@@ -198,14 +198,15 @@ describe("MathPath Tests", () => {
   })
 
   it("add", () => {
-    const p = new MathPath(
+    const p1 = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.OFF_CURVE_CUBIC, MathPath.OFF_CURVE_CUBIC, MathPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
+    const p2 = p1.copy();
+    const p3 = p1.addItemwise(p2);
     const mp = new MockPath2D();
-    const p2 = p.addItemwise(p);
-    p2.drawToPath(mp);
+    p3.drawToPath(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -217,14 +218,15 @@ describe("MathPath Tests", () => {
   })
 
   it("sub", () => {
-    const p = new MathPath(
+    const p1 = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.OFF_CURVE_CUBIC, MathPath.OFF_CURVE_CUBIC, MathPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
+    const p2 = p1.copy();
+    const p3 = p1.subItemwise(p2);
     const mp = new MockPath2D();
-    const p2 = p.subItemwise(p);
-    p2.drawToPath(mp);
+    p3.drawToPath(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
