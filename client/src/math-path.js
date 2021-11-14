@@ -23,6 +23,12 @@ export default class MathPath {
     }
   }
 
+  *iterPoints() {
+    for (let i = 0; i < this.coordinates.length; i += 2) {
+      yield {x: this.coordinates[i], y: this.coordinates[i + 1]};
+    }
+  }
+
   copy() {
     return new this.constructor(
       this.coordinates.copy(),
