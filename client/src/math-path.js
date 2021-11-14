@@ -31,6 +31,48 @@ export default class MathPath {
     );
   }
 
+  beginPath() {
+    if (this.contours.length) {
+      this.contours.push({endPoint: this.contours[this.contours.length - 1].endPoint, isClosed: false});
+    } else {
+      this.contours.push({endPoint: -1, isClosed: false});
+    }
+  }
+
+  addPoint(x, y, pointType) {
+    this.contours[this.contours.length - 1].endPoint += 1;
+    this.coordinates.push(x, y);
+    this.pointTypes.push(pointType);
+  }
+
+  moveTo(x, y) {
+    this.beginPath();
+    this.addPoint(x, y, MathPath.ON_CURVE);
+  }
+
+  lineTo(x, y) {
+    this.addPoint(x, y, MathPath.ON_CURVE);
+  }
+
+  curveTo(x1, y1, x2, y2, x3, y3) {
+    this.addPoint(x1, y1, MathPath.OFF_CURVE_CUBIC);
+    this.addPoint(x2, y2, MathPath.OFF_CURVE_CUBIC);
+    this.addPoint(x3, y3, MathPath.ON_CURVE);
+  }
+
+  qCurveTo( /* var args */ ) {
+    const numArgs = arguments.length
+    for (let i = 0; i < numArgs - 2; i += 2) {
+      this.addPoint(arguments[i], arguments[i + 1], MathPath.OFF_CURVE_QUAD);
+    }
+    let i = numArgs - 2;
+    this.addPoint(arguments[i], arguments[i + 1], MathPath.ON_CURVE);
+  }
+
+  closePath() {
+    this.contours[this.contours.length - 1].isClosed = true;
+  }
+
   addItemwise(other) {
     let otherCoordinates;
     if (other instanceof MathPath) {

@@ -202,4 +202,26 @@ describe("MathPath Tests", () => {
     );
   })
 
+  it("test pen-ish methods", () => {
+    const p = new MathPath();
+    const mp = new MockPath2D();
+    p.moveTo(0, 0);
+    p.lineTo(0, 100);
+    p.curveTo(30, 130, 70, 130, 100, 100);
+    p.qCurveTo(130, 70, 130, 30, 100, 0);
+    p.closePath();
+    p.drawToPath(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 0], "op": "moveTo"},
+        {"args": [0, 100], "op": "lineTo"},
+        {"args": [30, 130, 70, 130, 100, 100], "op": "bezierCurveTo"},
+        {"args": [130, 70, 130, 50], "op": "bezierQuadTo"},
+        {"args": [130, 30, 100, 0], "op": "bezierQuadTo"},
+        {"args": [0, 0], "op": "lineTo"},
+        {"args": [], "op": "closePath"},
+      ],
+    );
+  })
+
 })
