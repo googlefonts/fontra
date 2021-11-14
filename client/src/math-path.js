@@ -144,8 +144,9 @@ export default class MathPath {
 function drawContourToPath(path, coordinates, pointTypes, startPoint, numPoints, firstOnCurve, isClosed) {
   let currentSegment = [];
   let segmentFunc = drawLineSegment;
-  for (let i = 0; i <= numPoints; i++) {
-    const index = startPoint + (i + firstOnCurve) % numPoints;
+  const lastIndex = isClosed ? numPoints : numPoints - 1 - firstOnCurve;
+  for (let i = 0; i <= lastIndex; i++) {
+    const index = isClosed ? (startPoint + (firstOnCurve + i) % numPoints) : (startPoint + firstOnCurve + i);
     const pointType = pointTypes[index] & MathPath.POINT_TYPE_MASK;
     const x = coordinates[index * 2];
     const y = coordinates[index * 2 + 1];

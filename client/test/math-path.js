@@ -88,6 +88,58 @@ describe("MathPath Tests", () => {
     );
   })
 
+  it("test open path", () => {
+    const p = new MathPath(
+      new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
+      [MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE],
+      [{endPoint: 3, isClosed: false}],
+    );
+    const mp = new MockPath2D();
+    p.drawToPath(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 0], "op": "moveTo"},
+        {"args": [0, 100], "op": "lineTo"},
+        {"args": [100, 100], "op": "lineTo"},
+        {"args": [100, 0], "op": "lineTo"},
+      ],
+    );
+  })
+
+  it("test closed path dangling off curves", () => {
+    const p = new MathPath(
+      new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
+      [MathPath.OFF_CURVE_QUAD, MathPath.ON_CURVE, MathPath.OFF_CURVE_QUAD, MathPath.ON_CURVE],
+      [{endPoint: 3, isClosed: true}],
+    );
+    const mp = new MockPath2D();
+    p.drawToPath(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 100], "op": "moveTo"},
+        {"args": [100, 100, 100, 0], "op": "bezierQuadTo"},
+        {"args": [0, 0, 0, 100], "op": "bezierQuadTo"},
+        {"args": [], "op": "closePath"},
+      ],
+    );
+  })
+
+  it("test open path dangling off curves", () => {
+    const p = new MathPath(
+      new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
+      [MathPath.OFF_CURVE_QUAD, MathPath.ON_CURVE, MathPath.OFF_CURVE_QUAD, MathPath.ON_CURVE],
+      [{endPoint: 3, isClosed: false}],
+    );
+    const mp = new MockPath2D();
+    p.drawToPath(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 100], "op": "moveTo"},
+        {"args": [100, 100, 100, 0], "op": "bezierQuadTo"},
+      ],
+    );
+  })
+
   it("test quad", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
