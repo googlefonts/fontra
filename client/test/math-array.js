@@ -5,7 +5,7 @@ const assert = chai.assert,
 import MathArray from "../src/math-array.js";
 
 
-describe("Math Array", () => {
+describe("MathArray Tests", () => {
   const a1 = new MathArray(1, 2, 3, 4),
         a2 = new MathArray(5, 6, 7, 8);
 

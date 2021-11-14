@@ -28,7 +28,7 @@ class MockPath2D {
 }
 
 
-describe("Path Tests", () => {
+describe("MathPath Tests", () => {
   
   it("copy empty", () => {
     const p = new MathPath();
