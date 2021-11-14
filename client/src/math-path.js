@@ -34,6 +34,26 @@ export default class MathPath {
     }
   }
 
+  *iterHandles() {
+    let startPoint = 0;
+    for (const contour of this.contours) {
+      const endPoint = contour.endPoint;
+      let prevIndex = contour.isClosed ? endPoint : startPoint;
+      for (let nextIndex = startPoint + (contour.isClosed ? 0 : 1); nextIndex <= endPoint; nextIndex++) {
+        const prevType = this.pointTypes[prevIndex] & MathPath.POINT_TYPE_MASK;
+        const nextType = this.pointTypes[nextIndex] & MathPath.POINT_TYPE_MASK;
+        if (prevType != nextType) {
+          yield [
+            {x: this.coordinates[prevIndex * 2], y: this.coordinates[prevIndex * 2 + 1]},
+            {x: this.coordinates[nextIndex * 2], y: this.coordinates[nextIndex * 2 + 1]},
+          ];
+        }
+        prevIndex = nextIndex;
+      }
+      startPoint = endPoint + 1;
+    }
+  }
+
   copy() {
     return new this.constructor(
       this.coordinates.copy(),

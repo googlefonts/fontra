@@ -52,6 +52,25 @@ class PathPathItem extends BaseSceneItem {
 }
 
 
+class PathHandlesItem extends BaseSceneItem {
+  constructor(path) {
+    super();
+    this.path = path;
+  }
+
+  doDraw(controller) {
+    const context = controller.context;
+    const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
+
+    context.strokeStyle = controller.drawingParameters.handleColor;
+    context.lineWidth = controller.drawingParameters.handleLineWidth;
+    for (const [pt1, pt2] of this.path.iterHandles()) {
+      strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
+    }
+  }
+}
+
+
 class PathNodesItem extends BaseSceneItem {
   constructor(path) {
     super();
@@ -149,6 +168,8 @@ class CanvasController {
   drawingParameters = {
     nodeFillColor: "#FFF",
     nodeSize: 8,
+    handleColor: "#888",
+    handleLineWidth: 2,
     hoverNodeSize: 12,
     hoverNodeFillColor: "#F33",
     pathStrokeColor: "#BBB",
@@ -169,6 +190,7 @@ class CanvasController {
     this.path = lightCond.addItemwise(delta.mulScalar(0.333));
 
     this.scene = new SceneGraph();
+    this.scene.push(new PathHandlesItem(this.path));
     this.scene.push(new PathPathItem(this.path));
     this.scene.push(new PathNodesItem(this.path));
     this.scene.push(this.hoverLayer);
