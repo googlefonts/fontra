@@ -64,18 +64,7 @@ class PathNodesItem extends BaseSceneItem {
 
     context.fillStyle = controller.drawingParameters.nodeFillColor;
     for (const pt of this.path.iterPoints()) {
-      if (pt.type) {
-        context.beginPath();
-        context.arc(pt.x, pt.y, nodeSize / 2, 0, 2 * Math.PI, false);
-        context.fill();
-      } else {
-        context.fillRect(
-          pt.x - nodeSize / 2,
-          pt.y - nodeSize / 2,
-          nodeSize,
-          nodeSize
-        );
-      }
+      drawNode(context, pt.x, pt.y, nodeSize, pt.type, pt.smooth);
     }
   }
 }
@@ -96,16 +85,26 @@ class HoverLayer extends BaseSceneItem {
     context.save();
     context.globalCompositeOperation = "lighter";
     context.fillStyle = controller.drawingParameters.hoverNodeFillColor;
-    context.fillRect(
-      this.hoverItem.x - hoverNodeSize / 2,
-      this.hoverItem.y - hoverNodeSize / 2,
-      hoverNodeSize,
-      hoverNodeSize
-    )
+    drawNode(context, this.hoverItem.x, this.hoverItem.y, hoverNodeSize, this.hoverItem.type, this.hoverItem.smooth)
     context.restore();
   }
 }
 
+
+function drawNode(context, x, y, nodeSize, pointType, isSmooth) {
+  if (pointType) {
+    context.beginPath();
+    context.arc(x, y, nodeSize / 2, 0, 2 * Math.PI, false);
+    context.fill();
+  } else {
+    context.fillRect(
+      x - nodeSize / 2,
+      y - nodeSize / 2,
+      nodeSize,
+      nodeSize
+    );
+  }
+}
 
 function strokeLine(context, x1, y1, x2, y2) {
   context.beginPath();
@@ -235,6 +234,7 @@ class CanvasController {
       }
     }
     if (this.hoverLayer.hoverItem !== currentHoverItem) {
+      // TODO: fix above comparison, it will always be true
       this.draw(event);
     }
   }
