@@ -233,8 +233,7 @@ class CanvasController {
         break;
       }
     }
-    if (this.hoverLayer.hoverItem !== currentHoverItem) {
-      // TODO: fix above comparison, it will always be true
+    if (JSON.stringify(this.hoverLayer.hoverItem) !== JSON.stringify(currentHoverItem)) {
       this.draw(event);
     }
   }
