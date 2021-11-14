@@ -185,9 +185,10 @@ class CanvasController {
     this.hoverLayer = new HoverLayer()
 
     const lightCond = makePath(testGlyphs.lightCondensed);
-    const boldCond = makePath(testGlyphs.boldCondensed);
-    let delta = boldCond.subItemwise(lightCond);
-    this.path = lightCond.addItemwise(delta.mulScalar(0.333));
+    this.lightCondCoords = lightCond.coordinates;
+    const boldCondCoords = makePath(testGlyphs.boldCondensed).coordinates;
+    this.delta = boldCondCoords.subItemwise(this.lightCondCoords);
+    this.path = lightCond.copy();
 
     this.scene = new SceneGraph();
     this.scene.push(new PathHandlesItem(this.path));
@@ -216,6 +217,11 @@ class CanvasController {
     canvas.addEventListener("gesturechange", this.onEvent.bind(this));
     canvas.addEventListener("gestureend", this.onEvent.bind(this));
 
+    this.draw();
+  }
+
+  setSomeSliderValue(value) {
+    this.path.coordinates = this.lightCondCoords.addItemwise(this.delta.mulScalar(value));
     this.draw();
   }
 
