@@ -290,10 +290,10 @@ describe("MathPath Tests", () => {
     }
     expect(points).to.deep.equal(
       [
-        {x: 0, y: 0},
-        {x: 0, y: 100},
-        {x: 100, y: 100},
-        {x: 100, y: 0},
+        {x: 0, y: 0, type: 0, smooth: false},
+        {x: 0, y: 100, type: 2, smooth: false},
+        {x: 100, y: 100, type: 2, smooth: false},
+        {x: 100, y: 0, type: 0, smooth: false},
       ],
     );
   })

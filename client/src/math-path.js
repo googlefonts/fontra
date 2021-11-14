@@ -24,8 +24,13 @@ export default class MathPath {
   }
 
   *iterPoints() {
-    for (let i = 0; i < this.coordinates.length; i += 2) {
-      yield {x: this.coordinates[i], y: this.coordinates[i + 1]};
+    for (let i = 0; i < this.pointTypes.length; i++) {
+      yield {
+        x: this.coordinates[i * 2],
+        y: this.coordinates[i * 2 + 1],
+        type: this.pointTypes[i] & MathPath.POINT_TYPE_MASK,
+        smooth: !!(this.pointTypes[i] & MathPath.SMOOTH_FLAG),
+      };
     }
   }
 
