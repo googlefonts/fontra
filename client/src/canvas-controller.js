@@ -1,3 +1,7 @@
+import testGlyphs from "./test-glyphs.js";
+import MathPath from "./math-path.js";
+
+
 class BaseSceneItem {
   constructor() {
     this.hidden = false;
@@ -38,16 +42,12 @@ class PathPathItem extends BaseSceneItem {
   doDraw(controller) {
     const context = controller.context;
     const points = this.path;
-    const path = new Path2D();
-    path.moveTo(points[0].x, points[0].y);
-    for (var i = 1; i < points.length; i++) {
-      path.lineTo(points[i].x, points[i].y);
-    }
-    path.closePath();
+    const path2d = new Path2D();
+    this.path.drawToPath(path2d);
 
     context.lineWidth = controller.drawingParameters.pathLineWidth / controller.magnification;
     context.strokeStyle = controller.drawingParameters.pathStrokeColor;
-    context.stroke(path);
+    context.stroke(path2d);
   }
 }
 
@@ -61,11 +61,12 @@ class PathNodesItem extends BaseSceneItem {
   doDraw(controller) {
     const context = controller.context;
     const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
+
     context.fillStyle = controller.drawingParameters.nodeFillColor;
-    for (const point of this.path) {
+    for (const pt of this.path.iterPoints()) {
       context.fillRect(
-        point.x - nodeSize / 2,
-        point.y - nodeSize / 2,
+        pt.x - nodeSize / 2,
+        pt.y - nodeSize / 2,
         nodeSize,
         nodeSize
       );
@@ -147,15 +148,16 @@ class CanvasController {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
     this.magnification = 1;
+    this.origin = {x: 0, y: 800};
 
     this.hoverLayer = new HoverLayer()
-    this.points = [{x: 30, y: 30}];
-    for (let i = 0; i < 10; i++) {
-      this.points.push({x: 30 + Math.random() * 500, y: 30 + Math.random() * 500});
-    }
+
+    this.path = new MathPath();
+    testGlyphs.lightCondensed(this.path);
+
     this.scene = new SceneGraph();
-    this.scene.push(new PathPathItem(this.points));
-    this.scene.push(new PathNodesItem(this.points));
+    this.scene.push(new PathPathItem(this.path));
+    this.scene.push(new PathNodesItem(this.path));
     this.scene.push(this.hoverLayer);
 
     this.setupSize();
@@ -212,7 +214,7 @@ class CanvasController {
     );
     const currentHoverItem = this.hoverLayer.hoverItem;
     this.hoverLayer.hoverItem = null;
-    for (const point of this.points) {
+    for (const point of this.path.iterPoints()) {
       if (pointInRect(point, selRect)) {
         this.hoverLayer.hoverItem = point;
         break;
@@ -232,7 +234,9 @@ class CanvasController {
     let scale = window.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.save();
-    this.context.scale(scale * this.magnification, scale * this.magnification);
+    this.context.scale(scale, scale);
+    this.context.translate(this.origin.x, this.origin.y);
+    this.context.scale(this.magnification, -this.magnification);
     this.scene.draw(this);
     this.context.restore();
   }
@@ -240,8 +244,8 @@ class CanvasController {
   // helpers
 
   localPoint(point) {
-    let x = (point.x - this.canvas.offsetLeft) / this.magnification;
-    let y = (point.y - this.canvas.offsetTop) / this.magnification;
+    let x = (point.x - this.canvas.offsetLeft - this.origin.x) / this.magnification;
+    let y = (point.y - this.canvas.offsetTop - this.origin.y) / -this.magnification;
     return {x: x, y: y}
   }
 
