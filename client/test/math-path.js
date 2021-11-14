@@ -30,7 +30,7 @@ class MockPath2D {
 
 describe("MathPath Tests", () => {
   
-  it("copy empty", () => {
+  it("empty copy", () => {
     const p = new MathPath();
     const p2 = p.copy();
     const mp = new MockPath2D();
@@ -41,7 +41,7 @@ describe("MathPath Tests", () => {
     expect(mp.items).to.deep.equal([]);
   })
 
-  it("test construct", () => {
+  it("constructor", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE],
@@ -52,7 +52,7 @@ describe("MathPath Tests", () => {
     expect(p.contours).to.deep.equal([{endPoint: 3, isClosed: true}]);
   })
 
-  it("test copy", () => {
+  it("copy", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE],
@@ -68,7 +68,7 @@ describe("MathPath Tests", () => {
     expect(p2.contours).to.deep.equal([{endPoint: 3, isClosed: true}]);
   })
 
-  it("test draw", () => {
+  it("draw", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE],
@@ -88,7 +88,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test open path", () => {
+  it("open path", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE, MathPath.ON_CURVE],
@@ -106,7 +106,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test closed path dangling off curves", () => {
+  it("closed path dangling off curves", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.OFF_CURVE_QUAD, MathPath.ON_CURVE, MathPath.OFF_CURVE_QUAD, MathPath.ON_CURVE],
@@ -124,7 +124,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test open path dangling off curves", () => {
+  it("open path dangling off curves", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.OFF_CURVE_QUAD, MathPath.ON_CURVE, MathPath.OFF_CURVE_QUAD, MathPath.ON_CURVE],
@@ -140,7 +140,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test quad", () => {
+  it("quad", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.OFF_CURVE_QUAD, MathPath.OFF_CURVE_QUAD, MathPath.OFF_CURVE_QUAD],
@@ -159,7 +159,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test quad blob", () => {
+  it("quad blob", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.OFF_CURVE_QUAD, MathPath.OFF_CURVE_QUAD, MathPath.OFF_CURVE_QUAD, MathPath.OFF_CURVE_QUAD],
@@ -179,7 +179,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test cubic", () => {
+  it("cubic", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.OFF_CURVE_CUBIC, MathPath.OFF_CURVE_CUBIC, MathPath.ON_CURVE],
@@ -197,7 +197,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test add", () => {
+  it("add", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.OFF_CURVE_CUBIC, MathPath.OFF_CURVE_CUBIC, MathPath.ON_CURVE],
@@ -216,7 +216,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test sub", () => {
+  it("sub", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.OFF_CURVE_CUBIC, MathPath.OFF_CURVE_CUBIC, MathPath.ON_CURVE],
@@ -235,7 +235,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test mul", () => {
+  it("mul", () => {
     const p = new MathPath(
       new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
       [MathPath.ON_CURVE, MathPath.OFF_CURVE_CUBIC, MathPath.OFF_CURVE_CUBIC, MathPath.ON_CURVE],
@@ -254,7 +254,7 @@ describe("MathPath Tests", () => {
     );
   })
 
-  it("test pen-ish methods", () => {
+  it("pen-ish methods", () => {
     const p = new MathPath();
     const mp = new MockPath2D();
     p.moveTo(0, 0);
