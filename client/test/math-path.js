@@ -276,4 +276,24 @@ describe("MathPath Tests", () => {
     );
   })
 
+  it("iterPoints", () => {
+    const p = new MathPath(
+      new MathArray(0, 0, 0, 100, 100, 100, 100, 0),
+      [MathPath.ON_CURVE, MathPath.OFF_CURVE_CUBIC, MathPath.OFF_CURVE_CUBIC, MathPath.ON_CURVE],
+      [{endPoint: 3, isClosed: true}],
+    );
+    const points = [];
+    for (const pt of p.iterPoints()) {
+      points.push(pt)
+    }
+    expect(points).to.deep.equal(
+      [
+        {x: 0, y: 0},
+        {x: 0, y: 100},
+        {x: 100, y: 100},
+        {x: 100, y: 0},
+      ],
+    );
+  })
+
 })
