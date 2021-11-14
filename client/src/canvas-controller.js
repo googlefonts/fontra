@@ -133,6 +133,12 @@ function centeredRect(x, y, side) {
 }
 
 
+function makePath(f) {
+  const p = new MathPath();
+  f(p);
+  return p;
+}
+
 class CanvasController {
 
   drawingParameters = {
@@ -152,8 +158,10 @@ class CanvasController {
 
     this.hoverLayer = new HoverLayer()
 
-    this.path = new MathPath();
-    testGlyphs.lightCondensed(this.path);
+    const lightCond = makePath(testGlyphs.lightCondensed);
+    const boldCond = makePath(testGlyphs.boldCondensed);
+    let delta = boldCond.subItemwise(lightCond);
+    this.path = lightCond.addItemwise(delta.mulScalar(0.333));
 
     this.scene = new SceneGraph();
     this.scene.push(new PathPathItem(this.path));
