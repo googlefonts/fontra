@@ -1,13 +1,3 @@
-const drawingParameters = {
-  nodeFillColor: "#FFF",
-  nodeSize: 8,
-  hoverNodeSize: 12,
-  hoverNodeFillColor: "#F33",
-  pathStrokeColor: "#BBB",
-  pathLineWidth: 2
-};
-
-
 class BaseSceneItem {
   constructor() {
     this.hidden = false;
@@ -55,8 +45,8 @@ class PathPathItem extends BaseSceneItem {
     }
     path.closePath();
 
-    context.lineWidth = drawingParameters.pathLineWidth / controller.magnification;
-    context.strokeStyle = drawingParameters.pathStrokeColor;
+    context.lineWidth = controller.drawingParameters.pathLineWidth / controller.magnification;
+    context.strokeStyle = controller.drawingParameters.pathStrokeColor;
     context.stroke(path);
   }
 }
@@ -70,8 +60,8 @@ class PathNodesItem extends BaseSceneItem {
 
   doDraw(controller) {
     const context = controller.context;
-    const nodeSize = drawingParameters.nodeSize / controller.magnification
-    context.fillStyle = drawingParameters.nodeFillColor;
+    const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
+    context.fillStyle = controller.drawingParameters.nodeFillColor;
     for (const point of this.path) {
       context.fillRect(
         point.x - nodeSize / 2,
@@ -95,10 +85,10 @@ class HoverLayer extends BaseSceneItem {
       return;
     }
     const context = controller.context;
-    const hoverNodeSize = drawingParameters.hoverNodeSize / controller.magnification
+    const hoverNodeSize = controller.drawingParameters.hoverNodeSize / controller.magnification
     context.save();
     context.globalCompositeOperation = "lighter";
-    context.fillStyle = drawingParameters.hoverNodeFillColor;
+    context.fillStyle = controller.drawingParameters.hoverNodeFillColor;
     context.fillRect(
       this.hoverItem.x - hoverNodeSize / 2,
       this.hoverItem.y - hoverNodeSize / 2,
@@ -143,6 +133,16 @@ function centeredRect(x, y, side) {
 
 
 class CanvasController {
+
+  drawingParameters = {
+    nodeFillColor: "#FFF",
+    nodeSize: 8,
+    hoverNodeSize: 12,
+    hoverNodeFillColor: "#F33",
+    pathStrokeColor: "#BBB",
+    pathLineWidth: 2
+  }
+
   constructor(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
@@ -208,7 +208,7 @@ class CanvasController {
     const point = this.localPoint(event);
     const selRect = centeredRect(
       point.x, point.y,
-      drawingParameters.nodeSize / this.magnification,
+      this.drawingParameters.nodeSize / this.magnification,
     );
     const currentHoverItem = this.hoverLayer.hoverItem;
     this.hoverLayer.hoverItem = null;
