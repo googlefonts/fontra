@@ -62,6 +62,9 @@ export default class MathPath {
 
   qCurveTo( /* var args */ ) {
     const numArgs = arguments.length
+    if (numArgs % 2) {
+      throw new Error("number of arguments to qCurveTo must be even");
+    }
     for (let i = 0; i < numArgs - 2; i += 2) {
       this.addPoint(arguments[i], arguments[i + 1], MathPath.OFF_CURVE_QUAD);
     }
