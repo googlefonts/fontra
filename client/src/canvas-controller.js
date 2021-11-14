@@ -64,12 +64,18 @@ class PathNodesItem extends BaseSceneItem {
 
     context.fillStyle = controller.drawingParameters.nodeFillColor;
     for (const pt of this.path.iterPoints()) {
-      context.fillRect(
-        pt.x - nodeSize / 2,
-        pt.y - nodeSize / 2,
-        nodeSize,
-        nodeSize
-      );
+      if (pt.type) {
+        context.beginPath();
+        context.arc(pt.x, pt.y, nodeSize / 2, 0, 2 * Math.PI, false);
+        context.fill();
+      } else {
+        context.fillRect(
+          pt.x - nodeSize / 2,
+          pt.y - nodeSize / 2,
+          nodeSize,
+          nodeSize
+        );
+      }
     }
   }
 }
