@@ -85,9 +85,7 @@ export default class MathPath {
   addItemwise(other) {
     let otherCoordinates;
     if (other instanceof MathPath) {
-      if (this.pointTypes !== other.pointTypes || this.contours !== other.contours) {
-        throw new InterpolationError("paths are not compatible");
-      }
+      this._ensureCompatibility(other);
       otherCoordinates = other.coordinates;
     } else {
       otherCoordinates = other;
@@ -98,14 +96,18 @@ export default class MathPath {
   subItemwise(other) {
     let otherCoordinates;
     if (other instanceof MathPath) {
-      if (this.pointTypes !== other.pointTypes || this.contours !== other.contours) {
-        throw new InterpolationError("paths are not compatible");
-      }
+      this._ensureCompatibility(other);
       otherCoordinates = other.coordinates;
     } else {
       otherCoordinates = other;
     }
     return new this.constructor(this.coordinates.subItemwise(otherCoordinates), this.pointTypes, this.contours);
+  }
+
+  _ensureCompatibility(other) {
+    if (!arrayEquals(this.pointTypes, other.pointTypes) || !arrayEquals(this.contours, other.contours)) {
+      throw new InterpolationError("paths are not compatible");
+    }
   }
 
   mulScalar(scalar) {
@@ -212,4 +214,10 @@ function drawCubicSegment(path, segment) {
     // TODO warn or error
     path.lineTo(...segment.slice(-2));
   }
+}
+
+
+function arrayEquals(a, b) {
+  // Oh well
+  return JSON.stringify(a) === JSON.stringify(b);
 }
