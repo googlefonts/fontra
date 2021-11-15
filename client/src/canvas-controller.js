@@ -203,9 +203,9 @@ class CanvasController {
     this.setupSize();
     window.addEventListener("resize", event => this.handleResize(event));
     canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
-    // canvas.addEventListener("mousedown", async (e) => this.testing(e));
-
     canvas.addEventListener("wheel", event => this.handleWheel(event));
+
+    // canvas.addEventListener("mousedown", async (e) => this.testing(e));
     // canvas.addEventListener("scroll", this.onEvent.bind(this));
     // canvas.addEventListener("touchstart", this.onEvent.bind(this), false);
     // canvas.addEventListener("touchmove", this.onEvent.bind(this), false);
