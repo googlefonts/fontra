@@ -17,7 +17,7 @@ function addItemwise(a, b) {
 
 
 function subItemwise(a, b) {
-  if (!isNaN(a)) {
+  if (!isNaN(a) && typeof a !== "string") {
     return a - b;
   } else if (a.subItemwise !== undefined) {
     return a.subItemwise(b);
@@ -66,4 +66,4 @@ function itemwiseFunc(a, b, func) {
 }
 
 
-export { addItemwise };
+export { addItemwise, subItemwise };
