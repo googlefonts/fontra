@@ -1,6 +1,5 @@
 import chai from "chai";
-const assert = chai.assert,
-      expect = chai.expect;
+const expect = chai.expect;
 
 import VarArray from "../src/var-array.js";
 
@@ -33,12 +32,6 @@ describe("VarArray Tests", () => {
   })
 
   it("throws addItemwise", () => {
-    assert.throw(() => {
-      a1.addItemwise([1, 2, 3]);
-    }, Error, "arrays have different lengths: 4 vs. 3");
-  })
-
-  it("throws addItemwise 2", () => {
     expect(() => {
       a1.addItemwise([1, 2, 3]);
     }).to.throw("arrays have different lengths: 4 vs. 3");
