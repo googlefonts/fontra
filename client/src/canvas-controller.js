@@ -210,6 +210,11 @@ class CanvasController {
     canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
     canvas.addEventListener("wheel", event => this.handleWheel(event));
 
+    // Safari pinch zoom:
+    canvas.addEventListener("gesturestart", event => this.handleSafariGesture(event));
+    canvas.addEventListener("gesturechange", event => this.handleSafariGesture(event));
+    canvas.addEventListener("gestureend", event => this.handleSafariGesture(event));
+
     // canvas.addEventListener("mousedown", async (e) => this.testing(e));
     // canvas.addEventListener("scroll", this.onEvent.bind(this));
     // canvas.addEventListener("touchstart", this.onEvent.bind(this), false);
@@ -219,10 +224,6 @@ class CanvasController {
     // canvas.addEventListener("pointermove", this.onEvent.bind(this), false);
     // canvas.addEventListener("pointerup", this.onEvent.bind(this), false);
     // canvas.addEventListener("pointercancel", this.onEvent.bind(this), false);
-    // Safari:
-    // canvas.addEventListener("gesturestart", this.onEvent.bind(this));
-    // canvas.addEventListener("gesturechange", this.onEvent.bind(this));
-    // canvas.addEventListener("gestureend", this.onEvent.bind(this));
 
     this.draw();
   }
@@ -282,22 +283,32 @@ class CanvasController {
   handleWheel(event) {
     event.preventDefault();
     if (event.ctrlKey) {
-      const center = this.localPoint(event);
-      const prevMagnification = this.magnification;
-      this.magnification = this.magnification * (1 - event.deltaY / 100);
-      this.magnification = Math.min(Math.max(this.magnification, MIN_MAGNIFICATION), MAX_MAGNIFICATION);
-
-      // adjust origin
-      const scaling = this.magnification / prevMagnification;
-      this.origin.x += (1 - scaling) * center.x * prevMagnification;
-      this.origin.y -= (1 - scaling) * center.y * prevMagnification;
+      this._doPinchMagnify(1 - event.deltaY / 100);
     } else {
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
         this.origin.x -= event.deltaX;
       } else {
         this.origin.y -= event.deltaY;
       }
+      this.draw();
     }
+  }
+
+  handleSafariGesture(event) {
+    event.preventDefault();
+    this._doPinchMagnify(event.scale);
+  }
+
+  _doPinchMagnify(zoomFactor) {
+    const center = this.localPoint(event);
+    const prevMagnification = this.magnification;
+    this.magnification = this.magnification * zoomFactor;
+    this.magnification = Math.min(Math.max(this.magnification, MIN_MAGNIFICATION), MAX_MAGNIFICATION);
+
+    // adjust origin
+    const scaling = this.magnification / prevMagnification;
+    this.origin.x += (1 - scaling) * center.x * prevMagnification;
+    this.origin.y -= (1 - scaling) * center.y * prevMagnification;
     this.draw();
   }
 
