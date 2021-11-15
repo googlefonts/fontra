@@ -281,8 +281,11 @@ class CanvasController {
       this.origin.x += (1 - scaling) * center.x * prevMagnification;
       this.origin.y -= (1 - scaling) * center.y * prevMagnification;
     } else {
-      this.origin.x -= event.deltaX;
-      this.origin.y -= event.deltaY;
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+        this.origin.x -= event.deltaX;
+      } else {
+        this.origin.y -= event.deltaY;
+      }
     }
     this.draw();
   }
