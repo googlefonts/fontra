@@ -211,9 +211,9 @@ class CanvasController {
     canvas.addEventListener("wheel", event => this.handleWheel(event));
 
     // Safari pinch zoom:
-    canvas.addEventListener("gesturestart", event => this.handleSafariGesture(event));
-    canvas.addEventListener("gesturechange", event => this.handleSafariGesture(event));
-    canvas.addEventListener("gestureend", event => this.handleSafariGesture(event));
+    canvas.addEventListener("gesturestart", event => this.handleSafariGestureStart(event));
+    canvas.addEventListener("gesturechange", event => this.handleSafariGestureChange(event));
+    canvas.addEventListener("gestureend", event => this.handleSafariGestureEnd(event));
 
     // canvas.addEventListener("mousedown", async (e) => this.testing(e));
     // canvas.addEventListener("scroll", this.onEvent.bind(this));
@@ -283,7 +283,7 @@ class CanvasController {
   handleWheel(event) {
     event.preventDefault();
     if (event.ctrlKey) {
-      this._doPinchMagnify(1 - event.deltaY / 100);
+      this._doPinchMagnify(event, 1 - event.deltaY / 100);
     } else {
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
         this.origin.x -= event.deltaX;
@@ -294,21 +294,33 @@ class CanvasController {
     }
   }
 
-  handleSafariGesture(event) {
+  handleSafariGestureStart(event) {
     event.preventDefault();
-    this._doPinchMagnify(event.scale);
+    this._initialMagnification = this.magnification;
+    this._doPinchMagnify(event, event.scale);
   }
 
-  _doPinchMagnify(zoomFactor) {
-    const center = this.localPoint(event);
+  handleSafariGestureChange(event) {
+    event.preventDefault();
+    const zoomFactor = this._initialMagnification * event.scale / this.magnification;
+    this._doPinchMagnify(event, zoomFactor);
+  }
+
+  handleSafariGestureEnd(event) {
+    event.preventDefault();
+    delete this._initialMagnification;
+  }
+
+  _doPinchMagnify(event, zoomFactor) {
+    const center = this.localPoint({x: event.pageX, y: event.pageY});
     const prevMagnification = this.magnification;
+
     this.magnification = this.magnification * zoomFactor;
     this.magnification = Math.min(Math.max(this.magnification, MIN_MAGNIFICATION), MAX_MAGNIFICATION);
 
     // adjust origin
-    const scaling = this.magnification / prevMagnification;
-    this.origin.x += (1 - scaling) * center.x * prevMagnification;
-    this.origin.y -= (1 - scaling) * center.y * prevMagnification;
+    this.origin.x += (1 - zoomFactor) * center.x * prevMagnification;
+    this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
     this.draw();
   }
 
