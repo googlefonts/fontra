@@ -1,5 +1,5 @@
 import testGlyphs from "./test-glyphs.js";
-import MathPath from "./math-path.js";
+import VarPath from "./var-path.js";
 
 
 const MIN_MAGNIFICATION = 0.05;
@@ -162,7 +162,7 @@ function centeredRect(x, y, side) {
 
 
 function makePath(f) {
-  const p = new MathPath();
+  const p = new VarPath();
   f(p);
   return p;
 }

@@ -1,8 +1,8 @@
-import MathArray from "./math-array.js"
+import VarArray from "./var-array.js"
 import { InterpolationError } from "./errors.js"
 
 
-export default class MathPath {
+export default class VarPath {
 
   // point types
   static ON_CURVE = 0x00;
@@ -13,7 +13,7 @@ export default class MathPath {
 
   constructor(coordinates, pointTypes, contours) {
     if (coordinates === undefined) {
-      this.coordinates = new MathArray();
+      this.coordinates = new VarArray();
       this.pointTypes = [];
       this.contours = [];
     } else {
@@ -28,8 +28,8 @@ export default class MathPath {
       yield {
         x: this.coordinates[i * 2],
         y: this.coordinates[i * 2 + 1],
-        type: this.pointTypes[i] & MathPath.POINT_TYPE_MASK,
-        smooth: !!(this.pointTypes[i] & MathPath.SMOOTH_FLAG),
+        type: this.pointTypes[i] & VarPath.POINT_TYPE_MASK,
+        smooth: !!(this.pointTypes[i] & VarPath.SMOOTH_FLAG),
       };
     }
   }
@@ -40,8 +40,8 @@ export default class MathPath {
       const endPoint = contour.endPoint;
       let prevIndex = contour.isClosed ? endPoint : startPoint;
       for (let nextIndex = startPoint + (contour.isClosed ? 0 : 1); nextIndex <= endPoint; nextIndex++) {
-        const prevType = this.pointTypes[prevIndex] & MathPath.POINT_TYPE_MASK;
-        const nextType = this.pointTypes[nextIndex] & MathPath.POINT_TYPE_MASK;
+        const prevType = this.pointTypes[prevIndex] & VarPath.POINT_TYPE_MASK;
+        const nextType = this.pointTypes[nextIndex] & VarPath.POINT_TYPE_MASK;
         if (prevType != nextType) {
           yield [
             {x: this.coordinates[prevIndex * 2], y: this.coordinates[prevIndex * 2 + 1]},
@@ -78,17 +78,17 @@ export default class MathPath {
 
   moveTo(x, y) {
     this.beginPath();
-    this.addPoint(x, y, MathPath.ON_CURVE);
+    this.addPoint(x, y, VarPath.ON_CURVE);
   }
 
   lineTo(x, y) {
-    this.addPoint(x, y, MathPath.ON_CURVE);
+    this.addPoint(x, y, VarPath.ON_CURVE);
   }
 
   curveTo(x1, y1, x2, y2, x3, y3) {
-    this.addPoint(x1, y1, MathPath.OFF_CURVE_CUBIC);
-    this.addPoint(x2, y2, MathPath.OFF_CURVE_CUBIC);
-    this.addPoint(x3, y3, MathPath.ON_CURVE);
+    this.addPoint(x1, y1, VarPath.OFF_CURVE_CUBIC);
+    this.addPoint(x2, y2, VarPath.OFF_CURVE_CUBIC);
+    this.addPoint(x3, y3, VarPath.ON_CURVE);
   }
 
   qCurveTo( /* var args */ ) {
@@ -97,10 +97,10 @@ export default class MathPath {
       throw new Error("number of arguments to qCurveTo must be even");
     }
     for (let i = 0; i < numArgs - 2; i += 2) {
-      this.addPoint(arguments[i], arguments[i + 1], MathPath.OFF_CURVE_QUAD);
+      this.addPoint(arguments[i], arguments[i + 1], VarPath.OFF_CURVE_QUAD);
     }
     let i = numArgs - 2;
-    this.addPoint(arguments[i], arguments[i + 1], MathPath.ON_CURVE);
+    this.addPoint(arguments[i], arguments[i + 1], VarPath.ON_CURVE);
   }
 
   closePath() {
@@ -109,7 +109,7 @@ export default class MathPath {
 
   addItemwise(other) {
     let otherCoordinates;
-    if (other instanceof MathPath) {
+    if (other instanceof VarPath) {
       this._ensureCompatibility(other);
       otherCoordinates = other.coordinates;
     } else {
@@ -120,7 +120,7 @@ export default class MathPath {
 
   subItemwise(other) {
     let otherCoordinates;
-    if (other instanceof MathPath) {
+    if (other instanceof VarPath) {
       this._ensureCompatibility(other);
       otherCoordinates = other.coordinates;
     } else {
@@ -151,7 +151,7 @@ export default class MathPath {
 
       // Determine the index of the first on-curve point, if any
       for (let i = 0; i < numPoints; i++) {
-        if ((pointTypes[i] & MathPath.POINT_TYPE_MASK) === MathPath.ON_CURVE) {
+        if ((pointTypes[i] & VarPath.POINT_TYPE_MASK) === VarPath.ON_CURVE) {
           firstOnCurve = i;
           break;
         }
@@ -167,7 +167,7 @@ export default class MathPath {
         const xMid = (blobCoordinates[0] + blobCoordinates[endPoint * 2]) / 2;
         const yMid = (blobCoordinates[1] + blobCoordinates[endPoint * 2 + 1]) / 2;
         blobCoordinates.unshift(xMid, yMid);
-        blobPointTypes.unshift(MathPath.ON_CURVE);
+        blobPointTypes.unshift(VarPath.ON_CURVE);
         drawContourToPath(path, blobCoordinates, blobPointTypes, 0, numPoints + 1, 0, true);
       }
 
@@ -183,7 +183,7 @@ function drawContourToPath(path, coordinates, pointTypes, startPoint, numPoints,
   const lastIndex = isClosed ? numPoints : numPoints - 1 - firstOnCurve;
   for (let i = 0; i <= lastIndex; i++) {
     const index = isClosed ? (startPoint + (firstOnCurve + i) % numPoints) : (startPoint + firstOnCurve + i);
-    const pointType = pointTypes[index] & MathPath.POINT_TYPE_MASK;
+    const pointType = pointTypes[index] & VarPath.POINT_TYPE_MASK;
     const x = coordinates[index * 2];
     const y = coordinates[index * 2 + 1];
     if (i === 0) {
@@ -191,15 +191,15 @@ function drawContourToPath(path, coordinates, pointTypes, startPoint, numPoints,
     } else {
       currentSegment.push(x, y);
       switch (pointType) {
-        case MathPath.ON_CURVE:
+        case VarPath.ON_CURVE:
           segmentFunc(path, currentSegment)
           currentSegment = [];
           segmentFunc = drawLineSegment;
           break;
-        case MathPath.OFF_CURVE_QUAD:
+        case VarPath.OFF_CURVE_QUAD:
           segmentFunc = drawQuadSegment;
           break;
-        case MathPath.OFF_CURVE_CUBIC:
+        case VarPath.OFF_CURVE_CUBIC:
           segmentFunc = drawCubicSegment;
           break;
         default:

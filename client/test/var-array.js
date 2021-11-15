@@ -2,12 +2,12 @@ import chai from "chai";
 const assert = chai.assert,
       expect = chai.expect;
 
-import MathArray from "../src/math-array.js";
+import VarArray from "../src/var-array.js";
 
 
-describe("MathArray Tests", () => {
-  const a1 = new MathArray(1, 2, 3, 4),
-        a2 = new MathArray(5, 6, 7, 8);
+describe("VarArray Tests", () => {
+  const a1 = new VarArray(1, 2, 3, 4),
+        a2 = new VarArray(5, 6, 7, 8);
 
   it("copy", () => {
     const a3 = a1.copy();
@@ -44,8 +44,8 @@ describe("MathArray Tests", () => {
     }).to.throw("arrays have different lengths: 4 vs. 3");
   })
 
-  it("MathArray.from", () => {
-    const a = MathArray.from([1, 2, 3, 4]);
+  it("VarArray.from", () => {
+    const a = VarArray.from([1, 2, 3, 4]);
     expect(a).to.deep.equal([1, 2, 3, 4]);
   })
 })

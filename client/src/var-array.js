@@ -1,7 +1,7 @@
 import { InterpolationError } from "./errors.js"
 
 
-export default class MathArray extends Array {
+export default class VarArray extends Array {
 
   copy() {
     return this.slice();
