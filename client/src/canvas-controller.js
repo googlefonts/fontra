@@ -2,6 +2,10 @@ import testGlyphs from "./test-glyphs.js";
 import MathPath from "./math-path.js";
 
 
+const MIN_MAGNIFICATION = 0.1;
+const MAX_MAGNIFICATION = 100;
+
+
 class BaseSceneItem {
   constructor() {
     this.hidden = false;
@@ -63,7 +67,7 @@ class PathHandlesItem extends BaseSceneItem {
     const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
 
     context.strokeStyle = controller.drawingParameters.handleColor;
-    context.lineWidth = controller.drawingParameters.handleLineWidth;
+    context.lineWidth = controller.drawingParameters.handleLineWidth / controller.magnification;
     for (const [pt1, pt2] of this.path.iterHandles()) {
       strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
     }
@@ -266,8 +270,14 @@ class CanvasController {
 
   handleWheel(event) {
     event.preventDefault();
-    this.origin.x -= event.deltaX;
-    this.origin.y -= event.deltaY;
+    if (event.ctrlKey) {
+      console.log("???", event.deltaY, event.detail);
+      this.magnification = this.magnification - event.deltaY / 100;
+      this.magnification = Math.min(Math.max(this.magnification, MIN_MAGNIFICATION), MAX_MAGNIFICATION);
+    } else {
+      this.origin.x -= event.deltaX;
+      this.origin.y -= event.deltaY;
+    }
     this.draw();
   }
 
