@@ -2,30 +2,30 @@ import { VariationError } from "./errors.js"
 
 
 function addItemwise(a, b) {
-  if (!isNaN(a) && typeof a !== "string") {
-    return a + b;
-  } else if (a.addItemwise !== undefined) {
-    return a.addItemwise(b);
-  } else if (typeof a === "string") {
+  if (typeof a === "string") {
     if (a !== b) {
       throw new VariationError(`unexpected different strings: ${a} != ${b}`);
     }
     return a;
+  } else if (!isNaN(a)) {
+    return a + b;
+  } else if (a.addItemwise !== undefined) {
+    return a.addItemwise(b);
   }
   return itemwiseFunc(a, b, addItemwise);
 }
 
 
 function subItemwise(a, b) {
-  if (!isNaN(a) && typeof a !== "string") {
-    return a - b;
-  } else if (a.subItemwise !== undefined) {
-    return a.subItemwise(b);
-  } else if (typeof a === "string") {
+  if (typeof a === "string") {
     if (a !== b) {
       throw new VariationError(`unexpected different strings: ${a} != ${b}`);
     }
     return a;
+  } else if (!isNaN(a)) {
+    return a - b;
+  } else if (a.subItemwise !== undefined) {
+    return a.subItemwise(b);
   }
   return itemwiseFunc(a, b, subItemwise);
 }
