@@ -1,1 +1,1 @@
-export class InterpolationError extends Error {};
+export class VariationError extends Error {};

@@ -1,4 +1,4 @@
-import { InterpolationError } from "./errors.js"
+import { VariationError } from "./errors.js"
 
 
 export default class VarArray extends Array {
@@ -10,7 +10,7 @@ export default class VarArray extends Array {
   addItemwise(other) {
     const numItems = this.length;
     if (numItems !== other.length) {
-      throw new InterpolationError(`arrays have different lengths: ${numItems} vs. ${other.length}`);
+      throw new VariationError(`arrays have different lengths: ${numItems} vs. ${other.length}`);
     }
     const result = new this.constructor(numItems);
     for (let i = 0; i < numItems; i++) {
@@ -22,7 +22,7 @@ export default class VarArray extends Array {
   subItemwise(other) {
     const numItems = this.length;
     if (numItems !== other.length) {
-      throw new InterpolationError(`arrays have different lengths: ${numItems} vs. ${other.length}`);
+      throw new VariationError(`arrays have different lengths: ${numItems} vs. ${other.length}`);
     }
     const result = new this.constructor(numItems);
     for (let i = 0; i < numItems; i++) {

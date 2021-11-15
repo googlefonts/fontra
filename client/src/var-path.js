@@ -1,5 +1,5 @@
 import VarArray from "./var-array.js"
-import { InterpolationError } from "./errors.js"
+import { VariationError } from "./errors.js"
 
 
 export default class VarPath {
@@ -131,7 +131,7 @@ export default class VarPath {
 
   _ensureCompatibility(other) {
     if (!arrayEquals(this.pointTypes, other.pointTypes) || !arrayEquals(this.contours, other.contours)) {
-      throw new InterpolationError("paths are not compatible");
+      throw new VariationError("paths are not compatible");
     }
   }
 
