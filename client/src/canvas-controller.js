@@ -271,9 +271,15 @@ class CanvasController {
   handleWheel(event) {
     event.preventDefault();
     if (event.ctrlKey) {
-      console.log("???", event.deltaY, event.detail);
+      const center = this.localPoint(event);
+      const prevMagnification = this.magnification;
       this.magnification = this.magnification - event.deltaY / 100;
       this.magnification = Math.min(Math.max(this.magnification, MIN_MAGNIFICATION), MAX_MAGNIFICATION);
+
+      // adjust origin
+      const scaling = this.magnification / prevMagnification;
+      this.origin.x += (1 - scaling) * center.x * prevMagnification;
+      this.origin.y -= (1 - scaling) * center.y * prevMagnification;
     } else {
       this.origin.x -= event.deltaX;
       this.origin.y -= event.deltaY;
