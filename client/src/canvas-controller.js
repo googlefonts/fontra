@@ -197,25 +197,23 @@ class CanvasController {
     this.scene.push(this.hoverLayer);
 
     this.setupSize();
-    window.addEventListener("resize", this.onResize.bind(this));
-    canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
+    window.addEventListener("resize", event => this.handleResize(event));
+    canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
     // canvas.addEventListener("mousedown", async (e) => this.testing(e));
 
-    // canvas.addEventListener("wheel", this.onEvent.bind(this));
-    canvas.addEventListener("wheel", (e) => this.onEvent(e));
-    canvas.addEventListener("mousewheel", this.onEvent.bind(this));
-    canvas.addEventListener("scroll", this.onEvent.bind(this));
-    canvas.addEventListener("touchstart", this.onEvent.bind(this), false);
-    canvas.addEventListener("touchmove", this.onEvent.bind(this), false);
-    canvas.addEventListener("touchend", this.onEvent.bind(this), false);
-    canvas.addEventListener("pointerdown", async (e) => this.testing(e), false);
+    canvas.addEventListener("wheel", event => this.handleWheel(event));
+    // canvas.addEventListener("scroll", this.onEvent.bind(this));
+    // canvas.addEventListener("touchstart", this.onEvent.bind(this), false);
+    // canvas.addEventListener("touchmove", this.onEvent.bind(this), false);
+    // canvas.addEventListener("touchend", this.onEvent.bind(this), false);
+    // canvas.addEventListener("pointerdown", async (e) => this.testing(e), false);
     // canvas.addEventListener("pointermove", this.onEvent.bind(this), false);
     // canvas.addEventListener("pointerup", this.onEvent.bind(this), false);
     // canvas.addEventListener("pointercancel", this.onEvent.bind(this), false);
     // Safari:
-    canvas.addEventListener("gesturestart", this.onEvent.bind(this));
-    canvas.addEventListener("gesturechange", this.onEvent.bind(this));
-    canvas.addEventListener("gestureend", this.onEvent.bind(this));
+    // canvas.addEventListener("gesturestart", this.onEvent.bind(this));
+    // canvas.addEventListener("gesturechange", this.onEvent.bind(this));
+    // canvas.addEventListener("gestureend", this.onEvent.bind(this));
 
     this.draw();
   }
@@ -242,12 +240,12 @@ class CanvasController {
     this.canvas.style.height = height;
   }
 
-  onResize(event) {
+  handleResize(event) {
     this.setupSize();
     this.draw();
   }
 
-  onMouseMove(event) {
+  handleMouseMove(event) {
     const point = this.localPoint(event);
     const selRect = centeredRect(
       point.x, point.y,
@@ -264,6 +262,13 @@ class CanvasController {
     if (JSON.stringify(this.hoverLayer.hoverItem) !== JSON.stringify(currentHoverItem)) {
       this.draw(event);
     }
+  }
+
+  handleWheel(event) {
+    event.preventDefault();
+    this.origin.x -= event.deltaX;
+    this.origin.y -= event.deltaY;
+    this.draw();
   }
 
   onEvent(event) {
