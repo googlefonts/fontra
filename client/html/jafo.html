@@ -40,8 +40,16 @@
   <body>
     <div class="slidecontainer">
       <label>
-        Hello
-      <input type="range" min="0" max="100" value="0" step="any" class="slider" id="myRange" oninput="sliderChange(this.value)">
+      <input type="range" min="0" max="100" value="0" step="any" class="slider" id="weightSlider"
+          oninput="sliderChange(this.value, 'wght')">
+        Weight
+      </label>
+    </div>
+    <div class="slidecontainer">
+      <label>
+      <input type="range" min="0" max="100" value="0" step="any" class="slider" id="widthSlider"
+          oninput="sliderChange(this.value, 'wdth')">
+        Width
       </label>
     </div>
     <div id="canvas-container">
@@ -53,8 +61,8 @@
       var bodyElement = document.querySelector("body");
       let canvas = document.querySelector("#edit-canvas");
       let canvasController = new CanvasController(canvas);
-      function sliderChange(value) {
-        canvasController.setSomeSliderValue(value / 100);
+      function sliderChange(value, axisTag) {
+        canvasController.setAxisValue(value / 100, axisTag);
       }
       window.sliderChange = sliderChange;
     </script>

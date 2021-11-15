@@ -189,9 +189,14 @@ class CanvasController {
     this.hoverLayer = new HoverLayer()
 
     const lightCond = makePath(testGlyphs.lightCondensed);
-    this.lightCondCoords = lightCond.coordinates;
+    this.neutralCoords = lightCond.coordinates;
     const boldCondCoords = makePath(testGlyphs.boldCondensed).coordinates;
-    this.delta = boldCondCoords.subItemwise(this.lightCondCoords);
+    const lightWideCoords = makePath(testGlyphs.lightWide).coordinates;
+    const boldWideCoords = makePath(testGlyphs.boldWide).coordinates;
+    this.deltaWght = boldCondCoords.subItemwise(this.neutralCoords);
+    this.deltaWdth = lightWideCoords.subItemwise(this.neutralCoords);
+    this.deltaWghtWdth = boldWideCoords.subItemwise(this.neutralCoords.addItemwise(this.deltaWght).addItemwise(this.deltaWdth))
+    this.varLocation = {wght: 0, wdth: 0};
     this.path = lightCond.copy();
 
     this.scene = new SceneGraph();
@@ -222,8 +227,14 @@ class CanvasController {
     this.draw();
   }
 
-  setSomeSliderValue(value) {
-    this.path.coordinates = this.lightCondCoords.addItemwise(this.delta.mulScalar(value));
+  setAxisValue(value, axisTag) {
+    this.varLocation[axisTag] = value;
+    // console.log(this.varLocation);
+    this.path.coordinates = this.neutralCoords
+      .addItemwise(this.deltaWght.mulScalar(this.varLocation["wght"]))
+      .addItemwise(this.deltaWdth.mulScalar(this.varLocation["wdth"]))
+      .addItemwise(this.deltaWghtWdth.mulScalar(this.varLocation["wght"] * this.varLocation["wdth"]))
+      ;
     this.draw();
   }
 
