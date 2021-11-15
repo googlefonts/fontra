@@ -2,8 +2,8 @@ import testGlyphs from "./test-glyphs.js";
 import MathPath from "./math-path.js";
 
 
-const MIN_MAGNIFICATION = 0.1;
-const MAX_MAGNIFICATION = 100;
+const MIN_MAGNIFICATION = 0.05;
+const MAX_MAGNIFICATION = 200;
 
 
 class BaseSceneItem {
