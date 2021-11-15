@@ -30,6 +30,9 @@
         flex-direction: column;
       }
 
+      .slider-label {
+      }
+
       .slider {
         margin: 0;
         padding: 0;
@@ -56,13 +59,13 @@
     <div class="page">
 
       <div class="controls">
-        <label>
+        <label class="slider-label">
         <input type="range" min="0" max="100" value="0" step="any" class="slider" id="weightSlider"
             oninput="sliderChange(this.value, 'wght')">
           Weight
         </label>
         <br>
-        <label>
+        <label class="slider-label">
         <input type="range" min="0" max="100" value="0" step="any" class="slider" id="widthSlider"
             oninput="sliderChange(this.value, 'wdth')">
           Width
