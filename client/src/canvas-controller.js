@@ -169,11 +169,11 @@ class CanvasController {
     nodeFillColor: "#FFF",
     nodeSize: 8,
     handleColor: "#888",
-    handleLineWidth: 2,
-    hoverNodeSize: 12,
-    hoverNodeFillColor: "#F33",
+    handleLineWidth: 1,
+    hoverNodeSize: 14,
+    hoverNodeFillColor: "#48F",
     pathStrokeColor: "#BBB",
-    pathLineWidth: 2
+    pathLineWidth: 1
   }
 
   constructor(canvas) {
