@@ -284,7 +284,7 @@ class CanvasController {
     if (event.ctrlKey) {
       const center = this.localPoint(event);
       const prevMagnification = this.magnification;
-      this.magnification = this.magnification - event.deltaY / 100;
+      this.magnification = this.magnification * (1 - event.deltaY / 100);
       this.magnification = Math.min(Math.max(this.magnification, MIN_MAGNIFICATION), MAX_MAGNIFICATION);
 
       // adjust origin
