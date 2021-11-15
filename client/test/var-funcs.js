@@ -2,7 +2,7 @@ import chai from "chai";
 const expect = chai.expect;
 
 
-import { addItemwise, subItemwise } from "../src/var-funcs.js";
+import { addItemwise, subItemwise, mulScalar } from "../src/var-funcs.js";
 
 
 describe("Varation functions tests", () => {
@@ -115,4 +115,37 @@ describe("Varation functions tests", () => {
 
   });
 
+  describe("testing multiplication", () => {
+
+    it("mul arrays of ints", () => {
+      const result = mulScalar([1, 2, 3], 10);
+      expect(result).to.deep.equal([10, 20, 30]);
+    })
+
+    it("mul arrays of strings", () => {
+      const result = mulScalar(["1", "2"], 3);
+      expect(result).to.deep.equal(["1", "2"]);
+    })
+
+    it("mul objects", () => {
+      const result = mulScalar({a: 1, b: 2}, 3);
+      expect(result).to.deep.equal({a: 3, b: 6});
+    })
+
+    it("mul nested objects", () => {
+      const result = mulScalar({a: {x: 10}, b: 2}, 100);
+      expect(result).to.deep.equal({a: {x: 1000}, b: 200});
+    })
+
+    it("mul nested arrays", () => {
+      const result = mulScalar([[1, 2], 3, 4], 10);
+      expect(result).to.deep.equal([[10, 20], 30, 40]);
+    })
+
+    it("mul array of objects", () => {
+      const result = mulScalar([{x: 10}, 2], 5);
+      expect(result).to.deep.equal([{x: 50}, 10]);
+    })
+
+  });
 });

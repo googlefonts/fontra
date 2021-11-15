@@ -32,11 +32,16 @@ function subItemwise(a, b) {
 
 
 function mulScalar(o, scalar) {
-  if (o.mulScalar !== undefined) {
+  if (typeof o === "string") {
+    return o;
+  } else if (!isNaN(o)) {
+    return o * scalar;
+  } else if (o.mulScalar !== undefined) {
     return o.mulScalar(scalar);
   }
-  
+  return mapFunc(o, item => mulScalar(item, scalar));
 }
+
 
 function itemwiseFunc(a, b, func) {
   var result;
@@ -66,4 +71,18 @@ function itemwiseFunc(a, b, func) {
 }
 
 
-export { addItemwise, subItemwise };
+function mapFunc(o, func) {
+  var result;
+  if (o.map !== undefined) {
+    return o.map(func);
+  } else {
+    result = o.constructor();
+    const keys = Object.keys(o);
+    for (let key of keys) {
+      result[key] = func(o[key]);
+    }
+  }
+  return result;
+}
+
+export { addItemwise, subItemwise, mulScalar };
