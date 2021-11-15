@@ -44,4 +44,8 @@ describe("MathArray Tests", () => {
     }).to.throw("arrays have different lengths: 4 vs. 3");
   })
 
+  it("MathArray.from", () => {
+    const a = MathArray.from([1, 2, 3, 4]);
+    expect(a).to.deep.equal([1, 2, 3, 4]);
+  })
 })
