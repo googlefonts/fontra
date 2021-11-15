@@ -1,6 +1,5 @@
 import chai from "chai";
-const assert = chai.assert,
-      expect = chai.expect;
+const expect = chai.expect;
 
 import VarPath from "../src/var-path.js";
 import VarArray from "../src/var-array.js";
