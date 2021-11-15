@@ -2,6 +2,7 @@ import chai from "chai";
 const expect = chai.expect;
 
 
+import VarArray from "../src/var-array.js";
 import { addItemwise, subItemwise, mulScalar } from "../src/var-funcs.js";
 
 
@@ -59,6 +60,13 @@ describe("Varation functions tests", () => {
       expect(result).to.deep.equal([{x: 30}, 7]);
     })
 
+    it("add VarArray", () => {
+      const result = addItemwise(new VarArray(1, 2, 3), new VarArray(1, 2, 3));
+      expect(result).to.deep.equal([2, 4, 6]);
+      expect(result).to.be.an.instanceof(VarArray);
+      console.log(result);
+    })
+
   });
 
   describe("testing subtraction", () => {
@@ -113,6 +121,13 @@ describe("Varation functions tests", () => {
       expect(result).to.deep.equal([{x: -10}, -3]);
     })
 
+    it("sub VarArray", () => {
+      const result = subItemwise(new VarArray(1, 2, 3), new VarArray(1, 2, 3));
+      expect(result).to.deep.equal([0, 0, 0]);
+      expect(result).to.be.an.instanceof(VarArray);
+      console.log(result);
+    })
+
   });
 
   describe("testing multiplication", () => {
@@ -145,6 +160,13 @@ describe("Varation functions tests", () => {
     it("mul array of objects", () => {
       const result = mulScalar([{x: 10}, 2], 5);
       expect(result).to.deep.equal([{x: 50}, 10]);
+    })
+
+    it("mul VarArray", () => {
+      const result = mulScalar(new VarArray(1, 2, 3), 5);
+      expect(result).to.deep.equal([5, 10, 15]);
+      expect(result).to.be.an.instanceof(VarArray);
+      console.log(result);
     })
 
   });

@@ -46,7 +46,7 @@ function mulScalar(o, scalar) {
 function itemwiseFunc(a, b, func) {
   var result;
   if (a.length !== undefined) {
-    result = a.constructor(a.length);
+    result = new a.constructor(a.length);
     if (a.length != b.length) {
       throw new VariationError(`arrays have incompatible lengths: ${a.length} != ${b.length}`);
     }
@@ -54,7 +54,7 @@ function itemwiseFunc(a, b, func) {
       result[i] = func(a[i], b[i]);
     }
   } else {
-    result = a.constructor();
+    result = new a.constructor();
     const keys = Object.keys(a);
     if (keys.length != Object.keys(b).length) {
       throw new VariationError(`objects have incompatible number of entries: ${keys.length} != ${Object.keys(b).length}`);
@@ -76,7 +76,7 @@ function mapFunc(o, func) {
   if (o.map !== undefined) {
     return o.map(func);
   } else {
-    result = o.constructor();
+    result = new o.constructor();
     const keys = Object.keys(o);
     for (let key of keys) {
       result[key] = func(o[key]);
