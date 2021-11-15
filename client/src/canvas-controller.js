@@ -307,7 +307,7 @@ class CanvasController {
   }
 
   draw(event = null) {
-    let scale = window.devicePixelRatio;
+    const scale = window.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.save();
     this.context.scale(scale, scale);
@@ -320,8 +320,8 @@ class CanvasController {
   // helpers
 
   localPoint(point) {
-    let x = (point.x - this.canvas.offsetLeft - this.origin.x) / this.magnification;
-    let y = (point.y - this.canvas.offsetTop - this.origin.y) / -this.magnification;
+    const x = (point.x - this.canvas.offsetLeft - this.origin.x) / this.magnification;
+    const y = (point.y - this.canvas.offsetTop - this.origin.y) / -this.magnification;
     return {x: x, y: y}
   }
 
