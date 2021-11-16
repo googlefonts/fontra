@@ -1,7 +1,14 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import { deepCompare, locationToString, normalizeLocation, normalizeValue } from "../src/var-model.js";
+import {
+  VariationModel,
+  deepCompare,
+  locationToString,
+  normalizeLocation,
+  normalizeValue,
+  supportScalar,
+} from "../src/var-model.js";
 
 
 describe("var-model tests", () => {
@@ -43,6 +50,21 @@ describe("var-model tests", () => {
       expect(normalizeLocation({"wght": 500}, axes)).to.deep.equal({'wght': -0.5});
       expect(normalizeLocation({"wght": 1000}, axes)).to.deep.equal({'wght': 0.0});
       expect(normalizeLocation({"wght": 1001}, axes)).to.deep.equal({'wght': 0.0});
+    });
+
+  });
+
+  describe("supportScalar tests", () => {
+
+    it("supportScalar", () => {
+      expect(supportScalar({}, {})).to.equal(1.0);
+      expect(supportScalar({'wght':.2}, {})).to.equal(1.0);
+      expect(supportScalar({'wght':.2}, {'wght':[0,2,3]})).to.equal(0.1);
+      expect(supportScalar({'wght':2.5}, {'wght':[0,2,4]})).to.equal(0.75);
+      expect(supportScalar({'wght':2.5, 'wdth':0}, {'wght':[0,2,4], 'wdth':[-1,0,+1]})).to.equal(0.75);
+      expect(supportScalar({'wght':2.5, 'wdth':.5}, {'wght':[0,2,4], 'wdth':[-1,0,+1]}, false)).to.equal(0.375);
+      expect(supportScalar({'wght':2.5, 'wdth':0}, {'wght':[0,2,4], 'wdth':[-1,0,+1]})).to.equal(0.75);
+      expect(supportScalar({'wght':2.5, 'wdth':.5}, {'wght':[0,2,4], 'wdth':[-1,0,+1]})).to.equal(0.75);
     });
 
   });

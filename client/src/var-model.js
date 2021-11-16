@@ -208,4 +208,11 @@ function deepCompare(a, b) {
   }
 }
 
-export { VariationModel, deepCompare, locationToString, normalizeLocation, normalizeValue };
+export {
+  VariationModel,
+  deepCompare,
+  locationToString,
+  normalizeLocation,
+  normalizeValue,
+  supportScalar,
+};
