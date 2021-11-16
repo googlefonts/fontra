@@ -137,7 +137,6 @@ function normalizeLocation(location, axes) {
     if (v === undefined) {
       v = triple[1];
     }
-    console.log(tag, triple, v, normalizeValue(v, triple))
     out[tag] = normalizeValue(v, triple);
   }
   return out;
