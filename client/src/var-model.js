@@ -8,7 +8,7 @@ export class VariationModel {
 
   constructor(locations, axisOrder = null) {
     this.locations = locations;
-    this.axisOrder = axisOrder;
+    this.axisOrder = axisOrder || [];
     const locationsSet = Set(locations.map(item => locationToString(item)));
     if (locationsSet.size != locations.length) {
       throw new VariationError("locations must be unique");
@@ -16,12 +16,12 @@ export class VariationModel {
     if (! locationsSet.has("{}")) {
       throw new VariationError("locations must contain {} default");
     }
-    const compareFunc = this.getMasterLocationsSortCompareFunc(locations, this.axisOrder);
-    const sortedLocations = locations.slice();
-    sortedLocations.sort(compareFunc);
+    const decoratedLocations = getDecoratedMasterLocations(locations, this.axisOrder);
+    decoratedLocations.sort((a, b) => deepCompare(a[0], b[0]));
+    this.locations = decoratedLocations.map(item => item[1]);  // undecorate
     // this.mapping = ...;
     // this.reverseMapping = ...;
-    this._computeMasterSupports();
+    // this._computeMasterSupports();
   }
 
   getDeltas(masterValues) {
@@ -56,6 +56,75 @@ export class VariationModel {
 
 }
 
+
+function getDecoratedMasterLocations(locations, axisOrder) {
+  if (!arrayContainsItem(locations, {})) {
+    throw new VariationError("Base master not found");
+  }
+
+  axisPoints = {};
+  for (const loc of locations) {
+    if (Object.keys(loc).length != 1) {
+      continue;
+    }
+    axis = next(iter(loc));
+    value = loc[axis];
+    if (axisPoints[axis] === undefined) {
+      axisPoints[axis] = Set([0.0]);
+    }
+    // assert (
+    //   value not in axisPoints[axis]
+    // ), 'Value "%s" in axisPoints["%s"] -->  %s' % (value, axis, axisPoints)
+    axisPoints[axis].add(value);
+  }
+
+  const result = Array(locations.length);
+  for (let i = 0; i < locations.length; i++) {
+    const loc = locations[i];
+    const locEntries = Object.entries(loc);
+    const rank = locEntries.length;
+    const onPointAxes = [];
+    for (const [axis, value] of locEntries) {
+      if (axisPoints[axis] !== undefined && axisPoints[axis].has(value)) {
+        onPointAxes.push(axis);
+      }
+    }
+    const orderedAxes = axisOrder.filter(axis => loc[axis] !== undefined);
+    orderedAxes.push(...(Object.keys(loc).sort()).filter(axis => !arrayContainsItem(axisOrder, axis)));
+    const deco = [
+        rank,  // First, order by increasing rank
+        -onPointAxes.length,  // Next, by decreasing number of onPoint axes
+        orderedAxes.map(axis => axisOrder.index(axis) != -1 ? axisOrder.index(axis) : 0x10000),  // Next, by known axes
+        orderedAxes,  // Next, by all axes
+        orderedAxes.map(axis => sign(loc[axis])),  // Next, by signs of axis values
+        orderedAxes.map(axis => Math.abs(loc[axis])),  // Next, by absolute value of axis values
+    ];
+    result[i] = [deco, locations[i]];
+  }
+  return result;
+}
+
+
+function arrayContainsItem(a, item) {
+  for (let i = 0; i < a.length; i++) {
+    if (!deepCompare(a[i], item)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+function sign(v) {
+  return v < 0 ? -1 : v > 0 ? 1 : 0
+}
+
+
+function sorted(a) {
+  const result = a.slice();
+  result.sort();
+  return result;
+}
 
 export function locationToString(loc) {
   const keys = Object.keys(loc);
