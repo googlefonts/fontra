@@ -33,7 +33,7 @@ class VariationModel {
     for (i = 0; i < masterValues.length; i++) {
       let delta = masterValues[mapping[i]];
       const weights = this.deltaWeights[i];
-      for (let [j, weight] of weights.entries()) {
+      for (const [j, weight] of weights.entries()) {
         if (weight === 1) {
           delta = subItemwise(delta, out[i]);
         } else {
