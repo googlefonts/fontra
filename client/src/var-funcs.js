@@ -32,7 +32,7 @@ function subItemwise(a, b) {
 
 
 function mulScalar(o, scalar) {
-  if (typeof o === "string") {
+  if (scalar === 1 || typeof o === "string") {
     return o;
   } else if (!isNaN(o)) {
     return o * scalar;
