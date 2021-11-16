@@ -202,6 +202,7 @@ function deepCompare(a, b) {
   }
 }
 
+
 export {
   VariationModel,
   deepCompare,
