@@ -1,7 +1,7 @@
 import { VariationError } from "./errors.js"
 
 
-function addItemwise(a, b) {
+export function addItemwise(a, b) {
   if (typeof a === "string") {
     if (a !== b) {
       throw new VariationError(`unexpected different strings: ${a} != ${b}`);
@@ -16,7 +16,7 @@ function addItemwise(a, b) {
 }
 
 
-function subItemwise(a, b) {
+export function subItemwise(a, b) {
   if (typeof a === "string") {
     if (a !== b) {
       throw new VariationError(`unexpected different strings: ${a} != ${b}`);
@@ -31,7 +31,7 @@ function subItemwise(a, b) {
 }
 
 
-function mulScalar(o, scalar) {
+export function mulScalar(o, scalar) {
   if (scalar === 1 || typeof o === "string") {
     return o;
   } else if (!isNaN(o)) {
@@ -84,5 +84,3 @@ function mapFunc(o, func) {
   }
   return result;
 }
-
-export { addItemwise, subItemwise, mulScalar };
