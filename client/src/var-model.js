@@ -184,7 +184,8 @@ function deepCompare(a, b) {
     if (a.length === undefined || b.length === undefined) {
       throw new TypeError("can't compare objects");
     }
-    for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const length = Math.max(a.length, b.length);
+    for (let i = 0; i < length; i++) {
       const itemA = a[i];
       const itemB = b[i];
       if (itemA === undefined) {
