@@ -1,3 +1,6 @@
+'use strict';
+
+
 const testGlyphs = {
 
   lightCondensed: path => {
