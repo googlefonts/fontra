@@ -99,7 +99,7 @@ export default class VarPath {
     for (let i = 0; i < numArgs - 2; i += 2) {
       this.addPoint(arguments[i], arguments[i + 1], VarPath.OFF_CURVE_QUAD);
     }
-    let i = numArgs - 2;
+    const i = numArgs - 2;
     this.addPoint(arguments[i], arguments[i + 1], VarPath.ON_CURVE);
   }
 
