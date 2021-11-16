@@ -87,7 +87,7 @@ class PathNodesItem extends BaseSceneItem {
 
     context.fillStyle = controller.drawingParameters.nodeFillColor;
     for (const pt of this.path.iterPoints()) {
-      drawNode(context, pt.x, pt.y, nodeSize, pt.type, pt.smooth);
+      fillNode(context, pt.x, pt.y, nodeSize, pt.type, pt.smooth);
     }
   }
 }
@@ -107,20 +107,36 @@ class HoverLayer extends BaseSceneItem {
     const hoverNodeSize = controller.drawingParameters.hoverNodeSize / controller.magnification
     context.save();
     context.globalCompositeOperation = "lighter";
-    context.fillStyle = controller.drawingParameters.hoverNodeFillColor;
-    drawNode(context, this.hoverItem.x, this.hoverItem.y, hoverNodeSize, this.hoverItem.type, this.hoverItem.smooth)
+    context.strokeStyle = controller.drawingParameters.hoverNodeColor;
+    context.lineWidth = controller.drawingParameters.hoverNodeLineWidth / controller.magnification;
+    strokeNode(context, this.hoverItem.x, this.hoverItem.y, hoverNodeSize, this.hoverItem.type, this.hoverItem.smooth)
     context.restore();
   }
 }
 
 
-function drawNode(context, x, y, nodeSize, pointType, isSmooth) {
+function fillNode(context, x, y, nodeSize, pointType, isSmooth) {
   if (pointType) {
     context.beginPath();
     context.arc(x, y, nodeSize / 2, 0, 2 * Math.PI, false);
     context.fill();
   } else {
     context.fillRect(
+      x - nodeSize / 2,
+      y - nodeSize / 2,
+      nodeSize,
+      nodeSize
+    );
+  }
+}
+
+function strokeNode(context, x, y, nodeSize, pointType, isSmooth) {
+  if (pointType) {
+    context.beginPath();
+    context.arc(x, y, nodeSize / 2, 0, 2 * Math.PI, false);
+    context.stroke();
+  } else {
+    context.strokeRect(
       x - nodeSize / 2,
       y - nodeSize / 2,
       nodeSize,
@@ -175,7 +191,8 @@ class CanvasController {
     handleColor: "#888",
     handleLineWidth: 1,
     hoverNodeSize: 14,
-    hoverNodeFillColor: "#48F",
+    hoverNodeColor: "#48F",
+    hoverNodeLineWidth: 2,
     pathStrokeColor: "#BBB",
     pathLineWidth: 1
   }
