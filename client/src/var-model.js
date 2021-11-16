@@ -96,41 +96,6 @@ function normalizeValue(v, triple) {
 
 function normalizeLocation(location, axes) {
   // Normalizes location based on axis min/default/max values from axes.
-  // >>> axes = {"wght": (100, 400, 900)}
-  // >>> normalizeLocation({"wght": 400}, axes)
-  // {'wght': 0.0}
-  // >>> normalizeLocation({"wght": 100}, axes)
-  // {'wght': -1.0}
-  // >>> normalizeLocation({"wght": 900}, axes)
-  // {'wght': 1.0}
-  // >>> normalizeLocation({"wght": 650}, axes)
-  // {'wght': 0.5}
-  // >>> normalizeLocation({"wght": 1000}, axes)
-  // {'wght': 1.0}
-  // >>> normalizeLocation({"wght": 0}, axes)
-  // {'wght': -1.0}
-  // >>> axes = {"wght": (0, 0, 1000)}
-  // >>> normalizeLocation({"wght": 0}, axes)
-  // {'wght': 0.0}
-  // >>> normalizeLocation({"wght": -1}, axes)
-  // {'wght': 0.0}
-  // >>> normalizeLocation({"wght": 1000}, axes)
-  // {'wght': 1.0}
-  // >>> normalizeLocation({"wght": 500}, axes)
-  // {'wght': 0.5}
-  // >>> normalizeLocation({"wght": 1001}, axes)
-  // {'wght': 1.0}
-  // >>> axes = {"wght": (0, 1000, 1000)}
-  // >>> normalizeLocation({"wght": 0}, axes)
-  // {'wght': -1.0}
-  // >>> normalizeLocation({"wght": -1}, axes)
-  // {'wght': -1.0}
-  // >>> normalizeLocation({"wght": 500}, axes)
-  // {'wght': -0.5}
-  // >>> normalizeLocation({"wght": 1000}, axes)
-  // {'wght': 0.0}
-  // >>> normalizeLocation({"wght": 1001}, axes)
-  // {'wght': 0.0}
   const out = {};
   for (const [tag, triple] of Object.entries(axes)) {
     let v = location[tag];
@@ -148,22 +113,6 @@ function supportScalar(location, support, ot=true) {
   // with support.  If ot is True, then a peak value of zero
   // for support of an axis means "axis does not participate".  That
   // is how OpenType Variation Font technology works.
-  // >>> supportScalar({}, {})
-  // 1.0
-  // >>> supportScalar({'wght':.2}, {})
-  // 1.0
-  // >>> supportScalar({'wght':.2}, {'wght':(0,2,3)})
-  // 0.1
-  // >>> supportScalar({'wght':2.5}, {'wght':(0,2,4)})
-  // 0.75
-  // >>> supportScalar({'wght':2.5, 'wdth':0}, {'wght':(0,2,4), 'wdth':(-1,0,+1)})
-  // 0.75
-  // >>> supportScalar({'wght':2.5, 'wdth':.5}, {'wght':(0,2,4), 'wdth':(-1,0,+1)}, ot=False)
-  // 0.375
-  // >>> supportScalar({'wght':2.5, 'wdth':0}, {'wght':(0,2,4), 'wdth':(-1,0,+1)})
-  // 0.75
-  // >>> supportScalar({'wght':2.5, 'wdth':.5}, {'wght':(0,2,4), 'wdth':(-1,0,+1)})
-  // 0.75
   let scalar = 1.0;
   for (let [axis, [lower, peak, upper]] of Object.entries(support)) {
     let v;
