@@ -16,7 +16,7 @@ class VariationModel {
     if (! locationsSet.has("{}")) {
       throw new VariationError("locations must contain {} default");
     }
-    const compareFunc = self.getMasterLocationsSortCompareFunc(locations, this.axisOrder);
+    const compareFunc = this.getMasterLocationsSortCompareFunc(locations, this.axisOrder);
     const sortedLocations = locations.slice();
     sortedLocations.sort(compareFunc);
     // this.mapping = ...;
