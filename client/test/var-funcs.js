@@ -6,7 +6,7 @@ import VarArray from "../src/var-array.js";
 import { addItemwise, subItemwise, mulScalar } from "../src/var-funcs.js";
 
 
-describe("Varation functions tests", () => {
+describe("var-funcs tests", () => {
 
   describe("testing addition", () => {
 
