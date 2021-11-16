@@ -14,6 +14,7 @@ import {
 describe("var-model tests", () => {
 
   describe("VariationModel tests", () => {
+
     it("basic", () => {
       const locations = [
         {'wght':100},
@@ -39,8 +40,18 @@ describe("var-model tests", () => {
         {'wdth': 0.2, 'wght': 120},
       ];
       expect(model.locations).to.deep.equal(sortedLocations);
-      // test model.deltaWeights
+      // TODO test model.deltaWeights
     });
+
+    it("throw missing base master", () => {
+      expect(() => new VariationModel([{a:100}])).to.throw("locations must contain {} default");
+    });
+
+    it("throw non-unique locations", () => {
+      expect(() => new VariationModel([{},{}])).to.throw("locations must be unique");
+      expect(() => new VariationModel([{a:1,b:2},{b:2,a:1}])).to.throw("locations must be unique");
+    });
+
   });
 
   describe("normalizeValue test", () => {
