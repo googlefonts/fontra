@@ -78,7 +78,7 @@ function mapFunc(o, func) {
   } else {
     result = new o.constructor();
     const keys = Object.keys(o);
-    for (let key of keys) {
+    for (const key of keys) {
       result[key] = func(o[key]);
     }
   }
