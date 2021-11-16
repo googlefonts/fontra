@@ -64,7 +64,6 @@ describe("Varation functions tests", () => {
       const result = addItemwise(new VarArray(1, 2, 3), new VarArray(1, 2, 3));
       expect(result).to.deep.equal([2, 4, 6]);
       expect(result).to.be.an.instanceof(VarArray);
-      console.log(result);
     })
 
   });
@@ -125,7 +124,6 @@ describe("Varation functions tests", () => {
       const result = subItemwise(new VarArray(1, 2, 3), new VarArray(1, 2, 3));
       expect(result).to.deep.equal([0, 0, 0]);
       expect(result).to.be.an.instanceof(VarArray);
-      console.log(result);
     })
 
   });
@@ -166,7 +164,6 @@ describe("Varation functions tests", () => {
       const result = mulScalar(new VarArray(1, 2, 3), 5);
       expect(result).to.deep.equal([5, 10, 15]);
       expect(result).to.be.an.instanceof(VarArray);
-      console.log(result);
     })
 
   });
