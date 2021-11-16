@@ -70,12 +70,6 @@ function locationToString(loc) {
 
 function normalizeValue(v, triple) {
   // Normalizes value based on a min/default/max triple.
-  // >>> normalizeValue(400, (100, 400, 900))
-  // 0.0
-  // >>> normalizeValue(100, (100, 400, 900))
-  // -1.0
-  // >>> normalizeValue(650, (100, 400, 900))
-  // 0.5
   const [lower, dflt, upper] = triple;
   if (!((lower <= dflt) && (dflt <= upper))) {
     throw VariationError(
