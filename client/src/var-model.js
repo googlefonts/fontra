@@ -132,8 +132,12 @@ function normalizeLocation(location, axes) {
   // >>> normalizeLocation({"wght": 1001}, axes)
   // {'wght': 0.0}
   const out = {};
-  for ([tag, triple] of Object.entries(axes)) {
-    v = location[tag] || triple[1];
+  for (const [tag, triple] of Object.entries(axes)) {
+    let v = location[tag];
+    if (v === undefined) {
+      v = triple[1];
+    }
+    console.log(tag, triple, v, normalizeValue(v, triple))
     out[tag] = normalizeValue(v, triple);
   }
   return out;
@@ -256,4 +260,4 @@ function deepCompare(a, b) {
   }
 }
 
-export { VariationModel, deepCompare, locationToString, normalizeLocation };
+export { VariationModel, deepCompare, locationToString, normalizeLocation, normalizeValue };

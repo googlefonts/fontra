@@ -1,10 +1,51 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import { deepCompare, locationToString } from "../src/var-model.js";
+import { deepCompare, locationToString, normalizeLocation, normalizeValue } from "../src/var-model.js";
 
 
 describe("var-model tests", () => {
+
+  describe("normalizeValue test", () => {
+    it("misc", () => {
+      expect(normalizeValue(400, [100, 400, 900])).to.equal(0.0);
+      expect(normalizeValue(100, [100, 400, 900])).to.equal(-1.0);
+      expect(normalizeValue(650, [100, 400, 900])).to.equal(0.5);
+      expect(normalizeValue(0, [100, 400, 900])).to.equal(-1.0);
+      expect(normalizeValue(1000, [100, 400, 900])).to.equal(1.0);
+    });
+  });
+
+  describe("normalizeLocation tests", () => {
+    it("-1,0,1", () => {
+      const axes = {"wght": [100, 400, 900]};
+      expect(normalizeLocation({"wght": 400}, axes)).to.deep.equal({'wght': 0.0});
+      expect(normalizeLocation({"wght": 100}, axes)).to.deep.equal({'wght': -1.0});
+      expect(normalizeLocation({"wght": 900}, axes)).to.deep.equal({'wght': 1.0});
+      expect(normalizeLocation({"wght": 650}, axes)).to.deep.equal({'wght': 0.5});
+      expect(normalizeLocation({"wght": 1000}, axes)).to.deep.equal({'wght': 1.0});
+      expect(normalizeLocation({"wght": 0}, axes)).to.deep.equal({'wght': -1.0});
+    });
+
+    it("0,0,1", () => {
+      const axes = {"wght": [0, 0, 1000]};
+      expect(normalizeLocation({"wght": 0}, axes)).to.deep.equal({'wght': 0.0});
+      expect(normalizeLocation({"wght": -1}, axes)).to.deep.equal({'wght': 0.0});
+      expect(normalizeLocation({"wght": 1000}, axes)).to.deep.equal({'wght': 1.0});
+      expect(normalizeLocation({"wght": 500}, axes)).to.deep.equal({'wght': 0.5});
+      expect(normalizeLocation({"wght": 1001}, axes)).to.deep.equal({'wght': 1.0});
+    });
+
+    it("0,1,1", () => {
+      const axes = {"wght": [0, 1000, 1000]};
+      expect(normalizeLocation({"wght": 0}, axes)).to.deep.equal({'wght': -1.0});
+      expect(normalizeLocation({"wght": -1}, axes)).to.deep.equal({'wght': -1.0});
+      expect(normalizeLocation({"wght": 500}, axes)).to.deep.equal({'wght': -0.5});
+      expect(normalizeLocation({"wght": 1000}, axes)).to.deep.equal({'wght': 0.0});
+      expect(normalizeLocation({"wght": 1001}, axes)).to.deep.equal({'wght': 0.0});
+    });
+
+  });
 
   describe("locationToString tests", () => {
     it("empty location", () => {
