@@ -19,8 +19,12 @@ export class VariationModel {
     const decoratedLocations = getDecoratedMasterLocations(locations, this.axisOrder);
     decoratedLocations.sort((a, b) => deepCompare(a[0], b[0]));
     this.locations = decoratedLocations.map(item => item[1]);  // undecorate
-    // this.mapping = ...;
-    // this.reverseMapping = ...;
+
+    // Mapping from user's master order to our master order
+    const locationsStr = locations.map(locationToString);
+    const thisLocationsStr = this.locations.map(locationToString);
+    this.mapping = locationsStr.map(loc => thisLocationsStr.indexOf(loc));
+    this.reverseMapping = thisLocationsStr.map(loc => locationsStr.indexOf(loc));
     // this._computeMasterSupports();
   }
 

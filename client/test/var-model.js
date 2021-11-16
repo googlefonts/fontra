@@ -40,6 +40,8 @@ describe("var-model tests", () => {
         {'wdth': 0.2, 'wght': 120},
       ];
       expect(model.locations).to.deep.equal(sortedLocations);
+      expect(model.mapping).to.deep.equal([3, 1, 2, 5, 7, 8, 0, 6, 4]);
+      expect(model.reverseMapping).to.deep.equal([6, 1, 2, 0, 8, 3, 7, 4, 5]);
       // TODO test model.deltaWeights
     });
 
