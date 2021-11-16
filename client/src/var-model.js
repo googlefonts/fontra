@@ -4,7 +4,7 @@ import { VariationError } from "./errors.js";
 import { addItemwise, subItemwise, mulScalar } from "./var-funcs.js"
 
 
-class VariationModel {
+export class VariationModel {
 
   constructor(locations, axisOrder = null) {
     this.locations = locations;
@@ -57,7 +57,7 @@ class VariationModel {
 }
 
 
-function locationToString(loc) {
+export function locationToString(loc) {
   const keys = Object.keys(loc);
   const result = {};
   keys.sort()
@@ -68,7 +68,7 @@ function locationToString(loc) {
 }
 
 
-function normalizeValue(v, triple) {
+export function normalizeValue(v, triple) {
   // Normalizes value based on a min/default/max triple.
   const [lower, dflt, upper] = triple;
   if (!((lower <= dflt) && (dflt <= upper))) {
@@ -88,7 +88,7 @@ function normalizeValue(v, triple) {
 }
 
 
-function normalizeLocation(location, axes) {
+export function normalizeLocation(location, axes) {
   // Normalizes location based on axis min/default/max values from axes.
   const out = {};
   for (const [tag, triple] of Object.entries(axes)) {
@@ -102,7 +102,7 @@ function normalizeLocation(location, axes) {
 }
 
 
-function supportScalar(location, support, ot=true) {
+export function supportScalar(location, support, ot=true) {
   // Returns the scalar multiplier at location, for a master
   // with support.  If ot is True, then a peak value of zero
   // for support of an axis means "axis does not participate".  That
@@ -167,7 +167,7 @@ function interpolateFromDeltasAndScalars(deltas, scalars) {
 }
 
 
-function deepCompare(a, b) {
+export function deepCompare(a, b) {
   if (typeof a !== typeof b) {
     throw new TypeError("can't compare objects");
   }
@@ -202,13 +202,3 @@ function deepCompare(a, b) {
     return 0;
   }
 }
-
-
-export {
-  VariationModel,
-  deepCompare,
-  locationToString,
-  normalizeLocation,
-  normalizeValue,
-  supportScalar,
-};
