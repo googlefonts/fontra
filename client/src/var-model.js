@@ -108,7 +108,7 @@ function supportScalar(location, support, ot=true) {
   // for support of an axis means "axis does not participate".  That
   // is how OpenType Variation Font technology works.
   let scalar = 1.0;
-  for (let [axis, [lower, peak, upper]] of Object.entries(support)) {
+  for (const [axis, [lower, peak, upper]] of Object.entries(support)) {
     let v;
     if (ot) {
       // OpenType-specific case handling
