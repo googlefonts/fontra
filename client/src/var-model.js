@@ -93,15 +93,15 @@ function getDecoratedMasterLocations(locations, axisOrder) {
     const orderedAxes = axisOrder.filter(axis => loc[axis] !== undefined);
     orderedAxes.push(...(Object.keys(loc).sort()).filter(axis => !arrayContainsItem(axisOrder, axis)));
     const deco = [
-        rank,  // First, order by increasing rank
-        -onPointAxes.length,  // Next, by decreasing number of onPoint axes
-        orderedAxes.map(axis => {
-          const index = axisOrder.indexOf(axis);
-          return index != -1 ? index : 0x10000
-        }),  // Next, by known axes
-        orderedAxes,  // Next, by all axes
-        orderedAxes.map(axis => sign(loc[axis])),  // Next, by signs of axis values
-        orderedAxes.map(axis => Math.abs(loc[axis])),  // Next, by absolute value of axis values
+      rank,  // First, order by increasing rank
+      -onPointAxes.length,  // Next, by decreasing number of onPoint axes
+      orderedAxes.map(axis => {
+        const index = axisOrder.indexOf(axis);
+        return index != -1 ? index : 0x10000;
+      }),  // Next, by known axes
+      orderedAxes,  // Next, by all axes
+      orderedAxes.map(axis => sign(loc[axis])),  // Next, by signs of axis values
+      orderedAxes.map(axis => Math.abs(loc[axis])),  // Next, by absolute value of axis values
     ];
     result[i] = [deco, locations[i]];
   }
