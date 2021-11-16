@@ -1,5 +1,3 @@
-'use strict';
-
 import testGlyphs from "./test-glyphs.js";
 import VarPath from "./var-path.js";
 

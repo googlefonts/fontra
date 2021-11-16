@@ -1,5 +1,3 @@
-'use strict';
-
 import { VariationError } from "./errors.js"
 
 

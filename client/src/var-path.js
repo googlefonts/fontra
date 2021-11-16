@@ -1,5 +1,3 @@
-'use strict';
-
 import VarArray from "./var-array.js"
 import { VariationError } from "./errors.js"
 
