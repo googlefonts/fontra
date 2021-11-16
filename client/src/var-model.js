@@ -168,10 +168,10 @@ function interpolateFromDeltasAndScalars(deltas, scalars) {
 
 
 function deepCompare(a, b) {
+  if (typeof a !== typeof b) {
+    throw new TypeError("can't compare objects");
+  }
   if (typeof a === "string" || typeof a === "number") {
-    if (typeof a !== typeof b) {
-      throw new TypeError("can't compare objects");
-    }
     if (a < b) {
       return -1;
     } else if (a === b) {
