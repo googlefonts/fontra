@@ -13,6 +13,36 @@ import {
 
 describe("var-model tests", () => {
 
+  describe("VariationModel tests", () => {
+    it("basic", () => {
+      const locations = [
+        {'wght':100},
+        {'wght':-100},
+        {'wght':-180},
+        {'wdth':+.3},
+        {'wght':+120,'wdth':.3},
+        {'wght':+120,'wdth':.2},
+        {},
+        {'wght':+180,'wdth':.3},
+        {'wght':+180},
+      ];
+      const model = new VariationModel(locations, ['wght']);
+      const sortedLocations = [
+        {},
+        {'wght': -100},
+        {'wght': -180},
+        {'wght': 100},
+        {'wght': 180},
+        {'wdth': 0.3},
+        {'wdth': 0.3, 'wght': 180},
+        {'wdth': 0.3, 'wght': 120},
+        {'wdth': 0.2, 'wght': 120},
+      ];
+      expect(model.locations).to.deep.equal(sortedLocations);
+      // test model.deltaWeights
+    });
+  });
+
   describe("normalizeValue test", () => {
     it("misc", () => {
       expect(normalizeValue(400, [100, 400, 900])).to.equal(0.0);

@@ -9,7 +9,7 @@ export class VariationModel {
   constructor(locations, axisOrder = null) {
     this.locations = locations;
     this.axisOrder = axisOrder || [];
-    const locationsSet = Set(locations.map(item => locationToString(item)));
+    const locationsSet = new Set(locations.map(item => locationToString(item)));
     if (locationsSet.size != locations.length) {
       throw new VariationError("locations must be unique");
     }
@@ -62,15 +62,16 @@ function getDecoratedMasterLocations(locations, axisOrder) {
     throw new VariationError("Base master not found");
   }
 
-  axisPoints = {};
+  const axisPoints = {};
   for (const loc of locations) {
-    if (Object.keys(loc).length != 1) {
+    const keys = Object.keys(loc);
+    if (keys.length != 1) {
       continue;
     }
-    axis = next(iter(loc));
-    value = loc[axis];
+    const axis = keys[0];
+    const value = loc[axis];
     if (axisPoints[axis] === undefined) {
-      axisPoints[axis] = Set([0.0]);
+      axisPoints[axis] = new Set([0.0]);
     }
     // assert (
     //   value not in axisPoints[axis]
@@ -94,7 +95,10 @@ function getDecoratedMasterLocations(locations, axisOrder) {
     const deco = [
         rank,  // First, order by increasing rank
         -onPointAxes.length,  // Next, by decreasing number of onPoint axes
-        orderedAxes.map(axis => axisOrder.index(axis) != -1 ? axisOrder.index(axis) : 0x10000),  // Next, by known axes
+        orderedAxes.map(axis => {
+          const index = axisOrder.indexOf(axis);
+          return index != -1 ? index : 0x10000
+        }),  // Next, by known axes
         orderedAxes,  // Next, by all axes
         orderedAxes.map(axis => sign(loc[axis])),  // Next, by signs of axis values
         orderedAxes.map(axis => Math.abs(loc[axis])),  // Next, by absolute value of axis values
@@ -107,7 +111,7 @@ function getDecoratedMasterLocations(locations, axisOrder) {
 
 function arrayContainsItem(a, item) {
   for (let i = 0; i < a.length; i++) {
-    if (!deepCompare(a[i], item)) {
+    if (deepEqual(a[i], item)) {
       return true;
     }
   }
@@ -269,5 +273,18 @@ export function deepCompare(a, b) {
       }
     }
     return 0;
+  }
+}
+
+
+export function deepEqual(a, b) {
+  if (typeof a !== typeof b) {
+    throw new TypeError("can't compare objects");
+  }
+  if (typeof a === "string" || typeof a === "number") {
+    return a === b;
+  } else {
+    // TODO: do better?
+    return JSON.stringify(a) === JSON.stringify(b);
   }
 }
