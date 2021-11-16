@@ -1,10 +1,18 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import { deepCompare } from "../src/var-model.js";
+import { deepCompare, locationToString } from "../src/var-model.js";
 
 
 describe("var-model tests", () => {
+
+  describe("locationToString tests", () => {
+    it("empty location", () => {
+      expect(locationToString({})).to.equal("{}");
+      expect(locationToString({a:1, b:2})).to.equal('{"a":1,"b":2}');
+      expect(locationToString({b:2, a:1})).to.equal('{"a":1,"b":2}');
+    })
+  });
 
   describe("deepCompare tests", () => {
     it("deepCompare scalars", () => {

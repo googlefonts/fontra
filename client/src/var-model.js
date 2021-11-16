@@ -61,7 +61,7 @@ function locationToString(loc) {
   const keys = Object.keys(loc);
   const result = {};
   keys.sort()
-  for (key of keys) {
+  for (const key of keys) {
     result[key] = loc[key];
   }
   return JSON.stringify(result);
