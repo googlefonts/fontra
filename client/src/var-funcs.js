@@ -39,7 +39,7 @@ export function mulScalar(o, scalar) {
   } else if (o.mulScalar !== undefined) {
     return o.mulScalar(scalar);
   }
-  return mapFunc(o, item => mulScalar(item, scalar));
+  return objectMap(o, item => mulScalar(item, scalar));
 }
 
 
@@ -71,14 +71,13 @@ function itemwiseFunc(a, b, func) {
 }
 
 
-function mapFunc(o, func) {
+function objectMap(o, func) {
   var result;
   if (o.map !== undefined) {
     return o.map(func);
   } else {
     result = new o.constructor();
-    const keys = Object.keys(o);
-    for (const key of keys) {
+    for (const key of Object.keys(o)) {
       result[key] = func(o[key]);
     }
   }
