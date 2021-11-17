@@ -17,12 +17,12 @@ export class VariationModel {
       throw new VariationError("locations must contain {} default");
     }
     this.locations = sortedLocations(locations, axisOrder);
-
     // Mapping from user's master order to our master order
     const locationsStr = locations.map(locationToString);
     const thisLocationsStr = this.locations.map(locationToString);
     this.mapping = locationsStr.map(loc => thisLocationsStr.indexOf(loc));
     this.reverseMapping = thisLocationsStr.map(loc => locationsStr.indexOf(loc));
+
     // this._computeMasterSupports();
   }
 
