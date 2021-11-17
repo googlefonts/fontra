@@ -367,7 +367,7 @@ class CanvasController {
 
   localPoint(point) {
     const x = (point.x - this.canvas.offsetLeft - this.origin.x) / this.magnification;
-    const y = (point.y - this.canvas.offsetTop - this.origin.y) / -this.magnification;
+    const y = -(point.y - this.canvas.offsetTop - this.origin.y) / this.magnification;
     return {x: x, y: y}
   }
 
