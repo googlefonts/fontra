@@ -284,16 +284,3 @@ export function deepCompare(a, b) {
     return 0;
   }
 }
-
-
-export function deepEqual(a, b) {
-  if (typeof a !== typeof b) {
-    throw new TypeError("can't compare objects");
-  }
-  if (typeof a === "string" || typeof a === "number") {
-    return a === b;
-  } else {
-    // TODO: do better?
-    return JSON.stringify(a) === JSON.stringify(b);
-  }
-}
