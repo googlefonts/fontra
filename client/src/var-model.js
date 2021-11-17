@@ -67,7 +67,7 @@ function sortedLocations(locations, axisOrder = null) {
 
 
 function getDecoratedMasterLocations(locations, axisOrder) {
-  if (!arrayContainsItem(locations, {})) {
+  if (!locationsContainsBaseMaster(locations)) {
     throw new VariationError("Base master not found");
   }
 
@@ -100,7 +100,7 @@ function getDecoratedMasterLocations(locations, axisOrder) {
       }
     }
     const orderedAxes = axisOrder.filter(axis => loc[axis] !== undefined);
-    orderedAxes.push(...(Object.keys(loc).sort()).filter(axis => !arrayContainsItem(axisOrder, axis)));
+    orderedAxes.push(...(Object.keys(loc).sort()).filter(axis => axisOrder.indexOf(axis) === -1));
     const deco = [
       rank,  // First, order by increasing rank
       -onPointAxes.length,  // Next, by decreasing number of onPoint axes
@@ -118,9 +118,9 @@ function getDecoratedMasterLocations(locations, axisOrder) {
 }
 
 
-function arrayContainsItem(a, item) {
-  for (let i = 0; i < a.length; i++) {
-    if (deepEqual(a[i], item)) {
+function locationsContainsBaseMaster(locations) {
+  for (let i = 0; i < locations.length; i++) {
+    if (Object.keys(locations[i]).length === 0) {
       return true;
     }
   }
