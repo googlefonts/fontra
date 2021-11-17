@@ -129,13 +129,13 @@ export class VariationModel {
     this.deltaWeights = [];
     for (let i = 0; i < this.locations.length; i++) {
       const loc = this.locations[i];
-      const deltaWeight = {};
+      const deltaWeight = new Map();
       // Walk over previous masters now, populate deltaWeight
       for (let j = 0; j < i; j ++) {
         const support = this.supports[j];
         const scalar = supportScalar(loc, support);
         if (scalar) {
-          deltaWeight[j] = scalar;
+          deltaWeight.set(j, scalar);
         }
       }
       this.deltaWeights.push(deltaWeight);
@@ -148,17 +148,17 @@ export class VariationModel {
     }
     const mapping = this.reverseMapping;
     const out = [];
-    for (i = 0; i < masterValues.length; i++) {
+    for (let i = 0; i < masterValues.length; i++) {
       let delta = masterValues[mapping[i]];
       const weights = this.deltaWeights[i];
       for (const [j, weight] of weights.entries()) {
         if (weight === 1) {
-          delta = subItemwise(delta, out[i]);
+          delta = subItemwise(delta, out[j]);
         } else {
-          delta = subItemwise(delta, mulScalar(out[i], weight));
+          delta = subItemwise(delta, mulScalar(out[j], weight));
         }
-        out.push(delta);
       }
+      out.push(delta);
     }
     return out;
   }
@@ -369,7 +369,7 @@ function interpolateFromDeltasAndScalars(deltas, scalars) {
     throw new VariationError("deltas and scalars must have the same length");
   }
   let v = null;
-  for (i = 0; i < scalars.length; i++) {
+  for (let i = 0; i < scalars.length; i++) {
     const scalar = scalars[i];
     if (!scalar) {
       continue;
@@ -378,7 +378,7 @@ function interpolateFromDeltasAndScalars(deltas, scalars) {
     if (v === null) {
       v = contribution;
     } else {
-      v = addItemwise(a, contribution);
+      v = addItemwise(v, contribution);
     }
   }
   return v;

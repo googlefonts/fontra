@@ -43,24 +43,38 @@ describe("var-model tests", () => {
       expect(model.mapping).to.deep.equal([3, 1, 2, 5, 7, 8, 0, 6, 4]);
       expect(model.reverseMapping).to.deep.equal([6, 1, 2, 0, 8, 3, 7, 4, 5]);
       // test model.deltaWeights
+
       expect(model.deltaWeights).to.deep.equal([
-        {},
-        {0: 1.0},
-        {0: 1.0},
-        {0: 1.0},
-        {0: 1.0},
-        {0: 1.0},
-        {0: 1.0, 4: 1.0, 5: 1.0},
-        {0: 1.0, 3: 0.75, 4: 0.25, 5: 1.0, 6: 0.6666666666666666},
-        {0: 1.0,
-         3: 0.75,
-         4: 0.25,
-         5: 0.6666666666666667,
-         6: 0.4444444444444445,
-         7: 0.6666666666666667},
+        new Map(),
+        new Map([[0, 1.0]]),
+        new Map([[0, 1.0]]),
+        new Map([[0, 1.0]]),
+        new Map([[0, 1.0]]),
+        new Map([[0, 1.0]]),
+        new Map([[0, 1.0], [4, 1.0], [5, 1.0]]),
+        new Map([[0, 1.0], [3, 0.75], [4, 0.25], [5, 1.0], [6, 0.6666666666666666]]),
+        new Map([[0, 1.0],
+         [3, 0.75],
+         [4, 0.25],
+         [5, 0.6666666666666667],
+         [6, 0.4444444444444445],
+         [7, 0.6666666666666667]]),
       ]);
 
+    });
 
+    it("deltas and interpolation", () => {
+
+      const locations = [{}, {"wght": 1}, {"wdth": 1}, {"wght": 1, "wdth": 1}];
+      const model = new VariationModel(locations);
+      const masterValues = [1, 2.5, 3.25, 5.25];
+      const deltas = model.getDeltas(masterValues);
+      expect(deltas).to.deep.equal([1, 2.25, 1.5, 0.5]);
+      const testValues = [[{}, 1.0], [{'wght': 1}, 2.5], [{'wdth': 1}, 3.25], [{'wght': 0.5}, 1.75], [{'wdth': 0.5}, 2.125], [{'wght': 1, 'wdth': 1}, 5.25], [{'wght': 0.5, 'wdth': 0.5}, 3.0]];
+      for (const [loc, expectedValue] of testValues) {
+        const result = model.interpolateFromDeltas(loc, deltas)
+        expect(result).to.equal(expectedValue);
+      }
     });
 
     it("throw missing base master", () => {
