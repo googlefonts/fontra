@@ -52,6 +52,7 @@ describe("var-model tests", () => {
     it("throw non-unique locations", () => {
       expect(() => new VariationModel([{},{}])).to.throw("locations must be unique");
       expect(() => new VariationModel([{a:1,b:2},{b:2,a:1}])).to.throw("locations must be unique");
+      expect(() => new VariationModel([{a:1,b:2},{a:1,b:2.0}])).to.throw("locations must be unique");
     });
 
   });
