@@ -16,9 +16,7 @@ export class VariationModel {
     if (! locationsSet.has("{}")) {
       throw new VariationError("locations must contain {} default");
     }
-    const decoratedLocations = getDecoratedMasterLocations(locations, this.axisOrder);
-    decoratedLocations.sort((a, b) => deepCompare(a[0], b[0]));
-    this.locations = decoratedLocations.map(item => item[1]);  // undecorate
+    this.locations = sortedLocations(locations, axisOrder);
 
     // Mapping from user's master order to our master order
     const locationsStr = locations.map(locationToString);
@@ -58,6 +56,13 @@ export class VariationModel {
     return interpolateFromDeltasAndScalars(deltas, scalars);
   }
 
+}
+
+
+function sortedLocations(locations, axisOrder = null) {
+  const decoratedLocations = getDecoratedMasterLocations(locations, axisOrder || []);
+  decoratedLocations.sort((a, b) => deepCompare(a[0], b[0]));
+  return decoratedLocations.map(item => item[1]);  // undecorate
 }
 
 
