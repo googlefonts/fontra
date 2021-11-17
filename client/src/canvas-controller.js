@@ -202,6 +202,7 @@ class CanvasController {
     this.context = canvas.getContext("2d");
     this.magnification = 1;
     this.origin = {x: 0, y: 800};
+    this.needsUpdate = false;
 
     this.hoverLayer = new HoverLayer()
 
@@ -243,14 +244,14 @@ class CanvasController {
     // canvas.addEventListener("pointerup", this.onEvent.bind(this), false);
     // canvas.addEventListener("pointercancel", this.onEvent.bind(this), false);
 
-    this.draw();
+    this.setNeedsUpdate();
   }
 
   setAxisValue(value, axisTag) {
     this.varLocation[axisTag] = value;
     // console.log(this.varLocation);
     this.path.coordinates = this.model.interpolateFromDeltas(this.varLocation, this.deltas);
-    this.draw();
+    this.setNeedsUpdate();
   }
 
   async testing(event) {
@@ -272,7 +273,7 @@ class CanvasController {
 
   handleResize(event) {
     this.setupSize();
-    this.draw();
+    this.setNeedsUpdate();
   }
 
   handleMouseMove(event) {
@@ -290,7 +291,7 @@ class CanvasController {
       }
     }
     if (JSON.stringify(this.hoverLayer.hoverItem) !== JSON.stringify(currentHoverItem)) {
-      this.draw(event);
+      this.setNeedsUpdate();
     }
   }
 
@@ -304,7 +305,7 @@ class CanvasController {
       } else {
         this.origin.y -= event.deltaY;
       }
-      this.draw();
+      this.setNeedsUpdate();
     }
   }
 
@@ -335,7 +336,7 @@ class CanvasController {
     // adjust origin
     this.origin.x += (1 - zoomFactor) * center.x * prevMagnification;
     this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
-    this.draw();
+    this.setNeedsUpdate();
   }
 
   onEvent(event) {
@@ -343,7 +344,15 @@ class CanvasController {
     event.preventDefault();
   }
 
-  draw(event = null) {
+  setNeedsUpdate() {
+    if (!this.needsUpdate) {
+      this.needsUpdate = true;
+      setTimeout(() => this.draw(), 0);
+    }
+  }
+
+  draw() {
+    this.needsUpdate = false;
     const scale = window.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.save();
