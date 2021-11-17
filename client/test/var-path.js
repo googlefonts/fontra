@@ -298,7 +298,7 @@ describe("VarPath Tests", () => {
     );
   })
 
-  it("transform", () => {
+  it("transformed", () => {
     const t = new Transform().scale(2);
     const p = new VarPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
