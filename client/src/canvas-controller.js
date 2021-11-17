@@ -1,6 +1,6 @@
 import testGlyphs from "./test-glyphs.js";
 import VarPath from "./var-path.js";
-
+import { VariationModel } from "./var-model.js";
 
 const MIN_MAGNIFICATION = 0.05;
 const MAX_MAGNIFICATION = 200;
@@ -205,16 +205,17 @@ class CanvasController {
 
     this.hoverLayer = new HoverLayer()
 
-    const lightCond = makePath(testGlyphs.lightCondensed);
-    this.neutralCoords = lightCond.coordinates;
-    const boldCondCoords = makePath(testGlyphs.boldCondensed).coordinates;
-    const lightWideCoords = makePath(testGlyphs.lightWide).coordinates;
-    const boldWideCoords = makePath(testGlyphs.boldWide).coordinates;
-    this.deltaWght = boldCondCoords.subItemwise(this.neutralCoords);
-    this.deltaWdth = lightWideCoords.subItemwise(this.neutralCoords);
-    this.deltaWghtWdth = boldWideCoords.subItemwise(this.neutralCoords.addItemwise(this.deltaWght).addItemwise(this.deltaWdth))
+    const locations = [{}, {wght: 1}, {wdth: 1}, {wght: 1, wdth: 1}];
+    this.model = new VariationModel(locations);
+    const masterValues = [
+      makePath(testGlyphs.lightCondensed).coordinates,
+      makePath(testGlyphs.boldCondensed).coordinates,
+      makePath(testGlyphs.lightWide).coordinates,
+      makePath(testGlyphs.boldWide).coordinates,
+    ];
+    this.deltas = this.model.getDeltas(masterValues);
     this.varLocation = {wght: 0, wdth: 0};
-    this.path = lightCond.copy();
+    this.path = makePath(testGlyphs.lightCondensed);
 
     this.scene = new SceneGraph();
     this.scene.push(new PathHandlesItem(this.path));
@@ -248,11 +249,7 @@ class CanvasController {
   setAxisValue(value, axisTag) {
     this.varLocation[axisTag] = value;
     // console.log(this.varLocation);
-    this.path.coordinates = this.neutralCoords
-      .addItemwise(this.deltaWght.mulScalar(this.varLocation["wght"]))
-      .addItemwise(this.deltaWdth.mulScalar(this.varLocation["wdth"]))
-      .addItemwise(this.deltaWghtWdth.mulScalar(this.varLocation["wght"] * this.varLocation["wdth"]))
-      ;
+    this.path.coordinates = this.model.interpolateFromDeltas(this.varLocation, this.deltas);
     this.draw();
   }
 
