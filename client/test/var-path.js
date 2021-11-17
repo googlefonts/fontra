@@ -3,6 +3,7 @@ const expect = chai.expect;
 
 import VarPath from "../src/var-path.js";
 import VarArray from "../src/var-array.js";
+import { Transform } from "../src/transform.js";
 
 
 class MockPath2D {
@@ -296,5 +297,26 @@ describe("VarPath Tests", () => {
       ],
     );
   })
+
+  it("transform", () => {
+    const t = new Transform().scale(2);
+    const p = new VarPath(
+      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
+      [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
+      [{endPoint: 3, isClosed: false}],
+    );
+    const mp = new MockPath2D();
+    p.transformed(t).drawToPath(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 0], "op": "moveTo"},
+        {"args": [0, 200], "op": "lineTo"},
+        {"args": [200, 200], "op": "lineTo"},
+        {"args": [200, 0], "op": "lineTo"},
+      ],
+    );
+
+
+  });
 
 })

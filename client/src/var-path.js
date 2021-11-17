@@ -174,6 +174,17 @@ export default class VarPath {
       startPoint = endPoint + 1;
     }
   }
+
+  transformed(t) {
+    const coordinates = new VarArray(this.coordinates.length);
+    for (let i = 0; i < this.coordinates.length; i += 2) {
+      const x = this.coordinates[i];
+      const y = this.coordinates[i + 1];
+      [coordinates[i], coordinates[i + 1]] = t.transformPoint(x, y);
+    }
+    return new this.constructor(coordinates, this.pointTypes, this.contours);
+  }
+
 }
 
 
