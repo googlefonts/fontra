@@ -315,8 +315,6 @@ describe("VarPath Tests", () => {
         {"args": [200, 0], "op": "lineTo"},
       ],
     );
-
-
   });
 
 })
