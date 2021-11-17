@@ -23,7 +23,123 @@ export class VariationModel {
     this.mapping = locationsStr.map(loc => thisLocationsStr.indexOf(loc));
     this.reverseMapping = thisLocationsStr.map(loc => locationsStr.indexOf(loc));
 
-    // this._computeMasterSupports();
+    this._computeMasterSupports();
+  }
+
+  _computeMasterSupports() {
+    this.supports = [];
+    const regions = this._locationsToRegions();
+    for (let i = 0; i < regions.length; i++) {
+      const region = regions[i];
+      const locAxes = new Set(Object.keys(region));
+      // Walk over previous masters now
+      for (let j = 0; j < i; j++) {
+        const prev_region = regions[j];
+        // Master with extra axes do not participte
+        if (!isSubset(Object.keys(prev_region), locAxes)) {
+          continue;
+        }
+        // If it's NOT in the current box, it does not participate
+        let relevant = true;
+        for (const [axis, [lower, peak, upper]] of Object.entries(region)) {
+          if (prev_region[axis] === undefined ||
+              !(prev_region[axis][1] === peak ||
+                (lower < prev_region[axis][1] && prev_region[axis][1] < upper)
+              )
+          ) {
+            relevant = false;
+            break;
+          }
+        }
+        if (!relevant) {
+          continue;
+        }
+
+        // Split the box for new master; split in whatever direction
+        // that has largest range ratio.
+        //
+        // For symmetry, we actually cut across multiple axes
+        // if they have the largest, equal, ratio.
+        // https://github.com/fonttools/fonttools/commit/7ee81c8821671157968b097f3e55309a1faa511e#commitcomment-31054804
+
+        let bestAxes = {};
+        let bestRatio = -1;
+        for (const axis of Object.keys(prev_region)) {
+          const val = prev_region[axis][1];
+          // assert axis in region
+          const [lower, locV, upper] = region[axis];
+          let [newLower, newUpper] = [lower, upper]
+          let ratio;
+          if (val < locV) {
+            newLower = val;
+            ratio = (val - locV) / (lower - locV);
+          } else if (locV < val) {
+            newUpper = val;
+            ratio = (val - locV) / (upper - locV);
+          } else {  // val == locV
+            // Can't split box in this direction.
+            continue;
+          }
+          if (ratio > bestRatio) {
+            bestAxes = {};
+            bestRatio = ratio;
+          }
+          if (ratio == bestRatio) {
+            bestAxes[axis] = [newLower, locV, newUpper];
+          }
+        }
+
+        for (const [axis, triple] of Object.entries(bestAxes)) {
+          region[axis] = triple;
+        }
+      }
+      this.supports.push(region);
+    }
+    this._computeDeltaWeights()
+  }
+
+  _locationsToRegions() {
+    const locations = this.locations;
+    // Compute min/max across each axis, use it as total range.
+    const minV = {};
+    const maxV = {};
+    for (const l of locations) {
+      for (const [k, v] of Object.entries(l)) {
+        minV[k] = Math.min(v, objectGet(minV, k, v));
+        maxV[k] = Math.max(v, objectGet(maxV, k, v));
+      }
+    }
+
+    const regions = [];
+    for (const loc of locations) {
+      const region = {};
+      for (const [axis, locV] of Object.entries(loc)) {
+        if (locV > 0) {
+          region[axis] = [0, locV, maxV[axis]];
+        } else {
+          region[axis] = [minV[axis], locV, 0];
+        }
+      }
+      regions.push(region)
+    }
+    return regions;
+  }
+
+  _computeDeltaWeights() {
+    this.deltaWeights = [];
+    for (let i = 0; i < this.locations.length; i++) {
+      const loc = this.locations[i];
+      const deltaWeight = {};
+      // Walk over previous masters now, populate deltaWeight
+      for (let j = 0; j < i; j ++) {
+        const support = this.supports[j];
+        const scalar = supportScalar(loc, support);
+        if (scalar) {
+          deltaWeight[j] = scalar;
+        }
+      }
+      this.deltaWeights.push(deltaWeight);
+    }
   }
 
   getDeltas(masterValues) {
@@ -126,6 +242,25 @@ function locationsContainsBaseMaster(locations) {
     }
   }
   return false;
+}
+
+
+function objectGet(o, k, dflt) {
+  const result = o[k];
+  if (result === undefined) {
+    return dflt;
+  }
+  return result;
+}
+
+
+function isSubset(a, b) {
+  for (const item of a) {
+    if (!b.has(item)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 

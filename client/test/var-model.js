@@ -42,7 +42,25 @@ describe("var-model tests", () => {
       expect(model.locations).to.deep.equal(sortedLocations);
       expect(model.mapping).to.deep.equal([3, 1, 2, 5, 7, 8, 0, 6, 4]);
       expect(model.reverseMapping).to.deep.equal([6, 1, 2, 0, 8, 3, 7, 4, 5]);
-      // TODO test model.deltaWeights
+      // test model.deltaWeights
+      expect(model.deltaWeights).to.deep.equal([
+        {},
+        {0: 1.0},
+        {0: 1.0},
+        {0: 1.0},
+        {0: 1.0},
+        {0: 1.0},
+        {0: 1.0, 4: 1.0, 5: 1.0},
+        {0: 1.0, 3: 0.75, 4: 0.25, 5: 1.0, 6: 0.6666666666666666},
+        {0: 1.0,
+         3: 0.75,
+         4: 0.25,
+         5: 0.6666666666666667,
+         6: 0.4444444444444445,
+         7: 0.6666666666666667},
+      ]);
+
+
     });
 
     it("throw missing base master", () => {
