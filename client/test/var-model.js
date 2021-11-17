@@ -70,7 +70,16 @@ describe("var-model tests", () => {
       const masterValues = [1, 2.5, 3.25, 5.25];
       const deltas = model.getDeltas(masterValues);
       expect(deltas).to.deep.equal([1, 2.25, 1.5, 0.5]);
-      const testValues = [[{}, 1.0], [{'wght': 1}, 2.5], [{'wdth': 1}, 3.25], [{'wght': 0.5}, 1.75], [{'wdth': 0.5}, 2.125], [{'wght': 1, 'wdth': 1}, 5.25], [{'wght': 0.5, 'wdth': 0.5}, 3.0]];
+      const testValues = [
+        // loc, expectedValue
+        [{}, 1.0],
+        [{'wght': 1}, 2.5],
+        [{'wdth': 1}, 3.25],
+        [{'wght': 0.5}, 1.75],
+        [{'wdth': 0.5}, 2.125],
+        [{'wght': 1, 'wdth': 1}, 5.25],
+        [{'wght': 0.5, 'wdth': 0.5}, 3.0],
+      ];
       for (const [loc, expectedValue] of testValues) {
         const result = model.interpolateFromDeltas(loc, deltas)
         expect(result).to.equal(expectedValue);
