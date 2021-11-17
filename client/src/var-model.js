@@ -60,9 +60,10 @@ export class VariationModel {
 
 
 function sortedLocations(locations, axisOrder = null) {
+  // decorate, sort, undecorate
   const decoratedLocations = getDecoratedMasterLocations(locations, axisOrder || []);
   decoratedLocations.sort((a, b) => deepCompare(a[0], b[0]));
-  return decoratedLocations.map(item => item[1]);  // undecorate
+  return decoratedLocations.map(item => item[1]);
 }
 
 
