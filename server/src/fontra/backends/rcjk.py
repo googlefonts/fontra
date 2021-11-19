@@ -88,7 +88,9 @@ class UnpackPointPen:
         if not self._currentContour:
             return
         isClosed = self._currentContour[0][0] != "move"
-        isQuadBlob = all(segmentType is None for _, segmentType, _ in self._currentContour)
+        isQuadBlob = all(
+            segmentType is None for _, segmentType, _ in self._currentContour
+        )
         if isQuadBlob:
             self.pointTypes.extend([OFF_CURVE_QUAD] * len(self._currentContour))
             for pt, _, _ in self._currentContour:
@@ -115,7 +117,9 @@ class UnpackPointPen:
                             break
                         pointTypes[j] = OFF_CURVE_QUAD
             self.pointTypes.extend(pointTypes)
-        self.contours.append(dict(endPoint=len(self.coordinates) // 2 - 1, isClosed=isClosed))
+        self.contours.append(
+            dict(endPoint=len(self.coordinates) // 2 - 1, isClosed=isClosed)
+        )
         self._currentContour = None
 
     def addComponent(self, *args, **kwargs):
