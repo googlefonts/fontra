@@ -59,7 +59,7 @@ class Client:
             await self.sendMessage(response)
 
     async def sendMessage(self, message):
-        await self.websocket.send(json.dumps(message))
+        await self.websocket.send(json.dumps(message, separators=(",", ":")))
 
 
 if __name__ == "__main__":

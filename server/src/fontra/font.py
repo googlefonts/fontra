@@ -3,7 +3,7 @@ class FontServer:
         self.backend = backend
 
     async def remote_getGlyphNames(self):
-        return await sorted(self.backend.getGlyphNames())
+        return sorted(await self.backend.getGlyphNames())
 
     async def remote_getGlyph(self, glyphName):
         return await self.backend.getGlyph(glyphName)
