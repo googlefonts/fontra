@@ -163,6 +163,79 @@ testData = [
             },
         ],
     },
+    {
+        "axes": {"X_X_bo": (0.0, 0.0, 1.0), "X_X_la": (0.0, 0.0, 1.0)},
+        "name": "DC_0030_00",
+        "unicodes": [],
+        "sources": [
+            {
+                "location": {},
+                "source": {
+                    "components": [
+                        {
+                            "coord": {"WDTH": 0.33, "WGHT": 0.45},
+                            "name": "zero_00",
+                            "transform": {
+                                "rotation": 0,
+                                "scalex": 1,
+                                "scaley": 1,
+                                "tcenterx": 0,
+                                "tcentery": 0,
+                                "x": 0,
+                                "y": 0,
+                            },
+                        }
+                    ],
+                    "path": {"contours": [], "coordinates": [], "pointTypes": []},
+                    "xAdvance": 600,
+                },
+            },
+            {
+                "location": {"X_X_bo": 1.0},
+                "source": {
+                    "components": [
+                        {
+                            "coord": {"WDTH": 0.33, "WGHT": 1.0},
+                            "name": "zero_00",
+                            "transform": {
+                                "rotation": 0,
+                                "scalex": 1,
+                                "scaley": 1,
+                                "tcenterx": 0,
+                                "tcentery": 0,
+                                "x": 0,
+                                "y": 0,
+                            },
+                        }
+                    ],
+                    "path": {"contours": [], "coordinates": [], "pointTypes": []},
+                    "xAdvance": 600,
+                },
+            },
+            {
+                "location": {"X_X_la": 1.0},
+                "source": {
+                    "components": [
+                        {
+                            "coord": {"WDTH": 1.0, "WGHT": 0.45},
+                            "name": "zero_00",
+                            "transform": {
+                                "rotation": 0,
+                                "scalex": 1,
+                                "scaley": 1,
+                                "tcenterx": 0,
+                                "tcentery": 0,
+                                "x": 0,
+                                "y": 0,
+                            },
+                        }
+                    ],
+                    "path": {"contours": [], "coordinates": [], "pointTypes": []},
+                    "xAdvance": 600,
+                },
+            },
+        ],
+    },
 ]
 
 
