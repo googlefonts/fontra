@@ -63,11 +63,7 @@ export default class VarPath {
   }
 
   beginPath() {
-    if (this.contours.length) {
-      this.contours.push({endPoint: this.contours[this.contours.length - 1].endPoint, isClosed: false});
-    } else {
-      this.contours.push({endPoint: -1, isClosed: false});
-    }
+    this.contours.push({endPoint: this.coordinates.length / 2 - 1, isClosed: false});
   }
 
   addPoint(x, y, pointType) {
