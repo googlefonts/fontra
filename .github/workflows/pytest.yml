@@ -8,12 +8,14 @@ on:
     branches: [ main ]
     paths:
       - "server/**"
+      - ".github/workflows/pytest.yml"
       - "setup.cfg"
       - "setup.py"
   pull_request:
     branches: [ main ]
     paths:
       - "server/**"
+      - ".github/workflows/pytest.yml"
       - "setup.cfg"
       - "setup.py"
 
