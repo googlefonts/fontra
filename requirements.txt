@@ -1,1 +1,2 @@
+git+https://github.com/BlackFoundryCom/rcjk-tools.git
 websockets==10.1
