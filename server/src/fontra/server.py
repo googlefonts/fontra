@@ -51,8 +51,8 @@ class Client:
                 arguments = message.get("arguments", [])
                 kwArguments = message.get("keyword-arguments", {})
                 methodHandler = getattr(self.subject, "remote_" + methodName)
-                result = await methodHandler(*arguments, **kwArguments)
-                response = {"call-id": callID, "return-value": result}
+                returnValue = await methodHandler(*arguments, **kwArguments)
+                response = {"call-id": callID, "return-value": returnValue}
             except Exception as e:
                 logger.error("uncaught exception: %r", e)
                 response = {"call-id": callID, "exception": repr(e)}
