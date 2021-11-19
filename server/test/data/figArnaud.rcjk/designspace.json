@@ -1,0 +1,11 @@
+{
+  "axes": [
+    {
+      "name": "Weight",
+      "tag": "wght",
+      "minValue": 400,
+      "defaultValue": 400,
+      "maxValue": 700
+    }
+  ]
+}

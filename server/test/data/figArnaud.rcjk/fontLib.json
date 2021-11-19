@@ -1,0 +1,8 @@
+{
+    "com.typemytype.robofont.segmentType": "curve",
+    "robocjk.defaultGlyphWidth": 1000,
+    "robocjk.fontVariations": [
+        "wght"
+    ],
+    "robocjk.version": 1.1
+}

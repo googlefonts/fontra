@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="four_00" format="2">
+  <advance width="337"/>
+  <outline>
+    <contour>
+      <point x="212" y="0" type="line"/>
+      <point x="240" y="0" type="line"/>
+      <point x="240" y="600" type="line"/>
+      <point x="212" y="600" type="line"/>
+    </contour>
+    <contour>
+      <point x="15" y="145" type="line"/>
+      <point x="312" y="145" type="line"/>
+      <point x="312" y="170" type="line"/>
+      <point x="15" y="170" type="line"/>
+    </contour>
+    <contour>
+      <point x="44" y="170" type="line"/>
+      <point x="222" y="782" type="line"/>
+      <point x="222" y="600" type="line"/>
+      <point x="212" y="600" type="line"/>
+      <point x="15" y="170" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>robocjk.glyphVariationGlyphs</key>
+      <dict/>
+    </dict>
+  </lib>
+</glyph>

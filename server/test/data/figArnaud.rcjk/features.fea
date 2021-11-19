@@ -1,0 +1,39 @@
+#UFO: /Path/file.ufo
+
+languagesystem DFLT dflt;
+languagesystem latn dflt;
+
+@figures = [uni0030 uni0031 uni0032 uni0033 uni0034 uni0035 uni0036 uni0037 uni0038 uni0039];
+@figuresTabular = [uni0030.tab uni0031.tab uni0032.tab uni0033.tab uni0034.tab uni0035.tab uni0036.tab uni0037.tab uni0038.tab uni0039.tab];
+@figuresOldStyle = [uni0030.of  uni0031.of  uni0032.of  uni0033.of  uni0034.of  uni0035.of  uni0036.of  uni0037.of  uni0038.of  uni0039.of];
+@figuresSmallCaps = [uni0030.sc uni0031.sc uni0032.sc uni0033.sc uni0034.sc uni0035.sc uni0036.sc uni0037.sc uni0038.sc uni0039.sc];
+@figuresSuperscript = [uni0030.sup uni0031.sup uni0032.sup uni0033.sup uni0034.sup uni0035.sup uni0036.sup uni0037.sup uni0038.sup uni0039.sup];
+@figuresSubscript = [uni0030.inf uni0031.inf uni0032.inf uni0033.inf uni0034.inf uni0035.inf uni0036.inf uni0037.inf uni0038.inf uni0039.inf];
+
+feature sups {
+    sub @figures by @figuresSuperscript;
+} sups;
+
+feature subs {
+    sub @figures by @figuresSubscript;
+} subs;
+
+feature lnum {
+    sub @figuresOldStyle by @figures;
+} lnum;
+
+feature onum {
+    sub @figures by @figuresOldStyle;
+} onum;
+
+feature pnum {
+    sub @figuresTabular by @figures;
+}pnum;
+
+feature tnum {
+    sub @figures by @figuresTabular;
+}tnum;
+
+feature smcp {
+    sub @figures by @figuresSmallCaps;
+} smcp;

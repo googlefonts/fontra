@@ -1,0 +1,184 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="four_00" format="2">
+  <advance width="337"/>
+  <outline>
+    <contour>
+      <point x="212" y="0" type="line"/>
+      <point x="240" y="0" type="line"/>
+      <point x="240" y="600" type="line"/>
+      <point x="212" y="600" type="line"/>
+    </contour>
+    <contour>
+      <point x="15" y="145" type="line"/>
+      <point x="312" y="145" type="line"/>
+      <point x="312" y="170" type="line"/>
+      <point x="15" y="170" type="line"/>
+    </contour>
+    <contour>
+      <point x="44" y="170" type="line"/>
+      <point x="232" y="582" type="line"/>
+      <point x="232" y="600" type="line"/>
+      <point x="212" y="600" type="line"/>
+      <point x="15" y="170" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>public.markColor</key>
+      <string>1,0,0,1</string>
+      <key>robocjk.axes</key>
+      <array>
+        <dict>
+          <key>maxValue</key>
+          <real>1.0</real>
+          <key>minValue</key>
+          <real>0.0</real>
+          <key>name</key>
+          <string>DBLD</string>
+        </dict>
+        <dict>
+          <key>maxValue</key>
+          <real>1.0</real>
+          <key>minValue</key>
+          <real>0.0</real>
+          <key>name</key>
+          <string>HBAR</string>
+        </dict>
+        <dict>
+          <key>maxValue</key>
+          <real>1.0</real>
+          <key>minValue</key>
+          <real>0.0</real>
+          <key>name</key>
+          <string>HBLD</string>
+        </dict>
+        <dict>
+          <key>maxValue</key>
+          <real>1.0</real>
+          <key>minValue</key>
+          <real>0.0</real>
+          <key>name</key>
+          <string>HLON</string>
+        </dict>
+        <dict>
+          <key>maxValue</key>
+          <real>1.0</real>
+          <key>minValue</key>
+          <real>0.0</real>
+          <key>name</key>
+          <string>TOPC</string>
+        </dict>
+        <dict>
+          <key>maxValue</key>
+          <real>1.0</real>
+          <key>minValue</key>
+          <real>0.0</real>
+          <key>name</key>
+          <string>VBLD</string>
+        </dict>
+        <dict>
+          <key>maxValue</key>
+          <real>1.0</real>
+          <key>minValue</key>
+          <real>0.0</real>
+          <key>name</key>
+          <string>WDTH</string>
+        </dict>
+      </array>
+      <key>robocjk.variationGlyphs</key>
+      <array>
+        <dict>
+          <key>deepComponents</key>
+          <array/>
+          <key>layerName</key>
+          <string>diabold</string>
+          <key>location</key>
+          <dict>
+            <key>DBLD</key>
+            <real>1.0</real>
+          </dict>
+          <key>on</key>
+          <integer>1</integer>
+        </dict>
+        <dict>
+          <key>deepComponents</key>
+          <array/>
+          <key>layerName</key>
+          <string>crossbar</string>
+          <key>location</key>
+          <dict>
+            <key>HBAR</key>
+            <real>1.0</real>
+          </dict>
+          <key>on</key>
+          <integer>1</integer>
+        </dict>
+        <dict>
+          <key>deepComponents</key>
+          <array/>
+          <key>layerName</key>
+          <string>horibold</string>
+          <key>location</key>
+          <dict>
+            <key>HBLD</key>
+            <real>1.0</real>
+          </dict>
+          <key>on</key>
+          <integer>1</integer>
+        </dict>
+        <dict>
+          <key>deepComponents</key>
+          <array/>
+          <key>layerName</key>
+          <string>longbar</string>
+          <key>location</key>
+          <dict>
+            <key>HLON</key>
+            <real>1.0</real>
+          </dict>
+          <key>on</key>
+          <integer>1</integer>
+        </dict>
+        <dict>
+          <key>deepComponents</key>
+          <array/>
+          <key>layerName</key>
+          <string>connectop</string>
+          <key>location</key>
+          <dict>
+            <key>TOPC</key>
+            <real>1.0</real>
+          </dict>
+          <key>on</key>
+          <integer>1</integer>
+        </dict>
+        <dict>
+          <key>deepComponents</key>
+          <array/>
+          <key>layerName</key>
+          <string>vertibold</string>
+          <key>location</key>
+          <dict>
+            <key>VBLD</key>
+            <real>1.0</real>
+          </dict>
+          <key>on</key>
+          <integer>1</integer>
+        </dict>
+        <dict>
+          <key>deepComponents</key>
+          <array/>
+          <key>layerName</key>
+          <string>extended</string>
+          <key>location</key>
+          <dict>
+            <key>WDTH</key>
+            <real>1.0</real>
+          </dict>
+          <key>on</key>
+          <integer>1</integer>
+        </dict>
+      </array>
+    </dict>
+  </lib>
+</glyph>
