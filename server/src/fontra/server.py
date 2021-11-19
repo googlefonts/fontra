@@ -38,7 +38,7 @@ class Client:
         self.subject = subject
 
     async def handleConnection(self, path):
-        logger.info(f"incoming request: {path!r}")
+        logger.info(f"incoming connection: {path!r}")
         async for message in self.websocket:
             message = json.loads(message)
             if message.get("connection") == "close":
