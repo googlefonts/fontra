@@ -128,6 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# scm file
+server/src/fontra/_version.py
+
 # Node
 # Logs
 logs
@@ -247,3 +250,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Misc
+.DS_Store
+/vault/
