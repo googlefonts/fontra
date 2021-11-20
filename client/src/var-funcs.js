@@ -2,13 +2,17 @@ import { VariationError } from "./errors.js"
 
 
 export function addItemwise(a, b) {
-  if (typeof a === "string") {
+  if (typeof a !== typeof b) {
+    throw new VariationError(`incompatible object types: typeof ${a} != typeof ${b}`);
+  } if (typeof a === "string") {
     if (a !== b) {
       throw new VariationError(`unexpected different strings: ${a} != ${b}`);
     }
     return a;
-  } else if (!isNaN(a)) {
+  } else if (typeof a === "number") {
     return a + b;
+  } else if (a === undefined && b === undefined) {
+    return undefined;
   } else if (a.addItemwise !== undefined) {
     return a.addItemwise(b);
   }
@@ -17,13 +21,17 @@ export function addItemwise(a, b) {
 
 
 export function subItemwise(a, b) {
-  if (typeof a === "string") {
+  if (typeof a !== typeof b) {
+    throw new VariationError(`incompatible object types: typeof ${a} != typeof ${b}`);
+  } else if (typeof a === "string") {
     if (a !== b) {
       throw new VariationError(`unexpected different strings: ${a} != ${b}`);
     }
     return a;
-  } else if (!isNaN(a)) {
+  } else if (typeof a === "number") {
     return a - b;
+  } else if (a === undefined && b === undefined) {
+    return undefined;
   } else if (a.subItemwise !== undefined) {
     return a.subItemwise(b);
   }
@@ -34,8 +42,10 @@ export function subItemwise(a, b) {
 export function mulScalar(o, scalar) {
   if (scalar === 1 || typeof o === "string") {
     return o;
-  } else if (!isNaN(o)) {
+  } else if (typeof o === "number") {
     return o * scalar;
+  } else if (o === undefined) {
+    return undefined;
   } else if (o.mulScalar !== undefined) {
     return o.mulScalar(scalar);
   }
