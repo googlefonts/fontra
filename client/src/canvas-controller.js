@@ -269,7 +269,7 @@ class CanvasController {
     if (axis === undefined) {
       return;
     }
-    this.varLocation[axis.name] = value;
+    this.varLocation[axis.name] = axis.minValue + value * (axis.maxValue - axis.minValue);
     const inst = this.glyph.instantiate(this.varLocation);
     this.path.coordinates = inst.path.coordinates;
     this.path.pointTypes = inst.path.pointTypes;
