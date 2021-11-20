@@ -8,9 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 class Server:
-    def __init__(self, subject):
+    def __init__(self, subject, methodNames):
         self.clients = {}
         self.subject = subject
+        self.methodNames = set(methodNames)
 
     def run(self, host="localhost", port=8001):
         startServer = websockets.serve(self.incomingConnection, host, port)
@@ -24,7 +25,7 @@ class Server:
         del self.clients[client.websocket]
 
     async def incomingConnection(self, websocket, path):
-        client = Client(websocket, self.subject)
+        client = Client(websocket, self.subject, self.methodNames)
         await self.registerClient(client)
         try:
             await client.handleConnection(path)
@@ -33,9 +34,10 @@ class Server:
 
 
 class Client:
-    def __init__(self, websocket, subject):
+    def __init__(self, websocket, subject, methodNames):
         self.websocket = websocket
         self.subject = subject
+        self.methodNames = methodNames
 
     async def handleConnection(self, path):
         logger.info(f"incoming connection: {path!r}")
@@ -55,9 +57,15 @@ class Client:
             methodName = message["method-name"]
             arguments = message.get("arguments", [])
             kwArguments = message.get("keyword-arguments", {})
-            methodHandler = getattr(self.subject, "remote_" + methodName)
-            returnValue = await methodHandler(*arguments, **kwArguments)
-            response = {"call-id": callID, "return-value": returnValue}
+            if methodName in self.methodNames:
+                methodHandler = getattr(self.subject, methodName)
+                returnValue = await methodHandler(*arguments, **kwArguments)
+                response = {"call-id": callID, "return-value": returnValue}
+            else:
+                response = {
+                    "call-id": callID,
+                    "exception": f"unknown method {methodName}",
+                }
         except Exception as e:
             logger.error("uncaught exception: %r", e)
             response = {"call-id": callID, "exception": repr(e)}

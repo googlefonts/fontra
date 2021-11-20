@@ -14,7 +14,7 @@ def main():
     path = pathlib.Path(args.font)
     assert path.exists()
     if path.suffix == ".rcjk":
-        server = Server(FontServer(RCJKBackend(path)))
+        server = Server(RCJKBackend(path), {"getGlyph", "getGlyphNames"})
         server.run()
 
 
