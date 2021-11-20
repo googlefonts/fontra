@@ -45,7 +45,7 @@ def unpackGlyph(glyph):
         if components:
             sourceGlyph["components"] = components
         # TODO anchors?
-        sourceGlyph["xAdvance"] = varGlyph.width  # TODO: yAdvance, verticalOrigin
+        sourceGlyph["hAdvance"] = varGlyph.width  # TODO: vAdvance, verticalOrigin
         source["source"] = sourceGlyph
         sources.append(source)
     d["sources"] = sources

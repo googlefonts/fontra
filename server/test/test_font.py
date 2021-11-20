@@ -43,7 +43,7 @@ testData = [
                         "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                         "contours": [{"endPoint": 9, "isClosed": True}],
                     },
-                    "xAdvance": 229,
+                    "hAdvance": 229,
                 },
             },
             {
@@ -75,7 +75,7 @@ testData = [
                         "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                         "contours": [{"endPoint": 9, "isClosed": True}],
                     },
-                    "xAdvance": 369,
+                    "hAdvance": 369,
                 },
             },
             {
@@ -107,7 +107,7 @@ testData = [
                         "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                         "contours": [{"endPoint": 9, "isClosed": True}],
                     },
-                    "xAdvance": 450,
+                    "hAdvance": 450,
                 },
             },
         ],
@@ -137,7 +137,7 @@ testData = [
                             "coord": {"T_H_lo": 0, "X_X_bo": 0},
                         }
                     ],
-                    "xAdvance": 350,
+                    "hAdvance": 350,
                 },
             },
             {
@@ -158,7 +158,7 @@ testData = [
                             "coord": {"T_H_lo": 0, "X_X_bo": 0.7},
                         }
                     ],
-                    "xAdvance": 350,
+                    "hAdvance": 350,
                 },
             },
         ],
@@ -189,7 +189,7 @@ testData = [
                             },
                         }
                     ],
-                    "xAdvance": 600,
+                    "hAdvance": 600,
                 },
             },
             {
@@ -210,7 +210,7 @@ testData = [
                             },
                         }
                     ],
-                    "xAdvance": 600,
+                    "hAdvance": 600,
                 },
             },
             {
@@ -231,7 +231,7 @@ testData = [
                             },
                         }
                     ],
-                    "xAdvance": 600,
+                    "hAdvance": 600,
                 },
             },
         ],
