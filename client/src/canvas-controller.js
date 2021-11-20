@@ -217,7 +217,7 @@ class CanvasController {
       makePath(testGlyphs.boldWide).coordinates,
     ];
     this.deltas = this.model.getDeltas(masterValues);
-    this.varLocation = {wght: 0, wdth: 0};
+    this.varLocation = {};
     this.path = makePath(testGlyphs.lightCondensed);
 
     this.scene = new SceneGraph();
@@ -255,18 +255,25 @@ class CanvasController {
     if (glyph === null) {
       return;
     }
-    glyph = VarGlyph.fromObject(glyph);
-    const inst = glyph.instantiate({});
+    this.varLocation = {};
+    this.glyph = VarGlyph.fromObject(glyph);
+    const inst = this.glyph.instantiate({});
     this.path.coordinates = inst.path.coordinates;
     this.path.pointTypes = inst.path.pointTypes;
     this.path.contours = inst.path.contours;
     this.setNeedsUpdate();
   }
 
-  setAxisValue(value, axisTag) {
-    this.varLocation[axisTag] = value;
-    // console.log(this.varLocation);
-    this.path.coordinates = this.model.interpolateFromDeltas(this.varLocation, this.deltas);
+  setAxisValue(value, axisIndex) {
+    const axis = this.glyph.axes[axisIndex];
+    if (axis === undefined) {
+      return;
+    }
+    this.varLocation[axis.name] = value;
+    const inst = this.glyph.instantiate(this.varLocation);
+    this.path.coordinates = inst.path.coordinates;
+    this.path.pointTypes = inst.path.pointTypes;
+    this.path.contours = inst.path.contours;
     this.setNeedsUpdate();
   }
 
