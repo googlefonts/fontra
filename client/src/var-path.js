@@ -23,6 +23,14 @@ export default class VarPath {
     }
   }
 
+  static fromObject(obj) {
+    const path = new VarPath();
+    path.coordinates = VarArray.from(obj.coordinates);
+    path.pointTypes = obj.pointTypes;
+    path.contours = obj.contours;
+    return path;
+  }
+
   getPoint(index) {
     if (index >= this.pointTypes.length) {
       return null;

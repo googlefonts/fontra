@@ -90,9 +90,10 @@
       async function glyphNameChanged(glyphName) {
         const glyph = await app.getGlyph(glyphName);
         if (glyph !== null) {
-          console.log("got a glyph", glyphName, glyph);
+          canvasController.setGlyph(glyph);
+          // console.log("got a glyph", glyphName, glyph);
         } else {
-          console.log("no glyph", glyphName);
+          // console.log("no glyph", glyphName);
         }
       }
 

@@ -1,5 +1,6 @@
 import testGlyphs from "./test-glyphs.js";
 import VarPath from "./var-path.js";
+import { VarGlyph } from "./var-glyph.js";
 import { VariationModel } from "./var-model.js";
 
 const MIN_MAGNIFICATION = 0.05;
@@ -246,6 +247,11 @@ class CanvasController {
     // canvas.addEventListener("pointercancel", this.onEvent.bind(this), false);
 
     this.setNeedsUpdate();
+  }
+
+  setGlyph(glyph) {
+    glyph = VarGlyph.fromObject(glyph);
+    console.log("------------", glyph);
   }
 
   setAxisValue(value, axisTag) {

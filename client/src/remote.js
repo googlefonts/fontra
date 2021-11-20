@@ -25,8 +25,8 @@ export class RemoteObject {
     const message = JSON.parse(event.data);
     const callID = message["call-id"];
 
-    console.log("incoming message");
-    console.log(message);
+    // console.log("incoming message");
+    // console.log(message);
     if (callID !== undefined) {
       const returnCallbacks = this._callReturnCallbacks[callID];
       if (message.exception !== undefined) {
@@ -45,10 +45,10 @@ export class RemoteObject {
       "method-name": methodName,
       "arguments": args,
     };
-    console.log("outgoing")
-    console.log(message)
-    console.log("args", args);
-    console.log("args", JSON.stringify(args));
+    // console.log("outgoing")
+    // console.log(message)
+    // console.log("args", args);
+    // console.log("args", JSON.stringify(args));
     this.websocket.send(JSON.stringify(message));
 
     this._callReturnCallbacks[callID] = {}
