@@ -223,6 +223,7 @@ class CanvasController {
     this.magnification = 1;
     this.origin = {x: 0, y: 800};
     this.needsUpdate = false;
+    this._glyphsCache = {};
 
     const locations = [{}, {wght: 1}, {wdth: 1}, {wght: 1, wdth: 1}];
     this.model = new VariationModel(locations);
@@ -269,23 +270,30 @@ class CanvasController {
   }
 
   async _getGlyph(glyphName) {
-    const glyph = await this.remote.getGlyph(glyphName);
-    if (glyph !== null) {
-      return VarGlyph.fromObject(glyph);
+    let glyph = this._glyphsCache[glyphName];
+    if (glyph === undefined) {
+      glyph = await this.remote.getGlyph(glyphName);
+      if (glyph !== null) {
+        glyph = VarGlyph.fromObject(glyph);
+      }
+      this._glyphsCache[glyphName] = glyph;
     }
-    return null;
+    return this._glyphsCache[glyphName];
   }
 
-  async _getComponentPaths(components) {
+  async _getComponentPaths(components, transform) {
     const paths = [];
 
     for (const compo of components) {
       const glyph = await this._getGlyph(compo.name);
       const inst = glyph.instantiate(compo.coord);
-      const t = makeAffineTransform(compo.transform);
+      let t = makeAffineTransform(compo.transform);
+      if (transform !== undefined) {
+        t = transform.transform(t);
+      }
       paths.push(inst.path.transformed(t));
       if (inst.components !== undefined) {
-        paths.push(...await this._getComponentPaths(inst.components));
+        paths.push(...await this._getComponentPaths(inst.components, t));
       }
     }
     return paths;
