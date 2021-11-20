@@ -88,11 +88,11 @@
       const app = getRemoteProxy("ws://localhost:8001/");
 
       async function glyphNameChanged(glyphName) {
-        try {
-          const glyph = await app.getGlyph(glyphName);
+        const glyph = await app.getGlyph(glyphName);
+        if (glyph !== null) {
           console.log("got a glyph", glyphName, glyph);
-        } catch(error) {
-          console.log("no glyph", glyphName, error);
+        } else {
+          console.log("no glyph", glyphName);
         }
       }
 
