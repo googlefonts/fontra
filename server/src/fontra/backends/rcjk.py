@@ -22,7 +22,7 @@ class RCJKBackend:
             if glyphName in gs:
                 return unpackGlyph(gs.getGlyph(glyphName))
         else:
-            raise KeyError(glyphName)
+            return None
 
 
 def unpackGlyph(glyph):

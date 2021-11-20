@@ -2,7 +2,6 @@ import argparse
 import logging
 import pathlib
 from .backends.rcjk import RCJKBackend
-from .font import FontServer
 from .server import Server
 
 
