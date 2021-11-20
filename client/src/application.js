@@ -22,7 +22,7 @@ export default class Application {
     if (callID !== undefined) {
       const returnCallbacks = this._callReturnCallbacks[callID];
       if (message.exception !== undefined) {
-        returnCallbacks.reject(message.exception);
+        returnCallbacks.reject(message["exception"]);
       } else {
         returnCallbacks.resolve(message["return-value"]);
       }
