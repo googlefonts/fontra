@@ -60,15 +60,15 @@
     <div class="page">
 
       <div class="controls">
-        <input type="text" name="">
+        <input type="text" name="" oninput="glyphNameChanged(this.value)">
         <label class="slider-label">
         <input type="range" min="0" max="100" value="0" step="any" class="slider" id="weightSlider"
-            oninput="sliderChange(this.value, 'wght')">
+            oninput="sliderChanged(this.value, 'wght')">
           Weight
         </label>
         <label class="slider-label">
         <input type="range" min="0" max="100" value="0" step="any" class="slider" id="widthSlider"
-            oninput="sliderChange(this.value, 'wdth')">
+            oninput="sliderChanged(this.value, 'wdth')">
           Width
         </label>
       </div>
@@ -81,12 +81,26 @@
   </body>
     <script type="module">
       import { CanvasController } from "../src/canvas-controller.js";
-      var bodyElement = document.querySelector("body");
-      let canvas = document.querySelector("#edit-canvas");
-      let canvasController = new CanvasController(canvas);
-      function sliderChange(value, axisTag) {
+      import Application from "../src/application.js";
+      const bodyElement = document.querySelector("body");
+      const canvas = document.querySelector("#edit-canvas");
+      const canvasController = new CanvasController(canvas);
+      const app = new Application("ws://localhost:8001/");
+
+      async function glyphNameChanged(glyphName) {
+        try {
+          const glyph = await app.getGlyph(glyphName);
+          console.log("got a glyph", glyphName, glyph);
+        } catch(error) {
+          console.log("no glyph", glyphName, error);
+        }
+      }
+
+      function sliderChanged(value, axisTag) {
         canvasController.setAxisValue(value / 100, axisTag);
       }
-      window.sliderChange = sliderChange;
+
+      window.sliderChanged = sliderChanged;
+      window.glyphNameChanged = glyphNameChanged;
     </script>
 </html>
