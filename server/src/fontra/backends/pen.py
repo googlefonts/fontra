@@ -14,11 +14,14 @@ class PathBuilderPointPen:
         self._currentContour = None
 
     def getPath(self):
-        return dict(
-            coordinates=self.coordinates,
-            pointTypes=self.pointTypes,
-            contours=self.contours,
-        )
+        if self.coordinates:
+            return dict(
+                coordinates=self.coordinates,
+                pointTypes=self.pointTypes,
+                contours=self.contours,
+            )
+        else:
+            return None
 
     def beginPath(self):
         self._currentContour = []

@@ -43,7 +43,6 @@ testData = [
                         "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                         "contours": [{"endPoint": 9, "isClosed": True}],
                     },
-                    "components": [],
                     "xAdvance": 229,
                 },
             },
@@ -76,7 +75,6 @@ testData = [
                         "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                         "contours": [{"endPoint": 9, "isClosed": True}],
                     },
-                    "components": [],
                     "xAdvance": 369,
                 },
             },
@@ -109,7 +107,6 @@ testData = [
                         "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                         "contours": [{"endPoint": 9, "isClosed": True}],
                     },
-                    "components": [],
                     "xAdvance": 450,
                 },
             },
@@ -125,7 +122,6 @@ testData = [
             {
                 "location": {},
                 "source": {
-                    "path": {"coordinates": [], "pointTypes": [], "contours": []},
                     "components": [
                         {
                             "name": "DC_0031_00",
@@ -147,7 +143,6 @@ testData = [
             {
                 "location": {"wght": 1.0},
                 "source": {
-                    "path": {"coordinates": [], "pointTypes": [], "contours": []},
                     "components": [
                         {
                             "name": "DC_0031_00",
@@ -194,7 +189,6 @@ testData = [
                             },
                         }
                     ],
-                    "path": {"contours": [], "coordinates": [], "pointTypes": []},
                     "xAdvance": 600,
                 },
             },
@@ -216,7 +210,6 @@ testData = [
                             },
                         }
                     ],
-                    "path": {"contours": [], "coordinates": [], "pointTypes": []},
                     "xAdvance": 600,
                 },
             },
@@ -238,7 +231,6 @@ testData = [
                             },
                         }
                     ],
-                    "path": {"contours": [], "coordinates": [], "pointTypes": []},
                     "xAdvance": 600,
                 },
             },

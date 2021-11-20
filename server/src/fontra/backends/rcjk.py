@@ -38,8 +38,12 @@ def unpackGlyph(glyph):
         source = {}
         source["location"] = varGlyph.location
         sourceGlyph = {}
-        sourceGlyph["path"] = unpackPath(varGlyph)
-        sourceGlyph["components"] = unpackComponents(varGlyph.components)
+        path = unpackPath(varGlyph)
+        if path is not None:
+            sourceGlyph["path"] = path
+        components = unpackComponents(varGlyph.components)
+        if components:
+            sourceGlyph["components"] = components
         # TODO anchors?
         sourceGlyph["xAdvance"] = varGlyph.width  # TODO: yAdvance, verticalOrigin
         source["source"] = sourceGlyph
