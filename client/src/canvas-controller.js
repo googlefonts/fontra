@@ -2,6 +2,7 @@ import testGlyphs from "./test-glyphs.js";
 import VarPath from "./var-path.js";
 import { VarGlyph } from "./var-glyph.js";
 import { VariationModel } from "./var-model.js";
+import { Transform } from "./transform.js";
 
 const MIN_MAGNIFICATION = 0.05;
 const MAX_MAGNIFICATION = 200;
@@ -37,6 +38,21 @@ class SceneGraph extends BaseSceneItem {
   }
 }
 
+
+class MiscPathItem extends BaseSceneItem {
+  constructor(paths) {
+    super();
+    this.paths = paths;
+  }
+  doDraw(controller) {
+    const context = controller.context;
+
+    context.fillStyle = "#FFF"
+    for (const path of this.paths) {
+      context.fill(path);
+    }
+  }
+}
 
 class PathPathItem extends BaseSceneItem {
   constructor(path) {
@@ -221,6 +237,8 @@ class CanvasController {
     this.path = makePath(testGlyphs.lightCondensed);
 
     this.scene = new SceneGraph();
+    this.componentsLayer = new MiscPathItem([]);
+    this.scene.push(this.componentsLayer);
     this.scene.push(new PathHandlesItem(this.path));
     this.scene.push(new PathPathItem(this.path));
     this.scene.push(new PathNodesItem(this.path));
@@ -250,30 +268,65 @@ class CanvasController {
     this.setNeedsUpdate();
   }
 
-  async setGlyph(glyphName) {
-    let glyph = await this.remote.getGlyph(glyphName);
-    if (glyph === null) {
-      return;
+  async _getGlyph(glyphName) {
+    const glyph = await this.remote.getGlyph(glyphName);
+    if (glyph !== null) {
+      return VarGlyph.fromObject(glyph);
     }
-    this.varLocation = {};
-    this.glyph = VarGlyph.fromObject(glyph);
-    const inst = this.glyph.instantiate({});
+    return null;
+  }
+
+  async _getComponentPaths(components) {
+    const paths = [];
+
+    for (const compo of components) {
+      const glyph = await this._getGlyph(compo.name);
+      const inst = glyph.instantiate(compo.coord);
+      const t = makeAffineTransform(compo.transform);
+      paths.push(inst.path.transformed(t));
+      if (inst.components !== undefined) {
+        paths.push(...await this._getComponentPaths(inst.components));
+      }
+    }
+    return paths;
+  }
+
+  async _instantiateGlyph() {
+    const inst = this.glyph.instantiate(this.varLocation);
     this.path.coordinates = inst.path.coordinates;
     this.path.pointTypes = inst.path.pointTypes;
     this.path.contours = inst.path.contours;
+
+    let compoPaths2d = [];
+    if (inst.components !== undefined) {
+      const compoPaths = await this._getComponentPaths(inst.components);
+      compoPaths2d = compoPaths.map(path => {
+        const path2d = new Path2D();
+        path.drawToPath(path2d);
+        return path2d;
+      });
+    }
+    this.componentsLayer.paths = compoPaths2d;
+  }
+
+  async setGlyph(glyphName) {
+    const glyph = await this._getGlyph(glyphName);
+    if (glyph === null) {
+      return;
+    }
+    this.glyph = glyph;
+    this.varLocation = {};
+    await this._instantiateGlyph();
     this.setNeedsUpdate();
   }
 
-  setAxisValue(value, axisIndex) {
+  async setAxisValue(value, axisIndex) {
     const axis = this.glyph.axes[axisIndex];
     if (axis === undefined) {
       return;
     }
     this.varLocation[axis.name] = axis.minValue + value * (axis.maxValue - axis.minValue);
-    const inst = this.glyph.instantiate(this.varLocation);
-    this.path.coordinates = inst.path.coordinates;
-    this.path.pointTypes = inst.path.pointTypes;
-    this.path.contours = inst.path.contours;
+    await this._instantiateGlyph();
     this.setNeedsUpdate();
   }
 
@@ -396,6 +449,15 @@ class CanvasController {
     return {x: x, y: y}
   }
 
+}
+
+function makeAffineTransform(transform) {
+    let t = new Transform();
+    t = t.translate(transform.x + transform.tcenterx, transform.y + transform.tcentery);
+    t = t.rotate(transform.rotation * (Math.PI / 180));
+    t = t.scale(transform.scalex, transform.scaley);
+    t = t.translate(-transform.tcenterx, -transform.tcentery);
+    return t;
 }
 
 
