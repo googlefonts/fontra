@@ -81,11 +81,11 @@
   </body>
     <script type="module">
       import { CanvasController } from "../src/canvas-controller.js";
-      import Application from "../src/application.js";
+      import getApplication from "../src/application.js";
       const bodyElement = document.querySelector("body");
       const canvas = document.querySelector("#edit-canvas");
       const canvasController = new CanvasController(canvas);
-      const app = new Application("ws://localhost:8001/");
+      const app = getApplication("ws://localhost:8001/");
 
       async function glyphNameChanged(glyphName) {
         try {
