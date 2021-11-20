@@ -94,13 +94,14 @@ class PathNodesItem extends BaseSceneItem {
 
 
 class HoverLayer extends BaseSceneItem {
-  constructor() {
+  constructor(path) {
     super();
-    this.hoverItem = null;
+    this.path = path
+    this.hoverSelection = null;
   }
 
   doDraw(controller) {
-    if (this.hoverItem == null) {
+    if (this.hoverSelection == null) {
       return;
     }
     const context = controller.context;
@@ -109,7 +110,8 @@ class HoverLayer extends BaseSceneItem {
     context.globalCompositeOperation = "lighter";
     context.strokeStyle = controller.drawingParameters.hoverNodeColor;
     context.lineWidth = controller.drawingParameters.hoverNodeLineWidth / controller.magnification;
-    strokeNode(context, this.hoverItem.x, this.hoverItem.y, hoverNodeSize, this.hoverItem.type, this.hoverItem.smooth)
+    const point = this.path.getPoint(this.hoverSelection);
+    strokeNode(context, point.x, point.y, hoverNodeSize, point.type, point.smooth)
     context.restore();
   }
 }
@@ -204,8 +206,6 @@ class CanvasController {
     this.origin = {x: 0, y: 800};
     this.needsUpdate = false;
 
-    this.hoverLayer = new HoverLayer()
-
     const locations = [{}, {wght: 1}, {wdth: 1}, {wght: 1, wdth: 1}];
     this.model = new VariationModel(locations);
     const masterValues = [
@@ -222,6 +222,7 @@ class CanvasController {
     this.scene.push(new PathHandlesItem(this.path));
     this.scene.push(new PathPathItem(this.path));
     this.scene.push(new PathNodesItem(this.path));
+    this.hoverLayer = new HoverLayer(this.path)
     this.scene.push(this.hoverLayer);
 
     this.setupSize();
@@ -282,15 +283,17 @@ class CanvasController {
       point.x, point.y,
       this.drawingParameters.nodeSize / this.magnification,
     );
-    const currentHoverItem = this.hoverLayer.hoverItem;
-    this.hoverLayer.hoverItem = null;
+    const currentHoverSelection = this.hoverLayer.hoverSelection;
+    this.hoverLayer.hoverSelection = null;
+    let index = 0;
     for (const point of this.path.iterPoints()) {
       if (pointInRect(point, selRect)) {
-        this.hoverLayer.hoverItem = point;
+        this.hoverLayer.hoverSelection = index;
         break;
       }
+      index++;
     }
-    if (JSON.stringify(this.hoverLayer.hoverItem) !== JSON.stringify(currentHoverItem)) {
+    if (this.hoverLayer.hoverSelection !== currentHoverSelection) {
       this.setNeedsUpdate();
     }
   }

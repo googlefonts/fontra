@@ -23,13 +23,25 @@ export default class VarPath {
     }
   }
 
+  getPoint(index) {
+    if (index >= this.pointTypes.length) {
+      return null;
+    }
+    return {
+      x: this.coordinates[index * 2],
+      y: this.coordinates[index * 2 + 1],
+      type: this.pointTypes[index] & VarPath.POINT_TYPE_MASK,
+      smooth: !!(this.pointTypes[index] & VarPath.SMOOTH_FLAG),
+    };
+  }
+
   *iterPoints() {
-    for (let i = 0; i < this.pointTypes.length; i++) {
+    for (let index = 0; index < this.pointTypes.length; index++) {
       yield {
-        x: this.coordinates[i * 2],
-        y: this.coordinates[i * 2 + 1],
-        type: this.pointTypes[i] & VarPath.POINT_TYPE_MASK,
-        smooth: !!(this.pointTypes[i] & VarPath.SMOOTH_FLAG),
+        x: this.coordinates[index * 2],
+        y: this.coordinates[index * 2 + 1],
+        type: this.pointTypes[index] & VarPath.POINT_TYPE_MASK,
+        smooth: !!(this.pointTypes[index] & VarPath.SMOOTH_FLAG),
       };
     }
   }
