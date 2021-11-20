@@ -10,6 +10,7 @@ class PathBuilderPointPen:
         self.coordinates = []
         self.pointTypes = []
         self.contours = []
+        self.components = []
         self._currentContour = None
 
     def getPath(self):
@@ -64,4 +65,5 @@ class PathBuilderPointPen:
         self._currentContour = None
 
     def addComponent(self, *args, **kwargs):
+        # TODO: turn transform into varco transform
         pass

@@ -51,6 +51,7 @@ def unpackGlyph(glyph):
 def unpackPath(glyph):
     pen = PathBuilderPointPen()
     glyph.drawPoints(pen)
+    assert not pen.components
     return pen.getPath()
 
 
