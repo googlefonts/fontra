@@ -55,7 +55,7 @@ export function mulScalar(o, scalar) {
 
 function itemwiseFunc(a, b, func) {
   var result;
-  if (a.length !== undefined) {
+  if (Array.isArray(a)) {
     result = new a.constructor(a.length);
     if (a.length != b.length) {
       throw new VariationError(`arrays have incompatible lengths: ${a.length} != ${b.length}`);
