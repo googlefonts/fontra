@@ -46,7 +46,11 @@ class VarSource {
     source.hAdvance = obj.hAdvance;
     source.vAdvance = obj.vAdvance;
     source.verticalOrigin = obj.verticalOrigin;
-    source.path = VarPath.fromObject(obj.path);
+    if (obj.path !== undefined) {
+      source.path = VarPath.fromObject(obj.path);
+    } else {
+      source.path = new VarPath();
+    }
     source.components = obj.components;
     return source
   }
