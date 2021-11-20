@@ -3,8 +3,10 @@ export default class Application {
   constructor(wsUrl) {
       this.websocket = new WebSocket(wsUrl);
       this.websocket.onmessage = (event) => this._handleIncomingMessage(event);
-      this._callID = 0;
       this._callReturnCallbacks = {};
+
+      const g =_genNextCallID();
+      this._getNextCallID = () => {return g.next().value};
   }
 
   getGlyph(glyphName) {
@@ -44,12 +46,15 @@ export default class Application {
       this._callReturnCallbacks[callID]["resolve"] = resolve;
       this._callReturnCallbacks[callID]["reject"] = reject;
     });
-
   }
 
-  _getNextCallID() {
-    this._callID += 1;
-    return this._callID;
-  }
+}
 
+
+function* _genNextCallID() {
+  let callID = 0;
+  while (true) {
+    yield callID;
+    callID++;
+  }
 }
