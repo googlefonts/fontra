@@ -7,7 +7,10 @@ dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 testData = [
     {
-        "axes": {"HLON": (0.0, 0.0, 1.0), "WGHT": (0.0, 0.0, 1.0)},
+        "axes": [
+            {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "HLON"},
+            {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "WGHT"},
+        ],
         "name": "one_00",
         "unicodes": [],
         "sources": [
@@ -113,7 +116,9 @@ testData = [
         ],
     },
     {
-        "axes": {"wght": (0.0, 0.0, 1.0)},
+        "axes": [
+            {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "wght"}
+        ],
         "name": "uni0031",
         "unicodes": [49],
         "sources": [
@@ -164,7 +169,10 @@ testData = [
         ],
     },
     {
-        "axes": {"X_X_bo": (0.0, 0.0, 1.0), "X_X_la": (0.0, 0.0, 1.0)},
+        "axes": [
+            {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "X_X_bo"},
+            {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "X_X_la"},
+        ],
         "name": "DC_0030_00",
         "unicodes": [],
         "sources": [
