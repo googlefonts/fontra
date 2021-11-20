@@ -39,24 +39,29 @@ class Client:
 
     async def handleConnection(self, path):
         logger.info(f"incoming connection: {path!r}")
+        tasks = []
         async for message in self.websocket:
             message = json.loads(message)
             if message.get("connection") == "close":
                 logger.info("client requested connection close")
                 break
-            callID = "unknown-call-id"
-            try:
-                callID = message["call-id"]
-                methodName = message["method-name"]
-                arguments = message.get("arguments", [])
-                kwArguments = message.get("keyword-arguments", {})
-                methodHandler = getattr(self.subject, "remote_" + methodName)
-                returnValue = await methodHandler(*arguments, **kwArguments)
-                response = {"call-id": callID, "return-value": returnValue}
-            except Exception as e:
-                logger.error("uncaught exception: %r", e)
-                response = {"call-id": callID, "exception": repr(e)}
-            await self.sendMessage(response)
+            tasks = [task for task in tasks if not task.done()]
+            tasks.append(asyncio.create_task(self._performCall(message)))
+
+    async def _performCall(self, message):
+        callID = "unknown-call-id"
+        try:
+            callID = message["call-id"]
+            methodName = message["method-name"]
+            arguments = message.get("arguments", [])
+            kwArguments = message.get("keyword-arguments", {})
+            methodHandler = getattr(self.subject, "remote_" + methodName)
+            returnValue = await methodHandler(*arguments, **kwArguments)
+            response = {"call-id": callID, "return-value": returnValue}
+        except Exception as e:
+            logger.error("uncaught exception: %r", e)
+            response = {"call-id": callID, "exception": repr(e)}
+        await self.sendMessage(response)
 
     async def sendMessage(self, message):
         await self.websocket.send(json.dumps(message, separators=(",", ":")))
