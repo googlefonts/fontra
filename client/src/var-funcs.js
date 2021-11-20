@@ -70,11 +70,15 @@ function itemwiseFunc(a, b, func) {
       throw new VariationError(`objects have incompatible number of entries: ${keys.length} != ${Object.keys(b).length}`);
     }
     for (const key of keys) {
+      const valueA = a[key];
       const valueB = b[key];
-      if (valueB === undefined) {
+      if (
+        (valueA !== undefined && valueB === undefined) ||
+        (valueA === undefined && valueB !== undefined)
+      ) {
         throw new VariationError(`objects have incompatible key sets: ${keys} != ${Object.keys(b)}`);
       }
-      result[key] = func(a[key], valueB);
+      result[key] = func(valueA, valueB);
     }
   }
   return result;
