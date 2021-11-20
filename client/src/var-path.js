@@ -146,7 +146,10 @@ export default class VarPath {
   }
 
   _ensureCompatibility(other) {
-    if (!arrayEquals(this.pointTypes, other.pointTypes) || !arrayEquals(this.contours, other.contours)) {
+    if (
+      !arrayEquals(this.contours, other.contours) ||
+      !pointTypesEquals(this.pointTypes, other.pointTypes)
+    ) {
       throw new VariationError("paths are not compatible");
     }
   }
@@ -272,4 +275,17 @@ function drawCubicSegment(path, segment) {
 function arrayEquals(a, b) {
   // Oh well
   return JSON.stringify(a) === JSON.stringify(b);
+}
+
+
+function pointTypesEquals(a, b) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i++) {
+    if ((a[i] & VarPath.POINT_TYPE_MASK) != (b[i] & VarPath.POINT_TYPE_MASK)) {
+      return false;
+    }
+  }
+  return true;
 }
