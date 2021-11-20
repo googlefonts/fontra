@@ -1,4 +1,5 @@
 import VarPath from "../src/var-path.js";
+import { VariationModel } from "../src/var-model.js";
 
 
 export class VarGlyph {
@@ -12,6 +13,27 @@ export class VarGlyph {
       return {"location": item.location, "source": VarSource.fromObject(item.source)}
     });
     return glyph;
+  }
+
+  get model() {
+    if (this._model === undefined) {
+      this._model = new VariationModel(
+        this.sources.map(source => source.location),
+        this.axes.map(axis => axis.name));
+    }
+    return this._model;
+  }
+
+  get deltas() {
+    if (this._deltas === undefined) {
+      const masterValues = this.sources.map(source => source.source);
+      this._deltas = this.model.getDeltas(masterValues);
+    }
+    return this._deltas;
+  }
+
+  instantiate(location) {
+    return this.model.interpolateFromDeltas(location, this.deltas);
   }
 
 }
