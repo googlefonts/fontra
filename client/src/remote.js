@@ -1,4 +1,16 @@
-export default class RemoteObject {
+export function getRemoteProxy(wsURL) {
+  const app = new Proxy(new RemoteObject(wsURL), {
+    get: (remote, propertyName, app) => {
+      return function () {
+        return remote.doCall(propertyName, Array.from(arguments))
+      };
+    }
+  });
+  return app;
+}
+
+
+export class RemoteObject {
 
   constructor(wsURL) {
       this.websocket = new WebSocket(wsURL);
