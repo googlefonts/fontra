@@ -26,7 +26,10 @@ class RCJKBackend:
 
 def unpackGlyph(glyph):
     d = {}
-    d["axes"] = glyph.axes
+    d["axes"] = [
+        dict(name=name, minValue=minValue, defaultValue=defaultValue, maxValue=maxValue)
+        for name, (minValue, defaultValue, maxValue) in glyph.axes.items()
+    ]
     d["name"] = glyph.name
     d["unicodes"] = glyph.unicodes
     sources = []
