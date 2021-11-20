@@ -200,8 +200,9 @@ class CanvasController {
     pathLineWidth: 1
   }
 
-  constructor(canvas) {
+  constructor(canvas, remote) {
     this.canvas = canvas;
+    this.remote = remote;
     this.context = canvas.getContext("2d");
     this.magnification = 1;
     this.origin = {x: 0, y: 800};
@@ -249,9 +250,17 @@ class CanvasController {
     this.setNeedsUpdate();
   }
 
-  setGlyph(glyph) {
+  async setGlyph(glyphName) {
+    let glyph = await this.remote.getGlyph(glyphName);
+    if (glyph === null) {
+      return;
+    }
     glyph = VarGlyph.fromObject(glyph);
-    console.log("------------", glyph);
+    const inst = glyph.instantiate({});
+    this.path.coordinates = inst.path.coordinates;
+    this.path.pointTypes = inst.path.pointTypes;
+    this.path.contours = inst.path.contours;
+    this.setNeedsUpdate();
   }
 
   setAxisValue(value, axisTag) {

@@ -84,17 +84,11 @@
       import { getRemoteProxy } from "../src/remote.js";
       const bodyElement = document.querySelector("body");
       const canvas = document.querySelector("#edit-canvas");
-      const canvasController = new CanvasController(canvas);
-      const app = getRemoteProxy("ws://localhost:8001/");
+      const remote = getRemoteProxy("ws://localhost:8001/");
+      const canvasController = new CanvasController(canvas, remote);
 
       async function glyphNameChanged(glyphName) {
-        const glyph = await app.getGlyph(glyphName);
-        if (glyph !== null) {
-          canvasController.setGlyph(glyph);
-          // console.log("got a glyph", glyphName, glyph);
-        } else {
-          // console.log("no glyph", glyphName);
-        }
+        await canvasController.setGlyph(glyphName);
       }
 
       function sliderChanged(value, axisTag) {

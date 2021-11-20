@@ -66,6 +66,12 @@ describe("var-funcs tests", () => {
       expect(result).to.be.an.instanceof(VarArray);
     })
 
+    it("add undefined", () => {
+      expect(() => addItemwise(123, undefined)).to.throw("incompatible object types: typeof 123 != typeof undefined");
+      expect(() => addItemwise(undefined, 123)).to.throw("incompatible object types: typeof undefined != typeof 123");
+      expect(addItemwise(undefined, undefined)).to.equal(undefined);
+    })
+
   });
 
   describe("testing subtraction", () => {
@@ -126,6 +132,12 @@ describe("var-funcs tests", () => {
       expect(result).to.be.an.instanceof(VarArray);
     })
 
+    it("sub undefined", () => {
+      expect(() => subItemwise(123, undefined)).to.throw("incompatible object types: typeof 123 != typeof undefined");
+      expect(() => subItemwise(undefined, 123)).to.throw("incompatible object types: typeof undefined != typeof 123");
+      expect(subItemwise(undefined, undefined)).to.equal(undefined);
+    })
+
   });
 
   describe("testing multiplication", () => {
@@ -164,6 +176,10 @@ describe("var-funcs tests", () => {
       const result = mulScalar(new VarArray(1, 2, 3), 5);
       expect(result).to.deep.equal([5, 10, 15]);
       expect(result).to.be.an.instanceof(VarArray);
+    })
+
+    it("mul undefined", () => {
+      expect(mulScalar(undefined, 3)).to.equal(undefined);
     })
 
   });
