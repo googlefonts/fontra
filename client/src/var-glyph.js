@@ -1,5 +1,5 @@
 import VarPath from "../src/var-path.js";
-import { VariationModel } from "../src/var-model.js";
+import { VariationModel, normalizeLocation } from "../src/var-model.js";
 
 
 export class VarGlyph {
@@ -17,8 +17,10 @@ export class VarGlyph {
 
   get model() {
     if (this._model === undefined) {
+      const axisDict = this.axisDict;
+      const locations = this.sources.map(source => source.location);
       this._model = new VariationModel(
-        this.sources.map(source => source.location),
+        locations.map(location => normalizeLocationSparse(location, axisDict)),
         this.axes.map(axis => axis.name));
     }
     return this._model;
@@ -32,8 +34,20 @@ export class VarGlyph {
     return this._deltas;
   }
 
+  get axisDict() {
+    if (this._axisDict === undefined) {
+      this._axisDict = {};
+      for (const axis of this.axes) {
+        this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
+      }
+    }
+    return this._axisDict;
+  }
+
   instantiate(location) {
-    return this.model.interpolateFromDeltas(location, this.deltas);
+    return this.model.interpolateFromDeltas(
+      normalizeLocation(location, this.axisDict), this.deltas
+    );
   }
 
 }
@@ -55,4 +69,16 @@ class VarSource {
     return source
   }
 
+}
+
+
+
+function normalizeLocationSparse(location, axes) {
+  const normLoc = normalizeLocation(location, axes);
+  for (const [name, value] of Object.entries(normLoc)) {
+    if (!value) {
+      delete normLoc[name];
+    }
+  }
+  return normLoc;
 }
