@@ -208,6 +208,18 @@ export default class VarPath {
     return new this.constructor(coordinates, this.pointTypes, this.contours);
   }
 
+  concat(other) {
+    const _result = new VarPath();
+    _result.coordinates = this.coordinates.concat(other.coordinates);
+    _result.pointTypes = this.pointTypes.concat(other.pointTypes);
+    _result.contours = this.contours.concat(other.contours).map(c => { return {...c}; });
+    const endPointOffset = this.numPoints;
+    for (let i = this.contours.length; i < _result.contours.length; i++) {
+      _result.contours[i].endPoint += endPointOffset;
+    }
+    return _result;
+  }
+
 }
 
 

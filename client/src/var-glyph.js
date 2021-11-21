@@ -81,11 +81,15 @@ class VarSource {
       if (transform !== null) {
         t = transform.transform(t);
       }
+      const componentPaths = [];
       if (inst.path.numPoints) {
-        paths.push(inst.path.transformed(t));
+        componentPaths.push(inst.path.transformed(t));
       }
       if (inst.components !== undefined) {
-        paths.push(...await inst.getComponentPaths(getGlyphFunc, compoLocation, t));
+        componentPaths.push(...await inst.getComponentPaths(getGlyphFunc, compoLocation, t));
+      }
+      if (componentPaths.length > 0) {
+        paths.push(componentPaths.reduce((p1, p2) => p1.concat(p2)));
       }
     }
     return paths;
