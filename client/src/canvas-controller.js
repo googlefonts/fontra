@@ -343,7 +343,7 @@ export class CanvasController {
 
   handleResize(event) {
     this.setupSize();
-    this.setNeedsUpdate();
+    this.draw();
   }
 
   handleMouseMove(event) {
