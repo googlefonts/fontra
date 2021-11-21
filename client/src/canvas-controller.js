@@ -289,7 +289,8 @@ class CanvasController {
     let compoPaths2d = [];
     if (inst.components !== undefined) {
       const compoPaths = await inst.getComponentPaths(
-        async glyphName => await this._getGlyph(glyphName)
+        async glyphName => await this._getGlyph(glyphName),
+        this.varLocation,
       );
       compoPaths2d = compoPaths.map(path => {
         const path2d = new Path2D();

@@ -70,10 +70,11 @@ class VarSource {
     return source
   }
 
-  async getComponentPaths(getGlyphFunc, transform = null) {
+  async getComponentPaths(getGlyphFunc, parentLocation, transform = null) {
     const paths = [];
 
     for (const compo of this.components) {
+      const compoLocation = mergeLocations(parentLocation, compo.coord)
       const glyph = await getGlyphFunc(compo.name);
       const inst = glyph.instantiate(compo.coord);
       let t = makeAffineTransform(compo.transform);
@@ -82,7 +83,7 @@ class VarSource {
       }
       paths.push(inst.path.transformed(t));
       if (inst.components !== undefined) {
-        paths.push(...await inst.getComponentPaths(getGlyphFunc, t));
+        paths.push(...await inst.getComponentPaths(getGlyphFunc, compoLocation, t));
       }
     }
     return paths;
@@ -90,6 +91,17 @@ class VarSource {
 
 }
 
+
+function mergeLocations(loc1, loc2) {
+  if (!loc1) {
+    return loc2;
+  }
+  const merged = {...loc1};
+  for (const [k, v] of Object.entries(loc2)) {
+    merged[k] = v;
+  }
+  return merged;
+}
 
 
 function normalizeLocationSparse(location, axes) {
