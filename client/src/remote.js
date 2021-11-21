@@ -1,5 +1,5 @@
-export function getRemoteProxy(wsURL) {
-  const app = new Proxy(new RemoteObject(wsURL), {
+export function getRemoteProxy(wsURL, onopen) {
+  const app = new Proxy(new RemoteObject(wsURL, onopen), {
     get: (remote, propertyName, app) => {
       return function () {
         return remote.doCall(propertyName, Array.from(arguments))
@@ -12,9 +12,12 @@ export function getRemoteProxy(wsURL) {
 
 export class RemoteObject {
 
-  constructor(wsURL) {
+  constructor(wsURL, onopen) {
       this.websocket = new WebSocket(wsURL);
       this.websocket.onmessage = (event) => this._handleIncomingMessage(event);
+      if (onopen) {
+        this.websocket.onopen = onopen;
+      }
       this._callReturnCallbacks = {};
 
       const g =_genNextCallID();
