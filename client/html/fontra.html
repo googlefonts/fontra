@@ -89,32 +89,12 @@
 
       const appController = new AppController();
 
-      async function glyphNameChanged(glyphName) {
-        const didSetGlyph = await appController.setSelectedGlyph(glyphName);
-        if (!didSetGlyph) {
-          return;
-        }
-        const axisSliders = document.querySelector("#axis-sliders");
-        axisSliders.innerHTML = "";
-        for (const axis of appController.getAxisInfo()) {
-          const label = document.createElement("label");
-          const slider = document.createElement("input");
-          label.setAttribute("class", "slider-label");
-          slider.setAttribute("type", "range");
-          slider.setAttribute("step", "any");
-          slider.setAttribute("class", "slider");
-          slider.setAttribute("min", axis.minValue);
-          slider.setAttribute("max", axis.maxValue);
-          slider.setAttribute("value", axis.defaultValue);
-          slider.setAttribute("oninput", `sliderChanged(this.value, "${axis.name}")`);
-          label.appendChild(slider);
-          label.append(axis.name);
-          axisSliders.appendChild(label);
-        }
-      }
-
       function sliderChanged(value, axisTag) {
         appController.setAxisValue(value, axisTag);
+      }
+
+      async function glyphNameChanged(glyphName) {
+        await appController.glyphNameChangedCallback(glyphName);
       }
 
       window.sliderChanged = sliderChanged;

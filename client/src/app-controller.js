@@ -50,6 +50,31 @@ export class AppController {
     }
   }
 
+  async glyphNameChangedCallback(glyphName) {
+    const didSetGlyph = await this.setSelectedGlyph(glyphName);
+    if (!didSetGlyph) {
+      return;
+    }
+    // Rebuild axis sliders
+    const axisSliders = document.querySelector("#axis-sliders");
+    axisSliders.innerHTML = "";  // Delete previous sliders
+    for (const axis of this.getAxisInfo()) {
+      const label = document.createElement("label");
+      const slider = document.createElement("input");
+      label.setAttribute("class", "slider-label");
+      slider.setAttribute("type", "range");
+      slider.setAttribute("step", "any");
+      slider.setAttribute("class", "slider");
+      slider.setAttribute("min", axis.minValue);
+      slider.setAttribute("max", axis.maxValue);
+      slider.setAttribute("value", axis.defaultValue);
+      slider.setAttribute("oninput", `sliderChanged(this.value, "${axis.name}")`);
+      label.appendChild(slider);
+      label.append(axis.name);
+      axisSliders.appendChild(label);
+    }
+  }
+
   handleMouseMove(event) {
     const point = this.canvasController.localPoint(event);
     const selRect = centeredRect(
