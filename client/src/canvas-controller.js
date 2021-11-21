@@ -2,7 +2,6 @@ import testGlyphs from "./test-glyphs.js";
 import VarPath from "./var-path.js";
 import { VarGlyph } from "./var-glyph.js";
 import { VariationModel } from "./var-model.js";
-import { Transform } from "./transform.js";
 
 const MIN_MAGNIFICATION = 0.05;
 const MAX_MAGNIFICATION = 200;
@@ -281,24 +280,6 @@ class CanvasController {
     return this._glyphsCache[glyphName];
   }
 
-  async _getComponentPaths(components, transform) {
-    const paths = [];
-
-    for (const compo of components) {
-      const glyph = await this._getGlyph(compo.name);
-      const inst = glyph.instantiate(compo.coord);
-      let t = makeAffineTransform(compo.transform);
-      if (transform !== undefined) {
-        t = transform.transform(t);
-      }
-      paths.push(inst.path.transformed(t));
-      if (inst.components !== undefined) {
-        paths.push(...await this._getComponentPaths(inst.components, t));
-      }
-    }
-    return paths;
-  }
-
   async _instantiateGlyph() {
     const inst = this.glyph.instantiate(this.varLocation);
     this.path.coordinates = inst.path.coordinates;
@@ -307,7 +288,9 @@ class CanvasController {
 
     let compoPaths2d = [];
     if (inst.components !== undefined) {
-      const compoPaths = await this._getComponentPaths(inst.components);
+      const compoPaths = await inst.getComponentPaths(
+        async glyphName => await this._getGlyph(glyphName)
+      );
       compoPaths2d = compoPaths.map(path => {
         const path2d = new Path2D();
         path.drawToPath(path2d);
@@ -458,15 +441,5 @@ class CanvasController {
   }
 
 }
-
-function makeAffineTransform(transform) {
-    let t = new Transform();
-    t = t.translate(transform.x + transform.tcenterx, transform.y + transform.tcentery);
-    t = t.rotate(transform.rotation * (Math.PI / 180));
-    t = t.scale(transform.scalex, transform.scaley);
-    t = t.translate(-transform.tcenterx, -transform.tcentery);
-    return t;
-}
-
 
 export { CanvasController };

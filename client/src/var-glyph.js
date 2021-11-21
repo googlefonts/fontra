@@ -1,5 +1,6 @@
 import VarPath from "../src/var-path.js";
 import { VariationModel, normalizeLocation } from "../src/var-model.js";
+import { Transform } from "./transform.js";
 
 
 export class VarGlyph {
@@ -69,6 +70,24 @@ class VarSource {
     return source
   }
 
+  async getComponentPaths(getGlyphFunc, transform = null) {
+    const paths = [];
+
+    for (const compo of this.components) {
+      const glyph = await getGlyphFunc(compo.name);
+      const inst = glyph.instantiate(compo.coord);
+      let t = makeAffineTransform(compo.transform);
+      if (transform !== null) {
+        t = transform.transform(t);
+      }
+      paths.push(inst.path.transformed(t));
+      if (inst.components !== undefined) {
+        paths.push(...await inst.getComponentPaths(getGlyphFunc, t));
+      }
+    }
+    return paths;
+  }
+
 }
 
 
@@ -81,4 +100,14 @@ function normalizeLocationSparse(location, axes) {
     }
   }
   return normLoc;
+}
+
+
+function makeAffineTransform(transform) {
+    let t = new Transform();
+    t = t.translate(transform.x + transform.tcenterx, transform.y + transform.tcentery);
+    t = t.rotate(transform.rotation * (Math.PI / 180));
+    t = t.scale(transform.scalex, transform.scaley);
+    t = t.translate(-transform.tcenterx, -transform.tcentery);
+    return t;
 }
