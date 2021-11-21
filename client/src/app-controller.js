@@ -37,6 +37,10 @@ export class AppController {
     this.canvasController.scene = scene;
 
     this.canvasController.canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
+
+    window.glyphNameChanged = async (glyphName) => {
+      await this.glyphNameChangedCallback(glyphName);
+    };
   }
 
   async initGlyphNames() {
