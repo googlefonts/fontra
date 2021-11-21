@@ -186,7 +186,7 @@ function centeredRect(x, y, side) {
 }
 
 
-class CanvasController {
+export class CanvasController {
 
   drawingParameters = {
     nodeFillColor: "#FFF",
@@ -453,6 +453,3 @@ function _getAxisBaseName(axisName) {
   }
   return axisName;
 }
-
-
-export { CanvasController };
