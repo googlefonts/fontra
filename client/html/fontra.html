@@ -85,12 +85,12 @@
   </div>
   </body>
     <script type="module">
-      import { CanvasController } from "../src/canvas-controller.js";
+      import { AppController } from "../src/app-controller.js";
       import { getRemoteProxy } from "../src/remote.js";
       const bodyElement = document.querySelector("body");
       const canvas = document.querySelector("#edit-canvas");
       const remote = getRemoteProxy("ws://localhost:8001/", initGlyphNames);
-      const canvasController = new CanvasController(canvas, remote);
+      const appController = new AppController(canvas, remote);
 
       async function initGlyphNames() {
         const glyphNamesMenu = document.querySelector("#glyph-select");
@@ -104,13 +104,13 @@
       }
 
       async function glyphNameChanged(glyphName) {
-        const didSetGlyph = await canvasController.setGlyph(glyphName);
+        const didSetGlyph = await appController.setSelectedGlyph(glyphName);
         if (!didSetGlyph) {
           return;
         }
         const axisSliders = document.querySelector("#axis-sliders");
         axisSliders.innerHTML = "";
-        for (const axis of canvasController.getAxisInfo()) {
+        for (const axis of appController.getAxisInfo()) {
           const label = document.createElement("label");
           const slider = document.createElement("input");
           label.setAttribute("class", "slider-label");
@@ -128,7 +128,7 @@
       }
 
       function sliderChanged(value, axisTag) {
-        canvasController.setAxisValue(value, axisTag);
+        appController.setAxisValue(value, axisTag);
       }
 
       window.sliderChanged = sliderChanged;

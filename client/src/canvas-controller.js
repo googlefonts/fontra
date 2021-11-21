@@ -1,189 +1,5 @@
-import VarPath from "./var-path.js";
-import { VarGlyph } from "./var-glyph.js";
-import { VariationModel } from "./var-model.js";
-
 const MIN_MAGNIFICATION = 0.05;
 const MAX_MAGNIFICATION = 200;
-
-
-class BaseSceneItem {
-  constructor() {
-    this.hidden = false;
-  }
-
-  draw(controller) {
-    if (!this.hidden) {
-      this.doDraw(controller)
-    }
-  }
-}
-
-
-class SceneGraph extends BaseSceneItem {
-  constructor() {
-    super();
-    this.items = [];
-  }
-
-  push(item) {
-    this.items.push(item)
-  }
-
-  doDraw(controller) {
-    for (const item of this.items) {
-      item.draw(controller);
-    }
-  }
-}
-
-
-class MiscPathItem extends BaseSceneItem {
-  constructor(paths) {
-    super();
-    this.paths = paths;
-  }
-  doDraw(controller) {
-    const context = controller.context;
-
-    context.fillStyle = "#FFF"
-    for (const path of this.paths) {
-      context.fill(path);
-    }
-  }
-}
-
-class PathPathItem extends BaseSceneItem {
-  constructor(path) {
-    super();
-    this.path = path;
-  }
-
-  doDraw(controller) {
-    const context = controller.context;
-    const points = this.path;
-    const path2d = new Path2D();
-    this.path.drawToPath(path2d);
-
-    context.lineWidth = controller.drawingParameters.pathLineWidth / controller.magnification;
-    context.strokeStyle = controller.drawingParameters.pathStrokeColor;
-    context.stroke(path2d);
-  }
-}
-
-
-class PathHandlesItem extends BaseSceneItem {
-  constructor(path) {
-    super();
-    this.path = path;
-  }
-
-  doDraw(controller) {
-    const context = controller.context;
-    const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
-
-    context.strokeStyle = controller.drawingParameters.handleColor;
-    context.lineWidth = controller.drawingParameters.handleLineWidth / controller.magnification;
-    for (const [pt1, pt2] of this.path.iterHandles()) {
-      strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
-    }
-  }
-}
-
-
-class PathNodesItem extends BaseSceneItem {
-  constructor(path) {
-    super();
-    this.path = path;
-  }
-
-  doDraw(controller) {
-    const context = controller.context;
-    const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
-
-    context.fillStyle = controller.drawingParameters.nodeFillColor;
-    for (const pt of this.path.iterPoints()) {
-      fillNode(context, pt.x, pt.y, nodeSize, pt.type, pt.smooth);
-    }
-  }
-}
-
-
-class HoverLayer extends BaseSceneItem {
-  constructor(path) {
-    super();
-    this.path = path
-    this.hoverSelection = null;
-  }
-
-  doDraw(controller) {
-    if (this.hoverSelection == null) {
-      return;
-    }
-    const context = controller.context;
-    const hoverNodeSize = controller.drawingParameters.hoverNodeSize / controller.magnification
-    context.save();
-    context.globalCompositeOperation = "lighter";
-    context.strokeStyle = controller.drawingParameters.hoverNodeColor;
-    context.lineWidth = controller.drawingParameters.hoverNodeLineWidth / controller.magnification;
-    const point = this.path.getPoint(this.hoverSelection);
-    strokeNode(context, point.x, point.y, hoverNodeSize, point.type, point.smooth)
-    context.restore();
-  }
-}
-
-
-function fillNode(context, x, y, nodeSize, pointType, isSmooth) {
-  if (pointType) {
-    context.beginPath();
-    context.arc(x, y, nodeSize / 2, 0, 2 * Math.PI, false);
-    context.fill();
-  } else {
-    context.fillRect(
-      x - nodeSize / 2,
-      y - nodeSize / 2,
-      nodeSize,
-      nodeSize
-    );
-  }
-}
-
-function strokeNode(context, x, y, nodeSize, pointType, isSmooth) {
-  if (pointType) {
-    context.beginPath();
-    context.arc(x, y, nodeSize / 2, 0, 2 * Math.PI, false);
-    context.stroke();
-  } else {
-    context.strokeRect(
-      x - nodeSize / 2,
-      y - nodeSize / 2,
-      nodeSize,
-      nodeSize
-    );
-  }
-}
-
-function strokeLine(context, x1, y1, x2, y2) {
-  context.beginPath();
-  context.moveTo(x1, y1);
-  context.lineTo(x2, y2);
-  context.stroke();
-}
-
-
-function pointInRect(point, rect) {
-  return (point.x >= rect.xMin && point.x <= rect.xMax && point.y >= rect.yMin && point.y <= rect.yMax);
-}
-
-
-function centeredRect(x, y, side) {
-  const halfSide = side / 2;
-  return {
-    xMin: x - halfSide,
-    yMin: y - halfSide,
-    xMax: x + halfSide,
-    yMax: y + halfSide
-  }
-}
 
 
 export class CanvasController {
@@ -200,26 +16,14 @@ export class CanvasController {
     pathLineWidth: 1
   }
 
-  constructor(canvas, remote) {
+  constructor(canvas) {
     this.canvas = canvas;
-    this.remote = remote;
     this.context = canvas.getContext("2d");
+    this.scene = null;
+
     this.magnification = 1;
-    this.origin = {x: 0, y: 800};
+    this.origin = {x: 0, y: 800};  // TODO choose y based on initial canvas height
     this.needsUpdate = false;
-    this._glyphsCache = {};
-
-    this.varLocation = {};
-    this.path = new VarPath();
-
-    this.scene = new SceneGraph();
-    this.componentsLayer = new MiscPathItem([]);
-    this.scene.push(this.componentsLayer);
-    this.scene.push(new PathHandlesItem(this.path));
-    this.scene.push(new PathPathItem(this.path));
-    this.scene.push(new PathNodesItem(this.path));
-    this.hoverLayer = new HoverLayer(this.path)
-    this.scene.push(this.hoverLayer);
 
     const resizeObserver = new ResizeObserver(entries => {
       this.setupSize();
@@ -229,7 +33,6 @@ export class CanvasController {
     resizeObserver.observe(this.canvas);
 
     window.addEventListener("resize", event => this.handleResize(event));
-    canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
     canvas.addEventListener("wheel", event => this.handleWheel(event));
 
     // Safari pinch zoom:
@@ -251,127 +54,43 @@ export class CanvasController {
     this.setNeedsUpdate();
   }
 
-  async _getGlyph(glyphName) {
-    let glyph = this._glyphsCache[glyphName];
-    if (glyph === undefined) {
-      glyph = await this.remote.getGlyph(glyphName);
-      if (glyph !== null) {
-        glyph = VarGlyph.fromObject(glyph);
-      }
-      this._glyphsCache[glyphName] = glyph;
-    }
-    return this._glyphsCache[glyphName];
-  }
-
-  async _instantiateGlyph() {
-    const inst = this.glyph.instantiate(this.varLocation);
-    this.path.coordinates = inst.path.coordinates;
-    this.path.pointTypes = inst.path.pointTypes;
-    this.path.contours = inst.path.contours;
-
-    let compoPaths2d = [];
-    if (inst.components !== undefined) {
-      const compoPaths = await inst.getComponentPaths(
-        async glyphName => await this._getGlyph(glyphName),
-        this.varLocation,
-      );
-      compoPaths2d = compoPaths.map(path => {
-        const path2d = new Path2D();
-        path.drawToPath(path2d);
-        return path2d;
-      });
-    }
-    this.componentsLayer.paths = compoPaths2d;
-  }
-
-  async setGlyph(glyphName) {
-    const glyph = await this._getGlyph(glyphName);
-    if (glyph === null) {
-      return false;
-    }
-    this.glyph = glyph;
-    this.varLocation = {};
-    this.axisMapping = this._makeAxisMapping(this.glyph.axes);
-    await this._instantiateGlyph();
-    this.setNeedsUpdate();
-    return true;
-  }
-
-  _makeAxisMapping(axes) {
-    const axisMapping = {};
-    for (const axis of axes) {
-      const baseName = _getAxisBaseName(axis.name);
-      if (axisMapping[baseName] === undefined) {
-        axisMapping[baseName] = [];
-      }
-      axisMapping[baseName].push(axis.name);
-    }
-    return axisMapping;
-  }
-
-  *getAxisInfo() {
-    const done = {};
-    for (const axis of this.glyph.axes) {
-      const baseName = _getAxisBaseName(axis.name);
-      if (done[baseName]) {
-        continue;
-      }
-      done[baseName] = true;
-      const axisInfo = {...axis};
-      axisInfo.name = baseName;
-      yield axisInfo;
-    }
-  }
-
-  async setAxisValue(value, axisName) {
-    for (const realAxisName of this.axisMapping[axisName]) {
-      this.varLocation[realAxisName] = value;
-    }
-    await this._instantiateGlyph();
-    this.setNeedsUpdate();
-  }
-
-  async testing(event) {
-    console.log("testing async 1");
-    await new Promise(r => setTimeout(r, 500));
-    console.log("testing async 2");
-  }
-
   setupSize() {
-    let width = this.canvas.parentElement.getBoundingClientRect().width;
-    let height = this.canvas.parentElement.getBoundingClientRect().height;
+    const width = this.canvas.parentElement.getBoundingClientRect().width;
+    const height = this.canvas.parentElement.getBoundingClientRect().height;
 
-    let scale = window.devicePixelRatio; // Change to 1 on retina screens to see blurry canvas.
+    const scale = window.devicePixelRatio; // Change to 1 on retina screens to see blurry canvas.
     this.canvas.width = Math.floor(width * scale);
     this.canvas.height = Math.floor(height * scale);
     this.canvas.style.width = width;
     this.canvas.style.height = height;
   }
 
+  setNeedsUpdate() {
+    if (!this.needsUpdate) {
+      this.needsUpdate = true;
+      setTimeout(() => this.draw(), 0);
+    }
+  }
+
+  draw() {
+    this.needsUpdate = false;
+    const scale = window.devicePixelRatio;
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.context.save();
+    this.context.scale(scale, scale);
+    this.context.translate(this.origin.x, this.origin.y);
+    this.context.scale(this.magnification, -this.magnification);
+    if (this.scene) {
+      this.scene.draw(this);
+    }
+    this.context.restore();
+  }
+
+  // Event handlers
+
   handleResize(event) {
     this.setupSize();
     this.draw();
-  }
-
-  handleMouseMove(event) {
-    const point = this.localPoint(event);
-    const selRect = centeredRect(
-      point.x, point.y,
-      this.drawingParameters.nodeSize / this.magnification,
-    );
-    const currentHoverSelection = this.hoverLayer.hoverSelection;
-    this.hoverLayer.hoverSelection = null;
-    let index = 0;
-    for (const point of this.path.iterPoints()) {
-      if (pointInRect(point, selRect)) {
-        this.hoverLayer.hoverSelection = index;
-        break;
-      }
-      index++;
-    }
-    if (this.hoverLayer.hoverSelection !== currentHoverSelection) {
-      this.setNeedsUpdate();
-    }
   }
 
   handleWheel(event) {
@@ -423,23 +142,10 @@ export class CanvasController {
     event.preventDefault();
   }
 
-  setNeedsUpdate() {
-    if (!this.needsUpdate) {
-      this.needsUpdate = true;
-      setTimeout(() => this.draw(), 0);
-    }
-  }
-
-  draw() {
-    this.needsUpdate = false;
-    const scale = window.devicePixelRatio;
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.context.save();
-    this.context.scale(scale, scale);
-    this.context.translate(this.origin.x, this.origin.y);
-    this.context.scale(this.magnification, -this.magnification);
-    this.scene.draw(this);
-    this.context.restore();
+  async testing(event) {
+    console.log("testing async 1");
+    await new Promise(r => setTimeout(r, 500));
+    console.log("testing async 2");
   }
 
   // helpers
@@ -450,13 +156,4 @@ export class CanvasController {
     return {x: x, y: y}
   }
 
-}
-
-
-function _getAxisBaseName(axisName) {
-  const asterixPos = axisName.indexOf("*");
-  if (asterixPos > 0) {
-    return axisName.slice(0, asterixPos);
-  }
-  return axisName;
 }
