@@ -38,8 +38,8 @@ export class AppController {
 
     this.canvasController.canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
 
-    window.glyphNameChanged = async (glyphName) => {
-      await this.glyphNameChangedCallback(glyphName);
+    window.sliderChanged = (value, axisTag) => {
+      this.setAxisValue(value, axisTag);
     };
   }
 

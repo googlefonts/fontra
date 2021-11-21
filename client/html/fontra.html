@@ -87,8 +87,8 @@
     <script type="module">
       import { AppController } from "../src/app-controller.js";
       const appController = new AppController();
-      window.sliderChanged = (value, axisTag) => {
-        appController.setAxisValue(value, axisTag);
+      window.glyphNameChanged = async (glyphName) => {
+        await appController.glyphNameChangedCallback(glyphName);
       };
     </script>
 </html>
