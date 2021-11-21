@@ -4,18 +4,6 @@ const MAX_MAGNIFICATION = 200;
 
 export class CanvasController {
 
-  drawingParameters = {
-    nodeFillColor: "#FFF",
-    nodeSize: 8,
-    handleColor: "#888",
-    handleLineWidth: 1,
-    hoverNodeSize: 14,
-    hoverNodeColor: "#48F",
-    hoverNodeLineWidth: 2,
-    pathStrokeColor: "#BBB",
-    pathLineWidth: 1
-  }
-
   constructor(canvas) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");

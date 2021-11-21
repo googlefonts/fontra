@@ -20,6 +20,17 @@ export class AppController {
 
     this.remote = getRemoteProxy("ws://localhost:8001/", async () => await this.initGlyphNames());
     this.canvasController = new CanvasController(canvas);
+    this.canvasController.drawingParameters = {
+      nodeFillColor: "#FFF",
+      nodeSize: 8,
+      handleColor: "#888",
+      handleLineWidth: 1,
+      hoverNodeSize: 14,
+      hoverNodeColor: "#48F",
+      hoverNodeLineWidth: 2,
+      pathStrokeColor: "#BBB",
+      pathLineWidth: 1
+    }
 
     this._glyphsCache = {};
     this.varLocation = {};
