@@ -66,23 +66,16 @@
     <div class="page">
 
       <div class="controls">
-        <input type="text" name="" oninput="glyphNameChanged(this.value)">
+
+        <select name="glyphs" id="glyph-select" oninput="glyphNameChanged(this.value)">
+          <option value="">--Please choose a glyph--</option>
+          <!-- contents will be filled dynamically -->
+        </select>
 
         <div class="axis-sliders" id="axis-sliders">
-
-            <label class="slider-label">
-            <input type="range" min="0" max="100" value="0" step="any" class="slider"
-                oninput="sliderChanged(this.value, 0)">
-              #0
-            </label>
-
-            <label class="slider-label">
-            <input type="range" min="0" max="100" value="0" step="any" class="slider"
-                oninput="sliderChanged(this.value, 1)">
-              #1
-            </label>
-
+          <!-- contents will be filled dynamically -->
         </div>
+
       </div>
 
       <div class="canvas-container">
@@ -96,8 +89,20 @@
       import { getRemoteProxy } from "../src/remote.js";
       const bodyElement = document.querySelector("body");
       const canvas = document.querySelector("#edit-canvas");
-      const remote = getRemoteProxy("ws://localhost:8001/");
+      const remote = getRemoteProxy("ws://localhost:8001/", initGlyphNames);
       const canvasController = new CanvasController(canvas, remote);
+
+      async function initGlyphNames() {
+        const glyphNamesMenu = document.querySelector("#glyph-select");
+        const glyphNames = await remote.getGlyphNames();
+        console.log(glyphNames);
+        for (const glyphName of glyphNames) {
+          const option = document.createElement("option");
+          option.setAttribute("value", glyphName);
+          option.append(glyphName);
+          glyphNamesMenu.appendChild(option);
+        }
+      }
 
       async function glyphNameChanged(glyphName) {
         const didSetGlyph = await canvasController.setGlyph(glyphName);
