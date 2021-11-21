@@ -95,7 +95,6 @@
       async function initGlyphNames() {
         const glyphNamesMenu = document.querySelector("#glyph-select");
         const glyphNames = await remote.getGlyphNames();
-        console.log(glyphNames);
         for (const glyphName of glyphNames) {
           const option = document.createElement("option");
           option.setAttribute("value", glyphName);
