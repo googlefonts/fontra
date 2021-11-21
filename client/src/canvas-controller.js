@@ -194,12 +194,6 @@ function centeredRect(x, y, side) {
 }
 
 
-function makePath(f) {
-  const p = new VarPath();
-  f(p);
-  return p;
-}
-
 class CanvasController {
 
   drawingParameters = {
