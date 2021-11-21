@@ -304,20 +304,17 @@ class CanvasController {
   async setGlyph(glyphName) {
     const glyph = await this._getGlyph(glyphName);
     if (glyph === null) {
-      return;
+      return false;
     }
     this.glyph = glyph;
     this.varLocation = {};
     await this._instantiateGlyph();
     this.setNeedsUpdate();
+    return true;
   }
 
-  async setAxisValue(value, axisIndex) {
-    const axis = this.glyph.axes[axisIndex];
-    if (axis === undefined) {
-      return;
-    }
-    this.varLocation[axis.name] = axis.minValue + value * (axis.maxValue - axis.minValue);
+  async setAxisValue(value, axisName) {
+    this.varLocation[axisName] = value;
     await this._instantiateGlyph();
     this.setNeedsUpdate();
   }
