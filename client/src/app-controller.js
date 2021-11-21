@@ -1,3 +1,4 @@
+import { getRemoteProxy } from "../src/remote.js";
 import VarPath from "./var-path.js";
 import { VarGlyph } from "./var-glyph.js";
 import { CanvasController } from "../src/canvas-controller.js";
@@ -14,9 +15,11 @@ import {
 
 
 export class AppController {
-  constructor(canvas, remote) {
+  constructor() {
+    const canvas = document.querySelector("#edit-canvas");
+
+    this.remote = getRemoteProxy("ws://localhost:8001/", async () => await this.initGlyphNames());
     this.canvasController = new CanvasController(canvas);
-    this.remote = remote;
 
     this._glyphsCache = {};
     this.varLocation = {};
@@ -33,7 +36,18 @@ export class AppController {
     scene.push(this.hoverLayer);
     this.canvasController.scene = scene;
 
-    canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
+    this.canvasController.canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
+  }
+
+  async initGlyphNames() {
+    const glyphNamesMenu = document.querySelector("#glyph-select");
+    const glyphNames = await this.remote.getGlyphNames();
+    for (const glyphName of glyphNames) {
+      const option = document.createElement("option");
+      option.setAttribute("value", glyphName);
+      option.append(glyphName);
+      glyphNamesMenu.appendChild(option);
+    }
   }
 
   handleMouseMove(event) {
@@ -62,6 +76,7 @@ export class AppController {
     if (glyph === null) {
       return false;
     }
+    this.hoverLayer.hoverSelection = null;
     this.glyph = glyph;
     this.varLocation = {};
     this.axisMapping = _makeAxisMapping(this.glyph.axes);

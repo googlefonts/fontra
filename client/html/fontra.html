@@ -86,22 +86,8 @@
   </body>
     <script type="module">
       import { AppController } from "../src/app-controller.js";
-      import { getRemoteProxy } from "../src/remote.js";
-      const bodyElement = document.querySelector("body");
-      const canvas = document.querySelector("#edit-canvas");
-      const remote = getRemoteProxy("ws://localhost:8001/", initGlyphNames);
-      const appController = new AppController(canvas, remote);
 
-      async function initGlyphNames() {
-        const glyphNamesMenu = document.querySelector("#glyph-select");
-        const glyphNames = await remote.getGlyphNames();
-        for (const glyphName of glyphNames) {
-          const option = document.createElement("option");
-          option.setAttribute("value", glyphName);
-          option.append(glyphName);
-          glyphNamesMenu.appendChild(option);
-        }
-      }
+      const appController = new AppController();
 
       async function glyphNameChanged(glyphName) {
         const didSetGlyph = await appController.setSelectedGlyph(glyphName);
