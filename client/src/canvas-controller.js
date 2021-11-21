@@ -170,14 +170,6 @@ function strokeLine(context, x1, y1, x2, y2) {
 }
 
 
-function strokeHLine(context, x1, x2, y) {
-  context.beginPath();
-  context.moveTo(x1, y);
-  context.lineTo(x2, y);
-  context.stroke();
-}
-
-
 function pointInRect(point, rect) {
   return (point.x >= rect.xMin && point.x <= rect.xMax && point.y >= rect.yMin && point.y <= rect.yMax);
 }
