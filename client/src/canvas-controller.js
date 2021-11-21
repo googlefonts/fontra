@@ -1,4 +1,3 @@
-import testGlyphs from "./test-glyphs.js";
 import VarPath from "./var-path.js";
 import { VarGlyph } from "./var-glyph.js";
 import { VariationModel } from "./var-model.js";
@@ -224,17 +223,8 @@ class CanvasController {
     this.needsUpdate = false;
     this._glyphsCache = {};
 
-    const locations = [{}, {wght: 1}, {wdth: 1}, {wght: 1, wdth: 1}];
-    this.model = new VariationModel(locations);
-    const masterValues = [
-      makePath(testGlyphs.lightCondensed).coordinates,
-      makePath(testGlyphs.boldCondensed).coordinates,
-      makePath(testGlyphs.lightWide).coordinates,
-      makePath(testGlyphs.boldWide).coordinates,
-    ];
-    this.deltas = this.model.getDeltas(masterValues);
     this.varLocation = {};
-    this.path = makePath(testGlyphs.lightCondensed);
+    this.path = new VarPath();
 
     this.scene = new SceneGraph();
     this.componentsLayer = new MiscPathItem([]);
