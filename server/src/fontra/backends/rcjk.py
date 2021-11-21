@@ -18,6 +18,8 @@ class RCJKBackend:
         return self.glyphNames
 
     async def getGlyph(self, glyphName):
+        if not glyphName:
+            return None
         for gs in self._iterGlyphSets():
             if glyphName in gs:
                 return unpackGlyph(gs.getGlyph(glyphName))
