@@ -31,6 +31,10 @@ export default class VarPath {
     return path;
   }
 
+  get numPoints() {
+    return this.pointTypes.length;
+  }
+
   getPoint(index) {
     if (index >= this.pointTypes.length) {
       return null;

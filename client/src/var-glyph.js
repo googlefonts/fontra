@@ -81,7 +81,9 @@ class VarSource {
       if (transform !== null) {
         t = transform.transform(t);
       }
-      paths.push(inst.path.transformed(t));
+      if (inst.path.numPoints) {
+        paths.push(inst.path.transformed(t));
+      }
       if (inst.components !== undefined) {
         paths.push(...await inst.getComponentPaths(getGlyphFunc, compoLocation, t));
       }
