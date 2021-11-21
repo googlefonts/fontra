@@ -87,7 +87,7 @@ function itemwiseFunc(a, b, func) {
 
 function objectMap(o, func) {
   var result;
-  if (o.map !== undefined) {
+  if (Array.isArray(o)) {
     return o.map(func);
   } else {
     result = new o.constructor();
