@@ -308,13 +308,42 @@ class CanvasController {
     }
     this.glyph = glyph;
     this.varLocation = {};
+    this.axisMapping = this._makeAxisMapping(this.glyph.axes);
     await this._instantiateGlyph();
     this.setNeedsUpdate();
     return true;
   }
 
+  _makeAxisMapping(axes) {
+    const axisMapping = {};
+    for (const axis of axes) {
+      const baseName = _getAxisBaseName(axis.name);
+      if (axisMapping[baseName] === undefined) {
+        axisMapping[baseName] = [];
+      }
+      axisMapping[baseName].push(axis.name);
+    }
+    return axisMapping;
+  }
+
+  *getAxisInfo() {
+    const done = {};
+    for (const axis of this.glyph.axes) {
+      const baseName = _getAxisBaseName(axis.name);
+      if (done[baseName]) {
+        continue;
+      }
+      done[baseName] = true;
+      const axisInfo = {...axis};
+      axisInfo.name = baseName;
+      yield axisInfo;
+    }
+  }
+
   async setAxisValue(value, axisName) {
-    this.varLocation[axisName] = value;
+    for (const realAxisName of this.axisMapping[axisName]) {
+      this.varLocation[realAxisName] = value;
+    }
     await this._instantiateGlyph();
     this.setNeedsUpdate();
   }
@@ -439,5 +468,15 @@ class CanvasController {
   }
 
 }
+
+
+function _getAxisBaseName(axisName) {
+  const asterixPos = axisName.indexOf("*");
+  if (asterixPos > 0) {
+    return axisName.slice(0, asterixPos);
+  }
+  return axisName;
+}
+
 
 export { CanvasController };

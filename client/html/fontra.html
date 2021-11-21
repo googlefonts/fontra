@@ -104,7 +104,7 @@
         if (didSetGlyph) {
           const axisSliders = document.querySelector("#axis-sliders");
           axisSliders.innerHTML = "";
-          for (const axis of canvasController.glyph.axes) {
+          for (const axis of canvasController.getAxisInfo()) {
             const label = document.createElement("label");
             const slider = document.createElement("input");
             label.setAttribute("class", "slider-label");
