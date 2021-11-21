@@ -8,6 +8,7 @@ class RCJKBackend:
         self.glyphNames = set()
         for gs in self._iterGlyphSets():
             self.glyphNames.update(gs.getGlyphNamesAndUnicodes())
+        self.glyphNames = sorted(self.glyphNames)
 
     def _iterGlyphSets(self):
         yield self.project.characterGlyphGlyphSet
