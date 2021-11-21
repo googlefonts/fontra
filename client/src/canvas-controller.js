@@ -221,7 +221,13 @@ export class CanvasController {
     this.hoverLayer = new HoverLayer(this.path)
     this.scene.push(this.hoverLayer);
 
-    this.setupSize();
+    const resizeObserver = new ResizeObserver(entries => {
+      this.setupSize();
+      this.draw();
+      // console.log('Size changed');
+    });
+    resizeObserver.observe(this.canvas);
+
     window.addEventListener("resize", event => this.handleResize(event));
     canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
     canvas.addEventListener("wheel", event => this.handleWheel(event));
@@ -241,6 +247,7 @@ export class CanvasController {
     // canvas.addEventListener("pointerup", this.onEvent.bind(this), false);
     // canvas.addEventListener("pointercancel", this.onEvent.bind(this), false);
 
+    this.setupSize();
     this.setNeedsUpdate();
   }
 
