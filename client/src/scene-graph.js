@@ -34,6 +34,7 @@ export class MiscPathItem extends BaseSceneItem {
     super();
     this.paths = paths;
   }
+
   doDraw(controller) {
     const context = controller.context;
 
