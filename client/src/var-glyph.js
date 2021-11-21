@@ -103,8 +103,8 @@ function mergeLocations(loc1, loc2) {
     return loc2;
   }
   const merged = {...loc1};
-  for (const [k, v] of Object.entries(loc2)) {
-    merged[k] = v;
+  for (const k in loc2) {
+    merged[k] = loc2[k];
   }
   return merged;
 }
