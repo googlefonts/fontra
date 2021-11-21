@@ -89,8 +89,8 @@ export class VariationModel {
           }
         }
 
-        for (const [axis, triple] of Object.entries(bestAxes)) {
-          region[axis] = triple;
+        for (const axis in bestAxes) {
+          region[axis] = bestAxes[axis];
         }
       }
       this.supports.push(region);
