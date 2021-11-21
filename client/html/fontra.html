@@ -31,6 +31,12 @@
         gap:  0.5em;
       }
 
+      .axis-sliders {
+        display: flex;
+        flex-direction: column;
+        gap:  0.5em;
+      }
+
       .slider-label {
       }
 
@@ -62,102 +68,21 @@
       <div class="controls">
         <input type="text" name="" oninput="glyphNameChanged(this.value)">
 
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 0)">
-          #0
-        </label>
+        <div class="axis-sliders" id="axis-sliders">
 
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 1)">
-          #1
-        </label>
+            <label class="slider-label">
+            <input type="range" min="0" max="100" value="0" step="any" class="slider"
+                oninput="sliderChanged(this.value, 0)">
+              #0
+            </label>
 
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 2)">
-          #2
-        </label>
+            <label class="slider-label">
+            <input type="range" min="0" max="100" value="0" step="any" class="slider"
+                oninput="sliderChanged(this.value, 1)">
+              #1
+            </label>
 
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 3)">
-          #3
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 4)">
-          #4
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 5)">
-          #5
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 6)">
-          #6
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 7)">
-          #7
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 8)">
-          #8
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 9)">
-          #9
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 10)">
-          #10
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 11)">
-          #11
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 12)">
-          #12
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 13)">
-          #13
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 14)">
-          #14
-        </label>
-
-        <label class="slider-label">
-        <input type="range" min="0" max="100" value="0" step="any" class="slider"
-            oninput="sliderChanged(this.value, 15)">
-          #15
-        </label>
-
+        </div>
       </div>
 
       <div class="canvas-container">
@@ -175,11 +100,30 @@
       const canvasController = new CanvasController(canvas, remote);
 
       async function glyphNameChanged(glyphName) {
-        await canvasController.setGlyph(glyphName);
+        const didSetGlyph = await canvasController.setGlyph(glyphName);
+        if (didSetGlyph) {
+          const axisSliders = document.querySelector("#axis-sliders");
+          axisSliders.innerHTML = "";
+          for (const axis of canvasController.glyph.axes) {
+            const label = document.createElement("label");
+            const slider = document.createElement("input");
+            label.setAttribute("class", "slider-label");
+            slider.setAttribute("type", "range");
+            slider.setAttribute("step", "any");
+            slider.setAttribute("class", "slider");
+            slider.setAttribute("min", axis.minValue);
+            slider.setAttribute("max", axis.maxValue);
+            slider.setAttribute("value", axis.defaultValue);
+            slider.setAttribute("oninput", `sliderChanged(this.value, "${axis.name}")`);
+            label.appendChild(slider);
+            label.append(axis.name);
+            axisSliders.appendChild(label);
+          }
+        }
       }
 
       function sliderChanged(value, axisTag) {
-        canvasController.setAxisValue(value / 100, axisTag);
+        canvasController.setAxisValue(value, axisTag);
       }
 
       window.sliderChanged = sliderChanged;
