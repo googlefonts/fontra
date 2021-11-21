@@ -109,6 +109,12 @@ export class AppController {
       }
       index++;
     }
+    for (const path of this.componentsLayer.paths) {
+      if (this.canvasController.context.isPointInPath(path, point.x, point.y)) {
+        // now what
+      }
+
+    }
     if (this.hoverLayer.hoverSelection !== currentHoverSelection) {
       this.canvasController.setNeedsUpdate();
     }
