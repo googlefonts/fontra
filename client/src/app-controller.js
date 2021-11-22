@@ -1,7 +1,7 @@
-import { getRemoteProxy } from "../src/remote.js";
+import { getRemoteProxy } from "./remote.js";
 import VarPath from "./var-path.js";
 import { VarGlyph } from "./var-glyph.js";
-import { CanvasController } from "../src/canvas-controller.js";
+import { CanvasController } from "./canvas-controller.js";
 import {
   SceneGraph,
   ComponentPathItem,
@@ -9,9 +9,8 @@ import {
   PathPathItem,
   PathNodesItem,
   HoverLayer,
-  pointInRect,
-  centeredRect,
-} from "../src/scene-graph.js";
+} from "./scene-graph.js";
+import { pointInRect, centeredRect } from "./rectangle.js";
 
 
 const drawingParameters = {

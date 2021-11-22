@@ -173,19 +173,3 @@ function strokeLine(context, x1, y1, x2, y2) {
   context.lineTo(x2, y2);
   context.stroke();
 }
-
-
-export function pointInRect(point, rect) {
-  return (point.x >= rect.xMin && point.x <= rect.xMax && point.y >= rect.yMin && point.y <= rect.yMax);
-}
-
-
-export function centeredRect(x, y, side) {
-  const halfSide = side / 2;
-  return {
-    xMin: x - halfSide,
-    yMin: y - halfSide,
-    xMax: x + halfSide,
-    yMax: y + halfSide
-  }
-}
