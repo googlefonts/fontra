@@ -8,18 +8,18 @@
 
 - activate venv:
 
-    source venv/bin/activate
+    `source venv/bin/activate`
 
 - install dependencies:
 
-    pip install --upgrade pip
-    pip install -r requirements.txt
-    pip install -e .
+    `pip install --upgrade pip`
+    `pip install -r requirements.txt`
+    `pip install -e .`
 
 - start the fontra server with a path to an .rcjk project:
 
-    fontra /path/to/a/project.rcjk
+    `fontra /path/to/a/project.rcjk`
 
 - navigate to
 
-    http://localhost:8000/html/fontra.html
+    `http://localhost:8000/html/fontra.html`
