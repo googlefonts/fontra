@@ -7,6 +7,7 @@ from .server import Server
 
 
 def main():
+    websocketPort = 8001
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument("font")
@@ -18,12 +19,18 @@ def main():
     else:
         assert False, path
 
+    async def handleWebsocketPort(request):
+        return web.Response(text=str(websocketPort))
+
     async def setupWebsocketServer(app):
         server = Server(backend, {"getGlyph", "getGlyphNames"})
-        await server.getServerTask(port=8001)
+        await server.getServerTask(port=websocketPort)
 
     httpApp = web.Application()
-    httpApp.add_routes([web.static('/', "client")])
+    httpApp.add_routes([
+        web.get('/websocketport', handleWebsocketPort),
+        web.static('/', "client"),
+    ])
     httpApp.on_startup.append(setupWebsocketServer)
     web.run_app(httpApp, port=8000)
 

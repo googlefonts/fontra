@@ -87,9 +87,26 @@
   </body>
     <script type="module">
       import { AppController } from "../src/app-controller.js";
-      const appController = new AppController();
-      window.glyphNameChanged = async (glyphName) => {
-        await appController.glyphNameChangedCallback(glyphName);
-      };
+
+      function httpGetAsync(theUrl, callback) {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = () => {
+          if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+            callback(xmlHttp.responseText);
+          }
+        }
+        xmlHttp.open("GET", theUrl, true); // true for asynchronous
+        xmlHttp.send(null);
+      }
+
+      function startApp(port) {
+        const appController = new AppController(port);
+        window.glyphNameChanged = async (glyphName) => {
+          await appController.glyphNameChangedCallback(glyphName);
+        };
+      }
+
+      httpGetAsync("/websocketport", startApp)
+
     </script>
 </html>

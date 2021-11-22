@@ -28,10 +28,10 @@ const drawingParameters = {
 
 
 export class AppController {
-  constructor() {
+  constructor(port = 8001) {
     const canvas = document.querySelector("#edit-canvas");
 
-    this.remote = getRemoteProxy("ws://localhost:8001/", async () => await this.initGlyphNames());
+    this.remote = getRemoteProxy(`ws://localhost:${port}/`, async () => await this.initGlyphNames());
     this.canvasController = new CanvasController(canvas);
     this.canvasController.drawingParameters = drawingParameters;
 
