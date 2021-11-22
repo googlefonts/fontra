@@ -128,13 +128,11 @@ class MouseTracker {
     const size = this.canvasController.drawingParameters.nodeSize;
     const selection = this.layout.selectionAtPoint(point, size, this.canvasController.context);
 
-    console.log(">>>", this.layout.hoverLayer.selection);
     if (event.shiftKey) {
       this.layout.selectionLayer.selection = symmetricDifference(this.layout.selectionLayer.selection, selection);
     } else {
       this.layout.selectionLayer.selection = selection;
     }
-    console.log("<<<", this.layout.hoverLayer.selection);
 
     this.layout.hoverLayer.selection = null;
     this.canvasController.setNeedsUpdate();
