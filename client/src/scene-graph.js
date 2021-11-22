@@ -144,9 +144,11 @@ export class SelectionLayer extends BaseSceneItem {
         context.strokeStyle = color;
         strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth)
       } else {
-        context.lineWidth = lineWidth * 3;
-        context.strokeStyle = "#0008";  // TODO tweak, put in drawingParameters
+        context.globalCompositeOperation = "destination-out";
+        context.lineWidth = lineWidth * 2;
+        context.strokeStyle = "#FFF";  // TODO tweak, put in drawingParameters
         context.stroke(this.componentPaths[index]);
+        context.globalCompositeOperation = "source-over";
         context.lineWidth = lineWidth;
         context.strokeStyle = color;
         context.stroke(this.componentPaths[index]);
