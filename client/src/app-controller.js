@@ -118,7 +118,7 @@ export class AppController {
 
     this.remote = getRemoteProxy(`ws://localhost:${port}/`, async () => await this.initGlyphNames());
     this.canvasController = new CanvasController(canvas);
-    this.canvasController.unscaledDrawingParameters = drawingParameters;
+    this.canvasController.setDrawingParameters(drawingParameters);
 
     this._glyphsCache = {};
     this.varLocation = {};

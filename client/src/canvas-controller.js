@@ -11,7 +11,8 @@ export class CanvasController {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
     this.scene = null;
-    this.unscaledDrawingParameters = {};
+    this._unscaledDrawingParameters = {};
+    this.drawingParameters = {};
 
     this.magnification = 1;
     this.origin = {x: 0, y: 800};  // TODO choose y based on initial canvas height
@@ -64,11 +65,19 @@ export class CanvasController {
     }
   }
 
+  setDrawingParameters(drawingParameters) {
+    this._unscaledDrawingParameters = drawingParameters;
+    this._updateDrawingParameters();
+  }
+
+  _updateDrawingParameters() {
+    this.drawingParameters = mulScalar(
+      this._unscaledDrawingParameters, 1 / this.magnification
+    );
+  }
+
   draw() {
     this.needsUpdate = false;
-    this.drawingParameters = mulScalar(
-      this.unscaledDrawingParameters, 1 / this.magnification
-    );
     const scale = window.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.save();
@@ -129,6 +138,7 @@ export class CanvasController {
     // adjust origin
     this.origin.x += (1 - zoomFactor) * center.x * prevMagnification;
     this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
+    this._updateDrawingParameters();
     this.setNeedsUpdate();
   }
 
