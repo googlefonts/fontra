@@ -64,9 +64,13 @@ class Layout {
     yield this.hoverLayer;
   }
 
+  resetSelection() {
+    this.selectionLayer.selection = new Set();
+    this.hoverLayer.selection = new Set();
+  }
+
   async setInstance(instance) {
     this.instance = instance;
-    this.selectionLayer.selection = new Set();
     this.hoverLayer.selection = new Set();
     await this.updateScene();
   }
@@ -251,6 +255,7 @@ export class AppController {
     this.axisMapping = _makeAxisMapping(this.glyph.axes);
     await this._instantiateGlyph();
     this.canvasController.setNeedsUpdate();
+    this.layout.resetSelection();
     return true;
   }
 
