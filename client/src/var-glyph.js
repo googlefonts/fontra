@@ -122,10 +122,10 @@ function normalizeLocationSparse(location, axes) {
 
 
 function makeAffineTransform(transform) {
-    let t = new Transform();
-    t = t.translate(transform.x + transform.tcenterx, transform.y + transform.tcentery);
-    t = t.rotate(transform.rotation * (Math.PI / 180));
-    t = t.scale(transform.scalex, transform.scaley);
-    t = t.translate(-transform.tcenterx, -transform.tcentery);
-    return t;
+  let t = new Transform();
+  t = t.translate(transform.x + transform.tcenterx, transform.y + transform.tcentery);
+  t = t.rotate(transform.rotation * (Math.PI / 180));
+  t = t.scale(transform.scalex, transform.scaley);
+  t = t.translate(-transform.tcenterx, -transform.tcentery);
+  return t;
 }
