@@ -1,3 +1,6 @@
+import { mulScalar } from "./var-funcs.js";
+
+
 const MIN_MAGNIFICATION = 0.05;
 const MAX_MAGNIFICATION = 200;
 
@@ -8,6 +11,7 @@ export class CanvasController {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
     this.scene = null;
+    this.unscaledDrawingParameters = {};
 
     this.magnification = 1;
     this.origin = {x: 0, y: 800};  // TODO choose y based on initial canvas height
@@ -62,6 +66,9 @@ export class CanvasController {
 
   draw() {
     this.needsUpdate = false;
+    this.drawingParameters = mulScalar(
+      this.unscaledDrawingParameters, 1 / this.magnification
+    );
     const scale = window.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.save();

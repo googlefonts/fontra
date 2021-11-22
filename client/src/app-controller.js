@@ -118,7 +118,7 @@ export class AppController {
 
     this.remote = getRemoteProxy(`ws://localhost:${port}/`, async () => await this.initGlyphNames());
     this.canvasController = new CanvasController(canvas);
-    this.canvasController.drawingParameters = drawingParameters;
+    this.canvasController.unscaledDrawingParameters = drawingParameters;
 
     this._glyphsCache = {};
     this.varLocation = {};
@@ -179,7 +179,7 @@ export class AppController {
 
   handleMouseMove(event) {
     const point = this.canvasController.localPoint(event);
-    const size = this.canvasController.drawingParameters.nodeSize / this.canvasController.magnification;
+    const size = this.canvasController.drawingParameters.nodeSize;
     if (this.layout.mouseOver(point, size, this.canvasController.context)) {
       this.canvasController.setNeedsUpdate();
     }

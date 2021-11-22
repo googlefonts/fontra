@@ -61,7 +61,7 @@ export class PathPathItem extends BaseSceneItem {
     const path2d = new Path2D();
     this.path.drawToPath(path2d);
 
-    context.lineWidth = controller.drawingParameters.pathLineWidth / controller.magnification;
+    context.lineWidth = controller.drawingParameters.pathLineWidth;
     context.strokeStyle = controller.drawingParameters.pathStrokeColor;
     context.stroke(path2d);
   }
@@ -79,10 +79,10 @@ export class PathHandlesItem extends BaseSceneItem {
       return;
     }
     const context = controller.context;
-    const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
+    const nodeSize = controller.drawingParameters.nodeSize;
 
     context.strokeStyle = controller.drawingParameters.handleColor;
-    context.lineWidth = controller.drawingParameters.handleLineWidth / controller.magnification;
+    context.lineWidth = controller.drawingParameters.handleLineWidth;
     for (const [pt1, pt2] of this.path.iterHandles()) {
       strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
     }
@@ -101,7 +101,7 @@ export class PathNodesItem extends BaseSceneItem {
       return;
     }
     const context = controller.context;
-    const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
+    const nodeSize = controller.drawingParameters.nodeSize;
 
     context.fillStyle = controller.drawingParameters.nodeFillColor;
     for (const pt of this.path.iterPoints()) {
@@ -129,8 +129,8 @@ export class SelectionLayer extends BaseSceneItem {
     selectionStrings.sort();
 
     const context = controller.context;
-    const hoverNodeSize = controller.drawingParameters.hoverNodeSize / controller.magnification
-    const lineWidth = controller.drawingParameters.hoverNodeLineWidth / controller.magnification;
+    const hoverNodeSize = controller.drawingParameters.hoverNodeSize;
+    const lineWidth = controller.drawingParameters.hoverNodeLineWidth;
     const color = controller.drawingParameters.hoverNodeColor;
     context.save();
     context.globalCompositeOperation = "source-over";
