@@ -4,7 +4,7 @@
 
 - create a Python venv in the root of the repo:
 
-    python3 -m venv venv --prompt=fontra
+    `python3 -m venv venv --prompt=fontra`
 
 - activate venv:
 
