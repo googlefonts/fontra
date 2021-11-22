@@ -56,6 +56,7 @@ class Layout {
 
   async setInstance(instance) {
     this.instance = instance;
+    this.hoverLayer.hoverSelection = null;
     await this.updateScene();
   }
 
@@ -79,7 +80,7 @@ class Layout {
     }
   }
 
-  mouseOver(point, size) {
+  mouseOver(point, size, context) {
     const selRect = centeredRect(point.x, point.y, size);
     const currentHoverSelection = this.hoverLayer.hoverSelection;
     this.hoverLayer.hoverSelection = null;
@@ -92,7 +93,7 @@ class Layout {
       index++;
     }
     for (const path of this.componentsLayer.paths) {
-      if (this.canvasController.context.isPointInPath(path, point.x, point.y)) {
+      if (context.isPointInPath(path, point.x, point.y)) {
         // now what
       }
     }
@@ -163,7 +164,7 @@ export class AppController {
   handleMouseMove(event) {
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize / this.canvasController.magnification;
-    if (this.layout.mouseOver(point, size)) {
+    if (this.layout.mouseOver(point, size, this.canvasController.context)) {
       this.canvasController.setNeedsUpdate();
     }
   }
