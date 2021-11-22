@@ -93,6 +93,9 @@ class Layout {
   }
 
   selectionAtPoint(point, size, context) {
+    if (this.instance === null) {
+      return null;
+    }
     const selRect = centeredRect(point.x, point.y, size);
     for (const hit of this.instance.path.iterPointsInRect(selRect)) {
       return `point/${hit.pointIndex}`;
@@ -125,6 +128,8 @@ export class AppController {
     )
     this.canvasController.scene = this.layout.scene;
     this.canvasController.canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
+    this.canvasController.canvas.addEventListener("mousedown", event => this.handleMouseDown(event));
+    this.canvasController.canvas.addEventListener("mouseup", event => this.handleMouseUp(event));
 
     window.sliderChanged = (value, axisTag) => {
       this.setAxisValue(value, axisTag);
@@ -167,6 +172,11 @@ export class AppController {
     }
   }
 
+  handleMouseDown(event) {
+    const point = this.canvasController.localPoint(event);
+    console.log("down", point);
+  }
+
   handleMouseMove(event) {
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize / this.canvasController.magnification;
@@ -174,6 +184,12 @@ export class AppController {
       this.canvasController.setNeedsUpdate();
     }
   }
+
+  handleMouseUp(event) {
+    const point = this.canvasController.localPoint(event);
+    console.log("up", point);
+  }
+
 
   async setSelectedGlyph(glyphName) {
     const glyph = await this.getRemoteGlyph(glyphName);
