@@ -1,5 +1,10 @@
 export function pointInRect(point, rect) {
-  return (point.x >= rect.xMin && point.x <= rect.xMax && point.y >= rect.yMin && point.y <= rect.yMax);
+  return (
+    point.x >= rect.xMin &&
+    point.x <= rect.xMax &&
+    point.y >= rect.yMin &&
+    point.y <= rect.yMax
+  );
 }
 
 
