@@ -1,5 +1,5 @@
-import VarPath from "../src/var-path.js";
-import { VariationModel, normalizeLocation } from "../src/var-model.js";
+import VarPath from "./var-path.js";
+import { VariationModel, normalizeLocation } from "./var-model.js";
 import { Transform } from "./transform.js";
 
 
