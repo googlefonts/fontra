@@ -38,6 +38,7 @@ class Layout {
     this.pathLayer = new PathPathItem();
     this.nodesLayer = new PathNodesItem();
     this.selectionLayer = new SelectionLayer()
+    this.hoverLayer = new SelectionLayer()
 
     this.scene = new SceneGraph();
     this.scene.push(this.componentsLayer);
@@ -45,6 +46,7 @@ class Layout {
     this.scene.push(this.pathLayer);
     this.scene.push(this.nodesLayer);
     this.scene.push(this.selectionLayer);
+    this.scene.push(this.hoverLayer);
   }
 
   *_iterPathLayers() {
@@ -52,11 +54,12 @@ class Layout {
     yield this.pathLayer;
     yield this.nodesLayer;
     yield this.selectionLayer;
+    yield this.hoverLayer;
   }
 
   async setInstance(instance) {
     this.instance = instance;
-    this.selectionLayer.hoverSelection = null;
+    this.hoverLayer.selection = null;
     await this.updateScene();
   }
 
@@ -76,20 +79,12 @@ class Layout {
       });
       this.componentsLayer.paths = compoPaths2d;
       this.selectionLayer.componentPaths = compoPaths2d;
+      this.hoverLayer.componentPaths = compoPaths2d;
     } else {
       this.componentsLayer.paths = [];
+      this.selectionLayer.componentPaths = [];
+      this.hoverLayer.componentPaths = [];
     }
-  }
-
-  mouseOver(point, size, context) {
-    const selRect = centeredRect(point.x, point.y, size);
-    const selItem = this.selectionAtPoint(point, size, context);
-    const hoverSelection = selItem ? new Set([selItem]) : new Set();
-    if (!lenientIsEqualSet(hoverSelection, this.selectionLayer.hoverSelection)) {
-      this.selectionLayer.hoverSelection = hoverSelection;
-      return true;
-    }
-    return false;
   }
 
   selectionAtPoint(point, size, context) {
@@ -98,15 +93,55 @@ class Layout {
     }
     const selRect = centeredRect(point.x, point.y, size);
     for (const hit of this.instance.path.iterPointsInRect(selRect)) {
-      return `point/${hit.pointIndex}`;
+      return new Set([`point/${hit.pointIndex}`]);
     }
     for (let i = this.componentsLayer.paths.length - 1; i >= 0; i--) {
       const path = this.componentsLayer.paths[i];
       if (context.isPointInPath(path, point.x, point.y)) {
-        return `component/${i}`;
+        return new Set([`component/${i}`]);
       }
     }
     return null;
+  }
+
+}
+
+
+class MouseTracker {
+  constructor(canvasController, layout) {
+    this.canvasController = canvasController;
+    this.layout = layout;
+    this.inDrag = false;
+  }
+
+  handleMouseDown(event) {
+    this.inDrag = true;
+    const point = this.canvasController.localPoint(event);
+    const size = this.canvasController.drawingParameters.nodeSize;
+    console.log("down", point);
+    const selection = this.layout.selectionAtPoint(point, size, this.canvasController.context);
+    this.layout.selectionLayer.selection = selection;
+    this.layout.hoverLayer.selection = null;
+    this.canvasController.setNeedsUpdate();
+  }
+
+  handleMouseMove(event) {
+    const point = this.canvasController.localPoint(event);
+    const size = this.canvasController.drawingParameters.nodeSize;
+    if (!this.inDrag) {
+      const selRect = centeredRect(point.x, point.y, size);
+      const selection = this.layout.selectionAtPoint(point, size, this.canvasControllercontext);
+      if (!lenientIsEqualSet(selection, this.layout.hoverLayer.selection)) {
+        this.layout.hoverLayer.selection = selection;
+        this.canvasController.setNeedsUpdate();
+      }
+    }
+  }
+
+  handleMouseUp(event) {
+    const point = this.canvasController.localPoint(event);
+    console.log("up", point);
+    this.inDrag = false;
   }
 
 }
@@ -127,9 +162,11 @@ export class AppController {
       async glyphName => await this.getRemoteGlyph(glyphName)
     )
     this.canvasController.scene = this.layout.scene;
-    this.canvasController.canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
-    this.canvasController.canvas.addEventListener("mousedown", event => this.handleMouseDown(event));
-    this.canvasController.canvas.addEventListener("mouseup", event => this.handleMouseUp(event));
+    canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
+    canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
+    canvas.addEventListener("mouseup", event => this.mouseTracker.handleMouseUp(event));
+
+    this.mouseTracker = new MouseTracker(this.canvasController, this.layout);
 
     window.sliderChanged = (value, axisTag) => {
       this.setAxisValue(value, axisTag);
@@ -171,25 +208,6 @@ export class AppController {
       axisSliders.appendChild(label);
     }
   }
-
-  handleMouseDown(event) {
-    const point = this.canvasController.localPoint(event);
-    console.log("down", point);
-  }
-
-  handleMouseMove(event) {
-    const point = this.canvasController.localPoint(event);
-    const size = this.canvasController.drawingParameters.nodeSize;
-    if (this.layout.mouseOver(point, size, this.canvasController.context)) {
-      this.canvasController.setNeedsUpdate();
-    }
-  }
-
-  handleMouseUp(event) {
-    const point = this.canvasController.localPoint(event);
-    console.log("up", point);
-  }
-
 
   async setSelectedGlyph(glyphName) {
     const glyph = await this.getRemoteGlyph(glyphName);
