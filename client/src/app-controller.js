@@ -195,6 +195,9 @@ export class AppController {
     canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
     canvas.addEventListener("mouseup", event => this.mouseTracker.handleMouseUp(event));
 
+    canvas.addEventListener("keydown", event => console.log(event));
+    canvas.addEventListener("keyup", event => console.log(event));
+
     this.mouseTracker = new MouseTracker(this.canvasController, this.layout);
 
     window.sliderChanged = (value, axisTag) => {
