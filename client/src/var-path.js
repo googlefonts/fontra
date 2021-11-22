@@ -209,15 +209,15 @@ export default class VarPath {
   }
 
   concat(other) {
-    const _result = new VarPath();
-    _result.coordinates = this.coordinates.concat(other.coordinates);
-    _result.pointTypes = this.pointTypes.concat(other.pointTypes);
-    _result.contours = this.contours.concat(other.contours).map(c => { return {...c}; });
+    const result = new VarPath();
+    result.coordinates = this.coordinates.concat(other.coordinates);
+    result.pointTypes = this.pointTypes.concat(other.pointTypes);
+    result.contours = this.contours.concat(other.contours).map(c => { return {...c}; });
     const endPointOffset = this.numPoints;
-    for (let i = this.contours.length; i < _result.contours.length; i++) {
-      _result.contours[i].endPoint += endPointOffset;
+    for (let i = this.contours.length; i < result.contours.length; i++) {
+      result.contours[i].endPoint += endPointOffset;
     }
-    return _result;
+    return result;
   }
 
 }
