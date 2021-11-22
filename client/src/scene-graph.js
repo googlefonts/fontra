@@ -32,7 +32,7 @@ export class SceneGraph extends BaseSceneItem {
 export class ComponentPathItem extends BaseSceneItem {
   constructor(paths) {
     super();
-    this.paths = paths;
+    this.paths = paths || [];
   }
 
   doDraw(controller) {
@@ -53,6 +53,9 @@ export class PathPathItem extends BaseSceneItem {
   }
 
   doDraw(controller) {
+    if (!this.path) {
+      return;
+    }
     const context = controller.context;
     const points = this.path;
     const path2d = new Path2D();
@@ -72,6 +75,9 @@ export class PathHandlesItem extends BaseSceneItem {
   }
 
   doDraw(controller) {
+    if (!this.path) {
+      return;
+    }
     const context = controller.context;
     const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
 
@@ -91,6 +97,9 @@ export class PathNodesItem extends BaseSceneItem {
   }
 
   doDraw(controller) {
+    if (!this.path) {
+      return;
+    }
     const context = controller.context;
     const nodeSize = controller.drawingParameters.nodeSize / controller.magnification
 
@@ -110,7 +119,7 @@ export class HoverLayer extends BaseSceneItem {
   }
 
   doDraw(controller) {
-    if (this.hoverSelection == null) {
+    if (this.hoverSelection == null || !this.path) {
       return;
     }
     const context = controller.context;
