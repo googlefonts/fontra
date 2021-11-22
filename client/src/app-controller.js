@@ -11,7 +11,7 @@ import {
   SelectionLayer,
 } from "./scene-graph.js";
 import { centeredRect } from "./rectangle.js";
-import { isEqualSet, union, symmetricDifference } from "./set-ops.js";
+import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
 
 const drawingParameters = {
@@ -66,8 +66,8 @@ class Layout {
 
   async setInstance(instance) {
     this.instance = instance;
-    this.selectionLayer.selection = null;
-    this.hoverLayer.selection = null;
+    this.selectionLayer.selection = new Set();
+    this.hoverLayer.selection = new Set();
     await this.updateScene();
   }
 
@@ -97,7 +97,7 @@ class Layout {
 
   selectionAtPoint(point, size, context) {
     if (this.instance === null) {
-      return null;
+      return new Set();
     }
     const selRect = centeredRect(point.x, point.y, size);
     for (const hit of this.instance.path.iterPointsInRect(selRect)) {
@@ -109,7 +109,7 @@ class Layout {
         return new Set([`component/${i}`]);
       }
     }
-    return null;
+    return new Set();
   }
 
 }
@@ -127,14 +127,31 @@ class MouseTracker {
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize;
     const selection = this.layout.selectionAtPoint(point, size, this.canvasController.context);
+    let initiateDrag = false;
+    let initiateRectSelect = false;
 
-    if (event.shiftKey) {
-      this.layout.selectionLayer.selection = symmetricDifference(this.layout.selectionLayer.selection, selection);
+    if (selection.size > 0) {
+      if (event.shiftKey) {
+        this.layout.selectionLayer.selection = symmetricDifference(this.layout.selectionLayer.selection, selection);
+        if (isSuperset(this.layout.selectionLayer.selection, selection)) {
+          initiateDrag = true;
+        }
+      } else if (isSuperset(this.layout.selectionLayer.selection, selection)) {
+        initiateDrag = true;
+      } else {
+        this.layout.selectionLayer.selection = selection;
+        initiateDrag = true;
+      }
     } else {
-      this.layout.selectionLayer.selection = selection;
+      if (!event.shiftKey) {
+        this.layout.selectionLayer.selection = selection;
+      }
+      initiateRectSelect = true;
     }
+    console.log("drag?", initiateDrag);
+    console.log("rect select?", initiateRectSelect);
 
-    this.layout.hoverLayer.selection = null;
+    this.layout.hoverLayer.selection = new Set();
     this.canvasController.setNeedsUpdate();
   }
 
