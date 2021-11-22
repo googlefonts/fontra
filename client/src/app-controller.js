@@ -28,6 +28,80 @@ const drawingParameters = {
 }
 
 
+class Layout {
+  constructor(glyphGetterFunc) {
+    this._glyphGetterFunc = glyphGetterFunc;
+    this.instance = null;
+
+    this.componentsLayer = new ComponentPathItem();
+    this.handlesLayer = new PathHandlesItem();
+    this.pathLayer = new PathPathItem();
+    this.nodesLayer = new PathNodesItem();
+    this.hoverLayer = new HoverLayer()
+
+    this.scene = new SceneGraph();
+    this.scene.push(this.componentsLayer);
+    this.scene.push(this.handlesLayer);
+    this.scene.push(this.pathLayer);
+    this.scene.push(this.nodesLayer);
+    this.scene.push(this.hoverLayer);
+  }
+
+  *_iterPathLayers() {
+    yield this.handlesLayer;
+    yield this.pathLayer;
+    yield this.nodesLayer;
+    yield this.hoverLayer;
+  }
+
+  async setInstance(instance) {
+    this.instance = instance;
+    await this.updateScene();
+  }
+
+  async updateScene() {
+    for (const layer of this._iterPathLayers()) {
+      layer.path = this.instance.path;
+    }
+
+    if (!!this.instance.components) {
+      const compoPaths = await this.instance.getComponentPaths(
+        this._glyphGetterFunc, this.varLocation,
+      );
+      const compoPaths2d = compoPaths.map(path => {
+        const path2d = new Path2D();
+        path.drawToPath(path2d);
+        return path2d;
+      });
+      this.componentsLayer.paths = compoPaths2d;
+    } else {
+      this.componentsLayer.paths = [];
+    }
+  }
+
+  mouseOver(point, size) {
+    const selRect = centeredRect(point.x, point.y, size);
+    const currentHoverSelection = this.hoverLayer.hoverSelection;
+    this.hoverLayer.hoverSelection = null;
+    let index = 0;
+    for (const point of this.instance.path.iterPoints()) {
+      if (pointInRect(point, selRect)) {
+        this.hoverLayer.hoverSelection = index;
+        break;
+      }
+      index++;
+    }
+    for (const path of this.componentsLayer.paths) {
+      if (this.canvasController.context.isPointInPath(path, point.x, point.y)) {
+        // now what
+      }
+    }
+    return this.hoverLayer.hoverSelection !== currentHoverSelection;
+  }
+
+}
+
+
 export class AppController {
   constructor(port = 8001) {
     const canvas = document.querySelector("#edit-canvas");
@@ -39,18 +113,10 @@ export class AppController {
     this._glyphsCache = {};
     this.varLocation = {};
 
-    this.path = new VarPath();
-
-    const scene = new SceneGraph();
-    this.componentsLayer = new ComponentPathItem([]);
-    scene.push(this.componentsLayer);
-    scene.push(new PathHandlesItem(this.path));
-    scene.push(new PathPathItem(this.path));
-    scene.push(new PathNodesItem(this.path));
-    this.hoverLayer = new HoverLayer(this.path)
-    scene.push(this.hoverLayer);
-    this.canvasController.scene = scene;
-
+    this.layout = new Layout(
+      async glyphName => await this.getRemoteGlyph(glyphName)
+    )
+    this.canvasController.scene = this.layout.scene;
     this.canvasController.canvas.addEventListener("mousemove", event => this.handleMouseMove(event));
 
     window.sliderChanged = (value, axisTag) => {
@@ -96,27 +162,8 @@ export class AppController {
 
   handleMouseMove(event) {
     const point = this.canvasController.localPoint(event);
-    const selRect = centeredRect(
-      point.x, point.y,
-      this.canvasController.drawingParameters.nodeSize / this.canvasController.magnification,
-    );
-    const currentHoverSelection = this.hoverLayer.hoverSelection;
-    this.hoverLayer.hoverSelection = null;
-    let index = 0;
-    for (const point of this.path.iterPoints()) {
-      if (pointInRect(point, selRect)) {
-        this.hoverLayer.hoverSelection = index;
-        break;
-      }
-      index++;
-    }
-    for (const path of this.componentsLayer.paths) {
-      if (this.canvasController.context.isPointInPath(path, point.x, point.y)) {
-        // now what
-      }
-
-    }
-    if (this.hoverLayer.hoverSelection !== currentHoverSelection) {
+    const size = this.canvasController.drawingParameters.nodeSize / this.canvasController.magnification;
+    if (this.layout.mouseOver(point, size)) {
       this.canvasController.setNeedsUpdate();
     }
   }
@@ -126,7 +173,7 @@ export class AppController {
     if (glyph === null) {
       return false;
     }
-    this.hoverLayer.hoverSelection = null;
+    // this.hoverLayer.hoverSelection = null;  // XXXX
     this.glyph = glyph;
     this.varLocation = {};
     this.axisMapping = _makeAxisMapping(this.glyph.axes);
@@ -170,24 +217,8 @@ export class AppController {
   }
 
   async _instantiateGlyph() {
-    const inst = this.glyph.instantiate(this.varLocation);
-    this.path.coordinates = inst.path.coordinates;
-    this.path.pointTypes = inst.path.pointTypes;
-    this.path.contours = inst.path.contours;
-
-    let compoPaths2d = [];
-    if (inst.components !== undefined) {
-      const compoPaths = await inst.getComponentPaths(
-        async glyphName => await this.getRemoteGlyph(glyphName),
-        this.varLocation,
-      );
-      compoPaths2d = compoPaths.map(path => {
-        const path2d = new Path2D();
-        path.drawToPath(path2d);
-        return path2d;
-      });
-    }
-    this.componentsLayer.paths = compoPaths2d;
+    const instance = this.glyph.instantiate(this.varLocation);
+    await this.layout.setInstance(instance);
   }
 
 }
