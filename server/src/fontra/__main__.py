@@ -28,7 +28,7 @@ def main():
 
     async def setupWebsocketServer(app):
         server = Server(backend, {"getGlyph", "getGlyphNames"})
-        await server.getServerTask(port=websocketPort)
+        await server.getServerTask(host="localhost", port=websocketPort)
 
     httpApp = web.Application()
     httpApp.add_routes(
@@ -46,7 +46,7 @@ def main():
     print(f"|      http://localhost:{httpPort}/html/fontra.html       |")
     print("|                                                   |")
     print("+---------------------------------------------------+")
-    web.run_app(httpApp, port=httpPort)
+    web.run_app(httpApp, host="localhost", port=httpPort)
 
 
 if __name__ == "__main__":
