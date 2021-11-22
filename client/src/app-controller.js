@@ -254,6 +254,7 @@ function _getAxisBaseName(axisName) {
 
 function lenientIsEqualSet(set1, set2) {
   if (set1 === set2) {
+    // same object, or both undefined
     return true;
   }
   if (set1 && set2 && isEqualSet(set1, set2)) {
