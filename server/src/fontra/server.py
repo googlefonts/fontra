@@ -13,8 +13,11 @@ class Server:
         self.subject = subject
         self.methodNames = set(methodNames)
 
+    def getServerTask(self, host="localhost", port=8001):
+        return websockets.serve(self.incomingConnection, host, port)
+
     def run(self, host="localhost", port=8001):
-        startServer = websockets.serve(self.incomingConnection, host, port)
+        startServer = self.getServerTask()
         asyncio.get_event_loop().run_until_complete(startServer)
         asyncio.get_event_loop().run_forever()
 

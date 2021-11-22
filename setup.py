@@ -16,6 +16,7 @@ setup(
     packages=find_packages("server/src"),
     install_requires=[
         "websockets>=10.1",
+        "aiohttp>=3.8.1",
     ],
     setup_requires=["setuptools_scm"],
     extras_require={},
