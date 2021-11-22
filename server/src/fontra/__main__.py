@@ -7,11 +7,15 @@ from .server import Server
 
 
 def main():
-    websocketPort = 8001
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument("font")
     args = parser.parse_args()
+
+    # TODO: take from args
+    httpPort = 8000
+    websocketPort = 8001
+
     path = pathlib.Path(args.font)
     assert path.exists()
     if path.suffix == ".rcjk":
@@ -32,7 +36,15 @@ def main():
         web.static('/', "client"),
     ])
     httpApp.on_startup.append(setupWebsocketServer)
-    web.run_app(httpApp, port=8000)
+    print("+---------------------------------------------------+")
+    print("|                                                   |")
+    print("|      Fontra!                                      |")
+    print("|                                                   |")
+    print("|      Navigate to:                                 |")
+    print(f"|      http://localhost:{httpPort}/html/fontra.html       |")
+    print("|                                                   |")
+    print("+---------------------------------------------------+")
+    web.run_app(httpApp, port=httpPort)
 
 
 if __name__ == "__main__":
