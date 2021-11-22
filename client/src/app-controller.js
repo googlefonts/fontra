@@ -85,14 +85,7 @@ class Layout {
     const selRect = centeredRect(point.x, point.y, size);
     const selItem = this.selectionAtPoint(point, size, context);
     const hoverSelection = selItem ? new Set([selItem]) : new Set();
-    if (hoverSelection === this.selectionLayer.hoverSelection) {
-      return false;
-    }
-    if (
-      !hoverSelection ||
-      !this.selectionLayer.hoverSelection ||
-      !isEqualSet(hoverSelection, this.selectionLayer.hoverSelection)
-    ) {
+    if (!lenientIsEqualSet(hoverSelection, this.selectionLayer.hoverSelection)) {
       this.selectionLayer.hoverSelection = hoverSelection;
       return true;
     }
@@ -256,4 +249,15 @@ function _getAxisBaseName(axisName) {
     return axisName.slice(0, asterixPos);
   }
   return axisName;
+}
+
+
+function lenientIsEqualSet(set1, set2) {
+  if (set1 === set2) {
+    return true;
+  }
+  if (set1 && set2 && isEqualSet(set1, set2)) {
+    return true;
+  }
+  return false;
 }
