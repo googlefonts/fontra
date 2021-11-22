@@ -1,5 +1,6 @@
 import VarArray from "./var-array.js"
 import { VariationError } from "./errors.js"
+import { pointInRect } from "./rectangle.js";
 
 
 export default class VarPath {
@@ -75,6 +76,16 @@ export default class VarPath {
         prevIndex = nextIndex;
       }
       startPoint = endPoint + 1;
+    }
+  }
+
+  *iterPointsInRect(rect) {
+    let pointIndex = 0;
+    for (const point of this.iterPoints()) {
+      if (pointInRect(point, rect)) {
+        yield {...point, pointIndex: pointIndex};
+      }
+      pointIndex++;
     }
   }
 

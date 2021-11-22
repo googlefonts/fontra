@@ -10,7 +10,7 @@ import {
   PathNodesItem,
   HoverLayer,
 } from "./scene-graph.js";
-import { pointInRect, centeredRect } from "./rectangle.js";
+import { centeredRect } from "./rectangle.js";
 
 
 const drawingParameters = {
@@ -83,13 +83,9 @@ class Layout {
     const selRect = centeredRect(point.x, point.y, size);
     const currentHoverSelection = this.hoverLayer.hoverSelection;
     this.hoverLayer.hoverSelection = null;
-    let index = 0;
-    for (const point of this.instance.path.iterPoints()) {
-      if (pointInRect(point, selRect)) {
-        this.hoverLayer.hoverSelection = index;
-        break;
-      }
-      index++;
+    for (const hit of this.instance.path.iterPointsInRect(selRect)) {
+      this.hoverLayer.hoverSelection = hit.pointIndex;
+      break;
     }
     for (const path of this.componentsLayer.paths) {
       if (context.isPointInPath(path, point.x, point.y)) {
