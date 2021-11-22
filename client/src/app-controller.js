@@ -11,7 +11,7 @@ import {
   SelectionLayer,
 } from "./scene-graph.js";
 import { centeredRect } from "./rectangle.js";
-import { isEqualSet } from "./set-ops.js";
+import { isEqualSet, union, symmetricDifference } from "./set-ops.js";
 
 
 const drawingParameters = {
@@ -127,7 +127,15 @@ class MouseTracker {
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize;
     const selection = this.layout.selectionAtPoint(point, size, this.canvasController.context);
-    this.layout.selectionLayer.selection = selection;
+
+    console.log(">>>", this.layout.hoverLayer.selection);
+    if (event.shiftKey) {
+      this.layout.selectionLayer.selection = symmetricDifference(this.layout.selectionLayer.selection, selection);
+    } else {
+      this.layout.selectionLayer.selection = selection;
+    }
+    console.log("<<<", this.layout.hoverLayer.selection);
+
     this.layout.hoverLayer.selection = null;
     this.canvasController.setNeedsUpdate();
   }
