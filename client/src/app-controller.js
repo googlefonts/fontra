@@ -80,23 +80,20 @@ class Layout {
       layer.path = this.instance.path;
     }
 
+    let compoPaths2d = [];
     if (!!this.instance.components) {
       const compoPaths = await this.instance.getComponentPaths(
         this._glyphGetterFunc, this.varLocation,
       );
-      const compoPaths2d = compoPaths.map(path => {
+      compoPaths2d = compoPaths.map(path => {
         const path2d = new Path2D();
         path.drawToPath(path2d);
         return path2d;
       });
-      this.componentsLayer.paths = compoPaths2d;
-      this.selectionLayer.componentPaths = compoPaths2d;
-      this.hoverLayer.componentPaths = compoPaths2d;
-    } else {
-      this.componentsLayer.paths = [];
-      this.selectionLayer.componentPaths = [];
-      this.hoverLayer.componentPaths = [];
     }
+    this.componentsLayer.paths = compoPaths2d;
+    this.selectionLayer.componentPaths = compoPaths2d;
+    this.hoverLayer.componentPaths = compoPaths2d;
   }
 
   selectionAtPoint(point, size, context) {
