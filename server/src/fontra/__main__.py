@@ -31,10 +31,12 @@ def main():
         await server.getServerTask(port=websocketPort)
 
     httpApp = web.Application()
-    httpApp.add_routes([
-        web.get('/websocketport', handleWebsocketPort),
-        web.static('/', "client"),
-    ])
+    httpApp.add_routes(
+        [
+            web.get("/websocketport", handleWebsocketPort),
+            web.static("/", "client"),
+        ]
+    )
     httpApp.on_startup.append(setupWebsocketServer)
     print("+---------------------------------------------------+")
     print("|                                                   |")
