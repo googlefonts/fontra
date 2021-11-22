@@ -111,25 +111,46 @@ export class PathNodesItem extends BaseSceneItem {
 }
 
 
-export class HoverLayer extends BaseSceneItem {
+export class SelectionLayer extends BaseSceneItem {
   constructor(path) {
     super();
     this.path = path
+    this.componentPaths;
+    this.selection = null;
     this.hoverSelection = null;
   }
 
   doDraw(controller) {
-    if (this.hoverSelection == null || !this.path) {
+    const selection = this.hoverSelection || this.selection;
+    if (selection == null || !this.path) {
       return;
     }
+    const selectionStrings = Array.from(selection);
+    selectionStrings.sort();
+
     const context = controller.context;
     const hoverNodeSize = controller.drawingParameters.hoverNodeSize / controller.magnification
+    const lineWidth = controller.drawingParameters.hoverNodeLineWidth / controller.magnification;
+    const color = controller.drawingParameters.hoverNodeColor;
     context.save();
-    context.globalCompositeOperation = "lighter";
-    context.strokeStyle = controller.drawingParameters.hoverNodeColor;
-    context.lineWidth = controller.drawingParameters.hoverNodeLineWidth / controller.magnification;
-    const point = this.path.getPoint(this.hoverSelection);
-    strokeNode(context, point.x, point.y, hoverNodeSize, point.type, point.smooth)
+    context.globalCompositeOperation = "source-over";
+    context.lineJoin = "round";
+    for (const selItem of selectionStrings) {
+      const [tp, index] = selItem.split("/");
+      if (tp === "point") {
+        const point = this.path.getPoint(index);
+        context.lineWidth = lineWidth;
+        context.strokeStyle = color;
+        strokeNode(context, point.x, point.y, hoverNodeSize, point.type, point.smooth)
+      } else {
+        context.lineWidth = lineWidth * 2;
+        context.strokeStyle = "#48F5";  // TODO tweak, put in drawingParameters
+        context.stroke(this.componentPaths[index]);
+        context.lineWidth = lineWidth;
+        context.strokeStyle = color;
+        context.stroke(this.componentPaths[index]);
+      }
+    }
     context.restore();
   }
 }

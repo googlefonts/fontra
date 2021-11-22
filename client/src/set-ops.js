@@ -1,6 +1,18 @@
-// Copied straight from
+// Copied mostly from
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
 
+
+export function isEqualSet(set1, set2) {
+  if (set1.size !== set2.size) {
+    return false;
+  }
+  for (let elem of set1) {
+    if (!set2.has(elem)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 export function isSuperset(set, subset) {
   for (let elem of subset) {

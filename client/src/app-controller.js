@@ -8,9 +8,10 @@ import {
   PathHandlesItem,
   PathPathItem,
   PathNodesItem,
-  HoverLayer,
+  SelectionLayer,
 } from "./scene-graph.js";
 import { centeredRect } from "./rectangle.js";
+import { isEqualSet } from "./set-ops.js";
 
 
 const drawingParameters = {
@@ -36,26 +37,26 @@ class Layout {
     this.handlesLayer = new PathHandlesItem();
     this.pathLayer = new PathPathItem();
     this.nodesLayer = new PathNodesItem();
-    this.hoverLayer = new HoverLayer()
+    this.selectionLayer = new SelectionLayer()
 
     this.scene = new SceneGraph();
     this.scene.push(this.componentsLayer);
     this.scene.push(this.handlesLayer);
     this.scene.push(this.pathLayer);
     this.scene.push(this.nodesLayer);
-    this.scene.push(this.hoverLayer);
+    this.scene.push(this.selectionLayer);
   }
 
   *_iterPathLayers() {
     yield this.handlesLayer;
     yield this.pathLayer;
     yield this.nodesLayer;
-    yield this.hoverLayer;
+    yield this.selectionLayer;
   }
 
   async setInstance(instance) {
     this.instance = instance;
-    this.hoverLayer.hoverSelection = null;
+    this.selectionLayer.hoverSelection = null;
     await this.updateScene();
   }
 
@@ -74,6 +75,7 @@ class Layout {
         return path2d;
       });
       this.componentsLayer.paths = compoPaths2d;
+      this.selectionLayer.componentPaths = compoPaths2d;
     } else {
       this.componentsLayer.paths = [];
     }
@@ -81,18 +83,34 @@ class Layout {
 
   mouseOver(point, size, context) {
     const selRect = centeredRect(point.x, point.y, size);
-    const currentHoverSelection = this.hoverLayer.hoverSelection;
-    this.hoverLayer.hoverSelection = null;
-    for (const hit of this.instance.path.iterPointsInRect(selRect)) {
-      this.hoverLayer.hoverSelection = hit.pointIndex;
-      break;
+    const selItem = this.selectionAtPoint(point, size, context);
+    const hoverSelection = selItem ? new Set([selItem]) : new Set();
+    if (hoverSelection === this.selectionLayer.hoverSelection) {
+      return false;
     }
-    for (const path of this.componentsLayer.paths) {
+    if (
+      !hoverSelection ||
+      !this.selectionLayer.hoverSelection ||
+      !isEqualSet(hoverSelection, this.selectionLayer.hoverSelection)
+    ) {
+      this.selectionLayer.hoverSelection = hoverSelection;
+      return true;
+    }
+    return false;
+  }
+
+  selectionAtPoint(point, size, context) {
+    const selRect = centeredRect(point.x, point.y, size);
+    for (const hit of this.instance.path.iterPointsInRect(selRect)) {
+      return `point/${hit.pointIndex}`;
+    }
+    for (let i = this.componentsLayer.paths.length - 1; i >= 0; i--) {
+      const path = this.componentsLayer.paths[i];
       if (context.isPointInPath(path, point.x, point.y)) {
-        // now what
+        return `component/${i}`;
       }
     }
-    return this.hoverLayer.hoverSelection !== currentHoverSelection;
+    return null;
   }
 
 }
@@ -169,7 +187,6 @@ export class AppController {
     if (glyph === null) {
       return false;
     }
-    // this.hoverLayer.hoverSelection = null;  // XXXX
     this.glyph = glyph;
     this.varLocation = {};
     this.axisMapping = _makeAxisMapping(this.glyph.axes);
