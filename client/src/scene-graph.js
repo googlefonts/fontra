@@ -112,16 +112,17 @@ export class PathNodesItem extends BaseSceneItem {
 
 
 export class SelectionLayer extends BaseSceneItem {
-  constructor(path) {
+  constructor(displayKey) {
     super();
-    this.path = path
+    this.path = null;
+    this.displayKey = displayKey;
     this.componentPaths;
     this.selection = null;
     this.hoverSelection = null;
   }
 
   doDraw(controller) {
-    const selection = this.hoverSelection || this.selection;
+    const selection = this.selection;
     if (selection == null || !this.path) {
       return;
     }
@@ -129,9 +130,10 @@ export class SelectionLayer extends BaseSceneItem {
     selectionStrings.sort();
 
     const context = controller.context;
-    const hoverNodeSize = controller.drawingParameters.hoverNodeSize;
-    const lineWidth = controller.drawingParameters.hoverNodeLineWidth;
-    const color = controller.drawingParameters.hoverNodeColor;
+    const parms = controller.drawingParameters[this.displayKey];
+    const hoverNodeSize = parms.nodeSize;
+    const lineWidth = parms.nodeLineWidth;
+    const color = parms.nodeColor;
     context.save();
     context.globalCompositeOperation = "source-over";
     context.lineJoin = "round";
@@ -143,8 +145,8 @@ export class SelectionLayer extends BaseSceneItem {
         context.strokeStyle = color;
         strokeNode(context, point.x, point.y, hoverNodeSize, point.type, point.smooth)
       } else {
-        context.lineWidth = lineWidth * 2;
-        context.strokeStyle = "#48F5";  // TODO tweak, put in drawingParameters
+        context.lineWidth = lineWidth * 3;
+        context.strokeStyle = "#0008";  // TODO tweak, put in drawingParameters
         context.stroke(this.componentPaths[index]);
         context.lineWidth = lineWidth;
         context.strokeStyle = color;

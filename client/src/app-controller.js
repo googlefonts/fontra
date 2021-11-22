@@ -19,9 +19,16 @@ const drawingParameters = {
   nodeSize: 8,
   handleColor: "#888",
   handleLineWidth: 1,
-  hoverNodeSize: 14,
-  hoverNodeColor: "#48F",
-  hoverNodeLineWidth: 2,
+  selection: {
+    nodeSize: 14,
+    nodeColor: "#4AF",
+    nodeLineWidth: 2,
+  },
+  hover: {
+    nodeSize: 14,
+    nodeColor: "#8CF",
+    nodeLineWidth: 2,
+  },
   pathStrokeColor: "#BBB",
   pathLineWidth: 1,
   componentFillColor: "#FFF",
@@ -37,8 +44,8 @@ class Layout {
     this.handlesLayer = new PathHandlesItem();
     this.pathLayer = new PathPathItem();
     this.nodesLayer = new PathNodesItem();
-    this.selectionLayer = new SelectionLayer()
-    this.hoverLayer = new SelectionLayer()
+    this.selectionLayer = new SelectionLayer("selection")
+    this.hoverLayer = new SelectionLayer("hover")
 
     this.scene = new SceneGraph();
     this.scene.push(this.componentsLayer);
@@ -59,6 +66,7 @@ class Layout {
 
   async setInstance(instance) {
     this.instance = instance;
+    this.selectionLayer.selection = null;
     this.hoverLayer.selection = null;
     await this.updateScene();
   }
@@ -118,7 +126,6 @@ class MouseTracker {
     this.inDrag = true;
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize;
-    console.log("down", point);
     const selection = this.layout.selectionAtPoint(point, size, this.canvasController.context);
     this.layout.selectionLayer.selection = selection;
     this.layout.hoverLayer.selection = null;
@@ -130,7 +137,7 @@ class MouseTracker {
     const size = this.canvasController.drawingParameters.nodeSize;
     if (!this.inDrag) {
       const selRect = centeredRect(point.x, point.y, size);
-      const selection = this.layout.selectionAtPoint(point, size, this.canvasControllercontext);
+      const selection = this.layout.selectionAtPoint(point, size, this.canvasController.context);
       if (!lenientIsEqualSet(selection, this.layout.hoverLayer.selection)) {
         this.layout.hoverLayer.selection = selection;
         this.canvasController.setNeedsUpdate();
@@ -140,7 +147,6 @@ class MouseTracker {
 
   handleMouseUp(event) {
     const point = this.canvasController.localPoint(event);
-    console.log("up", point);
     this.inDrag = false;
   }
 
