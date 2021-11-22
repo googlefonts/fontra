@@ -117,8 +117,7 @@ export class SelectionLayer extends BaseSceneItem {
     this.path = null;
     this.displayKey = displayKey;
     this.componentPaths;
-    this.selection = null;
-    this.hoverSelection = null;
+    this.selection = new Set();
   }
 
   doDraw(controller) {
@@ -131,7 +130,7 @@ export class SelectionLayer extends BaseSceneItem {
 
     const context = controller.context;
     const parms = controller.drawingParameters[this.displayKey];
-    const hoverNodeSize = parms.nodeSize;
+    const nodeSize = parms.nodeSize;
     const lineWidth = parms.nodeLineWidth;
     const color = parms.nodeColor;
     context.save();
@@ -143,7 +142,7 @@ export class SelectionLayer extends BaseSceneItem {
         const point = this.path.getPoint(index);
         context.lineWidth = lineWidth;
         context.strokeStyle = color;
-        strokeNode(context, point.x, point.y, hoverNodeSize, point.type, point.smooth)
+        strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth)
       } else {
         context.lineWidth = lineWidth * 3;
         context.strokeStyle = "#0008";  // TODO tweak, put in drawingParameters
