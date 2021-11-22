@@ -29,7 +29,7 @@ export class SceneGraph extends BaseSceneItem {
 }
 
 
-export class MiscPathItem extends BaseSceneItem {
+export class ComponentPathItem extends BaseSceneItem {
   constructor(paths) {
     super();
     this.paths = paths;
@@ -38,12 +38,13 @@ export class MiscPathItem extends BaseSceneItem {
   doDraw(controller) {
     const context = controller.context;
 
-    context.fillStyle = "#FFF"
+    context.fillStyle = controller.drawingParameters.componentFillColor;
     for (const path of this.paths) {
       context.fill(path);
     }
   }
 }
+
 
 export class PathPathItem extends BaseSceneItem {
   constructor(path) {
@@ -140,6 +141,7 @@ function fillNode(context, x, y, nodeSize, pointType, isSmooth) {
   }
 }
 
+
 function strokeNode(context, x, y, nodeSize, pointType, isSmooth) {
   if (pointType) {
     context.beginPath();
@@ -154,6 +156,7 @@ function strokeNode(context, x, y, nodeSize, pointType, isSmooth) {
     );
   }
 }
+
 
 function strokeLine(context, x1, y1, x2, y2) {
   context.beginPath();

@@ -4,7 +4,7 @@ import { VarGlyph } from "./var-glyph.js";
 import { CanvasController } from "../src/canvas-controller.js";
 import {
   SceneGraph,
-  MiscPathItem,
+  ComponentPathItem,
   PathHandlesItem,
   PathPathItem,
   PathNodesItem,
@@ -23,7 +23,8 @@ const drawingParameters = {
   hoverNodeColor: "#48F",
   hoverNodeLineWidth: 2,
   pathStrokeColor: "#BBB",
-  pathLineWidth: 1
+  pathLineWidth: 1,
+  componentFillColor: "#FFF",
 }
 
 
@@ -41,7 +42,7 @@ export class AppController {
     this.path = new VarPath();
 
     const scene = new SceneGraph();
-    this.componentsLayer = new MiscPathItem([]);
+    this.componentsLayer = new ComponentPathItem([]);
     scene.push(this.componentsLayer);
     scene.push(new PathHandlesItem(this.path));
     scene.push(new PathPathItem(this.path));
