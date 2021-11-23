@@ -30,7 +30,11 @@ def main():
         server = Server(backend, {"getGlyph", "getGlyphNames"})
         await server.getServerTask(host="localhost", port=websocketPort)
 
+    async def rootHandler(request):
+        return web.HTTPFound('/index.html')
+
     httpApp = web.Application()
+    httpApp.router.add_route('*', '/', rootHandler)
     httpApp.add_routes(
         [
             web.get("/websocketport", handleWebsocketPort),
@@ -38,12 +42,13 @@ def main():
         ]
     )
     httpApp.on_startup.append(setupWebsocketServer)
+    pad = " " * (5 - len(str(httpPort)))
     print("+---------------------------------------------------+")
     print("|                                                   |")
     print("|      Fontra!                                      |")
     print("|                                                   |")
     print("|      Navigate to:                                 |")
-    print(f"|      http://localhost:{httpPort}/html/fontra.html       |")
+    print(f"|      http://localhost:{httpPort}/{pad}                      |")
     print("|                                                   |")
     print("+---------------------------------------------------+")
     web.run_app(httpApp, host="localhost", port=httpPort)
