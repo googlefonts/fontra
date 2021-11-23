@@ -34,10 +34,10 @@ def main():
         return web.HTTPFound('/index.html')
 
     httpApp = web.Application()
-    httpApp.router.add_route('*', '/', rootHandler)
     httpApp.add_routes(
         [
             web.get("/websocketport", handleWebsocketPort),
+            web.get("/", rootHandler),
             web.static("/", "client"),
         ]
     )
