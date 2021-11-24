@@ -17,6 +17,40 @@ html, body {
   flex-direction: row;
 }
 
+.glyphs-navigation {
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  background: lightgray;
+}
+
+.glyphs-search {
+  padding-bottom: 1em;
+}
+
+.glyphs-search-input {
+  border-radius: 1em;
+  padding: 0.3em;
+  padding-left: 0.8em;
+}
+
+.glyphs-list {
+  display: flex;
+  flex-direction: column;
+  min-width: 10em;
+  gap: 0.2em;
+  font-size: 0.9em;
+}
+
+.glyph-name {
+  background: #FFF;
+  border-radius: 0.3em;
+  padding: 0.1em;
+  padding-left: 0.5em;
+  right: 0.5em;
+  cursor: pointer;
+}
+
 .controls {
   padding: 1em;
   background: lightgray;
