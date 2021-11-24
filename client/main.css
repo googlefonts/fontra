@@ -91,4 +91,5 @@ html, body {
   margin: 0;
   overscroll-behavior: none;
   touch-action: none;
+  cursor: default;
 }
