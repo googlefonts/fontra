@@ -4,10 +4,10 @@ import { VarGlyph } from "./var-glyph.js";
 import { CanvasController } from "./canvas-controller.js";
 import {
   SceneGraph,
-  ComponentPathItem,
-  PathHandlesItem,
-  PathPathItem,
-  PathNodesItem,
+  ComponentsLayer,
+  HandlesLayer,
+  PathLayer,
+  NodesLayer,
   SelectionLayer,
 } from "./scene-graph.js";
 import { centeredRect } from "./rectangle.js";
@@ -40,10 +40,10 @@ class Layout {
     this._glyphGetterFunc = glyphGetterFunc;
     this.instance = null;
 
-    this.componentsLayer = new ComponentPathItem();
-    this.handlesLayer = new PathHandlesItem();
-    this.pathLayer = new PathPathItem();
-    this.nodesLayer = new PathNodesItem();
+    this.componentsLayer = new ComponentsLayer();
+    this.handlesLayer = new HandlesLayer();
+    this.pathLayer = new PathLayer();
+    this.nodesLayer = new NodesLayer();
     this.selectionLayer = new SelectionLayer("selection")
     this.hoverLayer = new SelectionLayer("hover")
 

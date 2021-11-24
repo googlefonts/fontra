@@ -29,7 +29,7 @@ export class SceneGraph extends BaseSceneItem {
 }
 
 
-export class ComponentPathItem extends BaseSceneItem {
+export class ComponentsLayer extends BaseSceneItem {
   constructor(paths) {
     super();
     this.paths = paths || [];
@@ -46,7 +46,7 @@ export class ComponentPathItem extends BaseSceneItem {
 }
 
 
-export class PathPathItem extends BaseSceneItem {
+export class PathLayer extends BaseSceneItem {
   constructor(path) {
     super();
     this.path = path;
@@ -68,7 +68,7 @@ export class PathPathItem extends BaseSceneItem {
 }
 
 
-export class PathHandlesItem extends BaseSceneItem {
+export class HandlesLayer extends BaseSceneItem {
   constructor(path) {
     super();
     this.path = path;
@@ -90,7 +90,7 @@ export class PathHandlesItem extends BaseSceneItem {
 }
 
 
-export class PathNodesItem extends BaseSceneItem {
+export class NodesLayer extends BaseSceneItem {
   constructor(path) {
     super();
     this.path = path;
