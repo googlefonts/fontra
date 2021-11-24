@@ -158,6 +158,28 @@ export class SelectionLayer extends BaseSceneItem {
   }
 }
 
+export class RectangleSelectionLayer extends BaseSceneItem {
+  constructor() {
+    super();
+    this.selectionRect = undefined;
+  }
+  doDraw(controller) {
+    if (this.selectionRect === undefined) {
+      return;
+    }
+    const selRect = this.selectionRect;
+    const context = controller.context;
+    context.lineWidth = controller.drawingParameters.rectSelectLineWidth;
+    context.strokeStyle = "#FFF";
+    context.setLineDash(controller.drawingParameters.rectSelectLineDash);
+    const x = selRect.xMin;
+    const y = selRect.yMin;
+    const w = selRect.xMax - x;
+    const h = selRect.yMax - y;
+    context.strokeRect(x, y, w, h);
+  }
+}
+
 
 function fillNode(context, x, y, nodeSize, pointType, isSmooth) {
   if (pointType) {

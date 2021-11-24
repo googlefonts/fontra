@@ -9,8 +9,9 @@ import {
   PathLayer,
   NodesLayer,
   SelectionLayer,
+  RectangleSelectionLayer,
 } from "./scene-graph.js";
-import { centeredRect } from "./rectangle.js";
+import { centeredRect, normalizeRect } from "./rectangle.js";
 import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
 
@@ -32,6 +33,8 @@ const drawingParameters = {
   pathStrokeColor: "#BBB",
   pathLineWidth: 1,
   componentFillColor: "#CCC",
+  rectSelectLineWidth: 1,
+  rectSelectLineDash: [10, 10],
 }
 
 
@@ -46,6 +49,7 @@ class Layout {
     this.nodesLayer = new NodesLayer();
     this.selectionLayer = new SelectionLayer("selection")
     this.hoverLayer = new SelectionLayer("hover")
+    this.rectSelectLayer = new RectangleSelectionLayer("hover")
 
     this.scene = new SceneGraph();
     this.scene.push(this.componentsLayer);
@@ -54,6 +58,7 @@ class Layout {
     this.scene.push(this.nodesLayer);
     this.scene.push(this.selectionLayer);
     this.scene.push(this.hoverLayer);
+    this.scene.push(this.rectSelectLayer);
   }
 
   *_iterPathLayers() {
@@ -101,16 +106,80 @@ class Layout {
       return new Set();
     }
     const selRect = centeredRect(point.x, point.y, size);
+
     for (const hit of this.instance.path.iterPointsInRect(selRect)) {
-      return new Set([`point/${hit.pointIndex}`]);
+      return new Set([`point/${hit.pointIndex}`])
     }
     for (let i = this.componentsLayer.paths.length - 1; i >= 0; i--) {
       const path = this.componentsLayer.paths[i];
       if (context.isPointInPath(path, point.x, point.y)) {
-        return new Set([`component/${i}`]);
+        return new Set([`component/${i}`])
       }
     }
     return new Set();
+  }
+
+  selectionAtRect(selRect, context) {
+    const selection = new Set();
+    for (const hit of this.instance.path.iterPointsInRect(selRect)) {
+      selection.add(`point/${hit.pointIndex}`);
+    }
+    // TODO: implement for components
+    // for (let i = this.componentsLayer.paths.length - 1; i >= 0; i--) {
+    //   const path = this.componentsLayer.paths[i];
+    //   if (context.isPointInPath(path, point.x, point.y)) {
+    //     selection.add(`component/${i}`);
+    //   }
+    // }
+    return selection;
+  }
+}
+
+
+const MINIMAL_DRAG_DISTANCE = 10;
+
+
+class RectSelectTracker {
+  constructor(canvasController, layout, event) {
+    this.canvasController = canvasController;
+    this.layout = layout;
+    this.initialX = event.pageX;
+    this.initialY = event.pageY;
+    this.initialPoint = canvasController.localPoint(event);
+    this.didStart = false;
+  }
+
+  handleMouseMove(event) {
+    const x = event.pageX;
+    const y = event.pageY;
+    if (
+      Math.abs(this.initialX - x) > MINIMAL_DRAG_DISTANCE ||
+      Math.abs(this.initialX - x) > MINIMAL_DRAG_DISTANCE
+    ) {
+      this.didStart = true;
+    }
+    if (!this.didStart) {
+      return;
+    }
+    const currentPoint = this.canvasController.localPoint(event);
+    const selRect = normalizeRect({
+      "xMin": this.initialPoint.x,
+      "yMin": this.initialPoint.y,
+      "xMax": currentPoint.x,
+      "yMax": currentPoint.y,
+    });
+    const selection = this.layout.selectionAtRect(selRect, this.canvasController.context);
+    this.layout.rectSelectLayer.selectionRect = selRect;
+    this.layout.hoverLayer.selection = selection;
+    this.canvasController.setNeedsUpdate();
+  }
+
+  handleMouseUp(event) {
+    delete this.layout.rectSelectLayer.selectionRect;
+    this.canvasController.setNeedsUpdate();
+    // TODO: fix
+    this.layout.selectionLayer.selection = this.layout.hoverLayer.selection;
+    this.layout.hoverLayer.selection = new Set();
   }
 
 }
@@ -152,6 +221,10 @@ class MouseTracker {
     console.log("drag?", initiateDrag);
     console.log("rect select?", initiateRectSelect);
 
+    if (initiateRectSelect) {
+      this.subTracker = new RectSelectTracker(this.canvasController, this.layout, event);
+    }
+
     this.layout.hoverLayer.selection = new Set();
     this.canvasController.setNeedsUpdate();
   }
@@ -166,11 +239,19 @@ class MouseTracker {
         this.layout.hoverLayer.selection = selection;
         this.canvasController.setNeedsUpdate();
       }
+    } else if (this.subTracker !== undefined) {
+      this.subTracker.handleMouseMove(event);
     }
   }
 
   handleMouseUp(event) {
     const point = this.canvasController.localPoint(event);
+
+    if (this.subTracker !== undefined) {
+      this.subTracker.handleMouseUp(event);
+      delete this.subTracker;
+    }
+
     this.inDrag = false;
   }
 
