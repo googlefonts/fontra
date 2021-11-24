@@ -171,6 +171,7 @@ class RectSelectTracker {
     });
     const selection = this.layout.selectionAtRect(selRect, this.canvasController.context);
     this.layout.rectSelectLayer.selectionRect = selRect;
+    // TODO: take shift / command keys into account
     this.layout.selectionLayer.selection = selection;
     this.canvasController.setNeedsUpdate();
   }
