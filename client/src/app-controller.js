@@ -157,6 +157,7 @@ class RectSelectTracker {
       Math.abs(this.initialX - x) > MINIMAL_DRAG_DISTANCE
     ) {
       this.didStart = true;
+    this.currentSelection = this.layout.selectionLayer.selection;
     }
     if (!this.didStart) {
       return;
@@ -170,16 +171,14 @@ class RectSelectTracker {
     });
     const selection = this.layout.selectionAtRect(selRect, this.canvasController.context);
     this.layout.rectSelectLayer.selectionRect = selRect;
-    this.layout.hoverLayer.selection = selection;
+    this.layout.selectionLayer.selection = selection;
     this.canvasController.setNeedsUpdate();
   }
 
   handleMouseUp(event) {
     delete this.layout.rectSelectLayer.selectionRect;
     this.canvasController.setNeedsUpdate();
-    // TODO: fix
-    this.layout.selectionLayer.selection = this.layout.hoverLayer.selection;
-    this.layout.hoverLayer.selection = new Set();
+    delete this.currentSelection;
   }
 
 }
