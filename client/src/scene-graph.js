@@ -150,7 +150,7 @@ export class SelectionLayer extends BaseSceneItem {
         fillNode(context, point.x, point.y, controller.drawingParameters.nodeSize, point.type, point.smooth);
       } else {
         context.save();
-        context.shadowColor = '#6CF';
+        context.shadowColor = '#ADF';
         context.shadowBlur = 18 * window.devicePixelRatio;  // shadowBlur is in device space
         // context.shadowOffsetX = 2;
         // context.shadowOffsetY = 2;
@@ -174,13 +174,15 @@ export class RectangleSelectionLayer extends BaseSceneItem {
     }
     const selRect = this.selectionRect;
     const context = controller.context;
-    context.lineWidth = controller.drawingParameters.rectSelectLineWidth;
-    context.strokeStyle = "#FFF";
-    context.setLineDash(controller.drawingParameters.rectSelectLineDash);
     const x = selRect.xMin;
     const y = selRect.yMin;
     const w = selRect.xMax - x;
     const h = selRect.yMax - y;
+    context.lineWidth = controller.drawingParameters.rectSelectLineWidth;
+    context.strokeStyle = "#000";
+    context.strokeRect(x, y, w, h);
+    context.strokeStyle = "#FFF";
+    context.setLineDash(controller.drawingParameters.rectSelectLineDash);
     context.strokeRect(x, y, w, h);
   }
 }
