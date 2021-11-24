@@ -15,7 +15,7 @@ export class CanvasController {
     this.drawingParameters = {};
 
     this.magnification = 1;
-    this.origin = {x: 0, y: 800};  // TODO choose y based on initial canvas height
+    this.origin = {x: 200, y: 880};  // TODO choose y based on initial canvas height
     this.needsUpdate = false;
 
     const resizeObserver = new ResizeObserver(entries => {
