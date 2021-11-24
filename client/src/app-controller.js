@@ -31,7 +31,7 @@ const drawingParameters = {
   },
   pathStrokeColor: "#BBB",
   pathLineWidth: 1,
-  componentFillColor: "#BBB",
+  componentFillColor: "#CCC",
 }
 
 
