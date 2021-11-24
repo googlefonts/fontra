@@ -140,9 +140,14 @@ export class SelectionLayer extends BaseSceneItem {
       const [tp, index] = selItem.split("/");
       if (tp === "point") {
         const point = this.path.getPoint(index);
-        context.lineWidth = lineWidth;
-        context.strokeStyle = color;
-        strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth);
+        // context.lineWidth = lineWidth;
+        // context.strokeStyle = color;
+        // strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth);
+
+        context.shadowColor = '#ADF';
+        context.shadowBlur = 8 * window.devicePixelRatio;  // shadowBlur is in device space
+        context.fillStyle = "#FFF";
+        fillNode(context, point.x, point.y, controller.drawingParameters.nodeSize, point.type, point.smooth);
       } else {
         context.save();
         context.shadowColor = '#6CF';

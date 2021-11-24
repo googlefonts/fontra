@@ -16,21 +16,21 @@ import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js
 
 
 const drawingParameters = {
-  nodeFillColor: "#FFF",
+  nodeFillColor: "#888",
   nodeSize: 8,
   handleColor: "#888",
   handleLineWidth: 1,
   selection: {
-    nodeSize: 14,
+    nodeSize: 10,
     nodeColor: "#4AF",
     nodeLineWidth: 2,
   },
   hover: {
-    nodeSize: 14,
+    nodeSize: 10,
     nodeColor: "#8CF",
     nodeLineWidth: 2,
   },
-  pathStrokeColor: "#BBB",
+  pathStrokeColor: "#FFF",
   pathLineWidth: 1,
   componentFillColor: "#CCC",
   rectSelectLineWidth: 1,
@@ -54,8 +54,8 @@ class Layout {
     this.scene = new SceneGraph();
     this.scene.push(this.componentsLayer);
     this.scene.push(this.handlesLayer);
-    this.scene.push(this.pathLayer);
     this.scene.push(this.nodesLayer);
+    this.scene.push(this.pathLayer);
     this.scene.push(this.selectionLayer);
     this.scene.push(this.hoverLayer);
     this.scene.push(this.rectSelectLayer);
