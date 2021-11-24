@@ -146,7 +146,7 @@ export class SelectionLayer extends BaseSceneItem {
       } else {
         context.save();
         context.shadowColor = '#6CF';
-        context.shadowBlur = 35;
+        context.shadowBlur = 18 * window.devicePixelRatio;  // shadowBlur is in device space
         // context.shadowOffsetX = 2;
         // context.shadowOffsetY = 2;
         context.fillStyle = "#FFF";
