@@ -142,7 +142,7 @@ export class SelectionLayer extends BaseSceneItem {
         const point = this.path.getPoint(index);
         context.lineWidth = lineWidth;
         context.strokeStyle = color;
-        strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth)
+        strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth);
       } else {
         context.save();
         context.shadowColor = '#6CF';
