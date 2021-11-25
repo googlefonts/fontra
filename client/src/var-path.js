@@ -36,6 +36,18 @@ export default class VarPath {
     return this.pointTypes.length;
   }
 
+  getContourIndex(pointIndex) {
+    if (pointIndex < 0) {
+      return undefined;
+    }
+    for (let i = 0; i < this.contours.length; i++) {
+      if (pointIndex <= this.contours[i].endPoint) {
+        return i;
+      }
+    }
+    return undefined;
+  }
+
   getPoint(index) {
     if (index >= this.pointTypes.length) {
       return null;
