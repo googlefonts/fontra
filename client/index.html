@@ -12,18 +12,14 @@
         <div class="glyphs-search">
           <input class="glyphs-search-input" placeholder="Search glyphs">
         </div>
-        <div class="glyphs-list">
-          <div class="glyph-name">Glyph 1</div>
-          <div class="glyph-name">Glyph 2</div>
+        <div class="glyphs-list" id="glyphs-list">
+          <!-- contents will be filled dynamically -->
         </div>
       </div>
 
       <div class="controls">
 
-        <select name="glyphs" id="glyph-select" oninput="glyphNameChanged(this.value)">
-          <option value="">--Please choose a glyph--</option>
-          <!-- contents will be filled dynamically -->
-        </select>
+        <!-- <div style="width: 250px;"></div> -->
 
         <div class="axis-sliders" id="axis-sliders">
           <!-- contents will be filled dynamically -->
@@ -53,9 +49,6 @@
 
       function startApp(port) {
         const appController = new AppController(port);
-        window.glyphNameChanged = async (glyphName) => {
-          await appController.glyphNameChangedCallback(glyphName);
-        };
       }
 
       httpGetAsync("/websocketport", startApp)

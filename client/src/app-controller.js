@@ -288,13 +288,17 @@ export class AppController {
   }
 
   async initGlyphNames() {
-    const glyphNamesMenu = document.querySelector("#glyph-select");
     const glyphNames = await this.remote.getGlyphNames();
+    const glyphsList = document.querySelector("#glyphs-list");
     for (const glyphName of glyphNames) {
-      const option = document.createElement("option");
-      option.setAttribute("value", glyphName);
-      option.append(glyphName);
-      glyphNamesMenu.appendChild(option);
+      const glyphRow = document.createElement("div");
+      glyphRow.setAttribute("class", "glyph-name");
+      glyphRow.setAttribute("id", `glyph-${glyphName}`);
+      glyphRow.append(glyphName);
+      glyphRow.addEventListener("click", async event => {
+        await this.glyphNameChangedCallback(glyphName);
+      });
+      glyphsList.appendChild(glyphRow);
     }
   }
 
