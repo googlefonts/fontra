@@ -40,12 +40,22 @@ export default class VarPath {
     if (pointIndex < 0) {
       return undefined;
     }
-    for (let i = 0; i < this.contours.length; i++) {
-      if (pointIndex <= this.contours[i].endPoint) {
-        return i;
+    // binary search, adapted from bisect.py
+    let lo = 0;
+    let hi = this.contours.length;
+    while (lo < hi) {
+      const mid = Math.floor((lo + hi) / 2);
+      if (pointIndex <= this.contours[mid].endPoint) {
+        hi = mid;
+      }
+      else {
+        lo = mid + 1;
       }
     }
-    return undefined;
+    if (lo >= this.contours.length) {
+      return undefined;
+    }
+    return lo
   }
 
   getPoint(index) {
