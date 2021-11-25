@@ -15,7 +15,7 @@ import { centeredRect, normalizeRect } from "./rectangle.js";
 import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
 
-const GLYPHS_LIST_CHUNK_SIZE = 80;  // the amount of glyph names added to the list at a time
+const GLYPHS_LIST_CHUNK_SIZE = 200;  // the amount of glyph names added to the list at a time
 
 
 const drawingParameters = {
@@ -298,7 +298,7 @@ export class AppController {
     glyphsListWrapper.addEventListener("scroll", async event => {
       if (
         this.glyphNamesBackLog.length > 0 &&
-        glyphsListWrapper.scrollTop + glyphsListWrapper.offsetHeight + 100 > glyphsList.offsetHeight
+        glyphsListWrapper.scrollTop + glyphsListWrapper.offsetHeight + 200 > glyphsList.offsetHeight
       ) {
         // adding more glyph names
         await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
