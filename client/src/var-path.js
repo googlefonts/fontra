@@ -36,6 +36,22 @@ export default class VarPath {
     return this.pointTypes.length;
   }
 
+  getControlBounds() {
+    let xMin = Number.MAX_VALUE;
+    let yMin = Number.MAX_VALUE;
+    let xMax = Number.MIN_VALUE;
+    let yMax = Number.MIN_VALUE;
+    for (let i = 0; i < this.coordinates.length; i += 2) {
+      const x = this.coordinates[i];
+      const y = this.coordinates[i + 1];
+      xMin = Math.min(x, xMin);
+      yMin = Math.min(y, yMin);
+      xMax = Math.max(x, xMax);
+      yMax = Math.max(y, yMax);
+    }
+    return {"xMin": xMin, "yMin": yMin, "xMax": xMax, "yMax": yMax};
+  }
+
   getContourIndex(pointIndex) {
     if (pointIndex < 0) {
       return undefined;

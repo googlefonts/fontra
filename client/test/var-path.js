@@ -372,4 +372,12 @@ describe("VarPath Tests", () => {
     expect(Array.from(p.iterPointsOfContour(1))).to.deep.equal([]);
   });
 
+  it("getControlBounds", () => {
+    const p = simpleTestPath();
+    const t = new Transform().scale(1.5, 2);
+    const p2 = p.transformed(t);
+    expect(p.getControlBounds()).to.deep.equal({"xMin": 0, "yMin": 0, "xMax": 100, "yMax": 100});
+    expect(p2.getControlBounds()).to.deep.equal({"xMin": 0, "yMin": 0, "xMax": 150, "yMax": 200});
+  });
+
 })
