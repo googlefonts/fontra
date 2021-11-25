@@ -317,7 +317,7 @@ export class AppController {
       glyphRow.setAttribute("id", `glyph-${encodeGlyphName(glyphName)}`);
       glyphRow.append(glyphName);
       glyphRow.addEventListener("click", async event => {
-        glyphRow.setAttribute("style", "background-color: #8F2;");
+        glyphRow.setAttribute("style", "background-color: #FD7;");
         const currentGlyphName = this.currentGlyphName;
         if (glyphName === currentGlyphName) {
           return;
