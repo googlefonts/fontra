@@ -2,6 +2,7 @@ import { getRemoteProxy } from "./remote.js";
 import VarPath from "./var-path.js";
 import { VarGlyph } from "./var-glyph.js";
 import { CanvasController } from "./canvas-controller.js";
+import { LRUCache } from "./lru-cache.js";
 import {
   SceneGraph,
   ComponentsLayer,
@@ -269,9 +270,7 @@ export class AppController {
     this.canvasController = new CanvasController(canvas);
     this.canvasController.setDrawingParameters(drawingParameters);
 
-    // TODO: the glyphs cache should be a LRU cache. An example implementation is here:
-    // https://www.section.io/engineering-education/lru-cache-implementation-in-javascript/
-    this._glyphsCache = {};
+    this._glyphsCache = new LRUCache(250);
     this.varLocation = {};
 
     this.layout = new Layout(
@@ -437,15 +436,16 @@ export class AppController {
   }
 
   async getRemoteGlyph(glyphName) {
-    let glyph = this._glyphsCache[glyphName];
+    let glyph = this._glyphsCache.get(glyphName);
     if (glyph === undefined) {
       glyph = await this.remote.getGlyph(glyphName);
       if (glyph !== null) {
         glyph = VarGlyph.fromObject(glyph);
       }
-      this._glyphsCache[glyphName] = glyph;
+      this._glyphsCache.put(glyphName, glyph);
+      // console.log("LRU size", this._glyphsCache.map.size);
     }
-    return this._glyphsCache[glyphName];
+    return glyph;
   }
 
   async _instantiateGlyph() {
