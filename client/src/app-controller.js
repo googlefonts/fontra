@@ -16,9 +16,9 @@ import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js
 
 
 const drawingParameters = {
-  nodeFillColor: "#888",
+  nodeFillColor: "#777",
   nodeSize: 8,
-  handleColor: "#888",
+  handleColor: "#777",
   handleLineWidth: 1,
   selection: {
     nodeSize: 10,
