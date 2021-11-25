@@ -24,4 +24,4 @@
 
 - navigate to
 
-    `http://localhost:8000/html/fontra.html`
+    `http://localhost:8000/`
