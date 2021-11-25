@@ -43,14 +43,15 @@ html, body {
   display: flex;
   flex-direction: column;
   min-width: 10em;
-  gap: 0.2em;
+  /*gap: 0.2em;*/
   font-size: 0.9em;
 }
 
 .glyph-name {
   background: #FFF;
   border-radius: 0.3em;
-  padding: 0.1em;
+  border-top: 1px solid gray;
+  padding: 0.15em;
   padding-left: 0.5em;
   right: 0.5em;
   cursor: pointer;
