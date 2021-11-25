@@ -77,7 +77,6 @@ export default class VarPath {
 
   *iterPointsOfContour(contourIndex) {
     const contour = this.contours[contourIndex];
-    console.log(contourIndex, contour);
     if (contour === undefined) {
       return;
     }
