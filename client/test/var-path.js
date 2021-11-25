@@ -317,4 +317,32 @@ describe("VarPath Tests", () => {
     );
   });
 
+  it("concat", () => {
+    const p1 = new VarPath(
+      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
+      [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
+      [{endPoint: 3, isClosed: true}],
+    );
+    const p2 = p1.copy();
+    const p3 = p1.concat(p2);
+    const mp = new MockPath2D();
+    p3.drawToPath(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 0], "op": "moveTo"},
+        {"args": [0, 100], "op": "lineTo"},
+        {"args": [100, 100], "op": "lineTo"},
+        {"args": [100, 0], "op": "lineTo"},
+        {"args": [0, 0], "op": "lineTo"},
+        {"args": [], "op": "closePath"},
+        {"args": [0, 0], "op": "moveTo"},
+        {"args": [0, 100], "op": "lineTo"},
+        {"args": [100, 100], "op": "lineTo"},
+        {"args": [100, 0], "op": "lineTo"},
+        {"args": [0, 0], "op": "lineTo"},
+        {"args": [], "op": "closePath"},
+      ],
+    );
+  });
+
 })
