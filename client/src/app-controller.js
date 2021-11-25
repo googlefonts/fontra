@@ -314,12 +314,12 @@ export class AppController {
     for (const glyphName of glyphNames) {
       const glyphRow = document.createElement("div");
       glyphRow.setAttribute("class", "glyph-name");
-      glyphRow.setAttribute("id", `glyph-${glyphName}`);
+      glyphRow.setAttribute("id", `glyph-${encodeGlyphName(glyphName)}`);
       glyphRow.append(glyphName);
       glyphRow.addEventListener("click", async event => {
         glyphRow.setAttribute("style", "background-color: #8F2;");
         if (this.currentGlyphName !== undefined) {
-          const selectedRow = document.querySelector(`#glyph-${this.currentGlyphName}`)
+          const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(this.currentGlyphName)}`)
           if (selectedRow) {
             selectedRow.setAttribute("style", "background-color: #FFF;");
           }
@@ -450,4 +450,11 @@ function lenientIsEqualSet(set1, set2) {
     return true;
   }
   return false;
+}
+
+
+function encodeGlyphName(glyphName) {
+  // encode a glyph name as base64 minus padding, so it can be used
+  // as a query selector
+  return window.btoa(glyphName).replace("=", "")
 }
