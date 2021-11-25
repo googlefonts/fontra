@@ -150,6 +150,7 @@ class RectSelectTracker {
     this.initialX = event.pageX;
     this.initialY = event.pageY;
     this.initialPoint = canvasController.localPoint(event);
+    this.currentSelection = this.layout.selectionLayer.selection;
     this.didStart = false;
   }
 
@@ -161,7 +162,6 @@ class RectSelectTracker {
       Math.abs(this.initialX - x) > MINIMAL_DRAG_DISTANCE
     ) {
       this.didStart = true;
-    this.currentSelection = this.layout.selectionLayer.selection;
     }
     if (!this.didStart) {
       return;
@@ -175,8 +175,13 @@ class RectSelectTracker {
     });
     const selection = this.layout.selectionAtRect(selRect);
     this.layout.rectSelectLayer.selectionRect = selRect;
-    // TODO: take shift / command keys into account
-    this.layout.selectionLayer.selection = selection;
+
+    if (event.shiftKey) {
+      this.layout.selectionLayer.selection = symmetricDifference(this.currentSelection, selection);
+    } else {
+      this.layout.selectionLayer.selection = selection;
+    }
+
     this.canvasController.setNeedsUpdate();
   }
 
