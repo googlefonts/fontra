@@ -318,13 +318,23 @@ export class AppController {
       glyphRow.append(glyphName);
       glyphRow.addEventListener("click", async event => {
         glyphRow.setAttribute("style", "background-color: #8F2;");
-        if (this.currentGlyphName !== undefined) {
-          const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(this.currentGlyphName)}`)
+        const currentGlyphName = this.currentGlyphName;
+        if (glyphName === currentGlyphName) {
+          return;
+        }
+        try {
+          await this.glyphNameChangedCallback(glyphName);
+        } catch (error) {
+          glyphRow.setAttribute("style", "background-color: #FFF;");
+          throw(error);
+        }
+
+        if (currentGlyphName !== undefined) {
+          const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(currentGlyphName)}`)
           if (selectedRow) {
             selectedRow.setAttribute("style", "background-color: #FFF;");
           }
         }
-        await this.glyphNameChangedCallback(glyphName);
       });
       glyphsList.appendChild(glyphRow);
     }
@@ -342,7 +352,6 @@ export class AppController {
     if (!didSetGlyph) {
       return;
     }
-    this.currentGlyphName = glyphName;
     // Rebuild axis sliders
     const axisSliders = document.querySelector("#axis-sliders");
     axisSliders.innerHTML = "";  // Delete previous sliders
@@ -361,6 +370,7 @@ export class AppController {
       label.append(axis.name);
       axisSliders.appendChild(label);
     }
+    this.currentGlyphName = glyphName;
   }
 
   async setSelectedGlyph(glyphName) {
