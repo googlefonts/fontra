@@ -19,13 +19,46 @@ class RCJKBackend:
         return self.glyphNames
 
     async def getGlyph(self, glyphName):
+        glyph = self._getRCJKGlyph(glyphName)
+        if glyph is not None:
+            ensureComponentCoords(glyph, self._getRCJKGlyph)
+            glyph = unpackGlyph(glyph)
+        return glyph
+
+    def _getRCJKGlyph(self, glyphName):
         if not glyphName:
             return None
         for gs in self._iterGlyphSets():
             if glyphName in gs:
-                return unpackGlyph(gs.getGlyph(glyphName))
+                return gs.getGlyph(glyphName)
         else:
             return None
+
+
+def ensureComponentCoords(glyph, getGlyphFunc):
+    if getattr(glyph, "_ensuredComponentCoords", False):
+        return
+
+    for compoIndex, compo in enumerate(glyph.components):
+        compoGlyph = getGlyphFunc(compo.name)
+        if compoGlyph is None:
+            print(f"can't find component base glyph {compo.name}")
+            continue
+
+        allAxisNames = {
+            axisName
+            for g in [glyph] + glyph.variations
+            for axisName in g.components[compoIndex].coord
+        }
+        allAxisNames &= set(compoGlyph.axes)
+        for axisName in sorted(allAxisNames):
+            defaultValue = compoGlyph.axes.get(axisName, (0, 0, 0))[1]
+            for g in [glyph] + glyph.variations:
+                axisValue = g.components[compoIndex].coord.get(axisName)
+                if axisValue is None:
+                    g.components[compoIndex].coord[axisName] = defaultValue
+
+    glyph._ensuredComponentCoords = True
 
 
 def unpackGlyph(glyph):
