@@ -330,6 +330,13 @@ export class AppController {
     }
   }
 
+  async glyphSeachFieldChanged(value) {
+    const glyphsList = document.querySelector("#glyphs-list");
+    this.glyphNamesBackLog = this.glyphNames.filter(glyphName => glyphName.indexOf(value) >= 0);
+    glyphsList.innerHTML = "";
+    await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
+  }
+
   async glyphNameChangedCallback(glyphName) {
     const didSetGlyph = await this.setSelectedGlyph(glyphName);
     if (!didSetGlyph) {

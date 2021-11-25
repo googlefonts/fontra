@@ -10,7 +10,11 @@
 
       <div class="glyphs-navigation">
         <div class="glyphs-search">
-          <input class="glyphs-search-input" placeholder="Search glyphs">
+          <input
+            class="glyphs-search-input"
+            id="glyphs-search-input"
+            placeholder="Search glyphs"
+            oninput="glyphSeachFieldChanged(value)">
         </div>
         <div id="glyphs-list-wrapper">
           <div class="glyphs-list" id="glyphs-list">
@@ -51,6 +55,7 @@
 
       function startApp(port) {
         const appController = new AppController(port);
+        window.glyphSeachFieldChanged = (value) => appController.glyphSeachFieldChanged(value);
       }
 
       httpGetAsync("/websocketport", startApp)
