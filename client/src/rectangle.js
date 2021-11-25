@@ -28,3 +28,25 @@ export function normalizeRect(rect) {
   };
   return nRect;
 }
+
+
+export function sectRect(rect1, rect2) {
+    // Test for rectangle-rectangle intersection.
+
+    // Args:
+    //     rect1: First bounding rectangle
+    //     rect2: Second bounding rectangle
+
+    // Returns:
+    //     A rectangle or null.
+    //     If the input rectangles intersect, returns the intersecting rectangle.
+    //     Returns ``null`` if the input rectangles do not intersect.
+    const xMin = Math.max(rect1.xMin, rect2.xMin);
+    const yMin = Math.max(rect1.yMin, rect2.yMin);
+    const xMax = Math.min(rect1.xMax, rect2.xMax);
+    const yMax = Math.min(rect1.yMax, rect2.yMax);
+    if (xMin >= xMax || yMin >= yMax) {
+      return null;
+    }
+    return {"xMin": xMin, "yMin": yMin, "xMax": xMax, "yMax": yMax};
+}

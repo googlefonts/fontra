@@ -12,7 +12,7 @@ import {
   SelectionLayer,
   RectangleSelectionLayer,
 } from "./scene-graph.js";
-import { centeredRect, normalizeRect } from "./rectangle.js";
+import { centeredRect, normalizeRect, sectRect } from "./rectangle.js";
 import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
 
@@ -90,6 +90,7 @@ class Layout {
     }
 
     let compoPaths2d = [];
+    this.componentsBounds = [];
     if (!!this.instance.components) {
       const compoPaths = await this.instance.getComponentPaths(
         this._glyphGetterFunc, this.varLocation,
@@ -99,6 +100,7 @@ class Layout {
         path.drawToPath(path2d);
         return path2d;
       });
+      this.componentsBounds = compoPaths.map(path => path.getControlBounds());
     }
     this.componentsLayer.paths = compoPaths2d;
     this.selectionLayer.componentPaths = compoPaths2d;
@@ -123,18 +125,20 @@ class Layout {
     return new Set();
   }
 
-  selectionAtRect(selRect, context) {
+  selectionAtRect(selRect) {
     const selection = new Set();
     for (const hit of this.instance.path.iterPointsInRect(selRect)) {
       selection.add(`point/${hit.pointIndex}`);
     }
-    // TODO: implement for components
-    // for (let i = this.componentsLayer.paths.length - 1; i >= 0; i--) {
-    //   const path = this.componentsLayer.paths[i];
-    //   if (context.isPointInPath(path, point.x, point.y)) {
-    //     selection.add(`component/${i}`);
-    //   }
-    // }
+    for (let i = 0; i < this.componentsBounds.length; i++) {
+      console.log(">>>", i);
+      console.log(selRect);
+      console.log(this.componentsBounds[i]);
+      console.log(sectRect(selRect, this.componentsBounds[i]));
+      if (sectRect(selRect, this.componentsBounds[i]) !== null) {
+        selection.add(`component/${i}`);
+      }
+    }
     return selection;
   }
 }
@@ -173,7 +177,7 @@ class RectSelectTracker {
       "xMax": currentPoint.x,
       "yMax": currentPoint.y,
     });
-    const selection = this.layout.selectionAtRect(selRect, this.canvasController.context);
+    const selection = this.layout.selectionAtRect(selRect);
     this.layout.rectSelectLayer.selectionRect = selRect;
     // TODO: take shift / command keys into account
     this.layout.selectionLayer.selection = selection;
