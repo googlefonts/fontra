@@ -18,6 +18,7 @@ def main():
 
     path = pathlib.Path(args.font)
     assert path.exists()
+    print(f"loading project {path.name}...")
     if path.suffix == ".rcjk":
         backend = RCJKBackend(path)
     else:
