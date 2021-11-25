@@ -309,6 +309,7 @@ export class AppController {
           glyphRow = selectedRow.nextElementSibling;
         }
         if (glyphRow) {
+          glyphRow.scrollIntoView({behavior: "auto", block: "nearest", inline: "nearest"});
           await this._selectGlyphByRowElement(glyphRow);
         }
       }
