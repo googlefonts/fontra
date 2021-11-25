@@ -330,7 +330,13 @@ describe("VarPath Tests", () => {
     );
   });
 
-  it("getPoint", () => {});
+  it("getPoint", () => {
+    const p = simpleTestPath();
+    expect(p.getPoint(-1)).to.deep.equal(undefined);
+    expect(p.getPoint(0)).to.deep.equal({"x": 0, "y": 0, "type": 0, "smooth": false});
+    expect(p.getPoint(3)).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
+    expect(p.getPoint(4)).to.deep.equal(undefined);
+  });
 
   it("getContourIndex", () => {
     const p = new VarPath(
