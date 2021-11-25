@@ -280,8 +280,8 @@ export class AppController {
     canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
     canvas.addEventListener("mouseup", event => this.mouseTracker.handleMouseUp(event));
 
-    canvas.addEventListener("keydown", event => console.log(event));
-    canvas.addEventListener("keyup", event => console.log(event));
+    // canvas.addEventListener("keydown", event => console.log(event));
+    // canvas.addEventListener("keyup", event => console.log(event));
 
     this.mouseTracker = new MouseTracker(this.canvasController, this.layout);
 
@@ -294,6 +294,26 @@ export class AppController {
     this.glyphNames = await this.remote.getGlyphNames();
     const glyphsList = document.querySelector("#glyphs-list");
     const glyphsListWrapper = document.querySelector("#glyphs-list-wrapper");
+
+    glyphsListWrapper.addEventListener("keydown", async event => {
+      event.preventDefault();
+      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
+        return;
+      }
+      const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(this.currentGlyphName)}`)
+      if (selectedRow) {
+        let glyphRow;
+        if (event.key === "ArrowUp") {
+          glyphRow = selectedRow.previousElementSibling;
+        } else {
+          glyphRow = selectedRow.nextElementSibling;
+        }
+        if (glyphRow) {
+          await this._selectGlyphByRowElement(glyphRow);
+        }
+      }
+      event.preventDefault();
+    });
 
     glyphsListWrapper.addEventListener("scroll", async event => {
       if (
@@ -315,28 +335,32 @@ export class AppController {
       const glyphRow = document.createElement("div");
       glyphRow.setAttribute("class", "glyph-name");
       glyphRow.setAttribute("id", `glyph-${encodeGlyphName(glyphName)}`);
+      glyphRow.setAttribute("glyphname", glyphName);
       glyphRow.append(glyphName);
-      glyphRow.addEventListener("click", async event => {
-        glyphRow.setAttribute("style", "background-color: #FD7;");
-        const currentGlyphName = this.currentGlyphName;
-        if (glyphName === currentGlyphName) {
-          return;
-        }
-        try {
-          await this.glyphNameChangedCallback(glyphName);
-        } catch (error) {
-          glyphRow.setAttribute("style", "background-color: #FFF;");
-          throw(error);
-        }
-
-        if (currentGlyphName !== undefined) {
-          const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(currentGlyphName)}`)
-          if (selectedRow) {
-            selectedRow.setAttribute("style", "background-color: #FFF;");
-          }
-        }
-      });
+      glyphRow.addEventListener("click", async event => this._selectGlyphByRowElement(glyphRow));
       glyphsList.appendChild(glyphRow);
+    }
+  }
+
+  async _selectGlyphByRowElement(glyphRow) {
+    const glyphName = glyphRow.getAttribute("glyphname");
+    const currentGlyphName = this.currentGlyphName;
+    if (glyphName === currentGlyphName) {
+      return;
+    }
+    glyphRow.setAttribute("style", "background-color: #FD7;");
+    try {
+      await this.glyphNameChangedCallback(glyphName);
+    } catch (error) {
+      glyphRow.setAttribute("style", "background-color: #FFF;");
+      throw(error);
+    }
+
+    if (currentGlyphName !== undefined) {
+      const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(currentGlyphName)}`)
+      if (selectedRow) {
+        selectedRow.setAttribute("style", "background-color: #FFF;");
+      }
     }
   }
 
