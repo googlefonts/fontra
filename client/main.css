@@ -50,7 +50,7 @@ html, body {
 .glyph-name {
   background: #FFF;
   border-radius: 0.3em;
-  border-top: 1px solid gray;
+  border-top: 1px solid lightgray;
   padding: 0.15em;
   padding-left: 0.5em;
   right: 0.5em;
