@@ -37,6 +37,9 @@ export default class VarPath {
   }
 
   getControlBounds() {
+    if (!this.coordinates.length) {
+      return undefined;
+    }
     let xMin = Number.MAX_VALUE;
     let yMin = Number.MAX_VALUE;
     let xMax = Number.MIN_VALUE;

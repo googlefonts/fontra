@@ -380,4 +380,9 @@ describe("VarPath Tests", () => {
     expect(p2.getControlBounds()).to.deep.equal({"xMin": 0, "yMin": 0, "xMax": 150, "yMax": 200});
   });
 
+  it("empty getControlBounds", () => {
+    const p = new VarPath();
+    expect(p.getControlBounds()).to.deep.equal(undefined);
+  });
+
 })
