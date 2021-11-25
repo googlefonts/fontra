@@ -50,7 +50,7 @@ def ensureComponentCoords(glyph, getGlyphFunc):
             for g in [glyph] + glyph.variations
             for axisName in g.components[compoIndex].coord
         }
-        allAxisNames &= set(compoGlyph.axes)
+        allAxisNames |= set(compoGlyph.axes)
         for axisName in sorted(allAxisNames):
             defaultValue = compoGlyph.axes.get(axisName, (0, 0, 0))[1]
             for g in [glyph] + glyph.variations:
