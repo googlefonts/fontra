@@ -35,13 +35,16 @@ html, body {
   font-size: 1em;
 }
 
+#glyphs-list-wrapper {
+  overflow: scroll;
+}
+
 .glyphs-list {
   display: flex;
   flex-direction: column;
   min-width: 10em;
   gap: 0.2em;
   font-size: 0.9em;
-  overflow-y: auto;
 }
 
 .glyph-name {

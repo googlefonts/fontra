@@ -15,6 +15,9 @@ import { centeredRect, normalizeRect } from "./rectangle.js";
 import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
 
+const GLYPHS_LIST_CHUNK_SIZE = 80;  // the amount of glyph names added to the list at a time
+
+
 const drawingParameters = {
   nodeFillColor: "#777",
   nodeSize: 8,
@@ -288,7 +291,25 @@ export class AppController {
   }
 
   async initGlyphNames() {
-    const glyphNames = await this.remote.getGlyphNames();
+    this.glyphNames = await this.remote.getGlyphNames();
+    const glyphsList = document.querySelector("#glyphs-list");
+    const glyphsListWrapper = document.querySelector("#glyphs-list-wrapper");
+
+    glyphsListWrapper.addEventListener("scroll", async event => {
+      if (
+        this.glyphNamesBackLog.length > 0 &&
+        glyphsListWrapper.scrollTop + glyphsListWrapper.offsetHeight + 100 > glyphsList.offsetHeight
+      ) {
+        // adding more glyph names
+        await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
+      }
+    }, false)
+
+    this.glyphNamesBackLog = Array.from(this.glyphNames);
+    await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
+  }
+
+  async _appendGlyphNames(glyphNames) {
     const glyphsList = document.querySelector("#glyphs-list");
     for (const glyphName of glyphNames) {
       const glyphRow = document.createElement("div");
@@ -296,6 +317,13 @@ export class AppController {
       glyphRow.setAttribute("id", `glyph-${glyphName}`);
       glyphRow.append(glyphName);
       glyphRow.addEventListener("click", async event => {
+        glyphRow.setAttribute("style", "background-color: #8F2;");
+        if (this.currentGlyphName !== undefined) {
+          const selectedRow = document.querySelector(`#glyph-${this.currentGlyphName}`)
+          if (selectedRow) {
+            selectedRow.setAttribute("style", "background-color: #FFF;");
+          }
+        }
         await this.glyphNameChangedCallback(glyphName);
       });
       glyphsList.appendChild(glyphRow);
@@ -307,6 +335,7 @@ export class AppController {
     if (!didSetGlyph) {
       return;
     }
+    this.currentGlyphName = glyphName;
     // Rebuild axis sliders
     const axisSliders = document.querySelector("#axis-sliders");
     axisSliders.innerHTML = "";  // Delete previous sliders
