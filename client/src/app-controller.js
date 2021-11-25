@@ -269,6 +269,8 @@ export class AppController {
     this.canvasController = new CanvasController(canvas);
     this.canvasController.setDrawingParameters(drawingParameters);
 
+    // TODO: the glyphs cache should be a LRU cache. An example implementation is here:
+    // https://www.section.io/engineering-education/lru-cache-implementation-in-javascript/
     this._glyphsCache = {};
     this.varLocation = {};
 
@@ -296,10 +298,10 @@ export class AppController {
     const glyphsListWrapper = document.querySelector("#glyphs-list-wrapper");
 
     glyphsListWrapper.addEventListener("keydown", async event => {
-      event.preventDefault();
       if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
         return;
       }
+      event.preventDefault();
       const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(this.currentGlyphName)}`)
       if (selectedRow) {
         let glyphRow;
