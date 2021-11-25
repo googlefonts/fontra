@@ -362,4 +362,14 @@ describe("VarPath Tests", () => {
     expect(p.getContourIndex(21)).to.equal(undefined);
   });
 
+  it("iterPointsOfContour", () => {
+    const p = simpleTestPath();
+    const pts = Array.from(p.iterPointsOfContour(0));
+    expect(pts.length).to.equal(4);
+    expect(pts[0]).to.deep.equal({"x": 0, "y": 0, "type": 0, "smooth": false});
+    expect(pts[3]).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
+    expect(Array.from(p.iterPointsOfContour(-1))).to.deep.equal([]);
+    expect(Array.from(p.iterPointsOfContour(1))).to.deep.equal([]);
+  });
+
 })
