@@ -84,6 +84,10 @@ class Layout {
     await this.updateScene();
   }
 
+  canSelect() {
+    return !!this.instance;
+  }
+
   async updateScene() {
     for (const layer of this._iterPathLayers()) {
       layer.path = this.instance.path;
@@ -202,6 +206,9 @@ class MouseTracker {
   }
 
   handleMouseDown(event) {
+    if (!this.layout.canSelect()) {
+      return;
+    }
     this.inDrag = true;
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize;
@@ -227,11 +234,11 @@ class MouseTracker {
       }
       initiateRectSelect = true;
     }
-    console.log("drag?", initiateDrag);
-    console.log("rect select?", initiateRectSelect);
 
     if (initiateRectSelect) {
       this.subTracker = new RectSelectTracker(this.canvasController, this.layout, event);
+    } else if (initiateDrag) {
+      console.log("let's drag stuff", initiateDrag);
     }
 
     this.layout.hoverLayer.selection = new Set();
