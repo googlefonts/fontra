@@ -28,6 +28,15 @@ class MockPath2D {
 }
 
 
+function simpleTestPath(isClosed=true) {
+  return new VarPath(
+    new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
+    [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
+    [{endPoint: 3, isClosed: isClosed}],
+  );
+}
+
+
 describe("VarPath Tests", () => {
   
   it("empty copy", () => {
@@ -42,22 +51,14 @@ describe("VarPath Tests", () => {
   })
 
   it("constructor", () => {
-    const p = new VarPath(
-      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
-      [{endPoint: 3, isClosed: true}],
-    );
+    const p = simpleTestPath();
     expect(p.coordinates).to.deep.equal([0, 0, 0, 100, 100, 100, 100, 0]);
     expect(p.pointTypes).to.deep.equal([VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE]);
     expect(p.contours).to.deep.equal([{endPoint: 3, isClosed: true}]);
   })
 
   it("copy", () => {
-    const p = new VarPath(
-      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
-      [{endPoint: 3, isClosed: true}],
-    );
+    const p = simpleTestPath();
     const p2 = p.copy();
     // modify original
     p.coordinates[0] = 1000;
@@ -69,11 +70,7 @@ describe("VarPath Tests", () => {
   })
 
   it("draw", () => {
-    const p = new VarPath(
-      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
-      [{endPoint: 3, isClosed: true}],
-    );
+    const p = simpleTestPath();
     const mp = new MockPath2D();
     p.drawToPath(mp);
     expect(mp.items).to.deep.equal(
@@ -89,11 +86,7 @@ describe("VarPath Tests", () => {
   })
 
   it("open path", () => {
-    const p = new VarPath(
-      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
-      [{endPoint: 3, isClosed: false}],
-    );
+    const p = simpleTestPath(false);
     const mp = new MockPath2D();
     p.drawToPath(mp);
     expect(mp.items).to.deep.equal(
@@ -300,11 +293,7 @@ describe("VarPath Tests", () => {
 
   it("transformed", () => {
     const t = new Transform().scale(2);
-    const p = new VarPath(
-      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
-      [{endPoint: 3, isClosed: false}],
-    );
+    const p = simpleTestPath(false);
     const mp = new MockPath2D();
     p.transformed(t).drawToPath(mp);
     expect(mp.items).to.deep.equal(
@@ -318,11 +307,7 @@ describe("VarPath Tests", () => {
   });
 
   it("concat", () => {
-    const p1 = new VarPath(
-      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
-      [{endPoint: 3, isClosed: true}],
-    );
+    const p1 = simpleTestPath();
     const p2 = p1.copy();
     const p3 = p1.concat(p2);
     const mp = new MockPath2D();
@@ -344,6 +329,8 @@ describe("VarPath Tests", () => {
       ],
     );
   });
+
+  it("getPoint", () => {});
 
   it("getContourIndex", () => {
     const p = new VarPath(

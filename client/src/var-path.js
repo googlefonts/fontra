@@ -49,25 +49,36 @@ export default class VarPath {
   }
 
   getPoint(index) {
-    if (index >= this.pointTypes.length) {
-      return null;
-    }
-    return {
+    const point = {
       x: this.coordinates[index * 2],
       y: this.coordinates[index * 2 + 1],
       type: this.pointTypes[index] & VarPath.POINT_TYPE_MASK,
       smooth: !!(this.pointTypes[index] & VarPath.SMOOTH_FLAG),
     };
+    if (point.x === undefined) {
+      return undefined;
+    }
+    return point;
   }
 
   *iterPoints() {
-    for (let index = 0; index < this.pointTypes.length; index++) {
-      yield {
-        x: this.coordinates[index * 2],
-        y: this.coordinates[index * 2 + 1],
-        type: this.pointTypes[index] & VarPath.POINT_TYPE_MASK,
-        smooth: !!(this.pointTypes[index] & VarPath.SMOOTH_FLAG),
-      };
+    yield* this._iterPointsFromTo(0, this.pointTypes.length - 1);
+  }
+
+  *iterPointsOfContour(contourIndex) {
+    const contour = this.contours[contourIndex];
+    let startPoint;
+    if (contourIndex <= 0) {
+      startPoint = 0;
+    } else {
+      startPoint = this.contours[contourIndex - 1].endPoint + 1;
+    }
+    yield* this._iterPointsFromTo(startPoint, contour.endPoint);
+  }
+
+  *_iterPointsFromTo(startPoint, endPoint) {
+    for (let index = startPoint; index <= endPoint; index++) {
+      yield this.getPoint(index);
     }
   }
 
