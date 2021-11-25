@@ -131,10 +131,6 @@ class Layout {
       selection.add(`point/${hit.pointIndex}`);
     }
     for (let i = 0; i < this.componentsBounds.length; i++) {
-      console.log(">>>", i);
-      console.log(selRect);
-      console.log(this.componentsBounds[i]);
-      console.log(sectRect(selRect, this.componentsBounds[i]));
       if (sectRect(selRect, this.componentsBounds[i]) !== null) {
         selection.add(`component/${i}`);
       }
