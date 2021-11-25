@@ -345,4 +345,28 @@ describe("VarPath Tests", () => {
     );
   });
 
+  it("getContourIndex", () => {
+    const p = new VarPath(
+      new VarArray(),  // dummy
+      [],  // dummy
+      [
+        {endPoint: 3, isClosed: true},
+        {endPoint: 13, isClosed: true},
+        {endPoint: 15, isClosed: true},
+        {endPoint: 20, isClosed: true},
+      ],
+    );
+    expect(p.getContourIndex(-1)).to.equal(undefined);
+    expect(p.getContourIndex(0)).to.equal(0);
+    expect(p.getContourIndex(3)).to.equal(0);
+    expect(p.getContourIndex(4)).to.equal(1);
+    expect(p.getContourIndex(5)).to.equal(1);
+    expect(p.getContourIndex(13)).to.equal(1);
+    expect(p.getContourIndex(14)).to.equal(2);
+    expect(p.getContourIndex(15)).to.equal(2);
+    expect(p.getContourIndex(16)).to.equal(3);
+    expect(p.getContourIndex(20)).to.equal(3);
+    expect(p.getContourIndex(21)).to.equal(undefined);
+  });
+
 })
