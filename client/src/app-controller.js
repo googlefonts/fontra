@@ -351,6 +351,9 @@ export class AppController {
       glyphRow.setAttribute("class", "glyph-name");
       glyphRow.setAttribute("id", `glyph-${encodeGlyphName(glyphName)}`);
       glyphRow.setAttribute("glyphname", glyphName);
+      if (glyphName === this.currentGlyphName) {
+        glyphRow.setAttribute("style", "background-color: #FD7;");
+      }
       glyphRow.append(glyphName);
       glyphRow.addEventListener("click", async event => this._selectGlyphByRowElement(glyphRow));
       glyphsList.appendChild(glyphRow);
