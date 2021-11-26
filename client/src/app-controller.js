@@ -209,6 +209,7 @@ class MouseTracker {
     if (!this.layout.canSelect()) {
       return;
     }
+    event.preventDefault();
     this.inDrag = true;
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize;
