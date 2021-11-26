@@ -17,6 +17,7 @@ import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js
 
 
 const GLYPHS_LIST_CHUNK_SIZE = 200;  // the amount of glyph names added to the list at a time
+const LIST_ROW_SELECTED_BACKGROUND_COLOR = "#FD7"
 
 
 const drawingParameters = {
@@ -352,7 +353,7 @@ export class AppController {
       glyphRow.setAttribute("id", `glyph-${encodeGlyphName(glyphName)}`);
       glyphRow.setAttribute("glyphname", glyphName);
       if (glyphName === this.currentGlyphName) {
-        glyphRow.setAttribute("style", "background-color: #FD7;");
+        glyphRow.setAttribute("style", `background-color: ${LIST_ROW_SELECTED_BACKGROUND_COLOR};`);
       }
       glyphRow.append(glyphName);
       glyphRow.addEventListener("click", async event => this._selectGlyphByRowElement(glyphRow));
@@ -366,7 +367,7 @@ export class AppController {
     if (glyphName === currentGlyphName) {
       return;
     }
-    glyphRow.setAttribute("style", "background-color: #FD7;");
+    glyphRow.setAttribute("style", `background-color: ${LIST_ROW_SELECTED_BACKGROUND_COLOR};`);
     try {
       await this.glyphNameChangedCallback(glyphName);
     } catch (error) {
