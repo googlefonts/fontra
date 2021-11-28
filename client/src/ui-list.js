@@ -66,11 +66,11 @@ export class List {
     for (const item of items) {
       const row = document.createElement("div");
       row.rowIndex = rowIndex;
-      row.setAttribute(
-        "style", CELL_STYLE + `background: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};`
-      );
       row.append(item);
       this.contents.appendChild(row);
+      row.setAttribute(
+        "style", CELL_STYLE + `background-color: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};`
+      );
       rowIndex++;
     }
   }
@@ -90,7 +90,7 @@ export class List {
     if (this.selectedItemIndex !== undefined) {
       const currentRow = this.contents.children[this.selectedItemIndex];
       currentRow.setAttribute(
-        "style", CELL_STYLE + `background: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};`
+        "style", CELL_STYLE + `background-color: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};`
       );
     }
     if (row) {
