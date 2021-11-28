@@ -14,6 +14,7 @@ import {
 } from "./scene-graph.js";
 import { centeredRect, normalizeRect, sectRect } from "./rectangle.js";
 import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
+import { List } from "./ui-list.js";
 
 
 const GLYPHS_LIST_CHUNK_SIZE = 200;  // the amount of glyph names added to the list at a time
@@ -306,88 +307,22 @@ export class AppController {
   }
 
   async initGlyphNames() {
-    this.glyphNames = await this.remote.getGlyphNames();
-    const glyphsListContents = document.querySelector("#glyphs-list-contents");
-    const glyphsListContainer = document.querySelector("#glyphs-list-container");
-
-    glyphsListContainer.addEventListener("keydown", async event => {
-      if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
-        return;
-      }
-      event.preventDefault();
-      const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(this.currentGlyphName)}`)
-      if (selectedRow) {
-        let glyphRow;
-        if (event.key === "ArrowUp") {
-          glyphRow = selectedRow.previousElementSibling;
-        } else {
-          glyphRow = selectedRow.nextElementSibling;
-        }
-        if (glyphRow) {
-          glyphRow.scrollIntoView({behavior: "auto", block: "nearest", inline: "nearest"});
-          await this._selectGlyphByRowElement(glyphRow);
-        }
-      }
-      event.preventDefault();
-    }, false);
-
-    glyphsListContainer.addEventListener("scroll", async event => {
-      if (
-        this.glyphNamesBackLog.length > 0 &&
-        glyphsListContainer.scrollTop + glyphsListContainer.offsetHeight + 200 > glyphsListContents.offsetHeight
-      ) {
-        // adding more glyph names
-        await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
-      }
-    }, false)
-
-    this.glyphNamesBackLog = Array.from(this.glyphNames);
-    await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
-  }
-
-  async _appendGlyphNames(glyphNames) {
-    const glyphsListContents = document.querySelector("#glyphs-list-contents");
-    for (const glyphName of glyphNames) {
-      const glyphRow = document.createElement("div");
-      glyphRow.setAttribute("class", "glyph-name");
-      glyphRow.setAttribute("id", `glyph-${encodeGlyphName(glyphName)}`);
-      glyphRow.setAttribute("glyphname", glyphName);
-      if (glyphName === this.currentGlyphName) {
-        glyphRow.setAttribute("style", `background-color: ${LIST_ROW_SELECTED_BACKGROUND_COLOR};`);
-      }
-      glyphRow.append(glyphName);
-      glyphRow.addEventListener("click", async event => this._selectGlyphByRowElement(glyphRow));
-      glyphsListContents.appendChild(glyphRow);
-    }
-  }
-
-  async _selectGlyphByRowElement(glyphRow) {
-    const glyphName = glyphRow.getAttribute("glyphname");
-    const currentGlyphName = this.currentGlyphName;
-    if (glyphName === currentGlyphName) {
-      return;
-    }
-    glyphRow.setAttribute("style", `background-color: ${LIST_ROW_SELECTED_BACKGROUND_COLOR};`);
-    try {
+    this.glyphNamesList = new List("#glyphs-list-container");
+    this.glyphNamesList.addEventListener("listSelectionChanged", async (event) => {
+      const list = event.detail;
+      const glyphName = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(glyphName);
-    } catch (error) {
-      glyphRow.setAttribute("style", "background-color: #FFF;");
-      throw(error);
-    }
-
-    if (currentGlyphName !== undefined) {
-      const selectedRow = document.querySelector(`#glyph-${encodeGlyphName(currentGlyphName)}`)
-      if (selectedRow) {
-        selectedRow.setAttribute("style", "background-color: #FFF;");
-      }
-    }
+    });
+    this.glyphNames = await this.remote.getGlyphNames();
+    this.glyphNamesList.setItems(this.glyphNames);
   }
 
   async glyphSeachFieldChanged(value) {
     const glyphsListContents = document.querySelector("#glyphs-list-contents");
-    this.glyphNamesBackLog = this.glyphNames.filter(glyphName => glyphName.indexOf(value) >= 0);
-    glyphsListContents.innerHTML = "";
-    await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
+    const filteredGlyphNames = this.glyphNames.filter(glyphName => glyphName.indexOf(value) >= 0);
+    const selectedItem = this.glyphNamesList.getSelectedItem();
+    this.glyphNamesList.setItems(filteredGlyphNames);
+    this.glyphNamesList.setSelectedItem(selectedItem);
   }
 
   async glyphNameChangedCallback(glyphName) {
