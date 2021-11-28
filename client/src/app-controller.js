@@ -307,7 +307,7 @@ export class AppController {
   }
 
   async initGlyphNames() {
-    this.glyphNamesList = new List("#glyphs-list-container");
+    this.glyphNamesList = new List("glyphs-list");
     this.glyphNamesList.addEventListener("listSelectionChanged", async (event) => {
       const list = event.detail;
       const glyphName = list.items[list.selectedItemIndex];

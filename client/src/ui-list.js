@@ -8,13 +8,19 @@ const CELL_STYLE = "border-top: 1px solid lightgray; padding: 0.15em; padding-le
 
 export class List {
 
-  constructor(containerID, columnDescriptions) {
+  constructor(queryPrefix, columnDescriptions) {
+    this.queryPrefix = queryPrefix;
+    const containerID = `#${queryPrefix}-container`
     this.container = document.querySelector(containerID);
+    if (!this.container) {
+      throw Error(`Expecting an element with id="${containerID}"`);
+    }
     if (this.container.children.length != 0) {
       throw Error("list container must be empty");
     }
     this.container.style = "overflow: scroll";
     this.contents = document.createElement("div");
+    this.contents.setAttribute("id", `${queryPrefix}-contents`)
     this.contents.style = "display: flex; flex-direction: column;"
     this.container.appendChild(this.contents);
     this.contents.addEventListener("click", event => this._clickHandler(event), false);
