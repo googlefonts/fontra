@@ -307,10 +307,10 @@ export class AppController {
 
   async initGlyphNames() {
     this.glyphNames = await this.remote.getGlyphNames();
-    const glyphsList = document.querySelector("#glyphs-list");
-    const glyphsListWrapper = document.querySelector("#glyphs-list-wrapper");
+    const glyphsListContents = document.querySelector("#glyphs-list-contents");
+    const glyphsListContainer = document.querySelector("#glyphs-list-container");
 
-    glyphsListWrapper.addEventListener("keydown", async event => {
+    glyphsListContainer.addEventListener("keydown", async event => {
       if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
         return;
       }
@@ -329,12 +329,12 @@ export class AppController {
         }
       }
       event.preventDefault();
-    });
+    }, false);
 
-    glyphsListWrapper.addEventListener("scroll", async event => {
+    glyphsListContainer.addEventListener("scroll", async event => {
       if (
         this.glyphNamesBackLog.length > 0 &&
-        glyphsListWrapper.scrollTop + glyphsListWrapper.offsetHeight + 200 > glyphsList.offsetHeight
+        glyphsListContainer.scrollTop + glyphsListContainer.offsetHeight + 200 > glyphsListContents.offsetHeight
       ) {
         // adding more glyph names
         await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
@@ -346,7 +346,7 @@ export class AppController {
   }
 
   async _appendGlyphNames(glyphNames) {
-    const glyphsList = document.querySelector("#glyphs-list");
+    const glyphsListContents = document.querySelector("#glyphs-list-contents");
     for (const glyphName of glyphNames) {
       const glyphRow = document.createElement("div");
       glyphRow.setAttribute("class", "glyph-name");
@@ -357,7 +357,7 @@ export class AppController {
       }
       glyphRow.append(glyphName);
       glyphRow.addEventListener("click", async event => this._selectGlyphByRowElement(glyphRow));
-      glyphsList.appendChild(glyphRow);
+      glyphsListContents.appendChild(glyphRow);
     }
   }
 
@@ -384,9 +384,9 @@ export class AppController {
   }
 
   async glyphSeachFieldChanged(value) {
-    const glyphsList = document.querySelector("#glyphs-list");
+    const glyphsListContents = document.querySelector("#glyphs-list-contents");
     this.glyphNamesBackLog = this.glyphNames.filter(glyphName => glyphName.indexOf(value) >= 0);
-    glyphsList.innerHTML = "";
+    glyphsListContents.innerHTML = "";
     await this._appendGlyphNames(this.glyphNamesBackLog.splice(0, GLYPHS_LIST_CHUNK_SIZE));
   }
 
