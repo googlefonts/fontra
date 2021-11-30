@@ -71,8 +71,12 @@ export class List {
     let rowIndex = this.contents.childElementCount;
     for (const item of items) {
       const row = document.createElement("div");
+      const cell = document.createElement("div");
+      row.setAttribute("class", this.queryPrefix + "-row");
       row.rowIndex = rowIndex;
-      row.append(item);
+      cell.setAttribute("class", this.queryPrefix + "-cell");
+      cell.append(item);
+      row.appendChild(cell);
       this.contents.appendChild(row);
       row.setAttribute(
         "style", CELL_STYLE + `background-color: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};`
@@ -84,7 +88,11 @@ export class List {
   _clickHandler(event) {
     const target = event.target;
     if (target.parentNode === this.contents) {
+      // clicked on row
       this._selectByRowElement(target);
+    } else if (target.parentNode.parentNode === this.contents) {
+      // clicked on cell
+      this._selectByRowElement(target.parentNode);
     }
   }
 
