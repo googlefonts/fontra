@@ -77,6 +77,8 @@ export class List {
       cell.append(item);
       row.appendChild(cell);
       this.contents.appendChild(row);
+      // TODO: find CSS from document.styleSheets, only set properties
+      // not set in the stylesheet
       row.style.borderTopStyle = "solid";
       row.style.borderTopWidth = "1px";
       row.style.borderTopColor = "#DDD";
