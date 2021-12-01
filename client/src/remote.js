@@ -1,7 +1,7 @@
 export function getRemoteProxy(wsURL, onopen) {
   const app = new Proxy(new RemoteObject(wsURL, onopen), {
     get: (remote, propertyName, app) => {
-      return function () {
+      return function ( /* var args */ ) {
         return remote.doCall(propertyName, Array.from(arguments))
       };
     }
