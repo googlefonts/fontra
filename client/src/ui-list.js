@@ -30,23 +30,24 @@ export class List {
 
   constructor(queryPrefix, columnDescriptions) {
     this.queryPrefix = queryPrefix;
-    const containerID = `#${queryPrefix}-container`
-    const contentsID = `#${queryPrefix}-contents`
-    this.rowClass = `.${queryPrefix}-row`
-    this.container = document.querySelector(containerID);
+    const containerID = `${queryPrefix}-container`
+    const contentsID = `${queryPrefix}-contents`
+    this.rowClass = `${queryPrefix}-row`
+
+    this.container = document.querySelector(`#${containerID}`);
     if (!this.container) {
-      throw Error(`Expecting an element with id="${containerID}"`);
+      throw Error(`Expecting an element with id="#${containerID}"`);
     }
     if (this.container.children.length != 0) {
       throw Error("list container must be empty");
     }
 
-    document.styleSheets[0].insertRule(`${containerID} ${defaultContainerStyleSheet}`);
-    document.styleSheets[0].insertRule(`${contentsID} ${defaultContentsStyleSheet}`);
-    document.styleSheets[0].insertRule(`${this.rowClass} ${defaultRowStyleSheet}`);
+    document.styleSheets[0].insertRule(`#${containerID} ${defaultContainerStyleSheet}`);
+    document.styleSheets[0].insertRule(`#${contentsID} ${defaultContentsStyleSheet}`);
+    document.styleSheets[0].insertRule(`.${this.rowClass} ${defaultRowStyleSheet}`);
 
     this.contents = document.createElement("div");
-    this.contents.setAttribute("id", `${queryPrefix}-contents`)
+    this.contents.setAttribute("id", contentsID)
     this.container.appendChild(this.contents);
     this.contents.addEventListener("click", event => this._clickHandler(event), false);
     this.container.addEventListener("scroll", event => this._scrollHandler(event), false)
@@ -97,7 +98,7 @@ export class List {
     for (const item of items) {
       const row = document.createElement("div");
       const cell = document.createElement("div");
-      row.setAttribute("class", this.queryPrefix + "-row");
+      row.setAttribute("class", this.rowClass);
       row.rowIndex = rowIndex;
       cell.setAttribute("class", this.queryPrefix + "-cell");
       // cell.style.width = "12em";
