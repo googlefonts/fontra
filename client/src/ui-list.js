@@ -114,6 +114,7 @@ export class List {
       for (const colDesc of this.columnDescriptions) {
         const cell = document.createElement("div");
         cell.setAttribute("class", this.cellClass + "-" + colDesc.key);
+        // TODO: from CSS and/or from colDesc.style dict
         // cell.style.width = "12em";
         cell.style.overflow = "hidden";
         cell.style.textOverflow = "ellipsis";
