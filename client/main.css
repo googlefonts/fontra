@@ -35,11 +35,6 @@ html, body {
   font-size: 1em;
 }
 
-#glyphs-list-container {
-  overflow: scroll;
-  font-size: 0.9em;
-}
-
 .controls {
   padding: 1em;
   background: lightgray;

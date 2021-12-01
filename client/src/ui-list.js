@@ -4,12 +4,35 @@ const LIST_CHUNK_SIZE = 200;  // the amount of items added to the list at a time
 const LIST_ROW_SELECTED_BACKGROUND_COLOR = "#FD7"
 const LIST_ROW_UNSELECTED_BACKGROUND_COLOR = "#FFF";
 
+// TODO: these should ideally be part of a special .css file
+const defaultContainerStyleSheet = `{
+  overflow: scroll;
+}`
+
+const defaultContentsStyleSheet = `{
+  display: flex;
+  flex-direction: column;
+}`
+
+const defaultRowStyleSheet = `{
+  display: flex;
+  width: content;
+  border-top: solid 1px #DDD;
+  background-color: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};
+  padding: 0.15em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  cursor: pointer;
+}`
+
 
 export class List {
 
   constructor(queryPrefix, columnDescriptions) {
     this.queryPrefix = queryPrefix;
     const containerID = `#${queryPrefix}-container`
+    const contentsID = `#${queryPrefix}-contents`
+    this.rowClass = `.${queryPrefix}-row`
     this.container = document.querySelector(containerID);
     if (!this.container) {
       throw Error(`Expecting an element with id="${containerID}"`);
@@ -17,10 +40,13 @@ export class List {
     if (this.container.children.length != 0) {
       throw Error("list container must be empty");
     }
-    this.container.style = "overflow: scroll";
+
+    document.styleSheets[0].insertRule(`${containerID} ${defaultContainerStyleSheet}`);
+    document.styleSheets[0].insertRule(`${contentsID} ${defaultContentsStyleSheet}`);
+    document.styleSheets[0].insertRule(`${this.rowClass} ${defaultRowStyleSheet}`);
+
     this.contents = document.createElement("div");
     this.contents.setAttribute("id", `${queryPrefix}-contents`)
-    this.contents.style = "display: flex; flex-direction: column;"
     this.container.appendChild(this.contents);
     this.contents.addEventListener("click", event => this._clickHandler(event), false);
     this.container.addEventListener("scroll", event => this._scrollHandler(event), false)
@@ -74,19 +100,12 @@ export class List {
       row.setAttribute("class", this.queryPrefix + "-row");
       row.rowIndex = rowIndex;
       cell.setAttribute("class", this.queryPrefix + "-cell");
+      // cell.style.width = "12em";
+      cell.style.overflow = "hidden";
+      cell.style.textOverflow = "ellipsis";
       cell.append(item);
       row.appendChild(cell);
       this.contents.appendChild(row);
-      // TODO: find CSS from document.styleSheets, only set properties
-      // not set in the stylesheet
-      row.style.borderTopStyle = "solid";
-      row.style.borderTopWidth = "1px";
-      row.style.borderTopColor = "#DDD";
-      row.style.backgroundColor = LIST_ROW_UNSELECTED_BACKGROUND_COLOR;
-      row.style.padding = "0.15em";
-      row.style.paddingLeft = "0.5em";
-      row.style.paddingRight = "0.5em";
-      row.style.cursor = "pointer";
       rowIndex++;
     }
   }
