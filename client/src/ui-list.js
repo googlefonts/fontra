@@ -33,6 +33,7 @@ export class List {
     const containerID = `${queryPrefix}-container`
     const contentsID = `${queryPrefix}-contents`
     this.rowClass = `${queryPrefix}-row`
+    this.cellClass = `${queryPrefix}-cell`
 
     this.container = document.querySelector(`#${containerID}`);
     if (!this.container) {
@@ -45,6 +46,16 @@ export class List {
     document.styleSheets[0].insertRule(`#${containerID} ${defaultContainerStyleSheet}`);
     document.styleSheets[0].insertRule(`#${contentsID} ${defaultContentsStyleSheet}`);
     document.styleSheets[0].insertRule(`.${this.rowClass} ${defaultRowStyleSheet}`);
+
+    if (!columnDescriptions) {
+      columnDescriptions = [
+        {
+          "key": "default",
+          "get": item => item,
+        }
+      ];
+    }
+    this.columnDescriptions = columnDescriptions
 
     this.contents = document.createElement("div");
     this.contents.setAttribute("id", contentsID)
@@ -97,15 +108,20 @@ export class List {
     let rowIndex = this.contents.childElementCount;
     for (const item of items) {
       const row = document.createElement("div");
-      const cell = document.createElement("div");
       row.setAttribute("class", this.rowClass);
       row.rowIndex = rowIndex;
-      cell.setAttribute("class", this.queryPrefix + "-cell");
-      // cell.style.width = "12em";
-      cell.style.overflow = "hidden";
-      cell.style.textOverflow = "ellipsis";
-      cell.append(item);
-      row.appendChild(cell);
+
+      for (const colDesc of this.columnDescriptions) {
+        const cell = document.createElement("div");
+        cell.setAttribute("class", this.cellClass + "-" + colDesc.key);
+        // cell.style.width = "12em";
+        cell.style.overflow = "hidden";
+        cell.style.textOverflow = "ellipsis";
+        const value = colDesc.get ? colDesc.get(item) : item[key];
+        cell.append(value);
+        row.appendChild(cell);
+      }
+
       this.contents.appendChild(row);
       rowIndex++;
     }
