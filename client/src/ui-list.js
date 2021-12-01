@@ -3,7 +3,6 @@ const LIST_CHUNK_SIZE = 200;  // the amount of items added to the list at a time
 // TODO: from CSS?
 const LIST_ROW_SELECTED_BACKGROUND_COLOR = "#FD7"
 const LIST_ROW_UNSELECTED_BACKGROUND_COLOR = "#FFF";
-const CELL_STYLE = "border-top: 1px solid lightgray; padding: 0.15em; padding-left: 0.5em; padding-right: 0.5em; cursor: pointer;"
 
 
 export class List {
@@ -78,9 +77,14 @@ export class List {
       cell.append(item);
       row.appendChild(cell);
       this.contents.appendChild(row);
-      row.setAttribute(
-        "style", CELL_STYLE + `background-color: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};`
-      );
+      row.style.borderTopStyle = "solid";
+      row.style.borderTopWidth = "1px";
+      row.style.borderTopColor = "#DDD";
+      row.style.backgroundColor = LIST_ROW_UNSELECTED_BACKGROUND_COLOR;
+      row.style.padding = "0.15em";
+      row.style.paddingLeft = "0.5em";
+      row.style.paddingRight = "0.5em";
+      row.style.cursor = "pointer";
       rowIndex++;
     }
   }
@@ -103,14 +107,10 @@ export class List {
     }
     if (this.selectedItemIndex !== undefined) {
       const currentRow = this.contents.children[this.selectedItemIndex];
-      currentRow.setAttribute(
-        "style", CELL_STYLE + `background-color: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};`
-      );
+      currentRow.style.backgroundColor = LIST_ROW_UNSELECTED_BACKGROUND_COLOR;
     }
     if (row) {
-      row.setAttribute(
-        "style", CELL_STYLE + `background-color: ${LIST_ROW_SELECTED_BACKGROUND_COLOR};`
-      );
+      row.style.backgroundColor = LIST_ROW_SELECTED_BACKGROUND_COLOR;
       this.selectedItemIndex = row.rowIndex;
     } else {
       this.selectedItemIndex = undefined;
