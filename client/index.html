@@ -44,7 +44,8 @@
 
       async function startApp() {
         const port = await httpGetAsync("/websocketport");
-        const appController = new AppController(port);
+        const appController = new AppController();
+        await appController.start(port);
         window.glyphSeachFieldChanged = (value) => appController.glyphSeachFieldChanged(value);
       }
 

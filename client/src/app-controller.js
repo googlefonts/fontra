@@ -279,10 +279,9 @@ class MouseTracker {
 
 
 export class AppController {
-  constructor(port = 8001) {
+  constructor() {
     const canvas = document.querySelector("#edit-canvas");
 
-    this.remote = getRemoteProxy(`ws://localhost:${port}/`, async () => await this.initGlyphNames());
     this.canvasController = new CanvasController(canvas);
     this.canvasController.setDrawingParameters(drawingParameters);
 
@@ -305,6 +304,10 @@ export class AppController {
     window.sliderChanged = (value, axisTag) => {
       this.setAxisValue(value, axisTag);
     };
+  }
+
+  async start(port) {
+    this.remote = getRemoteProxy(`ws://localhost:${port}/`, async () => await this.initGlyphNames());
   }
 
   async initGlyphNames() {
