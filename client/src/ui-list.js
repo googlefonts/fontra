@@ -80,10 +80,6 @@ export class List {
       for (const colDesc of this.columnDescriptions) {
         const cell = document.createElement("div");
         cell.className = "text-cell" + " " + colDesc.key;
-        // TODO: from CSS and/or from colDesc.style dict
-        // cell.style.width = "12em";
-        // cell.style.overflow = "hidden";
-        // cell.style.textOverflow = "ellipsis";
         const value = colDesc.get ? colDesc.get(item) : item[key];
         cell.append(value);
         row.appendChild(cell);
