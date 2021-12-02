@@ -50,9 +50,9 @@ export class List {
   setSelectedItem(item) {
     const index = this.items.indexOf(item);
     if (index >= 0) {
-      this._selectByRowElement(this.contents.children[index])
+      this._selectByRowIndex(index)
     } else {
-      this._selectByRowElement(undefined)
+      this._selectByRowIndex(undefined)
     }
   }
 
@@ -94,28 +94,27 @@ export class List {
     const target = event.target;
     if (target.parentNode === this.contents) {
       // clicked on row
-      this._selectByRowElement(target);
+      this._selectByRowIndex(target.rowIndex);
     } else if (target.parentNode.parentNode === this.contents) {
       // clicked on cell
-      this._selectByRowElement(target.parentNode);
+      this._selectByRowIndex(target.parentNode.rowIndex);
     }
   }
 
-  _selectByRowElement(row) {
-    if (row && row.rowIndex === this.selectedItemIndex) {
+  _selectByRowIndex(rowIndex) {
+    if (rowIndex === this.selectedItemIndex) {
       // nothing to do
       return;
     }
     if (this.selectedItemIndex !== undefined) {
-      const currentRow = this.contents.children[this.selectedItemIndex];
-      currentRow.classList.remove("selected");
+      const row = this.contents.children[this.selectedItemIndex];
+      row?.classList.remove("selected");
     }
-    if (row) {
-      row.classList.add("selected");
-      this.selectedItemIndex = row.rowIndex;
-    } else {
-      this.selectedItemIndex = undefined;
+    if (rowIndex !== undefined) {
+      const row = this.contents.children[rowIndex];
+      row?.classList.add("selected");
     }
+    this.selectedItemIndex = rowIndex;
     const event = new CustomEvent("listSelectionChanged", {
       "bubbles": false,
       "detail": this,
@@ -138,7 +137,7 @@ export class List {
       }
       if (newRow) {
         newRow.scrollIntoView({behavior: "auto", block: "nearest", inline: "nearest"});
-        this._selectByRowElement(newRow);
+        this._selectByRowIndex(newRow.rowIndex);
       }
     }
     event.preventDefault();
