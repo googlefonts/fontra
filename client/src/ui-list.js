@@ -36,8 +36,8 @@ export class List {
     this.contents.innerHTML = "";
     this.items = items;
     this._itemsBackLog = Array.from(items);
-    this._addMoreItemsIfNeeded();
     this.selectedItemIndex = undefined;
+    this._addMoreItemsIfNeeded();
   }
 
   getSelectedItem() {
@@ -76,6 +76,9 @@ export class List {
       const row = document.createElement("div");
       row.className = "row";
       row.rowIndex = rowIndex;
+      if (rowIndex === this.selectedItemIndex) {
+        row.classList.add("selected");
+      }
 
       for (const colDesc of this.columnDescriptions) {
         const cell = document.createElement("div");
