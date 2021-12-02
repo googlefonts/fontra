@@ -1,6 +1,6 @@
-export async function getRemoteProxy(wsURL, onopen) {
+export async function getRemoteProxy(wsURL) {
   const remote = new RemoteObject(wsURL);
-  await remote.connect(onopen);
+  await remote.connect();
   const app = new Proxy(remote, {
     get: (remote, propertyName, app) => {
       if (propertyName === "then") {
@@ -27,12 +27,13 @@ export class RemoteObject {
     this._getNextCallID = () => {return g.next().value};
   }
 
-  async connect(onopen) {
+  connect() {
     this.websocket = new WebSocket(this.wsURL);
     this.websocket.onmessage = (event) => this._handleIncomingMessage(event);
-    if (onopen) {
-      this.websocket.onopen = onopen;
-    }
+    return new Promise((resolve, reject) => {
+      this.websocket.onopen = resolve;
+      this.websocket.onerror = reject;
+    })
   }
 
   _handleIncomingMessage(event) {

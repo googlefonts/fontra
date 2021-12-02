@@ -307,7 +307,8 @@ export class AppController {
   }
 
   async start(port) {
-    this.remote = await getRemoteProxy(`ws://localhost:${port}/`, async () => await this.initGlyphNames());
+    this.remote = await getRemoteProxy(`ws://localhost:${port}/`);
+    await this.initGlyphNames();
   }
 
   async initGlyphNames() {
