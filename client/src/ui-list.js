@@ -1,30 +1,5 @@
 const LIST_CHUNK_SIZE = 200;  // the amount of items added to the list at a time
 
-// TODO: from CSS?
-const LIST_ROW_SELECTED_BACKGROUND_COLOR = "#FD7"
-const LIST_ROW_UNSELECTED_BACKGROUND_COLOR = "#FFF";
-
-// TODO: these should ideally be part of a special .css file
-const defaultContainerStyleSheet = `{
-  overflow: scroll;
-}`
-
-const defaultContentsStyleSheet = `{
-  display: flex;
-  flex-direction: column;
-}`
-
-const defaultRowStyleSheet = `{
-  display: flex;
-  width: content;
-  border-top: solid 1px #DDD;
-  background-color: ${LIST_ROW_UNSELECTED_BACKGROUND_COLOR};
-  padding: 0.15em;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-  cursor: pointer;
-}`
-
 
 export class List {
 
@@ -42,10 +17,7 @@ export class List {
     if (this.container.children.length != 0) {
       throw Error("list container must be empty");
     }
-
-    document.styleSheets[0].insertRule(`#${containerID} ${defaultContainerStyleSheet}`);
-    document.styleSheets[0].insertRule(`#${contentsID} ${defaultContentsStyleSheet}`);
-    document.styleSheets[0].insertRule(`.${this.rowClass} ${defaultRowStyleSheet}`);
+    this.container.classList.add("ui-list");
 
     if (!columnDescriptions) {
       columnDescriptions = [
@@ -58,7 +30,7 @@ export class List {
     this.columnDescriptions = columnDescriptions
 
     this.contents = document.createElement("div");
-    this.contents.setAttribute("id", contentsID)
+    this.contents.className = "contents"
     this.container.appendChild(this.contents);
     this.contents.addEventListener("click", event => this._clickHandler(event), false);
     this.container.addEventListener("scroll", event => this._scrollHandler(event), false)
@@ -108,16 +80,16 @@ export class List {
     let rowIndex = this.contents.childElementCount;
     for (const item of items) {
       const row = document.createElement("div");
-      row.setAttribute("class", this.rowClass);
+      row.className = "row";
       row.rowIndex = rowIndex;
 
       for (const colDesc of this.columnDescriptions) {
         const cell = document.createElement("div");
-        cell.setAttribute("class", this.cellClass + "-" + colDesc.key);
+        cell.className = "text-cell" + " " + colDesc.key;
         // TODO: from CSS and/or from colDesc.style dict
         // cell.style.width = "12em";
-        cell.style.overflow = "hidden";
-        cell.style.textOverflow = "ellipsis";
+        // cell.style.overflow = "hidden";
+        // cell.style.textOverflow = "ellipsis";
         const value = colDesc.get ? colDesc.get(item) : item[key];
         cell.append(value);
         row.appendChild(cell);
@@ -146,10 +118,10 @@ export class List {
     }
     if (this.selectedItemIndex !== undefined) {
       const currentRow = this.contents.children[this.selectedItemIndex];
-      currentRow.style.backgroundColor = LIST_ROW_UNSELECTED_BACKGROUND_COLOR;
+      currentRow.classList.remove("selected");
     }
     if (row) {
-      row.style.backgroundColor = LIST_ROW_SELECTED_BACKGROUND_COLOR;
+      row.classList.add("selected");
       this.selectedItemIndex = row.rowIndex;
     } else {
       this.selectedItemIndex = undefined;

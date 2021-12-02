@@ -1,0 +1,29 @@
+.ui-list {
+  overflow: scroll;
+}
+
+.ui-list > .contents {
+  display: flex;
+  flex-direction: column;
+}
+
+.ui-list > .contents > .row {
+  display: flex;
+  width: content;
+  border-top: solid 1px #DDD;
+  background-color: #FFF;
+  padding: 0.15em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  cursor: pointer;
+}
+
+.ui-list > .contents > .selected {
+  background-color: #FD7;
+}
+
+.ui-list > .contents > .row > .text-cell {
+  /*color: red;*/
+  overflow: hidden;
+  textOverflow: ellipsis;
+}
