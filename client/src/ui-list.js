@@ -127,20 +127,19 @@ export class List {
       return;
     }
     event.preventDefault();
-    const selectedRow = this.contents.children[this.selectedItemIndex];
-    if (selectedRow) {
-      let newRow;
-      if (event.key === "ArrowUp") {
-        newRow = selectedRow.previousElementSibling;
-      } else {
-        newRow = selectedRow.nextElementSibling;
-      }
-      if (newRow) {
-        newRow.scrollIntoView({behavior: "auto", block: "nearest", inline: "nearest"});
-        this._selectByRowIndex(newRow.rowIndex);
-      }
+    if (!this.items.length) {
+      return;
     }
-    event.preventDefault();
+    let rowIndex = this.selectedItemIndex;
+    if (rowIndex === undefined) {
+      rowIndex = 0;
+    } else {
+      rowIndex = event.key === "ArrowUp" ? rowIndex - 1 : rowIndex + 1;
+      rowIndex = Math.min(Math.max(rowIndex, 0), this.items.length - 1);
+    }
+    this._selectByRowIndex(rowIndex);
+    const newRow = this.contents.children[rowIndex];
+    newRow?.scrollIntoView({behavior: "auto", block: "nearest", inline: "nearest"});
   }
 
   _scrollHandler(event) {
