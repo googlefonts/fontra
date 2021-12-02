@@ -318,7 +318,6 @@ export class AppController {
   }
 
   async glyphSeachFieldChanged(value) {
-    const glyphsListContents = document.querySelector("#glyphs-list-contents");
     const filteredGlyphNames = this.glyphNames.filter(glyphName => glyphName.indexOf(value) >= 0);
     const selectedItem = this.glyphNamesList.getSelectedItem();
     this.glyphNamesList.setItems(filteredGlyphNames);
