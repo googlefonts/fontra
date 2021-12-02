@@ -40,24 +40,15 @@
   </body>
     <script type="module">
       import { AppController } from "./src/app-controller.js";
+      import { httpGetAsync } from "./src/utils.js";
 
-      function httpGetAsync(theUrl, callback) {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.onreadystatechange = () => {
-          if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-            callback(xmlHttp.responseText);
-          }
-        }
-        xmlHttp.open("GET", theUrl, true); // true for asynchronous
-        xmlHttp.send(null);
-      }
-
-      function startApp(port) {
+      async function startApp() {
+        const port = await httpGetAsync("/websocketport");
         const appController = new AppController(port);
         window.glyphSeachFieldChanged = (value) => appController.glyphSeachFieldChanged(value);
       }
 
-      httpGetAsync("/websocketport", startApp)
+      startApp();
 
     </script>
 </html>
