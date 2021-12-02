@@ -13,15 +13,15 @@ export function getRemoteProxy(wsURL, onopen) {
 export class RemoteObject {
 
   constructor(wsURL, onopen) {
-      this.websocket = new WebSocket(wsURL);
-      this.websocket.onmessage = (event) => this._handleIncomingMessage(event);
-      if (onopen) {
-        this.websocket.onopen = onopen;
-      }
-      this._callReturnCallbacks = {};
+    this.websocket = new WebSocket(wsURL);
+    this.websocket.onmessage = (event) => this._handleIncomingMessage(event);
+    if (onopen) {
+      this.websocket.onopen = onopen;
+    }
+    this._callReturnCallbacks = {};
 
-      const g =_genNextCallID();
-      this._getNextCallID = () => {return g.next().value};
+    const g =_genNextCallID();
+    this._getNextCallID = () => {return g.next().value};
   }
 
   _handleIncomingMessage(event) {
