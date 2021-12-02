@@ -38,7 +38,7 @@ html, body {
   border-radius: 0.66em;
   padding: 0.2em;
   padding-left: 0.8em;
-  font-size: 1em;
+  font-family: fontra-ui-regular, sans-serif;
 }
 
 .controls {
