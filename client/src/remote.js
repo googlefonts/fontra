@@ -53,17 +53,17 @@ export class RemoteObject {
     }
   }
 
-  doCall(methodName, args) {
+  async doCall(methodName, args) {
     const callID = this._getNextCallID();
     const message = {
       "call-id": callID,
       "method-name": methodName,
       "arguments": args,
     };
-    // console.log("outgoing")
-    // console.log(message)
-    // console.log("args", args);
-    // console.log("args", JSON.stringify(args));
+    if (this.websocket.readyState !== 1) {
+      // console.log("reconnecting");
+      await this.connect();
+    }
     this.websocket.send(JSON.stringify(message));
 
     this._callReturnCallbacks[callID] = {}
