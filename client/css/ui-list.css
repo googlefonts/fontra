@@ -23,7 +23,6 @@
 }
 
 .ui-list > .contents > .row > .text-cell {
-  /*color: red;*/
   overflow: hidden;
-  textOverflow: ellipsis;
+  text-overflow: ellipsis;
 }
