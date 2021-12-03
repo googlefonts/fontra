@@ -21,19 +21,19 @@ class Server:
         asyncio.get_event_loop().run_until_complete(startServer)
         asyncio.get_event_loop().run_forever()
 
-    async def registerClient(self, client):
+    def registerClient(self, client):
         self.clients[client.websocket] = client
 
-    async def unregisterClient(self, client):
+    def unregisterClient(self, client):
         del self.clients[client.websocket]
 
     async def incomingConnection(self, websocket, path):
         client = Client(websocket, self.subject, self.methodNames)
-        await self.registerClient(client)
+        self.registerClient(client)
         try:
             await client.handleConnection(path)
         finally:
-            await self.unregisterClient(client)
+            self.unregisterClient(client)
 
 
 class Client:
