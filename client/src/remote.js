@@ -68,8 +68,8 @@ export class RemoteObject {
 
     this._callReturnCallbacks[callID] = {}
     return new Promise((resolve, reject) => {
-      this._callReturnCallbacks[callID]["resolve"] = resolve;
-      this._callReturnCallbacks[callID]["reject"] = reject;
+      this._callReturnCallbacks[callID].resolve = resolve;
+      this._callReturnCallbacks[callID].reject = reject;
     });
   }
 
