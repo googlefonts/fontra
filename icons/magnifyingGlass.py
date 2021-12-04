@@ -5,7 +5,7 @@ radius = diameter / 2
 lineThickness = 6
 handleLength = radius * 1.6
 
-offset = 15
+offset = 13
 translate(radius + offset, height() - radius - offset)
 rotate(-45)
 
