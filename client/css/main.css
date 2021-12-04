@@ -103,12 +103,24 @@ html, body {
   width: 2em;
   height: 2em;
   transition: 0.15s;
+  display: flex;
 }
 
 .overlay-item:hover {
   background-color: white;
   box-shadow: 4px 4px 15px lightgray;
-  width: 20em;
+  width: 20em; /*max-content*/
+}
+
+.overlay-item > div {
+  margin-left: 1em;
+  margin-right: 1em;
+  font-size: 1.4em;
+  visibility: hidden;
+}
+
+.overlay-item:hover > div {
+  visibility: visible;
 }
 
 .icon-img {
