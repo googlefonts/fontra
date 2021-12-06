@@ -333,7 +333,7 @@ export class AppController {
   }
 
   async glyphSeachFieldChanged(value) {
-    const filteredGlyphItems = this.glyphsListItems.filter(item => item.glyphName.indexOf(value) >= 0);
+    const filteredGlyphItems = this.glyphsListItems.filter(item => glyphFilterFunc(item, value));
     const selectedItem = this.glyphNamesList.getSelectedItem();
     this.glyphNamesList.setItems(filteredGlyphItems);
     this.glyphNamesList.setSelectedItem(selectedItem);
@@ -483,4 +483,11 @@ function glyphItemSortFunc(item1, item2) {
     return -1;
   }
   return 0;
+}
+
+function glyphFilterFunc(item, searchString) {
+  if (item.glyphName.indexOf(searchString) >= 0) {
+    return true;
+  }
+  return false;
 }
