@@ -312,20 +312,30 @@ export class AppController {
   }
 
   async initGlyphNames() {
-    this.glyphNamesList = new List("glyphs-list");
+    const columnDescriptions = [
+      {"key": "char", "width": "2em", "get": item => getCharFromUnicode(item.unicodes[0])},
+      {"key": "glyphName", "width": "10em", },
+      {"key": "unicode", "width": "5em", "get": item => getUniStringFromUnicode(item.unicodes[0])},
+    ];
+    this.glyphNamesList = new List("glyphs-list", columnDescriptions);
     this.glyphNamesList.addEventListener("listSelectionChanged", async (event) => {
       const list = event.detail;
-      const glyphName = list.items[list.selectedItemIndex];
-      await this.glyphNameChangedCallback(glyphName);
+      const item = list.items[list.selectedItemIndex];
+      await this.glyphNameChangedCallback(item.glyphName);
     });
-    this.glyphNames = await this.remote.getGlyphNames();
-    this.glyphNamesList.setItems(this.glyphNames);
+    this.reversedCmap = await this.remote.getReversedCmap();
+    this.glyphsListItems = [];
+    for (const glyphName in this.reversedCmap) {
+      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": this.reversedCmap[glyphName]});
+    }
+    this.glyphsListItems.sort(glyphItemSortFunc);
+    this.glyphNamesList.setItems(this.glyphsListItems);
   }
 
   async glyphSeachFieldChanged(value) {
-    const filteredGlyphNames = this.glyphNames.filter(glyphName => glyphName.indexOf(value) >= 0);
+    const filteredGlyphItems = this.glyphsListItems.filter(item => item.glyphName.indexOf(value) >= 0);
     const selectedItem = this.glyphNamesList.getSelectedItem();
-    this.glyphNamesList.setItems(filteredGlyphNames);
+    this.glyphNamesList.setItems(filteredGlyphItems);
     this.glyphNamesList.setSelectedItem(selectedItem);
   }
 
@@ -450,4 +460,27 @@ function encodeGlyphName(glyphName) {
   // encode a glyph name as base64 minus padding, so it can be used
   // as a query selector
   return window.btoa(glyphName).replaceAll("=", "");
+}
+
+
+function getCharFromUnicode(codePoint) {
+  return codePoint !== undefined ? String.fromCodePoint(codePoint) : ""
+
+}
+
+function getUniStringFromUnicode(codePoint) {
+  return codePoint !== undefined ? "U+" + codePoint.toString(16).toUpperCase().padStart(4, "0") : ""
+}
+
+function glyphItemSortFunc(item1, item2) {
+  if (item1.unicodes[0] === undefined && item2.unicodes[0] === undefined && item1.glyphName < item2.glyphName) {
+    return -1;
+  } else if (item1.unicodes[0] === undefined && item2.unicodes[0] !== undefined) {
+    return 1;
+  } else if (item1.unicodes[0] !== undefined && item2.unicodes[0] === undefined) {
+    return -1;
+  } else if (item1.unicodes[0] < item2.unicodes[0]) {
+    return -1;
+  }
+  return 0;
 }
