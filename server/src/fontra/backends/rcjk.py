@@ -5,18 +5,24 @@ from .pen import PathBuilderPointPen
 class RCJKBackend:
     def __init__(self, path):
         self.project = RoboCJKProject(path)
-        self.glyphNames = set()
-        for gs in self._iterGlyphSets():
-            self.glyphNames.update(gs.getGlyphNamesAndUnicodes())
-        self.glyphNames = sorted(self.glyphNames)
+        self.reversedCmap = {}
+        for gs, hasEncoding in self._iterGlyphSets():
+            reversedCmap = gs.getGlyphNamesAndUnicodes()
+            for glyphName, unicodes in reversedCmap.items():
+                assert glyphName not in self.reversedCmap
+                self.reversedCmap[glyphName] = unicodes if hasEncoding else []
+        self.glyphNames = sorted(self.reversedCmap)
 
     def _iterGlyphSets(self):
-        yield self.project.characterGlyphGlyphSet
-        yield self.project.deepComponentGlyphSet
-        yield self.project.atomicElementGlyphSet
+        yield self.project.characterGlyphGlyphSet, True
+        yield self.project.deepComponentGlyphSet, False
+        yield self.project.atomicElementGlyphSet, False
 
     async def getGlyphNames(self):
         return self.glyphNames
+
+    async def getReversedCmap(self):
+        return self.reversedCmap
 
     async def getGlyph(self, glyphName):
         glyph = self._getRCJKGlyph(glyphName)
@@ -28,7 +34,7 @@ class RCJKBackend:
     def _getRCJKGlyph(self, glyphName):
         if not glyphName:
             return None
-        for gs in self._iterGlyphSets():
+        for gs, _ in self._iterGlyphSets():
             if glyphName in gs:
                 return gs.getGlyph(glyphName)
         else:
