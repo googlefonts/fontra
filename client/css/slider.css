@@ -1,4 +1,4 @@
-input {
+input[type=range] {
   --slider-track-width: 10em;
   --slider-track-height: 0.3em;
   --slider-track-color: #0008;
