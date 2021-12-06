@@ -473,16 +473,9 @@ function getUniStringFromUnicode(codePoint) {
 }
 
 function glyphItemSortFunc(item1, item2) {
-  if (item1.unicodes[0] === undefined && item2.unicodes[0] === undefined && item1.glyphName < item2.glyphName) {
-    return -1;
-  } else if (item1.unicodes[0] === undefined && item2.unicodes[0] !== undefined) {
-    return 1;
-  } else if (item1.unicodes[0] !== undefined && item2.unicodes[0] === undefined) {
-    return -1;
-  } else if (item1.unicodes[0] < item2.unicodes[0]) {
-    return -1;
-  }
-  return 0;
+  const uniCmp = compare(item1.unicodes[0], item2.unicodes[0]);
+  const glyphNameCmp = compare(item1.glyphName, item2.glyphName);
+  return uniCmp ? uniCmp : glyphNameCmp;
 }
 
 function glyphFilterFunc(item, searchString) {
@@ -496,4 +489,19 @@ function glyphFilterFunc(item, searchString) {
     }
   }
   return false;
+}
+
+function compare(a, b) {
+  // sort undefined at the end
+  if (a === b) {
+    return 0;
+  } else if (a === undefined) {
+    return 1;
+  } else if (b === undefined) {
+    return -1;
+  } else if (a < b) {
+    return -1;
+  } else {
+    return 1;
+  }
 }
