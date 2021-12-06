@@ -83,7 +83,10 @@ export class List {
       for (const colDesc of this.columnDescriptions) {
         const cell = document.createElement("div");
         cell.className = "text-cell " + colDesc.key;
-        const value = colDesc.get ? colDesc.get(item) : item[key];
+        if (colDesc.width) {
+          cell.style.width = colDesc.width;
+        }
+        const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
         cell.append(value);
         row.appendChild(cell);
       }
