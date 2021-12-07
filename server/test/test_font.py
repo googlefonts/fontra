@@ -1,5 +1,7 @@
 import pathlib
 import pytest
+from fontra.backends import getBackendClass
+from fontra.backends.designspace import DesignspaceBackend
 from fontra.backends.rcjk import RCJKBackend
 
 
@@ -259,3 +261,20 @@ async def test_getGlyph(rcjkTestFont, expectedGlyph):
     glyphNames = await rcjkTestFont.getGlyphNames()
     glyph = await rcjkTestFont.getGlyph(expectedGlyph["name"])
     assert glyph == expectedGlyph
+
+
+getBackendTestData = [
+    ("rcjk", RCJKBackend),
+    ("designspace", DesignspaceBackend),
+]
+
+
+@pytest.mark.parametrize("extension, backendClass", getBackendTestData)
+def test_getBackendClass(extension, backendClass):
+    cls = getBackendClass(extension)
+    assert cls is backendClass
+
+
+def test_getBackendClassFail():
+    with pytest.raises(ValueError):
+        cls = getBackendClass("foo")
