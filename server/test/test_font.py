@@ -76,6 +76,157 @@ getGlyphTestData = [
         },
     ),
     (
+        "designspace",
+        {
+            "axes": [
+                {
+                    "defaultValue": 0.0,
+                    "maxValue": 1000.0,
+                    "minValue": 0.0,
+                    "name": "width",
+                },
+                {
+                    "defaultValue": 0.0,
+                    "maxValue": 1000.0,
+                    "minValue": 0.0,
+                    "name": "weight",
+                },
+            ],
+            "name": "Aacute",
+            "unicodes": [ord("Á")],
+            "sources": [
+                {
+                    "location": {"weight": 0.0, "width": 0.0},
+                    "source": {
+                        "components": [
+                            {
+                                "name": "A",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 0,
+                                    "y": 0,
+                                },
+                            },
+                            {
+                                "name": "acute",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 99,
+                                    "y": 20,
+                                },
+                            },
+                        ],
+                        "hAdvance": 396,
+                    },
+                },
+                {
+                    "location": {"weight": 1000.0, "width": 0.0},
+                    "source": {
+                        "components": [
+                            {
+                                "name": "A",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 0,
+                                    "y": 0,
+                                },
+                            },
+                            {
+                                "name": "acute",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 204,
+                                    "y": 0,
+                                },
+                            },
+                        ],
+                        "hAdvance": 740,
+                    },
+                },
+                {
+                    "location": {"weight": 0.0, "width": 1000.0},
+                    "source": {
+                        "components": [
+                            {
+                                "name": "A",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 0,
+                                    "y": 0,
+                                },
+                            },
+                            {
+                                "name": "acute",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 494,
+                                    "y": 20,
+                                },
+                            },
+                        ],
+                        "hAdvance": 1190,
+                    },
+                },
+                {
+                    "location": {"weight": 1000.0, "width": 1000.0},
+                    "source": {
+                        "components": [
+                            {
+                                "name": "A",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 0,
+                                    "y": 0,
+                                },
+                            },
+                            {
+                                "name": "acute",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 484,
+                                    "y": 20,
+                                },
+                            },
+                        ],
+                        "hAdvance": 1290,
+                    },
+                },
+            ],
+        },
+    ),
+    (
         "rcjk",
         {
             "axes": [

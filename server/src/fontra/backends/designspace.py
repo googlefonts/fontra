@@ -74,6 +74,8 @@ class UFOSource:
         glyphDict = {}
         if path is not None:
             glyphDict["path"] = path
+        if pen.components:
+            glyphDict["components"] = pen.components
         glyphDict["hAdvance"] = glyph.width
         # TODO: components
         # TODO: anchors
