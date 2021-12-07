@@ -273,7 +273,7 @@ def getTestFont(backendName):
 
 getGlyphNamesTestData = [
     ("rcjk", 80, ["DC_0030_00", "DC_0031_00", "DC_0032_00", "DC_0033_00"]),
-    ("designspace", 49, ['A', 'Aacute', 'Adieresis', 'B']),
+    ("designspace", 49, ["A", "Aacute", "Adieresis", "B"]),
 ]
 
 
@@ -290,6 +290,7 @@ async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
 
 getReversedCmapTestData = [
     ("rcjk", 80, {"uni0031": [ord("1")]}),
+    ("designspace", 49, {"A": [ord("A")], "B": [ord("B")]}),
 ]
 
 
