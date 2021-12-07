@@ -76,16 +76,3 @@ class Client:
 
     async def sendMessage(self, message):
         await self.websocket.send(json.dumps(message, separators=(",", ":")))
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-
-    class Foo:
-        async def remote_test(self, *arguments, **kwargs):
-            print("remote_test!")
-            print("args:", arguments, kwargs)
-            return "return value"
-
-    server = Server(Foo())
-    server.run()
