@@ -1,3 +1,7 @@
+import math
+from rcjktools.utils import decomposeTwoByTwo
+
+
 ON_CURVE = 0x00
 OFF_CURVE_QUAD = 0x01
 OFF_CURVE_CUBIC = 0x02
@@ -67,6 +71,26 @@ class PathBuilderPointPen:
         )
         self._currentContour = None
 
-    def addComponent(self, *args, **kwargs):
-        # TODO: turn transform into varco transform
-        pass
+    def addComponent(self, glyphName, transformation, **kwargs):
+        xx, xy, yx, yy, dx, dy = transformation
+        rotation, scalex, scaley, skewx, skewy = decomposeTwoByTwo((xx, xy, yx, yy))
+        if rotation == -0.0:
+            rotation = 0.0
+        assert abs(skewx) < 0.00001, f"x skew is not yet supported ({self.name})"
+        assert abs(skewy) < 0.00001, f"y skew is not yet supported ({self.name})"
+        transform = dict(
+            x=dx,
+            y=dy,
+            scalex=scalex,
+            scaley=scaley,
+            rotation=math.degrees(rotation),
+            tcenterx=0,
+            tcentery=0,
+        )
+
+        self.components.append(
+            {
+                "name": glyphName,
+                "transform": transform,
+            }
+        )
