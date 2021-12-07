@@ -9,6 +9,73 @@ dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 getGlyphTestData = [
     (
+        "designspace",
+        {
+            "axes": [
+                {
+                    "defaultValue": 0.0,
+                    "maxValue": 1000.0,
+                    "minValue": 0.0,
+                    "name": "width",
+                },
+                {
+                    "defaultValue": 0.0,
+                    "maxValue": 1000.0,
+                    "minValue": 0.0,
+                    "name": "weight",
+                },
+            ],
+            "name": "period",
+            "unicodes": [ord(".")],
+            "sources": [
+                {
+                    "location": {"weight": 0.0, "width": 0.0},
+                    "source": {
+                        "hAdvance": 170,
+                        "path": {
+                            "contours": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                    },
+                },
+                {
+                    "location": {"weight": 1000.0, "width": 0.0},
+                    "source": {
+                        "hAdvance": 250,
+                        "path": {
+                            "contours": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [30, 0, 220, 0, 220, 300, 30, 300],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                    },
+                },
+                {
+                    "location": {"weight": 0.0, "width": 1000.0},
+                    "source": {
+                        "hAdvance": 290,
+                        "path": {
+                            "contours": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [120, 0, 170, 0, 170, 220, 120, 220],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                    },
+                },
+                {
+                    "location": {"weight": 1000.0, "width": 1000.0},
+                    "source": {
+                        "hAdvance": 310,
+                        "path": {
+                            "contours": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [60, 0, 250, 0, 250, 300, 60, 300],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                    },
+                },
+            ],
+        },
+    ),
+    (
         "rcjk",
         {
             "axes": [
