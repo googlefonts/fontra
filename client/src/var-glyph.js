@@ -8,8 +8,8 @@ export class VarGlyph {
   static fromObject(obj) {
     const glyph = new VarGlyph();
     glyph.name = obj.name;
-    glyph.axes = obj.axes;
-    glyph.unicodes = obj.unicodes;
+    glyph.axes = obj.axes || [];
+    glyph.unicodes = obj.unicodes || [];
     glyph.sources = obj.sources.map(item => {
       return {"location": item.location, "source": VarSource.fromObject(item.source)}
     });

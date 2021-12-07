@@ -380,6 +380,9 @@ export class AppController {
   }
 
   *getAxisInfo() {
+    if (!this.glyph.axes) {
+      return;
+    }
     const done = {};
     for (const axis of this.glyph.axes) {
       const baseName = _getAxisBaseName(axis.name);
