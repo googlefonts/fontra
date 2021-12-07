@@ -46,7 +46,6 @@ class DesignspaceBackend:
             ufoSource = self._getSourceFromSourceDescriptor(sourceDescriptor)
             if not ufoSource.hasGlyph(glyphName):
                 continue
-            location = sourceDescriptor.location
             sourceDict, sourceGlyph = ufoSource.serializeGlyph(glyphName)
             sources.append(
                 {
