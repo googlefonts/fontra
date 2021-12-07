@@ -28,7 +28,7 @@ class RCJKBackend:
         glyph = self._getRCJKGlyph(glyphName)
         if glyph is not None:
             ensureComponentCoords(glyph, self._getRCJKGlyph)
-            glyph = unpackGlyph(glyph)
+            glyph = serializeGlyph(glyph)
         return glyph
 
     def _getRCJKGlyph(self, glyphName):
@@ -67,7 +67,7 @@ def ensureComponentCoords(glyph, getGlyphFunc):
     glyph._ensuredComponentCoords = True
 
 
-def unpackGlyph(glyph):
+def serializeGlyph(glyph):
     d = {}
     d["axes"] = [
         dict(name=name, minValue=minValue, defaultValue=defaultValue, maxValue=maxValue)
@@ -80,10 +80,10 @@ def unpackGlyph(glyph):
         source = {}
         source["location"] = varGlyph.location
         sourceGlyph = {}
-        path = unpackPath(varGlyph)
+        path = serializePath(varGlyph)
         if path is not None:
             sourceGlyph["path"] = path
-        components = unpackComponents(varGlyph.components)
+        components = serializeComponents(varGlyph.components)
         if components:
             sourceGlyph["components"] = components
         # TODO anchors?
@@ -94,14 +94,14 @@ def unpackGlyph(glyph):
     return d
 
 
-def unpackPath(glyph):
+def serializePath(glyph):
     pen = PathBuilderPointPen()
     glyph.drawPoints(pen)
     assert not pen.components
     return pen.getPath()
 
 
-def unpackComponents(components):
+def serializeComponents(components):
     return [
         dict(name=compo.name, transform=compo.transform, coord=compo.coord)
         for compo in components
