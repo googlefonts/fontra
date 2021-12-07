@@ -37,10 +37,10 @@ class DesignspaceBackend:
         return src
 
     async def getGlyphNames(self):
-        return self.defaultSource.getGlyphNames()
+        return await self.defaultSource.getGlyphNames()
 
     async def getReversedCmap(self):
-        return self.defaultSource.getReversedCmap()
+        return await self.defaultSource.getReversedCmap()
 
     async def getGlyph(self, glyphName):
         glyph = {"axes": self.axes, "name": glyphName}
@@ -87,12 +87,12 @@ class UFOSource:
         # TODO: vAdvance, verticalOrigin
         return glyphDict, glyph
 
-    def getGlyphNames(self):
+    async def getGlyphNames(self):
         return sorted(self.glyphSet.keys())
 
-    def getReversedCmap(self):
+    async def getReversedCmap(self):
         revCmap = {}
-        for glyphName in self.getGlyphNames():
+        for glyphName in await self.getGlyphNames():
             glifData = self.glyphSet.getGLIF(glyphName)
             gn, unicodes = extractGlyphNameAndUnicodes(glifData)
             assert gn == glyphName
