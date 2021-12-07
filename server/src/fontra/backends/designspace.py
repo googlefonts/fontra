@@ -11,9 +11,9 @@ class DesignspaceBackend:
 
     @property
     def defaultSource(self):
-        return self._getSourceFromSource(self.dsDoc.default)
+        return self._getSourceFromSourceDescriptor(self.dsDoc.default)
 
-    def _getSourceFromSource(self, source):
+    def _getSourceFromSourceDescriptor(self, source):
         path = source.path
         layerName = source.layerName
         key = (path, layerName)
