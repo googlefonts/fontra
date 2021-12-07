@@ -271,11 +271,6 @@ def getTestFont(backendName):
     return cls(testFontPaths[backendName])
 
 
-@pytest.fixture
-def rcjkTestFont():
-    return RCJKBackend(testFontPaths["rcjk"])
-
-
 getGlyphNamesTestData = [
     ("rcjk", 80, ["DC_0030_00", "DC_0031_00", "DC_0032_00", "DC_0033_00"]),
 ]
