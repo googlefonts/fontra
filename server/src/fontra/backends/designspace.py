@@ -32,7 +32,7 @@ class DesignspaceBackend:
         key = (path, layerName)
         src = self._sources.get(key)
         if src is None:
-            src = UFOSource(path, layerName)
+            src = UFOSource.fromPath(path, layerName)
         self._sources[key] = src
         return src
 
@@ -64,9 +64,12 @@ class DesignspaceBackend:
 
 
 class UFOSource:
-    def __init__(self, path, layerName):
+    @classmethod
+    def fromPath(cls, path, layerName=None):
+        self = cls()
         self.reader = UFOReader(path)
         self.glyphSet = self.reader.getGlyphSet(layerName=layerName)
+        return self
 
     def serializeGlyph(self, glyphName):
         glyph = UFOGlyph()
