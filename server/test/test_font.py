@@ -8,7 +8,7 @@ from fontra.backends.rcjk import RCJKBackend
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 testData = [
-    {
+    ("rcjk", {
         "axes": [
             {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "HLON"},
             {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "WGHT"},
@@ -113,8 +113,8 @@ testData = [
                 },
             },
         ],
-    },
-    {
+    }),
+    ("rcjk", {
         "axes": [
             {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "wght"}
         ],
@@ -164,8 +164,8 @@ testData = [
                 },
             },
         ],
-    },
-    {
+    }),
+    ("rcjk", {
         "axes": [
             {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "X_X_bo"},
             {"defaultValue": 0.0, "maxValue": 1.0, "minValue": 0.0, "name": "X_X_la"},
@@ -237,29 +237,46 @@ testData = [
                 },
             },
         ],
-    },
+    }),
 ]
+
+
+testFontPaths = {
+    "rcjk": dataDir / "figArnaud.rcjk",
+    "designspace": dataDir / "mutatorsans" / "MutatorSans.designspace",
+}
+
+
+def getTestFont(backendName):
+    cls = getBackendClass(backendName)
+    return cls(testFontPaths[backendName])
 
 
 @pytest.fixture
 def rcjkTestFont():
-    return RCJKBackend(dataDir / "figArnaud.rcjk")
+    return RCJKBackend(testFontPaths["rcjk"])
+
+
+getGlyphNamesTestData = [
+    ("rcjk", 80, ["DC_0030_00", "DC_0031_00", "DC_0032_00", "DC_0033_00"]),
+]
 
 
 @pytest.mark.asyncio
-async def test_getGlyphNames(rcjkTestFont):
-    glyphNames = await rcjkTestFont.getGlyphNames()
-    assert 80 == len(glyphNames)
-    assert ["DC_0030_00", "DC_0031_00", "DC_0032_00", "DC_0033_00"] == sorted(
-        glyphNames
-    )[:4]
+@pytest.mark.parametrize("backendName, numGlyphs, firstFourGlyphNames", getGlyphNamesTestData)
+async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
+    font = getTestFont(backendName)
+    glyphNames = await font.getGlyphNames()
+    assert numGlyphs == len(glyphNames)
+    assert firstFourGlyphNames == sorted(glyphNames)[:4]
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("expectedGlyph", testData)
-async def test_getGlyph(rcjkTestFont, expectedGlyph):
-    glyphNames = await rcjkTestFont.getGlyphNames()
-    glyph = await rcjkTestFont.getGlyph(expectedGlyph["name"])
+@pytest.mark.parametrize("backendName, expectedGlyph", testData)
+async def test_getGlyph(backendName, expectedGlyph):
+    font = getTestFont(backendName)
+    glyphNames = await font.getGlyphNames()
+    glyph = await font.getGlyph(expectedGlyph["name"])
     assert glyph == expectedGlyph
 
 
