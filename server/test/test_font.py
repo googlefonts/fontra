@@ -7,7 +7,7 @@ from fontra.backends.rcjk import RCJKBackend
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
-testData = [
+getGlyphTestData = [
     (
         "rcjk",
         {
@@ -303,7 +303,7 @@ async def test_getReversedCmap(backendName, numGlyphs, testMapping):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("backendName, expectedGlyph", testData)
+@pytest.mark.parametrize("backendName, expectedGlyph", getGlyphTestData)
 async def test_getGlyph(backendName, expectedGlyph):
     font = getTestFont(backendName)
     glyphNames = await font.getGlyphNames()
