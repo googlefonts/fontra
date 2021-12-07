@@ -1,7 +1,7 @@
 import pathlib
 import pytest
 from fontra.backends import getBackendClass
-from fontra.backends.designspace import DesignspaceBackend, UFOSource
+from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.backends.rcjk import RCJKBackend
 
 
@@ -537,7 +537,7 @@ async def test_getGlyph(backendName, expectedGlyph):
 getBackendTestData = [
     ("rcjk", RCJKBackend),
     ("designspace", DesignspaceBackend),
-    ("ufo", UFOSource),
+    ("ufo", UFOBackend),
 ]
 
 

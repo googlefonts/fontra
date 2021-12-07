@@ -32,7 +32,7 @@ class DesignspaceBackend:
         key = (path, layerName)
         src = self._sources.get(key)
         if src is None:
-            src = UFOSource.fromPath(path, layerName)
+            src = UFOBackend.fromPath(path, layerName)
         self._sources[key] = src
         return src
 
@@ -63,7 +63,7 @@ class DesignspaceBackend:
         return glyph
 
 
-class UFOSource:
+class UFOBackend:
     @classmethod
     def fromPath(cls, path, layerName=None):
         self = cls()
