@@ -99,4 +99,5 @@ class UFOSource:
 
 
 class UFOGlyph:
-    pass
+    unicodes = ()
+    width = 0
