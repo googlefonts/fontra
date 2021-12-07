@@ -293,10 +293,11 @@ getReversedCmapTestData = [
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("backendName, numChars, testMapping", getReversedCmapTestData)
-async def test_getReversedCmap(backendName, numChars, testMapping):
+@pytest.mark.parametrize("backendName, numGlyphs, testMapping", getReversedCmapTestData)
+async def test_getReversedCmap(backendName, numGlyphs, testMapping):
     font = getTestFont(backendName)
     revCmap = await font.getReversedCmap()
+    assert numGlyphs == len(revCmap)
     for glyphName, unicodes in testMapping.items():
         assert revCmap[glyphName] == unicodes
 
