@@ -2,7 +2,7 @@ import argparse
 import logging
 import pathlib
 from aiohttp import web
-from .backends.rcjk import RCJKBackend
+from .backends import getBackendClass
 from .server import Server
 
 
@@ -19,10 +19,9 @@ def main():
     path = pathlib.Path(args.font)
     assert path.exists()
     print(f"loading project {path.name}...")
-    if path.suffix == ".rcjk":
-        backend = RCJKBackend(path)
-    else:
-        assert False, path
+    fileType = path.suffix.lstrip(".")
+    backendClass = getBackendClass(fileType)
+    backend = backendClass(path)
 
     async def handleWebsocketPort(request):
         return web.Response(text=str(websocketPort))
