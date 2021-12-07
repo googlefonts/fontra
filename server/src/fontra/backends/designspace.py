@@ -11,13 +11,16 @@ class DesignspaceBackend:
 
     @property
     def defaultSource(self):
-        return self._getSource(self.dsDoc.default.path)
+        return self._getSourceFromSource(self.dsDoc.default)
 
-    def _getSource(self, path):
-        src = self._sources.get(path)
+    def _getSourceFromSource(self, source):
+        path = source.path
+        layerName = source.layerName
+        key = (path, layerName)
+        src = self._sources.get(key)
         if src is None:
-            src = UFOSource(path)
-        self._sources[path] = src
+            src = UFOSource(path, layerName)
+        self._sources[key] = src
         return src
 
     async def getGlyphNames(self):
@@ -28,9 +31,9 @@ class DesignspaceBackend:
 
 
 class UFOSource:
-    def __init__(self, path):
+    def __init__(self, path, layerName):
         self.reader = UFOReader(path)
-        self.glyphSet = self.reader.getGlyphSet()
+        self.glyphSet = self.reader.getGlyphSet(layerName=layerName)
 
     def getGlyphNames(self):
         return sorted(self.glyphSet.keys())
@@ -43,3 +46,6 @@ class UFOSource:
             assert gn == glyphName
             revCmap[glyphName] = unicodes
         return revCmap
+
+    def hasGlyph(self, glyphName):
+        return glyphName in self.glyphSet
