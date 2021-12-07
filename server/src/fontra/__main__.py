@@ -32,7 +32,7 @@ def main():
         await server.getServerTask(host="localhost", port=websocketPort)
 
     async def rootHandler(request):
-        return web.HTTPFound('/index.html')
+        return web.HTTPFound("/index.html")
 
     httpApp = web.Application()
     httpApp.add_routes(
