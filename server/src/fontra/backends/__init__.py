@@ -6,6 +6,7 @@ backendClasses = {
 
 def getBackendClass(extension):
     import importlib
+
     backendClass = backendClasses.get(extension)
     if backendClass is None:
         raise ValueError(f"No backend was found for '{extension}'")
