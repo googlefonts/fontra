@@ -5,7 +5,9 @@ from .pen import PathBuilderPointPen
 
 
 class DesignspaceBackend:
-    def __init__(self, path):
+    @classmethod
+    def fromPath(cls, path):
+        self = cls()
         self.dsDoc = DesignSpaceDocument.fromfile(path)
         self.dsDoc.findDefault()
         self._sources = {}
@@ -18,6 +20,7 @@ class DesignspaceBackend:
             }
             for axis in self.dsDoc.axes
         ]
+        return self
 
     @property
     def defaultSource(self):

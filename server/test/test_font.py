@@ -486,7 +486,7 @@ testFontPaths = {
 
 def getTestFont(backendName):
     cls = getBackendClass(backendName)
-    return cls(testFontPaths[backendName])
+    return cls.fromPath(testFontPaths[backendName])
 
 
 getGlyphNamesTestData = [

@@ -21,7 +21,7 @@ def main():
     print(f"loading project {path.name}...")
     fileType = path.suffix.lstrip(".")
     backendClass = getBackendClass(fileType)
-    backend = backendClass(path)
+    backend = backendClass.fromPath(path)
 
     async def handleWebsocketPort(request):
         return web.Response(text=str(websocketPort))

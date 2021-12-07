@@ -3,7 +3,9 @@ from .pen import PathBuilderPointPen
 
 
 class RCJKBackend:
-    def __init__(self, path):
+    @classmethod
+    def fromPath(cls, path):
+        self = cls()
         self.project = RoboCJKProject(path)
         self.reversedCmap = {}
         for gs, hasEncoding in self._iterGlyphSets():
@@ -12,6 +14,7 @@ class RCJKBackend:
                 assert glyphName not in self.reversedCmap
                 self.reversedCmap[glyphName] = unicodes if hasEncoding else []
         self.glyphNames = sorted(self.reversedCmap)
+        return self
 
     def _iterGlyphSets(self):
         yield self.project.characterGlyphGlyphSet, True
