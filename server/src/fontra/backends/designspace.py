@@ -54,7 +54,7 @@ class DesignspaceBackend:
                     "source": sourceDict,
                 }
             )
-            if sourceDescriptor == self.dsDoc.default:
+            if ufoSource == self.defaultSource:
                 glyph["unicodes"] = sourceGlyph.unicodes
 
         glyph["sources"] = sources
