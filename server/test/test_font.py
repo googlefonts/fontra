@@ -7,6 +7,7 @@ from fontra.backends.rcjk import RCJKBackend
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
+
 getGlyphTestData = [
     (
         "ufo",
