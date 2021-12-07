@@ -1,7 +1,7 @@
 import pathlib
 import pytest
 from fontra.backends import getBackendClass
-from fontra.backends.designspace import DesignspaceBackend
+from fontra.backends.designspace import DesignspaceBackend, UFOSource
 from fontra.backends.rcjk import RCJKBackend
 
 
@@ -481,6 +481,7 @@ getGlyphTestData = [
 testFontPaths = {
     "rcjk": dataDir / "figArnaud.rcjk",
     "designspace": dataDir / "mutatorsans" / "MutatorSans.designspace",
+    "ufo": dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo",
 }
 
 
@@ -492,6 +493,7 @@ def getTestFont(backendName):
 getGlyphNamesTestData = [
     ("rcjk", 80, ["DC_0030_00", "DC_0031_00", "DC_0032_00", "DC_0033_00"]),
     ("designspace", 49, ["A", "Aacute", "Adieresis", "B"]),
+    ("ufo", 49, ["A", "Aacute", "Adieresis", "B"]),
 ]
 
 
@@ -509,6 +511,7 @@ async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
 getReversedCmapTestData = [
     ("rcjk", 80, {"uni0031": [ord("1")]}),
     ("designspace", 49, {"A": [ord("A")], "B": [ord("B")]}),
+    ("ufo", 49, {"A": [ord("A")], "B": [ord("B")]}),
 ]
 
 
@@ -534,6 +537,7 @@ async def test_getGlyph(backendName, expectedGlyph):
 getBackendTestData = [
     ("rcjk", RCJKBackend),
     ("designspace", DesignspaceBackend),
+    ("ufo", UFOSource),
 ]
 
 

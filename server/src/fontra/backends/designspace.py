@@ -102,6 +102,18 @@ class UFOSource:
     def hasGlyph(self, glyphName):
         return glyphName in self.glyphSet
 
+    async def getGlyph(self, glyphName):
+        glyph = {"name": glyphName}
+        sourceDict, sourceGlyph = self.serializeGlyph(glyphName)
+        glyph["sources"] = [
+            {
+                "location": {},
+                "source": sourceDict,
+            }
+        ]
+        glyph["unicodes"] = sourceGlyph.unicodes
+        return glyph
+
 
 class UFOGlyph:
     unicodes = ()
