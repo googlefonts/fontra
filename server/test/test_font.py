@@ -287,6 +287,20 @@ async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
     assert firstFourGlyphNames == sorted(glyphNames)[:4]
 
 
+getReversedCmapTestData = [
+    ("rcjk", 80, {"uni0031": [ord("1")]}),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("backendName, numChars, testMapping", getReversedCmapTestData)
+async def test_getReversedCmap(backendName, numChars, testMapping):
+    font = getTestFont(backendName)
+    revCmap = await font.getReversedCmap()
+    for glyphName, unicodes in testMapping.items():
+        assert revCmap[glyphName] == unicodes
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize("backendName, expectedGlyph", testData)
 async def test_getGlyph(backendName, expectedGlyph):
