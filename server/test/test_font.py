@@ -273,6 +273,7 @@ def getTestFont(backendName):
 
 getGlyphNamesTestData = [
     ("rcjk", 80, ["DC_0030_00", "DC_0031_00", "DC_0032_00", "DC_0033_00"]),
+    ("designspace", 49, ['A', 'Aacute', 'Adieresis', 'B']),
 ]
 
 
