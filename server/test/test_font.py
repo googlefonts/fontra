@@ -9,6 +9,67 @@ dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 getGlyphTestData = [
     (
+        "ufo",
+        {
+            "name": "period",
+            "unicodes": [ord(".")],
+            "sources": [
+                {
+                    "location": {},
+                    "source": {
+                        "hAdvance": 170,
+                        "path": {
+                            "contours": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                    },
+                }
+            ],
+        },
+    ),
+    (
+        "ufo",
+        {
+            "name": "Aacute",
+            "unicodes": [ord("Á")],
+            "sources": [
+                {
+                    "location": {},
+                    "source": {
+                        "components": [
+                            {
+                                "name": "A",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 0,
+                                    "y": 0,
+                                },
+                            },
+                            {
+                                "name": "acute",
+                                "transform": {
+                                    "rotation": 0.0,
+                                    "scalex": 1.0,
+                                    "scaley": 1.0,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 99,
+                                    "y": 20,
+                                },
+                            },
+                        ],
+                        "hAdvance": 396,
+                    },
+                }
+            ],
+        },
+    ),
+    (
         "designspace",
         {
             "axes": [
