@@ -1,6 +1,7 @@
 import argparse
 import logging
 import pathlib
+from urllib.parse import urlsplit, urlunsplit
 from aiohttp import web
 from .backends import getBackendClass
 from .server import Server
@@ -9,6 +10,9 @@ from .server import Server
 async def getMySQLBackend(url):
     from .backends.rcjkmysql import RCJKMySQLBackend
 
+    parsed = urlsplit(url)
+    displayURL = urlunsplit([parsed.scheme, parsed.hostname, parsed.path, None, None])
+    print(f"connecting to project {displayURL}...")
     return await RCJKMySQLBackend.fromURL(url)
 
 
