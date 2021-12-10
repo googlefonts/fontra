@@ -103,7 +103,9 @@ def serializeGlyph(glifData, layers, axisDefaults):
     if path:
         defaultSourceDict["path"] = path
 
-    defaultComponents = serializeComponents(glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults)
+    defaultComponents = serializeComponents(
+        glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults
+    )
     components = defaultComponents or pen.components
     if components:
         defaultSourceDict["components"] = components
@@ -150,10 +152,14 @@ def serializeComponents(deepComponents, componentNames, axisDefaults):
     components = []
     for index, deepCompoDict in enumerate(deepComponents):
         component = {}
-        name = deepCompoDict["name"] if "name" in deepCompoDict else componentNames[index]
+        name = (
+            deepCompoDict["name"] if "name" in deepCompoDict else componentNames[index]
+        )
         component["name"] = name
         if deepCompoDict["coord"]:
-            component["coord"] = cleanupCoord(deepCompoDict["coord"], axisDefaults[name])
+            component["coord"] = cleanupCoord(
+                deepCompoDict["coord"], axisDefaults[name]
+            )
         component["transform"] = deepCompoDict["transform"]
         components.append(component)
     return components
@@ -193,7 +199,9 @@ def extractAxisDefaults(baseGlyphDict):
     axisDefaults = {}
     glyph = GLIFGlyph()
     readGlyphFromString(baseGlyphDict["data"], glyph)
-    axisDefaults[glyph.name] = {a["name"]: a["defaultValue"] for a in glyph.lib.get("robocjk.axes", ())}
+    axisDefaults[glyph.name] = {
+        a["name"]: a["defaultValue"] for a in glyph.lib.get("robocjk.axes", ())
+    }
 
     # handle nested made_of glyphs
     for subGlyphDict in baseGlyphDict.get("made_of", ()):
