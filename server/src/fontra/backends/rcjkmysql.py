@@ -6,17 +6,6 @@ from .rcjkclient import Client
 
 
 class RCJKMySQLBackend:
-    async def getGlyphNames(self):
-        return sorted(await self.getReversedCmap())
-
-    async def getReversedCmap(self):
-        loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self._getReversedCmapSync)
-
-    async def getGlyph(self, glyphName):
-        loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self._getGlyphSync, glyphName)
-
     @classmethod
     def fromURL(cls, url):
         self = cls()
@@ -44,6 +33,17 @@ class RCJKMySQLBackend:
         )
         self._glyphMapping = None
         return self
+
+    async def getGlyphNames(self):
+        return sorted(await self.getReversedCmap())
+
+    async def getReversedCmap(self):
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, self._getReversedCmapSync)
+
+    async def getGlyph(self, glyphName):
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, self._getGlyphSync, glyphName)
 
     def _getReversedCmapSync(self):
         self._glyphMapping = {}
