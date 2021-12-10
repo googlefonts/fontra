@@ -63,16 +63,19 @@ class RCJKMySQLBackend:
     def _getGlyphSync(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
         getMethodName = _getGlyphMethods[typeCode]
-        wantLayers = typeCode == "AE"
         response = getattr(self.client, getMethodName)(
-            self.font_uid, glyphID, return_layers=wantLayers, return_related=True
+            self.font_uid, glyphID, return_layers=True, return_related=True
         )
+        axisDefaults = {}
+        for baseGlyphDict in response["data"].get("made_of", ()):
+            axisDefaults.update(extractAxisDefaults(baseGlyphDict))
+
         layers = {l["group_name"]: l for l in response["data"].get("layers", ())}
-        glyph = serializeGlyph(response["data"]["data"], layers)
+        glyph = serializeGlyph(response["data"]["data"], layers, axisDefaults)
         return glyph
 
 
-def serializeGlyph(glifData, layers):
+def serializeGlyph(glifData, layers, axisDefaults):
     glyph = GLIFGlyph()
     pen = PathBuilderPointPen()
     readGlyphFromString(glifData, glyph, pen)
@@ -84,7 +87,7 @@ def serializeGlyph(glifData, layers):
     if path:
         defaultSourceDict["path"] = path
 
-    defaultComponents = serializeComponents(glyph.lib.get("robocjk.deepComponents", ()))
+    defaultComponents = serializeComponents(glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults)
     components = defaultComponents or pen.components
     if components:
         defaultSourceDict["components"] = components
@@ -107,7 +110,7 @@ def serializeGlyph(glifData, layers):
             if path:
                 varSourceDict["path"] = path
         varComponents = serializeComponents(
-            varDict.get("deepComponents", ()), componentNames
+            varDict.get("deepComponents", ()), componentNames, axisDefaults
         )
         varComponents = varComponents or pen.components
         if varComponents:
@@ -125,21 +128,23 @@ def serializeGlyph(glifData, layers):
     return glyphDict
 
 
-def serializeComponents(deepComponents, componentNames=None):
+def serializeComponents(deepComponents, componentNames, axisDefaults):
     if componentNames is not None:
         assert len(deepComponents) == len(componentNames)
     components = []
     for index, deepCompoDict in enumerate(deepComponents):
         component = {}
-        if "name" in deepCompoDict:
-            component["name"] = deepCompoDict["name"]
-        else:
-            component["name"] = componentNames[index]
+        name = deepCompoDict["name"] if "name" in deepCompoDict else componentNames[index]
+        component["name"] = name
         if deepCompoDict["coord"]:
-            component["coord"] = deepCompoDict["coord"]
+            component["coord"] = cleanupCoord(deepCompoDict["coord"], axisDefaults[name])
         component["transform"] = deepCompoDict["transform"]
         components.append(component)
     return components
+
+
+def cleanupCoord(coord, axisDefaults):
+    return {a: coord.get(a, v) for a, v in axisDefaults.items()}
 
 
 class GLIFGlyph:
@@ -166,3 +171,11 @@ def _get_uid_by_name(items, name):
         if item["name"] == name:
             return item["uid"]
     raise ValueError(f"item {name} not found")
+
+
+def extractAxisDefaults(baseGlyphDict):
+    axisDefaults = {}
+    glyph = GLIFGlyph()
+    readGlyphFromString(baseGlyphDict["data"], glyph)
+    axisDefaults[glyph.name] = {a["name"]: a["defaultValue"] for a in glyph.lib.get("robocjk.axes", ())}
+    return axisDefaults
