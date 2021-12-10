@@ -56,8 +56,6 @@ class Client(object):
         if not password:
             raise ValueError('Invalid password: {}'.format(password))
 
-        self.session = requests.Session()
-
         # strip last slash in case
         if host.endswith('/'):
             host = host[:-1]
@@ -66,6 +64,7 @@ class Client(object):
         self._username = username
         self._password = password
         self._auth_token = None
+        self._session = requests.Session()
 
         try:
             # check if there are robocjk apis available at the given host
@@ -109,7 +108,7 @@ class Client(object):
             # 'verify': self._host.startswith('https://'),
         }
         # send post request
-        response = self.session.post(url, **options)
+        response = self._session.post(url, **options)
         if response.status_code == 401:
             # unauthorized - request a new auth token
             self.auth_token()
@@ -251,13 +250,14 @@ class Client(object):
         return self._api_call('project_get', params)
 
 
-    def project_create(self, name, repo_url):
+    def project_create(self, name, repo_url, repo_branch='master'):
         """
         Create a new Project with the specified name and repository url.
         """
         params = {
             'name': name,
             'repo_url': repo_url,
+            'repo_branch': repo_branch,
         }
         return self._api_call('project_create', params)
 
