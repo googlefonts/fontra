@@ -6,26 +6,17 @@ from .rcjkclient import Client
 
 
 class RCJKMySQLBackend:
-    @classmethod
-    def fromURL(cls, url):
-        self = cls()
-        self.blockingBackend = RCJKMySQLBackendBlocking.fromURL(url)
-        return self
-
     async def getGlyphNames(self):
-        loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self.blockingBackend.getGlyphNames)
+        return sorted(await self.getReversedCmap())
 
     async def getReversedCmap(self):
         loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self.blockingBackend.getReversedCmap)
+        return await loop.run_in_executor(None, self._getReversedCmapSync)
 
     async def getGlyph(self, glyphName):
         loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self.blockingBackend.getGlyph, glyphName)
+        return await loop.run_in_executor(None, self._getGlyphSync, glyphName)
 
-
-class RCJKMySQLBackendBlocking:
     @classmethod
     def fromURL(cls, url):
         self = cls()
@@ -54,10 +45,7 @@ class RCJKMySQLBackendBlocking:
         self._glyphMapping = None
         return self
 
-    def getGlyphNames(self):
-        return sorted(self.getReversedCmap())
-
-    def getReversedCmap(self):
+    def _getReversedCmapSync(self):
         self._glyphMapping = {}
         revCmap = {}
         for typeCode, methodName in _glyphListMethods.items():
@@ -72,7 +60,7 @@ class RCJKMySQLBackendBlocking:
                 self._glyphMapping[glyphInfo["name"]] = (typeCode, glyphInfo["id"])
         return revCmap
 
-    def getGlyph(self, glyphName):
+    def _getGlyphSync(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
         getMethodName = _getGlyphMethods[typeCode]
         wantLayers = typeCode == "AE"
