@@ -16,12 +16,17 @@ def main():
     httpPort = 8000
     websocketPort = 8001
 
-    path = pathlib.Path(args.font)
-    assert path.exists()
-    print(f"loading project {path.name}...")
-    fileType = path.suffix.lstrip(".")
-    backendClass = getBackendClass(fileType)
-    backend = backendClass.fromPath(path)
+    if args.font.startswith("https://"):
+        from .backends.rcjkmysql import RCJKMySQLBackend
+
+        backend = RCJKMySQLBackend.fromURL(args.font)
+    else:
+        path = pathlib.Path(args.font)
+        assert path.exists()
+        print(f"loading project {path.name}...")
+        fileType = path.suffix.lstrip(".")
+        backendClass = getBackendClass(fileType)
+        backend = backendClass.fromPath(path)
 
     async def handleWebsocketPort(request):
         return web.Response(text=str(websocketPort))
