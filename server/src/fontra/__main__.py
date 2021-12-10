@@ -6,6 +6,21 @@ from .backends import getBackendClass
 from .server import Server
 
 
+async def getMySQLBackend(url):
+    from .backends.rcjkmysql import RCJKMySQLBackend
+
+    return await RCJKMySQLBackend.fromURL(url)
+
+
+async def getFileSystemBackend(path):
+    path = pathlib.Path(path)
+    assert path.exists()
+    print(f"loading project {path.name}...")
+    fileType = path.suffix.lstrip(".")
+    backendClass = getBackendClass(fileType)
+    return backendClass.fromPath(path)
+
+
 def main():
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
@@ -17,21 +32,15 @@ def main():
     websocketPort = 8001
 
     if args.font.startswith("https://"):
-        from .backends.rcjkmysql import RCJKMySQLBackend
-
-        backend = RCJKMySQLBackend.fromURL(args.font)
+        backendCoro = getMySQLBackend(args.font)
     else:
-        path = pathlib.Path(args.font)
-        assert path.exists()
-        print(f"loading project {path.name}...")
-        fileType = path.suffix.lstrip(".")
-        backendClass = getBackendClass(fileType)
-        backend = backendClass.fromPath(path)
+        backendCoro = getFileSystemBackend(args.font)
 
     async def handleWebsocketPort(request):
         return web.Response(text=str(websocketPort))
 
     async def setupWebsocketServer(app):
+        backend = await backendCoro
         server = Server(
             backend,
             {"getGlyph", "getGlyphNames", "getReversedCmap"},

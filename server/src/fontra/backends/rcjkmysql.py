@@ -7,7 +7,7 @@ from .rcjkclient import Client
 
 class RCJKMySQLBackend:
     @classmethod
-    def fromURL(cls, url):
+    async def fromURL(cls, url):
         self = cls()
         parsed = urlsplit(url)
         if parsed.scheme != "https":
