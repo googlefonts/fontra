@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import traceback
 import websockets
 
 
@@ -8,10 +9,11 @@ logger = logging.getLogger(__name__)
 
 
 class Server:
-    def __init__(self, subject, methodNames):
+    def __init__(self, subject, methodNames, verboseErrors=False):
         self.clients = {}
         self.subject = subject
         self.methodNames = set(methodNames)
+        self.verboseErrors = verboseErrors
 
     def getServerTask(self, host="localhost", port=8001):
         return websockets.serve(self.incomingConnection, host, port)
@@ -28,7 +30,7 @@ class Server:
         del self.clients[client.websocket]
 
     async def incomingConnection(self, websocket, path):
-        client = Client(websocket, self.subject, self.methodNames)
+        client = Client(websocket, self.subject, self.methodNames, verboseErrors)
         self.registerClient(client)
         try:
             await client.handleConnection(path)
@@ -37,10 +39,11 @@ class Server:
 
 
 class Client:
-    def __init__(self, websocket, subject, methodNames):
+    def __init__(self, websocket, subject, methodNames, verboseErrors):
         self.websocket = websocket
         self.subject = subject
         self.methodNames = methodNames
+        self.verboseErrors = verboseErrors
 
     async def handleConnection(self, path):
         logger.info(f"incoming connection: {path!r}")
@@ -71,6 +74,8 @@ class Client:
                 }
         except Exception as e:
             logger.error("uncaught exception: %r", e)
+            if self.verboseErrors:
+                traceback.print_exc()
             response = {"call-id": callID, "exception": repr(e)}
         await self.sendMessage(response)
 

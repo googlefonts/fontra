@@ -32,7 +32,11 @@ def main():
         return web.Response(text=str(websocketPort))
 
     async def setupWebsocketServer(app):
-        server = Server(backend, {"getGlyph", "getGlyphNames", "getReversedCmap"})
+        server = Server(
+            backend,
+            {"getGlyph", "getGlyphNames", "getReversedCmap"},
+            verboseErrors=True,
+        )
         await server.getServerTask(host="localhost", port=websocketPort)
 
     async def rootHandler(request):
