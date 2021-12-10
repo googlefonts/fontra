@@ -119,7 +119,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
         varSourceDict = {}
         layerName = varDict.get("layerName")
         hAdvance = 0
-        if layerName:
+        if layerName and layerName in layers:
             varGlyph = GLIFGlyph()
             pen = PathBuilderPointPen()
             readGlyphFromString(layers[layerName]["data"], varGlyph, pen)
