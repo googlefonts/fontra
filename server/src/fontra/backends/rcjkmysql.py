@@ -100,9 +100,9 @@ def serializeGlyph(glifData, layers, axisDefaults):
     defaultSourceDict = {
         "hAdvance": glyph.width,
     }
-    path = pen.getPath()
-    if path:
-        defaultSourceDict["path"] = path
+    defaultPath = pen.getPath()
+    if defaultPath:
+        defaultSourceDict["path"] = defaultPath
 
     defaultComponents = serializeComponents(
         glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults
@@ -117,17 +117,19 @@ def serializeGlyph(glifData, layers, axisDefaults):
     ]
 
     for varDict in glyph.lib.get("robocjk.variationGlyphs", ()):
+        if not varDict.get("on", True):
+            continue
         varSourceDict = {}
         layerName = varDict.get("layerName")
         hAdvance = 0
-        if layerName and layerName in layers:
+        if defaultPath and layerName and layerName in layers:
             varGlyph = GLIFGlyph()
             pen = PathBuilderPointPen()
             readGlyphFromString(layers[layerName]["data"], varGlyph, pen)
             hAdvance = varGlyph.width
-            path = pen.getPath()
-            if path:
-                varSourceDict["path"] = path
+            varPath = pen.getPath()
+            if varPath:
+                varSourceDict["path"] = varPath
         varComponents = serializeComponents(
             varDict.get("deepComponents", ()), componentNames, axisDefaults
         )
