@@ -32,6 +32,7 @@ class RCJKMySQLBackend:
             self.client.font_list(self.project_uid)["data"], font_name
         )
         self._glyphMapping = None
+        self._glyphDataCache = {}
         return self
 
     async def getGlyphNames(self):
@@ -62,17 +63,32 @@ class RCJKMySQLBackend:
 
     def _getGlyphSync(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
-        getMethodName = _getGlyphMethods[typeCode]
-        response = getattr(self.client, getMethodName)(
-            self.font_uid, glyphID, return_layers=True, return_related=True
-        )
+        glyphData = self._glyphDataCache.get((typeCode, glyphID))
+        if glyphData is None:
+            getMethodName = _getGlyphMethods[typeCode]
+            response = getattr(self.client, getMethodName)(
+                self.font_uid, glyphID, return_layers=True, return_related=True
+            )
+            glyphData = response["data"]
+            self._glyphDataCache[(typeCode, glyphID)] = glyphData
+
+        self._cacheBaseGlyphData(glyphData.get("made_of", ()))
         axisDefaults = {}
-        for baseGlyphDict in response["data"].get("made_of", ()):
+        for baseGlyphDict in glyphData.get("made_of", ()):
             axisDefaults.update(extractAxisDefaults(baseGlyphDict))
 
-        layers = {l["group_name"]: l for l in response["data"].get("layers", ())}
-        glyph = serializeGlyph(response["data"]["data"], layers, axisDefaults)
+        layers = {l["group_name"]: l for l in glyphData.get("layers", ())}
+        glyph = serializeGlyph(glyphData["data"], layers, axisDefaults)
         return glyph
+
+    def _cacheBaseGlyphData(self, baseGlyphs):
+        for glyphDict in baseGlyphs:
+            typeCode, glyphID = self._glyphMapping[glyphDict["name"]]
+            assert typeCode == glyphDict["type_code"]
+            assert glyphID == glyphDict["id"]
+            self._glyphDataCache[(typeCode, glyphID)] = glyphDict
+            # No need to recurse into glyphDict["made_of"], as _getGlyphSync
+            # does that for us.
 
 
 def serializeGlyph(glifData, layers, axisDefaults):
