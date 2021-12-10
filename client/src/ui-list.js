@@ -29,6 +29,7 @@ export class List {
     this.contents.addEventListener("click", event => this._clickHandler(event), false);
     this.container.addEventListener("scroll", event => this._scrollHandler(event), false)
     this.container.addEventListener("keydown", event => this._keyDownHandler(event), false)
+    this.container.addEventListener("keyup", event => this._keyUpHandler(event), false)
     this.selectedItemIndex = undefined;
   }
 
@@ -121,6 +122,12 @@ export class List {
       row?.classList.add("selected");
     }
     this.selectedItemIndex = rowIndex;
+    if (!this._isKeyRepeating) {
+      this._dispatchListSelectionChanged();
+    }
+  }
+
+  _dispatchListSelectionChanged() {
     const event = new CustomEvent("listSelectionChanged", {
       "bubbles": false,
       "detail": this,
@@ -143,9 +150,19 @@ export class List {
       rowIndex = event.key === "ArrowUp" ? rowIndex - 1 : rowIndex + 1;
       rowIndex = Math.min(Math.max(rowIndex, 0), this.items.length - 1);
     }
+    this._isKeyRepeating = event.repeat;
     this._selectByRowIndex(rowIndex);
     const newRow = this.contents.children[rowIndex];
     newRow?.scrollIntoView({behavior: "auto", block: "nearest", inline: "nearest"});
+  }
+
+  _keyUpHandler(event) {
+    if (this._isKeyRepeating) {
+      // When key events repeat, they may fire too fast, so selection-changed
+      // events are suppressed. We need to send one after the fact.
+      this._isKeyRepeating = false;
+      this._dispatchListSelectionChanged();
+    }
   }
 
   _scrollHandler(event) {
