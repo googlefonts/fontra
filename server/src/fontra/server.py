@@ -48,13 +48,16 @@ class Client:
     async def handleConnection(self, path):
         logger.info(f"incoming connection: {path!r}")
         tasks = []
-        async for message in self.websocket:
-            message = json.loads(message)
-            if message.get("connection") == "close":
-                logger.info("client requested connection close")
-                break
-            tasks = [task for task in tasks if not task.done()]
-            tasks.append(asyncio.create_task(self._performCall(message)))
+        try:
+            async for message in self.websocket:
+                message = json.loads(message)
+                if message.get("connection") == "close":
+                    logger.info("client requested connection close")
+                    break
+                tasks = [task for task in tasks if not task.done()]
+                tasks.append(asyncio.create_task(self._performCall(message)))
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.info(f"websocket connection closed: {e!r}")
 
     async def _performCall(self, message):
         callID = "unknown-call-id"
