@@ -80,8 +80,7 @@ class RCJKMySQLBackend:
             axisDefaults.update(extractAxisDefaults(baseGlyphDict))
 
         layers = {l["group_name"]: l for l in glyphData.get("layers", ())}
-        glyph = serializeGlyph(glyphData["data"], layers, axisDefaults)
-        return glyph
+        return serializeGlyph(glyphData["data"], layers, axisDefaults)
 
     def _cacheBaseGlyphData(self, baseGlyphs):
         for glyphDict in baseGlyphs:
