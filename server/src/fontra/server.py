@@ -30,7 +30,7 @@ class Server:
         del self.clients[client.websocket]
 
     async def incomingConnection(self, websocket, path):
-        client = Client(websocket, self.subject, self.methodNames, verboseErrors)
+        client = Client(websocket, self.subject, self.methodNames, self.verboseErrors)
         self.registerClient(client)
         try:
             await client.handleConnection(path)
