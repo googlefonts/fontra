@@ -50,7 +50,8 @@ class RCJKMySQLBackend:
         self._glyphMapping = {}
         revCmap = {}
         for typeCode, methodName in _glyphListMethods.items():
-            response = getattr(self.client, methodName)(self.font_uid)
+            method = getattr(self.client, methodName)
+            response = method(self.font_uid)
             for glyphInfo in response["data"]:
                 unicode_hex = glyphInfo.get("unicode_hex")
                 if unicode_hex:
@@ -66,7 +67,8 @@ class RCJKMySQLBackend:
         glyphData = self._glyphDataCache.get((typeCode, glyphID))
         if glyphData is None:
             getMethodName = _getGlyphMethods[typeCode]
-            response = getattr(self.client, getMethodName)(
+            method = getattr(self.client, getMethodName)
+            response = method(
                 self.font_uid, glyphID, return_layers=True, return_related=True
             )
             glyphData = response["data"]
