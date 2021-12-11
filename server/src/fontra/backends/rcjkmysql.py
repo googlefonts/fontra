@@ -1,8 +1,78 @@
 import asyncio
-from urllib.parse import urlparse, urlsplit, urlunsplit
+from urllib.parse import urlsplit
+import aiohttp
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from .pen import PathBuilderPointPen
 from .rcjkclient import Client
+
+
+class HTTPError(Exception):
+    pass
+
+
+class AuthenticationError(Exception):
+    pass
+
+
+class ClientAsync(Client):
+    def _connect(self):
+        # Override with no-op, as we need to handle the connection separately
+        # as an async method.
+        pass
+
+    async def connect(self):
+        self._session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(verify_ssl=False)
+        )
+        session = await self._session.__aenter__()
+        assert session is self._session
+
+        try:
+            # check if there are robocjk apis available at the given host
+            response = await self._api_call("ping")
+            assert response["data"] == "pong"
+        except Exception as e:
+            # invalid host
+            raise ValueError(
+                f"Unable to call RoboCJK APIs at host: {self._host} - Exception: {e}"
+            )
+
+        # obtain the auth token to prevent 401 error on first call
+        await self.auth_token()
+
+    async def close(self):
+        await self._session.__aexit__(None, None, None)
+
+    async def _api_call(self, view_name, params=None):
+        url, data, headers = self._prepare_request(view_name, params)
+        async with self._session.post(url, data=data, headers=headers) as response:
+            if response.status == 401:
+                # unauthorized - request a new auth token
+                await self.auth_token()
+                if self._auth_token:
+                    # re-send previously unauthorized request
+                    return await self._api_call(view_name, params)
+            elif response.status != 200:
+                raise HTTPError(response.status)
+            # read response json data and return dict
+            response_data = await response.json()
+        return response_data
+
+    async def auth_token(self):
+        """
+        Get an authorization token for the current user.
+        """
+        params = {
+            "username": self._username,
+            "password": self._password,
+        }
+        try:
+            response = await self._api_call("auth_token", params)
+        except HTTPError as e:
+            raise AuthenticationError("authentication failed") from e
+        # update auth token
+        self._auth_token = response.get("data", {}).get("auth_token", self._auth_token)
+        return response
 
 
 class RCJKMySQLBackend:
@@ -19,17 +89,18 @@ class RCJKMySQLBackend:
             raise ValueError(f"invalid path: {path}")
         _, project_name, font_name = path_parts
 
-        self.client = Client(
+        self.client = ClientAsync(
             host=plainURL,
             username=parsed.username,
             password=parsed.password,
         )
+        await self.client.connect()
 
         self.project_uid = _get_uid_by_name(
-            self.client.project_list()["data"], project_name
+            (await self.client.project_list())["data"], project_name
         )
         self.font_uid = _get_uid_by_name(
-            self.client.font_list(self.project_uid)["data"], font_name
+            (await self.client.font_list(self.project_uid))["data"], font_name
         )
         self._glyphMapping = None
         self._glyphDataCache = {}
@@ -39,19 +110,11 @@ class RCJKMySQLBackend:
         return sorted(await self.getReversedCmap())
 
     async def getReversedCmap(self):
-        loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self._getReversedCmapSync)
-
-    async def getGlyph(self, glyphName):
-        loop = asyncio.get_running_loop()
-        return await loop.run_in_executor(None, self._getGlyphSync, glyphName)
-
-    def _getReversedCmapSync(self):
         self._glyphMapping = {}
         revCmap = {}
         for typeCode, methodName in _glyphListMethods.items():
             method = getattr(self.client, methodName)
-            response = method(self.font_uid)
+            response = await method(self.font_uid)
             for glyphInfo in response["data"]:
                 unicode_hex = glyphInfo.get("unicode_hex")
                 if unicode_hex:
@@ -62,13 +125,13 @@ class RCJKMySQLBackend:
                 self._glyphMapping[glyphInfo["name"]] = (typeCode, glyphInfo["id"])
         return revCmap
 
-    def _getGlyphSync(self, glyphName):
+    async def getGlyph(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
         glyphData = self._glyphDataCache.get((typeCode, glyphID))
         if glyphData is None:
             getMethodName = _getGlyphMethods[typeCode]
             method = getattr(self.client, getMethodName)
-            response = method(
+            response = await method(
                 self.font_uid, glyphID, return_layers=True, return_related=True
             )
             glyphData = response["data"]
@@ -88,7 +151,7 @@ class RCJKMySQLBackend:
             assert typeCode == glyphDict["type_code"]
             assert glyphID == glyphDict["id"]
             self._glyphDataCache[(typeCode, glyphID)] = glyphDict
-            # No need to recurse into glyphDict["made_of"], as _getGlyphSync
+            # No need to recurse into glyphDict["made_of"], as getGlyph
             # does that for us.
 
 
