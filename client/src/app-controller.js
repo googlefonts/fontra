@@ -300,10 +300,6 @@ export class AppController {
     // canvas.addEventListener("keyup", event => console.log(event));
 
     this.mouseTracker = new MouseTracker(this.canvasController, this.layout);
-
-    window.sliderChanged = (value, axisTag) => {
-      this.setAxisValue(value, axisTag);
-    };
   }
 
   async start(port) {
@@ -357,7 +353,10 @@ export class AppController {
       slider.min = axis.minValue;
       slider.max = axis.maxValue;
       slider.value = axis.defaultValue;
-      slider.setAttribute("oninput", `sliderChanged(this.value, "${axis.name}")`);
+      {
+        const axisName = axis.name;
+        slider.oninput = event => this.setAxisValue(axisName, event.target.value);
+      }
       label.appendChild(slider);
       label.append(axis.name);
       axisSliders.appendChild(label);
@@ -396,7 +395,7 @@ export class AppController {
     }
   }
 
-  async setAxisValue(value, axisName) {
+  async setAxisValue(axisName, value) {
     for (const realAxisName of this.axisMapping[axisName]) {
       this.varLocation[realAxisName] = value;
     }
