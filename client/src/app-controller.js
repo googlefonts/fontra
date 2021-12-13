@@ -350,13 +350,13 @@ export class AppController {
     for (const axis of this.getAxisInfo()) {
       const label = document.createElement("label");
       const slider = document.createElement("input");
-      label.setAttribute("class", "slider-label");
-      slider.setAttribute("type", "range");
-      slider.setAttribute("step", "any");
-      slider.setAttribute("class", "slider");
-      slider.setAttribute("min", axis.minValue);
-      slider.setAttribute("max", axis.maxValue);
-      slider.setAttribute("value", axis.defaultValue);
+      label.className = "slider-label";
+      slider.type = "range";
+      slider.step = "any";
+      slider.class = "slider";
+      slider.min = axis.minValue;
+      slider.max = axis.maxValue;
+      slider.value = axis.defaultValue;
       slider.setAttribute("oninput", `sliderChanged(this.value, "${axis.name}")`);
       label.appendChild(slider);
       label.append(axis.name);
