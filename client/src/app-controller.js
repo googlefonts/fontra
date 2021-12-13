@@ -419,6 +419,7 @@ export class AppController {
 
   async _instantiateGlyph() {
     const instance = this.glyph.instantiate(this.varLocation);
+    this.layout.varLocation = this.varLocation;
     await this.layout.setInstance(instance);
   }
 
