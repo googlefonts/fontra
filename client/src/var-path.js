@@ -232,6 +232,7 @@ export default class VarPath {
     let startPoint = 0
     const coordinates = this.coordinates;
     const pointTypes = this.pointTypes;
+
     for (const contour of this.contours) {
       const endPoint = contour.endPoint;
       const numPoints = contour.endPoint + 1 - startPoint;
