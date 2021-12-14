@@ -230,12 +230,12 @@ export default class VarPath {
 
   drawToPath(path) {
     let startPoint = 0
+    const coordinates = this.coordinates;
+    const pointTypes = this.pointTypes;
     for (const contour of this.contours) {
       const endPoint = contour.endPoint;
       const numPoints = contour.endPoint + 1 - startPoint;
 
-      const coordinates = this.coordinates;
-      const pointTypes = this.pointTypes;
       var firstOnCurve = null;
 
       // Determine the index of the first on-curve point, if any
