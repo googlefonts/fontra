@@ -385,4 +385,30 @@ describe("VarPath Tests", () => {
     expect(p.getControlBounds()).to.deep.equal(undefined);
   });
 
+  it("test firstOnCurve bug", () => {
+    const p1 = simpleTestPath();
+    const p2 = p1.concat(p1);
+    p2.pointTypes[0] = VarPath.OFF_CURVE_CUBIC;
+    p2.pointTypes[1] = VarPath.OFF_CURVE_CUBIC;
+    p2.pointTypes[5] = VarPath.OFF_CURVE_CUBIC;
+    p2.pointTypes[6] = VarPath.OFF_CURVE_CUBIC;
+    expect(p2.coordinates.length).to.equal(16);
+    expect(p2.contours.length).to.equal(2);
+    expect(p2.contours[0].endPoint).to.equal(3);
+    expect(p2.contours[1].endPoint).to.equal(7);
+    const mp = new MockPath2D();
+    p2.drawToPath(mp);
+    console.log(mp.items);
+    expect(mp.items).to.deep.equal([
+      { op: 'moveTo', args: [ 100, 100 ] },
+      { op: 'lineTo', args: [ 100, 0 ] },
+      { op: 'bezierCurveTo', args: [ 0, 0, 0, 100, 100, 100 ] },
+      { op: 'closePath', args: [] },
+      { op: 'moveTo', args: [ 0, 0 ] },
+      { op: 'bezierCurveTo', args: [ 0, 100, 100, 100, 100, 0 ] },
+      { op: 'lineTo', args: [ 0, 0 ] },
+      { op: 'closePath', args: [] }
+    ]);
+  });
+
 })
