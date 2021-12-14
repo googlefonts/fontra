@@ -240,7 +240,7 @@ export default class VarPath {
 
       // Determine the index of the first on-curve point, if any
       for (let i = 0; i < numPoints; i++) {
-        if ((pointTypes[i] & VarPath.POINT_TYPE_MASK) === VarPath.ON_CURVE) {
+        if ((pointTypes[i + startPoint] & VarPath.POINT_TYPE_MASK) === VarPath.ON_CURVE) {
           firstOnCurve = i;
           break;
         }
