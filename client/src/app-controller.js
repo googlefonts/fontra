@@ -36,7 +36,7 @@ const drawingParameters = {
 }
 
 
-class Layout {
+class SceneController {
   constructor(canvasController, font) {
     this.canvasController = canvasController;
     this.font = font;
@@ -190,13 +190,13 @@ const MINIMAL_DRAG_DISTANCE = 10;
 
 
 class RectSelectTracker {
-  constructor(canvasController, layout, event) {
+  constructor(canvasController, layoutController, event) {
     this.canvasController = canvasController;
-    this.layout = layout;
+    this.sceneController = layoutController;
     this.initialX = event.pageX;
     this.initialY = event.pageY;
     this.initialPoint = canvasController.localPoint(event);
-    this.currentSelection = this.layout.selectionLayer.selection;
+    this.currentSelection = this.sceneController.selectionLayer.selection;
     this.didStart = false;
   }
 
@@ -219,20 +219,20 @@ class RectSelectTracker {
       "xMax": currentPoint.x,
       "yMax": currentPoint.y,
     });
-    const selection = this.layout.selectionAtRect(selRect);
-    this.layout.rectSelectLayer.selectionRect = selRect;
+    const selection = this.sceneController.selectionAtRect(selRect);
+    this.sceneController.rectSelectLayer.selectionRect = selRect;
 
     if (event.shiftKey) {
-      this.layout.selectionLayer.selection = symmetricDifference(this.currentSelection, selection);
+      this.sceneController.selectionLayer.selection = symmetricDifference(this.currentSelection, selection);
     } else {
-      this.layout.selectionLayer.selection = selection;
+      this.sceneController.selectionLayer.selection = selection;
     }
 
     this.canvasController.setNeedsUpdate();
   }
 
   handleMouseUp(event) {
-    delete this.layout.rectSelectLayer.selectionRect;
+    delete this.sceneController.rectSelectLayer.selectionRect;
     this.canvasController.setNeedsUpdate();
     delete this.currentSelection;
   }
@@ -241,14 +241,14 @@ class RectSelectTracker {
 
 
 class MouseTracker {
-  constructor(canvasController, layout) {
+  constructor(canvasController, layoutController) {
     this.canvasController = canvasController;
-    this.layout = layout;
+    this.sceneController = layoutController;
     this.inDrag = false;
   }
 
   handleMouseDown(event) {
-    if (!this.layout.canSelect()) {
+    if (!this.sceneController.canSelect()) {
       return;
     }
     // event.preventDefault();
@@ -256,36 +256,36 @@ class MouseTracker {
     this.inDrag = true;
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize;
-    const selection = this.layout.selectionAtPoint(point, size, this.canvasController.context);
+    const selection = this.sceneController.selectionAtPoint(point, size, this.canvasController.context);
     let initiateDrag = false;
     let initiateRectSelect = false;
 
     if (selection.size > 0) {
       if (event.shiftKey) {
-        this.layout.selectionLayer.selection = symmetricDifference(this.layout.selectionLayer.selection, selection);
-        if (isSuperset(this.layout.selectionLayer.selection, selection)) {
+        this.sceneController.selectionLayer.selection = symmetricDifference(this.sceneController.selectionLayer.selection, selection);
+        if (isSuperset(this.sceneController.selectionLayer.selection, selection)) {
           initiateDrag = true;
         }
-      } else if (isSuperset(this.layout.selectionLayer.selection, selection)) {
+      } else if (isSuperset(this.sceneController.selectionLayer.selection, selection)) {
         initiateDrag = true;
       } else {
-        this.layout.selectionLayer.selection = selection;
+        this.sceneController.selectionLayer.selection = selection;
         initiateDrag = true;
       }
     } else {
       if (!event.shiftKey) {
-        this.layout.selectionLayer.selection = selection;
+        this.sceneController.selectionLayer.selection = selection;
       }
       initiateRectSelect = true;
     }
 
     if (initiateRectSelect) {
-      this.subTracker = new RectSelectTracker(this.canvasController, this.layout, event);
+      this.subTracker = new RectSelectTracker(this.canvasController, this.sceneController, event);
     } else if (initiateDrag) {
       console.log("let's drag stuff", initiateDrag);
     }
 
-    this.layout.hoverLayer.selection = new Set();
+    this.sceneController.hoverLayer.selection = new Set();
     this.canvasController.setNeedsUpdate();
   }
 
@@ -294,9 +294,9 @@ class MouseTracker {
     const size = this.canvasController.drawingParameters.nodeSize;
     if (!this.inDrag) {
       const selRect = centeredRect(point.x, point.y, size);
-      const selection = this.layout.selectionAtPoint(point, size, this.canvasController.context);
-      if (!lenientIsEqualSet(selection, this.layout.hoverLayer.selection)) {
-        this.layout.hoverLayer.selection = selection;
+      const selection = this.sceneController.selectionAtPoint(point, size, this.canvasController.context);
+      if (!lenientIsEqualSet(selection, this.sceneController.hoverLayer.selection)) {
+        this.sceneController.hoverLayer.selection = selection;
         this.canvasController.setNeedsUpdate();
       }
     } else if (this.subTracker !== undefined) {
@@ -328,7 +328,7 @@ export class AppController {
 
     this.varLocation = {};
 
-    this.layout = new Layout(this.canvasController, font)
+    this.sceneController = new SceneController(this.canvasController, font)
 
     canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
     canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
@@ -337,7 +337,7 @@ export class AppController {
     // canvas.addEventListener("keydown", event => console.log(event));
     // canvas.addEventListener("keyup", event => console.log(event));
 
-    this.mouseTracker = new MouseTracker(this.canvasController, this.layout);
+    this.mouseTracker = new MouseTracker(this.canvasController, this.sceneController);
   }
 
   async start() {
@@ -373,14 +373,14 @@ export class AppController {
   }
 
   async glyphNameChangedCallback(glyphName) {
-    const didSetGlyph = await this.layout.setSelectedGlyph(glyphName);
+    const didSetGlyph = await this.sceneController.setSelectedGlyph(glyphName);
     if (!didSetGlyph) {
       return;
     }
     // Rebuild axis sliders
     const axisSliders = document.querySelector("#axis-sliders");
     axisSliders.innerHTML = "";  // Delete previous sliders
-    for (const axis of this.layout.getAxisInfo()) {
+    for (const axis of this.sceneController.getAxisInfo()) {
       const label = document.createElement("label");
       const slider = document.createElement("input");
       label.className = "slider-label";
@@ -392,7 +392,7 @@ export class AppController {
       slider.value = axis.defaultValue;
       {
         const axisName = axis.name;
-        slider.oninput = event => this.layout.setAxisValue(axisName, event.target.value);
+        slider.oninput = event => this.sceneController.setAxisValue(axisName, event.target.value);
       }
       label.appendChild(slider);
       label.append(axis.name);
