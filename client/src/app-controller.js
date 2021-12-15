@@ -75,6 +75,50 @@ class Layout {
     this.hoverLayer.selection = new Set();
   }
 
+  async setSelectedGlyph(glyphName) {
+    const glyph = await this.font.getGlyph(glyphName);
+    if (glyph === null) {
+      return false;
+    }
+    this.glyph = glyph;
+    this.varLocation = {};
+    this.axisMapping = _makeAxisMapping(this.glyph.axes);
+    await this._instantiateGlyph();
+    this.canvasController.setNeedsUpdate();
+    this.resetSelection();
+    return true;
+  }
+
+  async _instantiateGlyph() {
+    const instance = this.glyph.instantiate(this.varLocation);
+    await this.setInstance(instance);
+  }
+
+  *getAxisInfo() {
+    if (!this.glyph.axes) {
+      return;
+    }
+    const done = {};
+    for (const axis of this.glyph.axes) {
+      const baseName = _getAxisBaseName(axis.name);
+      if (done[baseName]) {
+        continue;
+      }
+      done[baseName] = true;
+      const axisInfo = {...axis};
+      axisInfo.name = baseName;
+      yield axisInfo;
+    }
+  }
+
+  async setAxisValue(axisName, value) {
+    for (const realAxisName of this.axisMapping[axisName]) {
+      this.varLocation[realAxisName] = value;
+    }
+    await this._instantiateGlyph();
+    this.canvasController.setNeedsUpdate();
+  }
+
   async setInstance(instance) {
     this.instance = instance;
     this.hoverLayer.selection = new Set();
@@ -329,14 +373,14 @@ export class AppController {
   }
 
   async glyphNameChangedCallback(glyphName) {
-    const didSetGlyph = await this.setSelectedGlyph(glyphName);
+    const didSetGlyph = await this.layout.setSelectedGlyph(glyphName);
     if (!didSetGlyph) {
       return;
     }
     // Rebuild axis sliders
     const axisSliders = document.querySelector("#axis-sliders");
     axisSliders.innerHTML = "";  // Delete previous sliders
-    for (const axis of this.getAxisInfo()) {
+    for (const axis of this.layout.getAxisInfo()) {
       const label = document.createElement("label");
       const slider = document.createElement("input");
       label.className = "slider-label";
@@ -348,58 +392,13 @@ export class AppController {
       slider.value = axis.defaultValue;
       {
         const axisName = axis.name;
-        slider.oninput = event => this.setAxisValue(axisName, event.target.value);
+        slider.oninput = event => this.layout.setAxisValue(axisName, event.target.value);
       }
       label.appendChild(slider);
       label.append(axis.name);
       axisSliders.appendChild(label);
     }
     this.currentGlyphName = glyphName;
-  }
-
-  async setSelectedGlyph(glyphName) {
-    const glyph = await this.font.getGlyph(glyphName);
-    if (glyph === null) {
-      return false;
-    }
-    this.glyph = glyph;
-    this.varLocation = {};
-    this.axisMapping = _makeAxisMapping(this.glyph.axes);
-    await this._instantiateGlyph();
-    this.canvasController.setNeedsUpdate();
-    this.layout.resetSelection();
-    return true;
-  }
-
-  *getAxisInfo() {
-    if (!this.glyph.axes) {
-      return;
-    }
-    const done = {};
-    for (const axis of this.glyph.axes) {
-      const baseName = _getAxisBaseName(axis.name);
-      if (done[baseName]) {
-        continue;
-      }
-      done[baseName] = true;
-      const axisInfo = {...axis};
-      axisInfo.name = baseName;
-      yield axisInfo;
-    }
-  }
-
-  async setAxisValue(axisName, value) {
-    for (const realAxisName of this.axisMapping[axisName]) {
-      this.varLocation[realAxisName] = value;
-    }
-    await this._instantiateGlyph();
-    this.canvasController.setNeedsUpdate();
-  }
-
-  async _instantiateGlyph() {
-    const instance = this.glyph.instantiate(this.varLocation);
-    this.layout.varLocation = this.varLocation;
-    await this.layout.setInstance(instance);
   }
 
 }
