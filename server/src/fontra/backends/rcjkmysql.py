@@ -86,10 +86,10 @@ class RCJKMySQLBackend:
         await self.client.connect()
 
         self.project_uid = _get_uid_by_name(
-            (await self.client.project_list())["data"], project_name
+            (await self.client.project_list())["data"], project_name, "project"
         )
         self.font_uid = _get_uid_by_name(
-            (await self.client.font_list(self.project_uid))["data"], font_name
+            (await self.client.font_list(self.project_uid))["data"], font_name, "font"
         )
         self._glyphMapping = None
         self._tempGlyphDataCache = {}
@@ -257,11 +257,11 @@ _glyphListMethods = {
 }
 
 
-def _get_uid_by_name(items, name):
+def _get_uid_by_name(items, name, kind):
     for item in items:
         if item["name"] == name:
             return item["uid"]
-    raise ValueError(f"item {name} not found")
+    raise ValueError(f"{kind} '{name}' not found")
 
 
 def extractAxisDefaults(baseGlyphDict):
