@@ -265,15 +265,18 @@ function getCharFromUnicode(codePoint) {
 
 }
 
+
 function getUniStringFromUnicode(codePoint) {
   return codePoint !== undefined ? "U+" + codePoint.toString(16).toUpperCase().padStart(4, "0") : ""
 }
+
 
 function glyphItemSortFunc(item1, item2) {
   const uniCmp = compare(item1.unicodes[0], item2.unicodes[0]);
   const glyphNameCmp = compare(item1.glyphName, item2.glyphName);
   return uniCmp ? uniCmp : glyphNameCmp;
 }
+
 
 function glyphFilterFunc(item, searchString) {
   if (item.glyphName.indexOf(searchString) >= 0) {
@@ -287,6 +290,7 @@ function glyphFilterFunc(item, searchString) {
   }
   return false;
 }
+
 
 function compare(a, b) {
   // sort undefined at the end
