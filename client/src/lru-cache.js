@@ -6,12 +6,15 @@ export class LRUCache {
   constructor(capacity) {
     this.capacity = capacity;
     this.map = new Map(); // this stores the entire array
+    this.clear();
+  }
 
-    // this is boundaries for double linked list
+  clear() {
+    // this are the boundaries for the double linked list
     this.head = {};
     this.tail = {};
 
-    this.head.next = this.tail; // initialize your double linked list
+    this.head.next = this.tail; // initialize the double linked list
     this.tail.prev = this.head;
   }
 
