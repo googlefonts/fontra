@@ -92,7 +92,9 @@ class RCJKMySQLBackend:
             (await self.client.font_list(self.project_uid))["data"], font_name
         )
         self._glyphMapping = None
-        self._glyphDataCache = {}
+        self._tempGlyphDataCache = {}
+        self._tempGlyphDataCacheTimer = None
+        self._tempGlyphDataCacheTimeout = 5
         return self
 
     async def getGlyphNames(self):
@@ -116,7 +118,7 @@ class RCJKMySQLBackend:
 
     async def getGlyph(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
-        glyphData = self._glyphDataCache.get((typeCode, glyphID))
+        glyphData = self._tempGlyphDataCache.get((typeCode, glyphID))
         if glyphData is None:
             getMethodName = _getGlyphMethods[typeCode]
             method = getattr(self.client, getMethodName)
@@ -124,7 +126,7 @@ class RCJKMySQLBackend:
                 self.font_uid, glyphID, return_layers=True, return_related=True
             )
             glyphData = response["data"]
-            self._glyphDataCache[(typeCode, glyphID)] = glyphData
+            self._tempGlyphDataCache[(typeCode, glyphID)] = glyphData
 
         self._cacheBaseGlyphData(glyphData.get("made_of", ()))
         axisDefaults = {}
@@ -132,14 +134,26 @@ class RCJKMySQLBackend:
             axisDefaults.update(extractAxisDefaults(baseGlyphDict))
 
         layers = {l["group_name"]: l for l in glyphData.get("layers", ())}
+        self._scheduleCachePurge()
         return serializeGlyph(glyphData["data"], layers, axisDefaults)
+
+    def _scheduleCachePurge(self):
+        if self._tempGlyphDataCacheTimer is not None:
+            self._tempGlyphDataCacheTimer.cancel()
+
+        async def purgeGlyphCache():
+            await asyncio.sleep(self._tempGlyphDataCacheTimeout)
+            # print("clearing temp glyph cache")
+            self._tempGlyphDataCache.clear()
+
+        self._tempGlyphDataCacheTimer = asyncio.create_task(purgeGlyphCache())
 
     def _cacheBaseGlyphData(self, baseGlyphs):
         for glyphDict in baseGlyphs:
             typeCode, glyphID = self._glyphMapping[glyphDict["name"]]
             assert typeCode == glyphDict["type_code"]
             assert glyphID == glyphDict["id"]
-            self._glyphDataCache[(typeCode, glyphID)] = glyphDict
+            self._tempGlyphDataCache[(typeCode, glyphID)] = glyphDict
             # No need to recurse into glyphDict["made_of"], as getGlyph
             # does that for us.
 
