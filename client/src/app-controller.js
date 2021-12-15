@@ -37,7 +37,8 @@ const drawingParameters = {
 
 
 class Layout {
-  constructor(font) {
+  constructor(canvasController, font) {
+    this.canvasController = canvasController;
     this.font = font;
     this.instance = null;
 
@@ -57,6 +58,8 @@ class Layout {
     this.scene.push(this.selectionLayer);
     this.scene.push(this.hoverLayer);
     this.scene.push(this.rectSelectLayer);
+
+    this.canvasController.scene = this.scene;
   }
 
   *_iterPathLayers() {
@@ -281,8 +284,8 @@ export class AppController {
 
     this.varLocation = {};
 
-    this.layout = new Layout(font)
-    this.canvasController.scene = this.layout.scene;
+    this.layout = new Layout(this.canvasController, font)
+
     canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
     canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
     canvas.addEventListener("mouseup", event => this.mouseTracker.handleMouseUp(event));
