@@ -37,8 +37,8 @@ const drawingParameters = {
 
 
 class Layout {
-  constructor(glyphGetterFunc) {
-    this._glyphGetterFunc = glyphGetterFunc;
+  constructor(font) {
+    this.font = font;
     this.instance = null;
 
     this.componentsLayer = new ComponentsLayer();
@@ -91,7 +91,8 @@ class Layout {
     this.componentsBounds = [];
     if (!!this.instance.components) {
       const compoPaths = await this.instance.getComponentPaths(
-        this._glyphGetterFunc, this.varLocation,
+        async glyphName => await this.font.getGlyph(glyphName),
+        this.varLocation,
       );
       compoPaths2d = compoPaths.map(path => {
         const path2d = new Path2D();
@@ -280,9 +281,7 @@ export class AppController {
 
     this.varLocation = {};
 
-    this.layout = new Layout(
-      async glyphName => await this.font.getGlyph(glyphName)
-    )
+    this.layout = new Layout(font)
     this.canvasController.scene = this.layout.scene;
     canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
     canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
