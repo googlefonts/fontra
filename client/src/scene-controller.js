@@ -37,6 +37,30 @@ export class SceneController {
     this.canvasController.scene = this.scene;
   }
 
+  get selection() {
+    return this.selectionLayer.selection;
+  }
+
+  set selection(selection) {
+    this.selectionLayer.selection = selection;
+  }
+
+  get hoverSelection() {
+    return this.hoverLayer.selection;
+  }
+
+  set hoverSelection(selection) {
+    this.hoverLayer.selection = selection;
+  }
+
+  get selectionRect() {
+    return this.rectSelectLayer.selectionRect;
+  }
+
+  set selectionRect(selRect) {
+    this.rectSelectLayer.selectionRect = selRect;
+  }
+
   *_iterPathLayers() {
     yield this.handlesLayer;
     yield this.pathLayer;

@@ -38,7 +38,7 @@ class RectSelectTracker {
     this.initialX = event.pageX;
     this.initialY = event.pageY;
     this.initialPoint = canvasController.localPoint(event);
-    this.currentSelection = this.sceneController.selectionLayer.selection;
+    this.currentSelection = this.sceneController.selection;
     this.didStart = false;
   }
 
@@ -62,19 +62,19 @@ class RectSelectTracker {
       "yMax": currentPoint.y,
     });
     const selection = this.sceneController.selectionAtRect(selRect);
-    this.sceneController.rectSelectLayer.selectionRect = selRect;
+    this.sceneController.selectionRect = selRect;
 
     if (event.shiftKey) {
-      this.sceneController.selectionLayer.selection = symmetricDifference(this.currentSelection, selection);
+      this.sceneController.selection = symmetricDifference(this.currentSelection, selection);
     } else {
-      this.sceneController.selectionLayer.selection = selection;
+      this.sceneController.selection = selection;
     }
 
     this.canvasController.setNeedsUpdate();
   }
 
   handleMouseUp(event) {
-    delete this.sceneController.rectSelectLayer.selectionRect;
+    this.sceneController.selectionRect = undefined;
     this.canvasController.setNeedsUpdate();
     delete this.currentSelection;
   }
@@ -104,19 +104,19 @@ class MouseTracker {
 
     if (selection.size > 0) {
       if (event.shiftKey) {
-        this.sceneController.selectionLayer.selection = symmetricDifference(this.sceneController.selectionLayer.selection, selection);
-        if (isSuperset(this.sceneController.selectionLayer.selection, selection)) {
+        this.sceneController.selection = symmetricDifference(this.sceneController.selection, selection);
+        if (isSuperset(this.sceneController.selection, selection)) {
           initiateDrag = true;
         }
-      } else if (isSuperset(this.sceneController.selectionLayer.selection, selection)) {
+      } else if (isSuperset(this.sceneController.selection, selection)) {
         initiateDrag = true;
       } else {
-        this.sceneController.selectionLayer.selection = selection;
+        this.sceneController.selection = selection;
         initiateDrag = true;
       }
     } else {
       if (!event.shiftKey) {
-        this.sceneController.selectionLayer.selection = selection;
+        this.sceneController.selection = selection;
       }
       initiateRectSelect = true;
     }
@@ -127,7 +127,7 @@ class MouseTracker {
       console.log("let's drag stuff", initiateDrag);
     }
 
-    this.sceneController.hoverLayer.selection = new Set();
+    this.sceneController.hoverSelection = new Set();
     this.canvasController.setNeedsUpdate();
   }
 
@@ -137,8 +137,8 @@ class MouseTracker {
     if (!this.inDrag) {
       const selRect = centeredRect(point.x, point.y, size);
       const selection = this.sceneController.selectionAtPoint(point, size, this.canvasController.context);
-      if (!lenientIsEqualSet(selection, this.sceneController.hoverLayer.selection)) {
-        this.sceneController.hoverLayer.selection = selection;
+      if (!lenientIsEqualSet(selection, this.sceneController.hoverSelection)) {
+        this.sceneController.hoverSelection = selection;
         this.canvasController.setNeedsUpdate();
       }
     } else if (this.subTracker !== undefined) {
