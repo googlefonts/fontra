@@ -288,7 +288,7 @@ export class AppController {
     this.varLocation = {};
 
     this.layout = new Layout(
-      async glyphName => await this.getRemoteGlyph(glyphName)
+      async glyphName => await this.getGlyph(glyphName)
     )
     this.canvasController.scene = this.layout.scene;
     canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
@@ -364,7 +364,7 @@ export class AppController {
   }
 
   async setSelectedGlyph(glyphName) {
-    const glyph = await this.getRemoteGlyph(glyphName);
+    const glyph = await this.getGlyph(glyphName);
     if (glyph === null) {
       return false;
     }
@@ -402,7 +402,7 @@ export class AppController {
     this.canvasController.setNeedsUpdate();
   }
 
-  async getRemoteGlyph(glyphName) {
+  async getGlyph(glyphName) {
     let glyph = this._glyphsCache.get(glyphName);
     if (glyph === undefined) {
       glyph = await this.fontEngine.getGlyph(glyphName);
