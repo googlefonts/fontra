@@ -1,4 +1,3 @@
-import { getRemoteProxy } from "./remote.js";
 import VarPath from "./var-path.js";
 import { VarGlyph } from "./var-glyph.js";
 import { CanvasController } from "./canvas-controller.js";
@@ -279,7 +278,7 @@ class MouseTracker {
 
 
 export class AppController {
-  constructor() {
+  constructor(fontEngine) {
     const canvas = document.querySelector("#edit-canvas");
 
     this.canvasController = new CanvasController(canvas);
@@ -300,10 +299,10 @@ export class AppController {
     // canvas.addEventListener("keyup", event => console.log(event));
 
     this.mouseTracker = new MouseTracker(this.canvasController, this.layout);
+    this.fontEngine = fontEngine;
   }
 
-  async start(port) {
-    this.remote = await getRemoteProxy(`ws://localhost:${port}/`);
+  async start() {
     await this.initGlyphNames();
   }
 
@@ -319,7 +318,7 @@ export class AppController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
-    this.reversedCmap = await this.remote.getReversedCmap();
+    this.reversedCmap = await this.fontEngine.getReversedCmap();
     this.glyphsListItems = [];
     for (const glyphName in this.reversedCmap) {
       this.glyphsListItems.push({"glyphName": glyphName, "unicodes": this.reversedCmap[glyphName]});
@@ -406,7 +405,7 @@ export class AppController {
   async getRemoteGlyph(glyphName) {
     let glyph = this._glyphsCache.get(glyphName);
     if (glyph === undefined) {
-      glyph = await this.remote.getGlyph(glyphName);
+      glyph = await this.fontEngine.getGlyph(glyphName);
       if (glyph !== null) {
         glyph = VarGlyph.fromObject(glyph);
       }
