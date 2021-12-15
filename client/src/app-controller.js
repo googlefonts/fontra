@@ -16,10 +16,6 @@ import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js
 import { List } from "./ui-list.js";
 
 
-const GLYPHS_LIST_CHUNK_SIZE = 200;  // the amount of glyph names added to the list at a time
-const LIST_ROW_SELECTED_BACKGROUND_COLOR = "#FD7"
-
-
 const drawingParameters = {
   nodeFillColor: "#777",
   nodeSize: 8,
