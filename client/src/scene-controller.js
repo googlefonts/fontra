@@ -25,16 +25,16 @@ export class SceneController {
     this.hoverLayer = new SelectionLayer("hover")
     this.rectSelectLayer = new RectangleSelectionLayer("hover")
 
-    this.scene = new SceneGraph();
-    this.scene.push(this.componentsLayer);
-    this.scene.push(this.handlesLayer);
-    this.scene.push(this.nodesLayer);
-    this.scene.push(this.pathLayer);
-    this.scene.push(this.selectionLayer);
-    this.scene.push(this.hoverLayer);
-    this.scene.push(this.rectSelectLayer);
+    const scene = new SceneGraph();
+    scene.push(this.componentsLayer);
+    scene.push(this.handlesLayer);
+    scene.push(this.nodesLayer);
+    scene.push(this.pathLayer);
+    scene.push(this.selectionLayer);
+    scene.push(this.hoverLayer);
+    scene.push(this.rectSelectLayer);
 
-    this.canvasController.scene = this.scene;
+    this.canvasController.scene = scene;
   }
 
   get selection() {
