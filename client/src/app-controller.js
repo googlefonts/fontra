@@ -314,7 +314,7 @@ export class AppController {
       {"key": "unicode", "width": "5em", "get": item => getUniStringFromUnicode(item.unicodes[0])},
     ];
     this.glyphNamesList = new List("glyphs-list", columnDescriptions);
-    this.glyphNamesList.addEventListener("listSelectionChanged", async (event) => {
+    this.glyphNamesList.addEventListener("listSelectionChanged", async event => {
       const list = event.detail;
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);

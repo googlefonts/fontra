@@ -29,7 +29,7 @@ export class RemoteObject {
 
   connect() {
     this.websocket = new WebSocket(this.wsURL);
-    this.websocket.onmessage = (event) => this._handleIncomingMessage(event);
+    this.websocket.onmessage = event => this._handleIncomingMessage(event);
     return new Promise((resolve, reject) => {
       this.websocket.onopen = resolve;
       this.websocket.onerror = reject;
