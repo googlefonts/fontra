@@ -36,7 +36,7 @@ def main():
     httpPort = 8000
     websocketPort = 8001
 
-    if args.font.startswith("https://"):
+    if args.font.startswith("http"):
         backendCoro = getMySQLBackend(args.font)
     else:
         backendCoro = getFileSystemBackend(args.font)

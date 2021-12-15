@@ -70,12 +70,12 @@ class RCJKMySQLBackend:
         self = cls()
         parsed = urlsplit(url)
         if parsed.scheme != "https":
-            raise ValueError(f"URL must be https, found {url}")
+            raise ValueError(f"URL must be https, found {parsed.scheme}")
         port = f":{parsed.port}" if parsed.port is not None else ""
         plainURL = f"{parsed.scheme}://{parsed.hostname}{port}/"
         path_parts = parsed.path.split("/")
         if len(path_parts) != 3:
-            raise ValueError(f"URL must contain /projectname/fontname path, found {url}")
+            raise ValueError(f"URL must contain /projectname/fontname path, found {parsed.path}")
         _, project_name, font_name = path_parts
 
         self.client = ClientAsync(
