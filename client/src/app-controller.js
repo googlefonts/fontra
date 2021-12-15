@@ -1,7 +1,4 @@
-import VarPath from "./var-path.js";
-import { VarGlyph } from "./var-glyph.js";
 import { CanvasController } from "./canvas-controller.js";
-import { LRUCache } from "./lru-cache.js";
 import {
   SceneGraph,
   ComponentsLayer,
@@ -274,17 +271,17 @@ class MouseTracker {
 
 
 export class AppController {
-  constructor(fontEngine) {
+  constructor(font) {
+    this.font = font;
     const canvas = document.querySelector("#edit-canvas");
 
     this.canvasController = new CanvasController(canvas);
     this.canvasController.setDrawingParameters(drawingParameters);
 
-    this._glyphsCache = new LRUCache(250);
     this.varLocation = {};
 
     this.layout = new Layout(
-      async glyphName => await this.getGlyph(glyphName)
+      async glyphName => await this.font.getGlyph(glyphName)
     )
     this.canvasController.scene = this.layout.scene;
     canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
@@ -295,7 +292,6 @@ export class AppController {
     // canvas.addEventListener("keyup", event => console.log(event));
 
     this.mouseTracker = new MouseTracker(this.canvasController, this.layout);
-    this.fontEngine = fontEngine;
   }
 
   async start() {
@@ -314,7 +310,7 @@ export class AppController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
-    this.reversedCmap = await this.fontEngine.getReversedCmap();
+    this.reversedCmap = await this.font.getReversedCmap();
     this.glyphsListItems = [];
     for (const glyphName in this.reversedCmap) {
       this.glyphsListItems.push({"glyphName": glyphName, "unicodes": this.reversedCmap[glyphName]});
@@ -360,7 +356,7 @@ export class AppController {
   }
 
   async setSelectedGlyph(glyphName) {
-    const glyph = await this.getGlyph(glyphName);
+    const glyph = await this.font.getGlyph(glyphName);
     if (glyph === null) {
       return false;
     }
@@ -396,19 +392,6 @@ export class AppController {
     }
     await this._instantiateGlyph();
     this.canvasController.setNeedsUpdate();
-  }
-
-  async getGlyph(glyphName) {
-    let glyph = this._glyphsCache.get(glyphName);
-    if (glyph === undefined) {
-      glyph = await this.fontEngine.getGlyph(glyphName);
-      if (glyph !== null) {
-        glyph = VarGlyph.fromObject(glyph);
-      }
-      this._glyphsCache.put(glyphName, glyph);
-      // console.log("LRU size", this._glyphsCache.map.size);
-    }
-    return glyph;
   }
 
   async _instantiateGlyph() {

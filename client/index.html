@@ -60,13 +60,15 @@
   </body>
     <script type="module">
       import { AppController } from "./src/app-controller.js";
+      import { Font } from "./src/font.js";
       import { getRemoteProxy } from "./src/remote.js";
       import { httpGetAsync } from "./src/utils.js";
 
       async function startApp() {
         const port = await httpGetAsync("/websocketport");
         const remoteFontEngine = await getRemoteProxy(`ws://localhost:${port}/`);
-        const appController = new AppController(remoteFontEngine);
+        const font = new Font(remoteFontEngine);
+        const appController = new AppController(font);
         await appController.start();
         window.glyphSeachFieldChanged = (value) => appController.glyphSeachFieldChanged(value);
       }
