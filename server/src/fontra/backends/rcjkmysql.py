@@ -75,7 +75,7 @@ class RCJKMySQLBackend:
         plainURL = f"{parsed.scheme}://{parsed.hostname}{port}/"
         path_parts = parsed.path.split("/")
         if len(path_parts) != 3:
-            raise ValueError(f"invalid path: {path}")
+            raise ValueError(f"invalid URL {url}")
         _, project_name, font_name = path_parts
 
         self.client = ClientAsync(
