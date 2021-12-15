@@ -32,9 +32,9 @@ const MINIMAL_DRAG_DISTANCE = 10;
 
 
 class RectSelectTracker {
-  constructor(canvasController, layoutController, event) {
+  constructor(canvasController, sceneController, event) {
     this.canvasController = canvasController;
-    this.sceneController = layoutController;
+    this.sceneController = sceneController;
     this.initialX = event.pageX;
     this.initialY = event.pageY;
     this.initialPoint = canvasController.localPoint(event);
@@ -83,9 +83,9 @@ class RectSelectTracker {
 
 
 class MouseTracker {
-  constructor(canvasController, layoutController) {
+  constructor(canvasController, sceneController) {
     this.canvasController = canvasController;
-    this.sceneController = layoutController;
+    this.sceneController = sceneController;
     this.inDrag = false;
   }
 
