@@ -290,7 +290,7 @@ export function normalizeValue(v, triple) {
   // Normalizes value based on a min/default/max triple.
   const [lower, dflt, upper] = triple;
   if (!((lower <= dflt) && (dflt <= upper))) {
-    throw VariationError(
+    throw new VariationError(
       `Invalid axis values, must be minimum, default, maximum: ${lower}, ${dflt}, ${upper}`
     );
   }
