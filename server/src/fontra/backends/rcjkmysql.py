@@ -211,7 +211,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
     glyphDict = {
         "name": glyph.name,
         "unicodes": glyph.unicodes,
-        "axes": glyph.lib["robocjk.axes"],
+        "axes": [cleanupAxis(axis) for axis in glyph.lib["robocjk.axes"]],
         "sources": sources,
     }
     return glyphDict
@@ -238,6 +238,18 @@ def serializeComponents(deepComponents, componentNames, axisDefaults):
 
 def cleanupCoord(coord, axisDefaults):
     return {a: coord.get(a, v) for a, v in axisDefaults.items()}
+
+
+def cleanupAxis(axisDict):
+    axisDict = dict(axisDict)
+    minValue = axisDict["minValue"]
+    maxValue = axisDict["maxValue"]
+    defaultValue = axisDict.get("defaultValue", minValue)
+    minValue, maxValue = sorted([minValue, maxValue])
+    axisDict["minValue"] = minValue
+    axisDict["defaultValue"] = defaultValue
+    axisDict["maxValue"] = maxValue
+    return axisDict
 
 
 class GLIFGlyph:
