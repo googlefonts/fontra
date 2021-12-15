@@ -235,7 +235,6 @@ export class AppController {
       label.append(axis.name);
       axisSliders.appendChild(label);
     }
-    this.currentGlyphName = glyphName;
   }
 
 }
