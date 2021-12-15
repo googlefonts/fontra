@@ -6,10 +6,10 @@ export class List {
   constructor(listID, columnDescriptions) {
     this.container = document.querySelector(`#${listID}`);
     if (!this.container) {
-      throw Error(`Expecting an element with id="#${listID}"`);
+      throw new Error(`Expecting an element with id="#${listID}"`);
     }
     if (this.container.children.length != 0) {
-      throw Error("list container must be empty");
+      throw new Error("list container must be empty");
     }
     this.container.classList.add("ui-list");
 
