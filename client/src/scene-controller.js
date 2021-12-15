@@ -43,6 +43,7 @@ export class SceneController {
 
   set selection(selection) {
     this.selectionLayer.selection = selection;
+    this.canvasController.setNeedsUpdate();
   }
 
   get hoverSelection() {
@@ -51,6 +52,7 @@ export class SceneController {
 
   set hoverSelection(selection) {
     this.hoverLayer.selection = selection;
+    this.canvasController.setNeedsUpdate();
   }
 
   get selectionRect() {
@@ -59,6 +61,7 @@ export class SceneController {
 
   set selectionRect(selRect) {
     this.rectSelectLayer.selectionRect = selRect;
+    this.canvasController.setNeedsUpdate();
   }
 
   *_iterPathLayers() {
@@ -70,8 +73,8 @@ export class SceneController {
   }
 
   resetSelection() {
-    this.selectionLayer.selection = new Set();
-    this.hoverLayer.selection = new Set();
+    this.selection = new Set();
+    this.hoverSelection = new Set();
   }
 
   async setSelectedGlyph(glyphName) {
@@ -82,15 +85,20 @@ export class SceneController {
     this.glyph = glyph;
     this.varLocation = {};
     this.axisMapping = _makeAxisMapping(this.glyph.axes);
-    await this._instantiateGlyph();
-    this.canvasController.setNeedsUpdate();
+    await this.instantiateGlyph();
     this.resetSelection();
     return true;
   }
 
-  async _instantiateGlyph() {
-    const instance = this.glyph.instantiate(this.varLocation);
-    await this.setInstance(instance);
+  async instantiateGlyph() {
+    await this.setInstance(this.glyph.instantiate(this.varLocation));
+  }
+
+  async setInstance(instance) {
+    this.instance = instance;
+    this.hoverSelection = new Set();
+    await this.updateScene();
+    this.canvasController.setNeedsUpdate();
   }
 
   *getAxisInfo() {
@@ -114,14 +122,7 @@ export class SceneController {
     for (const realAxisName of this.axisMapping[axisName]) {
       this.varLocation[realAxisName] = value;
     }
-    await this._instantiateGlyph();
-    this.canvasController.setNeedsUpdate();
-  }
-
-  async setInstance(instance) {
-    this.instance = instance;
-    this.hoverLayer.selection = new Set();
-    await this.updateScene();
+    await this.instantiateGlyph();
   }
 
   canSelect() {

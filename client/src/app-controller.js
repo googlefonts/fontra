@@ -69,13 +69,10 @@ class RectSelectTracker {
     } else {
       this.sceneController.selection = selection;
     }
-
-    this.canvasController.setNeedsUpdate();
   }
 
   handleMouseUp(event) {
     this.sceneController.selectionRect = undefined;
-    this.canvasController.setNeedsUpdate();
     delete this.currentSelection;
   }
 
@@ -128,7 +125,6 @@ class MouseTracker {
     }
 
     this.sceneController.hoverSelection = new Set();
-    this.canvasController.setNeedsUpdate();
   }
 
   handleMouseMove(event) {
@@ -139,7 +135,6 @@ class MouseTracker {
       const selection = this.sceneController.selectionAtPoint(point, size, this.canvasController.context);
       if (!lenientIsEqualSet(selection, this.sceneController.hoverSelection)) {
         this.sceneController.hoverSelection = selection;
-        this.canvasController.setNeedsUpdate();
       }
     } else if (this.subTracker !== undefined) {
       this.subTracker.handleMouseMove(event);
