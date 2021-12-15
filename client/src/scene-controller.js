@@ -78,8 +78,9 @@ export class SceneController {
   }
 
   async setSelectedGlyph(glyphName) {
+    this._selectedGlyphName = glyphName
     const glyph = await this.font.getGlyph(glyphName);
-    if (glyph === null) {
+    if (glyph === null || this._selectedGlyphName != glyphName) {
       return false;
     }
     this.glyph = glyph;
