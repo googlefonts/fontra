@@ -18,7 +18,8 @@ async def getMySQLBackend(url):
 
 async def getFileSystemBackend(path):
     path = pathlib.Path(path)
-    assert path.exists()
+    if not path.exists():
+        raise FileNotFoundError(path)
     print(f"loading project {path.name}...")
     fileType = path.suffix.lstrip(".")
     backendClass = getBackendClass(fileType)
