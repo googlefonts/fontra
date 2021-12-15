@@ -398,16 +398,15 @@ describe("VarPath Tests", () => {
     expect(p2.contours[1].endPoint).to.equal(7);
     const mp = new MockPath2D();
     p2.drawToPath(mp);
-    console.log(mp.items);
     expect(mp.items).to.deep.equal([
-      { op: 'moveTo', args: [ 100, 100 ] },
-      { op: 'lineTo', args: [ 100, 0 ] },
-      { op: 'bezierCurveTo', args: [ 0, 0, 0, 100, 100, 100 ] },
-      { op: 'closePath', args: [] },
-      { op: 'moveTo', args: [ 0, 0 ] },
-      { op: 'bezierCurveTo', args: [ 0, 100, 100, 100, 100, 0 ] },
-      { op: 'lineTo', args: [ 0, 0 ] },
-      { op: 'closePath', args: [] }
+      {"op": "moveTo", "args": [100, 100]},
+      {"op": "lineTo", "args": [100, 0]},
+      {"op": "bezierCurveTo", "args": [0, 0, 0, 100, 100, 100]},
+      {"op": "closePath", "args": []},
+      {"op": "moveTo", "args": [0, 0]},
+      {"op": "bezierCurveTo", "args": [0, 100, 100, 100, 100, 0]},
+      {"op": "lineTo", "args": [0, 0]},
+      {"op": "closePath", "args": []},
     ]);
   });
 
