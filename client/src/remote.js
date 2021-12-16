@@ -52,7 +52,7 @@ export class RemoteObject {
     // console.log(message);
     if (callID !== undefined) {
       const returnCallbacks = this._callReturnCallbacks[callID];
-      if (message.exception !== undefined) {
+      if (message["exception"] !== undefined) {
         returnCallbacks.reject(new RemoteException(message["exception"]));
       } else {
         returnCallbacks.resolve(message["return-value"]);
