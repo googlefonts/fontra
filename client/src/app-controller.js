@@ -160,15 +160,11 @@ export class AppController {
     canvasController.setDrawingParameters(drawingParameters);
 
     this.sceneController = new SceneController(canvasController, font)
+    this.mouseTracker = new MouseTracker(this.sceneController);
 
     canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
     canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
     canvas.addEventListener("mouseup", event => this.mouseTracker.handleMouseUp(event));
-
-    // canvas.addEventListener("keydown", event => console.log(event));
-    // canvas.addEventListener("keyup", event => console.log(event));
-
-    this.mouseTracker = new MouseTracker(this.sceneController);
   }
 
   async start() {
