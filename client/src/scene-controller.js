@@ -37,6 +37,14 @@ export class SceneController {
     this.canvasController.scene = scene;
   }
 
+  localPoint(point) {
+    return this.canvasController.localPoint(point);
+  }
+
+  get mouseClickMargin() {
+    return this.canvasController.drawingParameters.nodeSize;
+  }
+
   get selection() {
     return this.selectionLayer.selection;
   }

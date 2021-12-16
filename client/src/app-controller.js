@@ -32,12 +32,11 @@ const MINIMAL_DRAG_DISTANCE = 10;
 
 
 class RectSelectTracker {
-  constructor(canvasController, sceneController, event) {
-    this.canvasController = canvasController;
+  constructor(sceneController, event) {
     this.sceneController = sceneController;
     this.initialX = event.pageX;
     this.initialY = event.pageY;
-    this.initialPoint = canvasController.localPoint(event);
+    this.initialPoint = sceneController.localPoint(event);
     this.currentSelection = this.sceneController.selection;
     this.didStart = false;
   }
@@ -54,7 +53,7 @@ class RectSelectTracker {
     if (!this.didStart) {
       return;
     }
-    const currentPoint = this.canvasController.localPoint(event);
+    const currentPoint = this.sceneController.localPoint(event);
     const selRect = normalizeRect({
       "xMin": this.initialPoint.x,
       "yMin": this.initialPoint.y,
@@ -80,8 +79,7 @@ class RectSelectTracker {
 
 
 class MouseTracker {
-  constructor(canvasController, sceneController) {
-    this.canvasController = canvasController;
+  constructor(sceneController) {
     this.sceneController = sceneController;
     this.inDrag = false;
   }
@@ -90,11 +88,9 @@ class MouseTracker {
     if (!this.sceneController.canSelect()) {
       return;
     }
-    // event.preventDefault();
-    // this.canvasController.canvas.focus();
     this.inDrag = true;
-    const point = this.canvasController.localPoint(event);
-    const size = this.canvasController.drawingParameters.nodeSize;
+    const point = this.sceneController.localPoint(event);
+    const size = this.sceneController.mouseClickMargin
     const selection = this.sceneController.selectionAtPoint(point, size);
     let initiateDrag = false;
     let initiateRectSelect = false;
@@ -119,7 +115,7 @@ class MouseTracker {
     }
 
     if (initiateRectSelect) {
-      this.subTracker = new RectSelectTracker(this.canvasController, this.sceneController, event);
+      this.subTracker = new RectSelectTracker(this.sceneController, event);
     } else if (initiateDrag) {
       console.log("let's drag stuff", initiateDrag);
     }
@@ -128,8 +124,8 @@ class MouseTracker {
   }
 
   handleMouseMove(event) {
-    const point = this.canvasController.localPoint(event);
-    const size = this.canvasController.drawingParameters.nodeSize;
+    const point = this.sceneController.localPoint(event);
+    const size = this.sceneController.mouseClickMargin;
     if (!this.inDrag) {
       const selRect = centeredRect(point.x, point.y, size);
       const selection = this.sceneController.selectionAtPoint(point, size);
@@ -142,7 +138,7 @@ class MouseTracker {
   }
 
   handleMouseUp(event) {
-    const point = this.canvasController.localPoint(event);
+    const point = this.sceneController.localPoint(event);
 
     if (this.subTracker !== undefined) {
       this.subTracker.handleMouseUp(event);
@@ -172,7 +168,7 @@ export class AppController {
     // canvas.addEventListener("keydown", event => console.log(event));
     // canvas.addEventListener("keyup", event => console.log(event));
 
-    this.mouseTracker = new MouseTracker(canvasController, this.sceneController);
+    this.mouseTracker = new MouseTracker(this.sceneController);
   }
 
   async start() {
