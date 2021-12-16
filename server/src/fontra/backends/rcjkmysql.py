@@ -177,6 +177,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
     )
     dcNames = [c["name"] for c in defaultComponents]
     components = defaultComponents or pen.components
+    componentNames = [c["name"] for c in components]
     if components:
         defaultSourceDict["components"] = components
 
@@ -202,6 +203,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
             varDict.get("deepComponents", ()), dcNames, axisDefaults
         )
         varComponents = varComponents or pen.components
+        assert componentNames == [c["name"] for c in varComponents]
         if varComponents:
             varSourceDict["components"] = varComponents
         hAdvance = varDict["width"] if "width" in varDict else hAdvance
