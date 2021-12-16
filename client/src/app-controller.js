@@ -160,12 +160,10 @@ export class AppController {
     this.font = font;
     const canvas = document.querySelector("#edit-canvas");
 
-    this.canvasController = new CanvasController(canvas);
-    this.canvasController.setDrawingParameters(drawingParameters);
+    const canvasController = new CanvasController(canvas);
+    canvasController.setDrawingParameters(drawingParameters);
 
-    this.varLocation = {};
-
-    this.sceneController = new SceneController(this.canvasController, font)
+    this.sceneController = new SceneController(canvasController, font)
 
     canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
     canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
@@ -174,7 +172,7 @@ export class AppController {
     // canvas.addEventListener("keydown", event => console.log(event));
     // canvas.addEventListener("keyup", event => console.log(event));
 
-    this.mouseTracker = new MouseTracker(this.canvasController, this.sceneController);
+    this.mouseTracker = new MouseTracker(canvasController, this.sceneController);
   }
 
   async start() {
