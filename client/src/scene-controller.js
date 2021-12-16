@@ -163,9 +163,10 @@ export class SceneController {
     for (const hit of this.instance.path.iterPointsInRect(selRect)) {
       return new Set([`point/${hit.pointIndex}`])
     }
+    const context = this.canvasController.context;
     for (let i = this.componentsLayer.paths.length - 1; i >= 0; i--) {
       const path = this.componentsLayer.paths[i];
-      if (this.canvasController.context.isPointInPath(path, point.x, point.y)) {
+      if (context.isPointInPath(path, point.x, point.y)) {
         return new Set([`component/${i}`])
       }
     }
