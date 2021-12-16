@@ -156,8 +156,7 @@ export class AppController {
     this.font = font;
     const canvas = document.querySelector("#edit-canvas");
 
-    const canvasController = new CanvasController(canvas);
-    canvasController.setDrawingParameters(drawingParameters);
+    const canvasController = new CanvasController(canvas, drawingParameters);
 
     this.sceneController = new SceneController(canvasController, font)
     this.mouseTracker = new MouseTracker(this.sceneController);

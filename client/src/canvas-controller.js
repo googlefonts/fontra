@@ -7,16 +7,16 @@ const MAX_MAGNIFICATION = 200;
 
 export class CanvasController {
 
-  constructor(canvas) {
+  constructor(canvas, drawingParameters) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
     this.scene = null;
-    this._unscaledDrawingParameters = {};
-    this.drawingParameters = {};
 
     this.magnification = 1;
     this.origin = {x: 200, y: 880};  // TODO choose y based on initial canvas height
     this.needsUpdate = false;
+
+    this.setDrawingParameters(drawingParameters);
 
     const resizeObserver = new ResizeObserver(entries => {
       this.setupSize();
