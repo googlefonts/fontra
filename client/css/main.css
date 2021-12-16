@@ -136,12 +136,3 @@ html, body {
     background-color: #333;
   }
 }
-
-@media (prefers-color-scheme: light) {
-  html, body {
-    color: black;
-  }
-  .controls, .glyphs-navigation {
-    background-color: lightgray;
-  }
-}

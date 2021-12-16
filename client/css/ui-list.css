@@ -11,7 +11,7 @@
   display: flex;
   width: content;
   border-top: solid 1px #DDD;
-  background-color: #FFF;
+  background-color: white;
   padding: 0.15em;
   padding-left: 0.5em;
   padding-right: 0.5em;
@@ -36,16 +36,5 @@
 
   .ui-list > .contents > .selected {
     background-color: #04A;
-  }
-}
-
-@media (prefers-color-scheme: light) {
-  .ui-list > .contents > .row {
-    background-color: white;
-    color: black;
-  }
-
-  .ui-list > .contents > .selected {
-    background-color: #FD7;
   }
 }
