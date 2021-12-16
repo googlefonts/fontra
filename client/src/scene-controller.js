@@ -154,7 +154,7 @@ export class SceneController {
     this.hoverLayer.componentPaths = compoPaths2d;
   }
 
-  selectionAtPoint(point, size, context) {
+  selectionAtPoint(point, size) {
     if (this.instance === null) {
       return new Set();
     }
@@ -165,7 +165,7 @@ export class SceneController {
     }
     for (let i = this.componentsLayer.paths.length - 1; i >= 0; i--) {
       const path = this.componentsLayer.paths[i];
-      if (context.isPointInPath(path, point.x, point.y)) {
+      if (this.canvasController.context.isPointInPath(path, point.x, point.y)) {
         return new Set([`component/${i}`])
       }
     }

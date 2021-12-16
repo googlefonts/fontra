@@ -95,7 +95,7 @@ class MouseTracker {
     this.inDrag = true;
     const point = this.canvasController.localPoint(event);
     const size = this.canvasController.drawingParameters.nodeSize;
-    const selection = this.sceneController.selectionAtPoint(point, size, this.canvasController.context);
+    const selection = this.sceneController.selectionAtPoint(point, size);
     let initiateDrag = false;
     let initiateRectSelect = false;
 
@@ -132,7 +132,7 @@ class MouseTracker {
     const size = this.canvasController.drawingParameters.nodeSize;
     if (!this.inDrag) {
       const selRect = centeredRect(point.x, point.y, size);
-      const selection = this.sceneController.selectionAtPoint(point, size, this.canvasController.context);
+      const selection = this.sceneController.selectionAtPoint(point, size);
       if (!lenientIsEqualSet(selection, this.sceneController.hoverSelection)) {
         this.sceneController.hoverSelection = selection;
       }
