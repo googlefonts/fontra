@@ -175,10 +175,10 @@ def serializeGlyph(glifData, layers, axisDefaults):
     defaultComponents = serializeComponents(
         glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults
     )
+    dcNames = [c["name"] for c in defaultComponents]
     components = defaultComponents or pen.components
     if components:
         defaultSourceDict["components"] = components
-    componentNames = [c["name"] for c in components]
 
     sources = [
         {"location": {}, "source": defaultSourceDict},
@@ -199,7 +199,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
             if varPath:
                 varSourceDict["path"] = varPath
         varComponents = serializeComponents(
-            varDict.get("deepComponents", ()), componentNames, axisDefaults
+            varDict.get("deepComponents", ()), dcNames, axisDefaults
         )
         varComponents = varComponents or pen.components
         if varComponents:
@@ -217,14 +217,14 @@ def serializeGlyph(glifData, layers, axisDefaults):
     return glyphDict
 
 
-def serializeComponents(deepComponents, componentNames, axisDefaults):
-    if componentNames is not None:
-        assert len(deepComponents) == len(componentNames)
+def serializeComponents(deepComponents, dcNames, axisDefaults):
+    if dcNames is not None:
+        assert len(deepComponents) == len(dcNames)
     components = []
     for index, deepCompoDict in enumerate(deepComponents):
         component = {}
         name = (
-            deepCompoDict["name"] if "name" in deepCompoDict else componentNames[index]
+            deepCompoDict["name"] if "name" in deepCompoDict else dcNames[index]
         )
         component["name"] = name
         if deepCompoDict["coord"]:
