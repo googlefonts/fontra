@@ -26,3 +26,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+
+@media (prefers-color-scheme: dark) {
+  .ui-list > .contents > .row {
+    background-color: black;
+    color: white;
+  }
+
+  .ui-list > .contents > .selected {
+    background-color: #04A;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .ui-list > .contents > .row {
+    background-color: white;
+    color: black;
+  }
+
+  .ui-list > .contents > .selected {
+    background-color: #FD7;
+  }
+}
