@@ -140,4 +140,9 @@ html, body {
     background-color: black;
   }
 
+  .glyphs-search-input {
+    background-color: black;
+    color: white;
+  }
+
 }
