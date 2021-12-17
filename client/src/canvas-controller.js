@@ -68,6 +68,7 @@ export class CanvasController {
   setDrawingParameters(drawingParameters) {
     this._unscaledDrawingParameters = drawingParameters;
     this._updateDrawingParameters();
+    this.setNeedsUpdate();
   }
 
   _updateDrawingParameters() {

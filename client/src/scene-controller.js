@@ -72,6 +72,10 @@ export class SceneController {
     this.canvasController.setNeedsUpdate();
   }
 
+  setDrawingParameters(drawingParameters) {
+    this.canvasController.setDrawingParameters(drawingParameters);
+  }
+
   *_iterPathLayers() {
     yield this.handlesLayer;
     yield this.pathLayer;

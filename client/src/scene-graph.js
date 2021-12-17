@@ -144,17 +144,17 @@ export class SelectionLayer extends BaseSceneItem {
         // context.strokeStyle = color;
         // strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth);
 
-        context.shadowColor = '#ADF';
+        context.shadowColor = "#888";
         context.shadowBlur = 8 * window.devicePixelRatio;  // shadowBlur is in device space
-        context.fillStyle = "#FFF";
+        context.fillStyle = parms.nodeColor;
         fillNode(context, point.x, point.y, controller.drawingParameters.nodeSize, point.type, point.smooth);
       } else {
         context.save();
-        context.shadowColor = '#ADF';
+        context.shadowColor = "#888";
         context.shadowBlur = 18 * window.devicePixelRatio;  // shadowBlur is in device space
         // context.shadowOffsetX = 2;
         // context.shadowOffsetY = 2;
-        context.fillStyle = "#FFF";
+        context.fillStyle = parms.componentFillColor;;
         context.fill(this.componentPaths[index]);
         context.restore();
       }

@@ -5,20 +5,47 @@ import { isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js
 import { List } from "./ui-list.js";
 
 
-const drawingParameters = {
+const drawingParametersLight = {
+  nodeFillColor: "#CCC",
+  nodeSize: 8,
+  handleColor: "#CCC",
+  handleLineWidth: 1,
+  selection: {
+    nodeSize: 10,
+    nodeColor: "#000",
+    nodeLineWidth: 2,
+    componentFillColor: "#000"
+  },
+  hover: {
+    nodeSize: 10,
+    nodeColor: "#444",
+    nodeLineWidth: 2,
+    componentFillColor: "#444"
+  },
+  pathStrokeColor: "#000",
+  pathLineWidth: 1,
+  componentFillColor: "#222",
+  rectSelectLineWidth: 1,
+  rectSelectLineDash: [10, 10],
+}
+
+
+const drawingParametersDark = {
   nodeFillColor: "#777",
   nodeSize: 8,
   handleColor: "#777",
   handleLineWidth: 1,
   selection: {
     nodeSize: 10,
-    nodeColor: "#4AF",
+    nodeColor: "#FFF",
     nodeLineWidth: 2,
+    componentFillColor: "#FFF"
   },
   hover: {
     nodeSize: 10,
-    nodeColor: "#8CF",
+    nodeColor: "#DDD",
     nodeLineWidth: 2,
+    componentFillColor: "#DDD"
   },
   pathStrokeColor: "#FFF",
   pathLineWidth: 1,
@@ -156,6 +183,7 @@ export class AppController {
     this.font = font;
     const canvas = document.querySelector("#edit-canvas");
 
+    const drawingParameters = this.isThemeDark ? drawingParametersDark : drawingParametersLight;
     const canvasController = new CanvasController(canvas, drawingParameters);
 
     this.sceneController = new SceneController(canvasController, font)
@@ -164,6 +192,8 @@ export class AppController {
     canvas.addEventListener("mousemove", event => this.mouseTracker.handleMouseMove(event));
     canvas.addEventListener("mousedown", event => this.mouseTracker.handleMouseDown(event));
     canvas.addEventListener("mouseup", event => this.mouseTracker.handleMouseUp(event));
+
+    window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
   }
 
   async start() {
@@ -189,6 +219,19 @@ export class AppController {
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
     this.glyphNamesList.setItems(this.glyphsListItems);
+  }
+
+  themeChanged(event) {
+    const isDark = event.matches;
+    console.log("theme changed?", event);
+    console.log("is dark?", isDark, this.isThemeDark);
+      // e => e.matches && activateDarkMode() // listener
+    const drawingParameters = this.isThemeDark ? drawingParametersDark : drawingParametersLight;
+    this.sceneController.setDrawingParameters(drawingParameters);
+  }
+
+  get isThemeDark() {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
   }
 
   async glyphSeachFieldChanged(value) {
