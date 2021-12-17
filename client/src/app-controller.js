@@ -183,8 +183,7 @@ export class AppController {
     this.font = font;
     const canvas = document.querySelector("#edit-canvas");
 
-    const drawingParameters = this.isThemeDark ? drawingParametersDark : drawingParametersLight;
-    const canvasController = new CanvasController(canvas, drawingParameters);
+    const canvasController = new CanvasController(canvas, this.drawingParameters);
 
     this.sceneController = new SceneController(canvasController, font)
     this.mouseTracker = new MouseTracker(this.sceneController);
@@ -223,15 +222,15 @@ export class AppController {
 
   themeChanged(event) {
     const isDark = event.matches;
-    console.log("theme changed?", event);
-    console.log("is dark?", isDark, this.isThemeDark);
-      // e => e.matches && activateDarkMode() // listener
-    const drawingParameters = this.isThemeDark ? drawingParametersDark : drawingParametersLight;
-    this.sceneController.setDrawingParameters(drawingParameters);
+    this.sceneController.setDrawingParameters(this.drawingParameters);
   }
 
   get isThemeDark() {
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  get drawingParameters() {
+    return this.isThemeDark ? drawingParametersDark : drawingParametersLight;
   }
 
   async glyphSeachFieldChanged(value) {
