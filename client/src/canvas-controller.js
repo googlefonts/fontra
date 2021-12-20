@@ -162,4 +162,8 @@ export class CanvasController {
     return {x: x, y: y}
   }
 
+  get onePixelUnit() {
+    return 1 / this.magnification;
+  }
+
 }

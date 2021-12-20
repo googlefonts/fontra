@@ -41,6 +41,10 @@ export class SceneController {
     return this.canvasController.localPoint(point);
   }
 
+  get onePixelUnit() {
+    return this.canvasController.onePixelUnit;
+  }
+
   get mouseClickMargin() {
     return this.canvasController.drawingParameters.nodeSize;
   }
