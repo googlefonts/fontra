@@ -323,6 +323,7 @@ const MINIMAL_DRAG_DISTANCE = 6;
 
 
 async function shouldInitiateDrag(eventStream, initialEvent) {
+  // drop events until the pointer moved a minimal distance
   const initialX = initialEvent.pageX;
   const initialY = initialEvent.pageY;
 
