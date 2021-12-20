@@ -82,6 +82,8 @@ export class SceneController {
       }
     }
 
+    this.hoverSelection = new Set();
+
     if (initiateRectSelect) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
     } else if (initiateDrag) {
@@ -92,8 +94,6 @@ export class SceneController {
       }
       console.log("done iterating events!");
     }
-
-    this.hoverSelection = new Set();
   }
 
   async handleRectSelect(eventStream, initialEvent, initialSelection) {
