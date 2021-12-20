@@ -1,3 +1,4 @@
+import { MouseTracker } from "./mouse-tracker.js";
 import {
   SceneGraph,
   ComponentsLayer,
@@ -35,9 +36,29 @@ export class SceneController {
     scene.push(this.rectSelectLayer);
 
     this.canvasController.scene = scene;
+
+    this.mouseTracker = new MouseTracker({
+      drag: async (eventStream, initialEvent) => this.handleDrag(eventStream, initialEvent),
+      hover: event => console.log("hoverrrrr", event.point),
+      localPoint: point => this.canvasController.localPoint(point),
+      element: canvasController.canvas,
+    });
+  }
+
+  async handleDrag(eventStream, initialEvent) {
+    console.log("initial event!", initialEvent);
+    for await (const event of eventStream) {
+      console.log("event item!", event.localPoint, event);
+    }
+    console.log("done iterating events!");
+  }
+
+  handleHover(event) {
+
   }
 
   localPoint(point) {
+    // TODO: remove, no longer needed ******************
     return this.canvasController.localPoint(point);
   }
 

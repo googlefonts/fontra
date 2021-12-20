@@ -4,7 +4,7 @@ const modifierKeys = ["Shift", "Control", "Alt", "Meta"];
 export class MouseTracker {
 
   constructor(options) {
-    this.mouseDownFunc = options.mouseDown;
+    this.dragFunc = options.drag;
     this.hoverFunc = options.hover;
     this.localPointFunc = options.localPoint;
     this._eventStream = undefined;
@@ -24,36 +24,37 @@ export class MouseTracker {
       throw new Error("unfinished event stream");
     }
     this._eventStream = new EventStream();
-    this.mouseDownFunc(this._eventStream, this._packEvent(event));
+    this.dragFunc(this._eventStream, this._addLocalPoint(event));
   }
 
   handleMouseMove(event) {
     if (event.buttons) {
       // in mouse drag
-      this._eventStream.pushValue(this._packEvent(event));
+      this._eventStream.pushValue(this._addLocalPoint(event));
     } else {
       // hovering
-      this.hoverFunc(this._packEvent(event));
+      this.hoverFunc(this._addLocalPoint(event));
     }
   }
 
   handleMouseUp(event) {
-    this._eventStream.pushValue(this._packEvent(event));
+    this._eventStream.pushValue(this._addLocalPoint(event));
     this._eventStream.done();
     this._eventStream = undefined;
   }
 
   handleModifierKeyChange(event) {
     if (this._eventStream !== undefined && modifierKeys.indexOf(event.key) >= 0) {
-      this._eventStream.pushValue(this._packEvent(event));
+      this._eventStream.pushValue(this._addLocalPoint(event));
     }
   }
 
-  _packEvent(event) {
+  _addLocalPoint(event) {
     if (event.x !== undefined) {
-      this._point = this.localPointFunc(event);
+      this._localPoint = this.localPointFunc(event);
     }
-    return {"point": this._point, "event": event}
+    event.localPoint = this._localPoint;
+    return event;
   }
 
 }
