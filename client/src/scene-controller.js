@@ -127,8 +127,11 @@ export class SceneController {
     }
   }
 
-  localPoint(point) {
-    return this.canvasController.localPoint(point);
+  localPoint(event) {
+    if (event.x !== undefined) {
+      this._currentLocalPoint = this.canvasController.localPoint(event);
+    }
+    return this._currentLocalPoint;
   }
 
   get onePixelUnit() {
