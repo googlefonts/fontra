@@ -19,6 +19,7 @@ export class MouseTracker {
   }
 
   handleMouseDown(event) {
+    // console.log("number of clicks:", event.detail);
     if (this._eventStream !== undefined) {
       throw new Error("unfinished event stream");
     }
