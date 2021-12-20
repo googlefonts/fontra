@@ -15,13 +15,13 @@ export class MouseTracker {
     element.addEventListener("keydown", event => this.handleModifierKeyChange(event));
     element.addEventListener("keyup", event => this.handleModifierKeyChange(event));
 
-    if (!window._fontraInstalledMouseTrackerListeners) {
+    if (!window._fontraDidInstallMouseTrackerListeners) {
       // We add "mouseup" and "mousemove" as window-level event listeners,
       // because otherwise we will not receive them if they occur outside the
       // target element's box.
       window.addEventListener("mouseup", event => window._fontraMouseTracker?.handleMouseUp(event));
       window.addEventListener("mousemove", event => window._fontraMouseTracker?.handleMouseMove(event));
-      window._fontraInstalledMouseTrackerListeners = true;
+      window._fontraDidInstallMouseTrackerListeners = true;
     }
   }
 
