@@ -61,7 +61,6 @@ export class AppController {
     const canvasController = new CanvasController(canvas, this.drawingParameters);
 
     this.sceneController = new SceneController(canvasController, font)
-    this.mouseTracker = new MouseTracker(this.sceneController);
 
     window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
   }
