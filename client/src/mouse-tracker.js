@@ -12,10 +12,17 @@ export class MouseTracker {
 
   _addEventListeners(element) {
     element.addEventListener("mousedown", event => this.handleMouseDown(event))
-    element.addEventListener("mousemove", event => this.handleMouseMove(event));
-    element.addEventListener("mouseup", event => this.handleMouseUp(event));
     element.addEventListener("keydown", event => this.handleModifierKeyChange(event));
     element.addEventListener("keyup", event => this.handleModifierKeyChange(event));
+
+    if (!window._fontraInstalledMouseTrackerListeners) {
+      // We add "mouseup" and "mousemove" as window-level event listeners,
+      // because otherwise we will not receive them if they occur outside the
+      // target element's box.
+      window.addEventListener("mouseup", event => window._fontraMouseTracker?.handleMouseUp(event));
+      window.addEventListener("mousemove", event => window._fontraMouseTracker?.handleMouseMove(event));
+      window._fontraInstalledMouseTrackerListeners = true;
+    }
   }
 
   handleMouseDown(event) {
@@ -23,6 +30,7 @@ export class MouseTracker {
     if (this._eventStream !== undefined) {
       throw new Error("unfinished event stream");
     }
+    window._fontraMouseTracker = this;
     this._eventStream = new EventStream();
     this._dragFunc(this._eventStream, event);
   }
@@ -38,6 +46,7 @@ export class MouseTracker {
   }
 
   handleMouseUp(event) {
+    delete window._fontraMouseTracker;
     this._eventStream.pushEvent(event);
     this._eventStream.done();
     this._eventStream = undefined;
