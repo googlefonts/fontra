@@ -8,8 +8,8 @@ import {
   SelectionLayer,
   RectangleSelectionLayer,
 } from "./scene-graph.js";
-import { centeredRect, sectRect } from "./rectangle.js";
-
+import { centeredRect, normalizeRect, sectRect } from "./rectangle.js";
+import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
 
 export class SceneController {
@@ -39,27 +39,93 @@ export class SceneController {
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) => this.handleDrag(eventStream, initialEvent),
-      hover: event => console.log("hoverrrrr", event.point),
+      hover: event => this.handleHover(event),
       localPoint: point => this.canvasController.localPoint(point),
       element: canvasController.canvas,
     });
   }
 
   async handleDrag(eventStream, initialEvent) {
-    console.log("initial event!", initialEvent);
-    for await (const event of eventStream) {
-      console.log("event item!", event.localPoint, event);
+    if (!this.canSelect()) {
+      return;
     }
-    console.log("done iterating events!");
+
+    const point = initialEvent.localPoint;
+    const selection = this.selectionAtPoint(point, this.mouseClickMargin);
+    let initiateDrag = false;
+    let initiateRectSelect = false;
+
+    if (selection.size > 0) {
+      if (event.shiftKey) {
+        this.selection = symmetricDifference(this.selection, selection);
+        if (isSuperset(this.selection, selection)) {
+          initiateDrag = true;
+        }
+      } else if (isSuperset(this.selection, selection)) {
+        initiateDrag = true;
+      } else {
+        this.selection = selection;
+        initiateDrag = true;
+      }
+    } else {
+      if (!event.shiftKey) {
+        this.selection = selection;
+      }
+      initiateRectSelect = true;
+    }
+
+    if (initiateRectSelect || initiateDrag) {
+      if (!await shouldInitiateDrag(eventStream, initialEvent)) {
+        initiateRectSelect = false;
+        initiateDrag = false;
+      }
+    }
+
+    if (initiateRectSelect) {
+      return await this.handleRectSelect(eventStream, initialEvent);
+    } else if (initiateDrag) {
+      console.log("let's drag stuff", initiateDrag);
+      console.log("initial event!", initialEvent);
+      for await (const event of eventStream) {
+        console.log("event item!", event.localPoint, event);
+      }
+      console.log("done iterating events!");
+    }
+
+    this.hoverSelection = new Set();
+  }
+
+  async handleRectSelect(eventStream, initialEvent) {
+    const initialPoint = initialEvent.localPoint;
+    const currentSelection = this.selection;
+    for await (const event of eventStream) {
+      const currentPoint = event.localPoint;
+      const selRect = normalizeRect({
+        "xMin": initialPoint.x,
+        "yMin": initialPoint.y,
+        "xMax": currentPoint.x,
+        "yMax": currentPoint.y,
+      });
+      const selection = this.selectionAtRect(selRect);
+      this.selectionRect = selRect;
+
+      if (event.shiftKey) {
+        this.selection = symmetricDifference(currentSelection, selection);
+      } else {
+        this.selection = selection;
+      }
+    }
+    this.selectionRect = undefined;
   }
 
   handleHover(event) {
-
-  }
-
-  localPoint(point) {
-    // TODO: remove, no longer needed ******************
-    return this.canvasController.localPoint(point);
+    const point = event.localPoint;
+    const size = this.mouseClickMargin;
+    const selRect = centeredRect(point.x, point.y, size);
+    const selection = this.selectionAtPoint(point, size);
+    if (!lenientIsEqualSet(selection, this.hoverSelection)) {
+      this.hoverSelection = selection;
+    }
   }
 
   get onePixelUnit() {
@@ -244,4 +310,25 @@ function _getAxisBaseName(axisName) {
     return axisName.slice(0, asterixPos);
   }
   return axisName;
+}
+
+
+const MINIMAL_DRAG_DISTANCE = 6;
+
+
+async function shouldInitiateDrag(eventStream, initialEvent) {
+  const initialX = initialEvent.pageX;
+  const initialY = initialEvent.pageY;
+
+  for await (const event of eventStream) {
+    const x = event.pageX;
+    const y = event.pageY;
+    if (
+      Math.abs(initialX - x) > MINIMAL_DRAG_DISTANCE ||
+      Math.abs(initialY - y) > MINIMAL_DRAG_DISTANCE
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
