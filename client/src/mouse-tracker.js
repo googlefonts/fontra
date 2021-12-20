@@ -4,8 +4,8 @@ const modifierKeys = ["Shift", "Control", "Alt", "Meta"];
 export class MouseTracker {
 
   constructor(options) {
-    this.dragFunc = options.drag;
-    this.hoverFunc = options.hover;
+    this._dragFunc = options.drag;
+    this._hoverFunc = options.hover;
     this._eventStream = undefined;
     this._addEventListeners(options.element);
   }
@@ -23,7 +23,7 @@ export class MouseTracker {
       throw new Error("unfinished event stream");
     }
     this._eventStream = new EventStream();
-    this.dragFunc(this._eventStream, event);
+    this._dragFunc(this._eventStream, event);
   }
 
   handleMouseMove(event) {
@@ -32,7 +32,7 @@ export class MouseTracker {
       this._eventStream.pushEvent(event);
     } else {
       // hovering
-      this.hoverFunc(event);
+      this._hoverFunc(event);
     }
   }
 
