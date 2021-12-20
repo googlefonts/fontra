@@ -27,9 +27,9 @@ export class MouseTracker {
   }
 
   handleMouseMove(event) {
-    if (event.buttons) {
+    if (this._eventStream !== undefined) {
       // in mouse drag
-      this._eventStream.pushValue(event);
+      this._eventStream.pushEvent(event);
     } else {
       // hovering
       this.hoverFunc(event);
@@ -37,14 +37,14 @@ export class MouseTracker {
   }
 
   handleMouseUp(event) {
-    this._eventStream.pushValue(event);
+    this._eventStream.pushEvent(event);
     this._eventStream.done();
     this._eventStream = undefined;
   }
 
   handleModifierKeyChange(event) {
     if (this._eventStream !== undefined && modifierKeys.indexOf(event.key) >= 0) {
-      this._eventStream.pushValue(event);
+      this._eventStream.pushEvent(event);
     }
   }
 
@@ -81,12 +81,12 @@ class EventStream {
     }
   }
 
-  pushValue(value) {
+  pushEvent(event) {
     if (this._resolve !== undefined) {
-      this._resolve({"value": value, "done": false});
+      this._resolve({"value": event, "done": false});
       this._reset();
     } else {
-      // console.log("ignoring pushValue: no iteration took place");
+      // console.log("ignoring pushEvent: no iteration took place");
     }
   }
 
