@@ -95,7 +95,7 @@ class EventStream {
       this._resolve({"value": value, "done": false});
       this._reset();
     } else {
-      console.log("ignoring pushValue: no iteration took place");
+      // console.log("ignoring pushValue: no iteration took place");
     }
   }
 
