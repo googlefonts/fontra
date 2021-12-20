@@ -51,6 +51,7 @@ export class SceneController {
     }
 
     const point = initialEvent.localPoint;
+    const initialSelection = this.selection;
     const selection = this.selectionAtPoint(point, this.mouseClickMargin);
     let initiateDrag = false;
     let initiateRectSelect = false;
@@ -82,7 +83,7 @@ export class SceneController {
     }
 
     if (initiateRectSelect) {
-      return await this.handleRectSelect(eventStream, initialEvent);
+      return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
     } else if (initiateDrag) {
       console.log("let's drag stuff", initiateDrag);
       console.log("initial event!", initialEvent);
@@ -95,9 +96,8 @@ export class SceneController {
     this.hoverSelection = new Set();
   }
 
-  async handleRectSelect(eventStream, initialEvent) {
+  async handleRectSelect(eventStream, initialEvent, initialSelection) {
     const initialPoint = initialEvent.localPoint;
-    const currentSelection = this.selection;
     for await (const event of eventStream) {
       const currentPoint = event.localPoint;
       const selRect = normalizeRect({
@@ -110,7 +110,7 @@ export class SceneController {
       this.selectionRect = selRect;
 
       if (event.shiftKey) {
-        this.selection = symmetricDifference(currentSelection, selection);
+        this.selection = symmetricDifference(initialSelection, selection);
       } else {
         this.selection = selection;
       }
