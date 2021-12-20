@@ -40,7 +40,6 @@ export class SceneController {
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) => this.handleDrag(eventStream, initialEvent),
       hover: event => this.handleHover(event),
-      localPoint: point => this.canvasController.localPoint(point),
       element: canvasController.canvas,
     });
   }
@@ -50,7 +49,7 @@ export class SceneController {
       return;
     }
 
-    const point = initialEvent.localPoint;
+    const point = this.localPoint(initialEvent);
     const initialSelection = this.selection;
     const selection = this.selectionAtPoint(point, this.mouseClickMargin);
     let initiateDrag = false;
@@ -90,16 +89,16 @@ export class SceneController {
       console.log("let's drag stuff", initiateDrag);
       console.log("initial event!", initialEvent);
       for await (const event of eventStream) {
-        console.log("event item!", event.localPoint, event);
+        console.log("event item!", this.localPoint(event), event);
       }
       console.log("done iterating events!");
     }
   }
 
   async handleRectSelect(eventStream, initialEvent, initialSelection) {
-    const initialPoint = initialEvent.localPoint;
+    const initialPoint = this.localPoint(initialEvent);
     for await (const event of eventStream) {
-      const currentPoint = event.localPoint;
+      const currentPoint = this.localPoint(event);
       const selRect = normalizeRect({
         "xMin": initialPoint.x,
         "yMin": initialPoint.y,
@@ -119,13 +118,17 @@ export class SceneController {
   }
 
   handleHover(event) {
-    const point = event.localPoint;
+    const point = this.localPoint(event);
     const size = this.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
     const selection = this.selectionAtPoint(point, size);
     if (!lenientIsEqualSet(selection, this.hoverSelection)) {
       this.hoverSelection = selection;
     }
+  }
+
+  localPoint(point) {
+    return this.canvasController.localPoint(point);
   }
 
   get onePixelUnit() {
