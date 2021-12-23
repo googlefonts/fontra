@@ -14,6 +14,7 @@ export class MouseTracker {
     element.addEventListener("mousedown", event => this.handleMouseDown(event))
     element.addEventListener("keydown", event => this.handleModifierKeyChange(event));
     element.addEventListener("keyup", event => this.handleModifierKeyChange(event));
+    element.addEventListener("mousemove", event => this.handleMouseMove(event));
 
     if (!window._fontraDidInstallMouseTrackerListeners) {
       // We add "mouseup" and "mousemove" as window-level event listeners,
@@ -43,6 +44,7 @@ export class MouseTracker {
       // hovering
       this._hoverFunc(event);
     }
+    event.stopImmediatePropagation();  // handle element-level or window-level event, but not both
   }
 
   handleMouseUp(event) {
