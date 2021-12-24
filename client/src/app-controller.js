@@ -141,13 +141,6 @@ export class AppController {
 }
 
 
-function encodeGlyphName(glyphName) {
-  // encode a glyph name as base64 minus padding, so it can be used
-  // as a query selector
-  return window.btoa(glyphName).replaceAll("=", "");
-}
-
-
 function getCharFromUnicode(codePoint) {
   return codePoint !== undefined ? String.fromCodePoint(codePoint) : ""
 
