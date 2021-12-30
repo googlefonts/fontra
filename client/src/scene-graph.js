@@ -112,7 +112,7 @@ export class SelectionLayer extends BaseSceneItem {
     super();
     this.path = null;
     this.displayKey = displayKey;
-    this.componentPaths;
+    // this.componentPaths; // will be set later
     this.selection = new Set();
   }
 
