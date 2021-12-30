@@ -37,9 +37,7 @@ export class ComponentsLayer extends BaseSceneItem {
     const context = controller.context;
 
     context.fillStyle = controller.drawingParameters.componentFillColor;
-    for (const path of this.paths) {
-      context.fill(path);
-    }
+    this.paths.forEach(path => context.fill(path));
   }
 }
 
