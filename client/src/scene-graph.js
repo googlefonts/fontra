@@ -22,9 +22,7 @@ export class SceneGraph extends BaseSceneItem {
   }
 
   doDraw(controller) {
-    for (const item of this.items) {
-      item.draw(controller);
-    }
+    this.items.forEach(item => item.draw(controller));
   }
 }
 
