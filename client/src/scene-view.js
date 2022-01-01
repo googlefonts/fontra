@@ -15,7 +15,9 @@ export class SceneView {
     if (this.drawFunc === undefined) {
       return;
     }
+    canvasController.context.save();
     this.drawFunc(this.model, canvasController);
+    canvasController.context.restore();
   }
 
 }
