@@ -17,7 +17,6 @@ import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference }
 export class SceneController {
   constructor(canvasController, font) {
     this.canvasController = canvasController;
-    this.font = font;
 
     const sceneModel = new SceneModel(
       font,
