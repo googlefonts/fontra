@@ -10,7 +10,7 @@ export class CanvasController {
   constructor(canvas, drawingParameters) {
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
-    this.sceneView = null;
+    this.sceneView = undefined;  // will be set later
 
     this.magnification = 1;
     this.origin = {x: 200, y: 880};  // TODO choose y based on initial canvas height
