@@ -1,10 +1,3 @@
-export class SceneModel {
-  constructor() {
-
-  }
-}
-
-
 export class SceneView {
 
   constructor(model, drawFunc) {

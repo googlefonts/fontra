@@ -8,7 +8,8 @@ import {
   drawHoverLayer,
   drawRectangleSelectionLayer,
 } from "./scene-draw-funcs.js";
-import { SceneModel, SceneView } from "./scene.js"
+import { SceneModel } from "./scene-model.js";
+import { SceneView } from "./scene-view.js"
 import { centeredRect, normalizeRect, sectRect } from "./rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
