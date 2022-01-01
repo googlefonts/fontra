@@ -1,44 +1,12 @@
 import { MouseTracker } from "./mouse-tracker.js";
-import {
-  drawComponentsLayer,
-  drawHandlesLayer,
-  drawPathLayer,
-  drawNodesLayer,
-  drawSelectionLayer,
-  drawHoverLayer,
-  drawRectangleSelectionLayer,
-} from "./scene-draw-funcs.js";
-import { SceneModel } from "./scene-model.js";
-import { SceneView } from "./scene-view.js"
 import { centeredRect, normalizeRect } from "./rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
 
 export class SceneController {
-  constructor(canvasController, font) {
+  constructor(sceneModel, canvasController) {
     this.canvasController = canvasController;
-
-    const sceneModel = new SceneModel(
-      font,
-      // we need to do isPointInPath without having a context
-      canvasController.context.isPointInPath.bind(canvasController.context),
-    );
-    const sceneView = new SceneView();
-    const drawFuncs = [
-      drawComponentsLayer,
-      drawHandlesLayer,
-      drawNodesLayer,
-      drawPathLayer,
-      drawSelectionLayer,
-      drawHoverLayer,
-      drawRectangleSelectionLayer,
-    ]
-    drawFuncs.forEach(
-      drawFunc => sceneView.subviews.push(new SceneView(sceneModel, drawFunc))
-    );
-
     this.sceneModel = sceneModel;
-    this.canvasController.sceneView = sceneView;
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) => this.handleDrag(eventStream, initialEvent),

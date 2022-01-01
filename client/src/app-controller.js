@@ -1,5 +1,16 @@
 import { CanvasController } from "./canvas-controller.js";
 import { SceneController } from "./scene-controller.js"
+import {
+  drawComponentsLayer,
+  drawHandlesLayer,
+  drawPathLayer,
+  drawNodesLayer,
+  drawSelectionLayer,
+  drawHoverLayer,
+  drawRectangleSelectionLayer,
+} from "./scene-draw-funcs.js";
+import { SceneModel } from "./scene-model.js";
+import { SceneView } from "./scene-view.js"
 import { List } from "./ui-list.js";
 
 
@@ -59,8 +70,26 @@ export class AppController {
     const canvas = document.querySelector("#edit-canvas");
 
     const canvasController = new CanvasController(canvas, this.drawingParameters);
+    // We need to do isPointInPath without having a context, we'll pass a bound method
+    const isPointInPath = canvasController.context.isPointInPath.bind(canvasController.context);
 
-    this.sceneController = new SceneController(canvasController, font)
+    const sceneModel = new SceneModel(font, isPointInPath);
+    const sceneView = new SceneView();
+    const drawFuncs = [
+      drawComponentsLayer,
+      drawHandlesLayer,
+      drawNodesLayer,
+      drawPathLayer,
+      drawSelectionLayer,
+      drawHoverLayer,
+      drawRectangleSelectionLayer,
+    ]
+    sceneView.subviews = drawFuncs.map(
+      drawFunc => new SceneView(sceneModel, drawFunc)
+    );
+    canvasController.sceneView = sceneView;
+
+    this.sceneController = new SceneController(sceneModel, canvasController)
 
     window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
   }
