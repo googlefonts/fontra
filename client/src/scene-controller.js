@@ -10,7 +10,7 @@ import {
 } from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
 import { SceneView } from "./scene-view.js"
-import { centeredRect, normalizeRect, sectRect } from "./rectangle.js";
+import { centeredRect, normalizeRect } from "./rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
 
@@ -18,9 +18,12 @@ export class SceneController {
   constructor(canvasController, font) {
     this.canvasController = canvasController;
     this.font = font;
-    this.instance = null;
 
-    const sceneModel = new SceneModel();
+    const sceneModel = new SceneModel(
+      font,
+      // we need to do isPointInPath without having a context
+      canvasController.context.isPointInPath.bind(canvasController.context),
+    );
     const sceneView = new SceneView();
     const drawFuncs = [
       drawComponentsLayer,
@@ -46,13 +49,13 @@ export class SceneController {
   }
 
   async handleDrag(eventStream, initialEvent) {
-    if (!this.canSelect()) {
+    if (!this.sceneModel.canSelect()) {
       return;
     }
 
     const point = this.localPoint(initialEvent);
     const initialSelection = this.selection;
-    const selection = this.selectionAtPoint(point, this.mouseClickMargin);
+    const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
     let initiateDrag = false;
     let initiateRectSelect = false;
 
@@ -106,7 +109,7 @@ export class SceneController {
         "xMax": currentPoint.x,
         "yMax": currentPoint.y,
       });
-      const selection = this.selectionAtRect(selRect);
+      const selection = this.sceneModel.selectionAtRect(selRect);
       this.selectionRect = selRect;
 
       if (event.shiftKey) {
@@ -122,7 +125,7 @@ export class SceneController {
     const point = this.localPoint(event);
     const size = this.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
-    const selection = this.selectionAtPoint(point, size);
+    const selection = this.sceneModel.selectionAtPoint(point, size);
     if (!lenientIsEqualSet(selection, this.hoverSelection)) {
       this.hoverSelection = selection;
     }
@@ -174,139 +177,22 @@ export class SceneController {
     this.canvasController.setDrawingParameters(drawingParameters);
   }
 
-  resetSelection() {
-    this.selection = new Set();
-    this.hoverSelection = new Set();
-  }
-
   async setSelectedGlyph(glyphName) {
-    this._selectedGlyphName = glyphName
-    const glyph = await this.font.getGlyph(glyphName);
-    if (glyph === null || this._selectedGlyphName != glyphName) {
-      return false;
+    const didSetGlyph = await this.sceneModel.setSelectedGlyph(glyphName);
+    if (didSetGlyph) {
+      this.canvasController.setNeedsUpdate();
     }
-    this.glyph = glyph;
-    this.varLocation = {};
-    this.axisMapping = _makeAxisMapping(this.glyph.axes);
-    await this.instantiateGlyph();
-    this.resetSelection();
-    return true;
+    return didSetGlyph;
   }
 
-  async instantiateGlyph() {
-    await this.setInstance(this.glyph.instantiate(this.varLocation));
-  }
-
-  async setInstance(instance) {
-    this.instance = instance;
-    this.hoverSelection = new Set();
-    await this.updateScene();
-    this.canvasController.setNeedsUpdate();
-  }
-
-  *getAxisInfo() {
-    if (!this.glyph.axes) {
-      return;
-    }
-    const done = {};
-    for (const axis of this.glyph.axes) {
-      const baseName = _getAxisBaseName(axis.name);
-      if (done[baseName]) {
-        continue;
-      }
-      done[baseName] = true;
-      const axisInfo = {...axis};
-      axisInfo.name = baseName;
-      yield axisInfo;
-    }
+  getAxisInfo() {
+    return this.sceneModel.getAxisInfo();
   }
 
   async setAxisValue(axisName, value) {
-    for (const realAxisName of this.axisMapping[axisName]) {
-      this.varLocation[realAxisName] = value;
-    }
-    await this.instantiateGlyph();
+    await this.sceneModel.setAxisValue(axisName, value);
+    this.canvasController.setNeedsUpdate();
   }
-
-  canSelect() {
-    return !!this.instance;
-  }
-
-  async updateScene() {
-    this.sceneModel.path = this.instance.path;
-    this.sceneModel.path2d = new Path2D();
-    this.sceneModel.path.drawToPath(this.sceneModel.path2d);
-
-    let compoPaths2d = [];
-    this.componentsBounds = [];
-    if (!!this.instance.components) {
-      const compoPaths = await this.instance.getComponentPaths(
-        async glyphName => await this.font.getGlyph(glyphName),
-        this.varLocation,
-      );
-      compoPaths2d = compoPaths.map(path => {
-        const path2d = new Path2D();
-        path.drawToPath(path2d);
-        return path2d;
-      });
-      this.componentsBounds = compoPaths.map(path => path.getControlBounds());
-    }
-    this.sceneModel.componentPaths = compoPaths2d;
-  }
-
-  selectionAtPoint(point, size) {
-    if (this.instance === null) {
-      return new Set();
-    }
-    const selRect = centeredRect(point.x, point.y, size);
-
-    for (const hit of this.instance.path.iterPointsInRect(selRect)) {
-      return new Set([`point/${hit.pointIndex}`])
-    }
-    const context = this.canvasController.context;
-    for (let i = this.sceneModel.componentPaths.length - 1; i >= 0; i--) {
-      const path = this.sceneModel.componentPaths[i];
-      if (context.isPointInPath(path, point.x, point.y)) {
-        return new Set([`component/${i}`])
-      }
-    }
-    return new Set();
-  }
-
-  selectionAtRect(selRect) {
-    const selection = new Set();
-    for (const hit of this.instance.path.iterPointsInRect(selRect)) {
-      selection.add(`point/${hit.pointIndex}`);
-    }
-    for (let i = 0; i < this.componentsBounds.length; i++) {
-      if (sectRect(selRect, this.componentsBounds[i]) !== null) {
-        selection.add(`component/${i}`);
-      }
-    }
-    return selection;
-  }
-}
-
-
-function _makeAxisMapping(axes) {
-  const axisMapping = {};
-  for (const axis of axes) {
-    const baseName = _getAxisBaseName(axis.name);
-    if (axisMapping[baseName] === undefined) {
-      axisMapping[baseName] = [];
-    }
-    axisMapping[baseName].push(axis.name);
-  }
-  return axisMapping;
-}
-
-
-function _getAxisBaseName(axisName) {
-  const asterixPos = axisName.indexOf("*");
-  if (asterixPos > 0) {
-    return axisName.slice(0, asterixPos);
-  }
-  return axisName;
 }
 
 
