@@ -48,17 +48,17 @@ export function drawNodesLayer(model, controller) {
 
 
 export function drawSelectionLayer(model, controller) {
-  _drawHoverLayer("selection", model.selection, model, controller)  
+  _drawSelectionLayer("selection", model.selection, model, controller)
 }
 
 
 export function drawHoverLayer(model, controller) {
-  _drawHoverLayer("hover", model.hoverSelection, model, controller)  
+  _drawSelectionLayer("hover", model.hoverSelection, model, controller)
 }
 
 
-function _drawHoverLayer(displayKey, selection, model, controller) {
-  if (selection == null || !model.path) {
+function _drawSelectionLayer(displayKey, selection, model, controller) {
+  if (!selection || !model.path) {
     return;
   }
   const selectionStrings = Array.from(selection);
