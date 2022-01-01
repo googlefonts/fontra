@@ -6,8 +6,8 @@ import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference }
 export class SceneController {
 
   constructor(sceneModel, canvasController) {
-    this.canvasController = canvasController;
     this.sceneModel = sceneModel;
+    this.canvasController = canvasController;
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) => this.handleDrag(eventStream, initialEvent),
