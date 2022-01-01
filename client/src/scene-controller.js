@@ -1,13 +1,14 @@
 import { MouseTracker } from "./mouse-tracker.js";
 import {
-  SceneGraph,
-  ComponentsLayer,
-  HandlesLayer,
-  PathLayer,
-  NodesLayer,
-  SelectionLayer,
-  RectangleSelectionLayer,
-} from "./scene-graph.js";
+  drawComponentsLayer,
+  drawHandlesLayer,
+  drawPathLayer,
+  drawNodesLayer,
+  drawSelectionLayer,
+  drawHoverLayer,
+  drawRectangleSelectionLayer,
+} from "./scene-draw-funcs.js";
+import { SceneModel, SceneView } from "./scene.js"
 import { centeredRect, normalizeRect, sectRect } from "./rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
 
@@ -18,24 +19,23 @@ export class SceneController {
     this.font = font;
     this.instance = null;
 
-    this.componentsLayer = new ComponentsLayer();
-    this.handlesLayer = new HandlesLayer();
-    this.pathLayer = new PathLayer();
-    this.nodesLayer = new NodesLayer();
-    this.selectionLayer = new SelectionLayer("selection")
-    this.hoverLayer = new SelectionLayer("hover")
-    this.rectSelectLayer = new RectangleSelectionLayer("hover")
+    const sceneModel = new SceneModel();
+    const sceneView = new SceneView();
+    const drawFuncs = [
+      drawComponentsLayer,
+      drawHandlesLayer,
+      drawNodesLayer,
+      drawPathLayer,
+      drawSelectionLayer,
+      drawHoverLayer,
+      drawRectangleSelectionLayer,
+    ]
+    drawFuncs.forEach(
+      drawFunc => sceneView.subviews.push(new SceneView(sceneModel, drawFunc))
+    );
 
-    const scene = new SceneGraph();
-    scene.push(this.componentsLayer);
-    scene.push(this.handlesLayer);
-    scene.push(this.nodesLayer);
-    scene.push(this.pathLayer);
-    scene.push(this.selectionLayer);
-    scene.push(this.hoverLayer);
-    scene.push(this.rectSelectLayer);
-
-    this.canvasController.scene = scene;
+    this.sceneModel = sceneModel;
+    this.canvasController.sceneView = sceneView;
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) => this.handleDrag(eventStream, initialEvent),
@@ -143,42 +143,34 @@ export class SceneController {
   }
 
   get selection() {
-    return this.selectionLayer.selection;
+    return this.sceneModel.selection;
   }
 
   set selection(selection) {
-    this.selectionLayer.selection = selection;
+    this.sceneModel.selection = selection;
     this.canvasController.setNeedsUpdate();
   }
 
   get hoverSelection() {
-    return this.hoverLayer.selection;
+    return this.sceneModel.hoverSelection;
   }
 
   set hoverSelection(selection) {
-    this.hoverLayer.selection = selection;
+    this.sceneModel.hoverSelection = selection;
     this.canvasController.setNeedsUpdate();
   }
 
   get selectionRect() {
-    return this.rectSelectLayer.selectionRect;
+    return this.sceneModel.selectionRect;
   }
 
   set selectionRect(selRect) {
-    this.rectSelectLayer.selectionRect = selRect;
+    this.sceneModel.selectionRect = selRect;
     this.canvasController.setNeedsUpdate();
   }
 
   setDrawingParameters(drawingParameters) {
     this.canvasController.setDrawingParameters(drawingParameters);
-  }
-
-  *_iterPathLayers() {
-    yield this.handlesLayer;
-    yield this.pathLayer;
-    yield this.nodesLayer;
-    yield this.selectionLayer;
-    yield this.hoverLayer;
   }
 
   resetSelection() {
@@ -240,9 +232,9 @@ export class SceneController {
   }
 
   async updateScene() {
-    for (const layer of this._iterPathLayers()) {
-      layer.path = this.instance.path;
-    }
+    this.sceneModel.path = this.instance.path;
+    this.sceneModel.path2d = new Path2D();
+    this.sceneModel.path.drawToPath(this.sceneModel.path2d);
 
     let compoPaths2d = [];
     this.componentsBounds = [];
@@ -258,9 +250,7 @@ export class SceneController {
       });
       this.componentsBounds = compoPaths.map(path => path.getControlBounds());
     }
-    this.componentsLayer.paths = compoPaths2d;
-    this.selectionLayer.componentPaths = compoPaths2d;
-    this.hoverLayer.componentPaths = compoPaths2d;
+    this.sceneModel.componentPaths = compoPaths2d;
   }
 
   selectionAtPoint(point, size) {
@@ -273,8 +263,8 @@ export class SceneController {
       return new Set([`point/${hit.pointIndex}`])
     }
     const context = this.canvasController.context;
-    for (let i = this.componentsLayer.paths.length - 1; i >= 0; i--) {
-      const path = this.componentsLayer.paths[i];
+    for (let i = this.sceneModel.componentPaths.length - 1; i >= 0; i--) {
+      const path = this.sceneModel.componentPaths[i];
       if (context.isPointInPath(path, point.x, point.y)) {
         return new Set([`component/${i}`])
       }
