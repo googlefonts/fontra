@@ -65,6 +65,7 @@ const drawingParametersDark = {
 
 
 export class AppController {
+
   constructor(font) {
     this.font = font;
     const canvas = document.querySelector("#edit-canvas");

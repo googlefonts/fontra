@@ -4,6 +4,7 @@ import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference }
 
 
 export class SceneController {
+
   constructor(sceneModel, canvasController) {
     this.canvasController = canvasController;
     this.sceneModel = sceneModel;
