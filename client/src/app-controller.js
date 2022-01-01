@@ -74,7 +74,6 @@ export class AppController {
     const isPointInPath = canvasController.context.isPointInPath.bind(canvasController.context);
 
     const sceneModel = new SceneModel(font, isPointInPath);
-    const sceneView = new SceneView();
     const drawFuncs = [
       drawComponentsLayer,
       drawHandlesLayer,
@@ -84,6 +83,7 @@ export class AppController {
       drawHoverLayer,
       drawRectangleSelectionLayer,
     ]
+    const sceneView = new SceneView();
     sceneView.subviews = drawFuncs.map(
       drawFunc => new SceneView(sceneModel, drawFunc)
     );
