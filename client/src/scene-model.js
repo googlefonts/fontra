@@ -35,11 +35,7 @@ export class SceneModel {
   }
 
   async _instantiateGlyph(varLocation) {
-    await this.setInstance(this.glyph.instantiate(varLocation));
-  }
-
-  async setInstance(instance) {
-    this.instance = instance;
+    this.instance = this.glyph.instantiate(varLocation);
     this.hoverSelection = new Set();
     this.path = this.instance.path;
     this.path2d = new Path2D();
