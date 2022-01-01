@@ -38,23 +38,6 @@ export class SceneModel {
     await this.setInstance(this.glyph.instantiate(varLocation));
   }
 
-  *getAxisInfo() {
-    if (!this.glyph.axes) {
-      return;
-    }
-    const done = {};
-    for (const axis of this.glyph.axes) {
-      const baseName = _getAxisBaseName(axis.name);
-      if (done[baseName]) {
-        continue;
-      }
-      done[baseName] = true;
-      const axisInfo = {...axis};
-      axisInfo.name = baseName;
-      yield axisInfo;
-    }
-  }
-
   async setInstance(instance) {
     this.instance = instance;
     this.hoverSelection = new Set();
@@ -77,6 +60,23 @@ export class SceneModel {
       this.componentsBounds = compoPaths.map(path => path.getControlBounds());
     }
     this.componentPaths = compoPaths2d;
+  }
+
+  *getAxisInfo() {
+    if (!this.glyph.axes) {
+      return;
+    }
+    const done = {};
+    for (const axis of this.glyph.axes) {
+      const baseName = _getAxisBaseName(axis.name);
+      if (done[baseName]) {
+        continue;
+      }
+      done[baseName] = true;
+      const axisInfo = {...axis};
+      axisInfo.name = baseName;
+      yield axisInfo;
+    }
   }
 
   selectionAtPoint(point, size) {
