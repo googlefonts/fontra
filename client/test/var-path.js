@@ -46,7 +46,7 @@ describe("VarPath Tests", () => {
     expect(p2.coordinates).to.deep.equal([]);
     expect(p2.pointTypes).to.deep.equal([]);
     expect(p2.contours).to.deep.equal([]);
-    p2.drawToPath(mp);
+    p2.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([]);
   })
 
@@ -72,7 +72,7 @@ describe("VarPath Tests", () => {
   it("draw", () => {
     const p = simpleTestPath();
     const mp = new MockPath2D();
-    p.drawToPath(mp);
+    p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -88,7 +88,7 @@ describe("VarPath Tests", () => {
   it("open path", () => {
     const p = simpleTestPath(false);
     const mp = new MockPath2D();
-    p.drawToPath(mp);
+    p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -106,7 +106,7 @@ describe("VarPath Tests", () => {
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
-    p.drawToPath(mp);
+    p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 100], "op": "moveTo"},
@@ -124,7 +124,7 @@ describe("VarPath Tests", () => {
       [{endPoint: 3, isClosed: false}],
     );
     const mp = new MockPath2D();
-    p.drawToPath(mp);
+    p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 100], "op": "moveTo"},
@@ -140,7 +140,7 @@ describe("VarPath Tests", () => {
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
-    p.drawToPath(mp);
+    p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -159,7 +159,7 @@ describe("VarPath Tests", () => {
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
-    p.drawToPath(mp);
+    p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [50, 0], "op": "moveTo"},
@@ -179,7 +179,7 @@ describe("VarPath Tests", () => {
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
-    p.drawToPath(mp);
+    p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -199,7 +199,7 @@ describe("VarPath Tests", () => {
     const p2 = p1.copy();
     const p3 = p1.addItemwise(p2);
     const mp = new MockPath2D();
-    p3.drawToPath(mp);
+    p3.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -219,7 +219,7 @@ describe("VarPath Tests", () => {
     const p2 = p1.copy();
     const p3 = p1.subItemwise(p2);
     const mp = new MockPath2D();
-    p3.drawToPath(mp);
+    p3.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -238,7 +238,7 @@ describe("VarPath Tests", () => {
     );
     const mp = new MockPath2D();
     const p2 = p.mulScalar(2);
-    p2.drawToPath(mp);
+    p2.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -257,7 +257,7 @@ describe("VarPath Tests", () => {
     p.curveTo(30, 130, 70, 130, 100, 100);
     p.qCurveTo(130, 70, 130, 30, 100, 0);
     p.closePath();
-    p.drawToPath(mp);
+    p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -295,7 +295,7 @@ describe("VarPath Tests", () => {
     const t = new Transform().scale(2);
     const p = simpleTestPath(false);
     const mp = new MockPath2D();
-    p.transformed(t).drawToPath(mp);
+    p.transformed(t).drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -311,7 +311,7 @@ describe("VarPath Tests", () => {
     const p2 = p1.copy();
     const p3 = p1.concat(p2);
     const mp = new MockPath2D();
-    p3.drawToPath(mp);
+    p3.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
@@ -401,7 +401,7 @@ describe("VarPath Tests", () => {
     expect(p2.contours[0].endPoint).to.equal(3);
     expect(p2.contours[1].endPoint).to.equal(7);
     const mp = new MockPath2D();
-    p2.drawToPath(mp);
+    p2.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
       {"op": "moveTo", "args": [100, 100]},
       {"op": "lineTo", "args": [100, 0]},

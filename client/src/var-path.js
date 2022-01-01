@@ -228,7 +228,7 @@ export default class VarPath {
     return new this.constructor(this.coordinates.mulScalar(scalar), this.pointTypes, this.contours);
   }
 
-  drawToPath(path) {
+  drawToPath2d(path) {
     let startPoint = 0
     const coordinates = this.coordinates;
     const pointTypes = this.pointTypes;

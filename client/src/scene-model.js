@@ -60,7 +60,7 @@ export class SceneModel {
     this.hoverSelection = new Set();
     this.path = this.instance.path;
     this.path2d = new Path2D();
-    this.path.drawToPath(this.path2d);
+    this.path.drawToPath2d(this.path2d);
 
     let compoPaths2d = [];
     this.componentsBounds = [];
@@ -71,7 +71,7 @@ export class SceneModel {
       );
       compoPaths2d = compoPaths.map(path => {
         const path2d = new Path2D();
-        path.drawToPath(path2d);
+        path.drawToPath2d(path2d);
         return path2d;
       });
       this.componentsBounds = compoPaths.map(path => path.getControlBounds());
