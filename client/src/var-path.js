@@ -40,11 +40,11 @@ export default class VarPath {
     if (!this.coordinates.length) {
       return undefined;
     }
-    let xMin = Number.MAX_VALUE;
-    let yMin = Number.MAX_VALUE;
-    let xMax = Number.MIN_VALUE;
-    let yMax = Number.MIN_VALUE;
-    for (let i = 0; i < this.coordinates.length; i += 2) {
+    let xMin = this.coordinates[0];
+    let yMin = this.coordinates[1];
+    let xMax = xMin;
+    let yMax = yMin;
+    for (let i = 2; i < this.coordinates.length; i += 2) {
       const x = this.coordinates[i];
       const y = this.coordinates[i + 1];
       xMin = Math.min(x, xMin);

@@ -373,7 +373,11 @@ describe("VarPath Tests", () => {
   });
 
   it("getControlBounds", () => {
-    const p = simpleTestPath();
+    const p = new VarPath();
+    p.moveTo(0, 75);
+    p.curveTo(25, 100, 75, 100, 100, 25);
+    p.lineTo(70, 0);
+    p.closePath();
     const t = new Transform().scale(1.5, 2);
     const p2 = p.transformed(t);
     expect(p.getControlBounds()).to.deep.equal({"xMin": 0, "yMin": 0, "xMax": 100, "yMax": 100});
