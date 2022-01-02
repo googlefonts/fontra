@@ -43,9 +43,7 @@ html, body {
 
 .axis-sliders {
   display: flex;
-  /*background: white;*/
-  /*padding: 0.5em;*/
-  /*border-radius: 1em;*/
+  padding: 0.5em 1em 0.75em 0.25em;  /* top right bottom left */
   flex-direction: column;
   gap:  0.5em;
   overflow: scroll;
