@@ -92,14 +92,12 @@ html, body {
   padding: 0.6em;
   box-shadow: 4px 4px 15px #999;
   cursor: pointer;
-  width: 2em;
   transition: 0.15s;
   display: flex;
 }
 
 .overlay-item:hover {
   background-color: white;
-  width: 20em; /*max-content*/
 }
 
 .overlay-item > div {
