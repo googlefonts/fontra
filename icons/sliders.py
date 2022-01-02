@@ -1,5 +1,10 @@
 from random import seed
 
+try:
+    color
+except NameError:
+    color = 0
+
 seed(21)
 
 size(100, 100)
@@ -14,7 +19,7 @@ knobRadius = 5
 
 lineLength = width() - 2 * hMargin
 lineDist = (height() - 2 * vMargin) / (numLines - 1)
-stroke(0)
+stroke(color)
 strokeWidth(lineThickness)
 lineCap("round")
 fill(None)

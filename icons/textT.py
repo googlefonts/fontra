@@ -1,5 +1,10 @@
 size(100, 100)
 
+try:
+    color
+except NameError:
+    color = 0
+
 lineThickness = 6
 margin = 17
 lineLength = width() - 2 * margin
@@ -7,7 +12,7 @@ vSerif = 0.3 * lineLength
 hSerif = 0.22 * lineLength
 vOffset = 0.015 * lineLength
 
-stroke(0)
+stroke(color)
 strokeWidth(lineThickness)
 lineCap("round")
 fill(None)

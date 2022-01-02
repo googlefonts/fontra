@@ -1,5 +1,10 @@
 size(100, 100)
 
+try:
+    color
+except NameError:
+    color = 0
+
 diameter = 50
 radius = diameter / 2
 lineThickness = 6
@@ -9,7 +14,7 @@ offset = 13
 translate(radius + offset, height() - radius - offset)
 rotate(-45)
 
-stroke(0)
+stroke(color)
 strokeWidth(lineThickness)
 lineCap("round")
 fill(None)

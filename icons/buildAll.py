@@ -10,7 +10,9 @@ for p in thisFolder.glob("*.py"):
     if p.name == thisPath.name:
         continue
     src = p.read_text()
-    newDrawing()
-    exec(src)
-    saveImage(imagesFolder / (p.stem + ".svg"))
-    endDrawing()
+    for color in [0, 1]:
+        newDrawing()
+        nameSpace = {"color": color}
+        exec(src)
+        saveImage(imagesFolder / (p.stem + ("-dark" if color else "") + ".svg"))
+        endDrawing()

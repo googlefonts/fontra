@@ -1,5 +1,10 @@
 size(100, 100)
 
+try:
+    color
+except NameError:
+    color = 0
+
 diameter = 57
 radius = diameter / 2
 innerScale = 0.66
@@ -9,7 +14,7 @@ handleLength = radius * 0.47
 offset = 15
 translate(50, 50)
 
-stroke(0)
+stroke(color)
 strokeWidth(lineThickness)
 lineCap("round")
 fill(None)
@@ -21,6 +26,6 @@ with savedState():
 
 oval(-radius, -radius, diameter, diameter)
 stroke(None)
-fill(0)
+fill(color)
 scale(innerScale)
 oval(-radius, -radius, diameter, diameter)
