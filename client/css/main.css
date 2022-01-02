@@ -126,6 +126,10 @@ html, body {
     background-color: black;
   }
 
+  .glyphs-navigation {
+    background-color: black;
+  }
+
   .glyphs-search-input {
     background-color: black;
     color: white;
