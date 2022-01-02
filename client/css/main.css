@@ -41,14 +41,6 @@ html, body {
   font-family: fontra-ui-regular, sans-serif;
 }
 
-.controls {
-  padding: 1em;
-  background-color: lightgray;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-}
-
 .axis-sliders {
   display: flex;
   /*background: white;*/
@@ -95,45 +87,41 @@ html, body {
 }
 
 .overlay-item {
-  background-color: lightgray;
-  border-radius: 999px;
+  background-color: #FFF;
+  border-radius: 1em;
   padding: 0.6em;
-  box-shadow: 4px 4px 15px gray;
+  box-shadow: 4px 4px 15px #999;
   cursor: pointer;
   width: 2em;
-  height: 2em;
   transition: 0.15s;
   display: flex;
 }
 
 .overlay-item:hover {
   background-color: white;
-  box-shadow: 4px 4px 15px lightgray;
   width: 20em; /*max-content*/
 }
 
 .overlay-item > div {
-  margin-left: 1em;
-  margin-right: 1em;
-  font-size: 1.4em;
-  visibility: hidden;
+  display: none;
 }
 
 .overlay-item:hover > div {
-  visibility: visible;
+  display: inherit;
 }
 
 .icon-img {
-  max-width:100%;
-  max-height:100%;
+  width: 2em;
+  vertical-align: top;
+}
+
+.overlay-item:hover > img {
+  display: none;
 }
 
 @media (prefers-color-scheme: dark) {
   html, body {
     color: white;
-  }
-  .controls, .glyphs-navigation {
-    background-color: #333;
   }
 
   #edit-canvas {
@@ -145,4 +133,11 @@ html, body {
     color: white;
   }
 
+  .overlay-item {
+    background-color: #333;
+  }
+
+  .overlay-item:hover {
+    background-color: #222;
+  }
 }
