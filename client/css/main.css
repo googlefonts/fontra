@@ -138,4 +138,9 @@ html, body {
   .overlay-item:hover {
     background-color: #222;
   }
+
+  #slider-img {
+    content: url("../images/sliders-dark.svg");
+  }
+
 }
