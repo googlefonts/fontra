@@ -1,14 +1,6 @@
 import { CanvasController } from "./canvas-controller.js";
 import { SceneController } from "./scene-controller.js"
-import {
-  drawComponentsLayer,
-  drawHandlesLayer,
-  drawPathLayer,
-  drawNodesLayer,
-  drawSelectionLayer,
-  drawHoverLayer,
-  drawRectangleSelectionLayer,
-} from "./scene-draw-funcs.js";
+import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
 import { SceneView } from "./scene-view.js"
 import { List } from "./ui-list.js";
@@ -76,13 +68,13 @@ export class AppController {
 
     const sceneModel = new SceneModel(font, isPointInPath);
     const drawFuncs = [
-      drawComponentsLayer,
-      drawHandlesLayer,
-      drawNodesLayer,
-      drawPathLayer,
-      drawSelectionLayer,
-      drawHoverLayer,
-      drawRectangleSelectionLayer,
+      sceneDraw.drawComponentsLayer,
+      sceneDraw.drawHandlesLayer,
+      sceneDraw.drawNodesLayer,
+      sceneDraw.drawPathLayer,
+      sceneDraw.drawSelectionLayer,
+      sceneDraw.drawHoverLayer,
+      sceneDraw.drawRectangleSelectionLayer,
     ]
     const sceneView = new SceneView();
     sceneView.subviews = drawFuncs.map(
