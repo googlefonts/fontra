@@ -127,7 +127,7 @@ export class AppController {
   initSourcesList() {
     const columnDescriptions = [
       {"key": "sourceName", "width": "12em"},
-      {"key": "sourceIndex", "width": "2em"},
+      // {"key": "sourceIndex", "width": "2em"},
     ];
     this.sourcesList = new List("sources-list", columnDescriptions);
     this.sourcesList.addEventListener("listSelectionChanged", async event => {
