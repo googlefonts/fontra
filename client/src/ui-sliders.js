@@ -46,4 +46,13 @@ export class Sliders {
     return values;
   }
 
+  set values(values) {
+    for (const label of this.container.children) {
+      const slider = label.firstChild;
+      const value = values[slider.dataset.name];
+      if (value !== undefined) {
+        slider.value = values[slider.dataset.name];
+      }
+    }
+  }
 }
