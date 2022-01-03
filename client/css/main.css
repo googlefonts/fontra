@@ -41,9 +41,15 @@ html, body {
   font-family: fontra-ui-regular, sans-serif;
 }
 
+.sliders-and-sources {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5em 1em 0.75em 0.25em;  /* top right bottom left */
+  gap: 1em;
+}
+
 .axis-sliders {
   display: flex;
-  padding: 0.5em 1em 0.75em 0.25em;  /* top right bottom left */
   flex-direction: column;
   gap:  0.5em;
   overflow: scroll;
@@ -54,7 +60,7 @@ html, body {
 }
 
 .slider {
-  margin-right: 0.75em;
+  /*margin-right: 0.75em;*/
   padding: 0;
 }
 
