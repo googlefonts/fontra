@@ -52,6 +52,7 @@ class DesignspaceBackend:
             sourceDict, sourceGlyph = ufoSource.serializeGlyph(glyphName)
             sources.append(
                 {
+                    "name": sourceDescriptor.layerName or sourceDescriptor.styleName,
                     "location": sourceDescriptor.location,
                     "source": sourceDict,
                 }

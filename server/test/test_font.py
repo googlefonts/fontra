@@ -91,6 +91,7 @@ getGlyphTestData = [
             "unicodes": [ord(".")],
             "sources": [
                 {
+                    "name": "LightCondensed",
                     "location": {"weight": 0.0, "width": 0.0},
                     "source": {
                         "hAdvance": 170,
@@ -102,6 +103,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "BoldCondensed",
                     "location": {"weight": 1000.0, "width": 0.0},
                     "source": {
                         "hAdvance": 250,
@@ -113,6 +115,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "LightWide",
                     "location": {"weight": 0.0, "width": 1000.0},
                     "source": {
                         "hAdvance": 290,
@@ -124,6 +127,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "BoldWide",
                     "location": {"weight": 1000.0, "width": 1000.0},
                     "source": {
                         "hAdvance": 310,
@@ -158,6 +162,7 @@ getGlyphTestData = [
             "unicodes": [ord("Á")],
             "sources": [
                 {
+                    "name": "LightCondensed",
                     "location": {"weight": 0.0, "width": 0.0},
                     "source": {
                         "components": [
@@ -190,6 +195,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "BoldCondensed",
                     "location": {"weight": 1000.0, "width": 0.0},
                     "source": {
                         "components": [
@@ -222,6 +228,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "LightWide",
                     "location": {"weight": 0.0, "width": 1000.0},
                     "source": {
                         "components": [
@@ -254,6 +261,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "BoldWide",
                     "location": {"weight": 1000.0, "width": 1000.0},
                     "source": {
                         "components": [
