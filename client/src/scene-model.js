@@ -35,6 +35,9 @@ export class SceneModel {
     this.userVarLocation = values;
     const varLocation = {};
     for (const [name, value] of Object.entries(values)) {
+      if (this.axisMapping[name] === undefined) {
+        continue;
+      }
       for (const realAxisName of this.axisMapping[name]) {
         varLocation[realAxisName] = value;
       }
