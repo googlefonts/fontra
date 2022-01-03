@@ -89,7 +89,11 @@ export class SceneModel {
       return sourcesInfo;
     }
     for (let i = 0; i < this.glyph.sources.length; i++) {
-      sourcesInfo.push({"sourceName": `source${i}`, "sourceIndex": i})
+      let name = this.glyph.sources[i].name;
+      if (!name) {
+        name = `source${i}`;
+      }
+      sourcesInfo.push({"sourceName": name, "sourceIndex": i})
     }
     return sourcesInfo;
   }

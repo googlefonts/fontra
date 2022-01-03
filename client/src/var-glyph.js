@@ -11,7 +11,11 @@ export class VarGlyph {
     glyph.axes = obj.axes || [];
     glyph.unicodes = obj.unicodes || [];
     glyph.sources = obj.sources.map(item => {
-      return {"location": item.location, "source": VarSource.fromObject(item.source)}
+      return {
+        "name": item.name,
+        "location": item.location,
+        "source": VarSource.fromObject(item.source),
+      }
     });
     return glyph;
   }

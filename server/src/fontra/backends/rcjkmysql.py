@@ -182,7 +182,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
         defaultSourceDict["components"] = components
 
     sources = [
-        {"location": {}, "source": defaultSourceDict},
+        {"name": "<default>", "location": {}, "source": defaultSourceDict},
     ]
 
     for varDict in glyph.lib.get("robocjk.variationGlyphs", ()):
@@ -208,7 +208,13 @@ def serializeGlyph(glifData, layers, axisDefaults):
             varSourceDict["components"] = varComponents
         hAdvance = varDict["width"] if "width" in varDict else hAdvance
         varSourceDict["hAdvance"] = hAdvance
-        sources.append({"location": varDict["location"], "source": varSourceDict})
+        sources.append(
+            {
+                "name": varDict.get("sourceName"),
+                "location": varDict["location"],
+                "source": varSourceDict,
+            }
+        )
 
     glyphDict = {
         "name": glyph.name,
@@ -225,9 +231,7 @@ def serializeComponents(deepComponents, dcNames, axisDefaults):
     components = []
     for index, deepCompoDict in enumerate(deepComponents):
         component = {}
-        name = (
-            deepCompoDict["name"] if "name" in deepCompoDict else dcNames[index]
-        )
+        name = deepCompoDict["name"] if "name" in deepCompoDict else dcNames[index]
         component["name"] = name
         if deepCompoDict["coord"]:
             component["coord"] = cleanupCoord(
