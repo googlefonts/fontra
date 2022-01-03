@@ -88,6 +88,7 @@ html, body {
   position: absolute;
   gap: 1em;
   padding: 1em;
+  height: 100%;
 }
 
 .overlay-item {
@@ -98,6 +99,8 @@ html, body {
   cursor: pointer;
   transition: 0.15s;
   display: flex;
+  overflow: scroll;
+  max-height: calc(100% - 3.5em);
 }
 
 .overlay-item:hover {
