@@ -299,6 +299,7 @@ getGlyphTestData = [
             "unicodes": [],
             "sources": [
                 {
+                    "name": "<default>",
                     "location": {},
                     "source": {
                         "path": {
@@ -331,6 +332,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": None,
                     "location": {"HLON": 1.0},
                     "source": {
                         "path": {
@@ -363,6 +365,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": None,
                     "location": {"WGHT": 1.0},
                     "source": {
                         "path": {
@@ -407,6 +410,7 @@ getGlyphTestData = [
             "unicodes": [49],
             "sources": [
                 {
+                    "name": "<default>",
                     "location": {},
                     "source": {
                         "components": [
@@ -428,6 +432,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "wght",
                     "location": {"wght": 1.0},
                     "source": {
                         "components": [
@@ -472,6 +477,7 @@ getGlyphTestData = [
             "unicodes": [],
             "sources": [
                 {
+                    "name": "<default>",
                     "location": {},
                     "source": {
                         "components": [
@@ -493,6 +499,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "X_X_bo",
                     "location": {"X_X_bo": 1.0},
                     "source": {
                         "components": [
@@ -514,6 +521,7 @@ getGlyphTestData = [
                     },
                 },
                 {
+                    "name": "X_X_la",
                     "location": {"X_X_la": 1.0},
                     "source": {
                         "components": [
