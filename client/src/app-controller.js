@@ -150,10 +150,8 @@ export class AppController {
       slider.min = axis.minValue;
       slider.max = axis.maxValue;
       slider.value = axis.defaultValue;
-      {
-        const axisName = axis.name;
-        slider.oninput = event => this.sceneController.setAxisValue(axisName, event.target.value);
-      }
+      slider.dataset.axisName = axis.name;
+      slider.oninput = event => this.sceneController.setAxisValue(event.target.dataset.axisName, event.target.value);
       label.appendChild(slider);
       label.append(axis.name);
       axisSliders.appendChild(label);
