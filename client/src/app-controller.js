@@ -119,6 +119,8 @@ export class AppController {
     this.sliders = new Sliders("axis-sliders", []);
     this.sliders.addEventListener("slidersChanged", async event => {
       this.sceneController.setAxisValues(event.detail.values);
+      // TODO: find matching source
+      this.sourcesList.setSelectedItem(undefined);
     });
   }
 
