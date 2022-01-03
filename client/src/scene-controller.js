@@ -157,8 +157,21 @@ export class SceneController {
     return this.sceneModel.getAxisInfo();
   }
 
+  getAxisValues() {
+    return this.sceneModel.getAxisValues();
+  }
+
   async setAxisValues(values) {
     await this.sceneModel.setAxisValues(values);
+    this.canvasController.setNeedsUpdate();
+  }
+
+  getSourcesInfo() {
+    return this.sceneModel.getSourcesInfo();
+  }
+
+  async setSelectedSource(sourceInfo) {
+    await this.sceneModel.setSelectedSource(sourceInfo);
     this.canvasController.setNeedsUpdate();
   }
 }

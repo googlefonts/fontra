@@ -90,12 +90,8 @@ export class AppController {
 
   async start() {
     await this.initGlyphNames();
-
-    this.sliders = new Sliders("axis-sliders", []);
-    this.sliders.addEventListener("slidersChanged", async event => {
-      this.sceneController.setAxisValues(event.detail.values);
-    });
-
+    this.initSliders();
+    this.initSourcesList();
   }
 
   async initGlyphNames() {
@@ -117,6 +113,25 @@ export class AppController {
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
     this.glyphNamesList.setItems(this.glyphsListItems);
+  }
+
+  initSliders() {
+    this.sliders = new Sliders("axis-sliders", []);
+    this.sliders.addEventListener("slidersChanged", async event => {
+      this.sceneController.setAxisValues(event.detail.values);
+    });
+  }
+
+  initSourcesList() {
+    const columnDescriptions = [
+      {"key": "sourceName", "width": "12em"},
+      {"key": "sourceIndex", "width": "2em"},
+    ];
+    this.sourcesList = new List("sources-list", columnDescriptions);
+    this.sourcesList.addEventListener("listSelectionChanged", async event => {
+      await this.sceneController.setSelectedSource(event.detail.getSelectedItem());
+      this.sliders.values = this.sceneController.getAxisValues();
+    });
   }
 
   themeChanged(event) {
@@ -145,6 +160,7 @@ export class AppController {
       return;
     }
     this.sliders.setSliderDescriptions(this.sceneController.getAxisInfo());
+    this.sourcesList.setItems(this.sceneController.getSourcesInfo())
   }
 
 }

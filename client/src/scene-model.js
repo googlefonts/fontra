@@ -6,6 +6,7 @@ export class SceneModel {
   constructor(font, isPointInPath) {
     this.font = font;
     this.isPointInPath = isPointInPath;
+    this.userVarLocation = {};
   }
 
   canSelect() {
@@ -26,7 +27,12 @@ export class SceneModel {
     return true;
   }
 
+  getAxisValues() {
+    return this.userVarLocation;
+  }
+
   async setAxisValues(values) {
+    this.userVarLocation = values;
     const varLocation = {};
     for (const [name, value] of Object.entries(values)) {
       for (const realAxisName of this.axisMapping[name]) {
@@ -75,6 +81,33 @@ export class SceneModel {
       axisInfo.name = baseName;
       yield axisInfo;
     }
+  }
+
+  getSourcesInfo() {
+    const sourcesInfo = [];
+    if (!this.glyph) {
+      return sourcesInfo;
+    }
+    for (let i = 0; i < this.glyph.sources.length; i++) {
+      sourcesInfo.push({"sourceName": `source${i}`, "sourceIndex": i})
+    }
+    return sourcesInfo;
+  }
+
+  async setSelectedSource(sourceInfo) {
+    if (!this.glyph) {
+      return;
+    }
+    const source = this.glyph.sources[sourceInfo.sourceIndex];
+    this.userVarLocation = {};
+    for (const axisInfo of this.getAxisInfo()) {
+      this.userVarLocation[axisInfo.name] = axisInfo.defaultValue;
+    }
+    for (const [name, value] of Object.entries(source.location)) {
+      const baseName = _getAxisBaseName(name);
+      this.userVarLocation[baseName] = value;
+    }
+    await this._instantiateGlyph(source.location);
   }
 
   selectionAtPoint(point, size) {
