@@ -4,6 +4,7 @@ import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
 import { SceneView } from "./scene-view.js"
 import { List } from "./ui-list.js";
+import { Sliders } from "./ui-sliders.js";
 
 
 const drawingParametersLight = {
@@ -89,6 +90,12 @@ export class AppController {
 
   async start() {
     await this.initGlyphNames();
+
+    this.sliders = new Sliders("axis-sliders", []);
+    this.sliders.addEventListener("slidersChanged", async event => {
+      this.sceneController.setAxisValues(event.detail.values);
+    });
+
   }
 
   async initGlyphNames() {
@@ -137,25 +144,7 @@ export class AppController {
     if (!didSetGlyph) {
       return;
     }
-    // Rebuild axis sliders
-    const axisSliders = document.querySelector("#axis-sliders");
-    axisSliders.innerHTML = "";  // Delete previous sliders
-    for (const axis of this.sceneController.getAxisInfo()) {
-      const label = document.createElement("label");
-      const slider = document.createElement("input");
-      label.className = "slider-label";
-      slider.type = "range";
-      slider.step = "any";
-      slider.class = "slider";
-      slider.min = axis.minValue;
-      slider.max = axis.maxValue;
-      slider.value = axis.defaultValue;
-      slider.dataset.axisName = axis.name;
-      slider.oninput = event => this.sceneController.setAxisValue(event.target.dataset.axisName, event.target.value);
-      label.appendChild(slider);
-      label.append(axis.name);
-      axisSliders.appendChild(label);
-    }
+    this.sliders.setSliderDescriptions(this.sceneController.getAxisInfo());
   }
 
 }

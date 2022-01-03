@@ -19,19 +19,21 @@ export class SceneModel {
       return false;
     }
     this.glyph = glyph;
-    this.varLocation = {};
     this.axisMapping = _makeAxisMapping(this.glyph.axes);
-    await this._instantiateGlyph(this.varLocation);
+    await this._instantiateGlyph({});
     this.selection = new Set();
     this.hoverSelection = new Set();
     return true;
   }
 
-  async setAxisValue(axisName, value) {
-    for (const realAxisName of this.axisMapping[axisName]) {
-      this.varLocation[realAxisName] = value;
+  async setAxisValues(values) {
+    const varLocation = {};
+    for (const [name, value] of Object.entries(values)) {
+      for (const realAxisName of this.axisMapping[name]) {
+        varLocation[realAxisName] = value;
+      }
     }
-    await this._instantiateGlyph(this.varLocation);
+    await this._instantiateGlyph(varLocation);
   }
 
   async _instantiateGlyph(varLocation) {
@@ -46,7 +48,7 @@ export class SceneModel {
     if (!!this.instance.components) {
       const compoPaths = await this.instance.getComponentPaths(
         async glyphName => await this.font.getGlyph(glyphName),
-        this.varLocation,
+        varLocation,
       );
       compoPaths2d = compoPaths.map(path => {
         const path2d = new Path2D();

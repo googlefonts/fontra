@@ -157,8 +157,8 @@ export class SceneController {
     return this.sceneModel.getAxisInfo();
   }
 
-  async setAxisValue(axisName, value) {
-    await this.sceneModel.setAxisValue(axisName, value);
+  async setAxisValues(values) {
+    await this.sceneModel.setAxisValues(values);
     this.canvasController.setNeedsUpdate();
   }
 }
