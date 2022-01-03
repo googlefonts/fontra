@@ -5,6 +5,7 @@
 .ui-list > .contents {
   display: flex;
   flex-direction: column;
+  border: solid 1px lightgray;
 }
 
 .ui-list > .contents > .row {
