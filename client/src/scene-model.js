@@ -21,7 +21,7 @@ export class SceneModel {
     }
     this.glyph = glyph;
     this.axisMapping = _makeAxisMapping(this.glyph.axes);
-    await this._instantiateGlyph({});
+    await this.setAxisValues(this.userVarLocation);
     this.selection = new Set();
     this.hoverSelection = new Set();
     return true;

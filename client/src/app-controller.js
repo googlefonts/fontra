@@ -162,7 +162,8 @@ export class AppController {
       return;
     }
     this.sliders.setSliderDescriptions(this.sceneController.getAxisInfo());
-    this.sourcesList.setItems(this.sceneController.getSourcesInfo())
+    this.sourcesList.setItems(this.sceneController.getSourcesInfo());
+    this.sliders.values = this.sceneController.getAxisValues();
   }
 
 }
