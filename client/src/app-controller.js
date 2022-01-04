@@ -85,6 +85,16 @@ export class AppController {
 
     this.sceneController = new SceneController(sceneModel, canvasController)
 
+    const overlayItems = document.querySelectorAll(".overlay-item");
+    for (const item of overlayItems) {
+      item.onmouseenter = event => overlayItems.forEach(
+        item => item.style.display = item === event.target ? "inherit" : "none"
+      );
+      item.onmouseleave = event => overlayItems.forEach(
+        item => item.style.display = "inherit"
+      );
+    }
+
     window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
   }
 
