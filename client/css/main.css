@@ -156,6 +156,10 @@ html, body {
     background-color: #222;
   }
 
+  #glyph-search-img {
+    content: url("../images/magnifyingGlass-dark.svg");
+  }
+
   #slider-img {
     content: url("../images/sliders-dark.svg");
   }
