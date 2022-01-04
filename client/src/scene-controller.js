@@ -162,8 +162,9 @@ export class SceneController {
   }
 
   async setAxisValues(values) {
-    await this.sceneModel.setAxisValues(values);
+    const sourceIndex = await this.sceneModel.setAxisValues(values);
     this.canvasController.setNeedsUpdate();
+    return sourceIndex;
   }
 
   getSourcesInfo() {
