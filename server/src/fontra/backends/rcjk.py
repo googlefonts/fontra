@@ -81,7 +81,10 @@ def serializeGlyph(glyph):
     sources = []
     for varGlyph in [glyph] + glyph.variations:
         source = {}
-        source["name"] = getattr(varGlyph, "sourceName", "<default>")
+        sourceName = getattr(varGlyph, "sourceName", "<default>")
+        if not sourceName and varGlyph.layerName:
+            sourceName = f"sourcelayer-{varGlyph.layerName}"
+        source["name"] = sourceName
         source["location"] = varGlyph.location
         sourceGlyph = {}
         path = serializePath(varGlyph)
