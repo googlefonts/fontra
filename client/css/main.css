@@ -34,10 +34,12 @@ html, body {
 }
 
 .glyphs-search-input {
-  border-radius: 0.66em;
+  border-radius: 0.5em;
+  border: 0.5px solid lightgray;
   padding: 0.2em;
   padding-left: 0.8em;
   font-family: fontra-ui-regular, sans-serif;
+  font-size: 1.2em;
 }
 
 .sliders-and-sources {
