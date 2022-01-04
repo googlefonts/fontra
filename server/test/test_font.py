@@ -340,7 +340,7 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": None,
+                    "name": "sourcelayer-longbar",
                     "location": {"HLON": 1.0},
                     "source": {
                         "path": {
@@ -373,7 +373,7 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": None,
+                    "name": "sourcelayer-bold",
                     "location": {"WGHT": 1.0},
                     "source": {
                         "path": {
