@@ -67,6 +67,9 @@ export class List {
       this.container.scrollTop + this.container.offsetHeight + 200 > this.contents.offsetHeight
     ) {
       this._addMoreItems();
+      if (this.container.offsetHeight === 0) {
+        break;
+      }
     }
   }
 
