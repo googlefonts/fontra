@@ -11,25 +11,26 @@
   <body>
     <div class="page">
 
-      <div class="glyphs-navigation">
-        <div class="glyphs-search">
-          <input
-            class="glyphs-search-input"
-            id="glyphs-search-input"
-            placeholder="Search glyphs"
-            oninput="glyphSeachFieldChanged(value)">
-        </div>
-        <div id="glyphs-list" tabindex="1">
-          <!-- contents will be filled dynamically -->
-        </div>
-      </div>
-
       <div class="canvas-container">
 
         <div class="overlay-layer">
 
           <div class="overlay-item" id="glyph-search-overlay">
             <img class="icon-img" id="glyph-search-img" src="images/magnifyingGlass.svg">
+
+            <div class="glyphs-navigation">
+              <div class="glyphs-search">
+                <input
+                  class="glyphs-search-input"
+                  id="glyphs-search-input"
+                  placeholder="Search glyphs"
+                  oninput="glyphSeachFieldChanged(value)">
+              </div>
+              <div id="glyphs-list" tabindex="1">
+                <!-- contents will be filled dynamically -->
+              </div>
+            </div>
+
           </div>
 
           <div class="overlay-item" id="sliders-overlay">
