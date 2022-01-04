@@ -51,9 +51,9 @@ export class List {
   setSelectedItem(item) {
     const index = this.items.indexOf(item);
     if (index >= 0) {
-      this._selectByRowIndex(index)
+      this.setSelectedItemIndex(index)
     } else {
-      this._selectByRowIndex(undefined)
+      this.setSelectedItemIndex(undefined)
     }
   }
 
@@ -101,14 +101,14 @@ export class List {
     const target = event.target;
     if (target.parentNode === this.contents) {
       // clicked on row
-      this._selectByRowIndex(target.rowIndex);
+      this.setSelectedItemIndex(target.rowIndex);
     } else if (target.parentNode.parentNode === this.contents) {
       // clicked on cell
-      this._selectByRowIndex(target.parentNode.rowIndex);
+      this.setSelectedItemIndex(target.parentNode.rowIndex);
     }
   }
 
-  _selectByRowIndex(rowIndex) {
+  setSelectedItemIndex(rowIndex, shouldDispatchEvent = true) {
     if (rowIndex === this.selectedItemIndex) {
       // nothing to do
       return;
@@ -122,9 +122,13 @@ export class List {
       row?.classList.add("selected");
     }
     this.selectedItemIndex = rowIndex;
-    if (!this._isKeyRepeating) {
+    if (!this._isKeyRepeating && shouldDispatchEvent) {
       this._dispatchListSelectionChanged();
     }
+  }
+
+  getSelectedItemIndex() {
+    return this.selectedItemIndex;
   }
 
   _dispatchListSelectionChanged() {
@@ -151,7 +155,7 @@ export class List {
       rowIndex = Math.min(Math.max(rowIndex, 0), this.items.length - 1);
     }
     this._isKeyRepeating = event.repeat;
-    this._selectByRowIndex(rowIndex);
+    this.setSelectedItemIndex(rowIndex);
     const newRow = this.contents.children[rowIndex];
     newRow?.scrollIntoView({behavior: "auto", block: "nearest", inline: "nearest"});
   }
