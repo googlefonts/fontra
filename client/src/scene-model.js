@@ -40,7 +40,7 @@ export class SceneModel {
       });
     }
     await this._instantiateGlyph(varLocation);
-    return this._findSourceIndexFromLocation(varLocation);
+    this.currentSourceIndex = this._findSourceIndexFromLocation(varLocation);
   }
 
   _findSourceIndexFromLocation(varLocation) {

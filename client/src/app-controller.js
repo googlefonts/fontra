@@ -118,8 +118,8 @@ export class AppController {
   initSliders() {
     this.sliders = new Sliders("axis-sliders", []);
     this.sliders.addEventListener("slidersChanged", async event => {
-      const sourceIndex = await this.sceneController.setAxisValues(event.detail.values);
-      this.sourcesList.setSelectedItemIndex(sourceIndex, false);
+      await this.sceneController.setAxisValues(event.detail.values);
+      this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
     });
   }
 
@@ -163,6 +163,7 @@ export class AppController {
     this.sliders.setSliderDescriptions(this.sceneController.getAxisInfo());
     this.sourcesList.setItems(this.sceneController.getSourcesInfo());
     this.sliders.values = this.sceneController.getAxisValues();
+    this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
   }
 
 }
