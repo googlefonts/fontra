@@ -41,7 +41,7 @@ export class Sliders {
     const values = {};
     for (const label of this.container.children) {
       const slider = label.firstChild;
-      values[slider.dataset.name] = slider.value;
+      values[slider.dataset.name] = Number(slider.value);
     }
     return values;
   }
