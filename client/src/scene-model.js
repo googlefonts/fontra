@@ -40,6 +40,32 @@ export class SceneModel {
       });
     }
     await this._instantiateGlyph(varLocation);
+    return this._findSourceIndexFromLocation(varLocation);
+  }
+
+  _findSourceIndexFromLocation(varLocation) {
+    for (let i = 0; i < this.glyph.sources.length; i++) {
+      const source = this.glyph.sources[i];
+      let found = true;
+      for (const axis of this.glyph.axes) {
+        let varValue = varLocation[axis.name];
+        let sourceValue = source.location[axis.name];
+        if (varValue === undefined) {
+          varValue = axis.defaultValue;
+        }
+        if (sourceValue === undefined) {
+          sourceValue = axis.defaultValue;
+        }
+        if (varValue !== sourceValue) {
+          found = false;
+          break;
+        }
+      }
+      if (found) {
+        return i;
+      }
+    }
+    return undefined;
   }
 
   async _instantiateGlyph(varLocation) {
