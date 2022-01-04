@@ -208,9 +208,12 @@ def serializeGlyph(glifData, layers, axisDefaults):
             varSourceDict["components"] = varComponents
         hAdvance = varDict["width"] if "width" in varDict else hAdvance
         varSourceDict["hAdvance"] = hAdvance
+        sourceName = varDict.get("sourceName")
+        if not sourceName and layerName:
+            sourceName = f"sourcelayer-{layerName}"
         sources.append(
             {
-                "name": varDict.get("sourceName"),
+                "name": sourceName,
                 "location": varDict["location"],
                 "source": varSourceDict,
             }
