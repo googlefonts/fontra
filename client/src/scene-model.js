@@ -39,8 +39,8 @@ export class SceneModel {
         varLocation[realAxisName] = value
       });
     }
-    await this._instantiateGlyph(varLocation);
     this.currentSourceIndex = this._findSourceIndexFromLocation(varLocation);
+    await this._instantiateGlyph(varLocation);
   }
 
   _findSourceIndexFromLocation(varLocation) {
@@ -128,7 +128,6 @@ export class SceneModel {
     if (!this.glyph) {
       return;
     }
-    this.currentSourceIndex = sourceInfo.sourceIndex;
     const source = this.glyph.sources[sourceInfo.sourceIndex];
     this.userVarLocation = {};
     for (const axisInfo of this.getAxisInfo()) {
@@ -138,6 +137,7 @@ export class SceneModel {
       const baseName = _getAxisBaseName(name);
       this.userVarLocation[baseName] = value;
     }
+    this.currentSourceIndex = sourceInfo.sourceIndex;
     await this._instantiateGlyph(source.location);
   }
 
