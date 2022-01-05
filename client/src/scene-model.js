@@ -69,34 +69,6 @@ export class SceneModel {
     return undefined;
   }
 
-  findClosestSourceIndexFromLocation(varLocation) {
-    const axisDict = {};
-    for (const axis of this.glyph.axes) {
-      axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
-    }
-    const location = normalizeLocation(varLocation, axisDict);
-    const distances = [];
-    for (let i = 0; i < this.glyph.sources.length; i++) {
-      const sourceLocation = normalizeLocation(this.glyph.sources[i].location, axisDict);
-      let distanceSquared = 0;
-      for (const [axisName, value] of Object.entries(location)) {
-        const sourceValue = sourceLocation[axisName];
-        distanceSquared += (sourceValue - value) ** 2;
-      }
-      distances.push([distanceSquared, i]);
-      if (distanceSquared === 0) {
-        // exact match, no need to look further
-        break;
-      }
-    }
-    distances.sort((a, b) => {
-      const da = a[0];
-      const db = b[0];
-      return (a > b) - (a < b);
-    });
-    return {distance: Math.sqrt(distances[0][0]), index: distances[0][1]}
-  }
-
   async _instantiateGlyph(varLocation) {
     try {
       this.instance = this.glyph.instantiate(varLocation);
@@ -104,7 +76,7 @@ export class SceneModel {
       if (error.name !== "VariationError") {
         throw error;
       }
-      const nearestSource = this.findClosestSourceIndexFromLocation(varLocation);
+      const nearestSource = findClosestSourceIndexFromLocation(this.glyph, varLocation);
       console.log(`Interpolation error while instantiating ${this.glyph.name}`);
       this.instance = this.glyph.sources[nearestSource.index].source;
     }
@@ -232,4 +204,32 @@ function _getAxisBaseName(axisName) {
     return axisName.slice(0, asterixPos);
   }
   return axisName;
+}
+
+function findClosestSourceIndexFromLocation(glyph, varLocation) {
+  const axisDict = {};
+  for (const axis of glyph.axes) {
+    axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
+  }
+  const location = normalizeLocation(varLocation, axisDict);
+  const distances = [];
+  for (let i = 0; i < glyph.sources.length; i++) {
+    const sourceLocation = normalizeLocation(glyph.sources[i].location, axisDict);
+    let distanceSquared = 0;
+    for (const [axisName, value] of Object.entries(location)) {
+      const sourceValue = sourceLocation[axisName];
+      distanceSquared += (sourceValue - value) ** 2;
+    }
+    distances.push([distanceSquared, i]);
+    if (distanceSquared === 0) {
+      // exact match, no need to look further
+      break;
+    }
+  }
+  distances.sort((a, b) => {
+    const da = a[0];
+    const db = b[0];
+    return (a > b) - (a < b);
+  });
+  return {distance: Math.sqrt(distances[0][0]), index: distances[0][1]}
 }
