@@ -80,7 +80,16 @@ class VarSource {
     for (const compo of this.components) {
       const compoLocation = mergeLocations(parentLocation, compo.coord)
       const glyph = await getGlyphFunc(compo.name);
-      const inst = glyph.instantiate(compoLocation || {});
+      let inst;
+      try {
+        inst = glyph.instantiate(compoLocation || {});
+      } catch (error) {
+        if (error.name !== "VariationError") {
+          throw error;
+        }
+        console.log(`Interpolation error while instantiating component ${compo.name}`);
+        continue;
+      }
       let t = makeAffineTransform(compo.transform);
       if (transform !== null) {
         t = transform.transform(t);
