@@ -79,7 +79,7 @@ export class List {
     for (const item of items) {
       const row = document.createElement("div");
       row.className = "row";
-      row.rowIndex = rowIndex;
+      row.dataset.rowIndex = rowIndex;
       if (rowIndex === this.selectedItemIndex) {
         row.classList.add("selected");
       }
@@ -104,14 +104,15 @@ export class List {
     const target = event.target;
     if (target.parentNode === this.contents) {
       // clicked on row
-      this.setSelectedItemIndex(target.rowIndex);
+      this.setSelectedItemIndex(target.dataset.rowIndex);
     } else if (target.parentNode.parentNode === this.contents) {
       // clicked on cell
-      this.setSelectedItemIndex(target.parentNode.rowIndex);
+      this.setSelectedItemIndex(target.parentNode.dataset.rowIndex);
     }
   }
 
   setSelectedItemIndex(rowIndex, shouldDispatchEvent = true) {
+    rowIndex = Number(rowIndex);
     if (rowIndex === this.selectedItemIndex) {
       // nothing to do
       return;
