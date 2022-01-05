@@ -1,4 +1,5 @@
 import { centeredRect, sectRect } from "./rectangle.js";
+import { normalizeLocation } from "./var-model.js";
 
 
 export class SceneModel {
@@ -68,8 +69,45 @@ export class SceneModel {
     return undefined;
   }
 
+  findClosestSourceIndexFromLocation(varLocation) {
+    const axisDict = {};
+    for (const axis of this.glyph.axes) {
+      axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
+    }
+    const location = normalizeLocation(varLocation, axisDict);
+    const distances = [];
+    for (let i = 0; i < this.glyph.sources.length; i++) {
+      const sourceLocation = normalizeLocation(this.glyph.sources[i].location, axisDict);
+      let distanceSquared = 0;
+      for (const [axisName, value] of Object.entries(location)) {
+        const sourceValue = sourceLocation[axisName];
+        distanceSquared += (sourceValue - value) ** 2;
+      }
+      distances.push([distanceSquared, i]);
+      if (distanceSquared === 0) {
+        // exact match, no need to look further
+        break;
+      }
+    }
+    distances.sort((a, b) => {
+      const da = a[0];
+      const db = b[0];
+      return (a > b) - (a < b);
+    });
+    return {distance: Math.sqrt(distances[0][0]), index: distances[0][1]}
+  }
+
   async _instantiateGlyph(varLocation) {
-    this.instance = this.glyph.instantiate(varLocation);
+    try {
+      this.instance = this.glyph.instantiate(varLocation);
+    } catch(error) {
+      if (error.name !== "VariationError") {
+        throw error;
+      }
+      const nearestSource = this.findClosestSourceIndexFromLocation(varLocation);
+      console.log(`Interpolation error while instantiating ${this.glyph.name}`);
+      this.instance = this.glyph.sources[nearestSource.index].source;
+    }
     this.hoverSelection = new Set();
     this.path = this.instance.path;
     this.path2d = new Path2D();
