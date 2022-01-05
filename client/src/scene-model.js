@@ -206,6 +206,7 @@ function _getAxisBaseName(axisName) {
   return axisName;
 }
 
+
 function findClosestSourceIndexFromLocation(glyph, varLocation) {
   const axisDict = {};
   for (const axis of glyph.axes) {
