@@ -153,11 +153,13 @@ export class AppController {
     console.log = (...args) => {
       this._console_log(...args);
       this.miniConsole.innerText = args;
+      this.miniConsole.style.display = "inherit";
       if (this._miniConsoleClearTimeoutID) {
         clearTimeout(this._miniConsoleClearTimeoutID);
       }
       this._miniConsoleClearTimeoutID = setTimeout(() => {
         this.miniConsole.innerText = "";
+        this.miniConsole.style.display = "none";
         delete this._miniConsoleClearTimeoutID;
       }, 5000);
     }

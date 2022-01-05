@@ -135,6 +135,7 @@ html, body {
 }
 
 #mini-console {
+  display: none;  /* will be set to 'inherit' when needed */
   z-index: 3;
   position: absolute;
   color: black;
