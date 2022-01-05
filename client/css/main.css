@@ -54,6 +54,7 @@ html, body {
   flex-direction: column;
   gap:  0.5em;
   overflow: scroll;
+  flex: none;
 }
 
 .slider-label {
