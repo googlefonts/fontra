@@ -40,33 +40,8 @@ export class SceneModel {
         varLocation[realAxisName] = value
       });
     }
-    this.currentSourceIndex = this._findSourceIndexFromLocation(varLocation);
+    this.currentSourceIndex = findSourceIndexFromLocation(this.glyph, varLocation);
     await this._instantiateGlyph(varLocation);
-  }
-
-  _findSourceIndexFromLocation(varLocation) {
-    for (let i = 0; i < this.glyph.sources.length; i++) {
-      const source = this.glyph.sources[i];
-      let found = true;
-      for (const axis of this.glyph.axes) {
-        let varValue = varLocation[axis.name];
-        let sourceValue = source.location[axis.name];
-        if (varValue === undefined) {
-          varValue = axis.defaultValue;
-        }
-        if (sourceValue === undefined) {
-          sourceValue = axis.defaultValue;
-        }
-        if (varValue !== sourceValue) {
-          found = false;
-          break;
-        }
-      }
-      if (found) {
-        return i;
-      }
-    }
-    return undefined;
   }
 
   async _instantiateGlyph(varLocation) {
@@ -204,6 +179,32 @@ function _getAxisBaseName(axisName) {
     return axisName.slice(0, asterixPos);
   }
   return axisName;
+}
+
+
+function findSourceIndexFromLocation(glyph, varLocation) {
+  for (let i = 0; i < glyph.sources.length; i++) {
+    const source = glyph.sources[i];
+    let found = true;
+    for (const axis of glyph.axes) {
+      let varValue = varLocation[axis.name];
+      let sourceValue = source.location[axis.name];
+      if (varValue === undefined) {
+        varValue = axis.defaultValue;
+      }
+      if (sourceValue === undefined) {
+        sourceValue = axis.defaultValue;
+      }
+      if (varValue !== sourceValue) {
+        found = false;
+        break;
+      }
+    }
+    if (found) {
+      return i;
+    }
+  }
+  return undefined;
 }
 
 
