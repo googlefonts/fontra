@@ -95,6 +95,8 @@ export class AppController {
       );
     }
 
+    this.initMiniConsole();
+
     window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
   }
 
@@ -143,6 +145,22 @@ export class AppController {
       await this.sceneController.setSelectedSource(event.detail.getSelectedItem());
       this.sliders.values = this.sceneController.getAxisValues();
     });
+  }
+
+  initMiniConsole() {
+    this.miniConsole = document.querySelector("#mini-console");
+    this._console_log = console.log.bind(console);
+    console.log = (...args) => {
+      this._console_log(...args);
+      this.miniConsole.innerText = args;
+      if (this._miniConsoleClearTimeoutID) {
+        clearTimeout(this._miniConsoleClearTimeoutID);
+      }
+      this._miniConsoleClearTimeoutID = setTimeout(() => {
+        this.miniConsole.innerText = "";
+        delete this._miniConsoleClearTimeoutID;
+      }, 5000);
+    }
   }
 
   themeChanged(event) {
