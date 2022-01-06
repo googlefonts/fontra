@@ -126,9 +126,12 @@ html, body {
 }
 
 .icon-img {
+  position: relative  ;
+  left: 0em;
+  top: 0em;
   width: 2em;
   height: 2em;
-  /*vertical-align: top;*/
+  transition: 0.1s;
 }
 
 .icon-img:active {
@@ -136,7 +139,6 @@ html, body {
 }
 
 .icon-img:hover {
-  position: relative  ;
   left: -0.15em;
   top: -0.15em;
   width: 2.3em;
