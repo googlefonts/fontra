@@ -107,9 +107,14 @@ html, body {
   overflow: scroll;
   max-width: calc(100% - 3.5em);
   max-height: calc(100% - 3.5em);
+  width: 2em;
+  height: 2em;
+  pointer-events: auto;
+}
+
+.overlay-item-expanded {
   width: max-content;
   height: max-content;
-  pointer-events: auto;
 }
 
 .overlay-item > div {
@@ -123,8 +128,19 @@ html, body {
 .icon-img {
   width: 2em;
   height: 2em;
-  vertical-align: top;
+  /*vertical-align: top;*/
+}
+
+.icon-img:active {
   pointer-events: none;
+}
+
+.icon-img:hover {
+  position: relative  ;
+  left: -0.15em;
+  top: -0.15em;
+  width: 2.3em;
+  height: 2.3em;
 }
 
 .overlay-item-expanded > img {
