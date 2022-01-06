@@ -147,12 +147,14 @@ export class AppController {
       }
     }
 
+    const collapseOnEscapeKey = event => {
+      if (event.key === "Escape") {
+        collapseAll();
+      }
+    }
+
     for (const item of overlayItems) {
-      item.onkeydown = event => {
-        if (event.key === "Escape") {
-          collapseAll();
-        }
-      };
+      item.onkeydown = event => collapseOnEscapeKey(event);
       item.onclick = event => {
         if (overlayItems.indexOf(event.target) == -1) {
           return;
@@ -163,9 +165,8 @@ export class AppController {
       };
     }
 
-    canvas.addEventListener("mousedown", event => {
-      collapseAll();
-    });
+    canvas.addEventListener("mousedown", event => collapseAll());
+    window.addEventListener("keydown", event => collapseOnEscapeKey(event));
   }
 
   initMiniConsole() {
