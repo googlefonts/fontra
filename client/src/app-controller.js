@@ -158,11 +158,7 @@ export class AppController {
           return;
         }
         for (const item of overlayItems) {
-          if (item === event.target) {
-            item.classList.add("overlay-item-expanded");
-          } else {
-            item.classList.remove("overlay-item-expanded");
-          }
+          item.classList.toggle("overlay-item-expanded", item === event.target);
         }
       };
     }
