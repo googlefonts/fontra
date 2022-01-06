@@ -116,7 +116,7 @@ html, body {
   display: none;
 }
 
-.overlay-item:hover > div {
+.overlay-item-expanded > div {
   display: inherit;
 }
 
@@ -124,9 +124,10 @@ html, body {
   width: 2em;
   height: 2em;
   vertical-align: top;
+  pointer-events: none;
 }
 
-.overlay-item:hover > img {
+.overlay-item-expanded > img {
   display: none;
 }
 
@@ -164,7 +165,7 @@ html, body {
     background-color: #333;
   }
 
-  .overlay-item:hover {
+  .overlay-item-expanded {
     background-color: #222;
   }
 

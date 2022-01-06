@@ -85,16 +85,7 @@ export class AppController {
 
     this.sceneController = new SceneController(sceneModel, canvasController)
 
-    const overlayItems = document.querySelectorAll(".overlay-item");
-    for (const item of overlayItems) {
-      item.onmouseenter = event => overlayItems.forEach(
-        item => item.style.display = item === event.target ? "inherit" : "none"
-      );
-      item.onmouseleave = event => overlayItems.forEach(
-        item => item.style.display = "inherit"
-      );
-    }
-
+    this.initOverlayItems(canvas);
     this.initMiniConsole();
 
     window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
@@ -144,6 +135,37 @@ export class AppController {
     this.sourcesList.addEventListener("listSelectionChanged", async event => {
       await this.sceneController.setSelectedSource(event.detail.getSelectedItem());
       this.sliders.values = this.sceneController.getAxisValues();
+    });
+  }
+
+  initOverlayItems(canvas) {
+    const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
+    for (const item of overlayItems) {
+      item.onclick = event => {
+        if (overlayItems.indexOf(event.target) == -1) {
+          return;
+        }
+        for (const item of overlayItems) {
+          if (item === event.target) {
+            item.classList.add("overlay-item-expanded");
+          } else {
+            item.classList.remove("overlay-item-expanded");
+          }
+        }
+      };
+    }
+    const collapseAll = () => {
+      for (const item of overlayItems) {
+        item.classList.remove("overlay-item-expanded");
+      }
+    }
+    canvas.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        collapseAll();
+      }
+    });
+    canvas.addEventListener("mousedown", event => {
+      collapseAll();
     });
   }
 
