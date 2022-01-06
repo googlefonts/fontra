@@ -174,7 +174,9 @@ export class AppController {
     this._console_log = console.log.bind(console);
     console.log = (...args) => {
       this._console_log(...args);
-      this.miniConsole.innerText = args;
+      this.miniConsole.innerText = args.map(
+        item => typeof item == "string" ? item : JSON.stringify(item)
+      ).join(" ");
       this.miniConsole.style.display = "inherit";
       if (this._miniConsoleClearTimeoutID) {
         clearTimeout(this._miniConsoleClearTimeoutID);
