@@ -60,10 +60,10 @@
       import { AppController } from "./src/app-controller.js";
       import { Font } from "./src/font.js";
       import { getRemoteProxy } from "./src/remote.js";
-      import { httpGetAsync } from "./src/utils.js";
 
       async function startApp() {
-        const port = await httpGetAsync("/websocketport");
+        const response = await fetch("/websocketport");
+        const port = await response.text();
         const remoteFontEngine = await getRemoteProxy(`ws://localhost:${port}/`);
         const font = new Font(remoteFontEngine);
         const appController = new AppController(font);
