@@ -97,7 +97,7 @@ html, body {
 }
 
 .overlay-item {
-  background-color: #FFF;
+  background-color: white;
   border-radius: 1em;
   padding: 0.6em;
   box-shadow: 2px 2px 10px #999;
@@ -110,10 +110,6 @@ html, body {
   width: max-content;
   height: max-content;
   pointer-events: auto;
-}
-
-.overlay-item:hover {
-  background-color: white;
 }
 
 .overlay-item > div {
