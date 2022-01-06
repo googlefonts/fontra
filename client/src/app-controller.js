@@ -140,7 +140,19 @@ export class AppController {
 
   initOverlayItems(canvas) {
     const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
+
+    const collapseAll = () => {
+      for (const item of overlayItems) {
+        item.classList.remove("overlay-item-expanded");
+      }
+    }
+
     for (const item of overlayItems) {
+      item.onkeydown = event => {
+        if (event.key === "Escape") {
+          collapseAll();
+        }
+      };
       item.onclick = event => {
         if (overlayItems.indexOf(event.target) == -1) {
           return;
@@ -154,16 +166,7 @@ export class AppController {
         }
       };
     }
-    const collapseAll = () => {
-      for (const item of overlayItems) {
-        item.classList.remove("overlay-item-expanded");
-      }
-    }
-    canvas.addEventListener("keydown", event => {
-      if (event.key === "Escape") {
-        collapseAll();
-      }
-    });
+
     canvas.addEventListener("mousedown", event => {
       collapseAll();
     });
