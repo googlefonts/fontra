@@ -140,6 +140,7 @@ export class AppController {
 
   initOverlayItems(canvas) {
     const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
+    const textEntryElement = document.querySelector("#text-entry");
 
     const collapseAll = () => {
       for (const item of overlayItems) {
@@ -153,6 +154,10 @@ export class AppController {
       }
     }
 
+    textEntryElement.oninput = event => {
+      console.log(event.target.textContent);
+    }
+
     for (const item of overlayItems) {
       item.onkeydown = event => collapseOnEscapeKey(event);
       item.onclick = event => {
@@ -161,6 +166,9 @@ export class AppController {
         }
         for (const item of overlayItems) {
           item.classList.toggle("overlay-item-expanded", item === event.target);
+          if (item === event.target && item.id === "text-entry-overlay") {
+            textEntryElement.focus();
+          }
         }
       };
     }
