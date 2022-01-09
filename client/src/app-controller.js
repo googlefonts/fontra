@@ -162,7 +162,7 @@ export class AppController {
       const text = event.target.innerText;
       const glyphLines = [];
       for (const line of splitLines(text)) {
-        glyphLines.push(glyphNamesFromText(line, this.cmap));
+        glyphLines.push(glyphNamesFromText(line, this.cmap, this.reversedCmap));
       }
       console.log(text);
       for (const line of glyphLines) {
@@ -310,7 +310,7 @@ function makeCmapFromReversedCmap(reversedCmap) {
 
 const glyphNameRE = /[//\s]/g;
 
-function glyphNamesFromText(text, cmap) {
+function glyphNamesFromText(text, cmap, reversedCmap) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -335,12 +335,20 @@ function glyphNamesFromText(text, cmap) {
             i = j;
           }
         }
+        char = undefined;
+        for (const codePoint of reversedCmap[glyphName] || []) {
+          if (cmap[codePoint] === glyphName) {
+            console.log("!!!!!!");
+            char = String.fromCodePoint(codePoint);
+            break;
+          }
+        }
       }
     } else {
       glyphName = cmap[char.charCodeAt(0)];
     }
     if (glyphName !== "") {
-      glyphNames.push(glyphName);
+      glyphNames.push({character: char, glyphName: glyphName});
     }
   }
   return glyphNames;
