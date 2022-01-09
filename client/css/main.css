@@ -171,6 +171,7 @@ html, body {
   white-space: normal;
   outline: none;
   cursor: auto;
+  display: inline;
 }
 
 @media (prefers-color-scheme: dark) {
