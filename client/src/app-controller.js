@@ -264,6 +264,8 @@ function glyphFilterFunc(item, searchString) {
 }
 
 
+// utils, should perhaps move to utils.js
+
 function compare(a, b) {
   // sort undefined at the end
   if (a === b) {
