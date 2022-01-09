@@ -110,6 +110,7 @@ export class AppController {
       await this.glyphNameChangedCallback(item.glyphName);
     });
     this.reversedCmap = await this.font.getReversedCmap();
+    this.cmap = makeCmapFromReversedCmap(this.reversedCmap);
     this.glyphsListItems = [];
     for (const glyphName in this.reversedCmap) {
       this.glyphsListItems.push({"glyphName": glyphName, "unicodes": this.reversedCmap[glyphName]});
@@ -276,4 +277,19 @@ function compare(a, b) {
   } else {
     return 1;
   }
+}
+
+
+function makeCmapFromReversedCmap(reversedCmap) {
+  const cmap = {};
+  for (const [glyphName, codePoints] of Object.entries(reversedCmap)) {
+    for (const codePoint of codePoints) {
+      const mappedGlyphName = cmap[codePoint];
+      if (mappedGlyphName !== undefined && glyphName > mappedGlyphName) {
+        continue;
+      }
+      cmap[codePoint] = glyphName;
+    }
+  }
+  return cmap;
 }
