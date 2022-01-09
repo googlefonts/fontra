@@ -93,12 +93,12 @@ export class AppController {
 
   async start() {
     await this.font.setupCmap();
-    await this.initGlyphNames();
+    this.initGlyphNames();
     this.initSliders();
     this.initSourcesList();
   }
 
-  async initGlyphNames() {
+  initGlyphNames() {
     const columnDescriptions = [
       {"key": "char", "width": "2em", "get": item => getCharFromUnicode(item.unicodes[0])},
       {"key": "glyphName", "width": "10em", },
