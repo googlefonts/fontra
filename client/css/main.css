@@ -111,6 +111,7 @@ html, body {
   width: 2em;
   height: 2em;
   pointer-events: auto;
+  overflow: hidden;
 }
 
 .overlay-item-expanded {
