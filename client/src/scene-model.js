@@ -14,6 +14,28 @@ export class SceneModel {
     return !!this.instance;
   }
 
+  async *setGlyphLines(glyphLines) {
+    console.log(glyphLines);
+    const glyphPromises = {};
+    const glyphs = {};
+    for (const line of glyphLines) {
+      for (const glyph of line) {
+        if (glyph.glyphName === undefined) {
+          continue;
+        }
+        glyphPromises[glyph.glyphName] = (async (glyphName) => {
+          glyphs[glyphName] = await this.font.getGlyph(glyphName);
+          delete glyphPromises[glyphName];
+        })(glyph.glyphName);
+      }
+    }
+    while (Object.keys(glyphPromises).length) {
+      const result = await Promise.race(Object.values(glyphPromises));
+      console.log(glyphs);
+      yield;
+    }
+  }
+
   async setSelectedGlyph(glyphName) {
     this._selectedGlyphName = glyphName
     const glyph = await this.font.getGlyph(glyphName);

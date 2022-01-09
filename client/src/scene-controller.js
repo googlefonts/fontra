@@ -145,6 +145,12 @@ export class SceneController {
     this.canvasController.setDrawingParameters(drawingParameters);
   }
 
+  async setGlyphLines(glyphLines) {
+    for await (const _ of this.sceneModel.setGlyphLines(glyphLines)) {
+      this.canvasController.setNeedsUpdate();
+    }
+  }
+
   async setSelectedGlyph(glyphName) {
     const didSetGlyph = await this.sceneModel.setSelectedGlyph(glyphName);
     if (didSetGlyph) {

@@ -157,16 +157,13 @@ export class AppController {
       }
     }
 
-    textEntryElement.oninput = event => {
+    textEntryElement.oninput = async event => {
       const text = event.target.innerText;
       const glyphLines = [];
       for (const line of splitLines(text)) {
         glyphLines.push(glyphNamesFromText(line, this.font.cmap, this.font.reversedCmap));
       }
-      console.log(text);
-      for (const line of glyphLines) {
-        console.log("...", line);
-      }
+      await this.sceneController.setGlyphLines(glyphLines);
     }
 
     for (const item of overlayItems) {
