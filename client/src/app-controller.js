@@ -92,6 +92,7 @@ export class AppController {
   }
 
   async start() {
+    await this.font.setupCmap();
     await this.initGlyphNames();
     this.initSliders();
     this.initSourcesList();
@@ -109,11 +110,9 @@ export class AppController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
-    this.reversedCmap = await this.font.getReversedCmap();
-    this.cmap = makeCmapFromReversedCmap(this.reversedCmap);
     this.glyphsListItems = [];
-    for (const glyphName in this.reversedCmap) {
-      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": this.reversedCmap[glyphName]});
+    for (const glyphName in this.font.reversedCmap) {
+      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": this.font.reversedCmap[glyphName]});
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
     this.glyphNamesList.setItems(this.glyphsListItems);
@@ -162,7 +161,7 @@ export class AppController {
       const text = event.target.innerText;
       const glyphLines = [];
       for (const line of splitLines(text)) {
-        glyphLines.push(glyphNamesFromText(line, this.cmap, this.reversedCmap));
+        glyphLines.push(glyphNamesFromText(line, this.font.cmap, this.font.reversedCmap));
       }
       console.log(text);
       for (const line of glyphLines) {
@@ -290,21 +289,6 @@ function compare(a, b) {
   } else {
     return 1;
   }
-}
-
-
-function makeCmapFromReversedCmap(reversedCmap) {
-  const cmap = {};
-  for (const [glyphName, codePoints] of Object.entries(reversedCmap)) {
-    for (const codePoint of codePoints) {
-      const mappedGlyphName = cmap[codePoint];
-      if (mappedGlyphName !== undefined && glyphName > mappedGlyphName) {
-        continue;
-      }
-      cmap[codePoint] = glyphName;
-    }
-  }
-  return cmap;
 }
 
 

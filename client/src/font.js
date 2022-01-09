@@ -9,8 +9,9 @@ export class Font {
     this._glyphsCache = new LRUCache(250);
   }
 
-  async getReversedCmap() {
-    return await this.fontDataEngine.getReversedCmap();
+  async setupCmap() {
+    this.reversedCmap = await this.fontDataEngine.getReversedCmap();
+    this.cmap = makeCmapFromReversedCmap(this.reversedCmap);
   }
 
   async getGlyph(glyphName) {
@@ -26,4 +27,19 @@ export class Font {
     return glyph;
   }
 
+}
+
+
+function makeCmapFromReversedCmap(reversedCmap) {
+  const cmap = {};
+  for (const [glyphName, codePoints] of Object.entries(reversedCmap)) {
+    for (const codePoint of codePoints) {
+      const mappedGlyphName = cmap[codePoint];
+      if (mappedGlyphName !== undefined && glyphName > mappedGlyphName) {
+        continue;
+      }
+      cmap[codePoint] = glyphName;
+    }
+  }
+  return cmap;
 }
