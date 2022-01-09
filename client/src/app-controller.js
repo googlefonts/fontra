@@ -142,6 +142,7 @@ export class AppController {
   initOverlayItems(canvas) {
     // The following execCommand seems to make empty lines behave a bit better
     document.execCommand("defaultParagraphSeparator", false, "br");
+
     const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
     const textEntryElement = document.querySelector("#text-entry");
 
@@ -158,7 +159,6 @@ export class AppController {
     }
 
     textEntryElement.oninput = event => {
-      console.log(event.target.innerHTML);
       const text = event.target.innerText;
       const glyphLines = [];
       for (const line of splitLines(text)) {
