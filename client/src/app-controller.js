@@ -156,9 +156,16 @@ export class AppController {
     }
 
     textEntryElement.oninput = event => {
-      console.log(event.target.textContent);
-      const glyphNames = glyphNamesFromText(event.target.textContent, this.cmap);
-      console.log(glyphNames);
+      console.log(event.target.innerHTML);
+      const text = event.target.innerText;
+      const glyphLines = [];
+      for (const line of splitLines(text)) {
+        glyphLines.push(glyphNamesFromText(line, this.cmap));
+      }
+      console.log(text);
+      for (const line of glyphLines) {
+        console.log("...", line);
+      }
     }
 
     for (const item of overlayItems) {
@@ -299,11 +306,59 @@ function makeCmapFromReversedCmap(reversedCmap) {
 }
 
 
+const glyphNameRE = /[//\s]/g;
+
 function glyphNamesFromText(text, cmap) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    glyphNames.push(cmap[char.charCodeAt(0)]);
+    let glyphName;
+    let char = text[i];
+    if (char == "/") {
+      i++;
+      if (text[i] == "/") {
+        glyphName = cmap[char.charCodeAt(0)];
+      } else {
+        glyphNameRE.lastIndex = i;
+        glyphNameRE.test(text);
+        let j = glyphNameRE.lastIndex;
+        if (j == 0) {
+          glyphName = text.slice(i);
+          i = text.length - 1;
+        } else {
+          j--;
+          glyphName = text.slice(i, j);
+          if (text[j] == "/") {
+            i = j - 1;
+          } else {
+            i = j;
+          }
+        }
+      }
+    } else {
+      glyphName = cmap[char.charCodeAt(0)];
+    }
+    if (glyphName !== "") {
+      glyphNames.push(glyphName);
+    }
   }
   return glyphNames;
+}
+
+
+function splitLines(text) {
+  const lines = [];
+  let previousLineEmpty = false;
+  for (const line of text.split(/\r?\n/)) {
+    if (line.length === 0) {
+      if (previousLineEmpty) {
+        // turn double empty lines into a single empty line,
+        // working around a weirdness of element.innerText
+        previousLineEmpty = false;
+        continue;
+      }
+      previousLineEmpty = true;
+    }
+    lines.push(line);
+  }
+  return lines;
 }
