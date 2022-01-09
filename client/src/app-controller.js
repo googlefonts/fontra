@@ -157,6 +157,11 @@ export class AppController {
 
     textEntryElement.oninput = event => {
       console.log(event.target.textContent);
+      const glyphNames = [];
+      for (const char of event.target.textContent) {
+        glyphNames.push(this.cmap[char.charCodeAt(0)]);
+      }
+      console.log(glyphNames);
     }
 
     for (const item of overlayItems) {
