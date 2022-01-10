@@ -161,6 +161,11 @@ function flattenComponentPaths(item) {
       }
     }
   }
+  return joinPaths(paths);
+}
+
+
+function joinPaths(paths) {
   if (paths.length) {
     return paths.reduce((p1, p2) => p1.concat(p2));
   }
