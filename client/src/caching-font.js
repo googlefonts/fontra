@@ -34,12 +34,15 @@ class CachingGlyphInstance {
   constructor (glyphInstance, componentPaths) {
     this.glyphInstance = glyphInstance;
     this.componentPaths = componentPaths;
+    this.hAdvance = glyphInstance.hAdvance;
+    this.vAdvance = glyphInstance.vAdvance;
+    this.verticalOrigin = glyphInstance.verticalOrigin;
   }
 
   get path() {
     if (this._path === undefined) {
       const paths = [this.glyphInstance.path];
-      paths.push(...flattenComponentPaths(this.componentPaths));
+      paths.push(...this.componentPaths.map(flattenComponentPaths));
       this._path = joinPaths(paths);
     }
     return this._path;
@@ -54,10 +57,10 @@ class CachingGlyphInstance {
   }
 
   get controlBounds() {
-    if (this._contolBounds === undefined) {
-      this._contolBounds = this.path.getControlBounds();
+    if (this._controlBounds === undefined) {
+      this._controlBounds = this.path.getControlBounds();
     }
-    return this._contolBounds;
+    return this._controlBounds;
   }
 
 }
