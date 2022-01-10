@@ -14,23 +14,30 @@ export class SceneModel {
     return !!this.instance;
   }
 
-  async *setGlyphLines(glyphLines) {
-    console.log(glyphLines);
+  setGlyphLines(glyphLines) {
+    this.glyphLines = glyphLines;
+  }
+
+  async *updateScene() {
     const glyphPromises = {};
     const glyphs = {};
-    for (const line of glyphLines) {
+    for (const line of this.glyphLines) {
       for (const glyph of line) {
         if (glyph.glyphName === undefined) {
           continue;
         }
         glyphPromises[glyph.glyphName] = (async (glyphName) => {
+          console.log("loading", glyphName);
           glyphs[glyphName] = await this.font.getGlyph(glyphName);
+          // XXXX Need caching font wrapper at location?
+          // glyphInstances[glyphName] = ...
+          // glyphPaths[glyphName] = ...
           delete glyphPromises[glyphName];
         })(glyph.glyphName);
       }
     }
     while (Object.keys(glyphPromises).length) {
-      const result = await Promise.race(Object.values(glyphPromises));
+      await Promise.race(Object.values(glyphPromises));
       console.log(glyphs);
       yield;
     }
