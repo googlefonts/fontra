@@ -15,6 +15,9 @@ export class Font {
   }
 
   async getGlyph(glyphName) {
+    if (this.reversedCmap[glyphName] === undefined) {
+      return null;
+    }
     let glyph = this._glyphsCache.get(glyphName);
     if (glyph === undefined) {
       glyph = await this.fontDataEngine.getGlyph(glyphName);
