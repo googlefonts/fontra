@@ -114,10 +114,16 @@ class VarSource {
       }
       if (item.children !== undefined) {
         for (const child of item.children) {
-          paths.push(flatten(child));
+          const childPath = flatten(child);
+          if (!!childPath) {
+            paths.push(childPath);
+          }
         }
       }
-      return paths.reduce((p1, p2) => p1.concat(p2));
+      if (paths.length) {
+        return paths.reduce((p1, p2) => p1.concat(p2));
+      }
+      return null;
     }
 
     const toplevel = await this.getComponentPaths(getGlyphFunc, parentLocation, transform);
