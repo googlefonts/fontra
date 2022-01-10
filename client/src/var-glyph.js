@@ -77,7 +77,7 @@ class VarSource {
   async getComponentPaths(getGlyphFunc, parentLocation, transform = null) {
     const paths = [];
 
-    for (const compo of this.components) {
+    for (const compo of this.components || []) {
       const compoLocation = mergeLocations(parentLocation, compo.coord)
       const glyph = await getGlyphFunc(compo.name);
       let inst;
