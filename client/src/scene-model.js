@@ -92,7 +92,7 @@ export class SceneModel {
     let compoPaths2d = [];
     this.componentsBounds = [];
     if (!!this.instance.components) {
-      const compoPaths = await this.instance.getComponentPaths(
+      const compoPaths = await this.instance.getComponentPathsFlattened(
         async glyphName => await this.font.getGlyph(glyphName),
         varLocation,
       );

@@ -74,7 +74,7 @@ class VarSource {
     return source
   }
 
-  async getComponentPaths(getGlyphFunc, parentLocation, transform = null) {
+  async getComponentPathsFlattened(getGlyphFunc, parentLocation, transform = null) {
     const paths = [];
 
     for (const compo of this.components) {
@@ -99,7 +99,7 @@ class VarSource {
         componentPaths.push(inst.path.transformed(t));
       }
       if (inst.components !== undefined) {
-        componentPaths.push(...await inst.getComponentPaths(getGlyphFunc, compoLocation, t));
+        componentPaths.push(...await inst.getComponentPathsFlattened(getGlyphFunc, compoLocation, t));
       }
       if (componentPaths.length > 0) {
         paths.push(componentPaths.reduce((p1, p2) => p1.concat(p2)));
