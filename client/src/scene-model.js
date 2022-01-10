@@ -36,17 +36,20 @@ export class SceneModel {
           continue;
         }
         glyphPromises[glyph.glyphName] = (async (glyphName) => {
-          console.log("loading", glyphName);
           glyphs[glyphName] = await this.cachingFont.getGlyphInstance(glyphName);
-          delete glyphPromises[glyphName];
+          return glyphName;  // to identify this promise
         })(glyph.glyphName);
       }
     }
-    while (Object.keys(glyphPromises).length) {
-      await Promise.race(Object.values(glyphPromises));
+    do {
+      const promises = Object.values(glyphPromises);
+      if (promises.length) {
+        const resolvedGlyphName = await Promise.race(promises);
+        delete glyphPromises[resolvedGlyphName];
+      }
       this._buildScene(glyphs);
       yield;
-    }
+    } while (Object.keys(glyphPromises).length);
   }
 
   _buildScene(glyphs) {
@@ -294,4 +297,9 @@ function findClosestSourceIndexFromLocation(glyph, varLocation) {
     return (a > b) - (a < b);
   });
   return {distance: Math.sqrt(distances[0][0]), index: distances[0][1]}
+}
+
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
