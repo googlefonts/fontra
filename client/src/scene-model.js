@@ -37,16 +37,18 @@ export class SceneModel {
         }
         glyphPromises[glyph.glyphName] = (async (glyphName) => {
           glyphs[glyphName] = await this.cachingFont.getGlyphInstance(glyphName);
-          return glyphName;  // to identify this promise
         })(glyph.glyphName);
       }
     }
     do {
       const promises = Object.values(glyphPromises);
       if (promises.length) {
-        const resolvedGlyphName = await Promise.race(promises);
-        delete glyphPromises[resolvedGlyphName];
+        await Promise.race(promises);
+        for (const glyphName in glyphs) {
+          delete glyphPromises[glyphName];
+        }
       }
+      // console.log("build scene", glyphs);
       this._buildScene(glyphs);
       yield;
     } while (Object.keys(glyphPromises).length);
