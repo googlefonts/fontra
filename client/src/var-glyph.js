@@ -150,7 +150,7 @@ function makeAffineTransform(transform) {
 }
 
 
-function flattenComponentPaths(item) {
+export function flattenComponentPaths(item) {
   const paths = [];
   if (item.path !== undefined) {
     paths.push(item.path);
@@ -167,7 +167,7 @@ function flattenComponentPaths(item) {
 }
 
 
-function joinPaths(paths) {
+export function joinPaths(paths) {
   if (paths.length) {
     return paths.reduce((p1, p2) => p1.concat(p2));
   }
