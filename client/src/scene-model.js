@@ -63,14 +63,20 @@ export class SceneModel {
       for (const glyphInfo of glyphLine) {
         const glyphInstance = glyphs[glyphInfo.glyphName];
         if (glyphInstance) {
-          positionedLine.glyphs.push({"x": x, "y": y, "glyph": glyphInstance})
+          positionedLine.glyphs.push({
+            "x": x,
+            "y": y,
+            "glyph": glyphInstance,
+            "bounds": offsetRect(glyphInstance.controlBounds, x, y),
+          })
           x += glyphInstance.hAdvance;
         }
       }
       y -= 1000;  // TODO
       if (positionedLine.glyphs.length) {
-        const boundses = positionedLine.glyphs.map(glyph => offsetRect(glyph.glyph.controlBounds, glyph.x, glyph.y));
-        positionedLine.bounds = unionRect(...boundses);
+        positionedLine.bounds = unionRect(
+          ...positionedLine.glyphs.map(glyph => glyph.bounds)
+        );
         this.positionedLines.push(positionedLine);
       }
     }
