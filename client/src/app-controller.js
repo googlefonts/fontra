@@ -8,6 +8,7 @@ import { Sliders } from "./ui-sliders.js";
 
 
 const drawingParametersLight = {
+  glyphFillColor: "#000",
   nodeFillColor: "#CCC",
   nodeSize: 8,
   handleColor: "#CCC",
@@ -33,6 +34,7 @@ const drawingParametersLight = {
 
 
 const drawingParametersDark = {
+  glyphFillColor: "#FFF",
   nodeFillColor: "#777",
   nodeSize: 8,
   handleColor: "#777",
@@ -57,6 +59,22 @@ const drawingParametersDark = {
 }
 
 
+function drawMultiGlyphs(model, controller) {
+  if (!model.positionedLines) {
+    return;
+  }
+  const context = controller.context;
+  context.fillStyle = controller.drawingParameters.glyphFillColor;
+  for (const glyphLine of model.positionedLines) {
+    for (const glyph of glyphLine.glyphs) {
+      context.save();
+      context.translate(glyph.x, glyph.y);
+      context.fill(glyph.glyph.path2d);
+      context.restore();
+    }
+  }
+}
+
 export class AppController {
 
   constructor(font) {
@@ -69,6 +87,7 @@ export class AppController {
 
     const sceneModel = new SceneModel(font, isPointInPath);
     const drawFuncs = [
+      drawMultiGlyphs,
       sceneDraw.drawComponentsLayer,
       sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,
@@ -319,7 +338,6 @@ function glyphNamesFromText(text, cmap, reversedCmap) {
         char = undefined;
         for (const codePoint of reversedCmap[glyphName] || []) {
           if (cmap[codePoint] === glyphName) {
-            console.log("!!!!!!");
             char = String.fromCodePoint(codePoint);
             break;
           }

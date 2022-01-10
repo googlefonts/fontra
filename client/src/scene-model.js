@@ -69,7 +69,6 @@ export class SceneModel {
         this.positionedLines.push(positionedLine);
       }
     }
-    console.log(this.positionedLines);
   }
 
   async setSelectedGlyph(glyphName) {
