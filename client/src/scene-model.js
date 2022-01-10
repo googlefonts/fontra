@@ -1,5 +1,5 @@
 import { CachingFont } from "./caching-font.js"
-import { centeredRect, sectRect } from "./rectangle.js";
+import { centeredRect, offsetRect, sectRect, unionRect } from "./rectangle.js";
 import { normalizeLocation } from "./var-model.js";
 
 
@@ -9,6 +9,7 @@ export class SceneModel {
     this.font = font;
     this.isPointInPath = isPointInPath;
     this.userVarLocation = {};
+    this.varLocation = {};
   }
 
   get cachingFont() {
@@ -44,7 +45,29 @@ export class SceneModel {
     while (Object.keys(glyphPromises).length) {
       await Promise.race(Object.values(glyphPromises));
       console.log(glyphs);
+      this._buildScene(glyphs);
       yield;
+    }
+  }
+
+  _buildScene(glyphs) {
+    let y = 0;
+    this.positionedLines = [];
+    for (const glyphLine of this.glyphLines) {
+      const positionedLine = {"glyphs": []};
+      let x = 0;
+      for (const glyphInfo of glyphLine) {
+        const glyphInstance = glyphs[glyphInfo.glyphName];
+        if (glyphInstance) {
+          positionedLine.glyphs.push({"x": x, "y": y, "glyph": glyphInstance})
+          x += glyphInstance.hAdvance;
+        }
+      }
+      if (positionedLine.glyphs.length) {
+        const boundses = positionedLine.glyphs.map(glyph => offsetRect(glyph.glyph.controlBounds, glyph.x, glyph.y));
+        positionedLine.bounds = unionRect(...boundses);
+        this.positionedLines.push(positionedLine);
+      }
     }
   }
 
