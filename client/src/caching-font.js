@@ -21,7 +21,7 @@ export class CachingFont {
         async glyphName => await this.font.getGlyph(glyphName),
         this.location,
       )
-      glyphInstance = new CachingGlyphInstance(instance, componentPaths);
+      glyphInstance = new CachingGlyphInstance(glyphName, instance, componentPaths);
     }
     return glyphInstance;
   }
@@ -31,7 +31,8 @@ export class CachingFont {
 
 class CachingGlyphInstance {
 
-  constructor (glyphInstance, componentPaths) {
+  constructor (glyphName, glyphInstance, componentPaths) {
+    this.name = glyphName;
     this.glyphInstance = glyphInstance;
     this.componentPaths = componentPaths;
     this.hAdvance = glyphInstance.hAdvance;
