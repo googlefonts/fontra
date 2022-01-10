@@ -22,6 +22,7 @@ export class CachingFont {
         this.location,
       )
       glyphInstance = new CachingGlyphInstance(glyphName, instance, componentPaths);
+      this.cachedGlyphs[glyphName] = glyphInstance;
     }
     return glyphInstance;
   }
