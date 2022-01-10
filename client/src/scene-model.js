@@ -1,3 +1,4 @@
+import { CachingFont } from "./caching-font.js"
 import { centeredRect, sectRect } from "./rectangle.js";
 import { normalizeLocation } from "./var-model.js";
 
@@ -8,6 +9,13 @@ export class SceneModel {
     this.font = font;
     this.isPointInPath = isPointInPath;
     this.userVarLocation = {};
+  }
+
+  get cachingFont() {
+    if (this._cachingFont === undefined) {
+      this._cachingFont = new CachingFont(this.font, this.varLocation);
+    }
+    return this._cachingFont;
   }
 
   canSelect() {
@@ -28,10 +36,7 @@ export class SceneModel {
         }
         glyphPromises[glyph.glyphName] = (async (glyphName) => {
           console.log("loading", glyphName);
-          glyphs[glyphName] = await this.font.getGlyph(glyphName);
-          // XXXX Need caching font wrapper at location?
-          // glyphInstances[glyphName] = ...
-          // glyphPaths[glyphName] = ...
+          glyphs[glyphName] = await this.cachingFont.getGlyphInstance(glyphName);
           delete glyphPromises[glyphName];
         })(glyph.glyphName);
       }
@@ -69,6 +74,9 @@ export class SceneModel {
         varLocation[realAxisName] = value
       });
     }
+    this.varLocation = varLocation;
+    delete this._cachingFont;
+
     this.currentSourceIndex = findSourceIndexFromLocation(this.glyph, varLocation);
     await this._instantiateGlyph(varLocation);
   }
