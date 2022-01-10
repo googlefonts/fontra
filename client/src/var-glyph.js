@@ -107,27 +107,8 @@ class VarSource {
   }
 
   async getComponentPathsFlattened(getGlyphFunc, parentLocation, transform = null) {
-    const flatten = item => {
-      const paths = [];
-      if (item.path !== undefined) {
-        paths.push(item.path);
-      }
-      if (item.children !== undefined) {
-        for (const child of item.children) {
-          const childPath = flatten(child);
-          if (!!childPath) {
-            paths.push(childPath);
-          }
-        }
-      }
-      if (paths.length) {
-        return paths.reduce((p1, p2) => p1.concat(p2));
-      }
-      return null;
-    }
-
     const toplevel = await this.getComponentPaths(getGlyphFunc, parentLocation, transform);
-    const paths = toplevel.map(flatten);
+    const paths = toplevel.map(flattenComponentPaths);
     return paths;
   }
 
@@ -164,4 +145,24 @@ function makeAffineTransform(transform) {
   t = t.scale(transform.scalex, transform.scaley);
   t = t.translate(-transform.tcenterx, -transform.tcentery);
   return t;
+}
+
+
+function flattenComponentPaths(item) {
+  const paths = [];
+  if (item.path !== undefined) {
+    paths.push(item.path);
+  }
+  if (item.children !== undefined) {
+    for (const child of item.children) {
+      const childPath = flattenComponentPaths(child);
+      if (!!childPath) {
+        paths.push(childPath);
+      }
+    }
+  }
+  if (paths.length) {
+    return paths.reduce((p1, p2) => p1.concat(p2));
+  }
+  return null;
 }
