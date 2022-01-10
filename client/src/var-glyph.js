@@ -87,7 +87,9 @@ class VarSource {
         if (error.name !== "VariationError") {
           throw error;
         }
-        console.log(`Interpolation error while instantiating component ${compo.name}`);
+        const errorMessage = `Interpolation error while instantiating component ${compo.name}`;
+        console.log(errorMessage);
+        paths.push({"error": errorMessage});
         continue;
       }
       let t = makeAffineTransform(compo.transform);
@@ -169,5 +171,5 @@ function joinPaths(paths) {
   if (paths.length) {
     return paths.reduce((p1, p2) => p1.concat(p2));
   }
-  return null;
+  return new VarPath();
 }
