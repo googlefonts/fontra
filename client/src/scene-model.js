@@ -44,7 +44,6 @@ export class SceneModel {
     }
     while (Object.keys(glyphPromises).length) {
       await Promise.race(Object.values(glyphPromises));
-      console.log(glyphs);
       this._buildScene(glyphs);
       yield;
     }
@@ -63,12 +62,14 @@ export class SceneModel {
           x += glyphInstance.hAdvance;
         }
       }
+      y -= 1000;  // TODO
       if (positionedLine.glyphs.length) {
         const boundses = positionedLine.glyphs.map(glyph => offsetRect(glyph.glyph.controlBounds, glyph.x, glyph.y));
         positionedLine.bounds = unionRect(...boundses);
         this.positionedLines.push(positionedLine);
       }
     }
+    console.log(this.positionedLines);
   }
 
   async setSelectedGlyph(glyphName) {
