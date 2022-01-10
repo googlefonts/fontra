@@ -50,3 +50,33 @@ export function sectRect(rect1, rect2) {
     }
     return {"xMin": xMin, "yMin": yMin, "xMax": xMax, "yMax": yMax};
 }
+
+
+export function unionRect(...rectangles) {
+  if (!rectangles.length) {
+    return undefined;
+  }
+  const firstRect = rectangles[0];
+  let xMin = firstRect.xMin;
+  let yMin = firstRect.yMin;
+  let xMax = firstRect.xMax;
+  let yMax = firstRect.yMax;
+  for (let i = 1; i < rectangles.length; i++) {
+    const rect = rectangles[i];
+    xMin = Math.min(xMin, rect.xMin);
+    yMin = Math.min(yMin, rect.yMin);
+    xMax = Math.max(xMax, rect.xMax);
+    yMax = Math.max(yMax, rect.yMax);
+  }
+  return {"xMin": xMin, "yMin": yMin, "xMax": xMax, "yMax": yMax};
+}
+
+
+export function offsetRect(rect, x, y) {
+  return {
+    "xMin": rect.xMin + x,
+    "yMin": rect.yMin + y,
+    "xMax": rect.xMax + x,
+    "yMax": rect.yMax + y,
+  };
+}
