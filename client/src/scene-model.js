@@ -92,11 +92,10 @@ export class SceneModel {
     let compoPaths2d = [];
     this.componentsBounds = [];
     if (!!this.instance.components) {
-      let compoPaths = await this.instance.getComponentPathsFlattened(
+      const compoPaths = await this.instance.getComponentPathsFlattened(
         async glyphName => await this.font.getGlyph(glyphName),
         varLocation,
       );
-      compoPaths = compoPaths.filter(path => !!path)
       compoPaths2d = compoPaths.map(path => {
         const path2d = new Path2D();
         path.drawToPath2d(path2d);
