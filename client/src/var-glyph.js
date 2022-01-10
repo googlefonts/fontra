@@ -74,7 +74,7 @@ class VarSource {
     return source
   }
 
-  async getComponentPathsFlattened(getGlyphFunc, parentLocation, transform = null) {
+  async getComponentPaths(getGlyphFunc, parentLocation, transform = null) {
     const paths = [];
 
     for (const compo of this.components) {
@@ -94,17 +94,34 @@ class VarSource {
       if (transform !== null) {
         t = transform.transform(t);
       }
-      const componentPaths = [];
+      const componentPaths = {};
       if (inst.path.numPoints) {
-        componentPaths.push(inst.path.transformed(t));
+        componentPaths["path"] = inst.path.transformed(t);
       }
       if (inst.components !== undefined) {
-        componentPaths.push(...await inst.getComponentPathsFlattened(getGlyphFunc, compoLocation, t));
+        componentPaths["children"] = await inst.getComponentPaths(getGlyphFunc, compoLocation, t);
       }
-      if (componentPaths.length > 0) {
-        paths.push(componentPaths.reduce((p1, p2) => p1.concat(p2)));
-      }
+      paths.push(componentPaths);
     }
+    return paths;
+  }
+
+  async getComponentPathsFlattened(getGlyphFunc, parentLocation, transform = null) {
+    const flatten = item => {
+      const paths = [];
+      if (item.path !== undefined) {
+        paths.push(item.path);
+      }
+      if (item.children !== undefined) {
+        for (const child of item.children) {
+          paths.push(flatten(child));
+        }
+      }
+      return paths.reduce((p1, p2) => p1.concat(p2));
+    }
+
+    const toplevel = await this.getComponentPaths(getGlyphFunc, parentLocation, transform);
+    const paths = toplevel.map(flatten);
     return paths;
   }
 
