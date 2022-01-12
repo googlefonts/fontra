@@ -261,7 +261,7 @@ export class SceneModel {
       selection.add(`point/${hit.pointIndex}`);
     }
     for (let i = 0; i < this.componentsBounds.length; i++) {
-      if (sectRect(selRect, this.componentsBounds[i]) !== null) {
+      if (sectRect(selRect, this.componentsBounds[i])) {
         selection.add(`component/${i}`);
       }
     }
