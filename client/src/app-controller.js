@@ -59,22 +59,6 @@ const drawingParametersDark = {
 }
 
 
-function drawMultiGlyphs(model, controller) {
-  if (!model.positionedLines) {
-    return;
-  }
-  const context = controller.context;
-  context.fillStyle = controller.drawingParameters.glyphFillColor;
-  for (const glyphLine of model.positionedLines) {
-    for (const glyph of glyphLine.glyphs) {
-      context.save();
-      context.translate(glyph.x, glyph.y);
-      context.fill(glyph.glyph.path2d);
-      context.restore();
-    }
-  }
-}
-
 export class AppController {
 
   constructor(font) {
@@ -87,7 +71,7 @@ export class AppController {
 
     const sceneModel = new SceneModel(font, isPointInPath);
     const drawFuncs = [
-      drawMultiGlyphs,
+      sceneDraw.drawMultiGlyphsLayer,
       sceneDraw.drawComponentsLayer,
       sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,

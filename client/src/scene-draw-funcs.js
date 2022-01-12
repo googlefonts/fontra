@@ -1,3 +1,20 @@
+export function drawMultiGlyphsLayer(model, controller) {
+  if (!model.positionedLines) {
+    return;
+  }
+  const context = controller.context;
+  context.fillStyle = controller.drawingParameters.glyphFillColor;
+  for (const glyphLine of model.positionedLines) {
+    for (const glyph of glyphLine.glyphs) {
+      context.save();
+      context.translate(glyph.x, glyph.y);
+      context.fill(glyph.glyph.path2d);
+      context.restore();
+    }
+  }
+}
+
+
 export function drawComponentsLayer(model, controller) {
   const context = controller.context;
 
