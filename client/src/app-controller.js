@@ -140,6 +140,8 @@ export class AppController {
   initSliders() {
     this.sliders = new Sliders("axis-sliders", []);
     this.sliders.addEventListener("slidersChanged", async event => {
+      // Throttle events with a timer: if the scheduled task has
+      // not yet run, cancel the timer and set a new one.
       if (this._axisSlidersTimeoutID !== undefined) {
         clearTimeout(this._axisSlidersTimeoutID);
       }
