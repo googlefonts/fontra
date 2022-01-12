@@ -139,18 +139,10 @@ export class AppController {
 
   initSliders() {
     this.sliders = new Sliders("axis-sliders", []);
-    this.sliders.addEventListener("slidersChanged", async event => {
-      // Throttle events with a timer: if the scheduled task has
-      // not yet run, cancel the timer and set a new one.
-      if (this._axisSlidersTimeoutID !== undefined) {
-        clearTimeout(this._axisSlidersTimeoutID);
-      }
-      this._axisSlidersTimeoutID = setTimeout(async () => {
-        delete this._axisSlidersTimeoutID;
-        await this.sceneController.setAxisValues(event.detail.values);
-        this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
-      });
-    });
+    this.sliders.addEventListener("slidersChanged", throttleCalls(async event => {
+      await this.sceneController.setAxisValues(event.detail.values);
+      this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
+    }));
   }
 
   initSourcesList() {
@@ -378,4 +370,22 @@ function splitLines(text) {
     lines.push(line);
   }
   return lines;
+}
+
+
+function throttleCalls(func) {
+  // Throttle calls to func with a timer: if the scheduled task has
+  // not yet run, cancel it and let the new one override it.
+  // This is useful for calls triggered by events that can supercede
+  // previous calls; it avoids scheduling many redundant tasks.
+  let timeoutID = null;
+  return (...args) => {
+    if (timeoutID !== null) {
+      clearTimeout(timeoutID);
+    }
+    timeoutID = setTimeout(() => {
+      timeoutID = null;
+      func(...args);
+    }, 0);
+  };
 }
