@@ -140,8 +140,14 @@ export class AppController {
   initSliders() {
     this.sliders = new Sliders("axis-sliders", []);
     this.sliders.addEventListener("slidersChanged", async event => {
-      await this.sceneController.setAxisValues(event.detail.values);
-      this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
+      if (this._axisSlidersTimeoutID !== undefined) {
+        clearTimeout(this._axisSlidersTimeoutID);
+      }
+      this._axisSlidersTimeoutID = setTimeout(async () => {
+        delete this._axisSlidersTimeoutID;
+        await this.sceneController.setAxisValues(event.detail.values);
+        this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
+      });
     });
   }
 
