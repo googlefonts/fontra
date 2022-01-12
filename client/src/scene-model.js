@@ -1,5 +1,5 @@
 import { CachingFont } from "./caching-font.js"
-import { centeredRect, offsetRect, sectRect, unionRect } from "./rectangle.js";
+import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { normalizeLocation } from "./var-model.js";
 
 
@@ -10,6 +10,8 @@ export class SceneModel {
     this.isPointInPath = isPointInPath;
     this.userVarLocation = {};
     this.varLocation = {};
+    this.glyphLines = [];
+    this.positionedLines = [];
   }
 
   get cachingFont() {
@@ -34,9 +36,6 @@ export class SceneModel {
   }
 
   async *updateSceneIncrementally(incrementally = true) {
-    if (!this.glyphLines) {
-      return;
-    }
     const glyphPromises = {};
     const glyphs = {};
     for (const line of this.glyphLines) {
@@ -217,18 +216,33 @@ export class SceneModel {
   }
 
   selectionAtPoint(point, size) {
-    if (this.instance === undefined) {
-      return new Set();
-    }
     const selRect = centeredRect(point.x, point.y, size);
 
-    for (const hit of this.instance.path.iterPointsInRect(selRect)) {
-      return new Set([`point/${hit.pointIndex}`])
+    if (this.instance !== undefined) {
+      for (const hit of this.instance.path.iterPointsInRect(selRect)) {
+        return new Set([`point/${hit.pointIndex}`])
+      }
+      for (let i = this.componentPaths.length - 1; i >= 0; i--) {
+        const path = this.componentPaths[i];
+        if (this.isPointInPath(path, point.x, point.y)) {
+          return new Set([`component/${i}`])
+        }
+      }
     }
-    for (let i = this.componentPaths.length - 1; i >= 0; i--) {
-      const path = this.componentPaths[i];
-      if (this.isPointInPath(path, point.x, point.y)) {
-        return new Set([`component/${i}`])
+
+    for (let i = this.positionedLines.length - 1; i >= 0; i--) {
+      const positionedLine = this.positionedLines[i];
+      if (!pointInRect(point, positionedLine.bounds)) {
+        continue;
+      }
+      for (let j = positionedLine.glyphs.length - 1; j >= 0; j--) {
+        const positionedGlyph = positionedLine.glyphs[j];
+        if (!pointInRect(point, positionedGlyph.bounds)) {
+          continue;
+        }
+        if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
+          return new Set([`glyph/${i}/${j}`])
+        }
       }
     }
     return new Set();
