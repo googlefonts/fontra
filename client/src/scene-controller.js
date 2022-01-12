@@ -170,6 +170,9 @@ export class SceneController {
 
   async setAxisValues(values) {
     await this.sceneModel.setAxisValues(values);
+    for await (const _ of this.sceneModel.updateScene()) {
+      ;
+    }
     this.canvasController.setNeedsUpdate();
   }
 
