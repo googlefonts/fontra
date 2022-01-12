@@ -84,7 +84,7 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
       context.shadowBlur = 8 * window.devicePixelRatio;  // shadowBlur is in device space
       context.fillStyle = parms.nodeColor;
       fillNode(context, point.x, point.y, controller.drawingParameters.nodeSize, point.type, point.smooth);
-    } else {
+    } else if (tp === "component") {
       context.save();
       context.shadowColor = "#888";
       context.shadowBlur = 18 * window.devicePixelRatio;  // shadowBlur is in device space
