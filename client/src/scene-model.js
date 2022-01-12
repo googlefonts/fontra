@@ -28,6 +28,9 @@ export class SceneModel {
   }
 
   async *updateScene() {
+    if (!this.glyphLines) {
+      return;
+    }
     const glyphPromises = {};
     const glyphs = {};
     for (const line of this.glyphLines) {
