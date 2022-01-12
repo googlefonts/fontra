@@ -207,20 +207,17 @@ export class AppController {
   initMiniConsole() {
     this.miniConsole = document.querySelector("#mini-console");
     this._console_log = console.log.bind(console);
+    const clearMiniConsole = throttleCalls(() => {
+      this.miniConsole.innerText = "";
+      this.miniConsole.style.display = "none";
+    }, 5000);
     console.log = (...args) => {
       this._console_log(...args);
       this.miniConsole.innerText = args.map(
         item => typeof item == "string" ? item : JSON.stringify(item)
       ).join(" ");
       this.miniConsole.style.display = "inherit";
-      if (this._miniConsoleClearTimeoutID) {
-        clearTimeout(this._miniConsoleClearTimeoutID);
-      }
-      this._miniConsoleClearTimeoutID = setTimeout(() => {
-        this.miniConsole.innerText = "";
-        this.miniConsole.style.display = "none";
-        delete this._miniConsoleClearTimeoutID;
-      }, 5000);
+      clearMiniConsole();
     }
   }
 
@@ -373,7 +370,7 @@ function splitLines(text) {
 }
 
 
-function throttleCalls(func) {
+function throttleCalls(func, timeout = 0) {
   // Throttle calls to func with a timer: if the scheduled task has
   // not yet run, cancel it and let the new one override it.
   // This is useful for calls triggered by events that can supercede
@@ -386,6 +383,6 @@ function throttleCalls(func) {
     timeoutID = setTimeout(() => {
       timeoutID = null;
       func(...args);
-    }, 0);
+    }, timeout);
   };
 }
