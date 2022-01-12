@@ -75,7 +75,7 @@ export function drawHoverLayer(model, controller) {
 
 
 function _drawSelectionLayer(displayKey, selection, model, controller) {
-  if (!selection || !model.path) {
+  if (!selection) {
     return;
   }
   const selectionStrings = Array.from(selection);
@@ -93,6 +93,7 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
     const items = selItem.split("/")
     const tp = items[0];
     const index = items[1];
+    const glyphIndex = items[2];
     if (tp === "point") {
       const point = model.path.getPoint(index);
       // context.lineWidth = lineWidth;
@@ -111,6 +112,21 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
       // context.shadowOffsetY = 2;
       context.fillStyle = parms.componentFillColor;;
       context.fill(model.componentPaths[index]);
+      context.restore();
+    } else if (tp === "glyph") {
+      const positionedGlyph = model.positionedLines[index].glyphs[glyphIndex];
+      context.save();
+      context.lineWidth = 6 * controller.onePixelUnit;
+      context.strokeStyle = color;
+      context.translate(positionedGlyph.x, positionedGlyph.y);
+      context.stroke(positionedGlyph.glyph.path2d);
+      context.lineWidth = 3 * controller.onePixelUnit;
+      context.strokeStyle = "black";
+      context.globalCompositeOperation = "destination-out"
+      context.stroke(positionedGlyph.glyph.path2d);
+      context.globalCompositeOperation = "source-over"
+      context.fillStyle = controller.drawingParameters.glyphFillColor;
+      context.fill(positionedGlyph.glyph.path2d);
       context.restore();
     }
   }
