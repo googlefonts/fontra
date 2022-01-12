@@ -73,7 +73,9 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
   context.globalCompositeOperation = "source-over";
   context.lineJoin = "round";
   for (const selItem of selectionStrings) {
-    const [tp, index] = selItem.split("/");
+    const items = selItem.split("/")
+    const tp = items[0];
+    const index = items[1];
     if (tp === "point") {
       const point = model.path.getPoint(index);
       // context.lineWidth = lineWidth;
