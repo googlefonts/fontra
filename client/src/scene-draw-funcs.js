@@ -116,7 +116,7 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
     } else if (tp === "glyph") {
       const positionedGlyph = model.positionedLines[index].glyphs[glyphIndex];
       context.save();
-      context.lineWidth = 6 * controller.onePixelUnit;
+      context.lineWidth = 10 * controller.onePixelUnit;
       context.strokeStyle = "#AAA";
       context.translate(positionedGlyph.x, positionedGlyph.y);
       context.stroke(positionedGlyph.glyph.path2d);
