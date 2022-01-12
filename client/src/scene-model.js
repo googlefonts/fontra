@@ -28,7 +28,7 @@ export class SceneModel {
   }
 
   async updateScene() {
-    for await (const _ of this.updateSceneIncrementally()) {
+    for await (const _ of this.updateSceneIncrementally(false)) {
       ;
     }
   }
@@ -49,9 +49,9 @@ export class SceneModel {
         })(glyph.glyphName);
       }
     }
+    let promises = Object.values(glyphPromises);
     if (incrementally) {
       do {
-        const promises = Object.values(glyphPromises);
         if (promises.length) {
           await Promise.race(promises);
           for (const glyphName in glyphs) {
@@ -61,9 +61,9 @@ export class SceneModel {
         // console.log("build scene", glyphs);
         this._buildScene(glyphs);
         yield;
-      } while (Object.keys(glyphPromises).length);
+        promises = Object.values(glyphPromises);
+      } while (promises.length);
     } else {
-      const promises = Object.values(glyphPromises);
       if (promises.length) {
         await Promise.all(promises);
       }
