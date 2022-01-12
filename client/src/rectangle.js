@@ -46,7 +46,7 @@ export function sectRect(rect1, rect2) {
     const xMax = Math.min(rect1.xMax, rect2.xMax);
     const yMax = Math.min(rect1.yMax, rect2.yMax);
     if (xMin >= xMax || yMin >= yMax) {
-      return null;
+      return undefined;
     }
     return {"xMin": xMin, "yMin": yMin, "xMax": xMax, "yMax": yMax};
 }
