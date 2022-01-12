@@ -147,7 +147,7 @@ export class SceneController {
 
   async setGlyphLines(glyphLines) {
     this.sceneModel.setGlyphLines(glyphLines);
-    for await (const _ of this.sceneModel.updateScene()) {
+    for await (const _ of this.sceneModel.updateSceneIncrementally()) {
       this.canvasController.setNeedsUpdate();
     }
   }
@@ -170,9 +170,7 @@ export class SceneController {
 
   async setAxisValues(values) {
     await this.sceneModel.setAxisValues(values);
-    for await (const _ of this.sceneModel.updateScene()) {
-      ;
-    }
+    await this.sceneModel.updateScene();
     this.canvasController.setNeedsUpdate();
   }
 

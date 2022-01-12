@@ -27,7 +27,13 @@ export class SceneModel {
     this.glyphLines = glyphLines;
   }
 
-  async *updateScene() {
+  async updateScene() {
+    for await (const _ of this.updateSceneIncrementally()) {
+      ;
+    }
+  }
+
+  async *updateSceneIncrementally(incrementally = true) {
     if (!this.glyphLines) {
       return;
     }
@@ -43,18 +49,27 @@ export class SceneModel {
         })(glyph.glyphName);
       }
     }
-    do {
+    if (incrementally) {
+      do {
+        const promises = Object.values(glyphPromises);
+        if (promises.length) {
+          await Promise.race(promises);
+          for (const glyphName in glyphs) {
+            delete glyphPromises[glyphName];
+          }
+        }
+        // console.log("build scene", glyphs);
+        this._buildScene(glyphs);
+        yield;
+      } while (Object.keys(glyphPromises).length);
+    } else {
       const promises = Object.values(glyphPromises);
       if (promises.length) {
-        await Promise.race(promises);
-        for (const glyphName in glyphs) {
-          delete glyphPromises[glyphName];
-        }
+        await Promise.all(promises);
       }
-      // console.log("build scene", glyphs);
       this._buildScene(glyphs);
       yield;
-    } while (Object.keys(glyphPromises).length);
+    }
   }
 
   _buildScene(glyphs) {
