@@ -139,7 +139,7 @@ export class AppController {
 
   initSliders() {
     this.sliders = new Sliders("axis-sliders", []);
-    this.sliders.addEventListener("slidersChanged", throttleCalls(async event => {
+    this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
       await this.sceneController.setAxisValues(event.detail.values);
       this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
     }));
@@ -207,7 +207,7 @@ export class AppController {
   initMiniConsole() {
     this.miniConsole = document.querySelector("#mini-console");
     this._console_log = console.log.bind(console);
-    const clearMiniConsole = throttleCalls(() => {
+    const clearMiniConsole = scheduleCalls(() => {
       this.miniConsole.innerText = "";
       this.miniConsole.style.display = "none";
     }, 5000);
@@ -370,10 +370,10 @@ function splitLines(text) {
 }
 
 
-function throttleCalls(func, timeout = 0) {
-  // Throttle calls to func with a timer: if the scheduled task has
-  // not yet run, cancel it and let the new one override it.
-  // This is useful for calls triggered by events that can supercede
+function scheduleCalls(func, timeout = 0) {
+  // Schedule calls to func with a timer. If a previously scheduled call
+  // has not yet run, cancel it and let the new one override it.
+  // This is useful for calls triggered by events that can supersede
   // previous calls; it avoids scheduling many redundant tasks.
   let timeoutID = null;
   return (...args) => {
