@@ -135,6 +135,7 @@ export class CanvasController {
 
     this.magnification = this.magnification * zoomFactor;
     this.magnification = Math.min(Math.max(this.magnification, MIN_MAGNIFICATION), MAX_MAGNIFICATION);
+    zoomFactor = this.magnification / prevMagnification;
 
     // adjust origin
     this.origin.x += (1 - zoomFactor) * center.x * prevMagnification;
