@@ -29,6 +29,8 @@ export class SceneModel {
 
   setGlyphLines(glyphLines) {
     this.glyphLines = glyphLines;
+    this.selection = new Set();
+    this.hoverSelection = new Set();
   }
 
   async updateScene() {
