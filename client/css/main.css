@@ -208,6 +208,10 @@ html, body {
     content: url("../images/sliders-dark.svg");
   }
 
+  #text-entry-img {
+    content: url("../images/textT-dark.svg");
+  }
+
   #mini-console {
     color: white;
   background-color: #444;
