@@ -373,6 +373,7 @@ function splitLines(text) {
 function scheduleCalls(func, timeout = 0) {
   // Schedule calls to func with a timer. If a previously scheduled call
   // has not yet run, cancel it and let the new one override it.
+  // Returns a wrapped function that should be called instead of func.
   // This is useful for calls triggered by events that can supersede
   // previous calls; it avoids scheduling many redundant tasks.
   let timeoutID = null;
