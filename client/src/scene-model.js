@@ -35,7 +35,7 @@ export class SceneModel {
     const glyphs = {};
     for (const line of this.glyphLines) {
       for (const glyph of line) {
-        if (glyph.glyphName === undefined) {
+        if (glyph.glyphName === undefined || glyphPromises[glyph.glyphName] !== undefined) {
           continue;
         }
         glyphPromises[glyph.glyphName] = (async (glyphName) => {
