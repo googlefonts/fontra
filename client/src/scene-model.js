@@ -12,6 +12,8 @@ export class SceneModel {
     this.varLocation = {};
     this.glyphLines = [];
     this.positionedLines = [];
+    this.selection = new Set();
+    this.hoverSelection = new Set();
   }
 
   get cachingFont() {
@@ -22,7 +24,7 @@ export class SceneModel {
   }
 
   canSelect() {
-    return !!this.instance;
+    return !!this.instance || !!this.glyphLines.length;
   }
 
   setGlyphLines(glyphLines) {
@@ -250,6 +252,9 @@ export class SceneModel {
 
   selectionAtRect(selRect) {
     const selection = new Set();
+    if (!this.instance) {
+      return selection;
+    }
     for (const hit of this.instance.path.iterPointsInRect(selRect)) {
       selection.add(`point/${hit.pointIndex}`);
     }
