@@ -1,6 +1,7 @@
 import { MouseTracker } from "./mouse-tracker.js";
 import { centeredRect, normalizeRect } from "./rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
+import { objectsEqual } from "./utils.js";
 
 
 export class SceneController {
@@ -138,9 +139,9 @@ export class SceneController {
     return this.sceneModel.hoveredGlyph;
   }
 
-  set hoveredGlyph(glyph) {
-    if (this.sceneModel.hoveredGlyph !== glyph) {
-      this.sceneModel.hoveredGlyph = glyph;
+  set hoveredGlyph(glyphInfo) {
+    if (!objectsEqual(this.sceneModel.hoveredGlyph, glyphInfo)) {
+      this.sceneModel.hoveredGlyph = glyphInfo;
       this.canvasController.setNeedsUpdate();
     }
   }
@@ -149,9 +150,9 @@ export class SceneController {
     return this.sceneModel.selectedGlyph;
   }
 
-  set selectedGlyph(glyph) {
-    if (this.sceneModel.selectedGlyph !== glyph) {
-      this.sceneModel.selectedGlyph = glyph;
+  set selectedGlyph(glyphInfo) {
+    if (!objectsEqual(this.sceneModel.selectedGlyph, glyphInfo)) {
+      this.sceneModel.selectedGlyph = glyphInfo;
       this.canvasController.setNeedsUpdate();
     }
   }

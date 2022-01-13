@@ -266,7 +266,7 @@ export class SceneModel {
           continue;
         }
         if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
-          return positionedGlyph;
+          return {"lineIndex": i, "glyphIndex": j};
         }
       }
     }

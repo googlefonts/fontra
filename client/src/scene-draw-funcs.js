@@ -1,3 +1,6 @@
+import { objectsEqual } from "./utils.js";
+
+
 export function drawMultiGlyphsLayer(model, controller) {
   if (!model.positionedLines) {
     return;
@@ -19,14 +22,15 @@ export function drawHoverGlyphLayer(model, controller) {
   if (model.hoveredGlyph) {
     _drawHoverGlyphLayer(model.hoveredGlyph, model, controller);
   }
-  if (model.selectedGlyph && model.selectedGlyph !== model.hoveredGlyph) {
+  if (model.selectedGlyph && !objectsEqual(model.selectedGlyph, model.hoveredGlyph)) {
     _drawHoverGlyphLayer(model.selectedGlyph, model, controller);
   }
 }
 
 
-function _drawHoverGlyphLayer(positionedGlyph, model, controller) {
+function _drawHoverGlyphLayer(glyphInfo, model, controller) {
   const context = controller.context;
+  const positionedGlyph = model.positionedLines[glyphInfo.lineIndex].glyphs[glyphInfo.glyphIndex];
   context.save();
   context.lineJoin = "round";
   context.lineWidth = 10 * controller.onePixelUnit;
