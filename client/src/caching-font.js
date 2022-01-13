@@ -65,4 +65,11 @@ class CachingGlyphInstance {
     return this._controlBounds;
   }
 
+  get convexHull() {
+    if (this._convexHull === undefined) {
+      this._convexHull = this.path.getConvexHull();
+    }
+    return this._convexHull;
+  }
+
 }
