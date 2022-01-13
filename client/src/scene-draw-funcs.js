@@ -16,11 +16,17 @@ export function drawMultiGlyphsLayer(model, controller) {
 
 
 export function drawHoverGlyphLayer(model, controller) {
-  if (!model.hoveredGlyph) {
-    return;
+  if (model.hoveredGlyph) {
+    _drawHoverGlyphLayer(model.hoveredGlyph, model, controller);
   }
+  if (model.selectedGlyph && model.selectedGlyph !== model.hoveredGlyph) {
+    _drawHoverGlyphLayer(model.selectedGlyph, model, controller);
+  }
+}
+
+
+function _drawHoverGlyphLayer(positionedGlyph, model, controller) {
   const context = controller.context;
-  const positionedGlyph = model.hoveredGlyph;
   context.lineJoin = "round";
   context.lineWidth = 10 * controller.onePixelUnit;
   context.strokeStyle = "#AAA";
