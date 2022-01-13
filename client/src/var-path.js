@@ -1,6 +1,7 @@
 import VarArray from "./var-array.js"
 import { VariationError } from "./errors.js"
 import { pointInRect } from "./rectangle.js";
+import { convexHull } from "./utils.js";
 
 
 export default class VarPath {
@@ -53,6 +54,17 @@ export default class VarPath {
       yMax = Math.max(y, yMax);
     }
     return {"xMin": xMin, "yMin": yMin, "xMax": xMax, "yMax": yMax};
+  }
+
+  getConvexHull() {
+    if (!this.coordinates.length) {
+      return undefined;
+    }
+    const points = [];
+    for (let i = 0; i < this.coordinates.length; i += 2) {
+      points.push({"x": this.coordinates[i], "y": this.coordinates[i + 1]});
+    }
+    return convexHull(points);
   }
 
   getContourIndex(pointIndex) {
