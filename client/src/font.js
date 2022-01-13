@@ -12,6 +12,16 @@ export class Font {
   async setupCmap() {
     this.reversedCmap = await this.fontDataEngine.getReversedCmap();
     this.cmap = makeCmapFromReversedCmap(this.reversedCmap);
+    this._cmapDoneLoading?.call();
+  }
+
+  async cmapReady() {
+    if (this.reversedCmap) {
+      return;
+    }
+    await new Promise((resolve, reject) => {
+      this._cmapDoneLoading = resolve;
+    });
   }
 
   async getGlyph(glyphName) {

@@ -164,6 +164,7 @@ export class AppController {
     textEntryElement.oninput = async event => {
       const text = event.target.innerText;
       const glyphLines = [];
+      await this.font.cmapReady();
       for (const line of splitLines(text)) {
         glyphLines.push(glyphNamesFromText(line, this.font.cmap, this.font.reversedCmap));
       }
