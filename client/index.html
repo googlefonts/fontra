@@ -25,7 +25,7 @@
                   class="glyphs-search-input"
                   id="glyphs-search-input"
                   placeholder="Search glyphs"
-                  oninput="glyphSeachFieldChanged(value)">
+                  oninput="glyphSearchFieldChanged(value)">
               </div>
               <div id="glyphs-list" tabindex="1">
                 <!-- contents will be filled dynamically -->
@@ -75,7 +75,7 @@
         const font = new Font(remoteFontEngine);
         const appController = new AppController(font);
         await appController.start();
-        window.glyphSeachFieldChanged = (value) => appController.glyphSeachFieldChanged(value);
+        window.glyphSearchFieldChanged = (value) => appController.glyphSearchFieldChanged(value);
       }
 
       startApp();

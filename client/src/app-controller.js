@@ -219,7 +219,7 @@ export class AppController {
     return this.isThemeDark ? drawingParametersDark : drawingParametersLight;
   }
 
-  async glyphSeachFieldChanged(value) {
+  async glyphSearchFieldChanged(value) {
     const filteredGlyphItems = this.glyphsListItems.filter(item => glyphFilterFunc(item, value));
     const selectedItem = this.glyphNamesList.getSelectedItem();
     this.glyphNamesList.setItems(filteredGlyphItems);
