@@ -3,7 +3,7 @@ export function objectsEqual(obj1, obj2) {
 }
 
 
-export function pointInsideConvexPolygon(polygon, x, y) {
+export function pointInConvexPolygon(x, y, polygon) {
   // Adapted from a comment on
   // https://stackoverflow.com/questions/1119627/how-to-test-if-a-point-is-inside-of-a-convex-polygon-in-2d-integer-coordinates
 

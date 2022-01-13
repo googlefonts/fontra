@@ -149,7 +149,7 @@ export default class VarPath {
   *iterPointsInRect(rect) {
     let pointIndex = 0;
     for (const point of this.iterPoints()) {
-      if (pointInRect(point, rect)) {
+      if (pointInRect(point.x, point.y, rect)) {
         yield {...point, pointIndex: pointIndex};
       }
       pointIndex++;

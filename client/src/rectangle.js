@@ -1,9 +1,9 @@
-export function pointInRect(point, rect) {
+export function pointInRect(x, y, rect) {
   return (
-    point.x >= rect.xMin &&
-    point.x <= rect.xMax &&
-    point.y >= rect.yMin &&
-    point.y <= rect.yMax
+    x >= rect.xMin &&
+    x <= rect.xMax &&
+    y >= rect.yMin &&
+    y <= rect.yMax
   );
 }
 

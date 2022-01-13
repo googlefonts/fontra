@@ -1,6 +1,6 @@
 import { CachingFont } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
-import { pointInsideConvexPolygon } from "./utils.js";
+import { pointInConvexPolygon } from "./utils.js";
 import { normalizeLocation } from "./var-model.js";
 
 
@@ -258,15 +258,19 @@ export class SceneModel {
   glyphAtPoint(point) {
     for (let i = this.positionedLines.length - 1; i >= 0; i--) {
       const positionedLine = this.positionedLines[i];
-      if (!pointInRect(point, positionedLine.bounds)) {
+      if (!pointInRect(point.x, point.y, positionedLine.bounds)) {
         continue;
       }
       for (let j = positionedLine.glyphs.length - 1; j >= 0; j--) {
         const positionedGlyph = positionedLine.glyphs[j];
-        if (!pointInRect(point, positionedGlyph.bounds)) {
+        if (!pointInRect(point.x, point.y, positionedGlyph.bounds)) {
           continue;
         }
-        if (pointInsideConvexPolygon(positionedGlyph.glyph.convexHull, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
+        if (pointInConvexPolygon(
+          point.x - positionedGlyph.x,
+          point.y - positionedGlyph.y,
+          positionedGlyph.glyph.convexHull,
+        )) {
           return {"lineIndex": i, "glyphIndex": j};
         }
         // if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
