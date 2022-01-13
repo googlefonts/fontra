@@ -97,11 +97,7 @@ export class SceneController {
     if (!lenientIsEqualSet(selection, this.hoverSelection)) {
       this.hoverSelection = selection;
     }
-    const hoveredGlyph = this.sceneModel.glyphAtPoint(point);
-    if (hoveredGlyph !== this.sceneModel.hoveredGlyph) {
-      this.sceneModel.hoveredGlyph = hoveredGlyph;
-      this.canvasController.setNeedsUpdate();
-    }
+    this.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
   }
 
   localPoint(event) {
@@ -135,6 +131,28 @@ export class SceneController {
   set hoverSelection(selection) {
     this.sceneModel.hoverSelection = selection;
     this.canvasController.setNeedsUpdate();
+  }
+
+  get hoveredGlyph() {
+    return this.sceneModel.hoveredGlyph;
+  }
+
+  set hoveredGlyph(glyph) {
+    if (this.sceneModel.hoveredGlyph !== glyph) {
+      this.sceneModel.hoveredGlyph = glyph;
+      this.canvasController.setNeedsUpdate();
+    }
+  }
+
+  get selectedGlyph() {
+    return this.sceneModel.selectedGlyph;
+  }
+
+  set selectedGlyph(glyph) {
+    if (this.sceneModel.selectedGlyph !== glyph) {
+      this.sceneModel.selectedGlyph = glyph;
+      this.canvasController.setNeedsUpdate();
+    }
   }
 
   get selectionRect() {
