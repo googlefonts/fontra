@@ -17,11 +17,13 @@ export class SceneController {
   }
 
   async handleDrag(eventStream, initialEvent) {
+    const point = this.localPoint(initialEvent);
+    this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+
     if (!this.sceneModel.canSelect()) {
       return;
     }
 
-    const point = this.localPoint(initialEvent);
     const initialSelection = this.selection;
     const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
     let initiateDrag = false;
