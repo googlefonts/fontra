@@ -98,8 +98,9 @@ export class SceneController {
       this.hoverSelection = selection;
     }
     const hoveredGlyph = this.sceneModel.glyphAtPoint(point);
-    if (hoveredGlyph) {
-      console.log(hoveredGlyph);
+    if (hoveredGlyph !== this.sceneModel.hoveredGlyph) {
+      this.sceneModel.hoveredGlyph = hoveredGlyph;
+      this.canvasController.setNeedsUpdate();
     }
   }
 

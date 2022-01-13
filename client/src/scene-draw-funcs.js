@@ -15,6 +15,27 @@ export function drawMultiGlyphsLayer(model, controller) {
 }
 
 
+export function drawHoverGlyphLayer(model, controller) {
+  if (!model.hoveredGlyph) {
+    return;
+  }
+  const context = controller.context;
+  const positionedGlyph = model.hoveredGlyph;
+  context.lineJoin = "round";
+  context.lineWidth = 10 * controller.onePixelUnit;
+  context.strokeStyle = "#AAA";
+  context.translate(positionedGlyph.x, positionedGlyph.y);
+  context.stroke(positionedGlyph.glyph.path2d);
+  context.lineWidth = 3 * controller.onePixelUnit;
+  context.strokeStyle = "black";
+  context.globalCompositeOperation = "destination-out"
+  context.stroke(positionedGlyph.glyph.path2d);
+  context.globalCompositeOperation = "source-over"
+  context.fillStyle = controller.drawingParameters.glyphFillColor;
+  context.fill(positionedGlyph.glyph.path2d);
+}
+
+
 export function drawComponentsLayer(model, controller) {
   const context = controller.context;
 
@@ -112,21 +133,6 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
       // context.shadowOffsetY = 2;
       context.fillStyle = parms.componentFillColor;;
       context.fill(model.componentPaths[index]);
-      context.restore();
-    } else if (tp === "glyph") {
-      const positionedGlyph = model.positionedLines[index].glyphs[glyphIndex];
-      context.save();
-      context.lineWidth = 10 * controller.onePixelUnit;
-      context.strokeStyle = "#AAA";
-      context.translate(positionedGlyph.x, positionedGlyph.y);
-      context.stroke(positionedGlyph.glyph.path2d);
-      context.lineWidth = 3 * controller.onePixelUnit;
-      context.strokeStyle = "black";
-      context.globalCompositeOperation = "destination-out"
-      context.stroke(positionedGlyph.glyph.path2d);
-      context.globalCompositeOperation = "source-over"
-      context.fillStyle = controller.drawingParameters.glyphFillColor;
-      context.fill(positionedGlyph.glyph.path2d);
       context.restore();
     }
   }

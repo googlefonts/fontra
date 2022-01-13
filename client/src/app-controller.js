@@ -72,6 +72,7 @@ export class AppController {
     const sceneModel = new SceneModel(font, isPointInPath);
     const drawFuncs = [
       sceneDraw.drawMultiGlyphsLayer,
+      sceneDraw.drawHoverGlyphLayer,
       sceneDraw.drawComponentsLayer,
       sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,
