@@ -1,5 +1,6 @@
 import { CachingFont } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
+import { pointInsideConvexPolygon } from "./utils.js";
 import { normalizeLocation } from "./var-model.js";
 
 
@@ -265,9 +266,12 @@ export class SceneModel {
         if (!pointInRect(point, positionedGlyph.bounds)) {
           continue;
         }
-        if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
+        if (pointInsideConvexPolygon(positionedGlyph.glyph.convexHull, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
           return {"lineIndex": i, "glyphIndex": j};
         }
+        // if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
+        //   return {"lineIndex": i, "glyphIndex": j};
+        // }
       }
     }
     return undefined;
