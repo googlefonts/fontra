@@ -27,6 +27,7 @@ export function drawHoverGlyphLayer(model, controller) {
 
 function _drawHoverGlyphLayer(positionedGlyph, model, controller) {
   const context = controller.context;
+  context.save();
   context.lineJoin = "round";
   context.lineWidth = 10 * controller.onePixelUnit;
   context.strokeStyle = "#AAA";
@@ -39,6 +40,7 @@ function _drawHoverGlyphLayer(positionedGlyph, model, controller) {
   context.globalCompositeOperation = "source-over"
   context.fillStyle = controller.drawingParameters.glyphFillColor;
   context.fill(positionedGlyph.glyph.path2d);
+  context.restore();
 }
 
 
