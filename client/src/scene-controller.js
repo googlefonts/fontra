@@ -97,6 +97,10 @@ export class SceneController {
     if (!lenientIsEqualSet(selection, this.hoverSelection)) {
       this.hoverSelection = selection;
     }
+    const hoveredGlyph = this.sceneModel.glyphAtPoint(point);
+    if (hoveredGlyph) {
+      console.log(hoveredGlyph);
+    }
   }
 
   localPoint(event) {

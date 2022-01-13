@@ -220,9 +220,8 @@ export class SceneModel {
   }
 
   selectionAtPoint(point, size) {
-    const selRect = centeredRect(point.x, point.y, size);
-
     if (this.instance !== undefined) {
+      const selRect = centeredRect(point.x, point.y, size);
       for (const hit of this.instance.path.iterPointsInRect(selRect)) {
         return new Set([`point/${hit.pointIndex}`])
       }
@@ -234,21 +233,6 @@ export class SceneModel {
       }
     }
 
-    for (let i = this.positionedLines.length - 1; i >= 0; i--) {
-      const positionedLine = this.positionedLines[i];
-      if (!pointInRect(point, positionedLine.bounds)) {
-        continue;
-      }
-      for (let j = positionedLine.glyphs.length - 1; j >= 0; j--) {
-        const positionedGlyph = positionedLine.glyphs[j];
-        if (!pointInRect(point, positionedGlyph.bounds)) {
-          continue;
-        }
-        if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
-          return new Set([`glyph/${i}/${j}`])
-        }
-      }
-    }
     return new Set();
   }
 
@@ -266,6 +250,25 @@ export class SceneModel {
       }
     }
     return selection;
+  }
+
+  glyphAtPoint(point) {
+    for (let i = this.positionedLines.length - 1; i >= 0; i--) {
+      const positionedLine = this.positionedLines[i];
+      if (!pointInRect(point, positionedLine.bounds)) {
+        continue;
+      }
+      for (let j = positionedLine.glyphs.length - 1; j >= 0; j--) {
+        const positionedGlyph = positionedLine.glyphs[j];
+        if (!pointInRect(point, positionedGlyph.bounds)) {
+          continue;
+        }
+        if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
+          return positionedGlyph;
+        }
+      }
+    }
+    return undefined;
   }
 
 }
