@@ -1,5 +1,18 @@
 export function objectsEqual(obj1, obj2) {
-  return JSON.stringify(obj1) === JSON.stringify(obj2);
+  // Shallow object compare. Arguments may be null or undefined
+  if (!obj1 || !obj2) {
+    return obj1 === obj2;
+  }
+  const keys = Object.keys(obj1);
+  if (keys.length !== Object.keys(obj2).length) {
+    return false;
+  }
+  for (const key of keys) {
+    if (obj1[key] !== obj2[key]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 
