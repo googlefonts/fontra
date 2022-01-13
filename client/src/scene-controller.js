@@ -93,10 +93,7 @@ export class SceneController {
     const point = this.localPoint(event);
     const size = this.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
-    const selection = this.sceneModel.selectionAtPoint(point, size);
-    if (!lenientIsEqualSet(selection, this.hoverSelection)) {
-      this.hoverSelection = selection;
-    }
+    this.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
     this.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
   }
 
@@ -129,8 +126,10 @@ export class SceneController {
   }
 
   set hoverSelection(selection) {
-    this.sceneModel.hoverSelection = selection;
-    this.canvasController.setNeedsUpdate();
+    if (!lenientIsEqualSet(selection, this.hoverSelection)) {
+      this.sceneModel.hoverSelection = selection;
+      this.canvasController.setNeedsUpdate();
+    }
   }
 
   get hoveredGlyph() {
