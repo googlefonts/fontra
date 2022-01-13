@@ -69,6 +69,7 @@ export function convexHull(points) {
   // upper and the lower parts of the hull respectively."
 
   points = Array.from(points);
+  // Sort by (x, y)
   points.sort((a, b) => ((a.x > b.x) - (a.x < b.x) || (a.y > b.y) - (a.y < b.y)));
   const lower = halfConvexHull(points);
   const upper = halfConvexHull(reversed(points));
