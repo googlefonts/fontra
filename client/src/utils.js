@@ -72,8 +72,6 @@ export function convexHull(points) {
   points.sort((a, b) => ((a.x > b.x) - (a.x < b.x) || (a.y > b.y) - (a.y < b.y)));
   const lower = halfConvexHull(points);
   const upper = halfConvexHull(reversed(points));
-  lower.pop();
-  upper.pop();
   return upper.concat(lower);
 }
 
@@ -88,6 +86,7 @@ function halfConvexHull(points) {
     }
     stack.push(point);
   }
+  stack.pop();
   return stack;
 }
 
