@@ -93,7 +93,10 @@ function halfConvexHull(points) {
 
 
 function ccw(p1, p2, p3) {
-  // Compute the cross product
+  // Return a positive number if p1,p2,p3 make a counter-clockwise turn,
+  // return a negative number if p1,p2,p3 make a clockwise turn, and
+  // return 0 if the three points are collinear
+  // A.k.a. compute the cross product
   return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
 }
 
