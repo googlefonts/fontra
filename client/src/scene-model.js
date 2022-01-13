@@ -24,7 +24,7 @@ export class SceneModel {
   }
 
   canSelect() {
-    return !!this.instance || !!this.glyphLines.length;
+    return !!this.instance;
   }
 
   setGlyphLines(glyphLines) {
