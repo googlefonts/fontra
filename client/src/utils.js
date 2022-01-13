@@ -25,6 +25,8 @@ export function pointInConvexPolygon(x, y, polygon) {
     return false;
   }
 
+  const testPoint = {"x": x, "y": y};
+
   // n>2 Keep track of cross product sign changes
   let pos = 0;
   let neg = 0;
@@ -36,22 +38,15 @@ export function pointInConvexPolygon(x, y, polygon) {
     }
 
     // Form a segment between the i'th point
-    const x1 = polygon[i].x;
-    const y1 = polygon[i].y;
-
     // And the i+1'th, or if i is the last, with the first point
     const i2 = (i + 1) % polygon.length;
 
-    const x2 = polygon[i2].x;
-    const y2 = polygon[i2].y;
-
     // Compute the cross product
-    const d = (x - x1)*(y2 - y1) - (y - y1)*(x2 - x1);
+    const d = ccw(polygon[i], testPoint, polygon[i2]);
 
     if (d > 0) {
       pos++;
-    }
-    if (d < 0) {
+    } else if (d < 0) {
       neg++;
     }
 
@@ -98,6 +93,7 @@ function halfConvexHull(points) {
 
 
 function ccw(p1, p2, p3) {
+  // Compute the cross product
   return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
 }
 
