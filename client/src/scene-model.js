@@ -109,7 +109,7 @@ export class SceneModel {
     }
     if (glyphLines === this.glyphLines) {
       this.positionedLines = positionedLines;
-    }
+    } // else this.glyphLines has been changed in the meantime, and our work should be discarded
   }
 
   async setSelectedGlyph(glyphName) {
