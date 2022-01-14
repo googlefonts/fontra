@@ -161,17 +161,7 @@ export class AppController {
       }
     }
 
-    textEntryElement.oninput = async event => {
-      const text = event.target.innerText;
-      const glyphLines = [];
-      await this.font.cmapReady();
-      for (const line of splitLines(text)) {
-        glyphLines.push(glyphNamesFromText(line, this.font.cmap, this.font.reversedCmap));
-      }
-      await this.sceneController.setGlyphLines(glyphLines);
-      this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
-      this.sliders.values = this.sceneController.getAxisValues();
-    }
+    textEntryElement.oninput = async event => this.textFieldChangedCallback(event.target);
 
     for (const item of overlayItems) {
       item.onkeydown = event => collapseOnEscapeKey(event);
@@ -230,14 +220,27 @@ export class AppController {
   }
 
   async glyphNameChangedCallback(glyphName) {
-    const didSetGlyph = await this.sceneController.setSelectedGlyph(glyphName);
-    if (!didSetGlyph) {
-      return;
+    const codePoint = this.font.codePointForGlyph(glyphName);
+    const text = getCharFromUnicode(codePoint) || "/" + glyphName;
+    const textEntryElement = document.querySelector("#text-entry");
+    textEntryElement.innerText = text;
+    this.textFieldChangedCallback(textEntryElement);
+    // this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
+    // this.sourcesList.setItems(this.sceneController.getSourcesInfo());
+    // this.sliders.values = this.sceneController.getAxisValues();
+    // this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
+  }
+
+  async textFieldChangedCallback(element) {
+    const text = element.innerText;
+    const glyphLines = [];
+    await this.font.cmapReady();
+    for (const line of splitLines(text)) {
+      glyphLines.push(glyphNamesFromText(line, this.font.cmap, this.font.reversedCmap));
     }
+    await this.sceneController.setGlyphLines(glyphLines);
     this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
-    this.sourcesList.setItems(this.sceneController.getSourcesInfo());
     this.sliders.values = this.sceneController.getAxisValues();
-    this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
   }
 
 }

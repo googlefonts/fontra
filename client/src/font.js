@@ -24,6 +24,15 @@ export class Font {
     });
   }
 
+  codePointForGlyph(glyphName) {
+    for (const codePoint of this.reversedCmap[glyphName] || []) {
+      if (this.cmap[codePoint] === glyphName) {
+        return codePoint;
+      }
+    }
+    return undefined;
+  }
+
   async getGlyph(glyphName) {
     if (this.reversedCmap[glyphName] === undefined) {
       return null;
