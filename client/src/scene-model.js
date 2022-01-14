@@ -284,11 +284,7 @@ export class SceneModel {
 
 
 function _getAxisBaseName(axisName) {
-  const asterixPos = axisName.indexOf("*");
-  if (asterixPos > 0) {
-    return axisName.slice(0, asterixPos);
-  }
-  return axisName;
+  return axisName.split("*", 1)[0];
 }
 
 
