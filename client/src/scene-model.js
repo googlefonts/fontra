@@ -1,4 +1,4 @@
-import { CachingFont } from "./caching-font.js"
+import { CachingFont, mapNLILocation } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon } from "./utils.js";
 import { normalizeLocation } from "./var-model.js";
@@ -10,7 +10,6 @@ export class SceneModel {
     this.font = font;
     this.isPointInPath = isPointInPath;
     this.userVarLocation = {};
-    this.varLocation = {};
     this.glyphLines = [];
     this.positionedLines = [];
     this.selection = new Set();
@@ -114,7 +113,6 @@ export class SceneModel {
       return false;
     }
     this.glyph = glyph;
-    this.axisMapping = _makeAxisMapping(this.glyph.axes);
     await this.setAxisValues(this.userVarLocation);
     this.selection = new Set();
     this.hoverSelection = new Set();
@@ -127,23 +125,11 @@ export class SceneModel {
 
   async setAxisValues(values) {
     this.userVarLocation = values;
-    const varLocation = {};
-    for (const [name, value] of Object.entries(values)) {
-      // XXX TODO FixMe, axisMapping needs to go away, and will
-      // be handled by caching font
-      if (this.axisMapping) {
-        this.axisMapping[name]?.forEach(realAxisName => {
-          varLocation[realAxisName] = value;
-        });
-      } else {
-        varLocation[name] = value;
-      }
-    }
-    this.varLocation = varLocation;
     delete this._cachingFont;
 
     // TODO: remove
     if (this.glyph) {
+      const varLocation  = mapNLILocation(this.userVarLocation, this.glyph.axes);
       this.currentSourceIndex = findSourceIndexFromLocation(this.glyph, varLocation);
       await this._instantiateGlyph(varLocation);
     }
@@ -294,19 +280,6 @@ export class SceneModel {
     return undefined;
   }
 
-}
-
-
-function _makeAxisMapping(axes) {
-  const axisMapping = {};
-  for (const axis of axes) {
-    const baseName = _getAxisBaseName(axis.name);
-    if (axisMapping[baseName] === undefined) {
-      axisMapping[baseName] = [];
-    }
-    axisMapping[baseName].push(axis.name);
-  }
-  return axisMapping;
 }
 
 
