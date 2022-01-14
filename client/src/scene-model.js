@@ -19,7 +19,7 @@ export class SceneModel {
 
   get cachingFont() {
     if (this._cachingFont === undefined) {
-      this._cachingFont = new CachingFont(this.font, this.varLocation);
+      this._cachingFont = new CachingFont(this.font, this.userVarLocation);
     }
     return this._cachingFont;
   }

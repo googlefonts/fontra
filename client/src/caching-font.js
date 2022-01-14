@@ -16,10 +16,11 @@ export class CachingFont {
     let glyphInstance = this.cachedGlyphs[glyphName];
     if (glyphInstance === undefined) {
       const glyph = await this.font.getGlyph(glyphName);
-      const instance = await glyph.instantiate(this.location);
+      const location = mapNLILocation(this.location, glyph.axes);
+      const instance = await glyph.instantiate(location);
       const componentPaths = await instance.getComponentPaths(
         async glyphName => await this.font.getGlyph(glyphName),
-        this.location,
+        location,
       )
       glyphInstance = new CachingGlyphInstance(glyphName, instance, componentPaths);
       this.cachedGlyphs[glyphName] = glyphInstance;
@@ -72,4 +73,17 @@ class CachingGlyphInstance {
     return this._convexHull;
   }
 
+}
+
+
+function mapNLILocation(userLocation, axes) {
+  const location = {};
+  for (const axis of axes) {
+    const baseName = axis.name.split("*", 1)[0];
+    const value = userLocation[baseName];
+    if (value !== undefined) {
+      location[axis.name] = value;
+    }
+  }
+  return location;
 }
