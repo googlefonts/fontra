@@ -95,8 +95,6 @@ export class SceneModel {
             "bounds": bounds,
           })
           x += glyphInstance.xAdvance;
-        } else {
-          console.log("miss", glyphInfo.glyphName);
         }
       }
       y -= 1000;  // TODO
