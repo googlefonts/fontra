@@ -44,7 +44,8 @@ export class SceneModel {
   async *updateSceneIncrementally(incrementally = true) {
     const glyphPromises = {};
     const glyphs = {};
-    for (const line of this.glyphLines) {
+    const glyphLines = this.glyphLines;
+    for (const line of glyphLines) {
       for (const glyph of line) {
         if (glyph.glyphName === undefined || glyphPromises[glyph.glyphName] !== undefined) {
           continue;
@@ -64,7 +65,7 @@ export class SceneModel {
           }
         }
         // console.log("build scene", glyphs);
-        this._buildScene(glyphs);
+        this._buildScene(glyphs, glyphLines);
         yield;
         promises = Object.values(glyphPromises);
       } while (promises.length);
@@ -72,15 +73,15 @@ export class SceneModel {
       if (promises.length) {
         await Promise.all(promises);
       }
-      this._buildScene(glyphs);
+      this._buildScene(glyphs, glyphLines);
       yield;
     }
   }
 
-  _buildScene(glyphs) {
+  _buildScene(glyphs, glyphLines) {
     let y = 0;
-    this.positionedLines = [];
-    for (const glyphLine of this.glyphLines) {
+    const positionedLines = [];
+    for (const glyphLine of glyphLines) {
       const positionedLine = {"glyphs": []};
       let x = 0;
       for (const glyphInfo of glyphLine) {
@@ -94,6 +95,8 @@ export class SceneModel {
             "bounds": bounds,
           })
           x += glyphInstance.xAdvance;
+        } else {
+          console.log("miss", glyphInfo.glyphName);
         }
       }
       y -= 1000;  // TODO
@@ -101,8 +104,11 @@ export class SceneModel {
         positionedLine.bounds = unionRect(
           ...positionedLine.glyphs.map(glyph => glyph.bounds).filter(bounds => bounds !== undefined)
         );
-        this.positionedLines.push(positionedLine);
+        positionedLines.push(positionedLine);
       }
+    }
+    if (glyphLines === this.glyphLines) {
+      this.positionedLines = positionedLines;
     }
   }
 
