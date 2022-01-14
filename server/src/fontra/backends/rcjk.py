@@ -94,7 +94,7 @@ def serializeGlyph(glyph):
         if components:
             sourceGlyph["components"] = components
         # TODO anchors?
-        sourceGlyph["hAdvance"] = varGlyph.width  # TODO: vAdvance, verticalOrigin
+        sourceGlyph["xAdvance"] = varGlyph.width  # TODO: yAdvance, verticalOrigin
         source["source"] = sourceGlyph
         sources.append(source)
     d["sources"] = sources

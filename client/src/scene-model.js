@@ -94,7 +94,7 @@ export class SceneModel {
             "glyph": glyphInstance,
             "bounds": bounds,
           })
-          x += glyphInstance.hAdvance;
+          x += glyphInstance.xAdvance;
         }
       }
       y -= 1000;  // TODO

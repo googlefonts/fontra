@@ -36,8 +36,8 @@ class CachingGlyphInstance {
     this.name = glyphName;
     this.glyphInstance = glyphInstance;
     this.componentPaths = componentPaths;
-    this.hAdvance = glyphInstance.hAdvance;
-    this.vAdvance = glyphInstance.vAdvance;
+    this.xAdvance = glyphInstance.xAdvance;
+    this.yAdvance = glyphInstance.yAdvance;
     this.verticalOrigin = glyphInstance.verticalOrigin;
   }
 

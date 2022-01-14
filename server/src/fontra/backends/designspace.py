@@ -82,10 +82,10 @@ class UFOBackend:
             glyphDict["path"] = path
         if pen.components:
             glyphDict["components"] = pen.components
-        glyphDict["hAdvance"] = glyph.width
+        glyphDict["xAdvance"] = glyph.width
         # TODO: components
         # TODO: anchors
-        # TODO: vAdvance, verticalOrigin
+        # TODO: yAdvance, verticalOrigin
         return glyphDict, glyph
 
     async def getGlyphNames(self):

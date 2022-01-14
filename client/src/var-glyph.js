@@ -62,8 +62,8 @@ class VarSource {
 
   static fromObject(obj) {
     const source = new VarSource();
-    source.hAdvance = obj.hAdvance;
-    source.vAdvance = obj.vAdvance;
+    source.xAdvance = obj.xAdvance;
+    source.yAdvance = obj.yAdvance;
     source.verticalOrigin = obj.verticalOrigin;
     if (obj.path !== undefined) {
       source.path = VarPath.fromObject(obj.path);

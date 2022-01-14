@@ -18,7 +18,7 @@ getGlyphTestData = [
                 {
                     "location": {},
                     "source": {
-                        "hAdvance": 170,
+                        "xAdvance": 170,
                         "path": {
                             "contours": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
@@ -64,7 +64,7 @@ getGlyphTestData = [
                                 },
                             },
                         ],
-                        "hAdvance": 396,
+                        "xAdvance": 396,
                     },
                 }
             ],
@@ -94,7 +94,7 @@ getGlyphTestData = [
                     "name": "LightCondensed",
                     "location": {"weight": 0.0, "width": 0.0},
                     "source": {
-                        "hAdvance": 170,
+                        "xAdvance": 170,
                         "path": {
                             "contours": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
@@ -106,7 +106,7 @@ getGlyphTestData = [
                     "name": "BoldCondensed",
                     "location": {"weight": 1000.0, "width": 0.0},
                     "source": {
-                        "hAdvance": 250,
+                        "xAdvance": 250,
                         "path": {
                             "contours": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [30, 0, 220, 0, 220, 300, 30, 300],
@@ -118,7 +118,7 @@ getGlyphTestData = [
                     "name": "LightWide",
                     "location": {"weight": 0.0, "width": 1000.0},
                     "source": {
-                        "hAdvance": 290,
+                        "xAdvance": 290,
                         "path": {
                             "contours": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [120, 0, 170, 0, 170, 220, 120, 220],
@@ -130,7 +130,7 @@ getGlyphTestData = [
                     "name": "BoldWide",
                     "location": {"weight": 1000.0, "width": 1000.0},
                     "source": {
-                        "hAdvance": 310,
+                        "xAdvance": 310,
                         "path": {
                             "contours": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 250, 0, 250, 300, 60, 300],
@@ -191,7 +191,7 @@ getGlyphTestData = [
                                 },
                             },
                         ],
-                        "hAdvance": 396,
+                        "xAdvance": 396,
                     },
                 },
                 {
@@ -224,7 +224,7 @@ getGlyphTestData = [
                                 },
                             },
                         ],
-                        "hAdvance": 740,
+                        "xAdvance": 740,
                     },
                 },
                 {
@@ -257,7 +257,7 @@ getGlyphTestData = [
                                 },
                             },
                         ],
-                        "hAdvance": 1190,
+                        "xAdvance": 1190,
                     },
                 },
                 {
@@ -290,7 +290,7 @@ getGlyphTestData = [
                                 },
                             },
                         ],
-                        "hAdvance": 1290,
+                        "xAdvance": 1290,
                     },
                 },
             ],
@@ -336,7 +336,7 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                             "contours": [{"endPoint": 9, "isClosed": True}],
                         },
-                        "hAdvance": 229,
+                        "xAdvance": 229,
                     },
                 },
                 {
@@ -369,7 +369,7 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                             "contours": [{"endPoint": 9, "isClosed": True}],
                         },
-                        "hAdvance": 369,
+                        "xAdvance": 369,
                     },
                 },
                 {
@@ -402,7 +402,7 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
                             "contours": [{"endPoint": 9, "isClosed": True}],
                         },
-                        "hAdvance": 450,
+                        "xAdvance": 450,
                     },
                 },
             ],
@@ -436,7 +436,7 @@ getGlyphTestData = [
                                 "coord": {"T_H_lo": 0, "X_X_bo": 0},
                             }
                         ],
-                        "hAdvance": 350,
+                        "xAdvance": 350,
                     },
                 },
                 {
@@ -458,7 +458,7 @@ getGlyphTestData = [
                                 "coord": {"T_H_lo": 0, "X_X_bo": 0.7},
                             }
                         ],
-                        "hAdvance": 350,
+                        "xAdvance": 350,
                     },
                 },
             ],
@@ -503,7 +503,7 @@ getGlyphTestData = [
                                 },
                             }
                         ],
-                        "hAdvance": 600,
+                        "xAdvance": 600,
                     },
                 },
                 {
@@ -525,7 +525,7 @@ getGlyphTestData = [
                                 },
                             }
                         ],
-                        "hAdvance": 600,
+                        "xAdvance": 600,
                     },
                 },
                 {
@@ -547,7 +547,7 @@ getGlyphTestData = [
                                 },
                             }
                         ],
-                        "hAdvance": 600,
+                        "xAdvance": 600,
                     },
                 },
             ],

@@ -166,7 +166,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
     readGlyphFromString(glifData, glyph, pen)
 
     defaultSourceDict = {
-        "hAdvance": glyph.width,
+        "xAdvance": glyph.width,
     }
     defaultPath = pen.getPath()
     if defaultPath:
@@ -190,12 +190,12 @@ def serializeGlyph(glifData, layers, axisDefaults):
             continue
         varSourceDict = {}
         layerName = varDict.get("layerName")
-        hAdvance = glyph.width
+        xAdvance = glyph.width
         if defaultPath and layerName and layerName in layers:
             varGlyph = GLIFGlyph()
             pen = PathBuilderPointPen()
             readGlyphFromString(layers[layerName]["data"], varGlyph, pen)
-            hAdvance = varGlyph.width
+            xAdvance = varGlyph.width
             varPath = pen.getPath()
             if varPath:
                 varSourceDict["path"] = varPath
@@ -206,8 +206,8 @@ def serializeGlyph(glifData, layers, axisDefaults):
         assert componentNames == [c["name"] for c in varComponents]
         if varComponents:
             varSourceDict["components"] = varComponents
-        hAdvance = varDict["width"] if "width" in varDict else hAdvance
-        varSourceDict["hAdvance"] = hAdvance
+        xAdvance = varDict["width"] if "width" in varDict else xAdvance
+        varSourceDict["xAdvance"] = xAdvance
         sourceName = varDict.get("sourceName")
         if not sourceName and layerName:
             sourceName = f"sourcelayer-{layerName}"
