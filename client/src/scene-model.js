@@ -219,6 +219,8 @@ export class SceneModel {
     }
     this.currentSourceIndex = sourceInfo.sourceIndex;
     await this._instantiateGlyph(source.location);
+    delete this._cachingFont;  // Should be implied by this.userVarLocation assignment
+    await this.updateScene();
   }
 
   selectionAtPoint(point, size) {
