@@ -11,6 +11,11 @@ export function drawMultiGlyphsLayer(model, controller) {
     for (const glyph of glyphLine.glyphs) {
       context.save();
       context.translate(glyph.x, glyph.y);
+
+      // context.fillStyle = "#CCC";
+      // fillPolygon(context, glyph.glyph.convexHull);
+      // context.fillStyle = controller.drawingParameters.glyphFillColor;
+
       context.fill(glyph.glyph.path2d);
       context.restore();
     }
@@ -208,4 +213,24 @@ function strokeLine(context, x1, y1, x2, y2) {
   context.moveTo(x1, y1);
   context.lineTo(x2, y2);
   context.stroke();
+}
+
+
+function fillPolygon(context, points, isClosed = true) {
+  context.fill(polygonPath(points));
+}
+
+
+function polygonPath(points, isClosed = true) {
+  const path = new Path2D();
+  if (points && points.length) {
+    path.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      path.lineTo(points[i].x, points[i].y);
+    }
+    if (isClosed) {
+      path.closePath();
+    }
+  }
+  return path;
 }
