@@ -265,7 +265,7 @@ export class SceneModel {
   glyphAtPoint(point) {
     for (let i = this.positionedLines.length - 1; i >= 0; i--) {
       const positionedLine = this.positionedLines[i];
-      if (!pointInRect(point.x, point.y, positionedLine.bounds)) {
+      if (!positionedLine.bounds || !pointInRect(point.x, point.y, positionedLine.bounds)) {
         continue;
       }
       for (let j = positionedLine.glyphs.length - 1; j >= 0; j--) {
