@@ -18,6 +18,7 @@ export class SceneController {
   }
 
   async handleDrag(eventStream, initialEvent) {
+    initialEvent.preventDefault();
     const point = this.localPoint(initialEvent);
     this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
     if (this.selectedGlyph && initialEvent.detail === 2) {
