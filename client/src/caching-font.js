@@ -76,7 +76,7 @@ class CachingGlyphInstance {
 }
 
 
-function mapNLILocation(userLocation, axes) {
+export function mapNLILocation(userLocation, axes) {
   const location = {};
   for (const axis of axes) {
     const baseName = axis.name.split("*", 1)[0];
