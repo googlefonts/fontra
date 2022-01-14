@@ -173,21 +173,11 @@ export class SceneModel {
     this.componentPaths = compoPaths2d;
   }
 
-  *getAxisInfo() {
+  getAxisInfo() {
     if (!this.glyph.axes) {
-      return;
+      return [];
     }
-    const done = {};
-    for (const axis of this.glyph.axes) {
-      const baseName = _getAxisBaseName(axis.name);
-      if (done[baseName]) {
-        continue;
-      }
-      done[baseName] = true;
-      const axisInfo = {...axis};
-      axisInfo.name = baseName;
-      yield axisInfo;
-    }
+    return Object.values(getAxisInfoFromGlyph(this.glyph));
   }
 
   getSourcesInfo() {
@@ -363,4 +353,17 @@ function findClosestSourceIndexFromLocation(glyph, varLocation) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+function getAxisInfoFromGlyph(glyph) {
+  const axisInfo = {};
+  for (const axis of glyph.axes) {
+    const baseName = _getAxisBaseName(axis.name);
+    if (axisInfo[baseName]) {
+      continue;
+    }
+    axisInfo[baseName] = {...axis, "name": baseName};
+  }
+  return axisInfo;
 }
