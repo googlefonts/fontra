@@ -169,6 +169,8 @@ export class AppController {
         glyphLines.push(glyphNamesFromText(line, this.font.cmap, this.font.reversedCmap));
       }
       await this.sceneController.setGlyphLines(glyphLines);
+      this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
+      this.sliders.values = this.sceneController.getAxisValues();
     }
 
     for (const item of overlayItems) {
@@ -232,7 +234,7 @@ export class AppController {
     if (!didSetGlyph) {
       return;
     }
-    this.sliders.setSliderDescriptions(this.sceneController.getAxisInfo());
+    this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
     this.sourcesList.setItems(this.sceneController.getSourcesInfo());
     this.sliders.values = this.sceneController.getAxisValues();
     this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);

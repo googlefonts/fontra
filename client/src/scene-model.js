@@ -129,15 +129,24 @@ export class SceneModel {
     this.userVarLocation = values;
     const varLocation = {};
     for (const [name, value] of Object.entries(values)) {
-      this.axisMapping[name]?.forEach(realAxisName => {
-        varLocation[realAxisName] = value
-      });
+      // XXX TODO FixMe, axisMapping needs to go away, and will
+      // be handled by caching font
+      if (this.axisMapping) {
+        this.axisMapping[name]?.forEach(realAxisName => {
+          varLocation[realAxisName] = value;
+        });
+      } else {
+        varLocation[name] = value;
+      }
     }
     this.varLocation = varLocation;
     delete this._cachingFont;
 
-    this.currentSourceIndex = findSourceIndexFromLocation(this.glyph, varLocation);
-    await this._instantiateGlyph(varLocation);
+    // TODO: remove
+    if (this.glyph) {
+      this.currentSourceIndex = findSourceIndexFromLocation(this.glyph, varLocation);
+      await this._instantiateGlyph(varLocation);
+    }
   }
 
   async _instantiateGlyph(varLocation) {
@@ -173,11 +182,25 @@ export class SceneModel {
     this.componentPaths = compoPaths2d;
   }
 
-  getAxisInfo() {
-    if (!this.glyph.axes) {
-      return [];
+  async getAxisInfo() {
+    if (this.glyph && this.glyph.axes) {
+      return Object.values(getAxisInfoFromGlyph(this.glyph));
     }
-    return Object.values(getAxisInfoFromGlyph(this.glyph));
+    if (this.glyphLines) {
+      const axisInfos = {};
+      for (const line of this.glyphLines) {
+        for (const glyphInfo of line) {
+          const glyphName = glyphInfo.glyphName;
+          if (!glyphName || axisInfos[glyphName]) {
+            continue
+          }
+          const glyph = await this.font.getGlyph(glyphName);
+          axisInfos[glyphName] = getAxisInfoFromGlyph(glyph);
+        }
+      }
+      return mergeAxisInfo(Object.values(axisInfos));
+    }
+    return [];
   }
 
   getSourcesInfo() {
@@ -366,4 +389,23 @@ function getAxisInfoFromGlyph(glyph) {
     axisInfo[baseName] = {...axis, "name": baseName};
   }
   return axisInfo;
+}
+
+
+function mergeAxisInfo(axisInfos) {
+  if (!axisInfos.length) {
+    return [];
+  }
+  const mergedAxisInfo = {...axisInfos[0]};
+  for (let i = 1; i < axisInfos.length; i++) {
+    for (const axisInfo of Object.values(axisInfos[i])) {
+      if (mergedAxisInfo[axisInfo.name] !== undefined) {
+        mergedAxisInfo[axisInfo.name].minValue = Math.min(mergedAxisInfo[axisInfo.name].minValue, axisInfo.minValue);
+        mergedAxisInfo[axisInfo.name].maxValue = Math.max(mergedAxisInfo[axisInfo.name].maxValue, axisInfo.maxValue);
+      } else {
+        mergedAxisInfo[axisInfo.name] = {...axisInfo};
+      }
+    }
+  }
+  return Object.values(mergedAxisInfo);
 }
