@@ -210,7 +210,7 @@ export class SceneModel {
     }
     const source = this.glyph.sources[sourceInfo.sourceIndex];
     this.userVarLocation = {};
-    for (const axisInfo of this.getAxisInfo()) {
+    for (const axisInfo of await this.getAxisInfo()) {
       this.userVarLocation[axisInfo.name] = axisInfo.defaultValue;
     }
     for (const [name, value] of Object.entries(source.location)) {
