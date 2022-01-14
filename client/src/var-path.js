@@ -1,7 +1,7 @@
 import VarArray from "./var-array.js"
 import { VariationError } from "./errors.js"
 import { pointInRect } from "./rectangle.js";
-import { convexHull } from "./utils.js";
+import { convexHull } from "./convex-hull.js";
 
 
 export default class VarPath {

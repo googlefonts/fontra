@@ -1,6 +1,6 @@
 import { CachingFont, mapNLILocation } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
-import { pointInConvexPolygon } from "./utils.js";
+import { pointInConvexPolygon } from "./convex-hull.js";
 import { normalizeLocation } from "./var-model.js";
 
 
