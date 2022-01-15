@@ -224,17 +224,19 @@ export class SceneModel {
 
   selectionAtRect(selRect) {
     const selection = new Set();
-    if (!this.instance) {
+    if (!this.selectedGlyph) {
       return selection;
     }
-    for (const hit of this.instance.path.iterPointsInRect(selRect)) {
+    const positionedGlyph = this.getSelectedGlyph();
+    selRect = offsetRect(selRect, -positionedGlyph.x, -positionedGlyph.y);
+    for (const hit of positionedGlyph.glyph.outlinePath.iterPointsInRect(selRect)) {
       selection.add(`point/${hit.pointIndex}`);
     }
-    for (let i = 0; i < this.componentsBounds.length; i++) {
-      if (sectRect(selRect, this.componentsBounds[i])) {
-        selection.add(`component/${i}`);
-      }
-    }
+    // for (let i = 0; i < this.componentsBounds.length; i++) {
+    //   if (sectRect(selRect, this.componentsBounds[i])) {
+    //     selection.add(`component/${i}`);
+    //   }
+    // }
     return selection;
   }
 
