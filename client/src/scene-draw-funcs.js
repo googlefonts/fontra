@@ -31,7 +31,6 @@ export function drawSelectedGlyphLayer(model, controller) {
   const context = controller.context;
   const [lineIndex, glyphIndex] = model.hoveredGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
-  context.save();
   context.lineJoin = "round";
   context.lineWidth = 10 * controller.onePixelUnit;
   context.strokeStyle = "#AAA";
@@ -44,7 +43,6 @@ export function drawSelectedGlyphLayer(model, controller) {
   context.globalCompositeOperation = "source-over"
   context.fillStyle = controller.drawingParameters.glyphFillColor;
   context.fill(positionedGlyph.glyph.path2d);
-  context.restore();
 }
 
 
@@ -55,11 +53,9 @@ export function drawComponentsLayer(model, controller) {
   const context = controller.context;
   const positionedGlyph = model.getSelectedGlyph();
 
-  context.save();
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.fillStyle = "#888"; // controller.drawingParameters.componentFillColor;
   context.fill(positionedGlyph.glyph.componentsPath2d);
-  context.restore();
 }
 
 
@@ -70,12 +66,10 @@ export function drawPathLayer(model, controller) {
   const context = controller.context;
   const positionedGlyph = model.getSelectedGlyph();
 
-  context.save();
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.lineWidth = controller.drawingParameters.pathLineWidth;
   context.strokeStyle = controller.drawingParameters.pathStrokeColor;
   context.stroke(positionedGlyph.glyph.outlinePath2d);
-  context.restore();
 }
 
 
