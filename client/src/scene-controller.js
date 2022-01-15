@@ -21,6 +21,7 @@ export class SceneController {
     const point = this.localPoint(initialEvent);
     if (initialEvent.detail === 2) {
       this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+      return;
     }
 
     if (!this.sceneModel.canSelect()) {
