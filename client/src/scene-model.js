@@ -32,7 +32,7 @@ export class SceneModel {
   }
 
   canSelect() {
-    return !!this.instance;
+    return !!this.selectedGlyph;
   }
 
   setGlyphLines(glyphLines) {
