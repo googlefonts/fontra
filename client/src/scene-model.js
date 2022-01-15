@@ -65,6 +65,9 @@ export class SceneModel {
             delete glyphPromises[glyphName];
           }
         }
+        if (glyphLines !== this.glyphLines) {
+          return;  // abort, a later call supersedes us
+        }
         this._buildScene(glyphLines);
         yield;
         promises = Object.values(glyphPromises);
@@ -72,6 +75,9 @@ export class SceneModel {
     } else {
       if (promises.length) {
         await Promise.all(promises);
+      }
+      if (glyphLines !== this.glyphLines) {
+        return;  // abort, a later call supersedes us
       }
       this._buildScene(glyphLines);
       yield;
@@ -106,9 +112,7 @@ export class SceneModel {
         positionedLines.push(positionedLine);
       }
     }
-    if (glyphLines === this.glyphLines) {
-      this.positionedLines = positionedLines;
-    } // else this.glyphLines has been changed in the meantime, and our work should be discarded
+    this.positionedLines = positionedLines;
   }
 
   async setSelectedGlyph(glyphName) {
