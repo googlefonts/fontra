@@ -1,4 +1,14 @@
 export function drawMultiGlyphsLayer(model, controller) {
+  _drawMultiGlyphsLayer(model, controller);
+}
+
+
+export function drawMultiGlyphsLayerClean(model, controller) {
+  _drawMultiGlyphsLayer(model, controller, false);
+}
+
+
+function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
   if (!model.positionedLines) {
     return;
   }
@@ -7,7 +17,7 @@ export function drawMultiGlyphsLayer(model, controller) {
   context.fillStyle = controller.drawingParameters.glyphFillColor;
   for (const glyphLine of model.positionedLines) {
     for (const glyph of glyphLine.glyphs) {
-      if (glyph === selectedGlyph) {
+      if (skipSelected && glyph === selectedGlyph) {
         continue;
       }
       context.save();

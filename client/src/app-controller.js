@@ -66,6 +66,7 @@ export class AppController {
     const canvas = document.querySelector("#edit-canvas");
 
     const canvasController = new CanvasController(canvas, this.drawingParameters);
+    this.canvasController = canvasController;
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(canvasController.context);
 
@@ -86,6 +87,10 @@ export class AppController {
       drawFunc => new SceneView(sceneModel, drawFunc)
     );
     canvasController.sceneView = sceneView;
+
+    this.defaultSceneView = sceneView;
+    this.cleanSceneView = new SceneView();
+    this.cleanSceneView.subviews = [new SceneView(sceneModel, sceneDraw.drawMultiGlyphsLayerClean)];
 
     this.sceneController = new SceneController(sceneModel, canvasController)
     this.sceneController.addEventListener("selectedGlyphChanged", event => {
@@ -253,18 +258,19 @@ export class AppController {
   }
 
   spaceKeyDownHandler(event) {
-    console.log("?", event);
     if (event.key !== " " || event.repeat) {
       return;
     }
-    console.log("space down");
+    this.canvasController.sceneView = this.cleanSceneView;
+    this.canvasController.setNeedsUpdate();
   }
 
   spaceKeyUpHandler(event) {
     if (event.key != " ") {
       return;
     }
-    console.log("space up");
+    this.canvasController.sceneView = this.defaultSceneView;
+    this.canvasController.setNeedsUpdate();
   }
 
 }
