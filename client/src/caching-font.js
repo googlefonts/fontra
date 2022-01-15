@@ -40,10 +40,10 @@ class CachingGlyphInstance {
   constructor (glyphName, glyphInstance, componentPaths) {
     this.name = glyphName;
     this.glyphInstance = glyphInstance;
-    this.nestedComponentPaths = componentPaths;
     this.xAdvance = glyphInstance.xAdvance;
     this.yAdvance = glyphInstance.yAdvance;
     this.verticalOrigin = glyphInstance.verticalOrigin;
+    this.components = componentPaths.map(item => new CachingComponent(flattenComponentPaths(item)));
   }
 
   get flattenedPath() {
@@ -75,7 +75,7 @@ class CachingGlyphInstance {
 
   get componentsPath() {
     if (this._componentsPath === undefined) {
-      this._componentsPath = joinPaths(this.nestedComponentPaths.map(flattenComponentPaths));
+      this._componentsPath = joinPaths(this.components.map(compo => compo.path));
     }
     return this._componentsPath;
   }
@@ -98,6 +98,37 @@ class CachingGlyphInstance {
   get convexHull() {
     if (this._convexHull === undefined) {
       this._convexHull = this.flattenedPath.getConvexHull();
+    }
+    return this._convexHull;
+  }
+
+}
+
+
+class CachingComponent {
+
+  constructor(path) {
+    this.path = path;
+  }
+
+  get path2d() {
+    if (this._path2d === undefined) {
+      this._path2d = new Path2D();
+      this.path.drawToPath2d(this._path2d);
+    }
+    return this._path2d;
+  }
+
+  get controlBounds() {
+    if (this._controlBounds === undefined) {
+      this._controlBounds = this.path.getControlBounds();
+    }
+    return this._controlBounds;
+  }
+
+  get convexHull() {
+    if (this._convexHull === undefined) {
+      this._convexHull = this.path.getConvexHull();
     }
     return this._convexHull;
   }
