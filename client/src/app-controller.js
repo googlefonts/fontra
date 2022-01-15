@@ -97,6 +97,9 @@ export class AppController {
     this.initMiniConsole();
 
     window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
+
+    canvas.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
+    canvas.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
   }
 
   async start() {
@@ -247,6 +250,21 @@ export class AppController {
     await this.sceneController.setGlyphLines(glyphLines);
     this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
     this.sliders.values = this.sceneController.getAxisValues();
+  }
+
+  spaceKeyDownHandler(event) {
+    console.log("?", event);
+    if (event.key !== " " || event.repeat) {
+      return;
+    }
+    console.log("space down");
+  }
+
+  spaceKeyUpHandler(event) {
+    if (event.key != " ") {
+      return;
+    }
+    console.log("space up");
   }
 
 }
