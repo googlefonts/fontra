@@ -37,7 +37,7 @@ export class SceneController {
     const point = this.localPoint(initialEvent);
     if (initialEvent.detail >= 2) {
       this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
-      initialEvent.preventDefault();
+      initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
       return;
     }
 
