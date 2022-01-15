@@ -146,16 +146,16 @@ export class SceneModel {
     const glyph = this.font.getCachedGlyph(positionedGlyph.glyph.name);
 
     const source = glyph.sources[sourceInfo.sourceIndex];
-    this.userVarLocation = {};
+    const userVarLocation = {};
     for (const axisInfo of await this.getAxisInfo()) {
-      this.userVarLocation[axisInfo.name] = axisInfo.defaultValue;
+      userVarLocation[axisInfo.name] = axisInfo.defaultValue;
     }
     for (const [name, value] of Object.entries(source.location)) {
       const baseName = _getAxisBaseName(name);
-      this.userVarLocation[baseName] = value;
+      userVarLocation[baseName] = value;
     }
     this.currentSourceIndex = sourceInfo.sourceIndex;
-    delete this._cachingFont;  // Should be implied by this.userVarLocation assignment
+    this.setAxisValues(userVarLocation);
     await this.updateScene();
   }
 
