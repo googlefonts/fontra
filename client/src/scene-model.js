@@ -240,9 +240,11 @@ export class SceneModel {
     }
     const components = positionedGlyph.glyph.components;
     for (let i = 0; i < components.length; i++) {
-      if (sectRect(selRect, components[i].controlBounds)) {
-        selection.add(`component/${i}`);
+      if (!sectRect(selRect, components[i].controlBounds)) {
+        continue;
       }
+      // TODO: properly test intersection with the convex hull
+      selection.add(`component/${i}`);
     }
     return selection;
   }
