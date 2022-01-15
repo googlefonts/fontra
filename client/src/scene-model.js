@@ -92,19 +92,6 @@ export class SceneModel {
     }
   }
 
-  async setSelectedGlyph(glyphName) {
-    this._selectedGlyphName = glyphName
-    const glyph = await this.font.getGlyph(glyphName);
-    if (glyph === null || this._selectedGlyphName != glyphName) {
-      return false;
-    }
-    this.glyph = glyph;
-    await this.setAxisValues(this.userVarLocation);
-    this.selection = new Set();
-    this.hoverSelection = new Set();
-    return true;
-  }
-
   getAxisValues() {
     return this.userVarLocation;
   }
@@ -112,40 +99,6 @@ export class SceneModel {
   async setAxisValues(values) {
     this.userVarLocation = values;
     delete this._cachingFont;
-
-  }
-
-  async _instantiateGlyph(varLocation) {
-    try {
-      this.instance = this.glyph.instantiate(varLocation);
-    } catch(error) {
-      if (error.name !== "VariationError") {
-        throw error;
-      }
-      const nearestSource = findClosestSourceIndexFromLocation(this.glyph, varLocation);
-      console.log(`Interpolation error while instantiating ${this.glyph.name}`);
-      this.instance = this.glyph.sources[nearestSource.index].source;
-    }
-    this.hoverSelection = new Set();
-    this.path = this.instance.path;
-    this.path2d = new Path2D();
-    this.path.drawToPath2d(this.path2d);
-
-    let compoPaths2d = [];
-    this.componentsBounds = [];
-    if (!!this.instance.components) {
-      const compoPaths = await this.instance.getComponentPathsFlattened(
-        async glyphName => await this.font.getGlyph(glyphName),
-        varLocation,
-      );
-      compoPaths2d = compoPaths.map(path => {
-        const path2d = new Path2D();
-        path.drawToPath2d(path2d);
-        return path2d;
-      });
-      this.componentsBounds = compoPaths.map(path => path.getControlBounds());
-    }
-    this.componentPaths = compoPaths2d;
   }
 
   async getAxisInfo() {
@@ -170,11 +123,13 @@ export class SceneModel {
 
   getSourcesInfo() {
     const sourcesInfo = [];
-    if (!this.glyph) {
+    if (!this.selectedGlyph) {
       return sourcesInfo;
     }
-    for (let i = 0; i < this.glyph.sources.length; i++) {
-      let name = this.glyph.sources[i].name;
+    const positionedGlyph = this.getSelectedGlyph();
+    const glyph = this.font.getCachedGlyph(positionedGlyph.glyph.name);
+    for (let i = 0; i < glyph.sources.length; i++) {
+      let name = glyph.sources[i].name;
       if (!name) {
         name = `source${i}`;
       }
@@ -184,10 +139,13 @@ export class SceneModel {
   }
 
   async setSelectedSource(sourceInfo) {
-    if (!this.glyph) {
+    if (!this.selectedGlyph) {
       return;
     }
-    const source = this.glyph.sources[sourceInfo.sourceIndex];
+    const positionedGlyph = this.getSelectedGlyph();
+    const glyph = this.font.getCachedGlyph(positionedGlyph.glyph.name);
+
+    const source = glyph.sources[sourceInfo.sourceIndex];
     this.userVarLocation = {};
     for (const axisInfo of await this.getAxisInfo()) {
       this.userVarLocation[axisInfo.name] = axisInfo.defaultValue;
@@ -197,7 +155,6 @@ export class SceneModel {
       this.userVarLocation[baseName] = value;
     }
     this.currentSourceIndex = sourceInfo.sourceIndex;
-    await this._instantiateGlyph(source.location);
     delete this._cachingFont;  // Should be implied by this.userVarLocation assignment
     await this.updateScene();
   }

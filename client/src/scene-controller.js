@@ -198,14 +198,6 @@ export class SceneController {
     }
   }
 
-  async setSelectedGlyph(glyphName) {
-    const didSetGlyph = await this.sceneModel.setSelectedGlyph(glyphName);
-    if (didSetGlyph) {
-      this.canvasController.setNeedsUpdate();
-    }
-    return didSetGlyph;
-  }
-
   getAxisInfo() {
     return this.sceneModel.getAxisInfo();
   }

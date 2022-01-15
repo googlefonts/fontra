@@ -52,6 +52,11 @@ export class Font {
     return glyph;
   }
 
+  getCachedGlyph(glyphName) {
+    // TODO: this should not be needed once the above TODO is implemented.
+    return this._glyphsCache.get(glyphName);
+  }
+
 }
 
 

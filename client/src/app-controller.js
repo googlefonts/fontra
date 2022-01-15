@@ -89,7 +89,8 @@ export class AppController {
 
     this.sceneController = new SceneController(sceneModel, canvasController)
     this.sceneController.addEventListener("glyphChanged", event => {
-      console.log("glyph selection changed", event.detail.getSelectedGlyphName());
+      this.sourcesList.setItems(this.sceneController.getSourcesInfo());
+      this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex);
     });
 
     this.initOverlayItems(canvas);
