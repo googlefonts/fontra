@@ -276,7 +276,7 @@ export class SceneModel {
           point.y - positionedGlyph.y,
           positionedGlyph.glyph.convexHull,
         )) {
-          return {"lineIndex": i, "glyphIndex": j};
+          return `${i}/${j}`;
         }
         // if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
         //   return {"lineIndex": i, "glyphIndex": j};
