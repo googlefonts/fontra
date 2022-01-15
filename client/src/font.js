@@ -37,6 +37,9 @@ export class Font {
     if (this.reversedCmap[glyphName] === undefined) {
       return null;
     }
+    // TODO: if this get called multiple times for the same glyph before
+    // the glyph is loaded, we should return the same promise, to avoid
+    // loading twice.
     let glyph = this._glyphsCache.get(glyphName);
     if (glyph === undefined) {
       glyph = await this.fontDataEngine.getGlyph(glyphName);
