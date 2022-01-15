@@ -212,12 +212,18 @@ export class SceneModel {
     for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
       return new Set([`point/${hit.pointIndex}`])
     }
-    // for (let i = this.componentPaths.length - 1; i >= 0; i--) {
-    //   const path = this.componentPaths[i];
-    //   if (this.isPointInPath(path, point.x, point.y)) {
-    //     return new Set([`component/${i}`])
-    //   }
-    // }
+    const components = positionedGlyph.glyph.components;
+    const x = point.x - positionedGlyph.x;
+    const y = point.y - positionedGlyph.y;
+    for (let i = components.length - 1; i >= 0; i--) {
+      const component = components[i];
+      if (!pointInRect(x, y, component.controlBounds)) {
+        continue;
+      }
+      if (pointInConvexPolygon(x, y, component.convexHull)) {
+        return new Set([`component/${i}`])
+      }
+    }
 
     return new Set();
   }

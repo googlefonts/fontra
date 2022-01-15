@@ -153,8 +153,8 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
       context.shadowBlur = 18 * window.devicePixelRatio;  // shadowBlur is in device space
       // context.shadowOffsetX = 2;
       // context.shadowOffsetY = 2;
-      context.fillStyle = parms.componentFillColor;;
-      context.fill(model.componentPaths[index]);
+      context.fillStyle = parms.componentFillColor;
+      context.fill(positionedGlyph.glyph.components[index].path2d);
       context.restore();
     }
   }
