@@ -254,7 +254,8 @@ function findSourceIndexFromLocation(glyph, varLocation) {
     const source = glyph.sources[i];
     let found = true;
     for (const axis of glyph.axes) {
-      let varValue = varLocation[axis.name];
+      const baseName = _getAxisBaseName(axis.name);
+      let varValue = varLocation[baseName];
       let sourceValue = source.location[axis.name];
       if (varValue === undefined) {
         varValue = axis.defaultValue;
