@@ -88,7 +88,7 @@ export class AppController {
     canvasController.sceneView = sceneView;
 
     this.sceneController = new SceneController(sceneModel, canvasController)
-    this.sceneController.addEventListener("glyphChanged", event => {
+    this.sceneController.addEventListener("selectedGlyphChanged", event => {
       this.sourcesList.setItems(this.sceneController.getSourcesInfo());
       this.sourcesList.setSelectedItemIndex(this.sceneController.getCurrentSourceIndex());
     });

@@ -21,8 +21,8 @@ export class SceneController {
     this._eventElement.addEventListener(eventName, handler, options);
   }
 
-  _dispatchGlyphSelectionChanged() {
-    const event = new CustomEvent("glyphChanged", {
+  _dispatchSelectedGlyphChanged() {
+    const event = new CustomEvent("selectedGlyphChanged", {
       "bubbles": false,
       "detail": this,
     });
@@ -174,7 +174,7 @@ export class SceneController {
     if (this.sceneModel.selectedGlyph != selectedGlyph) {
       this.sceneModel.selectedGlyph = selectedGlyph;
       this.canvasController.setNeedsUpdate();
-      this._dispatchGlyphSelectionChanged();
+      this._dispatchSelectedGlyphChanged();
     }
   }
 
