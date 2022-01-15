@@ -113,12 +113,6 @@ export class SceneModel {
     this.userVarLocation = values;
     delete this._cachingFont;
 
-    // TODO: remove
-    if (this.glyph) {
-      const varLocation  = mapNLILocation(this.userVarLocation, this.glyph.axes);
-      this.currentSourceIndex = findSourceIndexFromLocation(this.glyph, varLocation);
-      await this._instantiateGlyph(varLocation);
-    }
   }
 
   async _instantiateGlyph(varLocation) {
