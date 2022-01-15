@@ -263,6 +263,8 @@ export class AppController {
     }
     this.canvasController.sceneView = this.cleanSceneView;
     this.canvasController.setNeedsUpdate();
+    const overlay = document.querySelector("#overlay-layer");
+    overlay.classList.add("overlay-layer-hidden");
   }
 
   spaceKeyUpHandler(event) {
@@ -271,6 +273,8 @@ export class AppController {
     }
     this.canvasController.sceneView = this.defaultSceneView;
     this.canvasController.setNeedsUpdate();
+    const overlay = document.querySelector("#overlay-layer");
+    overlay.classList.remove("overlay-layer-hidden");
   }
 
 }
