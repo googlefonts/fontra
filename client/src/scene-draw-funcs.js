@@ -80,29 +80,33 @@ export function drawPathLayer(model, controller) {
 
 
 export function drawHandlesLayer(model, controller) {
-  if (!model.path) {
+  if (!model.selectedGlyph) {
     return;
   }
   const context = controller.context;
+  const positionedGlyph = model.getSelectedGlyph();
   const nodeSize = controller.drawingParameters.nodeSize;
 
+  context.translate(positionedGlyph.x, positionedGlyph.y);
   context.strokeStyle = controller.drawingParameters.handleColor;
   context.lineWidth = controller.drawingParameters.handleLineWidth;
-  for (const [pt1, pt2] of model.path.iterHandles()) {
+  for (const [pt1, pt2] of positionedGlyph.glyph.outlinePath.iterHandles()) {
     strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
   }
 }
 
 
 export function drawNodesLayer(model, controller) {
-  if (!model.path) {
+  if (!model.selectedGlyph) {
     return;
   }
   const context = controller.context;
+  const positionedGlyph = model.getSelectedGlyph();
   const nodeSize = controller.drawingParameters.nodeSize;
 
+  context.translate(positionedGlyph.x, positionedGlyph.y);
   context.fillStyle = controller.drawingParameters.nodeFillColor;
-  for (const pt of model.path.iterPoints()) {
+  for (const pt of positionedGlyph.glyph.outlinePath.iterPoints()) {
     fillNode(context, pt.x, pt.y, nodeSize, pt.type, pt.smooth);
   }
 }
