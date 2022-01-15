@@ -68,7 +68,7 @@ export class SceneModel {
         if (glyphLines !== this.glyphLines) {
           return;  // abort, a later call supersedes us
         }
-        this._buildScene(glyphLines);
+        this.positionedLines = buildScene(this.cachingFont, glyphLines);
         yield;
         promises = Object.values(glyphPromises);
       } while (promises.length);
@@ -79,40 +79,9 @@ export class SceneModel {
       if (glyphLines !== this.glyphLines) {
         return;  // abort, a later call supersedes us
       }
-      this._buildScene(glyphLines);
+      this.positionedLines = buildScene(this.cachingFont, glyphLines);
       yield;
     }
-  }
-
-  _buildScene(glyphLines) {
-    const cachingFont = this.cachingFont;
-    let y = 0;
-    const positionedLines = [];
-    for (const glyphLine of glyphLines) {
-      const positionedLine = {"glyphs": []};
-      let x = 0;
-      for (const glyphInfo of glyphLine) {
-        const glyphInstance = cachingFont.getCachedGlyphInstance(glyphInfo.glyphName);
-        if (glyphInstance) {
-          const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
-          positionedLine.glyphs.push({
-            "x": x,
-            "y": y,
-            "glyph": glyphInstance,
-            "bounds": bounds,
-          })
-          x += glyphInstance.xAdvance;
-        }
-      }
-      y -= 1000;  // TODO
-      if (positionedLine.glyphs.length) {
-        positionedLine.bounds = unionRect(
-          ...positionedLine.glyphs.map(glyph => glyph.bounds).filter(bounds => bounds !== undefined)
-        );
-        positionedLines.push(positionedLine);
-      }
-    }
-    this.positionedLines = positionedLines;
   }
 
   async setSelectedGlyph(glyphName) {
@@ -385,4 +354,35 @@ function mergeAxisInfo(axisInfos) {
     }
   }
   return Object.values(mergedAxisInfo);
+}
+
+
+function buildScene(cachingFont, glyphLines) {
+  let y = 0;
+  const positionedLines = [];
+  for (const glyphLine of glyphLines) {
+    const positionedLine = {"glyphs": []};
+    let x = 0;
+    for (const glyphInfo of glyphLine) {
+      const glyphInstance = cachingFont.getCachedGlyphInstance(glyphInfo.glyphName);
+      if (glyphInstance) {
+        const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
+        positionedLine.glyphs.push({
+          "x": x,
+          "y": y,
+          "glyph": glyphInstance,
+          "bounds": bounds,
+        })
+        x += glyphInstance.xAdvance;
+      }
+    }
+    y -= 1000;  // TODO
+    if (positionedLine.glyphs.length) {
+      positionedLine.bounds = unionRect(
+        ...positionedLine.glyphs.map(glyph => glyph.bounds).filter(bounds => bounds !== undefined)
+      );
+      positionedLines.push(positionedLine);
+    }
+  }
+  return positionedLines;
 }
