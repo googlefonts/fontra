@@ -149,9 +149,6 @@ export class SceneModel {
   }
 
   async getAxisInfo() {
-    if (this.glyph && this.glyph.axes) {
-      return Object.values(getAxisInfoFromGlyph(this.glyph));
-    }
     if (this.glyphLines) {
       const axisInfos = {};
       for (const line of this.glyphLines) {
@@ -161,7 +158,9 @@ export class SceneModel {
             continue
           }
           const glyph = await this.font.getGlyph(glyphName);
-          axisInfos[glyphName] = getAxisInfoFromGlyph(glyph);
+          if (glyph) {
+            axisInfos[glyphName] = getAxisInfoFromGlyph(glyph);
+          }
         }
       }
       return mergeAxisInfo(Object.values(axisInfos));
