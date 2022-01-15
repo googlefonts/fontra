@@ -63,6 +63,10 @@ class CachingGlyphInstance {
     return this._path2d;
   }
 
+  get outlinePath() {
+    return this.glyphInstance.path;
+  }
+
   get outlinePath2d() {
     if (this._outlinePath2d === undefined) {
       this._outlinePath2d = new Path2D();
