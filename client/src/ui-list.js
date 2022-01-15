@@ -48,12 +48,12 @@ export class List {
     return this.items[this.selectedItemIndex];
   }
 
-  setSelectedItem(item) {
+  setSelectedItem(item, shouldDispatchEvent = false) {
     const index = this.items.indexOf(item);
     if (index >= 0) {
-      this.setSelectedItemIndex(index)
+      this.setSelectedItemIndex(index, shouldDispatchEvent);
     } else {
-      this.setSelectedItemIndex(undefined)
+      this.setSelectedItemIndex(undefined, shouldDispatchEvent);
     }
   }
 
@@ -104,14 +104,14 @@ export class List {
     const target = event.target;
     if (target.parentNode === this.contents) {
       // clicked on row
-      this.setSelectedItemIndex(target.dataset.rowIndex);
+      this.setSelectedItemIndex(target.dataset.rowIndex, true);
     } else if (target.parentNode.parentNode === this.contents) {
       // clicked on cell
-      this.setSelectedItemIndex(target.parentNode.dataset.rowIndex);
+      this.setSelectedItemIndex(target.parentNode.dataset.rowIndex, true);
     }
   }
 
-  setSelectedItemIndex(rowIndex, shouldDispatchEvent = true) {
+  setSelectedItemIndex(rowIndex, shouldDispatchEvent = false) {
     rowIndex = Number(rowIndex);
     if (rowIndex === this.selectedItemIndex) {
       // nothing to do
@@ -159,7 +159,7 @@ export class List {
       rowIndex = Math.min(Math.max(rowIndex, 0), this.items.length - 1);
     }
     this._isKeyRepeating = event.repeat;
-    this.setSelectedItemIndex(rowIndex);
+    this.setSelectedItemIndex(rowIndex, true);
     const newRow = this.contents.children[rowIndex];
     newRow?.scrollIntoView({behavior: "auto", block: "nearest", inline: "nearest"});
   }

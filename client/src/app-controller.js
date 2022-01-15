@@ -126,7 +126,7 @@ export class AppController {
     this.sliders = new Sliders("axis-sliders", []);
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
       await this.sceneController.setAxisValues(event.detail.values);
-      this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
+      this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex);
     }));
   }
 
@@ -225,10 +225,6 @@ export class AppController {
     const textEntryElement = document.querySelector("#text-entry");
     textEntryElement.innerText = text;
     this.textFieldChangedCallback(textEntryElement);
-    // this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
-    // this.sourcesList.setItems(this.sceneController.getSourcesInfo());
-    // this.sliders.values = this.sceneController.getAxisValues();
-    // this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex, false);
   }
 
   async textFieldChangedCallback(element) {
