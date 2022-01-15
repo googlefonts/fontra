@@ -99,7 +99,6 @@ export class SceneController {
     const size = this.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
     this.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
-    console.log(this.hoverSelection);
     this.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
   }
 
