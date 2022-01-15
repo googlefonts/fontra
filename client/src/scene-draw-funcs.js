@@ -117,7 +117,7 @@ export function drawHoverLayer(model, controller) {
 
 
 function _drawSelectionLayer(displayKey, selection, model, controller) {
-  if (!selection) {
+  if (!model.selectedGlyph || !selection || !selection.size) {
     return;
   }
   const positionedGlyph = model.getSelectedGlyph();
@@ -129,7 +129,7 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
   const nodeSize = parms.nodeSize;
   const lineWidth = parms.nodeLineWidth;
   const color = parms.nodeColor;
-  context.save();
+  context.translate(positionedGlyph.x, positionedGlyph.y);
   context.globalCompositeOperation = "source-over";
   context.lineJoin = "round";
   for (const selItem of selectionStrings) {
@@ -158,7 +158,6 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
       context.restore();
     }
   }
-  context.restore();
 }
 
 
