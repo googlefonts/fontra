@@ -46,19 +46,19 @@ class CachingGlyphInstance {
     this.verticalOrigin = glyphInstance.verticalOrigin;
   }
 
-  get path() {
-    if (this._path === undefined) {
+  get flattenedPath() {
+    if (this._flattenedPath === undefined) {
       const paths = [this.glyphInstance.path];
       paths.push(...this.componentPaths.map(flattenComponentPaths));
-      this._path = joinPaths(paths);
+      this._flattenedPath = joinPaths(paths);
     }
-    return this._path;
+    return this._flattenedPath;
   }
 
   get path2d() {
     if (this._path2d === undefined) {
       this._path2d = new Path2D();
-      this.path.drawToPath2d(this._path2d);
+      this.flattenedPath.drawToPath2d(this._path2d);
     }
     return this._path2d;
   }
@@ -92,14 +92,14 @@ class CachingGlyphInstance {
 
   get controlBounds() {
     if (this._controlBounds === undefined) {
-      this._controlBounds = this.path.getControlBounds();
+      this._controlBounds = this.flattenedPath.getControlBounds();
     }
     return this._controlBounds;
   }
 
   get convexHull() {
     if (this._convexHull === undefined) {
-      this._convexHull = this.path.getConvexHull();
+      this._convexHull = this.flattenedPath.getConvexHull();
     }
     return this._convexHull;
   }
