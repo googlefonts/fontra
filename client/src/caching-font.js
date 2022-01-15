@@ -9,7 +9,11 @@ export class CachingFont {
     this.cachedGlyphs = {};
   }
 
-  async getGlyphInstance(glyphName) {
+  getCachedGlyphInstance(glyphName) {
+    return this.cachedGlyphs[glyphName];
+  }
+
+  async loadGlyphInstance(glyphName) {
     if (this.font.reversedCmap[glyphName] === undefined) {
       return null;
     }

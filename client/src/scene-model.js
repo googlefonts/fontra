@@ -43,7 +43,7 @@ export class SceneModel {
 
   async *updateSceneIncrementally(incrementally = true) {
     const glyphPromises = {};
-    const glyphs = {};
+    const loadedGlyphs = {};
     const glyphLines = this.glyphLines;
     for (const line of glyphLines) {
       for (const glyph of line) {
@@ -51,7 +51,8 @@ export class SceneModel {
           continue;
         }
         glyphPromises[glyph.glyphName] = (async (glyphName) => {
-          glyphs[glyphName] = await this.cachingFont.getGlyphInstance(glyphName);
+          await this.cachingFont.loadGlyphInstance(glyphName);
+          loadedGlyphs[glyphName] = true;
         })(glyph.glyphName);
       }
     }
@@ -60,12 +61,11 @@ export class SceneModel {
       do {
         if (promises.length) {
           await Promise.race(promises);
-          for (const glyphName in glyphs) {
+          for (const glyphName in loadedGlyphs) {
             delete glyphPromises[glyphName];
           }
         }
-        // console.log("build scene", glyphs);
-        this._buildScene(glyphs, glyphLines);
+        this._buildScene(glyphLines);
         yield;
         promises = Object.values(glyphPromises);
       } while (promises.length);
@@ -73,19 +73,20 @@ export class SceneModel {
       if (promises.length) {
         await Promise.all(promises);
       }
-      this._buildScene(glyphs, glyphLines);
+      this._buildScene(glyphLines);
       yield;
     }
   }
 
-  _buildScene(glyphs, glyphLines) {
+  _buildScene(glyphLines) {
+    const cachingFont = this.cachingFont;
     let y = 0;
     const positionedLines = [];
     for (const glyphLine of glyphLines) {
       const positionedLine = {"glyphs": []};
       let x = 0;
       for (const glyphInfo of glyphLine) {
-        const glyphInstance = glyphs[glyphInfo.glyphName];
+        const glyphInstance = cachingFont.getCachedGlyphInstance(glyphInfo.glyphName);
         if (glyphInstance) {
           const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
           positionedLine.glyphs.push({
