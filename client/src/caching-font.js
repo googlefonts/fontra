@@ -77,9 +77,7 @@ class CachingGlyphInstance {
 
   get componentsPath() {
     if (this._componentsPath === undefined) {
-      if (this.componentPaths) {
-        this._componentsPath = joinPaths(this.componentPaths.map(flattenComponentPaths));
-      }
+      this._componentsPath = joinPaths(this.componentPaths.map(flattenComponentPaths));
     }
     return this._componentsPath;
   }
