@@ -221,8 +221,8 @@ export class SceneController {
     this.canvasController.setNeedsUpdate();
   }
 
-  get currentSourceIndex() {
-    return this.sceneModel.currentSourceIndex;
+  getCurrentSourceIndex() {
+    return this.sceneModel.getCurrentSourceIndex();
   }
 
 }

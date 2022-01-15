@@ -90,7 +90,7 @@ export class AppController {
     this.sceneController = new SceneController(sceneModel, canvasController)
     this.sceneController.addEventListener("glyphChanged", event => {
       this.sourcesList.setItems(this.sceneController.getSourcesInfo());
-      this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex);
+      this.sourcesList.setSelectedItemIndex(this.sceneController.getCurrentSourceIndex());
     });
 
     this.initOverlayItems(canvas);
@@ -130,7 +130,7 @@ export class AppController {
     this.sliders = new Sliders("axis-sliders", []);
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
       await this.sceneController.setAxisValues(event.detail.values);
-      this.sourcesList.setSelectedItemIndex(this.sceneController.currentSourceIndex);
+      this.sourcesList.setSelectedItemIndex(this.sceneController.getCurrentSourceIndex());
     }));
   }
 

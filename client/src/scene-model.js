@@ -105,7 +105,7 @@ export class SceneModel {
     delete this._cachingFont;
   }
 
-  get currentSourceIndex() {
+  getCurrentSourceIndex() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {
       const glyph = this.font.getCachedGlyph(glyphName);
