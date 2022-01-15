@@ -23,6 +23,14 @@ export class SceneModel {
     return this._cachingFont;
   }
 
+  getSelectedGlyph() {
+    if (!this.selectedGlyph) {
+      return undefined;
+    }
+    const [lineIndex, glyphIndex] = this.selectedGlyph.split("/");
+    return this.positionedLines[lineIndex]?.glyphs[glyphIndex];
+  }
+
   canSelect() {
     return !!this.instance;
   }
