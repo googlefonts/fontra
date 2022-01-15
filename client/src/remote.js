@@ -11,7 +11,7 @@ export async function getRemoteProxy(wsURL) {
   await remote.connect();
   const app = new Proxy(remote, {
     get: (remote, propertyName, app) => {
-      if (propertyName === "then") {
+      if (propertyName === "then" || propertyName === "toJSON") {
         // Some introspection tries to see whether we can do "then",
         // and will treat us as a promise...
         return undefined;
