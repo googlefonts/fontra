@@ -181,9 +181,10 @@ export function drawRectangleSelectionLayer(model, controller) {
 
 
 function fillNode(context, x, y, nodeSize, pointType, isSmooth) {
-  if (pointType) {
+  const radius = pointType ? nodeSize * 0.35 : nodeSize * 0.5;
+  if (pointType || isSmooth) {
     context.beginPath();
-    context.arc(x, y, nodeSize / 2, 0, 2 * Math.PI, false);
+    context.arc(x, y, radius, 0, 2 * Math.PI, false);
     context.fill();
   } else {
     context.fillRect(
