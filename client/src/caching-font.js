@@ -48,9 +48,7 @@ class CachingGlyphInstance {
 
   get flattenedPath() {
     if (this._flattenedPath === undefined) {
-      const paths = [this.glyphInstance.path];
-      paths.push(...this.nestedComponentPaths.map(flattenComponentPaths));
-      this._flattenedPath = joinPaths(paths);
+      this._flattenedPath = joinPaths([this.glyphInstance.path, this.componentsPath]);
     }
     return this._flattenedPath;
   }
