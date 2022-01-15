@@ -278,9 +278,6 @@ export class SceneModel {
         )) {
           return `${i}/${j}`;
         }
-        // if (this.isPointInPath(positionedGlyph.glyph.path2d, point.x - positionedGlyph.x, point.y - positionedGlyph.y)) {
-        //   return {"lineIndex": i, "glyphIndex": j};
-        // }
       }
     }
     return undefined;
