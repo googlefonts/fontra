@@ -209,7 +209,7 @@ export class SceneModel {
     }
     const positionedGlyph = this.getSelectedGlyph();
     const selRect = centeredRect(point.x - positionedGlyph.x, point.y - positionedGlyph.y, size);
-    for (const hit of positionedGlyph.glyph.outlinePath.iterPointsInRect(selRect)) {
+    for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
       return new Set([`point/${hit.pointIndex}`])
     }
     // for (let i = this.componentPaths.length - 1; i >= 0; i--) {
@@ -229,7 +229,7 @@ export class SceneModel {
     }
     const positionedGlyph = this.getSelectedGlyph();
     selRect = offsetRect(selRect, -positionedGlyph.x, -positionedGlyph.y);
-    for (const hit of positionedGlyph.glyph.outlinePath.iterPointsInRect(selRect)) {
+    for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
       selection.add(`point/${hit.pointIndex}`);
     }
     // for (let i = 0; i < this.componentsBounds.length; i++) {

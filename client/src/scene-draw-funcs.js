@@ -69,7 +69,7 @@ export function drawPathLayer(model, controller) {
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.lineWidth = controller.drawingParameters.pathLineWidth;
   context.strokeStyle = controller.drawingParameters.pathStrokeColor;
-  context.stroke(positionedGlyph.glyph.outlinePath2d);
+  context.stroke(positionedGlyph.glyph.path2d);
 }
 
 
@@ -84,7 +84,7 @@ export function drawHandlesLayer(model, controller) {
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.strokeStyle = controller.drawingParameters.handleColor;
   context.lineWidth = controller.drawingParameters.handleLineWidth;
-  for (const [pt1, pt2] of positionedGlyph.glyph.outlinePath.iterHandles()) {
+  for (const [pt1, pt2] of positionedGlyph.glyph.path.iterHandles()) {
     strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
   }
 }
@@ -100,7 +100,7 @@ export function drawNodesLayer(model, controller) {
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.fillStyle = controller.drawingParameters.nodeFillColor;
-  for (const pt of positionedGlyph.glyph.outlinePath.iterPoints()) {
+  for (const pt of positionedGlyph.glyph.path.iterPoints()) {
     fillNode(context, pt.x, pt.y, nodeSize, pt.type, pt.smooth);
   }
 }
@@ -138,7 +138,7 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
     const index = items[1];
     const glyphIndex = items[2];
     if (tp === "point") {
-      const point = positionedGlyph.glyph.outlinePath.getPoint(index);
+      const point = positionedGlyph.glyph.path.getPoint(index);
       // context.lineWidth = lineWidth;
       // context.strokeStyle = color;
       // strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth);
