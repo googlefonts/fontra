@@ -238,11 +238,12 @@ export class SceneModel {
     for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
       selection.add(`point/${hit.pointIndex}`);
     }
-    // for (let i = 0; i < this.componentsBounds.length; i++) {
-    //   if (sectRect(selRect, this.componentsBounds[i])) {
-    //     selection.add(`component/${i}`);
-    //   }
-    // }
+    const components = positionedGlyph.glyph.components;
+    for (let i = 0; i < components.length; i++) {
+      if (sectRect(selRect, components[i].controlBounds)) {
+        selection.add(`component/${i}`);
+      }
+    }
     return selection;
   }
 
