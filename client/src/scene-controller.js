@@ -14,6 +14,23 @@ export class SceneController {
       hover: event => this.handleHover(event),
       element: canvasController.canvas,
     });
+    this._eventElement = document.createElement("div");
+  }
+
+  addEventListener(eventName, handler, options) {
+    this._eventElement.addEventListener(eventName, handler, options);
+  }
+
+  _dispatchGlyphSelectionChanged() {
+    const event = new CustomEvent("glyphChanged", {
+      "bubbles": false,
+      "detail": this,
+    });
+    this._eventElement.dispatchEvent(event);
+  }
+
+  getSelectedGlyphName() {
+    return this.sceneModel.getSelectedGlyph()?.glyph.name;
   }
 
   async handleDrag(eventStream, initialEvent) {
@@ -157,6 +174,7 @@ export class SceneController {
     if (this.sceneModel.selectedGlyph != selectedGlyph) {
       this.sceneModel.selectedGlyph = selectedGlyph;
       this.canvasController.setNeedsUpdate();
+      this._dispatchGlyphSelectionChanged();
     }
   }
 

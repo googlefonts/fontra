@@ -88,6 +88,9 @@ export class AppController {
     canvasController.sceneView = sceneView;
 
     this.sceneController = new SceneController(sceneModel, canvasController)
+    this.sceneController.addEventListener("glyphChanged", event => {
+      console.log("glyph selection changed", event.detail.getSelectedGlyphName());
+    });
 
     this.initOverlayItems(canvas);
     this.initMiniConsole();
@@ -192,7 +195,13 @@ export class AppController {
     console.log = (...args) => {
       this._console_log(...args);
       this.miniConsole.innerText = args.map(
-        item => typeof item == "string" ? item : JSON.stringify(item)
+        item => {
+          try {
+            return typeof item == "string" ? item : JSON.stringify(item);
+          } catch(error) {
+            return item;
+          }
+        }
       ).join(" ");
       this.miniConsole.style.display = "inherit";
       clearMiniConsole();
