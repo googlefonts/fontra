@@ -3,9 +3,13 @@ export function drawMultiGlyphsLayer(model, controller) {
     return;
   }
   const context = controller.context;
+  const selectedGlyph = model.getSelectedGlyph();
   context.fillStyle = controller.drawingParameters.glyphFillColor;
   for (const glyphLine of model.positionedLines) {
     for (const glyph of glyphLine.glyphs) {
+      if (glyph === selectedGlyph) {
+        continue;
+      }
       context.save();
       context.translate(glyph.x, glyph.y);
 
@@ -21,18 +25,11 @@ export function drawMultiGlyphsLayer(model, controller) {
 
 
 export function drawSelectedGlyphLayer(model, controller) {
-  if (model.hoveredGlyph) {
-    _drawSelectedGlyphLayer(model.hoveredGlyph, model, controller);
+  if (!model.hoveredGlyph || model.hoveredGlyph === model.selectedGlyph) {
+    return;
   }
-  if (model.selectedGlyph && model.selectedGlyph != model.hoveredGlyph) {
-    _drawSelectedGlyphLayer(model.selectedGlyph, model, controller);
-  }
-}
-
-
-function _drawSelectedGlyphLayer(selectedGlyph, model, controller) {
   const context = controller.context;
-  const [lineIndex, glyphIndex] = selectedGlyph.split("/");
+  const [lineIndex, glyphIndex] = model.hoveredGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
   context.save();
   context.lineJoin = "round";
@@ -52,22 +49,33 @@ function _drawSelectedGlyphLayer(selectedGlyph, model, controller) {
 
 
 export function drawComponentsLayer(model, controller) {
+  if (!model.selectedGlyph) {
+    return;
+  }
   const context = controller.context;
+  const positionedGlyph = model.getSelectedGlyph();
 
-  context.fillStyle = controller.drawingParameters.componentFillColor;
-  model.componentPaths?.forEach(path => context.fill(path));
+  context.save();
+  context.translate(positionedGlyph.x, positionedGlyph.y);
+  context.fillStyle = "#888"; // controller.drawingParameters.componentFillColor;
+  context.fill(positionedGlyph.glyph.componentsPath2d);
+  context.restore();
 }
 
 
 export function drawPathLayer(model, controller) {
-  if (!model.path) {
+  if (!model.selectedGlyph) {
     return;
   }
   const context = controller.context;
+  const positionedGlyph = model.getSelectedGlyph();
 
+  context.save();
+  context.translate(positionedGlyph.x, positionedGlyph.y);
   context.lineWidth = controller.drawingParameters.pathLineWidth;
   context.strokeStyle = controller.drawingParameters.pathStrokeColor;
-  context.stroke(model.path2d);
+  context.stroke(positionedGlyph.glyph.outlinePath2d);
+  context.restore();
 }
 
 
