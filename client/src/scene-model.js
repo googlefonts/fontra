@@ -204,18 +204,20 @@ export class SceneModel {
   }
 
   selectionAtPoint(point, size) {
-    if (this.instance !== undefined) {
-      const selRect = centeredRect(point.x, point.y, size);
-      for (const hit of this.instance.path.iterPointsInRect(selRect)) {
-        return new Set([`point/${hit.pointIndex}`])
-      }
-      for (let i = this.componentPaths.length - 1; i >= 0; i--) {
-        const path = this.componentPaths[i];
-        if (this.isPointInPath(path, point.x, point.y)) {
-          return new Set([`component/${i}`])
-        }
-      }
+    if (!this.selectedGlyph) {
+      return;
     }
+    const positionedGlyph = this.getSelectedGlyph();
+    const selRect = centeredRect(point.x - positionedGlyph.x, point.y - positionedGlyph.y, size);
+    for (const hit of positionedGlyph.glyph.outlinePath.iterPointsInRect(selRect)) {
+      return new Set([`point/${hit.pointIndex}`])
+    }
+    // for (let i = this.componentPaths.length - 1; i >= 0; i--) {
+    //   const path = this.componentPaths[i];
+    //   if (this.isPointInPath(path, point.x, point.y)) {
+    //     return new Set([`component/${i}`])
+    //   }
+    // }
 
     return new Set();
   }

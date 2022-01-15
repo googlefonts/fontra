@@ -120,6 +120,7 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
   if (!selection) {
     return;
   }
+  const positionedGlyph = model.getSelectedGlyph();
   const selectionStrings = Array.from(selection);
   selectionStrings.sort();
 
@@ -137,7 +138,7 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
     const index = items[1];
     const glyphIndex = items[2];
     if (tp === "point") {
-      const point = model.path.getPoint(index);
+      const point = positionedGlyph.glyph.outlinePath.getPoint(index);
       // context.lineWidth = lineWidth;
       // context.strokeStyle = color;
       // strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth);
