@@ -30,7 +30,7 @@ export class SceneController {
   }
 
   getSelectedGlyphName() {
-    return this.sceneModel.getSelectedGlyph()?.glyph.name;
+    return this.sceneModel.getSelectedGlyphName();
   }
 
   async handleDrag(eventStream, initialEvent) {

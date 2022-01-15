@@ -31,6 +31,10 @@ export class SceneModel {
     return this.positionedLines[lineIndex]?.glyphs[glyphIndex];
   }
 
+  getSelectedGlyphName() {
+    return this.getSelectedGlyph()?.glyph.name;
+  }
+
   canSelect() {
     return !!this.selectedGlyph;
   }
@@ -101,6 +105,16 @@ export class SceneModel {
     delete this._cachingFont;
   }
 
+  get currentSourceIndex() {
+    const glyphName = this.getSelectedGlyphName();
+    if (glyphName) {
+      const glyph = this.font.getCachedGlyph(glyphName);
+      return findSourceIndexFromLocation(glyph, this.userVarLocation);
+    } else {
+      return undefined;
+    }
+  }
+
   async getAxisInfo() {
     if (this.glyphLines) {
       const axisInfos = {};
@@ -154,7 +168,6 @@ export class SceneModel {
       const baseName = _getAxisBaseName(name);
       userVarLocation[baseName] = value;
     }
-    this.currentSourceIndex = sourceInfo.sourceIndex;
     this.setAxisValues(userVarLocation);
     await this.updateScene();
   }
