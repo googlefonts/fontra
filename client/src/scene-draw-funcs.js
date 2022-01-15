@@ -20,19 +20,19 @@ export function drawMultiGlyphsLayer(model, controller) {
 }
 
 
-export function drawHoverGlyphLayer(model, controller) {
+export function drawSelectedGlyphLayer(model, controller) {
   if (model.hoveredGlyph) {
-    _drawHoverGlyphLayer(model.hoveredGlyph, model, controller);
+    _drawSelectedGlyphLayer(model.hoveredGlyph, model, controller);
   }
   if (model.selectedGlyph && model.selectedGlyph != model.hoveredGlyph) {
-    _drawHoverGlyphLayer(model.selectedGlyph, model, controller);
+    _drawSelectedGlyphLayer(model.selectedGlyph, model, controller);
   }
 }
 
 
-function _drawHoverGlyphLayer(glyphInfo, model, controller) {
+function _drawSelectedGlyphLayer(selectedGlyph, model, controller) {
   const context = controller.context;
-  const [lineIndex, glyphIndex] = glyphInfo.split("/");
+  const [lineIndex, glyphIndex] = selectedGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
   context.save();
   context.lineJoin = "round";
