@@ -40,7 +40,7 @@ class CachingGlyphInstance {
   constructor (glyphName, glyphInstance, componentPaths) {
     this.name = glyphName;
     this.glyphInstance = glyphInstance;
-    this.componentPaths = componentPaths;
+    this.nestedComponentPaths = componentPaths;
     this.xAdvance = glyphInstance.xAdvance;
     this.yAdvance = glyphInstance.yAdvance;
     this.verticalOrigin = glyphInstance.verticalOrigin;
@@ -49,7 +49,7 @@ class CachingGlyphInstance {
   get flattenedPath() {
     if (this._flattenedPath === undefined) {
       const paths = [this.glyphInstance.path];
-      paths.push(...this.componentPaths.map(flattenComponentPaths));
+      paths.push(...this.nestedComponentPaths.map(flattenComponentPaths));
       this._flattenedPath = joinPaths(paths);
     }
     return this._flattenedPath;
@@ -77,7 +77,7 @@ class CachingGlyphInstance {
 
   get componentsPath() {
     if (this._componentsPath === undefined) {
-      this._componentsPath = joinPaths(this.componentPaths.map(flattenComponentPaths));
+      this._componentsPath = joinPaths(this.nestedComponentPaths.map(flattenComponentPaths));
     }
     return this._componentsPath;
   }
