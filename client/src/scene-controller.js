@@ -142,9 +142,9 @@ export class SceneController {
     return this.sceneModel.hoveredGlyph;
   }
 
-  set hoveredGlyph(glyphInfo) {
-    if (this.sceneModel.hoveredGlyph != glyphInfo) {
-      this.sceneModel.hoveredGlyph = glyphInfo;
+  set hoveredGlyph(hoveredGlyph) {
+    if (this.sceneModel.hoveredGlyph != hoveredGlyph) {
+      this.sceneModel.hoveredGlyph = hoveredGlyph;
       this.canvasController.setNeedsUpdate();
     }
   }
@@ -153,9 +153,9 @@ export class SceneController {
     return this.sceneModel.selectedGlyph;
   }
 
-  set selectedGlyph(glyphInfo) {
-    if (this.sceneModel.selectedGlyph != glyphInfo) {
-      this.sceneModel.selectedGlyph = glyphInfo;
+  set selectedGlyph(selectedGlyph) {
+    if (this.sceneModel.selectedGlyph != selectedGlyph) {
+      this.sceneModel.selectedGlyph = selectedGlyph;
       this.canvasController.setNeedsUpdate();
     }
   }
