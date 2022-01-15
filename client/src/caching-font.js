@@ -55,12 +55,12 @@ class CachingGlyphInstance {
     return this._flattenedPath;
   }
 
-  get path2d() {
-    if (this._path2d === undefined) {
-      this._path2d = new Path2D();
-      this.flattenedPath.drawToPath2d(this._path2d);
+  get flattenedPath2d() {
+    if (this._flattenedPath2d === undefined) {
+      this._flattenedPath2d = new Path2D();
+      this.flattenedPath.drawToPath2d(this._flattenedPath2d);
     }
-    return this._path2d;
+    return this._flattenedPath2d;
   }
 
   get outlinePath() {

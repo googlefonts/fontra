@@ -17,7 +17,7 @@ export function drawMultiGlyphsLayer(model, controller) {
       // fillPolygon(context, glyph.glyph.convexHull);
       // context.fillStyle = controller.drawingParameters.glyphFillColor;
 
-      context.fill(glyph.glyph.path2d);
+      context.fill(glyph.glyph.flattenedPath2d);
       context.restore();
     }
   }
@@ -35,14 +35,14 @@ export function drawSelectedGlyphLayer(model, controller) {
   context.lineWidth = 10 * controller.onePixelUnit;
   context.strokeStyle = "#AAA";
   context.translate(positionedGlyph.x, positionedGlyph.y);
-  context.stroke(positionedGlyph.glyph.path2d);
+  context.stroke(positionedGlyph.glyph.flattenedPath2d);
   context.lineWidth = 3 * controller.onePixelUnit;
   context.strokeStyle = "black";
   context.globalCompositeOperation = "destination-out"
-  context.stroke(positionedGlyph.glyph.path2d);
+  context.stroke(positionedGlyph.glyph.flattenedPath2d);
   context.globalCompositeOperation = "source-over"
   context.fillStyle = controller.drawingParameters.glyphFillColor;
-  context.fill(positionedGlyph.glyph.path2d);
+  context.fill(positionedGlyph.glyph.flattenedPath2d);
 }
 
 
