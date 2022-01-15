@@ -63,6 +63,31 @@ class CachingGlyphInstance {
     return this._path2d;
   }
 
+  get outlinePath2d() {
+    if (this._outlinePath2d === undefined) {
+      this._outlinePath2d = new Path2D();
+      this.glyphInstance.path.drawToPath2d(this._outlinePath2d);
+    }
+    return this._outlinePath2d;
+  }
+
+  get componentsPath() {
+    if (this._componentsPath === undefined) {
+      if (this.componentPaths) {
+        this._componentsPath = joinPaths(this.componentPaths.map(flattenComponentPaths));
+      }
+    }
+    return this._componentsPath;
+  }
+
+  get componentsPath2d() {
+    if (this._componentsPath2d === undefined) {
+      this._componentsPath2d = new Path2D();
+      this.componentsPath?.drawToPath2d(this._componentsPath2d);
+    }
+    return this._componentsPath2d;
+  }
+
   get controlBounds() {
     if (this._controlBounds === undefined) {
       this._controlBounds = this.path.getControlBounds();
