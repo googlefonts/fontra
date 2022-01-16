@@ -238,7 +238,7 @@ export class AppController {
   }
 
   async glyphNameChangedCallback(glyphName) {
-    const codePoint = this.font.codePointForGlyph(glyphName);
+    const codePoint = await this.font.codePointForGlyph(glyphName);
     const text = getCharFromUnicode(codePoint) || "/" + glyphName;
     const textEntryElement = document.querySelector("#text-entry");
     textEntryElement.innerText = text;
