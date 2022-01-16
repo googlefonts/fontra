@@ -64,6 +64,12 @@ export function drawComponentsLayer(model, controller) {
   const positionedGlyph = model.getSelectedPositionedGlyph();
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
+
+  // context.fillStyle = "#DDD";
+  // for (const component of positionedGlyph.glyph.components) {
+  //   fillPolygon(context, component.convexHull);
+  // }
+
   context.fillStyle = "#888"; // controller.drawingParameters.componentFillColor;
   context.fill(positionedGlyph.glyph.componentsPath2d);
 }
