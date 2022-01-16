@@ -121,7 +121,7 @@ function _clipT(a, b, minimum, maximum) {
 
 function _numCmp(a, b) {
   // Return -1 when a < b, 1 when a > b, and 0 when a == b
-  return (a > b) - (a < b)
+  return (a > b) - (a < b);
 }
 
 
