@@ -33,13 +33,17 @@ export class Font {
     return undefined;
   }
 
+  async hasGlyph(glyphName) {
+    return glyphName in this.reversedCmap;
+  }
+
   getGlyph(glyphName) {
-    if (this.reversedCmap[glyphName] === undefined) {
-      return null;
-    }
     let glyphPromise = this._glyphsPromiseCache.get(glyphName);
     if (glyphPromise === undefined) {
       glyphPromise = (async () => {
+        if (!await this.hasGlyph(glyphName)) {
+          return null;
+        }
         let glyph = await this.fontDataEngine.getGlyph(glyphName);
         if (glyph !== null) {
           glyph = VarGlyph.fromObject(glyph);

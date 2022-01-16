@@ -10,12 +10,12 @@ export class CachingFont {
   }
 
   getGlyphInstance(glyphName) {
-    if (this.font.reversedCmap[glyphName] === undefined) {
-      return null;
-    }
     let glyphInstancePromise = this._glyphInstancePromiseCache[glyphName];
     if (glyphInstancePromise === undefined) {
       glyphInstancePromise = (async () => {
+        if (!await this.font.hasGlyph(glyphName)) {
+          return null;
+        }
         const glyph = await this.font.getGlyph(glyphName);
         const location = mapNLILocation(this.location, glyph.axes);
         const instance = await glyph.instantiate(location);
