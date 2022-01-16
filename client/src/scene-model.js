@@ -96,11 +96,11 @@ export class SceneModel {
     }
   }
 
-  getAxisValues() {
+  getLocation() {
     return this.userVarLocation;
   }
 
-  async setAxisValues(values) {
+  async setLocation(values) {
     this.userVarLocation = values;
     delete this._cachingFont;
   }
@@ -168,7 +168,7 @@ export class SceneModel {
       const baseName = _getAxisBaseName(name);
       userVarLocation[baseName] = value;
     }
-    this.setAxisValues(userVarLocation);
+    this.setLocation(userVarLocation);
     await this.updateScene();
   }
 

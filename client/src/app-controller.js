@@ -137,7 +137,7 @@ export class AppController {
   async initSliders() {
     this.sliders = new Sliders("axis-sliders", []);
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
-      await this.sceneController.setAxisValues(event.detail.values);
+      await this.sceneController.setLocation(event.detail.values);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getCurrentSourceIndex());
     }));
   }
@@ -150,7 +150,7 @@ export class AppController {
     this.sourcesList = new List("sources-list", columnDescriptions);
     this.sourcesList.addEventListener("listSelectionChanged", async event => {
       await this.sceneController.setSelectedSource(event.detail.getSelectedItem());
-      this.sliders.values = this.sceneController.getAxisValues();
+      this.sliders.values = this.sceneController.getLocation();
     });
   }
 
@@ -254,7 +254,7 @@ export class AppController {
     }
     await this.sceneController.setGlyphLines(glyphLines);
     this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
-    this.sliders.values = this.sceneController.getAxisValues();
+    this.sliders.values = this.sceneController.getLocation();
   }
 
   spaceKeyDownHandler(event) {

@@ -202,12 +202,12 @@ export class SceneController {
     return this.sceneModel.getAxisInfo();
   }
 
-  getAxisValues() {
-    return this.sceneModel.getAxisValues();
+  getLocation() {
+    return this.sceneModel.getLocation();
   }
 
-  async setAxisValues(values) {
-    await this.sceneModel.setAxisValues(values);
+  async setLocation(values) {
+    await this.sceneModel.setLocation(values);
     await this.sceneModel.updateScene();
     this.canvasController.setNeedsUpdate();
   }
