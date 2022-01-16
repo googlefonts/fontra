@@ -7,26 +7,30 @@ export class Font {
   constructor(fontDataEngine) {
     this.fontDataEngine = fontDataEngine;
     this._glyphsPromiseCache = new LRUCache(250);
+    this._reversedCmapPromise = undefined;
+    this._cmapPromise = undefined;
   }
 
-  async setupCmap() {
-    this.reversedCmap = await this.fontDataEngine.getReversedCmap();
-    this.cmap = makeCmapFromReversedCmap(this.reversedCmap);
-    this._cmapDoneLoading?.call();
-  }
-
-  async cmapReady() {
-    if (this.reversedCmap) {
-      return;
+  get reversedCmap() {
+    if (this._reversedCmapPromise === undefined) {
+      this._reversedCmapPromise = this.fontDataEngine.getReversedCmap()
     }
-    await new Promise((resolve, reject) => {
-      this._cmapDoneLoading = resolve;
-    });
+    return this._reversedCmapPromise;
+  }
+
+  get cmap() {
+    if (this._cmapPromise === undefined) {
+      this._cmapPromise = (async () => {
+        return makeCmapFromReversedCmap(await this.reversedCmap);
+      })();
+    }
+    return this._cmapPromise;
   }
 
   async codePointForGlyph(glyphName) {
-    for (const codePoint of this.reversedCmap[glyphName] || []) {
-      if (this.cmap[codePoint] === glyphName) {
+    const cmap = await this.cmap;
+    for (const codePoint of await this.reversedCmap[glyphName] || []) {
+      if (cmap[codePoint] === glyphName) {
         return codePoint;
       }
     }
@@ -34,7 +38,7 @@ export class Font {
   }
 
   async hasGlyph(glyphName) {
-    return glyphName in this.reversedCmap;
+    return glyphName in await this.reversedCmap;
   }
 
   getGlyph(glyphName) {

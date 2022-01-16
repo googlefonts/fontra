@@ -108,13 +108,12 @@ export class AppController {
   }
 
   async start() {
-    await this.font.setupCmap();
-    this.initGlyphNames();
+    await this.initGlyphNames();
     await this.initSliders();
     this.initSourcesList();
   }
 
-  initGlyphNames() {
+  async initGlyphNames() {
     const columnDescriptions = [
       {"key": "char", "width": "2em", "get": item => getCharFromUnicode(item.unicodes[0])},
       {"key": "glyphName", "width": "10em", },
@@ -126,9 +125,10 @@ export class AppController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
+    const reversedCmap = await this.font.reversedCmap;
     this.glyphsListItems = [];
-    for (const glyphName in this.font.reversedCmap) {
-      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": this.font.reversedCmap[glyphName]});
+    for (const glyphName in await reversedCmap) {
+      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": reversedCmap[glyphName]});
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
     this.glyphNamesList.setItems(this.glyphsListItems);
@@ -248,9 +248,10 @@ export class AppController {
   async textFieldChangedCallback(element) {
     const text = element.innerText;
     const glyphLines = [];
-    await this.font.cmapReady();
+    const reversedCmap = await this.font.reversedCmap;
+    const cmap = await this.font.cmap;
     for (const line of splitLines(text)) {
-      glyphLines.push(glyphNamesFromText(line, this.font.cmap, this.font.reversedCmap));
+      glyphLines.push(glyphNamesFromText(line, cmap, reversedCmap));
     }
     await this.sceneController.setGlyphLines(glyphLines);
     this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
