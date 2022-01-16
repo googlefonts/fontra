@@ -91,7 +91,7 @@ function lineIntersectsRect(p1, p2, rect) {
       return false;
     }
     const v = [p1.y + t[0] * dy, p1.y + t[1] * dy];
-    v.sort(numCmp);
+    v.sort(compare);
     return (v[0] <= rect.yMax && v[1] >= rect.yMin);
   } else {
     const t = clipT(p1.y, dy, rect.yMin, rect.yMax);
@@ -99,7 +99,7 @@ function lineIntersectsRect(p1, p2, rect) {
       return false;
     }
     const v = [p1.x + t[0] * dx, p1.x + t[1] * dx];
-    v.sort(numCmp);
+    v.sort(compare);
     return (v[0] <= rect.xMax && v[1] >= rect.xMin);
   }
   return false;
@@ -108,7 +108,7 @@ function lineIntersectsRect(p1, p2, rect) {
 
 function clipT(a, b, minimum, maximum) {
   const t = [(minimum - a) / b, (maximum - a) / b];
-  t.sort(numCmp);
+  t.sort(compare);
   if (t[0] < 0) {
     t[0] = 0;
   }
@@ -119,7 +119,7 @@ function clipT(a, b, minimum, maximum) {
 }
 
 
-function numCmp(a, b) {
+function compare(a, b) {
   // Return -1 when a < b, 1 when a > b, and 0 when a == b
   return (a > b) - (a < b);
 }
@@ -134,7 +134,7 @@ export function convexHull(points) {
 
   points = Array.from(points);
   // Sort by (x, y)
-  points.sort((a, b) => numCmp(a.x, b.x) || numCmp(a.y, b.y));
+  points.sort((a, b) => compare(a.x, b.x) || compare(a.y, b.y));
   const lower = halfConvexHull(points);
   const upper = halfConvexHull(reversed(points));
   return upper.concat(lower);
