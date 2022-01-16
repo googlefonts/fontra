@@ -7,6 +7,11 @@ export class CachingFont {
     this.font = font;
     this.location = location;
     this._glyphInstancePromiseCache = {};
+    this._loadedGlyphInstances = {};
+  }
+
+  isGlyphInstanceLoaded(glyphName) {
+    return glyphName in this._loadedGlyphInstances;
   }
 
   getGlyphInstance(glyphName) {
@@ -23,6 +28,7 @@ export class CachingFont {
           async glyphName => await this.font.getGlyph(glyphName),
           location,
         )
+        this._loadedGlyphInstances[glyphName] = true;
         return new CachingGlyphInstance(glyphName, instance, componentPaths);
       })();
       this._glyphInstancePromiseCache[glyphName] = glyphInstancePromise;

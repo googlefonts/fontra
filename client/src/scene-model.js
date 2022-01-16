@@ -57,11 +57,11 @@ export class SceneModel {
 
   async *updateSceneIncrementally(incrementally = true) {
     const glyphPromises = {};
-    const loadedGlyphs = {};
+    let loadedGlyphs = {};
     const glyphLines = this.glyphLines;
     for (const line of glyphLines) {
       for (const glyph of line) {
-        if (glyph.glyphName === undefined || glyphPromises[glyph.glyphName] !== undefined) {
+        if (glyph.glyphName === undefined || glyph.glyphName in glyphPromises) {
           continue;
         }
         glyphPromises[glyph.glyphName] = (async (glyphName) => {
@@ -78,6 +78,7 @@ export class SceneModel {
           for (const glyphName in loadedGlyphs) {
             delete glyphPromises[glyphName];
           }
+          loadedGlyphs = {};
         }
         if (glyphLines !== this.glyphLines) {
           return;  // abort, a later call supersedes us
@@ -351,6 +352,9 @@ async function buildScene(cachingFont, glyphLines) {
     const positionedLine = {"glyphs": []};
     let x = 0;
     for (const glyphInfo of glyphLine) {
+      if (!cachingFont.isGlyphInstanceLoaded(glyphInfo.glyphName)) {
+        continue;
+      }
       const glyphInstance = await cachingFont.getGlyphInstance(glyphInfo.glyphName);
       if (glyphInstance) {
         const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
