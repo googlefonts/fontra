@@ -66,6 +66,8 @@ const EPSILON = 0.0001;  // we deal with font units, this should be small enough
 
 
 function lineIntersectsRect(p1, p2, rect) {
+  // Return true if line p1,p2 intersects any of the sides of rect,
+  // or if it is fully enclosed by rect.
   const lineRect = normalizeRect({"xMin": p1.x, "yMin": p1.y, "xMax": p2.x, "yMax": p2.y});
   const lineSectRect = sectRect(rect, lineRect);
   if (!lineSectRect) {
