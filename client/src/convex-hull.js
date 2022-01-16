@@ -54,9 +54,7 @@ export function rectIntersectsPolygon(rect, polygon) {
   const numPoints = polygon.length;
   for (let i1 = 0; i1 < numPoints; i1++) {
     const i2 = (i1 + 1) % numPoints;
-    const p1 = polygon[i1];
-    const p2 = polygon[i2];
-    if (lineIntersectsRect(p1, p2, rect)) {
+    if (lineIntersectsRect(polygon[i1], polygon[i2], rect)) {
       return true;
     }
   }
