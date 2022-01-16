@@ -1,3 +1,6 @@
+import { equalRect, normalizeRect, sectRect } from "./rectangle.js";
+
+
 export function pointInConvexPolygon(x, y, polygon) {
   // Adapted from a comment on
   // https://stackoverflow.com/questions/1119627/how-to-test-if-a-point-is-inside-of-a-convex-polygon-in-2d-integer-coordinates
@@ -43,6 +46,85 @@ export function pointInConvexPolygon(x, y, polygon) {
 }
 
 
+export function rectIntersectsPolygon(rect, polygon) {
+  // Return true when the rectangle intersects the polygon, or if the
+  // polygon is fully enclosed by the rectangle. It misses the case
+  // when the rectangle is fully enclosed by the polygon, but we don't
+  // need that case so it's left unimplemented.
+  const numPoints = polygon.length;
+  for (let i1 = 0; i1 < numPoints; i1++) {
+    const i2 = (i1 + 1) % numPoints;
+    const p1 = polygon[i1];
+    const p2 = polygon[i2];
+    if (_lineIntersectsRect(p1, p2, rect)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+const EPSILON = 0.0001;  // we deal with font units, this should be small enough
+
+
+function _lineIntersectsRect(p1, p2, rect) {
+  const lineRect = normalizeRect({"xMin": p1.x, "yMin": p1.y, "xMax": p2.x, "yMax": p2.y});
+  const lineSectRect = sectRect(rect, lineRect);
+  if (!lineSectRect) {
+    return false;
+  }
+  if (equalRect(lineRect, lineSectRect)) {
+    // both p1 and p2 are inside rect
+    return true;
+  }
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  let a, b, da, db, aMin, aMax, bMin, bMax;
+  const abs_dx = Math.abs(dx);
+  const abs_dy = Math.abs(dy);
+  if (abs_dx < EPSILON || abs_dy < EPSILON) {
+    return true;
+  }
+  if (abs_dx > abs_dy) {
+    const t = _clipT(p1.x, dx, rect.xMin, rect.xMax);
+    if (t[0] > t[1]) {
+      return false;
+    }
+    const v = [p1.y + t[0] * dy, p1.y + t[1] * dy];
+    v.sort(_numCmp);
+    return (v[0] <= rect.yMax && v[1] >= rect.yMin);
+  } else {
+    const t = _clipT(p1.y, dy, rect.yMin, rect.yMax);
+    if (t[0] > t[1]) {
+      return false;
+    }
+    const v = [p1.x + t[0] * dx, p1.x + t[1] * dx];
+    v.sort(_numCmp);
+    return (v[0] <= rect.xMax && v[1] >= rect.xMin);
+  }
+  return false;
+}
+
+
+function _clipT(a, b, minimum, maximum) {
+  const t = [(minimum - a) / b, (maximum - a) / b];
+  t.sort(_numCmp);
+  if (t[0] < 0) {
+    t[0] = 0;
+  }
+  if (t[1] > 1) {
+    t[1] = 1;
+  }
+  return t;
+}
+
+
+function _numCmp(a, b) {
+  // Return -1 when a < b, 1 when a > b, and 0 when a == b
+  return (a > b) - (a < b)
+}
+
+
 export function convexHull(points) {
   // Adapted from https://en.wikipedia.org/wiki/Graham_scan
 
@@ -52,7 +134,7 @@ export function convexHull(points) {
 
   points = Array.from(points);
   // Sort by (x, y)
-  points.sort((a, b) => ((a.x > b.x) - (a.x < b.x) || (a.y > b.y) - (a.y < b.y)));
+  points.sort((a, b) => _numCmp(a.x, b.x) || _numCmp(a.y, b.y));
   const lower = halfConvexHull(points);
   const upper = halfConvexHull(reversed(points));
   return upper.concat(lower);
