@@ -6,30 +6,28 @@ export class CachingFont {
   constructor (font, location) {
     this.font = font;
     this.location = location;
-    this.cachedGlyphs = {};
+    this._glyphInstancePromiseCache = {};
   }
 
-  getCachedGlyphInstance(glyphName) {
-    return this.cachedGlyphs[glyphName];
-  }
-
-  async loadGlyphInstance(glyphName) {
+  getGlyphInstance(glyphName) {
     if (this.font.reversedCmap[glyphName] === undefined) {
       return null;
     }
-    let glyphInstance = this.cachedGlyphs[glyphName];
-    if (glyphInstance === undefined) {
-      const glyph = await this.font.getGlyph(glyphName);
-      const location = mapNLILocation(this.location, glyph.axes);
-      const instance = await glyph.instantiate(location);
-      const componentPaths = await instance.getComponentPaths(
-        async glyphName => await this.font.getGlyph(glyphName),
-        location,
-      )
-      glyphInstance = new CachingGlyphInstance(glyphName, instance, componentPaths);
-      this.cachedGlyphs[glyphName] = glyphInstance;
+    let glyphInstancePromise = this._glyphInstancePromiseCache[glyphName];
+    if (glyphInstancePromise === undefined) {
+      glyphInstancePromise = (async () => {
+        const glyph = await this.font.getGlyph(glyphName);
+        const location = mapNLILocation(this.location, glyph.axes);
+        const instance = await glyph.instantiate(location);
+        const componentPaths = await instance.getComponentPaths(
+          async glyphName => await this.font.getGlyph(glyphName),
+          location,
+        )
+        return new CachingGlyphInstance(glyphName, instance, componentPaths);
+      })();
+      this._glyphInstancePromiseCache[glyphName] = glyphInstancePromise;
     }
-    return glyphInstance;
+    return glyphInstancePromise;
   }
 
 }

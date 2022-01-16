@@ -65,7 +65,7 @@ export class SceneModel {
           continue;
         }
         glyphPromises[glyph.glyphName] = (async (glyphName) => {
-          await this.cachingFont.loadGlyphInstance(glyphName);
+          await this.cachingFont.getGlyphInstance(glyphName);
           loadedGlyphs[glyphName] = true;
         })(glyph.glyphName);
       }
@@ -82,7 +82,7 @@ export class SceneModel {
         if (glyphLines !== this.glyphLines) {
           return;  // abort, a later call supersedes us
         }
-        this.positionedLines = buildScene(this.cachingFont, glyphLines);
+        this.positionedLines = await buildScene(this.cachingFont, glyphLines);
         yield;
         promises = Object.values(glyphPromises);
       } while (promises.length);
@@ -93,7 +93,7 @@ export class SceneModel {
       if (glyphLines !== this.glyphLines) {
         return;  // abort, a later call supersedes us
       }
-      this.positionedLines = buildScene(this.cachingFont, glyphLines);
+      this.positionedLines = await buildScene(this.cachingFont, glyphLines);
       yield;
     }
   }
@@ -344,14 +344,14 @@ function mergeAxisInfo(axisInfos) {
 }
 
 
-function buildScene(cachingFont, glyphLines) {
+async function buildScene(cachingFont, glyphLines) {
   let y = 0;
   const positionedLines = [];
   for (const glyphLine of glyphLines) {
     const positionedLine = {"glyphs": []};
     let x = 0;
     for (const glyphInfo of glyphLine) {
-      const glyphInstance = cachingFont.getCachedGlyphInstance(glyphInfo.glyphName);
+      const glyphInstance = await cachingFont.getGlyphInstance(glyphInfo.glyphName);
       if (glyphInstance) {
         const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
         positionedLine.glyphs.push({
