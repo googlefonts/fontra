@@ -159,7 +159,7 @@ export class SceneModel {
       return;
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
-    const glyph = this.font.getCachedGlyph(positionedGlyph.glyph.name);
+    const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
 
     const source = glyph.sources[sourceInfo.sourceIndex];
     const userVarLocation = {};
