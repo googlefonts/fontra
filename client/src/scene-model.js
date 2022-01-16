@@ -14,6 +14,8 @@ export class SceneModel {
     this.positionedLines = [];
     this.selection = new Set();
     this.hoverSelection = new Set();
+    this.selectedGlyph = undefined;
+    this.hoveredGlyph = undefined;
   }
 
   get cachingFont() {
@@ -43,8 +45,8 @@ export class SceneModel {
     this.glyphLines = glyphLines;
     this.selection = new Set();
     this.hoverSelection = new Set();
-    delete this.selectedGlyph;
-    delete this.hoveredGlyph;
+    this.selectedGlyph = undefined;
+    this.hoveredGlyph = undefined;
   }
 
   async updateScene() {
