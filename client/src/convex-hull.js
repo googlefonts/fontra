@@ -101,7 +101,7 @@ function lineIntersectsRect(p1, p2, rect) {
     v.sort(compare);
     return (v[0] <= rect.xMax && v[1] >= rect.xMin);
   }
-  return false;
+  return false;  // unreachable
 }
 
 
