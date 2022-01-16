@@ -56,7 +56,7 @@ export function rectIntersectsPolygon(rect, polygon) {
     const i2 = (i1 + 1) % numPoints;
     const p1 = polygon[i1];
     const p2 = polygon[i2];
-    if (_lineIntersectsRect(p1, p2, rect)) {
+    if (lineIntersectsRect(p1, p2, rect)) {
       return true;
     }
   }
@@ -67,7 +67,7 @@ export function rectIntersectsPolygon(rect, polygon) {
 const EPSILON = 0.0001;  // we deal with font units, this should be small enough
 
 
-function _lineIntersectsRect(p1, p2, rect) {
+function lineIntersectsRect(p1, p2, rect) {
   const lineRect = normalizeRect({"xMin": p1.x, "yMin": p1.y, "xMax": p2.x, "yMax": p2.y});
   const lineSectRect = sectRect(rect, lineRect);
   if (!lineSectRect) {
@@ -86,29 +86,29 @@ function _lineIntersectsRect(p1, p2, rect) {
     return true;
   }
   if (abs_dx > abs_dy) {
-    const t = _clipT(p1.x, dx, rect.xMin, rect.xMax);
+    const t = clipT(p1.x, dx, rect.xMin, rect.xMax);
     if (t[0] > t[1]) {
       return false;
     }
     const v = [p1.y + t[0] * dy, p1.y + t[1] * dy];
-    v.sort(_numCmp);
+    v.sort(numCmp);
     return (v[0] <= rect.yMax && v[1] >= rect.yMin);
   } else {
-    const t = _clipT(p1.y, dy, rect.yMin, rect.yMax);
+    const t = clipT(p1.y, dy, rect.yMin, rect.yMax);
     if (t[0] > t[1]) {
       return false;
     }
     const v = [p1.x + t[0] * dx, p1.x + t[1] * dx];
-    v.sort(_numCmp);
+    v.sort(numCmp);
     return (v[0] <= rect.xMax && v[1] >= rect.xMin);
   }
   return false;
 }
 
 
-function _clipT(a, b, minimum, maximum) {
+function clipT(a, b, minimum, maximum) {
   const t = [(minimum - a) / b, (maximum - a) / b];
-  t.sort(_numCmp);
+  t.sort(numCmp);
   if (t[0] < 0) {
     t[0] = 0;
   }
@@ -119,7 +119,7 @@ function _clipT(a, b, minimum, maximum) {
 }
 
 
-function _numCmp(a, b) {
+function numCmp(a, b) {
   // Return -1 when a < b, 1 when a > b, and 0 when a == b
   return (a > b) - (a < b);
 }
@@ -134,7 +134,7 @@ export function convexHull(points) {
 
   points = Array.from(points);
   // Sort by (x, y)
-  points.sort((a, b) => _numCmp(a.x, b.x) || _numCmp(a.y, b.y));
+  points.sort((a, b) => numCmp(a.x, b.x) || numCmp(a.y, b.y));
   const lower = halfConvexHull(points);
   const upper = halfConvexHull(reversed(points));
   return upper.concat(lower);
