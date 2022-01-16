@@ -105,10 +105,10 @@ export class SceneModel {
     delete this._cachingFont;
   }
 
-  getCurrentSourceIndex() {
+  async getCurrentSourceIndex() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {
-      const glyph = this.font.getCachedGlyph(glyphName);
+      const glyph = await this.font.getGlyph(glyphName);
       return findSourceIndexFromLocation(glyph, this.userVarLocation);
     } else {
       return undefined;
@@ -135,13 +135,13 @@ export class SceneModel {
     return [];
   }
 
-  getSourcesInfo() {
+  async getSourcesInfo() {
     const sourcesInfo = [];
     if (!this.selectedGlyph) {
       return sourcesInfo;
     }
     const positionedGlyph = this.getSelectedGlyph();
-    const glyph = this.font.getCachedGlyph(positionedGlyph.glyph.name);
+    const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
     for (let i = 0; i < glyph.sources.length; i++) {
       let name = glyph.sources[i].name;
       if (!name) {

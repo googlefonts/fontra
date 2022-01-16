@@ -6,7 +6,7 @@ export class Font {
 
   constructor(fontDataEngine) {
     this.fontDataEngine = fontDataEngine;
-    this._glyphsCache = new LRUCache(250);
+    this._glyphsPromiseCache = new LRUCache(250);
   }
 
   async setupCmap() {
@@ -33,28 +33,23 @@ export class Font {
     return undefined;
   }
 
-  async getGlyph(glyphName) {
+  getGlyph(glyphName) {
     if (this.reversedCmap[glyphName] === undefined) {
       return null;
     }
-    // TODO: if this get called multiple times for the same glyph before
-    // the glyph is loaded, we should return the same promise, to avoid
-    // loading twice.
-    let glyph = this._glyphsCache.get(glyphName);
-    if (glyph === undefined) {
-      glyph = await this.fontDataEngine.getGlyph(glyphName);
-      if (glyph !== null) {
-        glyph = VarGlyph.fromObject(glyph);
-      }
-      this._glyphsCache.put(glyphName, glyph);
-      // console.log("LRU size", this._glyphsCache.map.size);
+    let glyphPromise = this._glyphsPromiseCache.get(glyphName);
+    if (glyphPromise === undefined) {
+      glyphPromise = (async () => {
+        let glyph = await this.fontDataEngine.getGlyph(glyphName);
+        if (glyph !== null) {
+          glyph = VarGlyph.fromObject(glyph);
+        }
+        return glyph;
+      })();
+      this._glyphsPromiseCache.put(glyphName, glyphPromise);
+      // console.log("LRU size", this._glyphsPromiseCache.map.size);
     }
-    return glyph;
-  }
-
-  getCachedGlyph(glyphName) {
-    // TODO: this should not be needed once the above TODO is implemented.
-    return this._glyphsCache.get(glyphName);
+    return glyphPromise;
   }
 
 }

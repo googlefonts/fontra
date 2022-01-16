@@ -93,9 +93,9 @@ export class AppController {
     this.cleanSceneView.subviews = [new SceneView(sceneModel, sceneDraw.drawMultiGlyphsLayerClean)];
 
     this.sceneController = new SceneController(sceneModel, canvasController)
-    this.sceneController.addEventListener("selectedGlyphChanged", event => {
-      this.sourcesList.setItems(this.sceneController.getSourcesInfo());
-      this.sourcesList.setSelectedItemIndex(this.sceneController.getCurrentSourceIndex());
+    this.sceneController.addEventListener("selectedGlyphChanged", async event => {
+      this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
+      this.sourcesList.setSelectedItemIndex(await this.sceneController.getCurrentSourceIndex());
     });
 
     this.initOverlayItems(canvas);
@@ -110,7 +110,7 @@ export class AppController {
   async start() {
     await this.font.setupCmap();
     this.initGlyphNames();
-    this.initSliders();
+    await this.initSliders();
     this.initSourcesList();
   }
 
@@ -134,11 +134,11 @@ export class AppController {
     this.glyphNamesList.setItems(this.glyphsListItems);
   }
 
-  initSliders() {
+  async initSliders() {
     this.sliders = new Sliders("axis-sliders", []);
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
       await this.sceneController.setAxisValues(event.detail.values);
-      this.sourcesList.setSelectedItemIndex(this.sceneController.getCurrentSourceIndex());
+      this.sourcesList.setSelectedItemIndex(await this.sceneController.getCurrentSourceIndex());
     }));
   }
 
