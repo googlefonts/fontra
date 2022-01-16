@@ -23,7 +23,7 @@ export class SceneModel {
     return this._cachingFont;
   }
 
-  getSelectedGlyph() {
+  getSelectedPositionedGlyph() {
     if (!this.selectedGlyph) {
       return undefined;
     }
@@ -32,7 +32,7 @@ export class SceneModel {
   }
 
   getSelectedGlyphName() {
-    return this.getSelectedGlyph()?.glyph.name;
+    return this.getSelectedPositionedGlyph()?.glyph.name;
   }
 
   canSelect() {
@@ -140,7 +140,7 @@ export class SceneModel {
     if (!this.selectedGlyph) {
       return sourcesInfo;
     }
-    const positionedGlyph = this.getSelectedGlyph();
+    const positionedGlyph = this.getSelectedPositionedGlyph();
     const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
     for (let i = 0; i < glyph.sources.length; i++) {
       let name = glyph.sources[i].name;
@@ -156,7 +156,7 @@ export class SceneModel {
     if (!this.selectedGlyph) {
       return;
     }
-    const positionedGlyph = this.getSelectedGlyph();
+    const positionedGlyph = this.getSelectedPositionedGlyph();
     const glyph = this.font.getCachedGlyph(positionedGlyph.glyph.name);
 
     const source = glyph.sources[sourceInfo.sourceIndex];
@@ -176,7 +176,7 @@ export class SceneModel {
     if (!this.selectedGlyph) {
       return;
     }
-    const positionedGlyph = this.getSelectedGlyph();
+    const positionedGlyph = this.getSelectedPositionedGlyph();
     const selRect = centeredRect(point.x - positionedGlyph.x, point.y - positionedGlyph.y, size);
     for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
       return new Set([`point/${hit.pointIndex}`])
@@ -202,7 +202,7 @@ export class SceneModel {
     if (!this.selectedGlyph) {
       return selection;
     }
-    const positionedGlyph = this.getSelectedGlyph();
+    const positionedGlyph = this.getSelectedPositionedGlyph();
     selRect = offsetRect(selRect, -positionedGlyph.x, -positionedGlyph.y);
     for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
       selection.add(`point/${hit.pointIndex}`);

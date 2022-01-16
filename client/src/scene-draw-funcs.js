@@ -13,7 +13,7 @@ function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
     return;
   }
   const context = controller.context;
-  const selectedGlyph = model.getSelectedGlyph();
+  const selectedGlyph = model.getSelectedPositionedGlyph();
   context.fillStyle = controller.drawingParameters.glyphFillColor;
   for (const glyphLine of model.positionedLines) {
     for (const glyph of glyphLine.glyphs) {
@@ -61,7 +61,7 @@ export function drawComponentsLayer(model, controller) {
     return;
   }
   const context = controller.context;
-  const positionedGlyph = model.getSelectedGlyph();
+  const positionedGlyph = model.getSelectedPositionedGlyph();
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.fillStyle = "#888"; // controller.drawingParameters.componentFillColor;
@@ -74,7 +74,7 @@ export function drawPathLayer(model, controller) {
     return;
   }
   const context = controller.context;
-  const positionedGlyph = model.getSelectedGlyph();
+  const positionedGlyph = model.getSelectedPositionedGlyph();
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.lineWidth = controller.drawingParameters.pathLineWidth;
@@ -88,7 +88,7 @@ export function drawHandlesLayer(model, controller) {
     return;
   }
   const context = controller.context;
-  const positionedGlyph = model.getSelectedGlyph();
+  const positionedGlyph = model.getSelectedPositionedGlyph();
   const nodeSize = controller.drawingParameters.nodeSize;
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
@@ -105,7 +105,7 @@ export function drawNodesLayer(model, controller) {
     return;
   }
   const context = controller.context;
-  const positionedGlyph = model.getSelectedGlyph();
+  const positionedGlyph = model.getSelectedPositionedGlyph();
   const nodeSize = controller.drawingParameters.nodeSize;
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
@@ -130,7 +130,7 @@ function _drawSelectionLayer(displayKey, selection, model, controller) {
   if (!model.selectedGlyph || !selection || !selection.size) {
     return;
   }
-  const positionedGlyph = model.getSelectedGlyph();
+  const positionedGlyph = model.getSelectedPositionedGlyph();
   const selectionStrings = Array.from(selection);
   selectionStrings.sort();
 
