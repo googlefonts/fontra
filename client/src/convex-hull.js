@@ -87,7 +87,7 @@ function lineIntersectsRect(p1, p2, rect) {
   }
   if (abs_dx > abs_dy) {
     const t = clipT(p1.x, dx, rect.xMin, rect.xMax);
-    if (t[0] > t[1]) {
+    if (!t) {
       return false;
     }
     const v = [p1.y + t[0] * dy, p1.y + t[1] * dy];
@@ -95,7 +95,7 @@ function lineIntersectsRect(p1, p2, rect) {
     return (v[0] <= rect.yMax && v[1] >= rect.yMin);
   } else {
     const t = clipT(p1.y, dy, rect.yMin, rect.yMax);
-    if (t[0] > t[1]) {
+    if (!t) {
       return false;
     }
     const v = [p1.x + t[0] * dx, p1.x + t[1] * dx];
@@ -115,7 +115,7 @@ function clipT(a, b, minimum, maximum) {
   if (t[1] > 1) {
     t[1] = 1;
   }
-  return t;
+  return t[0] <= t[1] ? t : undefined;
 }
 
 
