@@ -189,10 +189,8 @@ export class SceneModel {
     const y = point.y - positionedGlyph.y;
     for (let i = components.length - 1; i >= 0; i--) {
       const component = components[i];
-      if (!pointInRect(x, y, component.controlBounds)) {
-        continue;
-      }
-      if (pointInConvexPolygon(x, y, component.convexHull)) {
+      if (pointInRect(x, y, component.controlBounds)
+          && pointInConvexPolygon(x, y, component.convexHull)) {
         return new Set([`component/${i}`])
       }
     }
@@ -212,10 +210,8 @@ export class SceneModel {
     }
     const components = positionedGlyph.glyph.components;
     for (let i = 0; i < components.length; i++) {
-      if (!sectRect(selRect, components[i].controlBounds)) {
-        continue;
-      }
-      if (rectIntersectsPolygon(selRect, components[i].convexHull)) {
+      if (sectRect(selRect, components[i].controlBounds)
+          && rectIntersectsPolygon(selRect, components[i].convexHull)) {
         selection.add(`component/${i}`);
       }
     }
