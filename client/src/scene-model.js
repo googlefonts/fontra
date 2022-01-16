@@ -1,6 +1,6 @@
 import { CachingFont, mapNLILocation } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
-import { pointInConvexPolygon } from "./convex-hull.js";
+import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
 import { normalizeLocation } from "./var-model.js";
 
 
@@ -215,8 +215,9 @@ export class SceneModel {
       if (!sectRect(selRect, components[i].controlBounds)) {
         continue;
       }
-      // TODO: properly test intersection with the convex hull
-      selection.add(`component/${i}`);
+      if (rectIntersectsPolygon(selRect, components[i].convexHull)) {
+        selection.add(`component/${i}`);
+      }
     }
     return selection;
   }
