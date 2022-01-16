@@ -79,7 +79,6 @@ function lineIntersectsRect(p1, p2, rect) {
   }
   const dx = p2.x - p1.x;
   const dy = p2.y - p1.y;
-  let a, b, da, db, aMin, aMax, bMin, bMax;
   const abs_dx = Math.abs(dx);
   const abs_dy = Math.abs(dy);
   if (abs_dx < EPSILON || abs_dy < EPSILON) {
