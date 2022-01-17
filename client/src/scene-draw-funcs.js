@@ -133,7 +133,7 @@ export function drawSelectionLayer(model, controller) {
   const hoverSelection = model.hoverSelection;
   const combinedSelection = lenientUnion(selection, hoverSelection);
   const positionedGlyph = model.getSelectedPositionedGlyph();
-  const selectionStrings = Array.from(selection);
+  const selectionStrings = Array.from(combinedSelection);
   selectionStrings.sort();
 
   const context = controller.context;
@@ -152,7 +152,7 @@ export function drawSelectionLayer(model, controller) {
   const hoverStrokeOffset = 4
   context.fillStyle = controller.drawingParameters.selectedNodeFillColor;
 
-  for (const selItem of combinedSelection) {
+  for (const selItem of selectionStrings) {
     const drawHoverStroke = hoverSelection.has(selItem);
     const drawSelectionFill = selection.has(selItem);
     const [tp, index] = selItem.split("/");
