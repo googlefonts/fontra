@@ -9,53 +9,38 @@ import { Sliders } from "./ui-sliders.js";
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
+  hoveredGlyphStrokeColor: "#AAA",
   nodeFillColor: "#CCC",
-  nodeSize: 8,
+  selectedNodeFillColor: "#000",
+  hoveredNodeStrokeColor: "#CCC",
   handleColor: "#CCC",
-  handleLineWidth: 1,
-  selection: {
-    nodeSize: 10,
-    nodeColor: "#000",
-    nodeLineWidth: 2,
-    componentFillColor: "#000"
-  },
-  hover: {
-    nodeSize: 10,
-    nodeColor: "#444",
-    nodeLineWidth: 2,
-    componentFillColor: "#444"
-  },
   pathStrokeColor: "#000",
+  componentFillColor: "#AAA",
+  selectedComponentFillColor: "#666",
+  hoveredComponentStrokeColor: "#CCC",
+  cornerNodeSize: 8,
+  smoothNodeSize: 8,
+  handleNodeSize: 6.5,
+  hoveredNodeLineWidth: 1,
+  handleLineWidth: 1,
   pathLineWidth: 1,
-  componentFillColor: "#222",
   rectSelectLineWidth: 1,
   rectSelectLineDash: [10, 10],
 }
 
 
 const drawingParametersDark = {
+  ...drawingParametersLight,
   glyphFillColor: "#FFF",
+  hoveredGlyphStrokeColor: "#AAA",
   nodeFillColor: "#777",
-  nodeSize: 8,
+  selectedNodeFillColor: "#FFF",
+  hoveredNodeStrokeColor: "#888",
   handleColor: "#777",
-  handleLineWidth: 1,
-  selection: {
-    nodeSize: 10,
-    nodeColor: "#FFF",
-    nodeLineWidth: 2,
-    componentFillColor: "#FFF"
-  },
-  hover: {
-    nodeSize: 10,
-    nodeColor: "#DDD",
-    nodeLineWidth: 2,
-    componentFillColor: "#DDD"
-  },
   pathStrokeColor: "#FFF",
-  pathLineWidth: 1,
-  componentFillColor: "#CCC",
-  rectSelectLineWidth: 1,
-  rectSelectLineDash: [10, 10],
+  componentFillColor: "#444",
+  selectedComponentFillColor: "#888",
+  hoveredComponentStrokeColor: "#555",
 }
 
 
@@ -79,7 +64,6 @@ export class AppController {
       sceneDraw.drawNodesLayer,
       sceneDraw.drawPathLayer,
       sceneDraw.drawSelectionLayer,
-      sceneDraw.drawHoverLayer,
       sceneDraw.drawRectangleSelectionLayer,
     ]
     const sceneView = new SceneView();

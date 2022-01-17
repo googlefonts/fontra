@@ -1,3 +1,4 @@
+import { union } from "./set-ops.js";
 import { withSavedState } from "./utils.js";
 
 
@@ -51,7 +52,7 @@ export function drawSelectedGlyphLayer(model, controller) {
     positionedGlyph.glyph.flattenedPath2d,
     10 * controller.onePixelUnit,
     3 * controller.onePixelUnit,
-    "#AAA",
+    controller.drawingParameters.hoveredGlyphStrokeColor,
     controller.drawingParameters.glyphFillColor,
   )
 }
@@ -71,7 +72,7 @@ export function drawComponentsLayer(model, controller) {
   //   fillPolygon(context, component.convexHull);
   // }
 
-  context.fillStyle = "#888"; // controller.drawingParameters.componentFillColor;
+  context.fillStyle = controller.drawingParameters.componentFillColor;
   context.fill(positionedGlyph.glyph.componentsPath2d);
 }
 
@@ -96,7 +97,6 @@ export function drawHandlesLayer(model, controller) {
   }
   const context = controller.context;
   const positionedGlyph = model.getSelectedPositionedGlyph();
-  const nodeSize = controller.drawingParameters.nodeSize;
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.strokeStyle = controller.drawingParameters.handleColor;
@@ -113,65 +113,67 @@ export function drawNodesLayer(model, controller) {
   }
   const context = controller.context;
   const positionedGlyph = model.getSelectedPositionedGlyph();
-  const nodeSize = controller.drawingParameters.nodeSize;
+  const cornerNodeSize = controller.drawingParameters.cornerNodeSize;
+  const smoothNodeSize = controller.drawingParameters.smoothNodeSize;
+  const handleNodeSize = controller.drawingParameters.handleNodeSize;
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
   context.fillStyle = controller.drawingParameters.nodeFillColor;
   for (const pt of positionedGlyph.glyph.path.iterPoints()) {
-    fillNode(context, pt.x, pt.y, nodeSize, pt.type, pt.smooth);
+    fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize);
   }
 }
 
 
 export function drawSelectionLayer(model, controller) {
-  _drawSelectionLayer("selection", model.selection, model, controller)
-}
-
-
-export function drawHoverLayer(model, controller) {
-  _drawSelectionLayer("hover", model.hoverSelection, model, controller)
-}
-
-
-function _drawSelectionLayer(displayKey, selection, model, controller) {
-  if (!model.selectedGlyph || !selection || !selection.size) {
+  if (!model.selectedGlyph) {
     return;
   }
+  const selection = model.selection;
+  const hoverSelection = model.hoverSelection;
+  const combinedSelection = lenientUnion(selection, hoverSelection);
   const positionedGlyph = model.getSelectedPositionedGlyph();
   const selectionStrings = Array.from(selection);
   selectionStrings.sort();
 
   const context = controller.context;
-  const parms = controller.drawingParameters[displayKey];
-  const nodeSize = parms.nodeSize;
-  const lineWidth = parms.nodeLineWidth;
-  const color = parms.nodeColor;
-  context.translate(positionedGlyph.x, positionedGlyph.y);
-  context.globalCompositeOperation = "source-over";
-  context.lineJoin = "round";
-  for (const selItem of selectionStrings) {
-    const items = selItem.split("/")
-    const tp = items[0];
-    const index = items[1];
-    const glyphIndex = items[2];
-    if (tp === "point") {
-      const point = positionedGlyph.glyph.path.getPoint(index);
-      // context.lineWidth = lineWidth;
-      // context.strokeStyle = color;
-      // strokeNode(context, point.x, point.y, nodeSize, point.type, point.smooth);
 
-      context.shadowColor = "#888";
-      context.shadowBlur = 8 * window.devicePixelRatio;  // shadowBlur is in device space
-      context.fillStyle = parms.nodeColor;
-      fillNode(context, point.x, point.y, controller.drawingParameters.nodeSize, point.type, point.smooth);
+  const cornerNodeSize = controller.drawingParameters.cornerNodeSize;
+  const smoothNodeSize = controller.drawingParameters.smoothNodeSize;
+  const handleNodeSize = controller.drawingParameters.handleNodeSize;
+  const hoveredComponentStrokeColor = controller.drawingParameters.hoveredComponentStrokeColor;
+  const selectedComponentFillColor = controller.drawingParameters.selectedComponentFillColor;
+
+  context.translate(positionedGlyph.x, positionedGlyph.y);
+
+  context.strokeStyle = controller.drawingParameters.hoveredNodeStrokeColor;
+  context.lineWidth = controller.drawingParameters.hoveredNodeLineWidth;
+  const hoverStrokeOffset = 4
+  context.fillStyle = controller.drawingParameters.selectedNodeFillColor;
+
+  for (const selItem of combinedSelection) {
+    const drawHoverStroke = hoverSelection.has(selItem) && !selection.has(selItem)
+    const [tp, index] = selItem.split("/");
+    if (tp === "point") {
+      const pt = positionedGlyph.glyph.path.getPoint(index);
+      if (drawHoverStroke) {
+        strokeNode(context, pt, cornerNodeSize + hoverStrokeOffset, smoothNodeSize + hoverStrokeOffset, handleNodeSize + hoverStrokeOffset);
+      }
+      fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize);
     } else if (tp === "component") {
+      const componentPath = positionedGlyph.glyph.components[index].path2d;
       context.save();
-      context.shadowColor = "#888";
-      context.shadowBlur = 18 * window.devicePixelRatio;  // shadowBlur is in device space
-      // context.shadowOffsetX = 2;
-      // context.shadowOffsetY = 2;
-      context.fillStyle = parms.componentFillColor;
-      context.fill(positionedGlyph.glyph.components[index].path2d);
+      if (drawHoverStroke) {
+        drawWithDoubleStroke(context, componentPath,
+          10 * controller.onePixelUnit,
+          3 * controller.onePixelUnit,
+          hoveredComponentStrokeColor,
+          selectedComponentFillColor,
+        )
+      } else {
+        context.fillStyle = selectedComponentFillColor;
+        context.fill(componentPath);
+      }
       context.restore();
     }
   }
@@ -197,36 +199,57 @@ export function drawRectangleSelectionLayer(model, controller) {
 }
 
 
-function fillNode(context, x, y, nodeSize, pointType, isSmooth) {
-  const radius = pointType ? nodeSize * 0.35 : nodeSize * 0.5;
-  if (pointType || isSmooth) {
-    context.beginPath();
-    context.arc(x, y, radius, 0, 2 * Math.PI, false);
-    context.fill();
+function fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize) {
+  if (!pt.type && !pt.smooth) {
+    fillSquareNode(context, pt, cornerNodeSize);
+  } else if (!pt.type) {
+    fillRoundNode(context, pt, smoothNodeSize);
   } else {
-    context.fillRect(
-      x - nodeSize / 2,
-      y - nodeSize / 2,
-      nodeSize,
-      nodeSize
-    );
+    fillRoundNode(context, pt, handleNodeSize);
   }
 }
 
 
-function strokeNode(context, x, y, nodeSize, pointType, isSmooth) {
-  if (pointType) {
-    context.beginPath();
-    context.arc(x, y, nodeSize / 2, 0, 2 * Math.PI, false);
-    context.stroke();
+function strokeNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize) {
+  if (!pt.type && !pt.smooth) {
+    strokeSquareNode(context, pt, cornerNodeSize);
+  } else if (!pt.type) {
+    strokeRoundNode(context, pt, smoothNodeSize);
   } else {
-    context.strokeRect(
-      x - nodeSize / 2,
-      y - nodeSize / 2,
-      nodeSize,
-      nodeSize
-    );
+    strokeRoundNode(context, pt, handleNodeSize);
   }
+}
+
+
+function fillSquareNode(context, pt, nodeSize) {
+  context.fillRect(
+    pt.x - nodeSize / 2,
+    pt.y - nodeSize / 2,
+    nodeSize,
+    nodeSize
+  );
+}
+
+function fillRoundNode(context, pt, nodeSize) {
+  context.beginPath();
+  context.arc(pt.x, pt.y, nodeSize / 2, 0, 2 * Math.PI, false);
+  context.fill();
+}
+
+
+function strokeSquareNode(context, pt, nodeSize) {
+  context.strokeRect(
+    pt.x - nodeSize / 2,
+    pt.y - nodeSize / 2,
+    nodeSize,
+    nodeSize
+  );
+}
+
+function strokeRoundNode(context, pt, nodeSize) {
+  context.beginPath();
+  context.arc(pt.x, pt.y, nodeSize / 2, 0, 2 * Math.PI, false);
+  context.stroke();
 }
 
 
@@ -270,4 +293,15 @@ function drawWithDoubleStroke(context, path, outerLineWidth, innerLineWidth, str
   context.globalCompositeOperation = "source-over"
   context.fillStyle = fillStyle;
   context.fill(path);
+}
+
+
+function lenientUnion(setA, setB) {
+  if (!setA) {
+    return setB || new Set();
+  }
+  if (!setB) {
+    return setA || new Set();
+  }
+  return union(setA, setB);
 }
