@@ -16,7 +16,12 @@ export class SceneView {
       return;
     }
     canvasController.context.save();
-    this.drawFunc(this.model, canvasController);
+    try {
+      this.drawFunc(this.model, canvasController);
+    } catch(error) {
+      canvasController.context.restore();
+      throw error;
+    }
     canvasController.context.restore();
   }
 
