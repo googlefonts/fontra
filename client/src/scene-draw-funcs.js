@@ -142,6 +142,7 @@ export function drawSelectionLayer(model, controller) {
   const smoothNodeSize = controller.drawingParameters.smoothNodeSize;
   const handleNodeSize = controller.drawingParameters.handleNodeSize;
   const hoveredComponentStrokeColor = controller.drawingParameters.hoveredComponentStrokeColor;
+  const componentFillColor = controller.drawingParameters.componentFillColor;
   const selectedComponentFillColor = controller.drawingParameters.selectedComponentFillColor;
 
   context.translate(positionedGlyph.x, positionedGlyph.y);
@@ -152,14 +153,17 @@ export function drawSelectionLayer(model, controller) {
   context.fillStyle = controller.drawingParameters.selectedNodeFillColor;
 
   for (const selItem of combinedSelection) {
-    const drawHoverStroke = hoverSelection.has(selItem) && !selection.has(selItem)
+    const drawHoverStroke = hoverSelection.has(selItem);
+    const drawSelectionFill = selection.has(selItem);
     const [tp, index] = selItem.split("/");
     if (tp === "point") {
       const pt = positionedGlyph.glyph.path.getPoint(index);
       if (drawHoverStroke) {
         strokeNode(context, pt, cornerNodeSize + hoverStrokeOffset, smoothNodeSize + hoverStrokeOffset, handleNodeSize + hoverStrokeOffset);
       }
-      fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize);
+      if (drawSelectionFill) {
+        fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize);
+      }
     } else if (tp === "component") {
       const componentPath = positionedGlyph.glyph.components[index].path2d;
       context.save();
@@ -168,9 +172,10 @@ export function drawSelectionLayer(model, controller) {
           10 * controller.onePixelUnit,
           3 * controller.onePixelUnit,
           hoveredComponentStrokeColor,
-          selectedComponentFillColor,
+          drawSelectionFill ? selectedComponentFillColor : componentFillColor,
         )
-      } else {
+      }
+      if (drawSelectionFill) {
         context.fillStyle = selectedComponentFillColor;
         context.fill(componentPath);
       }
