@@ -127,7 +127,7 @@ export class AppController {
     });
     const reversedCmap = await this.font.reversedCmap;
     this.glyphsListItems = [];
-    for (const glyphName in await reversedCmap) {
+    for (const glyphName in reversedCmap) {
       this.glyphsListItems.push({"glyphName": glyphName, "unicodes": reversedCmap[glyphName]});
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
