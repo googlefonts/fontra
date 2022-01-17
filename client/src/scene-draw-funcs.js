@@ -44,18 +44,16 @@ export function drawSelectedGlyphLayer(model, controller) {
   const context = controller.context;
   const [lineIndex, glyphIndex] = model.hoveredGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
-  context.lineJoin = "round";
-  context.lineWidth = 10 * controller.onePixelUnit;
-  context.strokeStyle = "#AAA";
+
   context.translate(positionedGlyph.x, positionedGlyph.y);
-  context.stroke(positionedGlyph.glyph.flattenedPath2d);
-  context.lineWidth = 3 * controller.onePixelUnit;
-  context.strokeStyle = "black";
-  context.globalCompositeOperation = "destination-out"
-  context.stroke(positionedGlyph.glyph.flattenedPath2d);
-  context.globalCompositeOperation = "source-over"
-  context.fillStyle = controller.drawingParameters.glyphFillColor;
-  context.fill(positionedGlyph.glyph.flattenedPath2d);
+  drawWithDoubleStroke(
+    context,
+    positionedGlyph.glyph.flattenedPath2d,
+    10 * controller.onePixelUnit,
+    3 * controller.onePixelUnit,
+    "#AAA",
+    controller.drawingParameters.glyphFillColor,
+  )
 }
 
 
@@ -257,4 +255,19 @@ function polygonPath(points, isClosed = true) {
     }
   }
   return path;
+}
+
+
+function drawWithDoubleStroke(context, path, outerLineWidth, innerLineWidth, strokeStyle, fillStyle) {
+  context.lineJoin = "round";
+  context.lineWidth = outerLineWidth;
+  context.strokeStyle = strokeStyle;
+  context.stroke(path);
+  context.lineWidth = innerLineWidth;
+  context.strokeStyle = "black";
+  context.globalCompositeOperation = "destination-out"
+  context.stroke(path);
+  context.globalCompositeOperation = "source-over"
+  context.fillStyle = fillStyle;
+  context.fill(path);
 }
