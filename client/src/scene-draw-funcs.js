@@ -182,7 +182,7 @@ function _drawSelectionLayer(model, controller, drawType) {
       context.save();
       if (drawHoverStroke) {
         drawWithDoubleStroke(context, componentPath,
-          10 * controller.onePixelUnit,
+          8 * controller.onePixelUnit,
           3 * controller.onePixelUnit,
           hoveredComponentStrokeColor,
           drawSelectionFill ? selectedComponentFillColor : componentFillColor,
