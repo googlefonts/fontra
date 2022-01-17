@@ -305,11 +305,6 @@ function findClosestSourceIndexFromLocation(glyph, varLocation) {
 }
 
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
 function getAxisInfoFromGlyph(glyph) {
   const axisInfo = {};
   for (const axis of glyph.axes) {
