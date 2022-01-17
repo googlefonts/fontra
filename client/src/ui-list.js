@@ -34,6 +34,7 @@ export class List {
   }
 
   setItems(items) {
+    this.container.classList.toggle("empty", !items.length);
     this.contents.innerHTML = "";
     this.items = items;
     this._itemsBackLog = Array.from(items);

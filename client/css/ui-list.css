@@ -2,6 +2,10 @@
   overflow: scroll;
 }
 
+.ui-list.empty {
+  display:  none;
+}
+
 .ui-list > .contents {
   display: flex;
   flex-direction: column;
