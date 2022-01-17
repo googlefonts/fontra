@@ -1,3 +1,6 @@
+import { withSavedState } from "./utils.js";
+
+
 export function drawMultiGlyphsLayer(model, controller) {
   _drawMultiGlyphsLayer(model, controller);
 }
@@ -20,15 +23,15 @@ function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
       if (skipSelected && glyph === selectedGlyph) {
         continue;
       }
-      context.save();
-      context.translate(glyph.x, glyph.y);
+      withSavedState(context, () => {
+        context.translate(glyph.x, glyph.y);
 
-      // context.fillStyle = "#CCC";
-      // fillPolygon(context, glyph.glyph.convexHull);
-      // context.fillStyle = controller.drawingParameters.glyphFillColor;
+        // context.fillStyle = "#CCC";
+        // fillPolygon(context, glyph.glyph.convexHull);
+        // context.fillStyle = controller.drawingParameters.glyphFillColor;
 
-      context.fill(glyph.glyph.flattenedPath2d);
-      context.restore();
+        context.fill(glyph.glyph.flattenedPath2d);
+      });
     }
   }
 }
