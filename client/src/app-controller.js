@@ -89,8 +89,7 @@ export class AppController {
     canvasController.sceneView = sceneView;
 
     this.defaultSceneView = sceneView;
-    this.cleanSceneView = new SceneView();
-    this.cleanSceneView.subviews = [new SceneView(sceneModel, sceneDraw.drawMultiGlyphsLayerClean)];
+    this.cleanSceneView = new SceneView(sceneModel, sceneDraw.drawMultiGlyphsLayerClean);
 
     this.sceneController = new SceneController(sceneModel, canvasController)
     this.sceneController.addEventListener("selectedGlyphChanged", async event => {
