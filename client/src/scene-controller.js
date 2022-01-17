@@ -120,6 +120,11 @@ export class SceneController {
     const selRect = centeredRect(point.x, point.y, size);
     this.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
     this.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
+    if (this.hoverSelection?.size) {
+      this.canvasController.canvas.style.cursor = "pointer";
+    } else {
+      this.canvasController.canvas.style.cursor = "default";
+    }
   }
 
   localPoint(event) {
