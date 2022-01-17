@@ -125,7 +125,17 @@ export function drawNodesLayer(model, controller) {
 }
 
 
-export function drawSelectionLayer(model, controller) {
+export function drawComponentSelectionLayer(model, controller) {
+  _drawSelectionLayer(model, controller, "component");
+}
+
+
+export function drawPathSelectionLayer(model, controller) {
+  _drawSelectionLayer(model, controller, "point");
+}
+
+
+function _drawSelectionLayer(model, controller, drawType) {
   if (!model.selectedGlyph) {
     return;
   }
@@ -156,6 +166,9 @@ export function drawSelectionLayer(model, controller) {
     const drawHoverStroke = hoverSelection.has(selItem);
     const drawSelectionFill = selection.has(selItem);
     const [tp, index] = selItem.split("/");
+    if (tp != drawType) {
+      continue;
+    }
     if (tp === "point") {
       const pt = positionedGlyph.glyph.path.getPoint(index);
       if (drawHoverStroke) {

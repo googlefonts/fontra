@@ -62,8 +62,9 @@ export class AppController {
       sceneDraw.drawComponentsLayer,
       sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,
+      sceneDraw.drawComponentSelectionLayer,
+      sceneDraw.drawPathSelectionLayer,
       sceneDraw.drawPathLayer,
-      sceneDraw.drawSelectionLayer,
       sceneDraw.drawRectangleSelectionLayer,
     ]
     const sceneView = new SceneView();
