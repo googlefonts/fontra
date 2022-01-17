@@ -35,8 +35,11 @@ export class SceneController {
 
   async handleDrag(eventStream, initialEvent) {
     const point = this.localPoint(initialEvent);
+    const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
     if (initialEvent.detail >= 2) {
-      this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+      if (!selection || !selection.size) {
+        this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+      }
       initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
       return;
     }
@@ -46,7 +49,6 @@ export class SceneController {
     }
 
     const initialSelection = this.selection;
-    const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
     let initiateDrag = false;
     let initiateRectSelect = false;
 
