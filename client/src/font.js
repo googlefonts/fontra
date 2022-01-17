@@ -28,8 +28,9 @@ export class Font {
   }
 
   async codePointForGlyph(glyphName) {
+    const reversedCmap = await this.reversedCmap;
     const cmap = await this.cmap;
-    for (const codePoint of await this.reversedCmap[glyphName] || []) {
+    for (const codePoint of reversedCmap[glyphName] || []) {
       if (cmap[codePoint] === glyphName) {
         return codePoint;
       }
