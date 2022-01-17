@@ -14,3 +14,15 @@ export function objectsEqual(obj1, obj2) {
   }
   return true;
 }
+
+
+export function withSavedState(context, func) {
+  context.save();
+  try {
+    func();
+  } catch (error) {
+    context.restore();
+    throw error;
+  }
+  context.restore();
+}

@@ -1,3 +1,6 @@
+import { withSavedState } from "./utils.js";
+
+
 export class SceneView {
 
   constructor(model, drawFunc) {
@@ -15,14 +18,9 @@ export class SceneView {
     if (this.drawFunc === undefined) {
       return;
     }
-    canvasController.context.save();
-    try {
+    withSavedState(canvasController.context, () => {
       this.drawFunc(this.model, canvasController);
-    } catch(error) {
-      canvasController.context.restore();
-      throw error;
-    }
-    canvasController.context.restore();
+    });
   }
 
 }

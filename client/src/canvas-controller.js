@@ -1,3 +1,4 @@
+import { withSavedState } from "./utils.js";
 import { mulScalar } from "./var-funcs.js";
 
 
@@ -81,19 +82,14 @@ export class CanvasController {
     this.needsUpdate = false;
     const scale = window.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.context.save();
-    try {
+    withSavedState(this.context, () => {
       this.context.scale(scale, scale);
       this.context.translate(this.origin.x, this.origin.y);
       this.context.scale(this.magnification, -this.magnification);
       if (this.sceneView) {
         this.sceneView.draw(this);
       }
-    } catch (error) {
-      this.context.restore();
-      throw error;
-    }
-    this.context.restore();
+    });
   }
 
   // Event handlers
