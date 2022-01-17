@@ -256,6 +256,7 @@ export class AppController {
     await this.sceneController.setGlyphLines(glyphLines);
     this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
     this.sliders.values = this.sceneController.getLocation();
+    this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
   }
 
   spaceKeyDownHandler(event) {
