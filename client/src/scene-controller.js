@@ -78,7 +78,7 @@ export class SceneController {
       }
     }
 
-    // this.hoverSelection = new Set();
+    this.hoverSelection = new Set();
 
     if (initiateRectSelect) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
