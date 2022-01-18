@@ -14,7 +14,7 @@ export class VarGlyph {
       return {
         "name": item.name,
         "location": item.location,
-        "source": VarSource.fromObject(item.source),
+        "source": SourceGlyph.fromObject(item.source),
       }
     });
     return glyph;
@@ -58,10 +58,10 @@ export class VarGlyph {
 }
 
 
-class VarSource {
+class SourceGlyph {
 
   static fromObject(obj) {
-    const source = new VarSource();
+    const source = new SourceGlyph();
     source.xAdvance = obj.xAdvance;
     source.yAdvance = obj.yAdvance;
     source.verticalOrigin = obj.verticalOrigin;
