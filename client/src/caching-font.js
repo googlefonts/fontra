@@ -1,4 +1,4 @@
-import { flattenComponentPaths, joinPaths } from "./var-glyph.js";
+import { joinPaths } from "./var-glyph.js";
 
 
 export class CachingFont {
@@ -54,11 +54,14 @@ class CachingGlyphInstance {
     const glyph = await this.font.getGlyph(this.name);
     const location = mapNLILocation(this.location, glyph.axes);
     this.instance = await glyph.instantiate(location);
-    const componentPaths = await this.instance.getComponentPaths(
-      async glyphName => await this.font.getGlyph(glyphName),
-      location,
-    )
-    this.components = componentPaths.map(item => new CachingComponent(flattenComponentPaths(item)));
+
+    const getGlyphFunc = this.font.getGlyph.bind(this.font);
+    this.components = [];
+    for (const compo of this.instance.components) {
+      this.components.push(
+        new CachingComponent(await compo.getPath(getGlyphFunc, location))
+      );
+    }
   }
 
   get xAdvance() {

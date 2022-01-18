@@ -96,6 +96,10 @@ class SourceComponent {
     return compo;
   }
 
+  async getPath(getGlyphFunc, parentLocation, transform = null) {
+    return flattenComponentPaths(await this.getNestedPaths(getGlyphFunc, parentLocation, transform));
+  }
+
   async getNestedPaths(getGlyphFunc, parentLocation, transform = null) {
     const compoLocation = mergeLocations(parentLocation, this.coord)
     const glyph = await getGlyphFunc(this.name);
