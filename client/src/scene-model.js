@@ -189,6 +189,9 @@ export class SceneModel {
     const y = point.y - positionedGlyph.y;
     for (let i = components.length - 1; i >= 0; i--) {
       const component = components[i];
+      // Ideally we should do a proper point-inside if there are
+      // multiple matches: the current behavior is a bit annoying
+      // when the convex hulls overlap
       if (pointInRect(x, y, component.controlBounds)
           && pointInConvexPolygon(x, y, component.convexHull)) {
         return new Set([`component/${i}`])
