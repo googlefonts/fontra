@@ -6,6 +6,14 @@ export class CachingFont {
   constructor (font, location) {
     this.font = font;
     this.location = location;
+  }
+
+  get location() {
+    return this._location;
+  }
+
+  set location(location) {
+    this._location = location;
     this._glyphInstancePromiseCache = {};
     this._loadedGlyphInstances = {};
   }
