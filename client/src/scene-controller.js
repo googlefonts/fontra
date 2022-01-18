@@ -214,8 +214,7 @@ export class SceneController {
   }
 
   async setLocation(values) {
-    this.sceneModel.setLocation(values);
-    await this.sceneModel.updateScene();
+    await this.sceneModel.setLocation(values);
     this.canvasController.setNeedsUpdate();
   }
 

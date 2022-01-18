@@ -96,8 +96,9 @@ export class SceneModel {
     return this.cachingFont.location;
   }
 
-  setLocation(values) {
-    this.cachingFont.location = values;
+  async setLocation(location) {
+    this.cachingFont.location = location;
+    await this.updateScene();
   }
 
   async getCurrentSourceIndex() {
