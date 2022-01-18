@@ -307,7 +307,7 @@ async function buildScene(cachingFont, glyphLines) {
         x += glyphInstance.xAdvance;
       }
     }
-    y -= 1000;  // TODO
+    y -= 1100;  // TODO
     if (positionedLine.glyphs.length) {
       positionedLine.bounds = unionRect(
         ...positionedLine.glyphs.map(glyph => glyph.bounds).filter(bounds => bounds !== undefined)
