@@ -45,8 +45,8 @@ class CachingGlyphInstance {
   async initialize() {
     const glyph = await this.font.getGlyph(this.name);
     const location = mapNLILocation(this.location, glyph.axes);
-    this.glyphInstance = await glyph.instantiate(location);
-    const componentPaths = await this.glyphInstance.getComponentPaths(
+    this.instance = await glyph.instantiate(location);
+    const componentPaths = await this.instance.getComponentPaths(
       async glyphName => await this.font.getGlyph(glyphName),
       location,
     )
@@ -54,20 +54,20 @@ class CachingGlyphInstance {
   }
 
   get xAdvance() {
-    return this.glyphInstance.xAdvance;
+    return this.instance.xAdvance;
   }
 
   get yAdvance() {
-    return this.glyphInstance.yAdvance;
+    return this.instance.yAdvance;
   }
 
   get verticalOrigin() {
-    return this.glyphInstance.verticalOrigin;
+    return this.instance.verticalOrigin;
   }
 
   get flattenedPath() {
     if (this._flattenedPath === undefined) {
-      this._flattenedPath = joinPaths([this.glyphInstance.path, this.componentsPath]);
+      this._flattenedPath = joinPaths([this.instance.path, this.componentsPath]);
     }
     return this._flattenedPath;
   }
@@ -81,13 +81,13 @@ class CachingGlyphInstance {
   }
 
   get path() {
-    return this.glyphInstance.path;
+    return this.instance.path;
   }
 
   get path2d() {
     if (this._path2d === undefined) {
       this._path2d = new Path2D();
-      this.glyphInstance.path.drawToPath2d(this._path2d);
+      this.instance.path.drawToPath2d(this._path2d);
     }
     return this._path2d;
   }
