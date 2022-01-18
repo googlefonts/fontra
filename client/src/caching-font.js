@@ -21,15 +21,10 @@ export class CachingFont {
         if (!await this.font.hasGlyph(glyphName)) {
           return null;
         }
-        const glyph = await this.font.getGlyph(glyphName);
-        const location = mapNLILocation(this.location, glyph.axes);
-        const instance = await glyph.instantiate(location);
-        const componentPaths = await instance.getComponentPaths(
-          async glyphName => await this.font.getGlyph(glyphName),
-          location,
-        )
+        const cachingInstance = new CachingGlyphInstance(glyphName, this.font, this.location);
+        await cachingInstance.initialize();
         this._loadedGlyphInstances[glyphName] = true;
-        return new CachingGlyphInstance(glyphName, instance, componentPaths);
+        return cachingInstance;
       })();
       this._glyphInstancePromiseCache[glyphName] = glyphInstancePromise;
     }
@@ -41,13 +36,33 @@ export class CachingFont {
 
 class CachingGlyphInstance {
 
-  constructor (glyphName, glyphInstance, componentPaths) {
-    this.name = glyphName;
-    this.glyphInstance = glyphInstance;
-    this.xAdvance = glyphInstance.xAdvance;
-    this.yAdvance = glyphInstance.yAdvance;
-    this.verticalOrigin = glyphInstance.verticalOrigin;
+  constructor(name, font, location) {
+    this.name = name;
+    this.font = font;
+    this.location = location;
+  }
+
+  async initialize() {
+    const glyph = await this.font.getGlyph(this.name);
+    const location = mapNLILocation(this.location, glyph.axes);
+    this.glyphInstance = await glyph.instantiate(location);
+    const componentPaths = await this.glyphInstance.getComponentPaths(
+      async glyphName => await this.font.getGlyph(glyphName),
+      location,
+    )
     this.components = componentPaths.map(item => new CachingComponent(flattenComponentPaths(item)));
+  }
+
+  get xAdvance() {
+    return this.glyphInstance.xAdvance;
+  }
+
+  get yAdvance() {
+    return this.glyphInstance.yAdvance;
+  }
+
+  get verticalOrigin() {
+    return this.glyphInstance.verticalOrigin;
   }
 
   get flattenedPath() {
