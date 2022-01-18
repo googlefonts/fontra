@@ -70,7 +70,7 @@ class VarSource {
     } else {
       source.path = new VarPath();
     }
-    source.components = obj.components;
+    source.components = obj.components?.map(compo => SourceComponent.fromObject(compo)) || [];
     return source
   }
 
@@ -106,6 +106,19 @@ class VarSource {
       paths.push(componentPaths);
     }
     return paths;
+  }
+
+}
+
+
+class SourceComponent {
+
+  static fromObject(obj) {
+    const compo = new SourceComponent();
+    compo.name = obj.name;
+    compo.transform = obj.transform;
+    compo.coord = obj.coord;
+    return compo;
   }
 
 }
