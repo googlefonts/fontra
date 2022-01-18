@@ -78,32 +78,7 @@ class SourceGlyph {
     const paths = [];
 
     for (const compo of this.components || []) {
-      const compoLocation = mergeLocations(parentLocation, compo.coord)
-      const glyph = await getGlyphFunc(compo.name);
-      let inst;
-      try {
-        inst = glyph.instantiate(compoLocation || {});
-      } catch (error) {
-        if (error.name !== "VariationError") {
-          throw error;
-        }
-        const errorMessage = `Interpolation error while instantiating component ${compo.name}`;
-        console.log(errorMessage);
-        paths.push({"error": errorMessage});
-        continue;
-      }
-      let t = makeAffineTransform(compo.transform);
-      if (transform !== null) {
-        t = transform.transform(t);
-      }
-      const componentPaths = {};
-      if (inst.path.numPoints) {
-        componentPaths["path"] = inst.path.transformed(t);
-      }
-      if (inst.components !== undefined) {
-        componentPaths["children"] = await inst.getComponentPaths(getGlyphFunc, compoLocation, t);
-      }
-      paths.push(componentPaths);
+      paths.push(await compo.getNestedPaths(getGlyphFunc, parentLocation, transform));
     }
     return paths;
   }
@@ -119,6 +94,34 @@ class SourceComponent {
     compo.transform = obj.transform;
     compo.coord = obj.coord;
     return compo;
+  }
+
+  async getNestedPaths(getGlyphFunc, parentLocation, transform = null) {
+    const compoLocation = mergeLocations(parentLocation, this.coord)
+    const glyph = await getGlyphFunc(this.name);
+    let inst;
+    try {
+      inst = glyph.instantiate(compoLocation || {});
+    } catch (error) {
+      if (error.name !== "VariationError") {
+        throw error;
+      }
+      const errorMessage = `Interpolation error while instantiating component ${this.name}`;
+      console.log(errorMessage);
+      return {"error": errorMessage};
+    }
+    let t = makeAffineTransform(this.transform);
+    if (transform) {
+      t = transform.transform(t);
+    }
+    const componentPaths = {};
+    if (inst.path.numPoints) {
+      componentPaths["path"] = inst.path.transformed(t);
+    }
+    if (inst.components !== undefined) {
+      componentPaths["children"] = await inst.getComponentPaths(getGlyphFunc, compoLocation, t);
+    }
+    return componentPaths;
   }
 
 }
