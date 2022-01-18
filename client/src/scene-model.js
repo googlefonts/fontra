@@ -249,13 +249,13 @@ function _getAxisBaseName(axisName) {
 }
 
 
-function findSourceIndexFromLocation(glyph, varLocation) {
+function findSourceIndexFromLocation(glyph, location) {
   for (let i = 0; i < glyph.sources.length; i++) {
     const source = glyph.sources[i];
     let found = true;
     for (const axis of glyph.axes) {
       const baseName = _getAxisBaseName(axis.name);
-      let varValue = varLocation[baseName];
+      let varValue = location[baseName];
       let sourceValue = source.location[axis.name];
       if (varValue === undefined) {
         varValue = axis.defaultValue;
@@ -276,12 +276,12 @@ function findSourceIndexFromLocation(glyph, varLocation) {
 }
 
 
-function findClosestSourceIndexFromLocation(glyph, varLocation) {
+function findClosestSourceIndexFromLocation(glyph, location) {
   const axisDict = {};
   for (const axis of glyph.axes) {
     axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
   }
-  const location = normalizeLocation(varLocation, axisDict);
+  location = normalizeLocation(location, axisDict);
   const distances = [];
   for (let i = 0; i < glyph.sources.length; i++) {
     const sourceLocation = normalizeLocation(glyph.sources[i].location, axisDict);
