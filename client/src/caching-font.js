@@ -16,6 +16,7 @@ export class CachingFont {
     this._location = location;
     this._glyphInstancePromiseCache = {};
     this._loadedGlyphInstances = {};
+    this._sourceIndices = {};
   }
 
   isGlyphInstanceLoaded(glyphName) {
@@ -37,6 +38,14 @@ export class CachingFont {
       this._glyphInstancePromiseCache[glyphName] = glyphInstancePromise;
     }
     return glyphInstancePromise;
+  }
+
+  async getSourceIndex(glyphName) {
+    if (!(glyphName in this._sourceIndices)) {
+      const glyph = await this.font.getGlyph(glyphName);
+      this._sourceIndices[glyphName] = findSourceIndexFromLocation(glyph, this.location);
+    }
+    return this._sourceIndices[glyphName];
   }
 
 }
@@ -176,4 +185,36 @@ export function mapNLILocation(userLocation, axes) {
     }
   }
   return location;
+}
+
+
+export function getAxisBaseName(axisName) {
+  return axisName.split("*", 1)[0];
+}
+
+
+function findSourceIndexFromLocation(glyph, location) {
+  for (let i = 0; i < glyph.sources.length; i++) {
+    const source = glyph.sources[i];
+    let found = true;
+    for (const axis of glyph.axes) {
+      const baseName = getAxisBaseName(axis.name);
+      let varValue = location[baseName];
+      let sourceValue = source.location[axis.name];
+      if (varValue === undefined) {
+        varValue = axis.defaultValue;
+      }
+      if (sourceValue === undefined) {
+        sourceValue = axis.defaultValue;
+      }
+      if (varValue !== sourceValue) {
+        found = false;
+        break;
+      }
+    }
+    if (found) {
+      return i;
+    }
+  }
+  return undefined;
 }

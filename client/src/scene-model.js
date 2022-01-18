@@ -1,4 +1,4 @@
-import { CachingFont, mapNLILocation } from "./caching-font.js"
+import { CachingFont, getAxisBaseName, mapNLILocation } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
 import { normalizeLocation } from "./var-model.js";
@@ -59,8 +59,7 @@ export class SceneModel {
   async getSelectedSource() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {
-      const glyph = await this.font.getGlyph(glyphName);
-      return findSourceIndexFromLocation(glyph, this.cachingFont.location);
+      return await this.cachingFont.getSourceIndex(glyphName);
     } else {
       return undefined;
     }
@@ -79,7 +78,7 @@ export class SceneModel {
       location[axisInfo.name] = axisInfo.defaultValue;
     }
     for (const [name, value] of Object.entries(source.location)) {
-      const baseName = _getAxisBaseName(name);
+      const baseName = getAxisBaseName(name);
       location[baseName] = value;
     }
     await this.setLocation(location);
@@ -244,38 +243,6 @@ export class SceneModel {
 }
 
 
-function _getAxisBaseName(axisName) {
-  return axisName.split("*", 1)[0];
-}
-
-
-function findSourceIndexFromLocation(glyph, location) {
-  for (let i = 0; i < glyph.sources.length; i++) {
-    const source = glyph.sources[i];
-    let found = true;
-    for (const axis of glyph.axes) {
-      const baseName = _getAxisBaseName(axis.name);
-      let varValue = location[baseName];
-      let sourceValue = source.location[axis.name];
-      if (varValue === undefined) {
-        varValue = axis.defaultValue;
-      }
-      if (sourceValue === undefined) {
-        sourceValue = axis.defaultValue;
-      }
-      if (varValue !== sourceValue) {
-        found = false;
-        break;
-      }
-    }
-    if (found) {
-      return i;
-    }
-  }
-  return undefined;
-}
-
-
 function findClosestSourceIndexFromLocation(glyph, location) {
   const axisDict = {};
   for (const axis of glyph.axes) {
@@ -308,7 +275,7 @@ function findClosestSourceIndexFromLocation(glyph, location) {
 function getAxisInfoFromGlyph(glyph) {
   const axisInfo = {};
   for (const axis of glyph.axes) {
-    const baseName = _getAxisBaseName(axis.name);
+    const baseName = getAxisBaseName(axis.name);
     if (axisInfo[baseName]) {
       continue;
     }
