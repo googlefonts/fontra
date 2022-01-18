@@ -65,7 +65,7 @@ class SourceGlyph {
     source.xAdvance = obj.xAdvance;
     source.yAdvance = obj.yAdvance;
     source.verticalOrigin = obj.verticalOrigin;
-    if (obj.path !== undefined) {
+    if (obj.path) {
       source.path = VarPath.fromObject(obj.path);
     } else {
       source.path = new VarPath();
