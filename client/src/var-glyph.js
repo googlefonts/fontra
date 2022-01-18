@@ -122,9 +122,7 @@ class SourceComponent {
     if (inst.path.numPoints) {
       componentPaths["path"] = inst.path.transformed(t);
     }
-    if (inst.components !== undefined) {
-      componentPaths["children"] = await inst.getComponentPaths(getGlyphFunc, compoLocation, t);
-    }
+    componentPaths["children"] = await inst.getComponentPaths(getGlyphFunc, compoLocation, t);
     return componentPaths;
   }
 
