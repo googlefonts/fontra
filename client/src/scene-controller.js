@@ -221,8 +221,8 @@ export class SceneController {
     return this.sceneModel.getSourcesInfo();
   }
 
-  async setSelectedSource(sourceInfo) {
-    await this.sceneModel.setSelectedSource(sourceInfo);
+  async setSelectedSource(sourceIndex) {
+    await this.sceneModel.setSelectedSource(sourceIndex);
     this.canvasController.setNeedsUpdate();
   }
 

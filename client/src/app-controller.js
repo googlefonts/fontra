@@ -133,7 +133,7 @@ export class AppController {
     ];
     this.sourcesList = new List("sources-list", columnDescriptions);
     this.sourcesList.addEventListener("listSelectionChanged", async event => {
-      await this.sceneController.setSelectedSource(event.detail.getSelectedItem());
+      await this.sceneController.setSelectedSource(event.detail.getSelectedItem().sourceIndex);
       this.sliders.values = this.sceneController.getLocation();
     });
   }

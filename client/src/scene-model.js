@@ -47,6 +47,81 @@ export class SceneModel {
     }
   }
 
+  getLocation() {
+    return this.cachingFont.location;
+  }
+
+  async setLocation(location) {
+    this.cachingFont.location = location;
+    await this.updateScene();
+  }
+
+  async getCurrentSourceIndex() {
+    const glyphName = this.getSelectedGlyphName();
+    if (glyphName) {
+      const glyph = await this.font.getGlyph(glyphName);
+      return findSourceIndexFromLocation(glyph, this.cachingFont.location);
+    } else {
+      return undefined;
+    }
+  }
+
+  async setSelectedSource(sourceIndex) {
+    if (!this.selectedGlyph) {
+      return;
+    }
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
+
+    const source = glyph.sources[sourceIndex];
+    const userVarLocation = {};
+    for (const axisInfo of await this.getAxisInfo()) {
+      userVarLocation[axisInfo.name] = axisInfo.defaultValue;
+    }
+    for (const [name, value] of Object.entries(source.location)) {
+      const baseName = _getAxisBaseName(name);
+      userVarLocation[baseName] = value;
+    }
+    await this.setLocation(userVarLocation);
+  }
+
+  async getAxisInfo() {
+    if (this.glyphLines) {
+      const axisInfos = {};
+      for (const line of this.glyphLines) {
+        for (const glyphInfo of line) {
+          const glyphName = glyphInfo.glyphName;
+          if (!glyphName || axisInfos[glyphName]) {
+            continue
+          }
+          const glyph = await this.font.getGlyph(glyphName);
+          if (glyph) {
+            axisInfos[glyphName] = getAxisInfoFromGlyph(glyph);
+          }
+        }
+      }
+      return mergeAxisInfo(Object.values(axisInfos));
+    }
+    return [];
+  }
+
+  async getSourcesInfo() {
+    const sourcesInfo = [];
+    if (!this.selectedGlyph) {
+      return sourcesInfo;
+    }
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
+    for (let i = 0; i < glyph.sources.length; i++) {
+      let name = glyph.sources[i].name;
+      if (!name) {
+        name = `source${i}`;
+      }
+      sourcesInfo.push({"sourceName": name, "sourceIndex": i})
+    }
+    return sourcesInfo;
+  }
+
   async updateScene() {
     for await (const _ of this.updateSceneIncrementally(false)) {
       ;
@@ -95,81 +170,6 @@ export class SceneModel {
       this.positionedLines = await buildScene(this.cachingFont, glyphLines);
       yield;
     }
-  }
-
-  getLocation() {
-    return this.cachingFont.location;
-  }
-
-  async setLocation(location) {
-    this.cachingFont.location = location;
-    await this.updateScene();
-  }
-
-  async getCurrentSourceIndex() {
-    const glyphName = this.getSelectedGlyphName();
-    if (glyphName) {
-      const glyph = await this.font.getGlyph(glyphName);
-      return findSourceIndexFromLocation(glyph, this.cachingFont.location);
-    } else {
-      return undefined;
-    }
-  }
-
-  async getAxisInfo() {
-    if (this.glyphLines) {
-      const axisInfos = {};
-      for (const line of this.glyphLines) {
-        for (const glyphInfo of line) {
-          const glyphName = glyphInfo.glyphName;
-          if (!glyphName || axisInfos[glyphName]) {
-            continue
-          }
-          const glyph = await this.font.getGlyph(glyphName);
-          if (glyph) {
-            axisInfos[glyphName] = getAxisInfoFromGlyph(glyph);
-          }
-        }
-      }
-      return mergeAxisInfo(Object.values(axisInfos));
-    }
-    return [];
-  }
-
-  async getSourcesInfo() {
-    const sourcesInfo = [];
-    if (!this.selectedGlyph) {
-      return sourcesInfo;
-    }
-    const positionedGlyph = this.getSelectedPositionedGlyph();
-    const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
-    for (let i = 0; i < glyph.sources.length; i++) {
-      let name = glyph.sources[i].name;
-      if (!name) {
-        name = `source${i}`;
-      }
-      sourcesInfo.push({"sourceName": name, "sourceIndex": i})
-    }
-    return sourcesInfo;
-  }
-
-  async setSelectedSource(sourceInfo) {
-    if (!this.selectedGlyph) {
-      return;
-    }
-    const positionedGlyph = this.getSelectedPositionedGlyph();
-    const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
-
-    const source = glyph.sources[sourceInfo.sourceIndex];
-    const userVarLocation = {};
-    for (const axisInfo of await this.getAxisInfo()) {
-      userVarLocation[axisInfo.name] = axisInfo.defaultValue;
-    }
-    for (const [name, value] of Object.entries(source.location)) {
-      const baseName = _getAxisBaseName(name);
-      userVarLocation[baseName] = value;
-    }
-    await this.setLocation(userVarLocation);
   }
 
   selectionAtPoint(point, size) {
