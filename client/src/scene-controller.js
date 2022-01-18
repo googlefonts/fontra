@@ -222,7 +222,7 @@ export class SceneController {
   }
 
   getSelectedSource() {
-    return this.sceneModel.getCurrentSourceIndex();
+    return this.sceneModel.getSelectedSource();
   }
 
   async setSelectedSource(sourceIndex) {
