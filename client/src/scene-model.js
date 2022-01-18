@@ -74,15 +74,15 @@ export class SceneModel {
     const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
 
     const source = glyph.sources[sourceIndex];
-    const userVarLocation = {};
+    const location = {};
     for (const axisInfo of await this.getAxisInfo()) {
-      userVarLocation[axisInfo.name] = axisInfo.defaultValue;
+      location[axisInfo.name] = axisInfo.defaultValue;
     }
     for (const [name, value] of Object.entries(source.location)) {
       const baseName = _getAxisBaseName(name);
-      userVarLocation[baseName] = value;
+      location[baseName] = value;
     }
-    await this.setLocation(userVarLocation);
+    await this.setLocation(location);
   }
 
   async getAxisInfo() {
