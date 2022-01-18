@@ -182,18 +182,29 @@ export class SceneModel {
     const components = positionedGlyph.glyph.components;
     const x = point.x - positionedGlyph.x;
     const y = point.y - positionedGlyph.y;
+    const componentHullMatches = [];
     for (let i = components.length - 1; i >= 0; i--) {
       const component = components[i];
-      // Ideally we should do a proper point-inside if there are
-      // multiple matches: the current behavior is a bit annoying
-      // when the convex hulls overlap
       if (pointInRect(x, y, component.controlBounds)
           && pointInConvexPolygon(x, y, component.convexHull)) {
-        return new Set([`component/${i}`])
+        componentHullMatches.push({"index": i, "component": component});
       }
     }
-
-    return new Set();
+    switch (componentHullMatches.length) {
+      case 0:
+        return new Set();
+      case 1:
+        return new Set([`component/${componentHullMatches[0].index}`]);
+    }
+    // If we have multiple matches, take the first that has an actual
+    // point inside the path, and not just inside the hull
+    for (const match of componentHullMatches) {
+      if (this.isPointInPath(match.component.path2d, x, y)) {
+        return new Set([`component/${match.index}`]);
+      }
+    }
+    // Else, fall back to the first match
+    return new Set([`component/${componentHullMatches[0].index}`]);
   }
 
   selectionAtRect(selRect) {
