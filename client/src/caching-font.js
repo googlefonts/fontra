@@ -31,7 +31,9 @@ export class CachingFont {
         if (!await this.font.hasGlyph(glyphName)) {
           return null;
         }
-        const cachingInstance = new CachingGlyphInstance(glyphName, this.font, this.location);
+        const cachingInstance = new CachingGlyphInstance(
+          glyphName, this.font, this.location, await this.getSourceIndex(glyphName),
+        );
         await cachingInstance.initialize();
         this._loadedGlyphInstances[glyphName] = true;
         return cachingInstance;
@@ -54,16 +56,23 @@ export class CachingFont {
 
 class CachingGlyphInstance {
 
-  constructor(name, font, location) {
+  constructor(name, font, location, sourceIndex) {
     this.name = name;
     this.font = font;
     this.location = location;
+    this.sourceIndex = sourceIndex;
   }
 
   async initialize() {
     const glyph = await this.font.getGlyph(this.name);
     const location = mapNLILocation(this.location, glyph.axes);
-    this.instance = await glyph.instantiate(location);
+    if (this.sourceIndex !== undefined) {
+      this.instance = glyph.sources[this.sourceIndex].source;
+      this.canEdit = true;
+    } else {
+      this.instance = await glyph.instantiate(location);
+      this.canEdit = false;
+    }
 
     const getGlyphFunc = this.font.getGlyph.bind(this.font);
     this.components = [];
