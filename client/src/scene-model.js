@@ -9,20 +9,13 @@ export class SceneModel {
   constructor(font, isPointInPath) {
     this.font = font;
     this.isPointInPath = isPointInPath;
-    this.userVarLocation = {};
+    this.cachingFont = new CachingFont(this.font, {});
     this.glyphLines = [];
     this.positionedLines = [];
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.selectedGlyph = undefined;
     this.hoveredGlyph = undefined;
-  }
-
-  get cachingFont() {
-    if (this._cachingFont === undefined) {
-      this._cachingFont = new CachingFont(this.font, this.userVarLocation);
-    }
-    return this._cachingFont;
   }
 
   getSelectedPositionedGlyph() {
@@ -100,19 +93,18 @@ export class SceneModel {
   }
 
   getLocation() {
-    return this.userVarLocation;
+    return this.cachingFont.location;
   }
 
   async setLocation(values) {
-    this.userVarLocation = values;
-    delete this._cachingFont;
+    this.cachingFont.location = values;
   }
 
   async getCurrentSourceIndex() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {
       const glyph = await this.font.getGlyph(glyphName);
-      return findSourceIndexFromLocation(glyph, this.userVarLocation);
+      return findSourceIndexFromLocation(glyph, this.cachingFont.location);
     } else {
       return undefined;
     }
