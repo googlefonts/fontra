@@ -63,15 +63,17 @@ class CachingGlyphInstance {
     this.sourceIndex = sourceIndex;
   }
 
+  get canEdit() {
+    return this.sourceIndex !== undefined;
+  }
+
   async initialize() {
     const glyph = await this.font.getGlyph(this.name);
     const location = mapNLILocation(this.location, glyph.axes);
     if (this.sourceIndex !== undefined) {
       this.instance = glyph.sources[this.sourceIndex].source;
-      this.canEdit = true;
     } else {
       this.instance = await glyph.instantiate(location);
-      this.canEdit = false;
     }
 
     const getGlyphFunc = this.font.getGlyph.bind(this.font);
