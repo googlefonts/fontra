@@ -164,8 +164,7 @@ export class SceneModel {
       const baseName = _getAxisBaseName(name);
       userVarLocation[baseName] = value;
     }
-    this.setLocation(userVarLocation);
-    await this.updateScene();
+    await this.setLocation(userVarLocation);
   }
 
   selectionAtPoint(point, size) {
