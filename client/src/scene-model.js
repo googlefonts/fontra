@@ -56,7 +56,7 @@ export class SceneModel {
     await this.updateScene();
   }
 
-  async getCurrentSourceIndex() {
+  async getSelectedSource() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {
       const glyph = await this.font.getGlyph(glyphName);

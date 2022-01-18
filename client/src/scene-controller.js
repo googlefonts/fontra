@@ -221,13 +221,13 @@ export class SceneController {
     return this.sceneModel.getSourcesInfo();
   }
 
+  getSelectedSource() {
+    return this.sceneModel.getCurrentSourceIndex();
+  }
+
   async setSelectedSource(sourceIndex) {
     await this.sceneModel.setSelectedSource(sourceIndex);
     this.canvasController.setNeedsUpdate();
-  }
-
-  getCurrentSourceIndex() {
-    return this.sceneModel.getCurrentSourceIndex();
   }
 
 }
