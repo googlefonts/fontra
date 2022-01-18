@@ -204,10 +204,6 @@ export class SceneController {
     }
   }
 
-  getAxisInfo() {
-    return this.sceneModel.getAxisInfo();
-  }
-
   getLocation() {
     return this.sceneModel.getLocation();
   }
@@ -217,10 +213,6 @@ export class SceneController {
     this.canvasController.setNeedsUpdate();
   }
 
-  getSourcesInfo() {
-    return this.sceneModel.getSourcesInfo();
-  }
-
   getSelectedSource() {
     return this.sceneModel.getSelectedSource();
   }
@@ -228,6 +220,14 @@ export class SceneController {
   async setSelectedSource(sourceIndex) {
     await this.sceneModel.setSelectedSource(sourceIndex);
     this.canvasController.setNeedsUpdate();
+  }
+
+  getAxisInfo() {
+    return this.sceneModel.getAxisInfo();
+  }
+
+  getSourcesInfo() {
+    return this.sceneModel.getSourcesInfo();
   }
 
 }
