@@ -199,8 +199,7 @@ export class SceneController {
   }
 
   async setGlyphLines(glyphLines) {
-    this.sceneModel.setGlyphLines(glyphLines);
-    for await (const _ of this.sceneModel.updateSceneIncrementally()) {
+    for await (const _ of this.sceneModel.setGlyphLines(glyphLines, true)) {
       this.canvasController.setNeedsUpdate();
     }
   }

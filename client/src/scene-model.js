@@ -34,12 +34,17 @@ export class SceneModel {
     return !!this.selectedGlyph;
   }
 
-  setGlyphLines(glyphLines) {
+  setGlyphLines(glyphLines, updateIncrementally = false) {
     this.glyphLines = glyphLines;
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.selectedGlyph = undefined;
     this.hoveredGlyph = undefined;
+    if (updateIncrementally) {
+      return this.updateSceneIncrementally();
+    } else {
+      return this.updateScene();
+    }
   }
 
   async updateScene() {
