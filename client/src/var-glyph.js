@@ -108,11 +108,6 @@ class VarSource {
     return paths;
   }
 
-  async getComponentPathsFlattened(getGlyphFunc, parentLocation, transform = null) {
-    const toplevel = await this.getComponentPaths(getGlyphFunc, parentLocation, transform);
-    return toplevel.map(flattenComponentPaths);
-  }
-
 }
 
 
