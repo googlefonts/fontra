@@ -147,8 +147,10 @@ export class SceneController {
   }
 
   set selection(selection) {
-    this.sceneModel.selection = selection;
-    this.canvasController.setNeedsUpdate();
+    if (!lenientIsEqualSet(selection, this.selection)) {
+      this.sceneModel.selection = selection;
+      this.canvasController.setNeedsUpdate();
+    }
   }
 
   get hoverSelection() {
