@@ -33,13 +33,13 @@ const drawingParametersDark = {
   ...drawingParametersLight,
   glyphFillColor: "#FFF",
   hoveredGlyphStrokeColor: "#AAA",
-  nodeFillColor: "#777",
+  nodeFillColor: "#BBB",
   selectedNodeFillColor: "#FFF",
-  hoveredNodeStrokeColor: "#888",
+  hoveredNodeStrokeColor: "#BBB",
   handleColor: "#777",
   pathStrokeColor: "#FFF",
-  componentFillColor: "#444",
-  selectedComponentFillColor: "#888",
+  componentFillColor: "#777",
+  selectedComponentFillColor: "#CCC",
   hoveredComponentStrokeColor: "#555",
 }
 
