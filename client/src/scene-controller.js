@@ -85,12 +85,7 @@ export class SceneController {
     if (initiateRectSelect) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
     } else if (initiateDrag) {
-      console.log("let's drag stuff", initiateDrag);
-      console.log("initial event!", initialEvent);
-      for await (const event of eventStream) {
-        console.log("event item!", this.localPoint(event), event);
-      }
-      console.log("done iterating events!");
+      return await this.handleDragSelection(eventStream, initialEvent);
     }
   }
 
@@ -133,6 +128,21 @@ export class SceneController {
       }
     }
     this.selectionRect = undefined;
+  }
+
+  async handleDragSelection(eventStream, initialEvent) {
+    const initialPoint = this.localPoint(initialEvent);
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    if (!positionedGlyph.glyph.canEdit) {
+      console.log(`can't edit glyph '${positionedGlyph.glyph.name}': location is not a source`);
+      return;
+    }
+    const instance = positionedGlyph.glyph.instance;
+    for await (const event of eventStream) {
+      const currentPoint = this.localPoint(event);
+      const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
+      console.log("move selection by", delta);
+    }
   }
 
   handleHover(event) {
