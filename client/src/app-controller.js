@@ -131,7 +131,7 @@ export class AppController {
 
   initSourcesList() {
     const columnDescriptions = [
-      {"key": "sourceName", "width": "12em"},
+      {"key": "sourceName", "width": "14em"},
       // {"key": "sourceIndex", "width": "2em"},
     ];
     this.sourcesList = new List("sources-list", columnDescriptions);
