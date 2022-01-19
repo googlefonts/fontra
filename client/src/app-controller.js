@@ -238,6 +238,10 @@ export class AppController {
       glyphLines.push(glyphNamesFromText(line, cmap, reversedCmap));
     }
     await this.sceneController.setGlyphLines(glyphLines);
+    await this.updateSlidersAndSources();
+  }
+
+  async updateSlidersAndSources() {
     this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
     this.sliders.values = this.sceneController.getLocation();
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
