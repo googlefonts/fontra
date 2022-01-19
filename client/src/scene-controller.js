@@ -94,12 +94,12 @@ export class SceneController {
     if (!selection || !selection.size) {
       this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
     } else {
-      const dblClickedComponents = [];
+      const dblClickedComponents = new Set();
       for (const selItem of this.selection) {
         const [tp, index] = selItem.split("/");
         if (tp === "component") {
           const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
-          dblClickedComponents.push(instance.components[index].name);
+          dblClickedComponents.add(instance.components[index].name);
         }
       }
       console.log("double click on component(s)", dblClickedComponents);
