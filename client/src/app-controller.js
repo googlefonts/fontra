@@ -239,13 +239,9 @@ export class AppController {
   }
 
   async textFieldChangedCallback(element) {
-    const text = element.innerText;
-    const glyphLines = [];
-    const reversedCmap = await this.font.reversedCmap;
     const cmap = await this.font.cmap;
-    for (const line of splitLines(text)) {
-      glyphLines.push(glyphNamesFromText(line, cmap, reversedCmap));
-    }
+    const reversedCmap = await this.font.reversedCmap;
+    const glyphLines = glyphLinesFromText(element.innerText, cmap, reversedCmap);
     await this.sceneController.setGlyphLines(glyphLines);
     await this.updateSlidersAndSources();
   }
@@ -326,6 +322,15 @@ function compare(a, b) {
   } else {
     return 1;
   }
+}
+
+
+function glyphLinesFromText(text, cmap, reversedCmap) {
+  const glyphLines = [];
+  for (const line of splitLines(text)) {
+    glyphLines.push(glyphNamesFromText(line, cmap, reversedCmap));
+  }
+  return glyphLines;
 }
 
 
