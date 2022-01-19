@@ -210,7 +210,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
         varSourceDict["xAdvance"] = xAdvance
         sourceName = varDict.get("sourceName")
         if not sourceName and layerName:
-            sourceName = f"sourcelayer-{layerName}"
+            sourceName = f"{layerName}"
         sources.append(
             {
                 "name": sourceName,
