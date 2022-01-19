@@ -138,10 +138,9 @@ export class SceneController {
       return;
     }
     const cachingFont = this.sceneModel.cachingFont;
-    const cachingGlyph = positionedGlyph.glyph;
-    const glyphName = cachingGlyph.name;
+    const glyphName = positionedGlyph.glyph.name;
     const varGlyph = await this.sceneModel.font.getGlyph(glyphName);
-    const instance = cachingGlyph.instance;
+    const instance = positionedGlyph.glyph.instance;
     const path = instance.path;
     const editFuncs = [];
     for (const selItem of this.selection) {
@@ -158,7 +157,6 @@ export class SceneController {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       editFuncs.forEach(item => item(delta));
-      cachingGlyph.clearCache();
       cachingFont.clearGlyphCache(glyphName);
       varGlyph.clearDeltasCache();
       await this.sceneModel.updateScene();
