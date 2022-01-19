@@ -21,10 +21,10 @@ export class SceneController {
     this._eventElement.addEventListener(eventName, handler, options);
   }
 
-  _dispatchEvent(eventName) {
+  _dispatchEvent(eventName, detail) {
     const event = new CustomEvent(eventName, {
       "bubbles": false,
-      "detail": this,
+      "detail": detail || this,
     });
     this._eventElement.dispatchEvent(event);
   }
@@ -162,7 +162,9 @@ export class SceneController {
       varGlyph.clearDeltasCache();
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
+      this._dispatchEvent("glyphIsChanging", glyphName);
     }
+      this._dispatchEvent("glyphChanged", glyphName);
   }
 
   handleHover(event) {

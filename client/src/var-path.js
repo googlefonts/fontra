@@ -368,10 +368,10 @@ function drawQuadSegment(path, segment) {
     const [x2, y2] = [segment[i], segment[i + 1]];
     const xMid = (x1 + x2) / 2;
     const yMid = (y1 + y2) / 2;
-    path.bezierQuadTo(x1, y1, xMid, yMid);
+    path.quadraticCurveTo(x1, y1, xMid, yMid);
     [x1, y1] = [x2, y2];
   }
-  path.bezierQuadTo(x1, y1, segment[lastIndex], segment[lastIndex + 1]);
+  path.quadraticCurveTo(x1, y1, segment[lastIndex], segment[lastIndex + 1]);
 }
 
 

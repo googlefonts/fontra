@@ -19,8 +19,8 @@ class MockPath2D {
   bezierCurveTo(x1, y1, x2, y2, x3, y3) {
     this.items.push({op: "bezierCurveTo", args: [x1, y1, x2, y2, x3, y3]})
   }
-  bezierQuadTo(x1, y1, x2, y2) {
-    this.items.push({op: "bezierQuadTo", args: [x1, y1, x2, y2]})
+  quadraticCurveTo(x1, y1, x2, y2) {
+    this.items.push({op: "quadraticCurveTo", args: [x1, y1, x2, y2]})
   }
   closePath() {
     this.items.push({op: "closePath", args: []});
@@ -110,8 +110,8 @@ describe("VarPath Tests", () => {
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 100], "op": "moveTo"},
-        {"args": [100, 100, 100, 0], "op": "bezierQuadTo"},
-        {"args": [0, 0, 0, 100], "op": "bezierQuadTo"},
+        {"args": [100, 100, 100, 0], "op": "quadraticCurveTo"},
+        {"args": [0, 0, 0, 100], "op": "quadraticCurveTo"},
         {"args": [], "op": "closePath"},
       ],
     );
@@ -128,7 +128,7 @@ describe("VarPath Tests", () => {
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 100], "op": "moveTo"},
-        {"args": [100, 100, 100, 0], "op": "bezierQuadTo"},
+        {"args": [100, 100, 100, 0], "op": "quadraticCurveTo"},
       ],
     );
   })
@@ -144,9 +144,9 @@ describe("VarPath Tests", () => {
     expect(mp.items).to.deep.equal(
       [
         {"args": [0, 0], "op": "moveTo"},
-        {"args": [0, 100, 50, 100], "op": "bezierQuadTo"},
-        {"args": [100, 100, 100, 50], "op": "bezierQuadTo"},
-        {"args": [100, 0, 0, 0], "op": "bezierQuadTo"},
+        {"args": [0, 100, 50, 100], "op": "quadraticCurveTo"},
+        {"args": [100, 100, 100, 50], "op": "quadraticCurveTo"},
+        {"args": [100, 0, 0, 0], "op": "quadraticCurveTo"},
         {"args": [], "op": "closePath"},
       ],
     );
@@ -163,10 +163,10 @@ describe("VarPath Tests", () => {
     expect(mp.items).to.deep.equal(
       [
         {"args": [50, 0], "op": "moveTo"},
-        {"args": [0, 0, 0, 50], "op": "bezierQuadTo"},
-        {"args": [0, 100, 50, 100], "op": "bezierQuadTo"},
-        {"args": [100, 100, 100, 50], "op": "bezierQuadTo"},
-        {"args": [100, 0, 50, 0], "op": "bezierQuadTo"},
+        {"args": [0, 0, 0, 50], "op": "quadraticCurveTo"},
+        {"args": [0, 100, 50, 100], "op": "quadraticCurveTo"},
+        {"args": [100, 100, 100, 50], "op": "quadraticCurveTo"},
+        {"args": [100, 0, 50, 0], "op": "quadraticCurveTo"},
         {"args": [], "op": "closePath"},
       ],
     );
@@ -263,8 +263,8 @@ describe("VarPath Tests", () => {
         {"args": [0, 0], "op": "moveTo"},
         {"args": [0, 100], "op": "lineTo"},
         {"args": [30, 130, 70, 130, 100, 100], "op": "bezierCurveTo"},
-        {"args": [130, 70, 130, 50], "op": "bezierQuadTo"},
-        {"args": [130, 30, 100, 0], "op": "bezierQuadTo"},
+        {"args": [130, 70, 130, 50], "op": "quadraticCurveTo"},
+        {"args": [130, 30, 100, 0], "op": "quadraticCurveTo"},
         {"args": [0, 0], "op": "lineTo"},
         {"args": [], "op": "closePath"},
       ],
