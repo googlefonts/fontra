@@ -214,6 +214,10 @@ export class SceneController {
     this.canvasController.setDrawingParameters(drawingParameters);
   }
 
+  getGlyphLines() {
+    return this.sceneModel.getGlyphLines();
+  }
+
   async setGlyphLines(glyphLines) {
     for await (const _ of this.sceneModel.setGlyphLines(glyphLines, true)) {
       this.canvasController.setNeedsUpdate();
