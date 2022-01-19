@@ -37,19 +37,7 @@ export class SceneController {
     const point = this.localPoint(initialEvent);
     const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
     if (initialEvent.detail >= 2) {
-      if (!selection || !selection.size) {
-        this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
-      } else {
-        const dblClickedComponents = [];
-        for (const selItem of this.selection) {
-          const [tp, index] = selItem.split("/");
-          if (tp === "component") {
-            const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
-            dblClickedComponents.push(instance.components[index].name);
-          }
-        }
-        console.log("double click on component(s)", dblClickedComponents);
-      }
+      this.handleDoubleCick(selection, point);
       initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
       return;
     }
@@ -99,6 +87,22 @@ export class SceneController {
         console.log("event item!", this.localPoint(event), event);
       }
       console.log("done iterating events!");
+    }
+  }
+
+  handleDoubleCick(selection, point) {
+    if (!selection || !selection.size) {
+      this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+    } else {
+      const dblClickedComponents = [];
+      for (const selItem of this.selection) {
+        const [tp, index] = selItem.split("/");
+        if (tp === "component") {
+          const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
+          dblClickedComponents.push(instance.components[index].name);
+        }
+      }
+      console.log("double click on component(s)", dblClickedComponents);
     }
   }
 
