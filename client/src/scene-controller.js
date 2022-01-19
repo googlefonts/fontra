@@ -150,6 +150,7 @@ export class SceneController {
           editFuncs.push(makePointDragFunc(path, index));
           break;
         case "component":
+          editFuncs.push(makeComponentDragFunc(instance.components[index]));
           break;
       }
     }
@@ -315,6 +316,17 @@ function makePointDragFunc(path, pointIndex) {
   const point = path.getPoint(pointIndex);
   const dragFunc = (delta) => {
     path.setPointPosition(pointIndex, point.x + delta.x, point.y + delta.y);
+  };
+  return dragFunc;
+}
+
+
+function makeComponentDragFunc(component) {
+  const x = component.transform.x;
+  const y = component.transform.y;
+  const dragFunc = (delta) => {
+    component.transform.x = x + delta.x;
+    component.transform.y = y + delta.y;
   };
   return dragFunc;
 }
