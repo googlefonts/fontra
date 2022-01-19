@@ -49,9 +49,9 @@
                 |                             |                            |
     [ fontra rcjkmysql backend ]   [ fontra rcjk backend ]   [ fontra designspace backend ]
                 |                             |                            |
-       [ robocjk.api.client ]           [ rcjktools ]          [ ufoLib, designspaceLib ]
-                |                       [  ufoLib   ]          [       fontTools        ]
-            (network)                   [ fontTools ]                      |
+       [ robocjk.api.client ]           [ rcjktools ]              [ designspaceLib ]
+                |                       [  ufoLib   ]              [    ufoLib      ]
+            (network)                   [ fontTools ]              [   fontTools    ]
                 |                             |                            |
           [ HTTP server ]                      \                          /
                 |                               \                        /
