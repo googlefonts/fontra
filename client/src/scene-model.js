@@ -29,6 +29,14 @@ export class SceneModel {
     return this.getSelectedPositionedGlyph()?.glyph.name;
   }
 
+  getSelectedGlyphIndex() {
+    if (!this.selectedGlyph) {
+      return undefined;
+    }
+    const [lineIndex, glyphIndex] = this.selectedGlyph.split("/");
+    return {"lineIndex": lineIndex, "glyphIndex": glyphIndex};
+  }
+
   canSelect() {
     return !!this.selectedGlyph;
   }
