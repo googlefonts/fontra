@@ -20,6 +20,10 @@ export class VarGlyph {
     return glyph;
   }
 
+  clearDeltasCache() {
+    delete this._deltas;
+  }
+
   get model() {
     if (this._model === undefined) {
       const axisDict = this.axisDict;

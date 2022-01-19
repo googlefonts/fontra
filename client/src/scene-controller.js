@@ -138,8 +138,9 @@ export class SceneController {
       return;
     }
     const cachingFont = this.sceneModel.cachingFont;
-    const glyphName = positionedGlyph.name;
     const cachingGlyph = positionedGlyph.glyph;
+    const glyphName = cachingGlyph.name;
+    const varGlyph = await this.sceneModel.font.getGlyph(glyphName);
     const instance = cachingGlyph.instance;
     const path = instance.path;
     const editFuncs = [];
@@ -159,6 +160,7 @@ export class SceneController {
       editFuncs.forEach(item => item(delta));
       cachingGlyph.clearCache();
       cachingFont.clearGlyphCache(glyphName);
+      varGlyph.clearDeltasCache();
       this.canvasController.setNeedsUpdate();
     }
   }
