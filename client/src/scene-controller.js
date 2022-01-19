@@ -106,8 +106,10 @@ export class SceneController {
           componentNames.add(instance.components[index].name);
         }
       }
-      this.doubleClickedComponentNames = Array.from(componentNames);
-      this._dispatchEvent("doubleClickedComponents");
+      if (componentNames.size) {
+        this.doubleClickedComponentNames = Array.from(componentNames);
+        this._dispatchEvent("doubleClickedComponents");
+      }
     }
   }
 
