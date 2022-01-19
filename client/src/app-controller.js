@@ -77,6 +77,7 @@ export class AppController {
     this.cleanSceneView = new SceneView(sceneModel, sceneDraw.drawMultiGlyphsLayerClean);
 
     this.sceneController = new SceneController(sceneModel, canvasController)
+    // TODO move event stuff out of here
     this.sceneController.addEventListener("selectedGlyphChanged", async event => {
       this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
@@ -84,6 +85,12 @@ export class AppController {
     this.sceneController.addEventListener("doubleClickedComponents", async event => {
       this.doubleClickedComponentsCallback(event)
     });
+    // this.sceneController.addEventListener("glyphIsChanging", event => {
+    //   console.log("glyphIsChanging", event.detail);
+    // });
+    // this.sceneController.addEventListener("glyphDidChange", event => {
+    //   console.log("glyphDidChange", event.detail);
+    // });
 
     this.initOverlayItems(canvas);
     this.initMiniConsole();

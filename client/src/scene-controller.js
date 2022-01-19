@@ -164,7 +164,7 @@ export class SceneController {
       this.canvasController.setNeedsUpdate();
       this._dispatchEvent("glyphIsChanging", glyphName);
     }
-    this._dispatchEvent("glyphChanged", glyphName);
+    this._dispatchEvent("glyphDidChange", glyphName);
   }
 
   handleHover(event) {
