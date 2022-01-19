@@ -163,7 +163,7 @@ function _drawSelectionLayer(model, controller, drawType) {
   context.fillStyle = controller.drawingParameters.selectedNodeFillColor;
 
   for (const selItem of selectionStrings) {
-    const drawHoverStroke = hoverSelection.has(selItem);
+    const drawHoverStroke = hoverSelection?.has(selItem);
     const drawSelectionFill = selection.has(selItem);
     const [tp, index] = selItem.split("/");
     if (tp != drawType) {
