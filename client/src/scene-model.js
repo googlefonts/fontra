@@ -86,9 +86,7 @@ export class SceneModel {
     const source = glyph.sources[sourceIndex];
     const location = {...this.cachingFont.location};
     for (const axisInfo of await this.getAxisInfo()) {
-      if (location[axisInfo.name] === undefined) {
-        location[axisInfo.name] = axisInfo.defaultValue;
-      }
+      location[axisInfo.name] = axisInfo.defaultValue;
     }
     for (const [name, value] of Object.entries(source.location)) {
       const baseName = getAxisBaseName(name);
