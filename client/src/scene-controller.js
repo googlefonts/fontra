@@ -98,11 +98,11 @@ export class SceneController {
     if (!selection || !selection.size) {
       this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
     } else {
+      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const componentNames = new Set();
       for (const selItem of this.selection) {
         const [tp, index] = selItem.split("/");
         if (tp === "component") {
-          const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
           componentNames.add(instance.components[index].name);
         }
       }
