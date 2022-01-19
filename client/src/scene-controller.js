@@ -137,11 +137,29 @@ export class SceneController {
       console.log(`can't edit glyph '${positionedGlyph.glyph.name}': location is not a source`);
       return;
     }
-    const instance = positionedGlyph.glyph.instance;
+    const cachingFont = this.sceneModel.cachingFont;
+    const glyphName = positionedGlyph.name;
+    const cachingGlyph = positionedGlyph.glyph;
+    const instance = cachingGlyph.instance;
+    const path = instance.path;
+    const editFuncs = [];
+    for (const selItem of this.selection) {
+      const [tp, index] = selItem.split("/");
+      switch (tp) {
+        case "point":
+          editFuncs.push(makePointDragFunc(path, index));
+          break;
+        case "component":
+          break;
+      }
+    }
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      console.log("move selection by", delta);
+      editFuncs.forEach(item => item(delta));
+      cachingGlyph.clearCache();
+      cachingFont.clearGlyphCache(glyphName);
+      this.canvasController.setNeedsUpdate();
     }
   }
 
@@ -289,4 +307,13 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
     }
   }
   return false;
+}
+
+
+function makePointDragFunc(path, pointIndex) {
+  const point = path.getPoint(pointIndex);
+  const dragFunc = (delta) => {
+    path.setPointPosition(pointIndex, point.x + delta.x, point.y + delta.y);
+  };
+  return dragFunc;
 }
