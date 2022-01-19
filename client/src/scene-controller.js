@@ -33,6 +33,10 @@ export class SceneController {
     return this.sceneModel.getSelectedGlyphName();
   }
 
+  getSelectedGlyphIndex() {
+    return this.sceneModel.getSelectedGlyphIndex();
+  }
+
   async handleDrag(eventStream, initialEvent) {
     const point = this.localPoint(initialEvent);
     const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
@@ -94,15 +98,16 @@ export class SceneController {
     if (!selection || !selection.size) {
       this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
     } else {
-      const dblClickedComponents = new Set();
+      const componentNames = new Set();
       for (const selItem of this.selection) {
         const [tp, index] = selItem.split("/");
         if (tp === "component") {
           const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph.instance;
-          dblClickedComponents.add(instance.components[index].name);
+          componentNames.add(instance.components[index].name);
         }
       }
-      console.log("double click on component(s)", dblClickedComponents);
+      this.doubleClickedComponentNames = Array.from(componentNames);
+      this._dispatchEvent("doubleClickedComponents");
     }
   }
 

@@ -81,6 +81,9 @@ export class AppController {
       this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     });
+    this.sceneController.addEventListener("doubleClickedComponents", async event => {
+      this.doubleClickedComponentsCallback(event)
+    });
 
     this.initOverlayItems(canvas);
     this.initMiniConsole();
@@ -251,6 +254,24 @@ export class AppController {
     this.sliders.values = this.sceneController.getLocation();
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
   }
+
+  async doubleClickedComponentsCallback(event) {
+    const glyphInfos = [];
+    for (const glyphName of this.sceneController.doubleClickedComponentNames) {
+      const glyphInfo = {"glyphName": glyphName};
+      const codePoint = await this.font.codePointForGlyph(glyphName);
+      if (codePoint !== undefined) {
+        glyphInfo["character"] = getCharFromUnicode(codePoint);
+      }
+      glyphInfos.push(glyphInfo);
+    }
+    const selectedGlyphInfo = this.sceneController.getSelectedGlyphIndex();
+    const glyphLines = this.sceneController.getGlyphLines();
+    glyphLines[selectedGlyphInfo.lineIndex].splice(selectedGlyphInfo.glyphIndex + 1, 0, ...glyphInfos);
+    await this.sceneController.setGlyphLines(glyphLines);
+    this.updateTextEntryFromGlyphLines();
+    await this.updateSlidersAndSources();
+  };
 
   spaceKeyDownHandler(event) {
     if (event.key !== " " || event.repeat) {
