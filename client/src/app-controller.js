@@ -223,10 +223,19 @@ export class AppController {
 
   async glyphNameChangedCallback(glyphName) {
     const codePoint = await this.font.codePointForGlyph(glyphName);
-    const text = getCharFromUnicode(codePoint) || "/" + glyphName;
+    const glyphInfo = {"glyphName": glyphName};
+    if (codePoint !== undefined) {
+      glyphInfo["character"] = getCharFromUnicode(codePoint);
+    }
+    const glyphLines = [[glyphInfo]];
+    await this.sceneController.setGlyphLines(glyphLines);
+    this.updateTextEntryFromGlyphLines();
+    await this.updateSlidersAndSources();
+  }
+
+  updateTextEntryFromGlyphLines() {
     const textEntryElement = document.querySelector("#text-entry");
-    textEntryElement.innerText = text;
-    this.textFieldChangedCallback(textEntryElement);
+    textEntryElement.innerText = textFromGlyphLines(this.sceneController.getGlyphLines());
   }
 
   async textFieldChangedCallback(element) {
@@ -382,6 +391,27 @@ function splitLines(text) {
     lines.push(line);
   }
   return lines;
+}
+
+
+function textFromGlyphLines(glyphLines) {
+  const textLines = [];
+  for (const glyphLine of glyphLines) {
+    let textLine = "";
+    for (let i = 0; i < glyphLine.length; i++) {
+      const glyphInfo = glyphLine[i];
+      if (glyphInfo.character) {
+        textLine += glyphInfo.character;
+      } else {
+        textLine += "/" + glyphInfo.glyphName;
+        if (glyphLine[i + 1]?.character) {
+          textLine += " ";
+        }
+      }
+    }
+    textLines.push(textLine);
+  }
+  return textLines.join("\n");
 }
 
 
