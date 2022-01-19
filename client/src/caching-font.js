@@ -20,6 +20,13 @@ export class CachingFont {
     this._sourceIndices = {};
   }
 
+  clearGlyphCache(glyphName) {
+    delete this._glyphInstancePromiseCache[glyphName];
+    delete this._loadedGlyphInstances[glyphName];
+    delete this._sourceIndices[glyphName];
+
+  }
+
   isGlyphInstanceLoaded(glyphName) {
     return glyphName in this._loadedGlyphInstances;
   }
@@ -61,6 +68,16 @@ class CachingGlyphInstance {
     this.font = font;
     this.location = location;
     this.sourceIndex = sourceIndex;
+  }
+
+  clearCache() {
+    delete this._flattenedPath;
+    delete this._flattenedPath2d;
+    delete this._path2d;
+    delete this._componentsPath;
+    delete this._componentsPath2d;
+    delete this._controlBounds;
+    delete this._convexHull;
   }
 
   get canEdit() {
