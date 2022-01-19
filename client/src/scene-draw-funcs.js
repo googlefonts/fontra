@@ -159,7 +159,7 @@ function _drawSelectionLayer(model, controller, drawType) {
 
   context.strokeStyle = controller.drawingParameters.hoveredNodeStrokeColor;
   context.lineWidth = controller.drawingParameters.hoveredNodeLineWidth;
-  const hoverStrokeOffset = 4
+  const hoverStrokeOffset = 4 * controller.onePixelUnit
   context.fillStyle = controller.drawingParameters.selectedNodeFillColor;
 
   for (const selItem of selectionStrings) {
