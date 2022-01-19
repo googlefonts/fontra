@@ -102,6 +102,24 @@ export default class VarPath {
     return point;
   }
 
+  setPointPosition(index, x, y) {
+    this.coordinates[index * 2] = x;
+    this.coordinates[index * 2 + 1] = y;
+  }
+
+  setPoint(index, point) {
+    this.coordinates[index * 2] = point.x;
+    this.coordinates[index * 2 + 1] = point.y;
+    if (point.type !== undefined) {
+      this.pointTypes[index] &= ~VarPath.POINT_TYPE_MASK;
+      this.pointTypes[index] != point.type & VarPath.POINT_TYPE_MASK;
+    }
+    if (point.smooth !== undefined) {
+      this.pointTypes[index] &= ~VarPath.SMOOTH_FLAG;
+      this.pointTypes[index] |= (!!point.smooth) * VarPath.SMOOTH_FLAG;
+    }
+  }
+
   *iterPoints() {
     yield* this._iterPointsFromTo(0, this.pointTypes.length - 1);
   }
