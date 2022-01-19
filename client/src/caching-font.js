@@ -7,6 +7,7 @@ export class CachingFont {
   constructor (font, location) {
     this.font = font;
     this.location = location;
+    this._glyphDependencies = {};
   }
 
   get location() {
@@ -24,7 +25,9 @@ export class CachingFont {
     delete this._glyphInstancePromiseCache[glyphName];
     delete this._loadedGlyphInstances[glyphName];
     delete this._sourceIndices[glyphName];
-
+    for (const dependantName of this._glyphDependencies[glyphName] || []) {
+      this.clearGlyphCache(dependantName);
+    }
   }
 
   isGlyphInstanceLoaded(glyphName) {
@@ -42,6 +45,12 @@ export class CachingFont {
           glyphName, this.font, this.location, await this.getSourceIndex(glyphName),
         );
         await cachingInstance.initialize();
+        for (const componentName of cachingInstance.componentNames || []) {
+          if (!this._glyphDependencies[componentName]) {
+            this._glyphDependencies[componentName] = new Set();
+          }
+          this._glyphDependencies[componentName].add(glyphName);
+        }
         this._loadedGlyphInstances[glyphName] = true;
         return cachingInstance;
       })();
@@ -100,6 +109,7 @@ class CachingGlyphInstance {
         new CachingComponent(await compo.getPath(getGlyphFunc, location))
       );
     }
+    this.componentNames = glyph.componentNames;
   }
 
   get xAdvance() {

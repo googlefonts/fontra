@@ -20,6 +20,10 @@ export class VarGlyph {
     return glyph;
   }
 
+  get componentNames() {
+    return this.sources[0].source.components.map(compo => compo.name);
+  }
+
   clearDeltasCache() {
     delete this._deltas;
   }

@@ -161,6 +161,7 @@ export class SceneController {
       cachingGlyph.clearCache();
       cachingFont.clearGlyphCache(glyphName);
       varGlyph.clearDeltasCache();
+      await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
     }
   }
