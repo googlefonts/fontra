@@ -60,7 +60,7 @@ html, body {
 }
 
 .sources-list {
-  flex: 0 20 auto;
+  flex: 0 1 auto;
 }
 
 .slider-label {
