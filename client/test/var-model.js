@@ -7,6 +7,7 @@ import {
   locationToString,
   normalizeLocation,
   normalizeValue,
+  piecewiseLinearMap,
   supportScalar,
 } from "../src/var-model.js";
 
@@ -216,6 +217,35 @@ describe("var-model tests", () => {
     it("deepCompare throw TypeError", () => {
       expect(() => deepCompare({}, [])).to.throw(TypeError);
       expect(() => deepCompare(123, "123")).to.throw(TypeError);
+    });
+
+  });
+
+  describe("piecewiseLinearMap tests", () => {
+
+    it("undefined mapping", () => {
+      expect(piecewiseLinearMap(10, undefined)).to.equal(10);
+    });
+
+    it("empty mapping", () => {
+      expect(piecewiseLinearMap(10, {})).to.equal(10);
+    });
+
+    it("low mapping", () => {
+      expect(piecewiseLinearMap(9, {10: 100, 20: 200})).to.equal(99);
+    });
+
+    it("high mapping", () => {
+      expect(piecewiseLinearMap(21, {10: 100, 20: 200})).to.equal(201);
+    });
+
+    it("one segment mapping", () => {
+      expect(piecewiseLinearMap(15, {10: 100, 20: 200})).to.equal(150);
+    });
+
+    it("multi segment mapping", () => {
+      expect(piecewiseLinearMap(15, {10: 100, 20: 200, 30: 1000})).to.equal(150);
+      expect(piecewiseLinearMap(25, {10: 100, 20: 200, 30: 1000})).to.equal(600);
     });
 
   });

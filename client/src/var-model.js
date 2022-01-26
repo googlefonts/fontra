@@ -420,3 +420,41 @@ export function deepCompare(a, b) {
     return 0;
   }
 }
+
+
+export function mapFromUserSpace(location, axes) {
+
+}
+
+
+export function mapToUserSpace(location, axes) {
+
+}
+
+
+export function piecewiseLinearMap(v, mapping) {
+  if (!mapping) {
+    return v;
+  }
+  const keys = Object.keys(mapping);
+  if (!keys.length) {
+    return v;
+  }
+  if (v in mapping) {
+    return mapping[v];
+  }
+  let k = Math.min(...keys);
+  if (v < k) {
+    return v + mapping[k] - k;
+  }
+  k = Math.max(...keys);
+  if (v > k) {
+    return v + mapping[k] - k;
+  }
+  // Interpolate
+  const a = Math.max(...keys.filter(k => k < v));  // (k for k in keys if k < v)
+  const b = Math.min(...keys.filter(k => k > v));  // (k for k in keys if k > v)
+  const va = mapping[a];
+  const vb = mapping[b];
+  return va + (vb - va) * (v - a) / (b - a);
+}
