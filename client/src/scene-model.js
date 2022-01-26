@@ -1,6 +1,7 @@
 import { CachingFont, getAxisBaseName, mapNLILocation } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
+import { mapToUserSpace } from "./var-model.js";
 
 
 export class SceneModel {
@@ -92,7 +93,7 @@ export class SceneModel {
       const baseName = getAxisBaseName(name);
       location[baseName] = value;
     }
-    await this.setLocation(location);
+    await this.setLocation(mapToUserSpace(location, await this.font.userAxes));
   }
 
   async getAxisInfo() {
