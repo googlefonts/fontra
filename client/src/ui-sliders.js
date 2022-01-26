@@ -20,20 +20,26 @@ export class Sliders {
   setSliderDescriptions(sliderDescriptions) {
     this.container.innerHTML = "";  // Delete previous sliders
     for (const sliderInfo of sliderDescriptions) {
-      const label = document.createElement("label");
-      const slider = document.createElement("input");
-      label.className = "slider-label";
-      slider.type = "range";
-      slider.step = "any";
-      slider.class = "slider";
-      slider.min = sliderInfo.minValue;
-      slider.max = sliderInfo.maxValue;
-      slider.value = sliderInfo.defaultValue;
-      slider.dataset.name = sliderInfo.name;
-      slider.oninput = event => this._dispatchListSelectionChanged();
-      label.appendChild(slider);
-      label.append(sliderInfo.name);
-      this.container.appendChild(label);
+      if (sliderInfo.isDivider) {
+        const divider = document.createElement("hr");
+        divider.className = "slider-divider";
+        this.container.appendChild(divider);
+      } else {
+        const label = document.createElement("label");
+        const slider = document.createElement("input");
+        label.className = "slider-label";
+        slider.type = "range";
+        slider.step = "any";
+        slider.class = "slider";
+        slider.min = sliderInfo.minValue;
+        slider.max = sliderInfo.maxValue;
+        slider.value = sliderInfo.defaultValue;
+        slider.dataset.name = sliderInfo.name;
+        slider.oninput = event => this._dispatchListSelectionChanged();
+        label.appendChild(slider);
+        label.append(sliderInfo.name);
+        this.container.appendChild(label);
+      }
     }
   }
 
