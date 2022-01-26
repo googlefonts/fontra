@@ -628,3 +628,40 @@ def test_getBackendClass(extension, backendClass):
 def test_getBackendClassFail():
     with pytest.raises(ValueError):
         cls = getBackendClass("foo")
+
+
+getUserAxesTestData = [
+    (
+        "rcjk",
+        [
+            {
+                "defaultValue": 400,
+                "maxValue": 700,
+                "minValue": 400,
+                "name": "Weight",
+                "tag": "wght",
+            },
+        ],
+    ),
+    (
+        "designspace",
+        [
+            {"defaultValue": 0.0, "maxValue": 1000.0, "minValue": 0.0, "name": "width"},
+            {
+                "defaultValue": 0.0,
+                "maxValue": 1000.0,
+                "minValue": 0.0,
+                "name": "weight",
+            },
+        ],
+    ),
+    ("ufo", []),
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("backendName, expectedUserAxes", getUserAxesTestData)
+async def test_getUserAxes(backendName, expectedUserAxes):
+    font = getTestFont(backendName)
+    userAxes = await font.getUserAxes()
+    assert expectedUserAxes == userAxes
