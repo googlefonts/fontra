@@ -139,6 +139,11 @@ class RCJKMySQLBackend:
         self._scheduleCachePurge()
         return serializeGlyph(glyphData["data"], layers, axisDefaults)
 
+    async def getUserAxes(self):
+        font_data = await self.client.font_get(self.font_uid)
+        ds = font_data["data"].get("designspace", {})
+        return ds.get("axes", [])
+
     def _scheduleCachePurge(self):
         if self._tempGlyphDataCacheTimer is not None:
             self._tempGlyphDataCacheTimer.cancel()
