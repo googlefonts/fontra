@@ -48,7 +48,7 @@ def main():
         backend = await backendCoro
         server = Server(
             backend,
-            {"getGlyph", "getGlyphNames", "getReversedCmap"},
+            {"getGlyph", "getGlyphNames", "getReversedCmap", "getUserAxes"},
             verboseErrors=True,
         )
         await server.getServerTask(host="localhost", port=websocketPort)
