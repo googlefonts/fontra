@@ -258,7 +258,12 @@ export class AppController {
   }
 
   async updateSlidersAndSources() {
-    this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
+    const axisInfo = await this.sceneController.getAxisInfo();
+    const numUserAxes = (await this.font.userAxes).length;
+    if (numUserAxes && axisInfo.length != numUserAxes) {
+      axisInfo.splice(numUserAxes, 0, {"isDivider": true});
+    }
+    this.sliders.setSliderDescriptions(axisInfo);
     this.sliders.values = this.sceneController.getLocation();
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
   }
