@@ -11,15 +11,18 @@ class DesignspaceBackend:
         self.dsDoc = DesignSpaceDocument.fromfile(path)
         self.dsDoc.findDefault()
         self._sources = {}
-        self.axes = [
-            {
+        axes = []
+        for axis in self.dsDoc.axes:
+            axisDict = {
                 "minValue": axis.minimum,
                 "defaultValue": axis.default,
                 "maxValue": axis.maximum,
                 "name": axis.name,
             }
-            for axis in self.dsDoc.axes
-        ]
+            if axis.map:
+                axisDict["map"] = [[a, b] for a, b in axis.map]
+            axes.append(axisDict)
+        self.axes = axes
         return self
 
     @property

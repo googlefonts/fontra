@@ -622,6 +622,7 @@ getUserAxesTestData = [
             {
                 "defaultValue": 100.0,
                 "maxValue": 900.0,
+                "map": [[100.0, 150.0], [900.0, 850.0]],
                 "minValue": 100.0,
                 "name": "weight",
             },
