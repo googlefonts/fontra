@@ -1,4 +1,4 @@
-import { CachingFont, getAxisBaseName, mapNLILocation } from "./caching-font.js"
+import { CachingFont, getAxisBaseName } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
 import { mapToUserSpace } from "./var-model.js";

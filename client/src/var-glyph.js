@@ -1,11 +1,11 @@
 import VarPath from "./var-path.js";
-import { VariationModel, normalizeLocation } from "./var-model.js";
+import { VariationModel, mapFromUserSpace, mapToUserSpace, normalizeLocation, piecewiseLinearMap } from "./var-model.js";
 import { Transform } from "./transform.js";
 
 
 export class VarGlyph {
 
-  static fromObject(obj) {
+  static fromObject(obj, userAxes) {
     const glyph = new VarGlyph();
     glyph.name = obj.name;
     glyph.axes = obj.axes || [];
@@ -17,6 +17,7 @@ export class VarGlyph {
         "source": SourceGlyph.fromObject(item.source),
       }
     });
+    glyph.userAxes = userAxes;
     return glyph;
   }
 
@@ -50,6 +51,10 @@ export class VarGlyph {
   get axisDict() {
     if (this._axisDict === undefined) {
       this._axisDict = {};
+      for (const axis of this.userAxes) {
+        const m = getMapFunc(axis);
+        this._axisDict[axis.name] = [m(axis.minValue), m(axis.defaultValue), m(axis.maxValue)];
+      }
       for (const axis of this.axes) {
         this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
       }
@@ -58,11 +63,21 @@ export class VarGlyph {
   }
 
   instantiate(location) {
+    location = mapFromUserSpace(location, this.userAxes);
     return this.model.interpolateFromDeltas(
       normalizeLocation(location, this.axisDict), this.deltas
     );
   }
 
+}
+
+
+function getMapFunc(axis) {
+  if (!axis.map) {
+    return v => v;
+  }
+  const mapping = Object.fromEntries(axis.map);
+  return v => piecewiseLinearMap(v, mapping);
 }
 
 

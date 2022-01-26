@@ -59,7 +59,7 @@ export class Font {
         }
         let glyph = await this.fontDataEngine.getGlyph(glyphName);
         if (glyph !== null) {
-          glyph = VarGlyph.fromObject(glyph);
+          glyph = VarGlyph.fromObject(glyph, await this.userAxes);
         }
         return glyph;
       })();

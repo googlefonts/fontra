@@ -1,5 +1,5 @@
 import { joinPaths } from "./var-glyph.js";
-import { normalizeLocation } from "./var-model.js";
+import { mapFromUserSpace, normalizeLocation } from "./var-model.js";
 
 
 export class CachingFont {
@@ -214,13 +214,21 @@ class CachingComponent {
 }
 
 
-export function mapNLILocation(userLocation, axes) {
-  const location = {};
+function mapNLILocation(userLocation, axes) {
+  const nliAxes = {};
   for (const axis of axes) {
     const baseName = axis.name.split("*", 1)[0];
-    const value = userLocation[baseName];
-    if (value !== undefined) {
-      location[axis.name] = value;
+    if (baseName !== axis.name) {
+      if (!baseName in nliAxes) {
+        nliAxes[baseName] = [];
+      }
+      nliAxes[baseName].push(axis.name);
+    }
+  }
+  const location = {};
+  for (const [baseName, value] of Object.entries(userLocation)) {
+    for (const realName of nliAxes[baseName] || [baseName]) {
+      location[realName] = value;
     }
   }
   return location;
@@ -233,10 +241,11 @@ export function getAxisBaseName(axisName) {
 
 
 function findSourceIndexFromLocation(glyph, location) {
+  location = mapFromUserSpace(location, glyph.userAxes);
   for (let i = 0; i < glyph.sources.length; i++) {
     const source = glyph.sources[i];
     let found = true;
-    for (const axis of glyph.axes) {
+    for (const axis of glyph.userAxes.concat(glyph.axes)) {  // XXX overlapping axes?!
       const baseName = getAxisBaseName(axis.name);
       let varValue = location[baseName];
       let sourceValue = source.location[axis.name];
