@@ -81,6 +81,7 @@ export class AppController {
     this.sceneController.addEventListener("selectedGlyphChanged", async event => {
       this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
+      await this.updateSlidersAndSources();
     });
     this.sceneController.addEventListener("doubleClickedComponents", async event => {
       this.doubleClickedComponentsCallback(event)
@@ -129,7 +130,7 @@ export class AppController {
   }
 
   async initSliders() {
-    this.sliders = new Sliders("axis-sliders", []);
+    this.sliders = new Sliders("axis-sliders", await this.sceneController.getAxisInfo());
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
       await this.sceneController.setLocation(event.detail.values);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());

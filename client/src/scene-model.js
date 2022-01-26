@@ -86,7 +86,9 @@ export class SceneModel {
     const source = glyph.sources[sourceIndex];
     const location = {...this.cachingFont.location};
     for (const axisInfo of await this.getAxisInfo()) {
-      location[axisInfo.name] = axisInfo.defaultValue;
+      if (!axisInfo.isDivider) {
+        location[axisInfo.name] = axisInfo.defaultValue;
+      }
     }
     for (const [name, value] of Object.entries(source.location)) {
       const baseName = getAxisBaseName(name);
@@ -96,23 +98,19 @@ export class SceneModel {
   }
 
   async getAxisInfo() {
-    if (this.glyphLines) {
-      const axisInfos = {};
-      for (const line of this.glyphLines) {
-        for (const glyphInfo of line) {
-          const glyphName = glyphInfo.glyphName;
-          if (!glyphName || axisInfos[glyphName]) {
-            continue
-          }
-          const glyph = await this.font.getGlyph(glyphName);
-          if (glyph) {
-            axisInfos[glyphName] = getAxisInfoFromGlyph(glyph);
-          }
-        }
-      }
-      return mergeAxisInfo(Object.values(axisInfos));
+    const allAxes = [];
+    allAxes.push(...await this.font.userAxes);
+    let glyphAxes = [];
+    if (this.selectedGlyph) {
+      const positionedGlyph = this.getSelectedPositionedGlyph();
+      const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
+      glyphAxes = getAxisInfoFromGlyph(glyph);
     }
-    return [];
+    if (allAxes.length && glyphAxes.length) {
+      allAxes.push({"isDivider": true});
+    }
+    allAxes.push(...glyphAxes);
+    return allAxes;
   }
 
   async getSourcesInfo() {
@@ -274,7 +272,7 @@ function getAxisInfoFromGlyph(glyph) {
     }
     axisInfo[baseName] = {...axis, "name": baseName};
   }
-  return axisInfo;
+  return Object.values(axisInfo);
 }
 
 

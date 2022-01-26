@@ -9,6 +9,7 @@ export class Font {
     this._glyphsPromiseCache = new LRUCache(250);
     this._reversedCmapPromise = undefined;
     this._cmapPromise = undefined;
+    this._userAxesPromise = undefined;
   }
 
   get reversedCmap() {
@@ -27,8 +28,11 @@ export class Font {
     return this._cmapPromise;
   }
 
-  getUserAxes() {
-    return this.fontDataEngine.getUserAxes();
+  get userAxes() {
+    if (this._userAxesPromise === undefined) {
+      this._userAxesPromise = this.fontDataEngine.getUserAxes()
+    }
+    return this._userAxesPromise;
   }
 
   async codePointForGlyph(glyphName) {
