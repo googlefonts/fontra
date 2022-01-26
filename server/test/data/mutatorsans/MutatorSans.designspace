@@ -2,7 +2,10 @@
 <designspace format="4.0">
   <axes>
     <axis tag="wdth" name="width" minimum="0" maximum="1000" default="0"/>
-    <axis tag="wght" name="weight" minimum="0" maximum="1000" default="0"/>
+    <axis tag="wght" name="weight" minimum="100" maximum="900" default="100">
+      <map input="100" output="150"/>
+      <map input="900" output="850"/>
+    </axis>
   </axes>
   <rules>
     <rule name="fold_I_serifs">
@@ -27,43 +30,43 @@
       <info copy="1"/>
       <location>
         <dimension name="width" xvalue="0"/>
-        <dimension name="weight" xvalue="0"/>
+        <dimension name="weight" xvalue="150"/>
       </location>
     </source>
     <source filename="MutatorSansBoldCondensed.ufo" familyname="MutatorMathTest" stylename="BoldCondensed">
       <location>
         <dimension name="width" xvalue="0"/>
-        <dimension name="weight" xvalue="1000"/>
+        <dimension name="weight" xvalue="850"/>
       </location>
     </source>
     <source filename="MutatorSansLightWide.ufo" familyname="MutatorMathTest" stylename="LightWide">
       <location>
         <dimension name="width" xvalue="1000"/>
-        <dimension name="weight" xvalue="0"/>
+        <dimension name="weight" xvalue="150"/>
       </location>
     </source>
     <source filename="MutatorSansBoldWide.ufo" familyname="MutatorMathTest" stylename="BoldWide">
       <location>
         <dimension name="width" xvalue="1000"/>
-        <dimension name="weight" xvalue="1000"/>
+        <dimension name="weight" xvalue="850"/>
       </location>
     </source>
     <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.crossbar">
       <location>
         <dimension name="width" xvalue="0"/>
-        <dimension name="weight" xvalue="700"/>
+        <dimension name="weight" xvalue="595"/>
       </location>
     </source>
     <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.S.wide">
       <location>
         <dimension name="width" xvalue="1000"/>
-        <dimension name="weight" xvalue="700"/>
+        <dimension name="weight" xvalue="595"/>
       </location>
     </source>
     <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="support.S.middle">
       <location>
         <dimension name="width" xvalue="569.078000"/>
-        <dimension name="weight" xvalue="700"/>
+        <dimension name="weight" xvalue="595"/>
       </location>
     </source>
   </sources>

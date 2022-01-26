@@ -73,26 +73,12 @@ getGlyphTestData = [
     (
         "designspace",
         {
-            "axes": [
-                {
-                    "defaultValue": 0.0,
-                    "maxValue": 1000.0,
-                    "minValue": 0.0,
-                    "name": "width",
-                },
-                {
-                    "defaultValue": 0.0,
-                    "maxValue": 1000.0,
-                    "minValue": 0.0,
-                    "name": "weight",
-                },
-            ],
             "name": "period",
             "unicodes": [ord(".")],
             "sources": [
                 {
                     "name": "LightCondensed",
-                    "location": {"weight": 0.0, "width": 0.0},
+                    "location": {"weight": 150.0, "width": 0.0},
                     "source": {
                         "xAdvance": 170,
                         "path": {
@@ -104,7 +90,7 @@ getGlyphTestData = [
                 },
                 {
                     "name": "BoldCondensed",
-                    "location": {"weight": 1000.0, "width": 0.0},
+                    "location": {"weight": 850.0, "width": 0.0},
                     "source": {
                         "xAdvance": 250,
                         "path": {
@@ -116,7 +102,7 @@ getGlyphTestData = [
                 },
                 {
                     "name": "LightWide",
-                    "location": {"weight": 0.0, "width": 1000.0},
+                    "location": {"weight": 150.0, "width": 1000.0},
                     "source": {
                         "xAdvance": 290,
                         "path": {
@@ -128,7 +114,7 @@ getGlyphTestData = [
                 },
                 {
                     "name": "BoldWide",
-                    "location": {"weight": 1000.0, "width": 1000.0},
+                    "location": {"weight": 850.0, "width": 1000.0},
                     "source": {
                         "xAdvance": 310,
                         "path": {
@@ -144,26 +130,12 @@ getGlyphTestData = [
     (
         "designspace",
         {
-            "axes": [
-                {
-                    "defaultValue": 0.0,
-                    "maxValue": 1000.0,
-                    "minValue": 0.0,
-                    "name": "width",
-                },
-                {
-                    "defaultValue": 0.0,
-                    "maxValue": 1000.0,
-                    "minValue": 0.0,
-                    "name": "weight",
-                },
-            ],
             "name": "Aacute",
             "unicodes": [ord("Á")],
             "sources": [
                 {
                     "name": "LightCondensed",
-                    "location": {"weight": 0.0, "width": 0.0},
+                    "location": {"weight": 150.0, "width": 0.0},
                     "source": {
                         "components": [
                             {
@@ -196,7 +168,7 @@ getGlyphTestData = [
                 },
                 {
                     "name": "BoldCondensed",
-                    "location": {"weight": 1000.0, "width": 0.0},
+                    "location": {"weight": 850.0, "width": 0.0},
                     "source": {
                         "components": [
                             {
@@ -229,7 +201,7 @@ getGlyphTestData = [
                 },
                 {
                     "name": "LightWide",
-                    "location": {"weight": 0.0, "width": 1000.0},
+                    "location": {"weight": 150.0, "width": 1000.0},
                     "source": {
                         "components": [
                             {
@@ -262,7 +234,7 @@ getGlyphTestData = [
                 },
                 {
                     "name": "BoldWide",
-                    "location": {"weight": 1000.0, "width": 1000.0},
+                    "location": {"weight": 850.0, "width": 1000.0},
                     "source": {
                         "components": [
                             {
@@ -648,9 +620,9 @@ getUserAxesTestData = [
         [
             {"defaultValue": 0.0, "maxValue": 1000.0, "minValue": 0.0, "name": "width"},
             {
-                "defaultValue": 0.0,
-                "maxValue": 1000.0,
-                "minValue": 0.0,
+                "defaultValue": 100.0,
+                "maxValue": 900.0,
+                "minValue": 100.0,
                 "name": "weight",
             },
         ],

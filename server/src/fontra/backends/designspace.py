@@ -43,7 +43,7 @@ class DesignspaceBackend:
         return await self.defaultSource.getReversedCmap()
 
     async def getGlyph(self, glyphName):
-        glyph = {"axes": self.axes, "name": glyphName}
+        glyph = {"name": glyphName}
         sources = []
         for sourceDescriptor in self.dsDoc.sources:
             ufoSource = self._getSourceFromSourceDescriptor(sourceDescriptor)
