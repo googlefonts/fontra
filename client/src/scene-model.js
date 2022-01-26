@@ -86,9 +86,7 @@ export class SceneModel {
     const source = glyph.sources[sourceIndex];
     const location = {...this.cachingFont.location};
     for (const axisInfo of await this.getAxisInfo()) {
-      if (!axisInfo.isDivider) {
-        location[axisInfo.name] = axisInfo.defaultValue;
-      }
+      location[axisInfo.name] = axisInfo.defaultValue;
     }
     for (const [name, value] of Object.entries(source.location)) {
       const baseName = getAxisBaseName(name);
@@ -98,18 +96,13 @@ export class SceneModel {
   }
 
   async getAxisInfo() {
-    const allAxes = [];
-    allAxes.push(...await this.font.userAxes);
-    let glyphAxes = [];
+    const allAxes = Array.from(await this.font.userAxes);
+    const glyphAxes = [];
     if (this.selectedGlyph) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
-      glyphAxes = getAxisInfoFromGlyph(glyph);
+      allAxes.push(...getAxisInfoFromGlyph(glyph));
     }
-    if (allAxes.length && glyphAxes.length) {
-      allAxes.push({"isDivider": true});
-    }
-    allAxes.push(...glyphAxes);
     return allAxes;
   }
 
