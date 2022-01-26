@@ -5,6 +5,8 @@ import {
   VariationModel,
   deepCompare,
   locationToString,
+  mapFromUserSpace,
+  mapToUserSpace,
   normalizeLocation,
   normalizeValue,
   piecewiseLinearMap,
@@ -246,6 +248,50 @@ describe("var-model tests", () => {
     it("multi segment mapping", () => {
       expect(piecewiseLinearMap(15, {10: 100, 20: 200, 30: 1000})).to.equal(150);
       expect(piecewiseLinearMap(25, {10: 100, 20: 200, 30: 1000})).to.equal(600);
+    });
+
+  });
+
+  describe("mapFromUserSpace tests", () => {
+
+    it("undefined map", () => {
+      const axes = [{"name": "weight"}];
+      const location = {"weight": 10};
+      expect(mapFromUserSpace(location, axes)).to.deep.equal({"weight": 10});
+    });
+
+    it("empty map", () => {
+      const axes = [{"name": "weight", "map": []}];
+      const location = {"weight": 10};
+      expect(mapFromUserSpace(location, axes)).to.deep.equal({"weight": 10});
+    });
+
+    it("simple map", () => {
+      const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
+      const location = {"weight": 10};
+      expect(mapFromUserSpace(location, axes)).to.deep.equal({"weight": 150});
+    });
+
+  });
+
+  describe("mapToUserSpace tests", () => {
+
+    it("undefined map", () => {
+      const axes = [{"name": "weight"}];
+      const location = {"weight": 10};
+      expect(mapToUserSpace(location, axes)).to.deep.equal({"weight": 10});
+    });
+
+    it("empty map", () => {
+      const axes = [{"name": "weight", "map": []}];
+      const location = {"weight": 10};
+      expect(mapToUserSpace(location, axes)).to.deep.equal({"weight": 10});
+    });
+
+    it("simple map", () => {
+      const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
+      const location = {"weight": 150};
+      expect(mapToUserSpace(location, axes)).to.deep.equal({"weight": 10});
     });
 
   });

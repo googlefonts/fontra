@@ -423,12 +423,40 @@ export function deepCompare(a, b) {
 
 
 export function mapFromUserSpace(location, axes) {
-
+  const mappedLocation = {};
+  for (const axis of axes) {
+    if (!axis.name in location) {
+      continue;
+    }
+    const mapping = axis.map ? Object.fromEntries(axis.map) : undefined;
+    mappedLocation[axis.name] = piecewiseLinearMap(location[axis.name], mapping);
+  }
+  return mappedLocation;
 }
 
 
 export function mapToUserSpace(location, axes) {
+  const mappedLocation = {};
+  for (const axis of axes) {
+    if (!axis.name in location) {
+      continue;
+    }
+    const mapping = _reverseFromEntries(axis.map);
+    mappedLocation[axis.name] = piecewiseLinearMap(location[axis.name], mapping);
+  }
+  return mappedLocation;
+}
 
+
+function _reverseFromEntries(mappingArray) {
+  if (!mappingArray) {
+    return undefined;
+  }
+  const mapping = {};
+  for (const [value, key] of mappingArray) {
+    mapping[key] = value;
+  }
+  return mapping;
 }
 
 
