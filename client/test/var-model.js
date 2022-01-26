@@ -268,8 +268,8 @@ describe("var-model tests", () => {
 
     it("simple map", () => {
       const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
-      const location = {"weight": 10};
-      expect(mapFromUserSpace(location, axes)).to.deep.equal({"weight": 150});
+      const location = {"weight": 10, "width": 100};
+      expect(mapFromUserSpace(location, axes)).to.deep.equal({"weight": 150, "width": 100});
     });
 
   });
@@ -290,8 +290,8 @@ describe("var-model tests", () => {
 
     it("simple map", () => {
       const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
-      const location = {"weight": 150};
-      expect(mapToUserSpace(location, axes)).to.deep.equal({"weight": 10});
+      const location = {"weight": 150, "width": 100};
+      expect(mapToUserSpace(location, axes)).to.deep.equal({"weight": 10, "width": 100});
     });
 
   });
