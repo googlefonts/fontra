@@ -27,6 +27,10 @@ export class Font {
     return this._cmapPromise;
   }
 
+  getUserAxes() {
+    return this.fontDataEngine.getUserAxes();
+  }
+
   async codePointForGlyph(glyphName) {
     const reversedCmap = await this.reversedCmap;
     const cmap = await this.cmap;
