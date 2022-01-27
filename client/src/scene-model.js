@@ -91,6 +91,7 @@ export class SceneModel {
     }
     for (const [name, value] of Object.entries(source.location)) {
       const baseName = getAxisBaseName(name);
+      // TODO: fix axis mapping if axis name in both glyph.axes and globalAxes
       location[baseName] = value;
     }
     await this.setLocation(mapToUserSpace(location, await this.font.globalAxes));
