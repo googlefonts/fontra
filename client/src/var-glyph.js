@@ -62,10 +62,9 @@ export class VarGlyph {
       axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
     }
     for (const axis of this.axes) {
-      if (prioritizeGlobal && axis.name in axisDict) {
-        continue;
+      if (!prioritizeGlobal || !axis.name in axisDict) {
+        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
       }
-      axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
     }
     return axisDict;
   }
