@@ -1,6 +1,7 @@
-import { CachingFont, getAxisBaseName, mapNLILocation } from "./caching-font.js"
+import { CachingFont, getAxisBaseName } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
+import { mapForward, mapBackward, normalizeLocation } from "./var-model.js";
 
 
 export class SceneModel {
@@ -85,34 +86,28 @@ export class SceneModel {
 
     const source = glyph.sources[sourceIndex];
     const location = {...this.cachingFont.location};
-    for (const axisInfo of await this.getAxisInfo()) {
-      location[axisInfo.name] = axisInfo.defaultValue;
+    for (const [axisName, triple] of Object.entries(glyph.axisDictGlobal)) {
+      location[axisName] = triple[1];
     }
-    for (const [name, value] of Object.entries(source.location)) {
+    const localToGlobalMapping = glyph.getLocalToGlobalMapping();
+    const sourceLocation = mapForward(source.location, localToGlobalMapping);
+    for (const [name, value] of Object.entries(sourceLocation)) {
       const baseName = getAxisBaseName(name);
       location[baseName] = value;
     }
-    await this.setLocation(location);
+    await this.setLocation(mapBackward(location, await this.font.globalAxes));
   }
 
   async getAxisInfo() {
-    if (this.glyphLines) {
-      const axisInfos = {};
-      for (const line of this.glyphLines) {
-        for (const glyphInfo of line) {
-          const glyphName = glyphInfo.glyphName;
-          if (!glyphName || axisInfos[glyphName]) {
-            continue
-          }
-          const glyph = await this.font.getGlyph(glyphName);
-          if (glyph) {
-            axisInfos[glyphName] = getAxisInfoFromGlyph(glyph);
-          }
-        }
-      }
-      return mergeAxisInfo(Object.values(axisInfos));
+    const allAxes = Array.from(await this.font.globalAxes);
+    const globalAxisNames = new Set(allAxes.map(axis => axis.name));
+    if (this.selectedGlyph) {
+      const positionedGlyph = this.getSelectedPositionedGlyph();
+      const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
+      const glyphAxes = getAxisInfoFromGlyph(glyph).filter(axis => !globalAxisNames.has(axis.name));
+      allAxes.push(...glyphAxes);
     }
-    return [];
+    return allAxes;
   }
 
   async getSourcesInfo() {
@@ -247,7 +242,7 @@ export class SceneModel {
       }
       for (let j = positionedLine.glyphs.length - 1; j >= 0; j--) {
         const positionedGlyph = positionedLine.glyphs[j];
-        if (!pointInRect(point.x, point.y, positionedGlyph.bounds)) {
+        if (!positionedGlyph.bounds || !pointInRect(point.x, point.y, positionedGlyph.bounds)) {
           continue;
         }
         if (pointInConvexPolygon(
@@ -274,11 +269,13 @@ function getAxisInfoFromGlyph(glyph) {
     }
     axisInfo[baseName] = {...axis, "name": baseName};
   }
-  return axisInfo;
+  return Object.values(axisInfo);
 }
 
 
 function mergeAxisInfo(axisInfos) {
+  // This returns a list of axes that is a superset of all the axis
+  // sets of the input.
   if (!axisInfos.length) {
     return [];
   }

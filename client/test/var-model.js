@@ -5,8 +5,11 @@ import {
   VariationModel,
   deepCompare,
   locationToString,
+  mapForward,
+  mapBackward,
   normalizeLocation,
   normalizeValue,
+  piecewiseLinearMap,
   supportScalar,
 } from "../src/var-model.js";
 
@@ -216,6 +219,79 @@ describe("var-model tests", () => {
     it("deepCompare throw TypeError", () => {
       expect(() => deepCompare({}, [])).to.throw(TypeError);
       expect(() => deepCompare(123, "123")).to.throw(TypeError);
+    });
+
+  });
+
+  describe("piecewiseLinearMap tests", () => {
+
+    it("undefined mapping", () => {
+      expect(piecewiseLinearMap(10, undefined)).to.equal(10);
+    });
+
+    it("empty mapping", () => {
+      expect(piecewiseLinearMap(10, {})).to.equal(10);
+    });
+
+    it("low mapping", () => {
+      expect(piecewiseLinearMap(9, {10: 100, 20: 200})).to.equal(99);
+    });
+
+    it("high mapping", () => {
+      expect(piecewiseLinearMap(21, {10: 100, 20: 200})).to.equal(201);
+    });
+
+    it("one segment mapping", () => {
+      expect(piecewiseLinearMap(15, {10: 100, 20: 200})).to.equal(150);
+    });
+
+    it("multi segment mapping", () => {
+      expect(piecewiseLinearMap(15, {10: 100, 20: 200, 30: 1000})).to.equal(150);
+      expect(piecewiseLinearMap(25, {10: 100, 20: 200, 30: 1000})).to.equal(600);
+    });
+
+  });
+
+  describe("mapForward tests", () => {
+
+    it("undefined map", () => {
+      const axes = [{"name": "weight"}];
+      const location = {"weight": 10};
+      expect(mapForward(location, axes)).to.deep.equal({"weight": 10});
+    });
+
+    it("empty map", () => {
+      const axes = [{"name": "weight", "map": []}];
+      const location = {"weight": 10};
+      expect(mapForward(location, axes)).to.deep.equal({"weight": 10});
+    });
+
+    it("simple map", () => {
+      const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
+      const location = {"weight": 10, "width": 100};
+      expect(mapForward(location, axes)).to.deep.equal({"weight": 150, "width": 100});
+    });
+
+  });
+
+  describe("mapBackward tests", () => {
+
+    it("undefined map", () => {
+      const axes = [{"name": "weight"}];
+      const location = {"weight": 10};
+      expect(mapBackward(location, axes)).to.deep.equal({"weight": 10});
+    });
+
+    it("empty map", () => {
+      const axes = [{"name": "weight", "map": []}];
+      const location = {"weight": 10};
+      expect(mapBackward(location, axes)).to.deep.equal({"weight": 10});
+    });
+
+    it("simple map", () => {
+      const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
+      const location = {"weight": 150, "width": 100};
+      expect(mapBackward(location, axes)).to.deep.equal({"weight": 10, "width": 100});
     });
 
   });

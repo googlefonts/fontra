@@ -31,6 +31,7 @@ export class List {
     this.container.addEventListener("keydown", event => this._keyDownHandler(event), false)
     this.container.addEventListener("keyup", event => this._keyUpHandler(event), false)
     this.selectedItemIndex = undefined;
+    this.container.classList.add("empty");
   }
 
   setItems(items) {

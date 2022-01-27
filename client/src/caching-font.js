@@ -1,5 +1,5 @@
 import { joinPaths } from "./var-glyph.js";
-import { normalizeLocation } from "./var-model.js";
+import { mapBackward, mapForward, normalizeLocation } from "./var-model.js";
 
 
 export class CachingFont {
@@ -95,7 +95,7 @@ class CachingGlyphInstance {
 
   async initialize() {
     const glyph = await this.font.getGlyph(this.name);
-    const location = mapNLILocation(this.location, glyph.axes);
+    const location = mapForward(mapNLILocation(this.location, glyph.axes), glyph.globalAxes);
     if (this.sourceIndex !== undefined) {
       this.instance = glyph.sources[this.sourceIndex].source;
     } else {
@@ -214,13 +214,21 @@ class CachingComponent {
 }
 
 
-export function mapNLILocation(userLocation, axes) {
-  const location = {};
+function mapNLILocation(userLocation, axes) {
+  const nliAxes = {};
   for (const axis of axes) {
     const baseName = axis.name.split("*", 1)[0];
-    const value = userLocation[baseName];
-    if (value !== undefined) {
-      location[axis.name] = value;
+    if (baseName !== axis.name) {
+      if (!(baseName in nliAxes)) {
+        nliAxes[baseName] = [];
+      }
+      nliAxes[baseName].push(axis.name);
+    }
+  }
+  const location = {};
+  for (const [baseName, value] of Object.entries(userLocation)) {
+    for (const realName of nliAxes[baseName] || [baseName]) {
+      location[realName] = value;
     }
   }
   return location;
@@ -233,18 +241,20 @@ export function getAxisBaseName(axisName) {
 
 
 function findSourceIndexFromLocation(glyph, location) {
+  location = mapForward(location, glyph.globalAxes);
+  location = mapBackward(location, glyph.getLocalToGlobalMapping());
   for (let i = 0; i < glyph.sources.length; i++) {
     const source = glyph.sources[i];
     let found = true;
-    for (const axis of glyph.axes) {
-      const baseName = getAxisBaseName(axis.name);
+    for (const [axisName, triple] of Object.entries(glyph.axisDictLocal)) {
+      const baseName = getAxisBaseName(axisName);
       let varValue = location[baseName];
-      let sourceValue = source.location[axis.name];
+      let sourceValue = source.location[axisName];
       if (varValue === undefined) {
-        varValue = axis.defaultValue;
+        varValue = triple[1];
       }
       if (sourceValue === undefined) {
-        sourceValue = axis.defaultValue;
+        sourceValue = triple[1];
       }
       if (varValue !== sourceValue) {
         found = false;

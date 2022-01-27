@@ -1,11 +1,11 @@
 import VarPath from "./var-path.js";
-import { VariationModel, normalizeLocation } from "./var-model.js";
+import { VariationModel, normalizeLocation, piecewiseLinearMap } from "./var-model.js";
 import { Transform } from "./transform.js";
 
 
 export class VarGlyph {
 
-  static fromObject(obj) {
+  static fromObject(obj, globalAxes) {
     const glyph = new VarGlyph();
     glyph.name = obj.name;
     glyph.axes = obj.axes || [];
@@ -17,6 +17,7 @@ export class VarGlyph {
         "source": SourceGlyph.fromObject(item.source),
       }
     });
+    glyph.globalAxes = globalAxes;
     return glyph;
   }
 
@@ -30,10 +31,9 @@ export class VarGlyph {
 
   get model() {
     if (this._model === undefined) {
-      const axisDict = this.axisDict;
       const locations = this.sources.map(source => source.location);
       this._model = new VariationModel(
-        locations.map(location => normalizeLocationSparse(location, axisDict)),
+        locations.map(location => normalizeLocationSparse(location, this.axisDictLocal)),
         this.axes.map(axis => axis.name));
     }
     return this._model;
@@ -47,19 +47,50 @@ export class VarGlyph {
     return this._deltas;
   }
 
-  get axisDict() {
-    if (this._axisDict === undefined) {
-      this._axisDict = {};
-      for (const axis of this.axes) {
-        this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
+  get axisDictGlobal() {
+    if (this._axisDictGlobal === undefined) {
+      this._axisDictGlobal = this._combineGlobalAndLocalAxes(false);
+    }
+    return this._axisDictGlobal;
+  }
+
+  get axisDictLocal() {
+    if (this._axisDictLocal === undefined) {
+      this._axisDictLocal = this._combineGlobalAndLocalAxes(true);
+    }
+    return this._axisDictLocal;
+  }
+
+  _combineGlobalAndLocalAxes(prioritizeLocal) {
+    const axisDict = {};
+    for (const axis of this.globalAxes) {
+      const m = makeAxisMapFunc(axis);
+      axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
+    }
+    for (const axis of this.axes) {
+      if (prioritizeLocal || !(axis.name in axisDict)) {
+        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
       }
     }
-    return this._axisDict;
+    return axisDict;
+  }
+
+  getLocalToGlobalMapping() {
+    const pseudoAxisList = [];
+    for (const [axisName, localTriple] of Object.entries(this.axisDictLocal)) {
+      const globalTriple = this.axisDictGlobal[axisName];
+      const mapping = [];
+      for (let i = 0; i < 3; i++) {
+        mapping.push([localTriple[i], globalTriple[i]]);
+      }
+      pseudoAxisList.push({"name": axisName, "map": mapping});
+    }
+    return pseudoAxisList;
   }
 
   instantiate(location) {
     return this.model.interpolateFromDeltas(
-      normalizeLocation(location, this.axisDict), this.deltas
+      normalizeLocation(location, this.axisDictGlobal), this.deltas
     );
   }
 
@@ -109,7 +140,7 @@ class SourceComponent {
   }
 
   async getNestedPaths(getGlyphFunc, parentLocation, transform = null) {
-    const compoLocation = mergeLocations(parentLocation, this.coord)
+    const compoLocation = mergeLocations(parentLocation, this.coord);
     const glyph = await getGlyphFunc(this.name);
     let inst;
     try {
@@ -192,4 +223,13 @@ export function joinPaths(paths) {
     return paths.reduce((p1, p2) => p1.concat(p2));
   }
   return new VarPath();
+}
+
+
+function makeAxisMapFunc(axis) {
+  if (!axis.map) {
+    return v => v;
+  }
+  const mapping = Object.fromEntries(axis.map);
+  return v => piecewiseLinearMap(v, mapping);
 }

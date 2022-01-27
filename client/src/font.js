@@ -9,6 +9,7 @@ export class Font {
     this._glyphsPromiseCache = new LRUCache(250);
     this._reversedCmapPromise = undefined;
     this._cmapPromise = undefined;
+    this._globalAxesPromise = undefined;
   }
 
   get reversedCmap() {
@@ -25,6 +26,13 @@ export class Font {
       })();
     }
     return this._cmapPromise;
+  }
+
+  get globalAxes() {
+    if (this._globalAxesPromise === undefined) {
+      this._globalAxesPromise = this.fontDataEngine.getGlobalAxes()
+    }
+    return this._globalAxesPromise;
   }
 
   async codePointForGlyph(glyphName) {
@@ -51,7 +59,7 @@ export class Font {
         }
         let glyph = await this.fontDataEngine.getGlyph(glyphName);
         if (glyph !== null) {
-          glyph = VarGlyph.fromObject(glyph);
+          glyph = VarGlyph.fromObject(glyph, await this.globalAxes);
         }
         return glyph;
       })();

@@ -81,6 +81,7 @@ export class AppController {
     this.sceneController.addEventListener("selectedGlyphChanged", async event => {
       this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
+      await this.updateSlidersAndSources();
     });
     this.sceneController.addEventListener("doubleClickedComponents", async event => {
       this.doubleClickedComponentsCallback(event)
@@ -129,7 +130,7 @@ export class AppController {
   }
 
   async initSliders() {
-    this.sliders = new Sliders("axis-sliders", []);
+    this.sliders = new Sliders("axis-sliders", await this.sceneController.getAxisInfo());
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
       await this.sceneController.setLocation(event.detail.values);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
@@ -257,7 +258,12 @@ export class AppController {
   }
 
   async updateSlidersAndSources() {
-    this.sliders.setSliderDescriptions(await this.sceneController.getAxisInfo());
+    const axisInfo = await this.sceneController.getAxisInfo();
+    const numGlobalAxes = (await this.font.globalAxes).length;
+    if (numGlobalAxes && axisInfo.length != numGlobalAxes) {
+      axisInfo.splice(numGlobalAxes, 0, {"isDivider": true});
+    }
+    this.sliders.setSliderDescriptions(axisInfo);
     this.sliders.values = this.sceneController.getLocation();
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
   }

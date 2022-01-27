@@ -420,3 +420,78 @@ export function deepCompare(a, b) {
     return 0;
   }
 }
+
+
+export function mapForward(location, axes) {
+  return _mapSpace(location, axes, _fromEntries);
+}
+
+
+export function mapBackward(location, axes) {
+  return _mapSpace(location, axes, _reverseFromEntries);
+}
+
+
+function _mapSpace(location, axes, mapFunc) {
+  const mappedLocation = {...location};
+  const axesWithMap = {};
+
+  for (const axis of axes) {
+    if (axis.map && axis.name in location) {
+      axesWithMap[axis.name] = axis;
+    }
+  }
+  for (const axisName in axesWithMap) {
+    const mapping = mapFunc(axesWithMap[axisName].map);
+    mappedLocation[axisName] = piecewiseLinearMap(location[axisName], mapping);
+  }
+  return mappedLocation;
+}
+
+
+function _fromEntries(mappingArray) {
+  if (!mappingArray) {
+    return undefined;
+  }
+  return Object.fromEntries(mappingArray);
+}
+
+
+function _reverseFromEntries(mappingArray) {
+  if (!mappingArray) {
+    return undefined;
+  }
+  const mapping = {};
+  for (const [value, key] of mappingArray) {
+    mapping[key] = value;
+  }
+  return mapping;
+}
+
+
+export function piecewiseLinearMap(v, mapping) {
+  if (!mapping) {
+    return v;
+  }
+  const keys = Object.keys(mapping);
+  if (!keys.length) {
+    return v;
+  }
+  if (v in mapping) {
+    return mapping[v];
+  }
+  let k = Math.min(...keys);
+  if (v < k) {
+    return v + mapping[k] - k;
+  }
+  k = Math.max(...keys);
+  if (v > k) {
+    return v + mapping[k] - k;
+  }
+  // Interpolate
+  const a = Math.max(...keys.filter(k => k < v));  // (k for k in keys if k < v)
+  const b = Math.min(...keys.filter(k => k > v));  // (k for k in keys if k > v)
+  const va = mapping[a];
+  const vb = mapping[b];
+  return va + (vb - va) * (v - a) / (b - a);
+}

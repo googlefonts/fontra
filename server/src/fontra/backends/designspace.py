@@ -11,15 +11,18 @@ class DesignspaceBackend:
         self.dsDoc = DesignSpaceDocument.fromfile(path)
         self.dsDoc.findDefault()
         self._sources = {}
-        self.axes = [
-            {
+        axes = []
+        for axis in self.dsDoc.axes:
+            axisDict = {
                 "minValue": axis.minimum,
                 "defaultValue": axis.default,
                 "maxValue": axis.maximum,
                 "name": axis.name,
             }
-            for axis in self.dsDoc.axes
-        ]
+            if axis.map:
+                axisDict["map"] = [[a, b] for a, b in axis.map]
+            axes.append(axisDict)
+        self.axes = axes
         return self
 
     @property
@@ -43,7 +46,7 @@ class DesignspaceBackend:
         return await self.defaultSource.getReversedCmap()
 
     async def getGlyph(self, glyphName):
-        glyph = {"axes": self.axes, "name": glyphName}
+        glyph = {"name": glyphName}
         sources = []
         for sourceDescriptor in self.dsDoc.sources:
             ufoSource = self._getSourceFromSourceDescriptor(sourceDescriptor)
@@ -62,6 +65,9 @@ class DesignspaceBackend:
 
         glyph["sources"] = sources
         return glyph
+
+    async def getGlobalAxes(self):
+        return self.axes
 
 
 class UFOBackend:
@@ -114,6 +120,9 @@ class UFOBackend:
         ]
         glyph["unicodes"] = sourceGlyph.unicodes
         return glyph
+
+    async def getGlobalAxes(self):
+        return []
 
 
 class UFOGlyph:
