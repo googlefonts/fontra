@@ -219,7 +219,7 @@ function mapNLILocation(userLocation, axes) {
   for (const axis of axes) {
     const baseName = axis.name.split("*", 1)[0];
     if (baseName !== axis.name) {
-      if (!baseName in nliAxes) {
+      if (!(baseName in nliAxes)) {
         nliAxes[baseName] = [];
       }
       nliAxes[baseName].push(axis.name);

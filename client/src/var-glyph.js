@@ -62,7 +62,7 @@ export class VarGlyph {
       axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
     }
     for (const axis of this.axes) {
-      if (prioritizeLocal || !axis.name in axisDict) {
+      if (prioritizeLocal || !(axis.name in axisDict)) {
         axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
       }
     }
@@ -121,7 +121,7 @@ class SourceComponent {
   }
 
   async getNestedPaths(getGlyphFunc, parentLocation, transform = null) {
-    const compoLocation = mergeLocations(parentLocation, this.coord)
+    const compoLocation = mergeLocations(parentLocation, this.coord);
     const glyph = await getGlyphFunc(this.name);
     let inst;
     try {
