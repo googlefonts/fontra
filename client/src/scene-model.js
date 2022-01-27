@@ -98,7 +98,6 @@ export class SceneModel {
 
   async getAxisInfo() {
     const allAxes = Array.from(await this.font.globalAxes);
-    const glyphAxes = [];
     if (this.selectedGlyph) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
