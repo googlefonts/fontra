@@ -207,16 +207,16 @@ export default class VarPath {
     this.addPoint(x3, y3, VarPath.ON_CURVE);
   }
 
-  qCurveTo( /* var args */ ) {
-    const numArgs = arguments.length
+  qCurveTo(...args) {
+    const numArgs = args.length;
     if (numArgs % 2) {
       throw new Error("number of arguments to qCurveTo must be even");
     }
     for (let i = 0; i < numArgs - 2; i += 2) {
-      this.addPoint(arguments[i], arguments[i + 1], VarPath.OFF_CURVE_QUAD);
+      this.addPoint(args[i], args[i + 1], VarPath.OFF_CURVE_QUAD);
     }
     const i = numArgs - 2;
-    this.addPoint(arguments[i], arguments[i + 1], VarPath.ON_CURVE);
+    this.addPoint(args[i], args[i + 1], VarPath.ON_CURVE);
   }
 
   closePath() {
