@@ -53,7 +53,7 @@ export class VarGlyph {
       this._axisDict = {};
       for (const axis of this.userAxes) {
         const m = getMapFunc(axis);
-        this._axisDict[axis.name] = [m(axis.minValue), m(axis.defaultValue), m(axis.maxValue)];
+        this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
       }
       for (const axis of this.axes) {
         this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
