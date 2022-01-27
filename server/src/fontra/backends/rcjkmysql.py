@@ -143,10 +143,10 @@ class RCJKMySQLBackend:
         font_data = await self.client.font_get(self.font_uid)
         ds = font_data["data"].get("designspace", {})
         axes = ds.get("axes", [])
-        # for axis in axes:
-        #     axis["label"] = axis["name"]
-        #     axis["name"] = axis["tag"]
-        #     del axis["tag"]
+        for axis in axes:
+            axis["label"] = axis["name"]
+            axis["name"] = axis["tag"]
+            del axis["tag"]
         return axes
 
     def _scheduleCachePurge(self):

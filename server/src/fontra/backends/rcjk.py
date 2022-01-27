@@ -35,7 +35,12 @@ class RCJKBackend:
         return glyph
 
     async def getGlobalAxes(self):
-        return self.project.designspace["axes"]
+        axes = self.project.designspace["axes"]
+        for axis in axes:
+            axis["label"] = axis["name"]
+            axis["name"] = axis["tag"]
+            del axis["tag"]
+        return axes
 
     def _getRCJKGlyph(self, glyphName):
         if not glyphName:
