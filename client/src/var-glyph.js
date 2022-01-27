@@ -52,7 +52,7 @@ export class VarGlyph {
     if (this._axisDict === undefined) {
       this._axisDict = {};
       for (const axis of this.globalAxes) {
-        const m = getMapFunc(axis);
+        const m = getAxisMapFunc(axis);
         this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
       }
       for (const axis of this.axes) {
@@ -68,15 +68,6 @@ export class VarGlyph {
     );
   }
 
-}
-
-
-function getMapFunc(axis) {
-  if (!axis.map) {
-    return v => v;
-  }
-  const mapping = Object.fromEntries(axis.map);
-  return v => piecewiseLinearMap(v, mapping);
 }
 
 
@@ -206,4 +197,13 @@ export function joinPaths(paths) {
     return paths.reduce((p1, p2) => p1.concat(p2));
   }
   return new VarPath();
+}
+
+
+function getAxisMapFunc(axis) {
+  if (!axis.map) {
+    return v => v;
+  }
+  const mapping = Object.fromEntries(axis.map);
+  return v => piecewiseLinearMap(v, mapping);
 }
