@@ -1,7 +1,7 @@
 import { CachingFont, getAxisBaseName } from "./caching-font.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
-import { mapFromUserSpace, mapToUserSpace, normalizeLocation } from "./var-model.js";
+import { mapForward, mapBackward, normalizeLocation } from "./var-model.js";
 
 
 export class SceneModel {
@@ -90,12 +90,12 @@ export class SceneModel {
       location[axisName] = triple[1];
     }
     const localToGlobalMapping = glyph.getLocalToGlobalMapping();
-    const sourceLocation = mapFromUserSpace(source.location, localToGlobalMapping);
+    const sourceLocation = mapForward(source.location, localToGlobalMapping);
     for (const [name, value] of Object.entries(sourceLocation)) {
       const baseName = getAxisBaseName(name);
       location[baseName] = value;
     }
-    await this.setLocation(mapToUserSpace(location, await this.font.globalAxes));
+    await this.setLocation(mapBackward(location, await this.font.globalAxes));
   }
 
   async getAxisInfo() {

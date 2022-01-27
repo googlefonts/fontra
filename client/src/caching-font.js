@@ -1,5 +1,5 @@
 import { joinPaths } from "./var-glyph.js";
-import { mapFromUserSpace, normalizeLocation } from "./var-model.js";
+import { mapForward, normalizeLocation } from "./var-model.js";
 
 
 export class CachingFont {
@@ -95,7 +95,7 @@ class CachingGlyphInstance {
 
   async initialize() {
     const glyph = await this.font.getGlyph(this.name);
-    const location = mapFromUserSpace(mapNLILocation(this.location, glyph.axes), glyph.globalAxes);
+    const location = mapForward(mapNLILocation(this.location, glyph.axes), glyph.globalAxes);
     if (this.sourceIndex !== undefined) {
       this.instance = glyph.sources[this.sourceIndex].source;
     } else {
@@ -242,7 +242,7 @@ export function getAxisBaseName(axisName) {
 
 function findSourceIndexFromLocation(glyph, location) {
   const allAxes = glyph.globalAxes.concat(glyph.axes);  // XXX overlapping axes?!
-  location = mapFromUserSpace(location, glyph.globalAxes);
+  location = mapForward(location, glyph.globalAxes);
   for (let i = 0; i < glyph.sources.length; i++) {
     const source = glyph.sources[i];
     let found = true;

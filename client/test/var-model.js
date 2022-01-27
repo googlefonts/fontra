@@ -5,8 +5,8 @@ import {
   VariationModel,
   deepCompare,
   locationToString,
-  mapFromUserSpace,
-  mapToUserSpace,
+  mapForward,
+  mapBackward,
   normalizeLocation,
   normalizeValue,
   piecewiseLinearMap,
@@ -252,46 +252,46 @@ describe("var-model tests", () => {
 
   });
 
-  describe("mapFromUserSpace tests", () => {
+  describe("mapForward tests", () => {
 
     it("undefined map", () => {
       const axes = [{"name": "weight"}];
       const location = {"weight": 10};
-      expect(mapFromUserSpace(location, axes)).to.deep.equal({"weight": 10});
+      expect(mapForward(location, axes)).to.deep.equal({"weight": 10});
     });
 
     it("empty map", () => {
       const axes = [{"name": "weight", "map": []}];
       const location = {"weight": 10};
-      expect(mapFromUserSpace(location, axes)).to.deep.equal({"weight": 10});
+      expect(mapForward(location, axes)).to.deep.equal({"weight": 10});
     });
 
     it("simple map", () => {
       const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
       const location = {"weight": 10, "width": 100};
-      expect(mapFromUserSpace(location, axes)).to.deep.equal({"weight": 150, "width": 100});
+      expect(mapForward(location, axes)).to.deep.equal({"weight": 150, "width": 100});
     });
 
   });
 
-  describe("mapToUserSpace tests", () => {
+  describe("mapBackward tests", () => {
 
     it("undefined map", () => {
       const axes = [{"name": "weight"}];
       const location = {"weight": 10};
-      expect(mapToUserSpace(location, axes)).to.deep.equal({"weight": 10});
+      expect(mapBackward(location, axes)).to.deep.equal({"weight": 10});
     });
 
     it("empty map", () => {
       const axes = [{"name": "weight", "map": []}];
       const location = {"weight": 10};
-      expect(mapToUserSpace(location, axes)).to.deep.equal({"weight": 10});
+      expect(mapBackward(location, axes)).to.deep.equal({"weight": 10});
     });
 
     it("simple map", () => {
       const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
       const location = {"weight": 150, "width": 100};
-      expect(mapToUserSpace(location, axes)).to.deep.equal({"weight": 10, "width": 100});
+      expect(mapBackward(location, axes)).to.deep.equal({"weight": 10, "width": 100});
     });
 
   });

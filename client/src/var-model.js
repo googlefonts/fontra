@@ -422,12 +422,12 @@ export function deepCompare(a, b) {
 }
 
 
-export function mapFromUserSpace(location, axes) {
+export function mapForward(location, axes) {
   return _mapSpace(location, axes, _fromEntries);
 }
 
 
-export function mapToUserSpace(location, axes) {
+export function mapBackward(location, axes) {
   return _mapSpace(location, axes, _reverseFromEntries);
 }
 
