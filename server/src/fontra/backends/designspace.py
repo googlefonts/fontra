@@ -36,7 +36,7 @@ class DesignspaceBackend:
         src = self._sources.get(key)
         if src is None:
             src = UFOBackend.fromPath(path, layerName)
-        self._sources[key] = src
+            self._sources[key] = src
         return src
 
     async def getGlyphNames(self):
