@@ -16,8 +16,8 @@ export async function getRemoteProxy(wsURL) {
         // and will treat us as a promise...
         return undefined;
       }
-      return function ( /* var args */ ) {
-        return remote.doCall(propertyName, Array.from(arguments))
+      return function (...args) {
+        return remote.doCall(propertyName, args);
       };
     }
   });
