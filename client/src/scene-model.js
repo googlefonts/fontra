@@ -239,7 +239,7 @@ export class SceneModel {
       }
       for (let j = positionedLine.glyphs.length - 1; j >= 0; j--) {
         const positionedGlyph = positionedLine.glyphs[j];
-        if (!pointInRect(point.x, point.y, positionedGlyph.bounds)) {
+        if (!positionedGlyph.bounds || !pointInRect(point.x, point.y, positionedGlyph.bounds)) {
           continue;
         }
         if (pointInConvexPolygon(
