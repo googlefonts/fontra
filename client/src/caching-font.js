@@ -95,7 +95,7 @@ class CachingGlyphInstance {
 
   async initialize() {
     const glyph = await this.font.getGlyph(this.name);
-    const location = mapNLILocation(this.location, glyph.axes);
+    const location = mapFromUserSpace(mapNLILocation(this.location, glyph.axes), glyph.globalAxes);
     if (this.sourceIndex !== undefined) {
       this.instance = glyph.sources[this.sourceIndex].source;
     } else {

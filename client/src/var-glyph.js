@@ -1,5 +1,5 @@
 import VarPath from "./var-path.js";
-import { VariationModel, mapFromUserSpace, mapToUserSpace, normalizeLocation, piecewiseLinearMap } from "./var-model.js";
+import { VariationModel, mapToUserSpace, normalizeLocation, piecewiseLinearMap } from "./var-model.js";
 import { Transform } from "./transform.js";
 
 
@@ -63,7 +63,6 @@ export class VarGlyph {
   }
 
   instantiate(location) {
-    location = mapFromUserSpace(location, this.globalAxes);
     return this.model.interpolateFromDeltas(
       normalizeLocation(location, this.axisDict), this.deltas
     );
