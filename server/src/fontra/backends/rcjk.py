@@ -34,7 +34,7 @@ class RCJKBackend:
             glyph = serializeGlyph(glyph)
         return glyph
 
-    async def getUserAxes(self):
+    async def getGlobalAxes(self):
         return self.project.designspace["axes"]
 
     def _getRCJKGlyph(self, glyphName):

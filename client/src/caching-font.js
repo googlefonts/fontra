@@ -241,11 +241,11 @@ export function getAxisBaseName(axisName) {
 
 
 function findSourceIndexFromLocation(glyph, location) {
-  location = mapFromUserSpace(location, glyph.userAxes);
+  location = mapFromUserSpace(location, glyph.globalAxes);
   for (let i = 0; i < glyph.sources.length; i++) {
     const source = glyph.sources[i];
     let found = true;
-    for (const axis of glyph.userAxes.concat(glyph.axes)) {  // XXX overlapping axes?!
+    for (const axis of glyph.globalAxes.concat(glyph.axes)) {  // XXX overlapping axes?!
       const baseName = getAxisBaseName(axis.name);
       let varValue = location[baseName];
       let sourceValue = source.location[axis.name];

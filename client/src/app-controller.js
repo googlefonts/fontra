@@ -259,9 +259,9 @@ export class AppController {
 
   async updateSlidersAndSources() {
     const axisInfo = await this.sceneController.getAxisInfo();
-    const numUserAxes = (await this.font.userAxes).length;
-    if (numUserAxes && axisInfo.length != numUserAxes) {
-      axisInfo.splice(numUserAxes, 0, {"isDivider": true});
+    const numGlobalAxes = (await this.font.globalAxes).length;
+    if (numGlobalAxes && axisInfo.length != numGlobalAxes) {
+      axisInfo.splice(numGlobalAxes, 0, {"isDivider": true});
     }
     this.sliders.setSliderDescriptions(axisInfo);
     this.sliders.values = this.sceneController.getLocation();

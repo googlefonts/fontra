@@ -602,7 +602,7 @@ def test_getBackendClassFail():
         cls = getBackendClass("foo")
 
 
-getUserAxesTestData = [
+getGlobalAxesTestData = [
     (
         "rcjk",
         [
@@ -633,8 +633,8 @@ getUserAxesTestData = [
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("backendName, expectedUserAxes", getUserAxesTestData)
-async def test_getUserAxes(backendName, expectedUserAxes):
+@pytest.mark.parametrize("backendName, expectedGlobalAxes", getGlobalAxesTestData)
+async def test_getGlobalAxes(backendName, expectedGlobalAxes):
     font = getTestFont(backendName)
-    userAxes = await font.getUserAxes()
-    assert expectedUserAxes == userAxes
+    globalAxes = await font.getGlobalAxes()
+    assert expectedGlobalAxes == globalAxes

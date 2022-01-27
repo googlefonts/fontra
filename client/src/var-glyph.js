@@ -5,7 +5,7 @@ import { Transform } from "./transform.js";
 
 export class VarGlyph {
 
-  static fromObject(obj, userAxes) {
+  static fromObject(obj, globalAxes) {
     const glyph = new VarGlyph();
     glyph.name = obj.name;
     glyph.axes = obj.axes || [];
@@ -17,7 +17,7 @@ export class VarGlyph {
         "source": SourceGlyph.fromObject(item.source),
       }
     });
-    glyph.userAxes = userAxes;
+    glyph.globalAxes = globalAxes;
     return glyph;
   }
 
@@ -51,7 +51,7 @@ export class VarGlyph {
   get axisDict() {
     if (this._axisDict === undefined) {
       this._axisDict = {};
-      for (const axis of this.userAxes) {
+      for (const axis of this.globalAxes) {
         const m = getMapFunc(axis);
         this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
       }
@@ -63,7 +63,7 @@ export class VarGlyph {
   }
 
   instantiate(location) {
-    location = mapFromUserSpace(location, this.userAxes);
+    location = mapFromUserSpace(location, this.globalAxes);
     return this.model.interpolateFromDeltas(
       normalizeLocation(location, this.axisDict), this.deltas
     );

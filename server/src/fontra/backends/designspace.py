@@ -66,7 +66,7 @@ class DesignspaceBackend:
         glyph["sources"] = sources
         return glyph
 
-    async def getUserAxes(self):
+    async def getGlobalAxes(self):
         return self.axes
 
 
@@ -121,7 +121,7 @@ class UFOBackend:
         glyph["unicodes"] = sourceGlyph.unicodes
         return glyph
 
-    async def getUserAxes(self):
+    async def getGlobalAxes(self):
         return []
 
 
