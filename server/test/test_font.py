@@ -579,7 +579,6 @@ async def test_getReversedCmap(backendName, numGlyphs, testMapping):
 @pytest.mark.parametrize("backendName, expectedGlyph", getGlyphTestData)
 async def test_getGlyph(backendName, expectedGlyph):
     font = getTestFont(backendName)
-    glyphNames = await font.getGlyphNames()
     glyph = await font.getGlyph(expectedGlyph["name"])
     assert glyph == expectedGlyph
 
@@ -599,7 +598,7 @@ def test_getBackendClass(extension, backendClass):
 
 def test_getBackendClassFail():
     with pytest.raises(ValueError):
-        cls = getBackendClass("foo")
+        _ = getBackendClass("foo")
 
 
 getGlobalAxesTestData = [
