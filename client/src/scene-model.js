@@ -274,6 +274,8 @@ function getAxisInfoFromGlyph(glyph) {
 
 
 function mergeAxisInfo(axisInfos) {
+  // This returns a list of axes that is a superset of all the axis
+  // sets of the input.
   if (!axisInfos.length) {
     return [];
   }
