@@ -75,6 +75,19 @@ export class VarGlyph {
     return axisDict;
   }
 
+  getLocalToGlobalMapping() {
+    const pseudoAxisList = [];
+    for (const [axisName, localTriple] of Object.entries(this.axisDictLocal)) {
+      const globalTriple = this.axisDictGlobal[axisName];
+      const mapping = [];
+      for (let i = 0; i < 3; i++) {
+        mapping.push([localTriple[i], globalTriple[i]]);
+      }
+      pseudoAxisList.push({"name": axisName, "map": mapping});
+    }
+    return pseudoAxisList;
+  }
+
   instantiate(location) {
     return this.model.interpolateFromDeltas(
       normalizeLocation(location, this.axisDictGlobal), this.deltas
