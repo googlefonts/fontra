@@ -31,7 +31,7 @@ export class VarGlyph {
 
   get model() {
     if (this._model === undefined) {
-      const axisDict = this.axisDict;
+      const axisDict = this._combineGlobalAndLocalAxes(true);
       const locations = this.sources.map(source => source.location);
       this._model = new VariationModel(
         locations.map(location => normalizeLocationSparse(location, axisDict)),
@@ -55,14 +55,14 @@ export class VarGlyph {
     return this._axisDict;
   }
 
-  _combineGlobalAndLocalAxes(prioritizeGlobal = false) {
+  _combineGlobalAndLocalAxes(prioritizeLocal = false) {
     const axisDict = {};
     for (const axis of this.globalAxes) {
       const m = makeAxisMapFunc(axis);
       axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
     }
     for (const axis of this.axes) {
-      if (!prioritizeGlobal || !axis.name in axisDict) {
+      if (prioritizeLocal || !axis.name in axisDict) {
         axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
       }
     }
