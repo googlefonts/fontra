@@ -1,5 +1,5 @@
 import VarPath from "./var-path.js";
-import { VariationModel, mapToUserSpace, normalizeLocation, piecewiseLinearMap } from "./var-model.js";
+import { VariationModel, normalizeLocation, piecewiseLinearMap } from "./var-model.js";
 import { Transform } from "./transform.js";
 
 
