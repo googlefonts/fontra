@@ -31,10 +31,9 @@ export class VarGlyph {
 
   get model() {
     if (this._model === undefined) {
-      const axisDict = this._combineGlobalAndLocalAxes(true);
       const locations = this.sources.map(source => source.location);
       this._model = new VariationModel(
-        locations.map(location => normalizeLocationSparse(location, axisDict)),
+        locations.map(location => normalizeLocationSparse(location, this.axisDictLocal)),
         this.axes.map(axis => axis.name));
     }
     return this._model;
@@ -48,14 +47,21 @@ export class VarGlyph {
     return this._deltas;
   }
 
-  get axisDict() {
-    if (this._axisDict === undefined) {
-      this._axisDict = this._combineGlobalAndLocalAxes();
+  get axisDictGlobal() {
+    if (this._axisDictGlobal === undefined) {
+      this._axisDictGlobal = this._combineGlobalAndLocalAxes(false);
     }
-    return this._axisDict;
+    return this._axisDictGlobal;
   }
 
-  _combineGlobalAndLocalAxes(prioritizeLocal = false) {
+  get axisDictLocal() {
+    if (this._axisDictLocal === undefined) {
+      this._axisDictLocal = this._combineGlobalAndLocalAxes(true);
+    }
+    return this._axisDictLocal;
+  }
+
+  _combineGlobalAndLocalAxes(prioritizeLocal) {
     const axisDict = {};
     for (const axis of this.globalAxes) {
       const m = makeAxisMapFunc(axis);
@@ -71,7 +77,7 @@ export class VarGlyph {
 
   instantiate(location) {
     return this.model.interpolateFromDeltas(
-      normalizeLocation(location, this.axisDict), this.deltas
+      normalizeLocation(location, this.axisDictGlobal), this.deltas
     );
   }
 
