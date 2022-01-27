@@ -52,7 +52,7 @@ export class VarGlyph {
     if (this._axisDict === undefined) {
       this._axisDict = {};
       for (const axis of this.globalAxes) {
-        const m = getAxisMapFunc(axis);
+        const m = makeAxisMapFunc(axis);
         this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
       }
       for (const axis of this.axes) {
@@ -200,7 +200,7 @@ export function joinPaths(paths) {
 }
 
 
-function getAxisMapFunc(axis) {
+function makeAxisMapFunc(axis) {
   if (!axis.map) {
     return v => v;
   }
