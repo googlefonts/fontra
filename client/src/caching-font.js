@@ -1,5 +1,5 @@
 import { joinPaths } from "./var-glyph.js";
-import { mapForward, normalizeLocation } from "./var-model.js";
+import { mapBackward, mapForward, normalizeLocation } from "./var-model.js";
 
 
 export class CachingFont {
@@ -241,20 +241,20 @@ export function getAxisBaseName(axisName) {
 
 
 function findSourceIndexFromLocation(glyph, location) {
-  const allAxes = glyph.globalAxes.concat(glyph.axes);  // XXX overlapping axes?!
   location = mapForward(location, glyph.globalAxes);
+  location = mapBackward(location, glyph.getLocalToGlobalMapping());
   for (let i = 0; i < glyph.sources.length; i++) {
     const source = glyph.sources[i];
     let found = true;
-    for (const axis of allAxes) {
-      const baseName = getAxisBaseName(axis.name);
+    for (const [axisName, triple] of Object.entries(glyph.axisDictLocal)) {
+      const baseName = getAxisBaseName(axisName);
       let varValue = location[baseName];
-      let sourceValue = source.location[axis.name];
+      let sourceValue = source.location[axisName];
       if (varValue === undefined) {
-        varValue = axis.defaultValue;
+        varValue = triple[1];
       }
       if (sourceValue === undefined) {
-        sourceValue = axis.defaultValue;
+        sourceValue = triple[1];
       }
       if (varValue !== sourceValue) {
         found = false;
