@@ -55,25 +55,17 @@ export class VarGlyph {
     return this._axisDict;
   }
 
-  _combineGlobalAndLocalAxes(globalFirst = true) {
+  _combineGlobalAndLocalAxes(prioritizeGlobal = false) {
     const axisDict = {};
-    const addGlobalAxes = () => {
-      for (const axis of this.globalAxes) {
-        const m = makeAxisMapFunc(axis);
-        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
+    for (const axis of this.globalAxes) {
+      const m = makeAxisMapFunc(axis);
+      axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
+    }
+    for (const axis of this.axes) {
+      if (prioritizeGlobal && axis.name in axisDict) {
+        continue;
       }
-    };
-    const addLocalAxes = () => {
-      for (const axis of this.axes) {
-        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
-      }
-    };
-    if (globalFirst) {
-      addGlobalAxes();
-      addLocalAxes();
-    } else {
-      addLocalAxes();
-      addGlobalAxes();
+      axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
     }
     return axisDict;
   }
