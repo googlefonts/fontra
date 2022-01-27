@@ -50,16 +50,32 @@ export class VarGlyph {
 
   get axisDict() {
     if (this._axisDict === undefined) {
-      this._axisDict = {};
-      for (const axis of this.globalAxes) {
-        const m = makeAxisMapFunc(axis);
-        this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
-      }
-      for (const axis of this.axes) {
-        this._axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
-      }
+      this._axisDict = this._combineGlobalAndLocalAxes();
     }
     return this._axisDict;
+  }
+
+  _combineGlobalAndLocalAxes(globalFirst = true) {
+    const axisDict = {};
+    const addGlobalAxes = () => {
+      for (const axis of this.globalAxes) {
+        const m = makeAxisMapFunc(axis);
+        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
+      }
+    };
+    const addLocalAxes = () => {
+      for (const axis of this.axes) {
+        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
+      }
+    };
+    if (globalFirst) {
+      addGlobalAxes();
+      addLocalAxes();
+    } else {
+      addLocalAxes();
+      addGlobalAxes();
+    }
+    return axisDict;
   }
 
   instantiate(location) {
