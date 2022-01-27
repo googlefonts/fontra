@@ -23,21 +23,23 @@ class DesignspaceBackend:
                 axisDict["map"] = [[a, b] for a, b in axis.map]
             axes.append(axisDict)
         self.axes = axes
+        self.loadSources()
         return self
 
     @property
     def defaultSource(self):
         return self._getSourceFromSourceDescriptor(self.dsDoc.default)
 
+    def loadSources(self):
+        for source in self.dsDoc.sources:
+            path = source.path
+            layerName = source.layerName
+            key = (path, layerName)
+            assert key not in self._sources
+            self._sources[key] = UFOBackend.fromPath(path, layerName)
+
     def _getSourceFromSourceDescriptor(self, source):
-        path = source.path
-        layerName = source.layerName
-        key = (path, layerName)
-        src = self._sources.get(key)
-        if src is None:
-            src = UFOBackend.fromPath(path, layerName)
-            self._sources[key] = src
-        return src
+        return self._sources[(source.path, source.layerName)]
 
     async def getGlyphNames(self):
         return await self.defaultSource.getGlyphNames()
