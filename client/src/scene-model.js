@@ -98,10 +98,12 @@ export class SceneModel {
 
   async getAxisInfo() {
     const allAxes = Array.from(await this.font.globalAxes);
+    const globalAxisNames = new Set(allAxes.map(axis => axis.name));
     if (this.selectedGlyph) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
-      allAxes.push(...getAxisInfoFromGlyph(glyph));
+      const glyphAxes = getAxisInfoFromGlyph(glyph).filter(axis => !globalAxisNames.has(axis.name));
+      allAxes.push(...glyphAxes);
     }
     return allAxes;
   }
