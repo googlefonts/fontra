@@ -62,10 +62,15 @@ export class VarGlyph {
   }
 
   _combineGlobalAndLocalAxes(prioritizeLocal) {
+    const usedAxisNames = new Set(
+      this.sources.reduce((prev, cur) => prev.concat(Object.keys(cur.location)), [])
+    );
     const axisDict = {};
     for (const axis of this.globalAxes) {
-      const m = makeAxisMapFunc(axis);
-      axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
+      if (usedAxisNames.has(axis.name)) {
+        const m = makeAxisMapFunc(axis);
+        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
+      }
     }
     for (const axis of this.axes) {
       if (prioritizeLocal || !(axis.name in axisDict)) {
