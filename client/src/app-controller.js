@@ -132,7 +132,8 @@ export class AppController {
   async initSliders() {
     this.sliders = new Sliders("axis-sliders", await this.sceneController.getAxisInfo());
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
-      await this.sceneController.setLocation(event.detail.values);
+      const location = {...this.sceneController.getLocation(), ...event.detail.values};
+      await this.sceneController.setLocation(location);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     }));
   }
