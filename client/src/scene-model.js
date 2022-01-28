@@ -35,7 +35,7 @@ export class SceneModel {
       return undefined;
     }
     const [lineIndex, glyphIndex] = this.selectedGlyph.split("/");
-    return {"lineIndex": lineIndex, "glyphIndex": glyphIndex};
+    return {"lineIndex": Number(lineIndex), "glyphIndex": Number(glyphIndex)};
   }
 
   canSelect() {
