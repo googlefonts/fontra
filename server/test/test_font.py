@@ -405,7 +405,7 @@ getGlyphTestData = [
                                     "x": -1,
                                     "y": 0,
                                 },
-                                "coord": {"T_H_lo": 0, "X_X_bo": 0},
+                                "location": {"T_H_lo": 0, "X_X_bo": 0},
                             }
                         ],
                         "xAdvance": 350,
@@ -427,7 +427,7 @@ getGlyphTestData = [
                                     "x": -23.0,
                                     "y": 0.0,
                                 },
-                                "coord": {"T_H_lo": 0, "X_X_bo": 0.7},
+                                "location": {"T_H_lo": 0, "X_X_bo": 0.7},
                             }
                         ],
                         "xAdvance": 350,
@@ -462,7 +462,7 @@ getGlyphTestData = [
                     "source": {
                         "components": [
                             {
-                                "coord": {"WDTH": 0.33, "WGHT": 0.45},
+                                "location": {"WDTH": 0.33, "WGHT": 0.45},
                                 "name": "zero_00",
                                 "transform": {
                                     "rotation": 0,
@@ -484,7 +484,7 @@ getGlyphTestData = [
                     "source": {
                         "components": [
                             {
-                                "coord": {"WDTH": 0.33, "WGHT": 1.0},
+                                "location": {"WDTH": 0.33, "WGHT": 1.0},
                                 "name": "zero_00",
                                 "transform": {
                                     "rotation": 0,
@@ -506,7 +506,7 @@ getGlyphTestData = [
                     "source": {
                         "components": [
                             {
-                                "coord": {"WDTH": 1.0, "WGHT": 0.45},
+                                "location": {"WDTH": 1.0, "WGHT": 0.45},
                                 "name": "zero_00",
                                 "transform": {
                                     "rotation": 0,

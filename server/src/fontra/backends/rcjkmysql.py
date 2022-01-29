@@ -247,7 +247,7 @@ def serializeComponents(deepComponents, dcNames, axisDefaults):
         name = deepCompoDict["name"] if "name" in deepCompoDict else dcNames[index]
         component["name"] = name
         if deepCompoDict["coord"]:
-            component["coord"] = cleanupCoord(
+            component["location"] = cleanupLocation(
                 deepCompoDict["coord"], axisDefaults[name]
             )
         component["transform"] = deepCompoDict["transform"]
@@ -255,8 +255,8 @@ def serializeComponents(deepComponents, dcNames, axisDefaults):
     return components
 
 
-def cleanupCoord(coord, axisDefaults):
-    return {a: coord.get(a, v) for a, v in axisDefaults.items()}
+def cleanupLocation(location, axisDefaults):
+    return {a: location.get(a, v) for a, v in axisDefaults.items()}
 
 
 def cleanupAxis(axisDict):

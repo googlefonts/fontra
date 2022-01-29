@@ -136,7 +136,7 @@ class Component {
     const compo = new Component();
     compo.name = obj.name;
     compo.transform = obj.transform;
-    compo.coord = obj.coord;
+    compo.location = obj.location;
     return compo;
   }
 
@@ -145,7 +145,7 @@ class Component {
   }
 
   async getNestedPaths(getGlyphFunc, parentLocation, transform = null) {
-    const compoLocation = mergeLocations(parentLocation, this.coord);
+    const compoLocation = mergeLocations(parentLocation, this.location);
     const glyph = await getGlyphFunc(this.name);
     let inst;
     try {

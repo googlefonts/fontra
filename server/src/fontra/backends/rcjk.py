@@ -118,6 +118,6 @@ def serializePath(glyph):
 
 def serializeComponents(components):
     return [
-        dict(name=compo.name, transform=compo.transform, coord=compo.coord)
+        dict(name=compo.name, transform=compo.transform, location=compo.coord)
         for compo in components
     ]
