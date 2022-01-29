@@ -114,6 +114,7 @@ class Source {
   }
 
   get sourceGlyph() {
+    // TODO cache?
     for (const layer of this.layers) {
       if (layer.name === this.sourceLayerName) {
         return layer.glyph;
