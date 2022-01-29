@@ -192,7 +192,12 @@ def serializeGlyph(glifData, layers, axisDefaults):
         defaultSourceDict["components"] = components
 
     sources = [
-        {"name": "<default>", "location": {}, "source": defaultSourceDict},
+        {
+            "name": "<default>",
+            "location": {},
+            "sourceLayerName": "foreground",
+            "layers": [{"name": "foreground", "glyph": defaultSourceDict}],
+        },
     ]
 
     for varDict in glyph.lib.get("robocjk.variationGlyphs", ()):
@@ -225,7 +230,8 @@ def serializeGlyph(glifData, layers, axisDefaults):
             {
                 "name": sourceName,
                 "location": varDict["location"],
-                "source": varSourceDict,
+                "sourceLayerName": "foreground",
+                "layers": [{"name": "foreground", "glyph": varSourceDict}],
             }
         )
 
