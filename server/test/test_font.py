@@ -41,7 +41,7 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -53,7 +53,7 @@ getGlyphTestData = [
                             },
                             {
                                 "name": "acute",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -140,7 +140,7 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -152,7 +152,7 @@ getGlyphTestData = [
                             },
                             {
                                 "name": "acute",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -173,7 +173,7 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -185,7 +185,7 @@ getGlyphTestData = [
                             },
                             {
                                 "name": "acute",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -206,7 +206,7 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -218,7 +218,7 @@ getGlyphTestData = [
                             },
                             {
                                 "name": "acute",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -239,7 +239,7 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -251,7 +251,7 @@ getGlyphTestData = [
                             },
                             {
                                 "name": "acute",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0.0,
                                     "scalex": 1.0,
                                     "scaley": 1.0,
@@ -396,7 +396,7 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "DC_0031_00",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0,
                                     "scalex": 1,
                                     "scaley": 1,
@@ -418,7 +418,7 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "DC_0031_00",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0,
                                     "scalex": 0.93,
                                     "scaley": 1,
@@ -464,7 +464,7 @@ getGlyphTestData = [
                             {
                                 "location": {"WDTH": 0.33, "WGHT": 0.45},
                                 "name": "zero_00",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0,
                                     "scalex": 1,
                                     "scaley": 1,
@@ -486,7 +486,7 @@ getGlyphTestData = [
                             {
                                 "location": {"WDTH": 0.33, "WGHT": 1.0},
                                 "name": "zero_00",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0,
                                     "scalex": 1,
                                     "scaley": 1,
@@ -508,7 +508,7 @@ getGlyphTestData = [
                             {
                                 "location": {"WDTH": 1.0, "WGHT": 0.45},
                                 "name": "zero_00",
-                                "transform": {
+                                "transformation": {
                                     "rotation": 0,
                                     "scalex": 1,
                                     "scaley": 1,

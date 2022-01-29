@@ -82,7 +82,7 @@ class PathBuilderPointPen:
             rotation = 0.0
         assert abs(skewx) < 0.00001, f"x skew is not yet supported ({self.name})"
         assert abs(skewy) < 0.00001, f"y skew is not yet supported ({self.name})"
-        transform = dict(
+        transformation = dict(
             x=dx,
             y=dy,
             scalex=scalex,
@@ -95,6 +95,6 @@ class PathBuilderPointPen:
         self.components.append(
             {
                 "name": glyphName,
-                "transform": transform,
+                "transformation": transformation,
             }
         )

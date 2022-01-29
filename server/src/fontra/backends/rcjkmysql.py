@@ -250,7 +250,7 @@ def serializeComponents(deepComponents, dcNames, axisDefaults):
             component["location"] = cleanupLocation(
                 deepCompoDict["coord"], axisDefaults[name]
             )
-        component["transform"] = deepCompoDict["transform"]
+        component["transformation"] = deepCompoDict["transform"]
         components.append(component)
     return components
 

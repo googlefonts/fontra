@@ -118,11 +118,11 @@ class StaticGlyph {
     return source
   }
 
-  async getComponentPaths(getGlyphFunc, parentLocation, transform = null) {
+  async getComponentPaths(getGlyphFunc, parentLocation, transformation = null) {
     const paths = [];
 
     for (const compo of this.components || []) {
-      paths.push(await compo.getNestedPaths(getGlyphFunc, parentLocation, transform));
+      paths.push(await compo.getNestedPaths(getGlyphFunc, parentLocation, transformation));
     }
     return paths;
   }
@@ -135,16 +135,16 @@ class Component {
   static fromObject(obj) {
     const compo = new Component();
     compo.name = obj.name;
-    compo.transform = obj.transform;
+    compo.transformation = obj.transformation;
     compo.location = obj.location;
     return compo;
   }
 
-  async getPath(getGlyphFunc, parentLocation, transform = null) {
-    return flattenComponentPaths(await this.getNestedPaths(getGlyphFunc, parentLocation, transform));
+  async getPath(getGlyphFunc, parentLocation, transformation = null) {
+    return flattenComponentPaths(await this.getNestedPaths(getGlyphFunc, parentLocation, transformation));
   }
 
-  async getNestedPaths(getGlyphFunc, parentLocation, transform = null) {
+  async getNestedPaths(getGlyphFunc, parentLocation, transformation = null) {
     const compoLocation = mergeLocations(parentLocation, this.location);
     const glyph = await getGlyphFunc(this.name);
     let inst;
@@ -158,9 +158,9 @@ class Component {
       console.log(errorMessage);
       return {"error": errorMessage};
     }
-    let t = makeAffineTransform(this.transform);
-    if (transform) {
-      t = transform.transform(t);
+    let t = makeAffineTransform(this.transformation);
+    if (transformation) {
+      t = transformation.transform(t);
     }
     const componentPaths = {};
     if (inst.path.numPoints) {
@@ -196,12 +196,12 @@ function normalizeLocationSparse(location, axes) {
 }
 
 
-function makeAffineTransform(transform) {
+function makeAffineTransform(transformation) {
   let t = new Transform();
-  t = t.translate(transform.x + transform.tcenterx, transform.y + transform.tcentery);
-  t = t.rotate(transform.rotation * (Math.PI / 180));
-  t = t.scale(transform.scalex, transform.scaley);
-  t = t.translate(-transform.tcenterx, -transform.tcentery);
+  t = t.translate(transformation.x + transformation.tcenterx, transformation.y + transformation.tcentery);
+  t = t.rotate(transformation.rotation * (Math.PI / 180));
+  t = t.scale(transformation.scalex, transformation.scaley);
+  t = t.translate(-transformation.tcenterx, -transformation.tcentery);
   return t;
 }
 

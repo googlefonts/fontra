@@ -324,11 +324,11 @@ function makePointDragFunc(path, pointIndex) {
 
 
 function makeComponentDragFunc(component) {
-  const x = component.transform.x;
-  const y = component.transform.y;
+  const x = component.transformation.x;
+  const y = component.transformation.y;
   const dragFunc = (delta) => {
-    component.transform.x = x + delta.x;
-    component.transform.y = y + delta.y;
+    component.transformation.x = x + delta.x;
+    component.transformation.y = y + delta.y;
   };
   return dragFunc;
 }
