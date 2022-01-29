@@ -3,10 +3,10 @@ import { VariationModel, normalizeLocation, piecewiseLinearMap } from "./var-mod
 import { Transform } from "./transform.js";
 
 
-export class VarGlyph {
+export class VariableGlyph {
 
   static fromObject(obj, globalAxes) {
-    const glyph = new VarGlyph();
+    const glyph = new VariableGlyph();
     glyph.name = obj.name;
     glyph.axes = obj.axes || [];
     glyph.unicodes = obj.unicodes || [];
@@ -14,7 +14,7 @@ export class VarGlyph {
       return {
         "name": item.name,
         "location": item.location,
-        "source": SourceGlyph.fromObject(item.source),
+        "source": StaticGlyph.fromObject(item.source),
       }
     });
     glyph.globalAxes = globalAxes;
@@ -102,10 +102,10 @@ export class VarGlyph {
 }
 
 
-class SourceGlyph {
+class StaticGlyph {
 
   static fromObject(obj) {
-    const source = new SourceGlyph();
+    const source = new StaticGlyph();
     source.xAdvance = obj.xAdvance;
     source.yAdvance = obj.yAdvance;
     source.verticalOrigin = obj.verticalOrigin;

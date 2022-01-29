@@ -1,5 +1,5 @@
 import { LRUCache } from "./lru-cache.js";
-import { VarGlyph } from "./var-glyph.js";
+import { VariableGlyph } from "./var-glyph.js";
 
 
 export class Font {
@@ -59,7 +59,7 @@ export class Font {
         }
         let glyph = await this.fontDataEngine.getGlyph(glyphName);
         if (glyph !== null) {
-          glyph = VarGlyph.fromObject(glyph, await this.globalAxes);
+          glyph = VariableGlyph.fromObject(glyph, await this.globalAxes);
         }
         return glyph;
       })();
