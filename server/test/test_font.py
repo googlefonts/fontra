@@ -27,8 +27,18 @@ getGlyphTestData = [
                                     "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
                                     "pointTypes": [0, 0, 0, 0],
                                 },
-                            }
-                        }
+                            },
+                        },
+                        "background": {
+                            "glyph": {
+                                "xAdvance": 170,
+                                "path": {
+                                    "contours": [{"endPoint": 3, "isClosed": True}],
+                                    "coordinates": [62, 0, 112, 0, 112, 120, 62, 120],
+                                    "pointTypes": [0, 0, 0, 0],
+                                },
+                            },
+                        },
                     },
                 }
             ],

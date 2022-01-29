@@ -54,12 +54,12 @@ class DesignspaceBackend:
             ufoSource = self._getSourceFromSourceDescriptor(sourceDescriptor)
             if not ufoSource.hasGlyph(glyphName):
                 continue
-            sourceDict, sourceGlyph = ufoSource.serializeGlyph(glyphName)
+            layersDict, sourceGlyph = ufoSource.serializeGlyph(glyphName)
             sources.append(
                 {
                     "name": sourceDescriptor.layerName or sourceDescriptor.styleName,
                     "location": sourceDescriptor.location,
-                    "source": sourceDict,
+                    "source": layersDict[ufoSource.layerName]["glyph"],
                 }
             )
             if ufoSource == self.defaultSource:
@@ -80,36 +80,39 @@ class UFOBackend:
         if layerName is None:
             layerName = self.reader.getDefaultLayerName()
         self.layerName = layerName
-        self.glyphSet = self.reader.getGlyphSet(layerName=layerName)
+        self.glyphSets = {
+            layerName: self.reader.getGlyphSet(layerName=layerName)
+            for layerName in self.reader.getLayerNames()
+        }
         return self
 
     def serializeGlyph(self, glyphName):
-        return serializeGlyph(self.glyphSet, glyphName)
+        return serializeGlyphLayers(self.glyphSets, glyphName, self.layerName)
 
     async def getGlyphNames(self):
-        return sorted(self.glyphSet.keys())
+        return sorted(self.glyphSets[self.layerName].keys())
 
     async def getReversedCmap(self):
         revCmap = {}
         for glyphName in await self.getGlyphNames():
-            glifData = self.glyphSet.getGLIF(glyphName)
+            glifData = self.glyphSets[self.layerName].getGLIF(glyphName)
             gn, unicodes = extractGlyphNameAndUnicodes(glifData)
             assert gn == glyphName
             revCmap[glyphName] = unicodes
         return revCmap
 
     def hasGlyph(self, glyphName):
-        return glyphName in self.glyphSet
+        return glyphName in self.glyphSets[self.layerName]
 
     async def getGlyph(self, glyphName):
         glyph = {"name": glyphName}
-        sourceDict, sourceGlyph = self.serializeGlyph(glyphName)
+        layersDict, sourceGlyph = self.serializeGlyph(glyphName)
         layerName = self.layerName
         glyph["sources"] = [
             {
                 "location": {},
                 "sourceLayerName": self.layerName,
-                "layers": {self.layerName: {"glyph": sourceDict}},
+                "layers": layersDict,
             }
         ]
         glyph["unicodes"] = sourceGlyph.unicodes
@@ -122,6 +125,18 @@ class UFOBackend:
 class UFOGlyph:
     unicodes = ()
     width = 0
+
+
+def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
+    layers = {}
+    sourceLayerGlyph = None
+    for layerName, glyphSet in glyphSets.items():
+        if glyphName in glyphSet:
+            glyphDict, glyph = serializeGlyph(glyphSet, glyphName)
+            layers[layerName] = {"glyph": glyphDict}
+            if layerName == sourceLayerName:
+                sourceLayerGlyph = glyph
+    return layers, sourceLayerGlyph
 
 
 def serializeGlyph(glyphSet, glyphName):
