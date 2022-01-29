@@ -17,13 +17,18 @@ getGlyphTestData = [
             "sources": [
                 {
                     "location": {},
-                    "source": {
-                        "xAdvance": 170,
-                        "path": {
-                            "contours": [{"endPoint": 3, "isClosed": True}],
-                            "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
-                            "pointTypes": [0, 0, 0, 0],
-                        },
+                    "sourceLayerName": "foreground",
+                    "layers": {
+                        "foreground": {
+                            "glyph": {
+                                "xAdvance": 170,
+                                "path": {
+                                    "contours": [{"endPoint": 3, "isClosed": True}],
+                                    "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
+                                    "pointTypes": [0, 0, 0, 0],
+                                },
+                            }
+                        }
                     },
                 }
             ],
@@ -37,34 +42,39 @@ getGlyphTestData = [
             "sources": [
                 {
                     "location": {},
-                    "source": {
-                        "components": [
-                            {
-                                "name": "A",
-                                "transformation": {
-                                    "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 0,
-                                    "y": 0,
-                                },
-                            },
-                            {
-                                "name": "acute",
-                                "transformation": {
-                                    "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 99,
-                                    "y": 20,
-                                },
-                            },
-                        ],
-                        "xAdvance": 396,
+                    "sourceLayerName": "foreground",
+                    "layers": {
+                        "foreground": {
+                            "glyph": {
+                                "components": [
+                                    {
+                                        "name": "A",
+                                        "transformation": {
+                                            "rotation": 0.0,
+                                            "scalex": 1.0,
+                                            "scaley": 1.0,
+                                            "tcenterx": 0,
+                                            "tcentery": 0,
+                                            "x": 0,
+                                            "y": 0,
+                                        },
+                                    },
+                                    {
+                                        "name": "acute",
+                                        "transformation": {
+                                            "rotation": 0.0,
+                                            "scalex": 1.0,
+                                            "scaley": 1.0,
+                                            "tcenterx": 0,
+                                            "tcentery": 0,
+                                            "x": 99,
+                                            "y": 20,
+                                        },
+                                    },
+                                ],
+                                "xAdvance": 396,
+                            }
+                        },
                     },
                 }
             ],

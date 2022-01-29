@@ -77,24 +77,14 @@ class UFOBackend:
     def fromPath(cls, path, layerName=None):
         self = cls()
         self.reader = UFOReader(path)
+        if layerName is None:
+            layerName = self.reader.getDefaultLayerName()
+        self.layerName = layerName
         self.glyphSet = self.reader.getGlyphSet(layerName=layerName)
         return self
 
     def serializeGlyph(self, glyphName):
-        glyph = UFOGlyph()
-        pen = PathBuilderPointPen()
-        self.glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
-        path = pen.getPath()
-        glyphDict = {}
-        if path is not None:
-            glyphDict["path"] = path
-        if pen.components:
-            glyphDict["components"] = pen.components
-        glyphDict["xAdvance"] = glyph.width
-        # TODO: components
-        # TODO: anchors
-        # TODO: yAdvance, verticalOrigin
-        return glyphDict, glyph
+        return serializeGlyph(self.glyphSet, glyphName)
 
     async def getGlyphNames(self):
         return sorted(self.glyphSet.keys())
@@ -114,10 +104,12 @@ class UFOBackend:
     async def getGlyph(self, glyphName):
         glyph = {"name": glyphName}
         sourceDict, sourceGlyph = self.serializeGlyph(glyphName)
+        layerName = self.layerName
         glyph["sources"] = [
             {
                 "location": {},
-                "source": sourceDict,
+                "sourceLayerName": self.layerName,
+                "layers": {self.layerName: {"glyph": sourceDict}},
             }
         ]
         glyph["unicodes"] = sourceGlyph.unicodes
@@ -130,3 +122,19 @@ class UFOBackend:
 class UFOGlyph:
     unicodes = ()
     width = 0
+
+
+def serializeGlyph(glyphSet, glyphName):
+    glyph = UFOGlyph()
+    pen = PathBuilderPointPen()
+    glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
+    path = pen.getPath()
+    glyphDict = {}
+    if path is not None:
+        glyphDict["path"] = path
+    if pen.components:
+        glyphDict["components"] = pen.components
+    glyphDict["xAdvance"] = glyph.width
+    # TODO: anchors
+    # TODO: yAdvance, verticalOrigin
+    return glyphDict, glyph
