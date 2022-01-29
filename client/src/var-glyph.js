@@ -10,19 +10,13 @@ export class VariableGlyph {
     glyph.name = obj.name;
     glyph.axes = obj.axes || [];
     glyph.unicodes = obj.unicodes || [];
-    glyph.sources = obj.sources.map(item => {
-      return {
-        "name": item.name,
-        "location": item.location,
-        "source": StaticGlyph.fromObject(item.source),
-      }
-    });
+    glyph.sources = obj.sources.map(source => Source.fromObject(source));
     glyph.globalAxes = globalAxes;
     return glyph;
   }
 
   get componentNames() {
-    return this.sources[0].source.components.map(compo => compo.name);
+    return this.sources[0].sourceGlyph.components.map(compo => compo.name);
   }
 
   clearDeltasCache() {
@@ -41,7 +35,7 @@ export class VariableGlyph {
 
   get deltas() {
     if (this._deltas === undefined) {
-      const masterValues = this.sources.map(source => source.source);
+      const masterValues = this.sources.map(source => source.sourceGlyph);
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
@@ -97,6 +91,34 @@ export class VariableGlyph {
     return this.model.interpolateFromDeltas(
       normalizeLocation(location, this.axisDictGlobal), this.deltas
     );
+  }
+
+}
+
+
+class Source {
+
+  static fromObject(obj) {
+    const source = new Source();
+
+    source.name = obj.name;
+    source.location = obj.location;
+    source.sourceLayerName = obj.sourceLayerName;
+    source.layers = obj.layers.map(layer => {
+      return {
+        "name": layer.name,
+        "glyph": StaticGlyph.fromObject(layer.glyph),
+      }
+    });
+    return source;
+  }
+
+  get sourceGlyph() {
+    for (const layer of this.layers) {
+      if (layer.name === this.sourceLayerName) {
+        return layer.glyph;
+      }
+    }
   }
 
 }
