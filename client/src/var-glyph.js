@@ -114,7 +114,7 @@ class StaticGlyph {
     } else {
       source.path = new VarPath();
     }
-    source.components = obj.components?.map(compo => SourceComponent.fromObject(compo)) || [];
+    source.components = obj.components?.map(compo => Component.fromObject(compo)) || [];
     return source
   }
 
@@ -130,10 +130,10 @@ class StaticGlyph {
 }
 
 
-class SourceComponent {
+class Component {
 
   static fromObject(obj) {
-    const compo = new SourceComponent();
+    const compo = new Component();
     compo.name = obj.name;
     compo.transform = obj.transform;
     compo.coord = obj.coord;
