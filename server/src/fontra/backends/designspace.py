@@ -74,15 +74,21 @@ class DesignspaceBackend:
 
 class UFOBackend:
     @classmethod
-    def fromPath(cls, path, layerName=None):
+    def fromPath(cls, path, layerName=None, layerNames=None):
+        return cls.fromUFOReader(UFOReader(path), layerName, layerNames)
+
+    @classmethod
+    def fromUFOReader(cls, reader, layerName=None, layerNames=None):
         self = cls()
-        self.reader = UFOReader(path)
+        self.reader = reader
         if layerName is None:
             layerName = self.reader.getDefaultLayerName()
         self.layerName = layerName
+        if layerNames is None:
+            layerNames = self.reader.getLayerNames()
         self.glyphSets = {
             layerName: self.reader.getGlyphSet(layerName=layerName)
-            for layerName in self.reader.getLayerNames()
+            for layerName in layerNames
         }
         return self
 
