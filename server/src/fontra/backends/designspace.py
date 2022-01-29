@@ -82,7 +82,8 @@ class DesignspaceBackend:
                 {
                     "name": sourceDescriptor.layerName or sourceDescriptor.styleName,
                     "location": sourceDescriptor.location,
-                    "source": layersDict[ufoSource.layerName]["glyph"],
+                    "sourceLayerName": ufoSource.layerName,
+                    "layers": layersDict,
                 }
             )
             if ufoSource == self.defaultSource:
