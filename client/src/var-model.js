@@ -437,12 +437,12 @@ function _mapSpace(location, axes, mapFunc) {
   const axesWithMap = {};
 
   for (const axis of axes) {
-    if (axis.map && axis.name in location) {
+    if (axis.mapping && axis.name in location) {
       axesWithMap[axis.name] = axis;
     }
   }
   for (const axisName in axesWithMap) {
-    const mapping = mapFunc(axesWithMap[axisName].map);
+    const mapping = mapFunc(axesWithMap[axisName].mapping);
     mappedLocation[axisName] = piecewiseLinearMap(location[axisName], mapping);
   }
   return mappedLocation;

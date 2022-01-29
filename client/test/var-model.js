@@ -261,13 +261,13 @@ describe("var-model tests", () => {
     });
 
     it("empty map", () => {
-      const axes = [{"name": "weight", "map": []}];
+      const axes = [{"name": "weight", "mapping": []}];
       const location = {"weight": 10};
       expect(mapForward(location, axes)).to.deep.equal({"weight": 10});
     });
 
     it("simple map", () => {
-      const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
+      const axes = [{"name": "weight", "mapping": [[0, 100], [20, 200]]}];
       const location = {"weight": 10, "width": 100};
       expect(mapForward(location, axes)).to.deep.equal({"weight": 150, "width": 100});
     });
@@ -283,13 +283,13 @@ describe("var-model tests", () => {
     });
 
     it("empty map", () => {
-      const axes = [{"name": "weight", "map": []}];
+      const axes = [{"name": "weight", "mapping": []}];
       const location = {"weight": 10};
       expect(mapBackward(location, axes)).to.deep.equal({"weight": 10});
     });
 
     it("simple map", () => {
-      const axes = [{"name": "weight", "map": [[0, 100], [20, 200]]}];
+      const axes = [{"name": "weight", "mapping": [[0, 100], [20, 200]]}];
       const location = {"weight": 150, "width": 100};
       expect(mapBackward(location, axes)).to.deep.equal({"weight": 10, "width": 100});
     });

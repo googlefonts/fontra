@@ -88,7 +88,7 @@ export class VariableGlyph {
       for (let i = 0; i < 3; i++) {
         mapping.push([localTriple[i], globalTriple[i]]);
       }
-      pseudoAxisList.push({"name": axisName, "map": mapping});
+      pseudoAxisList.push({"name": axisName, "mapping": mapping});
     }
     return pseudoAxisList;
   }
@@ -232,9 +232,9 @@ export function joinPaths(paths) {
 
 
 function makeAxisMapFunc(axis) {
-  if (!axis.map) {
+  if (!axis.mapping) {
     return v => v;
   }
-  const mapping = Object.fromEntries(axis.map);
+  const mapping = Object.fromEntries(axis.mapping);
   return v => piecewiseLinearMap(v, mapping);
 }

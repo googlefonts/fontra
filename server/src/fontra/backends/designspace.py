@@ -20,7 +20,7 @@ class DesignspaceBackend:
                 "name": axis.name,
             }
             if axis.map:
-                axisDict["map"] = [[a, b] for a, b in axis.map]
+                axisDict["mapping"] = [[a, b] for a, b in axis.map]
             axes.append(axisDict)
         self.axes = axes
         self.loadSources()
