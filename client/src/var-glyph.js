@@ -100,7 +100,6 @@ class Source {
 
   static fromObject(obj) {
     const source = new Source();
-
     source.name = obj.name;
     source.location = obj.location;
     source.sourceLayerName = obj.sourceLayerName;
