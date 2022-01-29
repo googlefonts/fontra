@@ -74,6 +74,10 @@ class PathBuilderPointPen:
     def addComponent(self, glyphName, transformation, **kwargs):
         xx, xy, yx, yy, dx, dy = transformation
         rotation, scalex, scaley, skewx, skewy = decomposeTwoByTwo((xx, xy, yx, yy))
+        # TODO rotation is problematic with interpolation: should interpolation
+        # go clockwise or counter-clockwise? That ambiguous, and get more complicated
+        # with > 2 masters. Perhaps we can "normalize" the rotations angles in some
+        # way to have reasonable behavior in common cases.
         if rotation == -0.0:
             rotation = 0.0
         assert abs(skewx) < 0.00001, f"x skew is not yet supported ({self.name})"
