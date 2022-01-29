@@ -6,5 +6,7 @@
     <string>S_.glif</string>
     <key>S.closed</key>
     <string>S_.closed.glif</string>
+    <key>period</key>
+    <string>period.glif</string>
   </dict>
 </plist>
