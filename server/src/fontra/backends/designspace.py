@@ -158,12 +158,12 @@ class UFOGlyph:
 
 
 def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
-    layers = {}
+    layers = []
     sourceLayerGlyph = None
     for layerName, glyphSet in glyphSets.items():
         if glyphName in glyphSet:
             glyphDict, glyph = serializeGlyph(glyphSet, glyphName)
-            layers[layerName] = {"glyph": glyphDict}
+            layers.append({"name": layerName, "glyph": glyphDict})
             if layerName == sourceLayerName:
                 sourceLayerGlyph = glyph
     return layers, sourceLayerGlyph
