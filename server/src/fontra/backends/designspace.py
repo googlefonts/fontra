@@ -1,3 +1,4 @@
+from collections import defaultdict
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.ufoLib import UFOReader
 from rcjktools.project import extractGlyphNameAndUnicodes
@@ -31,12 +32,34 @@ class DesignspaceBackend:
         return self._getSourceFromSourceDescriptor(self.dsDoc.default)
 
     def loadSources(self):
+        # All layers in a source UFO that are NOT used as source layer
+        # by the designspace doc are added to the default source.
+        readers = {}
+        sourceLayers = defaultdict(set)
+        for source in self.dsDoc.sources:
+            path = source.path
+            reader = readers.get(path)
+            if reader is None:
+                reader = readers[path] = UFOReader(path)
+            sourceLayers[path].add(source.layerName or reader.getDefaultLayerName())
+
         for source in self.dsDoc.sources:
             path = source.path
             layerName = source.layerName
-            key = (path, layerName)
+            reader = readers[path]
+            usedLayerNames = sourceLayers[path]
+            if layerName is None:
+                layerName = reader.getDefaultLayerName()
+                layerNames = [
+                    n
+                    for n in reader.getLayerNames()
+                    if n == layerName or n not in usedLayerNames
+                ]
+            else:
+                layerNames = [layerName]
+            key = (path, source.layerName)
             assert key not in self._sources
-            self._sources[key] = UFOBackend.fromPath(path, layerName)
+            self._sources[key] = UFOBackend.fromUFOReader(reader, layerName, layerNames)
 
     def _getSourceFromSourceDescriptor(self, source):
         return self._sources[(source.path, source.layerName)]
