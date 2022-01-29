@@ -103,7 +103,8 @@ def serializeGlyph(glyph):
             sourceGlyph["components"] = components
         # TODO anchors?
         sourceGlyph["xAdvance"] = varGlyph.width  # TODO: yAdvance, verticalOrigin
-        source["source"] = sourceGlyph
+        source["sourceLayerName"] = "foreground"
+        source["layers"] = [{"name": "foreground", "glyph": sourceGlyph}]
         sources.append(source)
     d["sources"] = sources
     return d
