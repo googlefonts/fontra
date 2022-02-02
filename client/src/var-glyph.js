@@ -87,9 +87,10 @@ export class VariableGlyph {
     return pseudoAxisList;
   }
 
-  instantiate(location) {
+  instantiate(location, fromGlobal = true) {
+    const axisDict = fromGlobal ? this.axisDictGlobal : this.axisDictLocal;
     return this.model.interpolateFromDeltas(
-      normalizeLocation(location, this.axisDictGlobal), this.deltas
+      normalizeLocation(location, axisDict), this.deltas
     );
   }
 
@@ -171,7 +172,7 @@ class Component {
     const glyph = await getGlyphFunc(this.name);
     let inst;
     try {
-      inst = glyph.instantiate(compoLocation || {});
+      inst = glyph.instantiate(compoLocation || {}, false);
     } catch (error) {
       if (error.name !== "VariationError") {
         throw error;
