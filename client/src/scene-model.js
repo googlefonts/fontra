@@ -184,6 +184,8 @@ export class SceneModel {
     const positionedGlyph = this.getSelectedPositionedGlyph();
     const selRect = centeredRect(point.x - positionedGlyph.x, point.y - positionedGlyph.y, size);
     for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
+      // TODO: we may have to filter or sort for the case when a handle coincides with
+      // its anchor, to get a consistent result despite which of the two comes first.
       return new Set([`point/${hit.pointIndex}`])
     }
     const components = positionedGlyph.glyph.components;
