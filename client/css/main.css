@@ -217,15 +217,15 @@ html, body {
   }
 
   #glyph-search-img {
-    content: url("../images/magnifyingGlass-dark.svg");
+    content: url("../images/magnifyingGlass-white.svg");
   }
 
   #slider-img {
-    content: url("../images/sliders-dark.svg");
+    content: url("../images/sliders-white.svg");
   }
 
   #text-entry-img {
-    content: url("../images/textT-dark.svg");
+    content: url("../images/textT-white.svg");
   }
 
   #mini-console {
