@@ -6,6 +6,8 @@ imagesFolder = thisFolder.parent / "client" / "images"
 
 imagesFolder.mkdir(exist_ok=True)
 
+colorExts = ["-black", "-white"]
+
 for p in thisFolder.glob("*.py"):
     if p.name == thisPath.name:
         continue
@@ -14,5 +16,5 @@ for p in thisFolder.glob("*.py"):
         newDrawing()
         nameSpace = {"color": color}
         exec(src)
-        saveImage(imagesFolder / (p.stem + ("-dark" if color else "") + ".svg"))
+        saveImage(imagesFolder / (p.stem + colorExts[color] + ".svg"))
         endDrawing()
