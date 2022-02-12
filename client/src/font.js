@@ -61,12 +61,12 @@ export class Font {
         let glyph = await this.fontDataEngine.getGlyph(glyphName);
         if (glyph !== null) {
           glyph = VariableGlyph.fromObject(glyph, await this.globalAxes);
-        }
-        for (const componentName of glyph.componentNames) {
-          if (!this.glyphDependencies[componentName]) {
-            this.glyphDependencies[componentName] = new Set();
+          for (const componentName of glyph.getAllComponentNames()) {
+            if (!this.glyphDependencies[componentName]) {
+              this.glyphDependencies[componentName] = new Set();
+            }
+            this.glyphDependencies[componentName].add(glyphName);
           }
-          this.glyphDependencies[componentName].add(glyphName);
         }
         return glyph;
       })();

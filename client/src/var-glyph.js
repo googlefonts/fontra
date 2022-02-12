@@ -15,8 +15,16 @@ export class VariableGlyph {
     return glyph;
   }
 
-  get componentNames() {
-    return this.sources[0].sourceGlyph.components.map(compo => compo.name);
+  getAllComponentNames() {
+    const componentNames = new Set();
+    for (const source of this.sources) {
+      for (const layer of source.layers) {
+        for (const component of layer.glyph.components) {
+          componentNames.add(component.name);
+        }
+      }
+    }
+    return componentNames;
   }
 
   clearDeltasCache() {
