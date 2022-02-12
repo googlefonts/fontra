@@ -275,6 +275,7 @@ function sorted(a) {
   return result;
 }
 
+
 export function locationToString(loc) {
   const sortedLoc = {};
   for (const key of Object.keys(loc).sort()) {
