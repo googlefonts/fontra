@@ -16,6 +16,7 @@ export class VariableGlyph {
   }
 
   getAllComponentNames() {
+    // Return a set of all component names used by all layers of all sources
     const componentNames = new Set();
     for (const source of this.sources) {
       for (const layer of source.layers) {
