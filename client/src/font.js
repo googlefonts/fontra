@@ -10,6 +10,7 @@ export class Font {
     this._reversedCmapPromise = undefined;
     this._cmapPromise = undefined;
     this._globalAxesPromise = undefined;
+    this.glyphDependencies = {};
   }
 
   get reversedCmap() {
@@ -60,6 +61,12 @@ export class Font {
         let glyph = await this.fontDataEngine.getGlyph(glyphName);
         if (glyph !== null) {
           glyph = VariableGlyph.fromObject(glyph, await this.globalAxes);
+        }
+        for (const componentName of glyph.componentNames) {
+          if (!this.glyphDependencies[componentName]) {
+            this.glyphDependencies[componentName] = new Set();
+          }
+          this.glyphDependencies[componentName].add(glyphName);
         }
         return glyph;
       })();
