@@ -276,13 +276,11 @@ function sorted(a) {
 }
 
 export function locationToString(loc) {
-  const keys = Object.keys(loc);
-  const result = {};
-  keys.sort()
-  for (const key of keys) {
-    result[key] = loc[key];
+  const sortedLoc = {};
+  for (const key of Object.keys(loc).sort()) {
+    sortedLoc[key] = loc[key];
   }
-  return JSON.stringify(result);
+  return JSON.stringify(sortedLoc);
 }
 
 
