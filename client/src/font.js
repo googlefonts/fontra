@@ -18,7 +18,7 @@ export class Font {
   async getGlyph(glyphName) {
     let glyph = await this.fontDataEngine.getGlyph(glyphName);
     if (glyph) {
-      glyph = VariableGlyph.fromObject(glyph, []);  // XXX globalAxes arg!!!
+      glyph = VariableGlyph.fromObject(glyph);
     }
     return glyph;
   }
