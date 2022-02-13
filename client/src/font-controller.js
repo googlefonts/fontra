@@ -10,6 +10,7 @@ export class FontController {
     this.location = location;
     this._glyphsPromiseCache = new LRUCache(250);
     this.glyphUsedBy = {};
+    this.glyphMadeOf = {};
   }
 
   async initialize() {
@@ -54,11 +55,20 @@ export class FontController {
   }
 
   updateGlyphDependencies(glyph) {
-    for (const componentName of glyph.getAllComponentNames()) {
+    const glyphName = glyph.name;
+    // Zap previous used-by data for this glyph, if any
+    for (const componentName of this.glyphMadeOf[glyph] || []) {
+      if (this.glyphUsedBy[componentName]) {
+        this.glyphUsedBy[componentName].delete(glyphName);
+      }
+    }
+    const componentNames = glyph.getAllComponentNames();
+    this.glyphMadeOf[glyph] = componentNames;
+    for (const componentName of componentNames) {
       if (!this.glyphUsedBy[componentName]) {
         this.glyphUsedBy[componentName] = new Set();
       }
-      this.glyphUsedBy[componentName].add(glyph.name);
+      this.glyphUsedBy[componentName].add(glyphName);
     }
   }
 
