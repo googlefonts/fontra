@@ -315,9 +315,9 @@ class ComponentController {
 }
 
 
-async function getComponentPath(compo, getGlyphFunc, parentLocation, transformation = null) {
+async function getComponentPath(compo, getGlyphFunc, parentLocation) {
   return flattenComponentPaths(
-    await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation)
+    await getNestedComponentPaths(compo, getGlyphFunc, parentLocation)
   );
 }
 
