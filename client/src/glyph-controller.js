@@ -331,7 +331,9 @@ async function getComponentPaths(components, getGlyphFunc, parentLocation, trans
 
 
 async function getComponentPath(compo, getGlyphFunc, parentLocation, transformation = null) {
-  return flattenComponentPaths(await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation));
+  return flattenComponentPaths(
+    await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation)
+  );
 }
 
 
