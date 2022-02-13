@@ -173,7 +173,7 @@ export class VariableGlyphController {
     }
 
     const instanceController = new StaticGlyphController(
-      this.name, instance, this.location, sourceIndex,
+      this.name, instance, location, sourceIndex,
     );
     await instanceController.setupComponents(getGlyphFunc);
     return instanceController;
