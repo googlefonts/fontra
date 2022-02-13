@@ -157,7 +157,7 @@ export class SceneController {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       editFuncs.forEach(editFunc => editFunc(delta));
-      await fontController.clearGlyphCache(glyphName);
+      await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
       this._dispatchEvent("glyphIsChanging", glyphName);
