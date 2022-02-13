@@ -1,4 +1,3 @@
-import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
 
 
