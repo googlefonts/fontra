@@ -123,7 +123,6 @@ class VariableGlyphController {
   constructor(glyph, globalAxes) {
     this.glyph = glyph;
     this.globalAxes = globalAxes;
-    this.glyph.globalAxes = globalAxes;  // XXX should go away
   }
 
   get axes() {
