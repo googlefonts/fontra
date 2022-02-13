@@ -121,7 +121,7 @@ export class FontController {
         new CachingComponent(await compo.getPath(getGlyphFunc, location))
       );
     }
-    const cachingInstance = new CachingGlyphInstance(
+    const cachingInstance = new StaticGlyphController(
       glyphName, instance, components, this.location, sourceIndex,
     );
     return cachingInstance;
@@ -138,7 +138,7 @@ export class FontController {
 }
 
 
-class CachingGlyphInstance {
+class StaticGlyphController {
 
   constructor(name, instance, components, location, sourceIndex) {
     this.name = name;
