@@ -94,16 +94,37 @@ export class FontController {
         if (!await this.hasGlyph(glyphName)) {
           return null;
         }
-        const cachingInstance = new CachingGlyphInstance(
-          glyphName, this, this.location, await this.getSourceIndex(glyphName),
-        );
-        await cachingInstance.initialize();
+        const cachingInstance = await this._setupGlyphInstance(glyphName);
         this._loadedGlyphInstances[glyphName] = true;
         return cachingInstance;
       })();
       this._glyphInstancePromiseCache[glyphName] = glyphInstancePromise;
     }
     return glyphInstancePromise;
+  }
+
+  async _setupGlyphInstance(glyphName) {
+    const varGlyph = await this.getGlyph(glyphName);
+    const sourceIndex = await this.getSourceIndex(glyphName);
+    const location = mapForward(mapNLILocation(this.location, varGlyph.axes), this.globalAxes);
+    let instance;
+    if (sourceIndex !== undefined) {
+      instance = varGlyph.sources[sourceIndex].sourceGlyph;
+    } else {
+      instance = varGlyph.instantiate(location);
+    }
+
+    const getGlyphFunc = this.getGlyph.bind(this);
+    const components = [];
+    for (const compo of instance.components) {
+      components.push(
+        new CachingComponent(await compo.getPath(getGlyphFunc, location))
+      );
+    }
+    const cachingInstance = new CachingGlyphInstance(
+      glyphName, instance, components, this.location, sourceIndex,
+    );
+    return cachingInstance;
   }
 
   async getSourceIndex(glyphName) {
@@ -119,9 +140,10 @@ export class FontController {
 
 class CachingGlyphInstance {
 
-  constructor(name, fontController, location, sourceIndex) {
+  constructor(name, instance, components, location, sourceIndex) {
     this.name = name;
-    this.fontController = fontController;
+    this.instance = instance;
+    this.components = components;
     this.location = location;
     this.sourceIndex = sourceIndex;
   }
@@ -138,24 +160,6 @@ class CachingGlyphInstance {
 
   get canEdit() {
     return this.sourceIndex !== undefined;
-  }
-
-  async initialize() {
-    const glyph = await this.fontController.getGlyph(this.name);
-    const location = mapForward(mapNLILocation(this.location, glyph.axes), glyph.globalAxes);
-    if (this.sourceIndex !== undefined) {
-      this.instance = glyph.sources[this.sourceIndex].sourceGlyph;
-    } else {
-      this.instance = glyph.instantiate(location);
-    }
-
-    const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
-    this.components = [];
-    for (const compo of this.instance.components) {
-      this.components.push(
-        new CachingComponent(await compo.getPath(getGlyphFunc, location))
-      );
-    }
   }
 
   get xAdvance() {
