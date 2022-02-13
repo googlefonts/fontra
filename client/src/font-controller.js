@@ -121,10 +121,10 @@ export class FontController {
         new CachingComponent(await compo.getPath(getGlyphFunc, location))
       );
     }
-    const cachingInstance = new StaticGlyphController(
+    const instanceController = new StaticGlyphController(
       glyphName, instance, components, this.location, sourceIndex,
     );
-    return cachingInstance;
+    return instanceController;
   }
 
   async getSourceIndex(glyphName) {
