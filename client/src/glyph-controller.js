@@ -1,4 +1,4 @@
-import { joinPaths } from "./var-glyph.js";
+import { Transform } from "./transform.js";
 import {
   VariationModel,
   locationToString,
@@ -7,6 +7,7 @@ import {
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
+import VarPath from "./var-path.js";
 
 
 export class VariableGlyphController {
@@ -171,15 +172,10 @@ export class VariableGlyphController {
       instance = this.instantiate(location);
     }
 
-    const components = [];
-    for (const compo of instance.components) {
-      components.push(
-        new CachingComponent(await compo.getPath(getGlyphFunc, location))
-      );
-    }
     const instanceController = new StaticGlyphController(
-      this.name, instance, components, this.location, sourceIndex,
+      this.name, instance, this.location, sourceIndex,
     );
+    await instanceController.setupComponents(getGlyphFunc);
     return instanceController;
   }
 
@@ -188,12 +184,20 @@ export class VariableGlyphController {
 
 class StaticGlyphController {
 
-  constructor(name, instance, components, location, sourceIndex) {
+  constructor(name, instance, location, sourceIndex) {
     this.name = name;
     this.instance = instance;
-    this.components = components;
     this.location = location;
     this.sourceIndex = sourceIndex;
+  }
+
+  async setupComponents(getGlyphFunc) {
+    this.components = [];
+    for (const compo of this.instance.components) {
+      const compoController = new ComponentController(compo);
+      await compoController.setupPath(getGlyphFunc, this.location);
+      this.components.push(compoController);
+    }
   }
 
   clearCache() {
@@ -281,10 +285,14 @@ class StaticGlyphController {
 }
 
 
-class CachingComponent {
+class ComponentController {
 
-  constructor(path) {
-    this.path = path;
+  constructor(compo) {
+    this.compo = compo;
+  }
+
+  async setupPath(getGlyphFunc, location) {
+    this.path = await getComponentPath(this.compo, getGlyphFunc, location);
   }
 
   get path2d() {
@@ -309,6 +317,48 @@ class CachingComponent {
     return this._convexHull;
   }
 
+}
+
+
+async function getComponentPaths(components, getGlyphFunc, parentLocation, transformation = null) {
+  const paths = [];
+
+  for (const compo of components || []) {
+    paths.push(await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation));
+  }
+  return paths;
+}
+
+
+async function getComponentPath(compo, getGlyphFunc, parentLocation, transformation = null) {
+  return flattenComponentPaths(await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation));
+}
+
+
+async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation = null) {
+  const compoLocation = mergeLocations(parentLocation, compo.location);
+  const glyph = await getGlyphFunc(compo.name);
+  let inst;
+  try {
+    inst = glyph.instantiate(compoLocation || {}, false);
+  } catch (error) {
+    if (error.name !== "VariationError") {
+      throw error;
+    }
+    const errorMessage = `Interpolation error while instantiating component ${compo.name}`;
+    console.log(errorMessage);
+    return {"error": errorMessage};
+  }
+  let t = makeAffineTransform(compo.transformation);
+  if (transformation) {
+    t = transformation.transform(t);
+  }
+  const componentPaths = {};
+  if (inst.path.numPoints) {
+    componentPaths["path"] = inst.path.transformed(t);
+  }
+  componentPaths["children"] = await getComponentPaths(inst.components, getGlyphFunc, compoLocation, t);
+  return componentPaths;
 }
 
 
@@ -355,4 +405,47 @@ function mapNLILocation(userLocation, axes) {
     }
   }
   return location;
+}
+
+
+function flattenComponentPaths(item) {
+  const paths = [];
+  if (item.path !== undefined) {
+    paths.push(item.path);
+  }
+  if (item.children !== undefined) {
+    for (const child of item.children) {
+      const childPath = flattenComponentPaths(child);
+      if (!!childPath) {
+        paths.push(childPath);
+      }
+    }
+  }
+  return joinPaths(paths);
+}
+
+
+function joinPaths(paths) {
+  if (paths.length) {
+    return paths.reduce((p1, p2) => p1.concat(p2));
+  }
+  return new VarPath();
+}
+
+
+function mergeLocations(loc1, loc2) {
+  if (!loc1) {
+    return loc2;
+  }
+  return {...loc1, ...loc2};
+}
+
+
+function makeAffineTransform(transformation) {
+  let t = new Transform();
+  t = t.translate(transformation.x + transformation.tcenterx, transformation.y + transformation.tcentery);
+  t = t.rotate(transformation.rotation * (Math.PI / 180));
+  t = t.scale(transformation.scalex, transformation.scaley);
+  t = t.translate(-transformation.tcenterx, -transformation.tcentery);
+  return t;
 }
