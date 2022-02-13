@@ -1,3 +1,4 @@
+import { joinPaths } from "./var-glyph.js";
 import {
   VariationModel,
   locationToString,
@@ -14,6 +15,10 @@ export class VariableGlyphController {
     this.glyph = glyph;
     this.globalAxes = globalAxes;
     this._locationToSourceIndex = {};
+  }
+
+  get name() {
+    return this.glyph.name;
   }
 
   get axes() {
@@ -148,6 +153,154 @@ export class VariableGlyphController {
     );
   }
 
+  async instantiateController(location, getGlyphFunc) {
+    const sourceIndex = this.getSourceIndex(location);
+    location = mapForward(mapNLILocation(location, this.axes), this.globalAxes);
+    let instance;
+    if (sourceIndex !== undefined) {
+      instance = this.sources[sourceIndex].sourceGlyph;
+    } else {
+      instance = this.instantiate(location);
+    }
+
+    const components = [];
+    for (const compo of instance.components) {
+      components.push(
+        new CachingComponent(await compo.getPath(getGlyphFunc, location))
+      );
+    }
+    const instanceController = new StaticGlyphController(
+      this.name, instance, components, this.location, sourceIndex,
+    );
+    return instanceController;
+  }
+
+}
+
+
+class StaticGlyphController {
+
+  constructor(name, instance, components, location, sourceIndex) {
+    this.name = name;
+    this.instance = instance;
+    this.components = components;
+    this.location = location;
+    this.sourceIndex = sourceIndex;
+  }
+
+  clearCache() {
+    delete this._flattenedPath;
+    delete this._flattenedPath2d;
+    delete this._path2d;
+    delete this._componentsPath;
+    delete this._componentsPath2d;
+    delete this._controlBounds;
+    delete this._convexHull;
+  }
+
+  get canEdit() {
+    return this.sourceIndex !== undefined;
+  }
+
+  get xAdvance() {
+    return this.instance.xAdvance;
+  }
+
+  get yAdvance() {
+    return this.instance.yAdvance;
+  }
+
+  get verticalOrigin() {
+    return this.instance.verticalOrigin;
+  }
+
+  get flattenedPath() {
+    if (this._flattenedPath === undefined) {
+      this._flattenedPath = joinPaths([this.instance.path, this.componentsPath]);
+    }
+    return this._flattenedPath;
+  }
+
+  get flattenedPath2d() {
+    if (this._flattenedPath2d === undefined) {
+      this._flattenedPath2d = new Path2D();
+      this.flattenedPath.drawToPath2d(this._flattenedPath2d);
+    }
+    return this._flattenedPath2d;
+  }
+
+  get path() {
+    return this.instance.path;
+  }
+
+  get path2d() {
+    if (this._path2d === undefined) {
+      this._path2d = new Path2D();
+      this.instance.path.drawToPath2d(this._path2d);
+    }
+    return this._path2d;
+  }
+
+  get componentsPath() {
+    if (this._componentsPath === undefined) {
+      this._componentsPath = joinPaths(this.components.map(compo => compo.path));
+    }
+    return this._componentsPath;
+  }
+
+  get componentsPath2d() {
+    if (this._componentsPath2d === undefined) {
+      this._componentsPath2d = new Path2D();
+      this.componentsPath?.drawToPath2d(this._componentsPath2d);
+    }
+    return this._componentsPath2d;
+  }
+
+  get controlBounds() {
+    if (this._controlBounds === undefined) {
+      this._controlBounds = this.flattenedPath.getControlBounds();
+    }
+    return this._controlBounds;
+  }
+
+  get convexHull() {
+    if (this._convexHull === undefined) {
+      this._convexHull = this.flattenedPath.getConvexHull();
+    }
+    return this._convexHull;
+  }
+
+}
+
+
+class CachingComponent {
+
+  constructor(path) {
+    this.path = path;
+  }
+
+  get path2d() {
+    if (this._path2d === undefined) {
+      this._path2d = new Path2D();
+      this.path.drawToPath2d(this._path2d);
+    }
+    return this._path2d;
+  }
+
+  get controlBounds() {
+    if (this._controlBounds === undefined) {
+      this._controlBounds = this.path.getControlBounds();
+    }
+    return this._controlBounds;
+  }
+
+  get convexHull() {
+    if (this._convexHull === undefined) {
+      this._convexHull = this.path.getConvexHull();
+    }
+    return this._convexHull;
+  }
+
 }
 
 
@@ -173,4 +326,25 @@ function normalizeLocationSparse(location, axes) {
 
 export function getAxisBaseName(axisName) {
   return axisName.split("*", 1)[0];
+}
+
+
+function mapNLILocation(userLocation, axes) {
+  const nliAxes = {};
+  for (const axis of axes) {
+    const baseName = axis.name.split("*", 1)[0];
+    if (baseName !== axis.name) {
+      if (!(baseName in nliAxes)) {
+        nliAxes[baseName] = [];
+      }
+      nliAxes[baseName].push(axis.name);
+    }
+  }
+  const location = {};
+  for (const [baseName, value] of Object.entries(userLocation)) {
+    for (const realName of nliAxes[baseName] || [baseName]) {
+      location[realName] = value;
+    }
+  }
+  return location;
 }
