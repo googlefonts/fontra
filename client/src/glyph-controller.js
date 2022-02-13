@@ -1,5 +1,8 @@
 import {
   VariationModel,
+  locationToString,
+  mapForward,
+  mapBackward,
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
@@ -10,6 +13,7 @@ export class VariableGlyphController {
   constructor(glyph, globalAxes) {
     this.glyph = glyph;
     this.globalAxes = globalAxes;
+    this._locationToSourceIndex = {};
   }
 
   get axes() {
@@ -18,6 +22,42 @@ export class VariableGlyphController {
 
   get sources() {
     return this.glyph.sources;
+  }
+
+  getSourceIndex(location) {
+    const locationStr = locationToString(location);
+    if (!(locationStr in this._locationToSourceIndex)) {
+      this._locationToSourceIndex[locationStr] = this._getSourceIndex(location);
+    }
+    return this._locationToSourceIndex[locationStr];
+  }
+
+  _getSourceIndex(location) {
+    location = mapForward(location, this.globalAxes);
+    location = mapBackward(location, this.getLocalToGlobalMapping());
+    for (let i = 0; i < this.sources.length; i++) {
+      const source = this.sources[i];
+      let found = true;
+      for (const [axisName, triple] of Object.entries(this.axisDictLocal)) {
+        const baseName = getAxisBaseName(axisName);
+        let varValue = location[baseName];
+        let sourceValue = source.location[axisName];
+        if (varValue === undefined) {
+          varValue = triple[1];
+        }
+        if (sourceValue === undefined) {
+          sourceValue = triple[1];
+        }
+        if (varValue !== sourceValue) {
+          found = false;
+          break;
+        }
+      }
+      if (found) {
+        return i;
+      }
+    }
+    return undefined;
   }
 
   getAllComponentNames() {
@@ -128,4 +168,9 @@ function normalizeLocationSparse(location, axes) {
     }
   }
   return normLoc;
+}
+
+
+export function getAxisBaseName(axisName) {
+  return axisName.split("*", 1)[0];
 }

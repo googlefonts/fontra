@@ -2,7 +2,6 @@ import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { joinPaths } from "./var-glyph.js";
 import {
-  mapBackward,
   mapForward,
   normalizeLocation,
 } from "./var-model.js";
@@ -71,13 +70,11 @@ export class FontController {
     this._location = location;
     this._glyphInstancePromiseCache = {};
     this._loadedGlyphInstances = {};
-    this._sourceIndices = {};
   }
 
   clearGlyphCache(glyphName) {
     delete this._glyphInstancePromiseCache[glyphName];
     delete this._loadedGlyphInstances[glyphName];
-    delete this._sourceIndices[glyphName];
     for (const dependantName of this.glyphDependencies[glyphName] || []) {
       this.clearGlyphCache(dependantName);
     }
@@ -105,7 +102,7 @@ export class FontController {
 
   async _setupGlyphInstance(glyphName) {
     const varGlyph = await this.getGlyph(glyphName);
-    const sourceIndex = await this.getSourceIndex(glyphName);
+    const sourceIndex = varGlyph.getSourceIndex(this.location);
     const location = mapForward(mapNLILocation(this.location, varGlyph.axes), this.globalAxes);
     let instance;
     if (sourceIndex !== undefined) {
@@ -128,11 +125,8 @@ export class FontController {
   }
 
   async getSourceIndex(glyphName) {
-    if (!(glyphName in this._sourceIndices)) {
-      const glyph = await this.getGlyph(glyphName);
-      this._sourceIndices[glyphName] = findSourceIndexFromLocation(glyph, this.location);
-    }
-    return this._sourceIndices[glyphName];
+    const glyph = await this.getGlyph(glyphName);
+    return glyph.getSourceIndex(this.location);
   }
 
 }
@@ -282,40 +276,6 @@ function mapNLILocation(userLocation, axes) {
     }
   }
   return location;
-}
-
-
-export function getAxisBaseName(axisName) {
-  return axisName.split("*", 1)[0];
-}
-
-
-function findSourceIndexFromLocation(glyph, location) {
-  location = mapForward(location, glyph.globalAxes);
-  location = mapBackward(location, glyph.getLocalToGlobalMapping());
-  for (let i = 0; i < glyph.sources.length; i++) {
-    const source = glyph.sources[i];
-    let found = true;
-    for (const [axisName, triple] of Object.entries(glyph.axisDictLocal)) {
-      const baseName = getAxisBaseName(axisName);
-      let varValue = location[baseName];
-      let sourceValue = source.location[axisName];
-      if (varValue === undefined) {
-        varValue = triple[1];
-      }
-      if (sourceValue === undefined) {
-        sourceValue = triple[1];
-      }
-      if (varValue !== sourceValue) {
-        found = false;
-        break;
-      }
-    }
-    if (found) {
-      return i;
-    }
-  }
-  return undefined;
 }
 
 
