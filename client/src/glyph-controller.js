@@ -173,7 +173,7 @@ export class VariableGlyphController {
     }
 
     const instanceController = new StaticGlyphController(
-      this.name, instance, sourceIndex,
+      this.name, instance, sourceIndex !== undefined,
     );
     await instanceController.setupComponents(getGlyphFunc, location);
     return instanceController;
@@ -184,10 +184,10 @@ export class VariableGlyphController {
 
 class StaticGlyphController {
 
-  constructor(name, instance, sourceIndex) {
+  constructor(name, instance, canEdit) {
     this.name = name;
     this.instance = instance;
-    this.sourceIndex = sourceIndex;
+    this.canEdit = canEdit;
   }
 
   async setupComponents(getGlyphFunc, location) {
@@ -207,10 +207,6 @@ class StaticGlyphController {
     delete this._componentsPath2d;
     delete this._controlBounds;
     delete this._convexHull;
-  }
-
-  get canEdit() {
-    return this.sourceIndex !== undefined;
   }
 
   get xAdvance() {
