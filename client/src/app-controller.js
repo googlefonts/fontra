@@ -253,8 +253,8 @@ export class AppController {
   }
 
   async textFieldChangedCallback(element) {
-    const cmap = await this.fontController.cmap;
-    const reversedCmap = await this.fontController.reversedCmap;
+    const cmap = this.fontController.cmap;
+    const reversedCmap = this.fontController.reversedCmap;
     const glyphLines = glyphLinesFromText(element.innerText, cmap, reversedCmap);
     await this.sceneController.setGlyphLines(glyphLines);
     await this.updateSlidersAndSources();
