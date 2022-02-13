@@ -68,12 +68,14 @@ export class FontController {
     this._loadedGlyphInstances = {};
   }
 
-  clearGlyphCache(glyphName) {
+  async clearGlyphCache(glyphName) {
     delete this._glyphInstancePromiseCache[glyphName];
     delete this._loadedGlyphInstances[glyphName];
     for (const dependantName of this.glyphDependencies[glyphName] || []) {
-      this.clearGlyphCache(dependantName);
+      await this.clearGlyphCache(dependantName);
     }
+    const varGlyph = await this.getGlyph(glyphName);
+    varGlyph.clearDeltasCache();
   }
 
   isGlyphInstanceLoaded(glyphName) {

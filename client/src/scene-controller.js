@@ -139,7 +139,6 @@ export class SceneController {
     }
     const fontController = this.sceneModel.fontController;
     const glyphName = positionedGlyph.glyph.name;
-    const varGlyph = await fontController.getGlyph(glyphName);
     const instance = positionedGlyph.glyph.instance;
     const path = instance.path;
     const editFuncs = [];
@@ -158,8 +157,7 @@ export class SceneController {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       editFuncs.forEach(editFunc => editFunc(delta));
-      fontController.clearGlyphCache(glyphName);
-      varGlyph.clearDeltasCache();
+      await fontController.clearGlyphCache(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
       this._dispatchEvent("glyphIsChanging", glyphName);
