@@ -119,11 +119,7 @@ function mergeLocations(loc1, loc2) {
   if (!loc1) {
     return loc2;
   }
-  const merged = {...loc1};
-  for (const k in loc2) {
-    merged[k] = loc2[k];
-  }
-  return merged;
+  return {...loc1, ...loc2};
 }
 
 
