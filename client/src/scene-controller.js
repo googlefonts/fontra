@@ -139,7 +139,7 @@ export class SceneController {
     }
     const fontController = this.sceneModel.fontController;
     const glyphName = positionedGlyph.glyph.name;
-    const varGlyph = await this.sceneModel.font.getGlyph(glyphName);
+    const varGlyph = await fontController.getGlyph(glyphName);
     const instance = positionedGlyph.glyph.instance;
     const path = instance.path;
     const editFuncs = [];

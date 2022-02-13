@@ -6,10 +6,9 @@ import { mapForward, mapBackward, normalizeLocation } from "./var-model.js";
 
 export class SceneModel {
 
-  constructor(font, isPointInPath) {
-    this.font = font;
+  constructor(fontController, isPointInPath) {
+    this.fontController = fontController;
     this.isPointInPath = isPointInPath;
-    this.fontController = new FontController(this.font, {});
     this.glyphLines = [];
     this.positionedLines = [];
     this.selection = new Set();
@@ -82,7 +81,7 @@ export class SceneModel {
       return;
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
-    const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
+    const glyph = await this.fontController.getGlyph(positionedGlyph.glyph.name);
 
     const source = glyph.sources[sourceIndex];
     const location = {...this.fontController.location};
@@ -95,15 +94,15 @@ export class SceneModel {
       const baseName = getAxisBaseName(name);
       location[baseName] = value;
     }
-    await this.setLocation(mapBackward(location, await this.font.globalAxes));
+    await this.setLocation(mapBackward(location, await this.fontController.globalAxes));
   }
 
   async getAxisInfo() {
-    const allAxes = Array.from(await this.font.globalAxes);
+    const allAxes = Array.from(await this.fontController.globalAxes);
     const globalAxisNames = new Set(allAxes.map(axis => axis.name));
     if (this.selectedGlyph) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
-      const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
+      const glyph = await this.fontController.getGlyph(positionedGlyph.glyph.name);
       const glyphAxes = getAxisInfoFromGlyph(glyph).filter(axis => !globalAxisNames.has(axis.name));
       allAxes.push(...glyphAxes);
     }
@@ -116,7 +115,7 @@ export class SceneModel {
       return sourcesInfo;
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
-    const glyph = await this.font.getGlyph(positionedGlyph.glyph.name);
+    const glyph = await this.fontController.getGlyph(positionedGlyph.glyph.name);
     for (let i = 0; i < glyph.sources.length; i++) {
       let name = glyph.sources[i].name;
       if (!name) {

@@ -1,3 +1,4 @@
+import { LRUCache } from "./lru-cache.js";
 import { joinPaths } from "./var-glyph.js";
 import { mapBackward, mapForward, normalizeLocation } from "./var-model.js";
 
@@ -7,6 +8,54 @@ export class FontController {
   constructor (font, location) {
     this.font = font;
     this.location = location;
+    this._glyphsPromiseCache = new LRUCache(250);
+    this.glyphDependencies = {};
+  }
+
+  async initialize() {
+    this.reversedCmap = await this.font.getReversedCmap();
+    this.cmap = makeCmapFromReversedCmap(this.reversedCmap);
+    this.globalAxes = await this.font.getGlobalAxes();
+  }
+
+  codePointForGlyph(glyphName) {
+    const reversedCmap = this.reversedCmap;
+    const cmap = this.cmap;
+    for (const codePoint of reversedCmap[glyphName] || []) {
+      if (cmap[codePoint] === glyphName) {
+        return codePoint;
+      }
+    }
+    return undefined;
+  }
+
+  async hasGlyph(glyphName) {
+    return glyphName in this.reversedCmap;
+  }
+
+  getGlyph(glyphName) {
+    let glyphPromise = this._glyphsPromiseCache.get(glyphName);
+    if (glyphPromise === undefined) {
+      glyphPromise = (async () => {
+        if (!await this.hasGlyph(glyphName)) {
+          return null;
+        }
+        let glyph = await this.font.getGlyph(glyphName);
+        if (glyph !== null) {
+          glyph.globalAxes = this.globalAxes;  // XXX glyph shouldn't need to know
+          for (const componentName of glyph.getAllComponentNames()) {
+            if (!this.glyphDependencies[componentName]) {
+              this.glyphDependencies[componentName] = new Set();
+            }
+            this.glyphDependencies[componentName].add(glyphName);
+          }
+        }
+        return glyph;
+      })();
+      this._glyphsPromiseCache.put(glyphName, glyphPromise);
+      // console.log("LRU size", this._glyphsPromiseCache.map.size);
+    }
+    return glyphPromise;
   }
 
   get location() {
@@ -24,7 +73,7 @@ export class FontController {
     delete this._glyphInstancePromiseCache[glyphName];
     delete this._loadedGlyphInstances[glyphName];
     delete this._sourceIndices[glyphName];
-    for (const dependantName of this.font.glyphDependencies[glyphName] || []) {
+    for (const dependantName of this.glyphDependencies[glyphName] || []) {
       this.clearGlyphCache(dependantName);
     }
   }
@@ -37,11 +86,11 @@ export class FontController {
     let glyphInstancePromise = this._glyphInstancePromiseCache[glyphName];
     if (glyphInstancePromise === undefined) {
       glyphInstancePromise = (async () => {
-        if (!await this.font.hasGlyph(glyphName)) {
+        if (!await this.hasGlyph(glyphName)) {
           return null;
         }
         const cachingInstance = new CachingGlyphInstance(
-          glyphName, this.font, this.location, await this.getSourceIndex(glyphName),
+          glyphName, this, this.location, await this.getSourceIndex(glyphName),
         );
         await cachingInstance.initialize();
         this._loadedGlyphInstances[glyphName] = true;
@@ -54,7 +103,7 @@ export class FontController {
 
   async getSourceIndex(glyphName) {
     if (!(glyphName in this._sourceIndices)) {
-      const glyph = await this.font.getGlyph(glyphName);
+      const glyph = await this.getGlyph(glyphName);
       this._sourceIndices[glyphName] = findSourceIndexFromLocation(glyph, this.location);
     }
     return this._sourceIndices[glyphName];
@@ -65,9 +114,9 @@ export class FontController {
 
 class CachingGlyphInstance {
 
-  constructor(name, font, location, sourceIndex) {
+  constructor(name, fontController, location, sourceIndex) {
     this.name = name;
-    this.font = font;
+    this.fontController = fontController;
     this.location = location;
     this.sourceIndex = sourceIndex;
   }
@@ -87,7 +136,7 @@ class CachingGlyphInstance {
   }
 
   async initialize() {
-    const glyph = await this.font.getGlyph(this.name);
+    const glyph = await this.fontController.getGlyph(this.name);
     const location = mapForward(mapNLILocation(this.location, glyph.axes), glyph.globalAxes);
     if (this.sourceIndex !== undefined) {
       this.instance = glyph.sources[this.sourceIndex].sourceGlyph;
@@ -95,7 +144,7 @@ class CachingGlyphInstance {
       this.instance = await glyph.instantiate(location);
     }
 
-    const getGlyphFunc = this.font.getGlyph.bind(this.font);
+    const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
     this.components = [];
     for (const compo of this.instance.components) {
       this.components.push(
@@ -287,4 +336,19 @@ function findClosestSourceIndexFromLocation(glyph, location) {
     return (a > b) - (a < b);
   });
   return {distance: Math.sqrt(distances[0][0]), index: distances[0][1]}
+}
+
+
+function makeCmapFromReversedCmap(reversedCmap) {
+  const cmap = {};
+  for (const [glyphName, codePoints] of Object.entries(reversedCmap)) {
+    for (const codePoint of codePoints) {
+      const mappedGlyphName = cmap[codePoint];
+      if (mappedGlyphName !== undefined && glyphName > mappedGlyphName) {
+        continue;
+      }
+      cmap[codePoint] = glyphName;
+    }
+  }
+  return cmap;
 }
