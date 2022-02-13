@@ -91,9 +91,9 @@ export class FontController {
         if (!await this.hasGlyph(glyphName)) {
           return null;
         }
-        const cachingInstance = await this._setupGlyphInstance(glyphName);
+        const instanceController = await this._setupGlyphInstance(glyphName);
         this._loadedGlyphInstances[glyphName] = true;
-        return cachingInstance;
+        return instanceController;
       })();
       this._glyphInstancePromiseCache[glyphName] = glyphInstancePromise;
     }
