@@ -95,6 +95,14 @@ export class VariableGlyphController {
     delete this._deltas;
   }
 
+  clearModelCache() {
+    delete this._model;
+    delete this._deltas;
+    delete this._axisDictGlobal;
+    delete this._axisDictLocal;
+    this._locationToSourceIndex = {};
+  }
+
   get model() {
     if (this._model === undefined) {
       const locations = this.sources.map(source => source.location);
