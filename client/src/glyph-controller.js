@@ -173,9 +173,9 @@ export class VariableGlyphController {
     }
 
     const instanceController = new StaticGlyphController(
-      this.name, instance, location, sourceIndex,
+      this.name, instance, sourceIndex,
     );
-    await instanceController.setupComponents(getGlyphFunc);
+    await instanceController.setupComponents(getGlyphFunc, location);
     return instanceController;
   }
 
@@ -184,18 +184,17 @@ export class VariableGlyphController {
 
 class StaticGlyphController {
 
-  constructor(name, instance, location, sourceIndex) {
+  constructor(name, instance, sourceIndex) {
     this.name = name;
     this.instance = instance;
-    this.location = location;
     this.sourceIndex = sourceIndex;
   }
 
-  async setupComponents(getGlyphFunc) {
+  async setupComponents(getGlyphFunc, location) {
     this.components = [];
     for (const compo of this.instance.components) {
       const compoController = new ComponentController(compo);
-      await compoController.setupPath(getGlyphFunc, this.location);
+      await compoController.setupPath(getGlyphFunc, location);
       this.components.push(compoController);
     }
   }
@@ -291,8 +290,8 @@ class ComponentController {
     this.compo = compo;
   }
 
-  async setupPath(getGlyphFunc, location) {
-    this.path = await getComponentPath(this.compo, getGlyphFunc, location);
+  async setupPath(getGlyphFunc, parentLocation) {
+    this.path = await getComponentPath(this.compo, getGlyphFunc, parentLocation);
   }
 
   get path2d() {
