@@ -81,8 +81,8 @@ export class AppController {
     // TODO move event stuff out of here
     this.sceneController.addEventListener("selectedGlyphChanged", async event => {
       this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
-      this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
       await this.updateSlidersAndSources();
+      this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     });
     this.sceneController.addEventListener("doubleClickedComponents", async event => {
       this.doubleClickedComponentsCallback(event)
