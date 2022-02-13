@@ -42,7 +42,7 @@ export class FontController {
         }
         let glyph = await this.font.getGlyph(glyphName);
         if (glyph !== null) {
-          glyph.globalAxes = this.globalAxes;  // XXX glyph shouldn't need to know
+          glyph = new VariableGlyphController(glyph, this.globalAxes);
           for (const componentName of glyph.getAllComponentNames()) {
             if (!this.glyphDependencies[componentName]) {
               this.glyphDependencies[componentName] = new Set();
@@ -111,6 +111,66 @@ export class FontController {
 
 }
 
+
+class VariableGlyphController {
+
+  constructor(glyph, globalAxes) {
+    this.glyph = glyph;
+    this.globalAxes = globalAxes;
+    this.glyph.globalAxes = globalAxes;  // XXX should go away
+  }
+
+  get axes() {
+    return this.glyph.axes;
+  }
+
+  get sources() {
+    return this.glyph.sources;
+  }
+
+  get axisDictLocal() {
+    return this.glyph.axisDictLocal;
+  }
+
+  get axisDictGlobal() {
+    return this.glyph.axisDictGlobal;
+  }
+
+  getAllComponentNames() {
+    // Return a set of all component names used by all layers of all sources
+    const componentNames = new Set();
+    for (const source of this.glyph.sources) {
+      for (const layer of source.layers) {
+        for (const component of layer.glyph.components) {
+          componentNames.add(component.name);
+        }
+      }
+    }
+    return componentNames;
+  }
+
+  getLocalToGlobalMapping() {
+    const pseudoAxisList = [];
+    for (const [axisName, localTriple] of Object.entries(this.glyph.axisDictLocal)) {
+      const globalTriple = this.glyph.axisDictGlobal[axisName];
+      const mapping = [];
+      for (let i = 0; i < 3; i++) {
+        mapping.push([localTriple[i], globalTriple[i]]);
+      }
+      pseudoAxisList.push({"name": axisName, "mapping": mapping});
+    }
+    return pseudoAxisList;
+  }
+
+  clearDeltasCache() {
+    delete this.glyph._deltas;
+  }
+
+  instantiate(location) {
+    return this.glyph.instantiate(location);
+  }
+
+}
 
 class CachingGlyphInstance {
 

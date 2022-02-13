@@ -15,23 +15,6 @@ export class VariableGlyph {
     return glyph;
   }
 
-  getAllComponentNames() {
-    // Return a set of all component names used by all layers of all sources
-    const componentNames = new Set();
-    for (const source of this.sources) {
-      for (const layer of source.layers) {
-        for (const component of layer.glyph.components) {
-          componentNames.add(component.name);
-        }
-      }
-    }
-    return componentNames;
-  }
-
-  clearDeltasCache() {
-    delete this._deltas;
-  }
-
   get model() {
     if (this._model === undefined) {
       const locations = this.sources.map(source => source.location);
@@ -81,19 +64,6 @@ export class VariableGlyph {
       }
     }
     return axisDict;
-  }
-
-  getLocalToGlobalMapping() {
-    const pseudoAxisList = [];
-    for (const [axisName, localTriple] of Object.entries(this.axisDictLocal)) {
-      const globalTriple = this.axisDictGlobal[axisName];
-      const mapping = [];
-      for (let i = 0; i < 3; i++) {
-        mapping.push([localTriple[i], globalTriple[i]]);
-      }
-      pseudoAxisList.push({"name": axisName, "mapping": mapping});
-    }
-    return pseudoAxisList;
   }
 
   instantiate(location, fromGlobal = true) {
