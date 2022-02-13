@@ -122,10 +122,10 @@ export class AppController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
-    const reversedCmap = this.fontController.reversedCmap;
+    const reverseCmap = this.fontController.reverseCmap;
     this.glyphsListItems = [];
-    for (const glyphName in reversedCmap) {
-      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": reversedCmap[glyphName]});
+    for (const glyphName in reverseCmap) {
+      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": reverseCmap[glyphName]});
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
     this.glyphNamesList.setItems(this.glyphsListItems);
@@ -254,8 +254,8 @@ export class AppController {
 
   async textFieldChangedCallback(element) {
     const cmap = this.fontController.cmap;
-    const reversedCmap = this.fontController.reversedCmap;
-    const glyphLines = glyphLinesFromText(element.innerText, cmap, reversedCmap);
+    const reverseCmap = this.fontController.reverseCmap;
+    const glyphLines = glyphLinesFromText(element.innerText, cmap, reverseCmap);
     await this.sceneController.setGlyphLines(glyphLines);
     await this.updateSlidersAndSources();
   }
@@ -362,10 +362,10 @@ function compare(a, b) {
 }
 
 
-function glyphLinesFromText(text, cmap, reversedCmap) {
+function glyphLinesFromText(text, cmap, reverseCmap) {
   const glyphLines = [];
   for (const line of splitLines(text)) {
-    glyphLines.push(glyphNamesFromText(line, cmap, reversedCmap));
+    glyphLines.push(glyphNamesFromText(line, cmap, reverseCmap));
   }
   return glyphLines;
 }
@@ -373,7 +373,7 @@ function glyphLinesFromText(text, cmap, reversedCmap) {
 
 const glyphNameRE = /[//\s]/g;
 
-function glyphNamesFromText(text, cmap, reversedCmap) {
+function glyphNamesFromText(text, cmap, reverseCmap) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -399,7 +399,7 @@ function glyphNamesFromText(text, cmap, reversedCmap) {
           }
         }
         char = undefined;
-        for (const codePoint of reversedCmap[glyphName] || []) {
+        for (const codePoint of reverseCmap[glyphName] || []) {
           if (cmap[codePoint] === glyphName) {
             char = String.fromCodePoint(codePoint);
             break;

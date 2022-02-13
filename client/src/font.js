@@ -7,8 +7,8 @@ export class Font {
     this.fontDataEngine = fontDataEngine;
   }
 
-  getReversedCmap() {
-    return this.fontDataEngine.getReversedCmap();
+  getReverseCmap() {
+    return this.fontDataEngine.getReverseCmap();
   }
 
   getGlobalAxes() {

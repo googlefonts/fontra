@@ -13,15 +13,15 @@ export class FontController {
   }
 
   async initialize() {
-    this.reversedCmap = await this.font.getReversedCmap();
-    this.cmap = makeCmapFromReversedCmap(this.reversedCmap);
+    this.reverseCmap = await this.font.getReverseCmap();
+    this.cmap = makeCmapFromReverseCmap(this.reverseCmap);
     this.globalAxes = await this.font.getGlobalAxes();
   }
 
   codePointForGlyph(glyphName) {
-    const reversedCmap = this.reversedCmap;
+    const reverseCmap = this.reverseCmap;
     const cmap = this.cmap;
-    for (const codePoint of reversedCmap[glyphName] || []) {
+    for (const codePoint of reverseCmap[glyphName] || []) {
       if (cmap[codePoint] === glyphName) {
         return codePoint;
       }
@@ -30,7 +30,7 @@ export class FontController {
   }
 
   async hasGlyph(glyphName) {
-    return glyphName in this.reversedCmap;
+    return glyphName in this.reverseCmap;
   }
 
   getGlyph(glyphName) {
@@ -137,9 +137,9 @@ function findClosestSourceIndexFromLocation(glyph, location) {
 }
 
 
-function makeCmapFromReversedCmap(reversedCmap) {
+function makeCmapFromReverseCmap(reverseCmap) {
   const cmap = {};
-  for (const [glyphName, codePoints] of Object.entries(reversedCmap)) {
+  for (const [glyphName, codePoints] of Object.entries(reverseCmap)) {
     for (const codePoint of codePoints) {
       const mappedGlyphName = cmap[codePoint];
       if (mappedGlyphName !== undefined && glyphName > mappedGlyphName) {
