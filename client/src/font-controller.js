@@ -90,7 +90,9 @@ export class FontController {
         if (!await this.hasGlyph(glyphName)) {
           return null;
         }
-        const instanceController = await this._setupGlyphInstance(glyphName);
+        const varGlyph = await this.getGlyph(glyphName);
+        const getGlyphFunc = this.getGlyph.bind(this);
+        const instanceController = await varGlyph.instantiateController(this.location, getGlyphFunc);
         this._loadedGlyphInstances[glyphName] = true;
         return instanceController;
       })();
@@ -98,12 +100,6 @@ export class FontController {
     }
     return glyphInstancePromise;
   }
-
-  async _setupGlyphInstance(glyphName) {
-    const varGlyph = await this.getGlyph(glyphName);
-    const getGlyphFunc = this.getGlyph.bind(this);
-    return await varGlyph.instantiateController(this.location, getGlyphFunc);
-s  }
 
   async getSourceIndex(glyphName) {
     const glyph = await this.getGlyph(glyphName);
