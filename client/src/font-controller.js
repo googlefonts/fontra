@@ -2,7 +2,7 @@ import { joinPaths } from "./var-glyph.js";
 import { mapBackward, mapForward, normalizeLocation } from "./var-model.js";
 
 
-export class CachingFont {
+export class FontController {
 
   constructor (font, location) {
     this.font = font;

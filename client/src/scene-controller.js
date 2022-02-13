@@ -137,7 +137,7 @@ export class SceneController {
       console.log(`can't edit glyph '${positionedGlyph.glyph.name}': location is not a source`);
       return;
     }
-    const cachingFont = this.sceneModel.cachingFont;
+    const fontController = this.sceneModel.fontController;
     const glyphName = positionedGlyph.glyph.name;
     const varGlyph = await this.sceneModel.font.getGlyph(glyphName);
     const instance = positionedGlyph.glyph.instance;
@@ -158,7 +158,7 @@ export class SceneController {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       editFuncs.forEach(editFunc => editFunc(delta));
-      cachingFont.clearGlyphCache(glyphName);
+      fontController.clearGlyphCache(glyphName);
       varGlyph.clearDeltasCache();
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
