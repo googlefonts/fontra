@@ -1,4 +1,4 @@
-import { CachingFont, getAxisBaseName } from "./caching-font.js"
+import { CachingFont, getAxisBaseName } from "./font-controller.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
 import { mapForward, mapBackward, normalizeLocation } from "./var-model.js";
