@@ -362,6 +362,23 @@ async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, tran
 }
 
 
+function flattenComponentPaths(item) {
+  const paths = [];
+  if (item.path !== undefined) {
+    paths.push(item.path);
+  }
+  if (item.children !== undefined) {
+    for (const child of item.children) {
+      const childPath = flattenComponentPaths(child);
+      if (!!childPath) {
+        paths.push(childPath);
+      }
+    }
+  }
+  return joinPaths(paths);
+}
+
+
 function makeAxisMapFunc(axis) {
   if (!axis.mapping) {
     return v => v;
@@ -405,23 +422,6 @@ function mapNLILocation(userLocation, axes) {
     }
   }
   return location;
-}
-
-
-function flattenComponentPaths(item) {
-  const paths = [];
-  if (item.path !== undefined) {
-    paths.push(item.path);
-  }
-  if (item.children !== undefined) {
-    for (const child of item.children) {
-      const childPath = flattenComponentPaths(child);
-      if (!!childPath) {
-        paths.push(childPath);
-      }
-    }
-  }
-  return joinPaths(paths);
 }
 
 
