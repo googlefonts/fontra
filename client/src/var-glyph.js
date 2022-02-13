@@ -55,21 +55,8 @@ class StaticGlyph {
     } else {
       source.path = new VarPath();
     }
-    source.components = obj.components?.map(compo => Component.fromObject(compo)) || [];
+    source.components = obj.components || [];
     return source
-  }
-
-}
-
-
-class Component {
-
-  static fromObject(obj) {
-    const compo = new Component();
-    compo.name = obj.name;
-    compo.transformation = obj.transformation;
-    compo.location = obj.location;
-    return compo;
   }
 
 }
