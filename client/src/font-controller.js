@@ -9,7 +9,7 @@ export class FontController {
     this.font = font;
     this.location = location;
     this._glyphsPromiseCache = new LRUCache(250);
-    this.glyphDependencies = {};
+    this.glyphUsedBy = {};
   }
 
   async initialize() {
@@ -43,12 +43,7 @@ export class FontController {
         let glyph = await this.font.getGlyph(glyphName);
         if (glyph !== null) {
           glyph = new VariableGlyphController(glyph, this.globalAxes);
-          for (const componentName of glyph.getAllComponentNames()) {
-            if (!this.glyphDependencies[componentName]) {
-              this.glyphDependencies[componentName] = new Set();
-            }
-            this.glyphDependencies[componentName].add(glyphName);
-          }
+          this.updateGlyphDependencies(glyph);
         }
         return glyph;
       })();
@@ -56,6 +51,15 @@ export class FontController {
       // console.log("LRU size", this._glyphsPromiseCache.map.size);
     }
     return glyphPromise;
+  }
+
+  updateGlyphDependencies(glyph) {
+    for (const componentName of glyph.getAllComponentNames()) {
+      if (!this.glyphUsedBy[componentName]) {
+        this.glyphUsedBy[componentName] = new Set();
+      }
+      this.glyphUsedBy[componentName].add(glyph.name);
+    }
   }
 
   get location() {
@@ -71,7 +75,7 @@ export class FontController {
   async glyphChanged(glyphName) {
     delete this._glyphInstancePromiseCache[glyphName];
     delete this._loadedGlyphInstances[glyphName];
-    for (const dependantName of this.glyphDependencies[glyphName] || []) {
+    for (const dependantName of this.glyphUsedBy[glyphName] || []) {
       await this.glyphChanged(dependantName);
     }
     const varGlyph = await this.getGlyph(glyphName);
