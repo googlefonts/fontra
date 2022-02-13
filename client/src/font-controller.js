@@ -1,9 +1,6 @@
 import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
-import {
-  mapForward,
-  normalizeLocation,
-} from "./var-model.js";
+import { mapForward, normalizeLocation } from "./var-model.js";
 
 
 export class FontController {
