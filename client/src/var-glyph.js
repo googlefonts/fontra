@@ -1,76 +1,16 @@
 import VarPath from "./var-path.js";
-import { VariationModel, normalizeLocation, piecewiseLinearMap } from "./var-model.js";
 import { Transform } from "./transform.js";
 
 
 export class VariableGlyph {
 
-  static fromObject(obj, globalAxes) {
+  static fromObject(obj) {
     const glyph = new VariableGlyph();
     glyph.name = obj.name;
     glyph.axes = obj.axes || [];
     glyph.unicodes = obj.unicodes || [];
     glyph.sources = obj.sources.map(source => Source.fromObject(source));
-    glyph.globalAxes = globalAxes;
     return glyph;
-  }
-
-  get model() {
-    if (this._model === undefined) {
-      const locations = this.sources.map(source => source.location);
-      this._model = new VariationModel(
-        locations.map(location => normalizeLocationSparse(location, this.axisDictLocal)),
-        this.axes.map(axis => axis.name));
-    }
-    return this._model;
-  }
-
-  get deltas() {
-    if (this._deltas === undefined) {
-      const masterValues = this.sources.map(source => source.sourceGlyph);
-      this._deltas = this.model.getDeltas(masterValues);
-    }
-    return this._deltas;
-  }
-
-  get axisDictGlobal() {
-    if (this._axisDictGlobal === undefined) {
-      this._axisDictGlobal = this._combineGlobalAndLocalAxes(false);
-    }
-    return this._axisDictGlobal;
-  }
-
-  get axisDictLocal() {
-    if (this._axisDictLocal === undefined) {
-      this._axisDictLocal = this._combineGlobalAndLocalAxes(true);
-    }
-    return this._axisDictLocal;
-  }
-
-  _combineGlobalAndLocalAxes(prioritizeLocal) {
-    const usedAxisNames = new Set(
-      this.sources.reduce((prev, cur) => prev.concat(Object.keys(cur.location)), [])
-    );
-    const axisDict = {};
-    for (const axis of this.globalAxes) {
-      if (usedAxisNames.has(axis.name)) {
-        const m = makeAxisMapFunc(axis);
-        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
-      }
-    }
-    for (const axis of this.axes) {
-      if (prioritizeLocal || !(axis.name in axisDict)) {
-        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
-      }
-    }
-    return axisDict;
-  }
-
-  instantiate(location, fromGlobal = true) {
-    const axisDict = fromGlobal ? this.axisDictGlobal : this.axisDictLocal;
-    return this.model.interpolateFromDeltas(
-      normalizeLocation(location, axisDict), this.deltas
-    );
   }
 
 }
@@ -187,17 +127,6 @@ function mergeLocations(loc1, loc2) {
 }
 
 
-function normalizeLocationSparse(location, axes) {
-  const normLoc = normalizeLocation(location, axes);
-  for (const [name, value] of Object.entries(normLoc)) {
-    if (!value) {
-      delete normLoc[name];
-    }
-  }
-  return normLoc;
-}
-
-
 function makeAffineTransform(transformation) {
   let t = new Transform();
   t = t.translate(transformation.x + transformation.tcenterx, transformation.y + transformation.tcentery);
@@ -230,13 +159,4 @@ export function joinPaths(paths) {
     return paths.reduce((p1, p2) => p1.concat(p2));
   }
   return new VarPath();
-}
-
-
-function makeAxisMapFunc(axis) {
-  if (!axis.mapping) {
-    return v => v;
-  }
-  const mapping = Object.fromEntries(axis.mapping);
-  return v => piecewiseLinearMap(v, mapping);
 }

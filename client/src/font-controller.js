@@ -1,6 +1,12 @@
 import { LRUCache } from "./lru-cache.js";
 import { joinPaths } from "./var-glyph.js";
-import { mapBackward, mapForward, normalizeLocation } from "./var-model.js";
+import {
+  VariationModel,
+  mapBackward,
+  mapForward,
+  normalizeLocation,
+  piecewiseLinearMap
+} from "./var-model.js";
 
 
 export class FontController {
@@ -128,14 +134,6 @@ class VariableGlyphController {
     return this.glyph.sources;
   }
 
-  get axisDictLocal() {
-    return this.glyph.axisDictLocal;
-  }
-
-  get axisDictGlobal() {
-    return this.glyph.axisDictGlobal;
-  }
-
   getAllComponentNames() {
     // Return a set of all component names used by all layers of all sources
     const componentNames = new Set();
@@ -151,8 +149,8 @@ class VariableGlyphController {
 
   getLocalToGlobalMapping() {
     const pseudoAxisList = [];
-    for (const [axisName, localTriple] of Object.entries(this.glyph.axisDictLocal)) {
-      const globalTriple = this.glyph.axisDictGlobal[axisName];
+    for (const [axisName, localTriple] of Object.entries(this.axisDictLocal)) {
+      const globalTriple = this.axisDictGlobal[axisName];
       const mapping = [];
       for (let i = 0; i < 3; i++) {
         mapping.push([localTriple[i], globalTriple[i]]);
@@ -163,11 +161,65 @@ class VariableGlyphController {
   }
 
   clearDeltasCache() {
-    delete this.glyph._deltas;
+    delete this._deltas;
   }
 
-  instantiate(location) {
-    return this.glyph.instantiate(location);
+  get model() {
+    if (this._model === undefined) {
+      const locations = this.sources.map(source => source.location);
+      this._model = new VariationModel(
+        locations.map(location => normalizeLocationSparse(location, this.axisDictLocal)),
+        this.axes.map(axis => axis.name));
+    }
+    return this._model;
+  }
+
+  get deltas() {
+    if (this._deltas === undefined) {
+      const masterValues = this.sources.map(source => source.sourceGlyph);
+      this._deltas = this.model.getDeltas(masterValues);
+    }
+    return this._deltas;
+  }
+
+  get axisDictGlobal() {
+    if (this._axisDictGlobal === undefined) {
+      this._axisDictGlobal = this._combineGlobalAndLocalAxes(false);
+    }
+    return this._axisDictGlobal;
+  }
+
+  get axisDictLocal() {
+    if (this._axisDictLocal === undefined) {
+      this._axisDictLocal = this._combineGlobalAndLocalAxes(true);
+    }
+    return this._axisDictLocal;
+  }
+
+  _combineGlobalAndLocalAxes(prioritizeLocal) {
+    const usedAxisNames = new Set(
+      this.sources.reduce((prev, cur) => prev.concat(Object.keys(cur.location)), [])
+    );
+    const axisDict = {};
+    for (const axis of this.globalAxes) {
+      if (usedAxisNames.has(axis.name)) {
+        const m = makeAxisMapFunc(axis);
+        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
+      }
+    }
+    for (const axis of this.axes) {
+      if (prioritizeLocal || !(axis.name in axisDict)) {
+        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
+      }
+    }
+    return axisDict;
+  }
+
+  instantiate(location, fromGlobal = true) {
+    const axisDict = fromGlobal ? this.axisDictGlobal : this.axisDictLocal;
+    return this.model.interpolateFromDeltas(
+      normalizeLocation(location, axisDict), this.deltas
+    );
   }
 
 }
@@ -201,7 +253,7 @@ class CachingGlyphInstance {
     if (this.sourceIndex !== undefined) {
       this.instance = glyph.sources[this.sourceIndex].sourceGlyph;
     } else {
-      this.instance = await glyph.instantiate(location);
+      this.instance = glyph.instantiate(location);
     }
 
     const getGlyphFunc = this.fontController.getGlyph.bind(this.fontController);
@@ -411,4 +463,24 @@ function makeCmapFromReversedCmap(reversedCmap) {
     }
   }
   return cmap;
+}
+
+
+function makeAxisMapFunc(axis) {
+  if (!axis.mapping) {
+    return v => v;
+  }
+  const mapping = Object.fromEntries(axis.mapping);
+  return v => piecewiseLinearMap(v, mapping);
+}
+
+
+function normalizeLocationSparse(location, axes) {
+  const normLoc = normalizeLocation(location, axes);
+  for (const [name, value] of Object.entries(normLoc)) {
+    if (!value) {
+      delete normLoc[name];
+    }
+  }
+  return normLoc;
 }
