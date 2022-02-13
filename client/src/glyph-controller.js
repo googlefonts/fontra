@@ -320,16 +320,6 @@ class ComponentController {
 }
 
 
-async function getComponentPaths(components, getGlyphFunc, parentLocation, transformation = null) {
-  const paths = [];
-
-  for (const compo of components || []) {
-    paths.push(await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation));
-  }
-  return paths;
-}
-
-
 async function getComponentPath(compo, getGlyphFunc, parentLocation, transformation = null) {
   return flattenComponentPaths(
     await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation)
@@ -361,6 +351,16 @@ async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, tran
   }
   componentPaths["children"] = await getComponentPaths(inst.components, getGlyphFunc, compoLocation, t);
   return componentPaths;
+}
+
+
+async function getComponentPaths(components, getGlyphFunc, parentLocation, transformation = null) {
+  const paths = [];
+
+  for (const compo of components || []) {
+    paths.push(await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation));
+  }
+  return paths;
 }
 
 
