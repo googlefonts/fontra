@@ -264,7 +264,7 @@ export class AppController {
 
   async updateSlidersAndSources() {
     const axisInfo = await this.sceneController.getAxisInfo();
-    const numGlobalAxes = (await this.fontController.globalAxes).length;
+    const numGlobalAxes = this.fontController.globalAxes.length;
     if (numGlobalAxes && axisInfo.length != numGlobalAxes) {
       axisInfo.splice(numGlobalAxes, 0, {"isDivider": true});
     }

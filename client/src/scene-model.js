@@ -95,11 +95,11 @@ export class SceneModel {
       const baseName = getAxisBaseName(name);
       location[baseName] = value;
     }
-    await this.setLocation(mapBackward(location, await this.fontController.globalAxes));
+    await this.setLocation(mapBackward(location, this.fontController.globalAxes));
   }
 
   async getAxisInfo() {
-    const allAxes = Array.from(await this.fontController.globalAxes);
+    const allAxes = Array.from(this.fontController.globalAxes);
     const globalAxisNames = new Set(allAxes.map(axis => axis.name));
     if (this.selectedGlyph) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
