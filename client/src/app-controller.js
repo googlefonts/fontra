@@ -236,7 +236,7 @@ export class AppController {
   }
 
   async glyphNameChangedCallback(glyphName) {
-    const codePoint = await this.fontController.codePointForGlyph(glyphName);
+    const codePoint = this.fontController.codePointForGlyph(glyphName);
     const glyphInfo = {"glyphName": glyphName};
     if (codePoint !== undefined) {
       glyphInfo["character"] = getCharFromUnicode(codePoint);
@@ -277,7 +277,7 @@ export class AppController {
     const glyphInfos = [];
     for (const glyphName of this.sceneController.doubleClickedComponentNames) {
       const glyphInfo = {"glyphName": glyphName};
-      const codePoint = await this.fontController.codePointForGlyph(glyphName);
+      const codePoint = this.fontController.codePointForGlyph(glyphName);
       if (codePoint !== undefined) {
         glyphInfo["character"] = getCharFromUnicode(codePoint);
       }
