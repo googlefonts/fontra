@@ -1,4 +1,5 @@
 import { CanvasController } from "./canvas-controller.js";
+import { FontController } from "./font-controller.js";
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
@@ -47,7 +48,7 @@ const drawingParametersDark = {
 export class AppController {
 
   constructor(font) {
-    this.font = font;
+    this.fontController = new FontController(font, {});
     const canvas = document.querySelector("#edit-canvas");
 
     const canvasController = new CanvasController(canvas, this.drawingParameters);
@@ -55,7 +56,7 @@ export class AppController {
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(canvasController.context);
 
-    const sceneModel = new SceneModel(font, isPointInPath);
+    const sceneModel = new SceneModel(this.fontController, isPointInPath);
     const drawFuncs = [
       sceneDraw.drawMultiGlyphsLayer,
       sceneDraw.drawSelectedGlyphLayer,
@@ -80,8 +81,8 @@ export class AppController {
     // TODO move event stuff out of here
     this.sceneController.addEventListener("selectedGlyphChanged", async event => {
       this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
-      this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
       await this.updateSlidersAndSources();
+      this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     });
     this.sceneController.addEventListener("doubleClickedComponents", async event => {
       this.doubleClickedComponentsCallback(event)
@@ -103,6 +104,7 @@ export class AppController {
   }
 
   async start() {
+    await this.fontController.initialize();
     await this.initGlyphNames();
     await this.initSliders();
     this.initSourcesList();
@@ -120,10 +122,10 @@ export class AppController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
-    const reversedCmap = await this.font.reversedCmap;
+    const reverseCmap = this.fontController.reverseCmap;
     this.glyphsListItems = [];
-    for (const glyphName in reversedCmap) {
-      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": reversedCmap[glyphName]});
+    for (const glyphName in reverseCmap) {
+      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": reverseCmap[glyphName]});
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
     this.glyphNamesList.setItems(this.glyphsListItems);
@@ -234,7 +236,7 @@ export class AppController {
   }
 
   async glyphNameChangedCallback(glyphName) {
-    const codePoint = await this.font.codePointForGlyph(glyphName);
+    const codePoint = this.fontController.codePointForGlyph(glyphName);
     const glyphInfo = {"glyphName": glyphName};
     if (codePoint !== undefined) {
       glyphInfo["character"] = getCharFromUnicode(codePoint);
@@ -251,16 +253,18 @@ export class AppController {
   }
 
   async textFieldChangedCallback(element) {
-    const cmap = await this.font.cmap;
-    const reversedCmap = await this.font.reversedCmap;
-    const glyphLines = glyphLinesFromText(element.innerText, cmap, reversedCmap);
+    const glyphLines = glyphLinesFromText(
+      element.innerText,
+      this.fontController.cmap,
+      this.fontController.reverseCmap,
+    );
     await this.sceneController.setGlyphLines(glyphLines);
     await this.updateSlidersAndSources();
   }
 
   async updateSlidersAndSources() {
     const axisInfo = await this.sceneController.getAxisInfo();
-    const numGlobalAxes = (await this.font.globalAxes).length;
+    const numGlobalAxes = this.fontController.globalAxes.length;
     if (numGlobalAxes && axisInfo.length != numGlobalAxes) {
       axisInfo.splice(numGlobalAxes, 0, {"isDivider": true});
     }
@@ -273,7 +277,7 @@ export class AppController {
     const glyphInfos = [];
     for (const glyphName of this.sceneController.doubleClickedComponentNames) {
       const glyphInfo = {"glyphName": glyphName};
-      const codePoint = await this.font.codePointForGlyph(glyphName);
+      const codePoint = this.fontController.codePointForGlyph(glyphName);
       if (codePoint !== undefined) {
         glyphInfo["character"] = getCharFromUnicode(codePoint);
       }
@@ -360,10 +364,10 @@ function compare(a, b) {
 }
 
 
-function glyphLinesFromText(text, cmap, reversedCmap) {
+function glyphLinesFromText(text, cmap, reverseCmap) {
   const glyphLines = [];
   for (const line of splitLines(text)) {
-    glyphLines.push(glyphNamesFromText(line, cmap, reversedCmap));
+    glyphLines.push(glyphNamesFromText(line, cmap, reverseCmap));
   }
   return glyphLines;
 }
@@ -371,7 +375,7 @@ function glyphLinesFromText(text, cmap, reversedCmap) {
 
 const glyphNameRE = /[//\s]/g;
 
-function glyphNamesFromText(text, cmap, reversedCmap) {
+function glyphNamesFromText(text, cmap, reverseCmap) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -397,7 +401,7 @@ function glyphNamesFromText(text, cmap, reversedCmap) {
           }
         }
         char = undefined;
-        for (const codePoint of reversedCmap[glyphName] || []) {
+        for (const codePoint of reverseCmap[glyphName] || []) {
           if (cmap[codePoint] === glyphName) {
             char = String.fromCodePoint(codePoint);
             break;

@@ -67,8 +67,8 @@ class DesignspaceBackend:
     async def getGlyphNames(self):
         return await self.defaultSource.getGlyphNames()
 
-    async def getReversedCmap(self):
-        return await self.defaultSource.getReversedCmap()
+    async def getReverseCmap(self):
+        return await self.defaultSource.getReverseCmap()
 
     async def getGlyph(self, glyphName):
         glyph = {"name": glyphName}
@@ -122,7 +122,7 @@ class UFOBackend:
     async def getGlyphNames(self):
         return sorted(self.glyphSets[self.layerName].keys())
 
-    async def getReversedCmap(self):
+    async def getReverseCmap(self):
         revCmap = {}
         for glyphName in await self.getGlyphNames():
             glifData = self.glyphSets[self.layerName].getGLIF(glyphName)

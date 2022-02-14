@@ -100,9 +100,9 @@ class RCJKMySQLBackend:
         return self
 
     async def getGlyphNames(self):
-        return sorted(await self.getReversedCmap())
+        return sorted(await self.getReverseCmap())
 
-    async def getReversedCmap(self):
+    async def getReverseCmap(self):
         self._glyphMapping = {}
         revCmap = {}
         for typeCode, methodName in _glyphListMethods.items():

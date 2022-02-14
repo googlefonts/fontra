@@ -24,7 +24,7 @@ class RCJKBackend:
     async def getGlyphNames(self):
         return self.glyphNames
 
-    async def getReversedCmap(self):
+    async def getReverseCmap(self):
         return self.reversedCmap
 
     async def getGlyph(self, glyphName):

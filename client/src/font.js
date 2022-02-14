@@ -1,4 +1,3 @@
-import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
 
 
@@ -6,89 +5,22 @@ export class Font {
 
   constructor(fontDataEngine) {
     this.fontDataEngine = fontDataEngine;
-    this._glyphsPromiseCache = new LRUCache(250);
-    this._reversedCmapPromise = undefined;
-    this._cmapPromise = undefined;
-    this._globalAxesPromise = undefined;
-    this.glyphDependencies = {};
   }
 
-  get reversedCmap() {
-    if (this._reversedCmapPromise === undefined) {
-      this._reversedCmapPromise = this.fontDataEngine.getReversedCmap()
+  getReverseCmap() {
+    return this.fontDataEngine.getReverseCmap();
+  }
+
+  getGlobalAxes() {
+    return this.fontDataEngine.getGlobalAxes();
+  }
+
+  async getGlyph(glyphName) {
+    let glyph = await this.fontDataEngine.getGlyph(glyphName);
+    if (glyph) {
+      glyph = VariableGlyph.fromObject(glyph);
     }
-    return this._reversedCmapPromise;
+    return glyph;
   }
 
-  get cmap() {
-    if (this._cmapPromise === undefined) {
-      this._cmapPromise = (async () => {
-        return makeCmapFromReversedCmap(await this.reversedCmap);
-      })();
-    }
-    return this._cmapPromise;
-  }
-
-  get globalAxes() {
-    if (this._globalAxesPromise === undefined) {
-      this._globalAxesPromise = this.fontDataEngine.getGlobalAxes()
-    }
-    return this._globalAxesPromise;
-  }
-
-  async codePointForGlyph(glyphName) {
-    const reversedCmap = await this.reversedCmap;
-    const cmap = await this.cmap;
-    for (const codePoint of reversedCmap[glyphName] || []) {
-      if (cmap[codePoint] === glyphName) {
-        return codePoint;
-      }
-    }
-    return undefined;
-  }
-
-  async hasGlyph(glyphName) {
-    return glyphName in await this.reversedCmap;
-  }
-
-  getGlyph(glyphName) {
-    let glyphPromise = this._glyphsPromiseCache.get(glyphName);
-    if (glyphPromise === undefined) {
-      glyphPromise = (async () => {
-        if (!await this.hasGlyph(glyphName)) {
-          return null;
-        }
-        let glyph = await this.fontDataEngine.getGlyph(glyphName);
-        if (glyph !== null) {
-          glyph = VariableGlyph.fromObject(glyph, await this.globalAxes);
-          for (const componentName of glyph.getAllComponentNames()) {
-            if (!this.glyphDependencies[componentName]) {
-              this.glyphDependencies[componentName] = new Set();
-            }
-            this.glyphDependencies[componentName].add(glyphName);
-          }
-        }
-        return glyph;
-      })();
-      this._glyphsPromiseCache.put(glyphName, glyphPromise);
-      // console.log("LRU size", this._glyphsPromiseCache.map.size);
-    }
-    return glyphPromise;
-  }
-
-}
-
-
-function makeCmapFromReversedCmap(reversedCmap) {
-  const cmap = {};
-  for (const [glyphName, codePoints] of Object.entries(reversedCmap)) {
-    for (const codePoint of codePoints) {
-      const mappedGlyphName = cmap[codePoint];
-      if (mappedGlyphName !== undefined && glyphName > mappedGlyphName) {
-        continue;
-      }
-      cmap[codePoint] = glyphName;
-    }
-  }
-  return cmap;
 }
