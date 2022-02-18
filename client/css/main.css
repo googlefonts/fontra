@@ -217,7 +217,7 @@ html, body {
   }
 
   #glyph-search-img {
-    content: url("../images/magnifyingGlass-white.svg");
+    content: url("../images/magnifying-glass-white.svg");
   }
 
   #slider-img {
@@ -225,7 +225,7 @@ html, body {
   }
 
   #text-entry-img {
-    content: url("../images/textT-white.svg");
+    content: url("../images/text-tool-white.svg");
   }
 
   #mini-console {
