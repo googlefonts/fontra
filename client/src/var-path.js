@@ -13,15 +13,15 @@ export default class VarPath {
   static SMOOTH_FLAG = 0x08;
   static POINT_TYPE_MASK = 0x07;
 
-  constructor(coordinates, pointTypes, contours) {
+  constructor(coordinates, pointTypes, contourInfo) {
     if (coordinates === undefined) {
       this.coordinates = new VarArray();
       this.pointTypes = [];
-      this.contours = [];
+      this.contourInfo = [];
     } else {
       this.coordinates = coordinates;
       this.pointTypes = pointTypes;
-      this.contours = contours;
+      this.contourInfo = contourInfo;
     }
   }
 
@@ -29,7 +29,7 @@ export default class VarPath {
     const path = new VarPath();
     path.coordinates = VarArray.from(obj.coordinates);
     path.pointTypes = obj.pointTypes;
-    path.contours = obj.contours;
+    path.contourInfo = obj.contourInfo;
     return path;
   }
 
@@ -73,17 +73,17 @@ export default class VarPath {
     }
     // binary search, adapted from bisect.py
     let lo = 0;
-    let hi = this.contours.length;
+    let hi = this.contourInfo.length;
     while (lo < hi) {
       const mid = Math.floor((lo + hi) / 2);
-      if (pointIndex <= this.contours[mid].endPoint) {
+      if (pointIndex <= this.contourInfo[mid].endPoint) {
         hi = mid;
       }
       else {
         lo = mid + 1;
       }
     }
-    if (lo >= this.contours.length) {
+    if (lo >= this.contourInfo.length) {
       return undefined;
     }
     return lo
@@ -125,7 +125,7 @@ export default class VarPath {
   }
 
   *iterPointsOfContour(contourIndex) {
-    const contour = this.contours[contourIndex];
+    const contour = this.contourInfo[contourIndex];
     if (contour === undefined) {
       return;
     }
@@ -133,7 +133,7 @@ export default class VarPath {
     if (contourIndex <= 0) {
       startPoint = 0;
     } else {
-      startPoint = this.contours[contourIndex - 1].endPoint + 1;
+      startPoint = this.contourInfo[contourIndex - 1].endPoint + 1;
     }
     yield* this._iterPointsFromTo(startPoint, contour.endPoint);
   }
@@ -146,7 +146,7 @@ export default class VarPath {
 
   *iterHandles() {
     let startPoint = 0;
-    for (const contour of this.contours) {
+    for (const contour of this.contourInfo) {
       const endPoint = contour.endPoint;
       let prevIndex = contour.isClosed ? endPoint : startPoint;
       for (let nextIndex = startPoint + (contour.isClosed ? 0 : 1); nextIndex <= endPoint; nextIndex++) {
@@ -178,16 +178,16 @@ export default class VarPath {
     return new this.constructor(
       this.coordinates.copy(),
       this.pointTypes.slice(),
-      this.contours.map(item => { return {...item} }),
+      this.contourInfo.map(item => { return {...item} }),
     );
   }
 
   beginPath() {
-    this.contours.push({endPoint: this.coordinates.length / 2 - 1, isClosed: false});
+    this.contourInfo.push({endPoint: this.coordinates.length / 2 - 1, isClosed: false});
   }
 
   addPoint(x, y, pointType) {
-    this.contours[this.contours.length - 1].endPoint += 1;
+    this.contourInfo[this.contourInfo.length - 1].endPoint += 1;
     this.coordinates.push(x, y);
     this.pointTypes.push(pointType);
   }
@@ -220,7 +220,7 @@ export default class VarPath {
   }
 
   closePath() {
-    this.contours[this.contours.length - 1].isClosed = true;
+    this.contourInfo[this.contourInfo.length - 1].isClosed = true;
   }
 
   addItemwise(other) {
@@ -231,7 +231,7 @@ export default class VarPath {
     } else {
       otherCoordinates = other;
     }
-    return new this.constructor(this.coordinates.addItemwise(otherCoordinates), this.pointTypes, this.contours);
+    return new this.constructor(this.coordinates.addItemwise(otherCoordinates), this.pointTypes, this.contourInfo);
   }
 
   subItemwise(other) {
@@ -242,12 +242,12 @@ export default class VarPath {
     } else {
       otherCoordinates = other;
     }
-    return new this.constructor(this.coordinates.subItemwise(otherCoordinates), this.pointTypes, this.contours);
+    return new this.constructor(this.coordinates.subItemwise(otherCoordinates), this.pointTypes, this.contourInfo);
   }
 
   _ensureCompatibility(other) {
     if (
-      !arrayEquals(this.contours, other.contours) ||
+      !arrayEquals(this.contourInfo, other.contourInfo) ||
       !pointTypesEquals(this.pointTypes, other.pointTypes)
     ) {
       throw new VariationError("paths are not compatible");
@@ -255,7 +255,7 @@ export default class VarPath {
   }
 
   mulScalar(scalar) {
-    return new this.constructor(this.coordinates.mulScalar(scalar), this.pointTypes, this.contours);
+    return new this.constructor(this.coordinates.mulScalar(scalar), this.pointTypes, this.contourInfo);
   }
 
   drawToPath2d(path) {
@@ -263,7 +263,7 @@ export default class VarPath {
     const coordinates = this.coordinates;
     const pointTypes = this.pointTypes;
 
-    for (const contour of this.contours) {
+    for (const contour of this.contourInfo) {
       const endPoint = contour.endPoint;
       const numPoints = contour.endPoint + 1 - startPoint;
 
@@ -302,17 +302,17 @@ export default class VarPath {
       const y = this.coordinates[i + 1];
       [coordinates[i], coordinates[i + 1]] = transformation.transformPoint(x, y);
     }
-    return new this.constructor(coordinates, this.pointTypes, this.contours);
+    return new this.constructor(coordinates, this.pointTypes, this.contourInfo);
   }
 
   concat(other) {
     const result = new VarPath();
     result.coordinates = this.coordinates.concat(other.coordinates);
     result.pointTypes = this.pointTypes.concat(other.pointTypes);
-    result.contours = this.contours.concat(other.contours).map(c => { return {...c}; });
+    result.contourInfo = this.contourInfo.concat(other.contourInfo).map(c => { return {...c}; });
     const endPointOffset = this.numPoints;
-    for (let i = this.contours.length; i < result.contours.length; i++) {
-      result.contours[i].endPoint += endPointOffset;
+    for (let i = this.contourInfo.length; i < result.contourInfo.length; i++) {
+      result.contourInfo[i].endPoint += endPointOffset;
     }
     return result;
   }

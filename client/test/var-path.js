@@ -45,7 +45,7 @@ describe("VarPath Tests", () => {
     const mp = new MockPath2D();
     expect(p2.coordinates).to.deep.equal([]);
     expect(p2.pointTypes).to.deep.equal([]);
-    expect(p2.contours).to.deep.equal([]);
+    expect(p2.contourInfo).to.deep.equal([]);
     p2.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([]);
   })
@@ -54,7 +54,7 @@ describe("VarPath Tests", () => {
     const p = simpleTestPath();
     expect(p.coordinates).to.deep.equal([0, 0, 0, 100, 100, 100, 100, 0]);
     expect(p.pointTypes).to.deep.equal([VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE]);
-    expect(p.contours).to.deep.equal([{endPoint: 3, isClosed: true}]);
+    expect(p.contourInfo).to.deep.equal([{endPoint: 3, isClosed: true}]);
   })
 
   it("copy", () => {
@@ -63,10 +63,10 @@ describe("VarPath Tests", () => {
     // modify original
     p.coordinates[0] = 1000;
     p.pointTypes[0] = VarPath.OFF_CURVE_QUAD
-    p.contours[0].isClosed = false;
+    p.contourInfo[0].isClosed = false;
     expect(p2.coordinates).to.deep.equal([0, 0, 0, 100, 100, 100, 100, 0]);
     expect(p2.pointTypes).to.deep.equal([VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE]);
-    expect(p2.contours).to.deep.equal([{endPoint: 3, isClosed: true}]);
+    expect(p2.contourInfo).to.deep.equal([{endPoint: 3, isClosed: true}]);
   })
 
   it("draw", () => {
@@ -397,9 +397,9 @@ describe("VarPath Tests", () => {
     p2.pointTypes[5] = VarPath.OFF_CURVE_CUBIC;
     p2.pointTypes[6] = VarPath.OFF_CURVE_CUBIC;
     expect(p2.coordinates.length).to.equal(16);
-    expect(p2.contours.length).to.equal(2);
-    expect(p2.contours[0].endPoint).to.equal(3);
-    expect(p2.contours[1].endPoint).to.equal(7);
+    expect(p2.contourInfo.length).to.equal(2);
+    expect(p2.contourInfo[0].endPoint).to.equal(3);
+    expect(p2.contourInfo[1].endPoint).to.equal(7);
     const mp = new MockPath2D();
     p2.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([

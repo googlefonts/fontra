@@ -13,7 +13,7 @@ class PathBuilderPointPen:
     def __init__(self):
         self.coordinates = []
         self.pointTypes = []
-        self.contours = []
+        self.contourInfo = []
         self.components = []
         self._currentContour = None
 
@@ -22,7 +22,7 @@ class PathBuilderPointPen:
             return dict(
                 coordinates=self.coordinates,
                 pointTypes=self.pointTypes,
-                contours=self.contours,
+                contourInfo=self.contourInfo,
             )
         else:
             return None
@@ -66,7 +66,7 @@ class PathBuilderPointPen:
                             break
                         pointTypes[j] = OFF_CURVE_QUAD
             self.pointTypes.extend(pointTypes)
-        self.contours.append(
+        self.contourInfo.append(
             dict(endPoint=len(self.coordinates) // 2 - 1, isClosed=isClosed)
         )
         self._currentContour = None
