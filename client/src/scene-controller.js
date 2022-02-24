@@ -391,7 +391,7 @@ function makeComponentDragFunc(components, componentIndex) {
 
 
 function makePointChange(pointIndex, x, y) {
-  return {"!": "setPointPosition", "a": [pointIndex, x, y]};
+  return {"!": "setXY", "a": [pointIndex, x, y]};
 
 }
 

@@ -102,7 +102,7 @@ export default class VarPath {
     return point;
   }
 
-  setPointPosition(index, x, y) {
+  setXY(index, x, y) {
     this.coordinates[index * 2] = x;
     this.coordinates[index * 2 + 1] = y;
   }
