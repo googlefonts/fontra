@@ -328,14 +328,14 @@ function makeComponentOriginChange(componentIndex, x, y) {
 
 function makePointDragFunc(path, pointIndex) {
   const point = path.getPoint(pointIndex);
-  return delta => makePointChange(pointIndex, point.x + delta.x, point.y + delta.y);
+  return delta => [pointIndex, point.x + delta.x, point.y + delta.y];
 }
 
 
 function makeComponentDragFunc(components, componentIndex) {
   const x = components[componentIndex].transformation.x;
   const y = components[componentIndex].transformation.y;
-  return delta => makeComponentOriginChange(componentIndex, x + delta.x, y + delta.y);
+  return delta => [componentIndex, x + delta.x, y + delta.y];
 }
 
 
@@ -373,8 +373,12 @@ class GlyphEditor {
 
   makeChangeForDelta(delta) {
     const change = {
-      "path": this.pointEditFuncs.map(editFunc => editFunc(delta)),
-      "components": this.compoEditFuncs.map(editFunc => editFunc(delta)),
+      "path": this.pointEditFuncs.map(
+        editFunc => makePointChange(...editFunc(delta))
+      ),
+      "components": this.compoEditFuncs.map(
+        editFunc => makeComponentOriginChange(...editFunc(delta))
+      ),
     };
     return change;
   }
