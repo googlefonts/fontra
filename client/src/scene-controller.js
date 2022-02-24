@@ -166,7 +166,7 @@ export class SceneController {
     // console.log("change:", JSON.stringify(absChange));
     // console.log("undo:", JSON.stringify(absReverseChange));
 
-    // snap back, to test editor.rollbackChange
+    // snap back, to test rollbackChange
     // applyChange(instance, rollbackChange);
     // await fontController.glyphChanged(glyphName);
     // await this.sceneModel.updateScene();
