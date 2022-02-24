@@ -352,56 +352,57 @@ class GlyphEditor {
     const components = this.instance.components;
     const editFuncs = [];
 
-    [this.pointEditFuncs, this.compoEditFuncs] = mapSelection(this.selection,
-      pointIndex => makePointDragFunc(path, pointIndex),
-      componentIndex => makeComponentDragFunc(components, componentIndex),
+    this.editFuncs = mapSelection(this.selection,
+      {
+        "point": pointIndex => makePointDragFunc(path, pointIndex),
+        "component": componentIndex => makeComponentDragFunc(components, componentIndex),
+      }
     );
 
-    const [pointRollbacks, compoRollbacks] = mapSelection(this.selection,
-      pointIndex => {
-        const point = path.getPoint(pointIndex);
-        return makePointChange(pointIndex, point.x, point.y);
-      },
-      componentIndex => {
-        const t = components[componentIndex].transformation;
-        return makeComponentOriginChange(componentIndex, t.x, t.y);
-      },
+    const rollbacks = mapSelection(this.selection,
+      {
+        "point": pointIndex => {
+          const point = path.getPoint(pointIndex);
+          return makePointChange(pointIndex, point.x, point.y);
+        },
+        "component": componentIndex => {
+          const t = components[componentIndex].transformation;
+          return makeComponentOriginChange(componentIndex, t.x, t.y);
+        },
+      }
     );
 
-    this.rollbackChange = {"path": pointRollbacks, "components": compoRollbacks};
+    this.rollbackChange = {"path": rollbacks["point"], "components": rollbacks["component"]};
   }
 
   makeChangeForDelta(delta) {
-    const change = {
-      "path": this.pointEditFuncs.map(
+    return {
+      "path": this.editFuncs["point"]?.map(
         editFunc => makePointChange(...editFunc(delta))
       ),
-      "components": this.compoEditFuncs.map(
+      "components": this.editFuncs["component"]?.map(
         editFunc => makeComponentOriginChange(...editFunc(delta))
       ),
     };
-    return change;
   }
 
 }
 
 
-function mapSelection(selection, pointFunc, componentFunc) {
-  const pointResult = [];
-  const componentResult = [];
+function mapSelection(selection, funcs) {
+  const result = {};
   for (const selItem of selection) {
     let [tp, index] = selItem.split("/");
     index = Number(index);
-    switch (tp) {
-      case "point":
-        pointResult.push(pointFunc(index));
-        break;
-      case "component":
-        componentResult.push(componentFunc(index));
-        break;
+    const f = funcs[tp];
+    if (f !== undefined) {
+      if (!(tp in result)) {
+        result[tp] = [];
+      }
+      result[tp].push(f(index));
     }
   }
-  return [pointResult, componentResult];
+  return result;
 }
 
 
@@ -416,7 +417,9 @@ function applyChange(subject, change) {
     }
   } else {
     for (const [key, value] of Object.entries(change)) {
-      applyChange(subject[key], change[key]);
+      if (value !== undefined) {
+        applyChange(subject[key], change[key]);
+      }
     }
   }
 }
