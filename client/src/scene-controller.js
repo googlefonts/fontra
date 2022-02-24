@@ -147,11 +147,12 @@ export class SceneController {
 
     const rollbackChange = makeRollbackChange(instance, this.selection);
     const editor = new GlyphEditor(instance, this.selection);
+    let change = undefined;
 
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      const change = editor.makeChangeForDelta(delta);
+      change = editor.makeChangeForDelta(delta);
       applyChange(instance, change);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
