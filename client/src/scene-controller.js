@@ -332,7 +332,10 @@ function makeRollbackChange(instance, selection) {
     }
   );
 
-  return {"path": rollbacks["point"], "components": rollbacks["component"]};
+  const change = {};
+  setItem(change, "path", rollbacks["point"]);
+  setItem(change, "components", rollbacks["component"]);
+  return change;
 }
 
 
@@ -359,14 +362,14 @@ class GlyphEditor {
   }
 
   makeChangeForDelta(delta) {
-    return {
-      "path": this.editFuncs["point"]?.map(
-        editFunc => makePointChange(...editFunc(delta))
-      ),
-      "components": this.editFuncs["component"]?.map(
-        editFunc => makeComponentOriginChange(...editFunc(delta))
-      ),
-    };
+    const change = {};
+    setItem(change, "path", this.editFuncs["point"]?.map(
+      editFunc => makePointChange(...editFunc(delta))
+    ));
+    setItem(change, "components", this.editFuncs["component"]?.map(
+      editFunc => makeComponentOriginChange(...editFunc(delta))
+    ));
+    return change;
   }
 
 }
@@ -432,5 +435,12 @@ function applyChange(subject, change) {
         applyChange(subject[key], change[key]);
       }
     }
+  }
+}
+
+
+function setItem(obj, key, value) {
+  if (value !== undefined) {
+    obj[key] = value;
   }
 }
