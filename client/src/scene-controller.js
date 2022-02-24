@@ -314,29 +314,24 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
 }
 
 
-function makePointChange(pointIndex, x, y) {
-  return {"!": "setPointPosition", "a": [pointIndex, x, y]};
+function makeRollbackChange(instance, selection) {
+  const path = instance.path;
+  const components = instance.components;
 
-}
+  const rollbacks = mapSelection(selection,
+    {
+      "point": pointIndex => {
+        const point = path.getPoint(pointIndex);
+        return makePointChange(pointIndex, point.x, point.y);
+      },
+      "component": componentIndex => {
+        const t = components[componentIndex].transformation;
+        return makeComponentOriginChange(componentIndex, t.x, t.y);
+      },
+    }
+  );
 
-
-function makeComponentOriginChange(componentIndex, x, y) {
-  const rollback = {};
-  rollback[componentIndex] = {"transformation": [{"=": "x", "v": x}, {"=": "y", "v": y}]};
-  return rollback;
-}
-
-
-function makePointDragFunc(path, pointIndex) {
-  const point = path.getPoint(pointIndex);
-  return delta => [pointIndex, point.x + delta.x, point.y + delta.y];
-}
-
-
-function makeComponentDragFunc(components, componentIndex) {
-  const x = components[componentIndex].transformation.x;
-  const y = components[componentIndex].transformation.y;
-  return delta => [componentIndex, x + delta.x, y + delta.y];
+  return {"path": rollbacks["point"], "components": rollbacks["component"]};
 }
 
 
@@ -376,24 +371,29 @@ class GlyphEditor {
 }
 
 
-function makeRollbackChange(instance, selection) {
-  const path = instance.path;
-  const components = instance.components;
+function makePointDragFunc(path, pointIndex) {
+  const point = path.getPoint(pointIndex);
+  return delta => [pointIndex, point.x + delta.x, point.y + delta.y];
+}
 
-  const rollbacks = mapSelection(selection,
-    {
-      "point": pointIndex => {
-        const point = path.getPoint(pointIndex);
-        return makePointChange(pointIndex, point.x, point.y);
-      },
-      "component": componentIndex => {
-        const t = components[componentIndex].transformation;
-        return makeComponentOriginChange(componentIndex, t.x, t.y);
-      },
-    }
-  );
 
-  return {"path": rollbacks["point"], "components": rollbacks["component"]};
+function makeComponentDragFunc(components, componentIndex) {
+  const x = components[componentIndex].transformation.x;
+  const y = components[componentIndex].transformation.y;
+  return delta => [componentIndex, x + delta.x, y + delta.y];
+}
+
+
+function makePointChange(pointIndex, x, y) {
+  return {"!": "setPointPosition", "a": [pointIndex, x, y]};
+
+}
+
+
+function makeComponentOriginChange(componentIndex, x, y) {
+  const rollback = {};
+  rollback[componentIndex] = {"transformation": [{"=": "x", "v": x}, {"=": "y", "v": y}]};
+  return rollback;
 }
 
 
