@@ -31,12 +31,18 @@ class Source {
     return source;
   }
 
-  get sourceGlyph() {
-    // TODO cache?
-    for (const layer of this.layers) {
-      if (layer.name === this.sourceLayerName) {
-        return layer.glyph;
+  get sourceLayerIndex() {
+    for (let i = 0; i < this.layers.length; i++) {
+      if (this.layers[i].name === this.sourceLayerName) {
+        return i;
       }
+    }
+  }
+
+  get sourceGlyph() {
+    const i = this.sourceLayerIndex;
+    if (i !== undefined) {
+      return this.layers[i].glyph;
     }
   }
 
