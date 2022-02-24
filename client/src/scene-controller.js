@@ -328,18 +328,14 @@ function makeComponentOriginChange(componentIndex, x, y) {
 
 function makePointDragFunc(path, pointIndex) {
   const point = path.getPoint(pointIndex);
-  const rollback = makePointChange(pointIndex, point.x, point.y);
-  const dragFunc = delta => makePointChange(pointIndex, point.x + delta.x, point.y + delta.y);
-  return [rollback, dragFunc];
+  return delta => makePointChange(pointIndex, point.x + delta.x, point.y + delta.y);
 }
 
 
 function makeComponentDragFunc(components, componentIndex) {
   const x = components[componentIndex].transformation.x;
   const y = components[componentIndex].transformation.y;
-  const rollback = makeComponentOriginChange(componentIndex, x, y);
-  const dragFunc = delta => makeComponentOriginChange(componentIndex, x + delta.x, y + delta.y);
-  return [rollback, dragFunc];
+  return delta => makeComponentOriginChange(componentIndex, x + delta.x, y + delta.y);
 }
 
 
@@ -355,26 +351,23 @@ class GlyphEditor {
     const path = this.instance.path;
     const components = this.instance.components;
     const editFuncs = [];
-    const pointEditFuncs = this.pointEditFuncs = [];
-    const compoEditFuncs = this.compoEditFuncs = [];
-    const pointRollbacks = [];
-    const compoRollbacks = [];
-    for (const selItem of this.selection) {
-      let [tp, index] = selItem.split("/");
-      index = Number(index);
-      switch (tp) {
-        case "point":
-          const [rollbackPoint, pointDragFunc] = makePointDragFunc(path, index);
-          pointRollbacks.push(rollbackPoint);
-          pointEditFuncs.push(pointDragFunc);
-          break;
-        case "component":
-          const [rollbackCompo, compoDragFunc] = makeComponentDragFunc(components, index);
-          compoRollbacks.push(rollbackCompo);
-          compoEditFuncs.push(compoDragFunc);
-          break;
-      }
-    }
+
+    [this.pointEditFuncs, this.compoEditFuncs] = mapSelection(this.selection,
+      pointIndex => makePointDragFunc(path, pointIndex),
+      componentIndex => makeComponentDragFunc(components, componentIndex),
+    );
+
+    const [pointRollbacks, compoRollbacks] = mapSelection(this.selection,
+      pointIndex => {
+        const point = path.getPoint(pointIndex);
+        return makePointChange(pointIndex, point.x, point.y);
+      },
+      componentIndex => {
+        const t = components[componentIndex].transformation;
+        return makeComponentOriginChange(componentIndex, t.x, t.y);
+      },
+    );
+
     this.rollbackChange = {"path": pointRollbacks, "components": compoRollbacks};
   }
 
@@ -386,6 +379,25 @@ class GlyphEditor {
     return change;
   }
 
+}
+
+
+function mapSelection(selection, pointFunc, componentFunc) {
+  const pointResult = [];
+  const componentResult = [];
+  for (const selItem of selection) {
+    let [tp, index] = selItem.split("/");
+    index = Number(index);
+    switch (tp) {
+      case "point":
+        pointResult.push(pointFunc(index));
+        break;
+      case "component":
+        componentResult.push(componentFunc(index));
+        break;
+    }
+  }
+  return [pointResult, componentResult];
 }
 
 
