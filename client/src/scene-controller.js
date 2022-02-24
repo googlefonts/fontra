@@ -145,6 +145,7 @@ export class SceneController {
     const varGlyph = await fontController.getGlyph(glyphName);
     // console.log(["glyphs", glyphName, "sources", sourceIndex, "layers", varGlyph.sources[sourceIndex].sourceLayerIndex, "glyph"]);
 
+    const rollbackChange = makeRollbackChange(instance, this.selection);
     const editor = new GlyphEditor(instance, this.selection);
 
     for await (const event of eventStream) {
@@ -160,7 +161,7 @@ export class SceneController {
     this._dispatchEvent("glyphDidChange", glyphName);
 
     // snap back, to test editor.rollbackChange
-    // applyChange(instance, editor.rollbackChange);
+    // applyChange(instance, rollbackChange);
     // await fontController.glyphChanged(glyphName);
     // await this.sceneModel.updateScene();
     // this.canvasController.setNeedsUpdate();
@@ -359,20 +360,6 @@ class GlyphEditor {
       }
     );
 
-    const rollbacks = mapSelection(this.selection,
-      {
-        "point": pointIndex => {
-          const point = path.getPoint(pointIndex);
-          return makePointChange(pointIndex, point.x, point.y);
-        },
-        "component": componentIndex => {
-          const t = components[componentIndex].transformation;
-          return makeComponentOriginChange(componentIndex, t.x, t.y);
-        },
-      }
-    );
-
-    this.rollbackChange = {"path": rollbacks["point"], "components": rollbacks["component"]};
   }
 
   makeChangeForDelta(delta) {
@@ -386,6 +373,27 @@ class GlyphEditor {
     };
   }
 
+}
+
+
+function makeRollbackChange(instance, selection) {
+  const path = instance.path;
+  const components = instance.components;
+
+  const rollbacks = mapSelection(selection,
+    {
+      "point": pointIndex => {
+        const point = path.getPoint(pointIndex);
+        return makePointChange(pointIndex, point.x, point.y);
+      },
+      "component": componentIndex => {
+        const t = components[componentIndex].transformation;
+        return makeComponentOriginChange(componentIndex, t.x, t.y);
+      },
+    }
+  );
+
+  return {"path": rollbacks["point"], "components": rollbacks["component"]};
 }
 
 
