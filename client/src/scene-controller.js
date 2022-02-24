@@ -132,31 +132,25 @@ export class SceneController {
 
   async handleDragSelection(eventStream, initialEvent) {
     const initialPoint = this.localPoint(initialEvent);
-    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
-    if (!positionedGlyph.glyph.canEdit) {
-      console.log(`can't edit glyph '${positionedGlyph.glyph.name}': location is not a source`);
+    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    if (!glyphController.canEdit) {
+      console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
       return;
     }
+    const sourceIndex = glyphController.sourceIndex;
     const fontController = this.sceneModel.fontController;
-    const glyphName = positionedGlyph.glyph.name;
-    const instance = positionedGlyph.glyph.instance;
-    const path = instance.path;
-    const editFuncs = [];
-    for (const selItem of this.selection) {
-      const [tp, index] = selItem.split("/");
-      switch (tp) {
-        case "point":
-          editFuncs.push(makePointDragFunc(path, index));
-          break;
-        case "component":
-          editFuncs.push(makeComponentDragFunc(instance.components[index]));
-          break;
-      }
-    }
+    const glyphName = glyphController.name;
+    const instance = glyphController.instance;
+
+    const varGlyph = await fontController.getGlyph(glyphName);
+    // console.log(["glyphs", glyphName, "sources", sourceIndex, "layers", varGlyph.sources[sourceIndex].sourceLayerIndex, "glyph"]);
+
+    const editor = new GlyphEditor(instance, this.selection);
+
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      editFuncs.forEach(editFunc => editFunc(delta));
+      editor.applyDelta(delta);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
@@ -329,4 +323,37 @@ function makeComponentDragFunc(component) {
     component.transformation.y = y + delta.y;
   };
   return dragFunc;
+}
+
+
+class GlyphEditor {
+
+  constructor(instance, selection) {
+    this.instance = instance;
+    this.selection = selection;
+    this.setupEditFuncs();
+  }
+
+  setupEditFuncs() {
+    const path = this.instance.path;
+    const components = this.instance.components;
+    const editFuncs = [];
+    for (const selItem of this.selection) {
+      const [tp, index] = selItem.split("/");
+      switch (tp) {
+        case "point":
+          editFuncs.push(makePointDragFunc(path, index));
+          break;
+        case "component":
+          editFuncs.push(makeComponentDragFunc(components[index]));
+          break;
+      }
+    }
+    this.editFuncs = editFuncs;
+  }
+
+  applyDelta(delta) {
+    this.editFuncs.forEach(editFunc => editFunc(delta));
+  }
+
 }
