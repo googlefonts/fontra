@@ -150,7 +150,7 @@ export class SceneController {
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      const change = editor.getChangeForDelta(delta);
+      const change = editor.makeChangeForDelta(delta);
       applyChange(instance, change);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
@@ -313,12 +313,23 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
 }
 
 
+function makePointChange(pointIndex, x, y) {
+  return {"!": "setPointPosition", "a": [pointIndex, x, y]};
+
+}
+
+
+function makeComponentOriginChange(componentIndex, x, y) {
+  const rollback = {};
+  rollback[componentIndex] = {"transformation": [{"=": "x", "v": x}, {"=": "y", "v": y}]};
+  return rollback;
+}
+
+
 function makePointDragFunc(path, pointIndex) {
   const point = path.getPoint(pointIndex);
-  const rollback = {"!": "setPointPosition", "a": [pointIndex, point.x, point.y]};
-  const dragFunc = delta => (
-    {"!": "setPointPosition", "a": [pointIndex, point.x + delta.x, point.y + delta.y]}
-  );
+  const rollback = makePointChange(pointIndex, point.x, point.y);
+  const dragFunc = delta => makePointChange(pointIndex, point.x + delta.x, point.y + delta.y);
   return [rollback, dragFunc];
 }
 
@@ -326,13 +337,8 @@ function makePointDragFunc(path, pointIndex) {
 function makeComponentDragFunc(components, componentIndex) {
   const x = components[componentIndex].transformation.x;
   const y = components[componentIndex].transformation.y;
-  const rollback = {};
-  rollback[componentIndex] = {"transformation": [{"=": "x", "v": x}, {"=": "y", "v": y}]};
-  const dragFunc = delta => {
-    const change = {};
-    change[componentIndex] = {"transformation": [{"=": "x", "v": x + delta.x}, {"=": "y", "v": y + delta.y}]};
-    return change;
-  };
+  const rollback = makeComponentOriginChange(componentIndex, x, y);
+  const dragFunc = delta => makeComponentOriginChange(componentIndex, x + delta.x, y + delta.y);
   return [rollback, dragFunc];
 }
 
@@ -372,7 +378,7 @@ class GlyphEditor {
     this.rollbackChange = {"path": pointRollbacks, "components": compoRollbacks};
   }
 
-  getChangeForDelta(delta) {
+  makeChangeForDelta(delta) {
     const change = {
       "path": this.pointEditFuncs.map(editFunc => editFunc(delta)),
       "components": this.compoEditFuncs.map(editFunc => editFunc(delta)),
