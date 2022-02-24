@@ -143,7 +143,7 @@ export class SceneController {
     const instance = glyphController.instance;
 
     const varGlyph = await fontController.getGlyph(glyphName);
-    // console.log(["glyphs", glyphName, "sources", sourceIndex, "layers", varGlyph.sources[sourceIndex].sourceLayerIndex, "glyph"]);
+    const baseChangePath = ["glyphs", glyphName, "sources", sourceIndex, "layers", varGlyph.sources[sourceIndex].sourceLayerIndex, "glyph"];
 
     const rollbackChange = makeRollbackChange(instance, this.selection);
     const editor = new GlyphEditor(instance, this.selection);
@@ -160,6 +160,11 @@ export class SceneController {
       this._dispatchEvent("glyphIsChanging", glyphName);
     }
     this._dispatchEvent("glyphDidChange", glyphName);
+
+    const absChange = makeAbsChange(baseChangePath, change);
+    const absReverseChange = makeAbsChange(baseChangePath, rollbackChange);
+    // console.log("change:", JSON.stringify(absChange));
+    // console.log("undo:", JSON.stringify(absReverseChange));
 
     // snap back, to test editor.rollbackChange
     // applyChange(instance, rollbackChange);
@@ -433,4 +438,18 @@ function applyChange(subject, change) {
       }
     }
   }
+}
+
+
+function makeAbsChange(baseChangePath, change) {
+  const absChange = {};
+  let leafChange = absChange;
+  let i;
+  for (i = 0; i < baseChangePath.length - 1; i++) {
+    const newChange = {};
+    leafChange[baseChangePath[i]] = newChange;
+    leafChange = newChange;
+  }
+  leafChange[baseChangePath[i]] = change;
+  return absChange;
 }
