@@ -150,13 +150,20 @@ export class SceneController {
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      editor.applyDelta(delta);
+      const change = editor.getChangeForDelta(delta);
+      applyChange(instance, change);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
       this._dispatchEvent("glyphIsChanging", glyphName);
     }
     this._dispatchEvent("glyphDidChange", glyphName);
+
+    // snap back, to test editor.rollbackChange
+    // applyChange(instance, editor.rollbackChange);
+    // await fontController.glyphChanged(glyphName);
+    // await this.sceneModel.updateScene();
+    // this.canvasController.setNeedsUpdate();
   }
 
   handleHover(event) {
@@ -308,21 +315,25 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
 
 function makePointDragFunc(path, pointIndex) {
   const point = path.getPoint(pointIndex);
-  const dragFunc = (delta) => {
-    path.setPointPosition(pointIndex, point.x + delta.x, point.y + delta.y);
-  };
-  return dragFunc;
+  const rollback = {"!": "setPointPosition", "a": [pointIndex, point.x, point.y]};
+  const dragFunc = delta => (
+    {"!": "setPointPosition", "a": [pointIndex, point.x + delta.x, point.y + delta.y]}
+  );
+  return [rollback, dragFunc];
 }
 
 
-function makeComponentDragFunc(component) {
-  const x = component.transformation.x;
-  const y = component.transformation.y;
-  const dragFunc = (delta) => {
-    component.transformation.x = x + delta.x;
-    component.transformation.y = y + delta.y;
+function makeComponentDragFunc(components, componentIndex) {
+  const x = components[componentIndex].transformation.x;
+  const y = components[componentIndex].transformation.y;
+  const rollback = {};
+  rollback[componentIndex] = {"transformation": [{"=": "x", "v": x}, {"=": "y", "v": y}]};
+  const dragFunc = delta => {
+    const change = {};
+    change[componentIndex] = {"transformation": [{"=": "x", "v": x + delta.x}, {"=": "y", "v": y + delta.y}]};
+    return change;
   };
-  return dragFunc;
+  return [rollback, dragFunc];
 }
 
 
@@ -338,22 +349,52 @@ class GlyphEditor {
     const path = this.instance.path;
     const components = this.instance.components;
     const editFuncs = [];
+    const pointEditFuncs = this.pointEditFuncs = [];
+    const compoEditFuncs = this.compoEditFuncs = [];
+    const pointRollbacks = [];
+    const compoRollbacks = [];
     for (const selItem of this.selection) {
-      const [tp, index] = selItem.split("/");
+      let [tp, index] = selItem.split("/");
+      index = Number(index);
       switch (tp) {
         case "point":
-          editFuncs.push(makePointDragFunc(path, index));
+          const [rollbackPoint, pointDragFunc] = makePointDragFunc(path, index);
+          pointRollbacks.push(rollbackPoint);
+          pointEditFuncs.push(pointDragFunc);
           break;
         case "component":
-          editFuncs.push(makeComponentDragFunc(components[index]));
+          const [rollbackCompo, compoDragFunc] = makeComponentDragFunc(components, index);
+          compoRollbacks.push(rollbackCompo);
+          compoEditFuncs.push(compoDragFunc);
           break;
       }
     }
-    this.editFuncs = editFuncs;
+    this.rollbackChange = {"path": pointRollbacks, "components": compoRollbacks};
   }
 
-  applyDelta(delta) {
-    this.editFuncs.forEach(editFunc => editFunc(delta));
+  getChangeForDelta(delta) {
+    const change = {
+      "path": this.pointEditFuncs.map(editFunc => editFunc(delta)),
+      "components": this.compoEditFuncs.map(editFunc => editFunc(delta)),
+    };
+    return change;
   }
 
+}
+
+
+function applyChange(subject, change) {
+  if (change["="] !== undefined) {
+    subject[change["="]] = change["v"]
+  } else if (change["!"] !== undefined) {
+    subject[change["!"]](...change.a);
+  } else if (Array.isArray(change)) {
+    for (const changeItem of change) {
+      applyChange(subject, changeItem);
+    }
+  } else {
+    for (const [key, value] of Object.entries(change)) {
+      applyChange(subject[key], change[key]);
+    }
+  }
 }
