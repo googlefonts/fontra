@@ -145,7 +145,6 @@ export class SceneController {
     const varGlyph = await fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName, "sources", sourceIndex, "layers", varGlyph.sources[sourceIndex].sourceLayerIndex, "glyph"];
 
-    const rollbackChange = makeRollbackChange(instance, this.selection);
     const editor = new GlyphEditor(instance, this.selection);
     let change = undefined;
 
@@ -162,12 +161,12 @@ export class SceneController {
     this._dispatchEvent("glyphDidChange", glyphName);
 
     const absChange = makeAbsChange(baseChangePath, change);
-    const absReverseChange = makeAbsChange(baseChangePath, rollbackChange);
+    const absReverseChange = makeAbsChange(baseChangePath, editor.rollbackChange);
     // console.log("change:", JSON.stringify(absChange));
     // console.log("undo:", JSON.stringify(absReverseChange));
 
-    // snap back, to test rollbackChange
-    // applyChange(instance, rollbackChange);
+    // snap back, to test editor.rollbackChange
+    // applyChange(instance, editor.rollbackChange);
     // await fontController.glyphChanged(glyphName);
     // await this.sceneModel.updateScene();
     // this.canvasController.setNeedsUpdate();
@@ -347,6 +346,7 @@ class GlyphEditor {
     this.instance = instance;
     this.selection = selection;
     this.setupEditFuncs();
+    this.rollbackChange = makeRollbackChange(instance, selection);
   }
 
   setupEditFuncs() {
@@ -360,7 +360,6 @@ class GlyphEditor {
         "component": componentIndex => makeComponentDragFunc(components, componentIndex),
       }
     );
-
   }
 
   makeChangeForDelta(delta) {
