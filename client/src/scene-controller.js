@@ -416,8 +416,10 @@ function mapSelection(selection, funcs) {
 
 function applyChange(subject, change) {
   if (change["="] !== undefined) {
+    // set item
     subject[change["="]] = change["v"]
   } else if (change["!"] !== undefined) {
+    // call method
     subject[change["!"]](...change.a);
   } else if (Array.isArray(change)) {
     for (const changeItem of change) {
