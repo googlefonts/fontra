@@ -13,28 +13,28 @@ class FontHandler:
             "getGlobalAxes",
         }
 
-    async def getGlyph(self, glyphName, *, __client__):
+    async def getGlyph(self, glyphName, *, client):
         return await self.backend.getGlyph(glyphName)
 
-    async def getGlyphNames(self, *, __client__):
+    async def getGlyphNames(self, *, client):
         return await self.backend.getGlyphNames()
 
-    async def getReverseCmap(self, *, __client__):
+    async def getReverseCmap(self, *, client):
         return await self.backend.getReverseCmap()
 
-    async def getGlobalAxes(self, *, __client__):
+    async def getGlobalAxes(self, *, client):
         return await self.backend.getGlobalAxes()
 
-    async def changeBegin(self, *, __client__):
-        await self.broadcastMessage({"msg": "hello world"}, __client__)
+    async def changeBegin(self, *, client):
+        await self.broadcastMessage({"msg": "hello world"}, client)
 
-    async def changeSetRollback(self, rollbackChange, *, __client__):
+    async def changeSetRollback(self, rollbackChange, *, client):
         ...
 
-    async def changeChanging(self, change, *, __client__):
+    async def changeChanging(self, change, *, client):
         ...
 
-    async def changeEnd(self, *, __client__):
+    async def changeEnd(self, *, client):
         ...
 
     async def broadcastMessage(self, message, excludeClient):

@@ -65,11 +65,9 @@ class Client:
             callID = message["call-id"]
             methodName = message["method-name"]
             arguments = message.get("arguments", [])
-            kwArguments = message.get("keyword-arguments", {})
-            kwArguments["__client__"] = self
             if methodName in self.methodNames:
                 methodHandler = getattr(self.subject, methodName)
-                returnValue = await methodHandler(*arguments, **kwArguments)
+                returnValue = await methodHandler(*arguments, client=self)
                 response = {"call-id": callID, "return-value": returnValue}
             else:
                 response = {
