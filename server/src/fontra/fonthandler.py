@@ -8,7 +8,26 @@ class FontHandler:
             "getGlobalAxes",
         }
 
-    def __getattr__(self, attrName):
-        if attrName in self.remoteMethodNames:
-            return getattr(self.backend, attrName)
-        return super().__getattr__(attrName)
+    async def getGlyph(self, glyphName, *, __client__):
+        return await self.backend.getGlyph(glyphName)
+
+    async def getGlyphNames(self, *, __client__):
+        return await self.backend.getGlyphNames()
+
+    async def getReverseCmap(self, *, __client__):
+        return await self.backend.getReverseCmap()
+
+    async def getGlobalAxes(self, *, __client__):
+        return await self.backend.getGlobalAxes()
+
+    async def changeBegin(self):
+        ...
+
+    async def changeSetRollback(self, rollbackChange):
+        ...
+
+    async def changeChanging(self, change):
+        ...
+
+    async def changeEnd(self):
+        ...
