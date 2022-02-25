@@ -160,8 +160,8 @@ export class SceneController {
     }
     this._dispatchEvent("glyphDidChange", glyphName);
 
-    const absChange = nestChanges(baseChangePath, change);
-    const absReverseChange = nestChanges(baseChangePath, editor.rollbackChange);
+    const absChange = nestChanges(change, baseChangePath);
+    const absReverseChange = nestChanges(editor.rollbackChange, baseChangePath);
     // console.log("change:", JSON.stringify(absChange));
     // console.log("undo:", JSON.stringify(absReverseChange));
 
@@ -337,12 +337,12 @@ function makeRollbackChange(instance, selection) {
   );
   const changes = [];
   if (rollbacks["point"]) {
-    changes.push(nestChanges(["path"], rollbacks["point"]));
+    changes.push(nestChanges(rollbacks["point"], ["path"]));
   }
   if (rollbacks["component"]) {
-    changes.push(nestChanges(["components"], rollbacks["component"]));
+    changes.push(nestChanges(rollbacks["component"], ["components"]));
   }
-  return nestChanges([], changes);
+  return nestChanges(changes);
 }
 
 
@@ -377,12 +377,12 @@ class GlyphEditor {
     );
     const changes = [];
     if (pathChanges && pathChanges.length) {
-      changes.push(nestChanges(["path"], pathChanges));
+      changes.push(nestChanges(pathChanges, ["path"]));
     }
     if (componentChanges && componentChanges.length) {
-      changes.push(nestChanges(["components"], componentChanges));
+      changes.push(nestChanges(componentChanges, ["components"]));
     }
-    return nestChanges([], changes);
+    return nestChanges(changes);
   }
 
 }
@@ -431,8 +431,9 @@ function mapSelection(selection, funcs) {
 }
 
 
-function nestChanges(path, changes) {
+function nestChanges(changes, prefixPath) {
   let change;
+  let path = prefixPath || [];
   if (!Array.isArray(changes)) {
     changes = [changes];
   }
