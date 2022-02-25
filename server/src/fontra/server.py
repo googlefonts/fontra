@@ -61,7 +61,16 @@ class Client:
                     logger.info("client requested connection close")
                     break
                 tasks = [task for task in tasks if not task.done()]
-                tasks.append(asyncio.create_task(self._performCall(message)))
+                if "client-call-id" in message:
+                    tasks.append(asyncio.create_task(self._performCall(message)))
+                elif "server-call-id" in message:
+                    fut = self.callReturnFutures[message["server-call-id"]]
+                    returnValue = message.get("return-value")
+                    error = message.get("error")
+                    if error is None:
+                        fut.set_result(returnValue)
+                    else:
+                        fut.set_exception(error)  # wrap in ClientException
         except websockets.exceptions.ConnectionClosedError as e:
             logger.info(f"websocket connection closed: {e!r}")
 

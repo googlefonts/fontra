@@ -45,6 +45,5 @@ class FontHandler:
     async def broadcastMessage(self, arg, excludeClient):
         for client in self.clients.values():
             if client != excludeClient:
-                print("before")
                 result = await client.proxy.testCall(arg)
-                print(result)
+                print("return value of testCall():", result)

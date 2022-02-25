@@ -72,6 +72,7 @@
         const port = await response.text();
         const remoteFontEngine = await getRemoteProxy(`ws://localhost:${port}/`);
         const appController = new AppController(remoteFontEngine);
+        remoteFontEngine.receiver = appController;
         await appController.start();
         window.glyphSearchFieldChanged = (value) => appController.glyphSearchFieldChanged(value);
       }

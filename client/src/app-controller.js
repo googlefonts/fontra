@@ -104,6 +104,11 @@ export class AppController {
     this.initSourcesList();
   }
 
+  async testCall(arg) {
+    console.log("heeeeeyyyyyy", arg);
+    return `right back at ya (${arg})`;
+  }
+
   async initGlyphNames() {
     const columnDescriptions = [
       {"key": "char", "width": "2em", "get": item => getCharFromUnicode(item.unicodes[0])},

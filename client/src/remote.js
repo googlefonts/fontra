@@ -19,7 +19,11 @@ export async function getRemoteProxy(wsURL) {
       return (...args) => {
         return remote.doCall(propertyName, args);
       };
-    }
+    },
+    set: (remote, propertyName, value) => {
+      remote[propertyName] = value;
+      return true;
+    },
   });
   return remoteProxy;
 }
@@ -44,7 +48,7 @@ export class RemoteObject {
     })
   }
 
-  _handleIncomingMessage(event) {
+  async _handleIncomingMessage(event) {
     const message = JSON.parse(event.data);
     const clientCallID = message["client-call-id"];
     const serverCallID = message["server-call-id"];
@@ -60,7 +64,18 @@ export class RemoteObject {
       }
       delete this._callReturnCallbacks[clientCallID];
     } else if (serverCallID !== undefined) {
-      console.log("incoming", message);
+      if (this.receiver) {
+        let returnMessage;
+        try {
+          const returnValue = await this.receiver[message["method-name"]](...message["arguments"]);
+          returnMessage = {"server-call-id": serverCallID, "return-value": returnValue};
+        } catch(error) {
+          returnMessage = {"server-call-id": serverCallID, "error": error.toString()};
+        }
+        this.websocket.send(JSON.stringify(returnMessage));
+      } else {
+        console.log("no receiver in place to receive server messages", message);
+      }
     }
   }
 
