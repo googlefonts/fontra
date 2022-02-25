@@ -4,6 +4,7 @@ import pathlib
 from urllib.parse import urlsplit, urlunsplit
 from aiohttp import web
 from .backends import getBackendClass
+from .fonthandler import FontHandler
 from .server import Server
 
 
@@ -46,9 +47,10 @@ def main():
 
     async def setupWebsocketServer(app):
         backend = await backendCoro
+        font = FontHandler(backend)
         server = Server(
-            backend,
-            {"getGlyph", "getGlyphNames", "getReverseCmap", "getGlobalAxes"},
+            font,
+            font.remoteMethodNames,
             verboseErrors=True,
         )
         await server.getServerTask(host="localhost", port=websocketPort)
