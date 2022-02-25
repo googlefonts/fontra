@@ -1,6 +1,7 @@
 class FontHandler:
-    def __init__(self, backend):
+    def __init__(self, backend, clients):
         self.backend = backend
+        self.clients = clients
         self.remoteMethodNames = {
             "getGlyph",
             "getGlyphNames",
@@ -20,14 +21,14 @@ class FontHandler:
     async def getGlobalAxes(self, *, __client__):
         return await self.backend.getGlobalAxes()
 
-    async def changeBegin(self):
+    async def changeBegin(self, *, __client__):
         ...
 
-    async def changeSetRollback(self, rollbackChange):
+    async def changeSetRollback(self, rollbackChange, *, __client__):
         ...
 
-    async def changeChanging(self, change):
+    async def changeChanging(self, change, *, __client__):
         ...
 
-    async def changeEnd(self):
+    async def changeEnd(self, *, __client__):
         ...

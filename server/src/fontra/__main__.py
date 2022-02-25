@@ -46,11 +46,13 @@ def main():
         return web.Response(text=str(websocketPort))
 
     async def setupWebsocketServer(app):
+        clients = {}
         backend = await backendCoro
-        font = FontHandler(backend)
+        font = FontHandler(backend, clients)
         server = Server(
             font,
             font.remoteMethodNames,
+            clients=clients,
             verboseErrors=True,
         )
         await server.getServerTask(host="localhost", port=websocketPort)

@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class Server:
-    def __init__(self, subject, methodNames, verboseErrors=False):
-        self.clients = {}
+    def __init__(self, subject, methodNames, *, clients=None, verboseErrors=False):
+        self.clients = clients if clients is not None else {}
         self.subject = subject
         self.methodNames = set(methodNames)
         self.verboseErrors = verboseErrors
