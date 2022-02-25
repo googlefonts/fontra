@@ -9,8 +9,8 @@ class RemoteException extends Error {
 export async function getRemoteProxy(wsURL) {
   const remote = new RemoteObject(wsURL);
   await remote.connect();
-  const app = new Proxy(remote, {
-    get: (remote, propertyName, app) => {
+  const remoteProxy = new Proxy(remote, {
+    get: (remote, propertyName) => {
       if (propertyName === "then" || propertyName === "toJSON") {
         // Some introspection tries to see whether we can do "then",
         // and will treat us as a promise...
@@ -21,7 +21,7 @@ export async function getRemoteProxy(wsURL) {
       };
     }
   });
-  return app;
+  return remoteProxy;
 }
 
 
@@ -31,7 +31,7 @@ export class RemoteObject {
     this.wsURL = wsURL;
     this._callReturnCallbacks = {};
 
-    const g =_genNextClientCallID();
+    const g = _genNextClientCallID();
     this._getNextClientCallID = () => {return g.next().value};
   }
 
@@ -47,6 +47,7 @@ export class RemoteObject {
   _handleIncomingMessage(event) {
     const message = JSON.parse(event.data);
     const clientCallID = message["client-call-id"];
+    const serverCallID = message["server-call-id"];
 
     // console.log("incoming message");
     // console.log(message);
@@ -58,6 +59,8 @@ export class RemoteObject {
         returnCallbacks.resolve(message["return-value"]);
       }
       delete this._callReturnCallbacks[clientCallID];
+    } else if (serverCallID !== undefined) {
+      console.log("incoming", message);
     }
   }
 
