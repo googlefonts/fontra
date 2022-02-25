@@ -468,9 +468,7 @@ function applyChange(subject, change) {
     }
   }
 
-  if (children.length) {
-    for (const subChange of children) {
-      applyChange(subject, subChange);
-    }
+  for (const subChange of children) {
+    applyChange(subject, subChange);
   }
 }
