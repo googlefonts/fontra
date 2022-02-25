@@ -438,9 +438,14 @@ function nestChanges(path, changes) {
   }
   if (changes.length === 1) {
     change = {...changes[0]};
-    change["p"] = path.concat(change.p || []);
+    path = path.concat(change.p || []);
   } else {
-    change = {"p": path, "c": changes};
+    change = {"c": changes};
+  }
+  if (path.length) {
+    change["p"] = path;
+  } else {
+    delete change["p"];
   }
   return change;
 }
