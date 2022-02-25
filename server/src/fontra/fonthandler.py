@@ -4,6 +4,9 @@ class FontHandler:
         self.clients = clients
         self.remoteMethodNames = {
             "changeBegin",
+            "changeSetRollback",
+            "changeChanging",
+            "changeEnd",
             "getGlyph",
             "getGlyphNames",
             "getReverseCmap",
@@ -23,8 +26,7 @@ class FontHandler:
         return await self.backend.getGlobalAxes()
 
     async def changeBegin(self, *, __client__):
-        print("!!!", __client__)
-        print(self.clients)
+        await self.broadcastMessage({"msg": "hello world"}, __client__)
 
     async def changeSetRollback(self, rollbackChange, *, __client__):
         ...
@@ -34,3 +36,8 @@ class FontHandler:
 
     async def changeEnd(self, *, __client__):
         ...
+
+    async def broadcastMessage(self, message, excludeClient):
+        for client in self.clients.values():
+            if client != excludeClient:
+                await client.sendMessage(message)
