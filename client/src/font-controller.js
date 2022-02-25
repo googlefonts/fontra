@@ -119,6 +119,22 @@ export class FontController {
     return glyph.getSourceIndex(this.location);
   }
 
+  async changeBegin() {
+
+  }
+
+  async changeSetRollback(rollbackChange) {
+
+  }
+
+  async changeChanging(change) {
+
+  }
+
+  async changeEnd() {
+    return true;
+  }
+
 }
 
 

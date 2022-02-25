@@ -146,22 +146,30 @@ export class SceneController {
     const baseChangePath = ["glyphs", glyphName, "sources", sourceIndex, "layers", varGlyph.sources[sourceIndex].sourceLayerIndex, "glyph"];
 
     const editor = new GlyphEditor(instance, this.selection);
-    let change = undefined;
+    let change, absChange;
+    await fontController.changeBegin();
+    await fontController.changeSetRollback(consolidateChanges(editor.rollbackChange, baseChangePath));
 
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       change = editor.makeChangeForDelta(delta);
+      absChange = consolidateChanges(change, baseChangePath);
+      await fontController.changeChanging(absChange);
       applyChange(instance, change);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
-      this._dispatchEvent("glyphIsChanging", glyphName);
     }
-    this._dispatchEvent("glyphDidChange", glyphName);
 
-    const absChange = consolidateChanges(change, baseChangePath);
-    const absReverseChange = consolidateChanges(editor.rollbackChange, baseChangePath);
+    const success = await fontController.changeEnd();
+    if (!success) {
+      applyChange(instance, editor.rollbackChange);
+      await fontController.glyphChanged(glyphName);
+      await this.sceneModel.updateScene();
+      this.canvasController.setNeedsUpdate();
+    }
+
     // console.log("change:", JSON.stringify(absChange));
     // console.log("undo:", JSON.stringify(absReverseChange));
 
