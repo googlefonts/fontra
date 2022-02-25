@@ -3,6 +3,7 @@ class FontHandler:
         self.backend = backend
         self.clients = clients
         self.remoteMethodNames = {
+            "changeBegin",
             "getGlyph",
             "getGlyphNames",
             "getReverseCmap",
@@ -22,7 +23,8 @@ class FontHandler:
         return await self.backend.getGlobalAxes()
 
     async def changeBegin(self, *, __client__):
-        ...
+        print("!!!", __client__)
+        print(self.clients)
 
     async def changeSetRollback(self, rollbackChange, *, __client__):
         ...

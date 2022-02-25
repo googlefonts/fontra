@@ -1,5 +1,6 @@
 import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
+import { VariableGlyph } from "./var-glyph.js";
 import { mapForward, normalizeLocation } from "./var-model.js";
 
 
@@ -43,6 +44,7 @@ export class FontController {
         }
         let glyph = await this.font.getGlyph(glyphName);
         if (glyph !== null) {
+          glyph = VariableGlyph.fromObject(glyph);
           glyph = new VariableGlyphController(glyph, this.globalAxes);
           this.updateGlyphDependencies(glyph);
         }
@@ -120,7 +122,7 @@ export class FontController {
   }
 
   async changeBegin() {
-
+    await this.font.changeBegin();
   }
 
   async changeSetRollback(rollbackChange) {
