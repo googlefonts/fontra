@@ -132,7 +132,7 @@ export class FontController {
   }
 
   async changeEnd() {
-    return true;
+    return false;
   }
 
 }

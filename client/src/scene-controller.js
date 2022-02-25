@@ -162,22 +162,13 @@ export class SceneController {
       this.canvasController.setNeedsUpdate();
     }
 
-    const success = await fontController.changeEnd();
-    if (!success) {
+    const error = await fontController.changeEnd();
+    if (error) {
       applyChange(instance, editor.rollbackChange);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
     }
-
-    // console.log("change:", JSON.stringify(absChange));
-    // console.log("undo:", JSON.stringify(absReverseChange));
-
-    // snap back, to test editor.rollbackChange
-    // applyChange(instance, editor.rollbackChange);
-    // await fontController.glyphChanged(glyphName);
-    // await this.sceneModel.updateScene();
-    // this.canvasController.setNeedsUpdate();
   }
 
   handleHover(event) {
