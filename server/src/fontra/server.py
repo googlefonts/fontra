@@ -44,6 +44,12 @@ class Client:
         self.subject = subject
         self.methodNames = methodNames
         self.verboseErrors = verboseErrors
+        self.callReturnFutures = {}
+        self.getNextServerCallID = _genNextServerCallID()
+
+    @property
+    def proxy(self):
+        return ClientProxy(self)
 
     async def handleConnection(self, path):
         logger.info(f"incoming connection: {path!r}")
@@ -83,3 +89,33 @@ class Client:
 
     async def sendMessage(self, message):
         await self.websocket.send(json.dumps(message, separators=(",", ":")))
+
+
+class ClientProxy:
+    def __init__(self, client):
+        self._client = client
+
+    def __getattr__(self, methodName):
+        if methodName.startswith("_"):
+            return super().__getattr__(methodName)
+
+        async def methodWrapper(*args):
+            serverCallID = next(self._client.getNextServerCallID)
+            message = {
+                "server-call-id": serverCallID,
+                "method-name": methodName,
+                "arguments": args,
+            }
+            returnFuture = asyncio.Future()
+            self._client.callReturnFutures[serverCallID] = returnFuture
+            await self._client.sendMessage(message)
+            return await returnFuture
+
+        return methodWrapper
+
+
+def _genNextServerCallID():
+    serverCallID = 0
+    while True:
+        yield serverCallID
+        serverCallID += 1

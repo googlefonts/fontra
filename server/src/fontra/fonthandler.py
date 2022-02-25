@@ -1,3 +1,6 @@
+import asyncio
+
+
 class FontHandler:
     def __init__(self, backend, clients):
         self.backend = backend
@@ -26,7 +29,9 @@ class FontHandler:
         return await self.backend.getGlobalAxes()
 
     async def changeBegin(self, *, client):
-        await self.broadcastMessage({"msg": "hello world"}, client)
+        # await self.broadcastMessage("hello world", client)
+        # deadlock avoidance:
+        task = asyncio.create_task(self.broadcastMessage("hello world", client))
 
     async def changeSetRollback(self, rollbackChange, *, client):
         ...
@@ -37,7 +42,9 @@ class FontHandler:
     async def changeEnd(self, *, client):
         ...
 
-    async def broadcastMessage(self, message, excludeClient):
+    async def broadcastMessage(self, arg, excludeClient):
         for client in self.clients.values():
             if client != excludeClient:
-                await client.sendMessage(message)
+                print("before")
+                result = await client.proxy.testCall(arg)
+                print(result)
