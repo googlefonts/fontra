@@ -160,8 +160,8 @@ export class SceneController {
     }
     this._dispatchEvent("glyphDidChange", glyphName);
 
-    const absChange = makeAbsChange(baseChangePath, change);
-    const absReverseChange = makeAbsChange(baseChangePath, editor.rollbackChange);
+    const absChange = nestChanges(baseChangePath, change);
+    const absReverseChange = nestChanges(baseChangePath, editor.rollbackChange);
     // console.log("change:", JSON.stringify(absChange));
     // console.log("undo:", JSON.stringify(absReverseChange));
 
@@ -335,8 +335,14 @@ function makeRollbackChange(instance, selection) {
       },
     }
   );
-
-  return {"path": rollbacks["point"], "components": rollbacks["component"]};
+  const changes = [];
+  if (rollbacks["point"]) {
+    changes.push(nestChanges(["path"], rollbacks["point"]));
+  }
+  if (rollbacks["component"]) {
+    changes.push(nestChanges(["components"], rollbacks["component"]));
+  }
+  return nestChanges([], changes);
 }
 
 
@@ -363,14 +369,20 @@ class GlyphEditor {
   }
 
   makeChangeForDelta(delta) {
-    return {
-      "path": this.editFuncs["point"]?.map(
-        editFunc => makePointChange(...editFunc(delta))
-      ),
-      "components": this.editFuncs["component"]?.map(
-        editFunc => makeComponentOriginChange(...editFunc(delta))
-      ),
-    };
+    const pathChanges = this.editFuncs["point"]?.map(
+      editFunc => makePointChange(...editFunc(delta))
+    );
+    const componentChanges = this.editFuncs["component"]?.map(
+      editFunc => makeComponentOriginChange(...editFunc(delta))
+    );
+    const changes = [];
+    if (pathChanges && pathChanges.length) {
+      changes.push(nestChanges(["path"], pathChanges));
+    }
+    if (componentChanges && componentChanges.length) {
+      changes.push(nestChanges(["components"], componentChanges));
+    }
+    return nestChanges([], changes);
   }
 
 }
@@ -390,15 +402,15 @@ function makeComponentDragFunc(components, componentIndex) {
 
 
 function makePointChange(pointIndex, x, y) {
-  return {"!": "setXY", "a": [pointIndex, x, y]};
-
+  return {"m": "setXY", "a": [pointIndex, x, y]};
 }
 
 
 function makeComponentOriginChange(componentIndex, x, y) {
-  const rollback = {};
-  rollback[componentIndex] = {"transformation": [{"=": "x", "v": x}, {"=": "y", "v": y}]};
-  return rollback;
+  return {
+    "p": [componentIndex, "transformation"],
+    "c": [{"m": "=", "k": "x", "v": x}, {"m": "=", "k": "y", "v": y}],
+  };
 }
 
 
@@ -419,36 +431,46 @@ function mapSelection(selection, funcs) {
 }
 
 
-function applyChange(subject, change) {
-  if (change["="] !== undefined) {
-    // set item
-    subject[change["="]] = change["v"]
-  } else if (change["!"] !== undefined) {
-    // call method
-    subject[change["!"]](...change.a);
-  } else if (Array.isArray(change)) {
-    for (const changeItem of change) {
-      applyChange(subject, changeItem);
-    }
-  } else {
-    for (const [key, value] of Object.entries(change)) {
-      if (value !== undefined) {
-        applyChange(subject[key], change[key]);
-      }
-    }
+function nestChanges(path, changes) {
+  let change;
+  if (!Array.isArray(changes)) {
+    changes = [changes];
   }
+  if (changes.length === 1) {
+    change = {...changes[0]};
+    change["p"] = path.concat(change.p || []);
+  } else {
+    change = {"p": path, "c": changes};
+  }
+  return change;
 }
 
 
-function makeAbsChange(baseChangePath, change) {
-  const absChange = {};
-  let leafChange = absChange;
-  let i;
-  for (i = 0; i < baseChangePath.length - 1; i++) {
-    const newChange = {};
-    leafChange[baseChangePath[i]] = newChange;
-    leafChange = newChange;
+function applyChange(subject, change) {
+  const path = change["p"] || [];
+  const method = change["m"];
+  const children = change["c"] || [];
+
+  for (const pathElement of path) {
+    subject = subject[pathElement];
+    if (subject === undefined) {
+      throw new Error(`assert -- invalid change path: ${path}`);
+    }
   }
-  leafChange[baseChangePath[i]] = change;
-  return absChange;
+
+  if (method) {
+    if (method == "=") {
+      // set item
+      subject[change["k"]] = change["v"]
+    } else {
+      // call method
+      subject[method](...change["a"])
+    }
+  }
+
+  if (children.length) {
+    for (const subChange of children) {
+      applyChange(subject, subChange);
+    }
+  }
 }
