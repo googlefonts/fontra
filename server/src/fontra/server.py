@@ -60,25 +60,25 @@ class Client:
             logger.info(f"websocket connection closed: {e!r}")
 
     async def _performCall(self, message):
-        callID = "unknown-call-id"
+        clientCallID = "unknown-client-call-id"
         try:
-            callID = message["call-id"]
+            clientCallID = message["client-call-id"]
             methodName = message["method-name"]
             arguments = message.get("arguments", [])
             if methodName in self.methodNames:
                 methodHandler = getattr(self.subject, methodName)
                 returnValue = await methodHandler(*arguments, client=self)
-                response = {"call-id": callID, "return-value": returnValue}
+                response = {"client-call-id": clientCallID, "return-value": returnValue}
             else:
                 response = {
-                    "call-id": callID,
+                    "client-call-id": clientCallID,
                     "exception": f"unknown method {methodName}",
                 }
         except Exception as e:
             logger.error("uncaught exception: %r", e)
             if self.verboseErrors:
                 traceback.print_exc()
-            response = {"call-id": callID, "exception": repr(e)}
+            response = {"client-call-id": clientCallID, "exception": repr(e)}
         await self.sendMessage(response)
 
     async def sendMessage(self, message):

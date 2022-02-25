@@ -31,8 +31,8 @@ export class RemoteObject {
     this.wsURL = wsURL;
     this._callReturnCallbacks = {};
 
-    const g =_genNextCallID();
-    this._getNextCallID = () => {return g.next().value};
+    const g =_genNextClientCallID();
+    this._getNextClientCallID = () => {return g.next().value};
   }
 
   connect() {
@@ -46,25 +46,25 @@ export class RemoteObject {
 
   _handleIncomingMessage(event) {
     const message = JSON.parse(event.data);
-    const callID = message["call-id"];
+    const clientCallID = message["client-call-id"];
 
     // console.log("incoming message");
     // console.log(message);
-    if (callID !== undefined) {
-      const returnCallbacks = this._callReturnCallbacks[callID];
+    if (clientCallID !== undefined) {
+      const returnCallbacks = this._callReturnCallbacks[clientCallID];
       if (message["exception"] !== undefined) {
         returnCallbacks.reject(new RemoteException(message["exception"]));
       } else {
         returnCallbacks.resolve(message["return-value"]);
       }
-      delete this._callReturnCallbacks[callID];
+      delete this._callReturnCallbacks[clientCallID];
     }
   }
 
   async doCall(methodName, args) {
-    const callID = this._getNextCallID();
+    const clientCallID = this._getNextClientCallID();
     const message = {
-      "call-id": callID,
+      "client-call-id": clientCallID,
       "method-name": methodName,
       "arguments": args,
     };
@@ -74,20 +74,20 @@ export class RemoteObject {
     }
     this.websocket.send(JSON.stringify(message));
 
-    this._callReturnCallbacks[callID] = {}
+    this._callReturnCallbacks[clientCallID] = {}
     return new Promise((resolve, reject) => {
-      this._callReturnCallbacks[callID].resolve = resolve;
-      this._callReturnCallbacks[callID].reject = reject;
+      this._callReturnCallbacks[clientCallID].resolve = resolve;
+      this._callReturnCallbacks[clientCallID].reject = reject;
     });
   }
 
 }
 
 
-function* _genNextCallID() {
-  let callID = 0;
+function* _genNextClientCallID() {
+  let clientCallID = 0;
   while (true) {
-    yield callID;
-    callID++;
+    yield clientCallID;
+    clientCallID++;
   }
 }
