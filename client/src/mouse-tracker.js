@@ -7,14 +7,19 @@ export class MouseTracker {
     this._dragFunc = options.drag;
     this._hoverFunc = options.hover;
     this._eventStream = undefined;
+    this._lastMouseDown = undefined;
+    this._lastMouseDownType = undefined;
     this._addEventListeners(options.element);
   }
 
   _addEventListeners(element) {
     element.addEventListener("mousedown", event => this.handleMouseDown(event))
+    element.addEventListener("touchstart", event => this.handleMouseDown(event))
     element.addEventListener("keydown", event => this.handleModifierKeyChange(event));
     element.addEventListener("keyup", event => this.handleModifierKeyChange(event));
     element.addEventListener("mousemove", event => this.handleMouseMove(event));
+    element.addEventListener("touchmove", event => this.handleMouseMove(event));
+    element.addEventListener("touchend", event => this.handleMouseUp(event));
 
     if (!window._fontraDidInstallMouseTrackerListeners) {
       // We add "mouseup" and "mousemove" as window-level event listeners,
@@ -27,10 +32,26 @@ export class MouseTracker {
   }
 
   handleMouseDown(event) {
+    if (this._lastMouseDownType !== undefined && event.type !== this._lastMouseDownType) {
+      // Ignore MouseEvents that com after TouchEvent, yet don't
+      // do event.preventDefault().
+      return;
+    }
     // console.log("number of clicks:", event.detail);
     if (this._eventStream !== undefined) {
       throw new Error("unfinished event stream");
     }
+    event.myTapCount = 1;
+    const now = new Date().getTime();
+    if (this._lastMouseDown !== undefined) {
+      const timeSince = now - this._lastMouseDown;
+      if((timeSince < 600) && (timeSince > 0)) {
+        event.myTapCount = 2;
+      }
+    }
+    this._lastMouseDown = now;
+    this._lastMouseDownType = event.type
+
     window._fontraMouseTracker = this;
     this._eventStream = new EventStream();
     this._dragFunc(this._eventStream, event);
