@@ -38,7 +38,9 @@ def main():
 
     host = args.host
     httpPort = args.http_port
-    websocketPort = args.websocket_port if args.websocket_port is not None else  httpPort + 1
+    websocketPort = (
+        args.websocket_port if args.websocket_port is not None else httpPort + 1
+    )
 
     if args.font.startswith("http"):
         backendCoro = getMySQLBackend(args.font)
