@@ -159,6 +159,9 @@ export class CanvasController {
   // helpers
 
   localPoint(point) {
+    if (point.x === undefined) {
+      point = {"x": point.pageX, "y": point.pageY};
+    }
     const x = (point.x - this.canvas.offsetLeft - this.origin.x) / this.magnification;
     const y = -(point.y - this.canvas.offsetTop - this.origin.y) / this.magnification;
     return {x: x, y: y}
