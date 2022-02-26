@@ -70,7 +70,7 @@
       async function startApp() {
         const response = await fetch("/websocketport");
         const port = await response.text();
-        const remoteFontEngine = await getRemoteProxy(`ws://localhost:${port}/`);
+        const remoteFontEngine = await getRemoteProxy(`ws://${location.hostname}:${port}/`);
         const appController = new AppController(remoteFontEngine);
         remoteFontEngine.receiver = appController;
         await appController.start();
