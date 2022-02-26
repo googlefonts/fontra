@@ -34,6 +34,7 @@ def main():
     args = parser.parse_args()
 
     # TODO: take from args
+    httpHost = "localhost"
     httpPort = 8000
     websocketPort = 8001
 
@@ -55,7 +56,7 @@ def main():
             clients=clients,
             verboseErrors=True,
         )
-        await server.getServerTask(host="localhost", port=websocketPort)
+        await server.getServerTask(host=httpHost, port=websocketPort)
 
     async def rootHandler(request):
         return web.HTTPFound("/index.html")
@@ -78,7 +79,7 @@ def main():
     print(f"|      http://localhost:{httpPort}/{pad}                      |")
     print("|                                                   |")
     print("+---------------------------------------------------+")
-    web.run_app(httpApp, host="localhost", port=httpPort)
+    web.run_app(httpApp, host=httpHost, port=httpPort)
 
 
 if __name__ == "__main__":
