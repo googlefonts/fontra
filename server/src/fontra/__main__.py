@@ -30,13 +30,15 @@ async def getFileSystemBackend(path):
 def main():
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
+    parser.add_argument("--host", default="localhost")
+    parser.add_argument("--http-port", default=8000, type=int)
+    parser.add_argument("--websocket-port", type=int)
     parser.add_argument("font")
     args = parser.parse_args()
 
-    # TODO: take from args
-    httpHost = "localhost"
-    httpPort = 8000
-    websocketPort = 8001
+    host = args.host
+    httpPort = args.http_port
+    websocketPort = args.websocket_port if args.websocket_port is not None else  httpPort + 1
 
     if args.font.startswith("http"):
         backendCoro = getMySQLBackend(args.font)
@@ -56,7 +58,7 @@ def main():
             clients=clients,
             verboseErrors=True,
         )
-        await server.getServerTask(host=httpHost, port=websocketPort)
+        await server.getServerTask(host=host, port=websocketPort)
 
     async def rootHandler(request):
         return web.HTTPFound("/index.html")
@@ -70,16 +72,16 @@ def main():
         ]
     )
     httpApp.on_startup.append(setupWebsocketServer)
-    pad = " " * (5 - len(str(httpPort)))
+    pad = " " * (22 - len(str(httpPort)) - len(host))
     print("+---------------------------------------------------+")
     print("|                                                   |")
     print("|      Fontra!                                      |")
     print("|                                                   |")
     print("|      Navigate to:                                 |")
-    print(f"|      http://localhost:{httpPort}/{pad}                      |")
+    print(f"|      http://{host}:{httpPort}/{pad}              |")
     print("|                                                   |")
     print("+---------------------------------------------------+")
-    web.run_app(httpApp, host=httpHost, port=httpPort)
+    web.run_app(httpApp, host=host, port=httpPort)
 
 
 if __name__ == "__main__":
