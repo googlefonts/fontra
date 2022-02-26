@@ -451,7 +451,7 @@ function consolidateChanges(changes, prefixPath) {
 }
 
 
-function applyChange(subject, change) {
+export function applyChange(subject, change) {
   const path = change["p"] || [];
   const method = change["m"];
   const children = change["c"] || [];
