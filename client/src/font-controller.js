@@ -127,11 +127,11 @@ export class FontController {
   }
 
   async changeSetRollback(rollbackChange) {
-
+    this.font.changeSetRollback(rollbackChange);  // no await!
   }
 
   async changeChanging(change) {
-
+    this.font.changeChanging(change);  // no await!
   }
 
   async changeEnd() {

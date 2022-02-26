@@ -104,9 +104,8 @@ export class AppController {
     this.initSourcesList();
   }
 
-  async testCall(arg) {
-    console.log("heeeeeyyyyyy", arg);
-    return `right back at ya (${arg})`;
+  async externalChange(change) {
+    // console.log("incoming external change:", change.p[1], change);
   }
 
   async initGlyphNames() {
