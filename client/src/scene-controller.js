@@ -40,7 +40,7 @@ export class SceneController {
   async handleDrag(eventStream, initialEvent) {
     const point = this.localPoint(initialEvent);
     const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
-    if (initialEvent.detail >= 2) {
+    if (initialEvent.detail >= 2 || initialEvent.myTapCount >= 2) {
       this.handleDoubleCick(selection, point);
       initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
       return;
