@@ -15,6 +15,7 @@ class FontHandler:
             "getGlyphNames",
             "getReverseCmap",
             "getGlobalAxes",
+            "subscribeGlyphChanges",
         }
 
     def getGlyph(self, glyphName, *, client):
@@ -33,22 +34,24 @@ class FontHandler:
     async def getGlobalAxes(self, *, client):
         return await self.backend.getGlobalAxes()
 
+    async def subscribeGlyphChanges(self, glyphNames, *, client):
+        client.data["subscribedGlyphNames"] = set(glyphNames)
+
     async def changeBegin(self, *, client):
-        await self.broadcastMessage("hello world", client)
-        # "deadlock" avoidance (???):
-        # task = asyncio.create_task(self.broadcastMessage("hello world", client))
+        ...
 
     async def changeSetRollback(self, rollbackChange, *, client):
         ...
 
     async def changeChanging(self, change, *, client):
-        ...
+        await self.broadcastChange(change, client)
 
     async def changeEnd(self, *, client):
         ...
 
-    async def broadcastMessage(self, arg, excludeClient):
+    async def broadcastChange(self, change, sourceClient):
+        assert change["p"][0] == "glyphs"
+        glyphName = change["p"][1]
         for client in self.clients.values():
-            if client != excludeClient:
-                result = await client.proxy.testCall(arg)
-                print("return value of testCall():", result)
+            if client != sourceClient:  # and glyphName in client.data.get("subscribedGlyphNames", ())
+                await client.proxy.externalChange(change)
