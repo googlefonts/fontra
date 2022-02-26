@@ -1,4 +1,5 @@
 import asyncio
+import functools
 
 
 class FontHandler:
@@ -16,8 +17,12 @@ class FontHandler:
             "getGlobalAxes",
         }
 
-    async def getGlyph(self, glyphName, *, client):
-        return await self.backend.getGlyph(glyphName)
+    def getGlyph(self, glyphName, *, client):
+        return self._getGlyph(glyphName)
+
+    @functools.lru_cache(250)
+    def _getGlyph(self, glyphName):
+        return asyncio.create_task(self.backend.getGlyph(glyphName))
 
     async def getGlyphNames(self, *, client):
         return await self.backend.getGlyphNames()
@@ -29,9 +34,9 @@ class FontHandler:
         return await self.backend.getGlobalAxes()
 
     async def changeBegin(self, *, client):
-        # await self.broadcastMessage("hello world", client)
-        # deadlock avoidance:
-        task = asyncio.create_task(self.broadcastMessage("hello world", client))
+        await self.broadcastMessage("hello world", client)
+        # "deadlock" avoidance (???):
+        # task = asyncio.create_task(self.broadcastMessage("hello world", client))
 
     async def changeSetRollback(self, rollbackChange, *, client):
         ...
