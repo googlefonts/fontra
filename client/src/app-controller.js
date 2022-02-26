@@ -104,10 +104,6 @@ export class AppController {
     this.initSourcesList();
   }
 
-  async externalChange(change) {
-    // console.log("incoming external change:", change.p[1], change);
-  }
-
   async initGlyphNames() {
     const columnDescriptions = [
       {"key": "char", "width": "2em", "get": item => getCharFromUnicode(item.unicodes[0])},
@@ -307,6 +303,13 @@ export class AppController {
     this.canvasController.setNeedsUpdate();
     const overlay = document.querySelector("#overlay-layer");
     overlay.classList.remove("overlay-layer-hidden");
+  }
+
+  async externalChange(change) {
+    // console.log("incoming external change:", change.p[1], change);
+    await this.fontController.applyChange(change);
+    await this.sceneController.sceneModel.updateScene();
+    this.canvasController.setNeedsUpdate();
   }
 
 }

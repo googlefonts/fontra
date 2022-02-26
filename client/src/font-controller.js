@@ -2,6 +2,7 @@ import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
 import { mapForward, normalizeLocation } from "./var-model.js";
+import { applyChange } from "./scene-controller.js";
 
 
 export class FontController {
@@ -136,6 +137,17 @@ export class FontController {
 
   async changeEnd() {
     return false;
+  }
+
+  async applyChange(change) {
+    if (change.p[0] === "glyphs") {
+      const glyphName = change.p[1];
+      const glyphSet = {};
+      const root = {"glyphs": glyphSet};
+      glyphSet[glyphName] = await this.getGlyph(glyphName);
+      applyChange(root, change);
+      this.glyphChanged(glyphName);
+    }
   }
 
 }
