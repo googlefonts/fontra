@@ -163,6 +163,8 @@ export class SceneController {
     }
 
     if (absChange) {
+      // Ensure the last change goes through -- it might have
+      // been dropped by changeChangingThrottled()
       await fontController.changeChanging(absChange);
     }
 
