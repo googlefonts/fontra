@@ -7,8 +7,7 @@ export class MouseTracker {
     this._dragFunc = options.drag;
     this._hoverFunc = options.hover;
     this._eventStream = undefined;
-    this._lastMouseDown = undefined;
-    this._lastMouseDownType = undefined;
+    this._lastMouseDownEvent = undefined;
     this._addEventListeners(options.element);
   }
 
@@ -32,7 +31,7 @@ export class MouseTracker {
   }
 
   handleMouseDown(event) {
-    if (this._lastMouseDownType !== undefined && event.type !== this._lastMouseDownType) {
+    if (this._lastMouseDownEvent !== undefined && event.type !== this._lastMouseDownEvent.type) {
       // Ignore MouseEvents that com after TouchEvent, yet don't
       // do event.preventDefault().
       return;
@@ -42,15 +41,13 @@ export class MouseTracker {
       throw new Error("unfinished event stream");
     }
     event.myTapCount = 1;
-    const now = new Date().getTime();
-    if (this._lastMouseDown !== undefined) {
-      const timeSince = now - this._lastMouseDown;
+    if (this._lastMouseDownEvent !== undefined && areEventsClose(event, this._lastMouseDownEvent)) {
+      const timeSince = event.timeStamp - this._lastMouseDownEvent.timeStamp;
       if((timeSince < 600) && (timeSince > 0)) {
         event.myTapCount = 2;
       }
     }
-    this._lastMouseDown = now;
-    this._lastMouseDownType = event.type
+    this._lastMouseDownEvent = event;
 
     window._fontraMouseTracker = this;
     this._eventStream = new EventStream();
@@ -136,4 +133,13 @@ class EventStream {
     this._done = true;
   }
 
+}
+
+
+function areEventsClose(event1, event2) {
+  const maxDistance = 3;
+  return (
+    Math.abs(event1.pageX - event2.pageX) < maxDistance &&
+    Math.abs(event1.pageY - event2.pageY) < maxDistance
+  )
 }
