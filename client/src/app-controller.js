@@ -6,6 +6,7 @@ import { SceneModel } from "./scene-model.js";
 import { SceneView } from "./scene-view.js"
 import { List } from "./ui-list.js";
 import { Sliders } from "./ui-sliders.js";
+import { scheduleCalls } from "./utils.js";
 
 
 const drawingParametersLight = {
@@ -457,23 +458,4 @@ function textFromGlyphLines(glyphLines) {
     textLines.push(textLine);
   }
   return textLines.join("\n");
-}
-
-
-function scheduleCalls(func, timeout = 0) {
-  // Schedule calls to func with a timer. If a previously scheduled call
-  // has not yet run, cancel it and let the new one override it.
-  // Returns a wrapped function that should be called instead of func.
-  // This is useful for calls triggered by events that can supersede
-  // previous calls; it avoids scheduling many redundant tasks.
-  let timeoutID = null;
-  return (...args) => {
-    if (timeoutID !== null) {
-      clearTimeout(timeoutID);
-    }
-    timeoutID = setTimeout(() => {
-      timeoutID = null;
-      func(...args);
-    }, timeout);
-  };
 }
