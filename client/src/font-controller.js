@@ -17,7 +17,7 @@ export class FontController {
     // Helper to throttle calls to changeChanging. (Ideally the minTime should
     // be dynamic and based on network and server load.)
     this.throttledChangeChanging = throttleCalls(
-      (...args) => this.font.changeChanging(...args),
+      (change) => this.font.changeChanging(change),
       50,
     );
   }
