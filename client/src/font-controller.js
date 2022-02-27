@@ -14,6 +14,8 @@ export class FontController {
     this._glyphsPromiseCache = new LRUCache(250);
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
+    // Helper to throttle calls to changeChanging. (Ideally the minTime should
+    // be dynamic and based on network and server load.)
     this.throttledChangeChanging = throttleCalls(this.font.changeChanging, 50);
   }
 
