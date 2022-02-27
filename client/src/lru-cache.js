@@ -64,16 +64,40 @@ export class LRUCache {
     }
   }
 
+  delete(key) {
+    const node = this.map.get(key);
+    if (node !== undefined) {
+      //delete item both from map and DLL
+      this.map.delete(node.key);
+      node.prev.next = node.next;
+      node.next.prev = node.prev;
+    }
+  }
+
   _dllLength() {
     // the result of this function must match this.map.size;
-    let first = this.head.next;
     let count = 0;
-    let node = first.next;
-    while (node !== undefined) {
+    for (const node of this._dllIter()) {
       count++;
-      node = node.next;
     }
     return count;
+  }
+
+  *_dllIter() {
+    let node = this.head.next;
+    while (node !== this.tail) {
+      yield node;
+      node = node.next;
+    }
+  }
+
+  _dllKeys() {
+    const keys = [];
+    for (const node of this._dllIter()) {
+      keys.push(node.key);
+    }
+    return keys;
+
   }
 
 }
