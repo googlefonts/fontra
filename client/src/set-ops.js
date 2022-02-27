@@ -71,3 +71,9 @@ export function lenientIsEqualSet(set1, set2) {
   }
   return false;
 }
+
+export function setUpdate(set, iterable) {
+  for (const item of iterable) {
+    set.add(item);
+  }
+}
