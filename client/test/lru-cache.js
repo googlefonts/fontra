@@ -15,6 +15,7 @@ describe("LRUCache Tests", () => {
   });
 
   it("put/get", () => {
+    let deletedKey;
     const lru = new LRUCache(4);
     lru.put("a", 1);
     lru.put("b", 2);
@@ -25,11 +26,13 @@ describe("LRUCache Tests", () => {
     expect(lru.get("b")).to.equal(2);
     expect(lru.get("c")).to.equal(undefined);
     lru.put("c", 3);
-    lru.put("d", 4);
+    deletedKey = lru.put("d", 4);
+    expect(deletedKey).to.equal(undefined);
     expect(lru.get("a")).to.equal(1);
     expect(lru.get("b")).to.equal(2);
     expect(lru.get("c")).to.equal(3);
-    lru.put("e", 4);
+    deletedKey = lru.put("e", 4);
+    expect(deletedKey).to.equal("d");
     expect(lru.get("d")).to.equal(undefined);
     expect(lru.get("a")).to.equal(1);
     lru.put("f", 5);

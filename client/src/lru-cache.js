@@ -37,6 +37,7 @@ export class LRUCache {
   }
 
   put(key, value) {
+    let deletedKey = undefined;
     if (this.get(key) !== undefined) {
       // if key does not exist, update last element value
       // (assert this.tail.prev.key === key)
@@ -44,8 +45,9 @@ export class LRUCache {
     } else {
       // check if map size is at capacity
       if (this.map.size === this.capacity) {
+        deletedKey = this.head.next.key;
         //delete item both from map and DLL
-        this.map.delete(this.head.next.key); // delete first element of list
+        this.map.delete(deletedKey); // delete first element of list
         this.head.next = this.head.next.next; // update first element as next element
         this.head.next.prev = this.head;
       }
@@ -62,6 +64,7 @@ export class LRUCache {
       node.next = this.tail;
       this.tail.prev = node; // update last element
     }
+    return deletedKey;
   }
 
   delete(key) {
