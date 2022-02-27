@@ -129,6 +129,10 @@ export class FontController {
     return glyph.getSourceIndex(this.location);
   }
 
+  async subscribeGlyphChanges(glyphNames) {
+    this.font.subscribeGlyphChanges(glyphNames);
+  }
+
   async changeBegin() {
     this.font.changeBegin();  // no await!
     // await this.font.changeBegin();

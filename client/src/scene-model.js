@@ -47,6 +47,13 @@ export class SceneModel {
   }
 
   setGlyphLines(glyphLines, updateIncrementally = false) {
+    const usedGlyphs = new Set();
+    for (const line of glyphLines) {
+      for (const glyphInfo of line) {
+        usedGlyphs.add(glyphInfo.glyphName)
+      }
+    }
+    this.fontController.subscribeGlyphChanges(Array.from(usedGlyphs).sort());
     this.glyphLines = glyphLines;
     this.selection = new Set();
     this.hoverSelection = new Set();
