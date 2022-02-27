@@ -61,8 +61,7 @@ class FontHandler:
         glyphName = change["p"][1]
         clients = []
         for client in self.clients.values():
-            if client != sourceClient:
-                # and glyphName in client.data.get("subscribedLiveGlyphNames", ())
+            if client != sourceClient and glyphName in client.data.get("subscribedLiveGlyphNames", ()):
                 clients.append(client)
         await asyncio.gather(
             *[client.proxy.externalChange(change) for client in clients]

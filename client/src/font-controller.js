@@ -165,6 +165,24 @@ export class FontController {
     }
   }
 
+  *iterGlyphMadeOf(glyphName) {
+    for (const dependantGlyphName of this.glyphMadeOf[glyphName] || []) {
+      yield dependantGlyphName;
+      for (const deeperGlyphName of this.iterGlyphMadeOf(dependantGlyphName)) {
+        yield deeperGlyphName;
+      }
+    }
+  }
+
+  *iterGlyphUsedBy(glyphName) {
+    for (const dependantGlyphName of this.glyphUsedBy[glyphName] || []) {
+      yield dependantGlyphName;
+      for (const deeperGlyphName of this.iterGlyphUsedBy(dependantGlyphName)) {
+        yield deeperGlyphName;
+      }
+    }
+  }
+
 }
 
 

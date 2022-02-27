@@ -3,6 +3,7 @@ import { getAxisBaseName } from "./glyph-controller.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
 import { mapForward, mapBackward, normalizeLocation } from "./var-model.js";
+import { setUpdate } from "./set-ops.js";
 
 
 export class SceneModel {
@@ -47,13 +48,6 @@ export class SceneModel {
   }
 
   setGlyphLines(glyphLines, updateIncrementally = false) {
-    const usedGlyphs = new Set();
-    for (const line of glyphLines) {
-      for (const glyphInfo of line) {
-        usedGlyphs.add(glyphInfo.glyphName)
-      }
-    }
-    this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphs).sort());
     this.glyphLines = glyphLines;
     this.selection = new Set();
     this.hoverSelection = new Set();
@@ -182,6 +176,8 @@ export class SceneModel {
       this.positionedLines = await buildScene(this.fontController, glyphLines);
       yield;
     }
+    const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
+    this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
   }
 
   selectionAtPoint(point, size) {
@@ -334,4 +330,16 @@ async function buildScene(fontController, glyphLines) {
     }
   }
   return positionedLines;
+}
+
+
+function getUsedGlyphNames(fontController, positionedLines) {
+  const usedGlyphNames = new Set();
+  for (const line of positionedLines) {
+    for (const glyph of line.glyphs) {
+      usedGlyphNames.add(glyph.glyph.name);
+      setUpdate(usedGlyphNames, fontController.iterGlyphMadeOf(glyph.glyph.name))
+    }
+  }
+  return usedGlyphNames;
 }
