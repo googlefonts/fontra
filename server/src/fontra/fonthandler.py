@@ -42,10 +42,7 @@ class FontHandler:
         return await self.backend.getGlobalAxes()
 
     async def subscribeGlyphChanges(self, glyphNames, *, client):
-        expandedSet = set(glyphNames)
-        for glyphName in glyphNames:
-            expandedSet.update(self.iterGlyphDependencies(glyphName))
-        client.data["subscribedGlyphNames"] = expandedSet
+        client.data["subscribedGlyphNames"] = set(glyphNames)
 
     async def changeBegin(self, *, client):
         ...
@@ -71,10 +68,15 @@ class FontHandler:
             *[client.proxy.externalChange(change) for client in clients]
         )
 
-    def iterGlyphDependencies(self, glyphName):
+    def iterGlyphMadeOf(self, glyphName):
+        for dependantGlyphName in self.glyphMadeOf.get(glyphName, ()):
+            yield dependantGlyphName
+            yield from self.iterGlyphMadeOf(dependantGlyphName)
+
+    def iterGlyphUsedBy(self, glyphName):
         for dependantGlyphName in self.glyphUsedBy.get(glyphName, ()):
             yield dependantGlyphName
-            yield from self.iterGlyphDependencies(dependantGlyphName)
+            yield from self.iterGlyphUsedBy(dependantGlyphName)
 
     def updateGlyphDependencies(self, glyphName, glyphData):
         # Zap previous used-by data for this glyph, if any
