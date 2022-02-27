@@ -67,13 +67,13 @@ export class FontController {
   updateGlyphDependencies(glyph) {
     const glyphName = glyph.name;
     // Zap previous used-by data for this glyph, if any
-    for (const componentName of this.glyphMadeOf[glyph] || []) {
+    for (const componentName of this.glyphMadeOf[glyphName] || []) {
       if (this.glyphUsedBy[componentName]) {
         this.glyphUsedBy[componentName].delete(glyphName);
       }
     }
     const componentNames = glyph.getAllComponentNames();
-    this.glyphMadeOf[glyph] = componentNames;
+    this.glyphMadeOf[glyphName] = componentNames;
     for (const componentName of componentNames) {
       if (!this.glyphUsedBy[componentName]) {
         this.glyphUsedBy[componentName] = new Set();
