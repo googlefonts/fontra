@@ -52,6 +52,8 @@ class FontHandler:
     async def broadcastChange(self, change, sourceClient):
         assert change["p"][0] == "glyphs"
         glyphName = change["p"][1]
+        coros = []
         for client in self.clients.values():
             if client != sourceClient:  # and glyphName in client.data.get("subscribedGlyphNames", ())
-                await client.proxy.externalChange(change)
+                coros.append(client.proxy.externalChange(change))
+        await asyncio.gather(*coros)
