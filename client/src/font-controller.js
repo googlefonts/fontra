@@ -3,6 +3,7 @@ import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
 import { mapForward, normalizeLocation } from "./var-model.js";
 import { applyChange } from "./scene-controller.js";
+import { throttleCalls } from "./utils.js";
 
 
 export class FontController {
@@ -13,6 +14,7 @@ export class FontController {
     this._glyphsPromiseCache = new LRUCache(250);
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
+    this.throttledChangeChanging = throttleCalls(this.font.changeChanging, 50);
   }
 
   async initialize() {
@@ -131,8 +133,12 @@ export class FontController {
     this.font.changeSetRollback(rollbackChange);  // no await!
   }
 
-  async changeChanging(change) {
-    this.font.changeChanging(change);  // no await!
+  async changeChanging(change, throttle) {
+    if (throttle) {
+      this.throttledChangeChanging(change);
+    } else {
+      this.font.changeChanging(change);
+    }
   }
 
   async changeEnd() {

@@ -45,3 +45,18 @@ export function scheduleCalls(func, timeout = 0) {
     }, timeout);
   };
 }
+
+
+export function throttleCalls(func, minTime) {
+  // Return a wrapped function. If the function gets called before
+  // minTime (in ms) has elapsed since the last call, don't call
+  // the function.
+  let lastTime = 0;
+  return (...args) => {
+    const now = Date.now();
+    if (now - lastTime > minTime) {
+      func(...args);
+      lastTime = now;
+    }
+  };
+}
