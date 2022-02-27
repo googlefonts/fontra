@@ -53,7 +53,7 @@ export class SceneModel {
         usedGlyphs.add(glyphInfo.glyphName)
       }
     }
-    this.fontController.subscribeGlyphChanges(Array.from(usedGlyphs).sort());
+    this.fontController.subscribedLiveGlyphNames(Array.from(usedGlyphs).sort());
     this.glyphLines = glyphLines;
     this.selection = new Set();
     this.hoverSelection = new Set();

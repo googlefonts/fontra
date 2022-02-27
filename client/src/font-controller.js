@@ -129,8 +129,8 @@ export class FontController {
     return glyph.getSourceIndex(this.location);
   }
 
-  async subscribeGlyphChanges(glyphNames) {
-    this.font.subscribeGlyphChanges(glyphNames);
+  async subscribedLiveGlyphNames(glyphNames) {
+    this.font.subscribedLiveGlyphNames(glyphNames);
   }
 
   async changeBegin() {
