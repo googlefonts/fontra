@@ -155,7 +155,7 @@ export class SceneController {
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       change = editor.makeChangeForDelta(delta);
       absChange = consolidateChanges(change, baseChangePath);
-      await fontController.changeChanging(absChange, true);
+      await fontController.changeChangingThrottled(absChange);
       applyChange(instance, change);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
