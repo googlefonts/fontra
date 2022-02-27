@@ -16,7 +16,10 @@ export class FontController {
     this.glyphMadeOf = {};
     // Helper to throttle calls to changeChanging. (Ideally the minTime should
     // be dynamic and based on network and server load.)
-    this.throttledChangeChanging = throttleCalls(this.font.changeChanging, 50);
+    this.throttledChangeChanging = throttleCalls(
+      (...args) => this.font.changeChanging(...args),
+      50,
+    );
   }
 
   async initialize() {
