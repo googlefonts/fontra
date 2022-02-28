@@ -34,7 +34,6 @@ export class RemoteObject {
   constructor(wsURL) {
     this.wsURL = wsURL;
     this._callReturnCallbacks = {};
-    this._connectPromise = undefined;
 
     const g = _genNextClientCallID();
     this._getNextClientCallID = () => {return g.next().value};
@@ -53,7 +52,7 @@ export class RemoteObject {
     this._connectPromise = new Promise((resolve, reject) => {
       this.websocket.onopen = event => {
         resolve(event);
-        this._connectPromise = undefined;
+        delete this._connectPromise;
       };
       this.websocket.onerror = reject;
     });
