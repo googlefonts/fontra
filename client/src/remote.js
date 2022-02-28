@@ -32,6 +32,12 @@ export async function getRemoteProxy(wsURL) {
 export class RemoteObject {
 
   constructor(wsURL) {
+    if (crypto.randomUUID) {
+      this.clientUUID = crypto.randomUUID();
+    } else {
+      this.clientUUID = randomUUIDFallback();
+    }
+
     this.wsURL = wsURL;
     this._callReturnCallbacks = {};
 
@@ -53,6 +59,7 @@ export class RemoteObject {
       this.websocket.onopen = event => {
         resolve(event);
         delete this._connectPromise;
+        this.websocket.send(JSON.stringify({"client-uuid": this.clientUUID}));
       };
       this.websocket.onerror = reject;
     });
@@ -122,4 +129,11 @@ function* _genNextClientCallID() {
     yield clientCallID;
     clientCallID++;
   }
+}
+
+
+function randomUUIDFallback() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
 }

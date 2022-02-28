@@ -58,6 +58,9 @@ class Client:
         try:
             async for message in self.websocket:
                 message = json.loads(message)
+                if "client-uuid" in message:
+                    self.clientUUID = message["client-uuid"]
+                    continue
                 if message.get("connection") == "close":
                     logger.info("client requested connection close")
                     break
