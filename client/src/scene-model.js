@@ -3,7 +3,7 @@ import { getAxisBaseName } from "./glyph-controller.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
 import { mapForward, mapBackward, normalizeLocation } from "./var-model.js";
-import { setUpdate } from "./set-ops.js";
+import { updateSet } from "./set-ops.js";
 
 
 export class SceneModel {
@@ -338,7 +338,7 @@ function getUsedGlyphNames(fontController, positionedLines) {
   for (const line of positionedLines) {
     for (const glyph of line.glyphs) {
       usedGlyphNames.add(glyph.glyph.name);
-      setUpdate(usedGlyphNames, fontController.iterGlyphMadeOf(glyph.glyph.name))
+      updateSet(usedGlyphNames, fontController.iterGlyphMadeOf(glyph.glyph.name))
     }
   }
   return usedGlyphNames;
