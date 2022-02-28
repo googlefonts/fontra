@@ -1,4 +1,5 @@
 import asyncio
+from collections import defaultdict
 import functools
 
 
@@ -19,6 +20,7 @@ class FontHandler:
         }
         self.glyphUsedBy = {}
         self.glyphMadeOf = {}
+        self.clientData = defaultdict(dict)
 
     def getGlyph(self, glyphName, *, client):
         return self._getGlyph(glyphName)
@@ -42,7 +44,7 @@ class FontHandler:
         return await self.backend.getGlobalAxes()
 
     async def subscribeLiveGlyphChanges(self, glyphNames, *, client):
-        client.data["subscribedLiveGlyphNames"] = set(glyphNames)
+        self.clientData[client.clientUUID]["subscribedLiveGlyphNames"] = set(glyphNames)
 
     async def changeBegin(self, *, client):
         ...
@@ -62,7 +64,9 @@ class FontHandler:
         glyphName = change["p"][1]
         clients = []
         for client in self.clients.values():
-            subscribedGlyphNames = client.data.get("subscribedLiveGlyphNames", ())
+            subscribedGlyphNames = self.clientData[client.clientUUID].get(
+                "subscribedLiveGlyphNames", ()
+            )
             if client != sourceClient and glyphName in subscribedGlyphNames:
                 clients.append(client)
         await asyncio.gather(
