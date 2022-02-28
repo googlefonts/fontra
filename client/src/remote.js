@@ -91,6 +91,7 @@ export class RemoteObject {
   }
 
   async doCall(methodName, args) {
+    console.log("--- doCall", methodName);
     const clientCallID = this._getNextClientCallID();
     const message = {
       "client-call-id": clientCallID,

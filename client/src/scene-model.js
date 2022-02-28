@@ -3,7 +3,7 @@ import { getAxisBaseName } from "./glyph-controller.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "./rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "./convex-hull.js";
 import { mapForward, mapBackward, normalizeLocation } from "./var-model.js";
-import { updateSet } from "./set-ops.js";
+import { isEqualSet, updateSet } from "./set-ops.js";
 
 
 export class SceneModel {
@@ -177,7 +177,10 @@ export class SceneModel {
       yield;
     }
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
-    this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
+    if (!this._previousUsedGlyphName || !isEqualSet(usedGlyphNames, this._previousUsedGlyphName)) {
+      this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
+    }
+    this._previousUsedGlyphName = usedGlyphNames;
   }
 
   selectionAtPoint(point, size) {
