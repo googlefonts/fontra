@@ -34,18 +34,30 @@ export class RemoteObject {
   constructor(wsURL) {
     this.wsURL = wsURL;
     this._callReturnCallbacks = {};
+    this._connectPromise = undefined;
 
     const g = _genNextClientCallID();
     this._getNextClientCallID = () => {return g.next().value};
   }
 
   connect() {
+    if (this._connectPromise !== undefined) {
+      // websocket is still connecting/opening, return the same promise
+      return this._connectPromise;
+    }
+    if (this.websocket?.readyState <= 1) {
+      throw new Error("assert -- trying to open new websocket while we still have one");
+    }
     this.websocket = new WebSocket(this.wsURL);
     this.websocket.onmessage = event => this._handleIncomingMessage(event);
-    return new Promise((resolve, reject) => {
-      this.websocket.onopen = resolve;
+    this._connectPromise = new Promise((resolve, reject) => {
+      this.websocket.onopen = event => {
+        resolve(event);
+        this._connectPromise = undefined;
+      };
       this.websocket.onerror = reject;
-    })
+    });
+    return this._connectPromise;
   }
 
   async _handleIncomingMessage(event) {
@@ -87,7 +99,7 @@ export class RemoteObject {
       "arguments": args,
     };
     if (this.websocket.readyState !== 1) {
-      // console.log("reconnecting");
+      // console.log("waiting for reconnect");
       await this.connect();
     }
     this.websocket.send(JSON.stringify(message));
