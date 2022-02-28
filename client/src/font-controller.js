@@ -151,7 +151,7 @@ export class FontController {
   }
 
   async changeEnd() {
-    return false;
+    return await this.font.changeEnd();
   }
 
   async applyChange(change) {

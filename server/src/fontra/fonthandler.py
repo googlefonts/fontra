@@ -54,7 +54,8 @@ class FontHandler:
         await self.broadcastChange(change, client)
 
     async def changeEnd(self, *, client):
-        ...
+        return None
+        # return {"error": "computer says no"}
 
     async def broadcastChange(self, change, sourceClient):
         assert change["p"][0] == "glyphs"
