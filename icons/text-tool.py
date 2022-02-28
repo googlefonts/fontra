@@ -18,13 +18,16 @@ lineCap("round")
 fill(None)
 
 translate(margin, margin)
-line((0, lineLength), (lineLength, lineLength))
+bez = BezierPath()
+bez.line((0, lineLength), (lineLength, lineLength))
 
 for o in [-vOffset, vOffset]:
-    line((lineLength / 2 + o, 0), (lineLength / 2 + o, lineLength))
+    bez.line((lineLength / 2 + o, 0), (lineLength / 2 + o, lineLength))
 
 
-line((lineLength / 2 - hSerif, 0), (lineLength / 2 + hSerif, 0))
+bez.line((lineLength / 2 - hSerif, 0), (lineLength / 2 + hSerif, 0))
 
 for x in [0, lineLength]:
-    line((x, lineLength), (x, lineLength - vSerif))
+    bez.line((x, lineLength), (x, lineLength - vSerif))
+
+drawPath(bez)
