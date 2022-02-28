@@ -73,7 +73,7 @@ class Client:
                     if error is None:
                         fut.set_result(returnValue)
                     else:
-                        fut.set_exception(error)  # wrap in ClientException
+                        fut.set_exception(error)  # TODO: wrap in ClientException
         except websockets.exceptions.ConnectionClosedError as e:
             logger.info(f"websocket connection closed: {e!r}")
 
