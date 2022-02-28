@@ -67,6 +67,7 @@ export class RemoteObject {
     // console.log("incoming message");
     // console.log(message);
     if (clientCallID !== undefined) {
+      // this is a response to a client -> server call
       const returnCallbacks = this._callReturnCallbacks[clientCallID];
       if (message["exception"] !== undefined) {
         returnCallbacks.reject(new RemoteException(message["exception"]));
@@ -75,6 +76,7 @@ export class RemoteObject {
       }
       delete this._callReturnCallbacks[clientCallID];
     } else if (serverCallID !== undefined) {
+      // this is an incoming server -> client call
       if (this.receiver) {
         let returnMessage;
         try {
