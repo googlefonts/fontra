@@ -46,7 +46,6 @@ class Client:
         self.verboseErrors = verboseErrors
         self.callReturnFutures = {}
         self.getNextServerCallID = _genNextServerCallID()
-        self.data = {}
 
     @property
     def proxy(self):
