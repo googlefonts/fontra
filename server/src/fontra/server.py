@@ -63,8 +63,10 @@ class Client:
                     break
                 tasks = [task for task in tasks if not task.done()]
                 if "client-call-id" in message:
+                    # this is an incoming client -> server call
                     tasks.append(asyncio.create_task(self._performCall(message)))
                 elif "server-call-id" in message:
+                    # this is a response to a server -> client call
                     fut = self.callReturnFutures[message["server-call-id"]]
                     returnValue = message.get("return-value")
                     error = message.get("error")
