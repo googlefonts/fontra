@@ -43,6 +43,13 @@ export class RemoteObject {
 
     const g = _genNextClientCallID();
     this._getNextClientCallID = () => {return g.next().value};
+
+    document.addEventListener("visibilitychange", event => {
+      if (document.visibilityState === "visible" && this.websocket.readyState > 1) {
+        // console.log("wake reconnect");
+        this.connect();
+      }
+    }, false);
   }
 
   connect() {
