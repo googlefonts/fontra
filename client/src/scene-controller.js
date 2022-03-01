@@ -474,6 +474,8 @@ export const glyphChangeFunctions = {
 // "f": function name, to be lookud up in the changeFunctions dict
 // Optional: can be omitted if the change has children
 //
+// "k": a key or index into the "subject"
+//
 // "v": "value", a single argument for the change function
 // "a": "arguments", an array of arguments for the change function
 // If the change has a change function ("f" key), it MUST also have
