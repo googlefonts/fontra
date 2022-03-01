@@ -120,7 +120,7 @@ class ClientProxy:
                 "method-name": methodName,
                 "arguments": args,
             }
-            returnFuture = asyncio.Future()
+            returnFuture = asyncio.get_running_loop().create_future()
             self._client.callReturnFutures[serverCallID] = returnFuture
             await self._client.sendMessage(message)
             return await returnFuture
