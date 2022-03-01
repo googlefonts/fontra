@@ -509,6 +509,6 @@ export function applyChange(subject, change, changeFunctions) {
   }
 
   for (const subChange of children) {
-    applyChange(subject, subChange, glyphChangeFunctions);
+    applyChange(subject, subChange, changeFunctions);
   }
 }
