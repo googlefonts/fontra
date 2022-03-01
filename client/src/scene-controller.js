@@ -407,7 +407,7 @@ function makeComponentDragFunc(components, componentIndex) {
 
 
 function makePointChange(pointIndex, x, y) {
-  return {"f": "setXY", "k": pointIndex, "a": [x, y]};
+  return {"f": "=xy", "k": pointIndex, "a": [x, y]};
 }
 
 
@@ -459,7 +459,7 @@ function consolidateChanges(changes, prefixPath) {
 
 
 export const glyphChangeFunctions = {
-  setXY: (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
+  "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
   "=": (subject, key, value) => subject[key] = value,
 };
 
