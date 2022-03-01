@@ -437,6 +437,7 @@ function mapSelection(selection, funcs) {
 
 
 function consolidateChanges(changes, prefixPath) {
+  // TODO: consolidate common path prefix in changes
   let change;
   let path = prefixPath || [];
   if (!Array.isArray(changes)) {
