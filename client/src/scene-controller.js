@@ -459,7 +459,8 @@ function consolidateChanges(changes, prefixPath) {
 
 
 export const glyphChangeFunctions = {
-  setXY: (path, pointIndex, x, y) => path.setXY(pointIndex, x, y)
+  setXY: (path, pointIndex, x, y) => path.setXY(pointIndex, x, y),
+  "=": (subject, key, value) => subject[key] = value,
 };
 
 
