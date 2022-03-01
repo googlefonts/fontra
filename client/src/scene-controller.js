@@ -476,12 +476,13 @@ export function applyChange(subject, change, changeFunctions) {
   }
 
   if (functionName) {
-    if (functionName == "=") {
-      // set item
-      subject[change["k"]] = change["v"]
+    const changeFunc = changeFunctions[functionName];
+    const arg = change["v"];
+    let args = change["a"];
+    if (arg !== undefined) {
+      changeFunc(subject, change["k"], arg);
     } else {
-      // call functionName
-      changeFunctions[functionName](subject, change["k"], ...change["a"]);
+      changeFunc(subject, change["k"], ...args);
     }
   }
 
