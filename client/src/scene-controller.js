@@ -500,11 +500,10 @@ export function applyChange(subject, change, changeFunctions) {
   if (functionName) {
     const changeFunc = changeFunctions[functionName];
     const arg = change["v"];
-    let args = change["a"];
     if (arg !== undefined) {
       changeFunc(subject, change["k"], arg);
     } else {
-      changeFunc(subject, change["k"], ...args);
+      changeFunc(subject, change["k"], ...change["a"]);
     }
   }
 

@@ -175,11 +175,10 @@ def applyChange(subject, change, changeFunctions):
   if functionName is not None:
     changeFunc = changeFunctions[functionName]
     arg = change.get("v")
-    args = change.get("a")
     if arg is not None:
       changeFunc(subject, change["k"], arg)
     else:
-      changeFunc(subject, change["k"], *args)
+      changeFunc(subject, change["k"], *change["a"])
 
   for subChange in children:
     applyChange(subject, subChange, changeFunctions)
