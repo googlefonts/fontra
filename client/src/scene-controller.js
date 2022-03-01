@@ -464,6 +464,25 @@ export const glyphChangeFunctions = {
 };
 
 
+//
+// A "change" object is a simple JS object containing several
+// keys.
+//
+// "p": an array of path items, eg. ["glyphs", "Aring"]
+// Optional: can be omitted if empty.
+//
+// "f": function name, to be lookud up in the changeFunctions dict
+// Optional: can be omitted if the change has children
+//
+// "v": "value", a single argument for the change function
+// "a": "arguments", an array of arguments for the change function
+// If the change has a change function ("f" key), it MUST also have
+// a "v" key/value or an "a" key/value, but NOT both
+//
+// "c": Array of child changes. Optional.
+//
+
+
 export function applyChange(subject, change, changeFunctions) {
   const path = change["p"] || [];
   const functionName = change["f"];
