@@ -2,7 +2,7 @@ import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
 import { mapForward, normalizeLocation } from "./var-model.js";
-import { applyChange } from "./scene-controller.js";
+import { applyChange, glyphChangeFunctions } from "./scene-controller.js";
 import { throttleCalls } from "./utils.js";
 
 
@@ -160,7 +160,7 @@ export class FontController {
       const glyphSet = {};
       const root = {"glyphs": glyphSet};
       glyphSet[glyphName] = await this.getGlyph(glyphName);
-      applyChange(root, change);
+      applyChange(root, change, glyphChangeFunctions);
       this.glyphChanged(glyphName);
     }
   }

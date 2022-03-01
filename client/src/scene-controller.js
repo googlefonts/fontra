@@ -156,7 +156,7 @@ export class SceneController {
       change = editor.makeChangeForDelta(delta);
       absChange = consolidateChanges(change, baseChangePath);
       await fontController.changeChangingThrottled(absChange);
-      applyChange(instance, change);
+      applyChange(instance, change, glyphChangeFunctions);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
@@ -170,7 +170,7 @@ export class SceneController {
 
     const error = await fontController.changeEnd();
     if (error) {
-      applyChange(instance, editor.rollbackChange);
+      applyChange(instance, editor.rollbackChange, glyphChangeFunctions);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
@@ -407,14 +407,14 @@ function makeComponentDragFunc(components, componentIndex) {
 
 
 function makePointChange(pointIndex, x, y) {
-  return {"m": "setXY", "a": [pointIndex, x, y]};
+  return {"f": "setXY", "k": pointIndex, "a": [x, y]};
 }
 
 
 function makeComponentOriginChange(componentIndex, x, y) {
   return {
     "p": [componentIndex, "transformation"],
-    "c": [{"m": "=", "k": "x", "v": x}, {"m": "=", "k": "y", "v": y}],
+    "c": [{"f": "=", "k": "x", "v": x}, {"f": "=", "k": "y", "v": y}],
   };
 }
 
@@ -457,9 +457,14 @@ function consolidateChanges(changes, prefixPath) {
 }
 
 
-export function applyChange(subject, change) {
+export const glyphChangeFunctions = {
+  setXY: (path, pointIndex, x, y) => path.setXY(pointIndex, x, y)
+};
+
+
+export function applyChange(subject, change, changeFunctions) {
   const path = change["p"] || [];
-  const method = change["m"];
+  const functionName = change["f"];
   const children = change["c"] || [];
 
   for (const pathElement of path) {
@@ -469,17 +474,17 @@ export function applyChange(subject, change) {
     }
   }
 
-  if (method) {
-    if (method == "=") {
+  if (functionName) {
+    if (functionName == "=") {
       // set item
       subject[change["k"]] = change["v"]
     } else {
-      // call method
-      subject[method](...change["a"])
+      // call functionName
+      changeFunctions[functionName](subject, change["k"], ...change["a"]);
     }
   }
 
   for (const subChange of children) {
-    applyChange(subject, subChange);
+    applyChange(subject, subChange, glyphChangeFunctions);
   }
 }
