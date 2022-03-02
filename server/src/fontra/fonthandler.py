@@ -24,6 +24,10 @@ class FontHandler:
         self.changedGlyphs = {}
 
     def getGlyph(self, glyphName, *, client):
+        loadedGlyphNames = self.clientData[client.clientUUID].setdefault(
+            "loadedGlyphNames", set()
+        )
+        loadedGlyphNames.add(glyphName)
         glyph = self.changedGlyphs.get(glyphName)
         if glyph is not None:
             fut = asyncio.get_running_loop().create_future()
@@ -66,22 +70,26 @@ class FontHandler:
         ...
 
     async def changeChanging(self, liveChange, *, client):
-        await self.broadcastChange(liveChange, client)
+        await self.broadcastChange(liveChange, client, True)
 
     async def changeEnd(self, finalChange, *, client):
         if finalChange is None:
             return
         await self.updateServerGlyph(finalChange)
-        await self.broadcastChange(finalChange, client)
+        await self.broadcastChange(finalChange, client, False)
         # return {"error": "computer says no"}
 
-    async def broadcastChange(self, change, sourceClient):
+    async def broadcastChange(self, change, sourceClient, isLiveChange):
+        if isLiveChange:
+            subscribedGlyphNamesKey = "subscribedLiveGlyphNames"
+        else:
+            subscribedGlyphNamesKey = "loadedGlyphNames"
         assert change["p"][0] == "glyphs"
         glyphName = change["p"][1]
         clients = []
         for client in self.clients.values():
             subscribedGlyphNames = self.clientData[client.clientUUID].get(
-                "subscribedLiveGlyphNames", ()
+                subscribedGlyphNamesKey, ()
             )
             if client != sourceClient and glyphName in subscribedGlyphNames:
                 clients.append(client)
@@ -140,8 +148,8 @@ def setItem(subject, key, value):
 
 
 glyphChangeFunctions = {
-  "=xy": setPointPosition,
-  "=": setItem,
+    "=xy": setPointPosition,
+    "=": setItem,
 }
 
 
@@ -167,20 +175,20 @@ glyphChangeFunctions = {
 
 
 def applyChange(subject, change, changeFunctions):
-  path = change.get("p", [])
-  functionName = change.get("f")
-  children = change.get("c", [])
+    path = change.get("p", [])
+    functionName = change.get("f")
+    children = change.get("c", [])
 
-  for pathElement in path:
-    subject = subject[pathElement]
+    for pathElement in path:
+        subject = subject[pathElement]
 
-  if functionName is not None:
-    changeFunc = changeFunctions[functionName]
-    arg = change.get("v")
-    if arg is not None:
-      changeFunc(subject, change["k"], arg)
-    else:
-      changeFunc(subject, change["k"], *change["a"])
+    if functionName is not None:
+        changeFunc = changeFunctions[functionName]
+        arg = change.get("v")
+        if arg is not None:
+            changeFunc(subject, change["k"], arg)
+        else:
+            changeFunc(subject, change["k"], *change["a"])
 
-  for subChange in children:
-    applyChange(subject, subChange, changeFunctions)
+    for subChange in children:
+        applyChange(subject, subChange, changeFunctions)
