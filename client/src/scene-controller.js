@@ -155,20 +155,14 @@ export class SceneController {
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       change = editor.makeChangeForDelta(delta);
       absChange = consolidateChanges(change, baseChangePath);
-      await fontController.changeChangingThrottled(absChange);
+      await fontController.changeChanging(absChange);
       applyChange(instance, change, glyphChangeFunctions);
       await fontController.glyphChanged(glyphName);
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
     }
 
-    if (absChange) {
-      // Ensure the last change goes through -- it might have
-      // been dropped by changeChangingThrottled()
-      await fontController.changeChanging(absChange);
-    }
-
-    const error = await fontController.changeEnd();
+    const error = await fontController.changeEnd(absChange);
     if (error) {
       applyChange(instance, editor.rollbackChange, glyphChangeFunctions);
       await fontController.glyphChanged(glyphName);

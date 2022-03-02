@@ -65,12 +65,14 @@ class FontHandler:
     async def changeSetRollback(self, rollbackChange, *, client):
         ...
 
-    async def changeChanging(self, change, *, client):
-        await self.updateServerGlyph(change)
-        await self.broadcastChange(change, client)
+    async def changeChanging(self, liveChange, *, client):
+        await self.broadcastChange(liveChange, client)
 
-    async def changeEnd(self, *, client):
-        return None
+    async def changeEnd(self, finalChange, *, client):
+        if finalChange is None:
+            return
+        await self.updateServerGlyph(finalChange)
+        await self.broadcastChange(finalChange, client)
         # return {"error": "computer says no"}
 
     async def broadcastChange(self, change, sourceClient):
