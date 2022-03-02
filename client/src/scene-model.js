@@ -177,10 +177,10 @@ export class SceneModel {
       yield;
     }
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
-    if (!this._previousUsedGlyphName || !isEqualSet(usedGlyphNames, this._previousUsedGlyphName)) {
+    if (!this._previousUsedGlyphNames || !isEqualSet(usedGlyphNames, this._previousUsedGlyphNames)) {
       this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
     }
-    this._previousUsedGlyphName = usedGlyphNames;
+    this._previousUsedGlyphNames = usedGlyphNames;
   }
 
   selectionAtPoint(point, size) {
