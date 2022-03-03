@@ -30,6 +30,10 @@ export class VariableGlyphController {
     return this.glyph.sources;
   }
 
+  getLayerGlyph(layerName) {
+    return this.glyph.getLayerGlyph(layerName);
+  }
+
   getSourceIndex(location) {
     const locationStr = locationToString(location);
     if (!(locationStr in this._locationToSourceIndex)) {
@@ -69,11 +73,9 @@ export class VariableGlyphController {
   getAllComponentNames() {
     // Return a set of all component names used by all layers of all sources
     const componentNames = new Set();
-    for (const source of this.glyph.sources) {
-      for (const layer of source.layers) {
-        for (const component of layer.glyph.components) {
-          componentNames.add(component.name);
-        }
+    for (const layer of this.glyph.layers) {
+      for (const component of layer.glyph.components) {
+        componentNames.add(component.name);
       }
     }
     return componentNames;
@@ -116,7 +118,7 @@ export class VariableGlyphController {
 
   get deltas() {
     if (this._deltas === undefined) {
-      const masterValues = this.sources.map(source => source.sourceGlyph);
+      const masterValues = this.sources.map(source => this.getLayerGlyph(source.layerName));
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
@@ -167,11 +169,14 @@ export class VariableGlyphController {
     location = mapForward(mapNLILocation(location, this.axes), this.globalAxes);
     let instance;
     if (sourceIndex !== undefined) {
-      instance = this.sources[sourceIndex].sourceGlyph;
+      instance = this.getLayerGlyph(this.sources[sourceIndex].layerName);
     } else {
       instance = this.instantiate(location);
     }
 
+    if (!instance) {
+      throw new Error("assert -- instance is undefined")
+    }
     const instanceController = new StaticGlyphController(
       this.name, instance, sourceIndex,
     );

@@ -9,7 +9,31 @@ export class VariableGlyph {
     glyph.axes = obj.axes || [];
     glyph.unicodes = obj.unicodes || [];
     glyph.sources = obj.sources.map(source => Source.fromObject(source));
+    glyph.layers = obj.layers.map(layer => {
+      return {
+        "name": layer.name,
+        "glyph": StaticGlyph.fromObject(layer.glyph),
+      }
+    });
     return glyph;
+  }
+
+  getLayerGlyph(layerName) {
+    return this.getLayer(layerName).glyph;
+  }
+
+  getLayer(layerName) {
+    return this.layers[this.getLayerIndex(layerName)];
+  }
+
+  getLayerIndex(layerName) {
+    // Optimize with a dict?
+    for (let layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
+      const layer = this.layers[layerIndex];
+      if (layer.name === layerName) {
+        return layerIndex;
+      }
+    }
   }
 
 }
@@ -21,29 +45,8 @@ class Source {
     const source = new Source();
     source.name = obj.name;
     source.location = obj.location;
-    source.sourceLayerName = obj.sourceLayerName;
-    source.layers = obj.layers.map(layer => {
-      return {
-        "name": layer.name,
-        "glyph": StaticGlyph.fromObject(layer.glyph),
-      }
-    });
+    source.layerName = obj.layerName;
     return source;
-  }
-
-  get sourceLayerIndex() {
-    for (let i = 0; i < this.layers.length; i++) {
-      if (this.layers[i].name === this.sourceLayerName) {
-        return i;
-      }
-    }
-  }
-
-  get sourceGlyph() {
-    const i = this.sourceLayerIndex;
-    if (i !== undefined) {
-      return this.layers[i].glyph;
-    }
   }
 
 }
