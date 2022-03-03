@@ -13,6 +13,7 @@ class FontHandler:
             "changeChanging",
             "changeEnd",
             "getGlyph",
+            "unloadGlyph",
             "getGlyphNames",
             "getReverseCmap",
             "getGlobalAxes",
@@ -50,6 +51,10 @@ class FontHandler:
         glyphData = await self.backend.getGlyph(glyphName)
         self.updateGlyphDependencies(glyphName, glyphData)
         return glyphData
+
+    async def unloadGlyph(self, glyphName, *, client):
+        loadedGlyphNames = self.clientData[client.clientUUID]["loadedGlyphNames"]
+        loadedGlyphNames.discard(glyphName)
 
     async def getGlyphNames(self, *, client):
         return await self.backend.getGlyphNames()
