@@ -351,119 +351,115 @@ getGlyphTestData = [
                 {
                     "name": "<default>",
                     "location": {},
-                    "sourceLayerName": "foreground",
-                    "layers": [
-                        {
-                            "name": "foreground",
-                            "glyph": {
-                                "path": {
-                                    "coordinates": [
-                                        105,
-                                        0,
-                                        134,
-                                        0,
-                                        134,
-                                        600,
-                                        110,
-                                        600,
-                                        92,
-                                        600,
-                                        74,
-                                        598,
-                                        59,
-                                        596,
-                                        30,
-                                        592,
-                                        30,
-                                        572,
-                                        105,
-                                        572,
-                                    ],
-                                    "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
-                                    "contourInfo": [{"endPoint": 9, "isClosed": True}],
-                                },
-                                "xAdvance": 229,
-                            },
-                        },
-                    ],
+                    "layerName": "<default>/foreground",
                 },
                 {
                     "name": "longbar",
                     "location": {"HLON": 1.0},
-                    "sourceLayerName": "foreground",
-                    "layers": [
-                        {
-                            "name": "foreground",
-                            "glyph": {
-                                "path": {
-                                    "coordinates": [
-                                        175,
-                                        0,
-                                        204,
-                                        0,
-                                        204,
-                                        600,
-                                        180,
-                                        600,
-                                        152,
-                                        600,
-                                        124,
-                                        598,
-                                        99,
-                                        597,
-                                        0,
-                                        592,
-                                        0,
-                                        572,
-                                        175,
-                                        572,
-                                    ],
-                                    "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
-                                    "contourInfo": [{"endPoint": 9, "isClosed": True}],
-                                },
-                                "xAdvance": 369,
-                            },
-                        },
-                    ],
+                    "layerName": "longbar/foreground",
                 },
                 {
                     "name": "bold",
                     "location": {"WGHT": 1.0},
-                    "sourceLayerName": "foreground",
-                    "layers": [
-                        {
-                            "name": "foreground",
-                            "glyph": {
-                                "path": {
-                                    "coordinates": [
-                                        135,
-                                        0,
-                                        325,
-                                        0,
-                                        325,
-                                        600,
-                                        170,
-                                        600,
-                                        152,
-                                        600,
-                                        135,
-                                        598,
-                                        119,
-                                        596,
-                                        20,
-                                        582,
-                                        20,
-                                        457,
-                                        135,
-                                        457,
-                                    ],
-                                    "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
-                                    "contourInfo": [{"endPoint": 9, "isClosed": True}],
-                                },
-                                "xAdvance": 450,
-                            },
+                    "layerName": "bold/foreground",
+                },
+            ],
+            "layers": [
+                {
+                    "name": "<default>/foreground",
+                    "glyph": {
+                        "path": {
+                            "coordinates": [
+                                105,
+                                0,
+                                134,
+                                0,
+                                134,
+                                600,
+                                110,
+                                600,
+                                92,
+                                600,
+                                74,
+                                598,
+                                59,
+                                596,
+                                30,
+                                592,
+                                30,
+                                572,
+                                105,
+                                572,
+                            ],
+                            "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
+                            "contourInfo": [{"endPoint": 9, "isClosed": True}],
                         },
-                    ],
+                        "xAdvance": 229,
+                    },
+                },
+                {
+                    "name": "longbar/foreground",
+                    "glyph": {
+                        "path": {
+                            "coordinates": [
+                                175,
+                                0,
+                                204,
+                                0,
+                                204,
+                                600,
+                                180,
+                                600,
+                                152,
+                                600,
+                                124,
+                                598,
+                                99,
+                                597,
+                                0,
+                                592,
+                                0,
+                                572,
+                                175,
+                                572,
+                            ],
+                            "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
+                            "contourInfo": [{"endPoint": 9, "isClosed": True}],
+                        },
+                        "xAdvance": 369,
+                    },
+                },
+                {
+                    "name": "bold/foreground",
+                    "glyph": {
+                        "path": {
+                            "coordinates": [
+                                135,
+                                0,
+                                325,
+                                0,
+                                325,
+                                600,
+                                170,
+                                600,
+                                152,
+                                600,
+                                135,
+                                598,
+                                119,
+                                596,
+                                20,
+                                582,
+                                20,
+                                457,
+                                135,
+                                457,
+                            ],
+                            "pointTypes": [0, 0, 0, 8, 2, 2, 8, 0, 0, 0],
+                            "contourInfo": [{"endPoint": 9, "isClosed": True}],
+                        },
+                        "xAdvance": 450,
+                    },
                 },
             ],
         },
@@ -480,58 +476,56 @@ getGlyphTestData = [
                 {
                     "name": "<default>",
                     "location": {},
-                    "sourceLayerName": "foreground",
-                    "layers": [
-                        {
-                            "name": "foreground",
-                            "glyph": {
-                                "components": [
-                                    {
-                                        "name": "DC_0031_00",
-                                        "transformation": {
-                                            "rotation": 0,
-                                            "scalex": 1,
-                                            "scaley": 1,
-                                            "tcenterx": 0,
-                                            "tcentery": 0,
-                                            "x": -1,
-                                            "y": 0,
-                                        },
-                                        "location": {"T_H_lo": 0, "X_X_bo": 0},
-                                    }
-                                ],
-                                "xAdvance": 350,
-                            },
-                        },
-                    ],
+                    "layerName": "<default>/foreground",
                 },
                 {
                     "name": "wght",
                     "location": {"wght": 1.0},
-                    "sourceLayerName": "foreground",
-                    "layers": [
-                        {
-                            "name": "foreground",
-                            "glyph": {
-                                "components": [
-                                    {
-                                        "name": "DC_0031_00",
-                                        "transformation": {
-                                            "rotation": 0,
-                                            "scalex": 0.93,
-                                            "scaley": 1,
-                                            "tcenterx": 0,
-                                            "tcentery": 0,
-                                            "x": -23.0,
-                                            "y": 0.0,
-                                        },
-                                        "location": {"T_H_lo": 0, "X_X_bo": 0.7},
-                                    }
-                                ],
-                                "xAdvance": 350,
-                            },
-                        },
-                    ],
+                    "layerName": "wght/foreground",
+                },
+            ],
+            "layers": [
+                {
+                    "name": "<default>/foreground",
+                    "glyph": {
+                        "components": [
+                            {
+                                "name": "DC_0031_00",
+                                "transformation": {
+                                    "rotation": 0,
+                                    "scalex": 1,
+                                    "scaley": 1,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": -1,
+                                    "y": 0,
+                                },
+                                "location": {"T_H_lo": 0, "X_X_bo": 0},
+                            }
+                        ],
+                        "xAdvance": 350,
+                    },
+                },
+                {
+                    "name": "wght/foreground",
+                    "glyph": {
+                        "components": [
+                            {
+                                "name": "DC_0031_00",
+                                "transformation": {
+                                    "rotation": 0,
+                                    "scalex": 0.93,
+                                    "scaley": 1,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": -23.0,
+                                    "y": 0.0,
+                                },
+                                "location": {"T_H_lo": 0, "X_X_bo": 0.7},
+                            }
+                        ],
+                        "xAdvance": 350,
+                    },
                 },
             ],
         },
@@ -559,86 +553,82 @@ getGlyphTestData = [
                 {
                     "name": "<default>",
                     "location": {},
-                    "sourceLayerName": "foreground",
-                    "layers": [
-                        {
-                            "name": "foreground",
-                            "glyph": {
-                                "components": [
-                                    {
-                                        "location": {"WDTH": 0.33, "WGHT": 0.45},
-                                        "name": "zero_00",
-                                        "transformation": {
-                                            "rotation": 0,
-                                            "scalex": 1,
-                                            "scaley": 1,
-                                            "tcenterx": 0,
-                                            "tcentery": 0,
-                                            "x": 0,
-                                            "y": 0,
-                                        },
-                                    }
-                                ],
-                                "xAdvance": 600,
-                            },
-                        },
-                    ],
+                    "layerName": "<default>/foreground",
                 },
                 {
                     "name": "X_X_bo",
                     "location": {"X_X_bo": 1.0},
-                    "sourceLayerName": "foreground",
-                    "layers": [
-                        {
-                            "name": "foreground",
-                            "glyph": {
-                                "components": [
-                                    {
-                                        "location": {"WDTH": 0.33, "WGHT": 1.0},
-                                        "name": "zero_00",
-                                        "transformation": {
-                                            "rotation": 0,
-                                            "scalex": 1,
-                                            "scaley": 1,
-                                            "tcenterx": 0,
-                                            "tcentery": 0,
-                                            "x": 0,
-                                            "y": 0,
-                                        },
-                                    }
-                                ],
-                                "xAdvance": 600,
-                            },
-                        },
-                    ],
+                    "layerName": "X_X_bo/foreground",
                 },
                 {
                     "name": "X_X_la",
                     "location": {"X_X_la": 1.0},
-                    "sourceLayerName": "foreground",
-                    "layers": [
-                        {
-                            "name": "foreground",
-                            "glyph": {
-                                "components": [
-                                    {
-                                        "location": {"WDTH": 1.0, "WGHT": 0.45},
-                                        "name": "zero_00",
-                                        "transformation": {
-                                            "rotation": 0,
-                                            "scalex": 1,
-                                            "scaley": 1,
-                                            "tcenterx": 0,
-                                            "tcentery": 0,
-                                            "x": 0,
-                                            "y": 0,
-                                        },
-                                    }
-                                ],
-                                "xAdvance": 600,
-                            },
-                        },
-                    ],
+                    "layerName": "X_X_la/foreground",
+                },
+            ],
+            "layers": [
+                {
+                    "name": "<default>/foreground",
+                    "glyph": {
+                        "components": [
+                            {
+                                "location": {"WDTH": 0.33, "WGHT": 0.45},
+                                "name": "zero_00",
+                                "transformation": {
+                                    "rotation": 0,
+                                    "scalex": 1,
+                                    "scaley": 1,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 0,
+                                    "y": 0,
+                                },
+                            }
+                        ],
+                        "xAdvance": 600,
+                    },
+                },
+                {
+                    "name": "X_X_bo/foreground",
+                    "glyph": {
+                        "components": [
+                            {
+                                "location": {"WDTH": 0.33, "WGHT": 1.0},
+                                "name": "zero_00",
+                                "transformation": {
+                                    "rotation": 0,
+                                    "scalex": 1,
+                                    "scaley": 1,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 0,
+                                    "y": 0,
+                                },
+                            }
+                        ],
+                        "xAdvance": 600,
+                    },
+                },
+                {
+                    "name": "X_X_la/foreground",
+                    "glyph": {
+                        "components": [
+                            {
+                                "location": {"WDTH": 1.0, "WGHT": 0.45},
+                                "name": "zero_00",
+                                "transformation": {
+                                    "rotation": 0,
+                                    "scalex": 1,
+                                    "scaley": 1,
+                                    "tcenterx": 0,
+                                    "tcentery": 0,
+                                    "x": 0,
+                                    "y": 0,
+                                },
+                            }
+                        ],
+                        "xAdvance": 600,
+                    },
                 },
             ],
         },
