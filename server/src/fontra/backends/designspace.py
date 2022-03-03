@@ -32,64 +32,67 @@ class DesignspaceBackend:
         return self._getSourceFromSourceDescriptor(self.dsDoc.default)
 
     def loadSources(self):
-        # All layers in a source UFO that are NOT used as source layer
-        # by the designspace doc are added to the default source.
         readers = {}
-        sourceLayers = defaultdict(set)
-        for source in self.dsDoc.sources:
+        fontraLayerNames = {}
+        self.ufoGlyphSets = {}
+        self.globalSources = []
+        self.defaultSourceGlyphSet = None
+        for sourceIndex, source in enumerate(self.dsDoc.sources):
             path = source.path
             reader = readers.get(path)
             if reader is None:
                 reader = readers[path] = UFOReader(path)
-            sourceLayers[path].add(source.layerName or reader.getDefaultLayerName())
-
-        for source in self.dsDoc.sources:
-            path = source.path
-            layerName = source.layerName
-            reader = readers[path]
-            usedLayerNames = sourceLayers[path]
-            if layerName is None:
-                layerName = reader.getDefaultLayerName()
-                layerNames = [
-                    n
-                    for n in reader.getLayerNames()
-                    if n == layerName or n not in usedLayerNames
-                ]
-            else:
-                layerNames = [layerName]
-            key = (path, source.layerName)
-            assert key not in self._sources
-            self._sources[key] = UFOBackend.fromUFOReader(reader, layerName, layerNames)
-
-    def _getSourceFromSourceDescriptor(self, source):
-        return self._sources[(source.path, source.layerName)]
+            for ufoLayerName in reader.getLayerNames():
+                key = (path, ufoLayerName)
+                fontraLayerName = fontraLayerNames.get(key)
+                if fontraLayerName is None:
+                    fontraLayerName = f"{source.styleName}/{ufoLayerName}"
+                    fontraLayerNames[key] = fontraLayerName
+                    self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
+                        ufoLayerName
+                    )
+            sourceLayerName = (
+                source.layerName
+                if source.layerName is not None
+                else reader.getDefaultLayerName()
+            )
+            fontraLayerName = fontraLayerNames[(path, sourceLayerName)]
+            sourceDict = dict(
+                location=source.location,
+                name=source.styleName,
+                layerName=fontraLayerName,
+            )
+            if source == self.dsDoc.default:
+                self.defaultSourceGlyphSet = self.ufoGlyphSets[fontraLayerName]
+            self.globalSources.append(sourceDict)
 
     async def getGlyphNames(self):
-        return await self.defaultSource.getGlyphNames()
+        return sorted(self.defaultSourceGlyphSet.keys())
 
     async def getReverseCmap(self):
-        return await self.defaultSource.getReverseCmap()
+        return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
 
     async def getGlyph(self, glyphName):
-        glyph = {"name": glyphName}
-        sources = []
-        for sourceDescriptor in self.dsDoc.sources:
-            ufoSource = self._getSourceFromSourceDescriptor(sourceDescriptor)
-            if not ufoSource.hasGlyph(glyphName):
-                continue
-            layersDict, sourceGlyph = ufoSource.serializeGlyph(glyphName)
-            sources.append(
-                {
-                    "name": sourceDescriptor.layerName or sourceDescriptor.styleName,
-                    "location": sourceDescriptor.location,
-                    "sourceLayerName": ufoSource.layerName,
-                    "layers": layersDict,
-                }
-            )
-            if ufoSource == self.defaultSource:
-                glyph["unicodes"] = sourceGlyph.unicodes
+        glyph = {"name": glyphName, "unicodes": []}
 
+        sources = []
+        for globalSource in self.globalSources:
+            glyphSet = self.ufoGlyphSets[globalSource["layerName"]]
+            if glyphName not in glyphSet:
+                continue
+            sources.append(dict(globalSource))
         glyph["sources"] = sources
+
+        layers = []
+        for fontraLayerName, glyphSet in self.ufoGlyphSets.items():
+            if glyphName not in glyphSet:
+                continue
+            glyphDict, ufoGlyph = serializeGlyph(glyphSet, glyphName)
+            if glyphSet == self.defaultSourceGlyphSet:
+                glyph["unicodes"] = ufoGlyph.unicodes
+            layers.append({"name": fontraLayerName, "glyph": glyphDict})
+        glyph["layers"] = layers
+
         return glyph
 
     async def getGlobalAxes(self):
@@ -98,54 +101,39 @@ class DesignspaceBackend:
 
 class UFOBackend:
     @classmethod
-    def fromPath(cls, path, layerName=None, layerNames=None):
-        return cls.fromUFOReader(UFOReader(path), layerName, layerNames)
-
-    @classmethod
-    def fromUFOReader(cls, reader, layerName=None, layerNames=None):
+    def fromPath(cls, path):
         self = cls()
-        self.reader = reader
-        if layerName is None:
-            layerName = self.reader.getDefaultLayerName()
-        self.layerName = layerName
-        if layerNames is None:
-            layerNames = self.reader.getLayerNames()
+        self.reader = UFOReader(path)
+        self.layerName = self.reader.getDefaultLayerName()
         self.glyphSets = {
             layerName: self.reader.getGlyphSet(layerName=layerName)
-            for layerName in layerNames
+            for layerName in self.reader.getLayerNames()
         }
         return self
-
-    def serializeGlyph(self, glyphName):
-        return serializeGlyphLayers(self.glyphSets, glyphName, self.layerName)
 
     async def getGlyphNames(self):
         return sorted(self.glyphSets[self.layerName].keys())
 
     async def getReverseCmap(self):
-        revCmap = {}
-        for glyphName in await self.getGlyphNames():
-            glifData = self.glyphSets[self.layerName].getGLIF(glyphName)
-            gn, unicodes = extractGlyphNameAndUnicodes(glifData)
-            assert gn == glyphName
-            revCmap[glyphName] = unicodes
-        return revCmap
+        return getReverseCmapFromGlyphSet(self.glyphSets[self.layerName])
 
     def hasGlyph(self, glyphName):
         return glyphName in self.glyphSets[self.layerName]
 
     async def getGlyph(self, glyphName):
         glyph = {"name": glyphName}
-        layersDict, sourceGlyph = self.serializeGlyph(glyphName)
+        layers, sourceGlyph = serializeGlyphLayers(
+            self.glyphSets, glyphName, self.layerName
+        )
         layerName = self.layerName
         glyph["sources"] = [
             {
                 "location": {},
-                "sourceLayerName": self.layerName,
-                "layers": layersDict,
+                "layerName": self.layerName,
             }
         ]
         glyph["unicodes"] = sourceGlyph.unicodes
+        glyph["layers"] = layers
         return glyph
 
     async def getGlobalAxes(self):
@@ -183,3 +171,13 @@ def serializeGlyph(glyphSet, glyphName):
     # TODO: anchors
     # TODO: yAdvance, verticalOrigin
     return glyphDict, glyph
+
+
+def getReverseCmapFromGlyphSet(glyphSet):
+    revCmap = {}
+    for glyphName in glyphSet.keys():
+        glifData = glyphSet.getGLIF(glyphName)
+        gn, unicodes = extractGlyphNameAndUnicodes(glifData)
+        assert gn == glyphName
+        revCmap[glyphName] = unicodes
+    return revCmap
