@@ -38,6 +38,10 @@ class Server:
             self.unregisterClient(client)
 
 
+class ClientException(Exception):
+    pass
+
+
 class Client:
     def __init__(self, websocket, subject, methodNames, verboseErrors):
         self.websocket = websocket
@@ -75,7 +79,7 @@ class Client:
                     if error is None:
                         fut.set_result(returnValue)
                     else:
-                        fut.set_exception(error)  # TODO: wrap in ClientException
+                        fut.set_exception(ClientException(error))
         except websockets.exceptions.ConnectionClosedError as e:
             logger.info(f"websocket connection closed: {e!r}")
 

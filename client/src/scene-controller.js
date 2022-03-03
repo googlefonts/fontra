@@ -143,7 +143,8 @@ export class SceneController {
     const instance = glyphController.instance;
 
     const varGlyph = await fontController.getGlyph(glyphName);
-    const baseChangePath = ["glyphs", glyphName, "sources", sourceIndex, "layers", varGlyph.sources[sourceIndex].sourceLayerIndex, "glyph"];
+    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[sourceIndex].layerName);
+    const baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
 
     const editor = new GlyphEditor(instance, this.selection);
     let change, absChange;

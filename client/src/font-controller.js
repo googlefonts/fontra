@@ -159,7 +159,7 @@ export class FontController {
       const glyphName = change.p[1];
       const glyphSet = {};
       const root = {"glyphs": glyphSet};
-      glyphSet[glyphName] = await this.getGlyph(glyphName);
+      glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
       applyChange(root, change, glyphChangeFunctions);
       this.glyphChanged(glyphName);
     }

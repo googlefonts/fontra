@@ -92,6 +92,7 @@ def serializeGlyph(glyph):
     d["name"] = glyph.name
     d["unicodes"] = glyph.unicodes
     sources = []
+    layers = []
     for varGlyph in [glyph] + glyph.variations:
         source = {}
         sourceName = getattr(varGlyph, "sourceName", "<default>")
@@ -108,10 +109,11 @@ def serializeGlyph(glyph):
             sourceGlyph["components"] = components
         # TODO anchors?
         sourceGlyph["xAdvance"] = varGlyph.width  # TODO: yAdvance, verticalOrigin
-        source["sourceLayerName"] = "foreground"
-        source["layers"] = [{"name": "foreground", "glyph": sourceGlyph}]
+        source["layerName"] = f"{sourceName}/foreground"
+        layers.append({"name": f"{sourceName}/foreground", "glyph": sourceGlyph})
         sources.append(source)
     d["sources"] = sources
+    d["layers"] = layers
     return d
 
 

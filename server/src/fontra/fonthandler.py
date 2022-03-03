@@ -135,10 +135,9 @@ class FontHandler:
 
 
 def _iterAllComponentNames(glyphData):
-    for source in glyphData["sources"]:
-        for layer in source["layers"]:
-            for compo in layer["glyph"].get("components", ()):
-                yield compo["name"]
+    for layer in glyphData["layers"]:
+        for compo in layer["glyph"].get("components", ()):
+            yield compo["name"]
 
 
 def setPointPosition(path, pointIndex, x, y):

@@ -195,10 +195,10 @@ def serializeGlyph(glifData, layers, axisDefaults):
         {
             "name": "<default>",
             "location": {},
-            "sourceLayerName": "foreground",
-            "layers": [{"name": "foreground", "glyph": defaultSourceDict}],
+            "layerName": "<default>/foreground",
         },
     ]
+    layerData = [{"name": "<default>/foreground", "glyph": defaultSourceDict}]
 
     for varDict in glyph.lib.get("robocjk.variationGlyphs", ()):
         if not varDict.get("on", True):
@@ -230,16 +230,17 @@ def serializeGlyph(glifData, layers, axisDefaults):
             {
                 "name": sourceName,
                 "location": varDict["location"],
-                "sourceLayerName": "foreground",
-                "layers": [{"name": "foreground", "glyph": varSourceDict}],
+                "layerName": f"{sourceName}/foreground",
             }
         )
+        layerData.append({"name": f"{sourceName}/foreground", "glyph": varSourceDict})
 
     glyphDict = {
         "name": glyph.name,
         "unicodes": glyph.unicodes,
         "axes": [cleanupAxis(axis) for axis in glyph.lib["robocjk.axes"]],
         "sources": sources,
+        "layers": layerData,
     }
     return glyphDict
 
