@@ -11,7 +11,7 @@ export class FontController {
   constructor (font, location) {
     this.font = font;
     this.location = location;
-    this._glyphsPromiseCache = new LRUCache(250);
+    this._glyphsPromiseCache = new LRUCache(250);  // TODO: what if we need to display > 250 glyphs?
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
     // Helper to throttle calls to changeChanging. (Ideally the minTime should
@@ -58,7 +58,11 @@ export class FontController {
         }
         return glyph;
       })();
-      this._glyphsPromiseCache.put(glyphName, glyphPromise);
+      const purgedGlyphName = this._glyphsPromiseCache.put(glyphName, glyphPromise);
+      // if (purgedGlyphName) {
+      //   console.log("purging", purgedGlyphName);
+      //   this.font.unloadGlyph(purgedGlyphName);
+      // }
       // console.log("LRU size", this._glyphsPromiseCache.map.size);
     }
     return glyphPromise;
