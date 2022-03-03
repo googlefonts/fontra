@@ -38,7 +38,6 @@ export class VariableGlyphController {
     return this.glyph.getLayerIndex(layerName);
   }
 
-
   getSourceIndex(location) {
     const locationStr = locationToString(location);
     if (!(locationStr in this._locationToSourceIndex)) {
