@@ -1,5 +1,5 @@
 import asyncio
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, unquote
 import aiohttp
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from .pen import PathBuilderPointPen
@@ -73,7 +73,7 @@ class RCJKMySQLBackend:
             raise ValueError(f"URL must be https, found {parsed.scheme}")
         port = f":{parsed.port}" if parsed.port is not None else ""
         plainURL = f"{parsed.scheme}://{parsed.hostname}{port}/"
-        path_parts = parsed.path.split("/")
+        path_parts = unquote(parsed.path).split("/")
         if len(path_parts) != 3:
             raise ValueError(
                 f"URL must contain /projectname/fontname path, found {parsed.path}"
