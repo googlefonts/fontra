@@ -1,7 +1,7 @@
 import argparse
 import logging
 import pathlib
-from urllib.parse import urlsplit, urlunsplit, unquote
+from urllib.parse import urlsplit, urlunsplit
 from aiohttp import web
 from .backends import getBackendClass
 from .fonthandler import FontHandler
@@ -12,8 +12,7 @@ async def getMySQLBackend(url):
     from .backends.rcjkmysql import RCJKMySQLBackend
 
     parsed = urlsplit(url)
-    projectPath = unquote(parsed.path)
-    displayURL = urlunsplit([parsed.scheme, parsed.hostname, projectPath, None, None])
+    displayURL = urlunsplit([parsed.scheme, parsed.hostname, parsed.path, None, None])
     print(f"connecting to project {displayURL}...")
     return await RCJKMySQLBackend.fromURL(url)
 
