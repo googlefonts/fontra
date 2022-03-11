@@ -342,7 +342,7 @@ async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, tran
     if (error.name !== "VariationError") {
       throw error;
     }
-    const errorMessage = `Interpolation error while instantiating component ${compo.name}`;
+    const errorMessage = `Interpolation error while instantiating component ${compo.name} (${error.toString()})`;
     console.log(errorMessage);
     return {"error": errorMessage};
   }
