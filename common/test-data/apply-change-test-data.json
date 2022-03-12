@@ -20,7 +20,6 @@
       "testName": "change simple array",
       "inputDataName": "simpleArray",
       "change": {
-        "p": [],
         "f": "=",
         "k": 1,
         "v": 222
