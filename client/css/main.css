@@ -56,11 +56,12 @@ html, body {
   flex-direction: column;
   gap:  0.5em;
   overflow: scroll;
-  flex: 0 1 auto;
+  flex-shrink: 1;
 }
 
 .sources-list {
-  flex: 0 1 auto;
+  flex-shrink: 100;
+  min-height: 100px;
 }
 
 .slider-label {
