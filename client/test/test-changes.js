@@ -13,21 +13,21 @@ const __dirname = dirname(__filename)
 
 describe("Changes Tests", () => {
 
-  const test_data_path = join(dirname(dirname(__dirname)), "common/test-data/apply-changes-test-data.json");
+  const test_data_path = join(dirname(dirname(__dirname)), "common/test-data/apply-change-test-data.json");
   const test_data = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
-  const input_data = test_data["input_data"];
+  const inputData = test_data["inputData"];
   const tests = test_data["tests"];
 
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i];
-    const test_name = test["test_name"];
-    const input_data_name = test["input_data_name"];
-    const expected = test["expected_data"];
+    const testName = test["testName"];
+    const inputDataName = test["inputDataName"];
+    const expectedData = test["expectedData"];
 
-    const subject = copyObject(input_data[input_data_name]);
-    it(`Apply Changes test #${i} -- ${test_name}`, () => {
+    const subject = copyObject(inputData[inputDataName]);
+    it(`Apply Changes test #${i} -- ${testName}`, () => {
       applyChange(subject, test["change"], baseChangeFunctions);
-      expect(subject).to.deep.equal(expected);
+      expect(subject).to.deep.equal(expectedData);
     });
   }
 

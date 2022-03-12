@@ -1,6 +1,6 @@
 {
-  "input_data": {
-    "simple_array": [
+  "inputData": {
+    "simpleArray": [
       1,
       2,
       3
@@ -8,15 +8,15 @@
   },
   "tests": [
     {
-      "test_name": "change array",
-      "input_data_name": "simple_array",
+      "testName": "change array",
+      "inputDataName": "simpleArray",
       "change": {
         "p": [],
         "f": "=",
         "k": 1,
         "v": 222
       },
-      "expected_data": [
+      "expectedData": [
         1,
         222,
         3
