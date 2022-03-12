@@ -4,11 +4,20 @@
       1,
       2,
       3
+    ],
+    "nestedArray": [
+      1,
+      [
+        2,
+        22,
+        33
+      ],
+      3
     ]
   },
   "tests": [
     {
-      "testName": "change array",
+      "testName": "change simple array",
       "inputDataName": "simpleArray",
       "change": {
         "p": [],
@@ -19,6 +28,27 @@
       "expectedData": [
         1,
         222,
+        3
+      ]
+    },
+    {
+      "testName": "change nested array",
+      "inputDataName": "nestedArray",
+      "change": {
+        "p": [
+          1
+        ],
+        "f": "=",
+        "k": 2,
+        "v": 444
+      },
+      "expectedData": [
+        1,
+        [
+          2,
+          22,
+          444
+        ],
         3
       ]
     }
