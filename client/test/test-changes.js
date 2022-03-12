@@ -18,7 +18,6 @@ describe("Changes Tests", () => {
   const input_data = test_data["input_data"];
   const tests = test_data["tests"];
 
-
   for (let i = 0; i < tests.length; i++) {
     const test = tests[i];
     const test_name = test["test_name"];
