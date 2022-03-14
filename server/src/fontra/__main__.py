@@ -40,12 +40,14 @@ class FontraServer:
 
     def setup(self):
         self.httpApp = web.Application()
-        self.httpApp.add_routes(
-            [
-                web.get("/", self.rootDocumentHandler),
-                web.static("/", self.contentFolder),
-            ]
-        )
+        routes = []
+        routes.append(web.get("/", self.rootDocumentHandler))
+        maxDepth = 4
+        for i in range(maxDepth):
+            path = "/".join(f"{{path{j}}}" for j in range(i + 1))
+            routes.append(web.get("/projects/" + path, self.projectsPathHandler))
+        routes.append(web.static("/", self.contentFolder))
+        self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.setupWebSocketServer)
 
     def run(self):
@@ -73,6 +75,16 @@ class FontraServer:
             verboseErrors=True,
         )
         await server.getServerTask(host=self.host, port=self.webSocketPort)
+
+    async def projectsPathHandler(self, request):
+        pathItems = []
+        for i in range(10):
+            k = f"path{i}"
+            item = request.match_info.get(k)
+            if item is None:
+                break
+            pathItems.append(item)
+        return web.Response(text=f"Hallo {'/'.join(pathItems)}")
 
     async def rootDocumentHandler(self, request):
         editorTemplatePath = self.templatesFolder / "editor.html"
