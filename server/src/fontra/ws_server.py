@@ -8,7 +8,7 @@ import websockets
 logger = logging.getLogger(__name__)
 
 
-class WebsocketServer:
+class WebSocketServer:
     def __init__(self, subject, methodNames, *, clients=None, verboseErrors=False):
         self.clients = clients if clients is not None else {}
         self.subject = subject

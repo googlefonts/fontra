@@ -5,7 +5,7 @@ from urllib.parse import urlsplit, urlunsplit
 from aiohttp import web
 from .backends import getBackendClass
 from .fonthandler import FontHandler
-from .ws_server import WebsocketServer
+from .ws_server import WebSocketServer
 
 
 async def getMySQLBackend(url):
@@ -47,14 +47,14 @@ def main():
     else:
         backendCoro = getFileSystemBackend(args.font)
 
-    async def handleWebsocketPort(request):
+    async def handleWebSocketPort(request):
         return web.Response(text=str(websocketPort))
 
-    async def setupWebsocketServer(app):
+    async def setupWebSocketServer(app):
         clients = {}
         backend = await backendCoro
         font = FontHandler(backend, clients)
-        server = WebsocketServer(
+        server = WebSocketServer(
             font,
             font.remoteMethodNames,
             clients=clients,
@@ -68,12 +68,12 @@ def main():
     httpApp = web.Application()
     httpApp.add_routes(
         [
-            web.get("/websocketport", handleWebsocketPort),
+            web.get("/websocketport", handleWebSocketPort),
             web.get("/", rootHandler),
             web.static("/", "client"),
         ]
     )
-    httpApp.on_startup.append(setupWebsocketServer)
+    httpApp.on_startup.append(setupWebSocketServer)
     pad = " " * (22 - len(str(httpPort)) - len(host))
     print("+---------------------------------------------------+")
     print("|                                                   |")
