@@ -5,7 +5,7 @@ from urllib.parse import urlsplit, urlunsplit
 from aiohttp import web
 from .backends import getBackendClass
 from .fonthandler import FontHandler
-from .server import Server
+from .ws_server import WebsocketServer
 
 
 async def getMySQLBackend(url):
@@ -54,7 +54,7 @@ def main():
         clients = {}
         backend = await backendCoro
         font = FontHandler(backend, clients)
-        server = Server(
+        server = WebsocketServer(
             font,
             font.remoteMethodNames,
             clients=clients,
