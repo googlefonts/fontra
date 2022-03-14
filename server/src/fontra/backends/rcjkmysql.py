@@ -3,10 +3,10 @@ from urllib.parse import urlsplit, unquote
 import aiohttp
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from .pen import PathBuilderPointPen
-from .rcjkclient import Client, HTTPError
+from .rcjkclient import Client as RCJKClient, HTTPError
 
 
-class ClientAsync(Client):
+class RCJKClientAsync(RCJKClient):
     def _connect(self):
         # Override with no-op, as we need to handle the connection separately
         # as an async method.
@@ -79,7 +79,7 @@ class RCJKMySQLBackend:
             )
         _, projectName, fontName = pathParts
 
-        client = ClientAsync(
+        client = RCJKClientAsync(
             host=plainURL,
             username=parsed.username,
             password=parsed.password,
