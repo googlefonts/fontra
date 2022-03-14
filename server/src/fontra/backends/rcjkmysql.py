@@ -73,12 +73,12 @@ class RCJKMySQLBackend:
             raise ValueError(f"URL must be https, found {parsed.scheme}")
         port = f":{parsed.port}" if parsed.port is not None else ""
         plainURL = f"{parsed.scheme}://{parsed.hostname}{port}/"
-        path_parts = unquote(parsed.path).split("/")
-        if len(path_parts) != 3:
+        pathParts = unquote(parsed.path).split("/")
+        if len(pathParts) != 3:
             raise ValueError(
                 f"URL must contain /projectname/fontname path, found {parsed.path}"
             )
-        _, project_name, font_name = path_parts
+        _, projectName, fontName = pathParts
 
         self.client = ClientAsync(
             host=plainURL,
@@ -87,11 +87,11 @@ class RCJKMySQLBackend:
         )
         await self.client.connect()
 
-        self.project_uid = _get_uid_by_name(
-            (await self.client.project_list())["data"], project_name, "project"
+        projectUID = _getUIDByName(
+            (await self.client.project_list())["data"], projectName, "project"
         )
-        self.font_uid = _get_uid_by_name(
-            (await self.client.font_list(self.project_uid))["data"], font_name, "font"
+        self.fontUID = _getUIDByName(
+            (await self.client.font_list(projectUID))["data"], fontName, "font"
         )
         self._glyphMapping = None
         self._tempGlyphDataCache = {}
@@ -107,7 +107,7 @@ class RCJKMySQLBackend:
         revCmap = {}
         for typeCode, methodName in _glyphListMethods.items():
             method = getattr(self.client, methodName)
-            response = await method(self.font_uid)
+            response = await method(self.fontUID)
             for glyphInfo in response["data"]:
                 unicode_hex = glyphInfo.get("unicode_hex")
                 if unicode_hex:
@@ -125,7 +125,7 @@ class RCJKMySQLBackend:
             getMethodName = _getGlyphMethods[typeCode]
             method = getattr(self.client, getMethodName)
             response = await method(
-                self.font_uid, glyphID, return_layers=True, return_related=True
+                self.fontUID, glyphID, return_layers=True, return_related=True
             )
             glyphData = response["data"]
             self._tempGlyphDataCache[(typeCode, glyphID)] = glyphData
@@ -140,7 +140,7 @@ class RCJKMySQLBackend:
         return serializeGlyph(glyphData["data"], layers, axisDefaults)
 
     async def getGlobalAxes(self):
-        font_data = await self.client.font_get(self.font_uid)
+        font_data = await self.client.font_get(self.fontUID)
         ds = font_data["data"].get("designspace", {})
         axes = ds.get("axes", [])
         for axis in axes:
@@ -297,7 +297,7 @@ _glyphListMethods = {
 }
 
 
-def _get_uid_by_name(items, name, kind):
+def _getUIDByName(items, name, kind):
     for item in items:
         if item["name"] == name:
             return item["uid"]
