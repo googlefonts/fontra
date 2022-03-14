@@ -34,17 +34,18 @@ class FontraServer:
     host: str
     httpPort: int
     websocketPort: int
-    httpRoot: str
+    contentFolder: str
+    templatesFolder: str
     backendCoro: object  # TODO: turn into factory function, taking path
 
     def setup(self):
-        indexPath = self.httpRoot / "index.html"
+        indexPath = self.contentFolder / "index.html"
         self.httpApp = web.Application()
         self.httpApp.add_routes(
             [
                 web.get("/websocketport", self.handleWebSocketPort),
                 web.get("/", self.rootHandler),
-                web.static("/", self.httpRoot),
+                web.static("/", self.contentFolder),
             ]
         )
         self.httpApp.on_startup.append(self.setupWebSocketServer)
@@ -79,7 +80,7 @@ class FontraServer:
         return web.Response(text=str(self.websocketPort))
 
     async def rootHandler(self, request):
-        indexPath = self.httpRoot / "index.html"
+        indexPath = self.contentFolder / "index.html"
         return web.Response(
             text=indexPath.read_text(encoding="utf-8"), content_type="text/html"
         )
@@ -105,9 +106,13 @@ def main():
     else:
         backendCoro = getFileSystemBackend(args.font)
 
-    httpRoot = pathlib.Path("client").resolve()
+    fontraRoot = pathlib.Path(__file__).resolve().parent.parent.parent.parent
+    contentFolder = fontraRoot / "client"
+    templatesFolder = fontraRoot / "templates"
 
-    server = FontraServer(host, httpPort, websocketPort, httpRoot, backendCoro)
+    server = FontraServer(
+        host, httpPort, websocketPort, contentFolder, templatesFolder, backendCoro
+    )
     server.setup()
     server.run()
 
