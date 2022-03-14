@@ -33,7 +33,7 @@ class FontraServer:
 
     host: str
     httpPort: int
-    websocketPort: int
+    webSocketPort: int
     contentFolder: str
     templatesFolder: str
     backendCoro: object  # TODO: turn into factory function, taking path
@@ -72,12 +72,12 @@ class FontraServer:
             clients=clients,
             verboseErrors=True,
         )
-        await server.getServerTask(host=self.host, port=self.websocketPort)
+        await server.getServerTask(host=self.host, port=self.webSocketPort)
 
     async def rootHandler(self, request):
         editorTemplatePath = self.templatesFolder / "editor.html"
         editorHTML = editorTemplatePath.read_text(encoding="utf-8")
-        editorHTML = editorHTML.format(webSocketPort=self.websocketPort)
+        editorHTML = editorHTML.format(webSocketPort=self.webSocketPort)
         return web.Response(text=editorHTML, content_type="text/html")
 
 
@@ -92,7 +92,7 @@ def main():
 
     host = args.host
     httpPort = args.http_port
-    websocketPort = (
+    webSocketPort = (
         args.websocket_port if args.websocket_port is not None else httpPort + 1
     )
 
@@ -106,7 +106,7 @@ def main():
     templatesFolder = fontraRoot / "templates"
 
     server = FontraServer(
-        host, httpPort, websocketPort, contentFolder, templatesFolder, backendCoro
+        host, httpPort, webSocketPort, contentFolder, templatesFolder, backendCoro
     )
     server.setup()
     server.run()
