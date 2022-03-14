@@ -42,7 +42,6 @@ class FontraServer:
         self.httpApp = web.Application()
         self.httpApp.add_routes(
             [
-                web.get("/websocketport", self.handleWebSocketPort),
                 web.get("/", self.rootHandler),
                 web.static("/", self.contentFolder),
             ]
@@ -74,9 +73,6 @@ class FontraServer:
             verboseErrors=True,
         )
         await server.getServerTask(host=self.host, port=self.websocketPort)
-
-    async def handleWebSocketPort(self, request):
-        return web.Response(text=str(self.websocketPort))
 
     async def rootHandler(self, request):
         editorTemplatePath = self.templatesFolder / "editor.html"
