@@ -96,6 +96,9 @@ export class AppController {
 
     canvas.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
     canvas.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
+
+    const glyphsSearchInput = document.querySelector("#glyphs-search-input");
+    glyphsSearchInput.oninput = event => this.glyphSearchFieldChanged(event.target.value);
   }
 
   async start() {
