@@ -1,4 +1,5 @@
 import argparse
+from dataclasses import dataclass
 import logging
 import pathlib
 from urllib.parse import urlsplit, urlunsplit
@@ -27,6 +28,63 @@ async def getFileSystemBackend(path):
     return backendClass.fromPath(path)
 
 
+@dataclass
+class FontraServer:
+
+    host: str
+    httpPort: int
+    websocketPort: int
+    httpRoot: str
+    backendCoro: object  # TODO: turn into factory function, taking path
+
+    def setup(self):
+        indexPath = self.httpRoot / "index.html"
+        self.httpApp = web.Application()
+        self.httpApp.add_routes(
+            [
+                web.get("/websocketport", self.handleWebSocketPort),
+                web.get("/", self.rootHandler),
+                web.static("/", self.httpRoot),
+            ]
+        )
+        self.httpApp.on_startup.append(self.setupWebSocketServer)
+
+    def run(self):
+        host = self.host
+        httpPort = self.httpPort
+        pad = " " * (22 - len(str(httpPort)) - len(host))
+        print("+---------------------------------------------------+")
+        print("|                                                   |")
+        print("|      Fontra!                                      |")
+        print("|                                                   |")
+        print("|      Navigate to:                                 |")
+        print(f"|      http://{host}:{httpPort}/{pad}              |")
+        print("|                                                   |")
+        print("+---------------------------------------------------+")
+        web.run_app(self.httpApp, host=host, port=httpPort)
+
+    async def setupWebSocketServer(self, app):
+        clients = {}
+        backend = await self.backendCoro
+        font = FontHandler(backend, clients)
+        server = WebSocketServer(
+            font,
+            font.remoteMethodNames,
+            clients=clients,
+            verboseErrors=True,
+        )
+        await server.getServerTask(host=self.host, port=self.websocketPort)
+
+    async def handleWebSocketPort(self, request):
+        return web.Response(text=str(self.websocketPort))
+
+    async def rootHandler(self, request):
+        indexPath = self.httpRoot / "index.html"
+        return web.Response(
+            text=indexPath.read_text(encoding="utf-8"), content_type="text/html"
+        )
+
+
 def main():
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
@@ -47,43 +105,11 @@ def main():
     else:
         backendCoro = getFileSystemBackend(args.font)
 
-    async def handleWebSocketPort(request):
-        return web.Response(text=str(websocketPort))
+    httpRoot = pathlib.Path("client").resolve()
 
-    async def setupWebSocketServer(app):
-        clients = {}
-        backend = await backendCoro
-        font = FontHandler(backend, clients)
-        server = WebSocketServer(
-            font,
-            font.remoteMethodNames,
-            clients=clients,
-            verboseErrors=True,
-        )
-        await server.getServerTask(host=host, port=websocketPort)
-
-    async def rootHandler(request):
-        return web.HTTPFound("/index.html")
-
-    httpApp = web.Application()
-    httpApp.add_routes(
-        [
-            web.get("/websocketport", handleWebSocketPort),
-            web.get("/", rootHandler),
-            web.static("/", "client"),
-        ]
-    )
-    httpApp.on_startup.append(setupWebSocketServer)
-    pad = " " * (22 - len(str(httpPort)) - len(host))
-    print("+---------------------------------------------------+")
-    print("|                                                   |")
-    print("|      Fontra!                                      |")
-    print("|                                                   |")
-    print("|      Navigate to:                                 |")
-    print(f"|      http://{host}:{httpPort}/{pad}              |")
-    print("|                                                   |")
-    print("+---------------------------------------------------+")
-    web.run_app(httpApp, host=host, port=httpPort)
+    server = FontraServer(host, httpPort, websocketPort, httpRoot, backendCoro)
+    server.setup()
+    server.run()
 
 
 if __name__ == "__main__":
