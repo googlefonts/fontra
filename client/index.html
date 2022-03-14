@@ -65,14 +65,12 @@
   </body>
     <script type="module">
       import { AppController } from "./src/app-controller.js";
-      import { getRemoteProxy } from "./src/remote.js";
 
       async function startApp() {
         const response = await fetch("/websocketport");
         const port = await response.text();
-        const remoteFontEngine = await getRemoteProxy(`ws://${location.hostname}:${port}/`);
-        const appController = new AppController(remoteFontEngine);
-        remoteFontEngine.receiver = appController;
+        const url = `ws://${location.hostname}:${port}/`;
+        const appController = await AppController.fromURL(url);
         await appController.start();
         window.appController = appController;
       }

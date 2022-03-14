@@ -1,5 +1,6 @@
 import { CanvasController } from "./canvas-controller.js";
 import { FontController } from "./font-controller.js";
+import { getRemoteProxy } from "./remote.js";
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
@@ -47,6 +48,13 @@ const drawingParametersDark = {
 
 
 export class AppController {
+
+  static async fromURL(url) {
+    const remoteFontEngine = await getRemoteProxy(url);
+    const appController = new AppController(remoteFontEngine);
+    remoteFontEngine.receiver = appController;
+    return appController;
+  }
 
   constructor(font) {
     this.fontController = new FontController(font, {});
