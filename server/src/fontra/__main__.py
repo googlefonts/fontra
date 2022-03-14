@@ -39,7 +39,6 @@ class FontraServer:
     backendCoro: object  # TODO: turn into factory function, taking path
 
     def setup(self):
-        indexPath = self.contentFolder / "index.html"
         self.httpApp = web.Application()
         self.httpApp.add_routes(
             [
@@ -80,10 +79,10 @@ class FontraServer:
         return web.Response(text=str(self.websocketPort))
 
     async def rootHandler(self, request):
-        indexPath = self.contentFolder / "index.html"
-        return web.Response(
-            text=indexPath.read_text(encoding="utf-8"), content_type="text/html"
-        )
+        editorTemplatePath = self.templatesFolder / "editor.html"
+        editorHTML = editorTemplatePath.read_text(encoding="utf-8")
+        editorHTML = editorHTML.format(webSocketPort=self.websocketPort)
+        return web.Response(text=editorHTML, content_type="text/html")
 
 
 def main():
