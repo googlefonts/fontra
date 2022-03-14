@@ -67,7 +67,6 @@ class ClientAsync(Client):
 class RCJKMySQLBackend:
     @classmethod
     async def fromURL(cls, url):
-        self = cls()
         parsed = urlsplit(url)
         if parsed.scheme != "https":
             raise ValueError(f"URL must be https, found {parsed.scheme}")
@@ -80,11 +79,18 @@ class RCJKMySQLBackend:
             )
         _, projectName, fontName = pathParts
 
-        self.client = ClientAsync(
+        client = ClientAsync(
             host=plainURL,
             username=parsed.username,
             password=parsed.password,
         )
+        return await cls.fromRCJKClient(client, projectName, fontName)
+
+    @classmethod
+    async def fromRCJKClient(cls, client, projectName, fontName):
+        self = cls()
+        self.client = client
+
         await self.client.connect()
 
         projectUID = _getUIDByName(
