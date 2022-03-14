@@ -24,7 +24,8 @@
                   type="text"
                   class="glyphs-search-input"
                   id="glyphs-search-input"
-                  placeholder="Search glyphs">
+                  placeholder="Search glyphs"
+                  oninput="appController.glyphSearchFieldChanged(value)">
               </div>
               <div id="glyphs-list" tabindex="1">
                 <!-- contents will be filled dynamically -->
@@ -73,6 +74,7 @@
         const appController = new AppController(remoteFontEngine);
         remoteFontEngine.receiver = appController;
         await appController.start();
+        window.appController = appController;
       }
 
       startApp();
