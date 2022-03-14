@@ -70,9 +70,8 @@
         const response = await fetch("/websocketport");
         const port = await response.text();
         const url = `ws://${location.hostname}:${port}/`;
-        const appController = await AppController.fromURL(url);
-        await appController.start();
-        window.appController = appController;
+        window.appController = await AppController.fromURL(url);
+        await window.appController.start();
       }
 
       startApp();
