@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>Fontra</title>
+    <link rel="icon" href="data:;base64,=">
+    <link href="/css/ui-list.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+    <style>
+      .content {{
+        /*background-color: pink;*/
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        gap: 1em;
+      }}
+      .item {{
+        background-color: lightgray;
+        padding: 1em;
+        font-size: 2em;
+      }}
+    </style>
+  </head>
+  <body>
+    <div class="content">
+
+      <div class="item">
+        Hello.
+      </div>
+
+      <div class="item">
+        There.
+      </div>
+
+    </div>
+  </div>
+  </body>
+    <script type="module">
+
+      import {{ LandingController }} from "/src/landing-controller.js";
+
+      async function startApp() {{
+        const url = `ws://${{location.hostname}}:${{ {webSocketPort} }}/`;
+        const landingController = await LandingController.fromURL(url);
+        await landingController.setup();
+      }}
+
+      startApp();
+
+    </script>
+</html>

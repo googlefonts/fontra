@@ -9,10 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 class WebSocketServer:
-    def __init__(self, subject, methodNames, *, clients=None, verboseErrors=False):
+    def __init__(self, subjectFactory, *, clients=None, verboseErrors=False):
         self.clients = clients if clients is not None else {}
-        self.subject = subject
-        self.methodNames = set(methodNames)
+        self.subjectFactory = subjectFactory
         self.verboseErrors = verboseErrors
 
     def getServerTask(self, host="localhost", port=8001):
@@ -30,7 +29,9 @@ class WebSocketServer:
         del self.clients[client.websocket]
 
     async def incomingConnection(self, websocket, path):
-        client = Client(websocket, self.subject, self.methodNames, self.verboseErrors)
+        subject = await self.subjectFactory(path)
+        methodNames = set(subject.remoteMethodNames)
+        client = Client(websocket, subject, methodNames, self.verboseErrors)
         self.registerClient(client)
         try:
             await client.handleConnection(path)

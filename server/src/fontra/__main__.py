@@ -37,7 +37,7 @@ class FontraServer:
     webSocketPort: int
     contentFolder: str
     templatesFolder: str
-    backendCoro: object  # TODO: turn into factory function, taking path
+    projectManager: object
 
     def setup(self):
         self.httpApp = web.Application()
@@ -66,13 +66,9 @@ class FontraServer:
         web.run_app(self.httpApp, host=host, port=httpPort)
 
     async def setupWebSocketServer(self, app):
-        clients = {}
-        backend = await self.backendCoro
-        font = FontHandler(backend, clients)
         server = WebSocketServer(
-            font,
-            font.remoteMethodNames,
-            clients=clients,
+            self.projectManager.getRemoteSubject,
+            clients=self.projectManager.clients,
             verboseErrors=True,
         )
         await server.getServerTask(host=self.host, port=self.webSocketPort)
@@ -87,26 +83,61 @@ class FontraServer:
             pathItems.append(item)
         return web.Response(text=f"Hallo {'/'.join(pathItems)}")
 
+    # async def rootDocumentHandler(self, request):
+    #     editorTemplatePath = self.templatesFolder / "editor.html"
+    #     editorHTML = editorTemplatePath.read_text(encoding="utf-8")
+    #     editorHTML = editorHTML.format(webSocketPort=self.webSocketPort)
+    #     return web.Response(text=editorHTML, content_type="text/html")
+
     async def rootDocumentHandler(self, request):
-        editorTemplatePath = self.templatesFolder / "editor.html"
-        editorHTML = editorTemplatePath.read_text(encoding="utf-8")
-        editorHTML = editorHTML.format(webSocketPort=self.webSocketPort)
-        return web.Response(text=editorHTML, content_type="text/html")
+        templatePath = self.templatesFolder / "landing.html"
+        html = templatePath.read_text(encoding="utf-8")
+        html = html.format(webSocketPort=self.webSocketPort)
+        return web.Response(text=html, content_type="text/html")
 
 
-class FilseSystemProjectManager:
+class FileSystemProjectManager:
 
     needsLogin = False
+    remoteMethodNames = {"getProjectList", "getRequireLogin"}
 
-    def __init__(self, rootPath):
+    def __init__(self, rootPath, maxFolderDepth=3):
         self.rootPath = pathlib.Path(rootPath).resolve()
+        self.maxFolderDepth = maxFolderDepth
         self.extensions = {".designspace", ".ufo", ".rcjk"}
+        self.fontHandlers = {}
+        self.clients = {}
 
-    def listProjects(self, maxDepth):
+    async def getRequireLogin(self, *, client):
+        return False
+
+    async def getRemoteSubject(self, path):
+        if path == "/":
+            # login stuff
+            return self
+        pathItems = tuple(path.split("/"))
+        assert all(item for item in pathItems)
+        assert pathItems[0] == "projects"
+        pathItems = pathItems[1:]
+        print("-----", pathItems)
+        fontHandler = self.fontHandlers.get(pathItems)
+        if fontHandler is None:
+            projectPath = self.rootPath.joinpath(*pathItems)
+            if not projectPath.exists():
+                raise FileNotFoundError(projectPath)
+            backend = await getFileSystemBackend(projectPath)
+            fontHandler = FontHandler(backend, self.clients)
+            self.fontHandlers[pathItems] = fontHandler
+        return fontHandler
+
+    async def getProjectList(self, *, client):
         projectPaths = []
-        rootPath = os.fspath(self.rootPath)
-        for projectPath in _iterFolder(self.rootPath, self.extensions, 3):
-            ...
+        rootItems = self.rootPath.parts
+        for projectPath in _iterFolder(self.rootPath, self.extensions, self.maxFolderDepth):
+            projectItems = projectPath.parts
+            assert projectItems[: len(rootItems)] == rootItems
+            projectPaths.append("/".join(projectItems[len(rootItems) :]))
+        return projectPaths
 
 
 def _iterFolder(folderPath, extensions, maxDepth=3):
@@ -143,22 +174,22 @@ def main():
         print("You must specify exactly one of --rcjk-host and --filesystem-root.")
         sys.exit(1)
 
-    if args.rcjk_host:
-        manager = FilseSystemProjectManager(args.rcjk_host)
+    if args.filesystem_root:
+        manager = FileSystemProjectManager(args.filesystem_root)
     else:
-        manager = RCJKProjectManager(args.filesystem_root)
-
-    if args.font.startswith("http"):
-        backendCoro = getMySQLBackend(args.font)
-    else:
-        backendCoro = getFileSystemBackend(args.font)
+        manager = RCJKProjectManager(args.rcjk_host)
 
     fontraRoot = pathlib.Path(__file__).resolve().parent.parent.parent.parent
     contentFolder = fontraRoot / "client"
     templatesFolder = fontraRoot / "templates"
 
     server = FontraServer(
-        host, httpPort, webSocketPort, contentFolder, templatesFolder, backendCoro
+        host,
+        httpPort,
+        webSocketPort,
+        contentFolder,
+        templatesFolder,
+        projectManager=manager,
     )
     server.setup()
     server.run()
