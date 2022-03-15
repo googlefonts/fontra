@@ -1,12 +1,13 @@
 @font-face {
   font-family: "fontra-ui-regular";
-  src: url("../fonts/Read-Regular_V3101.woff2") format("woff2");
+  src: url("../fonts/InriaSans-Light.woff2") format("woff2");
 }
 
 
 html, body {
   font-family: fontra-ui-regular, sans-serif;
-  font-size: 0.9em;
+  font-feature-settings: "tnum" 1;
+  font-size: 1em;
   padding: 0;
   margin:  0;
   width: 100%;
