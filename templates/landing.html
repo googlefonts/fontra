@@ -45,7 +45,7 @@
       import {{ LandingController }} from "/src/landing-controller.js";
 
       async function startApp() {{
-        const url = `ws://${{location.hostname}}:${{ {webSocketPort} }}/`;
+        const url = `ws://${{location.hostname}}:{webSocketPort}/`;
         const landingController = await LandingController.fromURL(url);
         await landingController.setup();
       }}
