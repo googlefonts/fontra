@@ -82,7 +82,7 @@ class RCJKMySQLBackend:
         client = RCJKClientAsync(
             host=plainURL,
             username=parsed.username,
-            password=parsed.password,
+            password=unquote(parsed.password),
         )
         return await cls.fromRCJKClient(client, projectName, fontName)
 
