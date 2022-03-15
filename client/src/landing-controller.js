@@ -14,7 +14,6 @@ export class LandingController {
     this.remoteObject = remoteObject;
   }
 
-
   async setup() {
     if (await this.remoteObject.getRequireLogin()) {
       // ...
