@@ -104,26 +104,22 @@ export class List {
   }
 
   _clickHandler(event) {
-    const target = event.target;
-    if (target.parentNode === this.contents) {
-      // clicked on row
-      this.setSelectedItemIndex(target.dataset.rowIndex, true);
-    } else if (target.parentNode.parentNode === this.contents) {
-      // clicked on cell
-      this.setSelectedItemIndex(target.parentNode.dataset.rowIndex, true);
-    }
+    this.setSelectedItemIndex(this._getRowIndexFromTarget(event.target), true);
   }
 
   _dblClickHandler(event) {
-    const target = event.target;
+    this.doubleClickedRowIndex = this._getRowIndexFromTarget(event.target);
+    this._dispatchEvent("rowDoubleClicked");
+  }
+
+  _getRowIndexFromTarget(target) {
     if (target.parentNode === this.contents) {
       // clicked on row
-      this.doubleClickedRowIndex = target.dataset.rowIndex;
+      return target.dataset.rowIndex;
     } else if (target.parentNode.parentNode === this.contents) {
       // clicked on cell
-      this.doubleClickedRowIndex = target.parentNode.dataset.rowIndex;
+      return target.parentNode.dataset.rowIndex;
     }
-    this._dispatchEvent("rowDoubleClicked");
   }
 
   setSelectedItemIndex(rowIndex, shouldDispatchEvent = false) {
