@@ -26,8 +26,9 @@ export class LandingController {
   }
 
   projectDoubleClick(event) {
-    console.log("launch project", this.projectList[this.projectListUI.doubleClickedRowIndex]);
-
+    const selectedProject = this.projectList[this.projectListUI.doubleClickedRowIndex];
+    const url = "/projects/" + selectedProject;
+    window.open(url);
   }
 
 }
