@@ -220,15 +220,15 @@ html, body {
   }
 
   #glyph-search-img {
-    content: url("../images/magnifying-glass-white.svg");
+    content: url("/images/magnifying-glass-white.svg");
   }
 
   #slider-img {
-    content: url("../images/sliders-white.svg");
+    content: url("/images/sliders-white.svg");
   }
 
   #text-entry-img {
-    content: url("../images/text-tool-white.svg");
+    content: url("/images/text-tool-white.svg");
   }
 
   #mini-console {
