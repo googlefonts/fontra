@@ -298,7 +298,7 @@ export class SceneController {
 }
 
 
-const MINIMAL_DRAG_DISTANCE = 2;
+const MINIMUM_DRAG_DISTANCE = 2;
 
 
 async function shouldInitiateDrag(eventStream, initialEvent) {
@@ -310,8 +310,8 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
     const x = event.pageX;
     const y = event.pageY;
     if (
-      Math.abs(initialX - x) > MINIMAL_DRAG_DISTANCE ||
-      Math.abs(initialY - y) > MINIMAL_DRAG_DISTANCE
+      Math.abs(initialX - x) > MINIMUM_DRAG_DISTANCE ||
+      Math.abs(initialY - y) > MINIMUM_DRAG_DISTANCE
     ) {
       return true;
     }
