@@ -27,6 +27,7 @@ export class List {
     this.contents.className = "contents"
     this.container.appendChild(this.contents);
     this.contents.addEventListener("click", event => this._clickHandler(event), false);
+    this.contents.addEventListener("dblclick", event => this._dblClickHandler(event), false);
     this.container.addEventListener("scroll", event => this._scrollHandler(event), false)
     this.container.addEventListener("keydown", event => this._keyDownHandler(event), false)
     this.container.addEventListener("keyup", event => this._keyUpHandler(event), false)
@@ -113,6 +114,18 @@ export class List {
     }
   }
 
+  _dblClickHandler(event) {
+    const target = event.target;
+    if (target.parentNode === this.contents) {
+      // clicked on row
+      this.doubleClickedRowIndex = target.dataset.rowIndex;
+    } else if (target.parentNode.parentNode === this.contents) {
+      // clicked on cell
+      this.doubleClickedRowIndex = target.parentNode.dataset.rowIndex;
+    }
+    this._dispatchEvent("rowDoubleClicked");
+  }
+
   setSelectedItemIndex(rowIndex, shouldDispatchEvent = false) {
     rowIndex = Number(rowIndex);
     if (rowIndex === this.selectedItemIndex) {
@@ -129,7 +142,7 @@ export class List {
     }
     this.selectedItemIndex = rowIndex;
     if (!this._isKeyRepeating && shouldDispatchEvent) {
-      this._dispatchListSelectionChanged();
+      this._dispatchEvent("listSelectionChanged");
     }
   }
 
@@ -137,8 +150,8 @@ export class List {
     return this.selectedItemIndex;
   }
 
-  _dispatchListSelectionChanged() {
-    const event = new CustomEvent("listSelectionChanged", {
+  _dispatchEvent(eventName) {
+    const event = new CustomEvent(eventName, {
       "bubbles": false,
       "detail": this,
     });
@@ -171,7 +184,7 @@ export class List {
       // When key events repeat, they may fire too fast, so selection-changed
       // events are suppressed. We need to send one after the fact.
       this._isKeyRepeating = false;
-      this._dispatchListSelectionChanged();
+      this._dispatchEvent("listSelectionChanged");
     }
   }
 

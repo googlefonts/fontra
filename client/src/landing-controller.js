@@ -1,4 +1,5 @@
 import { getRemoteProxy } from "./remote.js";
+import { List } from "./ui-list.js";
 
 
 export class LandingController {
@@ -18,8 +19,15 @@ export class LandingController {
     if (await this.remoteObject.getRequireLogin()) {
       // ...
     }
-    const projectList = await this.remoteObject.getProjectList();
-    console.log("projectList", projectList);
+    this.projectList = await this.remoteObject.getProjectList();
+    this.projectListUI = new List("project-list");
+    this.projectListUI.setItems(this.projectList);
+    this.projectListUI.addEventListener("rowDoubleClicked", event => this.projectDoubleClick(event));
+  }
+
+  projectDoubleClick(event) {
+    console.log("launch project", this.projectList[this.projectListUI.doubleClickedRowIndex]);
+
   }
 
 }
