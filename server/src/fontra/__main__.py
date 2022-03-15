@@ -100,9 +100,13 @@ class FilseSystemProjectManager:
 
     def __init__(self, rootPath):
         self.rootPath = pathlib.Path(rootPath).resolve()
+        self.extensions = {".designspace", ".ufo", ".rcjk"}
 
     def listProjects(self, maxDepth):
-        ...
+        projectPaths = []
+        rootPath = os.fspath(self.rootPath)
+        for projectPath in _iterFolder(self.rootPath, self.extensions, 3):
+            ...
 
 
 def _iterFolder(folderPath, extensions, maxDepth=3):
