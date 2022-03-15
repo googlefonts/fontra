@@ -81,13 +81,14 @@ class FontraServer:
             if item is None:
                 break
             pathItems.append(item)
-        return web.Response(text=f"Hallo {'/'.join(pathItems)}")
+        projectPath = "/".join(pathItems)
 
-    # async def rootDocumentHandler(self, request):
-    #     editorTemplatePath = self.templatesFolder / "editor.html"
-    #     editorHTML = editorTemplatePath.read_text(encoding="utf-8")
-    #     editorHTML = editorHTML.format(webSocketPort=self.webSocketPort)
-    #     return web.Response(text=editorHTML, content_type="text/html")
+        editorTemplatePath = self.templatesFolder / "editor.html"
+        editorHTML = editorTemplatePath.read_text(encoding="utf-8")
+        editorHTML = editorHTML.format(
+            webSocketPort=self.webSocketPort, projectPath=projectPath
+        )
+        return web.Response(text=editorHTML, content_type="text/html")
 
     async def rootDocumentHandler(self, request):
         templatePath = self.templatesFolder / "landing.html"
@@ -116,10 +117,9 @@ class FileSystemProjectManager:
             # login stuff
             return self
         pathItems = tuple(path.split("/"))
-        assert all(item for item in pathItems)
-        assert pathItems[0] == "projects"
+        assert pathItems[0] == ""
         pathItems = pathItems[1:]
-        print("-----", pathItems)
+        assert all(item for item in pathItems)
         fontHandler = self.fontHandlers.get(pathItems)
         if fontHandler is None:
             projectPath = self.rootPath.joinpath(*pathItems)
@@ -133,7 +133,9 @@ class FileSystemProjectManager:
     async def getProjectList(self, *, client):
         projectPaths = []
         rootItems = self.rootPath.parts
-        for projectPath in _iterFolder(self.rootPath, self.extensions, self.maxFolderDepth):
+        for projectPath in _iterFolder(
+            self.rootPath, self.extensions, self.maxFolderDepth
+        ):
             projectItems = projectPath.parts
             assert projectItems[: len(rootItems)] == rootItems
             projectPaths.append("/".join(projectItems[len(rootItems) :]))
