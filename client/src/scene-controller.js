@@ -298,7 +298,7 @@ export class SceneController {
 }
 
 
-const MINIMAL_DRAG_DISTANCE = 6;
+const MINIMAL_DRAG_DISTANCE = 2;
 
 
 async function shouldInitiateDrag(eventStream, initialEvent) {
