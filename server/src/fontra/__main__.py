@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import logging
 import pathlib
 from urllib.parse import urlsplit, urlunsplit
+import sys
 from aiohttp import web
 from .backends import getBackendClass
 from .fonthandler import FontHandler
@@ -93,13 +94,37 @@ class FontraServer:
         return web.Response(text=editorHTML, content_type="text/html")
 
 
+class FilseSystemProjectManager:
+
+    needsLogin = False
+
+    def __init__(self, rootPath):
+        self.rootPath = pathlib.Path(rootPath).resolve()
+
+    def listProjects(self, maxDepth):
+        ...
+
+
+def _iterFolder(folderPath, extensions, maxDepth=3):
+    if maxDepth is not None and maxDepth <= 0:
+        return
+    for childPath in folderPath.iterdir():
+        if childPath.suffix.lower() in extensions:
+            yield childPath
+        elif childPath.is_dir():
+            yield from _iterFolder(
+                childPath, extensions, maxDepth - 1 if maxDepth is not None else None
+            )
+
+
 def main():
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="localhost")
     parser.add_argument("--http-port", default=8000, type=int)
     parser.add_argument("--websocket-port", type=int)
-    parser.add_argument("font")
+    parser.add_argument("--rcjk-host")
+    parser.add_argument("--filesystem-root")
     args = parser.parse_args()
 
     host = args.host
@@ -107,6 +132,17 @@ def main():
     webSocketPort = (
         args.websocket_port if args.websocket_port is not None else httpPort + 1
     )
+
+    if (args.rcjk_host and args.filesystem_root) or (
+        not args.rcjk_host and not args.filesystem_root
+    ):
+        print("You must specify exactly one of --rcjk-host and --filesystem-root.")
+        sys.exit(1)
+
+    if args.rcjk_host:
+        manager = FilseSystemProjectManager(args.rcjk_host)
+    else:
+        manager = RCJKProjectManager(args.filesystem_root)
 
     if args.font.startswith("http"):
         backendCoro = getMySQLBackend(args.font)
