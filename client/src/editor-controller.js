@@ -47,13 +47,13 @@ const drawingParametersDark = {
 }
 
 
-export class AppController {
+export class EditorController {
 
   static async fromURL(url) {
     const remoteFontEngine = await getRemoteProxy(url);
-    const appController = new AppController(remoteFontEngine);
-    remoteFontEngine.receiver = appController;
-    return appController;
+    const editorController = new EditorController(remoteFontEngine);
+    remoteFontEngine.receiver = editorController;
+    return editorController;
   }
 
   constructor(font) {

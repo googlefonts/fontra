@@ -24,7 +24,7 @@
                   class="glyphs-search-input"
                   id="glyphs-search-input"
                   placeholder="Search glyphs"
-                  oninput="appController.glyphSearchFieldChanged(value)">
+                  oninput="editorController.glyphSearchFieldChanged(value)">
               </div>
               <div id="glyphs-list" tabindex="1">
                 <!-- contents will be filled dynamically -->
@@ -63,12 +63,12 @@
   </div>
   </body>
     <script type="module">
-      import {{ AppController }} from "/src/editor-controller.js";
+      import {{ EditorController }} from "/src/editor-controller.js";
 
       async function startApp() {{
         const url = `ws://${{location.hostname}}:{webSocketPort}/{projectPath}`;
-        window.appController = await AppController.fromURL(url);
-        await window.appController.start();
+        window.editorController = await EditorController.fromURL(url);
+        await window.editorController.start();
       }}
 
       startApp();
