@@ -81,6 +81,10 @@ class FontraServer:
             if item is None:
                 break
             pathItems.append(item)
+
+        if not self.projectManager.projectExists(*pathItems):
+            return web.HTTPNotFound()
+
         projectPath = "/".join(pathItems)
 
         editorTemplatePath = self.templatesFolder / "editor.html"
@@ -111,6 +115,10 @@ class FileSystemProjectManager:
 
     async def getRequireLogin(self, *, client):
         return False
+
+    def projectExists(self, *pathItems):
+        projectPath = self.rootPath.joinpath(*pathItems)
+        return projectPath.exists()
 
     async def getRemoteSubject(self, path):
         if path == "/":
