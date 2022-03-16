@@ -74,7 +74,8 @@ def ensureComponentCoords(glyph, getGlyphFunc):
         }
         allAxisNames |= set(compoGlyph.axes)
         for axisName in sorted(allAxisNames):
-            defaultValue = compoGlyph.axes.get(axisName, (0, 0, 0))[1]
+            defaultFallbackValue = compoGlyph.axes.get(axisName, (0, 0, 0))[1]
+            defaultValue = glyph.components[compoIndex].coord.get(axisName, defaultFallbackValue)
             for g in [glyph] + glyph.variations:
                 axisValue = g.components[compoIndex].coord.get(axisName)
                 if axisValue is None:
