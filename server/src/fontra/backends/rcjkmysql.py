@@ -189,7 +189,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
         defaultSourceDict["path"] = defaultPath
 
     defaultComponents = serializeComponents(
-        glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults
+        glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults, None
     )
     dcNames = [c["name"] for c in defaultComponents]
     components = defaultComponents or pen.components
@@ -205,6 +205,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
         },
     ]
     layerData = [{"name": "<default>/foreground", "glyph": defaultSourceDict}]
+    neutralComponentLocations = [compo["location"] for compo in components]
 
     for varDict in glyph.lib.get("robocjk.variationGlyphs", ()):
         if not varDict.get("on", True):
@@ -221,7 +222,10 @@ def serializeGlyph(glifData, layers, axisDefaults):
             if varPath:
                 varSourceDict["path"] = varPath
         varComponents = serializeComponents(
-            varDict.get("deepComponents", ()), dcNames, axisDefaults
+            varDict.get("deepComponents", ()),
+            dcNames,
+            axisDefaults,
+            neutralComponentLocations,
         )
         varComponents = varComponents or pen.components
         assert componentNames == [c["name"] for c in varComponents]
@@ -251,7 +255,9 @@ def serializeGlyph(glifData, layers, axisDefaults):
     return glyphDict
 
 
-def serializeComponents(deepComponents, dcNames, axisDefaults):
+def serializeComponents(
+    deepComponents, dcNames, axisDefaults, neutralComponentLocations
+):
     if dcNames is not None:
         assert len(deepComponents) == len(dcNames)
     components = []
@@ -261,15 +267,22 @@ def serializeComponents(deepComponents, dcNames, axisDefaults):
         component["name"] = name
         if deepCompoDict["coord"]:
             component["location"] = cleanupLocation(
-                deepCompoDict["coord"], axisDefaults[name]
+                deepCompoDict["coord"],
+                axisDefaults[name],
+                neutralComponentLocations[index]
+                if neutralComponentLocations is not None
+                else {},
             )
         component["transformation"] = deepCompoDict["transform"]
         components.append(component)
     return components
 
 
-def cleanupLocation(location, axisDefaults):
-    return {a: location.get(a, v) for a, v in axisDefaults.items()}
+def cleanupLocation(location, axisDefaults, neutralLocation):
+    return {
+        a: location.get(a, neutralLocation.get(a, v))
+        for a, v in axisDefaults.items()
+    }
 
 
 def cleanupAxis(axisDict):
