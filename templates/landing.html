@@ -17,12 +17,24 @@
 
       <div class="landing-item">
 
-        <form method="post" id="login-form">
+        <form action="/login" method="post" id="login-form">
 
-          <div class="login-label">Username:</div>
-          <input type="text" placeholder="Enter Username" class="login-input login-username" id="login-username" required>
-          <div class="login-label">Password:</div>
-          <input type="password" placeholder="Enter Password" class="login-input login-password" id="login-password" required>
+          <label for="login-username" class="login-label">Username:</label>
+          <input
+            type="text"
+            name="username"
+            placeholder="Enter Username"
+            class="login-input login-username"
+            id="login-username"
+            required>
+          <label for="login-password" class="login-label">Password:</label>
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter Password"
+            class="login-input login-password"
+            id="login-password"
+            required>
           <button type="submit" class="login-login-button">Log in</button>
 
         </form>
