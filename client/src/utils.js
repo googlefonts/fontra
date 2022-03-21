@@ -60,3 +60,15 @@ export function throttleCalls(func, minTime) {
     }
   };
 }
+
+
+export function parseCookie(str) {
+  // https://www.geekstrick.com/snippets/how-to-parse-cookies-in-javascript/
+  return str
+  .split(';')
+  .map(v => v.split('='))
+  .reduce((acc, v) => {
+    acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+    return acc;
+  }, {});
+}
