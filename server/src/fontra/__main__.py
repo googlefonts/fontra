@@ -182,7 +182,7 @@ class FileSystemProjectManager:
         # print("authorizing:", token, remoteIP)
         return True
 
-    async def getRemoteSubject(self, path):
+    async def getRemoteSubject(self, path, token, remoteIP):
         if path == "/":
             return self
         pathItems = tuple(path.split("/"))
@@ -195,7 +195,7 @@ class FileSystemProjectManager:
             if not projectPath.exists():
                 raise FileNotFoundError(projectPath)
             backend = await getFileSystemBackend(projectPath)
-            fontHandler = FontHandler(backend, self.clients, self.authorizeToken)
+            fontHandler = FontHandler(backend, self.clients)
             self.fontHandlers[pathItems] = fontHandler
         return fontHandler
 

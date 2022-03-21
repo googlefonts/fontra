@@ -29,12 +29,10 @@ class WebSocketServer:
         del self.clients[client.websocket]
 
     async def incomingConnection(self, websocket, path):
-        subject = await self.subjectFactory(path)
-        methodNames = set(subject.remoteMethodNames)
-        client = Client(websocket, subject, methodNames, self.verboseErrors)
+        client = Client(websocket, path, self.subjectFactory, self.verboseErrors)
         self.registerClient(client)
         try:
-            await client.handleConnection(path)
+            await client.handleConnection()
         finally:
             self.unregisterClient(client)
 
@@ -44,10 +42,10 @@ class ClientException(Exception):
 
 
 class Client:
-    def __init__(self, websocket, subject, methodNames, verboseErrors):
+    def __init__(self, websocket, path, subjectFactory, verboseErrors):
         self.websocket = websocket
-        self.subject = subject
-        self.methodNames = methodNames
+        self.path = path
+        self.subjectFactory = subjectFactory
         self.verboseErrors = verboseErrors
         self.callReturnFutures = {}
         self.getNextServerCallID = _genNextServerCallID()
@@ -56,21 +54,21 @@ class Client:
     def proxy(self):
         return ClientProxy(self)
 
-    async def handleConnection(self, path):
-        logger.info(f"incoming connection: {path!r}")
+    async def handleConnection(self):
+        logger.info(f"incoming connection: {self.path!r}")
         tasks = []
-        authorized = False
+        subject = None
         try:
             async for message in self.websocket:
                 message = json.loads(message)
                 if "client-uuid" in message:
                     self.clientUUID = message["client-uuid"]
                     remoteIP = self.websocket.remote_address[0]
-                    authorized = self.subject.authorizeToken(message["autorization-token"], remoteIP)
-                    if not authorized:
-                        raise ClientException("unauthorized")
+                    subject = await self.subjectFactory(
+                        self.path, message["autorization-token"], remoteIP
+                    )
                     continue
-                if not authorized:
+                if subject is None:
                     raise ClientException("unauthorized")
                 if message.get("connection") == "close":
                     logger.info("client requested connection close")
@@ -78,7 +76,11 @@ class Client:
                 tasks = [task for task in tasks if not task.done()]
                 if "client-call-id" in message:
                     # this is an incoming client -> server call
-                    tasks.append(asyncio.create_task(self._performCall(message)))
+                    tasks.append(
+                        asyncio.create_task(
+                            self._performCall(message, subject)
+                        )
+                    )
                 elif "server-call-id" in message:
                     # this is a response to a server -> client call
                     fut = self.callReturnFutures[message["server-call-id"]]
@@ -91,14 +93,14 @@ class Client:
         except websockets.exceptions.ConnectionClosedError as e:
             logger.info(f"websocket connection closed: {e!r}")
 
-    async def _performCall(self, message):
+    async def _performCall(self, message, subject):
         clientCallID = "unknown-client-call-id"
         try:
             clientCallID = message["client-call-id"]
             methodName = message["method-name"]
             arguments = message.get("arguments", [])
-            if methodName in self.methodNames:
-                methodHandler = getattr(self.subject, methodName)
+            if methodName in subject.remoteMethodNames:
+                methodHandler = getattr(subject, methodName)
                 returnValue = await methodHandler(*arguments, client=self)
                 response = {"client-call-id": clientCallID, "return-value": returnValue}
             else:
