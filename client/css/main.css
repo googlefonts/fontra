@@ -246,7 +246,9 @@ html, body {
   padding: 0.5em 1.1em 0.5em 1em;
   margin-top: 0.5em;
   margin-bottom: 1em;
+  border: none;
   font-family: fontra-ui-semibold, sans-serif;
+  font-size: 1em;
 }
 
 .login-login-button:hover{
