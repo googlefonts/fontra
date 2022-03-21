@@ -64,6 +64,7 @@ class Client:
                 message = json.loads(message)
                 if "client-uuid" in message:
                     self.clientUUID = message["client-uuid"]
+                    self.subject.authorize(message["autorization-token"])
                     continue
                 if message.get("connection") == "close":
                     logger.info("client requested connection close")

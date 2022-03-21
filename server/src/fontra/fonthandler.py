@@ -25,6 +25,9 @@ class FontHandler:
         self.clientData = defaultdict(dict)
         self.changedGlyphs = {}
 
+    def authorize(self, token):
+        print("handler token:", token)
+
     def getGlyph(self, glyphName, *, client):
         loadedGlyphNames = self.clientData[client.clientUUID].setdefault(
             "loadedGlyphNames", set()

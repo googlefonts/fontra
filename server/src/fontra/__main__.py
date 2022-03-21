@@ -173,6 +173,9 @@ class FileSystemProjectManager:
         projectPath = self.rootPath.joinpath(*pathItems)
         return projectPath.exists()
 
+    def authorize(self, token):
+        print("manager token:", token)
+
     async def getRemoteSubject(self, path):
         if path == "/":
             # login stuff
