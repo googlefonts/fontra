@@ -53,7 +53,6 @@
     <script type="module">
 
       import {{ LandingController }} from "/src/landing-controller.js";
-      import {{ parseCookies }} from "/src/utils.js";
 
       async function startApp() {{
         const url = `ws://${{location.hostname}}:{webSocketPort}/`;
@@ -62,7 +61,6 @@
       }}
 
       startApp();
-      console.log("document.cookie", parseCookies(document.cookie));
 
     </script>
 </html>
