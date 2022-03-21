@@ -47,6 +47,7 @@ class Client:
         self.path = path
         self.subjectFactory = subjectFactory
         self.verboseErrors = verboseErrors
+        self.clientUUID = None
         self.callReturnFutures = {}
         self.getNextServerCallID = _genNextServerCallID()
 
@@ -63,10 +64,9 @@ class Client:
                 message = json.loads(message)
                 if "client-uuid" in message:
                     self.clientUUID = message["client-uuid"]
+                    token = message["autorization-token"]
                     remoteIP = self.websocket.remote_address[0]
-                    subject = await self.subjectFactory(
-                        self.path, message["autorization-token"], remoteIP
-                    )
+                    subject = await self.subjectFactory(self.path, token, remoteIP)
                     continue
                 if subject is None:
                     raise ClientException("unauthorized")
