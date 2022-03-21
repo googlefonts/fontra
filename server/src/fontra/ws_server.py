@@ -56,40 +56,43 @@ class Client:
         return ClientProxy(self)
 
     async def handleConnection(self):
+        try:
+            await self._handleConnection()
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.info(f"websocket connection closed: {e!r}")
+
+    async def _handleConnection(self):
         logger.info(f"incoming connection: {self.path!r}")
         tasks = []
         subject = None
-        try:
-            async for message in self.websocket:
-                message = json.loads(message)
-                if "client-uuid" in message:
-                    self.clientUUID = message["client-uuid"]
-                    token = message["autorization-token"]
-                    remoteIP = self.websocket.remote_address[0]
-                    subject = await self.subjectFactory(self.path, token, remoteIP)
-                    continue
-                if subject is None:
-                    raise ClientException("unauthorized")
-                if message.get("connection") == "close":
-                    logger.info("client requested connection close")
-                    break
-                tasks = [task for task in tasks if not task.done()]
-                if "client-call-id" in message:
-                    # this is an incoming client -> server call
-                    tasks.append(
-                        asyncio.create_task(self._performCall(message, subject))
-                    )
-                elif "server-call-id" in message:
-                    # this is a response to a server -> client call
-                    fut = self.callReturnFutures[message["server-call-id"]]
-                    returnValue = message.get("return-value")
-                    error = message.get("error")
-                    if error is None:
-                        fut.set_result(returnValue)
-                    else:
-                        fut.set_exception(ClientException(error))
-        except websockets.exceptions.ConnectionClosedError as e:
-            logger.info(f"websocket connection closed: {e!r}")
+        async for message in self.websocket:
+            message = json.loads(message)
+            if "client-uuid" in message:
+                self.clientUUID = message["client-uuid"]
+                token = message["autorization-token"]
+                remoteIP = self.websocket.remote_address[0]
+                subject = await self.subjectFactory(self.path, token, remoteIP)
+                continue
+            if subject is None:
+                raise ClientException("unauthorized")
+            if message.get("connection") == "close":
+                logger.info("client requested connection close")
+                break
+            tasks = [task for task in tasks if not task.done()]
+            if "client-call-id" in message:
+                # this is an incoming client -> server call
+                tasks.append(
+                    asyncio.create_task(self._performCall(message, subject))
+                )
+            elif "server-call-id" in message:
+                # this is a response to a server -> client call
+                fut = self.callReturnFutures[message["server-call-id"]]
+                returnValue = message.get("return-value")
+                error = message.get("error")
+                if error is None:
+                    fut.set_result(returnValue)
+                else:
+                    fut.set_exception(ClientException(error))
 
     async def _performCall(self, message, subject):
         clientCallID = "unknown-client-call-id"
