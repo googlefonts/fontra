@@ -69,7 +69,10 @@ class Client:
             message = json.loads(message)
             if "client-uuid" in message:
                 self.clientUUID = message["client-uuid"]
-                token = message["autorization-token"]
+                token = message.get("autorization-token")
+                if token is None:
+                    logger.info("closing unauthorized connection")
+                    break
                 remoteIP = self.websocket.remote_address[0]
                 subject = await self.subjectFactory(self.path, token, remoteIP)
                 continue
