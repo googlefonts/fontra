@@ -239,7 +239,7 @@ html, body {
   padding: 0.25em;
 }
 
-.login-login-button {
+.login-button {
   border-radius: 2em;
   background-color: #46F;
   width: max-content;
@@ -265,6 +265,10 @@ html, body {
 #login-failure-message {
   font-family: fontra-ui-semibold, sans-serif;
   color: red;
+}
+
+#project-list {
+  user-select: none;
 }
 
 .hidden {
