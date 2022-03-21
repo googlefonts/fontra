@@ -84,27 +84,6 @@ class FontraServer:
         )
         await server.getServerTask(host=self.host, port=self.webSocketPort)
 
-    async def projectsPathHandler(self, request):
-        pathItems = []
-        for i in range(10):
-            k = f"path{i}"
-            item = request.match_info.get(k)
-            if item is None:
-                break
-            pathItems.append(item)
-
-        if not self.projectManager.projectExists(*pathItems):
-            return web.HTTPNotFound()
-
-        projectPath = "/".join(pathItems)
-
-        editorTemplatePath = self.templatesFolder / "editor.html"
-        editorHTML = editorTemplatePath.read_text(encoding="utf-8")
-        editorHTML = editorHTML.format(
-            webSocketPort=self.webSocketPort, projectPath=projectPath
-        )
-        return web.Response(text=editorHTML, content_type="text/html")
-
     async def rootDocumentHandler(self, request):
         username = request.cookies.get("fontra-username")
         authToken = request.cookies.get("fontra-authorization-token")
@@ -155,6 +134,27 @@ class FontraServer:
             del self.authorizedSessions[authToken]
         response = web.HTTPFound("/")
         return response
+
+    async def projectsPathHandler(self, request):
+        pathItems = []
+        for i in range(10):
+            k = f"path{i}"
+            item = request.match_info.get(k)
+            if item is None:
+                break
+            pathItems.append(item)
+
+        if not self.projectManager.projectExists(*pathItems):
+            return web.HTTPNotFound()
+
+        projectPath = "/".join(pathItems)
+
+        editorTemplatePath = self.templatesFolder / "editor.html"
+        editorHTML = editorTemplatePath.read_text(encoding="utf-8")
+        editorHTML = editorHTML.format(
+            webSocketPort=self.webSocketPort, projectPath=projectPath
+        )
+        return web.Response(text=editorHTML, content_type="text/html")
 
 
 class FileSystemProjectManager:
