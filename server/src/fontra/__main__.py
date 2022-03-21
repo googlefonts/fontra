@@ -136,6 +136,11 @@ class FontraServer:
         return response
 
     async def projectsPathHandler(self, request):
+        authToken = request.cookies.get("fontra-authorization-token")
+        if authToken not in self.authorizedSessions:
+            response = web.HTTPFound("/")
+            return response
+
         pathItems = []
         for i in range(10):
             k = f"path{i}"
