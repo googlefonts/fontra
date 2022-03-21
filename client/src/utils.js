@@ -64,6 +64,9 @@ export function throttleCalls(func, minTime) {
 
 export function parseCookies(str) {
   // https://www.geekstrick.com/snippets/how-to-parse-cookies-in-javascript/
+  if (!str.trim()) {
+    return {};
+  }
   return str
   .split(';')
   .map(v => v.split('='))
