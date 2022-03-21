@@ -5,7 +5,7 @@ from .changes import applyChange, baseChangeFunctions
 
 
 class FontHandler:
-    def __init__(self, backend, clients, authorizationToken):
+    def __init__(self, backend, clients, authorizeTokenFunc):
         self.backend = backend
         self.clients = clients
         self.remoteMethodNames = {
@@ -24,10 +24,10 @@ class FontHandler:
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.changedGlyphs = {}
-        self.authorizationToken = authorizationToken
+        self.authorizeTokenFunc = authorizeTokenFunc
 
     def authorizeToken(self, token):
-        return token == self.authorizationToken
+        return self.authorizeTokenFunc(token)
 
     def getGlyph(self, glyphName, *, client):
         loadedGlyphNames = self.clientData[client.clientUUID].setdefault(
