@@ -260,6 +260,11 @@ html, body {
   background-color: #02A;
   cursor: pointer;
 }
+
+.landing-item-hidden {
+  display: none;
+}
+
 /* DARK MODE */
 
 @media (prefers-color-scheme: dark) {
@@ -273,6 +278,11 @@ html, body {
   }
 
   .glyphs-search-input {
+    background-color: black;
+    color: white;
+  }
+
+  .login-input {
     background-color: black;
     color: white;
   }
