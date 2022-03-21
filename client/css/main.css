@@ -252,12 +252,12 @@ html, body {
   font-size: 1em;
 }
 
-.login-login-button:hover{
+.login-button:hover{
   background-color: #24D;
   cursor: pointer;
 }
 
-.login-login-button:active{
+.login-button:active{
   background-color: #02A;
   cursor: pointer;
 }
