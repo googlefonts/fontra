@@ -2,7 +2,7 @@ import argparse
 from dataclasses import dataclass
 import logging
 import pathlib
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import urlsplit, urlunsplit, parse_qs
 import sys
 from aiohttp import web
 from .backends import getBackendClass
@@ -43,6 +43,7 @@ class FontraServer:
         self.httpApp = web.Application()
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
+        routes.append(web.post("/login", self.loginHandler))
         maxDepth = 4
         for i in range(maxDepth):
             path = "/".join(f"{{path{j}}}" for j in range(i + 1))
@@ -99,6 +100,13 @@ class FontraServer:
         html = templatePath.read_text(encoding="utf-8")
         html = html.format(webSocketPort=self.webSocketPort)
         return web.Response(text=html, content_type="text/html")
+
+    async def loginHandler(self, request):
+        print("hiiiii ---------------------")
+        formContent = parse_qs(await request.text())
+        print(formContent)
+        print("end ---------------------")
+        return web.HTTPFound("/")
 
 
 class FileSystemProjectManager:
