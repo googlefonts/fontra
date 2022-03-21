@@ -103,11 +103,10 @@ class FontraServer:
 
 class FileSystemProjectManager:
 
-    needsLogin = False
     remoteMethodNames = {"getProjectList", "getRequireLogin"}
 
     def __init__(self, rootPath, maxFolderDepth=3):
-        self.rootPath = pathlib.Path(rootPath).resolve()
+        self.rootPath = rootPath
         self.maxFolderDepth = maxFolderDepth
         self.extensions = {".designspace", ".ufo", ".rcjk"}
         self.fontHandlers = {}
@@ -162,6 +161,13 @@ def _iterFolder(folderPath, extensions, maxDepth=3):
             )
 
 
+def existingFolder(path):
+    path = pathlib.Path(path).resolve()
+    if not path.is_dir():
+        raise argparse.ArgumentError("not a directory")
+    return path
+
+
 def main():
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
@@ -169,7 +175,7 @@ def main():
     parser.add_argument("--http-port", default=8000, type=int)
     parser.add_argument("--websocket-port", type=int)
     parser.add_argument("--rcjk-host")
-    parser.add_argument("--filesystem-root")
+    parser.add_argument("--filesystem-root", type=existingFolder)
     args = parser.parse_args()
 
     host = args.host
