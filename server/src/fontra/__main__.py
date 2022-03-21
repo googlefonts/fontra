@@ -168,17 +168,18 @@ class FileSystemProjectManager:
         self.extensions = {".designspace", ".ufo", ".rcjk"}
         self.fontHandlers = {}
         self.clients = {}
+        self.authorizationToken = None
 
     def projectExists(self, *pathItems):
         projectPath = self.rootPath.joinpath(*pathItems)
         return projectPath.exists()
 
-    def authorize(self, token):
-        print("manager token:", token)
+    def authorizeToken(self, token):
+        self.authorizationToken = token
+        return True
 
     async def getRemoteSubject(self, path):
         if path == "/":
-            # login stuff
             return self
         pathItems = tuple(path.split("/"))
         assert pathItems[0] == ""
@@ -190,7 +191,7 @@ class FileSystemProjectManager:
             if not projectPath.exists():
                 raise FileNotFoundError(projectPath)
             backend = await getFileSystemBackend(projectPath)
-            fontHandler = FontHandler(backend, self.clients)
+            fontHandler = FontHandler(backend, self.clients, self.authorizationToken)
             self.fontHandlers[pathItems] = fontHandler
         return fontHandler
 

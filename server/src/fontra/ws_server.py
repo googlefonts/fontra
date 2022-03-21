@@ -59,13 +59,18 @@ class Client:
     async def handleConnection(self, path):
         logger.info(f"incoming connection: {path!r}")
         tasks = []
+        authorized = False
         try:
             async for message in self.websocket:
                 message = json.loads(message)
                 if "client-uuid" in message:
                     self.clientUUID = message["client-uuid"]
-                    self.subject.authorize(message["autorization-token"])
+                    authorized = self.subject.authorizeToken(message["autorization-token"])
+                    if not authorized:
+                        raise ClientException("unauthorized")
                     continue
+                if not authorized:
+                    raise ClientException("unauthorized")
                 if message.get("connection") == "close":
                     logger.info("client requested connection close")
                     break
