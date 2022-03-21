@@ -77,9 +77,7 @@ class Client:
                 if "client-call-id" in message:
                     # this is an incoming client -> server call
                     tasks.append(
-                        asyncio.create_task(
-                            self._performCall(message, subject)
-                        )
+                        asyncio.create_task(self._performCall(message, subject))
                     )
                 elif "server-call-id" in message:
                     # this is a response to a server -> client call
