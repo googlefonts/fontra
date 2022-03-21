@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import logging
 import pathlib
 from urllib.parse import urlsplit, urlunsplit, parse_qs
+import secrets
 import sys
 from aiohttp import web
 from .backends import getBackendClass
@@ -30,6 +31,13 @@ async def getFileSystemBackend(path):
 
 
 @dataclass
+class AuthorizedSession:
+    username: str
+    token: str
+    remoteIP: str
+
+
+@dataclass
 class FontraServer:
 
     host: str
@@ -40,10 +48,12 @@ class FontraServer:
     projectManager: object
 
     def setup(self):
+        self.authorizedSessions = {}
         self.httpApp = web.Application()
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
         routes.append(web.post("/login", self.loginHandler))
+        routes.append(web.post("/logout", self.logoutHandler))
         maxDepth = 4
         for i in range(maxDepth):
             path = "/".join(f"{{path{j}}}" for j in range(i + 1))
@@ -96,22 +106,61 @@ class FontraServer:
         return web.Response(text=editorHTML, content_type="text/html")
 
     async def rootDocumentHandler(self, request):
+        username = request.cookies.get("fontra-username")
+        authToken = request.cookies.get("fontra-authorization-token")
+        session = self.authorizedSessions.get(authToken)
+        if session is not None and (
+            session.username != username or session.remoteIP != request.remote
+        ):
+            session = None
+
         templatePath = self.templatesFolder / "landing.html"
         html = templatePath.read_text(encoding="utf-8")
         html = html.format(webSocketPort=self.webSocketPort)
-        return web.Response(text=html, content_type="text/html")
+        response = web.Response(text=html, content_type="text/html")
+        if session is not None:
+            response.set_cookie("fontra-authorization-token", session.token)
+        else:
+            response.del_cookie("fontra-authorization-token")
+        return response
 
     async def loginHandler(self, request):
-        print("hiiiii ---------------------")
         formContent = parse_qs(await request.text())
-        print(formContent)
-        print("end ---------------------")
-        return web.HTTPFound("/")
+        username = formContent["username"][0]
+        password = formContent["password"][0]
+        # if username + password ok: token = ...
+        if password == "a":
+            token = secrets.token_hex(32)
+            self.authorizedSessions[token] = AuthorizedSession(
+                username, token, request.remote
+            )
+        else:
+            token = None
+
+        response = web.HTTPFound("/")
+        response.set_cookie("fontra-username", username)
+        if token is not None:
+            response.set_cookie("fontra-authorization-token", token)
+            response.del_cookie("fontra-authorization-failed")
+        else:
+            response.set_cookie("fontra-authorization-failed", "true")
+            response.del_cookie("fontra-authorization-token")
+        return response
+
+    async def logoutHandler(self, request):
+        authToken = request.cookies.get("fontra-authorization-token")
+        if authToken is not None and authToken in self.authorizedSessions:
+            session = self.authorizedSessions[authToken]
+            logging.info(f"logging out '{session.username}'")
+            del self.authorizedSessions[authToken]
+        response = web.HTTPFound("/")
+        return response
 
 
 class FileSystemProjectManager:
 
-    remoteMethodNames = {"getProjectList", "getRequireLogin"}
+    remoteMethodNames = {"getProjectList"}
+    requireLogin = False
 
     def __init__(self, rootPath, maxFolderDepth=3):
         self.rootPath = rootPath
@@ -119,9 +168,6 @@ class FileSystemProjectManager:
         self.extensions = {".designspace", ".ufo", ".rcjk"}
         self.fontHandlers = {}
         self.clients = {}
-
-    async def getRequireLogin(self, *, client):
-        return False
 
     def projectExists(self, *pathItems):
         projectPath = self.rootPath.joinpath(*pathItems)
