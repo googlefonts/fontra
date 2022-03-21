@@ -3,6 +3,11 @@
   src: url("../fonts/InriaSans-Light.woff2") format("woff2");
 }
 
+@font-face {
+  font-family: "fontra-ui-semibold";
+  src: url("../fonts/InriaSans-Regular.woff2") format("woff2");
+}
+
 
 html, body {
   font-family: fontra-ui-regular, sans-serif;
@@ -214,6 +219,45 @@ html, body {
   font-size: 1.5em;
 }
 
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+
+}
+.login-label {
+  color: gray;
+  font-size: 0.85em;
+  margin-top: 0.5em;
+}
+
+.login-input {
+  font-family: fontra-ui-regular, sans-serif;
+  font-size: 1em;
+  width:  20em;
+  padding: 0.25em;
+}
+
+.login-login-button {
+  border-radius: 2em;
+  background-color: #46F;
+  width: max-content;
+  color: white;
+  padding: 0.5em 1.1em 0.5em 1em;
+  margin-top: 0.5em;
+  margin-bottom: 1em;
+  font-family: fontra-ui-semibold, sans-serif;
+}
+
+.login-login-button:hover{
+  background-color: #24D;
+  cursor: pointer;
+}
+
+.login-login-button:active{
+  background-color: #02A;
+  cursor: pointer;
+}
 /* DARK MODE */
 
 @media (prefers-color-scheme: dark) {
