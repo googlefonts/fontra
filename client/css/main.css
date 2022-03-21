@@ -199,6 +199,7 @@ html, body {
   display: inline;
 }
 
+
 /* LANDING PAGE */
 
 .landing-body {
@@ -245,7 +246,7 @@ html, body {
   color: white;
   padding: 0.5em 1.1em 0.5em 1em;
   margin-top: 0.5em;
-  margin-bottom: 1em;
+  margin-bottom: 0.5em;
   border: none;
   font-family: fontra-ui-semibold, sans-serif;
   font-size: 1em;
@@ -261,9 +262,15 @@ html, body {
   cursor: pointer;
 }
 
-.landing-item-hidden {
+#login-failure-message {
+  font-family: fontra-ui-semibold, sans-serif;
+  color: red;
+}
+
+.hidden {
   display: none;
 }
+
 
 /* DARK MODE */
 
