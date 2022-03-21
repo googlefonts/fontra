@@ -26,8 +26,8 @@ class FontHandler:
         self.changedGlyphs = {}
         self.authorizeTokenFunc = authorizeTokenFunc
 
-    def authorizeToken(self, token):
-        return self.authorizeTokenFunc(token)
+    def authorizeToken(self, token, remoteIP):
+        return self.authorizeTokenFunc(token, remoteIP)
 
     def getGlyph(self, glyphName, *, client):
         loadedGlyphNames = self.clientData[client.clientUUID].setdefault(

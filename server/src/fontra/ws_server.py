@@ -65,7 +65,8 @@ class Client:
                 message = json.loads(message)
                 if "client-uuid" in message:
                     self.clientUUID = message["client-uuid"]
-                    authorized = self.subject.authorizeToken(message["autorization-token"])
+                    remoteIP = self.websocket.remote_address[0]
+                    authorized = self.subject.authorizeToken(message["autorization-token"], remoteIP)
                     if not authorized:
                         raise ClientException("unauthorized")
                     continue

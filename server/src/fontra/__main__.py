@@ -173,14 +173,13 @@ class FileSystemProjectManager:
         self.extensions = {".designspace", ".ufo", ".rcjk"}
         self.fontHandlers = {}
         self.clients = {}
-        self.authorizationToken = None
 
     def projectExists(self, *pathItems):
         projectPath = self.rootPath.joinpath(*pathItems)
         return projectPath.exists()
 
-    def authorizeToken(self, token):
-        self.authorizationToken = token
+    def authorizeToken(self, token, remoteIP):
+        # print("authorizing:", token, remoteIP)
         return True
 
     async def getRemoteSubject(self, path):
