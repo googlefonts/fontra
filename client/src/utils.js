@@ -62,7 +62,7 @@ export function throttleCalls(func, minTime) {
 }
 
 
-export function parseCookie(str) {
+export function parseCookies(str) {
   // https://www.geekstrick.com/snippets/how-to-parse-cookies-in-javascript/
   return str
   .split(';')
