@@ -35,6 +35,17 @@ class RCJKClientAsync(RCJKClient):
     async def close(self):
         await self._session.__aexit__(None, None, None)
 
+    async def get_project_font_uid_mapping(self):
+        project_font_uid_mapping = {}
+        for project_item in (await self.project_list())["data"]:
+            project_name = project_item["name"]
+            project_uid = project_item["uid"]
+            for font_item in (await self.font_list(project_uid))["data"]:
+                font_name = font_item["name"]
+                font_uid = font_item["uid"]
+                project_font_uid_mapping[project_name, font_name] = (project_uid, font_uid)
+        return project_font_uid_mapping
+
     async def _api_call(self, view_name, params=None):
         url, data, headers = self._prepare_request(view_name, params)
         async with self._session.post(url, data=data, headers=headers) as response:
@@ -65,33 +76,11 @@ class RCJKClientAsync(RCJKClient):
 
 
 class RCJKMySQLBackend:
-    @classmethod
-    async def fromURL(cls, url):
-        parsed = urlsplit(url)
-        if parsed.scheme != "https":
-            raise ValueError(f"URL must be https, found {parsed.scheme}")
-        port = f":{parsed.port}" if parsed.port is not None else ""
-        plainURL = f"{parsed.scheme}://{parsed.hostname}{port}/"
-        pathParts = unquote(parsed.path).split("/")
-        if len(pathParts) != 3:
-            raise ValueError(
-                f"URL must contain /projectname/fontname path, found {parsed.path}"
-            )
-        _, projectName, fontName = pathParts
-
-        client = RCJKClientAsync(
-            host=plainURL,
-            username=parsed.username,
-            password=unquote(parsed.password),
-        )
-        return await cls.fromRCJKClient(client, projectName, fontName)
 
     @classmethod
     async def fromRCJKClient(cls, client, projectName, fontName):
         self = cls()
         self.client = client
-
-        await self.client.connect()
 
         projectUID = _getUIDByName(
             (await self.client.project_list())["data"], projectName, "project"
