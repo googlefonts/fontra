@@ -22,6 +22,12 @@ def main():
     parser.add_argument("--websocket-port", type=int)
     parser.add_argument("--rcjk-host")
     parser.add_argument("--filesystem-root", type=existingFolder)
+    parser.add_argument(
+        "--force-login",
+        action="store_true",
+        help="Enforce login, even for a project manager that doesn't need it. "
+        "For testing login.",
+    )
     args = parser.parse_args()
 
     host = args.host
@@ -40,6 +46,9 @@ def main():
         manager = FileSystemProjectManager(args.filesystem_root)
     else:
         manager = RCJKProjectManager(args.rcjk_host)
+
+    if args.force_login:
+        manager.requireLogin = True
 
     fontraRoot = pathlib.Path(__file__).resolve().parent.parent.parent.parent
     contentFolder = fontraRoot / "client"
