@@ -85,15 +85,21 @@ class FontraServer:
         await server.getServerTask(host=self.host, port=self.webSocketPort)
 
     async def rootDocumentHandler(self, request):
-        username = request.cookies.get("fontra-username")
-        authToken = request.cookies.get("fontra-authorization-token")
-        session = self.authorizedSessions.get(authToken)
-        if session is not None and (
-            session.username != username or session.remoteIP != request.remote
-        ):
-            session = None
+        session = None
+        if self.projectManager.requireLogin:
+            username = request.cookies.get("fontra-username")
+            authToken = request.cookies.get("fontra-authorization-token")
+            session = self.authorizedSessions.get(authToken)
+            if session is not None and (
+                session.username != username or session.remoteIP != request.remote
+            ):
+                session = None
 
-        html = self._formatHTMLTemplate("landing.html", webSocketPort=self.webSocketPort)
+        html = self._formatHTMLTemplate(
+            "landing.html",
+            webSocketPort=self.webSocketPort,
+            requireLogin=str(bool(self.projectManager.requireLogin)).lower(),
+        )
         response = web.Response(text=html, content_type="text/html")
         if session is not None:
             response.set_cookie("fontra-authorization-token", session.token)
@@ -134,10 +140,11 @@ class FontraServer:
         return response
 
     async def projectsPathHandler(self, request):
-        authToken = request.cookies.get("fontra-authorization-token")
-        if authToken not in self.authorizedSessions:
-            response = web.HTTPFound("/")
-            return response
+        if self.projectManager.requireLogin:
+            authToken = request.cookies.get("fontra-authorization-token")
+            if authToken not in self.authorizedSessions:
+                response = web.HTTPFound("/")
+                return response
 
         pathItems = []
         for i in range(10):
@@ -180,10 +187,6 @@ class FileSystemProjectManager:
     def projectExists(self, *pathItems):
         projectPath = self.rootPath.joinpath(*pathItems)
         return projectPath.exists()
-
-    def authorizeToken(self, token, remoteIP):
-        # print("authorizing:", token, remoteIP)
-        return True
 
     async def getRemoteSubject(self, path, token, remoteIP):
         if path == "/":
