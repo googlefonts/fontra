@@ -56,9 +56,8 @@ class FileSystemProjectManager:
     async def getProjectList(self, *, client):
         projectPaths = []
         rootItems = self.rootPath.parts
-        for projectPath in _iterFolder(
-            self.rootPath, self.extensions, self.maxFolderDepth
-        ):
+        paths = sorted(_iterFolder(self.rootPath, self.extensions, self.maxFolderDepth))
+        for projectPath in paths:
             projectItems = projectPath.parts
             assert projectItems[: len(rootItems)] == rootItems
             projectPaths.append("/".join(projectItems[len(rootItems) :]))

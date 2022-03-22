@@ -68,4 +68,4 @@ class AuthorizedClient:
         projectMapping = await self.rcjkClient.get_project_font_uid_mapping()
         projectList = [f"{p}/{f}" for p, f in projectMapping.keys()]
         self.projectMapping = projectMapping
-        return projectList
+        return sorted(projectList)
