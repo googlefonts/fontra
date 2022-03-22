@@ -32,7 +32,7 @@ class FileSystemProjectManager:
             return secrets.token_hex(32)
         return None
 
-    def projectExists(self, *pathItems):
+    def projectExists(self, token, *pathItems):
         projectPath = self.rootPath.joinpath(*pathItems)
         return projectPath.exists()
 

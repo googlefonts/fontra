@@ -117,6 +117,7 @@ class FontraServer:
         return response
 
     async def projectsPathHandler(self, request):
+        authToken = None
         if self.projectManager.requireLogin:
             authToken = request.cookies.get("fontra-authorization-token")
             if authToken not in self.authorizedSessions:
@@ -131,7 +132,7 @@ class FontraServer:
                 break
             pathItems.append(item)
 
-        if not self.projectManager.projectExists(*pathItems):
+        if not self.projectManager.projectExists(authToken, *pathItems):
             return web.HTTPNotFound()
 
         projectPath = "/".join(pathItems)
