@@ -1,13 +1,10 @@
-from urllib.parse import urlsplit, urlunsplit
+import logging
+import secrets
+from .backends.rcjkmysql import RCJKClientAsync, RCJKMySQLBackend
+from .backends.rcjkclient import HTTPError
 
 
-async def getMySQLBackend(url):
-    from .backends.rcjkmysql import RCJKMySQLBackend
-
-    parsed = urlsplit(url)
-    displayURL = urlunsplit([parsed.scheme, parsed.hostname, parsed.path, None, None])
-    print(f"connecting to project {displayURL}...")
-    return await RCJKMySQLBackend.fromURL(url)
+logger = logging.getLogger(__name__)
 
 
 class RCJKProjectManager:
@@ -16,14 +13,29 @@ class RCJKProjectManager:
 
     def __init__(self, host):
         self.host = host
+        self.clients = {}  # TODO: is this the right thing?
         self.rcjkClients = {}
 
     async def login(self, username, password):
+        url = f"https://{self.host}/"
+        rcjkClient = RCJKClientAsync(
+            host=url,
+            username=username,
+            password=password,
+        )
+        try:
+            await rcjkClient.connect()
+        except HTTPError:
+            logger.info(f"failed to log in '{username}'")
+            return None
+        token = secrets.token_hex(32)
+        self.rcjkClients[token] = rcjkClient
         return token
 
     async def getRemoteSubject(self, path, token, remoteIP):
+        client = self.rcjkClients[token]
         if path == "/":
-            return AuthorizedProjectManager(...)
+            return AuthorizedProjectManager(client)
         ...
 
 
@@ -38,4 +50,4 @@ class AuthorizedProjectManager:
         ...
 
     async def getProjectList(self, *, client):
-        ...
+        return ["/testing/fooo"]
