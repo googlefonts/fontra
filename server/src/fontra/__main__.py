@@ -8,7 +8,7 @@ import sys
 from aiohttp import web
 from .backends import getBackendClass
 from .fonthandler import FontHandler
-from .ws_server import WebSocketServer
+from .websocket import WebSocketServer
 
 
 async def getMySQLBackend(url):
