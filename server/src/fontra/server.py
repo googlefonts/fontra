@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 import logging
 from urllib.parse import parse_qs
-import secrets
 from aiohttp import web
 from .websocket import WebSocketServer
 
@@ -90,9 +89,8 @@ class FontraServer:
         formContent = parse_qs(await request.text())
         username = formContent["username"][0]
         password = formContent["password"][0]
-        # if username + password ok: token = ...
-        if password == "a":
-            token = secrets.token_hex(32)
+        token = await self.projectManager.login(username, password)
+        if token is not None:
             self.authorizedSessions[token] = AuthorizedSession(
                 username, token, request.remote
             )
