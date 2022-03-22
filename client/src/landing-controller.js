@@ -5,7 +5,15 @@ import { List } from "./ui-list.js";
 
 export class LandingController {
 
-  static async fromURL(url) {
+  static async fromURL(url, requireLogin) {
+    if (requireLogin) {
+      return LandingController.fromURLWithLogin(url);
+    } else {
+      return LandingController.fromURLWithToken(url, null);
+    }
+  }
+
+  static async fromURLWithLogin(url, requireLogin) {
     const loginForm = document.querySelector("#login-form-container");
     const logoutForm = document.querySelector("#logout-form-container");
     const logoutButton = document.querySelector("#logout-button");
@@ -27,13 +35,16 @@ export class LandingController {
       logoutButton.textContent = `Log out ${username}`;
     }
     loginFailureMessage.classList.toggle("hidden", !loginFailed);
-
     if (token) {
-      const remoteFontEngine = await getRemoteProxy(url, token);
-      const landingController = new LandingController(remoteFontEngine);
-      await landingController.setup();
-      return landingController;
+      return LandingController.fromURLWithToken(url, token);
     }
+  }
+
+  static async fromURLWithToken(url, token) {
+    const remoteFontEngine = await getRemoteProxy(url, token);
+    const landingController = new LandingController(remoteFontEngine);
+    await landingController.setup();
+    return landingController;
   }
 
   constructor(remoteObject) {
