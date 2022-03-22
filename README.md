@@ -32,39 +32,16 @@
 
 ## Block diagram
 
-```
-
-                                     [ UI (web browser) ]
-                                              |
-                                    [ fontra client (js) ]
-                                              |
-                                       (local network)
-                                              |
-                           [ fontra server (http + websocket, py) ]
-                                              |
-                                             /|\
-                   -------------------------- | -------------------------
-                  /                           |                          \
-                 /                            |                           \
-                |                             |                            |
-    [ fontra rcjkmysql backend ]   [ fontra rcjk backend ]   [ fontra designspace backend ]
-                |                             |                            |
-       [ robocjk.api.client ]           [ rcjktools ]              [ designspaceLib ]
-                |                       [  ufoLib   ]              [    ufoLib      ]
-            (network)                   [ fontTools ]              [   fontTools    ]
-                |                             |                            |
-          [ HTTP server ]                      \                          /
-                |                               \                        /
-           [ web API ]                           ---------   ------------
-                |                                         \ /
-             [ ORM ]                                       |
-                |                                          |
-    [ rcjk DB storage (MySQL) ]                     [ file system ]
-                |
-         [ file system ]
-                |
-             [ git ]
-                |
-            [ github ]
-
+```mermaid
+flowchart
+  browser[Web browser]---client[Fontra client .js .css .html<br>HTML5 Canvas]
+  client-.network.-server[Fontra server .py<br>aiohttp/websockets]
+  server---ds[.designspace .ufo backend]
+  server---rcjk[.rcjk backend]
+  server---rcjk_mysql[rcjk mysql backend]
+  ds---fs[File system]
+  rcjk---fs
+  rcjk_mysql-.network.-rcjk_server[RoboCJK web API]
+  rcjk_server---django[Django / MySQL]
+  django---git[GitHub]
 ```
