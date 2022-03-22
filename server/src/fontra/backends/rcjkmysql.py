@@ -116,7 +116,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
         },
     ]
     layerData = [{"name": "<default>/foreground", "glyph": defaultSourceDict}]
-    neutralComponentLocations = [compo["location"] for compo in components]
+    neutralComponentLocations = [compo.get("location", {}) for compo in components]
 
     for varDict in glyph.lib.get("robocjk.variationGlyphs", ()):
         if not varDict.get("on", True):
