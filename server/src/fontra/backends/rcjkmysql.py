@@ -42,7 +42,10 @@ class RCJKClientAsync(RCJKClient):
             for font_item in (await self.font_list(project_uid))["data"]:
                 font_name = font_item["name"]
                 font_uid = font_item["uid"]
-                project_font_uid_mapping[project_name, font_name] = (project_uid, font_uid)
+                project_font_uid_mapping[project_name, font_name] = (
+                    project_uid,
+                    font_uid,
+                )
         return project_font_uid_mapping
 
     async def _api_call(self, view_name, params=None):
@@ -75,7 +78,6 @@ class RCJKClientAsync(RCJKClient):
 
 
 class RCJKMySQLBackend:
-
     @classmethod
     async def fromRCJKClient(cls, client, fontUID):
         self = cls()
@@ -263,8 +265,7 @@ def serializeComponents(
 
 def cleanupLocation(location, axisDefaults, neutralLocation):
     return {
-        a: location.get(a, neutralLocation.get(a, v))
-        for a, v in axisDefaults.items()
+        a: location.get(a, neutralLocation.get(a, v)) for a, v in axisDefaults.items()
     }
 
 
