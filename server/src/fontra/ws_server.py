@@ -96,6 +96,9 @@ class Client:
                     fut.set_result(returnValue)
                 else:
                     fut.set_exception(ClientException(error))
+            else:
+                logger.info("invalid message, closing connection")
+                break
 
     async def _performCall(self, message, subject):
         clientCallID = "unknown-client-call-id"
