@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import traceback
+from urllib.parse import unquote
 import websockets
 
 
@@ -29,6 +30,7 @@ class WebSocketServer:
         del self.clients[client.websocket]
 
     async def incomingConnection(self, websocket, path):
+        path = unquote(path)
         client = Client(websocket, path, self.subjectFactory, self.verboseErrors)
         self.registerClient(client)
         try:
