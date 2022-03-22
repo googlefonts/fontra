@@ -299,13 +299,6 @@ _glyphListMethods = {
 }
 
 
-def _getUIDByName(items, name, kind):
-    for item in items:
-        if item["name"] == name:
-            return item["uid"]
-    raise ValueError(f"{kind} '{name}' not found")
-
-
 def extractAxisDefaults(baseGlyphDict):
     axisDefaults = {}
     glyph = GLIFGlyph()
