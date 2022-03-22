@@ -24,7 +24,7 @@
 }
 
 .ui-list > .contents > .selected {
-  background-color: #FD7;
+  background-color: #DDD;
 }
 
 .ui-list > .contents > .row > .text-cell {
@@ -34,12 +34,20 @@
 
 
 @media (prefers-color-scheme: dark) {
+  .ui-list > .contents {
+    border: solid 1px darkgray;
+  }
+
+  .ui-list > .contents > .row {
+    border-top: solid 1px #333;
+  }
+
   .ui-list > .contents > .row {
     background-color: black;
     color: white;
   }
 
   .ui-list > .contents > .selected {
-    background-color: #04A;
+    background-color: #333;
   }
 }

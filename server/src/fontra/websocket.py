@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import traceback
+from urllib.parse import unquote
 import websockets
 
 
@@ -9,10 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class WebSocketServer:
-    def __init__(self, subject, methodNames, *, clients=None, verboseErrors=False):
+    def __init__(self, subjectFactory, *, clients=None, verboseErrors=False):
         self.clients = clients if clients is not None else {}
-        self.subject = subject
-        self.methodNames = set(methodNames)
+        self.subjectFactory = subjectFactory
         self.verboseErrors = verboseErrors
 
     def getServerTask(self, host="localhost", port=8001):
@@ -30,10 +30,11 @@ class WebSocketServer:
         del self.clients[client.websocket]
 
     async def incomingConnection(self, websocket, path):
-        client = Client(websocket, self.subject, self.methodNames, self.verboseErrors)
+        path = unquote(path)
+        client = Client(websocket, path, self.subjectFactory, self.verboseErrors)
         self.registerClient(client)
         try:
-            await client.handleConnection(path)
+            await client.handleConnection()
         finally:
             self.unregisterClient(client)
 
@@ -43,11 +44,12 @@ class ClientException(Exception):
 
 
 class Client:
-    def __init__(self, websocket, subject, methodNames, verboseErrors):
+    def __init__(self, websocket, path, subjectFactory, verboseErrors):
         self.websocket = websocket
-        self.subject = subject
-        self.methodNames = methodNames
+        self.path = path
+        self.subjectFactory = subjectFactory
         self.verboseErrors = verboseErrors
+        self.clientUUID = None
         self.callReturnFutures = {}
         self.getNextServerCallID = _genNextServerCallID()
 
@@ -55,42 +57,56 @@ class Client:
     def proxy(self):
         return ClientProxy(self)
 
-    async def handleConnection(self, path):
-        logger.info(f"incoming connection: {path!r}")
-        tasks = []
+    async def handleConnection(self):
         try:
-            async for message in self.websocket:
-                message = json.loads(message)
-                if "client-uuid" in message:
-                    self.clientUUID = message["client-uuid"]
-                    continue
-                if message.get("connection") == "close":
-                    logger.info("client requested connection close")
-                    break
-                tasks = [task for task in tasks if not task.done()]
-                if "client-call-id" in message:
-                    # this is an incoming client -> server call
-                    tasks.append(asyncio.create_task(self._performCall(message)))
-                elif "server-call-id" in message:
-                    # this is a response to a server -> client call
-                    fut = self.callReturnFutures[message["server-call-id"]]
-                    returnValue = message.get("return-value")
-                    error = message.get("error")
-                    if error is None:
-                        fut.set_result(returnValue)
-                    else:
-                        fut.set_exception(ClientException(error))
+            await self._handleConnection()
         except websockets.exceptions.ConnectionClosedError as e:
             logger.info(f"websocket connection closed: {e!r}")
 
-    async def _performCall(self, message):
+    async def _handleConnection(self):
+        logger.info(f"incoming connection: {self.path!r}")
+        tasks = []
+        subject = None
+        async for message in self.websocket:
+            message = json.loads(message)
+            if "client-uuid" in message:
+                self.clientUUID = message["client-uuid"]
+                token = message.get("autorization-token")
+                remoteIP = self.websocket.remote_address[0]
+                subject = await self.subjectFactory(self.path, token, remoteIP)
+                continue
+            if subject is None:
+                raise ClientException("unauthorized")
+            if message.get("connection") == "close":
+                logger.info("client requested connection close")
+                break
+            tasks = [task for task in tasks if not task.done()]
+            if "client-call-id" in message:
+                # this is an incoming client -> server call
+                tasks.append(
+                    asyncio.create_task(self._performCall(message, subject))
+                )
+            elif "server-call-id" in message:
+                # this is a response to a server -> client call
+                fut = self.callReturnFutures[message["server-call-id"]]
+                returnValue = message.get("return-value")
+                error = message.get("error")
+                if error is None:
+                    fut.set_result(returnValue)
+                else:
+                    fut.set_exception(ClientException(error))
+            else:
+                logger.info("invalid message, closing connection")
+                break
+
+    async def _performCall(self, message, subject):
         clientCallID = "unknown-client-call-id"
         try:
             clientCallID = message["client-call-id"]
             methodName = message["method-name"]
             arguments = message.get("arguments", [])
-            if methodName in self.methodNames:
-                methodHandler = getattr(self.subject, methodName)
+            if methodName in subject.remoteMethodNames:
+                methodHandler = getattr(subject, methodName)
                 returnValue = await methodHandler(*arguments, client=self)
                 response = {"client-call-id": clientCallID, "return-value": returnValue}
             else:

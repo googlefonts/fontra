@@ -1,104 +1,15 @@
 import asyncio
-from urllib.parse import urlsplit, unquote
-import aiohttp
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from .pen import PathBuilderPointPen
-from .rcjkclient import Client as RCJKClient, HTTPError
-
-
-class RCJKClientAsync(RCJKClient):
-    def _connect(self):
-        # Override with no-op, as we need to handle the connection separately
-        # as an async method.
-        pass
-
-    async def connect(self):
-        self._session = aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(verify_ssl=False)
-        )
-        session = await self._session.__aenter__()
-        assert session is self._session
-
-        try:
-            # check if there are robocjk apis available at the given host
-            response = await self._api_call("ping")
-            assert response["data"] == "pong"
-        except Exception as e:
-            # invalid host
-            raise ValueError(
-                f"Unable to call RoboCJK APIs at host: {self._host} - Exception: {e}"
-            )
-
-        # obtain the auth token to prevent 401 error on first call
-        await self.auth_token()
-
-    async def close(self):
-        await self._session.__aexit__(None, None, None)
-
-    async def _api_call(self, view_name, params=None):
-        url, data, headers = self._prepare_request(view_name, params)
-        async with self._session.post(url, data=data, headers=headers) as response:
-            if response.status == 401:
-                # unauthorized - request a new auth token
-                await self.auth_token()
-                if self._auth_token:
-                    # re-send previously unauthorized request
-                    return await self._api_call(view_name, params)
-            # read response json data and return dict
-            response_data = await response.json()
-            if response.status != 200:
-                raise HTTPError(f"{response.status} {response_data['error']}")
-        return response_data
-
-    async def auth_token(self):
-        """
-        Get an authorization token for the current user.
-        """
-        params = {
-            "username": self._username,
-            "password": self._password,
-        }
-        response = await self._api_call("auth_token", params)
-        # update auth token
-        self._auth_token = response.get("data", {}).get("auth_token", self._auth_token)
-        return response
 
 
 class RCJKMySQLBackend:
     @classmethod
-    async def fromURL(cls, url):
-        parsed = urlsplit(url)
-        if parsed.scheme != "https":
-            raise ValueError(f"URL must be https, found {parsed.scheme}")
-        port = f":{parsed.port}" if parsed.port is not None else ""
-        plainURL = f"{parsed.scheme}://{parsed.hostname}{port}/"
-        pathParts = unquote(parsed.path).split("/")
-        if len(pathParts) != 3:
-            raise ValueError(
-                f"URL must contain /projectname/fontname path, found {parsed.path}"
-            )
-        _, projectName, fontName = pathParts
-
-        client = RCJKClientAsync(
-            host=plainURL,
-            username=parsed.username,
-            password=unquote(parsed.password),
-        )
-        return await cls.fromRCJKClient(client, projectName, fontName)
-
-    @classmethod
-    async def fromRCJKClient(cls, client, projectName, fontName):
+    async def fromRCJKClient(cls, client, fontUID):
         self = cls()
         self.client = client
+        self.fontUID = fontUID
 
-        await self.client.connect()
-
-        projectUID = _getUIDByName(
-            (await self.client.project_list())["data"], projectName, "project"
-        )
-        self.fontUID = _getUIDByName(
-            (await self.client.font_list(projectUID))["data"], fontName, "font"
-        )
         self._glyphMapping = None
         self._tempGlyphDataCache = {}
         self._tempGlyphDataCacheTimer = None
@@ -280,8 +191,7 @@ def serializeComponents(
 
 def cleanupLocation(location, axisDefaults, neutralLocation):
     return {
-        a: location.get(a, neutralLocation.get(a, v))
-        for a, v in axisDefaults.items()
+        a: location.get(a, neutralLocation.get(a, v)) for a, v in axisDefaults.items()
     }
 
 
@@ -314,13 +224,6 @@ _glyphListMethods = {
     "DC": "deep_component_list",
     "CG": "character_glyph_list",
 }
-
-
-def _getUIDByName(items, name, kind):
-    for item in items:
-        if item["name"] == name:
-            return item["uid"]
-    raise ValueError(f"{kind} '{name}' not found")
 
 
 def extractAxisDefaults(baseGlyphDict):

@@ -18,15 +18,15 @@
 
     `pip install -e .`
 
-- start the fontra server with a path to an .rcjk or a .designspace project:
+- start the fontra server with a path to a folder containing fonts (.rcjk, .designspace or .ufo), using `--filesystem-root`:
 
-    `fontra /path/to/a/project.rcjk`
+    `fontra --filesystem-root /path/to/a/folder`
 
-- or a URL to a RoboCJK MySQL server of this form:
+- or a start it with a robocjk server hostname, using `--rcjk-host`:
 
-    `fontra https://<user>:<passw>@<domain>/<project>/<font>`
+    `fontra --rcjk-host some-robocjk-server.some-domain.com`
 
-- navigate to
+- then navigate to:
 
     `http://localhost:8000/`
 

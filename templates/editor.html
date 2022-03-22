@@ -15,7 +15,7 @@
         <div id="overlay-layer">
 
           <div class="overlay-item" id="glyph-search-overlay">
-            <img class="icon-img" id="glyph-search-img" src="images/magnifying-glass-black.svg">
+            <img class="icon-img" id="glyph-search-img" src="/images/magnifying-glass-black.svg">
 
             <div class="glyphs-navigation">
               <div class="glyphs-search">
@@ -24,7 +24,7 @@
                   class="glyphs-search-input"
                   id="glyphs-search-input"
                   placeholder="Search glyphs"
-                  oninput="appController.glyphSearchFieldChanged(value)">
+                  oninput="editorController.glyphSearchFieldChanged(value)">
               </div>
               <div id="glyphs-list" tabindex="1">
                 <!-- contents will be filled dynamically -->
@@ -34,7 +34,7 @@
           </div>
 
           <div class="overlay-item" id="sliders-overlay">
-            <img class="icon-img" id="slider-img" src="images/sliders-black.svg">
+            <img class="icon-img" id="slider-img" src="/images/sliders-black.svg">
             <div class="sliders-and-sources">
               <div class="axis-sliders" id="axis-sliders">
                 <!-- contents will be filled dynamically -->
@@ -46,7 +46,7 @@
           </div>
 
           <div class="overlay-item" id="text-entry-overlay">
-            <img class="icon-img" id="text-entry-img" src="images/text-tool-black.svg">
+            <img class="icon-img" id="text-entry-img" src="/images/text-tool-black.svg">
             <div>
               <div id="text-entry" contenteditable="true"></div>
             </div>
@@ -63,12 +63,12 @@
   </div>
   </body>
     <script type="module">
-      import {{ AppController }} from "/src/app-controller.js";
+      import {{ EditorController }} from "/src/editor-controller.js";
 
       async function startApp() {{
-        const url = `ws://${{location.hostname}}:${{ {webSocketPort} }}/`;
-        window.appController = await AppController.fromURL(url);
-        await window.appController.start();
+        const url = `ws://${{location.hostname}}:{webSocketPort}/{projectPath}`;
+        window.editorController = await EditorController.fromURL(url);
+        await window.editorController.start();
       }}
 
       startApp();
