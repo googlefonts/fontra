@@ -1,4 +1,5 @@
 import pathlib
+import secrets
 from .backends import getBackendClass
 from .fonthandler import FontHandler
 
@@ -24,6 +25,12 @@ class FileSystemProjectManager:
         self.extensions = {".designspace", ".ufo", ".rcjk"}
         self.fontHandlers = {}
         self.clients = {}
+
+    async def login(self, username, password):
+        # dummy, for testing
+        if password == "a":
+            return secrets.token_hex(32)
+        return None
 
     def projectExists(self, *pathItems):
         projectPath = self.rootPath.joinpath(*pathItems)
