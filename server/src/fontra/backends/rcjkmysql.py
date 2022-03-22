@@ -1,5 +1,4 @@
 import asyncio
-from urllib.parse import urlsplit, unquote
 import aiohttp
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from .pen import PathBuilderPointPen
@@ -78,16 +77,11 @@ class RCJKClientAsync(RCJKClient):
 class RCJKMySQLBackend:
 
     @classmethod
-    async def fromRCJKClient(cls, client, projectName, fontName):
+    async def fromRCJKClient(cls, client, fontUID):
         self = cls()
         self.client = client
+        self.fontUID = fontUID
 
-        projectUID = _getUIDByName(
-            (await self.client.project_list())["data"], projectName, "project"
-        )
-        self.fontUID = _getUIDByName(
-            (await self.client.font_list(projectUID))["data"], fontName, "font"
-        )
         self._glyphMapping = None
         self._tempGlyphDataCache = {}
         self._tempGlyphDataCacheTimer = None

@@ -47,11 +47,8 @@ class RCJKProjectManager:
         assert pathItems[0] == ""
         pathItems = pathItems[1:]
         assert len(pathItems) == 2
-        projectName, fontName = pathItems
-
-        backend = await RCJKMySQLBackend.fromRCJKClient(
-            client.rcjkClient, projectName, fontName
-        )
+        _, fontUID = client.projectMapping[pathItems]
+        backend = await RCJKMySQLBackend.fromRCJKClient(client.rcjkClient, fontUID)
         return FontHandler(backend, self.clients)
 
 
@@ -61,13 +58,13 @@ class AuthorizedClient:
 
     def __init__(self, rcjkClient):
         self.rcjkClient = rcjkClient
-        self.cachedProjectMapping = set()
+        self.projectMapping = {}
 
     def projectExists(self, *pathItems):
-        return pathItems in self.cachedProjectMapping
+        return pathItems in self.projectMapping
 
     async def getProjectList(self, *, client):
         projectMapping = await self.rcjkClient.get_project_font_uid_mapping()
         projectList = [f"{p}/{f}" for p, f in projectMapping.keys()]
-        self.cachedProjectMapping = projectMapping
+        self.projectMapping = projectMapping
         return projectList
