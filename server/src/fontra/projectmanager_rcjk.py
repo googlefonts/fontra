@@ -1,7 +1,8 @@
 import logging
 import secrets
-from .backends.rcjkmysql import RCJKClientAsync, RCJKMySQLBackend
+from .backends.rcjkmysql import RCJKMySQLBackend
 from .backends.rcjkclient import HTTPError
+from .backends.rcjkclient_async import RCJKClientAsync
 from .fonthandler import FontHandler
 
 
