@@ -2,6 +2,7 @@ import logging
 import secrets
 from .backends.rcjkmysql import RCJKClientAsync, RCJKMySQLBackend
 from .backends.rcjkclient import HTTPError
+from .fonthandler import FontHandler
 
 
 logger = logging.getLogger(__name__)
@@ -41,7 +42,17 @@ class RCJKProjectManager:
         client = self.authorizedClients[token]
         if path == "/":
             return client
-        ...
+
+        pathItems = tuple(path.split("/"))
+        assert pathItems[0] == ""
+        pathItems = pathItems[1:]
+        assert len(pathItems) == 2
+        projectName, fontName = pathItems
+
+        backend = await RCJKMySQLBackend.fromRCJKClient(
+            client.rcjkClient, projectName, fontName
+        )
+        return FontHandler(backend, self.clients)
 
 
 class AuthorizedClient:
@@ -49,13 +60,14 @@ class AuthorizedClient:
     remoteMethodNames = {"getProjectList"}
 
     def __init__(self, rcjkClient):
-        self.cachedProjectPaths = set()
+        self.rcjkClient = rcjkClient
+        self.cachedProjectMapping = set()
 
     def projectExists(self, *pathItems):
-        path = "/".join(pathItems)
-        return path in self.cachedProjectPaths
+        return pathItems in self.cachedProjectMapping
 
     async def getProjectList(self, *, client):
-        projectList = ["testing/fooo"]
-        self.cachedProjectPaths = projectList
+        projectMapping = await self.rcjkClient.get_project_font_uid_mapping()
+        projectList = [f"{p}/{f}" for p, f in projectMapping.keys()]
+        self.cachedProjectMapping = projectMapping
         return projectList
