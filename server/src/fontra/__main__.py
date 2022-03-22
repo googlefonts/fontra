@@ -93,9 +93,7 @@ class FontraServer:
         ):
             session = None
 
-        templatePath = self.templatesFolder / "landing.html"
-        html = templatePath.read_text(encoding="utf-8")
-        html = html.format(webSocketPort=self.webSocketPort)
+        html = self._formatHTMLTemplate("landing.html", webSocketPort=self.webSocketPort)
         response = web.Response(text=html, content_type="text/html")
         if session is not None:
             response.set_cookie("fontra-authorization-token", session.token)
@@ -154,12 +152,17 @@ class FontraServer:
 
         projectPath = "/".join(pathItems)
 
-        editorTemplatePath = self.templatesFolder / "editor.html"
-        editorHTML = editorTemplatePath.read_text(encoding="utf-8")
-        editorHTML = editorHTML.format(
-            webSocketPort=self.webSocketPort, projectPath=projectPath
+        html = self._formatHTMLTemplate(
+            "editor.html",
+            webSocketPort=self.webSocketPort,
+            projectPath=projectPath,
         )
-        return web.Response(text=editorHTML, content_type="text/html")
+        return web.Response(text=html, content_type="text/html")
+
+    def _formatHTMLTemplate(self, fileName, **kwargs):
+        templatePath = self.templatesFolder / fileName
+        html = templatePath.read_text(encoding="utf-8")
+        return html.format(**kwargs)
 
 
 class FileSystemProjectManager:
