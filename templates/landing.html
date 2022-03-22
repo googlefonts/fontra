@@ -15,7 +15,7 @@
         <img src="/images/fontra-icon.svg" width="100" height="100">
       </div>
 
-      <div class="landing-item" id="login-form-container">
+      <div class="landing-item hidden" id="login-form-container">
 
         <form action="/login" method="post" id="login-form">
 
@@ -44,7 +44,7 @@
 
       </div>
 
-      <div class="landing-item" id="logout-form-container">
+      <div class="landing-item hidden" id="logout-form-container">
 
         <form action="/logout" method="post" id="logout-form">
           <button type="submit" class="login-button" id="logout-button">Log out</button>
@@ -64,7 +64,7 @@
 
       async function startApp() {{
         const url = `ws://${{location.hostname}}:{webSocketPort}/`;
-        const landingController = await LandingController.fromURL(url);
+        const landingController = await LandingController.fromURL(url, {requireLogin});
       }}
 
       startApp();
