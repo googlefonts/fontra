@@ -1,19 +1,10 @@
 import argparse
 import logging
 import pathlib
-from urllib.parse import urlsplit, urlunsplit
 import sys
 from .server import FontraServer
 from .projectmanager_fs import FileSystemProjectManager
-
-
-async def getMySQLBackend(url):
-    from .backends.rcjkmysql import RCJKMySQLBackend
-
-    parsed = urlsplit(url)
-    displayURL = urlunsplit([parsed.scheme, parsed.hostname, parsed.path, None, None])
-    print(f"connecting to project {displayURL}...")
-    return await RCJKMySQLBackend.fromURL(url)
+from .projectmanager_rcjk import RCJKProjectManager
 
 
 def existingFolder(path):
