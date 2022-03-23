@@ -110,6 +110,8 @@ class ProjectManager {
 }
 
 class FontHandler {
+  backend
+  clients
   changeBegin()
   changeSetRollback(rollbackChange)
   changeChanging(liveChange)
