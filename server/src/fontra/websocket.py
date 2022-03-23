@@ -31,7 +31,7 @@ class WebSocketServer:
 
     async def incomingConnection(self, websocket, path):
         path = unquote(path)
-        client = Client(websocket, path, self.subjectFactory, self.verboseErrors)
+        client = WebSocketClient(websocket, path, self.subjectFactory, self.verboseErrors)
         self.registerClient(client)
         try:
             await client.handleConnection()
@@ -43,7 +43,7 @@ class ClientException(Exception):
     pass
 
 
-class Client:
+class WebSocketClient:
     def __init__(self, websocket, path, subjectFactory, verboseErrors):
         self.websocket = websocket
         self.path = path
