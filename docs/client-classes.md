@@ -33,6 +33,6 @@
 - VariationModel
 - Transform
 
-### Server Interaction
+### Client/Server Interaction
 
 - RemoteObject
