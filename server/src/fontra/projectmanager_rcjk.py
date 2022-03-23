@@ -32,7 +32,7 @@ class RCJKProjectManager:
             await rcjkClient.close()
             return None
         token = secrets.token_hex(32)
-        self.authorizedClients[token] = AuthorizedClient(rcjkClient)
+        self.authorizedClients[token] = AuthorizedClient(rcjkClient, self.connections)
         return token
 
     def projectExists(self, token, *pathItems):
@@ -48,18 +48,18 @@ class RCJKProjectManager:
         assert pathItems[0] == ""
         pathItems = pathItems[1:]
         assert len(pathItems) == 2
-        _, fontUID = client.projectMapping[pathItems]
-        backend = await RCJKMySQLBackend.fromRCJKClient(client.rcjkClient, fontUID)
-        return FontHandler(backend, self.connections)
+        return await client.getFontHandler(pathItems)
 
 
 class AuthorizedClient:
 
     remoteMethodNames = {"getProjectList"}
 
-    def __init__(self, rcjkClient):
+    def __init__(self, rcjkClient, connections):
         self.rcjkClient = rcjkClient
+        self.connections = connections
         self.projectMapping = {}
+        self.fontHandlers = {}
 
     def projectExists(self, *pathItems):
         return pathItems in self.projectMapping
@@ -69,3 +69,12 @@ class AuthorizedClient:
         projectList = [f"{p}/{f}" for p, f in projectMapping.keys()]
         self.projectMapping = projectMapping
         return sorted(projectList)
+
+    async def getFontHandler(self, pathItems):
+        fontHandler = self.fontHandlers.get(pathItems)
+        if fontHandler is None:
+            _, fontUID = self.projectMapping[pathItems]
+            backend = await RCJKMySQLBackend.fromRCJKClient(self.rcjkClient, fontUID)
+            fontHandler = FontHandler(backend, self.connections)
+            self.fontHandlers[pathItems] = fontHandler
+        return fontHandler
