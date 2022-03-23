@@ -62,12 +62,12 @@ class FontraServer:
             connections=self.projectManager.connections,
             verboseErrors=True,
         )
+
         async def runner():
-            try:
-                async with server.getServerTask(host=self.host, port=self.webSocketPort):
-                    await asyncio.Future()
-            finally:
-                await self.projectManager.close()
+            serverTask = server.getServerTask(host=self.host, port=self.webSocketPort)
+            async with self.projectManager, serverTask:
+                await asyncio.Future()
+
         self._websocketTask = asyncio.create_task(runner())
 
     async def notFoundHandler(self, request):

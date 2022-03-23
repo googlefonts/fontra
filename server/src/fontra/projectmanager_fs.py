@@ -26,8 +26,11 @@ class FileSystemProjectManager:
         self.fontHandlers = {}
         self.connections = {}
 
-    async def close(self):
-        pass
+    async def __aenter__(self):
+        await log("entering context")
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await log("exiting context")
 
     async def login(self, username, password):
         # dummy, for testing

@@ -18,7 +18,10 @@ class RCJKProjectManager:
         self.connections = {}  # TODO: is this the right thing?
         self.authorizedClients = {}
 
-    async def close(self):
+    async def __aenter__(self):
+        pass
+
+    async def __aexit__(self, exc_type, exc, tb):
         for client in self.authorizedClients.values():
             await client.rcjkClient.close()
 
