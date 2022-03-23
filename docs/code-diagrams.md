@@ -110,6 +110,10 @@ class ProjectManager {
 }
 
 class FontHandler {
+  changeBegin()
+  changeSetRollback(rollbackChange)
+  changeChanging(liveChange)
+  changeEnd(finalChange)
   getGlyph(glyphName)
   getReverseCmap()
   getGlobalAxes()
