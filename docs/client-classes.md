@@ -3,29 +3,29 @@
 ```mermaid
 classDiagram
 class VariableGlyph {
-  +name
-  +unicodes
-  +axes
-  +sources
-  +layers
+  name
+  unicodes
+  axes
+  sources
+  layers
 }
 
 class Source {
-  +name
-  +location
-  +layerName
+  name
+  location
+  layerName
 }
 
 class StaticGlyph {
-  +advances
-  +path
-  +components
+  advances
+  path
+  components
 }
 
 class Component {
-  +name
-  +transformation
-  +location
+  name
+  transformation
+  location
 }
 EditorController-->SceneController
 EditorController-->CanvasController
