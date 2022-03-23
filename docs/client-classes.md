@@ -77,19 +77,22 @@ SceneController-->CanvasController
 SceneView-->SceneModel
 SceneView-->DrawingFunctions
 
+SceneModel-->StaticGlyphController : positioned<br>glyphs
 SceneModel-->FontController
 
 FontController-->VariableGlyphController
 FontController-->RemoteFont
 
-VariableGlyphController-->VariableGlyph
 VariableGlyphController-->StaticGlyphController : instantiation
+VariableGlyphController-->VariableGlyph
 
 VariableGlyph-->Source
 VariableGlyph-->StaticGlyph : layers
 Source-->StaticGlyph : layerName
-StaticGlyphController-->StaticGlyph
+StaticGlyphController-->Path2D : caching
 StaticGlyphController-->ComponentController
+StaticGlyphController-->StaticGlyph
+
 
 StaticGlyph-->Path
 StaticGlyph-->Component
