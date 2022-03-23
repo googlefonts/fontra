@@ -14,7 +14,7 @@ flowchart
   django---git([GitHub])
 ```
 
-## Fontra Javascript Client Object Relationships
+## Fontra Client Object Relationships (Javascript)
 
 ```mermaid
 classDiagram
@@ -79,7 +79,7 @@ StaticGlyph-->Component
 RemoteFont..>EditorController : external<br>change<br>notifications
 ```
 
-## Fontra Python Server Object Relationships
+## Fontra Server Object Relationships (Python)
 
 ```mermaid
 classDiagram
