@@ -30,6 +30,7 @@ class FontraServer:
         self.httpApp = web.Application()
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
+        routes.append(web.get("/test/{tail:.*}", self.notFoundHandler))
         routes.append(web.post("/login", self.loginHandler))
         routes.append(web.post("/logout", self.logoutHandler))
         maxDepth = 4
@@ -61,6 +62,9 @@ class FontraServer:
             verboseErrors=True,
         )
         await server.getServerTask(host=self.host, port=self.webSocketPort)
+
+    async def notFoundHandler(self, request):
+        return web.HTTPNotFound()
 
     async def rootDocumentHandler(self, request):
         session = None
