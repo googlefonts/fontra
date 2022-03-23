@@ -31,12 +31,35 @@ class WebSocketServer:
 
     async def incomingConnection(self, websocket, path):
         path = unquote(path)
-        connection = WebSocketConnection(websocket, path, self.subjectFactory, self.verboseErrors)
-        self.registerConnection(connection)
         try:
-            await connection.handleConnection()
-        finally:
-            self.unregisterConnection(connection)
+            subject = await self.getSubject(websocket, path)
+        except Exception as e:
+            logger.error("error while handling incoming websocket messages: %r", e)
+            if self.verboseErrors:
+                traceback.print_exc()
+            await websocket.close()
+        else:
+            connection = WebSocketConnection(
+                websocket, path, subject, self.verboseErrors
+            )
+            self.registerConnection(connection)
+            try:
+                await connection.handleConnection()
+            finally:
+                self.unregisterConnection(connection)
+
+    async def getSubject(self, websocket, path):
+        message = await async_next(websocket)
+        message = json.loads(message)
+        if "client-uuid" not in message:
+            raise WebSocketConnectionException("unrecognized message")
+        self.clientUUID = message["client-uuid"]
+        token = message.get("autorization-token")
+        remoteIP = websocket.remote_address[0]
+        subject = await self.subjectFactory(path, token, remoteIP)
+        if subject is None:
+            raise WebSocketConnectionException("unauthorized")
+        return subject
 
 
 class WebSocketConnectionException(Exception):
@@ -44,10 +67,10 @@ class WebSocketConnectionException(Exception):
 
 
 class WebSocketConnection:
-    def __init__(self, websocket, path, subjectFactory, verboseErrors):
+    def __init__(self, websocket, path, subject, verboseErrors):
         self.websocket = websocket
         self.path = path
-        self.subjectFactory = subjectFactory
+        self.subject = subject
         self.verboseErrors = verboseErrors
         self.clientUUID = None
         self.callReturnFutures = {}
@@ -58,25 +81,21 @@ class WebSocketConnection:
         return ClientProxy(self)
 
     async def handleConnection(self):
+        logger.info(f"incoming connection: {self.path!r}")
         try:
             await self._handleConnection()
         except websockets.exceptions.ConnectionClosedError as e:
             logger.info(f"websocket connection closed: {e!r}")
+        except Exception as e:
+            logger.error("error while handling incoming websocket messages: %r", e)
+            if self.verboseErrors:
+                traceback.print_exc()
+            await self.websocket.close()
 
     async def _handleConnection(self):
-        logger.info(f"incoming connection: {self.path!r}")
         tasks = []
-        subject = None
         async for message in self.websocket:
             message = json.loads(message)
-            if "client-uuid" in message:
-                self.clientUUID = message["client-uuid"]
-                token = message.get("autorization-token")
-                remoteIP = self.websocket.remote_address[0]
-                subject = await self.subjectFactory(self.path, token, remoteIP)
-                continue
-            if subject is None:
-                raise WebSocketConnectionException("unauthorized")
             if message.get("connection") == "close":
                 logger.info("client requested connection close")
                 break
@@ -84,7 +103,7 @@ class WebSocketConnection:
             if "client-call-id" in message:
                 # this is an incoming client -> server call
                 tasks.append(
-                    asyncio.create_task(self._performCall(message, subject))
+                    asyncio.create_task(self._performCall(message, self.subject))
                 )
             elif "server-call-id" in message:
                 # this is a response to a server -> client call
@@ -153,3 +172,11 @@ def _genNextServerCallID():
     while True:
         yield serverCallID
         serverCallID += 1
+
+
+def async_iter(iterable):
+    return iterable.__aiter__()
+
+
+async def async_next(it):
+    return await async_iter(it).__anext__()
