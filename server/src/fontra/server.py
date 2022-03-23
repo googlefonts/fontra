@@ -68,7 +68,7 @@ class FontraServer:
                     await asyncio.Future()
             finally:
                 await self.projectManager.close()
-        asyncio.create_task(runner())
+        self._websocketTask = asyncio.create_task(runner())
 
     async def notFoundHandler(self, request):
         return web.HTTPNotFound()
