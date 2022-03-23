@@ -78,3 +78,15 @@ StaticGlyph-->Component
 
 RemoteFont..>EditorController : external<br>change<br>notifications
 ```
+
+## Fontra Python Server Class Relationships
+
+```mermaid
+classDiagram
+
+FontraServer-->ProjectManager
+FontraServer<--aiohttp_app
+FontraServer<--WebSocketServer
+
+ProjectManager-->FontHandler
+FontHandler-->AbstractBackend
