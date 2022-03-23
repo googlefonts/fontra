@@ -29,19 +29,3 @@
 - then navigate to:
 
     `http://localhost:8000/`
-
-## Block diagram
-
-```mermaid
-flowchart
-  browser([Web browser])---client[\Fontra client .js .css .html<br>HTML5 Canvas/]
-  client-.network.-server[/Fontra server .py<br>aiohttp/websockets\]
-  server---ds{{.designspace .ufo backend}}
-  server---rcjk{{.rcjk backend}}
-  server---rcjk_mysql{{rcjk mysql backend}}
-  ds---fs([File system])
-  rcjk---fs
-  rcjk_mysql-.network.-rcjk_server[RoboCJK web API]
-  rcjk_server---django[(Django / MySQL)]
-  django---git([GitHub])
-```

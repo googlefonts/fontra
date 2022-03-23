@@ -1,4 +1,20 @@
-### Fontra JS Client Class Relationships
+## Fontra Block Diagram
+
+```mermaid
+flowchart
+  browser([Web browser])---client[\Fontra client .js .css .html<br>HTML5 Canvas/]
+  client-.network.-server[/Fontra server .py<br>aiohttp/websockets\]
+  server---ds{{.designspace .ufo backend}}
+  server---rcjk{{.rcjk backend}}
+  server---rcjk_mysql{{rcjk mysql backend}}
+  ds---fs([File system])
+  rcjk---fs
+  rcjk_mysql-.network.-rcjk_server[RoboCJK web API]
+  rcjk_server---django[(Django / MySQL)]
+  django---git([GitHub])
+```
+
+## Fontra Javascript Client Class Relationships
 
 ```mermaid
 classDiagram
@@ -62,42 +78,3 @@ StaticGlyph-->Component
 
 RemoteFont..>EditorController : external<br>change<br>notifications
 ```
-
-### UI Controllers
-
-- EditorController
-- SceneController
-- CanvasController
-
-### UI Model/View
-
-- SceneModel
-- SceneView
-
-### Misc UI
-
-- List
-- Sliders
-
-### Model Controllers
-
-- FontController
-- VariableGlyphController
-- StaticGlyphController
-- ComponentController
-
-### Model Objects
-
-- VariableGlyph
-- StaticGlyph
-- VarPath
-- VarArray
-
-### Misc Objects
-
-- VariationModel
-- Transform
-
-### Client/Server Interaction
-
-- RemoteObject
