@@ -18,6 +18,10 @@ class RCJKProjectManager:
         self.connections = {}  # TODO: is this the right thing?
         self.authorizedClients = {}
 
+    async def close(self):
+        for client in self.authorizedClients.values():
+            await client.rcjkClient.close()
+
     async def login(self, username, password):
         url = f"https://{self.host}/"
         rcjkClient = RCJKClientAsync(

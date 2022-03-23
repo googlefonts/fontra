@@ -26,6 +26,9 @@ class FileSystemProjectManager:
         self.fontHandlers = {}
         self.connections = {}
 
+    async def close(self):
+        pass
+
     async def login(self, username, password):
         # dummy, for testing
         if password == "a":
