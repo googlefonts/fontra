@@ -27,10 +27,10 @@ class FileSystemProjectManager:
         self.connections = {}
 
     async def __aenter__(self):
-        await log("entering context")
+        pass
 
     async def __aexit__(self, exc_type, exc, tb):
-        await log("exiting context")
+        pass
 
     async def login(self, username, password):
         # dummy, for testing
