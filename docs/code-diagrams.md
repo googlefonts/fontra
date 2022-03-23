@@ -84,9 +84,12 @@ RemoteFont..>EditorController : external<br>change<br>notifications
 ```mermaid
 classDiagram
 
-FontraServer-->ProjectManager
-FontraServer<--aiohttp_app
-FontraServer<--WebSocketServer
+FontraServer -- HTTPServer
+FontraServer -- WebSocketServer
+FontraServer --> ProjectManager
 
-ProjectManager-->FontHandler
-FontHandler-->AbstractBackend
+WebSocketServer --> ProjectManager
+WebSocketServer --> WebSocketClient
+
+ProjectManager --> FontHandler
+FontHandler --> AbstractBackend
