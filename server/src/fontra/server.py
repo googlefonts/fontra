@@ -58,7 +58,7 @@ class FontraServer:
     async def setupWebSocketServer(self, app):
         server = WebSocketServer(
             self.projectManager.getRemoteSubject,
-            clients=self.projectManager.clients,
+            connections=self.projectManager.connections,
             verboseErrors=True,
         )
         await server.getServerTask(host=self.host, port=self.webSocketPort)

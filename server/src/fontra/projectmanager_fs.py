@@ -24,7 +24,7 @@ class FileSystemProjectManager:
         self.maxFolderDepth = maxFolderDepth
         self.extensions = {".designspace", ".ufo", ".rcjk"}
         self.fontHandlers = {}
-        self.clients = {}
+        self.connections = {}
 
     async def login(self, username, password):
         # dummy, for testing
@@ -49,11 +49,11 @@ class FileSystemProjectManager:
             if not projectPath.exists():
                 raise FileNotFoundError(projectPath)
             backend = await getFileSystemBackend(projectPath)
-            fontHandler = FontHandler(backend, self.clients)
+            fontHandler = FontHandler(backend, self.connections)
             self.fontHandlers[pathItems] = fontHandler
         return fontHandler
 
-    async def getProjectList(self, *, client):
+    async def getProjectList(self, *, connection):
         projectPaths = []
         rootItems = self.rootPath.parts
         paths = sorted(_iterFolder(self.rootPath, self.extensions, self.maxFolderDepth))

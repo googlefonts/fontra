@@ -15,7 +15,7 @@ class RCJKProjectManager:
 
     def __init__(self, host):
         self.host = host
-        self.clients = {}  # TODO: is this the right thing?
+        self.connections = {}  # TODO: is this the right thing?
         self.authorizedClients = {}
 
     async def login(self, username, password):
@@ -50,7 +50,7 @@ class RCJKProjectManager:
         assert len(pathItems) == 2
         _, fontUID = client.projectMapping[pathItems]
         backend = await RCJKMySQLBackend.fromRCJKClient(client.rcjkClient, fontUID)
-        return FontHandler(backend, self.clients)
+        return FontHandler(backend, self.connections)
 
 
 class AuthorizedClient:
@@ -64,7 +64,7 @@ class AuthorizedClient:
     def projectExists(self, *pathItems):
         return pathItems in self.projectMapping
 
-    async def getProjectList(self, *, client):
+    async def getProjectList(self, *, connection):
         projectMapping = await self.rcjkClient.get_project_font_uid_mapping()
         projectList = [f"{p}/{f}" for p, f in projectMapping.keys()]
         self.projectMapping = projectMapping

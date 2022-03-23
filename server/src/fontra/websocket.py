@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class WebSocketServer:
-    def __init__(self, subjectFactory, *, clients=None, verboseErrors=False):
-        self.clients = clients if clients is not None else {}
+    def __init__(self, subjectFactory, *, connections=None, verboseErrors=False):
+        self.connections = connections if connections is not None else {}
         self.subjectFactory = subjectFactory
         self.verboseErrors = verboseErrors
 
@@ -23,23 +23,23 @@ class WebSocketServer:
         asyncio.get_event_loop().run_until_complete(startServer)
         asyncio.get_event_loop().run_forever()
 
-    def registerClient(self, client):
-        self.clients[client.websocket] = client
+    def registerConnection(self, connection):
+        self.connections[connection.websocket] = connection
 
-    def unregisterClient(self, client):
-        del self.clients[client.websocket]
+    def unregisterConnection(self, connection):
+        del self.connections[connection.websocket]
 
     async def incomingConnection(self, websocket, path):
         path = unquote(path)
-        client = WebSocketConnection(websocket, path, self.subjectFactory, self.verboseErrors)
-        self.registerClient(client)
+        connection = WebSocketConnection(websocket, path, self.subjectFactory, self.verboseErrors)
+        self.registerConnection(connection)
         try:
-            await client.handleConnection()
+            await connection.handleConnection()
         finally:
-            self.unregisterClient(client)
+            self.unregisterConnection(connection)
 
 
-class ClientException(Exception):
+class WebSocketConnectionException(Exception):
     pass
 
 
@@ -76,7 +76,7 @@ class WebSocketConnection:
                 subject = await self.subjectFactory(self.path, token, remoteIP)
                 continue
             if subject is None:
-                raise ClientException("unauthorized")
+                raise WebSocketConnectionException("unauthorized")
             if message.get("connection") == "close":
                 logger.info("client requested connection close")
                 break
@@ -94,7 +94,7 @@ class WebSocketConnection:
                 if error is None:
                     fut.set_result(returnValue)
                 else:
-                    fut.set_exception(ClientException(error))
+                    fut.set_exception(WebSocketConnectionException(error))
             else:
                 logger.info("invalid message, closing connection")
                 break
@@ -107,7 +107,7 @@ class WebSocketConnection:
             arguments = message.get("arguments", [])
             if methodName in subject.remoteMethodNames:
                 methodHandler = getattr(subject, methodName)
-                returnValue = await methodHandler(*arguments, client=self)
+                returnValue = await methodHandler(*arguments, connection=self)
                 response = {"client-call-id": clientCallID, "return-value": returnValue}
             else:
                 response = {
@@ -126,23 +126,23 @@ class WebSocketConnection:
 
 
 class ClientProxy:
-    def __init__(self, client):
-        self._client = client
+    def __init__(self, connection):
+        self._connection = connection
 
     def __getattr__(self, methodName):
         if methodName.startswith("_"):
             return super().__getattr__(methodName)
 
         async def methodWrapper(*args):
-            serverCallID = next(self._client.getNextServerCallID)
+            serverCallID = next(self._connection.getNextServerCallID)
             message = {
                 "server-call-id": serverCallID,
                 "method-name": methodName,
                 "arguments": args,
             }
             returnFuture = asyncio.get_running_loop().create_future()
-            self._client.callReturnFutures[serverCallID] = returnFuture
-            await self._client.sendMessage(message)
+            self._connection.callReturnFutures[serverCallID] = returnFuture
+            await self._connection.sendMessage(message)
             return await returnFuture
 
         return methodWrapper

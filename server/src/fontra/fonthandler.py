@@ -5,9 +5,9 @@ from .changes import applyChange, baseChangeFunctions
 
 
 class FontHandler:
-    def __init__(self, backend, clients):
+    def __init__(self, backend, connections):
         self.backend = backend
-        self.clients = clients
+        self.connections = connections
         self.remoteMethodNames = {
             "changeBegin",
             "changeSetRollback",
@@ -25,8 +25,8 @@ class FontHandler:
         self.clientData = defaultdict(dict)
         self.changedGlyphs = {}
 
-    def getGlyph(self, glyphName, *, client):
-        loadedGlyphNames = self.clientData[client.clientUUID].setdefault(
+    def getGlyph(self, glyphName, *, connection):
+        loadedGlyphNames = self.clientData[connection.clientUUID].setdefault(
             "loadedGlyphNames", set()
         )
         loadedGlyphNames.add(glyphName)
@@ -53,54 +53,54 @@ class FontHandler:
         self.updateGlyphDependencies(glyphName, glyphData)
         return glyphData
 
-    async def unloadGlyph(self, glyphName, *, client):
-        loadedGlyphNames = self.clientData[client.clientUUID]["loadedGlyphNames"]
+    async def unloadGlyph(self, glyphName, *, connection):
+        loadedGlyphNames = self.clientData[connection.clientUUID]["loadedGlyphNames"]
         loadedGlyphNames.discard(glyphName)
 
-    async def getGlyphNames(self, *, client):
+    async def getGlyphNames(self, *, connection):
         return await self.backend.getGlyphNames()
 
-    async def getReverseCmap(self, *, client):
+    async def getReverseCmap(self, *, connection):
         return await self.backend.getReverseCmap()
 
-    async def getGlobalAxes(self, *, client):
+    async def getGlobalAxes(self, *, connection):
         return await self.backend.getGlobalAxes()
 
-    async def subscribeLiveGlyphChanges(self, glyphNames, *, client):
-        self.clientData[client.clientUUID]["subscribedLiveGlyphNames"] = set(glyphNames)
+    async def subscribeLiveGlyphChanges(self, glyphNames, *, connection):
+        self.clientData[connection.clientUUID]["subscribedLiveGlyphNames"] = set(glyphNames)
 
-    async def changeBegin(self, *, client):
+    async def changeBegin(self, *, connection):
         ...
 
-    async def changeSetRollback(self, rollbackChange, *, client):
+    async def changeSetRollback(self, rollbackChange, *, connection):
         ...
 
-    async def changeChanging(self, liveChange, *, client):
-        await self.broadcastChange(liveChange, client, True)
+    async def changeChanging(self, liveChange, *, connection):
+        await self.broadcastChange(liveChange, connection, True)
 
-    async def changeEnd(self, finalChange, *, client):
+    async def changeEnd(self, finalChange, *, connection):
         if finalChange is None:
             return
         await self.updateServerGlyph(finalChange)
-        await self.broadcastChange(finalChange, client, False)
+        await self.broadcastChange(finalChange, connection, False)
         # return {"error": "computer says no"}
 
-    async def broadcastChange(self, change, sourceClient, isLiveChange):
+    async def broadcastChange(self, change, sourceConnection, isLiveChange):
         if isLiveChange:
             subscribedGlyphNamesKey = "subscribedLiveGlyphNames"
         else:
             subscribedGlyphNamesKey = "loadedGlyphNames"
         assert change["p"][0] == "glyphs"
         glyphName = change["p"][1]
-        clients = []
-        for client in self.clients.values():
-            subscribedGlyphNames = self.clientData[client.clientUUID].get(
+        connections = []
+        for connection in self.connections.values():
+            subscribedGlyphNames = self.clientData[connection.clientUUID].get(
                 subscribedGlyphNamesKey, ()
             )
-            if client != sourceClient and glyphName in subscribedGlyphNames:
-                clients.append(client)
+            if connection != sourceConnection and glyphName in subscribedGlyphNames:
+                connections.append(connection)
         await asyncio.gather(
-            *[client.proxy.externalChange(change) for client in clients]
+            *[connection.proxy.externalChange(change) for connection in connections]
         )
 
     async def updateServerGlyph(self, change):
