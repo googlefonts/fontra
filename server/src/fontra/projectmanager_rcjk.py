@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import logging
 import secrets
 from .backends.rcjkmysql import RCJKMySQLBackend
@@ -15,7 +16,6 @@ class RCJKProjectManager:
 
     def __init__(self, host):
         self.host = host
-        self.connections = {}  # TODO: is this the right thing?
         self.authorizedClients = {}
 
     async def __aenter__(self):
@@ -39,7 +39,7 @@ class RCJKProjectManager:
             await rcjkClient.close()
             return None
         token = secrets.token_hex(32)
-        self.authorizedClients[token] = AuthorizedClient(rcjkClient, self.connections)
+        self.authorizedClients[token] = AuthorizedClient(rcjkClient)
         return token
 
     def projectExists(self, token, *pathItems):
@@ -62,11 +62,14 @@ class AuthorizedClient:
 
     remoteMethodNames = {"getProjectList"}
 
-    def __init__(self, rcjkClient, connections):
+    def __init__(self, rcjkClient):
         self.rcjkClient = rcjkClient
-        self.connections = connections
         self.projectMapping = {}
         self.fontHandlers = {}
+
+    @contextmanager
+    def useConnection(self, connection):
+        yield
 
     def projectExists(self, *pathItems):
         return pathItems in self.projectMapping
@@ -82,6 +85,6 @@ class AuthorizedClient:
         if fontHandler is None:
             _, fontUID = self.projectMapping[pathItems]
             backend = await RCJKMySQLBackend.fromRCJKClient(self.rcjkClient, fontUID)
-            fontHandler = FontHandler(backend, self.connections)
+            fontHandler = FontHandler(backend)
             self.fontHandlers[pathItems] = fontHandler
         return fontHandler

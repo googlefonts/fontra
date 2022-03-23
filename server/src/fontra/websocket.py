@@ -10,9 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class WebSocketServer:
-    def __init__(self, subjectFactory, *, connections=None, verboseErrors=False):
-        self.connections = connections if connections is not None else {}
-        self.subjectFactory = subjectFactory
+    def __init__(self, subjectManager, *, verboseErrors=False):
+        self.subjectManager = subjectManager
         self.verboseErrors = verboseErrors
 
     def getServerTask(self, host="localhost", port=8001):
@@ -22,12 +21,6 @@ class WebSocketServer:
         startServer = self.getServerTask()
         asyncio.get_event_loop().run_until_complete(startServer)
         asyncio.get_event_loop().run_forever()
-
-    def registerConnection(self, connection):
-        self.connections[connection.websocket] = connection
-
-    def unregisterConnection(self, connection):
-        del self.connections[connection.websocket]
 
     async def incomingConnection(self, websocket, path):
         path = unquote(path)
@@ -42,11 +35,8 @@ class WebSocketServer:
             connection = WebSocketConnection(
                 websocket, path, subject, self.verboseErrors
             )
-            self.registerConnection(connection)
-            try:
+            with subject.useConnection(connection):
                 await connection.handleConnection()
-            finally:
-                self.unregisterConnection(connection)
 
     async def getSubject(self, websocket, path):
         message = await async_next(websocket)
@@ -56,7 +46,7 @@ class WebSocketServer:
         self.clientUUID = message["client-uuid"]
         token = message.get("autorization-token")
         remoteIP = websocket.remote_address[0]
-        subject = await self.subjectFactory(path, token, remoteIP)
+        subject = await self.subjectManager.getRemoteSubject(path, token, remoteIP)
         if subject is None:
             raise WebSocketConnectionException("unauthorized")
         return subject

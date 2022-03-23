@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import asyncio
 from collections import defaultdict
 import functools
@@ -5,9 +6,9 @@ from .changes import applyChange, baseChangeFunctions
 
 
 class FontHandler:
-    def __init__(self, backend, connections):
+    def __init__(self, backend):
         self.backend = backend
-        self.connections = connections
+        self.connections = set()
         self.remoteMethodNames = {
             "changeBegin",
             "changeSetRollback",
@@ -24,6 +25,12 @@ class FontHandler:
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.changedGlyphs = {}
+
+    @contextmanager
+    def useConnection(self, connection):
+        self.connections.add(connection)
+        yield
+        self.connections.remove(connection)
 
     def getGlyph(self, glyphName, *, connection):
         loadedGlyphNames = self.clientData[connection.clientUUID].setdefault(
@@ -93,7 +100,7 @@ class FontHandler:
         assert change["p"][0] == "glyphs"
         glyphName = change["p"][1]
         connections = []
-        for connection in self.connections.values():
+        for connection in self.connections:
             subscribedGlyphNames = self.clientData[connection.clientUUID].get(
                 subscribedGlyphNamesKey, ()
             )

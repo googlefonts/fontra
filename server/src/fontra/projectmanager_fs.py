@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import pathlib
 import secrets
 from .backends import getBackendClass
@@ -24,13 +25,16 @@ class FileSystemProjectManager:
         self.maxFolderDepth = maxFolderDepth
         self.extensions = {".designspace", ".ufo", ".rcjk"}
         self.fontHandlers = {}
-        self.connections = {}
 
     async def __aenter__(self):
         pass
 
     async def __aexit__(self, exc_type, exc, tb):
         pass
+
+    @contextmanager
+    def useConnection(self, connection):
+        yield
 
     async def login(self, username, password):
         # dummy, for testing
@@ -55,7 +59,7 @@ class FileSystemProjectManager:
             if not projectPath.exists():
                 raise FileNotFoundError(projectPath)
             backend = await getFileSystemBackend(projectPath)
-            fontHandler = FontHandler(backend, self.connections)
+            fontHandler = FontHandler(backend)
             self.fontHandlers[pathItems] = fontHandler
         return fontHandler
 
