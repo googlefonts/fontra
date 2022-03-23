@@ -9,7 +9,7 @@ const MAX_MAGNIFICATION = 200;
 export class CanvasController {
 
   constructor(canvas, drawingParameters) {
-    this.canvas = canvas;
+    this.canvas = canvas;  // The HTML5 Canvas object
     this.context = canvas.getContext("2d");
     this.sceneView = undefined;  // will be set later
 
