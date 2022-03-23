@@ -38,7 +38,7 @@ SceneController-->SceneModel
 SceneController-->CanvasController
 
 SceneView-->SceneModel
-SceneView-->DrawingFunctions
+SceneView-->DrawingFunctions : view layers
 
 SceneModel-->StaticGlyphController : positioned<br>glyphs
 SceneModel-->FontController
