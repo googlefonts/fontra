@@ -14,7 +14,7 @@ flowchart
   django---git([GitHub])
 ```
 
-## Fontra Client Object Relationships (Javascript)
+## Fontra Client Object Relationships (JavaScript)
 
 ```mermaid
 classDiagram
