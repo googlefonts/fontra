@@ -39,7 +39,7 @@ class WebSocketServer:
                 await connection.handleConnection()
 
     async def getSubject(self, websocket, path):
-        message = await async_next(websocket)
+        message = await anext(aiter(websocket))
         message = json.loads(message)
         self.clientUUID = message.get("client-uuid")
         if self.clientUUID is None:
@@ -164,9 +164,12 @@ def _genNextServerCallID():
         serverCallID += 1
 
 
-def async_iter(iterable):
-    return iterable.__aiter__()
+try:
+    anext
+except NameError:
+    # Python < 3.10
+    def aiter(iterable):
+        return iterable.__aiter__()
 
-
-async def async_next(it):
-    return await async_iter(it).__anext__()
+    def anext(it):
+        return it.__anext__()
