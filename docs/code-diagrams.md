@@ -94,12 +94,12 @@ class FontraServer {
 }
 
 class WebSocketServer {
-  subjectFactory
+  subjectManager
 }
 
 class WebSocketConnection {
   path
-  subjectFactory
+  subject
 }
 
 class ProjectManager {
@@ -131,9 +131,11 @@ FontraServer -- HTTPServer
 FontraServer -- WebSocketServer
 FontraServer --> ProjectManager
 
+WebSocketServer --> WebSocketConnection
+WebSocketServer --> ProjectManager : subject<br>manager
+
 ProjectManager --> FontHandler
 FontHandler --> FontBackend
 FontHandler ..> WebSocketConnection : broadcast<br>changes
 
-WebSocketServer --> ProjectManager : subject<br>factory
-WebSocketServer --> WebSocketConnection
+WebSocketConnection --> FontHandler : subject
