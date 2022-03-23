@@ -76,7 +76,9 @@ class FontHandler:
         return await self.backend.getGlobalAxes()
 
     async def subscribeLiveGlyphChanges(self, glyphNames, *, connection):
-        self.clientData[connection.clientUUID]["subscribedLiveGlyphNames"] = set(glyphNames)
+        self.clientData[connection.clientUUID]["subscribedLiveGlyphNames"] = set(
+            glyphNames
+        )
 
     async def changeBegin(self, *, connection):
         ...
