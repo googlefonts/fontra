@@ -41,9 +41,9 @@ class WebSocketServer:
     async def getSubject(self, websocket, path):
         message = await async_next(websocket)
         message = json.loads(message)
-        if "client-uuid" not in message:
+        self.clientUUID = message.get("client-uuid")
+        if self.clientUUID is None:
             raise WebSocketConnectionException("unrecognized message")
-        self.clientUUID = message["client-uuid"]
         token = message.get("autorization-token")
         remoteIP = websocket.remote_address[0]
         subject = await self.subjectManager.getRemoteSubject(path, token, remoteIP)
