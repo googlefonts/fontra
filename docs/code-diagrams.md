@@ -115,7 +115,7 @@ class FontHandler {
   getGlobalAxes()
 }
 
-class AbstractBackend {
+class FontBackend {
   getGlyph(glyphName)
   getReverseCmap()
   getGlobalAxes()
@@ -126,7 +126,7 @@ FontraServer -- WebSocketServer
 FontraServer --> ProjectManager
 
 ProjectManager --> FontHandler
-FontHandler --> AbstractBackend
+FontHandler --> FontBackend
 FontHandler ..> WebSocketClient : broadcast<br>changes
 
 WebSocketServer --> ProjectManager
