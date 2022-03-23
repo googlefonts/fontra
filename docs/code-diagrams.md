@@ -97,7 +97,7 @@ class WebSocketServer {
   subjectFactory
 }
 
-class WebSocketClient {
+class WebSocketConnection {
   path
   subjectFactory
 }
@@ -127,7 +127,7 @@ FontraServer --> ProjectManager
 
 ProjectManager --> FontHandler
 FontHandler --> FontBackend
-FontHandler ..> WebSocketClient : broadcast<br>changes
+FontHandler ..> WebSocketConnection : broadcast<br>changes
 
 WebSocketServer --> ProjectManager : subject<br>factory
-WebSocketServer --> WebSocketClient
+WebSocketServer --> WebSocketConnection
