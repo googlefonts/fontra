@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 import logging
 from urllib.parse import parse_qs
@@ -39,7 +40,7 @@ class FontraServer:
             routes.append(web.get("/projects/" + path, self.projectsPathHandler))
         routes.append(web.static("/", self.contentFolder))
         self.httpApp.add_routes(routes)
-        self.httpApp.on_startup.append(self.setupWebSocketServer)
+        self.httpApp.on_startup.append(self.startWebSocketServer)
 
     def run(self):
         host = self.host
@@ -55,13 +56,19 @@ class FontraServer:
         print("+---------------------------------------------------+")
         web.run_app(self.httpApp, host=host, port=httpPort)
 
-    async def setupWebSocketServer(self, app):
+    async def startWebSocketServer(self, app):
         server = WebSocketServer(
             self.projectManager.getRemoteSubject,
             connections=self.projectManager.connections,
             verboseErrors=True,
         )
-        await server.getServerTask(host=self.host, port=self.webSocketPort)
+        async def runner():
+            try:
+                async with server.getServerTask(host=self.host, port=self.webSocketPort):
+                    await asyncio.Future()
+            finally:
+                await self.projectManager.close()
+        asyncio.create_task(runner())
 
     async def notFoundHandler(self, request):
         return web.HTTPNotFound()
