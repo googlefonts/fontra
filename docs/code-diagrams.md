@@ -111,7 +111,7 @@ class ProjectManager {
 
 class FontHandler {
   backend
-  clients
+  connections
   changeBegin()
   changeSetRollback(rollbackChange)
   changeChanging(liveChange)
