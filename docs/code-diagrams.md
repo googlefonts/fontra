@@ -84,12 +84,50 @@ RemoteFont..>EditorController : external<br>change<br>notifications
 ```mermaid
 classDiagram
 
+class FontraServer {
+  host
+  httpPort
+  webSocketPort
+  contentFolder
+  templatesFolder
+  projectManager
+}
+
+class WebSocketServer {
+  subjectFactory
+}
+
+class WebSocketClient {
+  path
+  subjectFactory
+}
+
+class ProjectManager {
+  requireLogin
+  login(username, password)
+  getRemoteSubject(path, token, remoteIP)
+  getProjectList()
+}
+
+class FontHandler {
+  getGlyph(glyphName)
+  getReverseCmap()
+  getGlobalAxes()
+}
+
+class AbstractBackend {
+  getGlyph(glyphName)
+  getReverseCmap()
+  getGlobalAxes()
+}
+
 FontraServer -- HTTPServer
 FontraServer -- WebSocketServer
 FontraServer --> ProjectManager
 
-WebSocketServer --> ProjectManager
-WebSocketServer --> WebSocketClient
-
 ProjectManager --> FontHandler
 FontHandler --> AbstractBackend
+FontHandler ..> WebSocketClient : broadcast<br>changes
+
+WebSocketServer --> ProjectManager
+WebSocketServer --> WebSocketClient
