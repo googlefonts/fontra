@@ -29,8 +29,10 @@ class FontHandler:
     @contextmanager
     def useConnection(self, connection):
         self.connections.add(connection)
-        yield
-        self.connections.remove(connection)
+        try:
+            yield
+        finally:
+            self.connections.remove(connection)
 
     def getGlyph(self, glyphName, *, connection):
         loadedGlyphNames = self.clientData[connection.clientUUID].setdefault(
