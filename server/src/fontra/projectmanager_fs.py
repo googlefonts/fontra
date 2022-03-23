@@ -26,10 +26,7 @@ class FileSystemProjectManager:
         self.extensions = {".designspace", ".ufo", ".rcjk"}
         self.fontHandlers = {}
 
-    async def __aenter__(self):
-        pass
-
-    async def __aexit__(self, exc_type, exc, tb):
+    async def close(self):
         pass
 
     @contextmanager

@@ -18,10 +18,7 @@ class RCJKProjectManager:
         self.host = host
         self.authorizedClients = {}
 
-    async def __aenter__(self):
-        pass
-
-    async def __aexit__(self, exc_type, exc, tb):
+    async def close(self):
         for client in self.authorizedClients.values():
             await client.rcjkClient.close()
 

@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 import logging
 from urllib.parse import parse_qs
@@ -64,7 +65,7 @@ class FontraServer:
 
         async def runner():
             serverTask = server.getServerTask(host=self.host, port=self.webSocketPort)
-            async with self.projectManager, serverTask:
+            async with ensureClose(self.projectManager), serverTask:
                 await asyncio.Future()
 
         self._websocketTask = asyncio.create_task(runner())
@@ -158,3 +159,11 @@ class FontraServer:
         templatePath = self.templatesFolder / fileName
         html = templatePath.read_text(encoding="utf-8")
         return html.format(**kwargs)
+
+
+@asynccontextmanager
+async def ensureClose(closable):
+    try:
+        yield
+    finally:
+        await closable.close()
