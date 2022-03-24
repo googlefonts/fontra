@@ -39,25 +39,24 @@ class FileSystemProjectManager:
             return secrets.token_hex(32)
         return None
 
-    def projectExists(self, token, *pathItems):
-        projectPath = self.rootPath.joinpath(*pathItems)
+    def projectExists(self, token, path):
+        projectPath = self.rootPath.joinpath(*path.split("/"))
         return projectPath.exists()
 
     async def getRemoteSubject(self, path, token, remoteIP):
         if path == "/":
             return self
-        pathItems = tuple(path.split("/"))
-        assert pathItems[0] == ""
-        pathItems = pathItems[1:]
-        assert all(item for item in pathItems)
-        fontHandler = self.fontHandlers.get(pathItems)
+
+        assert path[0] == "/"
+        path = path[1:]
+        fontHandler = self.fontHandlers.get(path)
         if fontHandler is None:
-            projectPath = self.rootPath.joinpath(*pathItems)
+            projectPath = self.rootPath.joinpath(*path.split("/"))
             if not projectPath.exists():
                 raise FileNotFoundError(projectPath)
             backend = await getFileSystemBackend(projectPath)
             fontHandler = FontHandler(backend)
-            self.fontHandlers[pathItems] = fontHandler
+            self.fontHandlers[path] = fontHandler
         return fontHandler
 
     async def getProjectList(self, *, connection):

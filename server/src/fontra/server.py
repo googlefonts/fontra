@@ -35,10 +35,7 @@ class FontraServer:
         routes.append(web.get("/test/{tail:.*}", self.notFoundHandler))
         routes.append(web.post("/login", self.loginHandler))
         routes.append(web.post("/logout", self.logoutHandler))
-        maxDepth = 4
-        for i in range(maxDepth):
-            path = "/".join(f"{{path{j}}}" for j in range(i + 1))
-            routes.append(web.get("/projects/" + path, self.projectsPathHandler))
+        routes.append(web.get("/projects/{path:.*}", self.projectsPathHandler))
         routes.append(web.static("/", self.contentFolder))
         self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.startWebSocketServer)
@@ -135,23 +132,14 @@ class FontraServer:
                 response = web.HTTPFound("/")
                 return response
 
-        pathItems = []
-        for i in range(10):
-            k = f"path{i}"
-            item = request.match_info.get(k)
-            if item is None:
-                break
-            pathItems.append(item)
-
-        if not self.projectManager.projectExists(authToken, *pathItems):
+        path = request.match_info["path"]
+        if not self.projectManager.projectExists(authToken, path):
             return web.HTTPNotFound()
-
-        projectPath = "/".join(pathItems)
 
         html = self._formatHTMLTemplate(
             "editor.html",
             webSocketPort=self.webSocketPort,
-            projectPath=projectPath,
+            projectPath=path,
         )
         return web.Response(text=html, content_type="text/html")
 

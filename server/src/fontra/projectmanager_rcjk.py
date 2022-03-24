@@ -39,20 +39,18 @@ class RCJKProjectManager:
         self.authorizedClients[token] = AuthorizedClient(rcjkClient)
         return token
 
-    def projectExists(self, token, *pathItems):
+    def projectExists(self, token, path):
         client = self.authorizedClients[token]
-        return client.projectExists(*pathItems)
+        return client.projectExists(path)
 
     async def getRemoteSubject(self, path, token, remoteIP):
         client = self.authorizedClients[token]
         if path == "/":
             return client
 
-        pathItems = tuple(path.split("/"))
-        assert pathItems[0] == ""
-        pathItems = pathItems[1:]
-        assert len(pathItems) == 2
-        return await client.getFontHandler(pathItems)
+        assert path[0] == "/"
+        path = path[1:]
+        return await client.getFontHandler(path)
 
 
 class AuthorizedClient:
@@ -68,20 +66,20 @@ class AuthorizedClient:
     def useConnection(self, connection):
         yield
 
-    def projectExists(self, *pathItems):
-        return pathItems in self.projectMapping
+    def projectExists(self, path):
+        return path in self.projectMapping
 
     async def getProjectList(self, *, connection):
         projectMapping = await self.rcjkClient.get_project_font_uid_mapping()
-        projectList = [f"{p}/{f}" for p, f in projectMapping.keys()]
+        projectMapping = {f"{p}/{f}": uids for (p, f), uids in projectMapping.items()}
         self.projectMapping = projectMapping
-        return sorted(projectList)
+        return sorted(projectMapping)
 
-    async def getFontHandler(self, pathItems):
-        fontHandler = self.fontHandlers.get(pathItems)
+    async def getFontHandler(self, path):
+        fontHandler = self.fontHandlers.get(path)
         if fontHandler is None:
-            _, fontUID = self.projectMapping[pathItems]
+            _, fontUID = self.projectMapping[path]
             backend = await RCJKMySQLBackend.fromRCJKClient(self.rcjkClient, fontUID)
             fontHandler = FontHandler(backend)
-            self.fontHandlers[pathItems] = fontHandler
+            self.fontHandlers[path] = fontHandler
         return fontHandler
