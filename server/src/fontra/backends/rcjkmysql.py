@@ -93,6 +93,8 @@ def serializeGlyph(glifData, layers, axisDefaults):
     glyph = GLIFGlyph()
     pen = PathBuilderPointPen()
     readGlyphFromString(glifData, glyph, pen)
+    axes = [cleanupAxis(axis) for axis in glyph.lib["robocjk.axes"]]
+    defaultLocation = {axis["name"]: axis["defaultValue"] for axis in axes}
 
     defaultLayerDict = {
         "xAdvance": glyph.width,
@@ -105,7 +107,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
         glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults, None
     )
     dcNames = [c["name"] for c in defaultComponents]
-    components = defaultComponents or pen.components
+    components = defaultComponents or pen.getComponents(defaultLocation)
     componentNames = [c["name"] for c in components]
     if components:
         defaultLayerDict["components"] = components
@@ -148,7 +150,8 @@ def serializeGlyph(glifData, layers, axisDefaults):
                 axisDefaults,
                 neutralComponentLocations,
             )
-            varComponents = varComponents or pen.components if pen is not None else []
+            if not varComponents and pen is not None:
+                varComponents = pen.getComponents(varDict["location"])
             assert componentNames == [c["name"] for c in varComponents]
             if varComponents:
                 varLayerDict["components"] = varComponents
@@ -168,7 +171,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
     glyphDict = {
         "name": glyph.name,
         "unicodes": glyph.unicodes,
-        "axes": [cleanupAxis(axis) for axis in glyph.lib["robocjk.axes"]],
+        "axes": axes,
         "sources": sources,
         "layers": layerData,
     }
