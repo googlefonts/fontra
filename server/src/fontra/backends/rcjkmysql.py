@@ -158,7 +158,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
             xAdvance = varDict["width"] if "width" in varDict else xAdvance
             varLayerDict["xAdvance"] = xAdvance
             layerData.append(
-                {"name": f"{sourceName}/foreground", "glyph": varLayerDict}
+                {"name": fontraLayerName, "glyph": varLayerDict}
             )
         sources.append(
             {
