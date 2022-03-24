@@ -133,13 +133,14 @@ def serializeGlyph(glifData, layers, axisDefaults):
             fontraLayerName = f"{sourceName}/foreground"
             varLayerDict = {}
             xAdvance = glyph.width
-            if defaultPath and layerName and layerName in layers:
+            pen = None
+            if layerName and layerName in layers:
                 varGlyph = GLIFGlyph()
                 pen = PathBuilderPointPen()
                 readGlyphFromString(layers[layerName], varGlyph, pen)
                 xAdvance = varGlyph.width
                 varPath = pen.getPath()
-                if varPath:
+                if varPath and defaultPath:
                     varLayerDict["path"] = varPath
             varComponents = serializeComponents(
                 varDict.get("deepComponents", ()),
@@ -147,7 +148,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
                 axisDefaults,
                 neutralComponentLocations,
             )
-            varComponents = varComponents or pen.components
+            varComponents = varComponents or pen.components if pen is not None else []
             assert componentNames == [c["name"] for c in varComponents]
             if varComponents:
                 varLayerDict["components"] = varComponents
