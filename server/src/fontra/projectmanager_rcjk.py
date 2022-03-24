@@ -39,9 +39,9 @@ class RCJKProjectManager:
         self.authorizedClients[token] = AuthorizedClient(rcjkClient)
         return token
 
-    def projectExists(self, token, path):
+    def projectAvailable(self, token, path):
         client = self.authorizedClients[token]
-        return client.projectExists(path)
+        return client.projectAvailable(path)
 
     async def getRemoteSubject(self, path, token, remoteIP):
         client = self.authorizedClients[token]
@@ -50,7 +50,7 @@ class RCJKProjectManager:
 
         assert path[0] == "/"
         path = path[1:]
-        if not client.projectExists(path):
+        if not client.projectAvailable(path):
             return None  # not found or not authorized
         return await client.getFontHandler(path)
 
@@ -68,7 +68,7 @@ class AuthorizedClient:
     def useConnection(self, connection):
         yield
 
-    def projectExists(self, path):
+    def projectAvailable(self, path):
         return path in self.projectMapping
 
     async def getProjectList(self, *, connection):

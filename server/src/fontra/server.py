@@ -133,7 +133,7 @@ class FontraServer:
                 return response
 
         path = request.match_info["path"]
-        if not self.projectManager.projectExists(authToken, path):
+        if not self.projectManager.projectAvailable(authToken, path):
             return web.HTTPNotFound()
 
         html = self._formatHTMLTemplate(
