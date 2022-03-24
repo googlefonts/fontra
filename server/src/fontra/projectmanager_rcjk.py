@@ -50,6 +50,8 @@ class RCJKProjectManager:
 
         assert path[0] == "/"
         path = path[1:]
+        if not client.projectExists(path):
+            return None  # not found or not authorized
         return await client.getFontHandler(path)
 
 
