@@ -52,7 +52,9 @@ class RCJKMySQLBackend:
         for baseGlyphDict in glyphData.get("made_of", ()):
             axisDefaults.update(extractAxisDefaults(baseGlyphDict))
 
-        layers = {layer["group_name"]: layer for layer in glyphData.get("layers", ())}
+        layers = {
+            layer["group_name"]: layer["data"] for layer in glyphData.get("layers", ())
+        }
         self._scheduleCachePurge()
         return serializeGlyph(glyphData["data"], layers, axisDefaults)
 
@@ -134,7 +136,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
             if defaultPath and layerName and layerName in layers:
                 varGlyph = GLIFGlyph()
                 pen = PathBuilderPointPen()
-                readGlyphFromString(layers[layerName]["data"], varGlyph, pen)
+                readGlyphFromString(layers[layerName], varGlyph, pen)
                 xAdvance = varGlyph.width
                 varPath = pen.getPath()
                 if varPath:
@@ -151,7 +153,9 @@ def serializeGlyph(glifData, layers, axisDefaults):
                 varLayerDict["components"] = varComponents
             xAdvance = varDict["width"] if "width" in varDict else xAdvance
             varLayerDict["xAdvance"] = xAdvance
-            layerData.append({"name": f"{sourceName}/foreground", "glyph": varLayerDict})
+            layerData.append(
+                {"name": f"{sourceName}/foreground", "glyph": varLayerDict}
+            )
         sources.append(
             {
                 "name": sourceName,
