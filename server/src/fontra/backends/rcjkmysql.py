@@ -5,7 +5,7 @@ from .pen import PathBuilderPointPen
 
 class RCJKMySQLBackend:
     @classmethod
-    async def fromRCJKClient(cls, client, fontUID):
+    def fromRCJKClient(cls, client, fontUID):
         self = cls()
         self.client = client
         self.fontUID = fontUID

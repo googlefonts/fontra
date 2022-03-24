@@ -81,7 +81,7 @@ class AuthorizedClient:
         fontHandler = self.fontHandlers.get(path)
         if fontHandler is None:
             _, fontUID = self.projectMapping[path]
-            backend = await RCJKMySQLBackend.fromRCJKClient(self.rcjkClient, fontUID)
+            backend = RCJKMySQLBackend.fromRCJKClient(self.rcjkClient, fontUID)
             fontHandler = FontHandler(backend)
             self.fontHandlers[path] = fontHandler
         return fontHandler
