@@ -27,6 +27,9 @@ class PathBuilderPointPen:
         else:
             return None
 
+    def getComponents(self, location):
+        return [{**compo, "location": location} for compo in self.components]
+
     def beginPath(self, **kwargs):
         self._currentContour = []
 
