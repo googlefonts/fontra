@@ -121,40 +121,44 @@ def serializeGlyph(glifData, layers, axisDefaults):
     for varDict in glyph.lib.get("robocjk.variationGlyphs", ()):
         if not varDict.get("on", True):
             continue
-        varSourceDict = {}
         layerName = varDict.get("layerName")
-        xAdvance = glyph.width
-        if defaultPath and layerName and layerName in layers:
-            varGlyph = GLIFGlyph()
-            pen = PathBuilderPointPen()
-            readGlyphFromString(layers[layerName]["data"], varGlyph, pen)
-            xAdvance = varGlyph.width
-            varPath = pen.getPath()
-            if varPath:
-                varSourceDict["path"] = varPath
-        varComponents = serializeComponents(
-            varDict.get("deepComponents", ()),
-            dcNames,
-            axisDefaults,
-            neutralComponentLocations,
-        )
-        varComponents = varComponents or pen.components
-        assert componentNames == [c["name"] for c in varComponents]
-        if varComponents:
-            varSourceDict["components"] = varComponents
-        xAdvance = varDict["width"] if "width" in varDict else xAdvance
-        varSourceDict["xAdvance"] = xAdvance
         sourceName = varDict.get("sourceName")
         if not sourceName and layerName:
-            sourceName = f"{layerName}"
+            sourceName = layerName
+        if layerName == "foreground":
+            fontraLayerName = f"<default>/foreground"
+        else:
+            fontraLayerName = f"{sourceName}/foreground"
+            varLayerDict = {}
+            xAdvance = glyph.width
+            if defaultPath and layerName and layerName in layers:
+                varGlyph = GLIFGlyph()
+                pen = PathBuilderPointPen()
+                readGlyphFromString(layers[layerName]["data"], varGlyph, pen)
+                xAdvance = varGlyph.width
+                varPath = pen.getPath()
+                if varPath:
+                    varLayerDict["path"] = varPath
+            varComponents = serializeComponents(
+                varDict.get("deepComponents", ()),
+                dcNames,
+                axisDefaults,
+                neutralComponentLocations,
+            )
+            varComponents = varComponents or pen.components
+            assert componentNames == [c["name"] for c in varComponents]
+            if varComponents:
+                varLayerDict["components"] = varComponents
+            xAdvance = varDict["width"] if "width" in varDict else xAdvance
+            varLayerDict["xAdvance"] = xAdvance
+            layerData.append({"name": f"{sourceName}/foreground", "glyph": varLayerDict})
         sources.append(
             {
                 "name": sourceName,
                 "location": varDict["location"],
-                "layerName": f"{sourceName}/foreground",
+                "layerName": fontraLayerName,
             }
         )
-        layerData.append({"name": f"{sourceName}/foreground", "glyph": varSourceDict})
 
     glyphDict = {
         "name": glyph.name,
