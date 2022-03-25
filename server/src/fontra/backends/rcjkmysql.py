@@ -276,18 +276,3 @@ _glyphListMethods = {
     "DC": "deep_component_list",
     "CG": "character_glyph_list",
 }
-
-
-def extractAxisDefaults(baseGlyphDict):
-    axisDefaults = {}
-    glyph = GLIFGlyph()
-    readGlyphFromString(baseGlyphDict["data"], glyph)
-    axisDefaults[glyph.name] = {
-        a["name"]: a["defaultValue"] for a in glyph.lib.get("robocjk.axes", ())
-    }
-
-    # handle nested made_of glyphs
-    for subGlyphDict in baseGlyphDict.get("made_of", ()):
-        axisDefaults.update(extractAxisDefaults(subGlyphDict))
-
-    return axisDefaults
