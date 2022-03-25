@@ -133,7 +133,6 @@ def serializeGlyph(layerGlyphs, axisDefaults):
     sources = [
         {"name": "<default>", "location": {}, "layerName": "foreground"},
     ]
-
     variationGlyphData = defaultGlyph.lib.get("robocjk.variationGlyphs", ())
     for sourceIndex, varDict in enumerate(variationGlyphData, 1):
         if not varDict.get("on", True):
@@ -172,7 +171,6 @@ def serializeGlyph(layerGlyphs, axisDefaults):
         assert componentNames == [
             c["name"] for c in layerGlyphDict.get("components", ())
         ]
-
         location = varDict["location"]
         sources.append(
             {"name": sourceName, "location": location, "layerName": layerName}
