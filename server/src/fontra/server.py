@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import logging
 from urllib.parse import parse_qs
 from aiohttp import web
-from .websocket import WebSocketServer
+from .websocket import RemoteObjectServer
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class FontraServer:
         routes.append(web.get("/projects/{path:.*}", self.projectsPathHandler))
         routes.append(web.static("/", self.contentFolder))
         self.httpApp.add_routes(routes)
-        self.httpApp.on_startup.append(self.startWebSocketServer)
+        self.httpApp.on_startup.append(self.startRemoteObjectServer)
 
     def run(self):
         host = self.host
@@ -54,8 +54,8 @@ class FontraServer:
         print("+---------------------------------------------------+")
         web.run_app(self.httpApp, host=host, port=httpPort)
 
-    async def startWebSocketServer(self, app):
-        server = WebSocketServer(
+    async def startRemoteObjectServer(self, app):
+        server = RemoteObjectServer(
             self.projectManager,
             verboseErrors=True,
         )

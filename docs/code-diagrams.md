@@ -93,11 +93,11 @@ class FontraServer {
   projectManager
 }
 
-class WebSocketServer {
+class RemoteObjectServer {
   subjectManager
 }
 
-class WebSocketConnection {
+class RemoteObjectConnection {
   path
   subject
 }
@@ -128,14 +128,14 @@ class FontBackend {
 }
 
 FontraServer -- HTTPServer
-FontraServer -- WebSocketServer
+FontraServer -- RemoteObjectServer
 FontraServer --> ProjectManager
 
-WebSocketServer --> WebSocketConnection
-WebSocketServer --> ProjectManager : subject<br>manager
+RemoteObjectServer --> RemoteObjectConnection
+RemoteObjectServer --> ProjectManager : subject<br>manager
 
 ProjectManager --> FontHandler
 FontHandler --> FontBackend
-FontHandler ..> WebSocketConnection : broadcast<br>changes
+FontHandler ..> RemoteObjectConnection : broadcast<br>changes
 
-WebSocketConnection --> FontHandler : subject
+RemoteObjectConnection --> FontHandler : subject

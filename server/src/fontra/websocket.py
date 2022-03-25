@@ -9,7 +9,7 @@ import websockets
 logger = logging.getLogger(__name__)
 
 
-class WebSocketServer:
+class RemoteObjectServer:
     def __init__(self, subjectManager, *, verboseErrors=False):
         self.subjectManager = subjectManager
         self.verboseErrors = verboseErrors
@@ -32,7 +32,7 @@ class WebSocketServer:
                 traceback.print_exc()
             await websocket.close()
         else:
-            connection = WebSocketConnection(
+            connection = RemoteObjectConnection(
                 websocket, path, subject, self.verboseErrors
             )
             with subject.useConnection(connection):
@@ -43,20 +43,20 @@ class WebSocketServer:
         message = json.loads(message)
         self.clientUUID = message.get("client-uuid")
         if self.clientUUID is None:
-            raise WebSocketConnectionException("unrecognized message")
+            raise RemoteObjectConnectionException("unrecognized message")
         token = message.get("autorization-token")
         remoteIP = websocket.remote_address[0]
         subject = await self.subjectManager.getRemoteSubject(path, token, remoteIP)
         if subject is None:
-            raise WebSocketConnectionException("unauthorized")
+            raise RemoteObjectConnectionException("unauthorized")
         return subject
 
 
-class WebSocketConnectionException(Exception):
+class RemoteObjectConnectionException(Exception):
     pass
 
 
-class WebSocketConnection:
+class RemoteObjectConnection:
     def __init__(self, websocket, path, subject, verboseErrors):
         self.websocket = websocket
         self.path = path
@@ -103,7 +103,7 @@ class WebSocketConnection:
                 if error is None:
                     fut.set_result(returnValue)
                 else:
-                    fut.set_exception(WebSocketConnectionException(error))
+                    fut.set_exception(RemoteObjectConnectionException(error))
             else:
                 logger.info("invalid message, closing connection")
                 break
