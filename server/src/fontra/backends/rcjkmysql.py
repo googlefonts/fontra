@@ -118,7 +118,7 @@ def serializeGlyph(layerGlyphs, axisDefaults):
 
     defaultGlyph = layerGlyphs["foreground"]
     defaultComponents = serializeComponents(
-        defaultGlyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults, None
+        defaultGlyph.lib.get("robocjk.deepComponents", ()), axisDefaults, None, None
     )
     if defaultComponents:
         layers["foreground"]["glyph"]["components"] = defaultComponents
@@ -163,8 +163,8 @@ def serializeGlyph(layerGlyphs, axisDefaults):
 
         components = serializeComponents(
             varDict.get("deepComponents", ()),
-            dcNames,
             axisDefaults,
+            dcNames,
             defaultComponentLocations,
         )
         if components:
@@ -189,7 +189,7 @@ def serializeGlyph(layerGlyphs, axisDefaults):
 
 
 def serializeComponents(
-    deepComponents, dcNames, axisDefaults, neutralComponentLocations
+    deepComponents, axisDefaults, dcNames, neutralComponentLocations
 ):
     if dcNames is not None:
         assert len(deepComponents) == len(dcNames)
