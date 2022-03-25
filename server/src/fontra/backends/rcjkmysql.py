@@ -44,18 +44,7 @@ class RCJKMySQLBackend:
         return axes
 
     async def getGlyph(self, glyphName):
-        typeCode, glyphID = self._glyphMapping[glyphName]
-        layerGlyphs = self._tempGlyphCache.get(glyphName)
-        if layerGlyphs is None:
-            getMethodName = _getGlyphMethods[typeCode]
-            method = getattr(self.client, getMethodName)
-            response = await method(
-                self.fontUID, glyphID, return_layers=True, return_related=True
-            )
-            glyphData = response["data"]
-            self._populateGlyphCache(glyphName, glyphData)
-            self._scheduleCachePurge()
-            layerGlyphs = self._tempGlyphCache[glyphName]
+        layerGlyphs = await self._getLayerGlyphs(glyphName)
 
         axisDefaults = {}
         for componentGlyphName in layerGlyphs["foreground"].getComponentNames():
@@ -67,6 +56,21 @@ class RCJKMySQLBackend:
                 }
 
         return serializeGlyph(layerGlyphs, axisDefaults)
+
+    async def _getLayerGlyphs(self, glyphName):
+        layerGlyphs = self._tempGlyphCache.get(glyphName)
+        if layerGlyphs is None:
+            typeCode, glyphID = self._glyphMapping[glyphName]
+            getMethodName = _getGlyphMethods[typeCode]
+            method = getattr(self.client, getMethodName)
+            response = await method(
+                self.fontUID, glyphID, return_layers=True, return_related=True
+            )
+            glyphData = response["data"]
+            self._populateGlyphCache(glyphName, glyphData)
+            self._scheduleCachePurge()
+            layerGlyphs = self._tempGlyphCache[glyphName]
+        return layerGlyphs
 
     def _populateGlyphCache(self, glyphName, glyphData):
         if glyphName in self._tempGlyphCache:
