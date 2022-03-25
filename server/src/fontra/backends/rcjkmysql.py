@@ -57,8 +57,7 @@ class RCJKMySQLBackend:
             )
             glyphData = response["data"]
             self._tempGlyphDataCache[glyphName] = glyphData
-
-        self._cacheBaseGlyphData(glyphData.get("made_of", ()))
+            self._cacheBaseGlyphData(glyphData.get("made_of", ()))
         axisDefaults = {}
         for baseGlyphDict in glyphData.get("made_of", ()):
             axisDefaults.update(extractAxisDefaults(baseGlyphDict))
@@ -92,8 +91,7 @@ class RCJKMySQLBackend:
             assert typeCode == glyphDict["type_code"]
             assert glyphID == glyphDict["id"]
             self._tempGlyphDataCache[glyphName] = glyphDict
-            # No need to recurse into glyphDict["made_of"], as getGlyph
-            # does that for us.
+            self._cacheBaseGlyphData(glyphDict.get("made_of", ()))
 
 
 def serializeGlyph(layerGlyphs, axisDefaults):
