@@ -66,9 +66,6 @@ class DesignspaceBackend:
                 self.defaultSourceGlyphSet = self.ufoGlyphSets[fontraLayerName]
             self.globalSources.append(sourceDict)
 
-    async def getGlyphNames(self):
-        return sorted(self.defaultSourceGlyphSet.keys())
-
     async def getReverseCmap(self):
         return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
 
@@ -110,9 +107,6 @@ class UFOBackend:
             for layerName in self.reader.getLayerNames()
         }
         return self
-
-    async def getGlyphNames(self):
-        return sorted(self.glyphSets[self.layerName].keys())
 
     async def getReverseCmap(self):
         return getReverseCmapFromGlyphSet(self.glyphSets[self.layerName])

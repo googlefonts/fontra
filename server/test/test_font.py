@@ -661,7 +661,7 @@ getGlyphNamesTestData = [
 )
 async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
     font = getTestFont(backendName)
-    glyphNames = await font.getGlyphNames()
+    glyphNames = sorted(await font.getReverseCmap())
     assert numGlyphs == len(glyphNames)
     assert firstFourGlyphNames == sorted(glyphNames)[:4]
 

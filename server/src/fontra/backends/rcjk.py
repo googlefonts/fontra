@@ -21,9 +21,6 @@ class RCJKBackend:
         yield self.project.deepComponentGlyphSet, False
         yield self.project.atomicElementGlyphSet, False
 
-    async def getGlyphNames(self):
-        return self.glyphNames
-
     async def getReverseCmap(self):
         return self.reversedCmap
 

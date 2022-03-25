@@ -66,9 +66,6 @@ class FontHandler:
         loadedGlyphNames = self.clientData[connection.clientUUID]["loadedGlyphNames"]
         loadedGlyphNames.discard(glyphName)
 
-    async def getGlyphNames(self, *, connection):
-        return await self.backend.getGlyphNames()
-
     async def getReverseCmap(self, *, connection):
         return await self.backend.getReverseCmap()
 

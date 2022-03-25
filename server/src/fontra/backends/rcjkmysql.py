@@ -17,9 +17,6 @@ class RCJKMySQLBackend:
         self._tempGlyphDataCacheTimeout = 5
         return self
 
-    async def getGlyphNames(self):
-        return sorted(await self.getReverseCmap())
-
     async def getReverseCmap(self):
         self._glyphMapping = {}
         revCmap = {}
