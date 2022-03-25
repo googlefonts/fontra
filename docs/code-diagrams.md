@@ -3,13 +3,14 @@
 ```mermaid
 flowchart
   browser([Web browser])---client[Fontra client .js .css .html<br>HTML5 Canvas]
-  client-.network.-server[Fontra server .py<br>aiohttp/websockets]
+  client-.HTTP.-server[Fontra server .py<br>aiohttp/websockets]
+  client-.WebSocket.-server
   server---ds{{.designspace .ufo<br>backend}}
   server---rcjk{{.rcjk<br>backend}}
   server---rcjk_mysql{{rcjk mysql<br>backend}}
   ds---fs([File system])
   rcjk---fs
-  rcjk_mysql-.network.-rcjk_server[RoboCJK web API]
+  rcjk_mysql-.HTTP.-rcjk_server[RoboCJK web API]
   rcjk_server---django[(Django / MySQL)]
   django---git([GitHub])
 ```
