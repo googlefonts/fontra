@@ -61,7 +61,7 @@ class RCJKMySQLBackend:
         layerGLIFData = {"foreground": glyphData["data"], **layerGLIFData}
         layerGlyphs = {}
         for layerName, glifData in layerGLIFData.items():
-            layerGlyphs[layerName] = GLIFGlyph.fromGLIFString(glifData)
+            layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
         return serializeGlyph(layerGlyphs, axisDefaults)
 
     async def getGlobalAxes(self):
@@ -231,7 +231,7 @@ class GLIFGlyph:
     width = 0
 
     @classmethod
-    def fromGLIFString(cls, glifData):
+    def fromGLIFData(cls, glifData):
         self = cls()
         pen = PathBuilderPointPen()
         readGlyphFromString(glifData, self, pen)
