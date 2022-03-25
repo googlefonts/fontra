@@ -193,6 +193,8 @@ def serializeComponents(
 ):
     if dcNames is not None:
         assert len(deepComponents) == len(dcNames)
+    if neutralComponentLocations is None:
+        neutralComponentLocations = [{}] * len(deepComponents)
     components = []
     for index, deepCompoDict in enumerate(deepComponents):
         component = {}
@@ -202,9 +204,7 @@ def serializeComponents(
             component["location"] = cleanupLocation(
                 deepCompoDict["coord"],
                 axisDefaults[name],
-                neutralComponentLocations[index]
-                if neutralComponentLocations is not None
-                else {},
+                neutralComponentLocations[index],
             )
         component["transformation"] = deepCompoDict["transform"]
         components.append(component)
