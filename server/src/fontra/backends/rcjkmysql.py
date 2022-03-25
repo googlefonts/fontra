@@ -36,7 +36,7 @@ class RCJKMySQLBackend:
     async def getGlobalAxes(self):
         font_data = await self.client.font_get(self.fontUID)
         ds = font_data["data"].get("designspace", {})
-        axes = ds.get("axes", [])
+        axes = ds.get("axes", ())
         for axis in axes:
             axis["label"] = axis["name"]
             axis["name"] = axis["tag"]
@@ -45,8 +45,8 @@ class RCJKMySQLBackend:
 
     async def getGlyph(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
-        glyphData = self._tempGlyphCache.get(glyphName)
-        if glyphData is None:
+        layerGlyphs = self._tempGlyphCache.get(glyphName)
+        if layerGlyphs is None:
             getMethodName = _getGlyphMethods[typeCode]
             method = getattr(self.client, getMethodName)
             response = await method(
@@ -55,25 +55,23 @@ class RCJKMySQLBackend:
             glyphData = response["data"]
             self._populateGlyphCache(glyphName, glyphData)
             self._scheduleCachePurge()
+            layerGlyphs = self._tempGlyphCache[glyphName]
 
         axisDefaults = {}
-        for baseGlyphDict in glyphData.get("made_of", ()):
-            axisDefaults.update(extractAxisDefaults(baseGlyphDict))
+        for componentGlyphName in layerGlyphs["foreground"].getComponentNames():
+            componentGlyph = self._tempGlyphCache.get(componentGlyphName)
+            if componentGlyph is not None:
+                axisDefaults[componentGlyphName] = {
+                    axis["name"]: axis["defaultValue"]
+                    for axis in componentGlyph["foreground"].axes
+                }
 
-        layerGLIFData = {
-            layer["group_name"]: layer["data"] for layer in glyphData.get("layers", ())
-        }
-        assert "foreground" not in layerGLIFData
-        layerGLIFData = {"foreground": glyphData["data"], **layerGLIFData}
-        layerGlyphs = {}
-        for layerName, glifData in layerGLIFData.items():
-            layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
         return serializeGlyph(layerGlyphs, axisDefaults)
 
     def _populateGlyphCache(self, glyphName, glyphData):
         if glyphName in self._tempGlyphCache:
             return
-        self._tempGlyphCache[glyphName] = glyphData
+        self._tempGlyphCache[glyphName] = buildLayerGlyphs(glyphData)
         for subGlyphData in glyphData.get("made_of", ()):
             subGlyphName = subGlyphData["name"]
             typeCode, glyphID = self._glyphMapping[subGlyphName]
@@ -91,6 +89,18 @@ class RCJKMySQLBackend:
             self._tempGlyphCache.clear()
 
         self._tempGlyphCacheTimer = asyncio.create_task(purgeGlyphCache())
+
+
+def buildLayerGlyphs(glyphData):
+    layerGLIFData = {
+        layer["group_name"]: layer["data"] for layer in glyphData.get("layers", ())
+    }
+    assert "foreground" not in layerGLIFData
+    layerGLIFData = {"foreground": glyphData["data"], **layerGLIFData}
+    layerGlyphs = {}
+    for layerName, glifData in layerGLIFData.items():
+        layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
+    return layerGlyphs
 
 
 def serializeGlyph(layerGlyphs, axisDefaults):
@@ -239,6 +249,13 @@ class GLIFGlyph:
     @cached_property
     def axes(self):
         return [cleanupAxis(axis) for axis in self.lib.get("robocjk.axes", ())]
+
+    def getComponentNames(self):
+        classicComponentNames = {compo["name"] for compo in self.components}
+        deepComponentNames = {
+            compo["name"] for compo in self.lib.get("robocjk.deepComponents", ())
+        }
+        return sorted(classicComponentNames | deepComponentNames)
 
     def serialize(self):
         glyphDict = {"xAdvance": self.width}
