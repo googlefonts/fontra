@@ -71,7 +71,10 @@ class RCJKMySQLBackend:
         return serializeGlyph(layerGlyphs, axisDefaults)
 
     def _cacheRawGlyphData(self, glyphData):
-        self._tempGlyphDataCache[glyphData["name"]] = glyphData
+        glyphName = glyphData["name"]
+        if glyphName in self._tempGlyphDataCache:
+            return
+        self._tempGlyphDataCache[glyphName] = glyphData
         for subGlyphData in glyphData.get("made_of", ()):
             glyphName = subGlyphData["name"]
             typeCode, glyphID = self._glyphMapping[glyphName]
