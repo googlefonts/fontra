@@ -12,9 +12,9 @@ class RCJKMySQLBackend:
         self.fontUID = fontUID
 
         self._glyphMapping = None
-        self._tempGlyphDataCache = {}
-        self._tempGlyphDataCacheTimer = None
-        self._tempGlyphDataCacheTimeout = 5
+        self._tempGlyphCache = {}
+        self._tempGlyphCacheTimer = None
+        self._tempGlyphCacheTimeout = 5
         return self
 
     async def getReverseCmap(self):
@@ -45,7 +45,7 @@ class RCJKMySQLBackend:
 
     async def getGlyph(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
-        glyphData = self._tempGlyphDataCache.get(glyphName)
+        glyphData = self._tempGlyphCache.get(glyphName)
         if glyphData is None:
             getMethodName = _getGlyphMethods[typeCode]
             method = getattr(self.client, getMethodName)
@@ -53,7 +53,7 @@ class RCJKMySQLBackend:
                 self.fontUID, glyphID, return_layers=True, return_related=True
             )
             glyphData = response["data"]
-            self._cacheRawGlyphData(glyphName, glyphData)
+            self._populateGlyphCache(glyphName, glyphData)
             self._scheduleCachePurge()
 
         axisDefaults = {}
@@ -70,27 +70,27 @@ class RCJKMySQLBackend:
             layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
         return serializeGlyph(layerGlyphs, axisDefaults)
 
-    def _cacheRawGlyphData(self, glyphName, glyphData):
-        if glyphName in self._tempGlyphDataCache:
+    def _populateGlyphCache(self, glyphName, glyphData):
+        if glyphName in self._tempGlyphCache:
             return
-        self._tempGlyphDataCache[glyphName] = glyphData
+        self._tempGlyphCache[glyphName] = glyphData
         for subGlyphData in glyphData.get("made_of", ()):
             subGlyphName = subGlyphData["name"]
             typeCode, glyphID = self._glyphMapping[subGlyphName]
             assert typeCode == subGlyphData["type_code"]
             assert glyphID == subGlyphData["id"]
-            self._cacheRawGlyphData(subGlyphName, subGlyphData)
+            self._populateGlyphCache(subGlyphName, subGlyphData)
 
     def _scheduleCachePurge(self):
-        if self._tempGlyphDataCacheTimer is not None:
-            self._tempGlyphDataCacheTimer.cancel()
+        if self._tempGlyphCacheTimer is not None:
+            self._tempGlyphCacheTimer.cancel()
 
         async def purgeGlyphCache():
-            await asyncio.sleep(self._tempGlyphDataCacheTimeout)
+            await asyncio.sleep(self._tempGlyphCacheTimeout)
             # print("clearing temp glyph cache")
-            self._tempGlyphDataCache.clear()
+            self._tempGlyphCache.clear()
 
-        self._tempGlyphDataCacheTimer = asyncio.create_task(purgeGlyphCache())
+        self._tempGlyphCacheTimer = asyncio.create_task(purgeGlyphCache())
 
 
 def serializeGlyph(layerGlyphs, axisDefaults):
