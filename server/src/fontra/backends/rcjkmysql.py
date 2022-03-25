@@ -10,7 +10,6 @@ class RCJKMySQLBackend:
         self = cls()
         self.client = client
         self.fontUID = fontUID
-
         self._glyphMapping = None
         self._tempGlyphCache = {}
         self._tempGlyphCacheTimer = None
@@ -217,18 +216,6 @@ def cleanupLocation(location, axisDefaults, neutralLocation):
     }
 
 
-def cleanupAxis(axisDict):
-    axisDict = dict(axisDict)
-    minValue = axisDict["minValue"]
-    maxValue = axisDict["maxValue"]
-    defaultValue = axisDict.get("defaultValue", minValue)
-    minValue, maxValue = sorted([minValue, maxValue])
-    axisDict["minValue"] = minValue
-    axisDict["defaultValue"] = defaultValue
-    axisDict["maxValue"] = maxValue
-    return axisDict
-
-
 class GLIFGlyph:
 
     unicodes = ()
@@ -262,6 +249,18 @@ class GLIFGlyph:
             glyphDict["components"] = self.components
 
         return glyphDict
+
+
+def cleanupAxis(axisDict):
+    axisDict = dict(axisDict)
+    minValue = axisDict["minValue"]
+    maxValue = axisDict["maxValue"]
+    defaultValue = axisDict.get("defaultValue", minValue)
+    minValue, maxValue = sorted([minValue, maxValue])
+    axisDict["minValue"] = minValue
+    axisDict["defaultValue"] = defaultValue
+    axisDict["maxValue"] = maxValue
+    return axisDict
 
 
 _getGlyphMethods = {
