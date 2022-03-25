@@ -53,14 +53,14 @@ class RCJKMySQLBackend:
         for baseGlyphDict in glyphData.get("made_of", ()):
             axisDefaults.update(extractAxisDefaults(baseGlyphDict))
 
-        layers = {
+        layerGLIFData = {
             layer["group_name"]: layer["data"] for layer in glyphData.get("layers", ())
         }
         self._scheduleCachePurge()
-        assert "foreground" not in layers
-        layers = {"foreground": glyphData["data"], **layers}
+        assert "foreground" not in layerGLIFData
+        layerGLIFData = {"foreground": glyphData["data"], **layerGLIFData}
         layerGlyphs = {}
-        for layerName, glifData in layers.items():
+        for layerName, glifData in layerGLIFData.items():
             layerGlyphs[layerName] = GLIFGlyph.fromGLIFString(glifData)
         return serializeGlyph(layerGlyphs, axisDefaults)
 
