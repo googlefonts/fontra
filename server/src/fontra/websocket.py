@@ -68,7 +68,7 @@ class RemoteObjectConnection:
 
     @property
     def proxy(self):
-        return ClientProxy(self)
+        return RemoteClientProxy(self)
 
     async def handleConnection(self):
         logger.info(f"incoming connection: {self.path!r}")
@@ -134,7 +134,7 @@ class RemoteObjectConnection:
         await self.websocket.send(json.dumps(message, separators=(",", ":")))
 
 
-class ClientProxy:
+class RemoteClientProxy:
     def __init__(self, connection):
         self._connection = connection
 
