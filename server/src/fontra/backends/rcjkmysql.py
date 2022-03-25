@@ -135,7 +135,6 @@ def serializeGlyph(layerGlyphs, axisDefaults):
 
         xAdvance = defaultGlyph.width
         if layerName and layerName in layers:
-            assert layerName in layers, (layerName, layers.keys())
             layerGlyphDict = layers[layerName]["glyph"]
             xAdvance = layerGlyphs[layerName].width
         else:
