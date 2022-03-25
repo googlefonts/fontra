@@ -45,16 +45,7 @@ class RCJKMySQLBackend:
 
     async def getGlyph(self, glyphName):
         layerGlyphs = await self._getLayerGlyphs(glyphName)
-
-        axisDefaults = {}
-        for componentGlyphName in layerGlyphs["foreground"].getComponentNames():
-            componentGlyph = self._tempGlyphCache.get(componentGlyphName)
-            if componentGlyph is not None:
-                axisDefaults[componentGlyphName] = {
-                    axis["name"]: axis["defaultValue"]
-                    for axis in componentGlyph["foreground"].axes
-                }
-
+        axisDefaults = getComponentAxisDefaults(layerGlyphs, self._tempGlyphCache)
         return serializeGlyph(layerGlyphs, axisDefaults)
 
     async def _getLayerGlyphs(self, glyphName):
@@ -105,6 +96,18 @@ def buildLayerGlyphs(glyphData):
     for layerName, glifData in layerGLIFData.items():
         layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
     return layerGlyphs
+
+
+def getComponentAxisDefaults(layerGlyphs, layerGlyphCache):
+    axisDefaults = {}
+    for componentGlyphName in layerGlyphs["foreground"].getComponentNames():
+        componentGlyph = layerGlyphCache.get(componentGlyphName)
+        if componentGlyph is not None:
+            axisDefaults[componentGlyphName] = {
+                axis["name"]: axis["defaultValue"]
+                for axis in componentGlyph["foreground"].axes
+            }
+    return axisDefaults
 
 
 def serializeGlyph(layerGlyphs, axisDefaults):
