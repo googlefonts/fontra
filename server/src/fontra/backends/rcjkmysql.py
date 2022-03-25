@@ -59,7 +59,10 @@ class RCJKMySQLBackend:
         self._scheduleCachePurge()
         assert "foreground" not in layers
         layers = {"foreground": glyphData["data"], **layers}
-        return serializeGlyph(layers, axisDefaults)
+        layerGlyphs = {}
+        for layerName, glifData in layers.items():
+            layerGlyphs[layerName] = GLIFGlyph.fromGLIFString(glifData)
+        return serializeGlyph(layerGlyphs, axisDefaults)
 
     async def getGlobalAxes(self):
         font_data = await self.client.font_get(self.fontUID)
@@ -92,11 +95,7 @@ class RCJKMySQLBackend:
             # does that for us.
 
 
-def serializeGlyph(layers, axisDefaults):
-    layerGlyphs = {}
-    for layerName, glifData in layers.items():
-        layerGlyphs[layerName] = GLIFGlyph.fromGLIFString(glifData)
-
+def serializeGlyph(layerGlyphs, axisDefaults):
     layers = {
         layerName: {"name": layerName, "glyph": glyph.serialize()}
         for layerName, glyph in layerGlyphs.items()
