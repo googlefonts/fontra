@@ -36,6 +36,16 @@ class RCJKMySQLBackend:
                 self._glyphMapping[glyphInfo["name"]] = (typeCode, glyphInfo["id"])
         return revCmap
 
+    async def getGlobalAxes(self):
+        font_data = await self.client.font_get(self.fontUID)
+        ds = font_data["data"].get("designspace", {})
+        axes = ds.get("axes", [])
+        for axis in axes:
+            axis["label"] = axis["name"]
+            axis["name"] = axis["tag"]
+            del axis["tag"]
+        return axes
+
     async def getGlyph(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
         glyphData = self._tempGlyphDataCache.get((typeCode, glyphID))
@@ -63,16 +73,6 @@ class RCJKMySQLBackend:
         for layerName, glifData in layerGLIFData.items():
             layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
         return serializeGlyph(layerGlyphs, axisDefaults)
-
-    async def getGlobalAxes(self):
-        font_data = await self.client.font_get(self.fontUID)
-        ds = font_data["data"].get("designspace", {})
-        axes = ds.get("axes", [])
-        for axis in axes:
-            axis["label"] = axis["name"]
-            axis["name"] = axis["tag"]
-            del axis["tag"]
-        return axes
 
     def _scheduleCachePurge(self):
         if self._tempGlyphDataCacheTimer is not None:
