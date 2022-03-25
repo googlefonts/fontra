@@ -48,7 +48,7 @@ class RCJKMySQLBackend:
 
     async def getGlyph(self, glyphName):
         typeCode, glyphID = self._glyphMapping[glyphName]
-        glyphData = self._tempGlyphDataCache.get((typeCode, glyphID))
+        glyphData = self._tempGlyphDataCache.get(glyphName)
         if glyphData is None:
             getMethodName = _getGlyphMethods[typeCode]
             method = getattr(self.client, getMethodName)
@@ -56,7 +56,7 @@ class RCJKMySQLBackend:
                 self.fontUID, glyphID, return_layers=True, return_related=True
             )
             glyphData = response["data"]
-            self._tempGlyphDataCache[(typeCode, glyphID)] = glyphData
+            self._tempGlyphDataCache[glyphName] = glyphData
 
         self._cacheBaseGlyphData(glyphData.get("made_of", ()))
         axisDefaults = {}
@@ -87,10 +87,11 @@ class RCJKMySQLBackend:
 
     def _cacheBaseGlyphData(self, baseGlyphs):
         for glyphDict in baseGlyphs:
-            typeCode, glyphID = self._glyphMapping[glyphDict["name"]]
+            glyphName = glyphDict["name"]
+            typeCode, glyphID = self._glyphMapping[glyphName]
             assert typeCode == glyphDict["type_code"]
             assert glyphID == glyphDict["id"]
-            self._tempGlyphDataCache[(typeCode, glyphID)] = glyphDict
+            self._tempGlyphDataCache[glyphName] = glyphDict
             # No need to recurse into glyphDict["made_of"], as getGlyph
             # does that for us.
 
