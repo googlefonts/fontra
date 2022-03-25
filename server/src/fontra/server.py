@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import logging
 from urllib.parse import parse_qs
 from aiohttp import web
-from .websocket import RemoteObjectServer
+from .remote import RemoteObjectServer
 
 
 logger = logging.getLogger(__name__)
