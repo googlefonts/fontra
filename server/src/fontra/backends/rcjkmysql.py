@@ -56,8 +56,7 @@ class RCJKMySQLBackend:
                 self.fontUID, glyphID, return_layers=True, return_related=True
             )
             glyphData = response["data"]
-            self._tempGlyphDataCache[glyphName] = glyphData
-            self._cacheBaseGlyphData(glyphData.get("made_of", ()))
+            self._cacheRawGlyphData(glyphData)
             self._scheduleCachePurge()
 
         axisDefaults = {}
@@ -74,14 +73,14 @@ class RCJKMySQLBackend:
             layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
         return serializeGlyph(layerGlyphs, axisDefaults)
 
-    def _cacheBaseGlyphData(self, baseGlyphs):
-        for glyphDict in baseGlyphs:
-            glyphName = glyphDict["name"]
+    def _cacheRawGlyphData(self, glyphData):
+        self._tempGlyphDataCache[glyphData["name"]] = glyphData
+        for subGlyphData in glyphData.get("made_of", ()):
+            glyphName = subGlyphData["name"]
             typeCode, glyphID = self._glyphMapping[glyphName]
-            assert typeCode == glyphDict["type_code"]
-            assert glyphID == glyphDict["id"]
-            self._tempGlyphDataCache[glyphName] = glyphDict
-            self._cacheBaseGlyphData(glyphDict.get("made_of", ()))
+            assert typeCode == subGlyphData["type_code"]
+            assert glyphID == subGlyphData["id"]
+            self._cacheRawGlyphData(subGlyphData)
 
     def _scheduleCachePurge(self):
         if self._tempGlyphDataCacheTimer is not None:
