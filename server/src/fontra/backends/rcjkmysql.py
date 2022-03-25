@@ -132,11 +132,7 @@ def serializeGlyph(layerGlyphs, axisDefaults):
     ]
 
     sources = [
-        {
-            "name": "<default>",
-            "location": {},
-            "layerName": "foreground",
-        },
+        {"name": "<default>", "location": {}, "layerName": "foreground"},
     ]
 
     variationGlyphData = defaultGlyph.lib.get("robocjk.variationGlyphs", ())
@@ -147,18 +143,16 @@ def serializeGlyph(layerGlyphs, axisDefaults):
         layerName = varDict.get("layerName")
         sourceName = varDict.get("sourceName")
         if not sourceName:
-            if layerName:
-                sourceName = layerName
-            else:
-                sourceName = f"source_{sourceIndex}"
+            sourceName = layerName if layerName else f"source_{sourceIndex}"
+        if not layerName:
+            layerName = sourceName + "_layer"
+            assert layerName not in layers
 
         xAdvance = defaultGlyph.width
-        if layerName and layerName in layers:
+        if layerName in layers:
             layerGlyphDict = layers[layerName]["glyph"]
             xAdvance = layerGlyphs[layerName].width
         else:
-            if not layerName:
-                layerName = sourceName + "_layer"
             layerGlyphDict = {}
             layerDict = {"name": layerName, "glyph": layerGlyphDict}
             layers[layerName] = layerDict
@@ -180,12 +174,9 @@ def serializeGlyph(layerGlyphs, axisDefaults):
             c["name"] for c in layerGlyphDict.get("components", ())
         ]
 
+        location = varDict["location"]
         sources.append(
-            {
-                "name": sourceName,
-                "location": varDict["location"],
-                "layerName": layerName,
-            }
+            {"name": sourceName, "location": location, "layerName": layerName}
         )
 
     glyphDict = {
