@@ -1,4 +1,5 @@
 import asyncio
+from functools import cached_property
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from .pen import PathBuilderPointPen
 
@@ -56,7 +57,9 @@ class RCJKMySQLBackend:
             layer["group_name"]: layer["data"] for layer in glyphData.get("layers", ())
         }
         self._scheduleCachePurge()
-        return serializeGlyph(glyphData["data"], layers, axisDefaults)
+        assert "foreground" not in layers
+        layers = {"foreground": glyphData["data"], **layers}
+        return serializeGlyph(layers, axisDefaults)
 
     async def getGlobalAxes(self):
         font_data = await self.client.font_get(self.fontUID)
@@ -89,91 +92,95 @@ class RCJKMySQLBackend:
             # does that for us.
 
 
-def serializeGlyph(glifData, layers, axisDefaults):
-    glyph = GLIFGlyph()
-    pen = PathBuilderPointPen()
-    readGlyphFromString(glifData, glyph, pen)
-    axes = [cleanupAxis(axis) for axis in glyph.lib["robocjk.axes"]]
-    defaultLocation = {axis["name"]: axis["defaultValue"] for axis in axes}
+def serializeGlyph(layers, axisDefaults):
+    layerGlyphs = {}
+    for layerName, glifData in layers.items():
+        layerGlyphs[layerName] = GLIFGlyph.fromGLIFString(glifData)
 
-    defaultLayerDict = {
-        "xAdvance": glyph.width,
+    layers = {
+        layerName: {"name": layerName, "glyph": glyph.serialize()}
+        for layerName, glyph in layerGlyphs.items()
     }
-    defaultPath = pen.getPath()
-    if defaultPath:
-        defaultLayerDict["path"] = defaultPath
 
+    defaultGlyph = layerGlyphs["foreground"]
     defaultComponents = serializeComponents(
-        glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults, None
+        defaultGlyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults, None
     )
+    if defaultComponents:
+        layers["foreground"]["glyph"]["components"] = defaultComponents
+
     dcNames = [c["name"] for c in defaultComponents]
-    components = defaultComponents or pen.components
-    componentNames = [c["name"] for c in components]
-    if components:
-        defaultLayerDict["components"] = components
+    defaultComponentLocations = [
+        compo.get("location", {}) for compo in defaultComponents
+    ]
+    componentNames = [
+        c["name"] for c in layers["foreground"]["glyph"].get("components", ())
+    ]
 
     sources = [
         {
             "name": "<default>",
             "location": {},
-            "layerName": "<default>/foreground",
+            "layerName": "foreground",
         },
     ]
-    layerData = [{"name": "<default>/foreground", "glyph": defaultLayerDict}]
-    neutralComponentLocations = [compo.get("location", {}) for compo in components]
 
-    for varDict in glyph.lib.get("robocjk.variationGlyphs", ()):
+    variationGlyphData = defaultGlyph.lib.get("robocjk.variationGlyphs", ())
+    for sourceIndex, varDict in enumerate(variationGlyphData, 1):
         if not varDict.get("on", True):
+            # XXX TODO add support for "on flag"
             continue
         layerName = varDict.get("layerName")
         sourceName = varDict.get("sourceName")
-        if not sourceName and layerName:
-            sourceName = layerName
-        if layerName == "foreground":
-            fontraLayerName = f"<default>/foreground"
+        if not sourceName:
+            if layerName:
+                sourceName = layerName
+            else:
+                sourceName = f"source_{sourceIndex}"
+
+        xAdvance = defaultGlyph.width
+        if layerName and layerName in layers:
+            assert layerName in layers, (layerName, layers.keys())
+            layerGlyphDict = layers[layerName]["glyph"]
+            xAdvance = layerGlyphs[layerName].width
         else:
-            fontraLayerName = f"{sourceName}/foreground"
-            varLayerDict = {}
-            xAdvance = glyph.width
-            pen = None
-            if layerName and layerName in layers:
-                varGlyph = GLIFGlyph()
-                pen = PathBuilderPointPen()
-                readGlyphFromString(layers[layerName], varGlyph, pen)
-                xAdvance = varGlyph.width
-                varPath = pen.getPath()
-                if varPath and defaultPath:
-                    varLayerDict["path"] = varPath
-            varComponents = serializeComponents(
-                varDict.get("deepComponents", ()),
-                dcNames,
-                axisDefaults,
-                neutralComponentLocations,
-            )
-            if not varComponents and pen is not None:
-                varComponents = pen.components
-            assert componentNames == [c["name"] for c in varComponents]
-            if varComponents:
-                varLayerDict["components"] = varComponents
-            xAdvance = varDict["width"] if "width" in varDict else xAdvance
-            varLayerDict["xAdvance"] = xAdvance
-            layerData.append(
-                {"name": fontraLayerName, "glyph": varLayerDict}
-            )
+            if not layerName:
+                layerName = sourceName + "_layer"
+            layerGlyphDict = {}
+            layerDict = {"name": layerName, "glyph": layerGlyphDict}
+            layers[layerName] = layerDict
+
+        if "width" in varDict:
+            xAdvance = varDict["width"]
+        layerGlyphDict["xAdvance"] = xAdvance
+
+        components = serializeComponents(
+            varDict.get("deepComponents", ()),
+            dcNames,
+            axisDefaults,
+            defaultComponentLocations,
+        )
+        if components:
+            layerGlyphDict["components"] = components
+
+        assert componentNames == [
+            c["name"] for c in layerGlyphDict.get("components", ())
+        ]
+
         sources.append(
             {
                 "name": sourceName,
                 "location": varDict["location"],
-                "layerName": fontraLayerName,
+                "layerName": layerName,
             }
         )
 
     glyphDict = {
-        "name": glyph.name,
-        "unicodes": glyph.unicodes,
-        "axes": axes,
+        "name": defaultGlyph.name,
+        "unicodes": defaultGlyph.unicodes,
+        "axes": defaultGlyph.axes,
         "sources": sources,
-        "layers": layerData,
+        "layers": list(layers.values()),
     }
     return glyphDict
 
@@ -220,8 +227,31 @@ def cleanupAxis(axisDict):
 
 
 class GLIFGlyph:
+
     unicodes = ()
     width = 0
+
+    @classmethod
+    def fromGLIFString(cls, glifData):
+        self = cls()
+        pen = PathBuilderPointPen()
+        readGlyphFromString(glifData, self, pen)
+        self.path = pen.getPath()
+        self.components = pen.components
+        return self
+
+    @cached_property
+    def axes(self):
+        return [cleanupAxis(axis) for axis in self.lib.get("robocjk.axes", ())]
+
+    def serialize(self):
+        glyphDict = {"xAdvance": self.width}
+        if self.path:
+            glyphDict["path"] = self.path
+        if self.components:
+            glyphDict["components"] = self.components
+
+        return glyphDict
 
 
 _getGlyphMethods = {
