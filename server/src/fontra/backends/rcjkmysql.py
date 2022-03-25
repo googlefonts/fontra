@@ -58,6 +58,8 @@ class RCJKMySQLBackend:
             glyphData = response["data"]
             self._tempGlyphDataCache[glyphName] = glyphData
             self._cacheBaseGlyphData(glyphData.get("made_of", ()))
+            self._scheduleCachePurge()
+
         axisDefaults = {}
         for baseGlyphDict in glyphData.get("made_of", ()):
             axisDefaults.update(extractAxisDefaults(baseGlyphDict))
@@ -65,13 +67,21 @@ class RCJKMySQLBackend:
         layerGLIFData = {
             layer["group_name"]: layer["data"] for layer in glyphData.get("layers", ())
         }
-        self._scheduleCachePurge()
         assert "foreground" not in layerGLIFData
         layerGLIFData = {"foreground": glyphData["data"], **layerGLIFData}
         layerGlyphs = {}
         for layerName, glifData in layerGLIFData.items():
             layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
         return serializeGlyph(layerGlyphs, axisDefaults)
+
+    def _cacheBaseGlyphData(self, baseGlyphs):
+        for glyphDict in baseGlyphs:
+            glyphName = glyphDict["name"]
+            typeCode, glyphID = self._glyphMapping[glyphName]
+            assert typeCode == glyphDict["type_code"]
+            assert glyphID == glyphDict["id"]
+            self._tempGlyphDataCache[glyphName] = glyphDict
+            self._cacheBaseGlyphData(glyphDict.get("made_of", ()))
 
     def _scheduleCachePurge(self):
         if self._tempGlyphDataCacheTimer is not None:
@@ -83,15 +93,6 @@ class RCJKMySQLBackend:
             self._tempGlyphDataCache.clear()
 
         self._tempGlyphDataCacheTimer = asyncio.create_task(purgeGlyphCache())
-
-    def _cacheBaseGlyphData(self, baseGlyphs):
-        for glyphDict in baseGlyphs:
-            glyphName = glyphDict["name"]
-            typeCode, glyphID = self._glyphMapping[glyphName]
-            assert typeCode == glyphDict["type_code"]
-            assert glyphID == glyphDict["id"]
-            self._tempGlyphDataCache[glyphName] = glyphDict
-            self._cacheBaseGlyphData(glyphDict.get("made_of", ()))
 
 
 def serializeGlyph(layerGlyphs, axisDefaults):
