@@ -107,7 +107,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
         glyph.lib.get("robocjk.deepComponents", ()), None, axisDefaults, None
     )
     dcNames = [c["name"] for c in defaultComponents]
-    components = defaultComponents or pen.getComponents(defaultLocation)
+    components = defaultComponents or pen.components
     componentNames = [c["name"] for c in components]
     if components:
         defaultLayerDict["components"] = components
@@ -151,7 +151,7 @@ def serializeGlyph(glifData, layers, axisDefaults):
                 neutralComponentLocations,
             )
             if not varComponents and pen is not None:
-                varComponents = pen.getComponents(varDict["location"])
+                varComponents = pen.components
             assert componentNames == [c["name"] for c in varComponents]
             if varComponents:
                 varLayerDict["components"] = varComponents

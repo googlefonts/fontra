@@ -184,6 +184,14 @@ export class VariableGlyphController {
     const instanceController = new StaticGlyphController(
       this.name, instance, sourceIndex,
     );
+
+    // Map the axis values for which local axes exist to the
+    // local axes, while leaving the other global axis values alone.
+    let localLocation = subsetLocation(location, this.axes)
+    localLocation = mapForward(localLocation, this.globalAxes);
+    localLocation = mapBackward(localLocation, this.getLocalToGlobalMapping());
+    location = {...location, ...localLocation};
+
     await instanceController.setupComponents(getGlyphFunc, location);
     return instanceController;
   }
@@ -200,11 +208,11 @@ class StaticGlyphController {
     this.canEdit = sourceIndex !== undefined;
   }
 
-  async setupComponents(getGlyphFunc, location) {
+  async setupComponents(getGlyphFunc, parentLocation) {
     this.components = [];
     for (const compo of this.instance.components) {
       const compoController = new ComponentController(compo);
-      await compoController.setupPath(getGlyphFunc, location);
+      await compoController.setupPath(getGlyphFunc, parentLocation);
       this.components.push(compoController);
     }
   }
@@ -455,4 +463,15 @@ function makeAffineTransform(transformation) {
   t = t.scale(transformation.scalex, transformation.scaley);
   t = t.translate(-transformation.tcenterx, -transformation.tcentery);
   return t;
+}
+
+
+function subsetLocation(location, axes) {
+  const subsettedLocation = {};
+  for (const axis of axes) {
+    if (axis.name in location) {
+      subsettedLocation[axis.name] = location[axis.name]
+    }
+  }
+  return subsettedLocation;
 }
