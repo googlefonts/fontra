@@ -86,13 +86,13 @@ class RCJKMySQLBackend:
 
 
 def buildLayerGlyphs(glyphData):
-    layerGLIFData = {
-        layer["group_name"]: layer["data"] for layer in glyphData.get("layers", ())
-    }
-    assert "foreground" not in layerGLIFData
-    layerGLIFData = {"foreground": glyphData["data"], **layerGLIFData}
+    layerGLIFData = [("foreground", glyphData["data"])]
+    layerGLIFData.extend(
+        (layer["group_name"], layer["data"])
+        for layer in glyphData.get("layers", ())
+    )
     layerGlyphs = {}
-    for layerName, glifData in layerGLIFData.items():
+    for layerName, glifData in layerGLIFData:
         layerGlyphs[layerName] = GLIFGlyph.fromGLIFData(glifData)
     return layerGlyphs
 
