@@ -66,7 +66,8 @@
       import {{ EditorController }} from "/src/editor-controller.js";
 
       async function startApp() {{
-        const url = `ws://${{location.hostname}}:{webSocketPort}/{projectPath}`;
+        const protocol = location.protocol === "http:" ? "ws" : "wss";
+        const url = `${{protocol}}://${{location.hostname}}:{webSocketPort}/{projectPath}`;
         window.editorController = await EditorController.fromURL(url);
         await window.editorController.start();
       }}

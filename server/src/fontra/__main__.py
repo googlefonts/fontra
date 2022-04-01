@@ -20,6 +20,7 @@ def main():
     parser.add_argument("--host", default="localhost")
     parser.add_argument("--http-port", default=8000, type=int)
     parser.add_argument("--websocket-port", type=int)
+    parser.add_argument("--websocket-proxy-port", type=int)
     parser.add_argument("--rcjk-host")
     parser.add_argument("--filesystem-root", type=existingFolder)
     parser.add_argument(
@@ -34,6 +35,11 @@ def main():
     httpPort = args.http_port
     webSocketPort = (
         args.websocket_port if args.websocket_port is not None else httpPort + 1
+    )
+    webSocketProxyPort = (
+        args.websocket_proxy_port
+        if args.websocket_proxy_port is not None
+        else webSocketPort
     )
 
     if (args.rcjk_host and args.filesystem_root) or (
@@ -55,11 +61,12 @@ def main():
     templatesFolder = fontraRoot / "templates"
 
     server = FontraServer(
-        host,
-        httpPort,
-        webSocketPort,
-        contentFolder,
-        templatesFolder,
+        host=host,
+        httpPort=httpPort,
+        webSocketPort=webSocketPort,
+        webSocketProxyPort=webSocketProxyPort,
+        contentFolder=contentFolder,
+        templatesFolder=templatesFolder,
         projectManager=manager,
     )
     server.setup()

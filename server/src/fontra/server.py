@@ -17,12 +17,13 @@ class AuthorizedSession:
     remoteIP: str
 
 
-@dataclass
+@dataclass(kw_only=True)
 class FontraServer:
 
     host: str
     httpPort: int
     webSocketPort: int
+    webSocketProxyPort: int
     contentFolder: str
     templatesFolder: str
     projectManager: object
@@ -83,7 +84,7 @@ class FontraServer:
 
         html = self._formatHTMLTemplate(
             "landing.html",
-            webSocketPort=self.webSocketPort,
+            webSocketPort=self.webSocketProxyPort,
             requireLogin=str(bool(self.projectManager.requireLogin)).lower(),
         )
         response = web.Response(text=html, content_type="text/html")
@@ -138,7 +139,7 @@ class FontraServer:
 
         html = self._formatHTMLTemplate(
             "editor.html",
-            webSocketPort=self.webSocketPort,
+            webSocketPort=self.webSocketProxyPort,
             projectPath=path,
         )
         return web.Response(text=html, content_type="text/html")
