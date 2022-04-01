@@ -143,7 +143,7 @@ def serializeGlyph(layerGlyphs, axisDefaults):
             sourceName = layerName if layerName else f"source_{sourceIndex}"
         if not layerName:
             layerName = sourceName + "_layer"
-            assert layerName not in layers
+            assert layerName not in layers, layerName
 
         xAdvance = defaultGlyph.width
         if layerName in layers:
