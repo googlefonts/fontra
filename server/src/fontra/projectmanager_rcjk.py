@@ -35,6 +35,7 @@ class RCJKProjectManager:
             logger.info(f"failed to log in '{username}'")
             await rcjkClient.close()
             return None
+        logger.info(f"successfully logged in '{username}'")
         token = secrets.token_hex(32)
         self.authorizedClients[token] = AuthorizedClient(rcjkClient)
         return token
