@@ -46,6 +46,7 @@ class RCJKProjectManager:
     async def getRemoteSubject(self, path, token, remoteIP):
         client = self.authorizedClients.get(token)
         if client is None:
+            logger.info("reject unrecognized token")
             return None
         if path == "/":
             return client
@@ -53,6 +54,7 @@ class RCJKProjectManager:
         assert path[0] == "/"
         path = path[1:]
         if not client.projectAvailable(path):
+            logger.info(f"path {path!r} not found or not authorized")
             return None  # not found or not authorized
         return await client.getFontHandler(path)
 
