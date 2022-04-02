@@ -44,7 +44,9 @@ class RCJKProjectManager:
         return client.projectAvailable(path)
 
     async def getRemoteSubject(self, path, token, remoteIP):
-        client = self.authorizedClients[token]
+        client = self.authorizedClients.get(token)
+        if client is None:
+            return None
         if path == "/":
             return client
 
