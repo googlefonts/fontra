@@ -23,6 +23,7 @@ class RemoteObjectServer:
         asyncio.get_event_loop().run_forever()
 
     async def incomingConnection(self, websocket, path):
+        logger.info(f"incoming connection: {path!r}")
         path = unquote(path)
         try:
             subject = await self.getSubject(websocket, path)
@@ -71,7 +72,6 @@ class RemoteObjectConnection:
         return RemoteClientProxy(self)
 
     async def handleConnection(self):
-        logger.info(f"incoming connection: {self.path!r}")
         try:
             await self._handleConnection()
         except websockets.exceptions.ConnectionClosedError as e:
