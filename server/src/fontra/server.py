@@ -27,6 +27,7 @@ class FontraServer:
     contentFolder: str
     templatesFolder: str
     projectManager: object
+    cookieMaxAge: int = 7 * 24 * 60 * 60
 
     def setup(self):
         self.authorizedSessions = {}
@@ -89,7 +90,9 @@ class FontraServer:
         )
         response = web.Response(text=html, content_type="text/html")
         if session is not None:
-            response.set_cookie("fontra-authorization-token", session.token)
+            response.set_cookie(
+                "fontra-authorization-token", session.token, max_age=self.cookieMaxAge
+            )
         else:
             response.del_cookie("fontra-authorization-token")
         return response
@@ -107,12 +110,14 @@ class FontraServer:
             token = None
 
         response = web.HTTPFound("/")
-        response.set_cookie("fontra-username", username)
+        response.set_cookie("fontra-username", username, max_age=self.cookieMaxAge)
         if token is not None:
-            response.set_cookie("fontra-authorization-token", token)
+            response.set_cookie(
+                "fontra-authorization-token", token, max_age=self.cookieMaxAge
+            )
             response.del_cookie("fontra-authorization-failed")
         else:
-            response.set_cookie("fontra-authorization-failed", "true")
+            response.set_cookie("fontra-authorization-failed", "true", max_age=5)
             response.del_cookie("fontra-authorization-token")
         return response
 
