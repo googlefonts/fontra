@@ -27,6 +27,9 @@ class RemoteObjectServer:
         path = unquote(path)
         try:
             subject = await self.getSubject(websocket, path)
+        except RemoteObjectConnectionException as e:
+            logger.info("refused websocket request: %s", e)
+            await websocket.close()
         except Exception as e:
             logger.error("error while handling incoming websocket messages: %r", e)
             if self.verboseErrors:
