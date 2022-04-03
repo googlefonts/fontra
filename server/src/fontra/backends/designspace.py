@@ -11,7 +11,6 @@ class DesignspaceBackend:
         self = cls()
         self.dsDoc = DesignSpaceDocument.fromfile(path)
         self.dsDoc.findDefault()
-        self._sources = {}
         axes = []
         for axis in self.dsDoc.axes:
             axisDict = {
