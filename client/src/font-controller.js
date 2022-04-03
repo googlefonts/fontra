@@ -184,12 +184,18 @@ export class FontController {
     }
   }
 
+  _purgeGlyphCache(glyphName) {
+    this._glyphsPromiseCache.delete(glyphName);
+    delete this._glyphInstancePromiseCache[glyphName];
+    delete this._loadedGlyphInstances[glyphName];
+    for (const dependantName of this.glyphUsedBy[glyphName] || []) {
+      this._purgeGlyphCache(dependantName);
+    }
+  }
+
   async reloadGlyphs(glyphNames) {
     for (const glyphName of glyphNames) {
-      if (this.isGlyphInstanceLoaded(glyphName)) {
-        this._glyphsPromiseCache.delete(glyphName);
-        this.glyphChanged(glyphName);
-      }
+      this._purgeGlyphCache(glyphName);
     }
   }
 
