@@ -8,8 +8,10 @@ from .pen import PathBuilderPointPen
 class DesignspaceBackend:
     @classmethod
     def fromPath(cls, path):
-        self = cls()
-        self.dsDoc = DesignSpaceDocument.fromfile(path)
+        return cls(DesignSpaceDocument.fromfile(path))
+
+    def __init__(self, dsDoc):
+        self.dsDoc = dsDoc
         self.dsDoc.findDefault()
         axes = []
         for axis in self.dsDoc.axes:
@@ -24,7 +26,6 @@ class DesignspaceBackend:
             axes.append(axisDict)
         self.axes = axes
         self.loadSources()
-        return self
 
     @property
     def defaultSource(self):
