@@ -1,3 +1,4 @@
 git+https://github.com/BlackFoundryCom/rcjk-tools.git
 websockets==10.1
 aiohttp==3.8.1
+watchfiles==0.10

@@ -17,6 +17,7 @@ setup(
     install_requires=[
         "websockets>=10.1",
         "aiohttp>=3.8.1",
+        "watchfiles>=0.10",
     ],
     setup_requires=["setuptools_scm"],
     extras_require={},

@@ -1,7 +1,10 @@
+import asyncio
 from collections import defaultdict
+import os
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.ufoLib import UFOReader
 from rcjktools.project import extractGlyphNameAndUnicodes
+import watchfiles
 from .pen import PathBuilderPointPen
 
 
@@ -26,6 +29,9 @@ class DesignspaceBackend:
             axes.append(axisDict)
         self.axes = axes
         self.loadSources()
+        self.buildFileNameMapping()
+        self._watchTask = None
+        self.watchExternalChanges(None)
 
     @property
     def defaultSource(self):
@@ -65,6 +71,28 @@ class DesignspaceBackend:
             if source == self.dsDoc.default:
                 self.defaultSourceGlyphSet = self.ufoGlyphSets[fontraLayerName]
             self.globalSources.append(sourceDict)
+        self.ufoPaths = sorted(readers)
+
+    def buildFileNameMapping(self):
+        glifFileNames = {}
+        for glyphSet in self.ufoGlyphSets.values():
+            for glyphName, fileName in glyphSet.contents.items():
+                glifFileNames[fileName] = glyphName
+        self.glifFileNames = glifFileNames
+
+    def watchExternalChanges(self, glyphsChangedCallback):
+        assert self._watchTask is None, "already watching"
+
+        async def ufoWatcher(ufoPaths):
+            async for changes in watchfiles.awatch(*ufoPaths):
+                glyphNames = set()
+                for change, path in changes:
+                    glyphName = self.glifFileNames.get(os.path.basename(path))
+                    if glyphName is not None:
+                        glyphNames.add(glyphName)
+                print("glyphs changed", sorted(glyphNames))
+
+        self._watchTask = asyncio.create_task(ufoWatcher(self.ufoPaths))
 
     async def getReverseCmap(self):
         return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
