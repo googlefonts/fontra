@@ -30,7 +30,6 @@ class DesignspaceBackend:
         self.axes = axes
         self.loadSources()
         self.buildFileNameMapping()
-        self._watchTask = None
 
     @property
     def defaultSource(self):
@@ -80,8 +79,6 @@ class DesignspaceBackend:
         self.glifFileNames = glifFileNames
 
     def watchExternalChanges(self, glyphsChangedCallback):
-        assert self._watchTask is None, "already watching"
-
         async def ufoWatcher(ufoPaths):
             async for changes in watchfiles.awatch(*ufoPaths):
                 glyphNames = set()
@@ -89,9 +86,10 @@ class DesignspaceBackend:
                     glyphName = self.glifFileNames.get(os.path.basename(path))
                     if glyphName is not None:
                         glyphNames.add(glyphName)
-                print("glyphs changed", sorted(glyphNames))
+                if glyphNames:
+                    await glyphsChangedCallback(sorted(glyphNames))
 
-        self._watchTask = asyncio.create_task(ufoWatcher(self.ufoPaths))
+        return asyncio.create_task(ufoWatcher(self.ufoPaths))
 
     async def getReverseCmap(self):
         return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
