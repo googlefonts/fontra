@@ -1,11 +1,15 @@
 import asyncio
 from collections import defaultdict
+import logging
 import os
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.ufoLib import UFOReader
 from rcjktools.project import extractGlyphNameAndUnicodes
 import watchfiles
 from .pen import PathBuilderPointPen
+
+
+logger = logging.getLogger(__name__)
 
 
 class DesignspaceBackend:
@@ -87,7 +91,10 @@ class DesignspaceBackend:
                     if glyphName is not None:
                         glyphNames.add(glyphName)
                 if glyphNames:
-                    await glyphsChangedCallback(sorted(glyphNames))
+                    try:
+                        await glyphsChangedCallback(sorted(glyphNames))
+                    except Exception as e:
+                        logger.error("error in watchExternalChanges callback: %r", e)
 
         return asyncio.create_task(ufoWatcher(self.ufoPaths))
 
