@@ -31,7 +31,6 @@ class DesignspaceBackend:
         self.loadSources()
         self.buildFileNameMapping()
         self._watchTask = None
-        self.watchExternalChanges(None)
 
     @property
     def defaultSource(self):
