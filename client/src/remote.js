@@ -99,13 +99,15 @@ export class RemoteObject {
       if (this.receiver) {
         let returnMessage;
         try {
-          const method = this.receiver[message["method-name"]];
+          let method = this.receiver[message["method-name"]];
           if (method === undefined) {
             throw new Error(`undefined receiver method: ${message["method-name"]}`);
           }
+          method = method.bind(this.receiver);
           const returnValue = await method(...message["arguments"]);
           returnMessage = {"server-call-id": serverCallID, "return-value": returnValue};
         } catch(error) {
+          console.log("exception in receiver call", error.toString());
           returnMessage = {"server-call-id": serverCallID, "error": error.toString()};
         }
         this.websocket.send(JSON.stringify(returnMessage));
