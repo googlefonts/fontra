@@ -99,7 +99,11 @@ export class RemoteObject {
       if (this.receiver) {
         let returnMessage;
         try {
-          const returnValue = await this.receiver[message["method-name"]](...message["arguments"]);
+          const method = this.receiver[message["method-name"]];
+          if (method === undefined) {
+            throw new Error(`undefined receiver method: ${message["method-name"]}`);
+          }
+          const returnValue = await method(...message["arguments"]);
           returnMessage = {"server-call-id": serverCallID, "return-value": returnValue};
         } catch(error) {
           returnMessage = {"server-call-id": serverCallID, "error": error.toString()};
