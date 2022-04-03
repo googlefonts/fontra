@@ -323,6 +323,13 @@ export class EditorController {
     this.canvasController.setNeedsUpdate();
   }
 
+  async reloadGlyps(glyphNames) {
+    console.log("incoming external reload request:", glyphNames);
+    // await this.fontController.applyChange(change);
+    // await this.sceneController.sceneModel.updateScene();
+    // this.canvasController.setNeedsUpdate();
+  }
+
 }
 
 

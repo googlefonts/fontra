@@ -2,7 +2,11 @@ from contextlib import contextmanager
 import asyncio
 from collections import defaultdict
 import functools
+import logging
 from .changes import applyChange, baseChangeFunctions
+
+
+logger = logging.getLogger(__name__)
 
 
 class FontHandler:
@@ -25,6 +29,20 @@ class FontHandler:
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.changedGlyphs = {}
+        self.setupExternalChangesWatcher()
+
+    def setupExternalChangesWatcher(self):
+        if not hasattr(self.backend, "watchExternalChanges"):
+            return
+        task = self.backend.watchExternalChanges(self.externalChangesCallback)
+
+        def watcherTaskDone(task):
+            e = task.exception()
+            if e is not None:
+                logger.error("exception in external changes watcher: %r", e)
+
+        task.add_done_callback(watcherTaskDone)
+        self._externalWatcherTask = task
 
     @contextmanager
     def useConnection(self, connection):
@@ -141,6 +159,24 @@ class FontHandler:
             if componentName not in self.glyphUsedBy:
                 self.glyphUsedBy[componentName] = set()
             self.glyphUsedBy[componentName].add(glyphName)
+
+    async def externalChangesCallback(self, glyphNames):
+        # XXX TODO For now, just drop any local changes
+        for glyphName in glyphNames:
+            if glyphName in self.changedGlyphs:
+                del self.changedGlyphs[glyphName]
+
+        logger.info(f"broadcasting external glyph changes: {glyphNames}")
+        connections = []
+        for connection in self.connections:
+            subscribedGlyphNames = self.clientData[connection.clientUUID].get(
+                "loadedGlyphNames", ()
+            )
+            if glyphName in subscribedGlyphNames:
+                connections.append(connection)
+        await asyncio.gather(
+            *[connection.proxy.reloadGlyphs(glyphNames) for connection in connections]
+        )
 
 
 def _iterAllComponentNames(glyphData):
