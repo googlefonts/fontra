@@ -174,10 +174,18 @@ class FontHandler:
             subscribedGlyphNames = self.clientData[connection.clientUUID].get(
                 "loadedGlyphNames", ()
             )
-            if glyphName in subscribedGlyphNames:
-                connections.append(connection)
+            connGlyphNames = [
+                glyphName
+                for glyphName in glyphNames
+                if glyphName in subscribedGlyphNames
+            ]
+            if connGlyphNames:
+                connections.append((connection, connGlyphNames))
         await asyncio.gather(
-            *[connection.proxy.reloadGlyphs(glyphNames) for connection in connections]
+            *[
+                connection.proxy.reloadGlyphs(connGlyphNames)
+                for connection, connGlyphNames in connections
+            ]
         )
 
 
