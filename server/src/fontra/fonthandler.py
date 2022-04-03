@@ -166,6 +166,8 @@ class FontHandler:
             if glyphName in self.changedGlyphs:
                 del self.changedGlyphs[glyphName]
 
+        self._getGlyph.cache_clear()
+
         logger.info(f"broadcasting external glyph changes: {glyphNames}")
         connections = []
         for connection in self.connections:

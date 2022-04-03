@@ -184,6 +184,15 @@ export class FontController {
     }
   }
 
+  async reloadGlyphs(glyphNames) {
+    for (const glyphName of glyphNames) {
+      if (this.isGlyphInstanceLoaded(glyphName)) {
+        this._glyphsPromiseCache.delete(glyphName);
+        this.glyphChanged(glyphName);
+      }
+    }
+  }
+
 }
 
 
