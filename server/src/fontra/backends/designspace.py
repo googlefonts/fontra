@@ -1,5 +1,4 @@
 import asyncio
-from collections import defaultdict
 import logging
 import os
 from fontTools.designspaceLib import DesignSpaceDocument
@@ -151,7 +150,6 @@ class UFOBackend:
         layers, sourceGlyph = serializeGlyphLayers(
             self.glyphSets, glyphName, self.layerName
         )
-        layerName = self.layerName
         glyph["sources"] = [
             {
                 "location": {},

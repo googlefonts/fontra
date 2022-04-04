@@ -1,5 +1,4 @@
 import asyncio
-from .pen import PathBuilderPointPen
 from .ufo_utils import GLIFGlyph
 
 

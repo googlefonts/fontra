@@ -1,8 +1,12 @@
 from functools import cached_property
+import logging
 import re
 from fontTools.ufoLib.filenames import userNameToFileName
 from fontTools.ufoLib.glifLib import readGlyphFromString
 from .pen import PathBuilderPointPen
+
+
+logger = logging.getLogger(__name__)
 
 
 class GLIFGlyph:

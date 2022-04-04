@@ -2,7 +2,7 @@ import pathlib
 import pytest
 from fontra.backends import getBackendClass
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
-from fontra.backends.rcjk import RCJKBackend
+from fontra.backends.rcjk_fs import RCJKBackend
 
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"

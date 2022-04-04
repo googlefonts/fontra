@@ -1,5 +1,5 @@
 backendClasses = {
-    "rcjk": "fontra.backends.rcjk.RCJKBackend",
+    "rcjk": "fontra.backends.rcjk_fs.RCJKBackend",
     "designspace": "fontra.backends.designspace.DesignspaceBackend",
     "ufo": "fontra.backends.designspace.UFOBackend",
 }
