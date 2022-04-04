@@ -82,20 +82,9 @@ class DesignspaceBackend:
         self.glifFileNames = glifFileNames
 
     def watchExternalChanges(self, glyphsChangedCallback):
-        async def ufoWatcher(ufoPaths):
-            async for changes in watchfiles.awatch(*ufoPaths):
-                glyphNames = set()
-                for change, path in changes:
-                    glyphName = self.glifFileNames.get(os.path.basename(path))
-                    if glyphName is not None:
-                        glyphNames.add(glyphName)
-                if glyphNames:
-                    try:
-                        await glyphsChangedCallback(sorted(glyphNames))
-                    except Exception as e:
-                        logger.error("error in watchExternalChanges callback: %r", e)
-
-        return asyncio.create_task(ufoWatcher(self.ufoPaths))
+        return asyncio.create_task(
+            ufoWatcher(self.ufoPaths, self.glifFileNames, glyphsChangedCallback)
+        )
 
     async def getReverseCmap(self):
         return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
@@ -205,3 +194,17 @@ def getReverseCmapFromGlyphSet(glyphSet):
         assert gn == glyphName
         revCmap[glyphName] = unicodes
     return revCmap
+
+
+async def ufoWatcher(ufoPaths, glifFileNames, glyphsChangedCallback):
+    async for changes in watchfiles.awatch(*ufoPaths):
+        glyphNames = set()
+        for change, path in changes:
+            glyphName = glifFileNames.get(os.path.basename(path))
+            if glyphName is not None:
+                glyphNames.add(glyphName)
+        if glyphNames:
+            try:
+                await glyphsChangedCallback(sorted(glyphNames))
+            except Exception as e:
+                logger.error("error in watchExternalChanges callback: %r", e)
