@@ -1,3 +1,4 @@
+import { rectCenter, normalizeRect } from "./rectangle.js";
 import { withSavedState } from "./utils.js";
 import { mulScalar } from "./var-funcs.js";
 
@@ -169,6 +170,12 @@ export class CanvasController {
     return {x: x, y: y}
   }
 
+  canvasPoint(point) {
+    const x = point.x * this.magnification + this.canvas.offsetLeft + this.origin.x;
+    const y = -point.y * this.magnification + this.canvas.offsetTop + this.origin.y;
+    return {x: x, y: y}
+  }
+
   get onePixelUnit() {
     return 1 / this.magnification;
   }
@@ -178,7 +185,23 @@ export class CanvasController {
     const height = this.canvas.parentElement.getBoundingClientRect().height;
     const bottomLeft = this.localPoint({x: 0, y: 0});
     const topRight = this.localPoint({x: width, y: height});
-    return {xMin: bottomLeft.x, yMin: bottomLeft.y, xMax: topRight.x, yMax: topRight.y};
+    return normalizeRect(
+      {xMin: bottomLeft.x, yMin: bottomLeft.y, xMax: topRight.x, yMax: topRight.y}
+    );
+  }
+
+  setViewBox(viewBox) {
+    const localCenter = rectCenter(viewBox);
+    const width = this.canvas.parentElement.getBoundingClientRect().width;
+    const height = this.canvas.parentElement.getBoundingClientRect().height;
+    const magnificationX = Math.abs(width / (viewBox.xMax - viewBox.xMin));
+    const magnificationY = Math.abs(height / (viewBox.yMax - viewBox.yMin));
+    this.magnification = Math.min(magnificationX, magnificationY);
+    const canvasCenter = this.canvasPoint(localCenter);
+    this.origin.x = this.origin.x + width / 2 - canvasCenter.x;
+    this.origin.y = this.origin.y + height / 2 - canvasCenter.y;
+    this._updateDrawingParameters();
+    this.setNeedsUpdate();
   }
 
   _viewBoxChanged() {
