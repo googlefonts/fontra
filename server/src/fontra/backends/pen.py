@@ -1,5 +1,4 @@
 import math
-from rcjktools.utils import decomposeTwoByTwo
 
 
 ON_CURVE = 0x00
@@ -98,3 +97,36 @@ class PathBuilderPointPen:
                 "transformation": transformation,
             }
         )
+
+
+def decomposeTwoByTwo(twoByTwo):
+    """Decompose a 2x2 transformation matrix into components:
+    - rotation
+    - scalex
+    - scaley
+    - skewx
+    - skewy
+    """
+    a, b, c, d = twoByTwo
+    delta = a * d - b * c
+
+    rotation = 0
+    scalex = scaley = 0
+    skewx = skewy = 0
+
+    # Apply the QR-like decomposition.
+    if a != 0 or b != 0:
+        r = math.sqrt(a * a + b * b)
+        rotation = math.acos(a / r) if b > 0 else -math.acos(a / r)
+        scalex, scaley = (r, delta / r)
+        skewx, skewy = (math.atan((a * c + b * d) / (r * r)), 0)
+    elif c != 0 or d != 0:
+        s = math.sqrt(c * c + d * d)
+        rotation = math.pi / 2 - (math.acos(-c / s) if d > 0 else -math.acos(c / s))
+        scalex, scaley = (delta / s, s)
+        skewx, skewy = (0, math.atan((a * c + b * d) / (s * s)))
+    else:
+        # a = b = c = d = 0
+        pass
+
+    return rotation, scalex, scaley, skewx, skewy
