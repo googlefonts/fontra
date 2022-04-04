@@ -317,7 +317,6 @@ export class EditorController {
   }
 
   async externalChange(change) {
-    // console.log("incoming external change:", change.p[1], change);
     await this.fontController.applyChange(change);
     await this.sceneController.sceneModel.updateScene();
     this.canvasController.setNeedsUpdate();
