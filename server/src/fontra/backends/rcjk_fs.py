@@ -1,5 +1,8 @@
+import asyncio
 import json
+import os
 import pathlib
+import watchfiles
 from .ufo_utils import GLIFGlyph, extractGlyphNameAndUnicodes
 from .rcjk_base import TimedCache, getComponentAxisDefaults, serializeGlyph
 
@@ -32,7 +35,11 @@ class RCJKBackend:
             for glyphName, unicodes in reversedCmap.items():
                 assert glyphName not in self.reversedCmap
                 self.reversedCmap[glyphName] = unicodes if hasEncoding else []
-        self.glyphNames = sorted(self.reversedCmap)
+
+        self.glifFileNames = {
+            glifPath.name: glyphName
+            for glyphName, glifPath in self.characterGlyphGlyphSet.contents.items()
+        }
 
         self._tempGlyphCache = TimedCache()
 
@@ -90,6 +97,23 @@ class RCJKBackend:
             if glyphName in gs:
                 return gs.getGlyphLayerData(glyphName)
         return None
+
+    def watchExternalChanges(self, glyphsChangedCallback):
+        async def rcjkWatcher(rcjkPath):
+            async for changes in watchfiles.awatch(rcjkPath):
+                glyphNames = set()
+                for change, path in changes:
+                    glyphName = self.glifFileNames.get(os.path.basename(path))
+                    if glyphName is not None:
+                        glyphNames.add(glyphName)
+                if glyphNames:
+                    self._tempGlyphCache.clear()
+                    try:
+                        await glyphsChangedCallback(sorted(glyphNames))
+                    except Exception as e:
+                        logger.error("error in watchExternalChanges callback: %r", e)
+
+        return asyncio.create_task(rcjkWatcher(self.path))
 
 
 class RCJKGlyphSet:
