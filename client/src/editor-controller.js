@@ -1,5 +1,6 @@
 import { CanvasController } from "./canvas-controller.js";
 import { FontController } from "./font-controller.js";
+import { rectFromArray, rectToArray } from "./rectangle.js";
 import { getRemoteProxy } from "./remote.js";
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
@@ -8,7 +9,6 @@ import { SceneView } from "./scene-view.js"
 import { List } from "./ui-list.js";
 import { Sliders } from "./ui-sliders.js";
 import { parseCookies, scheduleCalls } from "./utils.js";
-
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
@@ -111,8 +111,6 @@ export class EditorController {
     this.updateURL = scheduleCalls(event => this._updateURL(), 500);
     canvas.addEventListener("viewBoxChanged", this.updateURL);
     this.sceneController.addEventListener("selectedGlyphChanged", this.updateURL);
-
-    this.setupFromURL();
   }
 
   async start() {
@@ -120,6 +118,7 @@ export class EditorController {
     await this.initGlyphNames();
     await this.initSliders();
     this.initSourcesList();
+    await this.setupFromURL();
   }
 
   async initGlyphNames() {
@@ -162,6 +161,7 @@ export class EditorController {
     this.sourcesList.addEventListener("listSelectionChanged", async event => {
       await this.sceneController.setSelectedSource(event.detail.getSelectedItem().sourceIndex);
       this.sliders.values = this.sceneController.getLocation();
+      this.updateURL();
     });
   }
 
@@ -345,22 +345,47 @@ export class EditorController {
 
   async setupFromURL() {
     const url = new URL(window.location);
+    let text, selectedGlyph, viewBox;
+    const location = {};
     for (const key of url.searchParams.keys()) {
       const value = url.searchParams.get(key);
       switch (key) {
         case "text":
-          this.textEntryElement.innerText = value;
-          this.setGlyphLinesFromText(value);
+          text = value;
           break;
+        case "selectedGlyph":
+          selectedGlyph = value;
+          break;
+        case "viewBox":
+          viewBox = value.split(",").map(v => parseFloat(v));
+          viewBox = rectFromArray(viewBox);
+          break;
+        default:
+          if (key.startsWith("axis-")) {
+            location[key.slice(5)] = parseFloat(value);
+          }
       }
-      console.log(key, "----", value);
     }
+    if (text) {
+      this.textEntryElement.innerText = text;
+      await this.setGlyphLinesFromText(text);
+    }
+    if (selectedGlyph) {
+      this.sceneController.selectedGlyph = selectedGlyph;
+    }
+    await this.sceneController.setLocation(location);
+    this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
+    this.sliders.values = location;
+    if (viewBox) {
+      this.canvasController.setViewBox(viewBox);
+    }
+
+    this.canvasController.setNeedsUpdate()
   }
 
   _updateURL() {
-    const rectFields = ["xMin", "yMin", "xMax", "yMax"];
     const viewBox = this.canvasController.getViewBox();
-    const viewBoxString = rectFields.map(f => viewBox[f].toFixed(1)).join(",")
+    const viewBoxString = rectToArray(viewBox).map(v => v.toFixed(1)).join(",")
 
     const url = new URL(window.location);
     clearSearchParams(url.searchParams);
