@@ -136,12 +136,15 @@ class TimedCache:
     def __contains__(self, key):
         return key in self.cacheDict
 
+    def clear(self):
+        self.cacheDict.clear()
+
     def updateTimeOut(self):
         if self.timerTask is not None:
             self.timerTask.cancel()
 
         async def clearCacheDict():
             await asyncio.sleep(self.timeOut)
-            self.cacheDict.clear()
+            self.clear()
 
         self.timerTask = asyncio.create_task(clearCacheDict())
