@@ -81,11 +81,6 @@ class DesignspaceBackend:
                 glifFileNames[fileName] = glyphName
         self.glifFileNames = glifFileNames
 
-    def watchExternalChanges(self, glyphsChangedCallback):
-        return asyncio.create_task(
-            ufoWatcher(self.ufoPaths, self.glifFileNames, glyphsChangedCallback)
-        )
-
     async def getReverseCmap(self):
         return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
 
@@ -114,6 +109,11 @@ class DesignspaceBackend:
 
     async def getGlobalAxes(self):
         return self.axes
+
+    def watchExternalChanges(self, glyphsChangedCallback):
+        return asyncio.create_task(
+            ufoWatcher(self.ufoPaths, self.glifFileNames, glyphsChangedCallback)
+        )
 
 
 class UFOBackend:
