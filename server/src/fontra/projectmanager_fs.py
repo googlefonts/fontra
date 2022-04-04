@@ -1,18 +1,24 @@
 from contextlib import contextmanager
+import logging
 import pathlib
 import secrets
 from .backends import getBackendClass
 from .fonthandler import FontHandler
 
 
+logger = logging.getLogger(__name__)
+
+
 async def getFileSystemBackend(path):
     path = pathlib.Path(path)
     if not path.exists():
         raise FileNotFoundError(path)
-    print(f"loading project {path.name}...")
+    logger.info(f"loading project {path.name}...")
     fileType = path.suffix.lstrip(".")
     backendClass = getBackendClass(fileType)
-    return backendClass.fromPath(path)
+    backend = backendClass.fromPath(path)
+    logger.info(f"done loading {path.name}")
+    return backend
 
 
 class FileSystemProjectManager:
