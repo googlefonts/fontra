@@ -90,3 +90,21 @@ export function equalRect(rect1, rect2) {
     rect1.yMax === rect2.yMax
   )
 }
+
+
+export function rectCenter(rect) {
+  return {"x": (rect.xMin + rect.xMax) / 2, "y": (rect.yMin + rect.yMax) / 2}
+}
+
+
+export function rectFromArray(array) {
+  if (array.length != 4) {
+    throw new Error("rect array must have length == 4");
+  }
+  return {"xMin": array[0], "yMin": array[1], "xMax": array[2], "yMax": array[3]}
+}
+
+
+export function rectToArray(rect) {
+  return [rect.xMin, rect.yMin, rect.xMax, rect.yMax];
+}
