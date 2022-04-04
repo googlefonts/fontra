@@ -15,9 +15,10 @@ setup(
     package_dir={"": "server/src"},
     packages=find_packages("server/src"),
     install_requires=[
-        "websockets>=10.1",
         "aiohttp>=3.8.1",
+        "fonttools[ufo,unicode]>=4.17.0",
         "watchfiles>=0.10",
+        "websockets>=10.1",
     ],
     setup_requires=["setuptools_scm"],
     extras_require={},

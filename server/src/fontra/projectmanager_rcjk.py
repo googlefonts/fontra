@@ -1,9 +1,9 @@
 from contextlib import contextmanager
 import logging
 import secrets
-from .backends.rcjkmysql import RCJKMySQLBackend
-from .backends.rcjkclient import HTTPError
-from .backends.rcjkclient_async import RCJKClientAsync
+from .backends.rcjk_mysql import RCJKMySQLBackend
+from .backends.rcjk_client import HTTPError
+from .backends.rcjk_client_async import RCJKClientAsync
 from .fonthandler import FontHandler
 
 

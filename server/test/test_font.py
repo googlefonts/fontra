@@ -2,7 +2,7 @@ import pathlib
 import pytest
 from fontra.backends import getBackendClass
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
-from fontra.backends.rcjk import RCJKBackend
+from fontra.backends.rcjk_fs import RCJKBackend
 
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -351,22 +351,22 @@ getGlyphTestData = [
                 {
                     "name": "<default>",
                     "location": {},
-                    "layerName": "<default>/foreground",
+                    "layerName": "foreground",
                 },
                 {
                     "name": "longbar",
                     "location": {"HLON": 1.0},
-                    "layerName": "longbar/foreground",
+                    "layerName": "longbar",
                 },
                 {
                     "name": "bold",
                     "location": {"WGHT": 1.0},
-                    "layerName": "bold/foreground",
+                    "layerName": "bold",
                 },
             ],
             "layers": [
                 {
-                    "name": "<default>/foreground",
+                    "name": "foreground",
                     "glyph": {
                         "path": {
                             "coordinates": [
@@ -398,7 +398,7 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": "longbar/foreground",
+                    "name": "longbar",
                     "glyph": {
                         "path": {
                             "coordinates": [
@@ -430,7 +430,7 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": "bold/foreground",
+                    "name": "bold",
                     "glyph": {
                         "path": {
                             "coordinates": [
@@ -476,17 +476,17 @@ getGlyphTestData = [
                 {
                     "name": "<default>",
                     "location": {},
-                    "layerName": "<default>/foreground",
+                    "layerName": "foreground",
                 },
                 {
                     "name": "wght",
                     "location": {"wght": 1.0},
-                    "layerName": "wght/foreground",
+                    "layerName": "wght",
                 },
             ],
             "layers": [
                 {
-                    "name": "<default>/foreground",
+                    "name": "foreground",
                     "glyph": {
                         "components": [
                             {
@@ -507,7 +507,7 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": "wght/foreground",
+                    "name": "wght",
                     "glyph": {
                         "components": [
                             {
@@ -553,22 +553,22 @@ getGlyphTestData = [
                 {
                     "name": "<default>",
                     "location": {},
-                    "layerName": "<default>/foreground",
+                    "layerName": "foreground",
                 },
                 {
                     "name": "X_X_bo",
                     "location": {"X_X_bo": 1.0},
-                    "layerName": "X_X_bo/foreground",
+                    "layerName": "X_X_bo_1_layer",
                 },
                 {
                     "name": "X_X_la",
                     "location": {"X_X_la": 1.0},
-                    "layerName": "X_X_la/foreground",
+                    "layerName": "X_X_la_2_layer",
                 },
             ],
             "layers": [
                 {
-                    "name": "<default>/foreground",
+                    "name": "foreground",
                     "glyph": {
                         "components": [
                             {
@@ -589,7 +589,7 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": "X_X_bo/foreground",
+                    "name": "X_X_bo_1_layer",
                     "glyph": {
                         "components": [
                             {
@@ -610,7 +610,7 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": "X_X_la/foreground",
+                    "name": "X_X_la_2_layer",
                     "glyph": {
                         "components": [
                             {
