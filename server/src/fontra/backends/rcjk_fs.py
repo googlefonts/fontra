@@ -1,7 +1,7 @@
 import json
 import pathlib
 from .ufo_utils import GLIFGlyph, extractGlyphNameAndUnicodes
-from .rcjk_mysql import getComponentAxisDefaults, serializeGlyph
+from .rcjk_base import getComponentAxisDefaults, serializeGlyph
 
 
 glyphSetNames = ["characterGlyph", "deepComponent", "atomicElement"]
