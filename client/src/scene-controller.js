@@ -209,6 +209,7 @@ export class SceneController {
     if (!lenientIsEqualSet(selection, this.selection)) {
       this.sceneModel.selection = selection;
       this.canvasController.setNeedsUpdate();
+      this._dispatchEvent("selectionChanged");
     }
   }
 

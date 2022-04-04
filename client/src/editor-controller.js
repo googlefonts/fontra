@@ -111,6 +111,7 @@ export class EditorController {
     this.updateURL = scheduleCalls(event => this._updateURL(), 500);
     canvas.addEventListener("viewBoxChanged", this.updateURL);
     this.sceneController.addEventListener("selectedGlyphChanged", this.updateURL);
+    this.sceneController.addEventListener("selectionChanged", this.updateURL);
   }
 
   async start() {
