@@ -198,8 +198,8 @@ export class CanvasController {
     const magnificationY = Math.abs(height / (viewBox.yMax - viewBox.yMin));
     this.magnification = Math.min(magnificationX, magnificationY);
     const canvasCenter = this.canvasPoint(localCenter);
-    this.origin.x = this.origin.x + width / 2 - canvasCenter.x;
-    this.origin.y = this.origin.y + height / 2 - canvasCenter.y;
+    this.origin.x = width / 2 + this.origin.x - canvasCenter.x;
+    this.origin.y = height / 2 + this.origin.y - canvasCenter.y;
     this._updateDrawingParameters();
     this.setNeedsUpdate();
   }
