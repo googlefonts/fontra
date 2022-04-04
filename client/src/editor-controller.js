@@ -106,7 +106,11 @@ export class EditorController {
 
     canvas.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
     canvas.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
-    canvas.addEventListener("viewBoxChanged", event => this.viewBoxChangedHandler(event));
+
+    this.enteredText = "";
+    this.updateURL = scheduleCalls(event => this._updateURL(), 500);
+    canvas.addEventListener("viewBoxChanged", this.updateURL);
+    this.sceneController.addEventListener("selectedGlyphChanged", this.updateURL);
   }
 
   async start() {
@@ -144,6 +148,7 @@ export class EditorController {
       await this.sceneController.setLocation(location);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     }));
+    this.sliders.addEventListener("slidersChanged", this.updateURL);
   }
 
   initSourcesList() {
@@ -255,12 +260,14 @@ export class EditorController {
 
   updateTextEntryFromGlyphLines() {
     const textEntryElement = document.querySelector("#text-entry");
-    textEntryElement.innerText = textFromGlyphLines(this.sceneController.getGlyphLines());
+    this.enteredText = textFromGlyphLines(this.sceneController.getGlyphLines());
+    textEntryElement.innerText = this.enteredText;
   }
 
   async textFieldChangedCallback(element) {
+    this.enteredText = element.innerText;
     const glyphLines = glyphLinesFromText(
-      element.innerText,
+      this.enteredText,
       this.fontController.cmap,
       this.fontController.reverseCmap,
     );
@@ -277,6 +284,7 @@ export class EditorController {
     this.sliders.setSliderDescriptions(axisInfo);
     this.sliders.values = this.sceneController.getLocation();
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
+    this.updateURL();
   }
 
   async doubleClickedComponentsCallback(event) {
@@ -329,9 +337,26 @@ export class EditorController {
     this.canvasController.setNeedsUpdate();
   }
 
-  viewBoxChangedHandler(event) {
-    // scheduleCalls(..., 1000);
-    // console.log("viewbox changed", event.detail.getViewBox());
+  _updateURL() {
+    const rectFields = ["xMin", "yMin", "xMax", "yMax"];
+    const viewBox = this.canvasController.getViewBox();
+    const viewBoxString = rectFields.map(f => viewBox[f].toFixed(1)).join(",")
+    const textEntryElement = document.querySelector("#text-entry");
+
+    const url = new URL(window.location);
+    clearSearchParams(url.searchParams);
+
+    url.searchParams.set("viewBox", viewBoxString);
+    if (this.enteredText) {
+      url.searchParams.set("text", this.enteredText);
+    }
+    if (this.sceneController.selectedGlyph) {
+      url.searchParams.set("selectedGlyph", this.sceneController.selectedGlyph);
+    }
+    for (const [name, value] of Object.entries(this.sliders.values)) {
+      url.searchParams.set(name, value.toFixed(2));
+    }
+    window.history.replaceState({}, "", url);
   }
 
 }
@@ -479,4 +504,11 @@ function textFromGlyphLines(glyphLines) {
     textLines.push(textLine);
   }
   return textLines.join("\n");
+}
+
+
+function clearSearchParams(searchParams) {
+  for (const key of Array.from(searchParams.keys())) {
+    searchParams.delete(key);
+  }
 }
