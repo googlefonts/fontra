@@ -142,7 +142,7 @@ html, body {
   overflow: scroll;
   width: 2em;
   height: 2em;
-  max-height: 100% /*calc(100% - 1.5em)*/;
+  max-height: calc(100% - 1.5em);
   pointer-events: auto;
   overflow: hidden;
 }
