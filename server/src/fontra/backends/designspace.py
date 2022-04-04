@@ -120,6 +120,7 @@ class UFOBackend:
     @classmethod
     def fromPath(cls, path):
         self = cls()
+        self.path = path
         self.reader = UFOReader(path)
         self.layerName = self.reader.getDefaultLayerName()
         self.glyphSets = {
@@ -151,6 +152,15 @@ class UFOBackend:
 
     async def getGlobalAxes(self):
         return []
+
+    def watchExternalChanges(self, glyphsChangedCallback):
+        glifFileNames = {
+            fileName: glyphName
+            for glyphName, fileName in self.glyphSets[self.layerName].contents.items()
+        }
+        return asyncio.create_task(
+            ufoWatcher([self.path], glifFileNames, glyphsChangedCallback)
+        )
 
 
 class UFOGlyph:
