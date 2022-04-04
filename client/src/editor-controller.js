@@ -106,6 +106,7 @@ export class EditorController {
 
     canvas.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
     canvas.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
+    canvas.addEventListener("viewBoxChanged", event => this.viewBoxChangedHandler(event), 1000);
   }
 
   async start() {
@@ -326,6 +327,11 @@ export class EditorController {
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneController.sceneModel.updateScene();
     this.canvasController.setNeedsUpdate();
+  }
+
+  viewBoxChangedHandler(event) {
+    // scheduleCalls(..., 1000);
+    // console.log("viewbox changed", event.detail.getViewBox());
   }
 
 }

@@ -110,6 +110,7 @@ export class CanvasController {
         this.origin.y -= event.deltaY;
       }
       this.setNeedsUpdate();
+      this._viewBoxChanged();
     }
   }
 
@@ -143,6 +144,7 @@ export class CanvasController {
     this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
     this._updateDrawingParameters();
     this.setNeedsUpdate();
+    this._viewBoxChanged();
   }
 
   onEvent(event) {
@@ -169,6 +171,22 @@ export class CanvasController {
 
   get onePixelUnit() {
     return 1 / this.magnification;
+  }
+
+  getViewBox() {
+    const width = this.canvas.parentElement.getBoundingClientRect().width;
+    const height = this.canvas.parentElement.getBoundingClientRect().height;
+    const bottomLeft = this.localPoint({x: 0, y: 0});
+    const topRight = this.localPoint({x: width, y: height});
+    return {xMin: bottomLeft.x, yMin: bottomLeft.y, xMax: topRight.x, yMax: topRight.y};
+  }
+
+  _viewBoxChanged() {
+    const event = new CustomEvent("viewBoxChanged", {
+      "bubbles": false,
+      "detail": this,
+    });
+    this.canvas.dispatchEvent(event);
   }
 
 }
