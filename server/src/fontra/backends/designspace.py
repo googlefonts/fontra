@@ -4,7 +4,7 @@ import logging
 import os
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.ufoLib import UFOReader
-from rcjktools.project import extractGlyphNameAndUnicodes
+from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
 from .pen import PathBuilderPointPen
 
