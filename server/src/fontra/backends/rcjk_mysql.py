@@ -1,5 +1,4 @@
-import asyncio
-from .rcjk_base import getComponentAxisDefaults, serializeGlyph
+from .rcjk_base import TimedCache, getComponentAxisDefaults, serializeGlyph
 from .ufo_utils import GLIFGlyph
 
 
@@ -10,9 +9,7 @@ class RCJKMySQLBackend:
         self.client = client
         self.fontUID = fontUID
         self._glyphMapping = None
-        self._tempGlyphCache = {}
-        self._tempGlyphCacheTimer = None
-        self._tempGlyphCacheTimeout = 5
+        self._tempGlyphCache = TimedCache()
         return self
 
     async def getReverseCmap(self):
@@ -57,7 +54,7 @@ class RCJKMySQLBackend:
             )
             glyphData = response["data"]
             self._populateGlyphCache(glyphName, glyphData)
-            self._scheduleCachePurge()
+            self._tempGlyphCache.updateTimeOut()
             layerGlyphs = self._tempGlyphCache[glyphName]
         return layerGlyphs
 
@@ -71,17 +68,6 @@ class RCJKMySQLBackend:
             assert typeCode == subGlyphData["type_code"]
             assert glyphID == subGlyphData["id"]
             self._populateGlyphCache(subGlyphName, subGlyphData)
-
-    def _scheduleCachePurge(self):
-        if self._tempGlyphCacheTimer is not None:
-            self._tempGlyphCacheTimer.cancel()
-
-        async def purgeGlyphCache():
-            await asyncio.sleep(self._tempGlyphCacheTimeout)
-            # print("clearing temp glyph cache")
-            self._tempGlyphCache.clear()
-
-        self._tempGlyphCacheTimer = asyncio.create_task(purgeGlyphCache())
 
 
 def buildLayerGlyphs(glyphData):

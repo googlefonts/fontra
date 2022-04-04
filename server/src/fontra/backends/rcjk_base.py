@@ -1,3 +1,6 @@
+import asyncio
+
+
 def getComponentAxisDefaults(layerGlyphs, layerGlyphCache):
     axisDefaults = {}
     for componentGlyphName in layerGlyphs["foreground"].getComponentNames():
@@ -113,3 +116,32 @@ def cleanupLocation(location, axisDefaults, neutralLocation):
     return {
         a: location.get(a, neutralLocation.get(a, v)) for a, v in axisDefaults.items()
     }
+
+
+class TimedCache:
+    def __init__(self, timeOut=5):
+        self.cacheDict = {}
+        self.timeOut = timeOut
+        self.timerTask = None
+
+    def get(self, key, default=None):
+        return self.cacheDict.get(key, default)
+
+    def __getitem__(self, key):
+        return self.cacheDict[key]
+
+    def __setitem__(self, key, value):
+        self.cacheDict[key] = value
+
+    def __contains__(self, key):
+        return key in self.cacheDict
+
+    def updateTimeOut(self):
+        if self.timerTask is not None:
+            self.timerTask.cancel()
+
+        async def clearCacheDict():
+            await asyncio.sleep(self.timeOut)
+            self.cacheDict.clear()
+
+        self.timerTask = asyncio.create_task(clearCacheDict())

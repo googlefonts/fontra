@@ -1,7 +1,7 @@
 import json
 import pathlib
 from .ufo_utils import GLIFGlyph, extractGlyphNameAndUnicodes
-from .rcjk_base import getComponentAxisDefaults, serializeGlyph
+from .rcjk_base import TimedCache, getComponentAxisDefaults, serializeGlyph
 
 
 glyphSetNames = ["characterGlyph", "deepComponent", "atomicElement"]
@@ -34,9 +34,7 @@ class RCJKBackend:
                 self.reversedCmap[glyphName] = unicodes if hasEncoding else []
         self.glyphNames = sorted(self.reversedCmap)
 
-        self._tempGlyphCache = {}
-        self._tempGlyphCacheTimer = None
-        self._tempGlyphCacheTimeout = 5
+        self._tempGlyphCache = TimedCache()
 
     def _iterGlyphSets(self):
         yield self.characterGlyphGlyphSet, True
@@ -68,7 +66,7 @@ class RCJKBackend:
         layerGlyphs = self._tempGlyphCache.get(glyphName)
         if layerGlyphs is None:
             self._populateGlyphCache(glyphName)
-            # self._scheduleCachePurge()
+            self._tempGlyphCache.updateTimeOut()
             layerGlyphs = self._tempGlyphCache[glyphName]
         return layerGlyphs
 
