@@ -135,7 +135,7 @@ html, body {
   background-color: white;
   border-radius: 1em;
   padding: 0.6em;
-  box-shadow: 2px 2px 10px #999;
+  box-shadow: 1.5px 1.5px 6px #999;
   cursor: pointer;
   transition: 0.15s;
   display: flex;
