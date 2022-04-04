@@ -111,6 +111,8 @@ export class EditorController {
     this.updateURL = scheduleCalls(event => this._updateURL(), 500);
     canvas.addEventListener("viewBoxChanged", this.updateURL);
     this.sceneController.addEventListener("selectedGlyphChanged", this.updateURL);
+
+    this.setupFromURL();
   }
 
   async start() {
@@ -168,7 +170,7 @@ export class EditorController {
     document.execCommand("defaultParagraphSeparator", false, "br");
 
     const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
-    const textEntryElement = document.querySelector("#text-entry");
+    this.textEntryElement = document.querySelector("#text-entry");
 
     const collapseAll = () => {
       for (const item of overlayItems) {
@@ -182,7 +184,7 @@ export class EditorController {
       }
     }
 
-    textEntryElement.oninput = async event => this.textFieldChangedCallback(event.target);
+    this.textEntryElement.oninput = async event => this.textFieldChangedCallback(event.target);
 
     for (const item of overlayItems) {
       item.onkeydown = event => collapseOnEscapeKey(event);
@@ -193,7 +195,7 @@ export class EditorController {
         for (const item of overlayItems) {
           item.classList.toggle("overlay-item-expanded", item === event.target);
           if (item === event.target && item.id === "text-entry-overlay") {
-            textEntryElement.focus();
+            this.textEntryElement.focus();
           }
         }
       };
@@ -259,13 +261,17 @@ export class EditorController {
   }
 
   updateTextEntryFromGlyphLines() {
-    const textEntryElement = document.querySelector("#text-entry");
     this.enteredText = textFromGlyphLines(this.sceneController.getGlyphLines());
-    textEntryElement.innerText = this.enteredText;
+    this.textEntryElement.innerText = this.enteredText;
   }
 
   async textFieldChangedCallback(element) {
-    this.enteredText = element.innerText;
+    this.setGlyphLinesFromText(element.innerText);
+  }
+
+  async setGlyphLinesFromText(text) {
+    this.enteredText = text;
+    await this.fontController.ensureInitialized;
     const glyphLines = glyphLinesFromText(
       this.enteredText,
       this.fontController.cmap,
@@ -337,11 +343,24 @@ export class EditorController {
     this.canvasController.setNeedsUpdate();
   }
 
+  async setupFromURL() {
+    const url = new URL(window.location);
+    for (const key of url.searchParams.keys()) {
+      const value = url.searchParams.get(key);
+      switch (key) {
+        case "text":
+          this.textEntryElement.innerText = value;
+          this.setGlyphLinesFromText(value);
+          break;
+      }
+      console.log(key, "----", value);
+    }
+  }
+
   _updateURL() {
     const rectFields = ["xMin", "yMin", "xMax", "yMax"];
     const viewBox = this.canvasController.getViewBox();
     const viewBoxString = rectFields.map(f => viewBox[f].toFixed(1)).join(",")
-    const textEntryElement = document.querySelector("#text-entry");
 
     const url = new URL(window.location);
     clearSearchParams(url.searchParams);
@@ -354,7 +373,7 @@ export class EditorController {
       url.searchParams.set("selectedGlyph", this.sceneController.selectedGlyph);
     }
     for (const [name, value] of Object.entries(this.sliders.values)) {
-      url.searchParams.set(name, value.toFixed(2));
+      url.searchParams.set("axis-" + name, value.toFixed(2));
     }
     window.history.replaceState({}, "", url);
   }
