@@ -96,7 +96,7 @@ export class CanvasController {
 
   handleResize(event) {
     this.setupSize();
-    this.draw();
+    this.setNeedsUpdate();
   }
 
   handleWheel(event) {
