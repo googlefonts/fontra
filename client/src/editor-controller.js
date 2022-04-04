@@ -106,7 +106,7 @@ export class EditorController {
 
     canvas.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
     canvas.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
-    canvas.addEventListener("viewBoxChanged", event => this.viewBoxChangedHandler(event), 1000);
+    canvas.addEventListener("viewBoxChanged", event => this.viewBoxChangedHandler(event));
   }
 
   async start() {
