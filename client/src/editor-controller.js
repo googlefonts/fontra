@@ -345,7 +345,7 @@ export class EditorController {
 
   async setupFromURL() {
     const url = new URL(window.location);
-    let text, selectedGlyph, viewBox;
+    let text, selectedGlyph, viewBox, selection;
     const location = {};
     for (const key of url.searchParams.keys()) {
       const value = url.searchParams.get(key);
@@ -354,11 +354,14 @@ export class EditorController {
           text = value;
           break;
         case "selectedGlyph":
-          selectedGlyph = value;
+          selectedGlyph = value.replaceAll("_", "/");
           break;
         case "viewBox":
-          viewBox = value.split(",").map(v => parseFloat(v));
+          viewBox = value.split("_").map(v => parseFloat(v));
           viewBox = rectFromArray(viewBox);
+          break;
+        case "selection":
+          selection = new Set(value.replaceAll(".", "/").split("_"));
           break;
         default:
           if (key.startsWith("axis-")) {
@@ -376,6 +379,9 @@ export class EditorController {
     await this.sceneController.setLocation(location);
     this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     this.sliders.values = location;
+    if (selection) {
+      this.sceneController.selection = selection;
+    }
     if (viewBox) {
       this.canvasController.setViewBox(viewBox);
     }
@@ -385,7 +391,7 @@ export class EditorController {
 
   _updateURL() {
     const viewBox = this.canvasController.getViewBox();
-    const viewBoxString = rectToArray(viewBox).map(v => v.toFixed(1)).join(",")
+    const viewBoxString = rectToArray(viewBox).map(v => v.toFixed(1)).join("_")
 
     const url = new URL(window.location);
     clearSearchParams(url.searchParams);
@@ -395,10 +401,14 @@ export class EditorController {
       url.searchParams.set("text", this.enteredText);
     }
     if (this.sceneController.selectedGlyph) {
-      url.searchParams.set("selectedGlyph", this.sceneController.selectedGlyph);
+      url.searchParams.set("selectedGlyph", this.sceneController.selectedGlyph.replaceAll("/", "_"));
     }
     for (const [name, value] of Object.entries(this.sliders.values)) {
       url.searchParams.set("axis-" + name, value.toFixed(2));
+    }
+    const selString = Array.from(this.sceneController.selection).join("_").replaceAll("/", ".");
+    if (selString) {
+      url.searchParams.set("selection", selString);
     }
     window.history.replaceState({}, "", url);
   }
