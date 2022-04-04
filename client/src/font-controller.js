@@ -21,12 +21,16 @@ export class FontController {
       (change) => this.font.changeChanging(change),
       50,
     );
+    this.ensureInitialized = new Promise((resolve, reject) => {
+      this._resolveInitialized = resolve;
+    });
   }
 
   async initialize() {
     this.reverseCmap = await this.font.getReverseCmap();
     this.cmap = makeCmapFromReverseCmap(this.reverseCmap);
     this.globalAxes = await this.font.getGlobalAxes();
+    this._resolveInitialized();
   }
 
   codePointForGlyph(glyphName) {
