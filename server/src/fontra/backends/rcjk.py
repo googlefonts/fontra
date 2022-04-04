@@ -1,8 +1,7 @@
 import json
 import pathlib
-from .pen import PathBuilderPointPen
-from .ufo_utils import extractGlyphNameAndUnicodes
-from .rcjkmysql import GLIFGlyph, getComponentAxisDefaults, serializeGlyph
+from .ufo_utils import GLIFGlyph, extractGlyphNameAndUnicodes
+from .rcjkmysql import getComponentAxisDefaults, serializeGlyph
 
 
 glyphSetNames = ["characterGlyph", "deepComponent", "atomicElement"]
