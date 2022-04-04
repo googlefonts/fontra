@@ -214,13 +214,11 @@ def cleanupLocation(location, axisDefaults, neutralLocation):
 
 
 class GLIFGlyph:
-
-    unicodes = ()
-    width = 0
-
     @classmethod
     def fromGLIFData(cls, glifData):
         self = cls()
+        self.unicodes = []
+        self.width = 0
         pen = PathBuilderPointPen()
         readGlyphFromString(glifData, self, pen)
         self.path = pen.getPath()
