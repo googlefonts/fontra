@@ -34,7 +34,7 @@
 
 
 @media (prefers-color-scheme: dark) {
-  .ui-list > .contents {
+  .ui-list {
     border: solid 1px darkgray;
   }
 
