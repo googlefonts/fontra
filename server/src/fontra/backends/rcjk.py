@@ -24,13 +24,6 @@ class RCJKBackend:
     async def getReverseCmap(self):
         return self.reversedCmap
 
-    async def getGlyph(self, glyphName):
-        glyph = self._getRCJKGlyph(glyphName)
-        if glyph is not None:
-            ensureComponentCoords(glyph, self._getRCJKGlyph)
-            glyph = serializeGlyph(glyph)
-        return glyph
-
     async def getGlobalAxes(self):
         axes = getattr(self, "_globalAxes", None)
         if axes is None:
@@ -43,6 +36,13 @@ class RCJKBackend:
                 axes.append(axis)
             self._globalAxes = axes
         return axes
+
+    async def getGlyph(self, glyphName):
+        glyph = self._getRCJKGlyph(glyphName)
+        if glyph is not None:
+            ensureComponentCoords(glyph, self._getRCJKGlyph)
+            glyph = serializeGlyph(glyph)
+        return glyph
 
     def _getRCJKGlyph(self, glyphName):
         if not glyphName:
