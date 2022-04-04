@@ -324,6 +324,10 @@ html, body {
     content: url("/images/text-tool-white.svg");
   }
 
+  #info-img {
+    content: url("/images/info-white.svg");
+  }
+
   #mini-console {
     color: white;
     background-color: #444;
