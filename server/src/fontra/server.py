@@ -136,7 +136,7 @@ class FontraServer:
         if self.projectManager.requireLogin:
             authToken = request.cookies.get("fontra-authorization-token")
             if authToken not in self.authorizedSessions:
-                qs = quote(request.path_qs, safe='')
+                qs = quote(request.path_qs, safe="")
                 response = web.HTTPFound(f"/?ref={qs}")
                 return response
 
