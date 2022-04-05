@@ -2,7 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 import logging
-from urllib.parse import parse_qs
+from urllib.parse import quote, parse_qs
 from aiohttp import web
 from .remote import RemoteObjectServer
 
@@ -109,7 +109,8 @@ class FontraServer:
         else:
             token = None
 
-        response = web.HTTPFound("/")
+        destination = request.query.get("ref", "/")
+        response = web.HTTPFound(destination)
         response.set_cookie("fontra-username", username, max_age=self.cookieMaxAge)
         if token is not None:
             response.set_cookie(
@@ -135,11 +136,12 @@ class FontraServer:
         if self.projectManager.requireLogin:
             authToken = request.cookies.get("fontra-authorization-token")
             if authToken not in self.authorizedSessions:
-                response = web.HTTPFound("/")
+                qs = quote(request.path_qs, safe='')
+                response = web.HTTPFound(f"/?ref={qs}")
                 return response
 
         path = request.match_info["path"]
-        if not self.projectManager.projectAvailable(authToken, path):
+        if not await self.projectManager.projectAvailable(authToken, path):
             return web.HTTPNotFound()
 
         html = self._formatHTMLTemplate(
