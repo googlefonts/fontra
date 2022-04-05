@@ -5,16 +5,16 @@ import { List } from "./ui-list.js";
 
 export class LandingController {
 
-  static async fromURL(url, requireLogin) {
+  static async fromURL(wsURL, requireLogin) {
     if (requireLogin) {
-      return LandingController.fromURLWithLogin(url);
+      return LandingController.fromURLWithLogin(wsURL);
     } else {
-      return LandingController.fromURLWithToken(url, null);
+      return LandingController.fromURLWithToken(wsURL, null);
     }
   }
 
-  static async fromURLWithLogin(url, requireLogin) {
-    const loginForm = document.querySelector("#login-form-container");
+  static async fromURLWithLogin(wsURL, requireLogin) {
+    const loginFormContainer = document.querySelector("#login-form-container");
     const logoutForm = document.querySelector("#logout-form-container");
     const logoutButton = document.querySelector("#logout-button");
     const loginFailureMessage = document.querySelector("#login-failure-message");
@@ -29,14 +29,18 @@ export class LandingController {
       const usernameField = document.querySelector("#login-username");
       usernameField.value = username;
     }
-    loginForm.classList.toggle("hidden", !!token);
+    loginFormContainer.classList.toggle("hidden", !!token);
     logoutForm.classList.toggle("hidden", !token);
     if (token && username) {
       logoutButton.textContent = `Log out ${username}`;
+    } else {
+      const loginForm = document.querySelector("#login-form");
+      const url = new URL(window.location);
+      loginForm.action = "/login" + url.search;
     }
     loginFailureMessage.classList.toggle("hidden", !loginFailed);
     if (token) {
-      return LandingController.fromURLWithToken(url, token);
+      return LandingController.fromURLWithToken(wsURL, token);
     }
   }
 
