@@ -40,9 +40,9 @@ class RCJKProjectManager:
         self.authorizedClients[token] = AuthorizedClient(rcjkClient)
         return token
 
-    def projectAvailable(self, token, path):
+    async def projectAvailable(self, token, path):
         client = self.authorizedClients[token]
-        return client.projectAvailable(path)
+        return await client.projectAvailable(path)
 
     async def getRemoteSubject(self, path, token, remoteIP):
         client = self.authorizedClients.get(token)
@@ -54,7 +54,7 @@ class RCJKProjectManager:
 
         assert path[0] == "/"
         path = path[1:]
-        if not client.projectAvailable(path):
+        if not await client.projectAvailable(path):
             logger.info(f"path {path!r} not found or not authorized")
             return None  # not found or not authorized
         return await client.getFontHandler(path)
@@ -66,21 +66,27 @@ class AuthorizedClient:
 
     def __init__(self, rcjkClient):
         self.rcjkClient = rcjkClient
-        self.projectMapping = {}
+        self.projectMapping = None
         self.fontHandlers = {}
 
     @contextmanager
     def useConnection(self, connection):
         yield
 
-    def projectAvailable(self, path):
+    async def projectAvailable(self, path):
+        await self._setupProjectList()
         return path in self.projectMapping
 
     async def getProjectList(self, *, connection):
+        await self._setupProjectList()
+        return sorted(self.projectMapping)
+
+    async def _setupProjectList(self):
+        if self.projectMapping is not None:
+            return
         projectMapping = await self.rcjkClient.get_project_font_uid_mapping()
         projectMapping = {f"{p}/{f}": uids for (p, f), uids in projectMapping.items()}
         self.projectMapping = projectMapping
-        return sorted(projectMapping)
 
     async def getFontHandler(self, path):
         fontHandler = self.fontHandlers.get(path)

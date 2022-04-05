@@ -45,7 +45,7 @@ class FileSystemProjectManager:
             return secrets.token_hex(32)
         return None
 
-    def projectAvailable(self, token, path):
+    async def projectAvailable(self, token, path):
         projectPath = self.rootPath.joinpath(*path.split("/"))
         return projectPath.exists()
 
