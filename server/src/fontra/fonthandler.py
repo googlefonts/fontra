@@ -37,9 +37,13 @@ class FontHandler:
         task = self.backend.watchExternalChanges(self.externalChangesCallback)
 
         def watcherTaskDone(task):
-            e = task.exception()
-            if e is not None:
-                logger.error("exception in external changes watcher: %r", e)
+            try:
+                e = task.exception()
+            except asyncio.CancelledError:
+                pass
+            else:
+                if e is not None and not isinstance(e, KeyboardInterrupt):
+                    logger.error("exception in external changes watcher: %r", e)
 
         task.add_done_callback(watcherTaskDone)
         self._externalWatcherTask = task
