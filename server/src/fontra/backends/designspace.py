@@ -110,10 +110,8 @@ class DesignspaceBackend:
     async def getGlobalAxes(self):
         return self.axes
 
-    def watchExternalChanges(self, glyphsChangedCallback):
-        return asyncio.create_task(
-            ufoWatcher(self.ufoPaths, self.glifFileNames, glyphsChangedCallback)
-        )
+    def watchExternalChanges(self):
+        return ufoWatcher(self.ufoPaths, self.glifFileNames)
 
 
 class UFOBackend:
@@ -153,14 +151,12 @@ class UFOBackend:
     async def getGlobalAxes(self):
         return []
 
-    def watchExternalChanges(self, glyphsChangedCallback):
+    def watchExternalChanges(self):
         glifFileNames = {
             fileName: glyphName
             for glyphName, fileName in self.glyphSets[self.layerName].contents.items()
         }
-        return asyncio.create_task(
-            ufoWatcher([self.path], glifFileNames, glyphsChangedCallback)
-        )
+        return ufoWatcher([self.path], glifFileNames)
 
 
 class UFOGlyph:
@@ -206,7 +202,7 @@ def getReverseCmapFromGlyphSet(glyphSet):
     return revCmap
 
 
-async def ufoWatcher(ufoPaths, glifFileNames, glyphsChangedCallback):
+async def ufoWatcher(ufoPaths, glifFileNames):
     async for changes in watchfiles.awatch(*ufoPaths):
         glyphNames = set()
         for change, path in changes:
@@ -214,7 +210,4 @@ async def ufoWatcher(ufoPaths, glifFileNames, glyphsChangedCallback):
             if glyphName is not None:
                 glyphNames.add(glyphName)
         if glyphNames:
-            try:
-                await glyphsChangedCallback(sorted(glyphNames))
-            except Exception as e:
-                logger.error("error in watchExternalChanges callback: %r", e)
+            yield glyphNames

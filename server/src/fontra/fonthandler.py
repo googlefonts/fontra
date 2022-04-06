@@ -29,24 +29,15 @@ class FontHandler:
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.changedGlyphs = {}
-        self.setupExternalChangesWatcher()
+        if hasattr(self.backend, "watchExternalChanges"):
+            self._externalWatcherTask = asyncio.create_task(self.watchExternalChanges())
 
-    def setupExternalChangesWatcher(self):
-        if not hasattr(self.backend, "watchExternalChanges"):
-            return
-        task = self.backend.watchExternalChanges(self.externalChangesCallback)
-
-        def watcherTaskDone(task):
-            try:
-                e = task.exception()
-            except asyncio.CancelledError:
-                pass
-            else:
-                if e is not None and not isinstance(e, KeyboardInterrupt):
-                    logger.error("exception in external changes watcher: %r", e)
-
-        task.add_done_callback(watcherTaskDone)
-        self._externalWatcherTask = task
+    async def watchExternalChanges(self):
+        try:
+            async for glyphNames in self.backend.watchExternalChanges():
+                await self.reloadGlyphs(glyphNames)
+        except Exception as e:
+            logger.error("exception in external changes watcher: %r", e)
 
     @contextmanager
     def useConnection(self, connection):
@@ -164,7 +155,7 @@ class FontHandler:
                 self.glyphUsedBy[componentName] = set()
             self.glyphUsedBy[componentName].add(glyphName)
 
-    async def externalChangesCallback(self, glyphNames):
+    async def reloadGlyphs(self, glyphNames):
         # XXX TODO For now, just drop any local changes
         for glyphName in glyphNames:
             if glyphName in self.changedGlyphs:
