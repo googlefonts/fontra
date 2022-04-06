@@ -30,7 +30,7 @@ class FontHandler:
         self.clientData = defaultdict(dict)
         self.changedGlyphs = {}
         if hasattr(self.backend, "watchExternalChanges"):
-            self._externalWatcherTask = asyncio.create_task(self.watchExternalChanges())
+            self._watcherTask = asyncio.create_task(self.watchExternalChanges())
 
     async def watchExternalChanges(self):
         try:
