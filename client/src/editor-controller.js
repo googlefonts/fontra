@@ -8,7 +8,7 @@ import { SceneModel } from "./scene-model.js";
 import { SceneView } from "./scene-view.js"
 import { List } from "./ui-list.js";
 import { Sliders } from "./ui-sliders.js";
-import { parseCookies, scheduleCalls } from "./utils.js";
+import { scheduleCalls } from "./utils.js";
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
@@ -50,9 +50,7 @@ const drawingParametersDark = {
 export class EditorController {
 
   static async fromURL(url) {
-    const cookies = parseCookies(document.cookie);
-    const token = cookies["fontra-authorization-token"];
-    const remoteFontEngine = await getRemoteProxy(url, token);
+    const remoteFontEngine = await getRemoteProxy(url);
     const editorController = new EditorController(remoteFontEngine);
     remoteFontEngine.receiver = editorController;
     return editorController;

@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import traceback
+from http.cookies import SimpleCookie
 from urllib.parse import unquote
 import websockets
 
@@ -48,7 +49,11 @@ class RemoteObjectServer:
         self.clientUUID = message.get("client-uuid")
         if self.clientUUID is None:
             raise RemoteObjectConnectionException("unrecognized message")
-        token = message.get("autorization-token")
+
+        cookies = SimpleCookie()
+        cookies.load(websocket.request_headers.get("Cookie", ""))
+        cookies = {k: v.value for k, v in cookies.items()}
+        token = cookies.get("fontra-authorization-token")
         remoteIP = websocket.remote_address[0]
         subject = await self.subjectManager.getRemoteSubject(path, token, remoteIP)
         if subject is None:

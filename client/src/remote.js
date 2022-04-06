@@ -6,8 +6,8 @@ class RemoteException extends Error {
 }
 
 
-export async function getRemoteProxy(wsURL, autorizationToken) {
-  const remote = new RemoteObject(wsURL, autorizationToken);
+export async function getRemoteProxy(wsURL) {
+  const remote = new RemoteObject(wsURL);
   await remote.connect();
   const remoteProxy = new Proxy(remote, {
     get: (remote, propertyName) => {
@@ -31,7 +31,7 @@ export async function getRemoteProxy(wsURL, autorizationToken) {
 
 export class RemoteObject {
 
-  constructor(wsURL, autorizationToken) {
+  constructor(wsURL) {
     if (crypto.randomUUID) {
       this.clientUUID = crypto.randomUUID();
     } else {
@@ -39,7 +39,6 @@ export class RemoteObject {
     }
 
     this.wsURL = wsURL;
-    this.autorizationToken = autorizationToken;
     this._callReturnCallbacks = {};
 
     const g = _genNextClientCallID();
@@ -69,7 +68,6 @@ export class RemoteObject {
         delete this._connectPromise;
         const message = {
           "client-uuid": this.clientUUID,
-          "autorization-token": this.autorizationToken,
         };
         this.websocket.send(JSON.stringify(message));
       };

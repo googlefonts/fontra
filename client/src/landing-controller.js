@@ -22,16 +22,16 @@ export class LandingController {
     const cookies = parseCookies(document.cookie);
 
     const username = cookies["fontra-username"];
-    const token = cookies["fontra-authorization-token"];
+    const haveToken = !!cookies["fontra-authorization-token"];
     const loginFailed = cookies["fontra-authorization-failed"] == "true";
 
     if (username) {
       const usernameField = document.querySelector("#login-username");
       usernameField.value = username;
     }
-    loginFormContainer.classList.toggle("hidden", !!token);
-    logoutForm.classList.toggle("hidden", !token);
-    if (token && username) {
+    loginFormContainer.classList.toggle("hidden", haveToken);
+    logoutForm.classList.toggle("hidden", !haveToken);
+    if (haveToken && username) {
       logoutButton.textContent = `Log out ${username}`;
     } else {
       const loginForm = document.querySelector("#login-form");
@@ -39,13 +39,13 @@ export class LandingController {
       loginForm.action = "/login" + url.search;
     }
     loginFailureMessage.classList.toggle("hidden", !loginFailed);
-    if (token) {
-      return LandingController.fromURLWithToken(wsURL, token);
+    if (haveToken) {
+      return LandingController.fromURLAuthenticated(wsURL);
     }
   }
 
-  static async fromURLWithToken(url, token) {
-    const remoteFontEngine = await getRemoteProxy(url, token);
+  static async fromURLAuthenticated(url) {
+    const remoteFontEngine = await getRemoteProxy(url);
     const landingController = new LandingController(remoteFontEngine);
     await landingController.setup();
     return landingController;
