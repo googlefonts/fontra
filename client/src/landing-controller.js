@@ -9,7 +9,7 @@ export class LandingController {
     if (requireLogin) {
       return LandingController.fromURLWithLogin(wsURL);
     } else {
-      return LandingController.fromURLWithToken(wsURL, null);
+      return LandingController.fromURLAuthenticated(wsURL);
     }
   }
 
