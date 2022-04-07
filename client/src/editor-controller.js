@@ -68,6 +68,7 @@ export class EditorController {
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
     const drawFuncs = [
       sceneDraw.drawMultiGlyphsLayer,
+      sceneDraw.drawSelectedBaselineLayer,
       sceneDraw.drawSelectedGlyphLayer,
       sceneDraw.drawComponentsLayer,
       sceneDraw.drawComponentSelectionLayer,

@@ -38,6 +38,19 @@ function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
 }
 
 
+export function drawSelectedBaselineLayer(model, controller) {
+  if (!model.selectedGlyph) {
+    return;
+  }
+  const context = controller.context;
+  const positionedGlyph = model.getSelectedPositionedGlyph();
+  context.translate(positionedGlyph.x, positionedGlyph.y);
+  context.strokeStyle = controller.drawingParameters.handleColor;
+  context.lineWidth = controller.drawingParameters.handleLineWidth;
+  strokeLine(context, 0, 0, positionedGlyph.glyph.xAdvance, 0);
+}
+
+
 export function drawSelectedGlyphLayer(model, controller) {
   if (!model.hoveredGlyph || model.hoveredGlyph === model.selectedGlyph) {
     return;
