@@ -9,7 +9,7 @@ from .fonthandler import FontHandler
 logger = logging.getLogger(__name__)
 
 
-async def getFileSystemBackend(path):
+def getFileSystemBackend(path):
     path = pathlib.Path(path)
     if not path.exists():
         raise FileNotFoundError(path)
@@ -60,7 +60,7 @@ class FileSystemProjectManager:
             projectPath = self.rootPath.joinpath(*path.split("/"))
             if not projectPath.exists():
                 raise FileNotFoundError(projectPath)
-            backend = await getFileSystemBackend(projectPath)
+            backend = getFileSystemBackend(projectPath)
             fontHandler = FontHandler(backend)
             self.fontHandlers[path] = fontHandler
         return fontHandler
