@@ -130,7 +130,7 @@ class RCJKGlyphSet:
     def setupLayers(self):
         if not self.exists():
             return
-        for layerDir in self.path.iterdir():
+        for layerDir in sorted(self.path.iterdir()):
             if layerDir.is_dir():
                 glifPaths = {
                     glifPath.name: glifPath for glifPath in layerDir.glob("*.glif")
