@@ -286,8 +286,12 @@ html, body {
 }
 
 .project-item:hover {
-  background-color: lightgray;
+  background-color: #EEE;
   cursor: pointer;
+}
+
+.project-item:active {
+  background-color: lightgray;
 }
 
 .hidden {
