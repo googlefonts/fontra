@@ -280,7 +280,6 @@ html, body {
 }
 
 .project-item {
-  background-color: white;
   border-radius: 1em;
   padding: 0.25em 1em 0.25em 1em;
 }
@@ -349,4 +348,12 @@ html, body {
     color: white;
     background-color: #444;
   }
+
+.project-item:hover {
+  background-color: #333;
+}
+
+.project-item:active {
+  background-color: #555;
+}
 }
