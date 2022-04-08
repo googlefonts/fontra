@@ -59,12 +59,10 @@ export class LandingController {
     const projectListContainer = document.querySelector("#project-list");
     projectListContainer.classList.remove("hidden");
     for (const project of this.projectList) {
-      const projectElement = document.createElement("div")
+      const projectElement = document.createElement("a")
+      projectElement.href = "/projects/" + project;
       projectElement.className = "project-item";
       projectElement.append(project);
-      projectElement.onclick = event => {
-        window.open("/projects/" + project, event.metaKey ? "_blank" : "_self");
-      };
       projectListContainer.appendChild(projectElement);
     }
   }

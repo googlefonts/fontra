@@ -25,6 +25,12 @@ html, body {
   background-color: white;
 }
 
+a {
+  color: inherit;
+  text-decoration: inherit;
+  cursor: inherit;
+}
+
 .page {
   display: flex;
   width: 100%;
