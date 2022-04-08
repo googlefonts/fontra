@@ -276,6 +276,7 @@ html, body {
 #project-list {
   display: grid;
   gap: 0.25em;
+  overflow-y: scroll;
 }
 
 .project-item {
