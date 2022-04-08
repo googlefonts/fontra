@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import asyncio
 from collections import defaultdict
+import functools
 import logging
 from .changes import applyChange, baseChangeFunctions
 
@@ -65,6 +66,7 @@ class FontHandler:
             self.changedGlyphs[glyphName] = glyph
         return glyph
 
+    # @functools.lru_cache(250)  # see also reloadGlyphs
     def _getGlyph(self, glyphName):
         return asyncio.create_task(self._getGlyphFromBackend(glyphName))
 
@@ -159,7 +161,7 @@ class FontHandler:
             if glyphName in self.changedGlyphs:
                 del self.changedGlyphs[glyphName]
 
-        self._getGlyph.cache_clear()
+        # self._getGlyph.cache_clear()
 
         logger.info(f"broadcasting external glyph changes: {glyphNames}")
         connections = []
