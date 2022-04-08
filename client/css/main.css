@@ -170,7 +170,7 @@ a {
   position: relative  ;
   width: 2em;
   height: 2em;
-  /*transition: 0.1s;*/
+  transition: all 0.125s ease-in-out;
 }
 
 .icon-img:active {
@@ -178,10 +178,8 @@ a {
 }
 
 .icon-img:hover {
-  left: -0.15em;
-  top: -0.15em;
-  width: 2.3em;
-  height: 2.3em;
+  transform: scale(1.2, 1.2)
+
 }
 
 .overlay-item-expanded > img {
