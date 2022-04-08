@@ -272,6 +272,29 @@ a {
   cursor: pointer;
 }
 
+.logout-button {
+  border-radius: 2em;
+  background-color: #999;
+  width: max-content;
+  color: white;
+  padding: 0.5em 1.1em 0.5em 1em;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  border: none;
+  font-family: fontra-ui-semibold, sans-serif;
+  font-size: 0.8em;
+}
+
+.logout-button:hover{
+  background-color: #777;
+  cursor: pointer;
+}
+
+.logout-button:active{
+  background-color: #555;
+  cursor: pointer;
+}
+
 #login-failure-message {
   font-family: fontra-ui-semibold, sans-serif;
   color: red;
