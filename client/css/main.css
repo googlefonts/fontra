@@ -274,7 +274,19 @@ html, body {
 }
 
 #project-list {
-  user-select: none;
+  display: grid;
+  gap: 0.25em;
+}
+
+.project-item {
+  background-color: white;
+  border-radius: 1em;
+  padding: 0.25em 1em 0.25em 1em;
+}
+
+.project-item:hover {
+  background-color: lightgray;
+  cursor: pointer;
 }
 
 .hidden {

@@ -1,6 +1,5 @@
 import { getRemoteProxy } from "./remote.js";
 import { parseCookies } from "/src/utils.js";
-import { List } from "./ui-list.js";
 
 
 export class LandingController {
@@ -57,16 +56,17 @@ export class LandingController {
 
   async setup() {
     this.projectList = await this.remoteObject.getProjectList();
-    this.projectListUI = new List("project-list");
-    this.projectListUI.container.classList.remove("hidden");
-    this.projectListUI.setItems(this.projectList);
-    this.projectListUI.addEventListener("rowDoubleClicked", event => this.projectDoubleClick(event));
-  }
-
-  projectDoubleClick(event) {
-    const selectedProject = this.projectList[this.projectListUI.doubleClickedRowIndex];
-    const url = "/projects/" + selectedProject;
-    window.open(url);
+    const projectListContainer = document.querySelector("#project-list");
+    projectListContainer.classList.remove("hidden");
+    for (const project of this.projectList) {
+      const projectElement = document.createElement("div")
+      projectElement.className = "project-item";
+      projectElement.append(project);
+      projectElement.onclick = event => {
+        window.open("/projects/" + project, event.metaKey ? "_blank" : "_self");
+      };
+      projectListContainer.appendChild(projectElement);
+    }
   }
 
 }
