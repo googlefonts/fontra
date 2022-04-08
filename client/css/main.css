@@ -301,6 +301,7 @@ html, body {
 /* DARK MODE */
 
 @media (prefers-color-scheme: dark) {
+
   html, body {
     color: white;
     background-color: black;
@@ -349,11 +350,12 @@ html, body {
     background-color: #444;
   }
 
-.project-item:hover {
-  background-color: #333;
-}
+  .project-item:hover {
+    background-color: #333;
+  }
 
-.project-item:active {
-  background-color: #555;
-}
+  .project-item:active {
+    background-color: #555;
+  }
+
 }
