@@ -50,7 +50,7 @@ const drawingParametersDark = {
 
 export class EditorController {
 
-  static async fromURL(url) {
+  static async fromWebSocketURL(url) {
     const remoteFontEngine = await getRemoteProxy(url);
     const editorController = new EditorController(remoteFontEngine);
     remoteFontEngine.receiver = editorController;

@@ -5,15 +5,15 @@ import { parseCookies } from "./utils.js";
 
 export class LandingController {
 
-  static async fromURL(wsURL, requireLogin) {
+  static async fromWebSocketURL(wsURL, requireLogin) {
     if (requireLogin) {
-      return LandingController.fromURLWithLogin(wsURL);
+      return LandingController.fromWebSocketURLWithLogin(wsURL);
     } else {
-      return LandingController.fromURLAuthenticated(wsURL);
+      return LandingController.fromWebSocketURLAuthenticated(wsURL);
     }
   }
 
-  static async fromURLWithLogin(wsURL, requireLogin) {
+  static async fromWebSocketURLWithLogin(wsURL, requireLogin) {
     const loginFormContainer = document.querySelector("#login-form-container");
     const logoutForm = document.querySelector("#logout-form-container");
     const logoutButton = document.querySelector("#logout-button");
@@ -40,11 +40,11 @@ export class LandingController {
     }
     loginFailureMessage.classList.toggle("hidden", !loginFailed);
     if (haveToken) {
-      return LandingController.fromURLAuthenticated(wsURL);
+      return LandingController.fromWebSocketURLAuthenticated(wsURL);
     }
   }
 
-  static async fromURLAuthenticated(url) {
+  static async fromWebSocketURLAuthenticated(url) {
     const remoteFontEngine = await getRemoteProxy(url);
     const landingController = new LandingController(remoteFontEngine);
     await landingController.setup();

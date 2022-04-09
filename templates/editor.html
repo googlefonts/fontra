@@ -89,7 +89,7 @@
       async function startApp() {{
         const protocol = location.protocol === "http:" ? "ws" : "wss";
         const url = `${{protocol}}://${{location.hostname}}:{webSocketPort}/{projectPath}`;
-        window.editorController = await EditorController.fromURL(url);
+        window.editorController = await EditorController.fromWebSocketURL(url);
         await window.editorController.start();
       }}
 
