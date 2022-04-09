@@ -1,5 +1,6 @@
 import { CanvasController } from "./canvas-controller.js";
 import { FontController } from "./font-controller.js";
+import { loaderSpinner } from "./loader-spinner.js";
 import { rectFromArray, rectToArray } from "./rectangle.js";
 import { getRemoteProxy } from "./remote.js";
 import { SceneController } from "./scene-controller.js"
@@ -114,6 +115,10 @@ export class EditorController {
   }
 
   async start() {
+    await loaderSpinner(this._start());
+  }
+
+  async _start() {
     await this.fontController.initialize();
     await this.initGlyphNames();
     await this.initSliders();
