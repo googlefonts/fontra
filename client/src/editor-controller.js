@@ -374,6 +374,9 @@ export class EditorController {
           }
       }
     }
+    if (viewBox) {
+      this.canvasController.setViewBox(viewBox);
+    }
     if (text) {
       this.textEntryElement.innerText = text;
       await this.setGlyphLinesFromText(text);
@@ -386,9 +389,6 @@ export class EditorController {
     this.sliders.values = location;
     if (selection) {
       this.sceneController.selection = selection;
-    }
-    if (viewBox) {
-      this.canvasController.setViewBox(viewBox);
     }
 
     this.canvasController.setNeedsUpdate()
