@@ -1,6 +1,6 @@
-import { loaderSpinner } from "/src/loader-spinner.js";
+import { loaderSpinner } from "./loader-spinner.js";
 import { getRemoteProxy } from "./remote.js";
-import { parseCookies } from "/src/utils.js";
+import { parseCookies } from "./utils.js";
 
 
 export class LandingController {
