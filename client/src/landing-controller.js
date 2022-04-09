@@ -1,3 +1,4 @@
+import { loaderSpinner } from "/src/loader-spinner.js";
 import { getRemoteProxy } from "./remote.js";
 import { parseCookies } from "/src/utils.js";
 
@@ -55,7 +56,7 @@ export class LandingController {
   }
 
   async setup() {
-    this.projectList = await this.remoteObject.getProjectList();
+    this.projectList = await loaderSpinner(this.remoteObject.getProjectList());
     const projectListContainer = document.querySelector("#project-list");
     projectListContainer.classList.remove("hidden");
     for (const project of this.projectList) {
