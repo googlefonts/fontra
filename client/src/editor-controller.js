@@ -390,7 +390,6 @@ export class EditorController {
     if (selection) {
       this.sceneController.selection = selection;
     }
-
     this.canvasController.setNeedsUpdate()
   }
 
