@@ -108,10 +108,10 @@ export class EditorController {
     canvas.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
 
     this.enteredText = "";
-    this.updateURL = scheduleCalls(event => this._updateURL(), 500);
-    canvas.addEventListener("viewBoxChanged", this.updateURL);
-    this.sceneController.addEventListener("selectedGlyphChanged", this.updateURL);
-    this.sceneController.addEventListener("selectionChanged", this.updateURL);
+    this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
+    canvas.addEventListener("viewBoxChanged", this.updateWindowLocation);
+    this.sceneController.addEventListener("selectedGlyphChanged", this.updateWindowLocation);
+    this.sceneController.addEventListener("selectionChanged", this.updateWindowLocation);
   }
 
   async start() {
@@ -123,7 +123,7 @@ export class EditorController {
     await this.initGlyphNames();
     await this.initSliders();
     this.initSourcesList();
-    await this.setupFromURL();
+    await this.setupFromWindowLocation();
   }
 
   async initGlyphNames() {
@@ -154,7 +154,7 @@ export class EditorController {
       await this.sceneController.setLocation(location);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     }));
-    this.sliders.addEventListener("slidersChanged", this.updateURL);
+    this.sliders.addEventListener("slidersChanged", this.updateWindowLocation);
   }
 
   initSourcesList() {
@@ -166,7 +166,7 @@ export class EditorController {
     this.sourcesList.addEventListener("listSelectionChanged", async event => {
       await this.sceneController.setSelectedSource(event.detail.getSelectedItem().sourceIndex);
       this.sliders.values = this.sceneController.getLocation();
-      this.updateURL();
+      this.updateWindowLocation();
     });
   }
 
@@ -295,7 +295,7 @@ export class EditorController {
     this.sliders.setSliderDescriptions(axisInfo);
     this.sliders.values = this.sceneController.getLocation();
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
-    this.updateURL();
+    this.updateWindowLocation();
   }
 
   async doubleClickedComponentsCallback(event) {
@@ -348,7 +348,7 @@ export class EditorController {
     this.canvasController.setNeedsUpdate();
   }
 
-  async setupFromURL() {
+  async setupFromWindowLocation() {
     const url = new URL(window.location);
     let text, selectedGlyph, viewBox, selection;
     const location = {};
@@ -394,7 +394,7 @@ export class EditorController {
     this.canvasController.setNeedsUpdate()
   }
 
-  _updateURL() {
+  _updateWindowLocation() {
     const viewBox = this.canvasController.getViewBox();
     const viewBoxString = rectToArray(viewBox).map(v => v.toFixed(1)).join("_")
 
