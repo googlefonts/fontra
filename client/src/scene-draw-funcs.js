@@ -51,12 +51,23 @@ export function drawSelectedBaselineLayer(model, controller) {
 }
 
 
-export function drawSelectedGlyphLayer(model, controller) {
+export function drawHoveredGlyphLayer(model, controller) {
   if (!model.hoveredGlyph || model.hoveredGlyph === model.selectedGlyph) {
     return;
   }
+  _drawSelectedGlyphLayer(model, controller, model.hoveredGlyph);
+}
+
+export function drawSelectedGlyphLayer(model, controller) {
+  if (!model.selectedGlyph || model.selectedGlyphIsEditing) {
+    return;
+  }
+  _drawSelectedGlyphLayer(model, controller, model.selectedGlyph);
+}
+
+function _drawSelectedGlyphLayer(model, controller, selectedGlyph) {
   const context = controller.context;
-  const [lineIndex, glyphIndex] = model.hoveredGlyph.split("/");
+  const [lineIndex, glyphIndex] = selectedGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
 
   context.translate(positionedGlyph.x, positionedGlyph.y);

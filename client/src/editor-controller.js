@@ -70,6 +70,7 @@ export class EditorController {
     const drawFuncs = [
       sceneDraw.drawMultiGlyphsLayer,
       // sceneDraw.drawSelectedBaselineLayer,
+      sceneDraw.drawHoveredGlyphLayer,
       sceneDraw.drawSelectedGlyphLayer,
       sceneDraw.drawComponentsLayer,
       sceneDraw.drawComponentSelectionLayer,
