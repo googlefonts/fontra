@@ -21,7 +21,7 @@ function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
   context.fillStyle = controller.drawingParameters.glyphFillColor;
   for (const glyphLine of model.positionedLines) {
     for (const glyph of glyphLine.glyphs) {
-      if (skipSelected && glyph === selectedGlyph) {
+      if (skipSelected && glyph === selectedGlyph && model.selectedGlyphIsEditing) {
         continue;
       }
       withSavedState(context, () => {
