@@ -39,7 +39,7 @@ function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
 
 
 export function drawSelectedBaselineLayer(model, controller) {
-  if (!model.selectedGlyph) {
+  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
     return;
   }
   const context = controller.context;
@@ -72,7 +72,7 @@ export function drawSelectedGlyphLayer(model, controller) {
 
 
 export function drawComponentsLayer(model, controller) {
-  if (!model.selectedGlyph) {
+  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
     return;
   }
   const context = controller.context;
@@ -91,7 +91,7 @@ export function drawComponentsLayer(model, controller) {
 
 
 export function drawPathLayer(model, controller) {
-  if (!model.selectedGlyph) {
+  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
     return;
   }
   const context = controller.context;
@@ -105,7 +105,7 @@ export function drawPathLayer(model, controller) {
 
 
 export function drawHandlesLayer(model, controller) {
-  if (!model.selectedGlyph) {
+  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
     return;
   }
   const context = controller.context;
@@ -121,7 +121,7 @@ export function drawHandlesLayer(model, controller) {
 
 
 export function drawNodesLayer(model, controller) {
-  if (!model.selectedGlyph) {
+  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
     return;
   }
   const context = controller.context;
@@ -149,7 +149,7 @@ export function drawPathSelectionLayer(model, controller) {
 
 
 function _drawSelectionLayer(model, controller, drawType) {
-  if (!model.selectedGlyph) {
+  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
     return;
   }
   const selection = model.selection;
