@@ -351,6 +351,7 @@ export class EditorController {
   async setupFromWindowLocation() {
     const url = new URL(window.location);
     let text, selectedGlyph, viewBox, selection;
+    let selectedGlyphIsEditing = false;
     const location = {};
     for (const key of url.searchParams.keys()) {
       const value = url.searchParams.get(key);
@@ -360,6 +361,9 @@ export class EditorController {
           break;
         case "selectedGlyph":
           selectedGlyph = value.replaceAll("_", "/");
+          break;
+        case "editing":
+          selectedGlyphIsEditing = value === "true";
           break;
         case "viewBox":
           viewBox = value.split("_").map(v => parseFloat(v));
@@ -384,6 +388,7 @@ export class EditorController {
     if (selectedGlyph) {
       this.sceneController.selectedGlyph = selectedGlyph;
     }
+    this.sceneController.selectedGlyphIsEditing = selectedGlyphIsEditing && !!selectedGlyph;
     await this.sceneController.setLocation(location);
     this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     this.sliders.values = location;
@@ -406,6 +411,9 @@ export class EditorController {
     }
     if (this.sceneController.selectedGlyph) {
       url.searchParams.set("selectedGlyph", this.sceneController.selectedGlyph.replaceAll("/", "_"));
+    }
+    if (this.sceneController.selectedGlyphIsEditing) {
+      url.searchParams.set("editing", "true");
     }
     for (const [name, value] of Object.entries(this.sliders.values)) {
       url.searchParams.set("axis-" + name, value.toFixed(2));
