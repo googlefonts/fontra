@@ -48,6 +48,7 @@ export class SceneController {
     }
 
     if (!this.sceneModel.selectedGlyphIsEditing) {
+      this.handleSingleCick(point);
       return;
     }
 
@@ -88,6 +89,11 @@ export class SceneController {
     } else if (initiateDrag) {
       return await this.handleDragSelection(eventStream, initialEvent);
     }
+  }
+
+  handleSingleCick(point) {
+    this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+    this.selectedGlyphIsEditing = false;
   }
 
   handleDoubleCick(selection, point) {
