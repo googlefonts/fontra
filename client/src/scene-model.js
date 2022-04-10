@@ -40,10 +40,6 @@ export class SceneModel {
     return {"lineIndex": Number(lineIndex), "glyphIndex": Number(glyphIndex)};
   }
 
-  canSelect() {
-    return !!this.selectedGlyph;
-  }
-
   getGlyphLines() {
     return this.glyphLines;
   }

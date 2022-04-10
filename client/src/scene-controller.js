@@ -47,7 +47,7 @@ export class SceneController {
       return;
     }
 
-    if (!this.sceneModel.canSelect()) {
+    if (!this.sceneModel.selectedGlyphIsEditing) {
       return;
     }
 
