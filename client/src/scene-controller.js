@@ -48,7 +48,8 @@ export class SceneController {
     }
 
     if (!this.sceneModel.selectedGlyphIsEditing) {
-      this.handleSingleCick(point);
+      this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+      this.selectedGlyphIsEditing = false;
       return;
     }
 
@@ -79,8 +80,12 @@ export class SceneController {
       if (!await shouldInitiateDrag(eventStream, initialEvent)) {
         initiateRectSelect = false;
         initiateDrag = false;
-        this.handleSingleCick(point);
-        return;
+        const selectedGlyph = this.sceneModel.glyphAtPoint(point);
+        if (selectedGlyph && selectedGlyph != this.selectedGlyph) {
+          this.selectedGlyph = selectedGlyph;
+          this.selectedGlyphIsEditing = false;
+          return;
+        }
       }
     }
 
@@ -92,11 +97,6 @@ export class SceneController {
     if (initiateDrag) {
       return await this.handleDragSelection(eventStream, initialEvent);
     }
-  }
-
-  handleSingleCick(point) {
-    this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
-    this.selectedGlyphIsEditing = false;
   }
 
   handleDoubleCick(selection, point) {
