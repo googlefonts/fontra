@@ -11,6 +11,7 @@ import { List } from "./ui-list.js";
 import { Sliders } from "./ui-sliders.js";
 import { scheduleCalls } from "./utils.js";
 
+
 const drawingParametersLight = {
   glyphFillColor: "#000",
   hoveredGlyphStrokeColor: "#CCC",
