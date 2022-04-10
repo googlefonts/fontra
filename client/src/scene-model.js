@@ -255,7 +255,10 @@ export class SceneModel {
           point.y - positionedGlyph.y,
           positionedGlyph.glyph.convexHull,
         )) {
-          return `${i}/${j}`;
+          const foundGlyph = `${i}/${j}`;
+          if (!this.selectedGlyphIsEditing || foundGlyph != this.selectedGlyph) {
+            return foundGlyph;
+          }
         }
       }
     }
