@@ -279,10 +279,6 @@ export class SceneController {
     this.canvasController.setNeedsUpdate();
   }
 
-  setDrawingParameters(drawingParameters) {
-    this.canvasController.setDrawingParameters(drawingParameters);
-  }
-
   getGlyphLines() {
     return this.sceneModel.getGlyphLines();
   }

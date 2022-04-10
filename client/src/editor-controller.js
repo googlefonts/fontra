@@ -239,7 +239,7 @@ export class EditorController {
 
   themeChanged(event) {
     const isDark = event.matches;
-    this.sceneController.setDrawingParameters(this.drawingParameters);
+    this.canvasController.setDrawingParameters(this.drawingParameters);
   }
 
   get isThemeDark() {
