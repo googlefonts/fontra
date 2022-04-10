@@ -79,14 +79,17 @@ export class SceneController {
       if (!await shouldInitiateDrag(eventStream, initialEvent)) {
         initiateRectSelect = false;
         initiateDrag = false;
+        this.handleSingleCick(point);
+        return;
       }
     }
 
-    // this.hoverSelection = new Set();
+    this.hoveredGlyph = undefined;
 
     if (initiateRectSelect) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
-    } else if (initiateDrag) {
+    }
+    if (initiateDrag) {
       return await this.handleDragSelection(eventStream, initialEvent);
     }
   }
