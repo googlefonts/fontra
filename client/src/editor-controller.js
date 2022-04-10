@@ -13,7 +13,8 @@ import { scheduleCalls } from "./utils.js";
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
-  hoveredGlyphStrokeColor: "#AAA",
+  hoveredGlyphStrokeColor: "#CCC",
+  selectedGlyphStrokeColor: "#AAA",
   nodeFillColor: "#CCC",
   selectedNodeFillColor: "#000",
   hoveredNodeStrokeColor: "#CCC",
@@ -36,7 +37,8 @@ const drawingParametersLight = {
 const drawingParametersDark = {
   ...drawingParametersLight,
   glyphFillColor: "#FFF",
-  hoveredGlyphStrokeColor: "#AAA",
+  hoveredGlyphStrokeColor: "#666",
+  selectedGlyphStrokeColor: "#999",
   nodeFillColor: "#BBB",
   selectedNodeFillColor: "#FFF",
   hoveredNodeStrokeColor: "#BBB",

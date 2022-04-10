@@ -55,17 +55,17 @@ export function drawHoveredGlyphLayer(model, controller) {
   if (!model.hoveredGlyph || model.hoveredGlyph === model.selectedGlyph) {
     return;
   }
-  _drawSelectedGlyphLayer(model, controller, model.hoveredGlyph);
+  _drawSelectedGlyphLayer(model, controller, model.hoveredGlyph, "hoveredGlyphStrokeColor");
 }
 
 export function drawSelectedGlyphLayer(model, controller) {
   if (!model.selectedGlyph || model.selectedGlyphIsEditing) {
     return;
   }
-  _drawSelectedGlyphLayer(model, controller, model.selectedGlyph);
+  _drawSelectedGlyphLayer(model, controller, model.selectedGlyph, "selectedGlyphStrokeColor");
 }
 
-function _drawSelectedGlyphLayer(model, controller, selectedGlyph) {
+function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorName) {
   const context = controller.context;
   const [lineIndex, glyphIndex] = selectedGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
@@ -76,7 +76,7 @@ function _drawSelectedGlyphLayer(model, controller, selectedGlyph) {
     positionedGlyph.glyph.flattenedPath2d,
     10 * controller.onePixelUnit,
     3 * controller.onePixelUnit,
-    controller.drawingParameters.hoveredGlyphStrokeColor,
+    controller.drawingParameters[strokeColorName],
     controller.drawingParameters.glyphFillColor,
   )
 }
