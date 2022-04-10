@@ -181,8 +181,8 @@ export class SceneModel {
   }
 
   selectionAtPoint(point, size) {
-    if (!this.selectedGlyph) {
-      return;
+    if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
+      return new Set();
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
     const selRect = centeredRect(point.x - positionedGlyph.x, point.y - positionedGlyph.y, size);
@@ -221,7 +221,7 @@ export class SceneModel {
 
   selectionAtRect(selRect) {
     const selection = new Set();
-    if (!this.selectedGlyph) {
+    if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
       return selection;
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
