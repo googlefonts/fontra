@@ -16,6 +16,7 @@ export class SceneModel {
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.selectedGlyph = undefined;
+    this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
   }
 
