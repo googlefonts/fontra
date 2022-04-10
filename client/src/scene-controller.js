@@ -243,6 +243,7 @@ export class SceneController {
   set selectedGlyph(selectedGlyph) {
     if (this.sceneModel.selectedGlyph != selectedGlyph) {
       this.sceneModel.selectedGlyph = selectedGlyph;
+      this.sceneModel.selection = new Set();
       this.canvasController.setNeedsUpdate();
       this._dispatchEvent("selectedGlyphChanged");
     }
