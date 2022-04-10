@@ -14,8 +14,8 @@ import { scheduleCalls } from "./utils.js";
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
-  hoveredGlyphStrokeColor: "#DDD",
-  selectedGlyphStrokeColor: "#BBB",
+  hoveredGlyphStrokeColor: "#BBB8",
+  selectedGlyphStrokeColor: "#7778",
   nodeFillColor: "#CCC",
   selectedNodeFillColor: "#000",
   hoveredNodeStrokeColor: "#CCC",
@@ -38,8 +38,8 @@ const drawingParametersLight = {
 const drawingParametersDark = {
   ...drawingParametersLight,
   glyphFillColor: "#FFF",
-  hoveredGlyphStrokeColor: "#666",
-  selectedGlyphStrokeColor: "#888",
+  hoveredGlyphStrokeColor: "#CCC8",
+  selectedGlyphStrokeColor: "#FFF8",
   nodeFillColor: "#BBB",
   selectedNodeFillColor: "#FFF",
   hoveredNodeStrokeColor: "#BBB",
@@ -73,8 +73,8 @@ export class EditorController {
     const drawFuncs = [
       sceneDraw.drawMultiGlyphsLayer,
       // sceneDraw.drawSelectedBaselineLayer,
-      sceneDraw.drawHoveredGlyphLayer,
       sceneDraw.drawSelectedGlyphLayer,
+      sceneDraw.drawHoveredGlyphLayer,
       sceneDraw.drawComponentsLayer,
       sceneDraw.drawComponentSelectionLayer,
       sceneDraw.drawHandlesLayer,
