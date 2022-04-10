@@ -93,6 +93,7 @@ export class SceneController {
   handleDoubleCick(selection, point) {
     if (!selection || !selection.size) {
       this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+      this.selectedGlyphIsEditing = !!this.selectedGlyph;
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const componentNames = new Set();
@@ -244,6 +245,18 @@ export class SceneController {
       this.sceneModel.selectedGlyph = selectedGlyph;
       this.canvasController.setNeedsUpdate();
       this._dispatchEvent("selectedGlyphChanged");
+    }
+  }
+
+  get selectedGlyphIsEditing() {
+    return this.sceneModel.selectedGlyphIsEditing;
+  }
+
+  set selectedGlyphIsEditing(flag) {
+    if (this.sceneModel.selectedGlyphIsEditing != flag) {
+      this.sceneModel.selectedGlyphIsEditing = flag;
+      this.canvasController.setNeedsUpdate();
+      this._dispatchEvent("selectedGlyphIsEditingChanged");
     }
   }
 
