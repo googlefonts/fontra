@@ -260,14 +260,15 @@ a {
   border: none;
   font-family: fontra-ui-semibold, sans-serif;
   font-size: 1em;
+  transition: all 0.1s ease-in;
 }
 
-.login-button:hover{
+.login-button:hover {
   background-color: #24D;
   cursor: pointer;
 }
 
-.login-button:active{
+.login-button:active {
   background-color: #02A;
   cursor: pointer;
 }
@@ -283,14 +284,15 @@ a {
   border: none;
   font-family: fontra-ui-semibold, sans-serif;
   font-size: 0.8em;
+  transition: all 0.1s ease-in;
 }
 
-.logout-button:hover{
+.logout-button:hover {
   background-color: #777;
   cursor: pointer;
 }
 
-.logout-button:active{
+.logout-button:active {
   background-color: #555;
   cursor: pointer;
 }
