@@ -308,6 +308,7 @@ a {
 .project-item {
   border-radius: 1em;
   padding: 0.25em 1em 0.25em 1em;
+  transition: all 0.1s ease-in;
 }
 
 .project-item:hover {
