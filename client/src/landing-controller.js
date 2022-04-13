@@ -5,21 +5,15 @@ import { parseCookies } from "./utils.js";
 
 export class LandingController {
 
-  static async fromWebSocketURL(wsURL, requireLogin) {
-    if (requireLogin) {
-      return LandingController.fromWebSocketURLWithLogin(wsURL);
-    } else {
+  static async fromWebSocketURL(wsURL) {
+    const cookies = parseCookies(document.cookie);
+    if (cookies["fontra-require-login"] === "false") {
       return LandingController.fromWebSocketURLAuthenticated(wsURL);
     }
-  }
-
-  static async fromWebSocketURLWithLogin(wsURL, requireLogin) {
     const loginFormContainer = document.querySelector("#login-form-container");
     const logoutForm = document.querySelector("#logout-form-container");
     const logoutButton = document.querySelector("#logout-button");
     const loginFailureMessage = document.querySelector("#login-failure-message");
-
-    const cookies = parseCookies(document.cookie);
 
     const username = cookies["fontra-username"];
     const haveToken = !!cookies["fontra-authorization-token"];

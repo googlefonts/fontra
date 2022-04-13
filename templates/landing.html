@@ -68,7 +68,7 @@
       async function startApp() {{
         const protocol = location.protocol === "http:" ? "ws" : "wss";
         const url = `${{protocol}}://${{location.hostname}}:{webSocketPort}/`;
-        const landingController = await LandingController.fromWebSocketURL(url, {requireLogin});
+        const landingController = await LandingController.fromWebSocketURL(url);
       }}
 
       startApp();

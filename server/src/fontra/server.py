@@ -86,9 +86,12 @@ class FontraServer:
         html = self._formatHTMLTemplate(
             "landing.html",
             webSocketPort=self.webSocketProxyPort,
-            requireLogin=str(bool(self.projectManager.requireLogin)).lower(),
         )
         response = web.Response(text=html, content_type="text/html")
+        response.set_cookie(
+            "fontra-require-login",
+            "true" if self.projectManager.requireLogin else "false",
+        )
         if session is not None:
             response.set_cookie(
                 "fontra-authorization-token", session.token, max_age=self.cookieMaxAge
