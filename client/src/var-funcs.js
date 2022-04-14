@@ -74,10 +74,7 @@ function itemwiseFunc(a, b, func) {
     for (const key of keys) {
       const valueA = a[key];
       const valueB = b[key];
-      if (
-        (valueA !== undefined && valueB === undefined) ||
-        (valueA === undefined && valueB !== undefined)
-      ) {
+      if ( (valueA === undefined) !== (valueB === undefined) ) {
         throw new VariationError(`objects have incompatible key sets: ${keys} != ${Object.keys(b)}`);
       }
       result[key] = func(valueA, valueB);
