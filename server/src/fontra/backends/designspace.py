@@ -34,6 +34,9 @@ class DesignspaceBackend:
         self.loadSources()
         self.buildFileNameMapping()
 
+    def close(self):
+        pass
+
     @property
     def defaultSource(self):
         return self._getSourceFromSourceDescriptor(self.dsDoc.default)
@@ -126,6 +129,9 @@ class UFOBackend:
             for layerName in self.reader.getLayerNames()
         }
         return self
+
+    def close(self):
+        pass
 
     async def getReverseCmap(self):
         return getReverseCmapFromGlyphSet(self.glyphSets[self.layerName])

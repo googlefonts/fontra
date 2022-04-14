@@ -12,6 +12,9 @@ class RCJKMySQLBackend:
         self._tempGlyphCache = TimedCache()
         return self
 
+    def close(self):
+        self._tempGlyphCache.cancel()
+
     async def getReverseCmap(self):
         self._glyphMapping = {}
         revCmap = {}

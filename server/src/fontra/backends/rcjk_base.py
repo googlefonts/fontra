@@ -148,3 +148,7 @@ class TimedCache:
             self.clear()
 
         self.timerTask = asyncio.create_task(clearCacheDict())
+
+    def cancel(self):
+        if self.timerTask is not None:
+            self.timerTask.cancel()

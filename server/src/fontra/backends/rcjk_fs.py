@@ -43,6 +43,9 @@ class RCJKBackend:
 
         self._tempGlyphCache = TimedCache()
 
+    def close(self):
+        self._tempGlyphCache.cancel()
+
     def _iterGlyphSets(self):
         yield self.characterGlyphGlyphSet, True
         yield self.deepComponentGlyphSet, False

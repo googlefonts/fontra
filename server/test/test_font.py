@@ -1,3 +1,4 @@
+import contextlib
 import pathlib
 import pytest
 from fontra.backends import getBackendClass
@@ -661,9 +662,10 @@ getGlyphNamesTestData = [
 )
 async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
     font = getTestFont(backendName)
-    glyphNames = sorted(await font.getReverseCmap())
-    assert numGlyphs == len(glyphNames)
-    assert firstFourGlyphNames == sorted(glyphNames)[:4]
+    with contextlib.closing(font):
+        glyphNames = sorted(await font.getReverseCmap())
+        assert numGlyphs == len(glyphNames)
+        assert firstFourGlyphNames == sorted(glyphNames)[:4]
 
 
 getReverseCmapTestData = [
@@ -677,18 +679,20 @@ getReverseCmapTestData = [
 @pytest.mark.parametrize("backendName, numGlyphs, testMapping", getReverseCmapTestData)
 async def test_getReverseCmap(backendName, numGlyphs, testMapping):
     font = getTestFont(backendName)
-    revCmap = await font.getReverseCmap()
-    assert numGlyphs == len(revCmap)
-    for glyphName, unicodes in testMapping.items():
-        assert revCmap[glyphName] == unicodes
+    with contextlib.closing(font):
+        revCmap = await font.getReverseCmap()
+        assert numGlyphs == len(revCmap)
+        for glyphName, unicodes in testMapping.items():
+            assert revCmap[glyphName] == unicodes
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("backendName, expectedGlyph", getGlyphTestData)
 async def test_getGlyph(backendName, expectedGlyph):
     font = getTestFont(backendName)
-    glyph = await font.getGlyph(expectedGlyph["name"])
-    assert glyph == expectedGlyph
+    with contextlib.closing(font):
+        glyph = await font.getGlyph(expectedGlyph["name"])
+        assert glyph == expectedGlyph
 
 
 getBackendTestData = [
