@@ -101,9 +101,9 @@ class RCJKBackend:
                 return gs.getGlyphLayerData(glyphName)
         return None
 
-    def watchExternalChanges(self, glyphsChangedCallback):
-        async def rcjkWatcher(rcjkPath):
-            async for changes in watchfiles.awatch(rcjkPath):
+    def watchExternalChanges(self):
+        async def glifWatcher():
+            async for changes in watchfiles.awatch(self.path):
                 glyphNames = set()
                 for change, path in changes:
                     glyphName = self.glifFileNames.get(os.path.basename(path))
@@ -111,12 +111,9 @@ class RCJKBackend:
                         glyphNames.add(glyphName)
                 if glyphNames:
                     self._tempGlyphCache.clear()
-                    try:
-                        await glyphsChangedCallback(sorted(glyphNames))
-                    except Exception as e:
-                        logger.error("error in watchExternalChanges callback: %r", e)
+                    yield glyphNames
 
-        return asyncio.create_task(rcjkWatcher(self.path))
+        return glifWatcher()
 
 
 class RCJKGlyphSet:
