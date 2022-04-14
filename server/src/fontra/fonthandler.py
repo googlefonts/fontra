@@ -36,11 +36,11 @@ class FontHandler:
         self.backend.close()
 
     async def watchExternalChanges(self):
-        try:
-            async for glyphNames in self.backend.watchExternalChanges():
+        async for glyphNames in self.backend.watchExternalChanges():
+            try:
                 await self.reloadGlyphs(glyphNames)
-        except Exception as e:
-            logger.error("exception in external changes watcher: %r", e)
+            except Exception as e:
+                logger.error("exception in external changes watcher: %r", e)
 
     @contextmanager
     def useConnection(self, connection):
