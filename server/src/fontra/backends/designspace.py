@@ -203,7 +203,7 @@ def getReverseCmapFromGlyphSet(glyphSet):
     for glyphName in glyphSet.keys():
         glifData = glyphSet.getGLIF(glyphName)
         gn, unicodes = extractGlyphNameAndUnicodes(glifData)
-        assert gn == glyphName
+        assert gn == glyphName, (gn, glyphName)
         revCmap[glyphName] = unicodes
     return revCmap
 
