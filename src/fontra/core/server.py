@@ -30,6 +30,7 @@ class FontraServer:
     templatesFolder: str
     projectManager: object
     cookieMaxAge: int = 7 * 24 * 60 * 60
+    allowedFileExtensions: set = frozenset(["css", "ico", "js", "svg", "woff2"])
 
     def setup(self):
         self.startupTime = datetime.now(timezone.utc).replace(microsecond=0)
@@ -82,6 +83,9 @@ class FontraServer:
         try:
             data = resources.read_binary(modulePath, resourceName)
         except (FileNotFoundError, IsADirectoryError, ModuleNotFoundError):
+            return web.HTTPNotFound()
+        ext = resourceName.rsplit(".", 1)[-1].lower()
+        if ext not in self.allowedFileExtensions:
             return web.HTTPNotFound()
         contentType, _ = mimetypes.guess_type(resourceName)
         response = web.Response(body=data, content_type=contentType)
