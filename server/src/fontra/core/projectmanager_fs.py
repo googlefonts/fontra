@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import logging
 import pathlib
 import secrets
-from .backends import getBackendClass
+from ..backends import getBackendClass
 from .fonthandler import FontHandler
 
 

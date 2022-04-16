@@ -2,7 +2,7 @@ import argparse
 import logging
 import pathlib
 import sys
-from .server import FontraServer
+from .core.server import FontraServer
 
 
 def existingFolder(path):
@@ -51,11 +51,11 @@ def main():
         sys.exit(1)
 
     if args.filesystem_root:
-        from .projectmanager_fs import FileSystemProjectManager
+        from .core.projectmanager_fs import FileSystemProjectManager
 
         manager = FileSystemProjectManager(args.filesystem_root)
     else:
-        from .projectmanager_rcjk import RCJKProjectManager
+        from .core.projectmanager_rcjk import RCJKProjectManager
 
         manager = RCJKProjectManager(args.rcjk_host)
 
