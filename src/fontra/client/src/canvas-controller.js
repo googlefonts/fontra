@@ -83,13 +83,14 @@ export class CanvasController {
     this.needsUpdate = false;
     const scale = window.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    if (!this.sceneView) {
+      return;
+    }
     withSavedState(this.context, () => {
       this.context.scale(scale, scale);
       this.context.translate(this.origin.x, this.origin.y);
       this.context.scale(this.magnification, -this.magnification);
-      if (this.sceneView) {
-        this.sceneView.draw(this);
-      }
+      this.sceneView.draw(this);
     });
   }
 
