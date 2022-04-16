@@ -63,13 +63,11 @@
   </body>
     <script type="module">
 
-      import {{ LandingController }} from "/src/landing-controller.js";
+      import { LandingController } from "/src/landing-controller.js";
 
-      async function startApp() {{
-        const protocol = location.protocol === "http:" ? "ws" : "wss";
-        const url = `${{protocol}}://${{location.hostname}}:{webSocketPort}/`;
-        const landingController = await LandingController.fromWebSocketURL(url);
-      }}
+      async function startApp() {
+        const landingController = await LandingController.fromWebSocket();
+      }
 
       startApp();
 

@@ -9,7 +9,7 @@ import { SceneModel } from "./scene-model.js";
 import { SceneView } from "./scene-view.js"
 import { List } from "./ui-list.js";
 import { Sliders } from "./ui-sliders.js";
-import { scheduleCalls } from "./utils.js";
+import { parseCookies, scheduleCalls } from "./utils.js";
 
 
 const drawingParametersLight = {
@@ -53,10 +53,21 @@ const drawingParametersDark = {
 
 export class EditorController {
 
-  static async fromWebSocketURL(url) {
-    const remoteFontEngine = await getRemoteProxy(url);
+  static async fromWebSocket() {
+    const cookies = parseCookies(document.cookie);
+    const webSocketPort = parseInt(cookies["websocket-port"]);
+    const pathItems = location.pathname.split("/");
+    // assert pathItems[0] === ""
+    // assert pathItems[1] === "editor"
+    const projectPath = pathItems.slice(2).join("/");
+    document.title = `Fontra — ${projectPath}`;
+    const protocol = location.protocol === "http:" ? "ws" : "wss";
+    const wsURL = `${protocol}://${location.hostname}:${webSocketPort}/${projectPath}`;
+
+    const remoteFontEngine = await getRemoteProxy(wsURL);
     const editorController = new EditorController(remoteFontEngine);
     remoteFontEngine.receiver = editorController;
+    await editorController.start();
     return editorController;
   }
 

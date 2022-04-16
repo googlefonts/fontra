@@ -83,10 +83,7 @@ class FontraServer:
             ):
                 session = None
 
-        html = self._formatHTMLTemplate(
-            "landing.html",
-            webSocketPort=self.webSocketProxyPort,
-        )
+        html = self._readHTMLTemplate("landing.html");
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie(
             "fontra-require-login",
@@ -98,6 +95,7 @@ class FontraServer:
             )
         else:
             response.del_cookie("fontra-authorization-token")
+        response.set_cookie("websocket-port", str(self.webSocketPort))
         return response
 
     async def loginHandler(self, request):
@@ -147,17 +145,14 @@ class FontraServer:
         if not await self.projectManager.projectAvailable(authToken, path):
             return web.HTTPNotFound()
 
-        html = self._formatHTMLTemplate(
-            "editor.html",
-            webSocketPort=self.webSocketProxyPort,
-            projectPath=path,
-        )
-        return web.Response(text=html, content_type="text/html")
+        html = self._readHTMLTemplate("editor.html");
+        response = web.Response(text=html, content_type="text/html")
+        response.set_cookie("websocket-port", str(self.webSocketPort))
+        return response
 
-    def _formatHTMLTemplate(self, fileName, **kwargs):
+    def _readHTMLTemplate(self, fileName):
         templatePath = self.templatesFolder / fileName
-        html = templatePath.read_text(encoding="utf-8")
-        return html.format(**kwargs)
+        return templatePath.read_text(encoding="utf-8")
 
 
 @asynccontextmanager
