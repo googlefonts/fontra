@@ -1,9 +1,9 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import VarPath from "../src/var-path.js";
-import VarArray from "../src/var-array.js";
-import { Transform } from "../src/transform.js";
+import VarPath from "../src/fontra/client/src/var-path.js";
+import VarArray from "../src/fontra/client/src/var-array.js";
+import { Transform } from "../src/fontra/client/src/transform.js";
 
 
 class MockPath2D {

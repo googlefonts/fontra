@@ -1,7 +1,7 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import { Transform } from "../src/transform.js";
+import { Transform } from "../src/fontra/client/src/transform.js";
 
 
 describe("transform tests", () => {

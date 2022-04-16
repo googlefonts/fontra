@@ -1,7 +1,7 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import { LRUCache } from "../src/lru-cache.js";
+import { LRUCache } from "../src/fontra/client/src/lru-cache.js";
 
 
 describe("LRUCache Tests", () => {

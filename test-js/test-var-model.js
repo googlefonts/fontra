@@ -11,7 +11,7 @@ import {
   normalizeValue,
   piecewiseLinearMap,
   supportScalar,
-} from "../src/var-model.js";
+} from "../src/fontra/client/src/var-model.js";
 
 
 describe("var-model tests", () => {

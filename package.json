@@ -4,7 +4,7 @@
     "mocha": "^9.1.3"
   },
   "scripts": {
-    "test": "mocha client/test --reporter spec"
+    "test": "mocha test-js --reporter spec"
   },
   "type": "module"
 }

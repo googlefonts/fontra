@@ -2,7 +2,7 @@ import chai from "chai";
 const expect = chai.expect;
 import fs from "fs";
 
-import { applyChange, baseChangeFunctions, consolidateChanges } from "../src/changes.js";
+import { applyChange, baseChangeFunctions, consolidateChanges } from "../src/fontra/client/src/changes.js";
 
 
 import { fileURLToPath } from 'url'
@@ -13,7 +13,7 @@ const __dirname = dirname(__filename)
 
 describe("Changes Tests", () => {
 
-  const test_data_path = join(dirname(dirname(__dirname)), "common/test-data/apply-change-test-data.json");
+  const test_data_path = join(dirname(__dirname), "test-common/apply-change-test-data.json");
   const test_data = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
   const inputData = test_data["inputData"];
   const tests = test_data["tests"];

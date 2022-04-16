@@ -2,8 +2,8 @@ import chai from "chai";
 const expect = chai.expect;
 
 
-import VarArray from "../src/var-array.js";
-import { addItemwise, subItemwise, mulScalar } from "../src/var-funcs.js";
+import VarArray from "../src/fontra/client/src/var-array.js";
+import { addItemwise, subItemwise, mulScalar } from "../src/fontra/client/src/var-funcs.js";
 
 
 describe("var-funcs tests", () => {

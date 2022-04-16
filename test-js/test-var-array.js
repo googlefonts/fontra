@@ -1,7 +1,7 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import VarArray from "../src/var-array.js";
+import VarArray from "../src/fontra/client/src/var-array.js";
 
 
 describe("VarArray Tests", () => {
