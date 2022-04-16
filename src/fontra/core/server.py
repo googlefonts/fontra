@@ -106,7 +106,7 @@ class FontraServer:
             ):
                 session = None
 
-        html = self._readHTMLTemplate("landing.html")
+        html = resources.read_text("fontra.client", "landing.html")
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie(
             "fontra-require-login",
@@ -168,14 +168,10 @@ class FontraServer:
         if not await self.projectManager.projectAvailable(authToken, path):
             return web.HTTPNotFound()
 
-        html = self._readHTMLTemplate("editor.html")
+        html = resources.read_text("fontra.client", "editor.html")
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("websocket-port", str(self.webSocketPort))
         return response
-
-    def _readHTMLTemplate(self, fileName):
-        templatePath = self.templatesFolder / fileName
-        return templatePath.read_text(encoding="utf-8")
 
 
 @asynccontextmanager
