@@ -2,7 +2,7 @@ from copy import deepcopy
 import json
 import pathlib
 import pytest
-from fontra.changes import applyChange, baseChangeFunctions
+from fontra.core.changes import applyChange, baseChangeFunctions
 
 
 testDataPath = (
