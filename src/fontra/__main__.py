@@ -63,7 +63,7 @@ def main():
         manager.requireLogin = True
 
     fontraRoot = pathlib.Path(__file__).resolve().parent.parent.parent
-    contentFolder = fontraRoot / "client"
+    contentFolder = fontraRoot / "src" / "fontra" / "client"
     templatesFolder = fontraRoot / "templates"
 
     server = FontraServer(
