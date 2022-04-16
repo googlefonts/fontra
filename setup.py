@@ -16,7 +16,9 @@ setup(
     packages=find_packages("src"),
     package_data={
         "": [
+            "client/*.html",
             "client/*.ico",
+            "client/*/*.html",
             "client/*/*.css",
             "client/*/*.svg",
             "client/*/*.js",
