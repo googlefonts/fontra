@@ -14,6 +14,15 @@ setup(
     },
     package_dir={"": "src"},
     packages=find_packages("src"),
+    package_data={
+        "": [
+            "client/*.ico",
+            "client/*/*.css",
+            "client/*/*.svg",
+            "client/*/*.js",
+            "client/*/*.woff2",
+        ]
+    },
     install_requires=[
         "aiohttp>=3.8.1",
         "fonttools[ufo,unicode]>=4.17.0",
