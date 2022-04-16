@@ -157,7 +157,7 @@ export class SceneController {
     const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[sourceIndex].layerName);
     const baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
 
-    const editor = new GlyphEditor(instance, this.selection);
+    const editor = new EditBehavior(instance, this.selection);
     let change, absChange;
     await fontController.changeBegin();
     await fontController.changeSetRollback(consolidateChanges(editor.rollbackChange, baseChangePath));
@@ -367,7 +367,7 @@ function makeRollbackChange(instance, selection) {
 }
 
 
-class GlyphEditor {
+class EditBehavior {
 
   constructor(instance, selection) {
     this.instance = instance;
