@@ -59,7 +59,7 @@ export class LandingController {
     projectListContainer.classList.remove("hidden");
     for (const project of this.projectList) {
       const projectElement = document.createElement("a")
-      projectElement.href = "/projects/" + project;
+      projectElement.href = "/editor/-/" + project;
       projectElement.className = "project-item";
       projectElement.append(project);
       projectListContainer.appendChild(projectElement);

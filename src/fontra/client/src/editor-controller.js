@@ -59,7 +59,8 @@ export class EditorController {
     const pathItems = location.pathname.split("/");
     // assert pathItems[0] === ""
     // assert pathItems[1] === "editor"
-    const projectPath = pathItems.slice(2).join("/");
+    // assert pathItems[2] === "-"
+    const projectPath = pathItems.slice(3).join("/");
     document.title = `Fontra — ${projectPath}`;
     const protocol = location.protocol === "http:" ? "ws" : "wss";
     const wsURL = `${protocol}://${location.hostname}:${webSocketPort}/${projectPath}`;

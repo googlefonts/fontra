@@ -37,7 +37,7 @@ class FontraServer:
         routes.append(web.get("/test/{tail:.*}", self.notFoundHandler))
         routes.append(web.post("/login", self.loginHandler))
         routes.append(web.post("/logout", self.logoutHandler))
-        routes.append(web.get("/projects/{path:.*}", self.projectsPathHandler))
+        routes.append(web.get("/editor/-/{path:.*}", self.projectsPathHandler))
         routes.append(web.static("/", self.contentFolder))
         self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.startRemoteObjectServer)
