@@ -27,7 +27,6 @@ class FontraServer:
     httpPort: int
     webSocketPort: int
     webSocketProxyPort: int
-    templatesFolder: str
     projectManager: object
     cookieMaxAge: int = 7 * 24 * 60 * 60
     allowedFileExtensions: set = frozenset(["css", "ico", "js", "svg", "woff2"])
