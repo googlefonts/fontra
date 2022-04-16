@@ -129,7 +129,7 @@ dmypy.json
 .pyre/
 
 # scm file
-server/src/fontra/_version.py
+src/fontra/_version.py
 
 # Node
 # Logs
