@@ -62,7 +62,7 @@ def main():
     if args.force_login:
         manager.requireLogin = True
 
-    fontraRoot = pathlib.Path(__file__).resolve().parent.parent.parent.parent
+    fontraRoot = pathlib.Path(__file__).resolve().parent.parent.parent
     contentFolder = fontraRoot / "client"
     templatesFolder = fontraRoot / "templates"
 
