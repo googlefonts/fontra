@@ -63,7 +63,6 @@ def main():
         manager.requireLogin = True
 
     fontraRoot = pathlib.Path(__file__).resolve().parent.parent.parent
-    contentFolder = fontraRoot / "src" / "fontra" / "client"
     templatesFolder = fontraRoot / "templates"
 
     server = FontraServer(
@@ -71,7 +70,6 @@ def main():
         httpPort=httpPort,
         webSocketPort=webSocketPort,
         webSocketProxyPort=webSocketProxyPort,
-        contentFolder=contentFolder,
         templatesFolder=templatesFolder,
         projectManager=manager,
     )

@@ -1,7 +1,10 @@
 import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from datetime import datetime, timezone
+from importlib import resources
 import logging
+import mimetypes
 from urllib.parse import quote, parse_qs
 from aiohttp import web
 from .remote import RemoteObjectServer
@@ -24,21 +27,20 @@ class FontraServer:
     httpPort: int
     webSocketPort: int
     webSocketProxyPort: int
-    contentFolder: str
     templatesFolder: str
     projectManager: object
     cookieMaxAge: int = 7 * 24 * 60 * 60
 
     def setup(self):
+        self.startupTime = datetime.now(timezone.utc).replace(microsecond=0)
         self.authorizedSessions = {}
         self.httpApp = web.Application()
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
-        routes.append(web.get("/test/{tail:.*}", self.notFoundHandler))
         routes.append(web.post("/login", self.loginHandler))
         routes.append(web.post("/logout", self.logoutHandler))
         routes.append(web.get("/editor/-/{path:.*}", self.projectsPathHandler))
-        routes.append(web.static("/", self.contentFolder))
+        routes.append(web.get("/{path:.*}", self.staticContentHandler))
         self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.startRemoteObjectServer)
 
@@ -69,6 +71,23 @@ class FontraServer:
 
         self._websocketTask = asyncio.create_task(runner())
 
+    async def staticContentHandler(self, request):
+        ifModSince = request.if_modified_since
+        if ifModSince is not None and ifModSince >= self.startupTime:
+            return web.HTTPNotModified()
+
+        pathItems = [""] + request.match_info["path"].split("/")
+        modulePath = "fontra.client" + ".".join(pathItems[:-1])
+        resourceName = pathItems[-1]
+        try:
+            data = resources.read_binary(modulePath, resourceName)
+        except (FileNotFoundError, IsADirectoryError, ModuleNotFoundError):
+            return web.HTTPNotFound()
+        contentType, _ = mimetypes.guess_type(resourceName)
+        response = web.Response(body=data, content_type=contentType)
+        response.last_modified = self.startupTime
+        return response
+
     async def notFoundHandler(self, request):
         return web.HTTPNotFound()
 
@@ -83,7 +102,7 @@ class FontraServer:
             ):
                 session = None
 
-        html = self._readHTMLTemplate("landing.html");
+        html = self._readHTMLTemplate("landing.html")
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie(
             "fontra-require-login",
@@ -145,7 +164,7 @@ class FontraServer:
         if not await self.projectManager.projectAvailable(authToken, path):
             return web.HTTPNotFound()
 
-        html = self._readHTMLTemplate("editor.html");
+        html = self._readHTMLTemplate("editor.html")
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("websocket-port", str(self.webSocketPort))
         return response
