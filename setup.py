@@ -18,10 +18,10 @@ setup(
         "": [
             "client/*.html",
             "client/*.ico",
-            "client/*/*.html",
             "client/*/*.css",
-            "client/*/*.svg",
+            "client/*/*.html",
             "client/*/*.js",
+            "client/*/*.svg",
             "client/*/*.woff2",
         ]
     },
