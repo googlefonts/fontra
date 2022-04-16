@@ -6,9 +6,8 @@ from fontra.core.changes import applyChange, baseChangeFunctions
 
 
 testDataPath = (
-    pathlib.Path(__file__).parent.parent.parent
-    / "common"
-    / "test-data"
+    pathlib.Path(__file__).parent.parent
+    / "test-common"
     / "apply-change-test-data.json"
 )
 

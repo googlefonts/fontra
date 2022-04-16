@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="fontra",
-    use_scm_version={"write_to": "server/src/fontra/_version.py"},
+    use_scm_version={"write_to": "src/fontra/_version.py"},
     description="Fontra",
     # long_description=long_description,
     # long_description_content_type="text/markdown",
@@ -12,8 +12,8 @@ setup(
     entry_points={
         "console_scripts": ["fontra=fontra.__main__:main"],
     },
-    package_dir={"": "server/src"},
-    packages=find_packages("server/src"),
+    package_dir={"": "src"},
+    packages=find_packages("src"),
     install_requires=[
         "aiohttp>=3.8.1",
         "fonttools[ufo,unicode]>=4.17.0",
