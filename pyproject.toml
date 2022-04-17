@@ -1,0 +1,61 @@
+[project]
+name = "fontra"
+description = "A browser-based font editor"
+readme = "README.md"
+authors = [
+    { name = "Just van Rossum", email = "justvanrossum@gmail.com" }
+]
+keywords = ["font", "fonts"]
+license = {text = "GNU General Public License v3"}
+dependencies = [
+    "aiohttp>=3.8.1",
+    "fonttools[ufo,unicode]>=4.17.0",
+    "watchfiles>=0.10",
+    "websockets>=10.1",
+]
+dynamic = ["version"]
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Environment :: Other Environment",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Graphics",
+]
+
+
+[project.scripts]
+fontra = "fontra.__main__:main"
+
+
+[build-system]
+requires = ["setuptools", "setuptools-scm[toml]"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools.package-data]
+fontra = [
+    "client/*.html",
+    "client/*.ico",
+    "client/*/*.css",
+    "client/*/*.html",
+    "client/*/*.js",
+    "client/*/*.svg",
+    "client/*/*.woff2",
+]
+
+
+[tool.setuptools_scm]
+write_to = "src/fontra/_version.py"
+
+
+[tool.pytest.ini_options]
+testpaths = [
+    "test-py",
+]
