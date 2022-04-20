@@ -83,8 +83,8 @@ function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
 
 export const drawSelectedBaselineLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
-  context.strokeStyle = controller.drawingParameters.handleColor;
-  context.lineWidth = controller.drawingParameters.handleLineWidth;
+  context.strokeStyle = drawingParameters.handleColor;
+  context.lineWidth = drawingParameters.handleLineWidth;
   strokeLine(context, 0, 0, glyph.xAdvance, 0);
 }
 ));
@@ -121,24 +121,12 @@ function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorNa
 }
 
 
-export function drawComponentsLayer(model, controller) {
-  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
-    return;
-  }
-  const context = controller.context;
-  const positionedGlyph = model.getSelectedPositionedGlyph();
-
-  context.translate(positionedGlyph.x, positionedGlyph.y);
-
-  // context.fillStyle = "#DDD";
-  // for (const component of positionedGlyph.glyph.components) {
-  //   fillPolygon(context, component.convexHull);
-  // }
-
-  context.fillStyle = controller.drawingParameters.componentFillColor;
-  context.fill(positionedGlyph.glyph.componentsPath2d);
+export const drawComponentsLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  context.fillStyle = drawingParameters.componentFillColor;
+  context.fill(glyph.componentsPath2d);
 }
-
+));
 
 export function drawPathLayer(model, controller) {
   if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
