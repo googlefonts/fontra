@@ -56,14 +56,14 @@ export class EditorController {
   static async fromWebSocket() {
     const cookies = parseCookies(document.cookie);
     const webSocketPort = parseInt(cookies["websocket-port"]);
-    const pathItems = location.pathname.split("/");
+    const pathItems = window.location.pathname.split("/");
     // assert pathItems[0] === ""
     // assert pathItems[1] === "editor"
     // assert pathItems[2] === "-"
     const projectPath = pathItems.slice(3).join("/");
     document.title = `Fontra — ${projectPath}`;
-    const protocol = location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${location.hostname}:${webSocketPort}/${projectPath}`;
+    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
+    const wsURL = `${protocol}://${window.location.hostname}:${webSocketPort}/${projectPath}`;
 
     const remoteFontEngine = await getRemoteProxy(wsURL);
     const editorController = new EditorController(remoteFontEngine);

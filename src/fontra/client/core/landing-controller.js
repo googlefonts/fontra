@@ -8,8 +8,8 @@ export class LandingController {
   static async fromWebSocket() {
     const cookies = parseCookies(document.cookie);
     const webSocketPort = parseInt(cookies["websocket-port"]);
-    const protocol = location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${location.hostname}:${webSocketPort}/`;
+    const protocol = window.location.protocol === "http:" ? "ws" : "wss";
+    const wsURL = `${protocol}://${window.location.hostname}:${webSocketPort}/`;
 
     if (cookies["fontra-require-login"] === "false") {
       return LandingController.fromWebSocketURLAuthenticated(wsURL);
