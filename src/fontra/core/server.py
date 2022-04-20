@@ -167,7 +167,7 @@ class FontraServer:
         if not await self.projectManager.projectAvailable(authToken, path):
             return web.HTTPNotFound()
 
-        html = resources.read_text("fontra.client", "editor.html")
+        html = resources.read_text("fontra.client.editor", "editor.html")
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("websocket-port", str(self.webSocketPort))
         return response
