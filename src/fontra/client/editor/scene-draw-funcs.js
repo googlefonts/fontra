@@ -26,7 +26,7 @@ function requireSelectedGlyph(func) {
 
 function requireHoveredGlyph(func) {
   function wrapper(model, controller) {
-    if (!model.hoveredGlyph || !model.hoveredGlyph === model.selectedGlyph) {
+    if (!model.hoveredGlyph || model.hoveredGlyph === model.selectedGlyph) {
       return;
     }
     func(model, controller);
