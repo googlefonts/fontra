@@ -262,8 +262,16 @@ export class EditorController {
     return window.matchMedia("(prefers-color-scheme: dark)").matches;
   }
 
+  get drawingParametersLight() {
+    return drawingParametersLight;
+  }
+
+  get drawingParametersDark() {
+    return drawingParametersDark;
+  }
+
   get drawingParameters() {
-    return this.isThemeDark ? drawingParametersDark : drawingParametersLight;
+    return this.isThemeDark ? this.drawingParametersDark : this.drawingParametersLight;
   }
 
   async glyphSearchFieldChanged(value) {
