@@ -29,6 +29,7 @@ export class FontController {
     this.reverseCmap = await this.font.getReverseCmap();
     this.cmap = makeCmapFromReverseCmap(this.reverseCmap);
     this.globalAxes = await this.font.getGlobalAxes();
+    this.fontLib = await this.font.getFontLib();
     this._resolveInitialized();
   }
 

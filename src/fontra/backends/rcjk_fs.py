@@ -101,6 +101,12 @@ class RCJKBackend:
                 return gs.getGlyphLayerData(glyphName)
         return None
 
+    async def getFontLib(self):
+        libPath = self.path / "fontLib.json"
+        if libPath.is_file():
+            return json.loads(libPath.read_text(encoding="utf-8"))
+        return {}
+
     def watchExternalChanges(self):
         async def glifWatcher():
             async for changes in watchfiles.awatch(self.path):

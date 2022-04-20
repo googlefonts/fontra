@@ -31,15 +31,27 @@ class RCJKMySQLBackend:
                 self._glyphMapping[glyphInfo["name"]] = (typeCode, glyphInfo["id"])
         return revCmap
 
-    async def getGlobalAxes(self):
+    async def _getMiscFontItems(self):
         font_data = await self.client.font_get(self.fontUID)
-        ds = font_data["data"].get("designspace", {})
-        axes = ds.get("axes", ())
-        for axis in axes:
-            axis["label"] = axis["name"]
-            axis["name"] = axis["tag"]
-            del axis["tag"]
-        return axes
+        self.designspace = font_data["data"].get("designspace", {})
+        self.fontLib = font_data["data"].get("fontlib", {})
+
+    async def getGlobalAxes(self):
+        if not hasattr(self, "designspace"):
+            await self._getMiscFontItems()
+        if not hasattr(self, "axes"):
+            axes = self.designspace.get("axes", ())
+            for axis in axes:
+                axis["label"] = axis["name"]
+                axis["name"] = axis["tag"]
+                del axis["tag"]
+            self.axes = axes
+        return self.axes
+
+    async def getFontLib(self):
+        if not hasattr(self, "fontLib"):
+            await self._getMiscFontItems()
+        return self.fontLib
 
     async def getGlyph(self, glyphName):
         layerGlyphs = await self._getLayerGlyphs(glyphName)

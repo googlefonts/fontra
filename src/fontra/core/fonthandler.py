@@ -22,6 +22,7 @@ class FontHandler:
             "unloadGlyph",
             "getGlyphNames",
             "getReverseCmap",
+            "getFontLib",
             "getGlobalAxes",
             "subscribeLiveGlyphChanges",
         }
@@ -87,6 +88,9 @@ class FontHandler:
 
     async def getGlobalAxes(self, *, connection):
         return await self.backend.getGlobalAxes()
+
+    async def getFontLib(self, *, connection):
+        return await self.backend.getFontLib()
 
     async def subscribeLiveGlyphChanges(self, glyphNames, *, connection):
         self.clientData[connection.clientUUID]["subscribedLiveGlyphNames"] = set(

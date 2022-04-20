@@ -113,6 +113,9 @@ class DesignspaceBackend:
     async def getGlobalAxes(self):
         return self.axes
 
+    async def getFontLib(self):
+        return self.dsDoc.lib
+
     def watchExternalChanges(self):
         return ufoWatcher(self.ufoPaths, self.glifFileNames)
 
@@ -156,6 +159,9 @@ class UFOBackend:
 
     async def getGlobalAxes(self):
         return []
+
+    async def getFontLib(self):
+        return self.reader.readLib()
 
     def watchExternalChanges(self):
         glifFileNames = {
