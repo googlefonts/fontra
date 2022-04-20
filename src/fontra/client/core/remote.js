@@ -1,9 +1,4 @@
-class RemoteException extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "RemoteException";
-  }
-}
+import { RemoteError } from "./errors.js";
 
 
 export async function getRemoteProxy(wsURL) {
@@ -87,7 +82,7 @@ export class RemoteObject {
       // this is a response to a client -> server call
       const returnCallbacks = this._callReturnCallbacks[clientCallID];
       if (message["exception"] !== undefined) {
-        returnCallbacks.reject(new RemoteException(message["exception"]));
+        returnCallbacks.reject(new RemoteError(message["exception"]));
       } else {
         returnCallbacks.resolve(message["return-value"]);
       }
