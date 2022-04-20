@@ -2,6 +2,27 @@ import { union } from "../core/set-ops.js";
 import { withSavedState } from "../core/utils.js";
 
 
+function requireEditingGlyph(func) {
+  function wrapper(model, controller) {
+    if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
+      return;
+    }
+    func(model, controller);
+  }
+  return wrapper;
+}
+
+
+function glyphTranslate(func) {
+  function wrapper(model, controller) {
+    const positionedGlyph = model.getSelectedPositionedGlyph();
+    controller.context.translate(positionedGlyph.x, positionedGlyph.y);
+    func(model, controller, controller.context, positionedGlyph.glyph, controller.drawingParameters);
+  }
+  return wrapper;
+}
+
+
 export function drawMultiGlyphsLayer(model, controller) {
   _drawMultiGlyphsLayer(model, controller);
 }
@@ -38,17 +59,13 @@ function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
 }
 
 
-export function drawSelectedBaselineLayer(model, controller) {
-  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
-    return;
-  }
-  const context = controller.context;
-  const positionedGlyph = model.getSelectedPositionedGlyph();
-  context.translate(positionedGlyph.x, positionedGlyph.y);
+export const drawSelectedBaselineLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
   context.strokeStyle = controller.drawingParameters.handleColor;
   context.lineWidth = controller.drawingParameters.handleLineWidth;
-  strokeLine(context, 0, 0, positionedGlyph.glyph.xAdvance, 0);
+  strokeLine(context, 0, 0, glyph.xAdvance, 0);
 }
+));
 
 
 export function drawHoveredGlyphLayer(model, controller) {
