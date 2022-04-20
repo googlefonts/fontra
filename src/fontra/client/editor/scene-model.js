@@ -1,9 +1,9 @@
-import { FontController } from "/core/font-controller.js"
-import { getAxisBaseName } from "/core/glyph-controller.js"
-import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "/core/rectangle.js";
-import { pointInConvexPolygon, rectIntersectsPolygon } from "/core/convex-hull.js";
-import { mapForward, mapBackward } from "/core/var-model.js";
-import { isEqualSet, updateSet } from "/core/set-ops.js";
+import { FontController } from "../core/font-controller.js"
+import { getAxisBaseName } from "../core/glyph-controller.js"
+import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "../core/rectangle.js";
+import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
+import { mapForward, mapBackward } from "../core/var-model.js";
+import { isEqualSet, updateSet } from "../core/set-ops.js";
 
 
 export class SceneModel {
