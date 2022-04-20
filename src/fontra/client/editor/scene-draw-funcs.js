@@ -149,22 +149,18 @@ export const drawHandlesLayer = requireEditingGlyph(glyphTranslate(
 ));
 
 
-export function drawNodesLayer(model, controller) {
-  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
-    return;
-  }
-  const context = controller.context;
-  const positionedGlyph = model.getSelectedPositionedGlyph();
-  const cornerNodeSize = controller.drawingParameters.cornerNodeSize;
-  const smoothNodeSize = controller.drawingParameters.smoothNodeSize;
-  const handleNodeSize = controller.drawingParameters.handleNodeSize;
+export const drawNodesLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  const cornerNodeSize = drawingParameters.cornerNodeSize;
+  const smoothNodeSize = drawingParameters.smoothNodeSize;
+  const handleNodeSize = drawingParameters.handleNodeSize;
 
-  context.translate(positionedGlyph.x, positionedGlyph.y);
-  context.fillStyle = controller.drawingParameters.nodeFillColor;
-  for (const pt of positionedGlyph.glyph.path.iterPoints()) {
+  context.fillStyle = drawingParameters.nodeFillColor;
+  for (const pt of glyph.path.iterPoints()) {
     fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize);
   }
 }
+));
 
 
 export function drawComponentSelectionLayer(model, controller) {
