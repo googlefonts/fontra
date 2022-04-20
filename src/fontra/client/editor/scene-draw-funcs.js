@@ -163,42 +163,38 @@ export const drawNodesLayer = requireEditingGlyph(glyphTranslate(
 ));
 
 
-export function drawComponentSelectionLayer(model, controller) {
-  _drawSelectionLayer(model, controller, "component");
+export const drawComponentSelectionLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  _drawSelectionLayer(model, controller, context, glyph, drawingParameters, "component");
 }
+));
 
 
-export function drawPathSelectionLayer(model, controller) {
-  _drawSelectionLayer(model, controller, "point");
+export const drawPathSelectionLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  _drawSelectionLayer(model, controller, context, glyph, drawingParameters, "point");
 }
+));
 
 
-function _drawSelectionLayer(model, controller, drawType) {
-  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
-    return;
-  }
+function _drawSelectionLayer(model, controller, context, glyph, drawingParameters, drawType) {
   const selection = model.selection;
   const hoverSelection = model.hoverSelection;
   const combinedSelection = lenientUnion(selection, hoverSelection);
-  const positionedGlyph = model.getSelectedPositionedGlyph();
   const selectionStrings = Array.from(combinedSelection);
   selectionStrings.sort();
 
-  const context = controller.context;
+  const cornerNodeSize = drawingParameters.cornerNodeSize;
+  const smoothNodeSize = drawingParameters.smoothNodeSize;
+  const handleNodeSize = drawingParameters.handleNodeSize;
+  const hoveredComponentStrokeColor = drawingParameters.hoveredComponentStrokeColor;
+  const componentFillColor = drawingParameters.componentFillColor;
+  const selectedComponentFillColor = drawingParameters.selectedComponentFillColor;
 
-  const cornerNodeSize = controller.drawingParameters.cornerNodeSize;
-  const smoothNodeSize = controller.drawingParameters.smoothNodeSize;
-  const handleNodeSize = controller.drawingParameters.handleNodeSize;
-  const hoveredComponentStrokeColor = controller.drawingParameters.hoveredComponentStrokeColor;
-  const componentFillColor = controller.drawingParameters.componentFillColor;
-  const selectedComponentFillColor = controller.drawingParameters.selectedComponentFillColor;
-
-  context.translate(positionedGlyph.x, positionedGlyph.y);
-
-  context.strokeStyle = controller.drawingParameters.hoveredNodeStrokeColor;
-  context.lineWidth = controller.drawingParameters.hoveredNodeLineWidth;
+  context.strokeStyle = drawingParameters.hoveredNodeStrokeColor;
+  context.lineWidth = drawingParameters.hoveredNodeLineWidth;
   const hoverStrokeOffset = 4 * controller.onePixelUnit
-  context.fillStyle = controller.drawingParameters.selectedNodeFillColor;
+  context.fillStyle = drawingParameters.selectedNodeFillColor;
 
   for (const selItem of selectionStrings) {
     const drawHoverStroke = hoverSelection?.has(selItem);
@@ -208,7 +204,7 @@ function _drawSelectionLayer(model, controller, drawType) {
       continue;
     }
     if (tp === "point") {
-      const pt = positionedGlyph.glyph.path.getPoint(index);
+      const pt = glyph.path.getPoint(index);
       if (drawHoverStroke) {
         strokeNode(context, pt, cornerNodeSize + hoverStrokeOffset, smoothNodeSize + hoverStrokeOffset, handleNodeSize + hoverStrokeOffset);
       }
@@ -216,7 +212,7 @@ function _drawSelectionLayer(model, controller, drawType) {
         fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize);
       }
     } else if (tp === "component") {
-      const componentPath = positionedGlyph.glyph.components[index].path2d;
+      const componentPath = glyph.components[index].path2d;
       context.save();
       if (drawHoverStroke) {
         drawWithDoubleStroke(context, componentPath,
