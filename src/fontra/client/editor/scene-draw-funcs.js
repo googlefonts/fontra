@@ -128,6 +128,7 @@ export const drawComponentsLayer = requireEditingGlyph(glyphTranslate(
 }
 ));
 
+
 export function drawPathLayer(model, controller) {
   if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
     return;
