@@ -138,20 +138,15 @@ export const drawPathLayer = requireEditingGlyph(glyphTranslate(
 ));
 
 
-export function drawHandlesLayer(model, controller) {
-  if (!model.selectedGlyph || !model.selectedGlyphIsEditing) {
-    return;
-  }
-  const context = controller.context;
-  const positionedGlyph = model.getSelectedPositionedGlyph();
-
-  context.translate(positionedGlyph.x, positionedGlyph.y);
-  context.strokeStyle = controller.drawingParameters.handleColor;
-  context.lineWidth = controller.drawingParameters.handleLineWidth;
-  for (const [pt1, pt2] of positionedGlyph.glyph.path.iterHandles()) {
+export const drawHandlesLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  context.strokeStyle = drawingParameters.handleColor;
+  context.lineWidth = drawingParameters.handleLineWidth;
+  for (const [pt1, pt2] of glyph.path.iterHandles()) {
     strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
   }
 }
+));
 
 
 export function drawNodesLayer(model, controller) {
