@@ -82,19 +82,7 @@ export class EditorController {
     const isPointInPath = canvasController.context.isPointInPath.bind(canvasController.context);
 
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
-    const drawFuncs = [
-      sceneDraw.drawMultiGlyphsLayer,
-      // sceneDraw.drawSelectedBaselineLayer,
-      sceneDraw.drawSelectedGlyphLayer,
-      sceneDraw.drawHoveredGlyphLayer,
-      sceneDraw.drawComponentsLayer,
-      sceneDraw.drawComponentSelectionLayer,
-      sceneDraw.drawHandlesLayer,
-      sceneDraw.drawNodesLayer,
-      sceneDraw.drawPathSelectionLayer,
-      sceneDraw.drawPathLayer,
-      sceneDraw.drawRectangleSelectionLayer,
-    ]
+    const drawFuncs = this.getDrawingFunctions();
     const sceneView = new SceneView();
     sceneView.subviews = drawFuncs.map(
       drawFunc => new SceneView(sceneModel, drawFunc)
@@ -128,6 +116,22 @@ export class EditorController {
     canvas.addEventListener("viewBoxChanged", this.updateWindowLocation);
     this.sceneController.addEventListener("selectedGlyphChanged", this.updateWindowLocation);
     this.sceneController.addEventListener("selectionChanged", this.updateWindowLocation);
+  }
+
+  getDrawingFunctions() {
+    return [
+      sceneDraw.drawMultiGlyphsLayer,
+      // sceneDraw.drawSelectedBaselineLayer,
+      sceneDraw.drawSelectedGlyphLayer,
+      sceneDraw.drawHoveredGlyphLayer,
+      sceneDraw.drawComponentsLayer,
+      sceneDraw.drawComponentSelectionLayer,
+      sceneDraw.drawHandlesLayer,
+      sceneDraw.drawNodesLayer,
+      sceneDraw.drawPathSelectionLayer,
+      sceneDraw.drawPathLayer,
+      sceneDraw.drawRectangleSelectionLayer,
+    ]
   }
 
   async start() {
