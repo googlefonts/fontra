@@ -114,13 +114,6 @@ export const drawCJKDesignFrameLayer = requireEditingGlyph(glyphTranslate(
 ));
 
 
-function _addRect(context, x, y, w, h, reverse = false) {
-  context.moveTo(x, y);
-  context.lineTo(x, 50);
-  context.closePath();
-}
-
-
 export const drawSelectedBaselineLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
   context.strokeStyle = drawingParameters.handleColor;
