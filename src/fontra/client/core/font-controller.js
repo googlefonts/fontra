@@ -1,9 +1,8 @@
-import { applyChange } from "./changes.js";
+import { applyChange, baseChangeFunctions } from "./changes.js";
 import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
 import { mapForward, normalizeLocation } from "./var-model.js";
-import { glyphChangeFunctions } from "/editor/scene-controller.js";
 import { throttleCalls } from "./utils.js";
 
 
@@ -248,3 +247,9 @@ function makeCmapFromReverseCmap(reverseCmap) {
   }
   return cmap;
 }
+
+
+export const glyphChangeFunctions = {
+  "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
+  ...baseChangeFunctions,
+};
