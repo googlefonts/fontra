@@ -1,3 +1,4 @@
+import asyncio
 from .rcjk_base import TimedCache, getComponentAxisDefaults, serializeGlyph
 from .ufo_utils import GLIFGlyph
 
@@ -32,9 +33,13 @@ class RCJKMySQLBackend:
         return revCmap
 
     async def _getMiscFontItems(self):
-        font_data = await self.client.font_get(self.fontUID)
-        self.designspace = font_data["data"].get("designspace", {})
-        self.fontLib = font_data["data"].get("fontlib", {})
+        if not hasattr(self, "_getMiscFontItemsTask"):
+            async def taskFunc():
+                font_data = await self.client.font_get(self.fontUID)
+                self.designspace = font_data["data"].get("designspace", {})
+                self.fontLib = font_data["data"].get("fontlib", {})
+            self._getMiscFontItemsTask = asyncio.create_task(taskFunc())
+        await self._getMiscFontItemsTask
 
     async def getGlobalAxes(self):
         if not hasattr(self, "designspace"):
