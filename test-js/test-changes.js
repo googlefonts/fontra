@@ -2,7 +2,7 @@ import chai from "chai";
 const expect = chai.expect;
 import fs from "fs";
 
-import { applyChange, baseChangeFunctions, consolidateChanges } from "../src/fontra/client/src/changes.js";
+import { applyChange, baseChangeFunctions, consolidateChanges } from "../src/fontra/client/core/changes.js";
 
 
 import { fileURLToPath } from 'url'
