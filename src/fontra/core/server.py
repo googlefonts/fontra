@@ -2,6 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from functools import partial
 from importlib import resources
 import logging
 import mimetypes
@@ -39,7 +40,13 @@ class FontraServer:
         routes.append(web.get("/", self.rootDocumentHandler))
         routes.append(web.post("/login", self.loginHandler))
         routes.append(web.post("/logout", self.logoutHandler))
-        routes.append(web.get("/editor/-/{path:.*}", self.projectsPathHandler))
+        for viewName in listBuiltinViews():
+            routes.append(
+                web.get(
+                    f"/{viewName}/-/{{path:.*}}",
+                    partial(self.viewPathHandler, viewName),
+                )
+            )
         routes.append(web.get("/{path:.*}", self.staticContentHandler))
         self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.startRemoteObjectServer)
@@ -154,7 +161,7 @@ class FontraServer:
         response = web.HTTPFound("/")
         return response
 
-    async def projectsPathHandler(self, request):
+    async def viewPathHandler(self, viewName, request):
         authToken = None
         if self.projectManager.requireLogin:
             authToken = request.cookies.get("fontra-authorization-token")
@@ -167,10 +174,25 @@ class FontraServer:
         if not await self.projectManager.projectAvailable(authToken, path):
             return web.HTTPNotFound()
 
-        html = resources.read_text("fontra.client.editor", "editor.html")
+        try:
+            html = resources.read_text(f"fontra.client.{viewName}", f"{viewName}.html")
+        except (FileNotFoundError, ModuleNotFoundError):
+            return web.HTTPNotFound()
+
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("websocket-port", str(self.webSocketPort))
         return response
+
+
+def listBuiltinViews():
+    viewNames = []
+    mod = "fontra.client"
+    for item in resources.contents(mod):
+        if not resources.is_resource(mod, item):
+            subMod = mod + "." + item
+            if resources.is_resource(subMod, item + ".html"):
+                viewNames.append(item)
+    return viewNames
 
 
 @asynccontextmanager
