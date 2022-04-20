@@ -81,6 +81,46 @@ function _drawMultiGlyphsLayer(model, controller, skipSelected = true) {
 }
 
 
+export const drawCJKDesignFrameLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  const cjkDesignFrameParameters = model.fontController.fontLib["CJKDesignFrameSettings"];
+  if (!cjkDesignFrameParameters) {
+    return;
+  }
+  const [emW, emH] = cjkDesignFrameParameters["em_Dimension"];
+  const characterFace = cjkDesignFrameParameters["characterFace"] / 100;
+  const [shiftX, shiftY] = cjkDesignFrameParameters["shift"] || [0, 0];
+  const [overshootInside, overshootOutside] = cjkDesignFrameParameters["overshoot"];
+  const [faceW, faceH] = [emW * characterFace, emH * characterFace];
+  const [faceX, faceY] = [(emW - faceW) / 2, (emH - faceH) / 2]
+  const [overshootInsideW, overshootInsideH] = [faceW - overshootInside * 2, faceH - overshootInside * 2];
+  const [overshootOutsideW, overshootOutsideH] = [faceW + overshootOutside * 2, faceH + overshootOutside * 2];
+
+  context.translate(shiftX, shiftY);
+
+  // overshoot rect
+  context.fillStyle = drawingParameters.cjkFrameOvershootColor;
+  context.beginPath();
+  context.rect(faceX - overshootOutside, faceY - overshootOutside, overshootOutsideW, overshootOutsideH);
+  context.rect(faceX + overshootInside, faceY + overshootInside, overshootInsideW, overshootInsideH);
+  context.fill("evenodd");
+
+  context.strokeStyle = drawingParameters.cjkFrameStrokeColor;
+  context.lineWidth = drawingParameters.cjkFrameLineWidth;
+  context.strokeRect(0, 0, emW, emH);
+  context.strokeRect(faceX, faceY, faceW, faceH);
+
+}
+));
+
+
+function _addRect(context, x, y, w, h, reverse = false) {
+  context.moveTo(x, y);
+  context.lineTo(x, 50);
+  context.closePath();
+}
+
+
 export const drawSelectedBaselineLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
   context.strokeStyle = drawingParameters.handleColor;

@@ -24,6 +24,8 @@ const drawingParametersLight = {
   componentFillColor: "#AAA",
   selectedComponentFillColor: "#666",
   hoveredComponentStrokeColor: "#CCC",
+  cjkFrameStrokeColor: "#000",
+  cjkFrameOvershootColor: "#00BFFF4C",
   cornerNodeSize: 8,
   smoothNodeSize: 8,
   handleNodeSize: 6.5,
@@ -32,6 +34,7 @@ const drawingParametersLight = {
   pathLineWidth: 1,
   rectSelectLineWidth: 1,
   rectSelectLineDash: [10, 10],
+  cjkFrameLineWidth: 1,
 }
 
 
@@ -48,6 +51,7 @@ const drawingParametersDark = {
   componentFillColor: "#777",
   selectedComponentFillColor: "#CCC",
   hoveredComponentStrokeColor: "#555",
+  cjkFrameStrokeColor: "#FFF",
 }
 
 
@@ -121,6 +125,7 @@ export class EditorController {
   getDrawingFunctions() {
     return [
       sceneDraw.drawMultiGlyphsLayer,
+      sceneDraw.drawCJKDesignFrameLayer,
       // sceneDraw.drawSelectedBaselineLayer,
       sceneDraw.drawSelectedGlyphLayer,
       sceneDraw.drawHoveredGlyphLayer,
