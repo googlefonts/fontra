@@ -1,5 +1,5 @@
-import { union } from "./set-ops.js";
-import { withSavedState } from "./utils.js";
+import { union } from "/core/set-ops.js";
+import { withSavedState } from "/core/utils.js";
 
 
 export function drawMultiGlyphsLayer(model, controller) {

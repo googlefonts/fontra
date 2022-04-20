@@ -1,15 +1,15 @@
-import { CanvasController } from "./canvas-controller.js";
-import { FontController } from "./font-controller.js";
-import { loaderSpinner } from "./loader-spinner.js";
-import { rectFromArray, rectToArray } from "./rectangle.js";
-import { getRemoteProxy } from "./remote.js";
+import { CanvasController } from "/core/canvas-controller.js";
+import { FontController } from "/core/font-controller.js";
+import { loaderSpinner } from "/core/loader-spinner.js";
+import { rectFromArray, rectToArray } from "/core/rectangle.js";
+import { getRemoteProxy } from "/core/remote.js";
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
-import { SceneView } from "./scene-view.js"
-import { List } from "./ui-list.js";
-import { Sliders } from "./ui-sliders.js";
-import { parseCookies, scheduleCalls } from "./utils.js";
+import { SceneView } from "/core/scene-view.js"
+import { List } from "/core/ui-list.js";
+import { Sliders } from "/core/ui-sliders.js";
+import { parseCookies, scheduleCalls } from "/core/utils.js";
 
 
 const drawingParametersLight = {

@@ -3,7 +3,7 @@ import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
 import { mapForward, normalizeLocation } from "./var-model.js";
-import { glyphChangeFunctions } from "./scene-controller.js";
+import { glyphChangeFunctions } from "/editor/scene-controller.js";
 import { throttleCalls } from "./utils.js";
 
 

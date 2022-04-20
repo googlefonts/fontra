@@ -1,7 +1,7 @@
-import { applyChange, baseChangeFunctions, consolidateChanges } from "./changes.js";
-import { MouseTracker } from "./mouse-tracker.js";
-import { centeredRect, normalizeRect } from "./rectangle.js";
-import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "./set-ops.js";
+import { applyChange, baseChangeFunctions, consolidateChanges } from "/core/changes.js";
+import { MouseTracker } from "/core/mouse-tracker.js";
+import { centeredRect, normalizeRect } from "/core/rectangle.js";
+import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "/core/set-ops.js";
 
 
 export class SceneController {
