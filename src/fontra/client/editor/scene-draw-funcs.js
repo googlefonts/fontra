@@ -13,6 +13,28 @@ function requireEditingGlyph(func) {
 }
 
 
+function requireSelectedGlyph(func) {
+  function wrapper(model, controller) {
+    if (!model.selectedGlyph || model.selectedGlyphIsEditing) {
+      return;
+    }
+    func(model, controller);
+  }
+  return wrapper;
+}
+
+
+function requireHoveredGlyph(func) {
+  function wrapper(model, controller) {
+    if (!model.hoveredGlyph || !model.hoveredGlyph === model.selectedGlyph) {
+      return;
+    }
+    func(model, controller);
+  }
+  return wrapper;
+}
+
+
 function glyphTranslate(func) {
   function wrapper(model, controller) {
     const positionedGlyph = model.getSelectedPositionedGlyph();
@@ -68,19 +90,19 @@ export const drawSelectedBaselineLayer = requireEditingGlyph(glyphTranslate(
 ));
 
 
-export function drawHoveredGlyphLayer(model, controller) {
-  if (!model.hoveredGlyph || model.hoveredGlyph === model.selectedGlyph) {
-    return;
-  }
+export const drawHoveredGlyphLayer = requireHoveredGlyph(
+(model, controller) => {
   _drawSelectedGlyphLayer(model, controller, model.hoveredGlyph, "hoveredGlyphStrokeColor");
 }
+);
 
-export function drawSelectedGlyphLayer(model, controller) {
-  if (!model.selectedGlyph || model.selectedGlyphIsEditing) {
-    return;
-  }
+
+export const drawSelectedGlyphLayer = requireSelectedGlyph(
+(model, controller) => {
   _drawSelectedGlyphLayer(model, controller, model.selectedGlyph, "selectedGlyphStrokeColor");
 }
+);
+
 
 function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorName) {
   const context = controller.context;
