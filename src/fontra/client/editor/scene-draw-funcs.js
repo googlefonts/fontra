@@ -183,8 +183,9 @@ function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorNa
 
 export const drawComponentsLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
-  context.fillStyle = drawingParameters.componentFillColor;
-  context.fill(glyph.componentsPath2d);
+  context.lineWidth = drawingParameters.pathLineWidth;
+  context.strokeStyle = drawingParameters.pathStrokeColor;
+  context.stroke(glyph.componentsPath2d);
 }
 ));
 
@@ -248,8 +249,9 @@ function _drawSelectionLayer(model, controller, context, glyph, drawingParameter
   const smoothNodeSize = drawingParameters.smoothNodeSize;
   const handleNodeSize = drawingParameters.handleNodeSize;
   const hoveredComponentStrokeColor = drawingParameters.hoveredComponentStrokeColor;
-  const componentFillColor = drawingParameters.componentFillColor;
-  const selectedComponentFillColor = drawingParameters.selectedComponentFillColor;
+  const selectedComponentStrokeColor = drawingParameters.selectedComponentStrokeColor;
+  const hoveredComponentLineWidth = drawingParameters.hoveredComponentLineWidth;
+  const selectedComponentLineWidth = drawingParameters.selectedComponentLineWidth;
 
   context.strokeStyle = drawingParameters.hoveredNodeStrokeColor;
   context.lineWidth = drawingParameters.hoveredNodeLineWidth;
@@ -274,18 +276,9 @@ function _drawSelectionLayer(model, controller, context, glyph, drawingParameter
     } else if (tp === "component") {
       const componentPath = glyph.components[index].path2d;
       context.save();
-      if (drawHoverStroke) {
-        drawWithDoubleStroke(context, componentPath,
-          8 * controller.onePixelUnit,
-          3 * controller.onePixelUnit,
-          hoveredComponentStrokeColor,
-          drawSelectionFill ? selectedComponentFillColor : componentFillColor,
-        )
-      }
-      if (drawSelectionFill) {
-        context.fillStyle = selectedComponentFillColor;
-        context.fill(componentPath);
-      }
+      context.lineWidth = drawSelectionFill ? selectedComponentLineWidth : hoveredComponentLineWidth;
+      context.strokeStyle = drawSelectionFill ? selectedComponentStrokeColor : hoveredComponentStrokeColor;
+      context.stroke(componentPath);
       context.restore();
     }
   }

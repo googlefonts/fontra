@@ -22,8 +22,8 @@ const drawingParametersLight = {
   handleColor: "#CCC",
   pathStrokeColor: "#000",
   componentFillColor: "#AAA",
-  selectedComponentFillColor: "#666",
-  hoveredComponentStrokeColor: "#CCC",
+  selectedComponentStrokeColor: "#AAA",
+  hoveredComponentStrokeColor: "#DDD",
   cjkFrameStrokeColor: "#000",
   cjkFrameOvershootColor: "#00BFFF4C",
   cjkFrameSecondLineColor: "#A62963FF",
@@ -36,6 +36,8 @@ const drawingParametersLight = {
   rectSelectLineWidth: 1,
   rectSelectLineDash: [10, 10],
   cjkFrameLineWidth: 1,
+  selectedComponentLineWidth: 3,
+  hoveredComponentLineWidth: 3,
 }
 
 
@@ -50,8 +52,8 @@ const drawingParametersDark = {
   handleColor: "#777",
   pathStrokeColor: "#FFF",
   componentFillColor: "#777",
-  selectedComponentFillColor: "#CCC",
-  hoveredComponentStrokeColor: "#555",
+  selectedComponentStrokeColor: "#BBB",
+  hoveredComponentStrokeColor: "#777",
   cjkFrameStrokeColor: "#FFF",
 }
 
@@ -130,8 +132,8 @@ export class EditorController {
       // sceneDraw.drawSelectedBaselineLayer,
       sceneDraw.drawSelectedGlyphLayer,
       sceneDraw.drawHoveredGlyphLayer,
-      sceneDraw.drawComponentsLayer,
       sceneDraw.drawComponentSelectionLayer,
+      sceneDraw.drawComponentsLayer,
       sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,
       sceneDraw.drawPathSelectionLayer,
