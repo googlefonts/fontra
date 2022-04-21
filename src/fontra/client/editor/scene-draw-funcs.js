@@ -89,7 +89,7 @@ export const drawCJKDesignFrameLayer = requireEditingGlyph(glyphTranslate(
   }
   const [emW, emH] = cjkDesignFrameParameters["em_Dimension"];
   const characterFace = cjkDesignFrameParameters["characterFace"] / 100;
-  const [shiftX, shiftY] = cjkDesignFrameParameters["shift"] || [0, 0];
+  const [shiftX, shiftY] = cjkDesignFrameParameters["shift"] || [0, -120];
   const [overshootInside, overshootOutside] = cjkDesignFrameParameters["overshoot"];
   const [faceW, faceH] = [emW * characterFace, emH * characterFace];
   const [faceX, faceY] = [(emW - faceW) / 2, (emH - faceH) / 2]
