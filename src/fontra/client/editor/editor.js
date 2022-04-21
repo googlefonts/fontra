@@ -26,6 +26,7 @@ const drawingParametersLight = {
   hoveredComponentStrokeColor: "#CCC",
   cjkFrameStrokeColor: "#000",
   cjkFrameOvershootColor: "#00BFFF4C",
+  cjkFrameSecondLineColor: "#A62963FF",
   cornerNodeSize: 8,
   smoothNodeSize: 8,
   handleNodeSize: 6.5,
