@@ -124,7 +124,7 @@ class FontraServer:
             )
         else:
             response.del_cookie("fontra-authorization-token")
-        response.set_cookie("websocket-port", str(self.webSocketPort))
+        response.set_cookie("websocket-port", str(self.webSocketProxyPort))
         return response
 
     async def loginHandler(self, request):
@@ -180,7 +180,7 @@ class FontraServer:
             return web.HTTPNotFound()
 
         response = web.Response(text=html, content_type="text/html")
-        response.set_cookie("websocket-port", str(self.webSocketPort))
+        response.set_cookie("websocket-port", str(self.webSocketProxyPort))
         return response
 
 
