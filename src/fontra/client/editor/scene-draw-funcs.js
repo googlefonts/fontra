@@ -181,20 +181,19 @@ function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorNa
 }
 
 
-export const drawComponentsLayer = requireEditingGlyph(glyphTranslate(
+export const drawPathFillLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
-  context.lineWidth = drawingParameters.pathLineWidth;
-  context.strokeStyle = drawingParameters.pathStrokeColor;
-  context.stroke(glyph.componentsPath2d);
+  context.fillStyle = drawingParameters.pathFillColor;
+  context.fill(glyph.flattenedPath2d);
 }
 ));
 
 
-export const drawPathLayer = requireEditingGlyph(glyphTranslate(
+export const drawPathStrokeLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
   context.lineWidth = drawingParameters.pathLineWidth;
   context.strokeStyle = drawingParameters.pathStrokeColor;
-  context.stroke(glyph.path2d);
+  context.stroke(glyph.flattenedPath2d);
 }
 ));
 
