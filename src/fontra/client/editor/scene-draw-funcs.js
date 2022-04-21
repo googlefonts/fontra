@@ -125,7 +125,7 @@ export const drawCJKDesignFrameLayer = requireEditingGlyph(glyphTranslate(
       const y = faceY + i * stepY;
       strokeLine(context, faceX, y, faceX + faceW, y);
     }
-    for (let i = 1; i < horizontalLine; i++) {
+    for (let i = 1; i < verticalLine; i++) {
       const x = faceX + i * stepX;
       strokeLine(context, x, faceY, x, faceY + faceH);
     }
