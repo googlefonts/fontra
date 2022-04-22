@@ -153,7 +153,6 @@ export class SceneController {
     const fontController = this.sceneModel.fontController;
     const glyphName = glyphController.name;
     const instance = glyphController.instance;
-    this.sceneModel.ghostPath = glyphController.flattenedPath2d;
 
     const varGlyph = await fontController.getGlyph(glyphName);
     const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[sourceIndex].layerName);
@@ -164,18 +163,23 @@ export class SceneController {
     await fontController.changeBegin();
     await fontController.changeSetRollback(consolidateChanges(editor.rollbackChange, baseChangePath));
 
-    for await (const event of eventStream) {
-      const currentPoint = this.localPoint(event);
-      const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      change = editor.makeChangeForDelta(delta);
-      absChange = consolidateChanges(change, baseChangePath);
-      await fontController.changeChanging(absChange);
-      applyChange(instance, change, glyphChangeFunctions);
-      await fontController.glyphChanged(glyphName);
-      await this.sceneModel.updateScene();
-      this.canvasController.setNeedsUpdate();
+    this.sceneModel.ghostPath = glyphController.flattenedPath2d;
+    try {
+      for await (const event of eventStream) {
+        const currentPoint = this.localPoint(event);
+        const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
+        change = editor.makeChangeForDelta(delta);
+        absChange = consolidateChanges(change, baseChangePath);
+        await fontController.changeChanging(absChange);
+        applyChange(instance, change, glyphChangeFunctions);
+        await fontController.glyphChanged(glyphName);
+        await this.sceneModel.updateScene();
+        this.canvasController.setNeedsUpdate();
+      }
+    } catch(error) {
+      delete this.sceneModel.ghostPath;
+      throw error;
     }
-
     delete this.sceneModel.ghostPath;
 
     const error = await fontController.changeEnd(absChange);
