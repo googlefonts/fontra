@@ -46,6 +46,7 @@ class RCJKMySQLBackend:
                     "fontlib", {}
                 )
                 self._tempFontItemsCache.updateTimeOut()
+                del self._getMiscFontItemsTask
 
             self._getMiscFontItemsTask = asyncio.create_task(taskFunc())
         await self._getMiscFontItemsTask
