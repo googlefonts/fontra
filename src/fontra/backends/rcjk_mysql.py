@@ -11,10 +11,12 @@ class RCJKMySQLBackend:
         self.fontUID = fontUID
         self._glyphMapping = None
         self._tempGlyphCache = TimedCache()
+        self._tempFontItemsCache = TimedCache()
         return self
 
     def close(self):
         self._tempGlyphCache.cancel()
+        self._tempFontItemsCache.cancel()
 
     async def getReverseCmap(self):
         self._glyphMapping = {}
@@ -34,29 +36,39 @@ class RCJKMySQLBackend:
 
     async def _getMiscFontItems(self):
         if not hasattr(self, "_getMiscFontItemsTask"):
+
             async def taskFunc():
                 font_data = await self.client.font_get(self.fontUID)
-                self.designspace = font_data["data"].get("designspace", {})
-                self.fontLib = font_data["data"].get("fontlib", {})
+                self._tempFontItemsCache["designspace"] = font_data["data"].get(
+                    "designspace", {}
+                )
+                self._tempFontItemsCache["fontLib"] = font_data["data"].get(
+                    "fontlib", {}
+                )
+                self._tempFontItemsCache.updateTimeOut()
+
             self._getMiscFontItemsTask = asyncio.create_task(taskFunc())
         await self._getMiscFontItemsTask
 
     async def getGlobalAxes(self):
-        if not hasattr(self, "designspace"):
+        axes = self._tempFontItemsCache.get("axes")
+        if axes is None:
             await self._getMiscFontItems()
-        if not hasattr(self, "axes"):
-            axes = self.designspace.get("axes", ())
+            designspace = self._tempFontItemsCache["designspace"]
+            axes = [dict(axis) for axis in designspace.get("axes", ())]
             for axis in axes:
                 axis["label"] = axis["name"]
                 axis["name"] = axis["tag"]
                 del axis["tag"]
-            self.axes = axes
-        return self.axes
+            self._tempFontItemsCache["axes"] = axes
+        return axes
 
     async def getFontLib(self):
-        if not hasattr(self, "fontLib"):
+        fontLib = self._tempFontItemsCache.get("fontLib")
+        if fontLib is None:
             await self._getMiscFontItems()
-        return self.fontLib
+            fontLib = self._tempFontItemsCache["fontLib"]
+        return fontLib
 
     async def getGlyph(self, glyphName):
         layerGlyphs = await self._getLayerGlyphs(glyphName)
