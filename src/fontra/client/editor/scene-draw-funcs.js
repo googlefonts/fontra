@@ -198,6 +198,18 @@ export const drawPathStrokeLayer = requireEditingGlyph(glyphTranslate(
 ));
 
 
+export const drawGhostPathLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  if (!model.ghostPath) {
+    return;
+  }
+  context.lineWidth = drawingParameters.pathLineWidth;
+  context.strokeStyle = drawingParameters.ghostPathStrokeColor;
+  context.stroke(model.ghostPath);
+}
+));
+
+
 export const drawHandlesLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
   context.strokeStyle = drawingParameters.handleColor;

@@ -153,6 +153,7 @@ export class SceneController {
     const fontController = this.sceneModel.fontController;
     const glyphName = glyphController.name;
     const instance = glyphController.instance;
+    this.sceneModel.ghostPath = glyphController.flattenedPath2d;
 
     const varGlyph = await fontController.getGlyph(glyphName);
     const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[sourceIndex].layerName);
@@ -174,6 +175,8 @@ export class SceneController {
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
     }
+
+    delete this.sceneModel.ghostPath;
 
     const error = await fontController.changeEnd(absChange);
     if (error) {
