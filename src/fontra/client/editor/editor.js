@@ -24,9 +24,9 @@ const drawingParametersLight = {
   pathFillColor: "#0001",
   selectedComponentStrokeColor: "#AAA",
   hoveredComponentStrokeColor: "#DDD",
-  cjkFrameStrokeColor: "#000",
-  cjkFrameOvershootColor: "#00BFFF4C",
-  cjkFrameSecondLineColor: "#A62963FF",
+  cjkFrameStrokeColor: "#0004",
+  cjkFrameOvershootColor: "#00BFFF26",
+  cjkFrameSecondLineColor: "#A6296344",
   cornerNodeSize: 8,
   smoothNodeSize: 8,
   handleNodeSize: 6.5,
@@ -54,7 +54,7 @@ const drawingParametersDark = {
   pathFillColor: "#FFF3",
   selectedComponentStrokeColor: "#BBB",
   hoveredComponentStrokeColor: "#777",
-  cjkFrameStrokeColor: "#FFF",
+  cjkFrameStrokeColor: "#FFF4",
 }
 
 
