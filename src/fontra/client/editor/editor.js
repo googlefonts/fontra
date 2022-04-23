@@ -28,6 +28,7 @@ const drawingParametersLight = {
   cjkFrameStrokeColor: "#0004",
   cjkFrameOvershootColor: "#00BFFF26",
   cjkFrameSecondLineColor: "#A6296344",
+  sidebearingBarColor: "#0004",
   cornerNodeSize: 8,
   smoothNodeSize: 8,
   handleNodeSize: 6.5,
@@ -39,6 +40,7 @@ const drawingParametersLight = {
   cjkFrameLineWidth: 1,
   selectedComponentLineWidth: 3,
   hoveredComponentLineWidth: 3,
+  sidebearingBarExtent: 16,
 }
 
 
@@ -58,6 +60,7 @@ const drawingParametersDark = {
   hoveredComponentStrokeColor: "#777",
   cjkFrameStrokeColor: "#FFF6",
   cjkFrameSecondLineColor: "#A62963AA",
+  sidebearingBarColor: "#FFF6",
 }
 
 
@@ -133,6 +136,7 @@ export class EditorController {
       sceneDraw.drawMultiGlyphsLayer,
       sceneDraw.drawCJKDesignFrameLayer,
       // sceneDraw.drawSelectedBaselineLayer,
+      sceneDraw.drawSidebearingsLayer,
       sceneDraw.drawGhostPathLayer,
       sceneDraw.drawPathFillLayer,
       sceneDraw.drawSelectedGlyphLayer,

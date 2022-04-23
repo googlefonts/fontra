@@ -143,9 +143,26 @@ export const drawCJKDesignFrameLayer = requireEditingGlyph(glyphTranslate(
 
 export const drawSelectedBaselineLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
-  context.strokeStyle = drawingParameters.handleColor;
-  context.lineWidth = drawingParameters.handleLineWidth;
+  context.strokeStyle = drawingParameters.sidebearingBarColor;
+  context.lineWidth = drawingParameters.pathLineWidth;
   strokeLine(context, 0, 0, glyph.xAdvance, 0);
+}
+));
+
+
+export const drawSidebearingsLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  context.strokeStyle = drawingParameters.sidebearingBarColor;
+  context.lineWidth = drawingParameters.pathLineWidth;
+  const extent = drawingParameters.sidebearingBarExtent;
+  strokeLine(context, 0, -extent, 0, extent);
+  strokeLine(context, glyph.xAdvance, -extent, glyph.xAdvance, extent);
+  if (extent < glyph.xAdvance / 2) {
+    strokeLine(context, 0, 0, extent, 0);
+    strokeLine(context, glyph.xAdvance, 0, glyph.xAdvance - extent, 0);
+  } else {
+    strokeLine(context, 0, 0, glyph.xAdvance, 0);
+  }
 }
 ));
 
