@@ -304,14 +304,21 @@ export class EditorController {
       glyphInfo["character"] = getCharFromUnicode(codePoint);
     }
     const selectedGlyphState = this.sceneController.getSelectedGlyphState();
+    const glyphLines = this.sceneController.getGlyphLines();
     if (selectedGlyphState) {
-      const glyphLines = this.sceneController.getGlyphLines();
       glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] = glyphInfo;
       await this.sceneController.setGlyphLines(glyphLines);
       this.sceneController.setSelectedGlyphState(selectedGlyphState);
     } else {
-      const glyphLines = [[glyphInfo]];
+      if (!glyphLines.length) {
+        glyphLines.push([]);
+      }
+      const lineIndex = glyphLines.length - 1;
+      glyphLines[lineIndex].push(glyphInfo);
       await this.sceneController.setGlyphLines(glyphLines);
+      this.sceneController.setSelectedGlyphState(
+        {"lineIndex": lineIndex, "glyphIndex": glyphLines[lineIndex].length - 1, "isEditing": false}
+      );
     }
     this.updateTextEntryFromGlyphLines();
     await this.updateSlidersAndSources();
