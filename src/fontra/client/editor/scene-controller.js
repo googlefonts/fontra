@@ -35,8 +35,13 @@ export class SceneController {
     return this.sceneModel.getSelectedGlyphName();
   }
 
-  getSelectedGlyphIndex() {
-    return this.sceneModel.getSelectedGlyphIndex();
+  getSelectedGlyphState() {
+    return this.sceneModel.getSelectedGlyphState();
+  }
+
+  setSelectedGlyphState(state) {
+    this.sceneModel.setSelectedGlyphState(state);
+    this.canvasController.setNeedsUpdate();
   }
 
   async handleDrag(eventStream, initialEvent) {

@@ -303,8 +303,16 @@ export class EditorController {
     if (codePoint !== undefined) {
       glyphInfo["character"] = getCharFromUnicode(codePoint);
     }
-    const glyphLines = [[glyphInfo]];
-    await this.sceneController.setGlyphLines(glyphLines);
+    const selectedGlyphState = this.sceneController.getSelectedGlyphState();
+    if (selectedGlyphState) {
+      const glyphLines = this.sceneController.getGlyphLines();
+      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] = glyphInfo;
+      await this.sceneController.setGlyphLines(glyphLines);
+      this.sceneController.setSelectedGlyphState(selectedGlyphState);
+    } else {
+      const glyphLines = [[glyphInfo]];
+      await this.sceneController.setGlyphLines(glyphLines);
+    }
     this.updateTextEntryFromGlyphLines();
     await this.updateSlidersAndSources();
   }
@@ -352,7 +360,7 @@ export class EditorController {
       }
       glyphInfos.push(glyphInfo);
     }
-    const selectedGlyphInfo = this.sceneController.getSelectedGlyphIndex();
+    const selectedGlyphInfo = this.sceneController.getSelectedGlyphState();
     const glyphLines = this.sceneController.getGlyphLines();
     glyphLines[selectedGlyphInfo.lineIndex].splice(selectedGlyphInfo.glyphIndex + 1, 0, ...glyphInfos);
     await this.sceneController.setGlyphLines(glyphLines);

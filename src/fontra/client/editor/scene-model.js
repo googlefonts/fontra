@@ -32,12 +32,26 @@ export class SceneModel {
     return this.getSelectedPositionedGlyph()?.glyph.name;
   }
 
-  getSelectedGlyphIndex() {
+  getSelectedGlyphState() {
     if (!this.selectedGlyph) {
       return undefined;
     }
     const [lineIndex, glyphIndex] = this.selectedGlyph.split("/");
-    return {"lineIndex": Number(lineIndex), "glyphIndex": Number(glyphIndex)};
+    return {
+      "lineIndex": Number(lineIndex),
+      "glyphIndex": Number(glyphIndex),
+      "isEditing": this.selectedGlyphIsEditing,
+    };
+  }
+
+  setSelectedGlyphState(state) {
+    if (!state) {
+      this.selectedGlyph = undefined;
+      this.selectedGlyphIsEditing = false;
+    } else {
+      this.selectedGlyph = `${state.lineIndex}/${state.glyphIndex}`;
+      this.selectedGlyphIsEditing = state.isEditing;
+    }
   }
 
   getGlyphLines() {
@@ -49,6 +63,7 @@ export class SceneModel {
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.selectedGlyph = undefined;
+    this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
     if (updateIncrementally) {
       return this.updateSceneIncrementally();
