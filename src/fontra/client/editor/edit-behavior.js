@@ -17,18 +17,26 @@ export class EditBehavior {
 
     this.editFuncs = mapSelection(this.selection,
       {
-        "point": pointIndex => makePointDragFunc(path, pointIndex),
-        "component": componentIndex => makeComponentDragFunc(components, componentIndex),
+        "point": pointIndex => makePointTransformFunc(path, pointIndex),
+        "component": componentIndex => makeComponentTransformFunc(components, componentIndex),
       }
     );
   }
 
   makeChangeForDelta(delta) {
+    return this.makeChangeForTransformFunc(
+      point => {
+        return {"x": point.x + delta.x, "y": point.y + delta.y};
+      }
+    );
+  }
+
+  makeChangeForTransformFunc(transformFunc) {
     const pathChanges = this.editFuncs["point"]?.map(
-      editFunc => makePointChange(...editFunc(delta))
+      editFunc => makePointChange(...editFunc(transformFunc))
     );
     const componentChanges = this.editFuncs["component"]?.map(
-      editFunc => makeComponentOriginChange(...editFunc(delta))
+      editFunc => makeComponentOriginChange(...editFunc(transformFunc))
     );
     const changes = [];
     if (pathChanges && pathChanges.length) {
@@ -70,16 +78,24 @@ function makeRollbackChange(instance, selection) {
 }
 
 
-function makePointDragFunc(path, pointIndex) {
+function makePointTransformFunc(path, pointIndex) {
   const point = path.getPoint(pointIndex);
-  return delta => [pointIndex, point.x + delta.x, point.y + delta.y];
+  return transformFunc => {
+    const editedPoint = transformFunc(point);
+    return [pointIndex, editedPoint.x, editedPoint.y]
+  };
 }
 
 
-function makeComponentDragFunc(components, componentIndex) {
-  const x = components[componentIndex].transformation.x;
-  const y = components[componentIndex].transformation.y;
-  return delta => [componentIndex, x + delta.x, y + delta.y];
+function makeComponentTransformFunc(components, componentIndex) {
+  const origin = {
+    "x": components[componentIndex].transformation.x,
+    "y": components[componentIndex].transformation.y,
+  };
+  return transformFunc => {
+    const editedOrigin = transformFunc(origin);
+    return [componentIndex, editedOrigin.x, editedOrigin.y];
+  }
 }
 
 
