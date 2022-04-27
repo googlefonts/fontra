@@ -102,13 +102,16 @@ export class FontController {
   }
 
   async glyphChanged(glyphName) {
-    delete this._glyphInstancePromiseCache[glyphName];
-    delete this._loadedGlyphInstances[glyphName];
-    for (const dependantName of this.glyphUsedBy[glyphName] || []) {
-      await this.glyphChanged(dependantName);
+    const glyphNames = Array.from(this._iterDeepGlyphDepencies(glyphName));
+    glyphNames.push(glyphName);
+    for (const glyphName of glyphNames) {
+      delete this._glyphInstancePromiseCache[glyphName];
+      delete this._loadedGlyphInstances[glyphName];
     }
-    const varGlyph = await this.getGlyph(glyphName);
-    varGlyph.clearDeltasCache();
+    for (const glyphName of glyphNames) {
+      const varGlyph = await this.getGlyph(glyphName);
+      varGlyph.clearDeltasCache();
+    }
   }
 
   isGlyphInstanceLoaded(glyphName) {
@@ -184,6 +187,15 @@ export class FontController {
       yield dependantGlyphName;
       for (const deeperGlyphName of this.iterGlyphUsedBy(dependantGlyphName)) {
         yield deeperGlyphName;
+      }
+    }
+  }
+
+  *_iterDeepGlyphDepencies(glyphName) {
+    for (const dependantName of this.glyphUsedBy[glyphName] || []) {
+      yield dependantName;
+      for (const sub of this._iterDeepGlyphDepencies(dependantName)) {
+        yield sub;
       }
     }
   }
