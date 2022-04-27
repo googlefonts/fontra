@@ -448,6 +448,7 @@ export class EditorController {
       this.autoViewBox = false;
       this.canvasController.setViewBox(viewBox);
     }
+    await this.sceneController.setLocation(location);
     if (text) {
       this.textEntryElement.innerText = text;
       await this.setGlyphLinesFromText(text);
@@ -456,7 +457,6 @@ export class EditorController {
       this.sceneController.selectedGlyph = selectedGlyph;
     }
     this.sceneController.selectedGlyphIsEditing = selectedGlyphIsEditing && !!selectedGlyph;
-    await this.sceneController.setLocation(location);
     this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     this.sliders.values = location;
     if (selection) {
