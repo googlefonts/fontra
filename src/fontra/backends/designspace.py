@@ -47,7 +47,9 @@ class DesignspaceBackend:
         self.ufoGlyphSets = {}
         self.globalSources = []
         self.defaultSourceGlyphSet = None
+        makeUniqueStyleName = uniqueNameMaker()
         for sourceIndex, source in enumerate(self.dsDoc.sources):
+            sourceStyleName = makeUniqueStyleName(source.styleName)
             path = source.path
             reader = readers.get(path)
             if reader is None:
@@ -56,7 +58,7 @@ class DesignspaceBackend:
                 key = (path, ufoLayerName)
                 fontraLayerName = fontraLayerNames.get(key)
                 if fontraLayerName is None:
-                    fontraLayerName = f"{source.styleName}/{ufoLayerName}"
+                    fontraLayerName = f"{sourceStyleName}/{ufoLayerName}"
                     fontraLayerNames[key] = fontraLayerName
                     self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
                         ufoLayerName
@@ -69,7 +71,7 @@ class DesignspaceBackend:
             fontraLayerName = fontraLayerNames[(path, sourceLayerName)]
             sourceDict = dict(
                 location=source.location,
-                name=source.styleName,
+                name=sourceStyleName,
                 layerName=fontraLayerName,
             )
             if source == self.dsDoc.default:
@@ -223,3 +225,18 @@ async def ufoWatcher(ufoPaths, glifFileNames):
                 glyphNames.add(glyphName)
         if glyphNames:
             yield glyphNames
+
+
+def uniqueNameMaker():
+    usedNames = set()
+
+    def makeUniqueName(name):
+        count = 0
+        uniqueName = name
+        while uniqueName in usedNames:
+            count += 1
+            uniqueName = f"{name}#{count}"
+        usedNames.add(uniqueName)
+        return uniqueName
+
+    return makeUniqueName
