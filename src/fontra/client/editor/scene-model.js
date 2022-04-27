@@ -340,11 +340,17 @@ async function buildScene(fontController, glyphLines, align = "center") {
       }
     }
 
+    let offset = 0;
     if (align === "center") {
-      const center = x / 2;
-      positionedLine.glyphs.forEach(item => item.x -= center);
+      offset = -x / 2;
     } else if (align === "right") {
-      positionedLine.glyphs.forEach(item => item.x -= x);
+      offset = -x;
+    }
+    if (offset) {
+      positionedLine.glyphs.forEach(item => {
+        item.x += offset;
+        item.bounds = offsetRect(item.bounds, offset, 0);
+      });
     }
 
     y -= 1100;  // TODO
