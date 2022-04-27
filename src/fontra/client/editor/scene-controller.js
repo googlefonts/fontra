@@ -340,6 +340,9 @@ export class SceneController {
     return this.sceneModel.getSourcesInfo();
   }
 
+  getSceneBounds() {
+    return this.sceneModel.getSceneBounds();
+  }
 }
 
 
