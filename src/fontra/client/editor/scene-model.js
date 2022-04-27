@@ -317,7 +317,7 @@ function mergeAxisInfo(axisInfos) {
 }
 
 
-async function buildScene(fontController, glyphLines) {
+async function buildScene(fontController, glyphLines, align = "center") {
   let y = 0;
   const positionedLines = [];
   for (const glyphLine of glyphLines) {
@@ -339,6 +339,14 @@ async function buildScene(fontController, glyphLines) {
         x += glyphInstance.xAdvance;
       }
     }
+
+    if (align === "center") {
+      const center = x / 2;
+      positionedLine.glyphs.forEach(item => item.x -= center);
+    } else if (align === "right") {
+      positionedLine.glyphs.forEach(item => item.x -= x);
+    }
+
     y -= 1100;  // TODO
     if (positionedLine.glyphs.length) {
       positionedLine.bounds = unionRect(
