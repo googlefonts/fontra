@@ -102,8 +102,7 @@ export class FontController {
   }
 
   async glyphChanged(glyphName) {
-    const glyphNames = Array.from(this.iterGlyphUsedBy(glyphName));
-    glyphNames.push(glyphName);
+    const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)]
     for (const glyphName of glyphNames) {
       delete this._glyphInstancePromiseCache[glyphName];
       delete this._loadedGlyphInstances[glyphName];
