@@ -299,7 +299,8 @@ export class EditorController {
   }
 
   async glyphSearchFieldChanged(value) {
-    const filteredGlyphItems = this.glyphsListItems.filter(item => glyphFilterFunc(item, value));
+    const searchItems = value.split(/\s+/).filter(item => item.length);
+    const filteredGlyphItems = this.glyphsListItems.filter(item => glyphFilterFunc(item, searchItems));
     const selectedItem = this.glyphNamesList.getSelectedItem();
     this.glyphNamesList.setItems(filteredGlyphItems);
     this.glyphNamesList.setSelectedItem(selectedItem);
@@ -532,14 +533,16 @@ function glyphItemSortFunc(item1, item2) {
 }
 
 
-function glyphFilterFunc(item, searchString) {
-  if (item.glyphName.indexOf(searchString) >= 0) {
-    return true;
-  }
-  if (item.unicodes[0] !== undefined) {
-    const char = String.fromCodePoint(item.unicodes[0]);
-    if (searchString === char) {
+function glyphFilterFunc(item, searchItems) {
+  for (const searchString of searchItems) {
+    if (item.glyphName.indexOf(searchString) >= 0) {
       return true;
+    }
+    if (item.unicodes[0] !== undefined) {
+      const char = String.fromCodePoint(item.unicodes[0]);
+      if (searchString === char) {
+        return true;
+      }
     }
   }
   return false;
