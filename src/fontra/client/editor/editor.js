@@ -538,7 +538,7 @@ function glyphFilterFunc(item, searchString) {
   }
   if (item.unicodes[0] !== undefined) {
     const char = String.fromCodePoint(item.unicodes[0]);
-    if (searchString.indexOf(char) >= 0) {
+    if (searchString === char) {
       return true;
     }
   }
