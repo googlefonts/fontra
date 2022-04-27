@@ -1,7 +1,7 @@
 import { CanvasController } from "../core/canvas-controller.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
-import { rectFromArray, rectToArray } from "../core/rectangle.js";
+import { insetRect, rectFromArray, rectToArray } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js"
 import { List } from "../core/ui-list.js";
@@ -87,6 +87,7 @@ export class EditorController {
 
   constructor(font) {
     this.fontController = new FontController(font, {});
+    this.autoViewBox = true;
     const canvas = document.querySelector("#edit-canvas");
 
     const canvasController = new CanvasController(canvas, this.drawingParameters);
@@ -322,6 +323,7 @@ export class EditorController {
     }
     this.updateTextEntryFromGlyphLines();
     await this.updateSlidersAndSources();
+    this.setAutoViewBox();
   }
 
   updateTextEntryFromGlyphLines() {
@@ -343,6 +345,7 @@ export class EditorController {
     );
     await this.sceneController.setGlyphLines(glyphLines);
     await this.updateSlidersAndSources();
+    this.setAutoViewBox();
   }
 
   async updateSlidersAndSources() {
@@ -373,6 +376,7 @@ export class EditorController {
     await this.sceneController.setGlyphLines(glyphLines);
     this.updateTextEntryFromGlyphLines();
     await this.updateSlidersAndSources();
+    this.setAutoViewBox();
   };
 
   spaceKeyDownHandler(event) {
@@ -438,6 +442,7 @@ export class EditorController {
       }
     }
     if (viewBox) {
+      this.autoViewBox = false;
       this.canvasController.setViewBox(viewBox);
     }
     if (text) {
@@ -482,6 +487,22 @@ export class EditorController {
       url.searchParams.set("selection", selString);
     }
     window.history.replaceState({}, "", url);
+  }
+
+  setAutoViewBox() {
+    if (!this.autoViewBox) {
+      return;
+    }
+    this.autoViewBox = false;
+    let bounds = this.sceneController.getSceneBounds();
+    if (!bounds) {
+      return;
+    }
+    const width = bounds.xMax - bounds.xMin;
+    const height = bounds.yMax - bounds.yMin;
+    const inset = width > height ? width * 0.1 : height * 0.1;
+    bounds = insetRect(bounds, -inset, -inset);
+    this.canvasController.setViewBox(bounds);
   }
 
 }
