@@ -82,6 +82,16 @@ export function offsetRect(rect, x, y) {
 }
 
 
+export function insetRect(rect, dx, dy) {
+  return {
+    "xMin": rect.xMin + dx,
+    "yMin": rect.yMin + dy,
+    "xMax": rect.xMax - dx,
+    "yMax": rect.yMax - dy,
+  };
+}
+
+
 export function equalRect(rect1, rect2) {
   return (
     rect1.xMin === rect2.xMin &&
