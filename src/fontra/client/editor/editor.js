@@ -127,7 +127,10 @@ export class EditorController {
 
     this.enteredText = "";
     this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
-    canvas.addEventListener("viewBoxChanged", this.updateWindowLocation);
+    canvas.addEventListener("viewBoxChanged", () => {
+      this.autoViewBox = false;
+      this.updateWindowLocation();
+    });
     this.sceneController.addEventListener("selectedGlyphChanged", this.updateWindowLocation);
     this.sceneController.addEventListener("selectionChanged", this.updateWindowLocation);
   }
@@ -493,7 +496,6 @@ export class EditorController {
     if (!this.autoViewBox) {
       return;
     }
-    this.autoViewBox = false;
     let bounds = this.sceneController.getSceneBounds();
     if (!bounds) {
       return;
