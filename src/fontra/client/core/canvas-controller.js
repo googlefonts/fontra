@@ -15,7 +15,7 @@ export class CanvasController {
     this.sceneView = undefined;  // will be set later
 
     this.magnification = 1;
-    this.origin = {x: 200, y: 880};  // TODO choose y based on initial canvas height
+    this.origin = {x: this.canvasWidth / 2, y: 0.85 * this.canvasHeight};  // TODO choose y based on initial canvas height
     this.needsUpdate = false;
 
     this.setDrawingParameters(drawingParameters);
@@ -49,10 +49,17 @@ export class CanvasController {
     this.setNeedsUpdate();
   }
 
-  setupSize() {
-    const width = this.canvas.parentElement.getBoundingClientRect().width;
-    const height = this.canvas.parentElement.getBoundingClientRect().height;
+  get canvasWidth() {
+    return this.canvas.parentElement.getBoundingClientRect().width;
+  }
 
+  get canvasHeight() {
+    return this.canvas.parentElement.getBoundingClientRect().height;
+  }
+
+  setupSize() {
+    const width = this.canvasWidth;
+    const height = this.canvasHeight;
     const scale = window.devicePixelRatio; // Change to 1 on retina screens to see blurry canvas.
     this.canvas.width = Math.floor(width * scale);
     this.canvas.height = Math.floor(height * scale);
@@ -183,8 +190,8 @@ export class CanvasController {
   }
 
   getViewBox() {
-    const width = this.canvas.parentElement.getBoundingClientRect().width;
-    const height = this.canvas.parentElement.getBoundingClientRect().height;
+    const width = this.canvasWidth;
+    const height = this.canvasHeight;
     const bottomLeft = this.localPoint({x: 0, y: 0});
     const topRight = this.localPoint({x: width, y: height});
     return normalizeRect(
@@ -194,8 +201,8 @@ export class CanvasController {
 
   setViewBox(viewBox) {
     const localCenter = rectCenter(viewBox);
-    const width = this.canvas.parentElement.getBoundingClientRect().width;
-    const height = this.canvas.parentElement.getBoundingClientRect().height;
+    const width = this.canvasWidth;
+    const height = this.canvasHeight;
     const magnificationX = Math.abs(width / (viewBox.xMax - viewBox.xMin));
     const magnificationY = Math.abs(height / (viewBox.yMax - viewBox.yMin));
     this.magnification = Math.min(magnificationX, magnificationY);
