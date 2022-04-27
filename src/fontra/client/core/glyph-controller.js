@@ -163,9 +163,20 @@ export class VariableGlyphController {
 
   instantiate(location, fromGlobal = true) {
     const axisDict = fromGlobal ? this.axisDictGlobal : this.axisDictLocal;
-    return this.model.interpolateFromDeltas(
-      normalizeLocation(location, axisDict), this.deltas
-    );
+    try {
+      return this.model.interpolateFromDeltas(
+        normalizeLocation(location, axisDict), this.deltas
+      );
+    } catch (error) {
+      if (error.name !== "VariationError") {
+        throw error;
+      }
+      const errorMessage = `Interpolation error while instantiating glyph ${this.name} (${error.toString()})`;
+      const indexInfo = findClosestSourceIndexFromLocation(
+        this.glyph, normalizeLocation(location, axisDict), this.axisDictLocal
+      );
+      return this.getLayerGlyph(this.sources[indexInfo.index].layerName);
+    }
   }
 
   async instantiateController(location, getGlyphFunc) {
@@ -474,4 +485,28 @@ function subsetLocation(location, axes) {
     }
   }
   return subsettedLocation;
+}
+
+
+function findClosestSourceIndexFromLocation(glyph, location, axisDict) {
+  const distances = [];
+  for (let i = 0; i < glyph.sources.length; i++) {
+    const sourceLocation = normalizeLocation(glyph.sources[i].location, axisDict);
+    let distanceSquared = 0;
+    for (const [axisName, value] of Object.entries(location)) {
+      const sourceValue = sourceLocation[axisName];
+      distanceSquared += (sourceValue - value) ** 2;
+    }
+    distances.push([distanceSquared, i]);
+    if (distanceSquared === 0) {
+      // exact match, no need to look further
+      break;
+    }
+  }
+  distances.sort((a, b) => {
+    const da = a[0];
+    const db = b[0];
+    return (a > b) - (a < b);
+  });
+  return {distance: Math.sqrt(distances[0][0]), index: distances[0][1]}
 }
