@@ -127,8 +127,12 @@ export class EditorController {
 
     this.enteredText = "";
     this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
-    canvas.addEventListener("viewBoxChanged", () => {
-      this.autoViewBox = false;
+    canvas.addEventListener("viewBoxChanged", event => {
+      if (event.detail === "canvas-size") {
+        this.setAutoViewBox();
+      } else {
+        this.autoViewBox = false;
+      }
       this.updateWindowLocation();
     });
     this.sceneController.addEventListener("selectedGlyphChanged", this.updateWindowLocation);
