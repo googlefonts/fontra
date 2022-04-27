@@ -280,6 +280,20 @@ export class SceneModel {
     return undefined;
   }
 
+  getSceneBounds() {
+    let bounds = undefined;
+    for (const line of this.positionedLines) {
+      for (const glyph of line.glyphs) {
+        if (!bounds) {
+          bounds = glyph.bounds;
+        } else if (glyph.bounds) {
+          bounds = unionRect(bounds, glyph.bounds);
+        }
+      }
+    }
+    return bounds;
+  }
+
 }
 
 
@@ -349,7 +363,7 @@ async function buildScene(fontController, glyphLines, align = "center") {
     if (offset) {
       positionedLine.glyphs.forEach(item => {
         item.x += offset;
-        item.bounds = offsetRect(item.bounds, offset, 0);
+        item.bounds = item.bounds ? offsetRect(item.bounds, offset, 0) : undefined;
       });
     }
 
