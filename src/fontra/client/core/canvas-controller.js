@@ -106,7 +106,7 @@ export class CanvasController {
   handleResize(event) {
     this.setupSize();
     this.setNeedsUpdate();
-    this._viewBoxChanged();
+    this._dispatchEvent("viewBoxChanged");
   }
 
   handleWheel(event) {
@@ -120,7 +120,7 @@ export class CanvasController {
         this.origin.y -= event.deltaY;
       }
       this.setNeedsUpdate();
-      this._viewBoxChanged();
+      this._dispatchEvent("viewBoxChanged");
     }
   }
 
@@ -154,7 +154,7 @@ export class CanvasController {
     this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
     this._updateDrawingParameters();
     this.setNeedsUpdate();
-    this._viewBoxChanged();
+    this._dispatchEvent("viewBoxChanged");
   }
 
   onEvent(event) {
@@ -213,8 +213,8 @@ export class CanvasController {
     this.setNeedsUpdate();
   }
 
-  _viewBoxChanged() {
-    const event = new CustomEvent("viewBoxChanged", {
+  _dispatchEvent(eventName) {
+    const event = new CustomEvent(eventName, {
       "bubbles": false,
       "detail": this,
     });
