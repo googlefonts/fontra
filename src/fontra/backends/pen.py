@@ -1,4 +1,8 @@
+import logging
 import math
+
+
+logger = logging.getLogger(__name__)
 
 
 ON_CURVE = 0x00
@@ -79,8 +83,10 @@ class PathBuilderPointPen:
         # way to have reasonable behavior in common cases.
         if rotation == -0.0:
             rotation = 0.0
-        assert abs(skewx) < 0.00001, f"x skew is not yet supported ({glyphName}, {skewx})"
-        assert abs(skewy) < 0.00001, f"y skew is not yet supported ({glyphName}, {skewy})"
+        if abs(skewx) > 0.00001:
+            logger.warn(f"x skew is not yet supported ({glyphName}, {skewx})")
+        if abs(skewy) > 0.00001:
+            logger.warn(f"y skew is not yet supported ({glyphName}, {skewy})")
         transformation = dict(
             x=dx,
             y=dy,
