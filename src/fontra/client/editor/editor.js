@@ -127,6 +127,7 @@ export class EditorController {
 
     this.enteredText = "";
     this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
+    this.updateSelectionInfo = scheduleCalls(event => this._updateSelectionInfo(), 250);
     canvas.addEventListener("viewBoxChanged", event => {
       if (event.detail === "canvas-size") {
         this.setAutoViewBox();
@@ -135,8 +136,8 @@ export class EditorController {
       }
       this.updateWindowLocation();
     });
-    this.sceneController.addEventListener("selectedGlyphChanged", event => this.selectionChanged(event));
-    this.sceneController.addEventListener("selectionChanged", event => this.selectionChanged(event));
+    this.sceneController.addEventListener("selectedGlyphChanged", () => this.updateWindowLocationAndSelectionInfo());
+    this.sceneController.addEventListener("selectionChanged", () => this.updateWindowLocationAndSelectionInfo());
   }
 
   getDrawingFunctions() {
@@ -198,7 +199,7 @@ export class EditorController {
       await this.sceneController.setLocation(location);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     }));
-    this.sliders.addEventListener("slidersChanged", this.updateWindowLocation);
+    this.sliders.addEventListener("slidersChanged", () => this.updateWindowLocationAndSelectionInfo());
   }
 
   initSourcesList() {
@@ -210,7 +211,7 @@ export class EditorController {
     this.sourcesList.addEventListener("listSelectionChanged", async event => {
       await this.sceneController.setSelectedSource(event.detail.getSelectedItem().sourceIndex);
       this.sliders.values = this.sceneController.getLocation();
-      this.updateWindowLocation();
+      this.updateWindowLocationAndSelectionInfo();
     });
   }
 
@@ -365,7 +366,7 @@ export class EditorController {
     this.sliders.setSliderDescriptions(axisInfo);
     this.sliders.values = this.sceneController.getLocation();
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
-    this.updateWindowLocation();
+    this.updateWindowLocationAndSelectionInfo();
   }
 
   async doubleClickedComponentsCallback(event) {
@@ -497,8 +498,46 @@ export class EditorController {
     window.history.replaceState({}, "", url);
   }
 
-  selectionChanged(event) {
+  updateWindowLocationAndSelectionInfo() {
+    this.updateSelectionInfo();
     this.updateWindowLocation();
+  }
+
+  _updateSelectionInfo() {
+    const selectionInfoElement = document.querySelector("#selection-info");
+    const glyph = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
+    const instance = glyph?.instance;
+    const glyphName = glyph?.name
+
+    const contents = [];
+    if (glyphName) {
+      contents.push(`Glyph “${glyphName}”`);
+      contents.push(`Advance width: ${instance.xAdvance}`);
+      contents.push("");
+    }
+    for (const selItem of this.sceneController.selection || []) {
+      const [tp, index] = selItem.split("/");
+      if (tp === "component") {
+        const component = instance.components[index];
+        contents.push(`“${component.name}” (#${index})`);
+        contents.push("transformation:");
+        for (const [key, value] of Object.entries(component.transformation)) {
+          contents.push(`${key}: ${value}`);
+        }
+        if (component.location) {
+          contents.push("location:");
+          for (const [key, value] of Object.entries(component.location)) {
+            contents.push(`${key}: ${value}`);
+          }
+        }
+        contents.push("");
+      }
+    }
+    if (contents.length) {
+      selectionInfoElement.innerHTML = contents.join("<br>");
+    } else {
+      selectionInfoElement.innerHTML = "<i>(no selection)</i>";
+    }
   }
 
   setAutoViewBox() {
