@@ -135,8 +135,8 @@ export class EditorController {
       }
       this.updateWindowLocation();
     });
-    this.sceneController.addEventListener("selectedGlyphChanged", this.updateWindowLocation);
-    this.sceneController.addEventListener("selectionChanged", this.updateWindowLocation);
+    this.sceneController.addEventListener("selectedGlyphChanged", event => this.selectionChanged(event));
+    this.sceneController.addEventListener("selectionChanged", event => this.selectionChanged(event));
   }
 
   getDrawingFunctions() {
@@ -495,6 +495,10 @@ export class EditorController {
       url.searchParams.set("selection", selString);
     }
     window.history.replaceState({}, "", url);
+  }
+
+  selectionChanged(event) {
+    this.updateWindowLocation();
   }
 
   setAutoViewBox() {
