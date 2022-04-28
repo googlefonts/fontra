@@ -577,6 +577,9 @@ function glyphItemSortFunc(item1, item2) {
 
 
 function glyphFilterFunc(item, searchItems) {
+  if (!searchItems.length) {
+    return true;
+  }
   for (const searchString of searchItems) {
     if (item.glyphName.indexOf(searchString) >= 0) {
       return true;
