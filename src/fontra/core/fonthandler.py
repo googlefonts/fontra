@@ -33,8 +33,11 @@ class FontHandler:
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.watchExternalChanges())
 
-    def close(self):
+    async def close(self):
         self.backend.close()
+        if hasattr(self, "_watcherTask"):
+            self._watcherTask.cancel()
+            await self._watcherTask
 
     async def watchExternalChanges(self):
         async for glyphNames in self.backend.watchExternalChanges():

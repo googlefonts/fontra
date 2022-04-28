@@ -34,7 +34,7 @@ class FileSystemProjectManager:
 
     async def close(self):
         for fontHandler in self.fontHandlers.values():
-            fontHandler.close()
+            await fontHandler.close()
 
     @contextmanager
     def useConnection(self, connection):
