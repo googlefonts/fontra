@@ -104,7 +104,7 @@ def serializeComponents(
         if deepCompoDict["coord"]:
             component["location"] = cleanupLocation(
                 deepCompoDict["coord"],
-                axisDefaults[name],
+                axisDefaults.get(name),
                 neutralComponentLocations[index],
             )
         component["transformation"] = deepCompoDict["transform"]
@@ -113,6 +113,8 @@ def serializeComponents(
 
 
 def cleanupLocation(location, axisDefaults, neutralLocation):
+    if axisDefaults is None:
+        return dict(location)
     return {
         a: location.get(a, neutralLocation.get(a, v)) for a, v in axisDefaults.items()
     }
