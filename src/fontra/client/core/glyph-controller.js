@@ -355,6 +355,7 @@ async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, tran
   const compoLocation = mergeLocations(parentLocation, compo.location);
   const glyph = await getGlyphFunc(compo.name);
   if (!glyph) {
+    console.log(`component glyph ${compo.name} was not found`)
     return {};
   }
   let inst;
