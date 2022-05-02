@@ -21,10 +21,14 @@ class RCJKMySQLBackend:
     async def getReverseCmap(self):
         self._glyphMapping = {}
         revCmap = {}
-        for typeCode, methodName in _glyphListMethods.items():
-            method = getattr(self.client, methodName)
-            response = await method(self.fontUID)
-            for glyphInfo in response["data"]:
+        response = await self.client.glif_list(self.fontUID)
+        glyphTypes = [
+            ("AE", "atomic_elements"),
+            ("DC", "deep_components"),
+            ("CG", "character_glyphs"),
+        ]
+        for typeCode, typeName in glyphTypes:
+            for glyphInfo in response["data"][typeName]:
                 unicode_hex = glyphInfo.get("unicode_hex")
                 if unicode_hex:
                     unicodes = [int(unicode_hex, 16)]
