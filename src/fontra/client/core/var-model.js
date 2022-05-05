@@ -11,6 +11,7 @@ export class VariationModel {
     this.axisOrder = axisOrder || [];
     const locationsSet = new Set(locations.map(item => locationToString(item)));
     if (locationsSet.size != locations.length) {
+      console.log("locations:", locations);
       throw new VariationError("locations must be unique");
     }
     if (! locationsSet.has("{}")) {

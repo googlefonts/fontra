@@ -172,6 +172,7 @@ export class VariableGlyphController {
         throw error;
       }
       const errorMessage = `Interpolation error while instantiating glyph ${this.name} (${error.toString()})`;
+      console.log(errorMessage);
       const indexInfo = findClosestSourceIndexFromLocation(
         this.glyph, normalizeLocation(location, axisDict), this.axisDictLocal
       );
