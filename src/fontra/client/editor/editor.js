@@ -4,6 +4,7 @@ import { loaderSpinner } from "../core/loader-spinner.js";
 import { insetRect, rectFromArray, rectToArray } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js"
+import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
 import { parseCookies, scheduleCalls } from "../core/utils.js";
@@ -119,6 +120,7 @@ export class EditorController {
 
     this.initOverlayItems(canvas);
     this.initMiniConsole();
+    this.infoForm = new Form("selection-info");
 
     window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
 
@@ -504,40 +506,51 @@ export class EditorController {
   }
 
   _updateSelectionInfo() {
-    const selectionInfoElement = document.querySelector("#selection-info");
     const glyph = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
     const instance = glyph?.instance;
     const glyphName = glyph?.name
 
-    const contents = [];
+    const formContents = [];
     if (glyphName) {
-      contents.push(`Glyph “${glyphName}”`);
-      contents.push(`Advance width: ${instance.xAdvance}`);
-      contents.push("");
+      formContents.push({"key": glyphName, "type": "header", "label": "Glyph", "value": glyphName});
+      formContents.push({"key": "xAdvance", "type": "number", "label": "Advance width", "value": instance.xAdvance});
     }
-    for (const selItem of this.sceneController.selection || []) {
+    const selection = Array.from(this.sceneController.selection || []);
+    selection.sort((a, b) => {
+      const [a0, a1] = a.split("/");
+      const [b0, b1] = b.split("/");
+      if (a0 === b0) {
+        return parseInt(a1) - parseInt(b1);
+      } else if (a0 < b0) {
+        return -1;
+      } else {
+        return 1;
+      }
+    });
+    for (const selItem of selection) {
       const [tp, index] = selItem.split("/");
       if (tp === "component") {
+        formContents.push({"type": "divider"});
         const component = instance.components[index];
-        contents.push(`“${component.name}” (#${index})`);
-        contents.push("transformation:");
+        formContents.push({"type": "header", "label": `Component #${index}`});
+        formContents.push({"key": "componentName", "type": "text", "label": "Base glyph", "value": component.name});
+        formContents.push({"type": "header", "label": "Transformation"});
+
         for (const [key, value] of Object.entries(component.transformation)) {
-          contents.push(`${key}: ${value}`);
+          formContents.push({"key": key, "type": "number", "value": value});
         }
         if (component.location) {
-          contents.push("location:");
+          formContents.push({"type": "header", "label": "Location"});
           for (const [key, value] of Object.entries(component.location)) {
-            contents.push(`${key}: ${value}`);
+            formContents.push({"key": key, "type": "number", "value": value});
           }
         }
-        contents.push("");
       }
     }
-    if (contents.length) {
-      selectionInfoElement.innerHTML = contents.join("<br>");
-    } else {
-      selectionInfoElement.innerHTML = "<i>(no selection)</i>";
+    if (!formContents.length) {
+      formContents.push({"type": "text", "value": "(No selection)"});
     }
+    this.infoForm.setFieldDescriptions(formContents);
   }
 
   setAutoViewBox() {
