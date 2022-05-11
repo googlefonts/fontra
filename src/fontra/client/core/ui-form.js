@@ -52,6 +52,12 @@ export class Form {
             valueElement.innerText = fieldItem.value;
           }
           break;
+        case "edit-number":
+          const inputElement = document.createElement("input");
+          inputElement.type = "number";
+          inputElement.value = fieldItem.value;
+          valueElement.appendChild(inputElement);
+          break;
         default:
           throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
