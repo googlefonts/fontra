@@ -512,7 +512,7 @@ export class EditorController {
 
     const formContents = [];
     if (glyphName) {
-      formContents.push({"key": glyphName, "type": "text", "label": "Glyph name", "value": glyphName});
+      formContents.push({"key": "glyphName", "type": "edit-text", "label": "Glyph name", "value": glyphName});
       formContents.push({"key": "xAdvance", "type": "edit-number", "label": "Advance width", "value": instance.xAdvance});
     }
     const selection = Array.from(this.sceneController.selection || []);
@@ -533,7 +533,7 @@ export class EditorController {
         formContents.push({"type": "divider"});
         const component = instance.components[index];
         formContents.push({"type": "header", "label": `Component #${index}`});
-        formContents.push({"key": "componentName", "type": "text", "label": "Base glyph", "value": component.name});
+        formContents.push({"key": "componentName", "type": "edit-text", "label": "Base glyph", "value": component.name});
         formContents.push({"type": "header", "label": "Transformation"});
 
         for (const [key, value] of Object.entries(component.transformation)) {
