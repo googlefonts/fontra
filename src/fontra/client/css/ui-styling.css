@@ -72,8 +72,11 @@
   border-top: 1px solid gray;
   width: 90%;
   height: 1px;
+  grid-column: 1 / span 2;
 }
 
 .ui-form-label.header {
-  font-weight: bold;
+  /*font-weight: bold;*/
+  grid-column: 1 / span 2;
+  text-align: left;
 }

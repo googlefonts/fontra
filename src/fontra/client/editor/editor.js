@@ -512,7 +512,7 @@ export class EditorController {
 
     const formContents = [];
     if (glyphName) {
-      formContents.push({"key": glyphName, "type": "header", "label": "Glyph", "value": glyphName});
+      formContents.push({"key": glyphName, "type": "text", "label": "Glyph name", "value": glyphName});
       formContents.push({"key": "xAdvance", "type": "number", "label": "Advance width", "value": instance.xAdvance});
     }
     const selection = Array.from(this.sceneController.selection || []);

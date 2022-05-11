@@ -19,11 +19,9 @@ export class Form {
     }
     for (const fieldItem of fieldDescriptions) {
       if (fieldItem.type === "divider") {
-        for (let i = 0; i < 2; i++) {
-          const dividerElement = document.createElement("hr");
-          dividerElement.className = "ui-form-divider";
-          this.container.appendChild(dividerElement);
-        }
+        const dividerElement = document.createElement("hr");
+        dividerElement.className = "ui-form-divider";
+        this.container.appendChild(dividerElement);
         continue;
       }
       const labelElement = document.createElement("div");
@@ -32,11 +30,14 @@ export class Form {
       valueElement.classList.add("ui-form-value", fieldItem.type);
 
       let label = fieldItem.label || fieldItem.key || "";
-      if (label.length) {
+      if (label.length && fieldItem.type !== "header") {
         label += ":";
       };
       labelElement.innerHTML = label;
       this.container.appendChild(labelElement);
+      if (fieldItem.type === "header") {
+        continue;
+      }
       this.container.appendChild(valueElement);
 
       switch (fieldItem.type) {
