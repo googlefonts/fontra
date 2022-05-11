@@ -40,6 +40,7 @@ export class Form {
       }
       this.container.appendChild(valueElement);
 
+      let inputElement;
       switch (fieldItem.type) {
         case "header":
           valueElement.innerText = fieldItem.value || "";
@@ -52,10 +53,18 @@ export class Form {
             valueElement.innerText = fieldItem.value;
           }
           break;
+        // case "edit-number-slider":
+        //   ...
         case "edit-number":
-          const inputElement = document.createElement("input");
+          inputElement = document.createElement("input");
           inputElement.type = "number";
           inputElement.value = fieldItem.value;
+          valueElement.appendChild(inputElement);
+          break;
+        case "edit-text":
+          inputElement = document.createElement("input");
+          inputElement.type = "text";
+          inputElement.value = fieldItem.value || "";
           valueElement.appendChild(inputElement);
           break;
         default:
