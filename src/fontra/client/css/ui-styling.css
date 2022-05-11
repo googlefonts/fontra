@@ -80,3 +80,7 @@
   grid-column: 1 / span 2;
   text-align: left;
 }
+
+.ui-form-value input {
+  font-family: "fontra-ui-regular";
+}
