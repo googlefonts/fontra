@@ -53,12 +53,21 @@ export class Form {
             valueElement.innerText = fieldItem.value;
           }
           break;
-        // case "edit-number-slider":
-        //   ...
+        case "edit-number-slider":
+          inputElement = document.createElement("input");
+          inputElement.type = "number";
+          inputElement.value = fieldItem.value;
+          inputElement.step = "any";
+          valueElement.appendChild(inputElement);
+          const sliderElement = document.createElement("input");
+          sliderElement.type = "range";
+          valueElement.appendChild(sliderElement);
+          break;
         case "edit-number":
           inputElement = document.createElement("input");
           inputElement.type = "number";
           inputElement.value = fieldItem.value;
+          inputElement.step = "any";
           valueElement.appendChild(inputElement);
           break;
         case "edit-text":

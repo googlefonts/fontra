@@ -542,7 +542,7 @@ export class EditorController {
         if (component.location) {
           formContents.push({"type": "header", "label": "Location"});
           for (const [key, value] of Object.entries(component.location)) {
-            formContents.push({"key": key, "type": "edit-number", "value": value});
+            formContents.push({"key": key, "type": "edit-number-slider", "value": value});
           }
         }
       }
