@@ -63,6 +63,22 @@ export class Form {
             el.min = fieldItem.minValue;
             el.max = fieldItem.maxValue;
           }
+          let sliderDragging = false;
+          sliderElement.oninput = event => {
+            if (!sliderDragging) {
+              sliderDragging = true;
+              // console.log("begin drag");
+            }
+            inputElement.value = myRound(sliderElement.value, 3);
+          };
+          sliderElement.onchange = event => {
+            sliderDragging = false;
+            // console.log("end drag");
+          };
+          inputElement.onchange = event => {
+            sliderElement.value = inputElement.value;
+            inputElement.value = sliderElement.value;  // Use slider's clamping
+          };
           valueElement.appendChild(inputElement);
           valueElement.appendChild(sliderElement);
           break;
@@ -96,4 +112,10 @@ export class Form {
 
   }
 
+}
+
+
+function myRound(n, digits) {
+  const f = 10 ** digits;
+  return Math.round(n * f) / f;
 }
