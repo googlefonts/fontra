@@ -55,15 +55,9 @@ export class Form {
         case "edit-number-slider":
           this._addEditNumberSlider(valueElement, fieldItem);
           break;
-        case "edit-number": {
-          const inputElement = document.createElement("input");
-          inputElement.type = "number";
-          inputElement.value = fieldItem.value;
-          inputElement.step = "any";
-          inputElement.disabled = fieldItem.disabled;
-          valueElement.appendChild(inputElement);
+        case "edit-number":
+          this._addEditNumber(valueElement, fieldItem);
           break;
-        }
         case "edit-text": {
           const inputElement = document.createElement("input");
           inputElement.type = "text";
@@ -76,6 +70,15 @@ export class Form {
           throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
     }
+  }
+
+  _addEditNumber(valueElement, fieldItem) {
+    const inputElement = document.createElement("input");
+    inputElement.type = "number";
+    inputElement.value = fieldItem.value;
+    inputElement.step = "any";
+    inputElement.disabled = fieldItem.disabled;
+    valueElement.appendChild(inputElement);
   }
 
   _addEditNumberSlider(valueElement, fieldItem) {
