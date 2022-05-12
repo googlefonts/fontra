@@ -208,6 +208,7 @@ export const drawPathFillLayer = requireEditingGlyph(glyphTranslate(
 
 export const drawPathStrokeLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
+  context.lineJoin = "round";
   context.lineWidth = drawingParameters.pathLineWidth;
   context.strokeStyle = drawingParameters.pathStrokeColor;
   context.stroke(glyph.flattenedPath2d);
@@ -220,6 +221,7 @@ export const drawGhostPathLayer = requireEditingGlyph(glyphTranslate(
   if (!model.ghostPath) {
     return;
   }
+  context.lineJoin = "round";
   context.lineWidth = drawingParameters.pathLineWidth;
   context.strokeStyle = drawingParameters.ghostPathStrokeColor;
   context.stroke(model.ghostPath);
@@ -304,6 +306,7 @@ function _drawSelectionLayer(model, controller, context, glyph, drawingParameter
     } else if (tp === "component") {
       const componentPath = glyph.components[index].path2d;
       context.save();
+      context.lineJoin = "round";
       context.lineWidth = drawSelectionFill ? selectedComponentLineWidth : hoveredComponentLineWidth;
       context.strokeStyle = drawSelectionFill ? selectedComponentStrokeColor : hoveredComponentStrokeColor;
       context.stroke(componentPath);
