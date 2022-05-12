@@ -56,11 +56,15 @@ export class Form {
         case "edit-number-slider":
           inputElement = document.createElement("input");
           inputElement.type = "number";
-          inputElement.value = fieldItem.value;
-          inputElement.step = "any";
-          valueElement.appendChild(inputElement);
           const sliderElement = document.createElement("input");
+          for (const el of [inputElement, sliderElement]) {
+            el.step = "any";
+            el.value = fieldItem.value;
+            el.min = fieldItem.minValue;
+            el.max = fieldItem.maxValue;
+          }
           sliderElement.type = "range";
+          valueElement.appendChild(inputElement);
           valueElement.appendChild(sliderElement);
           break;
         case "edit-number":
