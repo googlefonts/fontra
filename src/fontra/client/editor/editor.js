@@ -129,7 +129,7 @@ export class EditorController {
 
     this.enteredText = "";
     this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
-    this.updateSelectionInfo = scheduleCalls(event => this._updateSelectionInfo(), 250);
+    this.updateSelectionInfo = scheduleCalls(async event => await this._updateSelectionInfo(), 250);
     canvas.addEventListener("viewBoxChanged", event => {
       if (event.detail === "canvas-size") {
         this.setAutoViewBox();
@@ -505,7 +505,7 @@ export class EditorController {
     this.updateWindowLocation();
   }
 
-  _updateSelectionInfo() {
+  async _updateSelectionInfo() {
     const glyph = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
     const instance = glyph?.instance;
     const glyphName = glyph?.name
@@ -539,10 +539,21 @@ export class EditorController {
         for (const [key, value] of Object.entries(component.transformation)) {
           formContents.push({"key": key, "type": "edit-number", "value": value});
         }
-        if (component.location) {
+        const baseGlyph = await this.fontController.getGlyph(component.name);
+        if (baseGlyph?.axes && baseGlyph.axes.length) {
           formContents.push({"type": "header", "label": "Location"});
-          for (const [key, value] of Object.entries(component.location)) {
-            formContents.push({"key": key, "type": "edit-number-slider", "value": value});
+          for (const axis of baseGlyph.axes) {
+            let value = component.location[axis.name];
+            if (value === undefined) {
+              value = axis.defaultValue;
+            }
+            formContents.push({
+              "key": axis.name,
+              "type": "edit-number-slider",
+              "value": value,
+              "minValue": axis.minValue,
+              "maxValue": axis.maxValue,
+            });
           }
         }
       }
