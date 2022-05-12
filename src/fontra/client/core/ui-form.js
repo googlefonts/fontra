@@ -52,40 +52,9 @@ export class Form {
             valueElement.innerText = fieldItem.value;
           }
           break;
-        case "edit-number-slider": {
-          const inputElement = document.createElement("input");
-          const sliderElement = document.createElement("input");
-          inputElement.type = "number";
-          sliderElement.type = "range";
-          for (const el of [inputElement, sliderElement]) {
-            el.step = "any";
-            el.value = fieldItem.value;
-            el.min = fieldItem.minValue;
-            el.max = fieldItem.maxValue;
-            el.disabled = fieldItem.disabled;
-          }
-          setSliderCallbacks(
-            sliderElement,
-            {
-              beginDrag: () => {
-                // console.log("begin drag");
-              },
-              change: () => {
-                inputElement.value = myRound(sliderElement.value, 3);
-              },
-              endDrag: () => {
-                // console.log("end drag");
-              }
-            }
-          );
-          inputElement.onchange = event => {
-            sliderElement.value = inputElement.value;
-            inputElement.value = sliderElement.value;  // Use slider's clamping
-          };
-          valueElement.appendChild(inputElement);
-          valueElement.appendChild(sliderElement);
+        case "edit-number-slider":
+          this._addEditNumberSlider(valueElement, fieldItem);
           break;
-        }
         case "edit-number": {
           const inputElement = document.createElement("input");
           inputElement.type = "number";
@@ -107,6 +76,40 @@ export class Form {
           throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
     }
+  }
+
+  _addEditNumberSlider(valueElement, fieldItem) {
+    const inputElement = document.createElement("input");
+    const sliderElement = document.createElement("input");
+    inputElement.type = "number";
+    sliderElement.type = "range";
+    for (const el of [inputElement, sliderElement]) {
+      el.step = "any";
+      el.value = fieldItem.value;
+      el.min = fieldItem.minValue;
+      el.max = fieldItem.maxValue;
+      el.disabled = fieldItem.disabled;
+    }
+    setSliderCallbacks(
+      sliderElement,
+      {
+        beginDrag: () => {
+          // console.log("begin drag");
+        },
+        change: () => {
+          inputElement.value = myRound(sliderElement.value, 3);
+        },
+        endDrag: () => {
+          // console.log("end drag");
+        }
+      }
+    );
+    inputElement.onchange = event => {
+      sliderElement.value = inputElement.value;
+      inputElement.value = sliderElement.value;  // Use slider's clamping
+    };
+    valueElement.appendChild(inputElement);
+    valueElement.appendChild(sliderElement);
   }
 
   get values() {
