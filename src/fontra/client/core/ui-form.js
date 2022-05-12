@@ -62,6 +62,7 @@ export class Form {
             el.value = fieldItem.value;
             el.min = fieldItem.minValue;
             el.max = fieldItem.maxValue;
+            el.disabled = fieldItem.disabled;
           }
           setSliderCallbacks(
             sliderElement,
@@ -90,6 +91,7 @@ export class Form {
           inputElement.type = "number";
           inputElement.value = fieldItem.value;
           inputElement.step = "any";
+          inputElement.disabled = fieldItem.disabled;
           valueElement.appendChild(inputElement);
           break;
         }
@@ -97,6 +99,7 @@ export class Form {
           const inputElement = document.createElement("input");
           inputElement.type = "text";
           inputElement.value = fieldItem.value || "";
+          inputElement.disabled = fieldItem.disabled;
           valueElement.appendChild(inputElement);
           break;
         }
