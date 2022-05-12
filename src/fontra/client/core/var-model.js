@@ -153,10 +153,15 @@ export class VariationModel {
       let delta = masterValues[mapping[i]];
       const weights = this.deltaWeights[i];
       for (const [j, weight] of weights.entries()) {
-        if (weight === 1) {
-          delta = subItemwise(delta, out[j]);
-        } else {
-          delta = subItemwise(delta, mulScalar(out[j], weight));
+        try {
+          if (weight === 1) {
+            delta = subItemwise(delta, out[j]);
+          } else {
+            delta = subItemwise(delta, mulScalar(out[j], weight));
+          }
+        } catch(error) {
+          console.log(`error in master ${mapping[i]}`);
+          throw error;
         }
       }
       out.push(delta);
