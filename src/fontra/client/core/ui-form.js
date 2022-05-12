@@ -58,18 +58,21 @@ export class Form {
         case "edit-number":
           this._addEditNumber(valueElement, fieldItem);
           break;
-        case "edit-text": {
-          const inputElement = document.createElement("input");
-          inputElement.type = "text";
-          inputElement.value = fieldItem.value || "";
-          inputElement.disabled = fieldItem.disabled;
-          valueElement.appendChild(inputElement);
+        case "edit-text":
+          this._addEditText(valueElement, fieldItem);
           break;
-        }
         default:
           throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
     }
+  }
+
+  _addEditText(valueElement, fieldItem) {
+    const inputElement = document.createElement("input");
+    inputElement.type = "text";
+    inputElement.value = fieldItem.value || "";
+    inputElement.disabled = fieldItem.disabled;
+    valueElement.appendChild(inputElement);
   }
 
   _addEditNumber(valueElement, fieldItem) {
