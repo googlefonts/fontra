@@ -40,7 +40,6 @@ export class Form {
       }
       this.container.appendChild(valueElement);
 
-      let inputElement;
       switch (fieldItem.type) {
         case "header":
           valueElement.innerText = fieldItem.value || "";
@@ -53,8 +52,8 @@ export class Form {
             valueElement.innerText = fieldItem.value;
           }
           break;
-        case "edit-number-slider":
-          inputElement = document.createElement("input");
+        case "edit-number-slider": {
+          const inputElement = document.createElement("input");
           inputElement.type = "number";
           const sliderElement = document.createElement("input");
           for (const el of [inputElement, sliderElement]) {
@@ -67,19 +66,22 @@ export class Form {
           valueElement.appendChild(inputElement);
           valueElement.appendChild(sliderElement);
           break;
-        case "edit-number":
-          inputElement = document.createElement("input");
+        }
+        case "edit-number": {
+          const inputElement = document.createElement("input");
           inputElement.type = "number";
           inputElement.value = fieldItem.value;
           inputElement.step = "any";
           valueElement.appendChild(inputElement);
           break;
-        case "edit-text":
-          inputElement = document.createElement("input");
+        }
+        case "edit-text": {
+          const inputElement = document.createElement("input");
           inputElement.type = "text";
           inputElement.value = fieldItem.value || "";
           valueElement.appendChild(inputElement);
           break;
+        }
         default:
           throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
