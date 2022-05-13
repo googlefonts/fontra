@@ -148,6 +148,10 @@ export class Form {
       "detail": detail,
     });
     this.container.dispatchEvent(event);
+    const handlerName = "on" + capitalizeFirstLetter(eventName);
+    if (this[handlerName] !== undefined) {
+      this[handlerName](detail);
+    }
   }
 
   getKeys() {
@@ -200,4 +204,8 @@ function setSliderCallbacks(sliderElement, callbacks) {
 
 function hyphenatedToCamelCase(s) {
   return s.replace(/-([a-z])/g, m => m[1].toUpperCase());
+}
+
+function capitalizeFirstLetter(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
