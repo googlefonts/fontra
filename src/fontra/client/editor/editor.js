@@ -577,9 +577,15 @@ export class EditorController {
       formContents.push({"type": "text", "value": "(No selection)"});
     }
     this.infoForm.setFieldDescriptions(formContents);
+    await this._setupSelectionInfoHandlers(glyphName);
+  }
 
+  async _setupSelectionInfoHandlers(glyphName) {
     {
+      let glyphController = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
+      let instance = glyphController?.instance;
       const fontController = this.fontController;
+      const sceneModel = this.sceneController.sceneModel;
       const sourceIndex = glyphController.sourceIndex;
       const varGlyph = await fontController.getGlyph(glyphName);
       const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[sourceIndex].layerName);
@@ -591,12 +597,15 @@ export class EditorController {
       let absChange;
 
       this.infoForm.onBeginChange = async info => {
+        glyphController = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
+        instance = glyphController?.instance;
         keyString = info.key;
         keyPath = JSON.parse(keyString);
         localChangePath = ["components"].concat(keyPath);
         rollbackChange = makeFieldChange(localChangePath, getNestedValue(instance, localChangePath));
         await fontController.changeBegin();
         await fontController.changeSetRollback(consolidateChanges(rollbackChange, baseChangePath));
+        sceneModel.ghostPath = glyphController.flattenedPath2d;
       };
 
       this.infoForm.onDoChange = async info => {
@@ -609,7 +618,7 @@ export class EditorController {
         await fontController.changeChanging(absChange);
         applyChange(instance, change, glyphChangeFunctions);
         await fontController.glyphChanged(glyphName);
-        await this.sceneController.sceneModel.updateScene();
+        await sceneModel.updateScene();
         this.canvasController.setNeedsUpdate();
       };
 
@@ -617,13 +626,14 @@ export class EditorController {
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
+        delete sceneModel.ghostPath;
         const error = await fontController.changeEnd(absChange);
         if (error) {
           applyChange(instance, rollbackChange, glyphChangeFunctions);
           await fontController.glyphChanged(glyphName);
-          await this.sceneController.sceneModel.updateScene();
-          this.canvasController.setNeedsUpdate();
+          await sceneModel.updateScene();
         }
+        this.canvasController.setNeedsUpdate();
         keyString = undefined;
         keyPath = undefined;
         localChangePath = undefined;
