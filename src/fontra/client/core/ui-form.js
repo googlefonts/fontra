@@ -146,6 +146,10 @@ export class Form {
     this.container.dispatchEvent(event);
   }
 
+  getKeys() {
+    return Object.keys(this._fieldGetters);
+  }
+
   getValue(key) {
     const getter = this._fieldGetters[key];
     if (getter === undefined) {
