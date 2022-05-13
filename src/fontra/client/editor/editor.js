@@ -529,16 +529,28 @@ export class EditorController {
       }
     });
     for (const selItem of selection) {
-      const [tp, index] = selItem.split("/");
+      let [tp, index] = selItem.split("/");
       if (tp === "component") {
+        index = parseInt(index);
         formContents.push({"type": "divider"});
         const component = instance.components[index];
         formContents.push({"type": "header", "label": `Component #${index}`});
-        formContents.push({"key": "componentName", "type": "edit-text", "label": "Base glyph", "value": component.name});
+        formContents.push({
+          "type": "edit-text",
+          "key": JSON.stringify([index, "name"]),
+          "label": "Base glyph",
+          "value": component.name,
+        });
         formContents.push({"type": "header", "label": "Transformation"});
 
         for (const [key, value] of Object.entries(component.transformation)) {
-          formContents.push({"key": key, "type": "edit-number", "value": value, "disabled": !canEdit});
+          formContents.push({
+            "type": "edit-number",
+            "key": JSON.stringify([index, "transformation", key]),
+            "label": key,
+            "value": value,
+            "disabled": !canEdit,
+          });
         }
         const baseGlyph = await this.fontController.getGlyph(component.name);
         if (baseGlyph?.axes && baseGlyph.axes.length) {
@@ -549,8 +561,9 @@ export class EditorController {
               value = axis.defaultValue;
             }
             formContents.push({
-              "key": axis.name,
               "type": "edit-number-slider",
+              "key": JSON.stringify([index, "location", axis.name]),
+              "label": axis.name,
               "value": value,
               "minValue": axis.minValue,
               "maxValue": axis.maxValue,
@@ -564,9 +577,17 @@ export class EditorController {
       formContents.push({"type": "text", "value": "(No selection)"});
     }
     this.infoForm.setFieldDescriptions(formContents);
-    // this.infoForm.addEventListener("beginChange", event => console.log("begin", event.detail));
-    // this.infoForm.addEventListener("doChange", event => console.log("ch", event.detail));
-    // this.infoForm.addEventListener("endChange", event => console.log("end", event.detail));
+
+    this.infoForm.onBeginChange = info => {
+      console.log("begin", info);
+    };
+    this.infoForm.onDoChange = info => {
+      console.log("ch", info);
+    };
+    this.infoForm.onEndChange = info => {
+      console.log("end", info);
+    };
+
   }
 
   setAutoViewBox() {
