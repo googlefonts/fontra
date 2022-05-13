@@ -1,5 +1,6 @@
 import { CanvasController } from "../core/canvas-controller.js";
-import { FontController } from "../core/font-controller.js";
+import { applyChange, consolidateChanges } from "../core/changes.js";
+import { FontController, glyphChangeFunctions } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
 import { insetRect, rectFromArray, rectToArray } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
@@ -11,7 +12,6 @@ import { parseCookies, scheduleCalls } from "../core/utils.js";
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
-
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
@@ -578,15 +578,56 @@ export class EditorController {
     }
     this.infoForm.setFieldDescriptions(formContents);
 
-    this.infoForm.onBeginChange = info => {
-      console.log("begin", info);
-    };
-    this.infoForm.onDoChange = info => {
-      console.log("ch", info);
-    };
-    this.infoForm.onEndChange = info => {
-      console.log("end", info);
-    };
+    {
+      const fontController = this.fontController;
+      const sourceIndex = glyphController.sourceIndex;
+      const varGlyph = await fontController.getGlyph(glyphName);
+      const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[sourceIndex].layerName);
+      const baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
+      let keyString;
+      let keyPath;
+      let localChangePath;
+      let rollbackChange;
+      let absChange;
+
+      this.infoForm.onBeginChange = async info => {
+        keyString = info.key;
+        keyPath = JSON.parse(keyString);
+        localChangePath = ["components"].concat(keyPath);
+        rollbackChange = makeFieldChange(localChangePath, getNestedValue(instance, localChangePath));
+      };
+
+      this.infoForm.onDoChange = async info => {
+        if (keyString !== info.key) {
+          throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
+        }
+        const newValue = info.value;
+        const change = makeFieldChange(localChangePath, newValue);
+        absChange = consolidateChanges(change, baseChangePath);
+        await fontController.changeChanging(absChange);
+        applyChange(instance, change, glyphChangeFunctions);
+        await fontController.glyphChanged(glyphName);
+        await this.sceneController.sceneModel.updateScene();
+        this.canvasController.setNeedsUpdate();
+      };
+
+      this.infoForm.onEndChange = async info => {
+        if (keyString !== info.key) {
+          throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
+        }
+        const error = await fontController.changeEnd(absChange);
+        if (error) {
+          applyChange(instance, rollbackChange, glyphChangeFunctions);
+          await fontController.glyphChanged(glyphName);
+          await this.sceneController.sceneModel.updateScene();
+          this.canvasController.setNeedsUpdate();
+        }
+        keyString = undefined;
+        keyPath = undefined;
+        localChangePath = undefined;
+      };
+
+    }
 
   }
 
@@ -762,4 +803,27 @@ function clearSearchParams(searchParams) {
   for (const key of Array.from(searchParams.keys())) {
     searchParams.delete(key);
   }
+}
+
+
+function makeFieldChange(path, value) {
+  const key = path.slice(-1)[0];
+  path = path.slice(0, -1);
+  return {
+    "p": path,
+    "f": "=",
+    "k": key,
+    "v": value,
+  };
+}
+
+
+function getNestedValue(subject, path) {
+  for (const pathElement of path) {
+    subject = subject[pathElement];
+    if (subject === undefined) {
+      throw new Error(`assert -- invalid change path: ${path}`);
+    }
+  }
+  return subject;
 }
