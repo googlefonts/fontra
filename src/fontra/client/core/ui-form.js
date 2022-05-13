@@ -40,30 +40,29 @@ export class Form {
       }
       this.container.appendChild(valueElement);
 
-      switch (fieldItem.type) {
-        case "header":
-          valueElement.innerText = fieldItem.value || "";
-          break;
-        case "text":
-          valueElement.innerText = fieldItem.value || "";
-          break;
-        case "number":
-          if (fieldItem.value !== undefined) {
-            valueElement.innerText = fieldItem.value;
-          }
-          break;
-        case "edit-number-slider":
-          this._addEditNumberSlider(valueElement, fieldItem);
-          break;
-        case "edit-number":
-          this._addEditNumber(valueElement, fieldItem);
-          break;
-        case "edit-text":
-          this._addEditText(valueElement, fieldItem);
-          break;
-        default:
+      const methodName = hyphenatedToCamelCase("_add-" + fieldItem.type);
+      if (this[methodName] === undefined) {
           throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
+      this[methodName](valueElement, fieldItem);
+    }
+  }
+
+  _addHeader(valueElement, fieldItem) {
+    this._addSimple(valueElement, fieldItem);
+  }
+
+  _addText(valueElement, fieldItem) {
+    this._addSimple(valueElement, fieldItem);
+  }
+
+  _addNumber(valueElement, fieldItem) {
+    this._addSimple(valueElement, fieldItem);
+  }
+
+  _addSimple(valueElement, fieldItem) {
+    if (fieldItem.value !== undefined) {
+      valueElement.innerText = fieldItem.value;
     }
   }
 
@@ -151,4 +150,9 @@ function setSliderCallbacks(sliderElement, callbacks) {
     callbacks.endDrag();
   }
 
+}
+
+
+function hyphenatedToCamelCase(s) {
+  return s.replace(/-([a-z])/g, m => m[1].toUpperCase());
 }
