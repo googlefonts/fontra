@@ -72,9 +72,7 @@ export class Form {
     inputElement.value = fieldItem.value || "";
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = event => {
-      this._dispatchEvent("beginChange", {"key": fieldItem.key});
       this._dispatchEvent("doChange", {"key": fieldItem.key, "value": inputElement.value});
-      this._dispatchEvent("endChange", {"key": fieldItem.key});
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = value => inputElement.value = value;
@@ -88,9 +86,7 @@ export class Form {
     inputElement.step = "any";
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = event => {
-      this._dispatchEvent("beginChange", {"key": fieldItem.key});
       this._dispatchEvent("doChange", {"key": fieldItem.key, "value": parseFloat(inputElement.value)});
-      this._dispatchEvent("endChange", {"key": fieldItem.key});
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = value => inputElement.value = value;
@@ -128,6 +124,7 @@ export class Form {
     inputElement.onchange = event => {
       sliderElement.value = inputElement.value;
       inputElement.value = sliderElement.value;  // Use slider's clamping
+      this._dispatchEvent("doChange", {"key": fieldItem.key, "value": parseFloat(inputElement.value)});
     };
     this._fieldGetters[fieldItem.key] = () => sliderElement.value;
     this._fieldSetters[fieldItem.key] = value => {

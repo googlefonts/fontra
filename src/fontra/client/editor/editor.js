@@ -609,6 +609,11 @@ export class EditorController {
       };
 
       this.infoForm.onDoChange = async info => {
+        let doCallEndChange = false;
+        if (keyString === undefined) {
+          doCallEndChange = true;
+          await this.infoForm.onBeginChange(info);
+        }
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
@@ -620,6 +625,9 @@ export class EditorController {
         await fontController.glyphChanged(glyphName);
         await sceneModel.updateScene();
         this.canvasController.setNeedsUpdate();
+        if (doCallEndChange) {
+          await this.infoForm.onEndChange(info);
+        }
       };
 
       this.infoForm.onEndChange = async info => {
