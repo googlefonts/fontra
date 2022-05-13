@@ -595,6 +595,8 @@ export class EditorController {
         keyPath = JSON.parse(keyString);
         localChangePath = ["components"].concat(keyPath);
         rollbackChange = makeFieldChange(localChangePath, getNestedValue(instance, localChangePath));
+        await fontController.changeBegin();
+        await fontController.changeSetRollback(consolidateChanges(rollbackChange, baseChangePath));
       };
 
       this.infoForm.onDoChange = async info => {
