@@ -73,7 +73,7 @@ export class Form {
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = event => {
       this._dispatchEvent("beginChange", {"key": fieldItem.key});
-      this._dispatchEvent("change", {"key": fieldItem.key, "value": inputElement.value});
+      this._dispatchEvent("doChange", {"key": fieldItem.key, "value": inputElement.value});
       this._dispatchEvent("endChange", {"key": fieldItem.key});
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
@@ -89,7 +89,7 @@ export class Form {
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = event => {
       this._dispatchEvent("beginChange", {"key": fieldItem.key});
-      this._dispatchEvent("change", {"key": fieldItem.key, "value": inputElement.value});
+      this._dispatchEvent("doChange", {"key": fieldItem.key, "value": inputElement.value});
       this._dispatchEvent("endChange", {"key": fieldItem.key});
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
@@ -118,7 +118,7 @@ export class Form {
         },
         change: () => {
           inputElement.value = myRound(sliderElement.value, 3);
-          this._dispatchEvent("change", {"key": fieldItem.key, "value": inputElement.value});
+          this._dispatchEvent("doChange", {"key": fieldItem.key, "value": inputElement.value});
         },
         endEdit: () => {
           this._dispatchEvent("endChange", {"key": fieldItem.key});
@@ -136,6 +136,10 @@ export class Form {
     }
     valueElement.appendChild(inputElement);
     valueElement.appendChild(sliderElement);
+  }
+
+  addEventListener(eventName, handler, options) {
+    this.container.addEventListener(eventName, handler, options);
   }
 
   _dispatchEvent(eventName, detail) {

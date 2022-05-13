@@ -562,6 +562,9 @@ export class EditorController {
       formContents.push({"type": "text", "value": "(No selection)"});
     }
     this.infoForm.setFieldDescriptions(formContents);
+    // this.infoForm.addEventListener("beginChange", event => console.log("begin", event.detail));
+    // this.infoForm.addEventListener("doChange", event => console.log("ch", event.detail));
+    // this.infoForm.addEventListener("endChange", event => console.log("end", event.detail));
   }
 
   setAutoViewBox() {
