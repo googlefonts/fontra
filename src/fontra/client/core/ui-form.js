@@ -14,6 +14,8 @@ export class Form {
 
   setFieldDescriptions(fieldDescriptions) {
     this.container.innerHTML = "";
+    this._fieldGetters = {};
+    this._fieldSetters = {};
     if (!fieldDescriptions) {
       return;
     }
@@ -49,20 +51,18 @@ export class Form {
   }
 
   _addHeader(valueElement, fieldItem) {
-    this._addSimple(valueElement, fieldItem);
-  }
-
-  _addText(valueElement, fieldItem) {
-    this._addSimple(valueElement, fieldItem);
+    this._addText(valueElement, fieldItem);
   }
 
   _addNumber(valueElement, fieldItem) {
-    this._addSimple(valueElement, fieldItem);
+    this._addText(valueElement, fieldItem);
   }
 
-  _addSimple(valueElement, fieldItem) {
+  _addText(valueElement, fieldItem) {
     if (fieldItem.value !== undefined) {
       valueElement.innerText = fieldItem.value;
+      this._fieldGetters[fieldItem.key] = () => valueElement.innerText;
+      this._fieldSetters[fieldItem.key] = value => valueElement.innerText = value;
     }
   }
 
@@ -76,6 +76,8 @@ export class Form {
       this._dispatchEvent("change", {"key": fieldItem.key, "value": inputElement.value});
       this._dispatchEvent("endChange", {"key": fieldItem.key});
     };
+    this._fieldGetters[fieldItem.key] = () => inputElement.value;
+    this._fieldSetters[fieldItem.key] = value => inputElement.value = value;
     valueElement.appendChild(inputElement);
   }
 
@@ -90,6 +92,8 @@ export class Form {
       this._dispatchEvent("change", {"key": fieldItem.key, "value": inputElement.value});
       this._dispatchEvent("endChange", {"key": fieldItem.key});
     };
+    this._fieldGetters[fieldItem.key] = () => inputElement.value;
+    this._fieldSetters[fieldItem.key] = value => inputElement.value = value;
     valueElement.appendChild(inputElement);
   }
 
@@ -125,6 +129,11 @@ export class Form {
       sliderElement.value = inputElement.value;
       inputElement.value = sliderElement.value;  // Use slider's clamping
     };
+    this._fieldGetters[fieldItem.key] = () => sliderElement.value;
+    this._fieldSetters[fieldItem.key] = value => {
+      inputElement.value = value;
+      sliderElement.value = value;
+    }
     valueElement.appendChild(inputElement);
     valueElement.appendChild(sliderElement);
   }
@@ -135,6 +144,22 @@ export class Form {
       "detail": detail,
     });
     this.container.dispatchEvent(event);
+  }
+
+  getValue(key) {
+    const getter = this._fieldGetters[key];
+    if (getter === undefined) {
+      throw new Error(`getting unknown Form key: ${key}`);
+    }
+    return getter();
+  }
+
+  setValue(key, value) {
+    const setter = this._fieldSetters[key];
+    if (setter === undefined) {
+      throw new Error(`setting unknown Form key: ${key}`);
+    }
+    setter(value);
   }
 
 }
