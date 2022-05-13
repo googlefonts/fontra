@@ -117,12 +117,12 @@ export class Form {
     valueElement.appendChild(sliderElement);
   }
 
-  get values() {
-
-  }
-
-  set values(values) {
-
+  _dispatchEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      "bubbles": false,
+      "detail": detail,
+    });
+    this.container.dispatchEvent(event);
   }
 
 }
