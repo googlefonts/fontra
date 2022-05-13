@@ -52,11 +52,20 @@ export function throttleCalls(func, minTime) {
   // minTime (in ms) has elapsed since the last call, don't call
   // the function.
   let lastTime = 0;
+  let timeoutID = null;
   return (...args) => {
+    if (timeoutID !== null) {
+      clearTimeout(timeoutID);
+    }
     const now = Date.now();
     if (now - lastTime > minTime) {
       func(...args);
       lastTime = now;
+    } else {
+      timeoutID = setTimeout(() => {
+        timeoutID = null;
+        func(...args);
+      }, minTime);
     }
   };
 }
