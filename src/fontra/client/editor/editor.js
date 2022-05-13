@@ -506,9 +506,10 @@ export class EditorController {
   }
 
   async _updateSelectionInfo() {
-    const glyph = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
-    const instance = glyph?.instance;
-    const glyphName = glyph?.name
+    const glyphController = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
+    const instance = glyphController?.instance;
+    const glyphName = glyphController?.name;
+    const canEdit = glyphController.canEdit;
 
     const formContents = [];
     if (glyphName) {
@@ -537,7 +538,7 @@ export class EditorController {
         formContents.push({"type": "header", "label": "Transformation"});
 
         for (const [key, value] of Object.entries(component.transformation)) {
-          formContents.push({"key": key, "type": "edit-number", "value": value});
+          formContents.push({"key": key, "type": "edit-number", "value": value, "disabled": !canEdit});
         }
         const baseGlyph = await this.fontController.getGlyph(component.name);
         if (baseGlyph?.axes && baseGlyph.axes.length) {
@@ -553,6 +554,7 @@ export class EditorController {
               "value": value,
               "minValue": axis.minValue,
               "maxValue": axis.maxValue,
+              "disabled": !canEdit,
             });
           }
         }
