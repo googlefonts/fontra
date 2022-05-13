@@ -71,6 +71,11 @@ export class Form {
     inputElement.type = "text";
     inputElement.value = fieldItem.value || "";
     inputElement.disabled = fieldItem.disabled;
+    inputElement.onchange = event => {
+      this._dispatchEvent("beginChange", {"key": fieldItem.key});
+      this._dispatchEvent("change", {"key": fieldItem.key, "value": inputElement.value});
+      this._dispatchEvent("endChange", {"key": fieldItem.key});
+    };
     valueElement.appendChild(inputElement);
   }
 
@@ -80,6 +85,11 @@ export class Form {
     inputElement.value = fieldItem.value;
     inputElement.step = "any";
     inputElement.disabled = fieldItem.disabled;
+    inputElement.onchange = event => {
+      this._dispatchEvent("beginChange", {"key": fieldItem.key});
+      this._dispatchEvent("change", {"key": fieldItem.key, "value": inputElement.value});
+      this._dispatchEvent("endChange", {"key": fieldItem.key});
+    };
     valueElement.appendChild(inputElement);
   }
 
@@ -98,14 +108,16 @@ export class Form {
     setSliderCallbacks(
       sliderElement,
       {
-        beginDrag: () => {
+        beginChange: () => {
           // console.log("begin drag");
+          this._dispatchEvent("beginChange", {"key": fieldItem.key});
         },
         change: () => {
           inputElement.value = myRound(sliderElement.value, 3);
+          this._dispatchEvent("change", {"key": fieldItem.key, "value": inputElement.value});
         },
-        endDrag: () => {
-          // console.log("end drag");
+        endEdit: () => {
+          this._dispatchEvent("endChange", {"key": fieldItem.key});
         }
       }
     );
@@ -140,14 +152,14 @@ function setSliderCallbacks(sliderElement, callbacks) {
   sliderElement.oninput = event => {
     if (!sliderDragging) {
       sliderDragging = true;
-      callbacks.beginDrag();
+      callbacks.beginChange();
     }
     callbacks.change();
   }
 
   sliderElement.onchange = event => {
     sliderDragging = false;
-    callbacks.endDrag();
+    callbacks.endEdit();
   }
 
 }
