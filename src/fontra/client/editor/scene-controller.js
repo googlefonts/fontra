@@ -150,51 +150,28 @@ export class SceneController {
 
   async handleDragSelection(eventStream, initialEvent) {
     const initialPoint = this.localPoint(initialEvent);
-    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
-    if (!glyphController.canEdit) {
+
+    const editContext = this.getGlyphEditContext();
+    if (!editContext) {
       console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
+      // TODO: dialog with options:
+      // - go to closest source
+      // - insert new source here
+      // - cancel
       return;
     }
-    const sourceIndex = glyphController.sourceIndex;
-    const fontController = this.sceneModel.fontController;
-    const glyphName = glyphController.name;
-    const instance = glyphController.instance;
 
-    const varGlyph = await fontController.getGlyph(glyphName);
-    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[sourceIndex].layerName);
-    const baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
+    const editor = new EditBehavior(editContext.instance, this.selection);
 
-    const editor = new EditBehavior(instance, this.selection);
-    let change, absChange;
-    await fontController.changeBegin();
-    await fontController.changeSetRollback(consolidateChanges(editor.rollbackChange, baseChangePath));
+    await editContext.beginEdit(editor.rollbackChange);
 
-    this.sceneModel.ghostPath = glyphController.flattenedPath2d;
-    try {
-      for await (const event of eventStream) {
-        const currentPoint = this.localPoint(event);
-        const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-        change = editor.makeChangeForDelta(delta);
-        absChange = consolidateChanges(change, baseChangePath);
-        await fontController.changeChanging(absChange);
-        applyChange(instance, change, glyphChangeFunctions);
-        await fontController.glyphChanged(glyphName);
-        await this.sceneModel.updateScene();
-        this.canvasController.setNeedsUpdate();
-      }
-    } catch(error) {
-      delete this.sceneModel.ghostPath;
-      throw error;
+    for await (const event of eventStream) {
+      const currentPoint = this.localPoint(event);
+      const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
+      await editContext.doEdit(editor.makeChangeForDelta(delta));
     }
-    delete this.sceneModel.ghostPath;
 
-    const error = await fontController.changeEnd(absChange);
-    if (error) {
-      applyChange(instance, editor.rollbackChange, glyphChangeFunctions);
-      await fontController.glyphChanged(glyphName);
-      await this.sceneModel.updateScene();
-      this.canvasController.setNeedsUpdate();
-    }
+    await editContext.endEdit();
   }
 
   handleHover(event) {
@@ -343,6 +320,15 @@ export class SceneController {
   getSceneBounds() {
     return this.sceneModel.getSceneBounds();
   }
+
+  getGlyphEditContext() {
+    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    if (!glyphController.canEdit) {
+      return null;
+    }
+    return new GlyphEditContext(this, glyphController);
+  }
+
 }
 
 
@@ -365,4 +351,50 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
     }
   }
   return false;
+}
+
+
+class GlyphEditContext {
+
+  constructor(sceneController, glyphController) {
+    this.sceneController = sceneController;
+    this.sceneModel = sceneController.sceneModel;
+    this.canvasController = sceneController.canvasController
+    this.fontController = this.sceneModel.fontController;
+    this.glyphController = glyphController;
+    this.instance = glyphController.instance;
+    this.glyphName = glyphController.name;
+  }
+
+  async beginEdit(rollbackChange) {
+    this.rollbackChange = rollbackChange;
+    const varGlyph = await this.fontController.getGlyph(this.glyphName);
+    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[this.glyphController.sourceIndex].layerName);
+    this.baseChangePath = ["glyphs", this.glyphName, "layers", layerIndex, "glyph"];
+
+    await this.fontController.changeBegin();
+    await this.fontController.changeSetRollback(consolidateChanges(rollbackChange, this.baseChangePath));
+    this.sceneModel.ghostPath = this.glyphController.flattenedPath2d;
+  }
+
+  async doEdit(change) {
+    this.absChange = consolidateChanges(change, this.baseChangePath);
+    await this.fontController.changeChanging(this.absChange);
+    applyChange(this.instance, change, glyphChangeFunctions);
+    await this.fontController.glyphChanged(this.glyphName);
+    await this.sceneModel.updateScene();
+    this.canvasController.setNeedsUpdate();
+  }
+
+  async endEdit() {
+    delete this.sceneModel.ghostPath;
+    const error = await this.fontController.changeEnd(this.absChange);
+    if (error) {
+      applyChange(this.instance, this.rollbackChange, glyphChangeFunctions);
+      await this.fontController.glyphChanged(this.glyphName);
+      await this.sceneModel.updateScene();
+      this.canvasController.setNeedsUpdate();
+    }
+  }
+
 }
