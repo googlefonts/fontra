@@ -121,7 +121,7 @@ class FontHandler:
             subscribedGlyphNamesKey = "subscribedLiveGlyphNames"
         else:
             subscribedGlyphNamesKey = "loadedGlyphNames"
-        assert change["p"][0] == "glyphs"
+        assert change["p"][0] == "glyphs", change["p"]
         glyphName = change["p"][1]
         connections = []
         for connection in self.connections:
@@ -135,7 +135,7 @@ class FontHandler:
         )
 
     async def updateServerGlyph(self, change):
-        assert change["p"][0] == "glyphs"
+        assert change["p"][0] == "glyphs", change["p"]
         glyphName = change["p"][1]
         glyph = await self.getChangedGlyph(glyphName)
         applyChange(dict(glyphs={glyphName: glyph}), change, glyphChangeFunctions)
