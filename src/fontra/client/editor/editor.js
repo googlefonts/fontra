@@ -509,7 +509,7 @@ export class EditorController {
     const glyphController = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
     const instance = glyphController?.instance;
     const glyphName = glyphController?.name;
-    const canEdit = glyphController.canEdit;
+    const canEdit = glyphController?.canEdit;
 
     const formContents = [];
     if (glyphName) {
@@ -574,10 +574,11 @@ export class EditorController {
       }
     }
     if (!formContents.length) {
-      formContents.push({"type": "text", "value": "(No selection)"});
+      this.infoForm.setFieldDescriptions([{"type": "text", "value": "(No selection)"}]);
+    } else {
+      this.infoForm.setFieldDescriptions(formContents);
+      await this._setupSelectionInfoHandlers(glyphName);
     }
-    this.infoForm.setFieldDescriptions(formContents);
-    await this._setupSelectionInfoHandlers(glyphName);
   }
 
   async _setupSelectionInfoHandlers(glyphName) {
