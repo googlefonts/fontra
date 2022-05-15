@@ -326,7 +326,51 @@ export class SceneController {
     if (!glyphController.canEdit) {
       return null;
     }
-    return new GlyphEditContext(this, glyphController);
+
+    const fontController = this.sceneModel.fontController;
+    const instance = glyphController.instance;
+    const glyphName = glyphController.name;
+
+    let rollbackChange;
+    let baseChangePath;
+    let absChange;
+
+    return {
+
+      "instance": instance,
+
+      beginEdit: async rollback => {
+        rollbackChange = rollback;
+        const varGlyph = await fontController.getGlyph(glyphName);
+        const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[glyphController.sourceIndex].layerName);
+        baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
+
+        await fontController.changeBegin();
+        await fontController.changeSetRollback(consolidateChanges(rollbackChange, baseChangePath));
+        this.sceneModel.ghostPath = glyphController.flattenedPath2d;
+      },
+
+      doEdit: async change => {
+        absChange = consolidateChanges(change, baseChangePath);
+        await fontController.changeChanging(absChange);
+        applyChange(instance, change, glyphChangeFunctions);
+        await fontController.glyphChanged(glyphName);
+        await this.sceneModel.updateScene();
+        this.canvasController.setNeedsUpdate();
+      },
+
+      endEdit: async () => {
+        delete this.sceneModel.ghostPath;
+        const error = await fontController.changeEnd(absChange);
+        if (error) {
+          applyChange(instance, rollbackChange, glyphChangeFunctions);
+          await fontController.glyphChanged(glyphName);
+          await this.sceneModel.updateScene();
+          this.canvasController.setNeedsUpdate();
+        }
+      },
+
+    }
   }
 
 }
@@ -351,50 +395,4 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
     }
   }
   return false;
-}
-
-
-class GlyphEditContext {
-
-  constructor(sceneController, glyphController) {
-    this.sceneController = sceneController;
-    this.sceneModel = sceneController.sceneModel;
-    this.canvasController = sceneController.canvasController
-    this.fontController = this.sceneModel.fontController;
-    this.glyphController = glyphController;
-    this.instance = glyphController.instance;
-    this.glyphName = glyphController.name;
-  }
-
-  async beginEdit(rollbackChange) {
-    this.rollbackChange = rollbackChange;
-    const varGlyph = await this.fontController.getGlyph(this.glyphName);
-    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[this.glyphController.sourceIndex].layerName);
-    this.baseChangePath = ["glyphs", this.glyphName, "layers", layerIndex, "glyph"];
-
-    await this.fontController.changeBegin();
-    await this.fontController.changeSetRollback(consolidateChanges(rollbackChange, this.baseChangePath));
-    this.sceneModel.ghostPath = this.glyphController.flattenedPath2d;
-  }
-
-  async doEdit(change) {
-    this.absChange = consolidateChanges(change, this.baseChangePath);
-    await this.fontController.changeChanging(this.absChange);
-    applyChange(this.instance, change, glyphChangeFunctions);
-    await this.fontController.glyphChanged(this.glyphName);
-    await this.sceneModel.updateScene();
-    this.canvasController.setNeedsUpdate();
-  }
-
-  async endEdit() {
-    delete this.sceneModel.ghostPath;
-    const error = await this.fontController.changeEnd(this.absChange);
-    if (error) {
-      applyChange(this.instance, this.rollbackChange, glyphChangeFunctions);
-      await this.fontController.glyphChanged(this.glyphName);
-      await this.sceneModel.updateScene();
-      this.canvasController.setNeedsUpdate();
-    }
-  }
-
 }
