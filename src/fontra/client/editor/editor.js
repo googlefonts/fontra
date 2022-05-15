@@ -602,16 +602,15 @@ export class EditorController {
       };
 
       this.infoForm.onDoChange = async info => {
-        let doCallEndChange = false;
-        if (editContext === undefined) {
-          doCallEndChange = true;
+        let doCallBeginEnd = (editContext === undefined);
+        if (doCallBeginEnd) {
           await this.infoForm.onBeginChange(info);
         }
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
         await editContext.doEdit(makeFieldChange(localChangePath, info.value));
-        if (doCallEndChange) {
+        if (doCallBeginEnd) {
           await this.infoForm.onEndChange(info);
         }
       };
