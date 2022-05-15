@@ -583,66 +583,48 @@ export class EditorController {
 
   async _setupSelectionInfoHandlers(glyphName) {
     {
-      let glyphController = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
-      let instance = glyphController?.instance;
-      const fontController = this.fontController;
-      const sceneModel = this.sceneController.sceneModel;
-      const sourceIndex = glyphController.sourceIndex;
-      const varGlyph = await fontController.getGlyph(glyphName);
-      const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[sourceIndex].layerName);
-      const baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
+      let editContext;
       let keyString;
       let keyPath;
       let localChangePath;
-      let rollbackChange;
-      let absChange;
 
       this.infoForm.onBeginChange = async info => {
-        glyphController = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
-        instance = glyphController?.instance;
+        editContext = this.sceneController.getGlyphEditContext();
+        if (!editContext) {
+          console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
+          return;
+        }
         keyString = info.key;
         keyPath = JSON.parse(keyString);
         localChangePath = ["components"].concat(keyPath);
-        rollbackChange = makeFieldChange(localChangePath, getNestedValue(instance, localChangePath));
-        await fontController.changeBegin();
-        await fontController.changeSetRollback(consolidateChanges(rollbackChange, baseChangePath));
-        sceneModel.ghostPath = glyphController.flattenedPath2d;
+        const rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
+        await editContext.beginEdit(rollbackChange);
       };
 
       this.infoForm.onDoChange = async info => {
         let doCallEndChange = false;
-        if (keyString === undefined) {
+        if (editContext === undefined) {
           doCallEndChange = true;
           await this.infoForm.onBeginChange(info);
         }
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
-        const newValue = info.value;
-        const change = makeFieldChange(localChangePath, newValue);
-        absChange = consolidateChanges(change, baseChangePath);
-        await fontController.changeChanging(absChange);
-        applyChange(instance, change, glyphChangeFunctions);
-        await fontController.glyphChanged(glyphName);
-        await sceneModel.updateScene();
-        this.canvasController.setNeedsUpdate();
+        await editContext.doEdit(makeFieldChange(localChangePath, info.value));
         if (doCallEndChange) {
           await this.infoForm.onEndChange(info);
         }
       };
 
       this.infoForm.onEndChange = async info => {
+        if (!editContext) {
+          return;
+        }
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
-        delete sceneModel.ghostPath;
-        const error = await fontController.changeEnd(absChange);
-        if (error) {
-          applyChange(instance, rollbackChange, glyphChangeFunctions);
-          await fontController.glyphChanged(glyphName);
-          await sceneModel.updateScene();
-        }
-        this.canvasController.setNeedsUpdate();
+        await editContext.endEdit();
+        editContext = undefined;
         keyString = undefined;
         keyPath = undefined;
         localChangePath = undefined;
