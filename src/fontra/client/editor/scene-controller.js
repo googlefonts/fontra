@@ -151,7 +151,7 @@ export class SceneController {
   async handleDragSelection(eventStream, initialEvent) {
     const initialPoint = this.localPoint(initialEvent);
 
-    const editContext = this.getGlyphEditContext();
+    const editContext = await this.getGlyphEditContext();
     if (!editContext) {
       console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
       // TODO: dialog with options:
@@ -321,7 +321,7 @@ export class SceneController {
     return this.sceneModel.getSceneBounds();
   }
 
-  getGlyphEditContext() {
+  async getGlyphEditContext() {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
       return null;
@@ -331,8 +331,11 @@ export class SceneController {
     const instance = glyphController.instance;
     const glyphName = glyphController.name;
 
+    const varGlyph = await fontController.getGlyph(glyphName);
+    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[glyphController.sourceIndex].layerName);
+    const baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
+
     let rollbackChange;
-    let baseChangePath;
     let absChange;
 
     return {
@@ -341,9 +344,6 @@ export class SceneController {
 
       beginEdit: async rollback => {
         rollbackChange = rollback;
-        const varGlyph = await fontController.getGlyph(glyphName);
-        const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[glyphController.sourceIndex].layerName);
-        baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
 
         await fontController.changeBegin();
         await fontController.changeSetRollback(consolidateChanges(rollbackChange, baseChangePath));

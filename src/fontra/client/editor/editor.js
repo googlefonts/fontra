@@ -589,7 +589,7 @@ export class EditorController {
       let localChangePath;
 
       this.infoForm.onBeginChange = async info => {
-        editContext = this.sceneController.getGlyphEditContext();
+        editContext = await this.sceneController.getGlyphEditContext();
         if (!editContext) {
           console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
           return;
