@@ -513,8 +513,8 @@ export class EditorController {
 
     const formContents = [];
     if (glyphName) {
-      formContents.push({"key": "glyphName", "type": "edit-text", "label": "Glyph name", "value": glyphName});
-      formContents.push({"key": "xAdvance", "type": "edit-number", "label": "Advance width", "value": instance.xAdvance});
+      formContents.push({"key": "glyphName", "type": "text", "label": "Glyph name", "value": glyphName});
+      formContents.push({"key": "[\"xAdvance\"]", "type": "edit-number", "label": "Advance width", "value": instance.xAdvance});
     }
     const selection = Array.from(this.sceneController.selection || []);
     selection.sort((a, b) => {
@@ -530,6 +530,9 @@ export class EditorController {
     });
     for (const selItem of selection) {
       let [tp, index] = selItem.split("/");
+
+      const componentKey = (...path) => JSON.stringify(["components", index].concat(path));
+
       if (tp === "component") {
         index = parseInt(index);
         formContents.push({"type": "divider"});
@@ -537,7 +540,7 @@ export class EditorController {
         formContents.push({"type": "header", "label": `Component #${index}`});
         formContents.push({
           "type": "edit-text",
-          "key": JSON.stringify([index, "name"]),
+          "key": componentKey("name"),
           "label": "Base glyph",
           "value": component.name,
         });
@@ -546,7 +549,7 @@ export class EditorController {
         for (const [key, value] of Object.entries(component.transformation)) {
           formContents.push({
             "type": "edit-number",
-            "key": JSON.stringify([index, "transformation", key]),
+            "key": componentKey("transformation", key),
             "label": key,
             "value": value,
             "disabled": !canEdit,
@@ -562,7 +565,7 @@ export class EditorController {
             }
             formContents.push({
               "type": "edit-number-slider",
-              "key": JSON.stringify([index, "location", axis.name]),
+              "key": componentKey("location", axis.name),
               "label": axis.name,
               "value": value,
               "minValue": axis.minValue,
@@ -585,7 +588,6 @@ export class EditorController {
     {
       let editContext;
       let keyString;
-      let keyPath;
       let localChangePath;
 
       this.infoForm.onBeginChange = async info => {
@@ -595,8 +597,7 @@ export class EditorController {
           return;
         }
         keyString = info.key;
-        keyPath = JSON.parse(keyString);
-        localChangePath = ["components"].concat(keyPath);
+        localChangePath = JSON.parse(keyString);
         const rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
         await editContext.beginEdit(rollbackChange);
       };
@@ -625,7 +626,6 @@ export class EditorController {
         await editContext.endEdit();
         editContext = undefined;
         keyString = undefined;
-        keyPath = undefined;
         localChangePath = undefined;
       };
 
