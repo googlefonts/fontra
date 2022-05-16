@@ -10,6 +10,8 @@ export class Form {
     }
     this.container.classList.add("ui-form");
     this.setFieldDescriptions(fieldDescriptions);
+    this.callQueue = new CallQueue();
+    this.callQueue.start();
   }
 
   setFieldDescriptions(fieldDescriptions) {
@@ -147,7 +149,7 @@ export class Form {
     this.container.dispatchEvent(event);
     const handlerName = "on" + capitalizeFirstLetter(eventName);
     if (this[handlerName] !== undefined) {
-      this[handlerName](detail);
+      this.callQueue.put(async () => await this[handlerName](detail));
     }
   }
 
@@ -203,6 +205,38 @@ function hyphenatedToCamelCase(s) {
   return s.replace(/-([a-z])/g, m => m[1].toUpperCase());
 }
 
+
 function capitalizeFirstLetter(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+
+class CallQueue {
+
+  // Queue for async function calls, to ensure they are called
+  // in a specific order, instead of scheduled individually.
+
+  constructor() {
+    this.queue = [];
+  }
+
+  async start() {
+    while (true) {
+      const func = this.queue.shift();
+      if (func !== undefined) {
+        await func();
+      } else {
+        await new Promise(resolve => {
+          this.signal = resolve;
+        });
+        delete this.signal;
+      }
+    }
+  }
+
+  put(func) {
+    this.queue.push(func);
+    this.signal?.call();
+  }
+
 }
