@@ -415,7 +415,6 @@ export class EditorController {
     await this.sceneController.sceneModel.updateScene();
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     if (selectedGlyphName !== undefined && matchChange(change, ["glyphs", selectedGlyphName])) {
-      console.log("update info yes");
       this.updateSelectionInfo();
     }
     this.canvasController.setNeedsUpdate();
