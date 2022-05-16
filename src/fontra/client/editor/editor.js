@@ -1,5 +1,5 @@
 import { CanvasController } from "../core/canvas-controller.js";
-import { applyChange, consolidateChanges } from "../core/changes.js";
+import { applyChange, consolidateChanges, matchChange } from "../core/changes.js";
 import { FontController, glyphChangeFunctions } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
 import { insetRect, rectFromArray, rectToArray } from "../core/rectangle.js";
@@ -413,14 +413,21 @@ export class EditorController {
   async externalChange(change) {
     await this.fontController.applyChange(change);
     await this.sceneController.sceneModel.updateScene();
-    this.updateSelectionInfo();
+    const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
+    if (selectedGlyphName !== undefined && matchChange(change, ["glyphs", selectedGlyphName])) {
+      console.log("update info yes");
+      this.updateSelectionInfo();
+    }
     this.canvasController.setNeedsUpdate();
   }
 
   async reloadGlyphs(glyphNames) {
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneController.sceneModel.updateScene();
-    this.updateSelectionInfo();
+    const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
+    if (selectedGlyphName !== undefined && glyphNames.includes(selectedGlyphName)) {
+      this.updateSelectionInfo();
+    }
     this.canvasController.setNeedsUpdate();
   }
 

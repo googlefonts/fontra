@@ -72,3 +72,27 @@ export function applyChange(subject, change, changeFunctions) {
     applyChange(subject, subChange, changeFunctions);
   }
 }
+
+
+export function matchChange(change, matchPath) {
+  const path = change["p"] || [];
+  const children = change["c"] || [];
+  matchPath = Array.from(matchPath);
+
+  for (const pathElement of path) {
+    if (pathElement !== matchPath.shift()) {
+      return false;
+    }
+    if (!matchPath.length) {
+      return true;
+    }
+  }
+
+  for (const subChange of children) {
+    if (matchChange(subChange, matchPath)) {
+      return true;
+    }
+  }
+
+  return false;
+}
