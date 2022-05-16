@@ -531,7 +531,7 @@ export class EditorController {
     for (const selItem of selection) {
       let [tp, index] = selItem.split("/");
 
-      const componentKey = (...path) => JSON.stringify(["components", index].concat(path));
+      const componentKey = (...path) => JSON.stringify(["components", index, ...path]);
 
       if (tp === "component") {
         index = parseInt(index);
@@ -546,7 +546,8 @@ export class EditorController {
         });
         formContents.push({"type": "header", "label": "Transformation"});
 
-        for (const [key, value] of Object.entries(component.transformation)) {
+        for (const key of ["x", "y", "rotation", "scalex", "scaley", "tcenterx", "tcentery"]) {
+          const value = component.transformation[key];
           formContents.push({
             "type": "edit-number",
             "key": componentKey("transformation", key),
