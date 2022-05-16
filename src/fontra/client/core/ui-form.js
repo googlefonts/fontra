@@ -102,9 +102,9 @@ export class Form {
     sliderElement.type = "range";
     for (const el of [inputElement, sliderElement]) {
       el.step = "any";
-      el.value = fieldItem.value;
       el.min = fieldItem.minValue;
       el.max = fieldItem.maxValue;
+      el.value = fieldItem.value;
       el.disabled = fieldItem.disabled;
     }
     setSliderCallbacks(
