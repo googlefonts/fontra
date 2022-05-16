@@ -517,17 +517,8 @@ export class EditorController {
       formContents.push({"key": "[\"xAdvance\"]", "type": "edit-number", "label": "Advance width", "value": instance.xAdvance});
     }
     const selection = Array.from(this.sceneController.selection || []);
-    selection.sort((a, b) => {
-      const [a0, a1] = a.split("/");
-      const [b0, b1] = b.split("/");
-      if (a0 === b0) {
-        return parseInt(a1) - parseInt(b1);
-      } else if (a0 < b0) {
-        return -1;
-      } else {
-        return 1;
-      }
-    });
+    selection.sort(selectionCompare);
+
     for (const selItem of selection) {
       let [tp, index] = selItem.split("/");
 
@@ -829,4 +820,17 @@ function getNestedValue(subject, path) {
     }
   }
   return subject;
+}
+
+
+function selectionCompare(a, b) {
+  const [a0, a1] = a.split("/");
+  const [b0, b1] = b.split("/");
+  if (a0 === b0) {
+    return parseInt(a1) - parseInt(b1);
+  } else if (a0 < b0) {
+    return -1;
+  } else {
+    return 1;
+  }
 }
