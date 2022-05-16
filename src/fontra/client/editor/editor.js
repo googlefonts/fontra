@@ -8,10 +8,11 @@ import { SceneView } from "../core/scene-view.js"
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
-import { parseCookies, scheduleCalls, throttleCalls } from "../core/utils.js";
+import { hyphenatedToCamelCase, parseCookies, scheduleCalls, throttleCalls } from "../core/utils.js";
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
+
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
@@ -227,6 +228,8 @@ export class EditorController {
     const collapseAll = () => {
       for (const item of overlayItems) {
         item.classList.remove("overlay-item-expanded");
+        const methodName = hyphenatedToCamelCase("toggle-" + item.id);
+        this[methodName]?.call(this, false);
       }
     }
 
@@ -249,6 +252,8 @@ export class EditorController {
           if (item === event.target && item.id === "text-entry-overlay") {
             this.textEntryElement.focus();
           }
+          const methodName = hyphenatedToCamelCase("toggle-" + item.id);
+          this[methodName]?.call(this, item === event.target);
         }
       };
     }
@@ -513,7 +518,16 @@ export class EditorController {
     this.updateWindowLocation();
   }
 
+  toggleSelectionInfoOverlay(onOff) {
+    if (onOff) {
+      this.updateSelectionInfo();
+    }
+  }
+
   async _updateSelectionInfo() {
+    if (!this.infoForm.container.offsetParent) {
+      return;
+    }
     const glyphController = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
     const instance = glyphController?.instance;
     const glyphName = glyphController?.name;
