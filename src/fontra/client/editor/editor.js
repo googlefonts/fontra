@@ -8,7 +8,7 @@ import { SceneView } from "../core/scene-view.js"
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
-import { parseCookies, scheduleCalls } from "../core/utils.js";
+import { parseCookies, scheduleCalls, throttleCalls } from "../core/utils.js";
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
@@ -129,7 +129,7 @@ export class EditorController {
 
     this.enteredText = "";
     this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
-    this.updateSelectionInfo = scheduleCalls(async event => await this._updateSelectionInfo(), 250);
+    this.updateSelectionInfo = throttleCalls(async event => await this._updateSelectionInfo(), 100);
     canvas.addEventListener("viewBoxChanged", event => {
       if (event.detail === "canvas-size") {
         this.setAutoViewBox();
@@ -413,12 +413,14 @@ export class EditorController {
   async externalChange(change) {
     await this.fontController.applyChange(change);
     await this.sceneController.sceneModel.updateScene();
+    this.updateSelectionInfo();
     this.canvasController.setNeedsUpdate();
   }
 
   async reloadGlyphs(glyphNames) {
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneController.sceneModel.updateScene();
+    this.updateSelectionInfo();
     this.canvasController.setNeedsUpdate();
   }
 
