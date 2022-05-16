@@ -366,8 +366,8 @@ export class SceneController {
           applyChange(instance, rollbackChange, glyphChangeFunctions);
           await fontController.glyphChanged(glyphName);
           await this.sceneModel.updateScene();
-          this.canvasController.setNeedsUpdate();
         }
+        this.canvasController.setNeedsUpdate();
       },
 
     }
