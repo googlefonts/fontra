@@ -228,8 +228,7 @@ export class EditorController {
     const collapseAll = () => {
       for (const item of overlayItems) {
         item.classList.remove("overlay-item-expanded");
-        const methodName = hyphenatedToCamelCase("toggle-" + item.id);
-        this[methodName]?.call(this, false);
+        this._callToggleOverlayItem(item.id, false);
       }
     }
 
@@ -252,14 +251,18 @@ export class EditorController {
           if (item === event.target && item.id === "text-entry-overlay") {
             this.textEntryElement.focus();
           }
-          const methodName = hyphenatedToCamelCase("toggle-" + item.id);
-          this[methodName]?.call(this, item === event.target);
+          this._callToggleOverlayItem(item.id, item === event.target);
         }
       };
     }
 
     canvas.addEventListener("mousedown", event => collapseAll());
     window.addEventListener("keydown", event => collapseOnEscapeKey(event));
+  }
+
+  _callToggleOverlayItem(itemId, onOff) {
+    const methodName = hyphenatedToCamelCase("toggle-" + itemId);
+    this[methodName]?.call(this, onOff);
   }
 
   initMiniConsole() {
