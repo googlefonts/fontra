@@ -86,3 +86,13 @@ export function parseCookies(str) {
     return acc;
   }, {});
 }
+
+
+export function capitalizeFirstLetter(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+
+export function hyphenatedToCamelCase(s) {
+  return s.replace(/-([a-z])/g, m => m[1].toUpperCase());
+}

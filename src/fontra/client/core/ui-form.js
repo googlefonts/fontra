@@ -1,3 +1,6 @@
+import { capitalizeFirstLetter, hyphenatedToCamelCase } from "./utils.js";
+
+
 export class Form {
 
   constructor(formID, fieldDescriptions) {
@@ -198,16 +201,6 @@ function setSliderCallbacks(sliderElement, callbacks) {
     callbacks.endEdit();
   }
 
-}
-
-
-function hyphenatedToCamelCase(s) {
-  return s.replace(/-([a-z])/g, m => m[1].toUpperCase());
-}
-
-
-function capitalizeFirstLetter(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 
