@@ -153,7 +153,7 @@ export class SceneController {
 
     const editContext = await this.getGlyphEditContext();
     if (!editContext) {
-      console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
+      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
       // TODO: dialog with options:
       // - go to closest source
       // - insert new source here
