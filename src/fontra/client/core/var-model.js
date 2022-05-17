@@ -2,6 +2,7 @@
 
 import { VariationError } from "./errors.js";
 import { addItemwise, subItemwise, mulScalar } from "./var-funcs.js"
+import { isSuperset } from "./set-ops.js";
 
 
 export class VariationModel {
@@ -37,7 +38,7 @@ export class VariationModel {
       for (let j = 0; j < i; j++) {
         const prev_region = regions[j];
         // Master with extra axes do not participte
-        if (!isSubset(Object.keys(prev_region), locAxes)) {
+        if (!isSuperset(locAxes, Object.keys(prev_region))) {
           continue;
         }
         // If it's NOT in the current box, it does not participate
@@ -257,16 +258,6 @@ function objectGet(o, k, dflt) {
     return dflt;
   }
   return result;
-}
-
-
-function isSubset(a, b) {
-  for (const item of a) {
-    if (!b.has(item)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 
