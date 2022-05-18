@@ -3,7 +3,6 @@ import { glyphChangeFunctions } from "../core/font-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "../core/set-ops.js";
-import { throttleCalls } from "../core/utils.js";
 import { EditBehavior } from "./edit-behavior.js";
 
 
