@@ -14,10 +14,11 @@ class FontHandler:
         self.backend = backend
         self.connections = set()
         self.remoteMethodNames = {
-            "changeBegin",
-            "changeSetRollback",
-            "changeChanging",
-            "changeEnd",
+            "editBegin",
+            "editSetRollback",
+            "editDo",
+            "editEnd",
+            "editAtomic",
             "getGlyph",
             "unloadGlyph",
             "getGlyphNames",
@@ -100,21 +101,26 @@ class FontHandler:
             glyphNames
         )
 
-    async def changeBegin(self, *, connection):
+    async def editBegin(self, *, connection):
         ...
 
-    async def changeSetRollback(self, rollbackChange, *, connection):
+    async def editSetRollback(self, rollbackChange, *, connection):
         ...
 
-    async def changeChanging(self, liveChange, *, connection):
+    async def editDo(self, liveChange, *, connection):
         await self.broadcastChange(liveChange, connection, True)
 
-    async def changeEnd(self, finalChange, *, connection):
+    async def editEnd(self, finalChange, *, connection):
         if finalChange is None:
             return
         await self.updateServerGlyph(finalChange)
         await self.broadcastChange(finalChange, connection, False)
         # return {"error": "computer says no"}
+
+    async def editAtomic(self, change, rollbackChange, *, connection):
+        await self.editBegin(connection=connection)
+        await self.editSetRollback(rollbackChange, connection=connection)
+        await self.editEnd(change, connection=connection)
 
     async def broadcastChange(self, change, sourceConnection, isLiveChange):
         if isLiveChange:

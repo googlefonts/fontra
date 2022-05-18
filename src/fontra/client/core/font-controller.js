@@ -1,4 +1,4 @@
-import { applyChange, baseChangeFunctions } from "./changes.js";
+import { applyChange, baseChangeFunctions, consolidateChanges } from "./changes.js";
 import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
@@ -12,14 +12,9 @@ export class FontController {
     this.font = font;
     this.location = location;
     this._glyphsPromiseCache = new LRUCache(250);  // TODO: what if we need to display > 250 glyphs?
+    this._editListeners = new Set();
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
-    // Helper to throttle calls to changeChanging. (Ideally the minTime should
-    // be dynamic and based on network and server load.)
-    this.throttledChangeChanging = throttleCalls(
-      (change) => this.font.changeChanging(change),
-      50,
-    );
     this.ensureInitialized = new Promise((resolve, reject) => {
       this._resolveInitialized = resolve;
     });
@@ -144,21 +139,28 @@ export class FontController {
     this.font.subscribeLiveGlyphChanges(glyphNames);
   }
 
-  async changeBegin() {
-    this.font.changeBegin();  // no await!
-    // await this.font.changeBegin();
+  addEditListener(listener) {
+    this._editListeners.add(listener);
   }
 
-  async changeSetRollback(rollbackChange) {
-    this.font.changeSetRollback(rollbackChange);  // no await!
+  removeEditListener(listener) {
+    this._editListeners.delete(listener);
   }
 
-  async changeChanging(change) {
-    this.throttledChangeChanging(change);
+  async notifyEditListeners(editMethodName, senderID, ...args) {
+    for (const listener of this._editListeners) {
+      await listener(editMethodName, senderID, ...args);
+    }
   }
 
-  async changeEnd(finalChange) {
-    return await this.font.changeEnd(finalChange);
+  async getGlyphEditContext(glyphController, senderID) {
+    if (!glyphController.canEdit) {
+      // log warning here, or should the caller do that?
+      return null;
+    }
+    const editContext = new GlyphEditContext(this, glyphController, senderID);
+    await editContext.setup();
+    return editContext;
   }
 
   async applyChange(change) {
@@ -227,3 +229,59 @@ export const glyphChangeFunctions = {
   "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
   ...baseChangeFunctions,
 };
+
+
+class GlyphEditContext {
+
+  constructor(fontController, glyphController, senderID) {
+    this.fontController = fontController;
+    this.glyphController = glyphController;
+    this.instance = glyphController.instance;
+    this.senderID = senderID;
+    this.throttledEditDo = throttleCalls(async change => {fontController.font.editDo(change)}, 50);
+  }
+
+  async setup() {
+    const varGlyph = await this.fontController.getGlyph(this.glyphController.name);
+    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[this.glyphController.sourceIndex].layerName);
+    this.baseChangePath = ["glyphs", this.glyphController.name, "layers", layerIndex, "glyph"];
+  }
+
+  async editBegin() {
+    /* await */ this.fontController.font.editBegin();
+    await this.fontController.notifyEditListeners("editBegin", this.senderID);
+  }
+
+  async editSetRollback(rollback) {
+    this.rollback = consolidateChanges(rollback, this.baseChangePath);
+    /* await */ this.fontController.font.editSetRollback(this.rollback);
+    await this.fontController.notifyEditListeners("editSetRollback", this.senderID, this.rollback);
+  }
+
+  async editDo(change) {
+    await this.fontController.glyphChanged(this.glyphController.name);
+    applyChange(this.glyphController.instance, change, glyphChangeFunctions);
+    change = consolidateChanges(change, this.baseChangePath);
+    /* await */ this.throttledEditDo(change);
+    await this.fontController.notifyEditListeners("editDo", this.senderID, change);
+  }
+
+  async editEnd(change) {
+    await this.fontController.glyphChanged(this.glyphController.name);
+    change = consolidateChanges(change, this.baseChangePath);
+    const error = await this.fontController.font.editEnd(change);
+    // TODO handle error
+    await this.fontController.notifyEditListeners("editEnd", this.senderID, change);
+  }
+
+  async editAtomic(change, rollback) {
+    applyChange(this.glyphController.instance, change, glyphChangeFunctions);
+    await this.fontController.glyphChanged(this.glyphController.name);
+    change = consolidateChanges(change, this.baseChangePath);
+    rollback = consolidateChanges(rollback, this.baseChangePath);
+    const error = await this.fontController.font.editAtomic(change, rollback);
+    // TODO: handle error, rollback
+    await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
+  }
+
+}

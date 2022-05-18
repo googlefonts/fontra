@@ -18,6 +18,27 @@ export class SceneController {
       element: canvasController.canvas,
     });
     this._eventElement = document.createElement("div");
+
+    this.sceneModel.fontController.addEditListener(async (...args) => await this.editListenerCallback(...args));
+  }
+
+  async editListenerCallback(editMethodName, senderID, ...args) {
+    // console.log(editMethodName, senderID, ...args);
+    switch (editMethodName) {
+      case "editBegin":
+        {
+          const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+          this.sceneModel.ghostPath = glyphController.flattenedPath2d;
+        }
+        break;
+      case "editEnd":
+        delete this.sceneModel.ghostPath;
+      case "editDo":
+      case "editAtomic":
+        await this.sceneModel.updateScene();
+        this.canvasController.setNeedsUpdate();
+        break;
+    }
   }
 
   addEventListener(eventName, handler, options) {
@@ -163,15 +184,17 @@ export class SceneController {
 
     const editor = new EditBehavior(editContext.instance, this.selection);
 
-    await editContext.beginEdit(editor.rollbackChange);
+    await editContext.editBegin();
+    await editContext.editSetRollback(editor.rollbackChange);
+    let editChange;
 
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      await editContext.doEdit(editor.makeChangeForDelta(delta));
+      editChange = editor.makeChangeForDelta(delta)
+      await editContext.editDo(editChange);
     }
-
-    await editContext.endEdit();
+    await editContext.editEnd(editChange);
   }
 
   handleHover(event) {
@@ -326,51 +349,7 @@ export class SceneController {
     if (!glyphController.canEdit) {
       return null;
     }
-
-    const fontController = this.sceneModel.fontController;
-    const instance = glyphController.instance;
-    const glyphName = glyphController.name;
-
-    const varGlyph = await fontController.getGlyph(glyphName);
-    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[glyphController.sourceIndex].layerName);
-    const baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
-
-    let rollbackChange;
-    let absChange;
-
-    return {
-
-      "instance": instance,
-
-      beginEdit: async rollback => {
-        rollbackChange = rollback;
-
-        await fontController.changeBegin();
-        await fontController.changeSetRollback(consolidateChanges(rollbackChange, baseChangePath));
-        this.sceneModel.ghostPath = glyphController.flattenedPath2d;
-      },
-
-      doEdit: async change => {
-        absChange = consolidateChanges(change, baseChangePath);
-        await fontController.changeChanging(absChange);
-        applyChange(instance, change, glyphChangeFunctions);
-        await fontController.glyphChanged(glyphName);
-        await this.sceneModel.updateScene();
-        this.canvasController.setNeedsUpdate();
-      },
-
-      endEdit: async () => {
-        delete this.sceneModel.ghostPath;
-        const error = await fontController.changeEnd(absChange);
-        if (error) {
-          applyChange(instance, rollbackChange, glyphChangeFunctions);
-          await fontController.glyphChanged(glyphName);
-          await this.sceneModel.updateScene();
-        }
-        this.canvasController.setNeedsUpdate();
-      },
-
-    }
+    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, this);
   }
 
 }

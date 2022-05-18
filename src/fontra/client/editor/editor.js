@@ -608,52 +608,68 @@ export class EditorController {
   }
 
   async _setupSelectionInfoHandlers(glyphName) {
-    {
-      let editContext;
-      let keyString;
-      let localChangePath;
+    let editContext;
+    let keyString;
+    let localChangePath;
+    let change;
+    let rollbackChange;
 
-      this.infoForm.onBeginChange = async info => {
-        editContext = await this.sceneController.getGlyphEditContext();
-        if (!editContext) {
-          console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
+    const setup = async info => {
+      editContext = await this.sceneController.getGlyphEditContext();
+      if (!editContext) {
+        console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
+        return false;
+      }
+      keyString = info.key;
+      localChangePath = JSON.parse(keyString);
+      rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
+      return true;
+    };
+
+    const breakdown = () => {
+      editContext = undefined;
+      keyString = undefined;
+      localChangePath = undefined;
+      change = undefined;
+      rollbackChange = undefined;
+    };
+
+    this.infoForm.onBeginChange = async info => {
+      if (!(await setup(info))) {
+        return;
+      }
+      await editContext.editBegin();
+      await editContext.editSetRollback(rollbackChange);
+    };
+
+    this.infoForm.onDoChange = async info => {
+      let isAtomicEdit = (editContext === undefined);
+      if (isAtomicEdit) {
+        if (!(await setup(info))) {
           return;
         }
-        keyString = info.key;
-        localChangePath = JSON.parse(keyString);
-        const rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
-        await editContext.beginEdit(rollbackChange);
-      };
-
-      this.infoForm.onDoChange = async info => {
-        let doCallBeginEnd = (editContext === undefined);
-        if (doCallBeginEnd) {
-          await this.infoForm.onBeginChange(info);
-        }
+        change = makeFieldChange(localChangePath, info.value);
+        await editContext.editAtomic(change, rollbackChange);
+        breakdown();
+      } else {
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
-        await editContext.doEdit(makeFieldChange(localChangePath, info.value));
-        if (doCallBeginEnd) {
-          await this.infoForm.onEndChange(info);
-        }
-      };
+        change = makeFieldChange(localChangePath, info.value);
+        await editContext.editDo(change);
+      }
+    };
 
-      this.infoForm.onEndChange = async info => {
-        if (!editContext) {
-          return;
-        }
-        if (keyString !== info.key) {
-          throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
-        }
-        await editContext.endEdit();
-        editContext = undefined;
-        keyString = undefined;
-        localChangePath = undefined;
-      };
-
-    }
-
+    this.infoForm.onEndChange = async info => {
+      if (!editContext) {
+        return;
+      }
+      if (keyString !== info.key) {
+        throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
+      }
+      await editContext.editEnd(change);
+      breakdown();
+    };
   }
 
   setAutoViewBox() {
