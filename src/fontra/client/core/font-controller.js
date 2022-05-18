@@ -158,7 +158,6 @@ export class FontController {
       // log warning here, or should the caller do that?
       return null;
     }
-
     const editContext = new GlyphEditContext(this, glyphController, senderID);
     await editContext.setup();
     return editContext;
