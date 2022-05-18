@@ -26,8 +26,15 @@ export class SceneController {
   async editListenerCallback(editMethodName, senderID, ...args) {
     // console.log(editMethodName, senderID, ...args);
     switch (editMethodName) {
-      case "editDo":
+      case "editBegin":
+        {
+          const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+          this.sceneModel.ghostPath = glyphController.flattenedPath2d;
+        }
+        break;
       case "editEnd":
+        delete this.sceneModel.ghostPath;
+      case "editDo":
       case "editAtomic":
         await this.sceneModel.updateScene();
         this.canvasController.setNeedsUpdate();
