@@ -15,8 +15,6 @@ export class FontController {
     this._editListeners = new Set();
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
-    // Helper to throttle calls to changeChanging. (Ideally the minTime should
-    // be dynamic and based on network and server load.)
     this.ensureInitialized = new Promise((resolve, reject) => {
       this._resolveInitialized = resolve;
     });
