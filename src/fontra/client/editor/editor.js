@@ -612,32 +612,51 @@ export class EditorController {
     let keyString;
     let localChangePath;
     let change;
+    let rollbackChange;
 
-    this.infoForm.onBeginChange = async info => {
+    const setup = async info => {
       editContext = await this.sceneController.getGlyphEditContext();
       if (!editContext) {
         console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
-        return;
+        return false;
       }
       keyString = info.key;
       localChangePath = JSON.parse(keyString);
-      const rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
+      rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
+      return true;
+    };
+
+    const breakdown = () => {
+      editContext = undefined;
+      keyString = undefined;
+      localChangePath = undefined;
+      change = undefined;
+      rollbackChange = undefined;
+    };
+
+    this.infoForm.onBeginChange = async info => {
+      if (!(await setup(info))) {
+        return;
+      }
       await editContext.editBegin();
       await editContext.editSetRollback(rollbackChange);
     };
 
     this.infoForm.onDoChange = async info => {
-      let doCallBeginEnd = (editContext === undefined);
-      if (doCallBeginEnd) {
-        await this.infoForm.onBeginChange(info);
-      }
-      if (keyString !== info.key) {
-        throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
-      }
-      change = makeFieldChange(localChangePath, info.value);
-      await editContext.editDo(change);
-      if (doCallBeginEnd) {
-        await this.infoForm.onEndChange(info);
+      let isAtomicEdit = (editContext === undefined);
+      if (isAtomicEdit) {
+        if (!(await setup(info))) {
+          return;
+        }
+        change = makeFieldChange(localChangePath, info.value);
+        await editContext.editAtomic(change, rollbackChange);
+        breakdown();
+      } else {
+        if (keyString !== info.key) {
+          throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
+        }
+        change = makeFieldChange(localChangePath, info.value);
+        await editContext.editDo(change);
       }
     };
 
@@ -649,10 +668,7 @@ export class EditorController {
         throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
       }
       await editContext.editEnd(change);
-      editContext = undefined;
-      keyString = undefined;
-      localChangePath = undefined;
-      change = undefined;
+      breakdown();
     };
   }
 
