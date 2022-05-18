@@ -237,6 +237,7 @@ class GlyphEditContext {
   constructor(fontController, glyphController, senderID) {
     this.fontController = fontController;
     this.glyphController = glyphController;
+    this.instance = glyphController.instance;
     this.senderID = senderID;
     this.throttledEditDo = throttleCalls(async change => {fontController.font.editDo(change)}, 50);
   }
