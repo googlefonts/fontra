@@ -12,6 +12,7 @@ export class FontController {
     this.font = font;
     this.location = location;
     this._glyphsPromiseCache = new LRUCache(250);  // TODO: what if we need to display > 250 glyphs?
+    this._editListeners = new Set();
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
     // Helper to throttle calls to changeChanging. (Ideally the minTime should
@@ -144,6 +145,31 @@ export class FontController {
     this.font.subscribeLiveGlyphChanges(glyphNames);
   }
 
+  addEditListener(listener) {
+    this._editListeners.add(listener);
+  }
+
+  removeEditListener(listener) {
+    this._editListeners.delete(listener);
+  }
+
+  async notifyEditListeners(editMethodName, senderID, ...args) {
+    for (const listener of this._editListeners) {
+      await listener(editMethodName, senderID, ...args);
+    }
+  }
+
+  async getGlyphEditContext(glyphController, senderID) {
+    if (!glyphController.canEdit) {
+      // log warning here, or should the caller do that?
+      return null;
+    }
+
+    const editContext = new GlyphEditContext(this, glyphController, senderID);
+    await editContext.setup();
+    return editContext;
+  }
+
   async changeBegin() {
     this.font.changeBegin();  // no await!
     // await this.font.changeBegin();
@@ -227,3 +253,49 @@ export const glyphChangeFunctions = {
   "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
   ...baseChangeFunctions,
 };
+
+
+class GlyphEditContext {
+
+  constructor(fontController, glyphController, senderID) {
+    this.fontController = fontController;
+    this.glyphController = glyphController;
+    this.senderID = senderID;
+
+  }
+
+  async setup() {
+    const varGlyph = await this.fontController.getGlyph(this.glyphController.name);
+    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[this.glyphController.sourceIndex].layerName);
+    this.baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
+  }
+
+
+  async editBegin() {
+    await this.fontController.notifyEditListeners("editBegin", this.senderID);
+  }
+
+  async editSetRollback(rollback) {
+    rollback = consolidateChanges(rollback, this.baseChangePath);
+    this.rollback = rollback;
+    await this.fontController.notifyEditListeners("editSetRollback", this.senderID, rollback);
+  }
+
+  async editDo(change) {
+    applyChange(glyphController.glyph, change, glyphChangeFunctions);
+    change = consolidateChanges(change, this.baseChangePath);
+    await this.fontController.notifyEditListeners("editDo", this.senderID, change);
+  }
+
+  async editEnd() {
+    await this.fontController.notifyEditListeners("editEnd", this.senderID);
+  }
+
+  async editAtomic(change, rollback) {
+    applyChange(glyphController.glyph, change, glyphChangeFunctions);
+    change = consolidateChanges(change, this.baseChangePath);
+    rollback = consolidateChanges(rollback, this.baseChangePath);
+    await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
+  }
+
+}
