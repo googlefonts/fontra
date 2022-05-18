@@ -3,6 +3,7 @@ import { glyphChangeFunctions } from "../core/font-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "../core/set-ops.js";
+import { throttleCalls } from "../core/utils.js";
 import { EditBehavior } from "./edit-behavior.js";
 
 
@@ -338,6 +339,9 @@ export class SceneController {
     let rollbackChange;
     let absChange;
 
+    // TEMP: don't forget to remove throttleCalls import
+    const throttledEditDo = throttleCalls(async change => {fontController.font.editDo(change)}, 50);
+
     return {
 
       "instance": instance,
@@ -345,14 +349,14 @@ export class SceneController {
       beginEdit: async rollback => {
         rollbackChange = rollback;
 
-        await fontController.changeBegin();
-        await fontController.changeSetRollback(consolidateChanges(rollbackChange, baseChangePath));
+        await fontController.font.editBegin();
+        await fontController.font.editSetRollback(consolidateChanges(rollbackChange, baseChangePath));
         this.sceneModel.ghostPath = glyphController.flattenedPath2d;
       },
 
       doEdit: async change => {
         absChange = consolidateChanges(change, baseChangePath);
-        await fontController.changeChanging(absChange);
+        await throttledEditDo(absChange);
         applyChange(instance, change, glyphChangeFunctions);
         await fontController.glyphChanged(glyphName);
         await this.sceneModel.updateScene();
@@ -361,7 +365,7 @@ export class SceneController {
 
       endEdit: async () => {
         delete this.sceneModel.ghostPath;
-        const error = await fontController.changeEnd(absChange);
+        const error = await fontController.font.endEdit(absChange);
         if (error) {
           applyChange(instance, rollbackChange, glyphChangeFunctions);
           await fontController.glyphChanged(glyphName);

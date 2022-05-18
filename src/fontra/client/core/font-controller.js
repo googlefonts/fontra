@@ -17,10 +17,6 @@ export class FontController {
     this.glyphMadeOf = {};
     // Helper to throttle calls to changeChanging. (Ideally the minTime should
     // be dynamic and based on network and server load.)
-    this.throttledChangeChanging = throttleCalls(
-      (change) => this.font.editDo(change),
-      50,
-    );
     this.ensureInitialized = new Promise((resolve, reject) => {
       this._resolveInitialized = resolve;
     });
@@ -170,23 +166,6 @@ export class FontController {
     return editContext;
   }
 
-  async changeBegin() {
-    this.font.editBegin();  // no await!
-    // await this.font.changeBegin();
-  }
-
-  async changeSetRollback(rollbackChange) {
-    this.font.editSetRollback(rollbackChange);  // no await!
-  }
-
-  async changeChanging(change) {
-    this.throttledChangeChanging(change);
-  }
-
-  async changeEnd(finalChange) {
-    return await this.font.editEnd(finalChange);
-  }
-
   async applyChange(change) {
     if (change.p[0] === "glyphs") {
       const glyphName = change.p[1];
@@ -287,8 +266,8 @@ class GlyphEditContext {
     await this.fontController.notifyEditListeners("editDo", this.senderID, change);
   }
 
-  async editEnd() {
-    await this.fontController.notifyEditListeners("editEnd", this.senderID);
+  async editEnd(change) {
+    await this.fontController.notifyEditListeners("editEnd", this.senderID, change);
   }
 
   async editAtomic(change, rollback) {
