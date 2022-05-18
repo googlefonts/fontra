@@ -349,14 +349,14 @@ export class SceneController {
       beginEdit: async rollback => {
         rollbackChange = rollback;
 
-        await fontController.font.editBegin();
-        await fontController.font.editSetRollback(consolidateChanges(rollbackChange, baseChangePath));
+        /* await */ fontController.font.editBegin();
+        /* await */ fontController.font.editSetRollback(consolidateChanges(rollbackChange, baseChangePath));
         this.sceneModel.ghostPath = glyphController.flattenedPath2d;
       },
 
       doEdit: async change => {
         absChange = consolidateChanges(change, baseChangePath);
-        await throttledEditDo(absChange);
+        /* await */ throttledEditDo(absChange);
         applyChange(instance, change, glyphChangeFunctions);
         await fontController.glyphChanged(glyphName);
         await this.sceneModel.updateScene();
