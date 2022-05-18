@@ -276,11 +276,11 @@ class GlyphEditContext {
   }
 
   async editAtomic(change, rollback) {
-    applyChange(this.glyphController.glyph, change, glyphChangeFunctions);
+    applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
-    error = await fontController.font.editAtomic(change, rollback);
+    const error = await this.fontController.font.editAtomic(change, rollback);
     // TODO: handle error, rollback
     await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
   }
