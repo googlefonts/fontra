@@ -539,7 +539,13 @@ export class EditorController {
     const formContents = [];
     if (glyphName) {
       formContents.push({"key": "glyphName", "type": "text", "label": "Glyph name", "value": glyphName});
-      formContents.push({"key": "[\"xAdvance\"]", "type": "edit-number", "label": "Advance width", "value": instance.xAdvance});
+      formContents.push({
+        "type": "edit-number",
+        "key": "[\"xAdvance\"]",
+        "label": "Advance width",
+        "value": instance.xAdvance,
+        "disabled": !canEdit,
+      });
     }
     const selection = Array.from(this.sceneController.selection || []);
     selection.sort(selectionCompare);
