@@ -18,7 +18,7 @@ export class FontController {
     // Helper to throttle calls to changeChanging. (Ideally the minTime should
     // be dynamic and based on network and server load.)
     this.throttledChangeChanging = throttleCalls(
-      (change) => this.font.changeChanging(change),
+      (change) => this.font.editDo(change),
       50,
     );
     this.ensureInitialized = new Promise((resolve, reject) => {
@@ -171,12 +171,12 @@ export class FontController {
   }
 
   async changeBegin() {
-    this.font.changeBegin();  // no await!
+    this.font.editBegin();  // no await!
     // await this.font.changeBegin();
   }
 
   async changeSetRollback(rollbackChange) {
-    this.font.changeSetRollback(rollbackChange);  // no await!
+    this.font.editSetRollback(rollbackChange);  // no await!
   }
 
   async changeChanging(change) {
@@ -184,7 +184,7 @@ export class FontController {
   }
 
   async changeEnd(finalChange) {
-    return await this.font.changeEnd(finalChange);
+    return await this.font.editEnd(finalChange);
   }
 
   async applyChange(change) {
