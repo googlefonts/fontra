@@ -612,6 +612,7 @@ export class EditorController {
       let editContext;
       let keyString;
       let localChangePath;
+      let change;
 
       this.infoForm.onBeginChange = async info => {
         editContext = await this.sceneController.getGlyphEditContext();
@@ -622,7 +623,8 @@ export class EditorController {
         keyString = info.key;
         localChangePath = JSON.parse(keyString);
         const rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
-        await editContext.beginEdit(rollbackChange);
+        await editContext.editBegin();
+        await editContext.editSetRollback(rollbackChange);
       };
 
       this.infoForm.onDoChange = async info => {
@@ -633,7 +635,8 @@ export class EditorController {
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
-        await editContext.doEdit(makeFieldChange(localChangePath, info.value));
+        change = makeFieldChange(localChangePath, info.value);
+        await editContext.editDo(change);
         if (doCallBeginEnd) {
           await this.infoForm.onEndChange(info);
         }
@@ -646,10 +649,11 @@ export class EditorController {
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
-        await editContext.endEdit();
+        await editContext.editEnd(change);
         editContext = undefined;
         keyString = undefined;
         localChangePath = undefined;
+        change = undefined;
       };
 
     }
