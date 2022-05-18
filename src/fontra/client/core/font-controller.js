@@ -1,4 +1,4 @@
-import { applyChange, baseChangeFunctions } from "./changes.js";
+import { applyChange, baseChangeFunctions, consolidateChanges } from "./changes.js";
 import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
@@ -244,11 +244,11 @@ class GlyphEditContext {
   async setup() {
     const varGlyph = await this.fontController.getGlyph(this.glyphController.name);
     const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[this.glyphController.sourceIndex].layerName);
-    this.baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
+    this.baseChangePath = ["glyphs", this.glyphController.name, "layers", layerIndex, "glyph"];
   }
 
   async editBegin() {
-    /* await */ fontController.font.editBegin();
+    /* await */ this.fontController.font.editBegin();
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
   }
 
@@ -259,20 +259,24 @@ class GlyphEditContext {
   }
 
   async editDo(change) {
-    applyChange(glyphController.glyph, change, glyphChangeFunctions);
+    await this.fontController.glyphChanged(this.glyphController.name);
+    applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     change = consolidateChanges(change, this.baseChangePath);
     /* await */ this.throttledEditDo(change);
     await this.fontController.notifyEditListeners("editDo", this.senderID, change);
   }
 
   async editEnd(change) {
+    await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
-    error = await fontController.font.editEnd(change);
+    const error = await this.fontController.font.editEnd(change);
+    // TODO handle error
     await this.fontController.notifyEditListeners("editEnd", this.senderID, change);
   }
 
   async editAtomic(change, rollback) {
-    applyChange(glyphController.glyph, change, glyphChangeFunctions);
+    applyChange(this.glyphController.glyph, change, glyphChangeFunctions);
+    await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
     error = await fontController.font.editAtomic(change, rollback);
