@@ -348,7 +348,6 @@ export class SceneController {
 
       beginEdit: async rollback => {
         rollbackChange = rollback;
-
         /* await */ fontController.font.editBegin();
         /* await */ fontController.font.editSetRollback(consolidateChanges(rollbackChange, baseChangePath));
         this.sceneModel.ghostPath = glyphController.flattenedPath2d;
