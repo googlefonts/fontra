@@ -238,7 +238,7 @@ class GlyphEditContext {
     this.fontController = fontController;
     this.glyphController = glyphController;
     this.senderID = senderID;
-
+    this.throttledEditDo = throttleCalls(async change => {fontController.font.editDo(change)}, 50);
   }
 
   async setup() {
@@ -248,22 +248,26 @@ class GlyphEditContext {
   }
 
   async editBegin() {
+    /* await */ fontController.font.editBegin();
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
   }
 
   async editSetRollback(rollback) {
-    rollback = consolidateChanges(rollback, this.baseChangePath);
-    this.rollback = rollback;
-    await this.fontController.notifyEditListeners("editSetRollback", this.senderID, rollback);
+    this.rollback = consolidateChanges(rollback, this.baseChangePath);
+    /* await */ this.fontController.font.editSetRollback(this.rollback);
+    await this.fontController.notifyEditListeners("editSetRollback", this.senderID, this.rollback);
   }
 
   async editDo(change) {
     applyChange(glyphController.glyph, change, glyphChangeFunctions);
     change = consolidateChanges(change, this.baseChangePath);
+    /* await */ this.throttledEditDo(change);
     await this.fontController.notifyEditListeners("editDo", this.senderID, change);
   }
 
   async editEnd(change) {
+    change = consolidateChanges(change, this.baseChangePath);
+    error = await fontController.font.editEnd(change);
     await this.fontController.notifyEditListeners("editEnd", this.senderID, change);
   }
 
@@ -271,6 +275,8 @@ class GlyphEditContext {
     applyChange(glyphController.glyph, change, glyphChangeFunctions);
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
+    error = await fontController.font.editAtomic(change, rollback);
+    // TODO: handle error, rollback
     await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
   }
 
