@@ -249,7 +249,6 @@ class GlyphEditContext {
     this.baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
   }
 
-
   async editBegin() {
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
   }
