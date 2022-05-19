@@ -46,13 +46,16 @@ describe("LRUCache Tests", () => {
     lru.put("b", 2);
     lru.put("c", 3);
     expect(Array.from(lru.keys())).to.deep.equal(["a", "b", "c"]);
+    expect(Array.from(lru.values())).to.deep.equal([1, 2, 3]);
     expect(lru._dllKeys()).to.deep.equal(["a", "b", "c"]);
     lru.delete("b");
     expect(Array.from(lru.keys())).to.deep.equal(["a", "c"]);
+    expect(Array.from(lru.values())).to.deep.equal([1, 3]);
     expect(lru._dllKeys()).to.deep.equal(["a", "c"]);
     expect(lru._dllLength()).to.equal(2);
     lru.delete("a");
     expect(Array.from(lru.keys())).to.deep.equal(["c"]);
+    expect(Array.from(lru.values())).to.deep.equal([3]);
     expect(lru._dllKeys()).to.deep.equal(["c"]);
     expect(lru._dllLength()).to.equal(1);
     lru.delete("missing_key");
@@ -61,6 +64,7 @@ describe("LRUCache Tests", () => {
     expect(lru._dllLength()).to.equal(1);
     lru.delete("c");
     expect(Array.from(lru.keys())).to.deep.equal([]);
+    expect(Array.from(lru.values())).to.deep.equal([]);
     expect(lru._dllKeys()).to.deep.equal([]);
     expect(lru._dllLength()).to.equal(0);
   });
