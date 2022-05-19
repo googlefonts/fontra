@@ -77,6 +77,14 @@ export class LRUCache {
     }
   }
 
+  get size() {
+    return this.map.size;
+  }
+
+  keys() {
+    return this.map.keys();
+  }
+
   _dllLength() {
     // the result of this function must match this.map.size;
     let count = 0;
