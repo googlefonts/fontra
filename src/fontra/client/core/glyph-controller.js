@@ -157,9 +157,7 @@ export class VariableGlyphController {
     return axisDict;
   }
 
-  instantiate(location, fromGlobal = true) {
-    const axisLists = fromGlobal ? [this.axes, this.globalAxes] : [this.globalAxes, this.axes];
-    const normalizedLocation = normalizeLocationMulti(location, ...axisLists);
+  instantiate(normalizedLocation) {
     try {
       return this.model.interpolateFromDeltas(normalizedLocation, this.deltas);
     } catch (error) {
@@ -182,7 +180,7 @@ export class VariableGlyphController {
     if (sourceIndex !== undefined) {
       instance = this.getLayerGlyph(this.sources[sourceIndex].layerName);
     } else {
-      instance = this.instantiate(location);
+      instance = this.instantiate(normalizeLocationMulti(location, this.axes, this.globalAxes));
     }
 
     if (!instance) {
@@ -348,7 +346,7 @@ async function getComponentPath(compo, getGlyphFunc, parentLocation) {
 
 
 async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation = null) {
-  const compoLocation = mergeLocations(parentLocation, compo.location);
+  const compoLocation = mergeLocations(parentLocation, compo.location) || {};
   const glyph = await getGlyphFunc(compo.name);
   if (!glyph) {
     console.log(`component glyph ${compo.name} was not found`)
@@ -356,7 +354,7 @@ async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, tran
   }
   let inst;
   try {
-    inst = glyph.instantiate(compoLocation || {}, false);
+    inst = glyph.instantiate(normalizeLocationMulti(compoLocation, glyph.globalAxes, glyph.axes));
   } catch (error) {
     if (error.name !== "VariationError") {
       throw error;
