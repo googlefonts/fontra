@@ -33,11 +33,10 @@ export class SceneModel {
   }
 
   async getSelectedVarGlyph() {
-    const glyphName = this.getSelectedGlyphName();
-    if (glyphName === undefined) {
+    if (!this.selectedGlyph) {
       return undefined;
     }
-    return await this.fontController.getGlyph(glyphName);
+    return await this.fontController.getGlyph(this.getSelectedGlyphName());
   }
 
   getSelectedGlyphState() {
