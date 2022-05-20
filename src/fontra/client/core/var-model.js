@@ -301,15 +301,15 @@ export function normalizeValue(v, lower, dflt, upper) {
 }
 
 
-export function normalizeLocation(location, axes) {
+export function normalizeLocation(location, axisList) {
   // Normalizes location based on axis min/default/max values from axes.
   const out = {};
-  for (const [tag, triple] of Object.entries(axes)) {
-    let v = location[tag];
+  for (const axis of axisList) {
+    let v = location[axis.name];
     if (v === undefined) {
-      v = triple[1];
+      v = axis.defaultValue;
     }
-    out[tag] = normalizeValue(v, ...triple);
+    out[axis.name] = normalizeValue(v, axis.minValue, axis.defaultValue, axis.maxValue);
   }
   return out;
 }

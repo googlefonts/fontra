@@ -114,7 +114,7 @@ export class VariableGlyphController {
     if (this._model === undefined) {
       const locations = this.sources.map(source => source.location);
       this._model = new VariationModel(
-        locations.map(location => normalizeLocationSparse(location, this.axisDictLocal)),
+        locations.map(location => sparsifyLocation(normalizeLocationMulti(location, this.globalAxes, this.axes))),
         this.axes.map(axis => axis.name));
     }
     return this._model;
@@ -162,11 +162,14 @@ export class VariableGlyphController {
   }
 
   instantiate(location, fromGlobal = true) {
-    const axisDict = fromGlobal ? this.axisDictGlobal : this.axisDictLocal;
+    let normalizedLocation;
+    if (fromGlobal) {
+      normalizedLocation = normalizeLocationMulti(location, this.axes, this.globalAxes);
+    } else {
+      normalizedLocation = normalizeLocationMulti(location, this.globalAxes, this.axes);
+    }
     try {
-      return this.model.interpolateFromDeltas(
-        normalizeLocation(location, axisDict), this.deltas
-      );
+      return this.model.interpolateFromDeltas(normalizedLocation, this.deltas);
     } catch (error) {
       if (error.name !== "VariationError") {
         throw error;
@@ -174,7 +177,7 @@ export class VariableGlyphController {
       const errorMessage = `Interpolation error while instantiating glyph ${this.name} (${error.toString()})`;
       console.log(errorMessage);
       const indexInfo = findClosestSourceIndexFromLocation(
-        this.glyph, normalizeLocation(location, axisDict), this.axisDictLocal
+        this.glyph, normalizedLocation, this.globalAxes, this.axes
       );
       return this.getLayerGlyph(this.sources[indexInfo.index].layerName);
     }
@@ -419,14 +422,15 @@ function makeAxisMapFunc(axis) {
 }
 
 
-function normalizeLocationSparse(location, axes) {
-  const normLoc = normalizeLocation(location, axes);
-  for (const [name, value] of Object.entries(normLoc)) {
-    if (!value) {
-      delete normLoc[name];
+function sparsifyLocation(location) {
+  // location must be normalized
+  const sparseLocation = {};
+  for (const [name, value] of Object.entries(location)) {
+    if (value) {
+      sparseLocation[name] = value;
     }
   }
-  return normLoc;
+  return sparseLocation;
 }
 
 
@@ -493,10 +497,10 @@ function subsetLocation(location, axes) {
 }
 
 
-function findClosestSourceIndexFromLocation(glyph, location, axisDict) {
+function findClosestSourceIndexFromLocation(glyph, location, globalAxes, localAxes) {
   const distances = [];
   for (let i = 0; i < glyph.sources.length; i++) {
-    const sourceLocation = normalizeLocation(glyph.sources[i].location, axisDict);
+    const sourceLocation = normalizeLocationMulti(glyph.sources[i].location, globalAxes, localAxes);
     let distanceSquared = 0;
     for (const [axisName, value] of Object.entries(location)) {
       const sourceValue = sourceLocation[axisName];
@@ -514,4 +518,11 @@ function findClosestSourceIndexFromLocation(glyph, location, axisDict) {
     return (a > b) - (a < b);
   });
   return {distance: Math.sqrt(distances[0][0]), index: distances[0][1]}
+}
+
+
+function normalizeLocationMulti(location, ...axisLists) {
+  return axisLists.reduce((prev, axisList) => {
+    return {...prev, ...normalizeLocation(location, axisList)};
+  }, {});
 }
