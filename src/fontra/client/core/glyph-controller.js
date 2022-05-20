@@ -112,7 +112,6 @@ export class VariableGlyphController {
   clearModelCache() {
     delete this._model;
     delete this._deltas;
-    delete this._axisDictGlobal;
     delete this._axisDictLocal;
     this._locationToSourceIndex = {};
   }
@@ -133,13 +132,6 @@ export class VariableGlyphController {
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
-  }
-
-  get axisDictGlobal() {
-    if (this._axisDictGlobal === undefined) {
-      this._axisDictGlobal = this._combineGlobalAndLocalAxes(false);
-    }
-    return this._axisDictGlobal;
   }
 
   get axisDictLocal() {

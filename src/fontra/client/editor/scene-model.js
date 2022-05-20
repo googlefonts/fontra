@@ -108,8 +108,8 @@ export class SceneModel {
     const glyph = await this.getSelectedVariableGlyphController();
     const source = glyph.sources[sourceIndex];
     const location = {...this.fontController.location};
-    for (const [axisName, triple] of Object.entries(glyph.axisDictGlobal)) {
-      location[axisName] = triple[1];
+    for (const axis of glyph.axes.concat(glyph.globalAxes)) {
+      location[axis.name] = axis.defaultValue;
     }
     const localToGlobalMapping = glyph.getLocalToGlobalMapping();
     const sourceLocation = mapForward(source.location, localToGlobalMapping);
