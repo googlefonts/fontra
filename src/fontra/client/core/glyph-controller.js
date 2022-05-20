@@ -158,12 +158,8 @@ export class VariableGlyphController {
   }
 
   instantiate(location, fromGlobal = true) {
-    let normalizedLocation;
-    if (fromGlobal) {
-      normalizedLocation = normalizeLocationMulti(location, this.axes, this.globalAxes);
-    } else {
-      normalizedLocation = normalizeLocationMulti(location, this.globalAxes, this.axes);
-    }
+    const axisLists = fromGlobal ? [this.axes, this.globalAxes] : [this.globalAxes, this.axes];
+    const normalizedLocation = normalizeLocationMulti(location, ...axisLists);
     try {
       return this.model.interpolateFromDeltas(normalizedLocation, this.deltas);
     } catch (error) {
