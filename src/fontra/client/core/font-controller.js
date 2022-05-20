@@ -2,7 +2,6 @@ import { applyChange, baseChangeFunctions, consolidateChanges } from "./changes.
 import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
-import { mapForward } from "./var-model.js";
 import { throttleCalls } from "./utils.js";
 
 
