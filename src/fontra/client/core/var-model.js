@@ -282,9 +282,8 @@ export function locationToString(loc) {
 }
 
 
-export function normalizeValue(v, triple) {
+export function normalizeValue(v, lower, dflt, upper) {
   // Normalizes value based on a min/default/max triple.
-  const [lower, dflt, upper] = triple;
   if (!((lower <= dflt) && (dflt <= upper))) {
     throw new VariationError(
       `Invalid axis values, must be minimum, default, maximum: ${lower}, ${dflt}, ${upper}`
@@ -310,7 +309,7 @@ export function normalizeLocation(location, axes) {
     if (v === undefined) {
       v = triple[1];
     }
-    out[tag] = normalizeValue(v, triple);
+    out[tag] = normalizeValue(v, ...triple);
   }
   return out;
 }
