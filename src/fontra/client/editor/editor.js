@@ -531,7 +531,7 @@ export class EditorController {
     if (!this.infoForm.container.offsetParent) {
       return;
     }
-    const glyphController = this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph;
+    const glyphController = this.sceneController.sceneModel.getSelectedStaticGlyph();
     const instance = glyphController?.instance;
     const glyphName = glyphController?.name;
     const canEdit = glyphController?.canEdit;

@@ -39,6 +39,10 @@ export class SceneModel {
     return await this.fontController.getGlyph(this.getSelectedGlyphName());
   }
 
+  getSelectedStaticGlyph() {
+    return this.getSelectedPositionedGlyph()?.glyph;
+  }
+
   getSelectedGlyphState() {
     if (!this.selectedGlyph) {
       return undefined;
