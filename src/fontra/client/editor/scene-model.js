@@ -32,14 +32,14 @@ export class SceneModel {
     return this.getSelectedPositionedGlyph()?.glyph.name;
   }
 
-  async getSelectedVarGlyph() {
+  async getSelectedVariableGlyphController() {
     if (!this.selectedGlyph) {
       return undefined;
     }
     return await this.fontController.getGlyph(this.getSelectedGlyphName());
   }
 
-  getSelectedStaticGlyph() {
+  getSelectedStaticGlyphController() {
     return this.getSelectedPositionedGlyph()?.glyph;
   }
 
@@ -105,7 +105,7 @@ export class SceneModel {
     if (!this.selectedGlyph) {
       return;
     }
-    const glyph = await this.getSelectedVarGlyph();
+    const glyph = await this.getSelectedVariableGlyphController();
     const source = glyph.sources[sourceIndex];
     const location = {...this.fontController.location};
     for (const [axisName, triple] of Object.entries(glyph.axisDictGlobal)) {
@@ -124,7 +124,7 @@ export class SceneModel {
     const allAxes = Array.from(this.fontController.globalAxes);
     const globalAxisNames = new Set(allAxes.map(axis => axis.name));
     if (this.selectedGlyph) {
-      const glyph = await this.getSelectedVarGlyph();
+      const glyph = await this.getSelectedVariableGlyphController();
       const glyphAxes = getAxisInfoFromGlyph(glyph).filter(axis => !globalAxisNames.has(axis.name));
       allAxes.push(...glyphAxes);
     }
@@ -136,7 +136,7 @@ export class SceneModel {
     if (!this.selectedGlyph) {
       return sourcesInfo;
     }
-    const glyph = await this.getSelectedVarGlyph();
+    const glyph = await this.getSelectedVariableGlyphController();
     for (let i = 0; i < glyph.sources.length; i++) {
       let name = glyph.sources[i].name;
       if (!name) {
