@@ -87,13 +87,20 @@ export class VariableGlyphController {
 
   getLocalToGlobalMapping() {
     const pseudoAxisList = [];
-    for (const [axisName, localTriple] of Object.entries(this.axisDictLocal)) {
-      const globalTriple = this.axisDictGlobal[axisName];
-      const mapping = [];
-      for (let i = 0; i < 3; i++) {
-        mapping.push([localTriple[i], globalTriple[i]]);
+    const globalAxisDict = {};
+    for (const axis of this.globalAxes) {
+      globalAxisDict[axis.name] = axis;
+    }
+    for (const localAxis of this.axes) {
+      const globalAxis = globalAxisDict[localAxis.name];
+      if (globalAxis) {
+        const mapping = [
+          [localAxis.minValue, globalAxis.minValue],
+          [localAxis.defaultValue, globalAxis.defaultValue],
+          [localAxis.maxValue, globalAxis.maxValue],
+        ];
+        pseudoAxisList.push({"name": localAxis.name, "mapping": mapping});
       }
-      pseudoAxisList.push({"name": axisName, "mapping": mapping});
     }
     return pseudoAxisList;
   }
