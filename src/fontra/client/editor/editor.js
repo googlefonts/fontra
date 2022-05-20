@@ -1,6 +1,6 @@
 import { CanvasController } from "../core/canvas-controller.js";
-import { applyChange, consolidateChanges, matchChange } from "../core/changes.js";
-import { FontController, glyphChangeFunctions } from "../core/font-controller.js";
+import { matchChange } from "../core/changes.js";
+import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
 import { insetRect, rectFromArray, rectToArray } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
