@@ -51,16 +51,21 @@ export class VariableGlyphController {
     location = mapBackward(location, this.getLocalToGlobalMapping());
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
+      const seen = new Set();
       let found = true;
-      for (const [axisName, triple] of Object.entries(this.axisDictLocal)) {
-        const baseName = getAxisBaseName(axisName);
+      for (const axis of this.axes.concat(this.globalAxes)) {
+        if (seen.has(axis.name)) {
+          continue;
+        }
+        seen.add(axis.name);
+        const baseName = getAxisBaseName(axis.name);
         let varValue = location[baseName];
-        let sourceValue = source.location[axisName];
+        let sourceValue = source.location[axis.name];
         if (varValue === undefined) {
-          varValue = triple[1];
+          varValue = axis.defaultValue;
         }
         if (sourceValue === undefined) {
-          sourceValue = triple[1];
+          sourceValue = axis.defaultValue;
         }
         if (varValue !== sourceValue) {
           found = false;
@@ -112,7 +117,6 @@ export class VariableGlyphController {
   clearModelCache() {
     delete this._model;
     delete this._deltas;
-    delete this._axisDictLocal;
     this._locationToSourceIndex = {};
   }
 
@@ -132,13 +136,6 @@ export class VariableGlyphController {
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
-  }
-
-  get axisDictLocal() {
-    if (this._axisDictLocal === undefined) {
-      this._axisDictLocal = this._combineGlobalAndLocalAxes(true);
-    }
-    return this._axisDictLocal;
   }
 
   _combineGlobalAndLocalAxes(prioritizeLocal) {
