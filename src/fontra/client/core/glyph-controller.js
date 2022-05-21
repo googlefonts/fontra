@@ -140,7 +140,7 @@ export class VariableGlyphController {
     if (this._model === undefined) {
       const locations = this.sources.map(source => source.location);
       this._model = new VariationModel(
-        locations.map(location => sparsifyLocation(normalizeLocationMulti(location, this.globalAxes, this.axes))),
+        locations.map(location => sparsifyLocation(normalizeLocation(location, this.combinedAxes))),
         this.axes.map(axis => axis.name));
     }
     return this._model;
@@ -182,9 +182,7 @@ export class VariableGlyphController {
       }
       const errorMessage = `Interpolation error while instantiating glyph ${this.name} (${error.toString()})`;
       console.log(errorMessage);
-      const indexInfo = findClosestSourceIndexFromLocation(
-        this.glyph, normalizedLocation, this.globalAxes, this.axes
-      );
+      const indexInfo = findClosestSourceIndexFromLocation(this.glyph, normalizedLocation, this.combinedAxes);
       return this.getLayerGlyph(this.sources[indexInfo.index].layerName);
     }
   }
@@ -370,7 +368,7 @@ async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, tran
   }
   let inst;
   try {
-    inst = glyph.instantiate(normalizeLocationMulti(compoLocation, glyph.globalAxes, glyph.axes));
+    inst = glyph.instantiate(normalizeLocation(compoLocation, glyph.combinedAxes));
   } catch (error) {
     if (error.name !== "VariationError") {
       throw error;
@@ -503,10 +501,10 @@ function subsetLocation(location, axes) {
 }
 
 
-function findClosestSourceIndexFromLocation(glyph, location, globalAxes, localAxes) {
+function findClosestSourceIndexFromLocation(glyph, location, combinedAxes) {
   const distances = [];
   for (let i = 0; i < glyph.sources.length; i++) {
-    const sourceLocation = normalizeLocationMulti(glyph.sources[i].location, globalAxes, localAxes);
+    const sourceLocation = normalizeLocation(glyph.sources[i].location, combinedAxes);
     let distanceSquared = 0;
     for (const [axisName, value] of Object.entries(location)) {
       const sourceValue = sourceLocation[axisName];
