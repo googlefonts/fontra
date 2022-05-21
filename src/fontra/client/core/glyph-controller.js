@@ -30,6 +30,42 @@ export class VariableGlyphController {
     return this.glyph.sources;
   }
 
+  get combinedAxes() {
+    if (this._combinedAxes === undefined) {
+      this._setupAxisMapping();
+    }
+    return this._combinedAxes;
+  }
+
+  get localToGlobalMapping() {
+    if (this._localToGlobalMapping === undefined) {
+      this._setupAxisMapping();
+    }
+    return this._localToGlobalMapping;
+  }
+
+  _setupAxisMapping() {
+    this._combinedAxes = Array.from(this.axes);
+    this._localToGlobalMapping = [];
+    const localAxisDict = {};
+    for (const localAxis of this.axes) {
+      localAxisDict[localAxis.name] = localAxis;
+    }
+    for (const globalAxis of this.globalAxes) {
+      const localAxis = localAxisDict[globalAxis.name];
+      if (localAxis) {
+        const mapping = [
+          [localAxis.minValue, globalAxis.minValue],
+          [localAxis.defaultValue, globalAxis.defaultValue],
+          [localAxis.maxValue, globalAxis.maxValue],
+        ];
+        this._localToGlobalMapping.push({"name": globalAxis.name, "mapping": mapping});
+      } else {
+        this._combinedAxes.push(globalAxis);
+      }
+    }
+  }
+
   getLayerGlyph(layerName) {
     return this.glyph.getLayerGlyph(layerName);
   }
@@ -48,7 +84,7 @@ export class VariableGlyphController {
 
   _getSourceIndex(location) {
     location = mapForward(location, this.globalAxes);
-    location = mapBackward(location, this.getLocalToGlobalMapping());
+    location = mapBackward(location, this.localToGlobalMapping);
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
       const seen = new Set();
@@ -88,26 +124,6 @@ export class VariableGlyphController {
       }
     }
     return componentNames;
-  }
-
-  getLocalToGlobalMapping() {
-    const pseudoAxisList = [];
-    const globalAxisDict = {};
-    for (const axis of this.globalAxes) {
-      globalAxisDict[axis.name] = axis;
-    }
-    for (const localAxis of this.axes) {
-      const globalAxis = globalAxisDict[localAxis.name];
-      if (globalAxis) {
-        const mapping = [
-          [localAxis.minValue, globalAxis.minValue],
-          [localAxis.defaultValue, globalAxis.defaultValue],
-          [localAxis.maxValue, globalAxis.maxValue],
-        ];
-        pseudoAxisList.push({"name": localAxis.name, "mapping": mapping});
-      }
-    }
-    return pseudoAxisList;
   }
 
   clearDeltasCache() {
@@ -194,7 +210,7 @@ export class VariableGlyphController {
     // local axes, while leaving the other global axis values alone.
     let localLocation = subsetLocation(location, this.axes)
     localLocation = mapForward(localLocation, this.globalAxes);
-    localLocation = mapBackward(localLocation, this.getLocalToGlobalMapping());
+    localLocation = mapBackward(localLocation, this.localToGlobalMapping);
     location = {...location, ...localLocation};
 
     await instanceController.setupComponents(getGlyphFunc, location);

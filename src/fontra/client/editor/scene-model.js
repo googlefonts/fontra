@@ -110,8 +110,7 @@ export class SceneModel {
     for (const axis of glyph.axes.concat(glyph.globalAxes)) {
       location[axis.name] = axis.defaultValue;
     }
-    const localToGlobalMapping = glyph.getLocalToGlobalMapping();
-    const sourceLocation = mapForward(source.location, localToGlobalMapping);
+    const sourceLocation = mapForward(source.location, glyph.localToGlobalMapping);
     for (const [name, value] of Object.entries(sourceLocation)) {
       const baseName = getAxisBaseName(name);
       location[baseName] = value;
