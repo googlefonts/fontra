@@ -189,12 +189,18 @@ export class VariableGlyphController {
 
   async instantiateController(location, getGlyphFunc) {
     const sourceIndex = this.getSourceIndex(location);
-    location = mapForward(mapNLILocation(location, this.axes), this.globalAxes);
+    // Apply global axis mapping (user-facing avar)
+    location = mapForward(location, this.globalAxes);
+    // Map axes that exist both globally and locally to their local ranges
+    location = mapBackward(location, this.localToGlobalMapping);
+    // Expand folded NLI axes to their "real" axes
+    location = mapNLILocation(location, this.axes);
+
     let instance;
     if (sourceIndex !== undefined) {
       instance = this.getLayerGlyph(this.sources[sourceIndex].layerName);
     } else {
-      instance = this.instantiate(normalizeLocationMulti(location, this.axes, this.globalAxes));
+      instance = this.instantiate(normalizeLocation(location, this.combinedAxes));
     }
 
     if (!instance) {
@@ -203,13 +209,6 @@ export class VariableGlyphController {
     const instanceController = new StaticGlyphController(
       this.name, instance, sourceIndex,
     );
-
-    // Map the axis values for which local axes exist to the
-    // local axes, while leaving the other global axis values alone.
-    let localLocation = subsetLocation(location, this.axes)
-    localLocation = mapForward(localLocation, this.globalAxes);
-    localLocation = mapBackward(localLocation, this.localToGlobalMapping);
-    location = {...location, ...localLocation};
 
     await instanceController.setupComponents(getGlyphFunc, location);
     return instanceController;
