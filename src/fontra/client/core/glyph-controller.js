@@ -126,15 +126,17 @@ export class VariableGlyphController {
   }
 
   clearDeltasCache() {
+    // Call this when a source layer changed
     delete this._deltas;
   }
 
   clearModelCache() {
+    // Call this when global or local design spaces changed
     delete this._model;
     delete this._deltas;
-    this._locationToSourceIndex = {};
     delete this._combinedAxes;
     delete this._localToGlobalMapping;
+    this._locationToSourceIndex = {};
   }
 
   get model() {
