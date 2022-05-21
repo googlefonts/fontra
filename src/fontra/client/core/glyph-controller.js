@@ -61,7 +61,16 @@ export class VariableGlyphController {
         ];
         this._localToGlobalMapping.push({"name": globalAxis.name, "mapping": mapping});
       } else {
-        this._combinedAxes.push(globalAxis);
+        // Add global axis to combined axis list, but apply its
+        // user-facing avar mapping first
+        const mapFunc = makeAxisMapFunc(globalAxis);
+        const axis = {
+          "name": globalAxis.name,
+          "minValue": mapFunc(globalAxis.minValue),
+          "defaultValue": mapFunc(globalAxis.defaultValue),
+          "maxValue": mapFunc(globalAxis.maxValue),
+        }
+        this._combinedAxes.push(axis);
       }
     }
   }
@@ -155,25 +164,6 @@ export class VariableGlyphController {
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
-  }
-
-  _combineGlobalAndLocalAxes(prioritizeLocal) {
-    const usedAxisNames = new Set(
-      this.sources.reduce((prev, cur) => prev.concat(Object.keys(cur.location)), [])
-    );
-    const axisDict = {};
-    for (const axis of this.globalAxes) {
-      if (usedAxisNames.has(axis.name)) {
-        const m = makeAxisMapFunc(axis);
-        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
-      }
-    }
-    for (const axis of this.axes) {
-      if (prioritizeLocal || !(axis.name in axisDict)) {
-        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
-      }
-    }
-    return axisDict;
   }
 
   instantiate(normalizedLocation) {
