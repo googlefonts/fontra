@@ -1,4 +1,3 @@
-import { FontController } from "../core/font-controller.js"
 import { getAxisBaseName } from "../core/glyph-controller.js"
 import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "../core/rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
@@ -108,11 +107,10 @@ export class SceneModel {
     const glyph = await this.getSelectedVariableGlyphController();
     const source = glyph.sources[sourceIndex];
     const location = {...this.fontController.location};
-    for (const [axisName, triple] of Object.entries(glyph.axisDictGlobal)) {
-      location[axisName] = triple[1];
+    for (const axis of glyph.axes.concat(glyph.globalAxes)) {
+      location[axis.name] = axis.defaultValue;
     }
-    const localToGlobalMapping = glyph.getLocalToGlobalMapping();
-    const sourceLocation = mapForward(source.location, localToGlobalMapping);
+    const sourceLocation = mapForward(source.location, glyph.localToGlobalMapping);
     for (const [name, value] of Object.entries(sourceLocation)) {
       const baseName = getAxisBaseName(name);
       location[baseName] = value;

@@ -30,6 +30,50 @@ export class VariableGlyphController {
     return this.glyph.sources;
   }
 
+  get combinedAxes() {
+    if (this._combinedAxes === undefined) {
+      this._setupAxisMapping();
+    }
+    return this._combinedAxes;
+  }
+
+  get localToGlobalMapping() {
+    if (this._localToGlobalMapping === undefined) {
+      this._setupAxisMapping();
+    }
+    return this._localToGlobalMapping;
+  }
+
+  _setupAxisMapping() {
+    this._combinedAxes = Array.from(this.axes);
+    this._localToGlobalMapping = [];
+    const localAxisDict = {};
+    for (const localAxis of this.axes) {
+      localAxisDict[localAxis.name] = localAxis;
+    }
+    for (let globalAxis of this.globalAxes) {
+      // Apply user-facing avar mapping: we need "designspace" coordinates here
+      const mapFunc = makeAxisMapFunc(globalAxis);
+      globalAxis = {
+        "name": globalAxis.name,
+        "minValue": mapFunc(globalAxis.minValue),
+        "defaultValue": mapFunc(globalAxis.defaultValue),
+        "maxValue": mapFunc(globalAxis.maxValue),
+      }
+      const localAxis = localAxisDict[globalAxis.name];
+      if (localAxis) {
+        const mapping = [
+          [localAxis.minValue, globalAxis.minValue],
+          [localAxis.defaultValue, globalAxis.defaultValue],
+          [localAxis.maxValue, globalAxis.maxValue],
+        ];
+        this._localToGlobalMapping.push({"name": globalAxis.name, "mapping": mapping});
+      } else {
+        this._combinedAxes.push(globalAxis);
+      }
+    }
+  }
+
   getLayerGlyph(layerName) {
     return this.glyph.getLayerGlyph(layerName);
   }
@@ -47,20 +91,24 @@ export class VariableGlyphController {
   }
 
   _getSourceIndex(location) {
-    location = mapForward(location, this.globalAxes);
-    location = mapBackward(location, this.getLocalToGlobalMapping());
+    location = this.mapLocationToLocal(location);
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
+      const seen = new Set();
       let found = true;
-      for (const [axisName, triple] of Object.entries(this.axisDictLocal)) {
-        const baseName = getAxisBaseName(axisName);
+      for (const axis of this.axes.concat(this.globalAxes)) {
+        if (seen.has(axis.name)) {
+          continue;
+        }
+        seen.add(axis.name);
+        const baseName = getAxisBaseName(axis.name);
         let varValue = location[baseName];
-        let sourceValue = source.location[axisName];
+        let sourceValue = source.location[axis.name];
         if (varValue === undefined) {
-          varValue = triple[1];
+          varValue = axis.defaultValue;
         }
         if (sourceValue === undefined) {
-          sourceValue = triple[1];
+          sourceValue = axis.defaultValue;
         }
         if (varValue !== sourceValue) {
           found = false;
@@ -85,28 +133,17 @@ export class VariableGlyphController {
     return componentNames;
   }
 
-  getLocalToGlobalMapping() {
-    const pseudoAxisList = [];
-    for (const [axisName, localTriple] of Object.entries(this.axisDictLocal)) {
-      const globalTriple = this.axisDictGlobal[axisName];
-      const mapping = [];
-      for (let i = 0; i < 3; i++) {
-        mapping.push([localTriple[i], globalTriple[i]]);
-      }
-      pseudoAxisList.push({"name": axisName, "mapping": mapping});
-    }
-    return pseudoAxisList;
-  }
-
   clearDeltasCache() {
+    // Call this when a source layer changed
     delete this._deltas;
   }
 
   clearModelCache() {
+    // Call this when global or local design spaces changed
     delete this._model;
     delete this._deltas;
-    delete this._axisDictGlobal;
-    delete this._axisDictLocal;
+    delete this._combinedAxes;
+    delete this._localToGlobalMapping;
     this._locationToSourceIndex = {};
   }
 
@@ -114,7 +151,7 @@ export class VariableGlyphController {
     if (this._model === undefined) {
       const locations = this.sources.map(source => source.location);
       this._model = new VariationModel(
-        locations.map(location => normalizeLocationSparse(location, this.axisDictLocal)),
+        locations.map(location => sparsifyLocation(normalizeLocation(location, this.combinedAxes))),
         this.axes.map(axis => axis.name));
     }
     return this._model;
@@ -128,66 +165,29 @@ export class VariableGlyphController {
     return this._deltas;
   }
 
-  get axisDictGlobal() {
-    if (this._axisDictGlobal === undefined) {
-      this._axisDictGlobal = this._combineGlobalAndLocalAxes(false);
-    }
-    return this._axisDictGlobal;
-  }
-
-  get axisDictLocal() {
-    if (this._axisDictLocal === undefined) {
-      this._axisDictLocal = this._combineGlobalAndLocalAxes(true);
-    }
-    return this._axisDictLocal;
-  }
-
-  _combineGlobalAndLocalAxes(prioritizeLocal) {
-    const usedAxisNames = new Set(
-      this.sources.reduce((prev, cur) => prev.concat(Object.keys(cur.location)), [])
-    );
-    const axisDict = {};
-    for (const axis of this.globalAxes) {
-      if (usedAxisNames.has(axis.name)) {
-        const m = makeAxisMapFunc(axis);
-        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue].map(m);
-      }
-    }
-    for (const axis of this.axes) {
-      if (prioritizeLocal || !(axis.name in axisDict)) {
-        axisDict[axis.name] = [axis.minValue, axis.defaultValue, axis.maxValue];
-      }
-    }
-    return axisDict;
-  }
-
-  instantiate(location, fromGlobal = true) {
-    const axisDict = fromGlobal ? this.axisDictGlobal : this.axisDictLocal;
+  instantiate(normalizedLocation) {
     try {
-      return this.model.interpolateFromDeltas(
-        normalizeLocation(location, axisDict), this.deltas
-      );
+      return this.model.interpolateFromDeltas(normalizedLocation, this.deltas);
     } catch (error) {
       if (error.name !== "VariationError") {
         throw error;
       }
       const errorMessage = `Interpolation error while instantiating glyph ${this.name} (${error.toString()})`;
       console.log(errorMessage);
-      const indexInfo = findClosestSourceIndexFromLocation(
-        this.glyph, normalizeLocation(location, axisDict), this.axisDictLocal
-      );
+      const indexInfo = findClosestSourceIndexFromLocation(this.glyph, normalizedLocation, this.combinedAxes);
       return this.getLayerGlyph(this.sources[indexInfo.index].layerName);
     }
   }
 
   async instantiateController(location, getGlyphFunc) {
     const sourceIndex = this.getSourceIndex(location);
-    location = mapForward(mapNLILocation(location, this.axes), this.globalAxes);
+    location = this.mapLocationToLocal(location);
+
     let instance;
     if (sourceIndex !== undefined) {
       instance = this.getLayerGlyph(this.sources[sourceIndex].layerName);
     } else {
-      instance = this.instantiate(location);
+      instance = this.instantiate(normalizeLocation(location, this.combinedAxes));
     }
 
     if (!instance) {
@@ -197,15 +197,18 @@ export class VariableGlyphController {
       this.name, instance, sourceIndex,
     );
 
-    // Map the axis values for which local axes exist to the
-    // local axes, while leaving the other global axis values alone.
-    let localLocation = subsetLocation(location, this.axes)
-    localLocation = mapForward(localLocation, this.globalAxes);
-    localLocation = mapBackward(localLocation, this.getLocalToGlobalMapping());
-    location = {...location, ...localLocation};
-
     await instanceController.setupComponents(getGlyphFunc, location);
     return instanceController;
+  }
+
+  mapLocationToLocal(location) {
+    // Apply global axis mapping (user-facing avar)
+    location = mapForward(location, this.globalAxes);
+    // Map axes that exist both globally and locally to their local ranges
+    location = mapBackward(location, this.localToGlobalMapping);
+    // Expand folded NLI axes to their "real" axes
+    location = mapNLILocation(location, this.axes);
+    return location;
   }
 
 }
@@ -353,7 +356,7 @@ async function getComponentPath(compo, getGlyphFunc, parentLocation) {
 
 
 async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation = null) {
-  const compoLocation = mergeLocations(parentLocation, compo.location);
+  const compoLocation = mergeLocations(parentLocation, compo.location) || {};
   const glyph = await getGlyphFunc(compo.name);
   if (!glyph) {
     console.log(`component glyph ${compo.name} was not found`)
@@ -361,7 +364,7 @@ async function getNestedComponentPaths(compo, getGlyphFunc, parentLocation, tran
   }
   let inst;
   try {
-    inst = glyph.instantiate(compoLocation || {}, false);
+    inst = glyph.instantiate(normalizeLocation(compoLocation, glyph.combinedAxes));
   } catch (error) {
     if (error.name !== "VariationError") {
       throw error;
@@ -419,14 +422,15 @@ function makeAxisMapFunc(axis) {
 }
 
 
-function normalizeLocationSparse(location, axes) {
-  const normLoc = normalizeLocation(location, axes);
-  for (const [name, value] of Object.entries(normLoc)) {
-    if (!value) {
-      delete normLoc[name];
+function sparsifyLocation(location) {
+  // location must be normalized
+  const sparseLocation = {};
+  for (const [name, value] of Object.entries(location)) {
+    if (value) {
+      sparseLocation[name] = value;
     }
   }
-  return normLoc;
+  return sparseLocation;
 }
 
 
@@ -493,20 +497,20 @@ function subsetLocation(location, axes) {
 }
 
 
-function findClosestSourceIndexFromLocation(glyph, location, axisDict) {
+function findClosestSourceIndexFromLocation(glyph, location, axes) {
   const distances = [];
   for (let i = 0; i < glyph.sources.length; i++) {
-    const sourceLocation = normalizeLocation(glyph.sources[i].location, axisDict);
+    const sourceLocation = normalizeLocation(glyph.sources[i].location, axes);
     let distanceSquared = 0;
     for (const [axisName, value] of Object.entries(location)) {
       const sourceValue = sourceLocation[axisName];
       distanceSquared += (sourceValue - value) ** 2;
     }
-    distances.push([distanceSquared, i]);
     if (distanceSquared === 0) {
       // exact match, no need to look further
-      break;
+      return {distance: 0, index: i};
     }
+    distances.push([distanceSquared, i]);
   }
   distances.sort((a, b) => {
     const da = a[0];
