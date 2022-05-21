@@ -506,10 +506,10 @@ function subsetLocation(location, axes) {
 }
 
 
-function findClosestSourceIndexFromLocation(glyph, location, combinedAxes) {
+function findClosestSourceIndexFromLocation(glyph, location, axes) {
   const distances = [];
   for (let i = 0; i < glyph.sources.length; i++) {
-    const sourceLocation = normalizeLocation(glyph.sources[i].location, combinedAxes);
+    const sourceLocation = normalizeLocation(glyph.sources[i].location, axes);
     let distanceSquared = 0;
     for (const [axisName, value] of Object.entries(location)) {
       const sourceValue = sourceLocation[axisName];
