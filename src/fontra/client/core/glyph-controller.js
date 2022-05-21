@@ -51,7 +51,13 @@ export class VariableGlyphController {
     for (const localAxis of this.axes) {
       localAxisDict[localAxis.name] = localAxis;
     }
-    for (const globalAxis of this.globalAxes) {
+    for (let globalAxis of this.globalAxes) {
+      // Apply user-facing avar mapping: we need "designspace" coordinates here
+      const mapFunc = makeAxisMapFunc(globalAxis);
+      globalAxis = {...globalAxis};
+      globalAxis.minValue = mapFunc(globalAxis.minValue);
+      globalAxis.defaultValue = mapFunc(globalAxis.defaultValue);
+      globalAxis.maxValue = mapFunc(globalAxis.maxValue);
       const localAxis = localAxisDict[globalAxis.name];
       if (localAxis) {
         const mapping = [
@@ -61,16 +67,7 @@ export class VariableGlyphController {
         ];
         this._localToGlobalMapping.push({"name": globalAxis.name, "mapping": mapping});
       } else {
-        // Add global axis to combined axis list, but apply its
-        // user-facing avar mapping first
-        const mapFunc = makeAxisMapFunc(globalAxis);
-        const axis = {
-          "name": globalAxis.name,
-          "minValue": mapFunc(globalAxis.minValue),
-          "defaultValue": mapFunc(globalAxis.defaultValue),
-          "maxValue": mapFunc(globalAxis.maxValue),
-        }
-        this._combinedAxes.push(axis);
+        this._combinedAxes.push(globalAxis);
       }
     }
   }
