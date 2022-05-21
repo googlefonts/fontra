@@ -133,6 +133,8 @@ export class VariableGlyphController {
     delete this._model;
     delete this._deltas;
     this._locationToSourceIndex = {};
+    delete this._combinedAxes;
+    delete this._localToGlobalMapping;
   }
 
   get model() {
