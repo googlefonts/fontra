@@ -54,10 +54,12 @@ export class VariableGlyphController {
     for (let globalAxis of this.globalAxes) {
       // Apply user-facing avar mapping: we need "designspace" coordinates here
       const mapFunc = makeAxisMapFunc(globalAxis);
-      globalAxis = {...globalAxis};
-      globalAxis.minValue = mapFunc(globalAxis.minValue);
-      globalAxis.defaultValue = mapFunc(globalAxis.defaultValue);
-      globalAxis.maxValue = mapFunc(globalAxis.maxValue);
+      globalAxis = {
+        "name": globalAxis.name,
+        "minValue": mapFunc(globalAxis.minValue),
+        "defaultValue": mapFunc(globalAxis.defaultValue),
+        "maxValue": mapFunc(globalAxis.maxValue),
+      }
       const localAxis = localAxisDict[globalAxis.name];
       if (localAxis) {
         const mapping = [
