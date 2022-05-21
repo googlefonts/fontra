@@ -522,10 +522,3 @@ function findClosestSourceIndexFromLocation(glyph, location, combinedAxes) {
   });
   return {distance: Math.sqrt(distances[0][0]), index: distances[0][1]}
 }
-
-
-function normalizeLocationMulti(location, ...axisLists) {
-  return axisLists.reduce((prev, axisList) => {
-    return {...prev, ...normalizeLocation(location, axisList)};
-  }, {});
-}
