@@ -517,11 +517,11 @@ function findClosestSourceIndexFromLocation(glyph, location, axes) {
       const sourceValue = sourceLocation[axisName];
       distanceSquared += (sourceValue - value) ** 2;
     }
-    distances.push([distanceSquared, i]);
     if (distanceSquared === 0) {
       // exact match, no need to look further
-      break;
+      return {distance: 0, index: i};
     }
+    distances.push([distanceSquared, i]);
   }
   distances.sort((a, b) => {
     const da = a[0];
