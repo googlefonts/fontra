@@ -470,9 +470,9 @@ function mapLocationExpandNLI(userLocation, axes) {
 
 
 function mapLocationFoldNLI(location, axes) {
-  userLocation = {};
+  const userLocation = {};
   for (const [axisName, axisValue] of Object.entries(location)) {
-    const baseName = axis.name.split("*", 1)[0];
+    const baseName = axisName.split("*", 1)[0];
     userLocation[baseName] = axisValue;
   }
   return userLocation;
