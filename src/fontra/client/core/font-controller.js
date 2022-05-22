@@ -47,18 +47,7 @@ export class FontController {
   getGlyph(glyphName) {
     let glyphPromise = this._glyphsPromiseCache.get(glyphName);
     if (glyphPromise === undefined) {
-      glyphPromise = (async () => {
-        if (!await this.hasGlyph(glyphName)) {
-          return null;
-        }
-        let glyph = await this.font.getGlyph(glyphName);
-        if (glyph !== null) {
-          glyph = VariableGlyph.fromObject(glyph);
-          glyph = new VariableGlyphController(glyph, this.globalAxes);
-          this.updateGlyphDependencies(glyph);
-        }
-        return glyph;
-      })();
+      glyphPromise = this._getGlyph(glyphName);
       const purgedGlyphName = this._glyphsPromiseCache.put(glyphName, glyphPromise);
       // if (purgedGlyphName) {
       //   console.log("purging", purgedGlyphName);
@@ -67,6 +56,19 @@ export class FontController {
       // console.log("LRU size", this._glyphsPromiseCache.map.size);
     }
     return glyphPromise;
+  }
+
+  async _getGlyph(glyphName) {
+    if (!await this.hasGlyph(glyphName)) {
+      return null;
+    }
+    let glyph = await this.font.getGlyph(glyphName);
+    if (glyph !== null) {
+      glyph = VariableGlyph.fromObject(glyph);
+      glyph = new VariableGlyphController(glyph, this.globalAxes);
+      this.updateGlyphDependencies(glyph);
+    }
+    return glyph;
   }
 
   updateGlyphDependencies(glyph) {
