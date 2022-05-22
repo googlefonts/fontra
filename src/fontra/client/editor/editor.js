@@ -327,7 +327,7 @@ export class EditorController {
     const glyphLines = this.sceneController.getGlyphLines();
     if (selectedGlyphState) {
       glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] = glyphInfo;
-      await this.sceneController.setGlyphLines(glyphLines);
+      await this.setGlyphLines(glyphLines);
       this.sceneController.setSelectedGlyphState(selectedGlyphState);
     } else {
       if (!glyphLines.length) {
@@ -335,7 +335,7 @@ export class EditorController {
       }
       const lineIndex = glyphLines.length - 1;
       glyphLines[lineIndex].push(glyphInfo);
-      await this.sceneController.setGlyphLines(glyphLines);
+      await this.setGlyphLines(glyphLines);
       this.sceneController.setSelectedGlyphState(
         {"lineIndex": lineIndex, "glyphIndex": glyphLines[lineIndex].length - 1, "isEditing": false}
       );
@@ -354,6 +354,10 @@ export class EditorController {
     this.setGlyphLinesFromText(element.innerText);
   }
 
+  async setGlyphLines(glyphLines) {
+    await loaderSpinner(this.sceneController.setGlyphLines(glyphLines));
+  }
+
   async setGlyphLinesFromText(text) {
     this.enteredText = text;
     await this.fontController.ensureInitialized;
@@ -362,7 +366,7 @@ export class EditorController {
       this.fontController.cmap,
       this.fontController.reverseCmap,
     );
-    await this.sceneController.setGlyphLines(glyphLines);
+    await this.setGlyphLines(glyphLines);
     await this.updateSlidersAndSources();
     this.setAutoViewBox();
   }
@@ -392,7 +396,7 @@ export class EditorController {
     const selectedGlyphInfo = this.sceneController.getSelectedGlyphState();
     const glyphLines = this.sceneController.getGlyphLines();
     glyphLines[selectedGlyphInfo.lineIndex].splice(selectedGlyphInfo.glyphIndex + 1, 0, ...glyphInfos);
-    await this.sceneController.setGlyphLines(glyphLines);
+    await this.setGlyphLines(glyphLines);
     this.updateTextEntryFromGlyphLines();
     await this.updateSlidersAndSources();
     this.setAutoViewBox();
