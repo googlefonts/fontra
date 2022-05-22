@@ -11,6 +11,8 @@ export class FontController {
     this.font = font;
     this.location = location;
     this._glyphsPromiseCache = new LRUCache(250);  // TODO: what if we need to display > 250 glyphs?
+    this._glyphInstancesCache = {};  // cacheKey -> instancePromise
+    this._glyphInstancesCacheKeys = {};  // glyphName -> Set(cacheKeys)
     this._editListeners = new Set();
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
