@@ -101,8 +101,7 @@ export class VariableGlyphController {
           continue;
         }
         seen.add(axis.name);
-        const baseName = getAxisBaseName(axis.name);
-        let varValue = location[baseName];
+        let varValue = location[axis.name];
         let sourceValue = source.location[axis.name];
         if (varValue === undefined) {
           varValue = axis.defaultValue;
