@@ -84,6 +84,7 @@ export class VariableGlyphController {
 
   getSourceIndex(location) {
     const locationStr = locationToString(location);
+    // TODO: fix the unboundedness of the _locationToSourceIndex cache
     if (!(locationStr in this._locationToSourceIndex)) {
       this._locationToSourceIndex[locationStr] = this._getSourceIndex(location);
     }

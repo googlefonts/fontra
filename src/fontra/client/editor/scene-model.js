@@ -3,6 +3,7 @@ import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "../c
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
 import { mapForward, mapBackward } from "../core/var-model.js";
 import { isEqualSet, updateSet } from "../core/set-ops.js";
+import { locationToString } from "../core/var-model.js";
 
 
 export class SceneModel {
@@ -17,6 +18,7 @@ export class SceneModel {
     this.selectedGlyph = undefined;
     this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
+    this._location = {};
   }
 
   getSelectedPositionedGlyph() {
@@ -79,18 +81,18 @@ export class SceneModel {
   }
 
   getLocation() {
-    return this.fontController.location;
+    return this._location;
   }
 
   async setLocation(location) {
-    this.fontController.location = location;
+    this._location = location;
     await this.updateScene();
   }
 
   async getSelectedSource() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {
-      return await this.fontController.getSourceIndex(glyphName);
+      return await this.fontController.getSourceIndex(glyphName, this._location);
     } else {
       return undefined;
     }
@@ -101,7 +103,7 @@ export class SceneModel {
       return;
     }
     const glyph = await this.getSelectedVariableGlyphController();
-    let location = {...this.fontController.location};
+    let location = {...this._location};
     for (const axis of glyph.globalAxes.concat(glyph.axes)) {
       location[axis.name] = axis.defaultValue;
     }
@@ -138,7 +140,7 @@ export class SceneModel {
   }
 
   async updateScene() {
-    this.positionedLines = await buildScene(this.fontController, this.glyphLines);
+    this.positionedLines = await buildScene(this.fontController, this.glyphLines, this._location);
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
     if (!this._previousUsedGlyphNames || !isEqualSet(usedGlyphNames, this._previousUsedGlyphNames)) {
       this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
@@ -282,14 +284,17 @@ function mergeAxisInfo(axisInfos) {
 }
 
 
-async function buildScene(fontController, glyphLines, align = "center") {
+async function buildScene(fontController, glyphLines, location, align = "center") {
+  const locationString = locationToString(location);
   let y = 0;
   const positionedLines = [];
   for (const glyphLine of glyphLines) {
     const positionedLine = {"glyphs": []};
     let x = 0;
     for (const glyphInfo of glyphLine) {
-      const glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName);
+      const glyphInstance = await fontController.getGlyphInstance(
+        glyphInfo.glyphName, location, glyphInfo.glyphName + locationString
+      );
       if (glyphInstance) {
         const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
         positionedLine.glyphs.push({

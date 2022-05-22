@@ -85,21 +85,10 @@ export class FontController {
     }
   }
 
-  get location() {
-    return this._location;
-  }
-
-  set location(location) {
-    this._location = location;
-    this._glyphInstancePromiseCache = {};
-    this._loadedGlyphInstances = {};
-  }
-
   async glyphChanged(glyphName) {
     const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)]
     for (const glyphName of glyphNames) {
-      delete this._glyphInstancePromiseCache[glyphName];
-      delete this._loadedGlyphInstances[glyphName];
+      // delete this._glyphInstancePromiseCache[glyphName];
     }
     for (const glyphName of glyphNames) {
       const varGlyph = await this.getGlyph(glyphName);
@@ -107,31 +96,19 @@ export class FontController {
     }
   }
 
-  isGlyphInstanceLoaded(glyphName) {
-    return glyphName in this._loadedGlyphInstances;
-  }
-
-  getGlyphInstance(glyphName) {
-    let glyphInstancePromise = this._glyphInstancePromiseCache[glyphName];
-    if (glyphInstancePromise === undefined) {
-      glyphInstancePromise = (async () => {
-        if (!await this.hasGlyph(glyphName)) {
-          return null;
-        }
-        const varGlyph = await this.getGlyph(glyphName);
-        const getGlyphFunc = this.getGlyph.bind(this);
-        const instanceController = await varGlyph.instantiateController(this.location, getGlyphFunc);
-        this._loadedGlyphInstances[glyphName] = true;
-        return instanceController;
-      })();
-      this._glyphInstancePromiseCache[glyphName] = glyphInstancePromise;
+  async getGlyphInstance(glyphName, location, locationCacheKey) {
+    if (!await this.hasGlyph(glyphName)) {
+      return null;
     }
-    return glyphInstancePromise;
+    const varGlyph = await this.getGlyph(glyphName);
+    const getGlyphFunc = this.getGlyph.bind(this);
+    const instanceController = await varGlyph.instantiateController(location, getGlyphFunc);
+    return instanceController;
   }
 
-  async getSourceIndex(glyphName) {
+  async getSourceIndex(glyphName, location) {
     const glyph = await this.getGlyph(glyphName);
-    return glyph.getSourceIndex(this.location);
+    return glyph.getSourceIndex(location);
   }
 
   async subscribeLiveGlyphChanges(glyphNames) {
@@ -193,8 +170,7 @@ export class FontController {
 
   _purgeGlyphCache(glyphName) {
     this._glyphsPromiseCache.delete(glyphName);
-    delete this._glyphInstancePromiseCache[glyphName];
-    delete this._loadedGlyphInstances[glyphName];
+    // delete this._glyphInstancePromiseCache[glyphName];
     for (const dependantName of this.glyphUsedBy[glyphName] || []) {
       this._purgeGlyphCache(dependantName);
     }
