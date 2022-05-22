@@ -298,19 +298,7 @@ export class SceneController {
   }
 
   async setGlyphLines(glyphLines) {
-    const startTime = new Date();
-    let updating = false;
-    for await (const _ of this.sceneModel.setGlyphLines(glyphLines, true)) {
-      if (!updating) {
-        const currentTime = new Date();
-        if (currentTime - startTime > 200) {
-          updating = true;
-        }
-      }
-      if (updating) {
-        this.canvasController.setNeedsUpdate();
-      }
-    }
+    await this.sceneModel.setGlyphLines(glyphLines);
     this.canvasController.setNeedsUpdate();
   }
 

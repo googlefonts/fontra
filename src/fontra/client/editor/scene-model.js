@@ -68,18 +68,14 @@ export class SceneModel {
     return this.glyphLines;
   }
 
-  setGlyphLines(glyphLines, updateIncrementally = false) {
+  async setGlyphLines(glyphLines) {
     this.glyphLines = glyphLines;
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.selectedGlyph = undefined;
     this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
-    if (updateIncrementally) {
-      return this.updateSceneIncrementally();
-    } else {
-      return this.updateScene();
-    }
+    await this.updateScene();
   }
 
   getLocation() {
@@ -146,53 +142,7 @@ export class SceneModel {
   }
 
   async updateScene() {
-    for await (const _ of this.updateSceneIncrementally(false)) {
-      ;
-    }
-  }
-
-  async *updateSceneIncrementally(incrementally = true) {
-    const glyphPromises = {};
-    let loadedGlyphs = {};
-    const glyphLines = this.glyphLines;
-    for (const line of glyphLines) {
-      for (const glyph of line) {
-        if (glyph.glyphName === undefined || glyph.glyphName in glyphPromises) {
-          continue;
-        }
-        glyphPromises[glyph.glyphName] = (async (glyphName) => {
-          await this.fontController.getGlyphInstance(glyphName);
-          loadedGlyphs[glyphName] = true;
-        })(glyph.glyphName);
-      }
-    }
-    let promises = Object.values(glyphPromises);
-    if (incrementally) {
-      do {
-        if (promises.length) {
-          await Promise.race(promises);
-          for (const glyphName in loadedGlyphs) {
-            delete glyphPromises[glyphName];
-          }
-          loadedGlyphs = {};
-        }
-        if (glyphLines !== this.glyphLines) {
-          return;  // abort, a later call supersedes us
-        }
-        this.positionedLines = await buildScene(this.fontController, glyphLines);
-        yield;
-        promises = Object.values(glyphPromises);
-      } while (promises.length);
-    } else {
-      if (promises.length) {
-        await Promise.all(promises);
-      }
-      if (glyphLines !== this.glyphLines) {
-        return;  // abort, a later call supersedes us
-      }
-      this.positionedLines = await buildScene(this.fontController, glyphLines);
-      yield;
-    }
+    this.positionedLines = await buildScene(this.fontController, this.glyphLines);
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
     if (!this._previousUsedGlyphNames || !isEqualSet(usedGlyphNames, this._previousUsedGlyphNames)) {
       this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
@@ -343,9 +293,6 @@ async function buildScene(fontController, glyphLines, align = "center") {
     const positionedLine = {"glyphs": []};
     let x = 0;
     for (const glyphInfo of glyphLine) {
-      if (!fontController.isGlyphInstanceLoaded(glyphInfo.glyphName)) {
-        continue;
-      }
       const glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName);
       if (glyphInstance) {
         const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
