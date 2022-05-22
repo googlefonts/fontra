@@ -207,7 +207,7 @@ export class VariableGlyphController {
     // Map axes that exist both globally and locally to their local ranges
     location = mapBackward(location, this.localToGlobalMapping);
     // Expand folded NLI axes to their "real" axes
-    location = mapNLILocation(location, this.axes);
+    location = mapLocationExpandNLI(location, this.axes);
     return location;
   }
 
@@ -439,7 +439,7 @@ export function getAxisBaseName(axisName) {
 }
 
 
-function mapNLILocation(userLocation, axes) {
+function mapLocationExpandNLI(userLocation, axes) {
   const nliAxes = {};
   for (const axis of axes) {
     const baseName = axis.name.split("*", 1)[0];
