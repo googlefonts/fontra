@@ -91,7 +91,7 @@ export class VariableGlyphController {
   }
 
   _getSourceIndex(location) {
-    location = this.mapLocationToLocal(location);
+    location = this.mapLocationGlobalToLocal(location);
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
       const seen = new Set();
@@ -181,7 +181,7 @@ export class VariableGlyphController {
 
   async instantiateController(location, getGlyphFunc) {
     const sourceIndex = this.getSourceIndex(location);
-    location = this.mapLocationToLocal(location);
+    location = this.mapLocationGlobalToLocal(location);
 
     let instance;
     if (sourceIndex !== undefined) {
@@ -201,7 +201,7 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  mapLocationToLocal(location) {
+  mapLocationGlobalToLocal(location) {
     // Apply global axis mapping (user-facing avar)
     location = mapForward(location, this.globalAxes);
     // Map axes that exist both globally and locally to their local ranges
