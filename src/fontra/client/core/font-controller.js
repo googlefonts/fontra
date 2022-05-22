@@ -92,10 +92,7 @@ export class FontController {
   async glyphChanged(glyphName) {
     const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)]
     for (const glyphName of glyphNames) {
-      for (const cacheKey of this._glyphInstancePromiseCacheKeys[glyphName] || []) {
-        delete this._glyphInstancePromiseCache[cacheKey];
-      }
-      delete this._glyphInstancePromiseCacheKeys[glyphName];
+      this._purgeInstanceCache(glyphName);
     }
     for (const glyphName of glyphNames) {
       const varGlyph = await this.getGlyph(glyphName);
@@ -190,13 +187,17 @@ export class FontController {
 
   _purgeGlyphCache(glyphName) {
     this._glyphsPromiseCache.delete(glyphName);
+    this._purgeInstanceCache(glyphName);
+    for (const dependantName of this.glyphUsedBy[glyphName] || []) {
+      this._purgeGlyphCache(dependantName);
+    }
+  }
+
+  _purgeInstanceCache(glyphName) {
     for (const cacheKey of this._glyphInstancePromiseCacheKeys[glyphName] || []) {
       delete this._glyphInstancePromiseCache[cacheKey];
     }
     delete this._glyphInstancePromiseCacheKeys[glyphName];
-    for (const dependantName of this.glyphUsedBy[glyphName] || []) {
-      this._purgeGlyphCache(dependantName);
-    }
   }
 
   async reloadGlyphs(glyphNames) {
