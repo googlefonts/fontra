@@ -11,8 +11,8 @@ export class FontController {
     this.font = font;
     this.location = location;
     this._glyphsPromiseCache = new LRUCache(250);  // TODO: what if we need to display > 250 glyphs?
-    this._glyphInstancesCache = {};  // cacheKey -> instancePromise
-    this._glyphInstancesCacheKeys = {};  // glyphName -> Set(cacheKeys)
+    this._glyphInstancePromiseCache = {};  // cacheKey -> instancePromise
+    this._glyphInstancePromiseCacheKeys = {};  // glyphName -> Set(cacheKeys)
     this._editListeners = new Set();
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
@@ -92,7 +92,10 @@ export class FontController {
   async glyphChanged(glyphName) {
     const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)]
     for (const glyphName of glyphNames) {
-      // delete this._glyphInstancePromiseCache[glyphName];
+      for (const cacheKey of this._glyphInstancePromiseCacheKeys[glyphName] || []) {
+        delete this._glyphInstancePromiseCache[cacheKey];
+      }
+      delete this._glyphInstancePromiseCacheKeys[glyphName];
     }
     for (const glyphName of glyphNames) {
       const varGlyph = await this.getGlyph(glyphName);
@@ -100,7 +103,20 @@ export class FontController {
     }
   }
 
-  async getGlyphInstance(glyphName, location, locationCacheKey) {
+  getGlyphInstance(glyphName, location, locationCacheKey) {
+    let instancePromise = this._glyphInstancePromiseCache[locationCacheKey];
+    if (instancePromise === undefined) {
+      instancePromise = this._getGlyphInstance(glyphName, location, locationCacheKey);
+      this._glyphInstancePromiseCache[locationCacheKey] = instancePromise;
+      if (this._glyphInstancePromiseCacheKeys[glyphName] === undefined) {
+        this._glyphInstancePromiseCacheKeys[glyphName] = new Set();
+      }
+      this._glyphInstancePromiseCacheKeys[glyphName].add(locationCacheKey);
+    }
+    return instancePromise;
+  }
+
+  async _getGlyphInstance(glyphName, location, locationCacheKey) {
     if (!await this.hasGlyph(glyphName)) {
       return null;
     }
@@ -174,7 +190,10 @@ export class FontController {
 
   _purgeGlyphCache(glyphName) {
     this._glyphsPromiseCache.delete(glyphName);
-    // delete this._glyphInstancePromiseCache[glyphName];
+    for (const cacheKey of this._glyphInstancePromiseCacheKeys[glyphName] || []) {
+      delete this._glyphInstancePromiseCache[cacheKey];
+    }
+    delete this._glyphInstancePromiseCacheKeys[glyphName];
     for (const dependantName of this.glyphUsedBy[glyphName] || []) {
       this._purgeGlyphCache(dependantName);
     }
