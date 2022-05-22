@@ -210,6 +210,16 @@ export class VariableGlyphController {
     return location;
   }
 
+  mapLocationLocalToGlobal(location) {
+    // Fold NLI Axis into single user-facing axes
+    location = mapLocationFoldNLI(location);
+    // Map axes that exist both globally and locally to their global ranges
+    location = mapForward(location, this.localToGlobalMapping);
+    // Un-apply global axis mapping (user-facing avar)
+    location = mapBackward(location, this.globalAxes);
+    return location;
+  }
+
 }
 
 
@@ -456,6 +466,16 @@ function mapLocationExpandNLI(userLocation, axes) {
     }
   }
   return location;
+}
+
+
+function mapLocationFoldNLI(location, axes) {
+  userLocation = {};
+  for (const [axisName, axisValue] of Object.entries(location)) {
+    const baseName = axis.name.split("*", 1)[0];
+    userLocation[baseName] = axisValue;
+  }
+  return userLocation;
 }
 
 
