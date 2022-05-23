@@ -109,7 +109,8 @@ export class FontController {
       instancePromise = this._getGlyphInstance(glyphName, location, locationCacheKey);
       const deletedItem = this._glyphInstancePromiseCache.put(locationCacheKey, instancePromise);
       if (deletedItem !== undefined) {
-        this._glyphInstancePromiseCacheKeys[(await deletedItem.value).name].delete(locationCacheKey);
+        const chacheGlyphName = (await deletedItem.value).name;
+        this._glyphInstancePromiseCacheKeys[chacheGlyphName].delete(locationCacheKey);
       }
       if (this._glyphInstancePromiseCacheKeys[glyphName] === undefined) {
         this._glyphInstancePromiseCacheKeys[glyphName] = new Set();
