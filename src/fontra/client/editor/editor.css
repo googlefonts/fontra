@@ -105,9 +105,9 @@
 
 .overlay-item {
   background-color: white;
-  border-radius: 1em;
+  border-radius: 0.75em;
   padding: 0.6em;
-  box-shadow: 1.5px 1.5px 6px #999;
+  box-shadow: 1.5px 1.5px 5px #999;
   cursor: pointer;
   transition: 0.15s;
   display: flex;
