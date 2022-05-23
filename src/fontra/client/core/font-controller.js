@@ -13,9 +13,9 @@ export class FontController {
   constructor (font, location) {
     this.font = font;
     this.location = location;
-    this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE);
-    this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE);  // cacheKey -> instancePromise
-    this._glyphInstancePromiseCacheKeys = {};  // glyphName -> Set(cacheKeys)
+    this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE);  // glyph name -> var-glyph promise
+    this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE);  // instance cache key -> instance promise
+    this._glyphInstancePromiseCacheKeys = {};  // glyphName -> Set(instance cache keys)
     this._editListeners = new Set();
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
@@ -103,24 +103,25 @@ export class FontController {
     }
   }
 
-  async getGlyphInstance(glyphName, location, locationCacheKey) {
-    let instancePromise = this._glyphInstancePromiseCache.get(locationCacheKey);
+  async getGlyphInstance(glyphName, location, instanceCacheKey) {
+    // instanceCacheKey should be unique for glyphName + location
+    let instancePromise = this._glyphInstancePromiseCache.get(instanceCacheKey);
     if (instancePromise === undefined) {
-      instancePromise = this._getGlyphInstance(glyphName, location, locationCacheKey);
-      const deletedItem = this._glyphInstancePromiseCache.put(locationCacheKey, instancePromise);
+      instancePromise = this._getGlyphInstance(glyphName, location, instanceCacheKey);
+      const deletedItem = this._glyphInstancePromiseCache.put(instanceCacheKey, instancePromise);
       if (deletedItem !== undefined) {
         const chacheGlyphName = (await deletedItem.value).name;
-        this._glyphInstancePromiseCacheKeys[chacheGlyphName].delete(locationCacheKey);
+        this._glyphInstancePromiseCacheKeys[chacheGlyphName].delete(instanceCacheKey);
       }
       if (this._glyphInstancePromiseCacheKeys[glyphName] === undefined) {
         this._glyphInstancePromiseCacheKeys[glyphName] = new Set();
       }
-      this._glyphInstancePromiseCacheKeys[glyphName].add(locationCacheKey);
+      this._glyphInstancePromiseCacheKeys[glyphName].add(instanceCacheKey);
     }
     return await instancePromise;
   }
 
-  async _getGlyphInstance(glyphName, location, locationCacheKey) {
+  async _getGlyphInstance(glyphName, location) {
     if (!await this.hasGlyph(glyphName)) {
       return null;
     }
@@ -201,8 +202,8 @@ export class FontController {
   }
 
   _purgeInstanceCache(glyphName) {
-    for (const cacheKey of this._glyphInstancePromiseCacheKeys[glyphName] || []) {
-      this._glyphInstancePromiseCache.delete(cacheKey);
+    for (const instanceCacheKey of this._glyphInstancePromiseCacheKeys[glyphName] || []) {
+      this._glyphInstancePromiseCache.delete(instanceCacheKey);
     }
     delete this._glyphInstancePromiseCacheKeys[glyphName];
   }
