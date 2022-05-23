@@ -2,6 +2,7 @@ import { applyChange, baseChangeFunctions, consolidateChanges } from "./changes.
 import { VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { VariableGlyph } from "./var-glyph.js";
+import { locationToString } from "./var-model.js";
 import { throttleCalls } from "./utils.js";
 
 
@@ -105,6 +106,9 @@ export class FontController {
 
   async getGlyphInstance(glyphName, location, instanceCacheKey) {
     // instanceCacheKey should be unique for glyphName + location
+    if (instanceCacheKey === undefined) {
+      instanceCacheKey = glyphName + locationToString(location);
+    }
     let instancePromise = this._glyphInstancePromiseCache.get(instanceCacheKey);
     if (instancePromise === undefined) {
       instancePromise = this._getGlyphInstance(glyphName, location, instanceCacheKey);
