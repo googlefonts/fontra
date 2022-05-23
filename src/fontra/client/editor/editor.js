@@ -376,8 +376,7 @@ export class EditorController {
       axisInfo.splice(numGlobalAxes, 0, {"isDivider": true});
     }
     this.sliders.setSliderDescriptions(axisInfo);
-    const location = this.sceneController.getLocation();
-    this.sliders.values = location;
+    this.sliders.values = this.sceneController.getLocation();
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
     this.updateWindowLocationAndSelectionInfo();
   }
