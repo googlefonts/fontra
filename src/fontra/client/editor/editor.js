@@ -200,8 +200,8 @@ export class EditorController {
       const location = {...this.sceneController.getLocation(), ...event.detail.values};
       await this.sceneController.setLocation(location);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
+      this.updateWindowLocationAndSelectionInfo();
     }));
-    this.sliders.addEventListener("slidersChanged", () => this.updateWindowLocationAndSelectionInfo());
   }
 
   initSourcesList() {
