@@ -378,7 +378,6 @@ export class EditorController {
     this.sliders.setSliderDescriptions(axisInfo);
     const location = this.sceneController.getLocation();
     this.sliders.values = location;
-    this.sceneController.setLocation(location);
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
     this.updateWindowLocationAndSelectionInfo();
   }
