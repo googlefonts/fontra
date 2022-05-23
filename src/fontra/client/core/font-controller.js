@@ -5,13 +5,16 @@ import { VariableGlyph } from "./var-glyph.js";
 import { throttleCalls } from "./utils.js";
 
 
+const GLYPH_CACHE_SIZE = 250;
+
+
 export class FontController {
 
   constructor (font, location) {
     this.font = font;
     this.location = location;
-    this._glyphsPromiseCache = new LRUCache(250);  // TODO: what if we need to display > 250 glyphs?
-    this._glyphInstancePromiseCache = {};  // cacheKey -> instancePromise
+    this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE);
+    this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE);  // cacheKey -> instancePromise
     this._glyphInstancePromiseCacheKeys = {};  // glyphName -> Set(cacheKeys)
     this._editListeners = new Set();
     this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
@@ -100,17 +103,20 @@ export class FontController {
     }
   }
 
-  getGlyphInstance(glyphName, location, locationCacheKey) {
-    let instancePromise = this._glyphInstancePromiseCache[locationCacheKey];
+  async getGlyphInstance(glyphName, location, locationCacheKey) {
+    let instancePromise = this._glyphInstancePromiseCache.get(locationCacheKey);
     if (instancePromise === undefined) {
       instancePromise = this._getGlyphInstance(glyphName, location, locationCacheKey);
-      this._glyphInstancePromiseCache[locationCacheKey] = instancePromise;
+      const deletedItem = this._glyphInstancePromiseCache.put(locationCacheKey, instancePromise);
+      if (deletedItem !== undefined) {
+        this._glyphInstancePromiseCacheKeys[(await deletedItem.value).name].delete(locationCacheKey);
+      }
       if (this._glyphInstancePromiseCacheKeys[glyphName] === undefined) {
         this._glyphInstancePromiseCacheKeys[glyphName] = new Set();
       }
       this._glyphInstancePromiseCacheKeys[glyphName].add(locationCacheKey);
     }
-    return instancePromise;
+    return await instancePromise;
   }
 
   async _getGlyphInstance(glyphName, location, locationCacheKey) {
@@ -195,7 +201,7 @@ export class FontController {
 
   _purgeInstanceCache(glyphName) {
     for (const cacheKey of this._glyphInstancePromiseCacheKeys[glyphName] || []) {
-      delete this._glyphInstancePromiseCache[cacheKey];
+      this._glyphInstancePromiseCache.delete(cacheKey);
     }
     delete this._glyphInstancePromiseCacheKeys[glyphName];
   }
