@@ -3,7 +3,6 @@ import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "../c
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
 import { mapForward, mapBackward } from "../core/var-model.js";
 import { isEqualSet, updateSet } from "../core/set-ops.js";
-import { locationToString } from "../core/var-model.js";
 
 
 export class SceneModel {
