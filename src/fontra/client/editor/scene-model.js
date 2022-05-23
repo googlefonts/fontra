@@ -103,7 +103,7 @@ export class SceneModel {
       return;
     }
     const glyph = await this.getSelectedVariableGlyphController();
-    let location = {...this._location};
+    let location = {};
     for (const axis of glyph.globalAxes.concat(glyph.axes)) {
       location[axis.name] = axis.defaultValue;
     }
