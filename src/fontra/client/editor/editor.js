@@ -111,7 +111,6 @@ export class EditorController {
     this.sceneController = new SceneController(sceneModel, canvasController)
     // TODO move event stuff out of here
     this.sceneController.addEventListener("selectedGlyphChanged", async event => {
-      this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
       await this.updateSlidersAndSources();
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     });
@@ -198,11 +197,10 @@ export class EditorController {
   async initSliders() {
     this.sliders = new Sliders("axis-sliders", await this.sceneController.getAxisInfo());
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
-      const location = {...this.sceneController.getLocation(), ...event.detail.values};
-      await this.sceneController.setLocation(location);
+      await this.sceneController.setLocation(event.detail.values);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
+      this.updateWindowLocationAndSelectionInfo();
     }));
-    this.sliders.addEventListener("slidersChanged", () => this.updateWindowLocationAndSelectionInfo());
   }
 
   initSourcesList() {
@@ -476,7 +474,6 @@ export class EditorController {
       this.autoViewBox = false;
       this.canvasController.setViewBox(viewBox);
     }
-    await this.sceneController.setLocation(location);
     if (text) {
       this.textEntryElement.innerText = text;
       await this.setGlyphLinesFromText(text);
@@ -484,6 +481,7 @@ export class EditorController {
     if (selectedGlyph) {
       this.sceneController.selectedGlyph = selectedGlyph;
     }
+    await this.sceneController.setLocation(location);
     this.sceneController.selectedGlyphIsEditing = selectedGlyphIsEditing && !!selectedGlyph;
     this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     this.sliders.values = location;
