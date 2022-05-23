@@ -111,7 +111,6 @@ export class EditorController {
     this.sceneController = new SceneController(sceneModel, canvasController)
     // TODO move event stuff out of here
     this.sceneController.addEventListener("selectedGlyphChanged", async event => {
-      this.sourcesList.setItems(await this.sceneController.getSourcesInfo());
       await this.updateSlidersAndSources();
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     });
