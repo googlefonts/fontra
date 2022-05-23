@@ -197,8 +197,7 @@ export class EditorController {
   async initSliders() {
     this.sliders = new Sliders("axis-sliders", await this.sceneController.getAxisInfo());
     this.sliders.addEventListener("slidersChanged", scheduleCalls(async event => {
-      const location = {...this.sceneController.getLocation(), ...event.detail.values};
-      await this.sceneController.setLocation(location);
+      await this.sceneController.setLocation(event.detail.values);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
       this.updateWindowLocationAndSelectionInfo();
     }));
