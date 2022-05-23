@@ -81,7 +81,7 @@ export class SceneModel {
     await this.updateScene();
   }
 
-  async getLocation() {
+  getLocation() {
     const glyphName = this.getSelectedGlyphName();
     const location = {...this._globalLocation, ...this._localLocations[glyphName]};
     return location;
@@ -107,7 +107,7 @@ export class SceneModel {
   async getSelectedSource() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {
-      return await this.fontController.getSourceIndex(glyphName, this._globalLocation);
+      return await this.fontController.getSourceIndex(glyphName, this.getLocation());
     } else {
       return undefined;
     }
