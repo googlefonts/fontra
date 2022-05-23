@@ -211,7 +211,7 @@ export class EditorController {
     this.sourcesList = new List("sources-list", columnDescriptions);
     this.sourcesList.addEventListener("listSelectionChanged", async event => {
       await this.sceneController.setSelectedSource(event.detail.getSelectedItem().sourceIndex);
-      this.sliders.values = this.sceneController.getGlobalLocation();
+      this.sliders.values = await this.sceneController.getLocation();
       this.updateWindowLocationAndSelectionInfo();
     });
   }
@@ -376,7 +376,7 @@ export class EditorController {
       axisInfo.splice(numGlobalAxes, 0, {"isDivider": true});
     }
     this.sliders.setSliderDescriptions(axisInfo);
-    const location = this.sceneController.getGlobalLocation();
+    const location = await this.sceneController.getLocation();
     this.sliders.values = location;
     this.sceneController.setLocation(location);
     this.sourcesList.setItems(await this.sceneController.getSourcesInfo());

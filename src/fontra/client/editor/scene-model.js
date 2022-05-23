@@ -18,7 +18,8 @@ export class SceneModel {
     this.selectedGlyph = undefined;
     this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
-    this._location = {};
+    this._globalLocation = {};
+    this._localLocations = {};  // glyph name -> local location
   }
 
   getSelectedPositionedGlyph() {
@@ -80,19 +81,33 @@ export class SceneModel {
     await this.updateScene();
   }
 
-  getLocation() {
-    return this._location;
+  async getLocation() {
+    const glyphName = this.getSelectedGlyphName();
+    const location = {...this._globalLocation, ...this._localLocations[glyphName]};
+    return location;
   }
 
   async setLocation(location) {
-    this._location = location;
+    const glyphName = this.getSelectedGlyphName();
+    const localLocation = {...location};
+    const globalLocation = {};
+    for (const axis of this.fontController.globalAxes) {
+      if (location[axis.name] !== undefined) {
+        globalLocation[axis.name] = location[axis.name];
+      }
+      delete localLocation[axis.name];
+    }
+    this._globalLocation = globalLocation;
+    if (glyphName !== undefined) {
+      this._localLocations[glyphName] = localLocation;
+    }
     await this.updateScene();
   }
 
   async getSelectedSource() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {
-      return await this.fontController.getSourceIndex(glyphName, this._location);
+      return await this.fontController.getSourceIndex(glyphName, this._globalLocation);
     } else {
       return undefined;
     }
@@ -140,7 +155,9 @@ export class SceneModel {
   }
 
   async updateScene() {
-    this.positionedLines = await buildScene(this.fontController, this.glyphLines, this._location);
+    this.positionedLines = await buildScene(
+      this.fontController, this.glyphLines, this._globalLocation, this._localLocations
+    );
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
     if (!this._previousUsedGlyphNames || !isEqualSet(usedGlyphNames, this._previousUsedGlyphNames)) {
       this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
@@ -284,17 +301,15 @@ function mergeAxisInfo(axisInfos) {
 }
 
 
-async function buildScene(fontController, glyphLines, location, align = "center") {
-  const locationString = locationToString(location);
+async function buildScene(fontController, glyphLines, globalLocation, localLocations, align = "center") {
   let y = 0;
   const positionedLines = [];
   for (const glyphLine of glyphLines) {
     const positionedLine = {"glyphs": []};
     let x = 0;
     for (const glyphInfo of glyphLine) {
-      const glyphInstance = await fontController.getGlyphInstance(
-        glyphInfo.glyphName, location, glyphInfo.glyphName + locationString
-      );
+      const location = {...localLocations[glyphInfo.glyphName], ...globalLocation}
+      const glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName, location);
       if (glyphInstance) {
         const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
         positionedLine.glyphs.push({

@@ -302,17 +302,8 @@ export class SceneController {
     this.canvasController.setNeedsUpdate();
   }
 
-  getGlobalLocation() {
-    const location = this.getLocation();
-    const globalLocation = {};
-    for (const axis of this.sceneModel.fontController.globalAxes) {
-      globalLocation[axis.name] = location[axis.name];
-    }
-    return globalLocation;
-  }
-
-  getLocation() {
-    return this.sceneModel.getLocation();
+  async getLocation() {
+    return await this.sceneModel.getLocation();
   }
 
   async setLocation(values) {
