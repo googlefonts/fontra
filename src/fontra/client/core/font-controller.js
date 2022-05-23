@@ -105,7 +105,7 @@ export class FontController {
   }
 
   async getGlyphInstance(glyphName, location, instanceCacheKey) {
-    // instanceCacheKey should be unique for glyphName + location
+    // instanceCacheKey must be unique for glyphName + location
     if (instanceCacheKey === undefined) {
       instanceCacheKey = glyphName + locationToString(location);
     }
