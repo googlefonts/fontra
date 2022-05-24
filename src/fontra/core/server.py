@@ -30,7 +30,7 @@ class FontraServer:
     webSocketProxyPort: int
     projectManager: object
     cookieMaxAge: int = 7 * 24 * 60 * 60
-    allowedFileExtensions: set = frozenset(["css", "ico", "js", "svg", "woff2"])
+    allowedFileExtensions: set = frozenset(["css", "html", "ico", "js", "svg", "woff2"])
 
     def setup(self):
         self.startupTime = datetime.now(timezone.utc).replace(microsecond=0)
