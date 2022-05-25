@@ -5,15 +5,16 @@ import { loaderSpinner } from "../core/loader-spinner.js";
 import { insetRect, rectFromArray, rectToArray } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js"
-import { THEME_KEY, themeSwitchFromLocalStorage } from "../core/theme-switch.js";
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
 import {
+  THEME_KEY,
   autoReload,
   hyphenatedToCamelCase,
   parseCookies,
   scheduleCalls,
+  themeSwitchFromLocalStorage,
   throttleCalls,
 } from "../core/utils.js";
 import { SceneController } from "./scene-controller.js"

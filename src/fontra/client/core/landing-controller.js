@@ -1,7 +1,6 @@
 import { loaderSpinner } from "./loader-spinner.js";
 import { getRemoteProxy } from "./remote.js";
-import { themeSwitchFromLocalStorage } from "./theme-switch.js";
-import { autoReload, parseCookies } from "./utils.js";
+import { autoReload, parseCookies, themeSwitchFromLocalStorage } from "./utils.js";
 
 
 export class LandingController {
