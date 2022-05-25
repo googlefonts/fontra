@@ -103,7 +103,12 @@ export function equalRect(rect1, rect2) {
 
 
 export function rectCenter(rect) {
-  return {"x": (rect.xMin + rect.xMax) / 2, "y": (rect.yMin + rect.yMax) / 2}
+  return {"x": (rect.xMin + rect.xMax) / 2, "y": (rect.yMin + rect.yMax) / 2};
+}
+
+
+export function rectSize(rect) {
+  return {"width": Math.abs(rect.xMax - rect.xMin), "height": Math.abs(rect.yMax - rect.yMin)};
 }
 
 
