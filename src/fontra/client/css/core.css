@@ -18,9 +18,9 @@
 
 :root {
   --foreground-color-light: black;
-  --background-color-light: white;
+  --background-color-light: #F6F6F6;
   --foreground-color-dark: white;
-  --background-color-dark: black;
+  --background-color-dark: #333;
 
   --foreground-color: var(--foreground-color-light);
   --background-color: var(--background-color-light);

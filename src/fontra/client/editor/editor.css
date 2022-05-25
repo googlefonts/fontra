@@ -6,7 +6,7 @@
   --editor-glyphs-search-input-foreground-color-dark: white;
 
   --editor-overlay-item-background-color-light: white;
-  --editor-overlay-item-background-color-dark: #333;
+  --editor-overlay-item-background-color-dark: #484848;
 
   --editor-mini-console-background-color-light: #DDD;
   --editor-mini-console-background-color-dark: #444;
@@ -193,7 +193,7 @@
   background-color: var(--editor-overlay-item-background-color);
   border-radius: 0.75em;
   padding: 0.6em;
-  box-shadow: 1.5px 1.5px 5px #999;
+  box-shadow: 1.5px 1.5px 5px #0006;
   cursor: pointer;
   transition: 0.15s;
   display: flex;
