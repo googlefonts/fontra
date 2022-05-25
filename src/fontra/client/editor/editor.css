@@ -1,6 +1,6 @@
 :root {
   --editor-glyphs-search-input-background-color-light: white;
-  --editor-glyphs-search-input-background-color-dark: black;
+  --editor-glyphs-search-input-background-color-dark: #333;
 
   --editor-glyphs-search-input-foreground-color-light: black;
   --editor-glyphs-search-input-foreground-color-dark: white;
