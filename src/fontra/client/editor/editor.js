@@ -415,7 +415,7 @@ export class EditorController {
     if (event.key !== " " || event.repeat) {
       return;
     }
-    if (document.activeElement.tagName.toLowerCase() === "input" || document.activeElement.contentEditable === "true") {
+    if (isTypeableInput(document.activeElement)) {
       return;
     }
     this.canvasController.sceneView = this.cleanSceneView;
@@ -896,4 +896,15 @@ function selectionCompare(a, b) {
   } else {
     return 1;
   }
+}
+
+
+function isTypeableInput(element) {
+  if (element.contentEditable === "true") {
+    return true;
+  }
+  if (element.tagName.toLowerCase() === "input" && element.type !== "range") {
+    return true;
+  }
+  return false;
 }
