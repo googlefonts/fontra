@@ -3,10 +3,10 @@
   --landing-foreground-color-light: black;
   --landing-background-color-dark: black;
   --landing-foreground-color-dark: white;
-  --landing-project-item-hover-color-light: #EEE;
-  --landing-project-item-active-color-light: lightgray;
-  --landing-project-item-hover-color-dark: #333;
-  --landing-project-item-active-color-dark: #555;
+  --landing-project-item-hover-color-light: #E8E8E8;
+  --landing-project-item-active-color-light: #CCC;
+  --landing-project-item-hover-color-dark: #444;
+  --landing-project-item-active-color-dark: #666;
 
   --landing-background-color: var(--landing-background-color-light);
   --landing-foreground-color: var(--landing-foreground-color-light);
