@@ -52,6 +52,9 @@ export class SceneController {
   }
 
   async handleArrowKeys(event) {
+    if (!this.sceneModel.selectedGlyphIsEditing) {
+      return;
+    }
     const editContext = await this.getGlyphEditContext();
     if (!editContext) {
       console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
