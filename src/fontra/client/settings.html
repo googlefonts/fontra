@@ -53,6 +53,11 @@ h2 {
 <script type="module">
 
 import { THEME_KEY, themeSwitch } from "./core/theme-switch.js";
+import { autoReload, } from "./core/utils.js";
+
+
+autoReload();
+
 
 function themeSwitchCallback() {
   const themeValue = document.querySelector('input[name="theme-settings"]:checked').value;

@@ -96,3 +96,21 @@ export function capitalizeFirstLetter(s) {
 export function hyphenatedToCamelCase(s) {
   return s.replace(/-([a-z])/g, m => m[1].toUpperCase());
 }
+
+
+export const VERSION_TOKEN_KEY = "fontra-version-token";
+
+
+export function autoReload() {
+  const savedVersionToken = localStorage.getItem(VERSION_TOKEN_KEY);
+  const cookies = parseCookies(document.cookie);
+  const cookieVersionToken = cookies[VERSION_TOKEN_KEY];
+  if (cookieVersionToken) {
+    localStorage.setItem(VERSION_TOKEN_KEY, cookieVersionToken);
+  }
+  if (savedVersionToken && cookieVersionToken && savedVersionToken !== cookieVersionToken) {
+    window.location.reload();
+    return true;
+  }
+  return false;
+}

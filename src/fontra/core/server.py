@@ -125,6 +125,7 @@ class FontraServer:
         else:
             response.del_cookie("fontra-authorization-token")
         response.set_cookie("websocket-port", str(self.webSocketProxyPort))
+        response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
 
     async def loginHandler(self, request):
@@ -150,6 +151,7 @@ class FontraServer:
         else:
             response.set_cookie("fontra-authorization-failed", "true", max_age=5)
             response.del_cookie("fontra-authorization-token")
+        response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
 
     async def logoutHandler(self, request):
@@ -181,6 +183,7 @@ class FontraServer:
 
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("websocket-port", str(self.webSocketProxyPort))
+        response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
 
 
