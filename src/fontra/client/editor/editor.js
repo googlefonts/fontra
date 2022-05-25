@@ -418,7 +418,6 @@ export class EditorController {
     if (document.activeElement.tagName.toLowerCase() === "input" || document.activeElement.contentEditable === "true") {
       return;
     }
-    console.log(event);
     this.canvasController.sceneView = this.cleanSceneView;
     this.canvasController.setNeedsUpdate();
     const overlay = document.querySelector("#overlay-layer");
