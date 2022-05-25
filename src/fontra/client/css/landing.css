@@ -43,7 +43,7 @@
 a {
   color: inherit;
   text-decoration: inherit;
-  cursor: inherit;
+  cursor: pointer;
 }
 
 
@@ -63,6 +63,15 @@ a {
 
 .landing-item {
   font-size: 1.5em;
+}
+
+#fontra-icon-header {
+  display: flex;
+  gap: 2em;
+}
+
+#fontra-icon-header a {
+  font-size: 0.8em;
 }
 
 #login-form {
