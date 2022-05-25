@@ -9,7 +9,13 @@ import { THEME_KEY, themeSwitchFromLocalStorage } from "../core/theme-switch.js"
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
-import { hyphenatedToCamelCase, parseCookies, scheduleCalls, throttleCalls } from "../core/utils.js";
+import {
+  autoReload,
+  hyphenatedToCamelCase,
+  parseCookies,
+  scheduleCalls,
+  throttleCalls,
+} from "../core/utils.js";
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
@@ -70,6 +76,10 @@ const drawingParametersDark = {
 export class EditorController {
 
   static async fromWebSocket() {
+    if (autoReload()) {
+      // Will reload
+      return;
+    }
     const cookies = parseCookies(document.cookie);
     const webSocketPort = parseInt(cookies["websocket-port"]);
     const pathItems = window.location.pathname.split("/");

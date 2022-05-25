@@ -1,12 +1,16 @@
 import { loaderSpinner } from "./loader-spinner.js";
 import { getRemoteProxy } from "./remote.js";
 import { themeSwitchFromLocalStorage } from "./theme-switch.js";
-import { parseCookies } from "./utils.js";
+import { autoReload, parseCookies } from "./utils.js";
 
 
 export class LandingController {
 
   static async fromWebSocket() {
+    if (autoReload()) {
+      // Will reload
+      return;
+    }
     themeSwitchFromLocalStorage();
     const cookies = parseCookies(document.cookie);
     const webSocketPort = parseInt(cookies["websocket-port"]);
