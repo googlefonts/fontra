@@ -16,6 +16,38 @@
 }
 
 
+:root {
+  --foreground-color-light: black;
+  --background-color-light: white;
+  --foreground-color-dark: white;
+  --background-color-dark: black;
+
+  --foreground-color: var(--foreground-color-light);
+  --background-color: var(--background-color-light);
+}
+
+
+:root.dark-theme {
+  --foreground-color: var(--foreground-color-dark);
+  --background-color: var(--background-color-dark);
+}
+
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --foreground-color: var(--foreground-color-dark);
+    --background-color: var(--background-color-dark);
+  }
+
+  :root.light-theme {
+    --foreground-color: var(--foreground-color-light);
+    --background-color: var(--background-color-light);
+  }
+
+}
+
+
 html, body {
   font-family: fontra-ui-regular, sans-serif;
   font-feature-settings: "tnum" 1;
@@ -28,8 +60,8 @@ html, body {
   white-space: nowrap;
   overscroll-behavior: none;
   touch-action: none;
-  color: black;
-  background-color: white;
+  color: var(--foreground-color);
+  background-color: var(--background-color);
 }
 
 @keyframes global-loader-spinner {
@@ -51,16 +83,4 @@ html, body {
   border-top-color: #0005;
   border-left-color: #0005;
   animation: global-loader-spinner 0.8s linear infinite;
-}
-
-
-/* DARK MODE */
-
-@media (prefers-color-scheme: dark) {
-
-  html, body {
-    color: white;
-    background-color: black;
-  }
-
 }

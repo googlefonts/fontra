@@ -6,8 +6,6 @@
     <link href="/css/ui-styling.css" rel="stylesheet">
     <link href="/css/core.css" rel="stylesheet">
     <link href="/css/landing.css" rel="stylesheet">
-    <style>
-    </style>
   </head>
   <body class="landing-body">
 
@@ -15,8 +13,11 @@
 
     <div class="landing-content">
 
-      <div class="landing-item" id="fontra-icon">
+      <div class="landing-item" id="fontra-icon-header">
         <img src="/images/fontra-icon.svg" width="100" height="100">
+        <div>
+          <a href="/settings.html">Edit Settings...</a>
+        </div>
       </div>
 
       <div class="landing-item hidden" id="login-form-container">
@@ -62,15 +63,15 @@
     </div>
   </div>
   </body>
-    <script type="module">
+  <script type="module">
 
-      import { LandingController } from "/core/landing-controller.js";
+    import { LandingController } from "/core/landing-controller.js";
 
-      async function startApp() {
-        const landingController = await LandingController.fromWebSocket();
-      }
+    async function startApp() {
+      const landingController = await LandingController.fromWebSocket();
+    }
 
-      startApp();
+    startApp();
 
-    </script>
+  </script>
 </html>

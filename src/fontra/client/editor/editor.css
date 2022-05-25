@@ -1,3 +1,87 @@
+:root {
+  --editor-glyphs-search-input-background-color-light: white;
+  --editor-glyphs-search-input-background-color-dark: black;
+
+  --editor-glyphs-search-input-foreground-color-light: black;
+  --editor-glyphs-search-input-foreground-color-dark: white;
+
+  --editor-overlay-item-background-color-light: white;
+  --editor-overlay-item-background-color-dark: #333;
+
+  --editor-mini-console-background-color-light: #DDD;
+  --editor-mini-console-background-color-dark: #444;
+
+  --editor-mini-console-foreground-color-light: black;
+  --editor-mini-console-foreground-color-dark: white;
+
+  --editor-icon-magnifying-glass-light: url("/images/magnifying-glass-black.svg");
+  --editor-icon-sliders-light: url("/images/sliders-black.svg");
+  --editor-icon-text-tool-light: url("/images/text-tool-black.svg");
+  --editor-icon-info-light: url("/images/info-black.svg");
+  --editor-icon-magnifying-glass-dark: url("/images/magnifying-glass-white.svg");
+  --editor-icon-sliders-dark: url("/images/sliders-white.svg");
+  --editor-icon-text-tool-dark: url("/images/text-tool-white.svg");
+  --editor-icon-info-dark: url("/images/info-white.svg");
+}
+
+:root {
+  --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-light);
+  --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-light);
+  --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
+  --editor-mini-console-background-color: var(--editor-mini-console-background-color-light);
+  --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-light);
+
+  --editor-icon-magnifying-glass: var(--editor-icon-magnifying-glass-light);
+  --editor-icon-sliders: var(--editor-icon-sliders-light);
+  --editor-icon-text-tool: var(--editor-icon-text-tool-light);
+  --editor-icon-info: var(--editor-icon-info-light);
+}
+
+:root.dark-theme {
+  --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-dark);
+  --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-dark);
+  --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
+  --editor-mini-console-background-color: var(--editor-mini-console-background-color-dark);
+  --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-dark);
+
+  --editor-icon-magnifying-glass: var(--editor-icon-magnifying-glass-dark);
+  --editor-icon-sliders: var(--editor-icon-sliders-dark);
+  --editor-icon-text-tool: var(--editor-icon-text-tool-dark);
+  --editor-icon-info: var(--editor-icon-info-dark);
+}
+
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-dark);
+    --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-dark);
+    --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
+    --editor-mini-console-background-color: var(--editor-mini-console-background-color-dark);
+    --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-dark);
+
+    --editor-icon-magnifying-glass: var(--editor-icon-magnifying-glass-dark);
+    --editor-icon-sliders: var(--editor-icon-sliders-dark);
+    --editor-icon-text-tool: var(--editor-icon-text-tool-dark);
+    --editor-icon-info: var(--editor-icon-info-dark);
+  }
+
+  :root.light-theme {
+    --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-light);
+    --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-light);
+    --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
+    --editor-mini-console-background-color: var(--editor-mini-console-background-color-light);
+    --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-light);
+
+    --editor-icon-magnifying-glass: var(--editor-icon-magnifying-glass-light);
+    --editor-icon-sliders: var(--editor-icon-sliders-light);
+    --editor-icon-text-tool: var(--editor-icon-text-tool-light);
+    --editor-icon-info: var(--editor-icon-info-light);
+  }
+
+}
+
+
 .page {
   display: flex;
   width: 100%;
@@ -16,6 +100,8 @@
 }
 
 .glyphs-search-input {
+  background-color: var(--editor-glyphs-search-input-background-color);
+  color: var(--editor-glyphs-search-input-foreground-color);
   border-radius: 0.5em;
   border: 0.5px solid lightgray;
   outline: none;
@@ -104,7 +190,7 @@
 }
 
 .overlay-item {
-  background-color: white;
+  background-color: var(--editor-overlay-item-background-color);
   border-radius: 0.75em;
   padding: 0.6em;
   box-shadow: 1.5px 1.5px 5px #999;
@@ -148,6 +234,22 @@
 
 }
 
+#glyph-search-img {
+  content: var(--editor-icon-magnifying-glass);
+}
+
+#slider-img {
+  content: var(--editor-icon-sliders);
+}
+
+#text-entry-img {
+  content: var(--editor-icon-text-tool);
+}
+
+#info-img {
+  content: var(--editor-icon-info);
+}
+
 .overlay-item-expanded > img {
   display: none;
 }
@@ -156,8 +258,8 @@
   display: none;  /* will be set to 'inherit' when needed */
   z-index: 3;
   position: absolute;
-  color: black;
-  background-color: #DDD;
+  color: var(--editor-mini-console-foreground-color);
+  background-color: var(--editor-mini-console-background-color);
   font-size: 0.8em;
   padding: 1px 4px 1px 4px;
   bottom: 0;
@@ -173,49 +275,4 @@
   outline: none;
   cursor: auto;
   display: inline;
-}
-
-
-/* DARK MODE */
-
-@media (prefers-color-scheme: dark) {
-
-  .glyphs-navigation {
-    background-color: #222;
-  }
-
-  .glyphs-search-input {
-    background-color: black;
-    color: white;
-  }
-
-  .overlay-item {
-    background-color: #333;
-  }
-
-  .overlay-item-expanded {
-    background-color: #222;
-  }
-
-  #glyph-search-img {
-    content: url("/images/magnifying-glass-white.svg");
-  }
-
-  #slider-img {
-    content: url("/images/sliders-white.svg");
-  }
-
-  #text-entry-img {
-    content: url("/images/text-tool-white.svg");
-  }
-
-  #info-img {
-    content: url("/images/info-white.svg");
-  }
-
-  #mini-console {
-    color: white;
-    background-color: #444;
-  }
-
 }

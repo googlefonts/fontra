@@ -5,6 +5,7 @@ import { loaderSpinner } from "../core/loader-spinner.js";
 import { insetRect, rectFromArray, rectToArray } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js"
+import { THEME_KEY, themeSwitchFromLocalStorage } from "../core/theme-switch.js";
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
@@ -88,6 +89,7 @@ export class EditorController {
   }
 
   constructor(font) {
+    themeSwitchFromLocalStorage();
     this.fontController = new FontController(font, {});
     this.autoViewBox = true;
     const canvas = document.querySelector("#edit-canvas");
@@ -123,6 +125,11 @@ export class EditorController {
     this.infoForm = new Form("selection-info");
 
     window.matchMedia("(prefers-color-scheme: dark)").addListener(event => this.themeChanged(event));
+    window.addEventListener("storage", event => {
+      if (event.key === THEME_KEY) {
+        this.themeChanged(event);
+      }
+    });
 
     canvas.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
     canvas.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
@@ -287,12 +294,16 @@ export class EditorController {
   }
 
   themeChanged(event) {
-    const isDark = event.matches;
     this.canvasController.setDrawingParameters(this.drawingParameters);
   }
 
   get isThemeDark() {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const themeValue = localStorage.getItem(THEME_KEY);
+    if (themeValue === "automatic") {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    } else {
+      return themeValue === "dark";
+    }
   }
 
   get drawingParametersLight() {
