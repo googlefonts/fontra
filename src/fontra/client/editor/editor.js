@@ -131,8 +131,8 @@ export class EditorController {
       }
     });
 
-    canvas.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
-    canvas.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
+    window.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
+    window.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
 
     this.enteredText = "";
     this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
@@ -415,6 +415,10 @@ export class EditorController {
     if (event.key !== " " || event.repeat) {
       return;
     }
+    if (document.activeElement.tagName.toLowerCase() === "input" || document.activeElement.contentEditable === "true") {
+      return;
+    }
+    console.log(event);
     this.canvasController.sceneView = this.cleanSceneView;
     this.canvasController.setNeedsUpdate();
     const overlay = document.querySelector("#overlay-layer");
