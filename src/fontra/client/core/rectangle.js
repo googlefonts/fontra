@@ -8,13 +8,17 @@ export function pointInRect(x, y, rect) {
 }
 
 
-export function centeredRect(x, y, side) {
-  const halfSide = side / 2;
+export function centeredRect(x, y, width, height) {
+  if (height === undefined) {
+    height = width;
+  }
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
   return {
-    xMin: x - halfSide,
-    yMin: y - halfSide,
-    xMax: x + halfSide,
-    yMax: y + halfSide
+    xMin: x - halfWidth,
+    yMin: y - halfHeight,
+    xMax: x + halfWidth,
+    yMax: y + halfHeight,
   }
 }
 
