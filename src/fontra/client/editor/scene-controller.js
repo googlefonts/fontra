@@ -20,6 +20,7 @@ export class SceneController {
     this._eventElement = document.createElement("div");
 
     this.sceneModel.fontController.addEditListener(async (...args) => await this.editListenerCallback(...args));
+    this.canvasController.canvas.addEventListener("keydown", event => this.handleKeyDown(event));
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
@@ -39,6 +40,29 @@ export class SceneController {
         this.canvasController.setNeedsUpdate();
         break;
     }
+  }
+
+  handleKeyDown(event) {
+    if (event.key in arrowKeyDeltas) {
+      this.handleArrowKeys(event);
+    }
+  }
+
+  async handleArrowKeys(event) {
+    const editContext = await this.getGlyphEditContext();
+    if (!editContext) {
+      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
+      return;
+    }
+    let [dx, dy] = arrowKeyDeltas[event.key];
+    if (event.shiftKey) {
+      dx *= 10;
+      dy *= 10;
+    }
+    const editor = new EditBehavior(editContext.instance, this.selection);
+    const delta = {"x": dx, "y": dy};
+    const editChange = editor.makeChangeForDelta(delta)
+    await editContext.editAtomic(editChange, editor.rollbackChange);
   }
 
   addEventListener(eventName, handler, options) {
@@ -362,4 +386,12 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
     }
   }
   return false;
+}
+
+
+const arrowKeyDeltas = {
+  "ArrowUp": [0, 1],
+  "ArrowDown": [0, -1],
+  "ArrowLeft": [-1, 0],
+  "ArrowRight": [1, 0],
 }
