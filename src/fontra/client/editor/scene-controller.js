@@ -44,7 +44,10 @@ export class SceneController {
 
   handleKeyDown(event) {
     if (event.key in arrowKeyDeltas) {
-      this.handleArrowKeys(event);
+      return this.handleArrowKeys(event);
+    }
+    if (hasShortcutModifierKey(event)) {
+      // console.log(">>>", event.key);
     }
   }
 
@@ -394,4 +397,13 @@ const arrowKeyDeltas = {
   "ArrowDown": [0, -1],
   "ArrowLeft": [-1, 0],
   "ArrowRight": [1, 0],
+}
+
+
+function hasShortcutModifierKey(event) {
+  if (navigator.platform.toLowerCase().indexOf("mac") >= 0) {
+    return event.metaKey;
+  } else {
+    return event.controlKey;
+  }
 }
