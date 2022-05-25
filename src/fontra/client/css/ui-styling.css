@@ -8,8 +8,8 @@
   --ui-list-border-color-dark: darkgray;
   --ui-list-row-border-color-dark: #333;
   --ui-list-row-foreground-color-dark: white;
-  --ui-list-row-background-color-dark: black;
-  --ui-list-row-selected-background-color-dark: #333;
+  --ui-list-row-background-color-dark: #333;
+  --ui-list-row-selected-background-color-dark: #555;
 }
 
 
