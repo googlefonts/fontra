@@ -467,78 +467,54 @@ export class EditorController {
 
   async setupFromWindowLocation() {
     const url = new URL(window.location);
-    let text, selectedGlyph, viewBox, selection;
-    let selectedGlyphIsEditing = false;
-    const location = {};
+    const viewInfo = {};
     for (const key of url.searchParams.keys()) {
-      const value = url.searchParams.get(key);
-      switch (key) {
-        case "text":
-          text = value;
-          break;
-        case "selectedGlyph":
-          selectedGlyph = value.replaceAll("_", "/");
-          break;
-        case "editing":
-          selectedGlyphIsEditing = value === "true";
-          break;
-        case "viewBox":
-          viewBox = value.split("_").map(v => parseFloat(v));
-          viewBox = rectFromArray(viewBox);
-          break;
-        case "selection":
-          selection = new Set(value.replaceAll(".", "/").split("_"));
-          break;
-        default:
-          if (key.startsWith("axis-")) {
-            location[key.slice(5)] = parseFloat(value);
-          }
-      }
+      viewInfo[key] = JSON.parse(url.searchParams.get(key));
     }
-    if (viewBox) {
+    if (viewInfo["viewBox"]) {
       this.autoViewBox = false;
-      this.canvasController.setViewBox(viewBox);
+      this.canvasController.setViewBox(rectFromArray(viewInfo["viewBox"]));
     }
-    if (text) {
-      this.textEntryElement.innerText = text;
-      await this.setGlyphLinesFromText(text);
+    if (viewInfo["text"]) {
+      this.textEntryElement.innerText = viewInfo["text"];
+      await this.setGlyphLinesFromText(viewInfo["text"]);
     }
-    if (selectedGlyph) {
-      this.sceneController.selectedGlyph = selectedGlyph;
+    if (viewInfo["selectedGlyph"]) {
+      this.sceneController.selectedGlyph = viewInfo["selectedGlyph"];
     }
-    await this.sceneController.setLocation(location);
-    this.sceneController.selectedGlyphIsEditing = selectedGlyphIsEditing && !!selectedGlyph;
+    await this.sceneController.setLocation(viewInfo["location"]);
+    this.sceneController.selectedGlyphIsEditing = viewInfo["editing"] && !!viewInfo["selectedGlyph"];
     this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     this.sliders.values = location;
-    if (selection) {
-      this.sceneController.selection = selection;
+    if (viewInfo["selection"]) {
+      this.sceneController.selection = new Set(viewInfo["selection"]);
     }
     this.canvasController.setNeedsUpdate()
   }
 
   _updateWindowLocation() {
+    const viewInfo = {};
     const viewBox = this.canvasController.getViewBox();
-    const viewBoxString = rectToArray(viewBox).map(v => v.toFixed(1)).join("_")
-
     const url = new URL(window.location);
     clearSearchParams(url.searchParams);
 
-    url.searchParams.set("viewBox", viewBoxString);
+    viewInfo["viewBox"] = rectToArray(viewBox).map(Math.round);
     if (this.enteredText) {
-      url.searchParams.set("text", this.enteredText);
+      viewInfo["text"] = this.enteredText;
     }
     if (this.sceneController.selectedGlyph) {
-      url.searchParams.set("selectedGlyph", this.sceneController.selectedGlyph.replaceAll("/", "_"));
+      viewInfo["selectedGlyph"] = this.sceneController.selectedGlyph;
     }
     if (this.sceneController.selectedGlyphIsEditing) {
-      url.searchParams.set("editing", "true");
+      viewInfo["editing"] = true;
     }
-    for (const [name, value] of Object.entries(this.sliders.values)) {
-      url.searchParams.set("axis-" + name, value.toFixed(2));
+    viewInfo["location"] = this.sliders.values;
+    const selArray = Array.from(this.sceneController.selection);
+    if (selArray.length) {
+      viewInfo["selection"] = Array.from(selArray);
     }
-    const selString = Array.from(this.sceneController.selection).join("_").replaceAll("/", ".");
-    if (selString) {
-      url.searchParams.set("selection", selString);
+    for (const [key, value] of Object.entries(viewInfo)) {
+      url.searchParams.set(key, JSON.stringify(value));
     }
     window.history.replaceState({}, "", url);
   }
