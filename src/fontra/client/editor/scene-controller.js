@@ -336,8 +336,21 @@ export class SceneController {
     return this.sceneModel.getLocation();
   }
 
+  getGlobalLocation() {
+    return this.sceneModel.getGlobalLocation();
+  }
+
+  getLocalLocations(filterShownGlyphs = false) {
+    return this.sceneModel.getLocalLocations(filterShownGlyphs);
+  }
+
   async setLocation(values) {
     await this.sceneModel.setLocation(values);
+    this.canvasController.setNeedsUpdate();
+  }
+
+  async setGlobalAndLocalLocations(globalLocation, localLocations) {
+    await this.sceneModel.setGlobalAndLocalLocations(globalLocation, localLocations);
     this.canvasController.setNeedsUpdate();
   }
 

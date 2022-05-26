@@ -482,7 +482,9 @@ export class EditorController {
     if (viewInfo["selectedGlyph"]) {
       this.sceneController.selectedGlyph = viewInfo["selectedGlyph"];
     }
-    await this.sceneController.setLocation(viewInfo["location"]);
+    await this.sceneController.setGlobalAndLocalLocations(
+      viewInfo["location"], viewInfo["localLocations"],
+    );
     this.sceneController.selectedGlyphIsEditing = viewInfo["editing"] && !!viewInfo["selectedGlyph"];
     this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     if (viewInfo["selection"]) {
@@ -507,7 +509,9 @@ export class EditorController {
     if (this.sceneController.selectedGlyphIsEditing) {
       viewInfo["editing"] = true;
     }
-    viewInfo["location"] = this.sliders.values;
+    viewInfo["location"] = this.sceneController.getGlobalLocation();
+    viewInfo["localLocations"] = this.sceneController.getLocalLocations(true);
+
     const selArray = Array.from(this.sceneController.selection);
     if (selArray.length) {
       viewInfo["selection"] = Array.from(selArray);

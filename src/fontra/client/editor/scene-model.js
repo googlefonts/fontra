@@ -86,6 +86,30 @@ export class SceneModel {
     return location;
   }
 
+  getGlobalLocation() {
+    return this._globalLocation;
+  }
+
+  getLocalLocations(filterShownGlyphs = false) {
+    let localLocations;
+    if (filterShownGlyphs) {
+      localLocations = {};
+      for (const glyphLine of this.glyphLines) {
+        for (const glyphInfo of glyphLine) {
+          if (!localLocations[glyphInfo.glyphName] && this._localLocations[glyphInfo.glyphName]) {
+            const localLocation = this._localLocations[glyphInfo.glyphName];
+            if (Object.keys(localLocation).length) {
+              localLocations[glyphInfo.glyphName] = this._localLocations[glyphInfo.glyphName];
+            }
+          }
+        }
+      }
+    } else {
+      localLocations = this._localLocations;
+    }
+    return localLocations;
+  }
+
   async setLocation(location) {
     const glyphName = this.getSelectedGlyphName();
     const localLocation = {...location};
@@ -98,8 +122,18 @@ export class SceneModel {
     }
     this._globalLocation = globalLocation;
     if (glyphName !== undefined) {
-      this._localLocations[glyphName] = localLocation;
+      if (Object.keys(localLocation).length) {
+        this._localLocations[glyphName] = localLocation;
+      } else {
+        delete this._localLocations[glyphName];
+      }
     }
+    await this.updateScene();
+  }
+
+  async setGlobalAndLocalLocations(globalLocation, localLocations) {
+    this._globalLocation = globalLocation || {};
+    this._localLocations = localLocations || {};
     await this.updateScene();
   }
 
