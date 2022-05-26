@@ -510,8 +510,10 @@ export class EditorController {
       viewInfo["editing"] = true;
     }
     viewInfo["location"] = this.sceneController.getGlobalLocation();
-    viewInfo["localLocations"] = this.sceneController.getLocalLocations(true);
-
+    const localLocations = this.sceneController.getLocalLocations(true)
+    if (Object.keys(localLocations).length) {
+      viewInfo["localLocations"] = localLocations;
+    }
     const selArray = Array.from(this.sceneController.selection);
     if (selArray.length) {
       viewInfo["selection"] = Array.from(selArray);
