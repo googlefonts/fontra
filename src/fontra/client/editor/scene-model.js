@@ -156,7 +156,7 @@ export class SceneModel {
       location[axis.name] = axis.defaultValue;
     }
     const source = glyph.sources[sourceIndex];
-    location = {...location, ...glyph.mapLocationLocalToGlobal(source.location)};
+    location = glyph.mapLocationLocalToGlobal({...location, ...source.location});
     await this.setLocation(location);
   }
 
