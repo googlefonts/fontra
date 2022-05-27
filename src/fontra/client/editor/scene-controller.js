@@ -375,12 +375,12 @@ export class SceneController {
     return this.sceneModel.getSceneBounds();
   }
 
-  async getGlyphEditContext() {
+  async getGlyphEditContext(senderID) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
       return null;
     }
-    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, this);
+    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
   }
 
 }
