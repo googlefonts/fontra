@@ -45,7 +45,9 @@ export class SceneController {
 
   handleKeyDown(event) {
     if (!hasShortcutModifierKey(event) && event.key in arrowKeyDeltas) {
-      return this.handleArrowKeys(event);
+      this.handleArrowKeys(event);
+      event.preventDefault();
+      return;
     }
   }
 
