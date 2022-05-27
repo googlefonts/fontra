@@ -257,7 +257,7 @@ export class SceneModel {
     return selection;
   }
 
-  glyphAtPoint(point) {
+  glyphAtPoint(point, skipEditingGlyph = true) {
     for (let i = this.positionedLines.length - 1; i >= 0; i--) {
       const positionedLine = this.positionedLines[i];
       if (!positionedLine.bounds || !pointInRect(point.x, point.y, positionedLine.bounds)) {
@@ -274,7 +274,7 @@ export class SceneModel {
           positionedGlyph.glyph.convexHull,
         )) {
           const foundGlyph = `${i}/${j}`;
-          if (!this.selectedGlyphIsEditing || foundGlyph != this.selectedGlyph) {
+          if (!skipEditingGlyph || !this.selectedGlyphIsEditing || foundGlyph != this.selectedGlyph) {
             return foundGlyph;
           }
         }
