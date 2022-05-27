@@ -383,6 +383,10 @@ export class SceneController {
     return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
   }
 
+  getSelectionBox() {
+    return this.sceneModel.getSelectionBox();
+  }
+
 }
 
 
