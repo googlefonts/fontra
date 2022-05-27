@@ -503,6 +503,9 @@ export class EditorController {
     await this.sceneController.setGlobalAndLocalLocations(
       viewInfo["location"], viewInfo["localLocations"],
     );
+    if (viewInfo["location"]) {
+      this.sliders.values = viewInfo["location"];
+    }
     this.sceneController.selectedGlyphIsEditing = viewInfo["editing"] && !!viewInfo["selectedGlyph"];
     this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     if (viewInfo["selection"]) {
