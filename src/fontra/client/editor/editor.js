@@ -554,6 +554,7 @@ export class EditorController {
 
   async _updateSelectionInfo() {
     if (!this.infoForm.container.offsetParent) {
+      // If the info form is not visible, do nothing
       return;
     }
     const glyphController = this.sceneController.sceneModel.getSelectedStaticGlyphController();
