@@ -497,9 +497,7 @@ export class EditorController {
       this.textEntryElement.innerText = viewInfo["text"];
       await this.setGlyphLinesFromText(viewInfo["text"]);
     }
-    if (viewInfo["selectedGlyph"]) {
-      this.sceneController.selectedGlyph = viewInfo["selectedGlyph"];
-    }
+    this.sceneController.selectedGlyph = viewInfo["selectedGlyph"];
     await this.sceneController.setGlobalAndLocalLocations(
       viewInfo["location"], viewInfo["localLocations"],
     );
