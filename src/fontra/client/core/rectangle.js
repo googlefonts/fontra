@@ -86,6 +86,19 @@ export function offsetRect(rect, x, y) {
 }
 
 
+export function scaleRect(rect, sx, sy) {
+  if (sy === undefined) {
+    sy = sx;
+  }
+  return {
+    "xMin": rect.xMin * sx,
+    "yMin": rect.yMin * sy,
+    "xMax": rect.xMax * sx,
+    "yMax": rect.yMax * sy,
+  };
+}
+
+
 export function insetRect(rect, dx, dy) {
   return {
     "xMin": rect.xMin + dx,
