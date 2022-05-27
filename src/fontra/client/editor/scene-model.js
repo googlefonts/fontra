@@ -297,6 +297,43 @@ export class SceneModel {
     return bounds;
   }
 
+  getSelectionBox() {
+    if (!this.selectedGlyph) {
+      return this.getSceneBounds();
+    }
+    let bounds;
+    if (this.selectedGlyphIsEditing && this.selection.size) {
+      const positionedGlyph = this.getSelectedPositionedGlyph();
+      const [x, y] = [positionedGlyph.x, positionedGlyph.y];
+      const instance = this.getSelectedStaticGlyphController();
+      const boundses = [];
+      for (const selItem of this.selection) {
+        let [tp, index] = selItem.split("/");
+        index = Number(index);
+        switch (tp) {
+          case "point":
+            const pt = instance.path.getPoint(index);
+            boundses.push(offsetRect(centeredRect(pt.x, pt.y, 0, 0), x, y));
+            break;
+          case "component":
+            boundses.push(offsetRect(instance.components[index].controlBounds, x, y));
+            break;
+        }
+      }
+      if (boundses.length) {
+        bounds = unionRect(...boundses)
+      }
+    }
+    if (!bounds) {
+      const positionedGlyph = this.getSelectedPositionedGlyph();
+      bounds = positionedGlyph.bounds;
+    }
+    if (!bounds) {
+      bounds = this.getSceneBounds();
+    }
+    return bounds;
+  }
+
 }
 
 
