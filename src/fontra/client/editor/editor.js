@@ -272,7 +272,13 @@ export class EditorController {
       };
     }
 
-    canvas.addEventListener("mousedown", event => collapseAll());
+    canvas.addEventListener("mousedown", event => {
+      const point = this.sceneController.localPoint(event);
+      const sel = this.sceneController.sceneModel.glyphAtPoint(point, false);
+      if (!sel) {
+        collapseAll();
+      }
+    });
     window.addEventListener("keydown", event => collapseOnEscapeKey(event));
   }
 
