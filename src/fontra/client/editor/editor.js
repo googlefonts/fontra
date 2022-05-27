@@ -34,7 +34,7 @@ const drawingParametersLight = {
   ghostPathStrokeColor: "#0002",
   pathFillColor: "#0001",
   selectedComponentStrokeColor: "#888",
-  hoveredComponentStrokeColor: "#DDD",
+  hoveredComponentStrokeColor: "#CCC",
   cjkFrameStrokeColor: "#0004",
   cjkFrameOvershootColor: "#00BFFF26",
   cjkFrameSecondLineColor: "#A6296344",
