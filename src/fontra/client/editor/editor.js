@@ -106,6 +106,7 @@ export class EditorController {
     this.fontController.addEditListener(async (...args) => await this.editListenerCallback(...args));
     this.autoViewBox = true;
     const canvas = document.querySelector("#edit-canvas");
+    canvas.focus()
 
     const canvasController = new CanvasController(canvas, this.drawingParameters);
     this.canvasController = canvasController;
