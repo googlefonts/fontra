@@ -2,12 +2,22 @@ import { CanvasController } from "../core/canvas-controller.js";
 import { matchChange } from "../core/changes.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
-import { insetRect, rectFromArray, rectToArray } from "../core/rectangle.js";
+import {
+  centeredRect,
+  insetRect,
+  offsetRect,
+  rectCenter,
+  rectFromArray,
+  rectToArray,
+  rectSize,
+  scaleRect,
+} from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js"
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
+import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js"
 import {
   THEME_KEY,
   autoReload,
@@ -438,6 +448,28 @@ export class EditorController {
     }
     if (hasShortcutModifierKey(event)) {
       // console.log("shortcut?", event.key);
+      let didHandleShortcut = false;
+      switch (event.key) {
+        case "-":
+          this.zoomOut();
+          didHandleShortcut = true;
+          break;
+        case "+":
+        case "=":
+          if (event.key === "+" || (event.key === "=" && event.shiftKey)) {
+            this.zoomIn();
+          } else {
+            this.zoomFit();
+          }
+          didHandleShortcut = true;
+          break;
+        default:
+          // console.log("unhandled", event);
+          break;
+      }
+      if (didHandleShortcut) {
+        event.preventDefault();
+      }
     }
   }
 
@@ -720,13 +752,81 @@ export class EditorController {
     if (!bounds) {
       return;
     }
-    const width = bounds.xMax - bounds.xMin;
-    const height = bounds.yMax - bounds.yMin;
-    const inset = width > height ? width * 0.1 : height * 0.1;
-    bounds = insetRect(bounds, -inset, -inset);
+    bounds = rectAddMargin(bounds, 0.1);
     this.canvasController.setViewBox(bounds);
   }
 
+  zoomIn() {
+    this._zoom(1 / Math.sqrt(2));
+  }
+
+  zoomOut() {
+    this._zoom(Math.sqrt(2));
+  }
+
+  _zoom(factor) {
+    let viewBox = this.canvasController.getViewBox();
+    const selBox = this.sceneController.getSelectionBox();
+    const center = rectCenter(selBox || viewBox);
+    viewBox = rectScaleAroundCenter(viewBox, factor, center);
+    this.animateToViewBox(viewBox);
+  }
+
+  zoomFit() {
+    let viewBox = this.sceneController.getSelectionBox();
+    if (viewBox) {
+      let size = rectSize(viewBox);
+      if (size.width < 4 && size.height < 4) {
+        const center = rectCenter(viewBox);
+        viewBox = centeredRect(center.x, center.y, 10, 10);
+      } else {
+        viewBox = rectAddMargin(viewBox, 0.1);
+      }
+      this.animateToViewBox(viewBox);
+    }
+  }
+
+  animateToViewBox(viewBox) {
+    const startViewBox = this.canvasController.getViewBox();
+    const deltaViewBox = subItemwise(viewBox, startViewBox);
+    let start;
+    const duration = 200;
+
+    const animate = timestamp => {
+      if (start === undefined) {
+        start = timestamp;
+      }
+      let t = (timestamp - start) / duration;
+      if (t > 1.0) {
+        t = 1.0;
+      }
+      const animatingViewBox = addItemwise(startViewBox, mulScalar(deltaViewBox, easeOutQuad(t)));
+      if (t < 1.0) {
+        this.canvasController.setViewBox(animatingViewBox);
+        requestAnimationFrame(animate);
+      } else {
+        this.canvasController.setViewBox(viewBox);
+        this.updateWindowLocation();
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+}
+
+
+function rectAddMargin(rect, relativeMargin) {
+  const size = rectSize(rect);
+  const inset = size.width > size.height ? size.width * relativeMargin : size.height * relativeMargin;
+  return insetRect(rect, -inset, -inset);
+}
+
+
+function rectScaleAroundCenter(rect, scaleFactor, center) {
+  rect = offsetRect(rect, -center.x, -center.y);
+  rect = scaleRect(rect, scaleFactor);
+  rect = offsetRect(rect, center.x, center.y);
+  return rect;
 }
 
 
@@ -931,4 +1031,9 @@ function isTypeableInput(element) {
     return true;
   }
   return false;
+}
+
+
+function easeOutQuad(t) {
+  return 1 - (1 - t) ** 2;
 }
