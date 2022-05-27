@@ -147,3 +147,20 @@ function _themeSwitchFromLocalStorage() {
     themeSwitch(themeValue);
   }
 }
+
+
+export function hasShortcutModifierKey(event) {
+  if (navigator.platform.toLowerCase().indexOf("mac") >= 0) {
+    return event.metaKey;
+  } else {
+    return event.controlKey;
+  }
+}
+
+
+export const arrowKeyDeltas = {
+  "ArrowUp": [0, 1],
+  "ArrowDown": [0, -1],
+  "ArrowLeft": [-1, 0],
+  "ArrowRight": [1, 0],
+}

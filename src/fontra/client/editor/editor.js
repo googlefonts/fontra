@@ -11,6 +11,7 @@ import { Sliders } from "../core/ui-sliders.js";
 import {
   THEME_KEY,
   autoReload,
+  hasShortcutModifierKey,
   hyphenatedToCamelCase,
   parseCookies,
   scheduleCalls,
@@ -929,13 +930,4 @@ function isTypeableInput(element) {
     return true;
   }
   return false;
-}
-
-
-function hasShortcutModifierKey(event) {
-  if (navigator.platform.toLowerCase().indexOf("mac") >= 0) {
-    return event.metaKey;
-  } else {
-    return event.controlKey;
-  }
 }

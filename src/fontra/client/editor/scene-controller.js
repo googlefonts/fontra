@@ -3,6 +3,7 @@ import { glyphChangeFunctions } from "../core/font-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "../core/set-ops.js";
+import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
 import { EditBehavior } from "./edit-behavior.js";
 
 
@@ -43,7 +44,7 @@ export class SceneController {
   }
 
   handleKeyDown(event) {
-    if (event.key in arrowKeyDeltas) {
+    if (!hasShortcutModifierKey(event) && event.key in arrowKeyDeltas) {
       return this.handleArrowKeys(event);
     }
   }
@@ -402,12 +403,4 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
     }
   }
   return false;
-}
-
-
-const arrowKeyDeltas = {
-  "ArrowUp": [0, 1],
-  "ArrowDown": [0, -1],
-  "ArrowLeft": [-1, 0],
-  "ArrowRight": [1, 0],
 }
