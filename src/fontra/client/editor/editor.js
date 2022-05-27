@@ -143,8 +143,8 @@ export class EditorController {
       }
     });
 
-    window.addEventListener("keydown", event => this.spaceKeyDownHandler(event));
-    window.addEventListener("keyup", event => this.spaceKeyUpHandler(event));
+    window.addEventListener("keydown", event => this.keyDownHandler(event));
+    window.addEventListener("keyup", event => this.keyUpHandler(event));
 
     this.enteredText = "";
     this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
@@ -429,10 +429,24 @@ export class EditorController {
     this.setAutoViewBox();
   };
 
-  spaceKeyDownHandler(event) {
-    if (event.key !== " " || event.repeat) {
+  keyDownHandler(event) {
+    if (event.key === " " && !event.repeat) {
+      this.spaceKeyDownHandler();
       return;
     }
+    if (hasShortcutModifierKey(event)) {
+      // console.log("shortcut?", event.key);
+    }
+  }
+
+  keyUpHandler(event) {
+    if (event.key === " ") {
+      this.spaceKeyUpHandler();
+      return;
+    }
+  }
+
+  spaceKeyDownHandler(event) {
     if (isTypeableInput(document.activeElement)) {
       return;
     }
@@ -443,9 +457,6 @@ export class EditorController {
   }
 
   spaceKeyUpHandler(event) {
-    if (event.key != " ") {
-      return;
-    }
     this.canvasController.sceneView = this.defaultSceneView;
     this.canvasController.setNeedsUpdate();
     const overlay = document.querySelector("#overlay-layer");
@@ -917,4 +928,13 @@ function isTypeableInput(element) {
     return true;
   }
   return false;
+}
+
+
+function hasShortcutModifierKey(event) {
+  if (navigator.platform.toLowerCase().indexOf("mac") >= 0) {
+    return event.metaKey;
+  } else {
+    return event.controlKey;
+  }
 }
