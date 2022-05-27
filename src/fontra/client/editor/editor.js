@@ -102,6 +102,7 @@ export class EditorController {
   constructor(font) {
     themeSwitchFromLocalStorage();
     this.fontController = new FontController(font, {});
+    this.fontController.addEditListener(async (...args) => await this.editListenerCallback(...args));
     this.autoViewBox = true;
     const canvas = document.querySelector("#edit-canvas");
 
@@ -541,6 +542,16 @@ export class EditorController {
     }
   }
 
+  async editListenerCallback(editMethodName, senderID, ...args) {
+    if (senderID === this) {
+      // The edit comes from the selection info box itself, so we shouldn't update it
+      return;
+    }
+    if (editMethodName === "editDo" || editMethodName === "editAtomic") {
+      this.updateSelectionInfo();
+    }
+  }
+
   async _updateSelectionInfo() {
     if (!this.infoForm.container.offsetParent) {
       return;
@@ -629,7 +640,7 @@ export class EditorController {
     let rollbackChange;
 
     const setup = async info => {
-      editContext = await this.sceneController.getGlyphEditContext();
+      editContext = await this.sceneController.getGlyphEditContext(this);
       if (!editContext) {
         console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
         return false;
