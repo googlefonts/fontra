@@ -542,9 +542,12 @@ export class EditorController {
       this.autoViewBox = false;
       this.canvasController.setViewBox(rectFromArray(viewInfo["viewBox"]));
     }
+    this.textEntryElement.innerText = viewInfo["text"] || "";
     if (viewInfo["text"]) {
-      this.textEntryElement.innerText = viewInfo["text"];
       await this.setGlyphLinesFromText(viewInfo["text"]);
+    } else {
+      // Doing this directly avoids triggering rebuilding the window location
+      this.sceneController.setGlyphLines([]);
     }
     this.sceneController.selectedGlyph = viewInfo["selectedGlyph"];
     await this.sceneController.setGlobalAndLocalLocations(
