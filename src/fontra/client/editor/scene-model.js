@@ -137,6 +137,10 @@ export class SceneModel {
     await this.updateScene();
   }
 
+  updateLocalLocations(localLocations) {
+    this._localLocations = {...this._localLocations, ...localLocations};
+  }
+
   async getSelectedSource() {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName) {

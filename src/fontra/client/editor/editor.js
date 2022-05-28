@@ -423,8 +423,17 @@ export class EditorController {
   }
 
   async doubleClickedComponentsCallback(event) {
+    const glyphController = this.sceneController.sceneModel.getSelectedStaticGlyphController();
+    const instance = glyphController.instance;
+    const localLocations = {};
     const glyphInfos = [];
-    for (const glyphName of this.sceneController.doubleClickedComponentNames) {
+
+    for (const componentIndex of this.sceneController.doubleClickedComponentIndices) {
+      const glyphName = instance.components[componentIndex].name;
+      const location = instance.components[componentIndex].location;
+      if (location) {
+        localLocations[glyphName] = location;
+      }
       const glyphInfo = {"glyphName": glyphName};
       const codePoint = this.fontController.codePointForGlyph(glyphName);
       if (codePoint !== undefined) {
@@ -432,6 +441,7 @@ export class EditorController {
       }
       glyphInfos.push(glyphInfo);
     }
+    this.sceneController.updateLocalLocations(localLocations);
     const selectedGlyphInfo = this.sceneController.getSelectedGlyphState();
     const glyphLines = this.sceneController.getGlyphLines();
     glyphLines[selectedGlyphInfo.lineIndex].splice(selectedGlyphInfo.glyphIndex + 1, 0, ...glyphInfos);

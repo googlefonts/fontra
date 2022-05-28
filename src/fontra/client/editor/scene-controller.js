@@ -163,15 +163,16 @@ export class SceneController {
       this.selectedGlyphIsEditing = !!this.selectedGlyph;
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-      const componentNames = new Set();
+      const componentIndices = new Array();
       for (const selItem of this.selection) {
         const [tp, index] = selItem.split("/");
         if (tp === "component") {
-          componentNames.add(instance.components[index].name);
+          componentIndices.push(index);
         }
       }
-      if (componentNames.size) {
-        this.doubleClickedComponentNames = Array.from(componentNames);
+      if (componentIndices.length) {
+        componentIndices.sort();
+        this.doubleClickedComponentIndices = componentIndices;
         this._dispatchEvent("doubleClickedComponents");
       }
     }
@@ -352,6 +353,10 @@ export class SceneController {
   async setGlobalAndLocalLocations(globalLocation, localLocations) {
     await this.sceneModel.setGlobalAndLocalLocations(globalLocation, localLocations);
     this.canvasController.setNeedsUpdate();
+  }
+
+  updateLocalLocations(localLocations) {
+    this.sceneModel.updateLocalLocations(localLocations);
   }
 
   getSelectedSource() {
