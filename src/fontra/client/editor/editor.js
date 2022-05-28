@@ -450,6 +450,7 @@ export class EditorController {
     const glyphLines = this.sceneController.getGlyphLines();
     glyphLines[selectedGlyphInfo.lineIndex].splice(selectedGlyphInfo.glyphIndex + 1, 0, ...glyphInfos);
     await this.setGlyphLines(glyphLines);
+    this.sceneController.selectedGlyph = `${selectedGlyphInfo.lineIndex}/${selectedGlyphInfo.glyphIndex + 1}`;
     this.updateTextEntryFromGlyphLines();
     await this.updateSlidersAndSources();
     this.setAutoViewBox();
