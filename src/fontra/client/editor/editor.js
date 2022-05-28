@@ -171,6 +171,10 @@ export class EditorController {
     });
     this.sceneController.addEventListener("selectedGlyphChanged", () => this.updateWindowLocationAndSelectionInfo());
     this.sceneController.addEventListener("selectionChanged", () => this.updateWindowLocationAndSelectionInfo());
+
+    window.addEventListener('popstate', event => {
+      this.setupFromWindowLocation();
+    });
   }
 
   getDrawingFunctions() {
@@ -560,6 +564,10 @@ export class EditorController {
     const viewInfo = {};
     const viewBox = this.canvasController.getViewBox();
     const url = new URL(window.location);
+    let previousText = url.searchParams.get("text");
+    if (previousText) {
+      previousText = JSON.parse(previousText);
+    }
     clearSearchParams(url.searchParams);
 
     viewInfo["viewBox"] = rectToArray(viewBox).map(Math.round);
@@ -584,7 +592,11 @@ export class EditorController {
     for (const [key, value] of Object.entries(viewInfo)) {
       url.searchParams.set(key, JSON.stringify(value));
     }
-    window.history.replaceState({}, "", url);
+    if (previousText !== viewInfo["text"]) {
+      window.history.pushState({}, "", url);
+    } else {
+      window.history.replaceState({}, "", url);
+    }
   }
 
   updateWindowLocationAndSelectionInfo() {
