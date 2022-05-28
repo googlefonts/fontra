@@ -170,7 +170,7 @@ export class SceneController {
           componentIndices.push(index);
         }
       }
-      if (componentIndices.size) {
+      if (componentIndices.length) {
         componentIndices.sort();
         this.doubleClickedComponentIndices = componentIndices;
         this._dispatchEvent("doubleClickedComponents");
