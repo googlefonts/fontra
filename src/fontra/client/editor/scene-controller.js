@@ -355,6 +355,10 @@ export class SceneController {
     this.canvasController.setNeedsUpdate();
   }
 
+  updateLocalLocations(localLocations) {
+    this.sceneModel.updateLocalLocations(localLocations);
+  }
+
   getSelectedSource() {
     return this.sceneModel.getSelectedSource();
   }
