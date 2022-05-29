@@ -5,9 +5,9 @@ export class EditBehavior {
 
   constructor(instance, selection) {
     this.instance = instance;
-    this.selection = selection;
+    this.selections = splitSelection(selection);
     this.setupEditFuncs();
-    this.rollbackChange = makeRollbackChange(instance, selection);
+    this.rollbackChange = makeRollbackChange(instance, this.selections);
   }
 
   setupEditFuncs() {
@@ -15,12 +15,14 @@ export class EditBehavior {
     const components = this.instance.components;
     const editFuncs = [];
 
-    this.editFuncs = mapSelection(this.selection,
-      {
-        "point": pointIndex => makePointTransformFunc(path, pointIndex),
-        "component": componentIndex => makeComponentTransformFunc(components, componentIndex),
-      }
-    );
+    this.editFuncs = {
+      "point": this.selections["point"]?.map(
+        pointIndex => makePointTransformFunc(path, pointIndex)
+      ),
+      "component": this.selections["component"]?.map(
+        componentIndex => makeComponentTransformFunc(components, componentIndex)
+      ),
+    };
   }
 
   makeChangeForDelta(delta) {
@@ -51,28 +53,28 @@ export class EditBehavior {
 }
 
 
-function makeRollbackChange(instance, selection) {
+function makeRollbackChange(instance, selections) {
   const path = instance.path;
   const components = instance.components;
 
-  const rollbacks = mapSelection(selection,
-    {
-      "point": pointIndex => {
-        const point = path.getPoint(pointIndex);
-        return makePointChange(pointIndex, point.x, point.y);
-      },
-      "component": componentIndex => {
-        const t = components[componentIndex].transformation;
-        return makeComponentOriginChange(componentIndex, t.x, t.y);
-      },
+  const pointRollback = selections["point"]?.map(
+    pointIndex => {
+      const point = path.getPoint(pointIndex);
+      return makePointChange(pointIndex, point.x, point.y);
+    }
+  );
+  const componentRollback = selections["component"]?.map(
+    componentIndex => {
+      const t = components[componentIndex].transformation;
+      return makeComponentOriginChange(componentIndex, t.x, t.y);
     }
   );
   const changes = [];
-  if (rollbacks["point"]) {
-    changes.push(consolidateChanges(rollbacks["point"], ["path"]));
+  if (pointRollback) {
+    changes.push(consolidateChanges(pointRollback, ["path"]));
   }
-  if (rollbacks["component"]) {
-    changes.push(consolidateChanges(rollbacks["component"], ["components"]));
+  if (componentRollback) {
+    changes.push(consolidateChanges(componentRollback, ["components"]));
   }
   return consolidateChanges(changes);
 }
@@ -112,18 +114,14 @@ function makeComponentOriginChange(componentIndex, x, y) {
 }
 
 
-function mapSelection(selection, funcs) {
+function splitSelection(selection) {
   const result = {};
   for (const selItem of selection) {
     let [tp, index] = selItem.split("/");
-    index = Number(index);
-    const f = funcs[tp];
-    if (f !== undefined) {
-      if (!(tp in result)) {
-        result[tp] = [];
-      }
-      result[tp].push(f(index));
+    if (result[tp] === undefined) {
+      result[tp] = [];
     }
+    result[tp].push(Number(index));
   }
   return result;
 }
