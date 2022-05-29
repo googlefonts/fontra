@@ -6,20 +6,23 @@ export class EditBehavior {
   constructor(instance, selection) {
     this.instance = instance;
     this.selections = splitSelection(selection);
-    this.setupEditFuncs();
+    this.setupPointEditFuncs();
+    this.setupComponentEditFuncs();
+    this.rollbackChange = makeRollbackChange(this.instance, this.selections);
   }
 
-  setupEditFuncs() {
+  setupPointEditFuncs() {
     const path = this.instance.path;
-    const components = this.instance.components;
-
     this.pointEditFuncs = this.selections["point"]?.map(
       pointIndex => makePointTransformFunc(path, pointIndex)
     );
+  }
+
+  setupComponentEditFuncs() {
+    const components = this.instance.components;
     this.componentEditFuncs = this.selections["component"]?.map(
       componentIndex => makeComponentTransformFunc(components, componentIndex)
     );
-    this.rollbackChange = makeRollbackChange(this.instance, this.selections);
   }
 
   makeChangeForDelta(delta) {
