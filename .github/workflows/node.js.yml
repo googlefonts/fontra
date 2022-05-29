@@ -7,12 +7,14 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "client/**"
+      - "src/fontra/client/**"
+      - "test-js/**"
       - ".github/workflows/node.js.yml"
   pull_request:
     branches: [ main ]
     paths:
-      - "client/**"
+      - "src/fontra/client/**"
+      - "test-js/**"
       - ".github/workflows/node.js.yml"
 
 jobs:
