@@ -189,7 +189,33 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
   }
   const editFuncs1 = [];
   const editFuncs2 = [];
+  for (let i = 0; i < numPoints; i++) {
+    let state = defaultMatchTable;
+    for (let j = 0; j < 5; j++) {
+      const point = participatingPoints[i + j];
+      let pointType;
+      if (point === undefined) {
+        pointType = DOESNT_EXIST;
+      } else {
+        const smooth = boolInt(point.smooth);
+        const oncurve = boolInt(point.type === 0);
+        const selected = boolInt(point.selected);
+        pointType = POINT_TYPES[smooth][oncurve][selected];
+      }
+      state = state.get(pointType);
+      if (state === undefined) {
+        // No match
+        break;
+      }
+    }
+    // console.log(i, state);
+  }
   return [editFuncs1, editFuncs2];
+}
+
+
+function boolInt(v) {
+  return v ? 1 : 0;
 }
 
 
@@ -357,8 +383,8 @@ function buildPointMatchTable(rules) {
       ...actionForward,
       "direction": -1,
     }
-    _fillTable(matchTable, matchPoints, actionForward);
     _fillTable(matchTable, Array.from(reversed(matchPoints)), actionBackward);
+    _fillTable(matchTable, matchPoints, actionForward);
   }
   return matchTable;
 }
