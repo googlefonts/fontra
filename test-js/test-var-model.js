@@ -115,7 +115,7 @@ describe("var-model tests", () => {
 
   describe("normalizeLocation tests", () => {
     it("-1,0,1", () => {
-      const axes = {"wght": [100, 400, 900]};
+      const axes = [{"name": "wght", "minValue": 100, "defaultValue": 400, "maxValue": 900}];
       expect(normalizeLocation({"wght": 400}, axes)).to.deep.equal({'wght': 0.0});
       expect(normalizeLocation({"wght": 100}, axes)).to.deep.equal({'wght': -1.0});
       expect(normalizeLocation({"wght": 900}, axes)).to.deep.equal({'wght': 1.0});
@@ -125,7 +125,7 @@ describe("var-model tests", () => {
     });
 
     it("0,0,1", () => {
-      const axes = {"wght": [0, 0, 1000]};
+      const axes = [{"name": "wght", "minValue": 0, "defaultValue": 0, "maxValue": 1000}];
       expect(normalizeLocation({"wght": 0}, axes)).to.deep.equal({'wght': 0.0});
       expect(normalizeLocation({"wght": -1}, axes)).to.deep.equal({'wght': 0.0});
       expect(normalizeLocation({"wght": 1000}, axes)).to.deep.equal({'wght': 1.0});
@@ -134,7 +134,7 @@ describe("var-model tests", () => {
     });
 
     it("0,1,1", () => {
-      const axes = {"wght": [0, 1000, 1000]};
+      const axes = [{"name": "wght", "minValue": 0, "defaultValue": 1000, "maxValue": 1000}];
       expect(normalizeLocation({"wght": 0}, axes)).to.deep.equal({'wght': -1.0});
       expect(normalizeLocation({"wght": -1}, axes)).to.deep.equal({'wght': -1.0});
       expect(normalizeLocation({"wght": 500}, axes)).to.deep.equal({'wght': -0.5});
