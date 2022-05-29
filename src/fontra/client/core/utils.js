@@ -164,3 +164,11 @@ export const arrowKeyDeltas = {
   "ArrowLeft": [-1, 0],
   "ArrowRight": [1, 0],
 }
+
+
+export function *reversed(seq) {
+  // Like Python's reversed(seq) builtin
+  for (let i = seq.length - 1; i >= 0; i--) {
+    yield seq[i];
+  }
+}
