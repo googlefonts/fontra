@@ -287,50 +287,50 @@ const defaultRules = [
 ];
 
 
-function convertPointType(point) {
-  const sel = point & SEL;
-  const unsel = point & UNS;
-  const sharp = point & SHA;
-  const smooth = point & SMO;
-  const offcurve = point & OFF;
-  const doesntExist = point & NIL;
+function convertPointType(matchPoint) {
+  const sel = matchPoint & SEL;
+  const unsel = matchPoint & UNS;
+  const sharp = matchPoint & SHA;
+  const smooth = matchPoint & SMO;
+  const offcurve = matchPoint & OFF;
+  const doesntExist = matchPoint & NIL;
 
   if (sel && unsel) {
-    throw new Error("assert -- can't match point that is selected and unselected");
+    throw new Error("assert -- can't match matchPoint that is selected and unselected");
   }
   if (!(sharp || smooth || offcurve)) {
-    throw new Error("assert -- point must be at least sharp, smooth or off-curve");
+    throw new Error("assert -- matchPoint must be at least sharp, smooth or off-curve");
   }
 
-  const states = [];
+  const pointTypes = [];
   if (doesntExist) {
-    states.push(DOESNT_EXIST);
+    pointTypes.push(DOESNT_EXIST);
   }
   if (sharp) {
     if (!unsel) {
-      states.push(SHARP_SELECTED);
+      pointTypes.push(SHARP_SELECTED);
     }
     if (!sel) {
-      states.push(SHARP_UNSELECTED);
+      pointTypes.push(SHARP_UNSELECTED);
     }
   }
   if (smooth) {
     if (!unsel) {
-      states.push(SMOOTH_SELECTED);
+      pointTypes.push(SMOOTH_SELECTED);
     }
     if (!sel) {
-      states.push(SMOOTH_UNSELECTED);
+      pointTypes.push(SMOOTH_UNSELECTED);
     }
   }
   if (offcurve) {
     if (!unsel) {
-      states.push(OFFCURVE_SELECTED);
+      pointTypes.push(OFFCURVE_SELECTED);
     }
     if (!sel) {
-      states.push(OFFCURVE_UNSELECTED);
+      pointTypes.push(OFFCURVE_UNSELECTED);
     }
   }
-  return states;
+  return pointTypes;
 }
 
 
