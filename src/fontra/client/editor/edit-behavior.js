@@ -16,6 +16,9 @@ export class EditBehavior {
     this.pointEditFuncs = this.selections["point"]?.map(
       pointIndex => makePointTransformFunc(path, pointIndex)
     );
+    const [editFuncs1, editFuncs2] = makePointEditFuncs(
+      path, splitPointSelectionPerContour(path, this.selections["point"] || [])
+    );
   }
 
   setupComponentEditFuncs() {
@@ -122,6 +125,71 @@ function splitSelection(selection) {
       result[tp] = [];
     }
     result[tp].push(Number(index));
+  }
+  for (const indices of Object.values(result)) {
+    // Ensure indices are sorted
+    indices.sort((a, b) => a - b);
+  }
+  return result;
+}
+
+
+function splitPointSelectionPerContour(path, pointIndices) {
+  const contours = new Array(path.contourInfo.length);
+  let contourIndex = 0;
+  for (const pointIndex of pointIndices) {
+    while (path.contourInfo[contourIndex].endPoint < pointIndex) {
+      contourIndex++;
+    }
+    if (contours[contourIndex] === undefined) {
+      contours[contourIndex] = [];
+    }
+    contours[contourIndex].push(pointIndex);
+  }
+  return contours;
+}
+
+
+function makePointEditFuncs(path, selectedContourPointIndices) {
+  let contourStartPoint = 0;
+  const pointEditFuncs1 = [];
+  const pointEditFuncs2 = [];
+  for (let i = 0; i < path.contourInfo.length; i++) {
+    const contourEndPoint = path.contourInfo[i].endPoint + 1;
+    const selectedPointIndices = selectedContourPointIndices[i];
+    if (selectedPointIndices !== undefined) {
+      const [editFuncs1, editFuncs2] = makeContourPointEditFuncs(
+        path, selectedPointIndices, contourStartPoint, contourEndPoint, path.contourInfo[i].isClosed
+      );
+      pointEditFuncs1.push(...editFuncs1);
+      pointEditFuncs2.push(...editFuncs2);
+    }
+    contourStartPoint = contourEndPoint;
+  }
+  return [pointEditFuncs1, pointEditFuncs2];
+}
+
+
+function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed) {
+  const numPoints = endPoint - startPoint;
+  const participatingPoints = new Array(numPoints);
+  for (let i = 0; i < numPoints; i++) {
+    participatingPoints[i] = path.getPoint(i + startPoint);
+  }
+  for (const pointIndex of selectedPointIndices) {
+    participatingPoints[pointIndex - startPoint].selected = true;
+  }
+  const editFuncs1 = [];
+  const editFuncs2 = [];
+  return [editFuncs1, editFuncs2];
+}
+
+
+function modulo(a, b) {
+  // Modulo with Python behavior for negative numbers
+  const result = a % b;
+  if (result < 0) {
+    return result + b;
   }
   return result;
 }
