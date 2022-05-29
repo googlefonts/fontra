@@ -1,4 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
+import { reversed } from "../core/utils.js";
 
 
 export class EditBehavior {
@@ -195,6 +196,49 @@ function modulo(a, b) {
 }
 
 
+const N_TYPES = 7
+
+const SHARP_SELECTED = 0;
+const SHARP_UNSELECTED = 1;
+const SMOOTH_SELECTED = 2;
+const SMOOTH_UNSELECTED = 3;
+const OFFCURVE_SELECTED = 4;
+const OFFCURVE_UNSELECTED = 5;
+const DOESNT_EXIST = 6;
+
+
+const POINT_TYPES = [
+  // usage: POINT_TYPES[smooth][oncurve][selected]
+
+  // sharp
+  [
+    // off-curve
+    [
+      OFFCURVE_UNSELECTED,
+      OFFCURVE_SELECTED,
+    ],
+    // on-curve
+    [
+      SHARP_UNSELECTED,
+      SHARP_SELECTED,
+    ],
+  ],
+  // smooth
+  [
+    // off-curve
+    [
+      OFFCURVE_UNSELECTED,  // smooth off-curve points don't really exist
+      OFFCURVE_SELECTED,  // ditto
+    ],
+    // on-curve
+    [
+      SMOOTH_UNSELECTED,
+      SMOOTH_SELECTED,
+    ],
+  ],
+];
+
+
 // Or-able constants for rule definitions
 const NIL = 1 << 0;  // Does not exist
 const SEL = 1 << 1;  // Selected
@@ -211,7 +255,7 @@ const ANY = SHA | SMO | OFF;
 //     ANY|UNS    point can be off-curve, sharp or smooth, but must not be selected
 
 
-const defaultRulesList = [
+const defaultRules = [
   //   prevPrev    prev        the point   next        nextNext       Post    Action
 
   //   default rule: if no other rules apply, just move the selected point
@@ -241,3 +285,87 @@ const defaultRulesList = [
   [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,       false,  "DontMove"],
 
 ];
+
+
+function convertPointType(point) {
+  const sel = point & SEL;
+  const unsel = point & UNS;
+  const sharp = point & SHA;
+  const smooth = point & SMO;
+  const offcurve = point & OFF;
+  const doesntExist = point & NIL;
+
+  if (sel && unsel) {
+    throw new Error("assert -- can't match point that is selected and unselected");
+  }
+  if (!(sharp || smooth || offcurve)) {
+    throw new Error("assert -- point must be at least sharp, smooth or off-curve");
+  }
+
+  const states = [];
+  if (doesntExist) {
+    states.push(DOESNT_EXIST);
+  }
+  if (sharp) {
+    if (!unsel) {
+      states.push(SHARP_SELECTED);
+    }
+    if (!sel) {
+      states.push(SHARP_UNSELECTED);
+    }
+  }
+  if (smooth) {
+    if (!unsel) {
+      states.push(SMOOTH_SELECTED);
+    }
+    if (!sel) {
+      states.push(SMOOTH_UNSELECTED);
+    }
+  }
+  if (offcurve) {
+    if (!unsel) {
+      states.push(OFFCURVE_SELECTED);
+    }
+    if (!sel) {
+      states.push(OFFCURVE_UNSELECTED);
+    }
+  }
+  return states;
+}
+
+
+function buildPointMatchTable(rules) {
+  const matchTable = new Map();
+  for (const rule of rules) {
+    if (rule.length !== 7) {
+      throw new Error("assert -- invalid rule");
+    }
+    const matchPoints = rule.slice(0, 5);
+    const action = {
+      "post": rule[5],
+      "action": rule[6],
+    }
+    _fillTable(matchTable, matchPoints, action);
+    _fillTable(matchTable, Array.from(reversed(matchPoints)), action);
+  }
+  return matchTable;
+}
+
+
+function _fillTable(table, matchPoints, action) {
+  const matchPoint = matchPoints[0];
+  matchPoints = matchPoints.slice(1);
+  for (const pointType of convertPointType(matchPoint)) {
+    if (!matchPoints.length) {
+      table.set(pointType, action);
+    } else {
+      if (!table.has(pointType)) {
+        table.set(pointType, new Map());
+      }
+      _fillTable(table.get(pointType), matchPoints, action);
+    }
+  }
+}
+
+
+const defaultMatchTable = buildPointMatchTable(defaultRules);
