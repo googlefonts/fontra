@@ -193,3 +193,51 @@ function modulo(a, b) {
   }
   return result;
 }
+
+
+// Or-able constants for rule definitions
+const NIL = 1 << 0;  // Does not exist
+const SEL = 1 << 1;  // Selected
+const UNS = 1 << 2;  // Unselected
+const SHA = 1 << 3;  // Sharp On-Curve
+const SMO = 1 << 4;  // Smooth On-Curve
+const OFF = 1 << 5;  // Off-Curve
+const ANY = SHA | SMO | OFF;
+
+// Some examples:
+//     SHA        point must be sharp, but can be selected or not
+//     SHA|SMO    point must be either sharp or smooth, but can be selected or not
+//     OFF|SEL    point must be off-curve and selected
+//     ANY|UNS    point can be off-curve, sharp or smooth, but must not be selected
+
+
+const defaultRulesList = [
+  //   prevPrev    prev        the point   next        nextNext       Post    Action
+
+  //   default rule: if no other rules apply, just move the selected point
+  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,       false,  "Move"],
+
+  // off-curve point next to a smooth point next to a selected point
+  [    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,       true,   "RotateNext"],
+
+  // Selected tangent point: its neighboring off-curve point should move
+  [    SHA|SMO,    SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,       true,   "RotateNext"],
+
+  // Free off-curve point, move with on-curve neighbor
+  [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,       true,   "Move"],
+  [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,       true,   "Move"],
+
+  // An unselected off-curve between two smooth points
+  [    ANY|UNS,    SMO|SEL,    OFF,        SMO,        ANY|NIL,       true,   "MoveAndIntersect"],
+  [    ANY|SEL,    SMO,        OFF,        SMO,        ANY|NIL,       true,   "MoveAndIntersect"],
+
+  // Tangent bcp constraint
+  [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,       false,  "ConstrainPrevAngle"],
+
+  // Two selected points with an unselected smooth point between them
+  [    OFF|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,       false,  "ConstrainAngleWithPrevPrev"],
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,       false,  "ConstrainAngleWithPrevPrev"],
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,       false,  "DontMove"],
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,       false,  "DontMove"],
+
+];
