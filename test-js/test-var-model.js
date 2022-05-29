@@ -105,11 +105,11 @@ describe("var-model tests", () => {
 
   describe("normalizeValue test", () => {
     it("misc", () => {
-      expect(normalizeValue(400, [100, 400, 900])).to.equal(0.0);
-      expect(normalizeValue(100, [100, 400, 900])).to.equal(-1.0);
-      expect(normalizeValue(650, [100, 400, 900])).to.equal(0.5);
-      expect(normalizeValue(0, [100, 400, 900])).to.equal(-1.0);
-      expect(normalizeValue(1000, [100, 400, 900])).to.equal(1.0);
+      expect(normalizeValue(400, 100, 400, 900)).to.equal(0.0);
+      expect(normalizeValue(100, 100, 400, 900)).to.equal(-1.0);
+      expect(normalizeValue(650, 100, 400, 900)).to.equal(0.5);
+      expect(normalizeValue(0, 100, 400, 900)).to.equal(-1.0);
+      expect(normalizeValue(1000, 100, 400, 900)).to.equal(1.0);
     });
   });
 
