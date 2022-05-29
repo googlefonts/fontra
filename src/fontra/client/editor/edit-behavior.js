@@ -347,8 +347,7 @@ function buildPointMatchTable(rules) {
       "direction": 1,
     }
     const actionBackward = {
-      "post": rule[5],
-      "action": rule[6],
+      ...actionForward,
       "direction": -1,
     }
     _fillTable(matchTable, matchPoints, actionForward);
