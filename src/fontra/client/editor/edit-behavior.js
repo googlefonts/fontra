@@ -173,7 +173,7 @@ function makePointEditFuncs(path, selectedContourPointIndices) {
 
 function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed) {
   const numPoints = endPoint - startPoint;
-  const participatingPoints = new Array(numPoints + 4);
+  const participatingPoints = new Array(numPoints + 4);  // add two point slots on both ends
   for (let i = 0; i < numPoints; i++) {
     participatingPoints[i + 2] = path.getPoint(i + startPoint);
   }
@@ -181,7 +181,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
     participatingPoints[pointIndex - startPoint + 2].selected = true;
   }
   if (isClosed) {
-    // Wrap around two points on both sides
+    // Wrap around two points on both ends
     participatingPoints[0] = participatingPoints[numPoints + 0];
     participatingPoints[1] = participatingPoints[numPoints + 1];
     participatingPoints[numPoints + 2] = participatingPoints[2];
