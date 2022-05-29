@@ -341,12 +341,18 @@ function buildPointMatchTable(rules) {
       throw new Error("assert -- invalid rule");
     }
     const matchPoints = rule.slice(0, 5);
-    const action = {
+    const actionForward = {
       "post": rule[5],
       "action": rule[6],
+      "direction": 1,
     }
-    _fillTable(matchTable, matchPoints, action);
-    _fillTable(matchTable, Array.from(reversed(matchPoints)), action);
+    const actionBackward = {
+      "post": rule[5],
+      "action": rule[6],
+      "direction": -1,
+    }
+    _fillTable(matchTable, matchPoints, actionForward);
+    _fillTable(matchTable, Array.from(reversed(matchPoints)), actionBackward);
   }
   return matchTable;
 }
