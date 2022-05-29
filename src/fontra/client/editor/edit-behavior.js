@@ -190,7 +190,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
   const editFuncs1 = [];
   const editFuncs2 = [];
   for (let i = 0; i < numPoints; i++) {
-    let state = defaultMatchTable;
+    let match = defaultMatchTable;
     for (let j = 0; j < 5; j++) {
       const point = participatingPoints[i + j];
       let pointType;
@@ -202,13 +202,13 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
         const selected = boolInt(point.selected);
         pointType = POINT_TYPES[smooth][oncurve][selected];
       }
-      state = state.get(pointType);
-      if (state === undefined) {
+      match = match.get(pointType);
+      if (match === undefined) {
         // No match
         break;
       }
     }
-    // console.log(i, state);
+    // console.log(i, match);
   }
   return [editFuncs1, editFuncs2];
 }
