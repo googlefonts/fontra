@@ -7,7 +7,6 @@ export class EditBehavior {
     this.instance = instance;
     this.selections = splitSelection(selection);
     this.setupEditFuncs();
-    this.rollbackChange = makeRollbackChange(instance, this.selections);
   }
 
   setupEditFuncs() {
@@ -20,6 +19,7 @@ export class EditBehavior {
     this.componentEditFuncs = this.selections["component"]?.map(
       componentIndex => makeComponentTransformFunc(components, componentIndex)
     );
+    this.rollbackChange = makeRollbackChange(instance, this.selections);
   }
 
   makeChangeForDelta(delta) {
