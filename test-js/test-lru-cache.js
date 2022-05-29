@@ -32,7 +32,7 @@ describe("LRUCache Tests", () => {
     expect(lru.get("b")).to.equal(2);
     expect(lru.get("c")).to.equal(3);
     deletedKey = lru.put("e", 4);
-    expect(deletedKey).to.equal("d");
+    expect(deletedKey).to.deep.equal({"key": 'd', "value": 4});
     expect(lru.get("d")).to.equal(undefined);
     expect(lru.get("a")).to.equal(1);
     lru.put("f", 5);
