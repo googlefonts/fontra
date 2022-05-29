@@ -13,16 +13,13 @@ export class EditBehavior {
   setupEditFuncs() {
     const path = this.instance.path;
     const components = this.instance.components;
-    const editFuncs = [];
 
-    this.editFuncs = {
-      "point": this.selections["point"]?.map(
-        pointIndex => makePointTransformFunc(path, pointIndex)
-      ),
-      "component": this.selections["component"]?.map(
-        componentIndex => makeComponentTransformFunc(components, componentIndex)
-      ),
-    };
+    this.pointEditFuncs = this.selections["point"]?.map(
+      pointIndex => makePointTransformFunc(path, pointIndex)
+    );
+    this.componentEditFuncs = this.selections["component"]?.map(
+      componentIndex => makeComponentTransformFunc(components, componentIndex)
+    );
   }
 
   makeChangeForDelta(delta) {
@@ -34,10 +31,10 @@ export class EditBehavior {
   }
 
   makeChangeForTransformFunc(transformFunc) {
-    const pathChanges = this.editFuncs["point"]?.map(
+    const pathChanges = this.pointEditFuncs?.map(
       editFunc => makePointChange(...editFunc(transformFunc))
     );
-    const componentChanges = this.editFuncs["component"]?.map(
+    const componentChanges = this.componentEditFuncs?.map(
       editFunc => makeComponentOriginChange(...editFunc(transformFunc))
     );
     const changes = [];
