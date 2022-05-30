@@ -17,7 +17,7 @@ export class EditBehavior {
     this.pointEditFuncs = this.selections["point"]?.map(
       pointIndex => makePointTransformFunc(path, pointIndex)
     );
-    const [editFuncs1, editFuncs2] = makePointEditFuncs(
+    const editFuncs = makePointEditFuncs(
       path, splitPointSelectionPerContour(path, this.selections["point"] || [])
     );
   }
@@ -153,46 +153,43 @@ function splitPointSelectionPerContour(path, pointIndices) {
 
 function makePointEditFuncs(path, selectedContourPointIndices) {
   let contourStartPoint = 0;
-  const pointEditFuncs1 = [];
-  const pointEditFuncs2 = [];
+  const pointEditFuncs = [];
   for (let i = 0; i < path.contourInfo.length; i++) {
     const contourEndPoint = path.contourInfo[i].endPoint + 1;
     const selectedPointIndices = selectedContourPointIndices[i];
     if (selectedPointIndices !== undefined) {
-      const [editFuncs1, editFuncs2] = makeContourPointEditFuncs(
+      const editFuncs = makeContourPointEditFuncs(
         path, selectedPointIndices, contourStartPoint, contourEndPoint, path.contourInfo[i].isClosed
       );
-      pointEditFuncs1.push(...editFuncs1);
-      pointEditFuncs2.push(...editFuncs2);
+      pointEditFuncs.push(...editFuncs);
     }
     contourStartPoint = contourEndPoint;
   }
-  return [pointEditFuncs1, pointEditFuncs2];
+  return pointEditFuncs;
 }
 
 
 function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed) {
   const numPoints = endPoint - startPoint;
-  const participatingPoints = new Array(numPoints + 4);  // add two point slots on both ends
+  const participatingPoints = new Array(numPoints);
   for (let i = 0; i < numPoints; i++) {
-    participatingPoints[i + 2] = path.getPoint(i + startPoint);
+    participatingPoints[i] = path.getPoint(i + startPoint);
   }
   for (const pointIndex of selectedPointIndices) {
-    participatingPoints[pointIndex - startPoint + 2].selected = true;
+    participatingPoints[pointIndex - startPoint].selected = true;
   }
-  if (isClosed) {
-    // Wrap around two points on both ends
-    participatingPoints[0] = participatingPoints[numPoints + 0];
-    participatingPoints[1] = participatingPoints[numPoints + 1];
-    participatingPoints[numPoints + 2] = participatingPoints[2];
-    participatingPoints[numPoints + 3] = participatingPoints[3];
-  }
-  const editFuncs1 = [];
-  const editFuncs2 = [];
+  const editFuncsTransform = [];
+  const editFuncsConstrain = [];
   for (let i = 0; i < numPoints; i++) {
     let match = defaultMatchTable;
-    for (let j = 0; j < 5; j++) {
-      const point = participatingPoints[i + j];
+    const neighborIndices = new Array();
+    for (let j = -2; j < 3; j++) {
+      let neighborIndex = i + j;
+      if (isClosed) {
+        neighborIndex = modulo(neighborIndex, numPoints);
+      }
+      neighborIndices.push(neighborIndex);
+      const point = participatingPoints[neighborIndex];
       let pointType;
       if (point === undefined) {
         pointType = DOESNT_EXIST;
@@ -212,7 +209,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
     // constrain match: func takes five *updated* context points, returns [pointIndex, x, y]
     // console.log(i, match);
   }
-  return [editFuncs1, editFuncs2];
+  return editFuncsTransform.concat(editFuncsConstrain);
 }
 
 
