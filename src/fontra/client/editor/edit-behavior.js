@@ -481,6 +481,17 @@ const actionFunctionFactories = {
     };
   },
 
+  "MoveAndIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transformFunc(points[thePoint]);
+      const [intersection, t1, t2] = intersect(points[prevPrev], points[prev], points[next], points[nextNext]);
+      if (!intersection) {
+
+      }
+      return intersection;
+    };
+  },
+
 }
 
 
