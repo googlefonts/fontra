@@ -328,8 +328,8 @@ const defaultRules = [
   [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
 
   // An unselected off-curve between two smooth points
-  [    ANY|UNS,    SMO|SEL,    OFF,        SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
-  [    ANY|SEL,    SMO,        OFF,        SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
+  [    ANY|UNS,    SMO|SEL,    OFF|UNS,    SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
+  [    ANY|SEL,    SMO,        OFF|UNS,    SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
 
   // Tangent bcp constraint
   [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
