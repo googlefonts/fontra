@@ -102,13 +102,14 @@ export class VariableGlyphController {
           continue;
         }
         seen.add(axis.name);
+        const axisDefaultValue = piecewiseLinearMap(axis.defaultValue, Object.fromEntries(axis.mapping || []));
         let varValue = location[axis.name];
         let sourceValue = source.location[axis.name];
         if (varValue === undefined) {
-          varValue = axis.defaultValue;
+          varValue = axisDefaultValue;
         }
         if (sourceValue === undefined) {
-          sourceValue = axis.defaultValue;
+          sourceValue = axisDefaultValue;
         }
         if (varValue !== sourceValue) {
           found = false;
