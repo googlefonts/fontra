@@ -14,10 +14,7 @@ export class EditBehavior {
 
   setupPointEditFuncs() {
     const path = this.instance.path;
-    this.pointEditFuncs = this.selections["point"]?.map(
-      pointIndex => makePointTransformFunc(path, pointIndex)
-    );
-    const editFuncs = makePointEditFuncs(
+    this.pointEditFuncs = makePointEditFuncs(
       path, splitPointSelectionPerContour(path, this.selections["point"] || [])
     );
   }
@@ -81,15 +78,6 @@ function makeRollbackChange(instance, selections) {
     changes.push(consolidateChanges(componentRollback, ["components"]));
   }
   return consolidateChanges(changes);
-}
-
-
-function makePointTransformFunc(path, pointIndex) {
-  const point = path.getPoint(pointIndex);
-  return transformFunc => {
-    const editedPoint = transformFunc(point);
-    return [pointIndex, editedPoint.x, editedPoint.y]
-  };
 }
 
 
@@ -178,17 +166,19 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
   for (const pointIndex of selectedPointIndices) {
     participatingPoints[pointIndex - startPoint].selected = true;
   }
+  const originalPoints = Array.from(participatingPoints);
+  const temporaryPoints = Array.from(participatingPoints);
   const editFuncsTransform = [];
   const editFuncsConstrain = [];
   for (let i = 0; i < numPoints; i++) {
     let match = defaultMatchTable;
-    const neighborIndices = new Array();
+    const neighborIndicesForward = new Array();
     for (let j = -2; j < 3; j++) {
       let neighborIndex = i + j;
       if (isClosed) {
         neighborIndex = modulo(neighborIndex, numPoints);
       }
-      neighborIndices.push(neighborIndex);
+      neighborIndicesForward.push(neighborIndex);
       const point = participatingPoints[neighborIndex];
       let pointType;
       if (point === undefined) {
@@ -205,9 +195,30 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
         break;
       }
     }
-    // transform match: func takes transform func, and five context points, returns [pointIndex, x, y]
-    // constrain match: func takes five *updated* context points, returns [pointIndex, x, y]
     // console.log(i, match);
+    if (match !== undefined) {
+      // XXXX transform match: func takes transform func, and five context points, returns [pointIndex, x, y]
+      // XXXX constrain match: func takes five *updated* context points, returns [pointIndex, x, y]
+      const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndicesForward : reversed(neighborIndicesForward);
+      const points = originalPoints;
+      const editPoints = temporaryPoints;
+      const actionFunc = actionFuncs[match.action];
+      if (actionFunc === undefined) {
+        console.log(`Undefined action function: ${match.action}`);
+        continue;
+      }
+      if (!match.constrain) {
+        // transform
+        editFuncsTransform.push(transformFunc => {
+          const point = actionFunc(transformFunc, points, prevPrev, prev, thePoint, next, nextNext);
+          editPoints[thePoint] = point;
+          return [thePoint, point.x, point.y];
+        });
+      } else {
+        // constrain
+      }
+
+    }
   }
   return editFuncsTransform.concat(editFuncsConstrain);
 }
@@ -300,8 +311,8 @@ const defaultRules = [
   [    SHA|SMO,    SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
 
   // Free off-curve point, move with on-curve neighbor
-  [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "Move"],
-  [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "Move"],
+  [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+  [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
 
   // An unselected off-curve between two smooth points
   [    ANY|UNS,    SMO|SEL,    OFF,        SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
@@ -406,3 +417,10 @@ function _fillTable(table, matchPoints, action) {
 
 
 const defaultMatchTable = buildPointMatchTable(defaultRules);
+
+
+const actionFuncs = {
+  "Move": (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+    return transformFunc(points[thePoint]);
+  }
+}
