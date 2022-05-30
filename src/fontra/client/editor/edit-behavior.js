@@ -197,27 +197,26 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
     }
     // console.log(i, match);
     if (match !== undefined) {
-      // XXXX transform match: func takes transform func, and five context points, returns [pointIndex, x, y]
-      // XXXX constrain match: func takes five *updated* context points, returns [pointIndex, x, y]
       const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndicesForward : reversed(neighborIndicesForward);
       const points = originalPoints;
       const editPoints = temporaryPoints;
-      const actionFunc = actionFuncs[match.action];
-      if (actionFunc === undefined) {
+      const actionFuncionFactory = actionFunctionFactories[match.action];
+      if (actionFuncionFactory === undefined) {
         console.log(`Undefined action function: ${match.action}`);
         continue;
       }
+      const actionFunc = actionFuncionFactory(points, prevPrev, prev, thePoint, next, nextNext);
       if (!match.constrain) {
         // transform
         editFuncsTransform.push(transformFunc => {
-          const point = actionFunc(transformFunc, points, editPoints, prevPrev, prev, thePoint, next, nextNext);
+          const point = actionFunc(transformFunc, points, prevPrev, prev, thePoint, next, nextNext);
           editPoints[thePoint] = point;
           return [thePoint, point.x, point.y];
         });
       } else {
         // constrain
         editFuncsConstrain.push(transformFunc => {
-          const point = actionFunc(transformFunc, points, editPoints, prevPrev, prev, thePoint, next, nextNext);
+          const point = actionFunc(transformFunc, editPoints, prevPrev, prev, thePoint, next, nextNext);
           return [thePoint, point.x, point.y];
         });
       }
@@ -423,22 +422,26 @@ function _fillTable(table, matchPoints, action) {
 const defaultMatchTable = buildPointMatchTable(defaultRules);
 
 
-const actionFuncs = {
+const actionFunctionFactories = {
 
-  "Move": (transformFunc, points, editPoints, prevPrev, prev, thePoint, next, nextNext) => {
-    return transformFunc(points[thePoint]);
+  "Move": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+      return transformFunc(points[thePoint]);
+    };
   },
 
-  "RotateNext": (transformFunc, points, editPoints, prevPrev, prev, thePoint, next, nextNext) => {
-    const delta = subPoints(editPoints[prev], editPoints[prevPrev]);
-    const angle = Math.atan2(delta.y, delta.x);
-    const originalHandle = subPoints(points[thePoint], points[prev]);
-    const length = Math.hypot(originalHandle.x, originalHandle.y);
-    const handlePoint = {
-      "x": editPoints[prev].x + length * Math.cos(angle),
-      "y": editPoints[prev].y + length * Math.sin(angle),
-    }
-    return handlePoint;
+  "RotateNext": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const handle = subPoints(points[thePoint], points[prev]);
+    const handleLength = Math.hypot(handle.x, handle.y);
+    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const delta = subPoints(points[prev], points[prevPrev]);
+      const angle = Math.atan2(delta.y, delta.x);
+      const handlePoint = {
+        "x": points[prev].x + handleLength * Math.cos(angle),
+        "y": points[prev].y + handleLength * Math.sin(angle),
+      }
+      return handlePoint;
+    };
   },
 
 }
