@@ -317,7 +317,11 @@ const defaultRules = [
   [    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
 
   // Selected tangent point: its neighboring off-curve point should move
-  [    SHA|SMO,    SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
+  [    SHA|SMO,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
+
+  // Selected tangent point, selected handle: constrain both on original angle
+  [    SHA|SMO,    SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,ANY|NIL,    true,       "ConstrainPrevAngle"],
+  [    ANY,        SHA|SMO,    SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,true,       "ConstrainMiddle"],
 
   // Free off-curve point, move with on-curve neighbor
   [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
@@ -459,6 +463,17 @@ const actionFunctionFactories = {
   "ConstrainPrevAngle": (points, prevPrev, prev, thePoint, next, nextNext) => {
     const pt1 = points[prevPrev]
     const pt2 = points[prev];
+    const perpVector = rotate90CW(subPoints(pt2, pt1));
+    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transformFunc(points[thePoint]);
+      const [intersection, t1, t2] = intersect(pt1, pt2, point, addPoints(point, perpVector));
+      return intersection;
+    };
+  },
+
+  "ConstrainMiddle": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const pt1 = points[prev]
+    const pt2 = points[next];
     const perpVector = rotate90CW(subPoints(pt2, pt1));
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transformFunc(points[thePoint]);
