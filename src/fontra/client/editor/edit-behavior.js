@@ -210,12 +210,16 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
       if (!match.constrain) {
         // transform
         editFuncsTransform.push(transformFunc => {
-          const point = actionFunc(transformFunc, points, prevPrev, prev, thePoint, next, nextNext);
+          const point = actionFunc(transformFunc, points, editPoints, prevPrev, prev, thePoint, next, nextNext);
           editPoints[thePoint] = point;
           return [thePoint, point.x, point.y];
         });
       } else {
         // constrain
+        editFuncsConstrain.push(transformFunc => {
+          const point = actionFunc(transformFunc, points, editPoints, prevPrev, prev, thePoint, next, nextNext);
+          return [thePoint, point.x, point.y];
+        });
       }
 
     }
@@ -420,7 +424,26 @@ const defaultMatchTable = buildPointMatchTable(defaultRules);
 
 
 const actionFuncs = {
-  "Move": (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+
+  "Move": (transformFunc, points, editPoints, prevPrev, prev, thePoint, next, nextNext) => {
     return transformFunc(points[thePoint]);
-  }
+  },
+
+  "RotateNext": (transformFunc, points, editPoints, prevPrev, prev, thePoint, next, nextNext) => {
+    const delta = subPoints(editPoints[prev], editPoints[prevPrev]);
+    const angle = Math.atan2(delta.y, delta.x);
+    const originalHandle = subPoints(points[thePoint], points[prev]);
+    const length = Math.hypot(originalHandle.x, originalHandle.y);
+    const handlePoint = {
+      "x": editPoints[prev].x + length * Math.cos(angle),
+      "y": editPoints[prev].y + length * Math.sin(angle),
+    }
+    return handlePoint;
+  },
+
+}
+
+
+function subPoints(pointA, pointB) {
+  return {"x": pointA.x - pointB.x, "y": pointA.y - pointB.y};
 }
