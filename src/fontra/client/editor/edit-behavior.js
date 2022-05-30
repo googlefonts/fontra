@@ -529,7 +529,7 @@ function intersect(pt1, pt2, pt3, pt4) {
   //         elif t1 > 1:
   //                 the intersection lies between beyond pt2
   // Similarly for t2 and pt3-pt4.
-  // Return (None, 0, 0) if there is no intersection.
+  // Return [undefined, undefined, undefined] if there is no intersection.
   let intersection, t1, t2;
   const delta1 = subPoints(pt2, pt1);
   const delta2 = subPoints(pt4, pt3);
