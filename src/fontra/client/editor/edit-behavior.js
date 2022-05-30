@@ -208,6 +208,8 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
         break;
       }
     }
+    // transform match: func takes transform func, and five context points, returns [pointIndex, x, y]
+    // constrain match: func takes five *updated* context points, returns [pointIndex, x, y]
     // console.log(i, match);
   }
   return [editFuncs1, editFuncs2];
@@ -289,33 +291,33 @@ const ANY = SHA | SMO | OFF;
 
 
 const defaultRules = [
-  //   prevPrev    prev        the point   next        nextNext       Post    Action
+  //   prevPrev    prev        the point   next        nextNext    Constrain   Action
 
-  //   default rule: if no other rules apply, just move the selected point
-  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,       false,  "Move"],
+  // Default rule: if no other rules apply, just move the selected point
+  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
 
-  // off-curve point next to a smooth point next to a selected point
-  [    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,       true,   "RotateNext"],
+  // Off-curve point next to a smooth point next to a selected point
+  [    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
 
   // Selected tangent point: its neighboring off-curve point should move
-  [    SHA|SMO,    SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,       true,   "RotateNext"],
+  [    SHA|SMO,    SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
 
   // Free off-curve point, move with on-curve neighbor
-  [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,       true,   "Move"],
-  [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,       true,   "Move"],
+  [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "Move"],
+  [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "Move"],
 
   // An unselected off-curve between two smooth points
-  [    ANY|UNS,    SMO|SEL,    OFF,        SMO,        ANY|NIL,       true,   "MoveAndIntersect"],
-  [    ANY|SEL,    SMO,        OFF,        SMO,        ANY|NIL,       true,   "MoveAndIntersect"],
+  [    ANY|UNS,    SMO|SEL,    OFF,        SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
+  [    ANY|SEL,    SMO,        OFF,        SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
 
   // Tangent bcp constraint
-  [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,       false,  "ConstrainPrevAngle"],
+  [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
 
   // Two selected points with an unselected smooth point between them
-  [    OFF|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,       false,  "ConstrainAngleWithPrevPrev"],
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,       false,  "ConstrainAngleWithPrevPrev"],
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,       false,  "DontMove"],
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,       false,  "DontMove"],
+  [    OFF|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainAngleWithPrevPrev"],
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainAngleWithPrevPrev"],
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,    false,      "DontMove"],
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,    false,      "DontMove"],
 
 ];
 
