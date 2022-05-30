@@ -11,12 +11,12 @@ export class EditBehavior {
     this.componentSelection = selections["component"] || [];
     this.setupPointEditFuncs();
     this.setupComponentEditFuncs();
-    this.rollbackChange = makeRollbackChange(this.instance, this.pointSelection, this.componentSelection);
+    this.rollbackChange = makeRollbackChange(this.instance, this.participatingPointIndices, this.componentSelection);
   }
 
   setupPointEditFuncs() {
     const path = this.instance.path;
-    this.pointEditFuncs = makePointEditFuncs(
+    [this.pointEditFuncs, this.participatingPointIndices] = makePointEditFuncs(
       path, splitPointSelectionPerContour(path, this.pointSelection)
     );
   }
@@ -144,24 +144,27 @@ function splitPointSelectionPerContour(path, pointIndices) {
 function makePointEditFuncs(path, selectedContourPointIndices) {
   let contourStartPoint = 0;
   const pointEditFuncs = [];
+  const participatingPointIndices = [];
   for (let i = 0; i < path.contourInfo.length; i++) {
     const contourEndPoint = path.contourInfo[i].endPoint + 1;
     const selectedPointIndices = selectedContourPointIndices[i];
     if (selectedPointIndices !== undefined) {
-      const editFuncs = makeContourPointEditFuncs(
+      const [editFuncs, pointIndices] = makeContourPointEditFuncs(
         path, selectedPointIndices, contourStartPoint, contourEndPoint, path.contourInfo[i].isClosed
       );
       pointEditFuncs.push(...editFuncs);
+      participatingPointIndices.push(...pointIndices);
     }
     contourStartPoint = contourEndPoint;
   }
-  return pointEditFuncs;
+  return [pointEditFuncs, participatingPointIndices];
 }
 
 
 function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed) {
   const numPoints = endPoint - startPoint;
   const participatingPoints = new Array(numPoints);
+  const participatingPointIndices = [];
   for (let i = 0; i < numPoints; i++) {
     participatingPoints[i] = path.getPoint(i + startPoint);
   }
@@ -200,6 +203,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
     // console.log(i, match);
     if (match !== undefined) {
       const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndicesForward : reversed(neighborIndicesForward);
+      participatingPointIndices.push(thePoint + startPoint);
       const points = originalPoints;
       const editPoints = temporaryPoints;
       const actionFuncionFactory = actionFunctionFactories[match.action];
@@ -225,7 +229,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
 
     }
   }
-  return editFuncsTransform.concat(editFuncsConstrain);
+  return [editFuncsTransform.concat(editFuncsConstrain), participatingPointIndices];
 }
 
 
