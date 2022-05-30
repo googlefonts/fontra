@@ -444,9 +444,63 @@ const actionFunctionFactories = {
     };
   },
 
+  "ConstrainPrevAngle": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const pt1 = points[prevPrev]
+    const pt2 = points[prev];
+    const perpVector = rotate90CW(subPoints(pt2, pt1));
+    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transformFunc(points[thePoint]);
+      const [intersection, t1, t2] = intersect(pt1, pt2, point, addPoints(point, perpVector));
+      return intersection;
+    };
+  },
+
+}
+
+
+function addPoints(pointA, pointB) {
+  return {"x": pointA.x + pointB.x, "y": pointA.y + pointB.y};
 }
 
 
 function subPoints(pointA, pointB) {
   return {"x": pointA.x - pointB.x, "y": pointA.y - pointB.y};
+}
+
+
+function mulPoint(point, scalar) {
+  return {"x": point.x * scalar, "y": point.y * scalar};
+}
+
+
+function rotate90CW(vector) {
+  return {"x": vector.y, "y": -vector.x};
+}
+
+
+const _EPSILON = 1e-10;
+
+
+function intersect(pt1, pt2, pt3, pt4) {
+  // Return the intersection point of pt1-pt2 and pt3-pt4 as well as
+  // two 't' values, indicating where the intersection is relatively to
+  // the input lines, like so:
+  //         if 0 <= t1 <= 1:
+  //                 the intersection lies between pt1 and pt2
+  //         elif t1 < 0:
+  //                 the intersection lies between before pt1
+  //         elif t1 > 1:
+  //                 the intersection lies between beyond pt2
+  // Similarly for t2 and pt3-pt4.
+  // Return (None, 0, 0) if there is no intersection.
+  let intersection, t1, t2;
+  const delta1 = subPoints(pt2, pt1);
+  const delta2 = subPoints(pt4, pt3);
+  const determinant = (delta2.y*delta1.x - delta2.x*delta1.y);
+  if (Math.abs(determinant) > _EPSILON) {
+    t1 = ((pt3.x - pt1.x)*delta2.y + (pt1.y - pt3.y)*delta2.x) / determinant;
+    t2 = ((pt1.x - pt3.x)*delta1.y + (pt3.y - pt1.y)*delta1.x) / -determinant;
+    intersection = addPoints(mulPoint(delta1, t1), pt1);
+  }
+  return [intersection, t1, t2];
 }
