@@ -9,7 +9,7 @@ export class EditBehavior {
     this.selections = splitSelection(selection);
     this.setupPointEditFuncs();
     this.setupComponentEditFuncs();
-    this.rollbackChange = makeRollbackChange(this.instance, this.selections);
+    this.rollbackChange = makeRollbackChange(this.instance, this.selections["point"], this.selections["component"]);
   }
 
   setupPointEditFuncs() {
@@ -54,17 +54,17 @@ export class EditBehavior {
 }
 
 
-function makeRollbackChange(instance, selections) {
+function makeRollbackChange(instance, pointSelection, componentSelection) {
   const path = instance.path;
   const components = instance.components;
 
-  const pointRollback = selections["point"]?.map(
+  const pointRollback = pointSelection?.map(
     pointIndex => {
       const point = path.getPoint(pointIndex);
       return makePointChange(pointIndex, point.x, point.y);
     }
   );
-  const componentRollback = selections["component"]?.map(
+  const componentRollback = componentSelection?.map(
     componentIndex => {
       const t = components[componentIndex].transformation;
       return makeComponentOriginChange(componentIndex, t.x, t.y);
