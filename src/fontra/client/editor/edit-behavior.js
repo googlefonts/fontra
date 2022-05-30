@@ -211,13 +211,13 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
         editFuncsTransform.push(transformFunc => {
           const point = actionFunc(transformFunc, points, prevPrev, prev, thePoint, next, nextNext);
           editPoints[thePoint] = point;
-          return [thePoint, point.x, point.y];
+          return [thePoint + startPoint, point.x, point.y];
         });
       } else {
         // constrain
         editFuncsConstrain.push(transformFunc => {
           const point = actionFunc(transformFunc, editPoints, prevPrev, prev, thePoint, next, nextNext);
-          return [thePoint, point.x, point.y];
+          return [thePoint + startPoint, point.x, point.y];
         });
       }
 
