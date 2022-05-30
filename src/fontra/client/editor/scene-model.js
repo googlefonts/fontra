@@ -17,7 +17,7 @@ export class SceneModel {
     this.selectedGlyph = undefined;
     this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
-    this._globalLocation = {};
+    this._globalLocation = undefined;  // see getGlobalLocation()
     this._localLocations = {};  // glyph name -> local location
   }
 
@@ -82,11 +82,17 @@ export class SceneModel {
 
   getLocation() {
     const glyphName = this.getSelectedGlyphName();
-    const location = {...this._globalLocation, ...this._localLocations[glyphName]};
+    const location = {...this.getGlobalLocation(), ...this._localLocations[glyphName]};
     return location;
   }
 
   getGlobalLocation() {
+    if (this._globalLocation === undefined) {
+      this._globalLocation = {};
+      for (const axis of this.fontController.globalAxes) {
+        this._globalLocation[axis.name] = axis.defaultValue;
+      }
+    }
     return this._globalLocation;
   }
 
@@ -193,7 +199,7 @@ export class SceneModel {
 
   async updateScene() {
     this.positionedLines = await buildScene(
-      this.fontController, this.glyphLines, this._globalLocation, this._localLocations
+      this.fontController, this.glyphLines, this.getGlobalLocation(), this._localLocations
     );
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
     if (!this._previousUsedGlyphNames || !isEqualSet(usedGlyphNames, this._previousUsedGlyphNames)) {
