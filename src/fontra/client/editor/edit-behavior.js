@@ -424,6 +424,12 @@ const defaultMatchTable = buildPointMatchTable(defaultRules);
 
 const actionFunctionFactories = {
 
+  "DontMove": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+      return points[thePoint];
+    };
+  },
+
   "Move": (points, prevPrev, prev, thePoint, next, nextNext) => {
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
       return transformFunc(points[thePoint]);
