@@ -377,7 +377,7 @@ function buildPointMatchTable(rules) {
     }
     const matchPoints = rule.slice(0, 5);
     const actionForward = {
-      "post": rule[5],
+      "constrain": rule[5],
       "action": rule[6],
       "direction": 1,
     }
