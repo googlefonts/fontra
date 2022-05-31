@@ -2,29 +2,39 @@ import { consolidateChanges } from "../core/changes.js";
 import { reversed } from "../core/utils.js";
 
 
-export class EditBehavior {
+export class EditBehaviorFactory {
 
   constructor(instance, selection) {
     this.instance = instance;
     const selectionByType = splitSelectionByType(selection);
     this.pointSelectionByContour = splitPointSelectionByContour(instance.path, selectionByType["point"] || []);
     this.componentSelection = selectionByType["component"] || [];
-    this.setupPointEditFuncs();
-    this.setupComponentEditFuncs();
-    this.rollbackChange = makeRollbackChange(this.instance, this.participatingPointIndices, this.componentSelection);
   }
 
-  setupPointEditFuncs() {
-    [this.pointEditFuncs, this.participatingPointIndices] = makePointEditFuncs(
-      this.instance.path, this.pointSelectionByContour,
-    );
+  getBehavior(behaviorName) {
+    const behavior = behaviorTypes[behaviorName];
+    if (!behavior) {
+      throw new Error(`Behavior ${behaviorName} does not exist`);
+    }
+    return new EditBehavior(this.instance, this.pointSelectionByContour, this.componentSelection, behavior);
   }
 
-  setupComponentEditFuncs() {
-    const components = this.instance.components;
-    this.componentEditFuncs = this.componentSelection.map(
-      componentIndex => makeComponentTransformFunc(components, componentIndex)
+}
+
+
+class EditBehavior {
+
+  constructor(instance, pointSelectionByContour, componentSelection, behavior) {
+    const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
+      instance.path, pointSelectionByContour, behavior,
     );
+    this.pointEditFuncs = pointEditFuncs;
+
+    this.componentEditFuncs = componentSelection.map(
+      componentIndex => makeComponentTransformFunc(instance.components, componentIndex)
+    );
+
+    this.rollbackChange = makeRollbackChange(instance, participatingPointIndices, componentSelection);
   }
 
   makeChangeForDelta(delta) {
@@ -143,7 +153,7 @@ function splitPointSelectionByContour(path, pointIndices) {
 }
 
 
-function makePointEditFuncs(path, selectedContourPointIndices) {
+function makePointEditFuncs(path, selectedContourPointIndices, behavior) {
   if (selectedContourPointIndices.length !== path.contourInfo.length) {
     throw new Error("assert -- contour arrays length mismatch");
   }
@@ -155,7 +165,12 @@ function makePointEditFuncs(path, selectedContourPointIndices) {
     const selectedPointIndices = selectedContourPointIndices[i];
     if (selectedPointIndices !== undefined) {
       const [editFuncs, pointIndices] = makeContourPointEditFuncs(
-        path, selectedPointIndices, contourStartPoint, contourEndPoint, path.contourInfo[i].isClosed
+        path,
+        selectedPointIndices,
+        contourStartPoint,
+        contourEndPoint,
+        path.contourInfo[i].isClosed,
+        behavior,
       );
       pointEditFuncs.push(...editFuncs);
       participatingPointIndices.push(...pointIndices);
@@ -166,7 +181,7 @@ function makePointEditFuncs(path, selectedContourPointIndices) {
 }
 
 
-function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed) {
+function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed, behavior) {
   const numPoints = endPoint - startPoint;
   const contourPoints = new Array(numPoints);
   const participatingPointIndices = [];
@@ -181,7 +196,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
   const editFuncsTransform = [];
   const editFuncsConstrain = [];
   for (let i = 0; i < numPoints; i++) {
-    let match = defaultMatchTable;
+    let match = behavior.matchTable;
     const neighborIndicesForward = new Array();
     for (let j = -2; j < 3; j++) {
       let neighborIndex = i + j;
@@ -210,7 +225,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
       participatingPointIndices.push(thePoint + startPoint);
       const points = originalPoints;
       const editPoints = temporaryPoints;
-      const actionFuncionFactory = actionFunctionFactories[match.action];
+      const actionFuncionFactory = behavior.actions[match.action];
       if (actionFuncionFactory === undefined) {
         console.log(`Undefined action function: ${match.action}`);
         continue;
@@ -292,58 +307,6 @@ const POINT_TYPES = [
       SMOOTH_SELECTED,
     ],
   ],
-];
-
-
-// Or-able constants for rule definitions
-const NIL = 1 << 0;  // Does not exist
-const SEL = 1 << 1;  // Selected
-const UNS = 1 << 2;  // Unselected
-const SHA = 1 << 3;  // Sharp On-Curve
-const SMO = 1 << 4;  // Smooth On-Curve
-const OFF = 1 << 5;  // Off-Curve
-const ANY = SHA | SMO | OFF;
-
-// Some examples:
-//     SHA        point must be sharp, but can be selected or not
-//     SHA|SMO    point must be either sharp or smooth, but can be selected or not
-//     OFF|SEL    point must be off-curve and selected
-//     ANY|UNS    point can be off-curve, sharp or smooth, but must not be selected
-
-
-const defaultRules = [
-  //   prevPrev    prev        the point   next        nextNext    Constrain   Action
-
-  // Default rule: if no other rules apply, just move the selected point
-  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
-
-  // Off-curve point next to a smooth point next to a selected point
-  [    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
-
-  // Selected tangent point: its neighboring off-curve point should move
-  [    SHA|SMO,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
-
-  // Selected tangent point, selected handle: constrain both on original angle
-  [    SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,ANY|NIL,    true,       "ConstrainPrevAngle"],
-  [    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,true,       "ConstrainMiddle"],
-
-  // Free off-curve point, move with on-curve neighbor
-  [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
-  [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
-
-  // An unselected off-curve between two on-curve points
-  [    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
-  // An unselected off-curve between two smooth points
-  [    ANY|SEL,    SMO,        OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersect"],
-
-  // Tangent bcp constraint
-  [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
-
-  // Two selected points with an unselected smooth point between them
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,    false,      "DontMove"],
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,    false,      "DontMove"],
-
 ];
 
 
@@ -433,10 +396,59 @@ function _fillTable(table, matchPoints, action) {
 }
 
 
-const defaultMatchTable = buildPointMatchTable(defaultRules);
+// Or-able constants for rule definitions
+const NIL = 1 << 0;  // Does not exist
+const SEL = 1 << 1;  // Selected
+const UNS = 1 << 2;  // Unselected
+const SHA = 1 << 3;  // Sharp On-Curve
+const SMO = 1 << 4;  // Smooth On-Curve
+const OFF = 1 << 5;  // Off-Curve
+const ANY = SHA | SMO | OFF;
+
+// Some examples:
+//     SHA        point must be sharp, but can be selected or not
+//     SHA|SMO    point must be either sharp or smooth, but can be selected or not
+//     OFF|SEL    point must be off-curve and selected
+//     ANY|UNS    point can be off-curve, sharp or smooth, but must not be selected
 
 
-const actionFunctionFactories = {
+const defaultRules = [
+  //   prevPrev    prev        the point   next        nextNext    Constrain   Action
+
+  // Default rule: if no other rules apply, just move the selected point
+  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
+
+  // Off-curve point next to a smooth point next to a selected point
+  [    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
+
+  // Selected tangent point: its neighboring off-curve point should move
+  [    SHA|SMO,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
+
+  // Selected tangent point, selected handle: constrain both on original angle
+  [    SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,ANY|NIL,    true,       "ConstrainPrevAngle"],
+  [    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,true,       "ConstrainMiddle"],
+
+  // Free off-curve point, move with on-curve neighbor
+  [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+  [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+
+  // An unselected off-curve between two on-curve points
+  [    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
+  // An unselected off-curve between two smooth points
+  [    ANY|SEL,    SMO,        OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersect"],
+
+  // Tangent bcp constraint
+  [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
+
+  // Two selected points with an unselected smooth point between them
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,    false,      "DontMove"],
+  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,    false,      "DontMove"],
+
+];
+
+
+const defaultActions = {
 
   "DontMove": (points, prevPrev, prev, thePoint, next, nextNext) => {
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
@@ -509,6 +521,16 @@ const actionFunctionFactories = {
       return intersection;
     };
   },
+
+}
+
+
+const behaviorTypes = {
+
+  "default": {
+    "matchTable": buildPointMatchTable(defaultRules),
+    "actions": defaultActions,
+  }
 
 }
 
