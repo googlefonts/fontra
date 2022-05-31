@@ -1,5 +1,6 @@
 import { consolidateChanges } from "../core/changes.js";
 import { reversed } from "../core/utils.js";
+import * as vector from "../core/vector.js";
 
 
 export class EditBehaviorFactory {
@@ -463,10 +464,10 @@ const defaultActions = {
   },
 
   "RotateNext": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const handle = subPoints(points[thePoint], points[prev]);
+    const handle = vector.subVectors(points[thePoint], points[prev]);
     const handleLength = Math.hypot(handle.x, handle.y);
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
-      const delta = subPoints(points[prev], points[prevPrev]);
+      const delta = vector.subVectors(points[prev], points[prevPrev]);
       const angle = Math.atan2(delta.y, delta.x);
       const handlePoint = {
         "x": points[prev].x + handleLength * Math.cos(angle),
@@ -479,10 +480,10 @@ const defaultActions = {
   "ConstrainPrevAngle": (points, prevPrev, prev, thePoint, next, nextNext) => {
     const pt1 = points[prevPrev]
     const pt2 = points[prev];
-    const perpVector = rotate90CW(subPoints(pt2, pt1));
+    const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transformFunc(points[thePoint]);
-      const [intersection, t1, t2] = intersect(pt1, pt2, point, addPoints(point, perpVector));
+      const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
@@ -490,10 +491,10 @@ const defaultActions = {
   "ConstrainMiddle": (points, prevPrev, prev, thePoint, next, nextNext) => {
     const pt1 = points[prev]
     const pt2 = points[next];
-    const perpVector = rotate90CW(subPoints(pt2, pt1));
+    const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transformFunc(points[thePoint]);
-      const [intersection, t1, t2] = intersect(pt1, pt2, point, addPoints(point, perpVector));
+      const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
@@ -501,7 +502,7 @@ const defaultActions = {
   "TangentIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transformFunc(points[thePoint]);
-      const [intersection, t1, t2] = intersect(points[prevPrev], points[prev], points[next], points[nextNext]);
+      const [intersection, t1, t2] = vector.intersect(points[prevPrev], points[prev], points[next], points[nextNext]);
       if (!intersection) {
         // TODO: fallback to midPoint?
       }
@@ -510,11 +511,11 @@ const defaultActions = {
   },
 
   "HandleIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const vector1 = subPoints(points[thePoint], points[prev]);
-    const vector2 = subPoints(points[thePoint], points[next]);
+    const vector1 = vector.subVectors(points[thePoint], points[prev]);
+    const vector2 = vector.subVectors(points[thePoint], points[next]);
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transformFunc(points[thePoint]);
-      const [intersection, t1, t2] = intersect(points[prev], addPoints(points[prev], vector1), points[next], addPoints(points[next], vector2));
+      const [intersection, t1, t2] = vector.intersect(points[prev], vector.addVectors(points[prev], vector1), points[next], vector.addVectors(points[next], vector2));
       if (!intersection) {
         // TODO: fallback to midPoint?
       }
@@ -532,52 +533,4 @@ const behaviorTypes = {
     "actions": defaultActions,
   }
 
-}
-
-
-function addPoints(pointA, pointB) {
-  return {"x": pointA.x + pointB.x, "y": pointA.y + pointB.y};
-}
-
-
-function subPoints(pointA, pointB) {
-  return {"x": pointA.x - pointB.x, "y": pointA.y - pointB.y};
-}
-
-
-function mulPoint(point, scalar) {
-  return {"x": point.x * scalar, "y": point.y * scalar};
-}
-
-
-function rotate90CW(vector) {
-  return {"x": vector.y, "y": -vector.x};
-}
-
-
-const _EPSILON = 1e-10;
-
-
-function intersect(pt1, pt2, pt3, pt4) {
-  // Return the intersection point of pt1-pt2 and pt3-pt4 as well as
-  // two 't' values, indicating where the intersection is relatively to
-  // the input lines, like so:
-  //         if 0 <= t1 <= 1:
-  //                 the intersection lies between pt1 and pt2
-  //         elif t1 < 0:
-  //                 the intersection lies between before pt1
-  //         elif t1 > 1:
-  //                 the intersection lies between beyond pt2
-  // Similarly for t2 and pt3-pt4.
-  // Return [undefined, undefined, undefined] if there is no intersection.
-  let intersection, t1, t2;
-  const delta1 = subPoints(pt2, pt1);
-  const delta2 = subPoints(pt4, pt3);
-  const determinant = (delta2.y*delta1.x - delta2.x*delta1.y);
-  if (Math.abs(determinant) > _EPSILON) {
-    t1 = ((pt3.x - pt1.x)*delta2.y + (pt1.y - pt3.y)*delta2.x) / determinant;
-    t2 = ((pt1.x - pt3.x)*delta1.y + (pt3.y - pt1.y)*delta1.x) / -determinant;
-    intersection = addPoints(mulPoint(delta1, t1), pt1);
-  }
-  return [intersection, t1, t2];
 }
