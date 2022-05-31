@@ -124,10 +124,12 @@ function populateTable(table, matchPoints, action) {
     if (isLeafNode) {
       table.set(pointType, action);
     } else {
-      if (!table.has(pointType)) {
-        table.set(pointType, new Map());
+      let subTable = table.get(pointType);
+      if (!subTable) {
+        subTable = new Map();
+        table.set(pointType, subTable);
       }
-      populateTable(table.get(pointType), matchPoints, action);
+      populateTable(subTable, matchPoints, action);
     }
   }
 }
