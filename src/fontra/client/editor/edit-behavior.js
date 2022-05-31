@@ -142,6 +142,9 @@ function splitPointSelectionPerContour(path, pointIndices) {
 
 
 function makePointEditFuncs(path, selectedContourPointIndices) {
+  if (selectedContourPointIndices.length !== path.contourInfo.length) {
+    throw new Error("assert -- contour arrays length mismatch");
+  }
   let contourStartPoint = 0;
   const pointEditFuncs = [];
   const participatingPointIndices = [];
