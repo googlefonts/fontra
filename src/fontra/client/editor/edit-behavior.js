@@ -487,7 +487,7 @@ const actionFunctionFactories = {
       let point = transformFunc(points[thePoint]);
       const [intersection, t1, t2] = intersect(points[prevPrev], points[prev], points[next], points[nextNext]);
       if (!intersection) {
-
+        // TODO: fallback to midPoint?
       }
       return intersection;
     };
@@ -500,7 +500,7 @@ const actionFunctionFactories = {
       let point = transformFunc(points[thePoint]);
       const [intersection, t1, t2] = intersect(points[prev], addPoints(points[prev], vector1), points[next], addPoints(points[next], vector2));
       if (!intersection) {
-        // midPoint?
+        // TODO: fallback to midPoint?
       }
       return intersection;
     };
