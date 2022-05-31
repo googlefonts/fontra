@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { reversed } from "../core/utils.js";
+import { modulo, reversed } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 
 
@@ -262,16 +262,6 @@ function findPointMatch(matchTable, pointIndex, contourPoints, numPoints, isClos
 
 function boolInt(v) {
   return v ? 1 : 0;
-}
-
-
-function modulo(a, b) {
-  // Modulo with Python behavior for negative numbers
-  const result = a % b;
-  if (result < 0) {
-    return result + b;
-  }
-  return result;
 }
 
 
