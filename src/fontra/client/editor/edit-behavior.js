@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { modulo, reversed } from "../core/utils.js";
+import { modulo, reversed, sign } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import {
   NIL, SEL, UNS, SHA, SMO, OFF, ANY,
@@ -310,6 +310,13 @@ const defaultRules = [
 ];
 
 
+const constrainRules = defaultRules.concat([
+  // Selected free off curve: constrain to 0, 45 or 90 degrees
+  [    OFF|UNS,    SMO|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
+  [    ANY|NIL,    SHA|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
+]);
+
+
 const defaultActions = {
 
   "DontMove": (points, prevPrev, prev, thePoint, next, nextNext) => {
@@ -384,6 +391,30 @@ const defaultActions = {
     };
   },
 
+  "ConstrainHandle": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transformFunc(points[thePoint]);
+      let handleVector = vector.subVectors(newPoint, points[prev]);
+      const ax = Math.abs(handleVector.x);
+      const ay = Math.abs(handleVector.y);
+      if (ax < 0.001) {
+        return newPoint;
+      }
+      const tan = ay / ax;
+      if (0.414 < tan && tan < 2.414) {
+        // between 22.5 and 67.5 degrees
+        const d = 0.5 * (ax + ay);
+        handleVector.x = d * sign(handleVector.x);
+        handleVector.y = d * sign(handleVector.y);
+      } else if (ax > ay) {
+        handleVector.y = 0;
+      } else {
+        handleVector.x = 0;
+      }
+      return vector.addVectors(points[prev], handleVector);
+    };
+  }
+
 }
 
 
@@ -395,7 +426,7 @@ const behaviorTypes = {
   },
 
   "constrain": {
-    "matchTree": buildPointMatchTree(defaultRules),
+    "matchTree": buildPointMatchTree(constrainRules),
     "actions": defaultActions,
     "constrainDelta": vector.constrainHorVer,
   },
