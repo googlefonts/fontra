@@ -4,7 +4,7 @@ import * as vector from "../core/vector.js";
 import {
   NIL, SEL, UNS, SHA, SMO, OFF, ANY,
   POINT_TYPES,
-  buildPointMatchTable,
+  buildPointMatchTree,
 } from "./edit-behavior-support.js";
 
 
@@ -203,7 +203,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
   const editFuncsConstrain = [];
 
   for (let i = 0; i < numPoints; i++) {
-    const [match, neighborIndices] = findPointMatch(behavior.matchTable, i, contourPoints, numPoints, isClosed);
+    const [match, neighborIndices] = findPointMatch(behavior.matchTree, i, contourPoints, numPoints, isClosed);
     if (match === undefined) {
       continue;
     }
@@ -236,8 +236,8 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
 }
 
 
-function findPointMatch(matchTable, pointIndex, contourPoints, numPoints, isClosed) {
-  let match = matchTable;
+function findPointMatch(matchTree, pointIndex, contourPoints, numPoints, isClosed) {
+  let match = matchTree;
   const neighborIndices = new Array();
   for (let neightborOffset = -2; neightborOffset < 3; neightborOffset++) {
     let neighborIndex = pointIndex + neightborOffset;
@@ -386,7 +386,7 @@ const defaultActions = {
 const behaviorTypes = {
 
   "default": {
-    "matchTable": buildPointMatchTable(defaultRules),
+    "matchTree": buildPointMatchTree(defaultRules),
     "actions": defaultActions,
   }
 

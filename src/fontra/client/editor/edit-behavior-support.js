@@ -93,7 +93,7 @@ function convertPointType(matchPoint) {
 }
 
 
-export function buildPointMatchTable(rules) {
+export function buildPointMatchTree(rules) {
   const matchTree = new Map();
   for (const rule of rules) {
     if (rule.length !== 7) {
