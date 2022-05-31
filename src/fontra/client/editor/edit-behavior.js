@@ -327,9 +327,10 @@ const defaultRules = [
   [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
   [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
 
+  // An unselected off-curve between two on-curve points
+  [    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
   // An unselected off-curve between two smooth points
-  [    ANY|UNS,    SMO|SEL,    OFF|UNS,    SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
-  [    ANY|SEL,    SMO,        OFF|UNS,    SMO,        ANY|NIL,    true,       "MoveAndIntersect"],
+  [    ANY|SEL,    SMO,        OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersect"],
 
   // Tangent bcp constraint
   [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
@@ -481,12 +482,25 @@ const actionFunctionFactories = {
     };
   },
 
-  "MoveAndIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
+  "TangentIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
     return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transformFunc(points[thePoint]);
       const [intersection, t1, t2] = intersect(points[prevPrev], points[prev], points[next], points[nextNext]);
       if (!intersection) {
 
+      }
+      return intersection;
+    };
+  },
+
+  "HandleIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const vector1 = subPoints(points[thePoint], points[prev]);
+    const vector2 = subPoints(points[thePoint], points[next]);
+    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transformFunc(points[thePoint]);
+      const [intersection, t1, t2] = intersect(points[prev], addPoints(points[prev], vector1), points[next], addPoints(points[next], vector2));
+      if (!intersection) {
+        // midPoint?
       }
       return intersection;
     };
