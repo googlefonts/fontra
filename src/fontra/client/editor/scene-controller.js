@@ -65,11 +65,11 @@ export class SceneController {
       dx *= 10;
       dy *= 10;
     }
-    const behaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
-    const behavior = behaviorFactory.getBehavior("default");
+    const editBehaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
+    const editBehavior = editBehaviorFactory.getBehavior("default");
     const delta = {"x": dx, "y": dy};
-    const editChange = behavior.makeChangeForDelta(delta)
-    await editContext.editAtomic(editChange, behavior.rollbackChange);
+    const editChange = editBehavior.makeChangeForDelta(delta)
+    await editContext.editAtomic(editChange, editBehavior.rollbackChange);
   }
 
   addEventListener(eventName, handler, options) {
@@ -214,17 +214,17 @@ export class SceneController {
       return;
     }
 
-    const behaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
-    const behavior = behaviorFactory.getBehavior("default");
+    const editBehaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
+    const editBehavior = editBehaviorFactory.getBehavior("default");
 
     await editContext.editBegin();
-    await editContext.editSetRollback(behavior.rollbackChange);
+    await editContext.editSetRollback(editBehavior.rollbackChange);
     let editChange;
 
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      editChange = behavior.makeChangeForDelta(delta)
+      editChange = editBehavior.makeChangeForDelta(delta)
       await editContext.editDo(editChange);
     }
     await editContext.editEnd(editChange);
