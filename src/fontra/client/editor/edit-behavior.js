@@ -126,6 +126,9 @@ function splitSelectionByType(selection) {
 
 
 function splitPointSelectionPerContour(path, pointIndices) {
+  // Return an array with one item per contour. An item is either `undefined`,
+  // when no points from this contour are selected, or it is an array containing
+  // the indices of selected points in this contour.
   const contours = new Array(path.contourInfo.length);
   let contourIndex = 0;
   for (const pointIndex of pointIndices) {
