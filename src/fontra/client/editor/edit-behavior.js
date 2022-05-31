@@ -265,8 +265,6 @@ function boolInt(v) {
 }
 
 
-const N_TYPES = 7
-
 const SHARP_SELECTED = 0;
 const SHARP_UNSELECTED = 1;
 const SMOOTH_SELECTED = 2;
