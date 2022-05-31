@@ -31,6 +31,7 @@ export class EditBehaviorFactory {
 class EditBehavior {
 
   constructor(instance, pointSelectionByContour, componentSelection, behavior) {
+    this.constrainDelta = behavior.constrainDelta || (v => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
       instance.path, pointSelectionByContour, behavior,
     );
@@ -44,6 +45,7 @@ class EditBehavior {
   }
 
   makeChangeForDelta(delta) {
+    delta = this.constrainDelta(delta);
     return this.makeChangeForTransformFunc(
       point => {
         return {"x": point.x + delta.x, "y": point.y + delta.y};
@@ -388,6 +390,12 @@ const behaviorTypes = {
   "default": {
     "matchTree": buildPointMatchTree(defaultRules),
     "actions": defaultActions,
-  }
+  },
+
+  "constrain": {
+    "matchTree": buildPointMatchTree(defaultRules),
+    "actions": defaultActions,
+    "constrainDelta": vector.constrainHorVer,
+  },
 
 }
