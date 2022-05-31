@@ -17,7 +17,7 @@ export class EditBehavior {
   setupPointEditFuncs() {
     const path = this.instance.path;
     [this.pointEditFuncs, this.participatingPointIndices] = makePointEditFuncs(
-      path, splitPointSelectionPerContour(path, this.pointSelection)
+      path, splitPointSelectionByContour(path, this.pointSelection)
     );
   }
 
@@ -125,7 +125,7 @@ function splitSelectionByType(selection) {
 }
 
 
-function splitPointSelectionPerContour(path, pointIndices) {
+function splitPointSelectionByContour(path, pointIndices) {
   // Return an array with one item per contour. An item is either `undefined`,
   // when no points from this contour are selected, or it is an array containing
   // the indices of selected points in this contour.
