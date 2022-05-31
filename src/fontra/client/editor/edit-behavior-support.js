@@ -94,7 +94,7 @@ function convertPointType(matchPoint) {
 
 
 export function buildPointMatchTree(rules) {
-  const matchTree = new Map();
+  const matchTree = {};
   for (const rule of rules) {
     if (rule.length !== 7) {
       throw new Error("assert -- invalid rule");
@@ -122,12 +122,12 @@ function populateTree(tree, matchPoints, action) {
   const isLeafNode = !matchPoints.length;
   for (const pointType of convertPointType(matchPoint)) {
     if (isLeafNode) {
-      tree.set(pointType, action);
+      tree[pointType] = action;
     } else {
-      let branch = tree.get(pointType);
+      let branch = tree[pointType];
       if (!branch) {
-        branch = new Map();
-        tree.set(pointType, branch);
+        branch = {};
+        tree[pointType] = branch;
       }
       populateTree(branch, matchPoints, action);
     }

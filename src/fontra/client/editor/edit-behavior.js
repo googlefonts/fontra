@@ -255,7 +255,7 @@ function findPointMatch(matchTree, pointIndex, contourPoints, numPoints, isClose
       const selected = boolInt(point.selected);
       pointType = POINT_TYPES[smooth][oncurve][selected];
     }
-    match = match.get(pointType);
+    match = match[pointType];
     if (match === undefined) {
       // No match
       break;
