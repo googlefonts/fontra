@@ -199,32 +199,32 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
 
   for (let i = 0; i < numPoints; i++) {
     const [match, neighborIndices] = findPointMatch(behavior.matchTable, i, contourPoints, numPoints, isClosed);
-    if (match !== undefined) {
-      const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
-      participatingPointIndices.push(thePoint + startPoint);
-      const points = originalPoints;
-      const editPoints = temporaryPoints;
-      const actionFuncionFactory = behavior.actions[match.action];
-      if (actionFuncionFactory === undefined) {
-        console.log(`Undefined action function: ${match.action}`);
-        continue;
-      }
-      const actionFunc = actionFuncionFactory(points, prevPrev, prev, thePoint, next, nextNext);
-      if (!match.constrain) {
-        // transform
-        editFuncsTransform.push(transformFunc => {
-          const point = actionFunc(transformFunc, points, prevPrev, prev, thePoint, next, nextNext);
-          editPoints[thePoint] = point;
-          return [thePoint + startPoint, point.x, point.y];
-        });
-      } else {
-        // constrain
-        editFuncsConstrain.push(transformFunc => {
-          const point = actionFunc(transformFunc, editPoints, prevPrev, prev, thePoint, next, nextNext);
-          return [thePoint + startPoint, point.x, point.y];
-        });
-      }
-
+    if (match === undefined) {
+      continue;
+    }
+    const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
+    participatingPointIndices.push(thePoint + startPoint);
+    const points = originalPoints;
+    const editPoints = temporaryPoints;
+    const actionFuncionFactory = behavior.actions[match.action];
+    if (actionFuncionFactory === undefined) {
+      console.log(`Undefined action function: ${match.action}`);
+      continue;
+    }
+    const actionFunc = actionFuncionFactory(points, prevPrev, prev, thePoint, next, nextNext);
+    if (!match.constrain) {
+      // transform
+      editFuncsTransform.push(transformFunc => {
+        const point = actionFunc(transformFunc, points, prevPrev, prev, thePoint, next, nextNext);
+        editPoints[thePoint] = point;
+        return [thePoint + startPoint, point.x, point.y];
+      });
+    } else {
+      // constrain
+      editFuncsConstrain.push(transformFunc => {
+        const point = actionFunc(transformFunc, editPoints, prevPrev, prev, thePoint, next, nextNext);
+        return [thePoint + startPoint, point.x, point.y];
+      });
     }
   }
   return [editFuncsTransform.concat(editFuncsConstrain), participatingPointIndices];
