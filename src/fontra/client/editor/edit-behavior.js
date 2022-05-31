@@ -15,14 +15,16 @@ export class EditBehaviorFactory {
     const selectionByType = splitSelectionByType(selection);
     this.pointSelectionByContour = splitPointSelectionByContour(instance.path, selectionByType["point"] || []);
     this.componentSelection = selectionByType["component"] || [];
+
+    // Set up all behaviors up front. TODO: do this on-demand.
+    this.behaviors = {};
+    for (const behaviorName of Object.keys(behaviorTypes)) {
+      this.behaviors[behaviorName] = new EditBehavior(this.instance, this.pointSelectionByContour, this.componentSelection, behaviorTypes[behaviorName]);
+    }
   }
 
   getBehavior(behaviorName) {
-    const behavior = behaviorTypes[behaviorName];
-    if (!behavior) {
-      throw new Error(`Behavior ${behaviorName} does not exist`);
-    }
-    return new EditBehavior(this.instance, this.pointSelectionByContour, this.componentSelection, behavior);
+    return this.behaviors[behaviorName];
   }
 
 }
