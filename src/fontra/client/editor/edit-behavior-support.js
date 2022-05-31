@@ -94,7 +94,7 @@ function convertPointType(matchPoint) {
 
 
 export function buildPointMatchTable(rules) {
-  const matchTable = new Map();
+  const matchTree = new Map();
   for (const rule of rules) {
     if (rule.length !== 7) {
       throw new Error("assert -- invalid rule");
@@ -109,27 +109,27 @@ export function buildPointMatchTable(rules) {
       ...actionForward,
       "direction": -1,
     }
-    populateTable(matchTable, Array.from(reversed(matchPoints)), actionBackward);
-    populateTable(matchTable, matchPoints, actionForward);
+    populateTree(matchTree, Array.from(reversed(matchPoints)), actionBackward);
+    populateTree(matchTree, matchPoints, actionForward);
   }
-  return matchTable;
+  return matchTree;
 }
 
 
-function populateTable(table, matchPoints, action) {
+function populateTree(tree, matchPoints, action) {
   const matchPoint = matchPoints[0];
   matchPoints = matchPoints.slice(1);
   const isLeafNode = !matchPoints.length;
   for (const pointType of convertPointType(matchPoint)) {
     if (isLeafNode) {
-      table.set(pointType, action);
+      tree.set(pointType, action);
     } else {
-      let subTable = table.get(pointType);
-      if (!subTable) {
-        subTable = new Map();
-        table.set(pointType, subTable);
+      let branch = tree.get(pointType);
+      if (!branch) {
+        branch = new Map();
+        tree.set(pointType, branch);
       }
-      populateTable(subTable, matchPoints, action);
+      populateTree(branch, matchPoints, action);
     }
   }
 }
