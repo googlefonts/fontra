@@ -119,8 +119,9 @@ export function buildPointMatchTable(rules) {
 function populateTable(table, matchPoints, action) {
   const matchPoint = matchPoints[0];
   matchPoints = matchPoints.slice(1);
+  const isLeafNode = !matchPoints.length;
   for (const pointType of convertPointType(matchPoint)) {
-    if (!matchPoints.length) {
+    if (isLeafNode) {
       table.set(pointType, action);
     } else {
       if (!table.has(pointType)) {
