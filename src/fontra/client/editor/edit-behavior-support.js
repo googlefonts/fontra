@@ -11,10 +11,10 @@ export const OFF = 1 << 5;  // Off-Curve
 export const ANY = SHA | SMO | OFF;
 
 // Some examples:
-//     SHA        point must be sharp, but can be selected or not
-//     SHA|SMO    point must be either sharp or smooth, but can be selected or not
+//     SHA        point must be sharp, and can be selected or not
+//     SHA|SMO    point must be either sharp or smooth, and can be selected or not
 //     OFF|SEL    point must be off-curve and selected
-//     ANY|UNS    point can be off-curve, sharp or smooth, but must not be selected
+//     ANY|UNS    point can be off-curve, sharp or smooth, and must not be selected
 
 
 const SHARP_SELECTED = 0;
