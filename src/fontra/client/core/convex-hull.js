@@ -1,4 +1,5 @@
 import { equalRect, normalizeRect, sectRect } from "./rectangle.js";
+import { reversed } from "./utils.js";
 
 
 export function pointInConvexPolygon(x, y, polygon) {
@@ -161,12 +162,4 @@ function ccw(p1, p2, p3) {
   // return 0 if the three points are collinear
   // A.k.a. compute the cross product
   return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
-}
-
-
-function *reversed(seq) {
-  // Like Python's reversed(seq) builtin
-  for (let i = seq.length - 1; i >= 0; i--) {
-    yield seq[i];
-  }
 }

@@ -270,14 +270,15 @@ class GlyphEditContext {
   }
 
   async editDo(change) {
-    await this.fontController.glyphChanged(this.glyphController.name);
     applyChange(this.glyphController.instance, change, glyphChangeFunctions);
+    await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
     /* await */ this.throttledEditDo(change);
     await this.fontController.notifyEditListeners("editDo", this.senderID, change);
   }
 
   async editEnd(change) {
+    applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
     const error = await this.fontController.font.editEnd(change);
