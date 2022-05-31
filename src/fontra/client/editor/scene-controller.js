@@ -4,7 +4,7 @@ import { MouseTracker } from "../core/mouse-tracker.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "../core/set-ops.js";
 import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
-import { EditBehavior } from "./edit-behavior.js";
+import { EditBehaviorFactory } from "./edit-behavior.js";
 
 
 export class SceneController {
@@ -65,10 +65,11 @@ export class SceneController {
       dx *= 10;
       dy *= 10;
     }
-    const editor = new EditBehavior(editContext.instance, this.selection);
+    const editBehaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
+    const editBehavior = editBehaviorFactory.getBehavior("default");
     const delta = {"x": dx, "y": dy};
-    const editChange = editor.makeChangeForDelta(delta)
-    await editContext.editAtomic(editChange, editor.rollbackChange);
+    const editChange = editBehavior.makeChangeForDelta(delta)
+    await editContext.editAtomic(editChange, editBehavior.rollbackChange);
   }
 
   addEventListener(eventName, handler, options) {
@@ -213,16 +214,17 @@ export class SceneController {
       return;
     }
 
-    const editor = new EditBehavior(editContext.instance, this.selection);
+    const editBehaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
+    const editBehavior = editBehaviorFactory.getBehavior("default");
 
     await editContext.editBegin();
-    await editContext.editSetRollback(editor.rollbackChange);
+    await editContext.editSetRollback(editBehavior.rollbackChange);
     let editChange;
 
     for await (const event of eventStream) {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      editChange = editor.makeChangeForDelta(delta)
+      editChange = editBehavior.makeChangeForDelta(delta)
       await editContext.editDo(editChange);
     }
     await editContext.editEnd(editChange);

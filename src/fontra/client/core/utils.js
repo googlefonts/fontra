@@ -172,3 +172,13 @@ export function *reversed(seq) {
     yield seq[i];
   }
 }
+
+
+export function modulo(a, b) {
+  // Modulo with Python behavior for negative numbers
+  const result = a % b;
+  if (result < 0) {
+    return result + b;
+  }
+  return result;
+}
