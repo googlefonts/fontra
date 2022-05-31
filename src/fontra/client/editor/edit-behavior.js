@@ -6,9 +6,9 @@ export class EditBehavior {
 
   constructor(instance, selection) {
     this.instance = instance;
-    const selections = splitSelection(selection);
-    this.pointSelection = selections["point"] || [];
-    this.componentSelection = selections["component"] || [];
+    const selectionByType = splitSelectionByType(selection);
+    this.pointSelection = selectionByType["point"] || [];
+    this.componentSelection = selectionByType["component"] || [];
     this.setupPointEditFuncs();
     this.setupComponentEditFuncs();
     this.rollbackChange = makeRollbackChange(this.instance, this.participatingPointIndices, this.componentSelection);
@@ -108,7 +108,7 @@ function makeComponentOriginChange(componentIndex, x, y) {
 }
 
 
-function splitSelection(selection) {
+function splitSelectionByType(selection) {
   const result = {};
   for (const selItem of selection) {
     let [tp, index] = selItem.split("/");
