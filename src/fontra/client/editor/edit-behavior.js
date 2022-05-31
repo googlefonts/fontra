@@ -196,33 +196,11 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
   const temporaryPoints = Array.from(contourPoints);
   const editFuncsTransform = [];
   const editFuncsConstrain = [];
+
   for (let i = 0; i < numPoints; i++) {
-    let match = behavior.matchTable;
-    const neighborIndicesForward = new Array();
-    for (let j = -2; j < 3; j++) {
-      let neighborIndex = i + j;
-      if (isClosed) {
-        neighborIndex = modulo(neighborIndex, numPoints);
-      }
-      neighborIndicesForward.push(neighborIndex);
-      const point = contourPoints[neighborIndex];
-      let pointType;
-      if (point === undefined) {
-        pointType = DOESNT_EXIST;
-      } else {
-        const smooth = boolInt(point.smooth);
-        const oncurve = boolInt(point.type === 0);
-        const selected = boolInt(point.selected);
-        pointType = POINT_TYPES[smooth][oncurve][selected];
-      }
-      match = match.get(pointType);
-      if (match === undefined) {
-        // No match
-        break;
-      }
-    }
+    const [match, neighborIndices] = findPointMatch(behavior.matchTable, i, contourPoints, numPoints, isClosed);
     if (match !== undefined) {
-      const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndicesForward : reversed(neighborIndicesForward);
+      const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
       participatingPointIndices.push(thePoint + startPoint);
       const points = originalPoints;
       const editPoints = temporaryPoints;
@@ -250,6 +228,35 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
     }
   }
   return [editFuncsTransform.concat(editFuncsConstrain), participatingPointIndices];
+}
+
+
+function findPointMatch(matchTable, pointIndex, contourPoints, numPoints, isClosed) {
+  let match = matchTable;
+  const neighborIndices = new Array();
+  for (let neightborOffset = -2; neightborOffset < 3; neightborOffset++) {
+    let neighborIndex = pointIndex + neightborOffset;
+    if (isClosed) {
+      neighborIndex = modulo(neighborIndex, numPoints);
+    }
+    neighborIndices.push(neighborIndex);
+    const point = contourPoints[neighborIndex];
+    let pointType;
+    if (point === undefined) {
+      pointType = DOESNT_EXIST;
+    } else {
+      const smooth = boolInt(point.smooth);
+      const oncurve = boolInt(point.type === 0);
+      const selected = boolInt(point.selected);
+      pointType = POINT_TYPES[smooth][oncurve][selected];
+    }
+    match = match.get(pointType);
+    if (match === undefined) {
+      // No match
+      break;
+    }
+  }
+  return [match, neighborIndices];
 }
 
 
