@@ -163,16 +163,16 @@ function makePointEditFuncs(path, selectedContourPointIndices) {
 
 function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed) {
   const numPoints = endPoint - startPoint;
-  const participatingPoints = new Array(numPoints);
+  const contourPoints = new Array(numPoints);
   const participatingPointIndices = [];
   for (let i = 0; i < numPoints; i++) {
-    participatingPoints[i] = path.getPoint(i + startPoint);
+    contourPoints[i] = path.getPoint(i + startPoint);
   }
   for (const pointIndex of selectedPointIndices) {
-    participatingPoints[pointIndex - startPoint].selected = true;
+    contourPoints[pointIndex - startPoint].selected = true;
   }
-  const originalPoints = Array.from(participatingPoints);
-  const temporaryPoints = Array.from(participatingPoints);
+  const originalPoints = Array.from(contourPoints);
+  const temporaryPoints = Array.from(contourPoints);
   const editFuncsTransform = [];
   const editFuncsConstrain = [];
   for (let i = 0; i < numPoints; i++) {
@@ -184,7 +184,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
         neighborIndex = modulo(neighborIndex, numPoints);
       }
       neighborIndicesForward.push(neighborIndex);
-      const point = participatingPoints[neighborIndex];
+      const point = contourPoints[neighborIndex];
       let pointType;
       if (point === undefined) {
         pointType = DOESNT_EXIST;
