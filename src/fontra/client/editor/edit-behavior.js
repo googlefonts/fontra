@@ -200,7 +200,6 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
         break;
       }
     }
-    // console.log(i, match);
     if (match !== undefined) {
       const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndicesForward : reversed(neighborIndicesForward);
       participatingPointIndices.push(thePoint + startPoint);
