@@ -7,7 +7,7 @@ export class EditBehavior {
   constructor(instance, selection) {
     this.instance = instance;
     const selectionByType = splitSelectionByType(selection);
-    this.pointSelection = selectionByType["point"] || [];
+    this.pointSelectionByContour = splitPointSelectionByContour(instance.path, selectionByType["point"] || []);
     this.componentSelection = selectionByType["component"] || [];
     this.setupPointEditFuncs();
     this.setupComponentEditFuncs();
@@ -15,9 +15,8 @@ export class EditBehavior {
   }
 
   setupPointEditFuncs() {
-    const path = this.instance.path;
     [this.pointEditFuncs, this.participatingPointIndices] = makePointEditFuncs(
-      path, splitPointSelectionByContour(path, this.pointSelection)
+      this.instance.path, this.pointSelectionByContour,
     );
   }
 
