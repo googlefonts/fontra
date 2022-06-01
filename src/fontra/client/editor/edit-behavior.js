@@ -220,7 +220,7 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
   for (const pointIndex of selectedPointIndices) {
     originalPoints[pointIndex - startPoint].selected = true;
   }
-  const temporaryPoints = Array.from(originalPoints);  // will be modified
+  const editPoints = Array.from(originalPoints);  // will be modified
   const editFuncsTransform = [];
   const editFuncsConstrain = [];
 
@@ -233,18 +233,16 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
     // console.log(i, match.action);
     const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
     participatingPointIndices.push(thePoint + startPoint);
-    const points = originalPoints;  // bring into the loop scope
-    const editPoints = temporaryPoints;  // bring into the loop scope
     const actionFuncionFactory = behavior.actions[match.action];
     if (actionFuncionFactory === undefined) {
       console.log(`Undefined action function: ${match.action}`);
       continue;
     }
-    const actionFunc = actionFuncionFactory(points, prevPrev, prev, thePoint, next, nextNext);
+    const actionFunc = actionFuncionFactory(originalPoints, prevPrev, prev, thePoint, next, nextNext);
     if (!match.constrain) {
       // transform
       editFuncsTransform.push(transform => {
-        const point = actionFunc(transform, points, prevPrev, prev, thePoint, next, nextNext);
+        const point = actionFunc(transform, originalPoints, prevPrev, prev, thePoint, next, nextNext);
         editPoints[thePoint] = point;
         return [thePoint + startPoint, point.x, point.y];
       });
