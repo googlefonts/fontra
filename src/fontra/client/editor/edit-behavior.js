@@ -245,7 +245,7 @@ function makeContourPointEditFuncs(contour, behavior) {
     if (match === undefined) {
       continue;
     }
-    // console.log(i, match.action);
+    // console.log(i, match.action, match.ruleIndex);
     const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
     participatingPointIndices.push(thePoint);
     const actionFuncionFactory = behavior.actions[match.action];
@@ -368,6 +368,9 @@ const defaultRules = [
   // Selected tangent with selected handle: constrain at original tangent line
   [    SMO|SHA|UNS,SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
   [    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    ANY|NIL,    true,       "ConstrainMiddle"],
+
+  // Selected tangent, selected off-curve, selected smooth
+  [    SMO|SHA|UNS,SMO|SEL,    OFF|SEL,    SMO|SEL,    ANY|NIL,    true,       "HandleIntersect"],
 
   // Selected single off-curve, locked between two unselected smooth points
   [    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|SEL,    false,      "DontMove"],
