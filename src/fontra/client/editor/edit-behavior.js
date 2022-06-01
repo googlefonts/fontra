@@ -212,30 +212,29 @@ function makePointEditFuncs(path, selectedContourPointIndices, behavior) {
 
 function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed, behavior) {
   const numPoints = endPoint - startPoint;
-  const contourPoints = new Array(numPoints);
+  const originalPoints = new Array(numPoints);
   const participatingPointIndices = [];
   for (let i = 0; i < numPoints; i++) {
-    contourPoints[i] = path.getPoint(i + startPoint);
+    originalPoints[i] = path.getPoint(i + startPoint);
   }
   for (const pointIndex of selectedPointIndices) {
-    contourPoints[pointIndex - startPoint].selected = true;
+    originalPoints[pointIndex - startPoint].selected = true;
   }
-  const originalPoints = Array.from(contourPoints);
-  const temporaryPoints = Array.from(contourPoints);
+  const temporaryPoints = Array.from(originalPoints);  // will be modified
   const editFuncsTransform = [];
   const editFuncsConstrain = [];
 
   // console.log("------");
   for (let i = 0; i < numPoints; i++) {
-    const [match, neighborIndices] = findPointMatch(behavior.matchTree, i, contourPoints, numPoints, isClosed);
+    const [match, neighborIndices] = findPointMatch(behavior.matchTree, i, originalPoints, numPoints, isClosed);
     if (match === undefined) {
       continue;
     }
     // console.log(i, match.action);
     const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
     participatingPointIndices.push(thePoint + startPoint);
-    const points = originalPoints;
-    const editPoints = temporaryPoints;
+    const points = originalPoints;  // bring into the loop scope
+    const editPoints = temporaryPoints;  // bring into the loop scope
     const actionFuncionFactory = behavior.actions[match.action];
     if (actionFuncionFactory === undefined) {
       console.log(`Undefined action function: ${match.action}`);
