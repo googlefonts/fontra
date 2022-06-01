@@ -357,6 +357,8 @@ const constrainRules = defaultRules.concat([
   // Selected free off curve: constrain to 0, 45 or 90 degrees
   [    OFF|UNS,    SMO|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
   [    ANY|NIL,    SHA|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
+  [    OFF|UNS,    SMO|UNS,    OFF|SEL,    SHA|SMO|UNS,ANY|NIL,    false,      "ConstrainHandleIntersect"],
+  [    ANY|NIL,    SHA|UNS,    OFF|SEL,    SHA|SMO|UNS,ANY|NIL,    false,      "ConstrainHandleIntersect"],
 ]);
 
 
@@ -439,7 +441,25 @@ const defaultActions = {
       const handleVector = transform.constrainDelta(vector.subVectors(newPoint, points[prev]));
       return vector.addVectors(points[prev], handleVector);
     };
-  }
+  },
+
+  "ConstrainHandleIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(points[thePoint]);
+      const handlePrev = transform.constrainDelta(vector.subVectors(newPoint, points[prev]));
+      const handleNext = transform.constrainDelta(vector.subVectors(newPoint, points[next]));
+
+      const [intersection, t1, t2] = vector.intersect(
+        points[prev],
+        vector.addVectors(points[prev], handlePrev),
+        points[next],
+        vector.addVectors(points[next], handleNext));
+      if (!intersection) {
+        return newPoint;
+      }
+      return intersection;
+    };
+  },
 
 }
 
