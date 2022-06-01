@@ -350,6 +350,8 @@ const defaultRules = [
   [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,    false,      "DontMove"],
   [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,    false,      "DontMove"],
 
+  // Selected single off-curve, locked between two unselected smooth points
+  [    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|SEL,    false,      "DontMove"],
 ];
 
 
@@ -360,6 +362,7 @@ const constrainRules = defaultRules.concat([
   [    OFF|UNS,    SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|UNS,    false,      "ConstrainHandleIntersect"],
   [    ANY|NIL,    SHA|UNS,    OFF|SEL,    SHA|UNS,    ANY|NIL,    false,      "ConstrainHandleIntersect"],
   [    OFF|UNS,    SMO|UNS,    OFF|SEL,    SHA|UNS,    ANY|NIL,    false,      "ConstrainHandleIntersect"],
+  [    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|UNS,    false,      "ConstrainHandleIntersectPrev"],
 ]);
 
 
@@ -458,6 +461,24 @@ const defaultActions = {
       const [intersection, t1, t2] = vector.intersect(
         points[prev],
         vector.addVectors(points[prev], handlePrev),
+        points[next],
+        vector.addVectors(points[next], handleNext));
+      if (!intersection) {
+        return newPoint;
+      }
+      return intersection;
+    };
+  },
+
+  "ConstrainHandleIntersectPrev": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const tangentPrev = vector.subVectors(points[prev], points[prevPrev]);
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(points[thePoint]);
+      const handleNext = transform.constrainDelta(vector.subVectors(newPoint, points[next]));
+
+      const [intersection, t1, t2] = vector.intersect(
+        points[prev],
+        vector.addVectors(points[prev], tangentPrev),
         points[next],
         vector.addVectors(points[next], handleNext));
       if (!intersection) {
