@@ -11,7 +11,6 @@ import {
 export class EditBehaviorFactory {
 
   constructor(instance, selection) {
-    this.instance = instance;
     const selectionByType = splitSelectionByType(selection);
     this.contours = unpackContours(instance.path, selectionByType["point"] || []);
     this.components = unpackComponents(instance.components, selectionByType["component"] || []);
@@ -19,7 +18,7 @@ export class EditBehaviorFactory {
     // Set up all behaviors up front. TODO: do this on-demand (tricky: need original coordinates during setup).
     this.behaviors = {};
     for (const behaviorName of Object.keys(behaviorTypes)) {
-      this.behaviors[behaviorName] = new EditBehavior(instance, this.contours, this.components, behaviorTypes[behaviorName]);
+      this.behaviors[behaviorName] = new EditBehavior(this.contours, this.components, behaviorTypes[behaviorName]);
     }
   }
 
@@ -32,20 +31,18 @@ export class EditBehaviorFactory {
 
 class EditBehavior {
 
-  constructor(instance, contours, components, behavior) {
+  constructor(contours, components, behavior) {
     this.constrainDelta = behavior.constrainDelta || (v => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(contours, behavior);
     this.pointEditFuncs = pointEditFuncs;
 
     this.componentEditFuncs = [];
-    const componentSelection = [];
     for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
       if (components[componentIndex]) {
-        componentSelection.push(componentIndex);
         this.componentEditFuncs.push(makeComponentTransformFunc(components[componentIndex], componentIndex));
       }
     }
-    this.rollbackChange = makeRollbackChange(instance, participatingPointIndices, componentSelection);
+    this.rollbackChange = makeRollbackChange(contours, participatingPointIndices, components);
   }
 
   makeChangeForDelta(delta) {
@@ -89,27 +86,35 @@ class EditBehavior {
 }
 
 
-function makeRollbackChange(instance, pointSelection, componentSelection) {
-  const path = instance.path;
-  const components = instance.components;
+function makeRollbackChange(contours, participatingPointIndices, components) {
+  const pointRollback = [];
+  for (let i = 0; i < contours.length; i++) {
+    const contour = contours[i];
+    const contourPointIndices = participatingPointIndices[i];
+    if (!contour) {
+      continue;
+    }
+    const point = contour.points;
+    ;
+    pointRollback.push(...contourPointIndices.map(pointIndex => {
+      const point = contour.points[pointIndex];
+      return makePointChange(pointIndex + contour.startIndex, point.x, point.y);
+    }));
+  }
 
-  const pointRollback = pointSelection?.map(
-    pointIndex => {
-      const point = path.getPoint(pointIndex);
-      return makePointChange(pointIndex, point.x, point.y);
+  const componentRollback = [];
+  for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
+    const component = components[componentIndex];
+    if (!component) {
+      continue;
     }
-  );
-  const componentRollback = componentSelection?.map(
-    componentIndex => {
-      const t = components[componentIndex].transformation;
-      return makeComponentOriginChange(componentIndex, t.x, t.y);
-    }
-  );
+    componentRollback.push(makeComponentOriginChange(componentIndex, component.x, component.y))
+  }
   const changes = [];
-  if (pointRollback) {
+  if (pointRollback.length) {
     changes.push(consolidateChanges(pointRollback, ["path"]));
   }
-  if (componentRollback) {
+  if (componentRollback.length) {
     changes.push(consolidateChanges(componentRollback, ["components"]));
   }
   return consolidateChanges(changes);
@@ -211,14 +216,15 @@ function unpackComponents(components, selectedComponentIndices) {
 function makePointEditFuncs(contours, behavior) {
   let contourStartPoint = 0;
   const pointEditFuncs = [];
-  const participatingPointIndices = [];
-  for (const contour of contours) {
+  const participatingPointIndices = new Array(contours.length);
+  for (let contourIndex = 0; contourIndex < contours.length; contourIndex++) {
+    const contour = contours[contourIndex];
     if (!contour) {
       continue;
     }
     const [editFuncs, pointIndices] = makeContourPointEditFuncs(contour, behavior);
     pointEditFuncs.push(...editFuncs);
-    participatingPointIndices.push(...pointIndices);
+    participatingPointIndices[contourIndex] = pointIndices;
   }
   return [pointEditFuncs, participatingPointIndices];
 }
@@ -241,7 +247,7 @@ function makeContourPointEditFuncs(contour, behavior) {
     }
     // console.log(i, match.action);
     const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
-    participatingPointIndices.push(thePoint + startIndex);
+    participatingPointIndices.push(thePoint);
     const actionFuncionFactory = behavior.actions[match.action];
     if (actionFuncionFactory === undefined) {
       console.log(`Undefined action function: ${match.action}`);
