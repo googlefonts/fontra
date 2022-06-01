@@ -339,8 +339,8 @@ const defaultRules = [
 
   // An unselected off-curve between two on-curve points
   [    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
-  // An unselected off-curve between two smooth points
   [    ANY|SEL,    SMO,        OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersect"],
+  [    SMO|SHA,    SMO|SEL,    OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "TangentIntersect"],
 
   // Tangent bcp constraint
   [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
@@ -424,10 +424,15 @@ const defaultActions = {
   },
 
   "HandleIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const vector1 = vector.subVectors(points[thePoint], points[prev]);
-    const vector2 = vector.subVectors(points[thePoint], points[next]);
+    const handlePrev = vector.subVectors(points[thePoint], points[prev]);
+    const handleNext = vector.subVectors(points[thePoint], points[next]);
     return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      const [intersection, t1, t2] = vector.intersect(points[prev], vector.addVectors(points[prev], vector1), points[next], vector.addVectors(points[next], vector2));
+      const [intersection, t1, t2] = vector.intersect(
+        points[prev],
+        vector.addVectors(points[prev], handlePrev),
+        points[next],
+        vector.addVectors(points[next], handleNext),
+      );
       if (!intersection) {
         // TODO: fallback to midPoint?
       }
