@@ -46,6 +46,48 @@ export const POINT_TYPES = [
 ];
 
 
+export function buildPointMatchTree(rules) {
+  const matchTree = {};
+  for (const rule of rules) {
+    if (rule.length !== 7) {
+      throw new Error("assert -- invalid rule");
+    }
+    const matchPoints = rule.slice(0, 5);
+    const actionForward = {
+      "constrain": rule[5],
+      "action": rule[6],
+      "direction": 1,
+    }
+    const actionBackward = {
+      ...actionForward,
+      "direction": -1,
+    }
+    populateTree(matchTree, Array.from(reversed(matchPoints)), actionBackward);
+    populateTree(matchTree, matchPoints, actionForward);
+  }
+  return matchTree;
+}
+
+
+function populateTree(tree, matchPoints, action) {
+  const matchPoint = matchPoints[0];
+  matchPoints = matchPoints.slice(1);
+  const isLeafNode = !matchPoints.length;
+  for (const pointType of convertPointType(matchPoint)) {
+    if (isLeafNode) {
+      tree[pointType] = action;
+    } else {
+      let branch = tree[pointType];
+      if (!branch) {
+        branch = {};
+        tree[pointType] = branch;
+      }
+      populateTree(branch, matchPoints, action);
+    }
+  }
+}
+
+
 function convertPointType(matchPoint) {
   const sel = matchPoint & SEL;
   const unsel = matchPoint & UNS;
@@ -90,46 +132,4 @@ function convertPointType(matchPoint) {
     }
   }
   return pointTypes;
-}
-
-
-export function buildPointMatchTree(rules) {
-  const matchTree = {};
-  for (const rule of rules) {
-    if (rule.length !== 7) {
-      throw new Error("assert -- invalid rule");
-    }
-    const matchPoints = rule.slice(0, 5);
-    const actionForward = {
-      "constrain": rule[5],
-      "action": rule[6],
-      "direction": 1,
-    }
-    const actionBackward = {
-      ...actionForward,
-      "direction": -1,
-    }
-    populateTree(matchTree, Array.from(reversed(matchPoints)), actionBackward);
-    populateTree(matchTree, matchPoints, actionForward);
-  }
-  return matchTree;
-}
-
-
-function populateTree(tree, matchPoints, action) {
-  const matchPoint = matchPoints[0];
-  matchPoints = matchPoints.slice(1);
-  const isLeafNode = !matchPoints.length;
-  for (const pointType of convertPointType(matchPoint)) {
-    if (isLeafNode) {
-      tree[pointType] = action;
-    } else {
-      let branch = tree[pointType];
-      if (!branch) {
-        branch = {};
-        tree[pointType] = branch;
-      }
-      populateTree(branch, matchPoints, action);
-    }
-  }
 }
