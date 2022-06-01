@@ -436,7 +436,7 @@ const defaultActions = {
   "ConstrainHandle": (points, prevPrev, prev, thePoint, next, nextNext) => {
     return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
       const newPoint = transform.free(points[thePoint]);
-      const handleVector = constrainHorVerDiag(vector.subVectors(newPoint, points[prev]));
+      const handleVector = transform.constrainDelta(vector.subVectors(newPoint, points[prev]));
       return vector.addVectors(points[prev], handleVector);
     };
   }
