@@ -48,6 +48,7 @@ export const POINT_TYPES = [
 
 export function buildPointMatchTree(rules) {
   const matchTree = {};
+  let ruleIndex = 0;
   for (const rule of rules) {
     if (rule.length !== 7) {
       throw new Error("assert -- invalid rule");
@@ -57,6 +58,7 @@ export function buildPointMatchTree(rules) {
       "constrain": rule[5],
       "action": rule[6],
       "direction": 1,
+      "ruleIndex": ruleIndex,
     }
     const actionBackward = {
       ...actionForward,
@@ -64,6 +66,7 @@ export function buildPointMatchTree(rules) {
     }
     populateTree(matchTree, Array.from(reversed(matchPoints)), actionBackward);
     populateTree(matchTree, matchPoints, actionForward);
+    ruleIndex++;
   }
   return matchTree;
 }
