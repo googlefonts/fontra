@@ -16,7 +16,7 @@ export class EditBehaviorFactory {
     this.pointSelectionByContour = splitPointSelectionByContour(instance.path, selectionByType["point"] || []);
     this.componentSelection = selectionByType["component"] || [];
 
-    // Set up all behaviors up front. TODO: do this on-demand.
+    // Set up all behaviors up front. TODO: do this on-demand (tricky: need original coordinates during setup).
     this.behaviors = {};
     for (const behaviorName of Object.keys(behaviorTypes)) {
       this.behaviors[behaviorName] = new EditBehavior(this.instance, this.pointSelectionByContour, this.componentSelection, behaviorTypes[behaviorName]);
