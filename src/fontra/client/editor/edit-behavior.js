@@ -48,7 +48,7 @@ class EditBehavior {
 
   makeChangeForDelta(delta) {
     // For shift-constrain, we need two transform functions:
-    // - one with the delta constrained according to X/Y
+    // - one with the delta constrained to 0/45/90 degrees
     // - one with the 'free' delta
     // This is because shift-constrain does two fairly distinct things"
     // 1. Move points in only H or V directions
