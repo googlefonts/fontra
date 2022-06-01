@@ -65,8 +65,8 @@ export class SceneController {
       dx *= 10;
       dy *= 10;
     }
-    const editBehaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
-    const editBehavior = editBehaviorFactory.getBehavior("default");
+    const behaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
+    const editBehavior = behaviorFactory.getBehavior("default");
     const delta = {"x": dx, "y": dy};
     const editChange = editBehavior.makeChangeForDelta(delta)
     await editContext.editAtomic(editChange, editBehavior.rollbackChange);
@@ -214,9 +214,9 @@ export class SceneController {
       return;
     }
 
-    const editBehaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
+    const behaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
     let behaviorName = getBehaviorName(initialEvent);
-    let editBehavior = editBehaviorFactory.getBehavior(behaviorName);
+    let editBehavior = behaviorFactory.getBehavior(behaviorName);
 
     await editContext.editBegin();
     await editContext.editSetRollback(editBehavior.rollbackChange);
@@ -226,7 +226,7 @@ export class SceneController {
       const newEditBehaviorName = getBehaviorName(event);
       if (behaviorName !== newEditBehaviorName) {
         behaviorName = newEditBehaviorName;
-        editBehavior = editBehaviorFactory.getBehavior(behaviorName);
+        editBehavior = behaviorFactory.getBehavior(behaviorName);
         await editContext.editSetRollback(editBehavior.rollbackChange);
       }
       const currentPoint = this.localPoint(event);
