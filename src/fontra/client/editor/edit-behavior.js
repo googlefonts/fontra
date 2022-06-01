@@ -13,13 +13,13 @@ export class EditBehaviorFactory {
   constructor(instance, selection) {
     this.instance = instance;
     const selectionByType = splitSelectionByType(selection);
-    this.pointSelectionByContour = splitPointSelectionByContour(instance.path, selectionByType["point"] || []);
-    this.componentSelection = selectionByType["component"] || [];
+    this.contours = unpackContours(instance.path, selectionByType["point"] || []);
+    this.components = unpackComponents(instance.components, selectionByType["component"] || []);
 
     // Set up all behaviors up front. TODO: do this on-demand (tricky: need original coordinates during setup).
     this.behaviors = {};
     for (const behaviorName of Object.keys(behaviorTypes)) {
-      this.behaviors[behaviorName] = new EditBehavior(this.instance, this.pointSelectionByContour, this.componentSelection, behaviorTypes[behaviorName]);
+      this.behaviors[behaviorName] = new EditBehavior(instance, this.contours, this.components, behaviorTypes[behaviorName]);
     }
   }
 
@@ -32,17 +32,19 @@ export class EditBehaviorFactory {
 
 class EditBehavior {
 
-  constructor(instance, pointSelectionByContour, componentSelection, behavior) {
+  constructor(instance, contours, components, behavior) {
     this.constrainDelta = behavior.constrainDelta || (v => v);
-    const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
-      instance.path, pointSelectionByContour, behavior,
-    );
+    const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(contours, behavior);
     this.pointEditFuncs = pointEditFuncs;
 
-    this.componentEditFuncs = componentSelection.map(
-      componentIndex => makeComponentTransformFunc(instance.components, componentIndex)
-    );
-
+    this.componentEditFuncs = [];
+    const componentSelection = [];
+    for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
+      if (components[componentIndex]) {
+        componentSelection.push(componentIndex);
+        this.componentEditFuncs.push(makeComponentTransformFunc(components[componentIndex], componentIndex));
+      }
+    }
     this.rollbackChange = makeRollbackChange(instance, participatingPointIndices, componentSelection);
   }
 
@@ -114,10 +116,10 @@ function makeRollbackChange(instance, pointSelection, componentSelection) {
 }
 
 
-function makeComponentTransformFunc(components, componentIndex) {
+function makeComponentTransformFunc(component, componentIndex) {
   const origin = {
-    "x": components[componentIndex].transformation.x,
-    "y": components[componentIndex].transformation.y,
+    "x": component.x,
+    "y": component.y,
   };
   return transform => {
     const editedOrigin = transform.constrained(origin);
@@ -163,76 +165,83 @@ function splitSelectionByType(selection) {
 }
 
 
-function splitPointSelectionByContour(path, pointIndices) {
+function unpackContours(path, selectedPointIndices) {
   // Return an array with one item per contour. An item is either `undefined`,
-  // when no points from this contour are selected, or it is an array containing
-  // the indices of selected points in this contour.
+  // when no points from this contour are selected, or an object with contour info,
   const contours = new Array(path.contourInfo.length);
   let contourIndex = 0;
-  for (const pointIndex of pointIndices) {
+  for (const pointIndex of selectedPointIndices) {
     while (path.contourInfo[contourIndex].endPoint < pointIndex) {
       contourIndex++;
     }
-    if (contours[contourIndex] === undefined) {
-      contours[contourIndex] = [];
+    const contourStartIndex = !contourIndex ? 0 : path.contourInfo[contourIndex - 1].endPoint + 1;
+    let contour = contours[contourIndex];
+    if (contour === undefined) {
+      const contourEndIndex = path.contourInfo[contourIndex].endPoint + 1;
+      const contourNumPoints = contourEndIndex - contourStartIndex;
+      const contourPoints = new Array(contourNumPoints);
+      contour = {
+        "startIndex": contourStartIndex,
+        "points": contourPoints,
+        "isClosed": path.contourInfo[contourIndex].isClosed,
+      };
+      for (let i = 0; i < contourNumPoints; i++) {
+        contourPoints[i] = path.getPoint(i + contourStartIndex)
+      }
+      contours[contourIndex] = contour;
     }
-    contours[contourIndex].push(pointIndex);
+    contour.points[pointIndex - contourStartIndex].selected = true;
   }
   return contours;
 }
 
 
-function makePointEditFuncs(path, selectedContourPointIndices, behavior) {
-  if (selectedContourPointIndices.length !== path.contourInfo.length) {
-    throw new Error("assert -- contour arrays length mismatch");
+function unpackComponents(components, selectedComponentIndices) {
+  const unpackedComponents = new Array(components.length);
+  for (const componentIndex of selectedComponentIndices) {
+    unpackedComponents[componentIndex] = {
+      "x": components[componentIndex].transformation.x,
+      "y": components[componentIndex].transformation.y,
+    };
   }
+  return unpackedComponents;
+}
+
+
+function makePointEditFuncs(contours, behavior) {
   let contourStartPoint = 0;
   const pointEditFuncs = [];
   const participatingPointIndices = [];
-  for (let i = 0; i < path.contourInfo.length; i++) {
-    const contourEndPoint = path.contourInfo[i].endPoint + 1;
-    const selectedPointIndices = selectedContourPointIndices[i];
-    if (selectedPointIndices !== undefined) {
-      const [editFuncs, pointIndices] = makeContourPointEditFuncs(
-        path,
-        selectedPointIndices,
-        contourStartPoint,
-        contourEndPoint,
-        path.contourInfo[i].isClosed,
-        behavior,
-      );
-      pointEditFuncs.push(...editFuncs);
-      participatingPointIndices.push(...pointIndices);
+  for (const contour of contours) {
+    if (!contour) {
+      continue;
     }
-    contourStartPoint = contourEndPoint;
+    const [editFuncs, pointIndices] = makeContourPointEditFuncs(contour, behavior);
+    pointEditFuncs.push(...editFuncs);
+    participatingPointIndices.push(...pointIndices);
   }
   return [pointEditFuncs, participatingPointIndices];
 }
 
 
-function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPoint, isClosed, behavior) {
-  const numPoints = endPoint - startPoint;
-  const originalPoints = new Array(numPoints);
-  const participatingPointIndices = [];
-  for (let i = 0; i < numPoints; i++) {
-    originalPoints[i] = path.getPoint(i + startPoint);
-  }
-  for (const pointIndex of selectedPointIndices) {
-    originalPoints[pointIndex - startPoint].selected = true;
-  }
+function makeContourPointEditFuncs(contour, behavior) {
+  const startIndex = contour.startIndex;
+  const originalPoints = contour.points;
   const editPoints = Array.from(originalPoints);  // will be modified
+  const numPoints = originalPoints.length;
+  const participatingPointIndices = [];
   const editFuncsTransform = [];
   const editFuncsConstrain = [];
 
   // console.log("------");
   for (let i = 0; i < numPoints; i++) {
-    const [match, neighborIndices] = findPointMatch(behavior.matchTree, i, originalPoints, numPoints, isClosed);
+    const [match, neighborIndices] = findPointMatch(behavior.matchTree, i, originalPoints, numPoints, contour.isClosed);
     if (match === undefined) {
       continue;
     }
     // console.log(i, match.action);
     const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
-    participatingPointIndices.push(thePoint + startPoint);
+    participatingPointIndices.push(thePoint + startIndex);
     const actionFuncionFactory = behavior.actions[match.action];
     if (actionFuncionFactory === undefined) {
       console.log(`Undefined action function: ${match.action}`);
@@ -244,13 +253,13 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
       editFuncsTransform.push(transform => {
         const point = actionFunc(transform, originalPoints, prevPrev, prev, thePoint, next, nextNext);
         editPoints[thePoint] = point;
-        return [thePoint + startPoint, point.x, point.y];
+        return [thePoint + startIndex, point.x, point.y];
       });
     } else {
       // constrain
       editFuncsConstrain.push(transform => {
         const point = actionFunc(transform, editPoints, prevPrev, prev, thePoint, next, nextNext);
-        return [thePoint + startPoint, point.x, point.y];
+        return [thePoint + startIndex, point.x, point.y];
       });
     }
   }
