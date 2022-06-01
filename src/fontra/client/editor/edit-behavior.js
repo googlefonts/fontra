@@ -417,7 +417,7 @@ const defaultActions = {
   },
 
   "ConstrainPrevAngle": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const pt1 = points[prevPrev]
+    const pt1 = points[prevPrev];
     const pt2 = points[prev];
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
     return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
@@ -428,7 +428,7 @@ const defaultActions = {
   },
 
   "ConstrainMiddle": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const pt1 = points[prev]
+    const pt1 = points[prev];
     const pt2 = points[next];
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
     return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
