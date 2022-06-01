@@ -439,9 +439,15 @@ const defaultActions = {
   },
 
   "TangentIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const nextHandle = vector.subVectors(points[thePoint], points[next]);
     return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(points[thePoint]);
-      const [intersection, t1, t2] = vector.intersect(points[prevPrev], points[prev], points[next], points[nextNext]);
+      const [intersection, t1, t2] = vector.intersect(
+        points[prevPrev],
+        points[prev],
+        points[next],
+        vector.addVectors(points[next], nextHandle),
+      );
       if (!intersection) {
         // TODO: fallback to midPoint?
       }
