@@ -18,15 +18,6 @@ export function rotateVector90CW(vector) {
 }
 
 
-export function constrainHorVer(vector) {
-  if (Math.abs(vector.x) > Math.abs(vector.y)) {
-    return {"x": vector.x, "y": 0};
-  } else {
-    return {"x": 0, "y": vector.y};
-  }
- }
-
-
 const _EPSILON = 1e-10;
 
 

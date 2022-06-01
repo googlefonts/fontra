@@ -289,6 +289,30 @@ function boolInt(v) {
 }
 
 
+function constrainHorVerDiag(vector) {
+  const constrainedVector = {...vector};
+  const ax = Math.abs(vector.x);
+  const ay = Math.abs(vector.y);
+  let tan;
+  if (ax < 0.001) {
+    tan = 0;
+  } else {
+    tan = ay / ax;
+  }
+  if (0.414 < tan && tan < 2.414) {
+    // between 22.5 and 67.5 degrees
+    const d = 0.5 * (ax + ay);
+    constrainedVector.x = d * sign(constrainedVector.x);
+    constrainedVector.y = d * sign(constrainedVector.y);
+  } else if (ax > ay) {
+    constrainedVector.y = 0;
+  } else {
+    constrainedVector.x = 0;
+  }
+  return constrainedVector;
+}
+
+
 const defaultRules = [
   //   prevPrev    prev        the point   next        nextNext    Constrain   Action
 
@@ -408,23 +432,7 @@ const defaultActions = {
   "ConstrainHandle": (points, prevPrev, prev, thePoint, next, nextNext) => {
     return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
       const newPoint = transform.free(points[thePoint]);
-      let handleVector = vector.subVectors(newPoint, points[prev]);
-      const ax = Math.abs(handleVector.x);
-      const ay = Math.abs(handleVector.y);
-      if (ax < 0.001) {
-        return newPoint;
-      }
-      const tan = ay / ax;
-      if (0.414 < tan && tan < 2.414) {
-        // between 22.5 and 67.5 degrees
-        const d = 0.5 * (ax + ay);
-        handleVector.x = d * sign(handleVector.x);
-        handleVector.y = d * sign(handleVector.y);
-      } else if (ax > ay) {
-        handleVector.y = 0;
-      } else {
-        handleVector.x = 0;
-      }
+      const handleVector = constrainHorVerDiag(vector.subVectors(newPoint, points[prev]));
       return vector.addVectors(points[prev], handleVector);
     };
   }
@@ -442,7 +450,7 @@ const behaviorTypes = {
   "constrain": {
     "matchTree": buildPointMatchTree(constrainRules),
     "actions": defaultActions,
-    "constrainDelta": vector.constrainHorVer,
+    "constrainDelta": constrainHorVerDiag,
   },
 
 }
