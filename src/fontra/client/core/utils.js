@@ -182,3 +182,14 @@ export function modulo(a, b) {
   }
   return result;
 }
+
+
+export function sign(v) {
+  if (v > 0) {
+    return 1;
+  } else if (v < 0) {
+    return -1;
+  } else {
+    return 0;
+  }
+}

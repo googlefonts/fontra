@@ -215,13 +215,20 @@ export class SceneController {
     }
 
     const editBehaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
-    const editBehavior = editBehaviorFactory.getBehavior("default");
+    let behaviorName = getBehaviorName(initialEvent);
+    let editBehavior = editBehaviorFactory.getBehavior(behaviorName);
 
     await editContext.editBegin();
     await editContext.editSetRollback(editBehavior.rollbackChange);
     let editChange;
 
     for await (const event of eventStream) {
+      const newEditBehaviorName = getBehaviorName(event);
+      if (behaviorName !== newEditBehaviorName) {
+        behaviorName = newEditBehaviorName;
+        editBehavior = editBehaviorFactory.getBehavior(behaviorName);
+        await editContext.editSetRollback(editBehavior.rollbackChange);
+      }
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       editChange = editBehavior.makeChangeForDelta(delta)
@@ -416,4 +423,9 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
     }
   }
   return false;
+}
+
+
+function getBehaviorName(event) {
+  return event.shiftKey ? "constrain" : "default";
 }

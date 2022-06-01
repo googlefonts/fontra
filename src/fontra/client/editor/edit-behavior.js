@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { modulo, reversed } from "../core/utils.js";
+import { modulo, reversed, sign } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import {
   NIL, SEL, UNS, SHA, SMO, OFF, ANY,
@@ -15,14 +15,16 @@ export class EditBehaviorFactory {
     const selectionByType = splitSelectionByType(selection);
     this.pointSelectionByContour = splitPointSelectionByContour(instance.path, selectionByType["point"] || []);
     this.componentSelection = selectionByType["component"] || [];
+
+    // Set up all behaviors up front. TODO: do this on-demand (tricky: need original coordinates during setup).
+    this.behaviors = {};
+    for (const behaviorName of Object.keys(behaviorTypes)) {
+      this.behaviors[behaviorName] = new EditBehavior(this.instance, this.pointSelectionByContour, this.componentSelection, behaviorTypes[behaviorName]);
+    }
   }
 
   getBehavior(behaviorName) {
-    const behavior = behaviorTypes[behaviorName];
-    if (!behavior) {
-      throw new Error(`Behavior ${behaviorName} does not exist`);
-    }
-    return new EditBehavior(this.instance, this.pointSelectionByContour, this.componentSelection, behavior);
+    return this.behaviors[behaviorName];
   }
 
 }
@@ -31,6 +33,7 @@ export class EditBehaviorFactory {
 class EditBehavior {
 
   constructor(instance, pointSelectionByContour, componentSelection, behavior) {
+    this.constrainDelta = behavior.constrainDelta || (v => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
       instance.path, pointSelectionByContour, behavior,
     );
@@ -44,19 +47,32 @@ class EditBehavior {
   }
 
   makeChangeForDelta(delta) {
+    // For shift-constrain, we need two transform functions:
+    // - one with the delta constrained according to X/Y
+    // - one with the 'free' delta
+    // This is because shift-constrain does two fairly distinct things"
+    // 1. Move points in only H or V directions
+    // 2. Constrain Bézier handles to 0/45/90 degree angles
+    // For the latter, we don't want the initial change (before the constraint)
+    // to be constrained, but pin the handle angle based on the freely transformed
+    // off-curve point.
     return this.makeChangeForTransformFunc(
-      point => {
-        return {"x": point.x + delta.x, "y": point.y + delta.y};
-      }
+      makePointTranslateFunction(this.constrainDelta(delta)),
+      makePointTranslateFunction(delta),
     );
   }
 
-  makeChangeForTransformFunc(transformFunc) {
+  makeChangeForTransformFunc(transformFunc, freeTransformFunc) {
+    const transform = {
+      "constrained": transformFunc,
+      "free": freeTransformFunc || transformFunc,
+      "constrainDelta": this.constrainDelta,
+    };
     const pathChanges = this.pointEditFuncs?.map(
-      editFunc => makePointChange(...editFunc(transformFunc))
+      editFunc => makePointChange(...editFunc(transform))
     );
     const componentChanges = this.componentEditFuncs?.map(
-      editFunc => makeComponentOriginChange(...editFunc(transformFunc))
+      editFunc => makeComponentOriginChange(...editFunc(transform))
     );
     const changes = [];
     if (pathChanges && pathChanges.length) {
@@ -103,9 +119,16 @@ function makeComponentTransformFunc(components, componentIndex) {
     "x": components[componentIndex].transformation.x,
     "y": components[componentIndex].transformation.y,
   };
-  return transformFunc => {
-    const editedOrigin = transformFunc(origin);
+  return transform => {
+    const editedOrigin = transform.constrained(origin);
     return [componentIndex, editedOrigin.x, editedOrigin.y];
+  }
+}
+
+
+function makePointTranslateFunction(delta) {
+  return point => {
+    return {"x": point.x + delta.x, "y": point.y + delta.y};
   }
 }
 
@@ -219,15 +242,15 @@ function makeContourPointEditFuncs(path, selectedPointIndices, startPoint, endPo
     const actionFunc = actionFuncionFactory(points, prevPrev, prev, thePoint, next, nextNext);
     if (!match.constrain) {
       // transform
-      editFuncsTransform.push(transformFunc => {
-        const point = actionFunc(transformFunc, points, prevPrev, prev, thePoint, next, nextNext);
+      editFuncsTransform.push(transform => {
+        const point = actionFunc(transform, points, prevPrev, prev, thePoint, next, nextNext);
         editPoints[thePoint] = point;
         return [thePoint + startPoint, point.x, point.y];
       });
     } else {
       // constrain
-      editFuncsConstrain.push(transformFunc => {
-        const point = actionFunc(transformFunc, editPoints, prevPrev, prev, thePoint, next, nextNext);
+      editFuncsConstrain.push(transform => {
+        const point = actionFunc(transform, editPoints, prevPrev, prev, thePoint, next, nextNext);
         return [thePoint + startPoint, point.x, point.y];
       });
     }
@@ -270,6 +293,30 @@ function boolInt(v) {
 }
 
 
+function constrainHorVerDiag(vector) {
+  const constrainedVector = {...vector};
+  const ax = Math.abs(vector.x);
+  const ay = Math.abs(vector.y);
+  let tan;
+  if (ax < 0.001) {
+    tan = 0;
+  } else {
+    tan = ay / ax;
+  }
+  if (0.414 < tan && tan < 2.414) {
+    // between 22.5 and 67.5 degrees
+    const d = 0.5 * (ax + ay);
+    constrainedVector.x = d * sign(constrainedVector.x);
+    constrainedVector.y = d * sign(constrainedVector.y);
+  } else if (ax > ay) {
+    constrainedVector.y = 0;
+  } else {
+    constrainedVector.x = 0;
+  }
+  return constrainedVector;
+}
+
+
 const defaultRules = [
   //   prevPrev    prev        the point   next        nextNext    Constrain   Action
 
@@ -292,8 +339,8 @@ const defaultRules = [
 
   // An unselected off-curve between two on-curve points
   [    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
-  // An unselected off-curve between two smooth points
   [    ANY|SEL,    SMO,        OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersect"],
+  [    SMO|SHA,    SMO|SEL,    OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "TangentIntersect"],
 
   // Tangent bcp constraint
   [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
@@ -303,27 +350,40 @@ const defaultRules = [
   [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,    false,      "DontMove"],
   [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,    false,      "DontMove"],
 
+  // Selected single off-curve, locked between two unselected smooth points
+  [    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|SEL,    false,      "DontMove"],
 ];
+
+
+const constrainRules = defaultRules.concat([
+  // Selected free off curve: constrain to 0, 45 or 90 degrees
+  [    OFF|UNS,    SMO|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
+  [    ANY|NIL,    SHA|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
+  [    OFF|UNS,    SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|UNS,    false,      "ConstrainHandleIntersect"],
+  [    ANY|NIL,    SHA|UNS,    OFF|SEL,    SHA|UNS,    ANY|NIL,    false,      "ConstrainHandleIntersect"],
+  [    OFF|UNS,    SMO|UNS,    OFF|SEL,    SHA|UNS,    ANY|NIL,    false,      "ConstrainHandleIntersect"],
+  [    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|UNS,    false,      "ConstrainHandleIntersectPrev"],
+]);
 
 
 const defaultActions = {
 
   "DontMove": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
       return points[thePoint];
     };
   },
 
   "Move": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
-      return transformFunc(points[thePoint]);
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      return transform.constrained(points[thePoint]);
     };
   },
 
   "RotateNext": (points, prevPrev, prev, thePoint, next, nextNext) => {
     const handle = vector.subVectors(points[thePoint], points[prev]);
     const handleLength = Math.hypot(handle.x, handle.y);
-    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
       const delta = vector.subVectors(points[prev], points[prevPrev]);
       const angle = Math.atan2(delta.y, delta.x);
       const handlePoint = {
@@ -338,8 +398,8 @@ const defaultActions = {
     const pt1 = points[prevPrev]
     const pt2 = points[prev];
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
-    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
-      let point = transformFunc(points[thePoint]);
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(points[thePoint]);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
@@ -349,16 +409,16 @@ const defaultActions = {
     const pt1 = points[prev]
     const pt2 = points[next];
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
-    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
-      let point = transformFunc(points[thePoint]);
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(points[thePoint]);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
 
   "TangentIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
-      let point = transformFunc(points[thePoint]);
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(points[thePoint]);
       const [intersection, t1, t2] = vector.intersect(points[prevPrev], points[prev], points[next], points[nextNext]);
       if (!intersection) {
         // TODO: fallback to midPoint?
@@ -368,13 +428,61 @@ const defaultActions = {
   },
 
   "HandleIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const vector1 = vector.subVectors(points[thePoint], points[prev]);
-    const vector2 = vector.subVectors(points[thePoint], points[next]);
-    return (transformFunc, points, prevPrev, prev, thePoint, next, nextNext) => {
-      let point = transformFunc(points[thePoint]);
-      const [intersection, t1, t2] = vector.intersect(points[prev], vector.addVectors(points[prev], vector1), points[next], vector.addVectors(points[next], vector2));
+    const handlePrev = vector.subVectors(points[thePoint], points[prev]);
+    const handleNext = vector.subVectors(points[thePoint], points[next]);
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const [intersection, t1, t2] = vector.intersect(
+        points[prev],
+        vector.addVectors(points[prev], handlePrev),
+        points[next],
+        vector.addVectors(points[next], handleNext),
+      );
       if (!intersection) {
         // TODO: fallback to midPoint?
+      }
+      return intersection;
+    };
+  },
+
+  "ConstrainHandle": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(points[thePoint]);
+      const handleVector = transform.constrainDelta(vector.subVectors(newPoint, points[prev]));
+      return vector.addVectors(points[prev], handleVector);
+    };
+  },
+
+  "ConstrainHandleIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(points[thePoint]);
+      const handlePrev = transform.constrainDelta(vector.subVectors(newPoint, points[prev]));
+      const handleNext = transform.constrainDelta(vector.subVectors(newPoint, points[next]));
+
+      const [intersection, t1, t2] = vector.intersect(
+        points[prev],
+        vector.addVectors(points[prev], handlePrev),
+        points[next],
+        vector.addVectors(points[next], handleNext));
+      if (!intersection) {
+        return newPoint;
+      }
+      return intersection;
+    };
+  },
+
+  "ConstrainHandleIntersectPrev": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const tangentPrev = vector.subVectors(points[prev], points[prevPrev]);
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(points[thePoint]);
+      const handleNext = transform.constrainDelta(vector.subVectors(newPoint, points[next]));
+
+      const [intersection, t1, t2] = vector.intersect(
+        points[prev],
+        vector.addVectors(points[prev], tangentPrev),
+        points[next],
+        vector.addVectors(points[next], handleNext));
+      if (!intersection) {
+        return newPoint;
       }
       return intersection;
     };
@@ -388,6 +496,12 @@ const behaviorTypes = {
   "default": {
     "matchTree": buildPointMatchTree(defaultRules),
     "actions": defaultActions,
-  }
+  },
+
+  "constrain": {
+    "matchTree": buildPointMatchTree(constrainRules),
+    "actions": defaultActions,
+    "constrainDelta": constrainHorVerDiag,
+  },
 
 }
