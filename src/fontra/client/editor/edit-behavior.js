@@ -14,16 +14,16 @@ export class EditBehaviorFactory {
     const selectionByType = splitSelectionByType(selection);
     this.contours = unpackContours(instance.path, selectionByType["point"] || []);
     this.components = unpackComponents(instance.components, selectionByType["component"] || []);
-
-    // Set up all behaviors up front. TODO: do this on-demand (tricky: need original coordinates during setup).
     this.behaviors = {};
-    for (const behaviorName of Object.keys(behaviorTypes)) {
-      this.behaviors[behaviorName] = new EditBehavior(this.contours, this.components, behaviorTypes[behaviorName]);
-    }
   }
 
   getBehavior(behaviorName) {
-    return this.behaviors[behaviorName];
+    let behavior = this.behaviors[behaviorName];
+    if (!behavior) {
+      behavior = new EditBehavior(this.contours, this.components, behaviorTypes[behaviorName]);
+      this.behaviors[behaviorName] = behavior;
+    }
+    return behavior;
   }
 
 }
