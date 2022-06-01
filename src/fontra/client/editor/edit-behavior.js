@@ -63,7 +63,10 @@ class EditBehavior {
   }
 
   makeChangeForTransformFunc(transformFunc, freeTransformFunc) {
-    const transform = {"constrained": transformFunc, "free": freeTransformFunc || transformFunc};
+    const transform = {
+      "constrained": transformFunc,
+      "free": freeTransformFunc || transformFunc,
+    };
     const pathChanges = this.pointEditFuncs?.map(
       editFunc => makePointChange(...editFunc(transform))
     );
