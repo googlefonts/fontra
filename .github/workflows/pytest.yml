@@ -7,16 +7,20 @@ on:
   push:
     branches: [ main ]
     paths:
-      - "server/**"
+      - "src/fontra/**"
+      - "!src/fontra/client/**"
+      - "test-py/**"
       - ".github/workflows/pytest.yml"
-      - "setup.cfg"
+      - "pyproject.toml"
       - "setup.py"
   pull_request:
     branches: [ main ]
     paths:
-      - "server/**"
+      - "src/fontra/**"
+      - "!src/fontra/client/**"
+      - "test-py/**"
       - ".github/workflows/pytest.yml"
-      - "setup.cfg"
+      - "pyproject.toml"
       - "setup.py"
 
 jobs:
