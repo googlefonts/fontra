@@ -321,6 +321,16 @@ class GlyphEditContext {
   }
 
   async editSetRollback(rollback) {
+    if (this.localRollback) {
+      // Rollback was set before. The changes that now follow may not cover all
+      // the changes before, so we need to apply the old rollback to ensure
+      // we start fresh.
+      applyChange(this.glyphController.instance, this.localRollback, glyphChangeFunctions);
+      await this.fontController.glyphChanged(this.glyphController.name);
+      /* await */ this.fontController.font.editDo(this.rollback);
+      await this.fontController.notifyEditListeners("editDo", this.senderID, this.rollback);
+    }
+    this.localRollback = rollback;
     this.rollback = consolidateChanges(rollback, this.baseChangePath);
     /* await */ this.fontController.font.editSetRollback(this.rollback);
     await this.fontController.notifyEditListeners("editSetRollback", this.senderID, this.rollback);
