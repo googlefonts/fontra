@@ -258,18 +258,38 @@ function makeContourPointEditFuncs(contour, behavior) {
       console.log(`Undefined action function: ${match.action}`);
       continue;
     }
-    const actionFunc = actionFuncionFactory(originalPoints, prevPrev, prev, thePoint, next, nextNext);
+    const actionFunc = actionFuncionFactory(
+      originalPoints[prevPrev],
+      originalPoints[prev],
+      originalPoints[thePoint],
+      originalPoints[next],
+      originalPoints[nextNext],
+    );
     if (!match.constrain) {
       // transform
       editFuncsTransform.push(transform => {
-        const point = actionFunc(transform, originalPoints, prevPrev, prev, thePoint, next, nextNext);
+        const point = actionFunc(
+          transform,
+          originalPoints[prevPrev],
+          originalPoints[prev],
+          originalPoints[thePoint],
+          originalPoints[next],
+          originalPoints[nextNext],
+        );
         editPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     } else {
       // constrain
       editFuncsConstrain.push(transform => {
-        const point = actionFunc(transform, editPoints, prevPrev, prev, thePoint, next, nextNext);
+        const point = actionFunc(
+          transform,
+          editPoints[prevPrev],
+          editPoints[prev],
+          editPoints[thePoint],
+          editPoints[next],
+          editPoints[nextNext],
+        );
         return [thePoint + startIndex, point.x, point.y];
       });
     }
@@ -424,76 +444,76 @@ const alternateConstrainRules = alternateRules.concat([
 ]);
 
 
-const defaultActions = {
+const actionFactories = {
 
-  "DontMove": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      return points[thePoint];
+  "DontMove": (prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      return thePoint;
     };
   },
 
-  "Move": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      return transform.constrained(points[thePoint]);
+  "Move": (prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      return transform.constrained(thePoint);
     };
   },
 
-  "RotateNext": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const handle = vector.subVectors(points[thePoint], points[prev]);
+  "RotateNext": (prevPrev, prev, thePoint, next, nextNext) => {
+    const handle = vector.subVectors(thePoint, prev);
     const handleLength = Math.hypot(handle.x, handle.y);
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      const delta = vector.subVectors(points[prev], points[prevPrev]);
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      const delta = vector.subVectors(prev, prevPrev);
       const angle = Math.atan2(delta.y, delta.x);
       const handlePoint = {
-        "x": points[prev].x + handleLength * Math.cos(angle),
-        "y": points[prev].y + handleLength * Math.sin(angle),
+        "x": prev.x + handleLength * Math.cos(angle),
+        "y": prev.y + handleLength * Math.sin(angle),
       }
       return handlePoint;
     };
   },
 
-  "ConstrainPrevAngle": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const pt1 = points[prevPrev];
-    const pt2 = points[prev];
+  "ConstrainPrevAngle": (prevPrev, prev, thePoint, next, nextNext) => {
+    const pt1 = prevPrev;
+    const pt2 = prev;
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      let point = transform.free(points[thePoint]);
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
 
-  "ConstrainMiddle": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const pt1 = points[prev];
-    const pt2 = points[next];
+  "ConstrainMiddle": (prevPrev, prev, thePoint, next, nextNext) => {
+    const pt1 = prev;
+    const pt2 = next;
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      let point = transform.free(points[thePoint]);
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
 
-  "ConstrainMiddleTwo": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const pt1 = points[prevPrev];
-    const pt2 = points[next];
+  "ConstrainMiddleTwo": (prevPrev, prev, thePoint, next, nextNext) => {
+    const pt1 = prevPrev;
+    const pt2 = next;
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      let point = transform.free(points[thePoint]);
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
 
-  "TangentIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const nextHandle = vector.subVectors(points[thePoint], points[next]);
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      let point = transform.free(points[thePoint]);
+  "TangentIntersect": (prevPrev, prev, thePoint, next, nextNext) => {
+    const nextHandle = vector.subVectors(thePoint, next);
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(
-        points[prevPrev],
-        points[prev],
-        points[next],
-        vector.addVectors(points[next], nextHandle),
+        prevPrev,
+        prev,
+        next,
+        vector.addVectors(next, nextHandle),
       );
       if (!intersection) {
         // TODO: fallback to midPoint?
@@ -502,15 +522,15 @@ const defaultActions = {
     };
   },
 
-  "HandleIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const handlePrev = vector.subVectors(points[thePoint], points[prev]);
-    const handleNext = vector.subVectors(points[thePoint], points[next]);
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+  "HandleIntersect": (prevPrev, prev, thePoint, next, nextNext) => {
+    const handlePrev = vector.subVectors(thePoint, prev);
+    const handleNext = vector.subVectors(thePoint, next);
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
       const [intersection, t1, t2] = vector.intersect(
-        points[prev],
-        vector.addVectors(points[prev], handlePrev),
-        points[next],
-        vector.addVectors(points[next], handleNext),
+        prev,
+        vector.addVectors(prev, handlePrev),
+        next,
+        vector.addVectors(next, handleNext),
       );
       if (!intersection) {
         // TODO: fallback to midPoint?
@@ -519,25 +539,25 @@ const defaultActions = {
     };
   },
 
-  "ConstrainHandle": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      const newPoint = transform.free(points[thePoint]);
-      const handleVector = transform.constrainDelta(vector.subVectors(newPoint, points[prev]));
-      return vector.addVectors(points[prev], handleVector);
+  "ConstrainHandle": (prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(thePoint);
+      const handleVector = transform.constrainDelta(vector.subVectors(newPoint, prev));
+      return vector.addVectors(prev, handleVector);
     };
   },
 
-  "ConstrainHandleIntersect": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      const newPoint = transform.free(points[thePoint]);
-      const handlePrev = transform.constrainDelta(vector.subVectors(newPoint, points[prev]));
-      const handleNext = transform.constrainDelta(vector.subVectors(newPoint, points[next]));
+  "ConstrainHandleIntersect": (prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(thePoint);
+      const handlePrev = transform.constrainDelta(vector.subVectors(newPoint, prev));
+      const handleNext = transform.constrainDelta(vector.subVectors(newPoint, next));
 
       const [intersection, t1, t2] = vector.intersect(
-        points[prev],
-        vector.addVectors(points[prev], handlePrev),
-        points[next],
-        vector.addVectors(points[next], handleNext));
+        prev,
+        vector.addVectors(prev, handlePrev),
+        next,
+        vector.addVectors(next, handleNext));
       if (!intersection) {
         return newPoint;
       }
@@ -545,17 +565,17 @@ const defaultActions = {
     };
   },
 
-  "ConstrainHandleIntersectPrev": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const tangentPrev = vector.subVectors(points[prev], points[prevPrev]);
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      const newPoint = transform.free(points[thePoint]);
-      const handleNext = transform.constrainDelta(vector.subVectors(newPoint, points[next]));
+  "ConstrainHandleIntersectPrev": (prevPrev, prev, thePoint, next, nextNext) => {
+    const tangentPrev = vector.subVectors(prev, prevPrev);
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(thePoint);
+      const handleNext = transform.constrainDelta(vector.subVectors(newPoint, next));
 
       const [intersection, t1, t2] = vector.intersect(
-        points[prev],
-        vector.addVectors(points[prev], tangentPrev),
-        points[next],
-        vector.addVectors(points[next], handleNext));
+        prev,
+        vector.addVectors(prev, tangentPrev),
+        next,
+        vector.addVectors(next, handleNext));
       if (!intersection) {
         return newPoint;
       }
@@ -563,23 +583,23 @@ const defaultActions = {
     };
   },
 
-  "Interpolate": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const lenPrevNext = vector.vectorLength(vector.subVectors(points[next], points[prev]));
-    const lenPrev = vector.vectorLength(vector.subVectors(points[thePoint], points[prev]));
+  "Interpolate": (prevPrev, prev, thePoint, next, nextNext) => {
+    const lenPrevNext = vector.vectorLength(vector.subVectors(next, prev));
+    const lenPrev = vector.vectorLength(vector.subVectors(thePoint, prev));
     let t = lenPrevNext > 0.0001 ? lenPrev / lenPrevNext : 0;
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      const prevNext = vector.subVectors(points[next], points[prev]);
-      return vector.addVectors(points[prev], vector.mulVector(prevNext, t));
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      const prevNext = vector.subVectors(next, prev);
+      return vector.addVectors(prev, vector.mulVector(prevNext, t));
     };
   },
 
-  "InterpolatePrevPrevNext": (points, prevPrev, prev, thePoint, next, nextNext) => {
-    const lenPrevPrevNext = vector.vectorLength(vector.subVectors(points[next], points[prevPrev]));
-    const lenPrevPrev = vector.vectorLength(vector.subVectors(points[thePoint], points[prevPrev]));
+  "InterpolatePrevPrevNext": (prevPrev, prev, thePoint, next, nextNext) => {
+    const lenPrevPrevNext = vector.vectorLength(vector.subVectors(next, prevPrev));
+    const lenPrevPrev = vector.vectorLength(vector.subVectors(thePoint, prevPrev));
     let t = lenPrevPrevNext > 0.0001 ? lenPrevPrev / lenPrevPrevNext : 0;
-    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
-      const prevPrevNext = vector.subVectors(points[next], points[prevPrev]);
-      return vector.addVectors(points[prevPrev], vector.mulVector(prevPrevNext, t));
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      const prevPrevNext = vector.subVectors(next, prevPrev);
+      return vector.addVectors(prevPrev, vector.mulVector(prevPrevNext, t));
     };
   },
 
@@ -590,23 +610,23 @@ const behaviorTypes = {
 
   "default": {
     "matchTree": buildPointMatchTree(defaultRules),
-    "actions": defaultActions,
+    "actions": actionFactories,
   },
 
   "constrain": {
     "matchTree": buildPointMatchTree(constrainRules),
-    "actions": defaultActions,
+    "actions": actionFactories,
     "constrainDelta": constrainHorVerDiag,
   },
 
   "alternate": {
     "matchTree": buildPointMatchTree(alternateRules),
-    "actions": defaultActions,
+    "actions": actionFactories,
   },
 
   "alternate-constrain": {
     "matchTree": buildPointMatchTree(alternateConstrainRules),
-    "actions": defaultActions,
+    "actions": actionFactories,
   },
 
 }
