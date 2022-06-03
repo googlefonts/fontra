@@ -388,6 +388,15 @@ const constrainRules = defaultRules.concat([
 ]);
 
 
+const alternateRules = [
+  //   prevPrev    prev        the point   next        nextNext    Constrain   Action
+
+  // Default rule: if no other rules apply, just move the selected point
+  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
+
+]
+
+
 const defaultActions = {
 
   "DontMove": (points, prevPrev, prev, thePoint, next, nextNext) => {
@@ -530,6 +539,11 @@ const behaviorTypes = {
     "matchTree": buildPointMatchTree(constrainRules),
     "actions": defaultActions,
     "constrainDelta": constrainHorVerDiag,
+  },
+
+  "alternate": {
+    "matchTree": buildPointMatchTree(alternateRules),
+    "actions": defaultActions,
   },
 
 }
