@@ -158,12 +158,12 @@ export class FontController {
     }
   }
 
-  async getGlyphEditContext(glyphController, senderID) {
+  async getGlyphEditContext(glyphController, senderID, undoInfo) {
     if (!glyphController.canEdit) {
       // log warning here, or should the caller do that?
       return null;
     }
-    const editContext = new GlyphEditContext(this, glyphController, senderID);
+    const editContext = new GlyphEditContext(this, glyphController, senderID, undoInfo);
     await editContext.setup();
     return editContext;
   }
@@ -244,11 +244,12 @@ export const glyphChangeFunctions = {
 
 class GlyphEditContext {
 
-  constructor(fontController, glyphController, senderID) {
+  constructor(fontController, glyphController, senderID, undoInfo) {
     this.fontController = fontController;
     this.glyphController = glyphController;
     this.instance = glyphController.instance;
     this.senderID = senderID;
+    this.undoInfo = undoInfo;
     this.throttledEditDo = throttleCalls(async change => {fontController.font.editDo(change)}, 50);
   }
 

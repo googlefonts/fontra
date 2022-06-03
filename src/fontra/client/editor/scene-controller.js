@@ -55,7 +55,10 @@ export class SceneController {
     if (!this.sceneModel.selectedGlyphIsEditing) {
       return;
     }
-    const editContext = await this.getGlyphEditContext();
+    const undoInfo = {
+      "label": "nudge points",
+    }
+    const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
       console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
       return;
@@ -203,8 +206,11 @@ export class SceneController {
 
   async handleDragSelection(eventStream, initialEvent) {
     const initialPoint = this.localPoint(initialEvent);
+    const undoInfo = {
+      "label": "drag points",
+    }
 
-    const editContext = await this.getGlyphEditContext();
+    const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
       console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
       // TODO: dialog with options:
@@ -389,12 +395,12 @@ export class SceneController {
     return this.sceneModel.getSceneBounds();
   }
 
-  async getGlyphEditContext(senderID) {
+  async getGlyphEditContext(senderID, undoInfo) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
       return null;
     }
-    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
+    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this, undoInfo);
   }
 
   getSelectionBox() {

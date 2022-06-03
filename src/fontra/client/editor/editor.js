@@ -721,13 +721,18 @@ export class EditorController {
     let rollbackChange;
 
     const setup = async info => {
-      editContext = await this.sceneController.getGlyphEditContext(this);
+      keyString = info.key;
+      localChangePath = JSON.parse(keyString);
+      const plen = localChangePath.length;
+      const undoLabelField = plen == 1 ? `${localChangePath[plen - 1]}` : `${localChangePath[plen - 2]}.${localChangePath[plen - 1]}`;
+      const undoInfo = {
+        "label": `edit ${undoLabelField}`,
+      }
+      editContext = await this.sceneController.getGlyphEditContext(this, undoInfo);
       if (!editContext) {
         console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
         return false;
       }
-      keyString = info.key;
-      localChangePath = JSON.parse(keyString);
       rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
       return true;
     };
