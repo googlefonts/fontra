@@ -510,6 +510,14 @@ const actionFactories = {
     };
   },
 
+  "ConstrainAroundPrevPrev": (prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      const newPoint = transform.free(thePoint);
+      const handleVector = transform.constrainDelta(vector.subVectors(newPoint, prevPrev));
+      return vector.addVectors(prevPrev, handleVector);
+    };
+  },
+
 }
 
 
@@ -604,7 +612,7 @@ const alternateRules = [
 
 const alternateConstrainRules = alternateRules.concat([
 
-  // To be filled in
+  [    ANY|UNS,    SMO|UNS,    SHA|OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainAroundPrevPrev"],
 
 ]);
 
@@ -630,6 +638,7 @@ const behaviorTypes = {
   "alternate-constrain": {
     "matchTree": buildPointMatchTree(alternateConstrainRules),
     "actions": actionFactories,
+    "constrainDelta": constrainHorVerDiag,
   },
 
 }
