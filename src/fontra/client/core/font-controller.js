@@ -23,6 +23,7 @@ export class FontController {
     this.ensureInitialized = new Promise((resolve, reject) => {
       this._resolveInitialized = resolve;
     });
+    this.undoStacks = {};  // glyph name -> undo stack
   }
 
   async initialize() {
@@ -218,8 +219,24 @@ export class FontController {
     }
   }
 
-  pushUndoState(change, rollbackChange, undoInfo) {
-    console.log(change, rollbackChange, undoInfo);
+  pushUndoRecord(change, rollbackChange, undoInfo) {
+    if (change.p[0] !== "glyphs" || rollbackChange.p[0] !== "glyphs") {
+      // Doesn't currently happen, deal with it later.
+      return;
+    }
+    const glyphName = change.p[1];
+    if (rollbackChange.p[1] !== glyphName) {
+      console.log("internal inconsistency: undo rollback doesn't match change");
+    }
+    if (this.undoStacks[glyphName] === undefined) {
+      this.undoStacks[glyphName] = new UndoStack();
+    }
+    const undoRecord = {
+      "change": change,
+      "rollbackChange": rollbackChange,
+      "info": undoInfo,
+    }
+    this.undoStacks[glyphName].pushUndoRecord(undoRecord);
   }
 
 }
@@ -289,7 +306,7 @@ class GlyphEditContext {
     const error = await this.fontController.font.editEnd(change);
     // TODO handle error
     await this.fontController.notifyEditListeners("editEnd", this.senderID, change);
-    this.fontController.pushUndoState(change, this.rollback, this.undoInfo);
+    this.fontController.pushUndoRecord(change, this.rollback, this.undoInfo);
   }
 
   async editAtomic(change, rollback) {
@@ -300,7 +317,39 @@ class GlyphEditContext {
     const error = await this.fontController.font.editAtomic(change, rollback);
     // TODO: handle error, rollback
     await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
-    this.fontController.pushUndoState(change, rollback, this.undoInfo);
+    this.fontController.pushUndoRecord(change, rollback, this.undoInfo);
+  }
+
+}
+
+
+class UndoStack {
+
+  constructor() {
+    this.undoStack = [];
+    this.redoStack = [];
+  }
+
+  pushUndoRecord(undoRecord) {
+    this.undoStack.push(undoRecord);
+    this.redoStack = [];
+  }
+
+  undo() {
+    return this._undo(this.undoStack, this.redoStack);
+  }
+
+  redo() {
+    return this._undo(this.redoStack, this.undoStack);
+  }
+
+  _undo(popStack, pushStack) {
+    if (!popStack.length) {
+      return undefined;
+    }
+    const [undoRecord] = popStack.splice(-1, 1);
+    pushStack.push(undoRecord);
+    return undoRecord;
   }
 
 }
