@@ -20,7 +20,11 @@ export class EditBehaviorFactory {
   getBehavior(behaviorName) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
-      const behaviorType = behaviorTypes[behaviorName] || behaviorTypes["default"];
+      let behaviorType = behaviorTypes[behaviorName];
+      if (!behaviorType) {
+        console.log(`invalid behavior name: "${behaviorName}"`);
+        behaviorType = behaviorTypes["default"];
+      }
       behavior = new EditBehavior(this.contours, this.components, behaviorType);
       this.behaviors[behaviorName] = behavior;
     }
