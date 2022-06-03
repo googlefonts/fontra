@@ -18,6 +18,7 @@ export class EditBehaviorFactory {
   }
 
   getBehavior(behaviorName) {
+    console.log(this.contours[0]);
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
