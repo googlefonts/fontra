@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { modulo, reversed, sign } from "../core/utils.js";
+import { boolInt, modulo, reversed, sign } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import {
   NIL, SEL, UNS, SHA, SMO, OFF, ANY,
@@ -299,11 +299,6 @@ function findPointMatch(matchTree, pointIndex, contourPoints, numPoints, isClose
     }
   }
   return [match, neighborIndices];
-}
-
-
-function boolInt(v) {
-  return v ? 1 : 0;
 }
 
 
