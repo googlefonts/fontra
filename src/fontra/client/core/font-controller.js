@@ -244,7 +244,7 @@ export class FontController {
   }
 
   getUndoRedoInfo(glyphName, isRedo) {
-    return this.undoStacks[glyphName]?.getUndoRedoRecord(isRedo)?.info;
+    return this.undoStacks[glyphName]?.getTopUndoRedoRecord(isRedo)?.info;
   }
 
   async undoRedoGlyph(glyphName, isRedo) {
@@ -367,7 +367,7 @@ class UndoStack {
     this.redoStack = [];
   }
 
-  getUndoRedoRecord(isRedo) {
+  getTopUndoRedoRecord(isRedo) {
     const stack = !isRedo ? this.undoStack : this.redoStack;
     if (stack.length) {
       return stack[stack.length - 1];
