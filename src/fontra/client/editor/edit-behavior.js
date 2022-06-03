@@ -20,7 +20,8 @@ export class EditBehaviorFactory {
   getBehavior(behaviorName) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
-      behavior = new EditBehavior(this.contours, this.components, behaviorTypes[behaviorName]);
+      const behaviorType = behaviorTypes[behaviorName] || behaviorTypes["default"];
+      behavior = new EditBehavior(this.contours, this.components, behaviorType);
       this.behaviors[behaviorName] = behavior;
     }
     return behavior;
