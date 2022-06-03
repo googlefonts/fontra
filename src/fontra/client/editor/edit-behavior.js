@@ -253,12 +253,12 @@ function makeContourPointEditFuncs(contour, behavior) {
     // console.log(i, match.action, match.ruleIndex);
     const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
     participatingPointIndices.push(thePoint);
-    const actionFuncionFactory = behavior.actions[match.action];
-    if (actionFuncionFactory === undefined) {
+    const actionFunctionFactory = behavior.actions[match.action];
+    if (actionFunctionFactory === undefined) {
       console.log(`Undefined action function: ${match.action}`);
       continue;
     }
-    const actionFunc = actionFuncionFactory(
+    const actionFunc = actionFunctionFactory(
       originalPoints[prevPrev],
       originalPoints[prev],
       originalPoints[thePoint],
