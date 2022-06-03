@@ -240,11 +240,7 @@ export class FontController {
   }
 
   async undoRedoGlyph(glyphName, isRedo) {
-    const undoStack = this.undoStacks[glyphName];
-    if (undoStack === undefined) {
-      return undefined
-    }
-    let undoRecord = undoStack.popUndoRedoRecord(isRedo);
+    let undoRecord = this.undoStacks[glyphName]?.popUndoRedoRecord(isRedo);
     if (undoRecord === undefined) {
       return;
     }
