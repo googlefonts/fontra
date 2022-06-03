@@ -478,6 +478,14 @@ export class EditorController {
           }
           didHandleShortcut = true;
           break;
+        case "z":
+          if (event.shiftKey) {
+            console.log("Redo");
+          } else {
+            console.log("Undo");
+          }
+          didHandleShortcut = true;
+          break;
         default:
           // console.log("unhandled", event);
           break;
