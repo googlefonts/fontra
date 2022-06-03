@@ -417,6 +417,13 @@ const alternateRules = [
 ]
 
 
+const alternateConstrainRules = alternateRules.concat([
+
+  // To be filled in
+
+]);
+
+
 const defaultActions = {
 
   "DontMove": (points, prevPrev, prev, thePoint, next, nextNext) => {
@@ -594,6 +601,11 @@ const behaviorTypes = {
 
   "alternate": {
     "matchTree": buildPointMatchTree(alternateRules),
+    "actions": defaultActions,
+  },
+
+  "alternate-constrain": {
+    "matchTree": buildPointMatchTree(alternateConstrainRules),
     "actions": defaultActions,
   },
 
