@@ -407,6 +407,26 @@ export class SceneController {
     return this.sceneModel.getSelectionBox();
   }
 
+  async undo() {
+    await this._undoRedo(false);
+  }
+
+  async redo() {
+    await this._undoRedo(true);
+  }
+
+  async _undoRedo(isRedo) {
+    const glyphName = this.getSelectedGlyphName();
+    if (glyphName === undefined) {
+      return;
+    }
+    const undoInfo = await this.sceneModel.fontController.undoRedoGlyph(glyphName, isRedo);
+    if (undoInfo !== undefined) {
+      await this.sceneModel.updateScene();
+      this.canvasController.setNeedsUpdate();
+    }
+  }
+
 }
 
 

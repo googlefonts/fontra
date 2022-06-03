@@ -480,9 +480,9 @@ export class EditorController {
           break;
         case "z":
           if (event.shiftKey) {
-            console.log("Redo");
+            this.sceneController.redo();
           } else {
-            console.log("Undo");
+            this.sceneController.undo();
           }
           didHandleShortcut = true;
           break;
