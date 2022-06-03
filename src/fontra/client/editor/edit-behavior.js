@@ -599,7 +599,7 @@ const alternateRules = [
   [    SMO|UNS,    SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
 
   // Smooth with two selected neighbors
-  [    ANY|NIL,    ANY|SEL,    SMO|SEL,    OFF|SEL,        ANY|NIL,    false,      "ConstrainMiddle"],
+  [    ANY|NIL,    ANY|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    false,      "ConstrainMiddle"],
 
   // Unselected smooth between sharp and off-curve, one of them selected
   [    ANY|NIL,    SHA|OFF|UNS,SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Interpolate"],
@@ -619,6 +619,7 @@ const alternateRules = [
   [    ANY,        SHA|SEL,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,false,       "ConstrainMiddle"],
   [    ANY,        SMO|SEL,    SHA|SEL,    ANY|NIL,    ANY|NIL,    false,       "ConstrainPrevAngle"],
   [    ANY,        SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,       "ConstrainPrevAngle"],
+
 ]
 
 
