@@ -376,19 +376,20 @@ class UndoStack {
 
   popUndoRedoRecord(isRedo) {
     if (!isRedo) {
-      return this._undoRedo(this.undoStack, this.redoStack);
+      return _popUndoRedoRecord(this.undoStack, this.redoStack);
     } else {
-      return this._undoRedo(this.redoStack, this.undoStack);
+      return _popUndoRedoRecord(this.redoStack, this.undoStack);
     }
   }
 
-  _undoRedo(popStack, pushStack) {
-    if (!popStack.length) {
-      return undefined;
-    }
-    const [undoRecord] = popStack.splice(-1, 1);
-    pushStack.push(undoRecord);
-    return undoRecord;
-  }
+}
 
+
+function _popUndoRedoRecord(popStack, pushStack) {
+  if (!popStack.length) {
+    return undefined;
+  }
+  const [undoRecord] = popStack.splice(-1, 1);
+  pushStack.push(undoRecord);
+  return undoRecord;
 }
