@@ -612,6 +612,10 @@ const alternateRules = [
   // Two unselected smooth points between two selected off-curves
   [    OFF|SEL,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Move"],
 
+  // Two selected points locked by angle
+  [    ANY,        SHA|SEL,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,false,       "ConstrainMiddle"],
+  [    ANY,        SMO|SEL,    SHA|SEL,    ANY|NIL,    ANY|NIL,    false,       "ConstrainPrevAngle"],
+  [    ANY,        SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,       "ConstrainPrevAngle"],
 ]
 
 
