@@ -169,7 +169,7 @@ export class FontController {
     return editContext;
   }
 
-  async applyChange(change) {
+  async applyChange(change, isExternalChange) {
     if (change.p[0] === "glyphs") {
       const glyphName = change.p[1];
       const glyphSet = {};
@@ -177,6 +177,10 @@ export class FontController {
       glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
       applyChange(root, change, glyphChangeFunctions);
       this.glyphChanged(glyphName);
+      if (isExternalChange) {
+        // The undo stack is local, so any external change invalidates it
+        delete this.undoStacks[glyphName];
+      }
     }
   }
 

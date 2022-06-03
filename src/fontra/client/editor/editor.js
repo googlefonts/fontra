@@ -522,7 +522,7 @@ export class EditorController {
   }
 
   async externalChange(change) {
-    await this.fontController.applyChange(change);
+    await this.fontController.applyChange(change, true);
     await this.sceneController.sceneModel.updateScene();
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     if (selectedGlyphName !== undefined && matchChange(change, ["glyphs", selectedGlyphName])) {
