@@ -244,18 +244,29 @@ export class FontController {
     if (undoStack === undefined) {
       return undefined
     }
-    const undoRecord = undoStack.popUndoRedoRecord(isRedo);
+    let undoRecord = undoStack.popUndoRedoRecord(isRedo);
     if (undoRecord === undefined) {
       return;
     }
     if (isRedo) {
-      await this.applyChange(undoRecord.change);
-    } else {
-      await this.applyChange(undoRecord.rollbackChange);
+      undoRecord = reverseUndoRecord(undoRecord);
     }
+    // Hmmm, would be nice to have this abstracted more
+    await this.applyChange(undoRecord.rollbackChange);
+    const error = await this.font.editAtomic(undoRecord.rollbackChange, undoRecord.change);
+    await this.notifyEditListeners("editAtomic", this, undoRecord.rollbackChange, undoRecord.change);
     return undoRecord["info"];
   }
 
+}
+
+
+function reverseUndoRecord(undoRecord) {
+  return {
+    "change": undoRecord.rollbackChange,
+    "rollbackChange": undoRecord.change,
+    "info": undoRecord.info,
+  };
 }
 
 
