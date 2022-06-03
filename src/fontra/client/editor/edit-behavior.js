@@ -402,6 +402,10 @@ const alternateRules = [
   [    SMO|SEL,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
   [    SMO|UNS,    SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
 
+  // Unselected smooth between sharp and off-curve, one of those selected
+  [    ANY|NIL,    SHA|OFF|UNS,SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Interpolate"],
+  [    ANY|NIL,    SHA|OFF|SEL,SMO|UNS,    OFF|UNS,    ANY|NIL,    true,       "Interpolate"],
+
 ]
 
 
@@ -541,6 +545,16 @@ const defaultActions = {
         return newPoint;
       }
       return intersection;
+    };
+  },
+
+  "Interpolate": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const lenPrevNext = vector.vectorLength(vector.subVectors(points[next], points[prev]));
+    const lenPrev = vector.vectorLength(vector.subVectors(points[thePoint], points[prev], ));
+    let t = lenPrevNext > 0.0001 ? lenPrev / lenPrevNext : 0;
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const prevNext = vector.subVectors(points[next], points[prev]);
+      return vector.addVectors(points[prev], vector.mulVector(prevNext, t));
     };
   },
 
