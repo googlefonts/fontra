@@ -218,6 +218,10 @@ export class FontController {
     }
   }
 
+  pushUndoState(change, rollbackChange, undoInfo) {
+    console.log(change, rollbackChange, undoInfo);
+  }
+
 }
 
 
@@ -285,6 +289,7 @@ class GlyphEditContext {
     const error = await this.fontController.font.editEnd(change);
     // TODO handle error
     await this.fontController.notifyEditListeners("editEnd", this.senderID, change);
+    this.fontController.pushUndoState(change, this.rollback, this.undoInfo);
   }
 
   async editAtomic(change, rollback) {
@@ -295,6 +300,7 @@ class GlyphEditContext {
     const error = await this.fontController.font.editAtomic(change, rollback);
     // TODO: handle error, rollback
     await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
+    this.fontController.pushUndoState(change, rollback, this.undoInfo);
   }
 
 }
