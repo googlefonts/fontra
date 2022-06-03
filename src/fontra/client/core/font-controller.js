@@ -220,6 +220,8 @@ export class FontController {
   async reloadGlyphs(glyphNames) {
     for (const glyphName of glyphNames) {
       this._purgeGlyphCache(glyphName);
+      // The undo stack is local, so any external change invalidates it
+      delete this.undoStacks[glyphName];
     }
   }
 
