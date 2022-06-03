@@ -396,6 +396,7 @@ const alternateRules = [
 
   // Selected smooth before unselected off-curve
   [    ANY|NIL,    ANY|UNS,    SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainMiddle"],
+  [    OFF|UNS,    SMO|SEL,    SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainMiddleTwo"],
 
 ]
 
@@ -441,6 +442,17 @@ const defaultActions = {
 
   "ConstrainMiddle": (points, prevPrev, prev, thePoint, next, nextNext) => {
     const pt1 = points[prev];
+    const pt2 = points[next];
+    const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(points[thePoint]);
+      const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
+      return intersection;
+    };
+  },
+
+  "ConstrainMiddleTwo": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const pt1 = points[prevPrev];
     const pt2 = points[next];
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
     return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
