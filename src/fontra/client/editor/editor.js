@@ -727,6 +727,7 @@ export class EditorController {
       const undoLabelField = plen == 1 ? `${localChangePath[plen - 1]}` : `${localChangePath[plen - 2]}.${localChangePath[plen - 1]}`;
       const undoInfo = {
         "label": `edit ${undoLabelField}`,
+        "selection": this.sceneController.selection,
       }
       editContext = await this.sceneController.getGlyphEditContext(this, undoInfo);
       if (!editContext) {
