@@ -18,7 +18,6 @@ export class EditBehaviorFactory {
   }
 
   getBehavior(behaviorName) {
-    console.log(this.contours[0]);
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
@@ -394,6 +393,9 @@ const alternateRules = [
 
   // Default rule: if no other rules apply, just move the selected point
   [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
+
+  // Selected smooth before unselected off-curve
+  [    ANY|NIL,    ANY|UNS,    SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainMiddle"],
 
 ]
 
