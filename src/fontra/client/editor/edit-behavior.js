@@ -429,6 +429,22 @@ const actionFactories = {
     };
   },
 
+  "TangentIntersectLive": (prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+      let point = transform.free(thePoint);
+      const [intersection, t1, t2] = vector.intersect(
+        prevPrev,
+        prev,
+        next,
+        nextNext,
+      );
+      if (!intersection) {
+        // TODO: fallback to midPoint?
+      }
+      return intersection;
+    };
+  },
+
   "HandleIntersect": (prevPrev, prev, thePoint, next, nextNext) => {
     const handlePrev = vector.subVectors(thePoint, prev);
     const handleNext = vector.subVectors(thePoint, next);
@@ -543,9 +559,10 @@ const defaultRules = [
 
   // An unselected off-curve between two on-curve points
   [    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
-  [    ANY|SEL,    SMO|UNS,    OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersect"],
+  [    ANY|SEL,    SMO|UNS,    OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersectLive"],
   [    SMO|SHA,    SMO|SEL,    OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "TangentIntersect"],
   [    SMO|SHA,    SMO|UNS,    OFF|SEL,    SMO|SEL,    ANY|NIL,    true,       "HandleIntersect"],
+  [    ANY|SEL,    SMO|UNS,    OFF|UNS,    SHA|SEL,    ANY|NIL,    true,       "TangentIntersect"],
 
   // Tangent bcp constraint
   [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|UNS|NIL,ANY|NIL,    false,      "ConstrainPrevAngle"],
@@ -565,6 +582,7 @@ const defaultRules = [
 
   // Selected single off-curve, locked between two unselected smooth points
   [    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|SEL,    false,      "DontMove"],
+
 ];
 
 
