@@ -243,6 +243,10 @@ export class FontController {
     this.undoStacks[glyphName].pushUndoRecord(undoRecord);
   }
 
+  getUndoRedoInfo(glyphName, isRedo) {
+    return this.undoStacks[glyphName]?.getUndoRedoRecord(isRedo)?.info;
+  }
+
   async undoRedoGlyph(glyphName, isRedo) {
     let undoRecord = this.undoStacks[glyphName]?.popUndoRedoRecord(isRedo);
     if (undoRecord === undefined) {
@@ -361,6 +365,13 @@ class UndoStack {
   pushUndoRecord(undoRecord) {
     this.undoStack.push(undoRecord);
     this.redoStack = [];
+  }
+
+  getUndoRedoRecord(isRedo) {
+    const stack = !isRedo ? this.undoStack : this.redoStack;
+    if (stack.length) {
+      return stack[stack.length - 1];
+    }
   }
 
   popUndoRedoRecord(isRedo) {
