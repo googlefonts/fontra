@@ -58,6 +58,7 @@ export class SceneController {
     const undoInfo = {
       "label": "nudge selection",
       "selection": this.selection,
+      "location": this.getLocation(),
     }
     const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
@@ -210,6 +211,7 @@ export class SceneController {
     const undoInfo = {
       "label": "drag selection",
       "selection": this.selection,
+      "location": this.getLocation(),
     }
 
     const editContext = await this.getGlyphEditContext(this, undoInfo);
@@ -425,6 +427,9 @@ export class SceneController {
     const undoInfo = await this.sceneModel.fontController.undoRedoGlyph(glyphName, isRedo);
     if (undoInfo !== undefined) {
       this.selection = undoInfo.selection;
+      if (undoInfo.location) {
+        await this.setLocation(undoInfo.location);
+      }
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
     }

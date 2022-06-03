@@ -484,6 +484,7 @@ export class EditorController {
           } else {
             this.sceneController.undo();
           }
+          this.updateSlidersAndSources();
           didHandleShortcut = true;
           break;
         default:
@@ -728,6 +729,7 @@ export class EditorController {
       const undoInfo = {
         "label": `edit ${undoLabelField}`,
         "selection": this.sceneController.selection,
+        "location": this.sceneController.getLocation(),
       }
       editContext = await this.sceneController.getGlyphEditContext(this, undoInfo);
       if (!editContext) {
