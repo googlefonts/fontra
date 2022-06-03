@@ -56,7 +56,7 @@ export class SceneController {
       return;
     }
     const undoInfo = {
-      "label": "nudge points",
+      "label": "nudge selection",
     }
     const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
@@ -207,7 +207,7 @@ export class SceneController {
   async handleDragSelection(eventStream, initialEvent) {
     const initialPoint = this.localPoint(initialEvent);
     const undoInfo = {
-      "label": "drag points",
+      "label": "drag selection",
     }
 
     const editContext = await this.getGlyphEditContext(this, undoInfo);
