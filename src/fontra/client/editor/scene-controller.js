@@ -412,11 +412,11 @@ export class SceneController {
   }
 
   async undo() {
-    await this._undoRedo(false);
+    return await this._undoRedo(false);
   }
 
   async redo() {
-    await this._undoRedo(true);
+    return await this._undoRedo(true);
   }
 
   async _undoRedo(isRedo) {
@@ -433,6 +433,7 @@ export class SceneController {
       await this.sceneModel.updateScene();
       this.canvasController.setNeedsUpdate();
     }
+    return undoInfo !== undefined;
   }
 
 }
