@@ -23,6 +23,7 @@ export class FontController {
     this.ensureInitialized = new Promise((resolve, reject) => {
       this._resolveInitialized = resolve;
     });
+    this.undoStacks = {};  // glyph name -> undo stack
   }
 
   async initialize() {
@@ -158,17 +159,17 @@ export class FontController {
     }
   }
 
-  async getGlyphEditContext(glyphController, senderID) {
+  async getGlyphEditContext(glyphController, senderID, undoInfo) {
     if (!glyphController.canEdit) {
       // log warning here, or should the caller do that?
       return null;
     }
-    const editContext = new GlyphEditContext(this, glyphController, senderID);
+    const editContext = new GlyphEditContext(this, glyphController, senderID, undoInfo);
     await editContext.setup();
     return editContext;
   }
 
-  async applyChange(change) {
+  async applyChange(change, isExternalChange) {
     if (change.p[0] === "glyphs") {
       const glyphName = change.p[1];
       const glyphSet = {};
@@ -176,6 +177,10 @@ export class FontController {
       glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
       applyChange(root, change, glyphChangeFunctions);
       this.glyphChanged(glyphName);
+      if (isExternalChange) {
+        // The undo stack is local, so any external change invalidates it
+        delete this.undoStacks[glyphName];
+      }
     }
   }
 
@@ -215,9 +220,60 @@ export class FontController {
   async reloadGlyphs(glyphNames) {
     for (const glyphName of glyphNames) {
       this._purgeGlyphCache(glyphName);
+      // The undo stack is local, so any external change invalidates it
+      delete this.undoStacks[glyphName];
     }
   }
 
+  pushUndoRecord(change, rollbackChange, undoInfo) {
+    if (change.p[0] !== "glyphs" || rollbackChange.p[0] !== "glyphs") {
+      // Doesn't currently happen, deal with it later.
+      return;
+    }
+    const glyphName = change.p[1];
+    if (rollbackChange.p[1] !== glyphName) {
+      console.log("internal inconsistency: undo rollback doesn't match change");
+    }
+    if (this.undoStacks[glyphName] === undefined) {
+      this.undoStacks[glyphName] = new UndoStack();
+    }
+    const undoRecord = {
+      "change": change,
+      "rollbackChange": rollbackChange,
+      "info": undoInfo,
+    }
+    this.undoStacks[glyphName].pushUndoRecord(undoRecord);
+  }
+
+  getUndoRedoInfo(glyphName, isRedo) {
+    return this.undoStacks[glyphName]?.getTopUndoRedoRecord(isRedo)?.info;
+  }
+
+  async undoRedoGlyph(glyphName, isRedo) {
+    let undoRecord = this.undoStacks[glyphName]?.popUndoRedoRecord(isRedo);
+    if (undoRecord === undefined) {
+      return;
+    }
+    if (isRedo) {
+      undoRecord = reverseUndoRecord(undoRecord);
+    }
+    // Hmmm, would be nice to have this abstracted more
+    await this.applyChange(undoRecord.rollbackChange);
+    const error = await this.font.editAtomic(undoRecord.rollbackChange, undoRecord.change);
+    // TODO handle error
+    await this.notifyEditListeners("editAtomic", this, undoRecord.rollbackChange, undoRecord.change);
+    return undoRecord["info"];
+  }
+
+}
+
+
+function reverseUndoRecord(undoRecord) {
+  return {
+    "change": undoRecord.rollbackChange,
+    "rollbackChange": undoRecord.change,
+    "info": undoRecord.info,
+  };
 }
 
 
@@ -244,11 +300,12 @@ export const glyphChangeFunctions = {
 
 class GlyphEditContext {
 
-  constructor(fontController, glyphController, senderID) {
+  constructor(fontController, glyphController, senderID, undoInfo) {
     this.fontController = fontController;
     this.glyphController = glyphController;
     this.instance = glyphController.instance;
     this.senderID = senderID;
+    this.undoInfo = undoInfo;
     this.throttledEditDo = throttleCalls(async change => {fontController.font.editDo(change)}, 50);
   }
 
@@ -284,6 +341,7 @@ class GlyphEditContext {
     const error = await this.fontController.font.editEnd(change);
     // TODO handle error
     await this.fontController.notifyEditListeners("editEnd", this.senderID, change);
+    this.fontController.pushUndoRecord(change, this.rollback, this.undoInfo);
   }
 
   async editAtomic(change, rollback) {
@@ -294,6 +352,47 @@ class GlyphEditContext {
     const error = await this.fontController.font.editAtomic(change, rollback);
     // TODO: handle error, rollback
     await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
+    this.fontController.pushUndoRecord(change, rollback, this.undoInfo);
   }
 
+}
+
+
+class UndoStack {
+
+  constructor() {
+    this.undoStack = [];
+    this.redoStack = [];
+  }
+
+  pushUndoRecord(undoRecord) {
+    this.undoStack.push(undoRecord);
+    this.redoStack = [];
+  }
+
+  getTopUndoRedoRecord(isRedo) {
+    const stack = !isRedo ? this.undoStack : this.redoStack;
+    if (stack.length) {
+      return stack[stack.length - 1];
+    }
+  }
+
+  popUndoRedoRecord(isRedo) {
+    if (!isRedo) {
+      return _popUndoRedoRecord(this.undoStack, this.redoStack);
+    } else {
+      return _popUndoRedoRecord(this.redoStack, this.undoStack);
+    }
+  }
+
+}
+
+
+function _popUndoRedoRecord(popStack, pushStack) {
+  if (!popStack.length) {
+    return undefined;
+  }
+  const [undoRecord] = popStack.splice(-1, 1);
+  pushStack.push(undoRecord);
+  return undoRecord;
 }

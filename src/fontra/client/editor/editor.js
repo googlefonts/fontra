@@ -456,7 +456,7 @@ export class EditorController {
     this.setAutoViewBox();
   };
 
-  keyDownHandler(event) {
+  async keyDownHandler(event) {
     if (event.key === " " && !event.repeat) {
       this.spaceKeyDownHandler();
       return;
@@ -477,6 +477,21 @@ export class EditorController {
             this.zoomFit();
           }
           didHandleShortcut = true;
+          break;
+        case "z":
+          const isRedo = event.shiftKey;
+          const undoInfo = this.sceneController.getUndoRedoInfo(isRedo);
+          if (undoInfo && !isTypeableInput(document.activeElement)) {
+            // with the await below, we must immediately stop propagation, or
+            // the undo shortcut will still reach text elements
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            await this.sceneController.doUndoRedo(isRedo);
+            didHandleShortcut = true;
+            // Hmmm would be nice if the following was done automatically
+            await this.updateSlidersAndSources();
+            this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
+          }
           break;
         default:
           // console.log("unhandled", event);
@@ -513,7 +528,7 @@ export class EditorController {
   }
 
   async externalChange(change) {
-    await this.fontController.applyChange(change);
+    await this.fontController.applyChange(change, true);
     await this.sceneController.sceneModel.updateScene();
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     if (selectedGlyphName !== undefined && matchChange(change, ["glyphs", selectedGlyphName])) {
@@ -713,13 +728,20 @@ export class EditorController {
     let rollbackChange;
 
     const setup = async info => {
-      editContext = await this.sceneController.getGlyphEditContext(this);
+      keyString = info.key;
+      localChangePath = JSON.parse(keyString);
+      const plen = localChangePath.length;
+      const undoLabelField = plen == 1 ? `${localChangePath[plen - 1]}` : `${localChangePath[plen - 2]}.${localChangePath[plen - 1]}`;
+      const undoInfo = {
+        "label": `edit ${undoLabelField}`,
+        "selection": this.sceneController.selection,
+        "location": this.sceneController.getLocation(),
+      }
+      editContext = await this.sceneController.getGlyphEditContext(this, undoInfo);
       if (!editContext) {
         console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
         return false;
       }
-      keyString = info.key;
-      localChangePath = JSON.parse(keyString);
       rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
       return true;
     };

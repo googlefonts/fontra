@@ -55,7 +55,12 @@ export class SceneController {
     if (!this.sceneModel.selectedGlyphIsEditing) {
       return;
     }
-    const editContext = await this.getGlyphEditContext();
+    const undoInfo = {
+      "label": "nudge selection",
+      "selection": this.selection,
+      "location": this.getLocation(),
+    }
+    const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
       console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
       return;
@@ -203,8 +208,13 @@ export class SceneController {
 
   async handleDragSelection(eventStream, initialEvent) {
     const initialPoint = this.localPoint(initialEvent);
+    const undoInfo = {
+      "label": "drag selection",
+      "selection": this.selection,
+      "location": this.getLocation(),
+    }
 
-    const editContext = await this.getGlyphEditContext();
+    const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
       console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
       // TODO: dialog with options:
@@ -271,7 +281,7 @@ export class SceneController {
 
   set selection(selection) {
     if (!lenientIsEqualSet(selection, this.selection)) {
-      this.sceneModel.selection = selection;
+      this.sceneModel.selection = selection || new Set();
       this.canvasController.setNeedsUpdate();
       this._dispatchEvent("selectionChanged");
     }
@@ -389,16 +399,41 @@ export class SceneController {
     return this.sceneModel.getSceneBounds();
   }
 
-  async getGlyphEditContext(senderID) {
+  async getGlyphEditContext(senderID, undoInfo) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
       return null;
     }
-    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
+    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this, undoInfo);
   }
 
   getSelectionBox() {
     return this.sceneModel.getSelectionBox();
+  }
+
+  getUndoRedoInfo(isRedo) {
+    const glyphName = this.getSelectedGlyphName();
+    if (glyphName === undefined) {
+      return;
+    }
+    return this.sceneModel.fontController.getUndoRedoInfo(glyphName, isRedo);
+  }
+
+  async doUndoRedo(isRedo) {
+    const glyphName = this.getSelectedGlyphName();
+    if (glyphName === undefined) {
+      return;
+    }
+    const undoInfo = await this.sceneModel.fontController.undoRedoGlyph(glyphName, isRedo);
+    if (undoInfo !== undefined) {
+      this.selection = undoInfo.selection;
+      if (undoInfo.location) {
+        await this.setLocation(undoInfo.location);
+      }
+      await this.sceneModel.updateScene();
+      this.canvasController.setNeedsUpdate();
+    }
+    return undoInfo !== undefined;
   }
 
 }
