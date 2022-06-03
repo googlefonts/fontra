@@ -193,3 +193,9 @@ export function sign(v) {
     return 0;
   }
 }
+
+
+export function boolInt(v) {
+  // Return 1 if `v` is true-y, 0 if `v` is false-y
+  return v ? 1 : 0;
+}

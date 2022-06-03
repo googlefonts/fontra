@@ -1,9 +1,7 @@
-import { applyChange, consolidateChanges } from "../core/changes.js";
-import { glyphChangeFunctions } from "../core/font-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "../core/set-ops.js";
-import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
+import { arrowKeyDeltas, boolInt, hasShortcutModifierKey } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 
@@ -462,5 +460,11 @@ async function shouldInitiateDrag(eventStream, initialEvent) {
 
 
 function getBehaviorName(event) {
-  return event.shiftKey ? "constrain" : "default";
+  const behaviorNames = [
+    "default",
+    "constrain",
+    "alternate",
+    "alternate-constrain",
+  ];
+  return behaviorNames[boolInt(event.shiftKey) + 2 * boolInt(event.metaKey)];
 }

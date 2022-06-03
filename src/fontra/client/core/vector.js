@@ -18,6 +18,11 @@ export function rotateVector90CW(vector) {
 }
 
 
+export function vectorLength(vector) {
+  return Math.hypot(vector.x, vector.y);
+}
+
+
 const _EPSILON = 1e-10;
 
 
