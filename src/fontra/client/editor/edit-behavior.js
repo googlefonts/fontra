@@ -396,7 +396,9 @@ const alternateRules = [
 
   // Selected smooth before unselected off-curve
   [    ANY|NIL,    ANY|UNS,    SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainMiddle"],
-  [    OFF|UNS,    SMO|SEL,    SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainMiddleTwo"],
+  [    OFF,        SMO|SEL,    SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainMiddleTwo"],
+  [    OFF|UNS,    SMO|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    false,      "ConstrainMiddleTwo"],
+  [    SMO|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "RotateNext"],
 
 ]
 
