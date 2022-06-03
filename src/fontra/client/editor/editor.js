@@ -456,7 +456,7 @@ export class EditorController {
     this.setAutoViewBox();
   };
 
-  keyDownHandler(event) {
+  async keyDownHandler(event) {
     if (event.key === " " && !event.repeat) {
       this.spaceKeyDownHandler();
       return;
@@ -479,13 +479,17 @@ export class EditorController {
           didHandleShortcut = true;
           break;
         case "z":
-          if (event.shiftKey) {
-            this.sceneController.redo();
-          } else {
-            this.sceneController.undo();
+          const isRedo = event.shiftKey;
+          const undoInfo = this.sceneController.getUndoRedoInfo(isRedo);
+          if (undoInfo && !isTypeableInput(document.activeElement)) {
+            // with the await below, we must immediately stop propagation, or
+            // the undo shortcut will still reach text elements
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            await this.sceneController.doUndoRedo(isRedo);
+            didHandleShortcut = true;
+            this.updateSlidersAndSources();
           }
-          this.updateSlidersAndSources();
-          didHandleShortcut = true;
           break;
         default:
           // console.log("unhandled", event);
