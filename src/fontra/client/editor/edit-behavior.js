@@ -402,9 +402,13 @@ const alternateRules = [
   [    SMO|SEL,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
   [    SMO|UNS,    SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
 
-  // Unselected smooth between sharp and off-curve, one of those selected
+  // Unselected smooth between sharp and off-curve, one of them selected
   [    ANY|NIL,    SHA|OFF|UNS,SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Interpolate"],
   [    ANY|NIL,    SHA|OFF|SEL,SMO|UNS,    OFF|UNS,    ANY|NIL,    true,       "Interpolate"],
+
+  // Two unselected smooth points between two off-curves, one of them selected
+  [    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "InterpolatePrevPrevNext"],
+  [    OFF|SEL,    SMO|UNS,    SMO|UNS,    OFF|UNS,    ANY|NIL,    true,       "InterpolatePrevPrevNext"],
 
 ]
 
@@ -550,11 +554,21 @@ const defaultActions = {
 
   "Interpolate": (points, prevPrev, prev, thePoint, next, nextNext) => {
     const lenPrevNext = vector.vectorLength(vector.subVectors(points[next], points[prev]));
-    const lenPrev = vector.vectorLength(vector.subVectors(points[thePoint], points[prev], ));
+    const lenPrev = vector.vectorLength(vector.subVectors(points[thePoint], points[prev]));
     let t = lenPrevNext > 0.0001 ? lenPrev / lenPrevNext : 0;
     return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
       const prevNext = vector.subVectors(points[next], points[prev]);
       return vector.addVectors(points[prev], vector.mulVector(prevNext, t));
+    };
+  },
+
+  "InterpolatePrevPrevNext": (points, prevPrev, prev, thePoint, next, nextNext) => {
+    const lenPrevPrevNext = vector.vectorLength(vector.subVectors(points[next], points[prevPrev]));
+    const lenPrevPrev = vector.vectorLength(vector.subVectors(points[thePoint], points[prevPrev]));
+    let t = lenPrevPrevNext > 0.0001 ? lenPrevPrev / lenPrevPrevNext : 0;
+    return (transform, points, prevPrev, prev, thePoint, next, nextNext) => {
+      const prevPrevNext = vector.subVectors(points[next], points[prevPrev]);
+      return vector.addVectors(points[prevPrev], vector.mulVector(prevPrevNext, t));
     };
   },
 
