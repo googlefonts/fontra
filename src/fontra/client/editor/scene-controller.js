@@ -411,15 +411,15 @@ export class SceneController {
     return this.sceneModel.getSelectionBox();
   }
 
-  async undo() {
-    return await this._undoRedo(false);
+  getUndoRedoInfo(isRedo) {
+    const glyphName = this.getSelectedGlyphName();
+    if (glyphName === undefined) {
+      return;
+    }
+    return this.sceneModel.fontController.getUndoRedoInfo(glyphName, isRedo);
   }
 
-  async redo() {
-    return await this._undoRedo(true);
-  }
-
-  async _undoRedo(isRedo) {
+  async doUndoRedo(isRedo) {
     const glyphName = this.getSelectedGlyphName();
     if (glyphName === undefined) {
       return;
