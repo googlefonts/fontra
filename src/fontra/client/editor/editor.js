@@ -488,7 +488,9 @@ export class EditorController {
             event.stopImmediatePropagation();
             await this.sceneController.doUndoRedo(isRedo);
             didHandleShortcut = true;
-            this.updateSlidersAndSources();
+            // Hmmm would be nice if the following was done automatically
+            await this.updateSlidersAndSources();
+            this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
           }
           break;
         default:
