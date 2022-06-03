@@ -336,14 +336,14 @@ class UndoStack {
   }
 
   undo() {
-    return this._undo(this.undoStack, this.redoStack);
+    return this._undoRedo(this.undoStack, this.redoStack);
   }
 
   redo() {
-    return this._undo(this.redoStack, this.undoStack);
+    return this._undoRedo(this.redoStack, this.undoStack);
   }
 
-  _undo(popStack, pushStack) {
+  _undoRedo(popStack, pushStack) {
     if (!popStack.length) {
       return undefined;
     }
