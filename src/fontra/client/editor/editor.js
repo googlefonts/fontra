@@ -692,7 +692,7 @@ export class EditorController {
           });
         }
         const baseGlyph = await this.fontController.getGlyph(component.name);
-        if (baseGlyph?.axes && baseGlyph.axes.length) {
+        if (baseGlyph?.axes && baseGlyph.axes.length && component.location) {
           formContents.push({"type": "header", "label": "Location"});
           for (const axis of baseGlyph.axes) {
             let value = component.location[axis.name];
