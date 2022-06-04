@@ -219,7 +219,6 @@ function unpackComponents(components, selectedComponentIndices) {
 
 
 function makePointEditFuncs(contours, behavior) {
-  let contourStartPoint = 0;
   const pointEditFuncs = [];
   const participatingPointIndices = new Array(contours.length);
   for (let contourIndex = 0; contourIndex < contours.length; contourIndex++) {
