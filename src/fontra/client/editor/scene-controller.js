@@ -69,7 +69,7 @@ export class SceneController {
       dy *= 10;
     }
     const behaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
-    const editBehavior = behaviorFactory.getBehavior("default");
+    const editBehavior = behaviorFactory.getBehavior(event.altKey ? "alternate" : "default");
     const delta = {"x": dx, "y": dy};
     const editChange = editBehavior.makeChangeForDelta(delta)
     await editContext.editAtomic(editChange, editBehavior.rollbackChange);
