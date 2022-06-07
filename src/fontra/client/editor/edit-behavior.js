@@ -645,7 +645,7 @@ const alternateRules = [
 
 const alternateConstrainRules = alternateRules.concat([
 
-  [    ANY|UNS,    SMO|UNS,    SHA|OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainAroundPrevPrev"],
+  [    ANY|UNS,    SMO|UNS,    SHA|OFF|SEL,ANY|NIL,    ANY|NIL,    false,      "ConstrainAroundPrevPrev"],
 
 ]);
 
