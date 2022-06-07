@@ -270,7 +270,7 @@ export class SceneController {
   }
 
   get mouseClickMargin() {
-    return this.canvasController.drawingParameters.cornerNodeSize;
+    return this.onePixelUnit * 10;
   }
 
   get selection() {
