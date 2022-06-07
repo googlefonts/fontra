@@ -49,3 +49,8 @@ export function intersect(pt1, pt2, pt3, pt4) {
   }
   return [intersection, t1, t2];
 }
+
+
+export function distance(pt1, pt2) {
+  return vectorLength(subVectors(pt2, pt1));
+}
