@@ -506,8 +506,8 @@ const actionFactories = {
   },
 
   "Interpolate": (prevPrev, prev, thePoint, next, nextNext) => {
-    const lenPrevNext = vector.vectorLength(vector.subVectors(next, prev));
-    const lenPrev = vector.vectorLength(vector.subVectors(thePoint, prev));
+    const lenPrevNext = vector.distance(next, prev);
+    const lenPrev = vector.distance(thePoint, prev);
     let t = lenPrevNext > 0.0001 ? lenPrev / lenPrevNext : 0;
     return (transform, prevPrev, prev, thePoint, next, nextNext) => {
       const prevNext = vector.subVectors(next, prev);
@@ -516,8 +516,8 @@ const actionFactories = {
   },
 
   "InterpolatePrevPrevNext": (prevPrev, prev, thePoint, next, nextNext) => {
-    const lenPrevPrevNext = vector.vectorLength(vector.subVectors(next, prevPrev));
-    const lenPrevPrev = vector.vectorLength(vector.subVectors(thePoint, prevPrev));
+    const lenPrevPrevNext = vector.distance(next, prevPrev);
+    const lenPrevPrev = vector.distance(thePoint, prevPrev);
     let t = lenPrevPrevNext > 0.0001 ? lenPrevPrev / lenPrevPrevNext : 0;
     return (transform, prevPrev, prev, thePoint, next, nextNext) => {
       const prevPrevNext = vector.subVectors(next, prevPrev);
