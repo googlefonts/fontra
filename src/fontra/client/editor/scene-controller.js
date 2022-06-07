@@ -466,5 +466,5 @@ function getBehaviorName(event) {
     "alternate",
     "alternate-constrain",
   ];
-  return behaviorNames[boolInt(event.shiftKey) + 2 * boolInt(event.metaKey)];
+  return behaviorNames[boolInt(event.shiftKey) + 2 * boolInt(event.altKey)];
 }
