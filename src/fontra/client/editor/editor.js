@@ -50,6 +50,7 @@ const drawingParametersLight = {
   cjkFrameOvershootColor: "#00BFFF26",
   cjkFrameSecondLineColor: "#A6296344",
   sidebearingBarColor: "#0004",
+  startPointIndicatorColor: "#989898A0",
   cornerNodeSize: 8,
   smoothNodeSize: 8,
   handleNodeSize: 6.5,
@@ -62,6 +63,8 @@ const drawingParametersLight = {
   selectedComponentLineWidth: 3,
   hoveredComponentLineWidth: 3,
   sidebearingBarExtent: 16,
+  startPointIndicatorLineWidth: 2,
+  startPointIndicatorRadius: 9,
 }
 
 
@@ -82,6 +85,7 @@ const drawingParametersDark = {
   cjkFrameStrokeColor: "#FFF6",
   cjkFrameSecondLineColor: "#A62963AA",
   sidebearingBarColor: "#FFF6",
+  startPointIndicatorColor: "#989898A0",
 }
 
 
