@@ -506,37 +506,11 @@ const actionFactories = {
     };
   },
 
-  "ConstrainInterpolatePrevNextNext": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
-    const lenPrevNextNext = vector.distance(nextNext, prev);
-    const lenPrev = vector.distance(thePoint, prev);
-    let t = lenPrevNextNext > 0.0001 ? lenPrev / lenPrevNextNext : 0;
+  "ConstrainAroundPrevPrevPrev": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
-      nextNext = transform.free(nextNext);
-      const prevNextNext = transform.constrainDelta(vector.subVectors(nextNext, prev));
-      return vector.addVectors(prev, vector.mulVector(prevNextNext, t));
-    };
-  },
-
-  "ConstrainInterpolatePrevPrevNext": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
-    const lenPrevPrevNext = vector.distance(next, prevPrev);
-    const lenPrevPrev = vector.distance(thePoint, prevPrev);
-    let t = lenPrevPrevNext > 0.0001 ? lenPrevPrev / lenPrevPrevNext : 0;
-    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
-      next = transform.free(next);
-      const prevPrevNext = transform.constrainDelta(vector.subVectors(next, prevPrev));
-      return vector.addVectors(prevPrev, vector.mulVector(prevPrevNext, t));
-    };
-  },
-
-  "ConstrainPrevAngleLive": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
-      const perpVector = vector.rotateVector90CW(vector.subVectors(prev, prevPrev));
-      thePoint = transform.free(thePoint);
-      const [intersection, t1, t2] = vector.intersect(prevPrev, prev, thePoint, vector.addVectors(thePoint, perpVector));
-      if (!intersection) {
-        // TODO ???
-      }
-      return intersection;
+      const newPoint = transform.free(thePoint);
+      const handleVector = transform.constrainDelta(vector.subVectors(newPoint, prevPrevPrev));
+      return vector.addVectors(prevPrevPrev, handleVector);
     };
   },
 
@@ -655,9 +629,7 @@ const alternateConstrainRules = alternateRules.concat([
   [    ANY|NIL,    SHA|OFF|UNS,SMO|UNS,    SHA|OFF|SEL,ANY|NIL,    ANY|NIL,    false,      "ConstrainAroundPrevPrev"],
 
   // Two unselected smooth points between two off-curves, one of them selected
-  [    ANY|NIL,    ANY|NIL,    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    false,      "ConstrainInterpolatePrevNextNext"],
-  [    ANY|NIL,    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    false,      "ConstrainInterpolatePrevPrevNext"],
-  [    ANY|NIL,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngleLive"],
+  [    ANY|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainAroundPrevPrevPrev"],
 
 ]);
 
