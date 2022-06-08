@@ -1,5 +1,6 @@
 import { union } from "../core/set-ops.js";
 import { withSavedState } from "../core/utils.js";
+import { subVectors } from "../core/vector.js";
 
 
 function requireEditingGlyph(func) {
@@ -235,6 +236,38 @@ export const drawHandlesLayer = requireEditingGlyph(glyphTranslate(
   context.lineWidth = drawingParameters.handleLineWidth;
   for (const [pt1, pt2] of glyph.path.iterHandles()) {
     strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
+  }
+}
+));
+
+
+const START_POINT_ARC_GAP_ANGLE = 0.25 * Math.PI;
+
+
+export const drawStartPointsLayer = requireEditingGlyph(glyphTranslate(
+(model, controller, context, glyph, drawingParameters) => {
+  context.strokeStyle = "#8888";
+  context.lineWidth = 2 * drawingParameters.handleLineWidth;
+  const radius = 1.1 * drawingParameters.cornerNodeSize;
+  let startPointIndex = 0;
+  for (const contourInfo of glyph.path.contourInfo) {
+    const startPoint = glyph.path.getPoint(startPointIndex);
+    let angle;
+    if (startPointIndex <= contourInfo.endPoint) {
+      const nextPoint = glyph.path.getPoint(startPointIndex + 1);
+      const direction = subVectors(nextPoint, startPoint);
+      angle = Math.atan2(direction.y, direction.x);
+    }
+    let startAngle = 0;
+    let endAngle = 2 * Math.PI;
+    if (angle !== undefined) {
+      startAngle += angle + START_POINT_ARC_GAP_ANGLE;
+      endAngle += angle - START_POINT_ARC_GAP_ANGLE;
+    }
+    context.beginPath();
+    context.arc(startPoint.x, startPoint.y, radius, startAngle, endAngle, false);
+    context.stroke();
+    startPointIndex += contourInfo.endPoint + 1;
   }
 }
 ));

@@ -188,6 +188,7 @@ export class EditorController {
       sceneDraw.drawSelectedGlyphLayer,
       sceneDraw.drawHoveredGlyphLayer,
       sceneDraw.drawComponentSelectionLayer,
+      sceneDraw.drawStartPointsLayer,
       sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,
       sceneDraw.drawPathSelectionLayer,
