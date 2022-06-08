@@ -173,14 +173,25 @@ function _findPointMatch(matchTree, neighborIndices, contourPoints) {
   neighborIndices = neighborIndices.slice(1);
   if (!neighborIndices.length) {
     // Leaf node
+    // if (branchSpecific && branchWildcard) {
+    //   console.log("----", branchSpecific, branchWildcard);
+    // }
     return branchSpecific || branchWildcard;
   }
+  // if (branchSpecific && branchWildcard) {
+  //   console.log("....pointType", pointType);
+  //   console.log("....branchSpecific", branchSpecific);
+  //   console.log("....branchWildcard", branchWildcard);
+  // }
   let matchSpecific, matchWildcard;
   if (branchSpecific) {
     matchSpecific = _findPointMatch(branchSpecific, neighborIndices, contourPoints);
   }
-  if (!matchSpecific && branchWildcard) {
+  if (branchWildcard) {
     matchWildcard = _findPointMatch(branchWildcard, neighborIndices, contourPoints);
   }
+  // if (matchSpecific && matchWildcard) {
+  //   console.log("+++", matchSpecific, matchWildcard);
+  // }
   return matchSpecific || matchWildcard;
 }

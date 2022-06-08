@@ -534,9 +534,8 @@ const defaultRules = [
   [    ANY|NIL,    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,true,       "ConstrainMiddle"],
 
   // Unselected free off-curve point, move with on-curve neighbor
-  [    ANY|NIL,    ANY|NIL,    SHA|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+  [    ANY|NIL,    ANY|NIL,    SHA|SMO|SEL,OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
   [    ANY|NIL,    OFF,        SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
-  [    ANY|NIL,    ANY|SEL,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
 
   // An unselected off-curve between two on-curve points
   [    ANY|NIL,    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
