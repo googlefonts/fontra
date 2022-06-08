@@ -23,7 +23,7 @@ const SMOOTH_SELECTED = "SMOOTH_SELECTED";
 const SMOOTH_UNSELECTED = "SMOOTH_UNSELECTED";
 const OFFCURVE_SELECTED = "OFFCURVE_SELECTED";
 const OFFCURVE_UNSELECTED = "OFFCURVE_UNSELECTED";
-const DOESNT_EXIST = "DOESNT_EXIST";
+export const DOESNT_EXIST = "DOESNT_EXIST";
 
 
 export const POINT_TYPES = [
@@ -50,13 +50,14 @@ export function buildPointMatchTree(rules) {
   const matchTree = {};
   let ruleIndex = 0;
   for (const rule of rules) {
-    if (rule.length !== 7) {
+    if (rule.length !== 8) {
       throw new Error("assert -- invalid rule");
     }
-    const matchPoints = rule.slice(0, 5);
+    const matchPoints = rule.slice(0, 6);
+    matchPoints.push(ANY|NIL);
     const actionForward = {
-      "constrain": rule[5],
-      "action": rule[6],
+      "constrain": rule[6],
+      "action": rule[7],
       "direction": 1,
       "ruleIndex": ruleIndex,
     }
@@ -92,6 +93,9 @@ function populateTree(tree, matchPoints, action) {
 
 
 function convertPointType(matchPoint) {
+  if (matchPoint === (ANY|NIL)) {
+    return ["*"];
+  }
   const sel = matchPoint & SEL;
   const unsel = matchPoint & UNS;
   const sharp = matchPoint & SHA;

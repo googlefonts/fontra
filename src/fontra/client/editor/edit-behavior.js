@@ -3,6 +3,7 @@ import { boolInt, modulo, reversed, sign } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import {
   NIL, SEL, UNS, SHA, SMO, OFF, ANY,
+  DOESNT_EXIST,
   POINT_TYPES,
   buildPointMatchTree,
 } from "./edit-behavior-support.js";
@@ -250,7 +251,7 @@ function makeContourPointEditFuncs(contour, behavior) {
       continue;
     }
     // console.log(i, match.action, match.ruleIndex);
-    const [prevPrev, prev, thePoint, next, nextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
+    const [prevPrevPrev, prevPrev, prev, thePoint, next, nextNext, nextNextNext] = match.direction > 0 ? neighborIndices : reversed(neighborIndices);
     participatingPointIndices.push(thePoint);
     const actionFunctionFactory = behavior.actions[match.action];
     if (actionFunctionFactory === undefined) {
@@ -258,6 +259,7 @@ function makeContourPointEditFuncs(contour, behavior) {
       continue;
     }
     const actionFunc = actionFunctionFactory(
+      originalPoints[prevPrevPrev],
       originalPoints[prevPrev],
       originalPoints[prev],
       originalPoints[thePoint],
@@ -269,6 +271,7 @@ function makeContourPointEditFuncs(contour, behavior) {
       editFuncsTransform.push(transform => {
         const point = actionFunc(
           transform,
+          originalPoints[prevPrevPrev],
           originalPoints[prevPrev],
           originalPoints[prev],
           originalPoints[thePoint],
@@ -283,6 +286,7 @@ function makeContourPointEditFuncs(contour, behavior) {
       editFuncsConstrain.push(transform => {
         const point = actionFunc(
           transform,
+          editPoints[prevPrevPrev],
           editPoints[prevPrev],
           editPoints[prev],
           editPoints[thePoint],
@@ -298,31 +302,46 @@ function makeContourPointEditFuncs(contour, behavior) {
 
 
 function findPointMatch(matchTree, pointIndex, contourPoints, numPoints, isClosed) {
-  let match = matchTree;
   const neighborIndices = new Array();
-  for (let neightborOffset = -2; neightborOffset < 3; neightborOffset++) {
-    let neighborIndex = pointIndex + neightborOffset;
+  for (let neighborOffset = -3; neighborOffset < 4; neighborOffset++) {
+    let neighborIndex = pointIndex + neighborOffset;
     if (isClosed) {
       neighborIndex = modulo(neighborIndex, numPoints);
     }
     neighborIndices.push(neighborIndex);
-    const point = contourPoints[neighborIndex];
-    let pointType;
-    if (point === undefined) {
-      pointType = DOESNT_EXIST;
-    } else {
-      const smooth = boolInt(point.smooth);
-      const oncurve = boolInt(point.type === 0);
-      const selected = boolInt(point.selected);
-      pointType = POINT_TYPES[smooth][oncurve][selected];
-    }
-    match = match[pointType];
-    if (match === undefined) {
-      // No match
-      break;
-    }
   }
+  const match = _findPointMatch(matchTree, neighborIndices, contourPoints);
   return [match, neighborIndices];
+}
+
+
+function _findPointMatch(matchTree, neighborIndices, contourPoints) {
+  const neighborIndex = neighborIndices[0];
+  const point = contourPoints[neighborIndex];
+  let pointType;
+  if (point === undefined) {
+    pointType = DOESNT_EXIST;
+  } else {
+    const smooth = boolInt(point.smooth);
+    const oncurve = boolInt(point.type === 0);
+    const selected = boolInt(point.selected);
+    pointType = POINT_TYPES[smooth][oncurve][selected];
+  }
+  const branchSpecific = matchTree[pointType];
+  const branchWildcard = matchTree["*"];
+  neighborIndices = neighborIndices.slice(1);
+  if (!neighborIndices.length) {
+    // Leaf node
+    return branchSpecific || branchWildcard;
+  }
+  let matchSpecific, matchWildcard;
+  if (branchSpecific) {
+    matchSpecific = _findPointMatch(branchSpecific, neighborIndices, contourPoints);
+  }
+  if (!matchSpecific && branchWildcard) {
+    matchWildcard = _findPointMatch(branchWildcard, neighborIndices, contourPoints);
+  }
+  return matchSpecific || matchWildcard;
 }
 
 
@@ -352,22 +371,22 @@ function constrainHorVerDiag(vector) {
 
 const actionFactories = {
 
-  "DontMove": (prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+  "DontMove": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       return thePoint;
     };
   },
 
-  "Move": (prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+  "Move": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       return transform.constrained(thePoint);
     };
   },
 
-  "RotateNext": (prevPrev, prev, thePoint, next, nextNext) => {
+  "RotateNext": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const handle = vector.subVectors(thePoint, prev);
     const handleLength = Math.hypot(handle.x, handle.y);
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const delta = vector.subVectors(prev, prevPrev);
       const angle = Math.atan2(delta.y, delta.x);
       const handlePoint = {
@@ -378,42 +397,42 @@ const actionFactories = {
     };
   },
 
-  "ConstrainPrevAngle": (prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainPrevAngle": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const pt1 = prevPrev;
     const pt2 = prev;
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
 
-  "ConstrainMiddle": (prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainMiddle": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const pt1 = prev;
     const pt2 = next;
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
 
-  "ConstrainMiddleTwo": (prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainMiddleTwo": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const pt1 = prevPrev;
     const pt2 = next;
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
       return intersection;
     };
   },
 
-  "TangentIntersect": (prevPrev, prev, thePoint, next, nextNext) => {
+  "TangentIntersect": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const nextHandle = vector.subVectors(thePoint, next);
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(
         prevPrev,
@@ -428,8 +447,8 @@ const actionFactories = {
     };
   },
 
-  "TangentIntersectLive": (prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+  "TangentIntersectLive": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(
         prevPrev,
@@ -444,10 +463,10 @@ const actionFactories = {
     };
   },
 
-  "HandleIntersect": (prevPrev, prev, thePoint, next, nextNext) => {
+  "HandleIntersect": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const handlePrev = vector.subVectors(thePoint, prev);
     const handleNext = vector.subVectors(thePoint, next);
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const [intersection, t1, t2] = vector.intersect(
         prev,
         vector.addVectors(prev, handlePrev),
@@ -461,16 +480,16 @@ const actionFactories = {
     };
   },
 
-  "ConstrainHandle": (prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainHandle": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const newPoint = transform.free(thePoint);
       const handleVector = transform.constrainDelta(vector.subVectors(newPoint, prev));
       return vector.addVectors(prev, handleVector);
     };
   },
 
-  "ConstrainHandleIntersect": (prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainHandleIntersect": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const newPoint = transform.free(thePoint);
       const handlePrev = transform.constrainDelta(vector.subVectors(newPoint, prev));
       const handleNext = transform.constrainDelta(vector.subVectors(newPoint, next));
@@ -487,9 +506,9 @@ const actionFactories = {
     };
   },
 
-  "ConstrainHandleIntersectPrev": (prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainHandleIntersectPrev": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const tangentPrev = vector.subVectors(prev, prevPrev);
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const newPoint = transform.free(thePoint);
       const handleNext = transform.constrainDelta(vector.subVectors(newPoint, next));
 
@@ -505,58 +524,58 @@ const actionFactories = {
     };
   },
 
-  "Interpolate": (prevPrev, prev, thePoint, next, nextNext) => {
+  "Interpolate": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const lenPrevNext = vector.distance(next, prev);
     const lenPrev = vector.distance(thePoint, prev);
     let t = lenPrevNext > 0.0001 ? lenPrev / lenPrevNext : 0;
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const prevNext = vector.subVectors(next, prev);
       return vector.addVectors(prev, vector.mulVector(prevNext, t));
     };
   },
 
-  "InterpolatePrevPrevNext": (prevPrev, prev, thePoint, next, nextNext) => {
+  "InterpolatePrevPrevNext": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const lenPrevPrevNext = vector.distance(next, prevPrev);
     const lenPrevPrev = vector.distance(thePoint, prevPrev);
     let t = lenPrevPrevNext > 0.0001 ? lenPrevPrev / lenPrevPrevNext : 0;
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const prevPrevNext = vector.subVectors(next, prevPrev);
       return vector.addVectors(prevPrev, vector.mulVector(prevPrevNext, t));
     };
   },
 
-  "ConstrainAroundPrevPrev": (prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainAroundPrevPrev": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const newPoint = transform.free(thePoint);
       const handleVector = transform.constrainDelta(vector.subVectors(newPoint, prevPrev));
       return vector.addVectors(prevPrev, handleVector);
     };
   },
 
-  "ConstrainInterpolatePrevNextNext": (prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainInterpolatePrevNextNext": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const lenPrevNextNext = vector.distance(nextNext, prev);
     const lenPrev = vector.distance(thePoint, prev);
     let t = lenPrevNextNext > 0.0001 ? lenPrev / lenPrevNextNext : 0;
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       nextNext = transform.free(nextNext);
       const prevNextNext = transform.constrainDelta(vector.subVectors(nextNext, prev));
       return vector.addVectors(prev, vector.mulVector(prevNextNext, t));
     };
   },
 
-  "ConstrainInterpolatePrevPrevNext": (prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainInterpolatePrevPrevNext": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     const lenPrevPrevNext = vector.distance(next, prevPrev);
     const lenPrevPrev = vector.distance(thePoint, prevPrev);
     let t = lenPrevPrevNext > 0.0001 ? lenPrevPrev / lenPrevPrevNext : 0;
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       next = transform.free(next);
       const prevPrevNext = transform.constrainDelta(vector.subVectors(next, prevPrev));
       return vector.addVectors(prevPrev, vector.mulVector(prevPrevNext, t));
     };
   },
 
-  "ConstrainPrevAngleLive": (prevPrev, prev, thePoint, next, nextNext) => {
-    return (transform, prevPrev, prev, thePoint, next, nextNext) => {
+  "ConstrainPrevAngleLive": (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
+    return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const perpVector = vector.rotateVector90CW(vector.subVectors(prev, prevPrev));
       thePoint = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(prevPrev, prev, thePoint, vector.addVectors(thePoint, perpVector));
@@ -571,50 +590,50 @@ const actionFactories = {
 
 
 const defaultRules = [
-  //   prevPrev    prev        the point   next        nextNext    Constrain   Action
+  //   prev3       prevPrev    prev        the point   next        nextNext    Constrain   Action
 
   // Default rule: if no other rules apply, just move the selected point
-  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
+  [    ANY|NIL,    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
 
   // Off-curve point next to a smooth point next to a selected point
-  [    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
+  [    ANY|NIL,    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
 
   // Selected tangent point: its neighboring off-curve point should move
-  [    SHA|SMO,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
+  [    ANY|NIL,    SHA|SMO,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
 
   // Selected tangent point, selected handle: constrain both on original angle
-  [    SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,ANY|NIL,    true,       "ConstrainPrevAngle"],
-  [    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,true,       "ConstrainMiddle"],
+  [    ANY|NIL,    SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,ANY|NIL,    true,       "ConstrainPrevAngle"],
+  [    ANY|NIL,    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,true,       "ConstrainMiddle"],
 
   // Free off-curve point, move with on-curve neighbor
-  [    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
-  [    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+  [    ANY|NIL,    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+  [    ANY|NIL,    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
 
   // An unselected off-curve between two on-curve points
-  [    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
-  [    ANY|SEL,    SMO|UNS,    OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersectLive"],
-  [    SMO|SHA,    SMO|SEL,    OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "TangentIntersect"],
-  [    SMO|SHA,    SMO|UNS,    OFF|SEL,    SMO|SEL,    ANY|NIL,    true,       "HandleIntersect"],
-  [    ANY|SEL,    SMO|UNS,    OFF|UNS,    SHA|SEL,    ANY|NIL,    true,       "TangentIntersect"],
+  [    ANY|NIL,    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
+  [    ANY|NIL,    ANY|SEL,    SMO|UNS,    OFF|UNS,    SMO,        ANY|NIL,    true,       "TangentIntersectLive"],
+  [    ANY|NIL,    SMO|SHA,    SMO|SEL,    OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "TangentIntersect"],
+  [    ANY|NIL,    SMO|SHA,    SMO|UNS,    OFF|SEL,    SMO|SEL,    ANY|NIL,    true,       "HandleIntersect"],
+  [    ANY|NIL,    ANY|SEL,    SMO|UNS,    OFF|UNS,    SHA|SEL,    ANY|NIL,    true,       "TangentIntersect"],
 
   // Tangent bcp constraint
-  [    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|UNS|NIL,ANY|NIL,    false,      "ConstrainPrevAngle"],
-  [    SMO|SHA,    SMO|UNS,    OFF|SEL,    SHA|OFF,    ANY|NIL,    false,      "ConstrainPrevAngle"],
+  [    ANY|NIL,    SMO|SHA,    SMO|UNS,    OFF|SEL,    ANY|UNS|NIL,ANY|NIL,    false,      "ConstrainPrevAngle"],
+  [    ANY|NIL,    SMO|SHA,    SMO|UNS,    OFF|SEL,    SHA|OFF,    ANY|NIL,    false,      "ConstrainPrevAngle"],
 
   // Two selected points with an unselected smooth point between them
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,    false,      "DontMove"],
-  [    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,    false,      "DontMove"],
+  [    ANY|NIL,    ANY|SEL,    SMO|UNS,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
+  [    ANY|NIL,    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    ANY|SEL,    false,      "DontMove"],
+  [    ANY|NIL,    ANY|SEL,    SMO|UNS,    ANY|SEL,    SMO|UNS,    SMO|UNS,    false,      "DontMove"],
 
   // Selected tangent with selected handle: constrain at original tangent line
-  [    SMO|SHA|UNS,SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
-  [    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    ANY|NIL,    true,       "ConstrainMiddle"],
+  [    ANY|NIL,    SMO|SHA|UNS,SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
+  [    ANY|NIL,    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    ANY|NIL,    true,       "ConstrainMiddle"],
 
   // Selected tangent, selected off-curve, selected smooth
-  [    SMO|SHA|UNS,SMO|SEL,    OFF|SEL,    SMO|SEL,    ANY|NIL,    true,       "HandleIntersect"],
+  [    ANY|NIL,    SMO|SHA|UNS,SMO|SEL,    OFF|SEL,    SMO|SEL,    ANY|NIL,    true,       "HandleIntersect"],
 
   // Selected single off-curve, locked between two unselected smooth points
-  [    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|SEL,    false,      "DontMove"],
+  [    ANY|NIL,    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|SEL,    false,      "DontMove"],
 
 ];
 
@@ -622,69 +641,69 @@ const defaultRules = [
 const constrainRules = defaultRules.concat([
 
   // Selected free off curve: constrain to 0, 45 or 90 degrees
-  [    OFF|UNS,    SMO|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
-  [    ANY|NIL,    SHA|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
-  [    OFF|UNS,    SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|UNS,    false,      "ConstrainHandleIntersect"],
-  [    ANY|NIL,    SHA|UNS,    OFF|SEL,    SHA|UNS,    ANY|NIL,    false,      "ConstrainHandleIntersect"],
-  [    OFF|UNS,    SMO|UNS,    OFF|SEL,    SHA|UNS,    ANY|NIL,    false,      "ConstrainHandleIntersect"],
-  [    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|UNS,    false,      "ConstrainHandleIntersectPrev"],
+  [    ANY|NIL,    OFF|UNS,    SMO|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
+  [    ANY|NIL,    ANY|NIL,    SHA|UNS,    OFF|SEL,    OFF|NIL,    ANY|NIL,    false,      "ConstrainHandle"],
+  [    ANY|NIL,    OFF|UNS,    SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|UNS,    false,      "ConstrainHandleIntersect"],
+  [    ANY|NIL,    ANY|NIL,    SHA|UNS,    OFF|SEL,    SHA|UNS,    ANY|NIL,    false,      "ConstrainHandleIntersect"],
+  [    ANY|NIL,    OFF|UNS,    SMO|UNS,    OFF|SEL,    SHA|UNS,    ANY|NIL,    false,      "ConstrainHandleIntersect"],
+  [    ANY|NIL,    SHA|SMO|UNS,SMO|UNS,    OFF|SEL,    SMO|UNS,    OFF|UNS,    false,      "ConstrainHandleIntersectPrev"],
 
   // Selected smooth between unselected on-curve and off-curve
-  [    ANY|UNS,    SMO|SHA|UNS,SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainHandle"],
+  [    ANY|NIL,    ANY|UNS,    SMO|SHA|UNS,SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainHandle"],
 
 ]);
 
 
 const alternateRules = [
-  //   prevPrev    prev        the point   next        nextNext    Constrain   Action
+  //   prev3       prevPrev    prev        the point   next        nextNext    Constrain   Action
 
   // Default rule: if no other rules apply, just move the selected point
-  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
+  [    ANY|NIL,    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
 
   // Selected smooth before unselected off-curve
-  [    ANY|NIL,    ANY|UNS,    SMO|SEL,    OFF,        ANY|NIL,    false,      "ConstrainMiddle"],
-  [    OFF,        SMO|SEL,    SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainMiddleTwo"],
-  [    OFF|UNS,    SMO|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    false,      "ConstrainMiddleTwo"],
-  [    SMO|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "RotateNext"],
-  [    SMO|SEL,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
-  [    SMO|UNS,    SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
+  [    ANY|NIL,    ANY|NIL,    ANY|UNS,    SMO|SEL,    OFF,        ANY|NIL,    false,      "ConstrainMiddle"],
+  [    ANY|NIL,    OFF,        SMO|SEL,    SMO|SEL,    OFF|UNS,    ANY|NIL,    false,      "ConstrainMiddleTwo"],
+  [    ANY|NIL,    OFF|UNS,    SMO|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    false,      "ConstrainMiddleTwo"],
+  [    ANY|NIL,    SMO|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "RotateNext"],
+  [    ANY|NIL,    SMO|SEL,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
+  [    ANY|NIL,    SMO|UNS,    SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngle"],
 
   // Smooth with two selected neighbors
-  [    ANY|NIL,    ANY|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    false,      "ConstrainMiddle"],
+  [    ANY|NIL,    ANY|NIL,    ANY|SEL,    SMO|SEL,    OFF|SEL,    ANY|NIL,    false,      "ConstrainMiddle"],
 
   // Unselected smooth between sharp and off-curve, one of them selected
-  [    ANY|NIL,    SHA|OFF|UNS,SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Interpolate"],
-  [    ANY|NIL,    SHA|OFF|SEL,SMO|UNS,    OFF|UNS,    ANY|NIL,    true,       "Interpolate"],
+  [    ANY|NIL,    ANY|NIL,    SHA|OFF|UNS,SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Interpolate"],
+  [    ANY|NIL,    ANY|NIL,    SHA|OFF|SEL,SMO|UNS,    OFF|UNS,    ANY|NIL,    true,       "Interpolate"],
 
   // Two unselected smooth points between two off-curves, one of them selected
-  [    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "InterpolatePrevPrevNext"],
-  [    OFF|SEL,    SMO|UNS,    SMO|UNS,    OFF|UNS,    ANY|NIL,    true,       "InterpolatePrevPrevNext"],
+  [    ANY|NIL,    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "InterpolatePrevPrevNext"],
+  [    ANY|NIL,    OFF|SEL,    SMO|UNS,    SMO|UNS,    OFF|UNS,    ANY|NIL,    true,       "InterpolatePrevPrevNext"],
 
   // An unselected smooth point between two selected off-curves
-  [    ANY|NIL,    OFF|SEL,    SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Move"],
+  [    ANY|NIL,    ANY|NIL,    OFF|SEL,    SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Move"],
 
   // Two unselected smooth points between two selected off-curves
-  [    OFF|SEL,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Move"],
+  [    ANY|NIL,    OFF|SEL,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    true,       "Move"],
 
   // Two selected points locked by angle
-  [    ANY,        SHA|SEL,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,false,      "ConstrainMiddle"],
-  [    ANY,        SMO|SEL,    SHA|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
-  [    ANY,        SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
+  [    ANY|NIL,    ANY,        SHA|SEL,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,false,      "ConstrainMiddle"],
+  [    ANY|NIL,    ANY,        SMO|SEL,    SHA|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
+  [    ANY|NIL,    ANY,        SMO|SEL,    OFF|SEL,    ANY|NIL,    ANY|NIL,    false,      "ConstrainPrevAngle"],
 
   // Selected off-curve locked between two selected smooth points
-  [    ANY|NIL,    SMO|SEL,    OFF|SEL,    SMO|SEL,    ANY|NIL,    false,      "DontMove"],
+  [    ANY|NIL,    ANY|NIL,    SMO|SEL,    OFF|SEL,    SMO|SEL,    ANY|NIL,    false,      "DontMove"],
 
 ]
 
 
 const alternateConstrainRules = alternateRules.concat([
 
-  [    SHA|OFF|UNS,SMO|UNS,    SHA|OFF|SEL,ANY|NIL,    ANY|NIL,    false,      "ConstrainAroundPrevPrev"],
+  [    ANY|NIL,    SHA|OFF|UNS,SMO|UNS,    SHA|OFF|SEL,ANY|NIL,    ANY|NIL,    false,      "ConstrainAroundPrevPrev"],
 
   // Two unselected smooth points between two off-curves, one of them selected
-  [    ANY|NIL,    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    false,      "ConstrainInterpolatePrevNextNext"],
-  [    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    false,      "ConstrainInterpolatePrevPrevNext"],
-  [    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngleLive"],
+  [    ANY|NIL,    ANY|NIL,    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    false,      "ConstrainInterpolatePrevNextNext"],
+  [    ANY|NIL,    OFF|UNS,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    false,      "ConstrainInterpolatePrevPrevNext"],
+  [    ANY|NIL,    SMO|UNS,    SMO|UNS,    OFF|SEL,    ANY|NIL,    ANY|NIL,    true,       "ConstrainPrevAngleLive"],
 
 ]);
 
