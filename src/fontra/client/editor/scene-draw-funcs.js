@@ -267,7 +267,7 @@ export const drawStartPointsLayer = requireEditingGlyph(glyphTranslate(
     context.beginPath();
     context.arc(startPoint.x, startPoint.y, radius, startAngle, endAngle, false);
     context.stroke();
-    startPointIndex += contourInfo.endPoint + 1;
+    startPointIndex = contourInfo.endPoint + 1;
   }
 }
 ));
