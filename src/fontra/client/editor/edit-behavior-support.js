@@ -1,4 +1,4 @@
-import { reversed } from "../core/utils.js";
+import { boolInt, modulo, reversed } from "../core/utils.js";
 
 
 // Or-able constants for rule definitions
@@ -26,7 +26,7 @@ const OFFCURVE_UNSELECTED = "OFFCURVE_UNSELECTED";
 const DOESNT_EXIST = "DOESNT_EXIST";
 
 
-export const POINT_TYPES = [
+const POINT_TYPES = [
   // usage: POINT_TYPES[smooth][oncurve][selected]
 
   // sharp
@@ -50,13 +50,14 @@ export function buildPointMatchTree(rules) {
   const matchTree = {};
   let ruleIndex = 0;
   for (const rule of rules) {
-    if (rule.length !== 7) {
+    if (rule.length !== 8) {
       throw new Error("assert -- invalid rule");
     }
-    const matchPoints = rule.slice(0, 5);
+    const matchPoints = rule.slice(0, 6);
+    matchPoints.push(ANY|NIL);
     const actionForward = {
-      "constrain": rule[5],
-      "action": rule[6],
+      "constrain": rule[6],
+      "action": rule[7],
       "direction": 1,
       "ruleIndex": ruleIndex,
     }
@@ -92,6 +93,9 @@ function populateTree(tree, matchPoints, action) {
 
 
 function convertPointType(matchPoint) {
+  if (matchPoint === (ANY|NIL)) {
+    return ["*"];
+  }
   const sel = matchPoint & SEL;
   const unsel = matchPoint & UNS;
   const sharp = matchPoint & SHA;
@@ -135,4 +139,48 @@ function convertPointType(matchPoint) {
     }
   }
   return pointTypes;
+}
+
+
+export function findPointMatch(matchTree, pointIndex, contourPoints, numPoints, isClosed) {
+  const neighborIndices = new Array();
+  for (let neighborOffset = -3; neighborOffset < 4; neighborOffset++) {
+    let neighborIndex = pointIndex + neighborOffset;
+    if (isClosed) {
+      neighborIndex = modulo(neighborIndex, numPoints);
+    }
+    neighborIndices.push(neighborIndex);
+  }
+  const match = _findPointMatch(matchTree, neighborIndices, contourPoints);
+  return [match, neighborIndices];
+}
+
+
+function _findPointMatch(matchTree, neighborIndices, contourPoints) {
+  const neighborIndex = neighborIndices[0];
+  const point = contourPoints[neighborIndex];
+  let pointType;
+  if (point === undefined) {
+    pointType = DOESNT_EXIST;
+  } else {
+    const smooth = boolInt(point.smooth);
+    const oncurve = boolInt(point.type === 0);
+    const selected = boolInt(point.selected);
+    pointType = POINT_TYPES[smooth][oncurve][selected];
+  }
+  const branchSpecific = matchTree[pointType];
+  const branchWildcard = matchTree["*"];
+  neighborIndices = neighborIndices.slice(1);
+  if (!neighborIndices.length) {
+    // Leaf node
+    return branchSpecific || branchWildcard;
+  }
+  let matchSpecific, matchWildcard;
+  if (branchSpecific) {
+    matchSpecific = _findPointMatch(branchSpecific, neighborIndices, contourPoints);
+  }
+  if (!matchSpecific && branchWildcard) {
+    matchWildcard = _findPointMatch(branchWildcard, neighborIndices, contourPoints);
+  }
+  return matchSpecific || matchWildcard;
 }
