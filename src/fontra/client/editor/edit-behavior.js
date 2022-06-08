@@ -1,11 +1,9 @@
 import { consolidateChanges } from "../core/changes.js";
-import { boolInt, modulo, reversed, sign } from "../core/utils.js";
+import { reversed, sign } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import {
   NIL, SEL, UNS, SHA, SMO, OFF, ANY,
-  DOESNT_EXIST,
-  POINT_TYPES,
-  buildPointMatchTree,
+  buildPointMatchTree, findPointMatch,
 } from "./edit-behavior-support.js";
 
 
@@ -298,50 +296,6 @@ function makeContourPointEditFuncs(contour, behavior) {
     }
   }
   return [editFuncsTransform.concat(editFuncsConstrain), participatingPointIndices];
-}
-
-
-function findPointMatch(matchTree, pointIndex, contourPoints, numPoints, isClosed) {
-  const neighborIndices = new Array();
-  for (let neighborOffset = -3; neighborOffset < 4; neighborOffset++) {
-    let neighborIndex = pointIndex + neighborOffset;
-    if (isClosed) {
-      neighborIndex = modulo(neighborIndex, numPoints);
-    }
-    neighborIndices.push(neighborIndex);
-  }
-  const match = _findPointMatch(matchTree, neighborIndices, contourPoints);
-  return [match, neighborIndices];
-}
-
-
-function _findPointMatch(matchTree, neighborIndices, contourPoints) {
-  const neighborIndex = neighborIndices[0];
-  const point = contourPoints[neighborIndex];
-  let pointType;
-  if (point === undefined) {
-    pointType = DOESNT_EXIST;
-  } else {
-    const smooth = boolInt(point.smooth);
-    const oncurve = boolInt(point.type === 0);
-    const selected = boolInt(point.selected);
-    pointType = POINT_TYPES[smooth][oncurve][selected];
-  }
-  const branchSpecific = matchTree[pointType];
-  const branchWildcard = matchTree["*"];
-  neighborIndices = neighborIndices.slice(1);
-  if (!neighborIndices.length) {
-    // Leaf node
-    return branchSpecific || branchWildcard;
-  }
-  let matchSpecific, matchWildcard;
-  if (branchSpecific) {
-    matchSpecific = _findPointMatch(branchSpecific, neighborIndices, contourPoints);
-  }
-  if (!matchSpecific && branchWildcard) {
-    matchWildcard = _findPointMatch(branchWildcard, neighborIndices, contourPoints);
-  }
-  return matchSpecific || matchWildcard;
 }
 
 

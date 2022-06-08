@@ -1,4 +1,4 @@
-import { reversed } from "../core/utils.js";
+import { boolInt, modulo, reversed } from "../core/utils.js";
 
 
 // Or-able constants for rule definitions
@@ -23,10 +23,10 @@ const SMOOTH_SELECTED = "SMOOTH_SELECTED";
 const SMOOTH_UNSELECTED = "SMOOTH_UNSELECTED";
 const OFFCURVE_SELECTED = "OFFCURVE_SELECTED";
 const OFFCURVE_UNSELECTED = "OFFCURVE_UNSELECTED";
-export const DOESNT_EXIST = "DOESNT_EXIST";
+const DOESNT_EXIST = "DOESNT_EXIST";
 
 
-export const POINT_TYPES = [
+const POINT_TYPES = [
   // usage: POINT_TYPES[smooth][oncurve][selected]
 
   // sharp
@@ -139,4 +139,48 @@ function convertPointType(matchPoint) {
     }
   }
   return pointTypes;
+}
+
+
+export function findPointMatch(matchTree, pointIndex, contourPoints, numPoints, isClosed) {
+  const neighborIndices = new Array();
+  for (let neighborOffset = -3; neighborOffset < 4; neighborOffset++) {
+    let neighborIndex = pointIndex + neighborOffset;
+    if (isClosed) {
+      neighborIndex = modulo(neighborIndex, numPoints);
+    }
+    neighborIndices.push(neighborIndex);
+  }
+  const match = _findPointMatch(matchTree, neighborIndices, contourPoints);
+  return [match, neighborIndices];
+}
+
+
+function _findPointMatch(matchTree, neighborIndices, contourPoints) {
+  const neighborIndex = neighborIndices[0];
+  const point = contourPoints[neighborIndex];
+  let pointType;
+  if (point === undefined) {
+    pointType = DOESNT_EXIST;
+  } else {
+    const smooth = boolInt(point.smooth);
+    const oncurve = boolInt(point.type === 0);
+    const selected = boolInt(point.selected);
+    pointType = POINT_TYPES[smooth][oncurve][selected];
+  }
+  const branchSpecific = matchTree[pointType];
+  const branchWildcard = matchTree["*"];
+  neighborIndices = neighborIndices.slice(1);
+  if (!neighborIndices.length) {
+    // Leaf node
+    return branchSpecific || branchWildcard;
+  }
+  let matchSpecific, matchWildcard;
+  if (branchSpecific) {
+    matchSpecific = _findPointMatch(branchSpecific, neighborIndices, contourPoints);
+  }
+  if (!matchSpecific && branchWildcard) {
+    matchWildcard = _findPointMatch(branchWildcard, neighborIndices, contourPoints);
+  }
+  return matchSpecific || matchWildcard;
 }
