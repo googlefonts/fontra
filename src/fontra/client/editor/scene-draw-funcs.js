@@ -246,7 +246,7 @@ const START_POINT_ARC_GAP_ANGLE = 0.25 * Math.PI;
 
 export const drawStartPointsLayer = requireEditingGlyph(glyphTranslate(
 (model, controller, context, glyph, drawingParameters) => {
-  context.strokeStyle = "#8888";
+  context.strokeStyle = "#98989880";
   context.lineWidth = 2 * drawingParameters.handleLineWidth;
   const radius = 1.1 * drawingParameters.cornerNodeSize;
   let startPointIndex = 0;
