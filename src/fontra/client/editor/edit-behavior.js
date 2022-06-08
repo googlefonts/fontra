@@ -523,19 +523,20 @@ const defaultRules = [
   // Default rule: if no other rules apply, just move the selected point
   [    ANY|NIL,    ANY|NIL,    ANY|NIL,    ANY|SEL,    ANY|NIL,    ANY|NIL,    false,      "Move"],
 
-  // Off-curve point next to a smooth point next to a selected point
-  [    ANY|NIL,    ANY|SEL,    SMO|UNS,    OFF,        OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
+  // Unselected off-curve point next to a smooth point next to a selected point
+  [    ANY|NIL,    ANY|SEL,    SMO|UNS,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
 
   // Selected tangent point: its neighboring off-curve point should move
-  [    ANY|NIL,    SHA|SMO,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
+  [    ANY|NIL,    SHA|SMO|UNS,SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    true,       "RotateNext"],
 
   // Selected tangent point, selected handle: constrain both on original angle
   [    ANY|NIL,    SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,ANY|NIL,    true,       "ConstrainPrevAngle"],
   [    ANY|NIL,    ANY,        SHA|SMO|UNS,SMO|SEL,    OFF|SEL,    OFF|SHA|NIL,true,       "ConstrainMiddle"],
 
-  // Free off-curve point, move with on-curve neighbor
-  [    ANY|NIL,    ANY|NIL,    SHA|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
-  [    ANY|NIL,    OFF,        SMO|SEL,    OFF,        OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+  // Unselected free off-curve point, move with on-curve neighbor
+  [    ANY|NIL,    ANY|NIL,    SHA|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+  [    ANY|NIL,    OFF,        SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
+  [    ANY|NIL,    ANY|SEL,    SMO|SEL,    OFF|UNS,    OFF|SHA|NIL,ANY|NIL,    false,      "Move"],
 
   // An unselected off-curve between two on-curve points
   [    ANY|NIL,    ANY,        SMO|SHA|SEL,OFF|UNS,    SMO|SHA,    ANY|NIL,    true,       "HandleIntersect"],
