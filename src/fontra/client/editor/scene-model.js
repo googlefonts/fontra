@@ -417,12 +417,13 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
       let bounds = item.glyph.controlBounds;
       if (!bounds) {
         // Empty glyph, make up box based on advance so it can still be clickable/hoverable
+        // TODO: use font's ascender/descender values
         bounds = {"xMin": 0, "yMin": -200, "xMax": item.glyph.xAdvance, "yMax": 800};
       }
       item.bounds = offsetRect(bounds, item.x, item.y);
     });
 
-    y -= 1100;  // TODO
+    y -= 1100;  // TODO #1: use UPM from font, #2 make user-configurable
     if (positionedLine.glyphs.length) {
       positionedLine.bounds = unionRect(
         ...positionedLine.glyphs.map(glyph => glyph.bounds)
