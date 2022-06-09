@@ -168,6 +168,34 @@ export const drawSidebearingsLayer = requireEditingGlyph(glyphTranslate(
 ));
 
 
+export const drawHoveredEmptyGlyphLayer = requireHoveredGlyph(
+(model, controller) => {
+  _drawSelectedEmptyGlyphLayer(model, controller, model.hoveredGlyph, "hoveredEmptyGlyphColor");
+}
+);
+
+
+export const drawSelectedEmptyGlyphLayer = requireSelectedGlyph(
+(model, controller) => {
+  _drawSelectedEmptyGlyphLayer(model, controller, model.selectedGlyph, "selectedEmptyGlyphColor");
+}
+);
+
+
+function _drawSelectedEmptyGlyphLayer(model, controller, selectedGlyph, emptyGlyphColorName) {
+  const context = controller.context;
+  const [lineIndex, glyphIndex] = selectedGlyph.split("/");
+  const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
+
+  if (!positionedGlyph.isEmpty) {
+    return;
+  }
+  const box = positionedGlyph.bounds;
+  context.fillStyle = controller.drawingParameters[emptyGlyphColorName];
+  context.fillRect(box.xMin, box.yMin, box.xMax - box.xMin, box.yMax - box.yMin);
+}
+
+
 export const drawHoveredGlyphLayer = requireHoveredGlyph(
 (model, controller) => {
   _drawSelectedGlyphLayer(model, controller, model.hoveredGlyph, "hoveredGlyphStrokeColor");
@@ -187,6 +215,9 @@ function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorNa
   const [lineIndex, glyphIndex] = selectedGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
 
+  if (positionedGlyph.isEmpty) {
+    return;
+  }
   context.translate(positionedGlyph.x, positionedGlyph.y);
   drawWithDoubleStroke(
     context,

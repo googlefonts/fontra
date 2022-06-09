@@ -140,3 +140,9 @@ export function rectFromArray(array) {
 export function rectToArray(rect) {
   return [rect.xMin, rect.yMin, rect.xMax, rect.yMax];
 }
+
+
+export function isEmptyRect(rect) {
+  const size = rectSize(rect);
+  return size.width === 0 && size.height === 0;
+}

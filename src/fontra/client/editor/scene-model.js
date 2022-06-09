@@ -1,5 +1,5 @@
 import { getAxisBaseName } from "../core/glyph-controller.js"
-import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "../core/rectangle.js";
+import { centeredRect, isEmptyRect, offsetRect, pointInRect, sectRect, unionRect } from "../core/rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
 import { mapForward, mapBackward } from "../core/var-model.js";
 import { isEqualSet, updateSet } from "../core/set-ops.js";
@@ -278,7 +278,7 @@ export class SceneModel {
         if (!positionedGlyph.bounds || !pointInRect(point.x, point.y, positionedGlyph.bounds)) {
           continue;
         }
-        if (pointInConvexPolygon(
+        if (positionedGlyph.isEmpty || pointInConvexPolygon(
           point.x - positionedGlyph.x,
           point.y - positionedGlyph.y,
           positionedGlyph.glyph.convexHull,
@@ -391,12 +391,10 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
       const location = {...localLocations[glyphInfo.glyphName], ...globalLocation}
       const glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName, location);
       if (glyphInstance) {
-        const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
         positionedLine.glyphs.push({
           "x": x,
           "y": y,
           "glyph": glyphInstance,
-          "bounds": bounds,
         })
         x += glyphInstance.xAdvance;
       }
@@ -411,14 +409,25 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
     if (offset) {
       positionedLine.glyphs.forEach(item => {
         item.x += offset;
-        item.bounds = item.bounds ? offsetRect(item.bounds, offset, 0) : undefined;
       });
     }
 
-    y -= 1100;  // TODO
+    // Add bounding boxes
+    positionedLine.glyphs.forEach(item => {
+      let bounds = item.glyph.controlBounds;
+      if (!bounds || isEmptyRect(bounds)) {
+        // Empty glyph, make up box based on advance so it can still be clickable/hoverable
+        // TODO: use font's ascender/descender values
+        bounds = {"xMin": 0, "yMin": -200, "xMax": item.glyph.xAdvance, "yMax": 800};
+        item.isEmpty = true;
+      }
+      item.bounds = offsetRect(bounds, item.x, item.y);
+    });
+
+    y -= 1100;  // TODO #1: use UPM from font, #2 make user-configurable
     if (positionedLine.glyphs.length) {
       positionedLine.bounds = unionRect(
-        ...positionedLine.glyphs.map(glyph => glyph.bounds).filter(bounds => bounds !== undefined)
+        ...positionedLine.glyphs.map(glyph => glyph.bounds)
       );
       positionedLines.push(positionedLine);
     }
