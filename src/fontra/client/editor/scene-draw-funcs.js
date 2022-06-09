@@ -187,11 +187,12 @@ function _drawSelectedEmptyGlyphLayer(model, controller, selectedGlyph, emptyGly
   const [lineIndex, glyphIndex] = selectedGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
 
-  if (positionedGlyph.isEmpty) {
-    const box = positionedGlyph.bounds;
-    context.fillStyle = controller.drawingParameters[emptyGlyphColorName];
-    context.fillRect(box.xMin, box.yMin, box.xMax - box.xMin, box.yMax - box.yMin);
+  if (!positionedGlyph.isEmpty) {
+    return;
   }
+  const box = positionedGlyph.bounds;
+  context.fillStyle = controller.drawingParameters[emptyGlyphColorName];
+  context.fillRect(box.xMin, box.yMin, box.xMax - box.xMin, box.yMax - box.yMin);
 }
 
 
@@ -214,17 +215,18 @@ function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorNa
   const [lineIndex, glyphIndex] = selectedGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
 
-  if (!positionedGlyph.isEmpty) {
-    context.translate(positionedGlyph.x, positionedGlyph.y);
-    drawWithDoubleStroke(
-      context,
-      positionedGlyph.glyph.flattenedPath2d,
-      10 * controller.onePixelUnit,
-      3 * controller.onePixelUnit,
-      controller.drawingParameters[strokeColorName],
-      controller.drawingParameters.glyphFillColor,
-    )
+  if (positionedGlyph.isEmpty) {
+    return;
   }
+  context.translate(positionedGlyph.x, positionedGlyph.y);
+  drawWithDoubleStroke(
+    context,
+    positionedGlyph.glyph.flattenedPath2d,
+    10 * controller.onePixelUnit,
+    3 * controller.onePixelUnit,
+    controller.drawingParameters[strokeColorName],
+    controller.drawingParameters.glyphFillColor,
+  )
 }
 
 
