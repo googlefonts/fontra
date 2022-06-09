@@ -391,12 +391,10 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
       const location = {...localLocations[glyphInfo.glyphName], ...globalLocation}
       const glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName, location);
       if (glyphInstance) {
-        const bounds = glyphInstance.controlBounds ? offsetRect(glyphInstance.controlBounds, x, y) : undefined;
         positionedLine.glyphs.push({
           "x": x,
           "y": y,
           "glyph": glyphInstance,
-          "bounds": bounds,
         })
         x += glyphInstance.xAdvance;
       }
@@ -411,9 +409,13 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
     if (offset) {
       positionedLine.glyphs.forEach(item => {
         item.x += offset;
-        item.bounds = item.bounds ? offsetRect(item.bounds, offset, 0) : undefined;
       });
     }
+
+    // Add bounding boxes
+    positionedLine.glyphs.forEach(item => {
+      item.bounds = item.glyph.controlBounds ? offsetRect(item.glyph.controlBounds, item.x, item.y) : undefined;
+    });
 
     y -= 1100;  // TODO
     if (positionedLine.glyphs.length) {
