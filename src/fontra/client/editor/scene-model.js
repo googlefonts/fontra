@@ -278,7 +278,7 @@ export class SceneModel {
         if (!positionedGlyph.bounds || !pointInRect(point.x, point.y, positionedGlyph.bounds)) {
           continue;
         }
-        if (pointInConvexPolygon(
+        if (!positionedGlyph.glyph.bounds || pointInConvexPolygon(
           point.x - positionedGlyph.x,
           point.y - positionedGlyph.y,
           positionedGlyph.glyph.convexHull,
@@ -414,7 +414,12 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
 
     // Add bounding boxes
     positionedLine.glyphs.forEach(item => {
-      item.bounds = item.glyph.controlBounds ? offsetRect(item.glyph.controlBounds, item.x, item.y) : undefined;
+      let bounds = item.glyph.controlBounds;
+      if (!bounds) {
+        // Empty glyph, make up box based on advance so it can still be clickable/hoverable
+        bounds = {"xMin": 0, "yMin": -200, "xMax": item.glyph.xAdvance, "yMax": 800};
+      }
+      item.bounds = offsetRect(bounds, item.x, item.y);
     });
 
     y -= 1100;  // TODO
