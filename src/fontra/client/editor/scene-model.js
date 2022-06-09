@@ -1,5 +1,5 @@
 import { getAxisBaseName } from "../core/glyph-controller.js"
-import { centeredRect, offsetRect, pointInRect, sectRect, unionRect } from "../core/rectangle.js";
+import { centeredRect, isEmptyRect, offsetRect, pointInRect, sectRect, unionRect } from "../core/rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
 import { mapForward, mapBackward } from "../core/var-model.js";
 import { isEqualSet, updateSet } from "../core/set-ops.js";
@@ -415,7 +415,7 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
     // Add bounding boxes
     positionedLine.glyphs.forEach(item => {
       let bounds = item.glyph.controlBounds;
-      if (!bounds) {
+      if (!bounds || isEmptyRect(bounds)) {
         // Empty glyph, make up box based on advance so it can still be clickable/hoverable
         // TODO: use font's ascender/descender values
         bounds = {"xMin": 0, "yMin": -200, "xMax": item.glyph.xAdvance, "yMax": 800};
