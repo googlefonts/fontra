@@ -209,7 +209,7 @@ export const drawSelectedGlyphLayer = requireSelectedGlyph(
 );
 
 
-function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorName, emptyGlyphColorName) {
+function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorName) {
   const context = controller.context;
   const [lineIndex, glyphIndex] = selectedGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
