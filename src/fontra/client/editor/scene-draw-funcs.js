@@ -191,7 +191,18 @@ function _drawSelectedEmptyGlyphLayer(model, controller, selectedGlyph, emptyGly
     return;
   }
   const box = positionedGlyph.bounds;
-  context.fillStyle = controller.drawingParameters[emptyGlyphColorName];
+  const fillColor = controller.drawingParameters[emptyGlyphColorName];
+  if (fillColor[0] === "#" && fillColor.length === 7) {
+    const gradient = context.createLinearGradient(0, box.yMin, 0, box.yMax);
+    gradient.addColorStop(0.00, fillColor + "00");
+    gradient.addColorStop(0.20, fillColor + "DD");
+    gradient.addColorStop(0.50, fillColor + "FF");
+    gradient.addColorStop(0.80, fillColor + "DD");
+    gradient.addColorStop(1.00, fillColor + "00");
+    context.fillStyle = gradient;
+  } else {
+    context.fillStyle = fillColor;
+  }
   context.fillRect(box.xMin, box.yMin, box.xMax - box.xMin, box.yMax - box.yMin);
 }
 
