@@ -278,7 +278,7 @@ export class SceneModel {
         if (!positionedGlyph.bounds || !pointInRect(point.x, point.y, positionedGlyph.bounds)) {
           continue;
         }
-        if (!positionedGlyph.glyph.bounds || pointInConvexPolygon(
+        if (positionedGlyph.isEmpty || pointInConvexPolygon(
           point.x - positionedGlyph.x,
           point.y - positionedGlyph.y,
           positionedGlyph.glyph.convexHull,
