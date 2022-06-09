@@ -268,12 +268,12 @@ export class EditorController {
         item.classList.remove("overlay-item-expanded");
         this._callToggleOverlayItem(item.id, false);
       }
+      this.canvasController.canvas.focus();
     }
 
     const collapseOnEscapeKey = event => {
       if (event.key === "Escape") {
         collapseAll();
-        this.canvasController.canvas.focus();
       }
     }
 
