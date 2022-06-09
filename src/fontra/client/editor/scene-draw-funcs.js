@@ -170,32 +170,38 @@ export const drawSidebearingsLayer = requireEditingGlyph(glyphTranslate(
 
 export const drawHoveredGlyphLayer = requireHoveredGlyph(
 (model, controller) => {
-  _drawSelectedGlyphLayer(model, controller, model.hoveredGlyph, "hoveredGlyphStrokeColor");
+  _drawSelectedGlyphLayer(model, controller, model.hoveredGlyph, "hoveredGlyphStrokeColor", "hoveredEmptyGlyphColor");
 }
 );
 
 
 export const drawSelectedGlyphLayer = requireSelectedGlyph(
 (model, controller) => {
-  _drawSelectedGlyphLayer(model, controller, model.selectedGlyph, "selectedGlyphStrokeColor");
+  _drawSelectedGlyphLayer(model, controller, model.selectedGlyph, "selectedGlyphStrokeColor", "selectedEmptyGlyphColor");
 }
 );
 
 
-function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorName) {
+function _drawSelectedGlyphLayer(model, controller, selectedGlyph, strokeColorName, emptyGlyphColorName) {
   const context = controller.context;
   const [lineIndex, glyphIndex] = selectedGlyph.split("/");
   const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
 
-  context.translate(positionedGlyph.x, positionedGlyph.y);
-  drawWithDoubleStroke(
-    context,
-    positionedGlyph.glyph.flattenedPath2d,
-    10 * controller.onePixelUnit,
-    3 * controller.onePixelUnit,
-    controller.drawingParameters[strokeColorName],
-    controller.drawingParameters.glyphFillColor,
-  )
+  if (!positionedGlyph.glyph.controlBounds) {
+    const box = positionedGlyph.bounds;
+    context.fillStyle = controller.drawingParameters[emptyGlyphColorName];
+    context.fillRect(box.xMin, box.yMin, box.xMax - box.xMin, box.yMax - box.yMin);
+  } else {
+    context.translate(positionedGlyph.x, positionedGlyph.y);
+    drawWithDoubleStroke(
+      context,
+      positionedGlyph.glyph.flattenedPath2d,
+      10 * controller.onePixelUnit,
+      3 * controller.onePixelUnit,
+      controller.drawingParameters[strokeColorName],
+      controller.drawingParameters.glyphFillColor,
+    )
+  }
 }
 
 

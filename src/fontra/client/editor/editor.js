@@ -51,6 +51,8 @@ const drawingParametersLight = {
   cjkFrameSecondLineColor: "#A6296344",
   sidebearingBarColor: "#0004",
   startPointIndicatorColor: "#989898A0",
+  hoveredEmptyGlyphColor: "#FFF",
+  selectedEmptyGlyphColor: "#FFF",
   cornerNodeSize: 8,
   smoothNodeSize: 8,
   handleNodeSize: 6.5,
@@ -86,6 +88,8 @@ const drawingParametersDark = {
   cjkFrameSecondLineColor: "#A62963AA",
   sidebearingBarColor: "#FFF6",
   startPointIndicatorColor: "#989898A0",
+  hoveredEmptyGlyphColor: "#181818",
+  selectedEmptyGlyphColor: "#181818",
 }
 
 
