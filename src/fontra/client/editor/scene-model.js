@@ -419,6 +419,7 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
         // Empty glyph, make up box based on advance so it can still be clickable/hoverable
         // TODO: use font's ascender/descender values
         bounds = {"xMin": 0, "yMin": -200, "xMax": item.glyph.xAdvance, "yMax": 800};
+        item.isEmpty = true;
       }
       item.bounds = offsetRect(bounds, item.x, item.y);
     });
