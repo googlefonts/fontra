@@ -273,6 +273,7 @@ export class EditorController {
     const collapseOnEscapeKey = event => {
       if (event.key === "Escape") {
         collapseAll();
+        this.canvasController.canvas.focus();
       }
     }
 
