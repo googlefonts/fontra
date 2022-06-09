@@ -425,7 +425,7 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
     y -= 1100;  // TODO
     if (positionedLine.glyphs.length) {
       positionedLine.bounds = unionRect(
-        ...positionedLine.glyphs.map(glyph => glyph.bounds).filter(bounds => bounds !== undefined)
+        ...positionedLine.glyphs.map(glyph => glyph.bounds)
       );
       positionedLines.push(positionedLine);
     }
