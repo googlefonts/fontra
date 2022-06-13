@@ -9,4 +9,5 @@ feature rlig {
   sub i n f o by info;
   sub b u l l s e y e by bullseye;
   sub t e x t t o o l by texttool;
+  sub p o i n t e r by pointer;
 } rlig;
