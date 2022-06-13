@@ -13,15 +13,6 @@
 
   --editor-mini-console-foreground-color-light: black;
   --editor-mini-console-foreground-color-dark: white;
-
-  --editor-icon-magnifying-glass-light: url("/images/magnifying-glass-black.svg");
-  --editor-icon-sliders-light: url("/images/sliders-black.svg");
-  --editor-icon-text-tool-light: url("/images/text-tool-black.svg");
-  --editor-icon-info-light: url("/images/info-black.svg");
-  --editor-icon-magnifying-glass-dark: url("/images/magnifying-glass-white.svg");
-  --editor-icon-sliders-dark: url("/images/sliders-white.svg");
-  --editor-icon-text-tool-dark: url("/images/text-tool-white.svg");
-  --editor-icon-info-dark: url("/images/info-white.svg");
 }
 
 :root {
@@ -30,11 +21,6 @@
   --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
   --editor-mini-console-background-color: var(--editor-mini-console-background-color-light);
   --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-light);
-
-  --editor-icon-magnifying-glass: var(--editor-icon-magnifying-glass-light);
-  --editor-icon-sliders: var(--editor-icon-sliders-light);
-  --editor-icon-text-tool: var(--editor-icon-text-tool-light);
-  --editor-icon-info: var(--editor-icon-info-light);
 }
 
 :root.dark-theme {
@@ -43,11 +29,6 @@
   --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
   --editor-mini-console-background-color: var(--editor-mini-console-background-color-dark);
   --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-dark);
-
-  --editor-icon-magnifying-glass: var(--editor-icon-magnifying-glass-dark);
-  --editor-icon-sliders: var(--editor-icon-sliders-dark);
-  --editor-icon-text-tool: var(--editor-icon-text-tool-dark);
-  --editor-icon-info: var(--editor-icon-info-dark);
 }
 
 
@@ -59,11 +40,6 @@
     --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
     --editor-mini-console-background-color: var(--editor-mini-console-background-color-dark);
     --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-dark);
-
-    --editor-icon-magnifying-glass: var(--editor-icon-magnifying-glass-dark);
-    --editor-icon-sliders: var(--editor-icon-sliders-dark);
-    --editor-icon-text-tool: var(--editor-icon-text-tool-dark);
-    --editor-icon-info: var(--editor-icon-info-dark);
   }
 
   :root.light-theme {
@@ -72,11 +48,6 @@
     --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
     --editor-mini-console-background-color: var(--editor-mini-console-background-color-light);
     --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-light);
-
-    --editor-icon-magnifying-glass: var(--editor-icon-magnifying-glass-light);
-    --editor-icon-sliders: var(--editor-icon-sliders-light);
-    --editor-icon-text-tool: var(--editor-icon-text-tool-light);
-    --editor-icon-info: var(--editor-icon-info-light);
   }
 
 }
@@ -211,6 +182,7 @@
 }
 
 .overlay-item > .overlay-item-fontra-icon {
+  /* more specific than the .overlay-item-expanded > div below */
   display: inline;
   font-family: fontra-icons;
   font-size: 1.8rem;
