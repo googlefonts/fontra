@@ -254,3 +254,5 @@ dist
 # Misc
 .DS_Store
 /vault/
+/icons/*.ttf
+/icons/*.woff2
