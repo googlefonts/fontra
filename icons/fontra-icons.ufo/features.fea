@@ -1,0 +1,12 @@
+languagesystem DFLT dflt;
+languagesystem latn dflt;
+
+
+feature rlig {
+  sub s l i d e r s by sliders;
+  sub l a y e r s by layers;
+  sub m a g n i f y i n g g l a s s by magnifyingglass;
+  sub i n f o by info;
+  sub b u l l s e y e by bullseye;
+  sub t e x t t o o l by texttool;
+} rlig;
