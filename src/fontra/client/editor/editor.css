@@ -192,14 +192,14 @@
 .overlay-item {
   background-color: var(--editor-overlay-item-background-color);
   border-radius: 0.75em;
-  padding: 0.6em;
+  padding: 0.4em;
   box-shadow: 1.5px 1.5px 5px #0006;
   cursor: pointer;
   transition: 0.15s;
   display: flex;
   overflow: scroll;
-  width: 2em;
-  height: 2em;
+  width: 2.2em;
+  height: 2.2em;
   max-height: calc(100% - 1.5em);
   pointer-events: auto;
   overflow: hidden;
@@ -210,6 +210,25 @@
   height: max-content;
 }
 
+.overlay-item > .overlay-item-fontra-icon {
+  display: inline;
+  font-family: fontra-icons;
+  font-size: 1.8rem;
+  text-align: center;
+  width: 100%;
+  position: relative;
+  line-height: 1.65rem;
+  transition: all 0.125s ease-in-out;
+}
+
+.overlay-item-fontra-icon:hover {
+  transform: scale(1.2, 1.2)
+}
+
+.overlay-item-fontra-icon:active {
+  transform: scale(1.2, 1.2)
+}
+
 .overlay-item > div {
   display: none;
 }
@@ -218,39 +237,7 @@
   display: inherit;
 }
 
-.icon-img {
-  position: relative  ;
-  width: 2em;
-  height: 2em;
-  transition: all 0.125s ease-in-out;
-}
-
-.icon-img:active {
-  pointer-events: none;
-}
-
-.icon-img:hover {
-  transform: scale(1.2, 1.2)
-
-}
-
-#glyph-search-img {
-  content: var(--editor-icon-magnifying-glass);
-}
-
-#slider-img {
-  content: var(--editor-icon-sliders);
-}
-
-#text-entry-img {
-  content: var(--editor-icon-text-tool);
-}
-
-#info-img {
-  content: var(--editor-icon-info);
-}
-
-.overlay-item-expanded > img {
+.overlay-item-expanded > .overlay-item-fontra-icon {
   display: none;
 }
 

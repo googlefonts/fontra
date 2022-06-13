@@ -287,18 +287,24 @@ export class EditorController {
 
     for (const item of overlayItems) {
       item.onkeydown = event => collapseOnEscapeKey(event);
-      item.onclick = event => {
-        if (overlayItems.indexOf(event.target) == -1) {
+      const overlayClick = overlayItem => {
+        if (overlayItems.indexOf(overlayItem) == -1) {
           return;
         }
         for (const item of overlayItems) {
-          item.classList.toggle("overlay-item-expanded", item === event.target);
-          if (item === event.target && item.id === "text-entry-overlay") {
+          item.classList.toggle("overlay-item-expanded", item === overlayItem);
+          if (item === overlayItem && item.id === "text-entry-overlay") {
             this.textEntryElement.focus();
           }
-          this._callToggleOverlayItem(item.id, item === event.target);
+          this._callToggleOverlayItem(item.id, item === overlayItem);
         }
       };
+      item.onclick = event => overlayClick(item);
+      for (const child of item.children) {
+        if (child.className === "overlay-item-fontra-icon") {
+          child.onclick = event => overlayClick(item);
+        }
+      }
     }
 
     canvas.addEventListener("mousedown", event => {
