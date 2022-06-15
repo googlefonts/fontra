@@ -18,12 +18,12 @@
 
         <div id="overlay-layer">
 
-          <div class="overlay-items overlay-items-left">
+          <div class="overlay-items overlay-items-navigation">
 
             <div class="overlay-item" id="glyph-search-overlay">
               <div class="overlay-item-fontra-icon">magnifyingglass</div>
 
-              <div class="glyphs-navigation">
+              <div class="overlay-content glyphs-navigation">
                 <div class="glyphs-search">
                   <input
                     type="text"
@@ -41,7 +41,7 @@
 
             <div class="overlay-item" id="sliders-overlay">
               <div class="overlay-item-fontra-icon">sliders</div>
-              <div class="sliders-and-sources">
+              <div class="overlay-content sliders-and-sources">
                 <div class="axis-sliders" id="axis-sliders">
                   <!-- contents will be filled dynamically -->
                 </div>
@@ -53,18 +53,24 @@
 
             <div class="overlay-item" id="text-entry-overlay">
               <div class="overlay-item-fontra-icon">texttool</div>
-              <div>
+              <div class="overlay-content">
                 <div id="text-entry" contenteditable="true"></div>
               </div>
             </div>
 
           </div>
 
-          <div class="overlay-items overlay-items-right">
+          <div class="overlay-items overlay-items-tools">
+            <div class="tool-item">
+              <div class="overlay-item-fontra-icon">pointer</div>
+            </div>
+          </div>
+
+          <div class="overlay-items overlay-items-info">
 
             <div class="overlay-item" id="selection-info-overlay">
               <div class="overlay-item-fontra-icon">info</div>
-              <div>
+              <div class="overlay-content">
                 <div id="selection-info">
                   <!-- contents will be filled dynamically -->
                 </div>
