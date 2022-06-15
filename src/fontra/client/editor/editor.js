@@ -257,7 +257,6 @@ export class EditorController {
     const editTools = document.querySelector("#edit-tools");
     const zoomTools = document.querySelector("#zoom-tools");
     for (const editToolItem of editTools.children) {
-      console.log(editToolItem, editToolItem.firstChild.innerText);
       const toolIdentifier = editToolItem.firstChild.innerText;
       editToolItem.firstChild.onclick = () => {
         // this.setSelectedTool(toolIdentifier);
