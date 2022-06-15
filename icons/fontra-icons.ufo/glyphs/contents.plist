@@ -44,6 +44,8 @@
     <string>p.glif</string>
     <key>pointer</key>
     <string>pointer.glif</string>
+    <key>pointeradd</key>
+    <string>pointeradd.glif</string>
     <key>q</key>
     <string>q.glif</string>
     <key>r</key>

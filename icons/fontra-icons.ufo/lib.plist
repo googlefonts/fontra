@@ -69,6 +69,7 @@
       <string>bullseye</string>
       <string>texttool</string>
       <string>pointer</string>
+      <string>pointeradd</string>
     </array>
   </dict>
 </plist>
