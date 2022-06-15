@@ -187,20 +187,45 @@
   overflow: hidden;
 }
 
-.tool-item {
+.tools-item {
+  display: flex;
   background-color: var(--editor-overlay-item-background-color);
-  border-radius: 0.75em;
-  padding: 0.4em;
+  border-radius: 0.5em;
   box-shadow: 1.5px 1.5px 5px #0006;
   cursor: pointer;
-  transition: 0.15s;
-  display: flex;
-  overflow: scroll;
-  width: 2.2em;
-  height: 2.2em;
-  max-height: calc(100% - 1.5em);
+  height: min-content;
   pointer-events: auto;
   overflow: hidden;
+}
+
+.tool-button {
+  background-color: var(--editor-overlay-item-background-color);
+  font-size: 1.8rem;
+  width:  2.5rem;
+  height:  1.9rem;
+  padding: 0.1rem;
+  font-family: fontra-icons;
+  text-align: center;
+  transition: 0.15s;
+}
+
+.tool-icon {
+  position: relative;
+  bottom: +0.25rem;
+}
+
+.tool-button:hover {
+  background-color: #EEE;
+  transform: scale(1.1, 1.1)
+}
+
+.tool-button:active {
+  background-color: #CCC;
+}
+
+.tool-button.selected {
+  background-color: #666;
+  color: white;
 }
 
 .overlay-item-expanded {
