@@ -235,9 +235,13 @@
   bottom: +0.3rem;
 }
 
+.tool-icon:hover {
+  position: relative;
+  transform: scale(1.1, 1.1)
+}
+
 .tool-button:hover {
   background-color: var(--editor-tool-button-hover-background-color);
-  transform: scale(1.1, 1.1)
 }
 
 .tool-button:active {
