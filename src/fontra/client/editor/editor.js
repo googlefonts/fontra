@@ -148,6 +148,9 @@ export class EditorController {
       await this.updateSlidersAndSources();
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     });
+    this.sceneController.addEventListener("selectedGlyphIsEditingChanged", async event => {
+      // console.log("selectedGlyphIsEditingChanged");
+    });
     this.sceneController.addEventListener("doubleClickedComponents", async event => {
       this.doubleClickedComponentsCallback(event)
     });
