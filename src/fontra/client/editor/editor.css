@@ -8,6 +8,15 @@
   --editor-overlay-item-background-color-light: white;
   --editor-overlay-item-background-color-dark: #484848;
 
+  --editor-tool-button-hover-background-color-light: #EEE;
+  --editor-tool-button-hover-background-color-dark: #333;
+
+  --editor-tool-button-active-background-color-light: #CCC;
+  --editor-tool-button-active-background-color-dark: #555;
+
+  --editor-tool-button-selected-background-color-light: #333;
+  --editor-tool-button-selected-background-color-dark: #CCC;
+
   --editor-mini-console-background-color-light: #DDD;
   --editor-mini-console-background-color-dark: #444;
 
@@ -19,6 +28,9 @@
   --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-light);
   --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-light);
   --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
+  --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-light);
+  --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-light);
+  --editor-tool-button-selected-background-color: var(--editor-tool-button-selected-background-color-light);
   --editor-mini-console-background-color: var(--editor-mini-console-background-color-light);
   --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-light);
 }
@@ -27,6 +39,9 @@
   --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-dark);
   --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-dark);
   --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
+  --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-dark);
+  --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-dark);
+  --editor-tool-button-selected-background-color: var(--editor-tool-button-selected-background-color-dark);
   --editor-mini-console-background-color: var(--editor-mini-console-background-color-dark);
   --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-dark);
 }
@@ -38,6 +53,9 @@
     --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-dark);
     --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-dark);
     --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
+    --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-dark);
+    --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-dark);
+    --editor-tool-button-selected-background-color: var(--editor-tool-button-selected-background-color-dark);
     --editor-mini-console-background-color: var(--editor-mini-console-background-color-dark);
     --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-dark);
   }
@@ -46,6 +64,9 @@
     --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-light);
     --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-light);
     --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
+    --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-light);
+    --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-light);
+    --editor-tool-button-selected-background-color: var(--editor-tool-button-selected-background-color-light);
     --editor-mini-console-background-color: var(--editor-mini-console-background-color-light);
     --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-light);
   }
@@ -215,17 +236,17 @@
 }
 
 .tool-button:hover {
-  background-color: #EEE;
+  background-color: var(--editor-tool-button-hover-background-color);
   transform: scale(1.1, 1.1)
 }
 
 .tool-button:active {
-  background-color: #CCC;
+  background-color: var(--editor-tool-button-active-background-color);
 }
 
 .tool-button.selected {
-  background-color: #666;
-  color: white;
+  background-color: var(--editor-tool-button-selected-background-color);
+  color: var(--background-color);
 }
 
 .overlay-item-expanded {
