@@ -218,6 +218,7 @@ export class EditorController {
     await this.fontController.initialize();
     await this.initGlyphNames();
     await this.initSliders();
+    this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
   }
@@ -250,6 +251,21 @@ export class EditorController {
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
       this.updateWindowLocationAndSelectionInfo();
     }));
+  }
+
+  initTools() {
+    const editTools = document.querySelector("#edit-tools");
+    const zoomTools = document.querySelector("#zoom-tools");
+    for (const editToolItem of editTools.children) {
+      console.log(editToolItem, editToolItem.firstChild.innerText);
+      const toolIdentifier = editToolItem.firstChild.innerText;
+      editToolItem.firstChild.onclick = () => {
+        // this.setSelectedTool(toolIdentifier);
+        for (const editToolItem of editTools.children) {
+          editToolItem.classList.toggle("selected", editToolItem.firstChild.innerText === toolIdentifier);
+        }
+      }
+    }
   }
 
   initSourcesList() {
