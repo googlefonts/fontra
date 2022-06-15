@@ -70,6 +70,8 @@
       <string>texttool</string>
       <string>pointer</string>
       <string>pointeradd</string>
+      <string>zoomin</string>
+      <string>zoomout</string>
     </array>
   </dict>
 </plist>
