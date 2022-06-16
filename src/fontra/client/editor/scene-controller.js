@@ -1,7 +1,7 @@
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "../core/set-ops.js";
-import { arrowKeyDeltas, boolInt, hasShortcutModifierKey } from "../core/utils.js";
+import { arrowKeyDeltas, boolInt, hasShortcutModifierKey, hyphenatedToCamelCase } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 
@@ -20,6 +20,7 @@ export class SceneController {
 
     this.sceneModel.fontController.addEditListener(async (...args) => await this.editListenerCallback(...args));
     this.canvasController.canvas.addEventListener("keydown", event => this.handleKeyDown(event));
+    this.selectedToolIdentifier = "edit-tool";
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
@@ -42,7 +43,7 @@ export class SceneController {
   }
 
   setSelectedTool(toolIdentifier) {
-    console.log("selected tool:", toolIdentifier);
+    this.selectedToolIdentifier = toolIdentifier;
   }
 
   handleKeyDown(event) {
@@ -105,6 +106,25 @@ export class SceneController {
   }
 
   async handleDrag(eventStream, initialEvent) {
+    const handlerName = hyphenatedToCamelCase("handle-drag-" + this.selectedToolIdentifier);
+    if (this[handlerName]) {
+      await this[handlerName](eventStream, initialEvent);
+    }
+  }
+
+  async handleDragHandTool(eventStream, initialEvent) {
+    const initialX = initialEvent.x;
+    const initialY = initialEvent.y;
+    const originalOriginX = this.canvasController.origin.x;
+    const originalOriginY = this.canvasController.origin.y;
+    for await (const event of eventStream) {
+      this.canvasController.origin.x = originalOriginX + event.x - initialX;
+      this.canvasController.origin.y = originalOriginY + event.y - initialY;
+      this.canvasController.setNeedsUpdate();
+    }
+  }
+
+  async handleDragEditTool(eventStream, initialEvent) {
     const point = this.localPoint(initialEvent);
     const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
     if (initialEvent.detail >= 2 || initialEvent.myTapCount >= 2) {
