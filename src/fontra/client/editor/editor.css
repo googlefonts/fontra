@@ -233,6 +233,7 @@
 .tool-icon {
   position: relative;
   bottom: +0.25rem;
+  user-select: none;
 }
 
 .tool-icon:hover {
