@@ -13,4 +13,5 @@ feature rlig {
   sub p o i n t e r a d d by pointeradd;
   sub p l u s by plus;
   sub m i n u s by minus;
+  sub h a n d by hand;
 } rlig;
