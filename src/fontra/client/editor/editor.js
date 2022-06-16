@@ -384,7 +384,7 @@ export class EditorController {
     for (const editToolItem of editTools.children) {
       editToolItem.classList.toggle("selected", editToolItem.firstChild.id === toolIdentifier);
     }
-    console.log("selected tool:", toolIdentifier);
+    this.sceneController.setSelectedTool(toolIdentifier);
   }
 
   themeChanged(event) {

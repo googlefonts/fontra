@@ -41,6 +41,10 @@ export class SceneController {
     }
   }
 
+  setSelectedTool(toolIdentifier) {
+    console.log("selected tool:", toolIdentifier);
+  }
+
   handleKeyDown(event) {
     if (!hasShortcutModifierKey(event) && event.key in arrowKeyDeltas) {
       this.handleArrowKeys(event);
