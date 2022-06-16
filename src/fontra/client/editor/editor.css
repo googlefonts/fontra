@@ -211,8 +211,8 @@
 .tools-item {
   display: flex;
   background-color: var(--editor-overlay-item-background-color);
-  border-radius: 0.5em;
-  box-shadow: 1.5px 1.5px 5px #0006;
+  border-radius: 0.65em;
+  box-shadow: 1.0px 1.0px 5px #0006;
   cursor: pointer;
   height: min-content;
   pointer-events: auto;
