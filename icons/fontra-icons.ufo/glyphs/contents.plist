@@ -76,9 +76,5 @@
     <string>y.glif</string>
     <key>z</key>
     <string>z.glif</string>
-    <key>zoomin</key>
-    <string>zoomin.glif</string>
-    <key>zoomout</key>
-    <string>zoomout.glif</string>
   </dict>
 </plist>

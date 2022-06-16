@@ -11,8 +11,6 @@ feature rlig {
   sub t e x t t o o l by texttool;
   sub p o i n t e r by pointer;
   sub p o i n t e r a d d by pointeradd;
-  sub z o o m i n by zoomin;
-  sub z o o m o u t by zoomout;
   sub p l u s by plus;
   sub m i n u s by minus;
 } rlig;
