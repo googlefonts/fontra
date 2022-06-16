@@ -262,7 +262,7 @@ export class EditorController {
       iconElement.onclick = () => {
         // this.setSelectedTool(toolIdentifier);
         for (const editToolItem of editTools.children) {
-          editToolItem.classList.toggle("selected", iconElement.id === toolIdentifier);
+          editToolItem.classList.toggle("selected", editToolItem.firstChild.id === toolIdentifier);
         }
       }
     }
