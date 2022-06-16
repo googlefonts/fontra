@@ -72,6 +72,8 @@
       <string>pointeradd</string>
       <string>zoomin</string>
       <string>zoomout</string>
+      <string>plus</string>
+      <string>minus</string>
     </array>
   </dict>
 </plist>
