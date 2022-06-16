@@ -263,6 +263,7 @@
   display: inline;
   font-family: fontra-icons;
   font-size: 1.8rem;
+  user-select: none;
   text-align: center;
   width: 100%;
   position: relative;
