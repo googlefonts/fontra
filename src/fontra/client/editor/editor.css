@@ -160,6 +160,7 @@
   z-index: 2;
   display: grid;
   grid-template-columns: 2fr 1fr 2fr;
+  grid-template-rows: 100%;
   position: absolute;
   gap: 1em;
   width: 100%;
@@ -200,10 +201,9 @@
   cursor: pointer;
   transition: 0.15s;
   display: flex;
-  overflow: scroll;
   width: 2.2em;
   height: 2.2em;
-  max-height: calc(100% - 1.5em);
+  max-height: calc(100% - 1em);
   pointer-events: auto;
   overflow: hidden;
 }
