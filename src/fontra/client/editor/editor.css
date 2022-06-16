@@ -220,12 +220,13 @@
 }
 
 .tool-button {
-  background-color: var(--editor-overlay-item-background-color);
+  font-family: fontra-icons;
   font-size: 1.7rem;
+  user-select: none;
+  background-color: var(--editor-overlay-item-background-color);
   width:  2.7rem;
   height:  1.9rem;
   padding: 0.1rem;
-  font-family: fontra-icons;
   text-align: center;
   transition: 0.15s;
 }
@@ -233,7 +234,6 @@
 .tool-icon {
   position: relative;
   bottom: +0.25rem;
-  user-select: none;
 }
 
 .tool-icon:hover {
