@@ -255,18 +255,15 @@ export class EditorController {
 
   initTools() {
     const editTools = document.querySelector("#edit-tools");
-    const zoomTools = document.querySelector("#zoom-tools");
     for (const editToolItem of editTools.children) {
-      const iconElement = editToolItem.firstChild;
-      const toolIdentifier = iconElement.id;
-      iconElement.onclick = () => {
-        // this.setSelectedTool(toolIdentifier);
-        for (const editToolItem of editTools.children) {
-          editToolItem.classList.toggle("selected", editToolItem.firstChild.id === toolIdentifier);
-        }
+      const toolElement = editToolItem.firstChild;
+      const toolIdentifier = toolElement.id;
+      toolElement.onclick = () => {
+        this.setSelectedTool(toolElement.id);
       }
     }
 
+    const zoomTools = document.querySelector("#zoom-tools");
     for (const zoomToolItem of zoomTools.children) {
       const zoomElement = zoomToolItem.firstChild;
       const toolIdentifier = zoomElement.id;
@@ -380,6 +377,14 @@ export class EditorController {
       this.miniConsole.style.display = "inherit";
       clearMiniConsole();
     }
+  }
+
+  setSelectedTool(toolIdentifier) {
+    const editTools = document.querySelector("#edit-tools");
+    for (const editToolItem of editTools.children) {
+      editToolItem.classList.toggle("selected", editToolItem.firstChild.id === toolIdentifier);
+    }
+    console.log("selected tool:", toolIdentifier);
   }
 
   themeChanged(event) {
