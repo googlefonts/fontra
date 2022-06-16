@@ -257,11 +257,12 @@ export class EditorController {
     const editTools = document.querySelector("#edit-tools");
     const zoomTools = document.querySelector("#zoom-tools");
     for (const editToolItem of editTools.children) {
-      const toolIdentifier = editToolItem.firstChild.innerText;
-      editToolItem.firstChild.onclick = () => {
+      const iconElement = editToolItem.firstChild;
+      const toolIdentifier = iconElement.id;
+      iconElement.onclick = () => {
         // this.setSelectedTool(toolIdentifier);
         for (const editToolItem of editTools.children) {
-          editToolItem.classList.toggle("selected", editToolItem.firstChild.innerText === toolIdentifier);
+          editToolItem.classList.toggle("selected", iconElement.id === toolIdentifier);
         }
       }
     }
