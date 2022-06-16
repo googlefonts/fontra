@@ -531,11 +531,11 @@ export class EditorController {
           break;
         case "+":
         case "=":
-          if (event.key === "+" || (event.key === "=" && event.shiftKey)) {
-            this.zoomIn();
-          } else {
-            this.zoomFit();
-          }
+          this.zoomIn();
+          didHandleShortcut = true;
+          break;
+        case "0":
+          this.zoomFit();
           didHandleShortcut = true;
           break;
         case "z":
