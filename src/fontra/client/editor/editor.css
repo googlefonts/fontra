@@ -221,8 +221,8 @@
 
 .tool-button {
   background-color: var(--editor-overlay-item-background-color);
-  font-size: 1.8rem;
-  width:  2.5rem;
+  font-size: 1.7rem;
+  width:  2.7rem;
   height:  1.9rem;
   padding: 0.1rem;
   font-family: fontra-icons;
@@ -232,7 +232,7 @@
 
 .tool-icon {
   position: relative;
-  bottom: +0.3rem;
+  bottom: +0.25rem;
 }
 
 .tool-icon:hover {
