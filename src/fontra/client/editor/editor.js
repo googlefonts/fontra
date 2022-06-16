@@ -148,6 +148,9 @@ export class EditorController {
       await this.updateSlidersAndSources();
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
     });
+    this.sceneController.addEventListener("selectedGlyphIsEditingChanged", async event => {
+      // console.log("selectedGlyphIsEditingChanged");
+    });
     this.sceneController.addEventListener("doubleClickedComponents", async event => {
       this.doubleClickedComponentsCallback(event)
     });
@@ -215,6 +218,7 @@ export class EditorController {
     await this.fontController.initialize();
     await this.initGlyphNames();
     await this.initSliders();
+    this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
   }
@@ -247,6 +251,36 @@ export class EditorController {
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
       this.updateWindowLocationAndSelectionInfo();
     }));
+  }
+
+  initTools() {
+    const editTools = document.querySelector("#edit-tools");
+    for (const editToolItem of editTools.children) {
+      const toolElement = editToolItem.firstChild;
+      const toolIdentifier = toolElement.id;
+      toolElement.onclick = () => {
+        this.setSelectedTool(toolElement.id);
+      }
+    }
+
+    const zoomTools = document.querySelector("#zoom-tools");
+    for (const zoomToolItem of zoomTools.children) {
+      const zoomElement = zoomToolItem.firstChild;
+      const toolIdentifier = zoomElement.id;
+      zoomElement.onclick = () => {
+        switch (toolIdentifier) {
+          case "zoom-in":
+            this.zoomIn();
+            break;
+          case "zoom-out":
+            this.zoomOut();
+            break;
+          case "zoom-fit-selection":
+            this.zoomFit();
+            break;
+        }
+      };
+    }
   }
 
   initSourcesList() {
@@ -343,6 +377,14 @@ export class EditorController {
       this.miniConsole.style.display = "inherit";
       clearMiniConsole();
     }
+  }
+
+  setSelectedTool(toolIdentifier) {
+    const editTools = document.querySelector("#edit-tools");
+    for (const editToolItem of editTools.children) {
+      editToolItem.classList.toggle("selected", editToolItem.firstChild.id === toolIdentifier);
+    }
+    console.log("selected tool:", toolIdentifier);
   }
 
   themeChanged(event) {

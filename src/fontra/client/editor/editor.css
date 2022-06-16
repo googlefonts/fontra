@@ -8,6 +8,15 @@
   --editor-overlay-item-background-color-light: white;
   --editor-overlay-item-background-color-dark: #484848;
 
+  --editor-tool-button-hover-background-color-light: #EEE;
+  --editor-tool-button-hover-background-color-dark: #333;
+
+  --editor-tool-button-active-background-color-light: #CCC;
+  --editor-tool-button-active-background-color-dark: #555;
+
+  --editor-tool-button-selected-background-color-light: #666;
+  --editor-tool-button-selected-background-color-dark: #CCC;
+
   --editor-mini-console-background-color-light: #DDD;
   --editor-mini-console-background-color-dark: #444;
 
@@ -19,6 +28,9 @@
   --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-light);
   --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-light);
   --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
+  --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-light);
+  --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-light);
+  --editor-tool-button-selected-background-color: var(--editor-tool-button-selected-background-color-light);
   --editor-mini-console-background-color: var(--editor-mini-console-background-color-light);
   --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-light);
 }
@@ -27,6 +39,9 @@
   --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-dark);
   --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-dark);
   --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
+  --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-dark);
+  --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-dark);
+  --editor-tool-button-selected-background-color: var(--editor-tool-button-selected-background-color-dark);
   --editor-mini-console-background-color: var(--editor-mini-console-background-color-dark);
   --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-dark);
 }
@@ -38,6 +53,9 @@
     --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-dark);
     --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-dark);
     --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
+    --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-dark);
+    --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-dark);
+    --editor-tool-button-selected-background-color: var(--editor-tool-button-selected-background-color-dark);
     --editor-mini-console-background-color: var(--editor-mini-console-background-color-dark);
     --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-dark);
   }
@@ -46,6 +64,9 @@
     --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-light);
     --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-light);
     --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
+    --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-light);
+    --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-light);
+    --editor-tool-button-selected-background-color: var(--editor-tool-button-selected-background-color-light);
     --editor-mini-console-background-color: var(--editor-mini-console-background-color-light);
     --editor-mini-console-foreground-color: var(--editor-mini-console-foreground-color-light);
   }
@@ -137,14 +158,13 @@
 
 #overlay-layer {
   z-index: 2;
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 2fr 1fr 2fr;
   position: absolute;
   gap: 1em;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  justify-content: space-between;
 }
 
 .overlay-items {
@@ -154,6 +174,18 @@
   padding: 1em;
   /*width: min-content;*/
   /*height: 100%;*/
+}
+
+.overlay-items-navigation {
+
+}
+
+.overlay-items-tools {
+  justify-self: center;
+}
+
+.overlay-items-info {
+  justify-self: end;
 }
 
 #overlay-layer.overlay-layer-hidden {
@@ -176,16 +208,62 @@
   overflow: hidden;
 }
 
+.tools-item {
+  display: flex;
+  background-color: var(--editor-overlay-item-background-color);
+  border-radius: 0.65em;
+  box-shadow: 1.0px 1.0px 5px #0006;
+  cursor: pointer;
+  height: min-content;
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.tool-button {
+  font-family: fontra-icons;
+  font-size: 1.7rem;
+  user-select: none;
+  background-color: var(--editor-overlay-item-background-color);
+  width:  2.7rem;
+  height:  1.9rem;
+  padding: 0.1rem;
+  text-align: center;
+  transition: 0.15s;
+}
+
+.tool-icon {
+  position: relative;
+  bottom: +0.25rem;
+}
+
+.tool-icon:hover {
+  position: relative;
+  transform: scale(1.1, 1.1)
+}
+
+.tool-button:hover {
+  background-color: var(--editor-tool-button-hover-background-color);
+}
+
+.tool-button:active {
+  background-color: var(--editor-tool-button-active-background-color);
+}
+
+.tool-button.selected {
+  background-color: var(--editor-tool-button-selected-background-color);
+  color: var(--background-color);
+}
+
 .overlay-item-expanded {
   width: max-content;
   height: max-content;
 }
 
-.overlay-item > .overlay-item-fontra-icon {
-  /* more specific than the .overlay-item-expanded > div below */
+.overlay-item-fontra-icon {
   display: inline;
   font-family: fontra-icons;
   font-size: 1.8rem;
+  user-select: none;
   text-align: center;
   width: 100%;
   position: relative;
@@ -201,11 +279,11 @@
   transform: scale(1.2, 1.2)
 }
 
-.overlay-item > div {
+.overlay-item > .overlay-content {
   display: none;
 }
 
-.overlay-item-expanded > div {
+.overlay-item-expanded > .overlay-content {
   display: inherit;
 }
 

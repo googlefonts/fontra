@@ -36,12 +36,16 @@
     <string>m.glif</string>
     <key>magnifyingglass</key>
     <string>magnifyingglass.glif</string>
+    <key>minus</key>
+    <string>minus.glif</string>
     <key>n</key>
     <string>n.glif</string>
     <key>o</key>
     <string>o.glif</string>
     <key>p</key>
     <string>p.glif</string>
+    <key>plus</key>
+    <string>plus.glif</string>
     <key>pointer</key>
     <string>pointer.glif</string>
     <key>pointeradd</key>

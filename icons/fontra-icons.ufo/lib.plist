@@ -70,6 +70,8 @@
       <string>texttool</string>
       <string>pointer</string>
       <string>pointeradd</string>
+      <string>plus</string>
+      <string>minus</string>
     </array>
   </dict>
 </plist>
