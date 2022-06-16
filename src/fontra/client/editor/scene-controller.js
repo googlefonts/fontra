@@ -117,11 +117,13 @@ export class SceneController {
     const initialY = initialEvent.y;
     const originalOriginX = this.canvasController.origin.x;
     const originalOriginY = this.canvasController.origin.y;
+    this.canvasController.canvas.style.cursor = "grabbing";
     for await (const event of eventStream) {
       this.canvasController.origin.x = originalOriginX + event.x - initialX;
       this.canvasController.origin.y = originalOriginY + event.y - initialY;
       this.canvasController.setNeedsUpdate();
     }
+    this.canvasController.canvas.style.cursor = "grab";
   }
 
   async handleDragEditTool(eventStream, initialEvent) {
@@ -270,6 +272,17 @@ export class SceneController {
   }
 
   handleHover(event) {
+    const handlerName = hyphenatedToCamelCase("handle-hover-" + this.selectedToolIdentifier);
+    if (this[handlerName]) {
+      this[handlerName](event);
+    }
+  }
+
+  handleHoverHandTool(event) {
+    this.canvasController.canvas.style.cursor = "grab";
+  }
+
+  handleHoverEditTool(event) {
     const point = this.localPoint(event);
     const size = this.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
