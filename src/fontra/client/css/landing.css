@@ -48,10 +48,8 @@ a {
 
 
 .landing-body {
-  margin: 1em;
-  padding-left: 5em;
-  display: flex;
-  flex-direction: row;
+  height: 100%;
+  width: 100%;
 }
 
 .landing-content {
@@ -59,6 +57,9 @@ a {
   flex-direction: column;
   align-items: flex-start;
   gap: 1em;
+  height: calc(100% - 2rem);
+  padding-top: 1em;
+  padding-left: 6em;
 }
 
 .landing-item {
