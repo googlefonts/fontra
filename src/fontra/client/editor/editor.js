@@ -266,6 +266,24 @@ export class EditorController {
         }
       }
     }
+
+    for (const zoomToolItem of zoomTools.children) {
+      const zoomElement = zoomToolItem.firstChild;
+      const toolIdentifier = zoomElement.id;
+      zoomElement.onclick = () => {
+        switch (toolIdentifier) {
+          case "zoom-in":
+            this.zoomIn();
+            break;
+          case "zoom-out":
+            this.zoomOut();
+            break;
+          case "zoom-fit-selection":
+            this.zoomFit();
+            break;
+        }
+      };
+    }
   }
 
   initSourcesList() {
