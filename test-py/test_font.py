@@ -1,7 +1,7 @@
 import contextlib
+from importlib.metadata import entry_points
 import pathlib
 import pytest
-from fontra.backends import getBackendClass
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.backends.rcjk_fs import RCJKBackend
 
@@ -645,7 +645,8 @@ testFontPaths = {
 
 
 def getTestFont(backendName):
-    cls = getBackendClass(backendName)
+    backendEntryPoints = entry_points(group="fontra.filesystem_backends")
+    cls = backendEntryPoints[backendName].load()
     return cls.fromPath(testFontPaths[backendName])
 
 
@@ -700,17 +701,6 @@ getBackendTestData = [
     ("designspace", DesignspaceBackend),
     ("ufo", UFOBackend),
 ]
-
-
-@pytest.mark.parametrize("extension, backendClass", getBackendTestData)
-def test_getBackendClass(extension, backendClass):
-    cls = getBackendClass(extension)
-    assert cls is backendClass
-
-
-def test_getBackendClassFail():
-    with pytest.raises(ValueError):
-        _ = getBackendClass("foo")
 
 
 getGlobalAxesTestData = [
