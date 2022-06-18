@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from importlib import resources
+from importlib.metadata import entry_points
 import logging
 import mimetypes
 from urllib.parse import quote, parse_qs
@@ -36,11 +37,14 @@ class FontraServer:
         self.startupTime = datetime.now(timezone.utc).replace(microsecond=0)
         self.authorizedSessions = {}
         self.httpApp = web.Application()
+        self.viewEntryPoints = {
+            ep.name: ep.value for ep in entry_points(group="fontra.views")
+        }
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
         routes.append(web.post("/login", self.loginHandler))
         routes.append(web.post("/logout", self.logoutHandler))
-        for viewName in listBuiltinViews():
+        for viewName in self.viewEntryPoints:
             routes.append(
                 web.get(
                     f"/{viewName}/-/{{path:.*}}",
@@ -177,7 +181,9 @@ class FontraServer:
             return web.HTTPNotFound()
 
         try:
-            html = resources.read_text(f"fontra.client.{viewName}", f"{viewName}.html")
+            html = resources.read_text(
+                self.viewEntryPoints[viewName], f"{viewName}.html"
+            )
         except (FileNotFoundError, ModuleNotFoundError):
             return web.HTTPNotFound()
 
@@ -185,17 +191,6 @@ class FontraServer:
         response.set_cookie("websocket-port", str(self.webSocketProxyPort))
         response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
-
-
-def listBuiltinViews():
-    viewNames = []
-    mod = "fontra.client"
-    for item in resources.contents(mod):
-        if not resources.is_resource(mod, item):
-            subMod = mod + "." + item
-            if resources.is_resource(subMod, item + ".html"):
-                viewNames.append(item)
-    return viewNames
 
 
 @asynccontextmanager

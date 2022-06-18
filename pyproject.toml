@@ -36,6 +36,10 @@ classifiers = [
 fontra = "fontra.__main__:main"
 
 
+[project.entry-points."fontra.views"]
+editor = "fontra.client.editor"
+
+
 [build-system]
 requires = ["setuptools", "setuptools-scm[toml]"]
 build-backend = "setuptools.build_meta"
