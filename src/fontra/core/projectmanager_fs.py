@@ -1,8 +1,8 @@
 from contextlib import contextmanager
+from importlib.metadata import entry_points
 import logging
 import pathlib
 import secrets
-from ..backends import getBackendClass
 from .fonthandler import FontHandler
 
 
@@ -14,8 +14,11 @@ def getFileSystemBackend(path):
     if not path.exists():
         raise FileNotFoundError(path)
     logger.info(f"loading project {path.name}...")
-    fileType = path.suffix.lstrip(".")
-    backendClass = getBackendClass(fileType)
+    fileType = path.suffix.lstrip(".").lower()
+    backendEntryPoints = entry_points(group="fontra.filesystem_backends")
+    entryPoint = backendEntryPoints[fileType]
+    backendClass = entryPoint.load()
+
     backend = backendClass.fromPath(path)
     logger.info(f"done loading {path.name}")
     return backend
@@ -29,7 +32,8 @@ class FileSystemProjectManager:
     def __init__(self, rootPath, maxFolderDepth=3):
         self.rootPath = rootPath
         self.maxFolderDepth = maxFolderDepth
-        self.extensions = {".designspace", ".ufo", ".rcjk"}
+        backendEntryPoints = entry_points(group="fontra.filesystem_backends")
+        self.extensions = {f".{ep.name}" for ep in backendEntryPoints}
         self.fontHandlers = {}
 
     async def close(self):

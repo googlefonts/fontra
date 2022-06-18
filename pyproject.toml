@@ -40,6 +40,12 @@ fontra = "fontra.__main__:main"
 editor = "fontra.client.editor"
 
 
+[project.entry-points."fontra.filesystem_backends"]
+rcjk = "fontra.backends.rcjk_fs:RCJKBackend"
+designspace = "fontra.backends.designspace:DesignspaceBackend"
+ufo = "fontra.backends.designspace:UFOBackend"
+
+
 [build-system]
 requires = ["setuptools", "setuptools-scm[toml]"]
 build-backend = "setuptools.build_meta"
