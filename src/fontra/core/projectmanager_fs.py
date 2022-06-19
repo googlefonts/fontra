@@ -1,3 +1,4 @@
+import argparse
 from contextlib import contextmanager
 from importlib.metadata import entry_points
 import logging
@@ -7,6 +8,33 @@ from .fonthandler import FontHandler
 
 
 logger = logging.getLogger(__name__)
+
+
+class FileSystemProjectManagerFactory:
+    @staticmethod
+    def addArguments(parser):
+        parser.add_argument("root", type=existingFolder)
+        parser.add_argument("--max-folder-depth", type=int, default=3)
+        parser.add_argument(
+            "--dummy-login",
+            action="store_true",
+            help="Present dummy login form, for testing",
+        )
+
+    @staticmethod
+    def getProjectManager(arguments):
+        return FileSystemProjectManager(
+            rootPath=arguments.root,
+            maxFolderDepth=arguments.max_folder_depth,
+            dummyLogin=arguments.dummy_login,
+        )
+
+
+def existingFolder(path):
+    path = pathlib.Path(path).resolve()
+    if not path.is_dir():
+        raise argparse.ArgumentError("not a directory")
+    return path
 
 
 def getFileSystemBackend(path):
@@ -29,9 +57,10 @@ class FileSystemProjectManager:
     remoteMethodNames = {"getProjectList"}
     requireLogin = False
 
-    def __init__(self, rootPath, maxFolderDepth=3):
+    def __init__(self, rootPath, maxFolderDepth=3, dummyLogin=False):
         self.rootPath = rootPath
         self.maxFolderDepth = maxFolderDepth
+        self.requireLogin = dummyLogin
         backendEntryPoints = entry_points(group="fontra.filesystem.backends")
         self.extensions = {f".{ep.name}" for ep in backendEntryPoints}
         self.fontHandlers = {}

@@ -10,6 +10,16 @@ from .fonthandler import FontHandler
 logger = logging.getLogger(__name__)
 
 
+class RCJKProjectManagerFactory:
+    @staticmethod
+    def addArguments(parser):
+        parser.add_argument("rcjk_host")
+
+    @staticmethod
+    def getProjectManager(arguments):
+        return RCJKProjectManager(host=arguments.rcjk_host)
+
+
 class RCJKProjectManager:
 
     requireLogin = True

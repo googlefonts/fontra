@@ -40,6 +40,11 @@ fontra = "fontra.__main__:main"
 editor = "fontra.client.editor"
 
 
+[project.entry-points."fontra.projectmanagers"]
+filesystem = "fontra.core.projectmanager_fs:FileSystemProjectManagerFactory"
+rcjk = "fontra.core.projectmanager_rcjk:RCJKProjectManagerFactory"
+
+
 [project.entry-points."fontra.filesystem.backends"]
 rcjk = "fontra.backends.rcjk_fs:RCJKBackend"
 designspace = "fontra.backends.designspace:DesignspaceBackend"
