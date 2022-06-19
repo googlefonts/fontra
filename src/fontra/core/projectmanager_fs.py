@@ -4,7 +4,6 @@ from importlib import resources
 from importlib.metadata import entry_points
 import logging
 import pathlib
-import secrets
 from aiohttp import web
 from .fonthandler import FontHandler
 
