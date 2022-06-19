@@ -36,6 +36,16 @@ class FontraServer:
             self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
+        if hasattr(self.projectManager, "contentPackageName"):
+            routes.append(
+                web.get(
+                    f"/{self.projectManager.contentFolder}/{{path:.*}}",
+                    partial(
+                        self.staticContentHandler,
+                        packageName=self.projectManager.contentPackageName,
+                    ),
+                )
+            )
         for viewName, viewPackage in self.viewEntryPoints.items():
             routes.append(
                 web.get(
