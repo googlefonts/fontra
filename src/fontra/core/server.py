@@ -36,13 +36,14 @@ class FontraServer:
             self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
-        for viewName in self.viewEntryPoints:
+        for viewName, viewModule in self.viewEntryPoints.items():
             routes.append(
                 web.get(
                     f"/{viewName}/-/{{path:.*}}",
                     partial(self.viewPathHandler, viewName),
                 )
             )
+            routes.append(web.get(f"/{viewName}/{{path:.*}}", partial(self.staticContentHandler, moduleName=viewModule)))
         routes.append(web.get("/{path:.*}", self.staticContentHandler))
         self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.startRemoteObjectServer)
@@ -74,13 +75,13 @@ class FontraServer:
 
         self._websocketTask = asyncio.create_task(runner())
 
-    async def staticContentHandler(self, request):
+    async def staticContentHandler(self, request, moduleName="fontra.client"):
         ifModSince = request.if_modified_since
         if ifModSince is not None and ifModSince >= self.startupTime:
             return web.HTTPNotModified()
 
         pathItems = [""] + request.match_info["path"].split("/")
-        modulePath = "fontra.client" + ".".join(pathItems[:-1])
+        modulePath = moduleName + ".".join(pathItems[:-1])
         resourceName = pathItems[-1]
         try:
             data = resources.read_binary(modulePath, resourceName)
