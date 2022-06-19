@@ -15,7 +15,7 @@ def getFileSystemBackend(path):
         raise FileNotFoundError(path)
     logger.info(f"loading project {path.name}...")
     fileType = path.suffix.lstrip(".").lower()
-    backendEntryPoints = entry_points(group="fontra.filesystem_backends")
+    backendEntryPoints = entry_points(group="fontra.filesystem.backends")
     entryPoint = backendEntryPoints[fileType]
     backendClass = entryPoint.load()
 
@@ -32,7 +32,7 @@ class FileSystemProjectManager:
     def __init__(self, rootPath, maxFolderDepth=3):
         self.rootPath = rootPath
         self.maxFolderDepth = maxFolderDepth
-        backendEntryPoints = entry_points(group="fontra.filesystem_backends")
+        backendEntryPoints = entry_points(group="fontra.filesystem.backends")
         self.extensions = {f".{ep.name}" for ep in backendEntryPoints}
         self.fontHandlers = {}
 

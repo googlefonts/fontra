@@ -645,7 +645,7 @@ testFontPaths = {
 
 
 def getTestFont(backendName):
-    backendEntryPoints = entry_points(group="fontra.filesystem_backends")
+    backendEntryPoints = entry_points(group="fontra.filesystem.backends")
     cls = backendEntryPoints[backendName].load()
     return cls.fromPath(testFontPaths[backendName])
 
