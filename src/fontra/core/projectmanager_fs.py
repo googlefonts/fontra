@@ -50,7 +50,6 @@ def getFileSystemBackend(path):
 class FileSystemProjectManager:
 
     remoteMethodNames = {"getProjectList"}
-    requireLogin = False
 
     def __init__(self, rootPath, maxFolderDepth=3):
         self.rootPath = rootPath

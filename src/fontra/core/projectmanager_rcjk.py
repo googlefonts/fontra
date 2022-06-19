@@ -25,8 +25,6 @@ class RCJKProjectManagerFactory:
 
 class RCJKProjectManager:
 
-    requireLogin = True
-
     def __init__(self, host):
         self.host = host
         self.authorizedClients = {}
