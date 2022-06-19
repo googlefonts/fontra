@@ -2,7 +2,6 @@ import argparse
 from importlib.metadata import entry_points
 import logging
 import pathlib
-import sys
 from .core.server import FontraServer
 
 
