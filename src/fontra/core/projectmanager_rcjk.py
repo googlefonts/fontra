@@ -65,28 +65,28 @@ class RCJKProjectManager:
         return response
 
     async def logoutHandler(self, request):
-        authToken = request.cookies.get("fontra-authorization-token")
-        if authToken is not None and authToken in self.authorizedClients:
-            client = self.authorizedClients.pop(authToken)
+        token = request.cookies.get("fontra-authorization-token")
+        if token is not None and token in self.authorizedClients:
+            client = self.authorizedClients.pop(token)
             logger.info(f"logging out '{client.username}'")
             await client.close()
         response = web.HTTPFound("/")
         return response
 
     async def authorize(self, request):
-        authToken = request.cookies.get("fontra-authorization-token")
-        if authToken not in self.authorizedClients:
+        token = request.cookies.get("fontra-authorization-token")
+        if token not in self.authorizedClients:
             return None
-        return authToken
+        return token
 
     async def projectPageHandler(self, request):
-        authToken = await self.authorize(request)
+        token = await self.authorize(request)
         html = resources.read_text("fontra.client", "landing.html")
         response = web.Response(text=html, content_type="text/html")
 
-        if authToken:
+        if token:
             response.set_cookie(
-                "fontra-authorization-token", authToken, max_age=self.cookieMaxAge
+                "fontra-authorization-token", token, max_age=self.cookieMaxAge
             )
         else:
             response.del_cookie("fontra-authorization-token")
