@@ -43,7 +43,12 @@ class FontraServer:
                     partial(self.viewPathHandler, viewName),
                 )
             )
-            routes.append(web.get(f"/{viewName}/{{path:.*}}", partial(self.staticContentHandler, packageName=viewPackage)))
+            routes.append(
+                web.get(
+                    f"/{viewName}/{{path:.*}}",
+                    partial(self.staticContentHandler, packageName=viewPackage),
+                )
+            )
         routes.append(web.get("/{path:.*}", self.staticContentHandler))
         self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.startRemoteObjectServer)
