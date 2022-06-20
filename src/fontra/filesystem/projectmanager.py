@@ -49,6 +49,9 @@ def getFileSystemBackend(path):
 
 class FileSystemProjectManager:
 
+    contentPackageName = "fontra.filesystem"
+    contentFolder = "filesystem"
+
     remoteMethodNames = {"getProjectList"}
 
     def __init__(self, rootPath, maxFolderDepth=3):
