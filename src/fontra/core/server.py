@@ -42,7 +42,7 @@ class FontraServer:
                     f"/{self.projectManager.contentFolder}/{{path:.*}}",
                     partial(
                         self.staticContentHandler,
-                        packageName=self.projectManager.contentPackageName,
+                        self.projectManager.contentPackageName,
                     ),
                 )
             )
@@ -56,10 +56,12 @@ class FontraServer:
             routes.append(
                 web.get(
                     f"/{viewName}/{{path:.*}}",
-                    partial(self.staticContentHandler, packageName=viewPackage),
+                    partial(self.staticContentHandler, viewPackage),
                 )
             )
-        routes.append(web.get("/{path:.*}", self.staticContentHandler))
+        routes.append(
+            web.get("/{path:.*}", partial(self.staticContentHandler, "fontra.client"))
+        )
         self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.startRemoteObjectServer)
 
@@ -90,7 +92,7 @@ class FontraServer:
 
         self._websocketTask = asyncio.create_task(runner())
 
-    async def staticContentHandler(self, request, packageName="fontra.client"):
+    async def staticContentHandler(self, packageName, request):
         ifModSince = request.if_modified_since
         if ifModSince is not None and ifModSince >= self.startupTime:
             return web.HTTPNotModified()
