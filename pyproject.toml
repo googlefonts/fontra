@@ -41,7 +41,7 @@ editor = "fontra.views.editor"
 
 
 [project.entry-points."fontra.projectmanagers"]
-filesystem = "fontra.core.projectmanager_fs:FileSystemProjectManagerFactory"
+filesystem = "fontra.filesystem.projectmanager:FileSystemProjectManagerFactory"
 rcjk = "fontra.core.projectmanager_rcjk:RCJKProjectManagerFactory"
 
 
