@@ -5,13 +5,6 @@ import pathlib
 from .core.server import FontraServer
 
 
-def existingFolder(path):
-    path = pathlib.Path(path).resolve()
-    if not path.is_dir():
-        raise argparse.ArgumentError("not a directory")
-    return path
-
-
 def main():
     logging.basicConfig(
         format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
