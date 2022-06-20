@@ -18,13 +18,13 @@
 
     `pip install -e .`
 
-- start the fontra server with a path to a folder containing fonts (.rcjk, .designspace or .ufo), using `--filesystem-root`:
+- start the fontra server with a path to a folder containing fonts (.rcjk, .designspace or .ufo), using the `filesystem` subcommand:
 
-    `fontra --filesystem-root /path/to/a/folder`
+    `fontra filesystem /path/to/a/folder`
 
-- or a start it with a robocjk server hostname, using `--rcjk-host`:
+- or a start it with a robocjk server hostname, using the `rcjk` subcommand:
 
-    `fontra --rcjk-host some-robocjk-server.some-domain.com`
+    `fontra rcjk some-robocjk-server.some-domain.com`
 
 - then navigate to:
 

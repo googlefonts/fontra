@@ -7,19 +7,12 @@ from importlib import resources
 from importlib.metadata import entry_points
 import logging
 import mimetypes
-from urllib.parse import quote, parse_qs
+from urllib.parse import quote
 from aiohttp import web
 from .remote import RemoteObjectServer
 
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class AuthorizedSession:
-    username: str
-    token: str
-    remoteIP: str
 
 
 @dataclass(kw_only=True)
@@ -35,23 +28,40 @@ class FontraServer:
 
     def setup(self):
         self.startupTime = datetime.now(timezone.utc).replace(microsecond=0)
-        self.authorizedSessions = {}
         self.httpApp = web.Application()
         self.viewEntryPoints = {
             ep.name: ep.value for ep in entry_points(group="fontra.views")
         }
+        if hasattr(self.projectManager, "setupWebRoutes"):
+            self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
-        routes.append(web.post("/login", self.loginHandler))
-        routes.append(web.post("/logout", self.logoutHandler))
-        for viewName in self.viewEntryPoints:
+        if hasattr(self.projectManager, "contentPackageName"):
+            routes.append(
+                web.get(
+                    f"/{self.projectManager.contentFolder}/{{path:.*}}",
+                    partial(
+                        self.staticContentHandler,
+                        self.projectManager.contentPackageName,
+                    ),
+                )
+            )
+        for viewName, viewPackage in self.viewEntryPoints.items():
             routes.append(
                 web.get(
                     f"/{viewName}/-/{{path:.*}}",
                     partial(self.viewPathHandler, viewName),
                 )
             )
-        routes.append(web.get("/{path:.*}", self.staticContentHandler))
+            routes.append(
+                web.get(
+                    f"/{viewName}/{{path:.*}}",
+                    partial(self.staticContentHandler, viewPackage),
+                )
+            )
+        routes.append(
+            web.get("/{path:.*}", partial(self.staticContentHandler, "fontra.client"))
+        )
         self.httpApp.add_routes(routes)
         self.httpApp.on_startup.append(self.startRemoteObjectServer)
 
@@ -82,13 +92,13 @@ class FontraServer:
 
         self._websocketTask = asyncio.create_task(runner())
 
-    async def staticContentHandler(self, request):
+    async def staticContentHandler(self, packageName, request):
         ifModSince = request.if_modified_since
         if ifModSince is not None and ifModSince >= self.startupTime:
             return web.HTTPNotModified()
 
         pathItems = [""] + request.match_info["path"].split("/")
-        modulePath = "fontra.client" + ".".join(pathItems[:-1])
+        modulePath = packageName + ".".join(pathItems[:-1])
         resourceName = pathItems[-1]
         try:
             data = resources.read_binary(modulePath, resourceName)
@@ -106,75 +116,17 @@ class FontraServer:
         return web.HTTPNotFound()
 
     async def rootDocumentHandler(self, request):
-        session = None
-        if self.projectManager.requireLogin:
-            username = request.cookies.get("fontra-username")
-            authToken = request.cookies.get("fontra-authorization-token")
-            session = self.authorizedSessions.get(authToken)
-            if session is not None and (
-                session.username != username or session.remoteIP != request.remote
-            ):
-                session = None
-
-        html = resources.read_text("fontra.client", "landing.html")
-        response = web.Response(text=html, content_type="text/html")
-        response.set_cookie(
-            "fontra-require-login",
-            "true" if self.projectManager.requireLogin else "false",
-        )
-        if session is not None:
-            response.set_cookie(
-                "fontra-authorization-token", session.token, max_age=self.cookieMaxAge
-            )
-        else:
-            response.del_cookie("fontra-authorization-token")
+        response = await self.projectManager.projectPageHandler(request)
         response.set_cookie("websocket-port", str(self.webSocketProxyPort))
         response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
 
-    async def loginHandler(self, request):
-        formContent = parse_qs(await request.text())
-        username = formContent["username"][0]
-        password = formContent["password"][0]
-        token = await self.projectManager.login(username, password)
-        if token is not None:
-            self.authorizedSessions[token] = AuthorizedSession(
-                username, token, request.remote
-            )
-        else:
-            token = None
-
-        destination = request.query.get("ref", "/")
-        response = web.HTTPFound(destination)
-        response.set_cookie("fontra-username", username, max_age=self.cookieMaxAge)
-        if token is not None:
-            response.set_cookie(
-                "fontra-authorization-token", token, max_age=self.cookieMaxAge
-            )
-            response.del_cookie("fontra-authorization-failed")
-        else:
-            response.set_cookie("fontra-authorization-failed", "true", max_age=5)
-            response.del_cookie("fontra-authorization-token")
-        response.set_cookie("fontra-version-token", str(self.startupTime))
-        return response
-
-    async def logoutHandler(self, request):
-        authToken = request.cookies.get("fontra-authorization-token")
-        if authToken is not None and authToken in self.authorizedSessions:
-            session = self.authorizedSessions[authToken]
-            logger.info(f"logging out '{session.username}'")
-            del self.authorizedSessions[authToken]
-        response = web.HTTPFound("/")
-        return response
-
     async def viewPathHandler(self, viewName, request):
-        authToken = None
-        if self.projectManager.requireLogin:
-            authToken = request.cookies.get("fontra-authorization-token")
-            if authToken not in self.authorizedSessions:
-                qs = quote(request.path_qs, safe="")
-                response = web.HTTPFound(f"/?ref={qs}")
-                return response
+        authToken = await self.projectManager.authorize(request)
+        if not authToken:
+            qs = quote(request.path_qs, safe="")
+            response = web.HTTPFound(f"/?ref={qs}")
+            return response
 
         path = request.match_info["path"]
         if not await self.projectManager.projectAvailable(authToken, path):

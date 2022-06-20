@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 from fontTools.designspaceLib import DesignSpaceDocument

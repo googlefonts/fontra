@@ -37,7 +37,12 @@ fontra = "fontra.__main__:main"
 
 
 [project.entry-points."fontra.views"]
-editor = "fontra.client.editor"
+editor = "fontra.views.editor"
+
+
+[project.entry-points."fontra.projectmanagers"]
+filesystem = "fontra.core.projectmanager_fs:FileSystemProjectManagerFactory"
+rcjk = "fontra.core.projectmanager_rcjk:RCJKProjectManagerFactory"
 
 
 [project.entry-points."fontra.filesystem.backends"]
@@ -53,13 +58,13 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.package-data]
 fontra = [
-    "client/*.html",
-    "client/*.ico",
-    "client/*/*.css",
-    "client/*/*.html",
-    "client/*/*.js",
-    "client/*/*.svg",
-    "client/*/*.woff2",
+    "*.html",
+    "*.ico",
+    "*.css",
+    "*.html",
+    "*.js",
+    "*.svg",
+    "*.woff2",
 ]
 
 

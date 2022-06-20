@@ -62,13 +62,18 @@ export class LandingController {
     this.projectList = await loaderSpinner(this.remoteObject.getProjectList());
     const projectListContainer = document.querySelector("#project-list");
     projectListContainer.classList.remove("hidden");
-    for (const project of this.projectList) {
-      const projectElement = document.createElement("a")
-      projectElement.href = "/editor/-/" + project;
-      projectElement.className = "project-item";
-      projectElement.append(project);
-      projectListContainer.appendChild(projectElement);
-    }
+    buildProjectList(projectListContainer, this.projectList);
   }
 
+}
+
+
+function buildProjectList(container, projectList) {
+  for (const project of projectList) {
+    const projectElement = document.createElement("a")
+    projectElement.href = "/editor/-/" + project;
+    projectElement.className = "project-item";
+    projectElement.append(project);
+    container.appendChild(projectElement);
+  }
 }

@@ -1,12 +1,35 @@
+import argparse
 from contextlib import contextmanager
+from importlib import resources
 from importlib.metadata import entry_points
 import logging
 import pathlib
-import secrets
+from aiohttp import web
 from .fonthandler import FontHandler
 
 
 logger = logging.getLogger(__name__)
+
+
+class FileSystemProjectManagerFactory:
+    @staticmethod
+    def addArguments(parser):
+        parser.add_argument("root", type=existingFolder)
+        parser.add_argument("--max-folder-depth", type=int, default=3)
+
+    @staticmethod
+    def getProjectManager(arguments):
+        return FileSystemProjectManager(
+            rootPath=arguments.root,
+            maxFolderDepth=arguments.max_folder_depth,
+        )
+
+
+def existingFolder(path):
+    path = pathlib.Path(path).resolve()
+    if not path.is_dir():
+        raise argparse.ArgumentError("not a directory")
+    return path
 
 
 def getFileSystemBackend(path):
@@ -27,7 +50,6 @@ def getFileSystemBackend(path):
 class FileSystemProjectManager:
 
     remoteMethodNames = {"getProjectList"}
-    requireLogin = False
 
     def __init__(self, rootPath, maxFolderDepth=3):
         self.rootPath = rootPath
@@ -44,11 +66,14 @@ class FileSystemProjectManager:
     def useConnection(self, connection):
         yield
 
-    async def login(self, username, password):
-        # dummy, for testing
-        if password == "a":
-            return secrets.token_hex(32)
-        return None
+    async def authorize(self, request):
+        return "yes"  # arbitrary non-false string token
+
+    async def projectPageHandler(self, request):
+        html = resources.read_text("fontra.client", "landing.html")
+        response = web.Response(text=html, content_type="text/html")
+        response.set_cookie("fontra-require-login", "false")
+        return response
 
     async def projectAvailable(self, token, path):
         projectPath = self.rootPath.joinpath(*path.split("/"))
