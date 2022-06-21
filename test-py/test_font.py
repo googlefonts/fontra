@@ -2,8 +2,6 @@ import contextlib
 from importlib.metadata import entry_points
 import pathlib
 import pytest
-from fontra.backends.designspace import DesignspaceBackend, UFOBackend
-from fontra.backends.rcjk_fs import RCJKBackend
 
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -694,13 +692,6 @@ async def test_getGlyph(backendName, expectedGlyph):
     with contextlib.closing(font):
         glyph = await font.getGlyph(expectedGlyph["name"])
         assert glyph == expectedGlyph
-
-
-getBackendTestData = [
-    ("rcjk", RCJKBackend),
-    ("designspace", DesignspaceBackend),
-    ("ufo", UFOBackend),
-]
 
 
 getGlobalAxesTestData = [
