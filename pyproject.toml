@@ -42,11 +42,9 @@ editor = "fontra.views.editor"
 
 [project.entry-points."fontra.projectmanagers"]
 filesystem = "fontra.filesystem.projectmanager:FileSystemProjectManagerFactory"
-rcjk = "fontra.core.projectmanager_rcjk:RCJKProjectManagerFactory"
 
 
 [project.entry-points."fontra.filesystem.backends"]
-rcjk = "fontra.backends.rcjk_fs:RCJKBackend"
 designspace = "fontra.backends.designspace:DesignspaceBackend"
 ufo = "fontra.backends.designspace:UFOBackend"
 
