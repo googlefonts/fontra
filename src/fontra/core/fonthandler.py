@@ -145,6 +145,7 @@ class FontHandler:
         glyphName = change["p"][1]
         glyph = await self.getChangedGlyph(glyphName)
         applyChange(dict(glyphs={glyphName: glyph}), change, glyphChangeFunctions)
+        # TODO: write changes to backend
 
     def iterGlyphMadeOf(self, glyphName):
         for dependantGlyphName in self.glyphMadeOf.get(glyphName, ()):
