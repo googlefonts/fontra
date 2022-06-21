@@ -37,8 +37,8 @@ export class MouseTracker {
       return;
     }
     // console.log("number of clicks:", event.detail);
-    if (this._eventStream !== undefined) {
-      throw new Error("unfinished event stream");
+    if (this._eventStream !== undefined && !this._eventStream.isDone()) {
+      console.log("assert -- unfinished event stream");
     }
     event.myTapCount = 1;
     if (this._lastMouseDownEvent !== undefined && areEventsClose(event, this._lastMouseDownEvent)) {
@@ -131,6 +131,10 @@ class EventStream {
 
   done() {
     this._done = true;
+  }
+
+  isDone() {
+    return this._done;
   }
 
 }
