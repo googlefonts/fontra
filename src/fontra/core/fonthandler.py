@@ -113,6 +113,7 @@ class FontHandler:
     async def editEnd(self, finalChange, *, connection):
         if finalChange is None:
             return
+        # TODO: locking/checking
         await self.updateServerGlyph(finalChange)
         await self.broadcastChange(finalChange, connection, False)
         # return {"error": "computer says no"}
