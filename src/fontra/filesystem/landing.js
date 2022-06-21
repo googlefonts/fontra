@@ -3,7 +3,7 @@ import { getRemoteProxy } from "/core/remote.js";
 import { autoReload, parseCookies, themeSwitchFromLocalStorage } from "/core/utils.js";
 
 
-export async function startupLandingPage() {
+export async function startupLandingPage(authenticateFunc) {
   if (autoReload()) {
     // Will reload
     return;
@@ -14,6 +14,13 @@ export async function startupLandingPage() {
   const webSocketPort = parseInt(cookies["websocket-port"]);
   const protocol = window.location.protocol === "http:" ? "ws" : "wss";
   const wsURL = `${protocol}://${window.location.hostname}:${webSocketPort}/`;
+
+  if (authenticateFunc) {
+    if (!authenticateFunc()) {
+      return;
+    }
+  }
+
   const remoteFontEngine = await getRemoteProxy(wsURL);
   const projectList = await loaderSpinner(remoteFontEngine.getProjectList());
   const projectListContainer = document.querySelector("#project-list");
