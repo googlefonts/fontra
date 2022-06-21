@@ -326,11 +326,13 @@ export class EditorController {
           return;
         }
         for (const item of overlayItems) {
-          item.classList.toggle("overlay-item-expanded", item === overlayItem);
-          if (item === overlayItem && item.id === "text-entry-overlay") {
-            this.textEntryElement.focus();
+          if (item.classList.contains("overlay-item-expanded") !== (item === overlayItem)) {
+            const v = item.classList.toggle("overlay-item-expanded", item === overlayItem);
+            if (item === overlayItem && item.id === "text-entry-overlay") {
+              this.textEntryElement.focus();
+            }
+            this._callToggleOverlayItem(item.id, item === overlayItem);
           }
-          this._callToggleOverlayItem(item.id, item === overlayItem);
         }
       };
       item.onclick = event => overlayClick(item);
