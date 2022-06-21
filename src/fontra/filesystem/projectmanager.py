@@ -50,7 +50,7 @@ def getFileSystemBackend(path):
 class FileSystemProjectManager:
 
     contentPackageName = "fontra.filesystem"
-    contentFolder = "filesystem"
+    contentURLRoot = "filesystem"
 
     remoteMethodNames = {"getProjectList"}
 
