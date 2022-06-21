@@ -106,6 +106,10 @@ export class SceneController {
   }
 
   async handleDrag(eventStream, initialEvent) {
+    if(initialEvent.ctrlKey) {
+      eventStream.done();
+      return;
+    }
     const handlerName = hyphenatedToCamelCase("handle-drag-" + this.selectedToolIdentifier);
     if (this[handlerName]) {
       await this[handlerName](eventStream, initialEvent);
