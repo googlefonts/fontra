@@ -39,7 +39,7 @@ class FontraServer:
         if hasattr(self.projectManager, "contentPackageName"):
             routes.append(
                 web.get(
-                    f"/{self.projectManager.contentFolder}/{{path:.*}}",
+                    f"/{self.projectManager.contentURLRoot}/{{path:.*}}",
                     partial(
                         self.staticContentHandler,
                         self.projectManager.contentPackageName,

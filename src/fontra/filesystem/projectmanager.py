@@ -5,7 +5,7 @@ from importlib.metadata import entry_points
 import logging
 import pathlib
 from aiohttp import web
-from .fonthandler import FontHandler
+from ..core.fonthandler import FontHandler
 
 
 logger = logging.getLogger(__name__)
@@ -49,6 +49,9 @@ def getFileSystemBackend(path):
 
 class FileSystemProjectManager:
 
+    contentPackageName = "fontra.filesystem"
+    contentURLRoot = "filesystem"
+
     remoteMethodNames = {"getProjectList"}
 
     def __init__(self, rootPath, maxFolderDepth=3):
@@ -70,7 +73,7 @@ class FileSystemProjectManager:
         return "yes"  # arbitrary non-false string token
 
     async def projectPageHandler(self, request):
-        html = resources.read_text("fontra.client", "landing.html")
+        html = resources.read_text(self.contentPackageName, "landing.html")
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("fontra-require-login", "false")
         return response
