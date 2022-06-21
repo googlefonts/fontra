@@ -10,7 +10,7 @@ license = {text = "GNU General Public License v3"}
 dependencies = [
     "aiohttp>=3.8.1",
     "fonttools[ufo,unicode]>=4.17.0",
-    # "watchfiles>=0.10",
+    "watchfiles>=0.10",
     "websockets>=10.1",
 ]
 dynamic = ["version"]
