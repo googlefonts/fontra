@@ -64,13 +64,8 @@
   </body>
   <script type="module">
 
-    import { LandingController } from "/filesystem/landing.js";
-
-    async function startApp() {
-      const landingController = await LandingController.fromWebSocket();
-    }
-
-    startApp();
+    import { startupLandingPage } from "/filesystem/landing.js";
+    startupLandingPage();
 
   </script>
 </html>
