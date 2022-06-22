@@ -49,9 +49,6 @@ def getFileSystemBackend(path):
 
 class FileSystemProjectManager:
 
-    contentPackageName = "fontra.filesystem"
-    contentURLRoot = "filesystem"
-
     remoteMethodNames = {"getProjectList"}
 
     def __init__(self, rootPath, maxFolderDepth=3):
@@ -73,7 +70,7 @@ class FileSystemProjectManager:
         return "yes"  # arbitrary non-false string token
 
     async def projectPageHandler(self, request):
-        html = resources.read_text(self.contentPackageName, "landing.html")
+        html = resources.read_text("fontra.filesystem", "landing.html")
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("fontra-require-login", "false")
         return response

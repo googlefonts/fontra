@@ -44,6 +44,10 @@ editor = "fontra.views.editor"
 filesystem = "fontra.filesystem.projectmanager:FileSystemProjectManagerFactory"
 
 
+[project.entry-points."fontra.content"]
+filesystem = "fontra.filesystem"
+
+
 [project.entry-points."fontra.filesystem.backends"]
 designspace = "fontra.backends.designspace:DesignspaceBackend"
 ufo = "fontra.backends.designspace:UFOBackend"
