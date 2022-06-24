@@ -78,3 +78,4 @@ write_to = "src/fontra/_version.py"
 testpaths = [
     "test-py",
 ]
+asyncio_mode = "auto"
