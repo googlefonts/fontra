@@ -6,7 +6,7 @@ import { locationToString } from "./var-model.js";
 import { throttleCalls } from "./utils.js";
 
 
-const GLYPH_CACHE_SIZE = 250;
+const GLYPH_CACHE_SIZE = 1000;
 
 
 export class FontController {
