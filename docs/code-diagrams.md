@@ -104,8 +104,7 @@ class RemoteObjectConnection {
 }
 
 class ProjectManager {
-  requireLogin
-  login(username, password)
+  authorize(request)
   getRemoteSubject(path, token, remoteIP)
   getProjectList()
 }
