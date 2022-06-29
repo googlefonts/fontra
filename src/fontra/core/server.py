@@ -36,7 +36,7 @@ class FontraServer:
             self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
-        for ep in entry_points(group="fontra.content"):
+        for ep in entry_points(group="fontra.webcontent"):
             routes.append(
                 web.get(
                     f"/{ep.name}/{{path:.*}}",

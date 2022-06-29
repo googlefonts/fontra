@@ -44,7 +44,7 @@ editor = "fontra.views.editor"
 filesystem = "fontra.filesystem.projectmanager:FileSystemProjectManagerFactory"
 
 
-[project.entry-points."fontra.content"]
+[project.entry-points."fontra.webcontent"]
 filesystem = "fontra.filesystem"
 
 
