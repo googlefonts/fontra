@@ -2,10 +2,10 @@
 
 Fontra offers several plug-in APIs:
 
-- [Project Manager plug-in API](project-manager-plug-in-api)
-- [View plug-in API](view-plug-in-api)
-- [File System back-end plug-in API](file-system-back-end-plug-in-api)
-- [Static Content additions](static-content-additions)
+- [Project Manager plug-in API](#project-manager-plug-in-api)
+- [View plug-in API](#view-plug-in-api)
+- [File System back-end plug-in API](#file-system-back-end-plug-in-api)
+- [Static Content additions](#static-content-additions)
 
 Fontra uses Python's "entry-points" mechanism, which can be configured via
 "pyproject.toml" configuration files.
