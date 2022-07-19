@@ -174,13 +174,10 @@ export function *reversed(seq) {
 }
 
 
-export function modulo(a, b) {
-  // Modulo with Python behavior for negative numbers
-  const result = a % b;
-  if (result < 0) {
-    return result + b;
-  }
-  return result;
+export function modulo(v, n) {
+  // Modulo with Python behavior for negative values of `v`
+  // Assumes `n` to be positive
+  return v >= 0 ? v % n : (v % n + n) % n;
 }
 
 
