@@ -39,7 +39,7 @@ class PathBuilderPointPen:
     def endPath(self):
         if not self._currentContour:
             return
-        isClosed = self._currentContour[0][0] != "move"
+        isClosed = self._currentContour[0][1] != "move"
         isQuadBlob = all(
             segmentType is None for _, segmentType, _ in self._currentContour
         )
@@ -136,3 +136,37 @@ def decomposeTwoByTwo(twoByTwo):
         pass
 
     return rotation, scalex, scaley, skewx, skewy
+
+
+_pointToSegmentType = {
+    OFF_CURVE_CUBIC: "curve",
+    OFF_CURVE_QUAD: "qcurve",
+}
+
+
+def drawPathToPointPen(path, pen):
+    startPoint = 0
+    for contourInfo in path["contourInfo"]:
+        endPoint = contourInfo["endPoint"] + 1
+        coordinates = path["coordinates"][startPoint * 2 : endPoint * 2]
+        points = list(pairwise(coordinates))
+        pointTypes = path["pointTypes"][startPoint:endPoint]
+        assert len(points) == len(pointTypes)
+        pen.beginPath()
+        segmentType = "line" if contourInfo["isClosed"] else "move"
+        for point, pointType in zip(points, pointTypes):
+            isSmooth = bool(pointType & SMOOTH_FLAG)
+            pointType = pointType & POINT_TYPE_MASK
+            pen.addPoint(
+                point,
+                segmentType=segmentType if pointType == 0 else None,
+                smooth=isSmooth,
+            )
+            segmentType = _pointToSegmentType.get(pointType, "line")
+        pen.endPath()
+        startPoint = endPoint
+
+
+def pairwise(iterable):
+    it = iter(iterable)
+    return zip(it, it)
