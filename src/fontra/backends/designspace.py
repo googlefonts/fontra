@@ -117,25 +117,7 @@ class DesignspaceBackend:
     async def putGlyph(self, glyphName, glyph):
         for layer in glyph["layers"]:
             glyphSet = self.ufoGlyphSets[layer["name"]]
-            layerGlyph = UFOGlyph()
-            glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
-            pen = RecordingPointPen()
-            pathData = layer["glyph"].get("path")
-            xAdvance = layer["glyph"].get("xAdvance")
-            yAdvance = layer["glyph"].get("yAdvance")
-            if xAdvance is not None:
-                layerGlyph.width = xAdvance
-            if yAdvance is not None:
-                layerGlyph.height = yAdvance
-            if pathData is not None:
-                drawPathToPointPen(pathData, pen)
-            for component in layer["glyph"].get("components", ()):
-                pen.addComponent(
-                    component["name"], makeAffineTransform(component["transformation"])
-                )
-            glyphSet.writeGlyph(
-                glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
-            )
+            writeUFOLayerGlyph(glyphSet, glyphName, layer["glyph"])
 
     async def getGlobalAxes(self):
         return self.axes
@@ -229,6 +211,28 @@ def serializeGlyph(glyphSet, glyphName):
     # TODO: anchors
     # TODO: yAdvance, verticalOrigin
     return glyphDict, glyph
+
+
+def writeUFOLayerGlyph(glyphSet, glyphName, glyphData):
+    layerGlyph = UFOGlyph()
+    glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
+    pen = RecordingPointPen()
+    pathData = glyphData.get("path")
+    xAdvance = glyphData.get("xAdvance")
+    yAdvance = glyphData.get("yAdvance")
+    if xAdvance is not None:
+        layerGlyph.width = xAdvance
+    if yAdvance is not None:
+        layerGlyph.height = yAdvance
+    if pathData is not None:
+        drawPathToPointPen(pathData, pen)
+    for component in glyphData.get("components", ()):
+        pen.addComponent(
+            component["name"], makeAffineTransform(component["transformation"])
+        )
+    glyphSet.writeGlyph(
+        glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
+    )
 
 
 def getReverseCmapFromGlyphSet(glyphSet):
