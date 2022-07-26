@@ -153,7 +153,11 @@ def drawPathToPointPen(path, pen):
         pointTypes = path["pointTypes"][startPoint:endPoint]
         assert len(points) == len(pointTypes)
         pen.beginPath()
-        segmentType = "line" if contourInfo["isClosed"] else "move"
+        segmentType = (
+            _pointToSegmentType.get(pointTypes[-1] & POINT_TYPE_MASK, "line")
+            if contourInfo["isClosed"]
+            else "move"
+        )
         for point, pointType in zip(points, pointTypes):
             isSmooth = bool(pointType & SMOOTH_FLAG)
             pointType = pointType & POINT_TYPE_MASK
