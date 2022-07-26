@@ -111,6 +111,9 @@ class DesignspaceBackend:
 
         return glyph
 
+    async def putGlyph(self, glyphName, glyph):
+        ...
+
     async def getGlobalAxes(self):
         return self.axes
 
