@@ -1,10 +1,13 @@
 import logging
+import math
 import os
 from fontTools.designspaceLib import DesignSpaceDocument
+from fontTools.misc.transform import Transform
+from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReader
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
-from .pen import PathBuilderPointPen
+from .pen import PathBuilderPointPen, drawPathToPointPen
 
 
 logger = logging.getLogger(__name__)
@@ -112,7 +115,27 @@ class DesignspaceBackend:
         return glyph
 
     async def putGlyph(self, glyphName, glyph):
-        ...
+        for layer in glyph["layers"]:
+            glyphSet = self.ufoGlyphSets[layer["name"]]
+            layerGlyph = UFOGlyph()
+            glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
+            pen = RecordingPointPen()
+            pathData = layer["glyph"].get("path")
+            xAdvance = layer["glyph"].get("xAdvance")
+            yAdvance = layer["glyph"].get("yAdvance")
+            if xAdvance is not None:
+                layerGlyph.width = xAdvance
+            if yAdvance is not None:
+                layerGlyph.height = yAdvance
+            if pathData is not None:
+                drawPathToPointPen(pathData, pen)
+            for component in layer["glyph"].get("components", ()):
+                pen.addComponent(
+                    component["name"], makeAffineTransform(component["transformation"])
+                )
+            glyphSet.writeGlyph(
+                glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
+            )
 
     async def getGlobalAxes(self):
         return self.axes
@@ -120,8 +143,8 @@ class DesignspaceBackend:
     async def getFontLib(self):
         return self.dsDoc.lib
 
-    def watchExternalChanges(self):
-        return ufoWatcher(self.ufoPaths, self.glifFileNames)
+    # def watchExternalChanges(self):
+    #     return ufoWatcher(self.ufoPaths, self.glifFileNames)
 
 
 class UFOBackend:
@@ -242,3 +265,15 @@ def uniqueNameMaker():
         return uniqueName
 
     return makeUniqueName
+
+
+def makeAffineTransform(transformation):
+    t = Transform()
+    t = t.translate(
+        transformation["x"] + transformation["tcenterx"],
+        transformation["y"] + transformation["tcentery"],
+    )
+    t = t.rotate(transformation["rotation"] * (math.pi / 180))
+    t = t.scale(transformation["scalex"], transformation["scaley"])
+    t = t.translate(-transformation["tcenterx"], -transformation["tcentery"])
+    return t
