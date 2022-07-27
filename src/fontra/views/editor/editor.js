@@ -301,7 +301,7 @@ export class EditorController {
     document.execCommand("defaultParagraphSeparator", false, "br");
 
     const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
-    this.textEntryElement = document.querySelector("#text-entry");
+    this.textEntryElement = document.querySelector("#text-entry-textarea");
 
     const collapseAll = () => {
       for (const item of overlayItems) {
@@ -317,7 +317,10 @@ export class EditorController {
       }
     }
 
-    this.textEntryElement.oninput = async event => this.textFieldChangedCallback(event.target);
+    this.textEntryElement.addEventListener("input", () => {
+      this.textFieldChangedCallback(this.textEntryElement);
+      this.fixTextEntryHeight();
+    }, false);
 
     for (const item of overlayItems) {
       item.onkeydown = event => collapseOnEscapeKey(event);
@@ -351,6 +354,11 @@ export class EditorController {
       }
     });
     window.addEventListener("keydown", event => collapseOnEscapeKey(event));
+  }
+
+  fixTextEntryHeight() {
+    this.textEntryElement.style.height = "auto";
+    this.textEntryElement.style.height = this.textEntryElement.scrollHeight + "px";
   }
 
   _callToggleOverlayItem(itemId, onOff) {
@@ -452,11 +460,11 @@ export class EditorController {
 
   updateTextEntryFromGlyphLines() {
     this.enteredText = textFromGlyphLines(this.sceneController.getGlyphLines());
-    this.textEntryElement.innerText = this.enteredText;
+    this.textEntryElement.value = this.enteredText;
   }
 
   async textFieldChangedCallback(element) {
-    this.setGlyphLinesFromText(element.innerText);
+    this.setGlyphLinesFromText(element.value);
   }
 
   async setGlyphLines(glyphLines) {
@@ -619,7 +627,7 @@ export class EditorController {
       this.autoViewBox = false;
       this.canvasController.setViewBox(rectFromArray(viewInfo["viewBox"]));
     }
-    this.textEntryElement.innerText = viewInfo["text"] || "";
+    this.textEntryElement.value = viewInfo["text"] || "";
     if (viewInfo["text"]) {
       await this.setGlyphLinesFromText(viewInfo["text"]);
     } else {
@@ -688,6 +696,12 @@ export class EditorController {
   toggleSelectionInfoOverlay(onOff) {
     if (onOff) {
       this.updateSelectionInfo();
+    }
+  }
+
+  toggleTextEntryOverlay(onOff) {
+    if (onOff) {
+      this.fixTextEntryHeight();
     }
   }
 
@@ -1135,6 +1149,9 @@ function selectionCompare(a, b) {
 
 function isTypeableInput(element) {
   if (element.contentEditable === "true") {
+    return true;
+  }
+  if (element.tagName.toLowerCase() === "textarea") {
     return true;
   }
   if (element.tagName.toLowerCase() === "input" && element.type !== "range") {

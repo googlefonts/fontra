@@ -100,7 +100,7 @@
   padding: 0.2em;
   padding-left: 0.8em;
   font-family: fontra-ui-regular, sans-serif;
-  font-size: 1.2em;
+  font-size: 1.1rem;
 }
 
 .sliders-and-sources {
@@ -297,19 +297,26 @@
   position: absolute;
   color: var(--editor-mini-console-foreground-color);
   background-color: var(--editor-mini-console-background-color);
-  font-size: 0.8em;
+  font-size: 0.8rem;
   padding: 1px 4px 1px 4px;
   bottom: 0;
   right: 0;
 }
 
-#text-entry {
-  font-size: 1.2em;
-  min-width: 10em;
-  min-height: 1em;
-  padding: 0.1em 0.5em 0.1em 0.5em;
+.text-entry {
+  padding: 0.5em;
+}
+
+#text-entry-textarea {
+  font-size: 1.1rem;
+  font-family: fontra-ui-regular, sans-serif;
   white-space: normal;
   outline: none;
   cursor: auto;
   display: inline;
+  border: 0.5px solid lightgray;
+  border-radius: 0.5em;
+  overflow-x: scroll;
+  /*white-space: pre;*/
+  /*overflow-wrap: normal;*/
 }
