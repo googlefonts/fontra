@@ -35,6 +35,7 @@ class DesignspaceBackend:
         self.axes = axes
         self.loadSources()
         self.buildFileNameMapping()
+        self.savedGlyphModificationTimes = {}
 
     def close(self):
         pass
@@ -115,9 +116,12 @@ class DesignspaceBackend:
         return glyph
 
     async def putGlyph(self, glyphName, glyph):
+        modTimes = set()
         for layer in glyph["layers"]:
             glyphSet = self.ufoGlyphSets[layer["name"]]
             writeUFOLayerGlyph(glyphSet, glyphName, layer["glyph"])
+            modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
+        self.savedGlyphModificationTimes[glyphName] = modTimes
 
     async def getGlobalAxes(self):
         return self.axes
@@ -125,8 +129,10 @@ class DesignspaceBackend:
     async def getFontLib(self):
         return self.dsDoc.lib
 
-    # def watchExternalChanges(self):
-    #     return ufoWatcher(self.ufoPaths, self.glifFileNames)
+    def watchExternalChanges(self):
+        return ufoWatcher(
+            self.ufoPaths, self.glifFileNames, self.savedGlyphModificationTimes
+        )
 
 
 class UFOBackend:
@@ -177,7 +183,7 @@ class UFOBackend:
             fileName: glyphName
             for glyphName, fileName in self.glyphSets[self.layerName].contents.items()
         }
-        return ufoWatcher([self.path], glifFileNames)
+        return ufoWatcher([self.path], glifFileNames, {})
 
 
 class UFOGlyph:
@@ -245,12 +251,14 @@ def getReverseCmapFromGlyphSet(glyphSet):
     return revCmap
 
 
-async def ufoWatcher(ufoPaths, glifFileNames):
+async def ufoWatcher(ufoPaths, glifFileNames, savedGlyphModificationTimes):
     async for changes in watchfiles.awatch(*ufoPaths):
         glyphNames = set()
         for change, path in changes:
             glyphName = glifFileNames.get(os.path.basename(path))
-            if glyphName is not None:
+            if glyphName is not None and round(
+                os.stat(path).st_mtime, 5
+            ) not in savedGlyphModificationTimes.get(glyphName, ()):
                 glyphNames.add(glyphName)
         if glyphNames:
             yield glyphNames
