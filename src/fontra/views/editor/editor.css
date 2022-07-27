@@ -319,4 +319,5 @@
   overflow-x: scroll;
   /*white-space: pre;*/
   /*overflow-wrap: normal;*/
+  width: 12em;
 }
