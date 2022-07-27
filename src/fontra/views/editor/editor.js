@@ -1054,7 +1054,12 @@ function glyphNamesFromText(text, cmap, reverseCmap) {
         }
       }
     } else {
-      glyphName = cmap[char.charCodeAt(0)];
+      const charCode = text.codePointAt(i);
+      glyphName = cmap[charCode];
+      if (charCode >= 0x10000) {
+        i++;
+      }
+      char = String.fromCodePoint(charCode);
     }
     if (glyphName !== "") {
       glyphNames.push({character: char, glyphName: glyphName});
