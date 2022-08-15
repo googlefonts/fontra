@@ -24,7 +24,6 @@ export async function startupLandingPage(authenticateFunc) {
   const projectListContainer = document.querySelector("#project-list");
   projectListContainer.classList.remove("hidden");
 
-
   for (const project of projectList) {
     const projectElement = document.createElement("a")
     projectElement.href = "/editor/-/" + project;
