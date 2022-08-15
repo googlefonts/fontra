@@ -9,7 +9,7 @@ import logging
 import mimetypes
 import traceback
 from urllib.parse import quote
-from aiohttp import web
+from aiohttp import WSCloseCode, web
 from .remote import RemoteObjectConnection, RemoteObjectConnectionException
 
 
@@ -60,6 +60,8 @@ class FontraServer:
             web.get("/{path:.*}", partial(self.staticContentHandler, "fontra.client"))
         )
         self.httpApp.add_routes(routes)
+        self.httpApp.on_shutdown.append(self.onShutdown)
+        self._activeWebsockets = set()
 
     def run(self):
         host = self.host
@@ -75,6 +77,12 @@ class FontraServer:
         print("+---------------------------------------------------+")
         web.run_app(self.httpApp, host=host, port=httpPort)
 
+    async def onShutdown(self, httpApp):
+        for websocket in list(self._activeWebsockets):
+            await websocket.close(
+                code=WSCloseCode.GOING_AWAY, message="Server shutdown"
+            )
+
     async def websocketHandler(self, request):
         path = "/" + request.match_info["path"]
         logger.info(f"incoming connection: {path!r}")
@@ -86,7 +94,7 @@ class FontraServer:
 
         websocket = web.WebSocketResponse()
         await websocket.prepare(request)
-
+        self._activeWebsockets.add(websocket)
         try:
             subject = await self.getSubject(websocket, path, token)
         except RemoteObjectConnectionException as e:
@@ -100,6 +108,8 @@ class FontraServer:
             connection = RemoteObjectConnection(websocket, path, subject, True)
             with subject.useConnection(connection):
                 await connection.handleConnection()
+        finally:
+            self._activeWebsockets.discard(websocket)
 
         return websocket
 
