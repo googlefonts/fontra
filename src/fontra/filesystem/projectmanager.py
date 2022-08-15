@@ -79,7 +79,7 @@ class FileSystemProjectManager:
         projectPath = self.rootPath.joinpath(*path.split("/"))
         return projectPath.exists()
 
-    async def getRemoteSubject(self, path, token, remoteIP):
+    async def getRemoteSubject(self, path, token):
         if path == "/":
             return self
 
