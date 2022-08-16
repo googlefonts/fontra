@@ -1,64 +1,9 @@
 import asyncio
-import json
 import logging
 import traceback
-from http.cookies import SimpleCookie
-from urllib.parse import unquote
-import websockets
 
 
 logger = logging.getLogger(__name__)
-
-
-class RemoteObjectServer:
-    def __init__(self, subjectManager, *, verboseErrors=False):
-        self.subjectManager = subjectManager
-        self.verboseErrors = verboseErrors
-
-    def getServerTask(self, host="localhost", port=8001):
-        return websockets.serve(self.incomingConnection, host, port)
-
-    def run(self, host="localhost", port=8001):
-        startServer = self.getServerTask()
-        asyncio.get_event_loop().run_until_complete(startServer)
-        asyncio.get_event_loop().run_forever()
-
-    async def incomingConnection(self, websocket, path):
-        logger.info(f"incoming connection: {path!r}")
-        path = unquote(path)
-        try:
-            subject = await self.getSubject(websocket, path)
-        except RemoteObjectConnectionException as e:
-            logger.info("refused websocket request: %s", e)
-            await websocket.close()
-        except Exception as e:
-            logger.error("error while handling incoming websocket messages: %r", e)
-            if self.verboseErrors:
-                traceback.print_exc()
-            await websocket.close()
-        else:
-            connection = RemoteObjectConnection(
-                websocket, path, subject, self.verboseErrors
-            )
-            with subject.useConnection(connection):
-                await connection.handleConnection()
-
-    async def getSubject(self, websocket, path):
-        message = await anext(aiter(websocket))
-        message = json.loads(message)
-        self.clientUUID = message.get("client-uuid")
-        if self.clientUUID is None:
-            raise RemoteObjectConnectionException("unrecognized message")
-
-        cookies = SimpleCookie()
-        cookies.load(websocket.request_headers.get("Cookie", ""))
-        cookies = {k: v.value for k, v in cookies.items()}
-        token = cookies.get("fontra-authorization-token")
-        remoteIP = websocket.remote_address[0]
-        subject = await self.subjectManager.getRemoteSubject(path, token, remoteIP)
-        if subject is None:
-            raise RemoteObjectConnectionException("unauthorized")
-        return subject
 
 
 class RemoteObjectConnectionException(Exception):
@@ -80,10 +25,15 @@ class RemoteObjectConnection:
         return RemoteClientProxy(self)
 
     async def handleConnection(self):
+        message = await anext(aiter(self.websocket))
+        message = message.json()
+        self.clientUUID = message.get("client-uuid")
+        if self.clientUUID is None:
+            raise RemoteObjectConnectionException("unrecognized message")
         try:
             await self._handleConnection()
-        except websockets.exceptions.ConnectionClosedError as e:
-            logger.info(f"websocket connection closed: {e!r}")
+        # except websockets.exceptions.ConnectionClosedError as e:
+        #     logger.info(f"websocket connection closed: {e!r}")
         except Exception as e:
             logger.error("error while handling incoming websocket messages: %r", e)
             if self.verboseErrors:
@@ -93,7 +43,7 @@ class RemoteObjectConnection:
     async def _handleConnection(self):
         tasks = []
         async for message in self.websocket:
-            message = json.loads(message)
+            message = message.json()
             if message.get("connection") == "close":
                 logger.info("client requested connection close")
                 break
@@ -139,7 +89,7 @@ class RemoteObjectConnection:
         await self.sendMessage(response)
 
     async def sendMessage(self, message):
-        await self.websocket.send(json.dumps(message, separators=(",", ":")))
+        await self.websocket.send_json(message)
 
 
 class RemoteClientProxy:

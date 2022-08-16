@@ -1,15 +1,16 @@
-import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
+from http.cookies import SimpleCookie
 from importlib import resources
 from importlib.metadata import entry_points
 import logging
 import mimetypes
+import traceback
 from urllib.parse import quote
-from aiohttp import web
-from .remote import RemoteObjectServer
+from aiohttp import WSCloseCode, web
+from .remote import RemoteObjectConnection, RemoteObjectConnectionException
 
 
 logger = logging.getLogger(__name__)
@@ -20,8 +21,6 @@ class FontraServer:
 
     host: str
     httpPort: int
-    webSocketPort: int
-    webSocketProxyPort: int
     projectManager: object
     cookieMaxAge: int = 7 * 24 * 60 * 60
     allowedFileExtensions: set = frozenset(["css", "html", "ico", "js", "svg", "woff2"])
@@ -36,6 +35,7 @@ class FontraServer:
             self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
+        routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))
         for ep in entry_points(group="fontra.webcontent"):
             routes.append(
                 web.get(
@@ -60,7 +60,8 @@ class FontraServer:
             web.get("/{path:.*}", partial(self.staticContentHandler, "fontra.client"))
         )
         self.httpApp.add_routes(routes)
-        self.httpApp.on_startup.append(self.startRemoteObjectServer)
+        self.httpApp.on_shutdown.append(self.onShutdown)
+        self._activeWebsockets = set()
 
     def run(self):
         host = self.host
@@ -76,18 +77,47 @@ class FontraServer:
         print("+---------------------------------------------------+")
         web.run_app(self.httpApp, host=host, port=httpPort)
 
-    async def startRemoteObjectServer(self, app):
-        server = RemoteObjectServer(
-            self.projectManager,
-            verboseErrors=True,
-        )
+    async def onShutdown(self, httpApp):
+        for websocket in list(self._activeWebsockets):
+            await websocket.close(
+                code=WSCloseCode.GOING_AWAY, message="Server shutdown"
+            )
 
-        async def runner():
-            serverTask = server.getServerTask(host=self.host, port=self.webSocketPort)
-            async with ensureClose(self.projectManager), serverTask:
-                await asyncio.Future()
+    async def websocketHandler(self, request):
+        path = "/" + request.match_info["path"]
+        logger.info(f"incoming connection: {path!r}")
 
-        self._websocketTask = asyncio.create_task(runner())
+        cookies = SimpleCookie()
+        cookies.load(request.headers.get("Cookie", ""))
+        cookies = {k: v.value for k, v in cookies.items()}
+        token = cookies.get("fontra-authorization-token")
+
+        websocket = web.WebSocketResponse()
+        await websocket.prepare(request)
+        self._activeWebsockets.add(websocket)
+        try:
+            subject = await self.getSubject(websocket, path, token)
+        except RemoteObjectConnectionException as e:
+            logger.info("refused websocket request: %s", e)
+            await websocket.close()
+        except Exception as e:
+            logger.error("error while handling incoming websocket messages: %r", e)
+            traceback.print_exc()
+            await websocket.close()
+        else:
+            connection = RemoteObjectConnection(websocket, path, subject, True)
+            with subject.useConnection(connection):
+                await connection.handleConnection()
+        finally:
+            self._activeWebsockets.discard(websocket)
+
+        return websocket
+
+    async def getSubject(self, websocket, path, token):
+        subject = await self.projectManager.getRemoteSubject(path, token)
+        if subject is None:
+            raise RemoteObjectConnectionException("unauthorized")
+        return subject
 
     async def staticContentHandler(self, packageName, request):
         ifModSince = request.if_modified_since
@@ -114,7 +144,6 @@ class FontraServer:
 
     async def rootDocumentHandler(self, request):
         response = await self.projectManager.projectPageHandler(request)
-        response.set_cookie("websocket-port", str(self.webSocketProxyPort))
         response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
 
@@ -137,7 +166,6 @@ class FontraServer:
             return web.HTTPNotFound()
 
         response = web.Response(text=html, content_type="text/html")
-        response.set_cookie("websocket-port", str(self.webSocketProxyPort))
         response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
 

@@ -11,16 +11,14 @@ export async function startupLandingPage(authenticateFunc) {
   themeSwitchFromLocalStorage();
 
   const cookies = parseCookies(document.cookie);
-  const webSocketPort = parseInt(cookies["websocket-port"]);
   const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-  const wsURL = `${protocol}://${window.location.hostname}:${webSocketPort}/`;
+  const wsURL = `${protocol}://${window.location.host}/websocket/`;
 
   if (authenticateFunc) {
     if (!authenticateFunc()) {
       return;
     }
   }
-
   const remoteFontEngine = await getRemoteProxy(wsURL);
   const projectList = await loaderSpinner(remoteFontEngine.getProjectList());
   const projectListContainer = document.querySelector("#project-list");

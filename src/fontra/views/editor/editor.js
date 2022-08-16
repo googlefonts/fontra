@@ -23,7 +23,6 @@ import {
   autoReload,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
-  parseCookies,
   scheduleCalls,
   themeSwitchFromLocalStorage,
   throttleCalls,
@@ -100,8 +99,6 @@ export class EditorController {
       // Will reload
       return;
     }
-    const cookies = parseCookies(document.cookie);
-    const webSocketPort = parseInt(cookies["websocket-port"]);
     const pathItems = window.location.pathname.split("/");
     // assert pathItems[0] === ""
     // assert pathItems[1] === "editor"
@@ -109,7 +106,7 @@ export class EditorController {
     const projectPath = pathItems.slice(3).join("/");
     document.title = `Fontra — ${projectPath}`;
     const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-    const wsURL = `${protocol}://${window.location.hostname}:${webSocketPort}/${projectPath}`;
+    const wsURL = `${protocol}://${window.location.host}/websocket/${projectPath}`;
 
     const remoteFontEngine = await getRemoteProxy(wsURL);
     const editorController = new EditorController(remoteFontEngine);
