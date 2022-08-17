@@ -61,6 +61,7 @@ class FontraServer:
         )
         self.httpApp.add_routes(routes)
         self.httpApp.on_shutdown.append(self.onShutdown)
+        self.httpApp.on_shutdown.append(self.projectManager.close)
         self._activeWebsockets = set()
 
     def run(self):
@@ -168,11 +169,3 @@ class FontraServer:
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
-
-
-@asynccontextmanager
-async def ensureClose(closable):
-    try:
-        yield
-    finally:
-        await closable.close()
