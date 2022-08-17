@@ -167,7 +167,7 @@ export class EditorController {
     window.addEventListener("keyup", event => this.keyUpHandler(event));
 
     this.enteredText = "";
-    this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 500);
+    this.updateWindowLocation = scheduleCalls(event => this._updateWindowLocation(), 200);
     this.updateSelectionInfo = throttleCalls(async event => await this._updateSelectionInfo(), 100);
     canvas.addEventListener("viewBoxChanged", event => {
       if (event.detail === "canvas-size") {
