@@ -389,15 +389,16 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
     let x = 0;
     for (const glyphInfo of glyphLine) {
       const location = {...localLocations[glyphInfo.glyphName], ...globalLocation}
-      const glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName, location);
-      if (glyphInstance) {
-        positionedLine.glyphs.push({
-          "x": x,
-          "y": y,
-          "glyph": glyphInstance,
-        })
-        x += glyphInstance.xAdvance;
+      let glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName, location);
+      if (!glyphInstance) {
+        glyphInstance = {"xAdvance": 0};  // Dummy missing glyph
       }
+      positionedLine.glyphs.push({
+        "x": x,
+        "y": y,
+        "glyph": glyphInstance,
+      })
+      x += glyphInstance.xAdvance;
     }
 
     let offset = 0;
