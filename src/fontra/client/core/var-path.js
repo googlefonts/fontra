@@ -182,29 +182,29 @@ export default class VarPath {
     );
   }
 
-  beginPath() {
+  appendEmptyPath() {
     this.contourInfo.push({endPoint: this.coordinates.length / 2 - 1, isClosed: false});
   }
 
-  addPoint(x, y, pointType) {
+  _appendPoint(x, y, pointType) {
     this.contourInfo[this.contourInfo.length - 1].endPoint += 1;
     this.coordinates.push(x, y);
     this.pointTypes.push(pointType);
   }
 
   moveTo(x, y) {
-    this.beginPath();
-    this.addPoint(x, y, VarPath.ON_CURVE);
+    this.appendEmptyPath();
+    this._appendPoint(x, y, VarPath.ON_CURVE);
   }
 
   lineTo(x, y) {
-    this.addPoint(x, y, VarPath.ON_CURVE);
+    this._appendPoint(x, y, VarPath.ON_CURVE);
   }
 
   curveTo(x1, y1, x2, y2, x3, y3) {
-    this.addPoint(x1, y1, VarPath.OFF_CURVE_CUBIC);
-    this.addPoint(x2, y2, VarPath.OFF_CURVE_CUBIC);
-    this.addPoint(x3, y3, VarPath.ON_CURVE);
+    this._appendPoint(x1, y1, VarPath.OFF_CURVE_CUBIC);
+    this._appendPoint(x2, y2, VarPath.OFF_CURVE_CUBIC);
+    this._appendPoint(x3, y3, VarPath.ON_CURVE);
   }
 
   qCurveTo(...args) {
@@ -213,10 +213,10 @@ export default class VarPath {
       throw new Error("number of arguments to qCurveTo must be even");
     }
     for (let i = 0; i < numArgs - 2; i += 2) {
-      this.addPoint(args[i], args[i + 1], VarPath.OFF_CURVE_QUAD);
+      this._appendPoint(args[i], args[i + 1], VarPath.OFF_CURVE_QUAD);
     }
     const i = numArgs - 2;
-    this.addPoint(args[i], args[i + 1], VarPath.ON_CURVE);
+    this._appendPoint(args[i], args[i + 1], VarPath.ON_CURVE);
   }
 
   closePath() {
