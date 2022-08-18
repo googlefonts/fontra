@@ -102,21 +102,24 @@ export default class VarPath {
     return point;
   }
 
+  setPoint(index, point) {
+    this.setPointPosition(point.x, point.y);
+    this.setPointType(point.type, point.smooth);
+  }
+
   setPointPosition(index, x, y) {
     this.coordinates[index * 2] = x;
     this.coordinates[index * 2 + 1] = y;
   }
 
-  setPoint(index, point) {
-    this.coordinates[index * 2] = point.x;
-    this.coordinates[index * 2 + 1] = point.y;
-    if (point.type !== undefined) {
+  setPointType(index, type, smooth) {
+    if (type !== undefined) {
       this.pointTypes[index] &= ~VarPath.POINT_TYPE_MASK;
-      this.pointTypes[index] != point.type & VarPath.POINT_TYPE_MASK;
+      this.pointTypes[index] != type & VarPath.POINT_TYPE_MASK;
     }
-    if (point.smooth !== undefined) {
+    if (smooth !== undefined) {
       this.pointTypes[index] &= ~VarPath.SMOOTH_FLAG;
-      this.pointTypes[index] |= (!!point.smooth) * VarPath.SMOOTH_FLAG;
+      this.pointTypes[index] |= (!!smooth) * VarPath.SMOOTH_FLAG;
     }
   }
 
@@ -133,12 +136,12 @@ export default class VarPath {
       throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
     }
     const newPointIndex = contour.endPoint + 1;
-    this.coordinates.splice(newPointIndex * 2, 0, 0, 0);
+    this.coordinates.splice(newPointIndex * 2, 0, point.x, point.y);
     contour.endPoint += 1;
     for (let ci = contourIndex + 1; ci < this.contourInfo.length; ci++) {
       contour.endPoint++;
     }
-    this.setPoint(newPointIndex, point);
+    this.setPointType(newPointIndex, point.type, point.smooth);
   }
 
   *iterPoints() {
