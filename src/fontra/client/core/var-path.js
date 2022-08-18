@@ -89,12 +89,12 @@ export default class VarPath {
     return lo
   }
 
-  getPoint(index) {
+  getPoint(pointIndex) {
     const point = {
-      x: this.coordinates[index * 2],
-      y: this.coordinates[index * 2 + 1],
-      type: this.pointTypes[index] & VarPath.POINT_TYPE_MASK,
-      smooth: !!(this.pointTypes[index] & VarPath.SMOOTH_FLAG),
+      x: this.coordinates[pointIndex * 2],
+      y: this.coordinates[pointIndex * 2 + 1],
+      type: this.pointTypes[pointIndex] & VarPath.POINT_TYPE_MASK,
+      smooth: !!(this.pointTypes[pointIndex] & VarPath.SMOOTH_FLAG),
     };
     if (point.x === undefined) {
       return undefined;
@@ -102,22 +102,85 @@ export default class VarPath {
     return point;
   }
 
-  setPointPosition(index, x, y) {
-    this.coordinates[index * 2] = x;
-    this.coordinates[index * 2 + 1] = y;
+  setPoint(pointIndex, point) {
+    this.setPointPosition(pointIndex, point.x, point.y);
+    this.setPointType(pointIndex, point.type, point.smooth);
   }
 
-  setPoint(index, point) {
-    this.coordinates[index * 2] = point.x;
-    this.coordinates[index * 2 + 1] = point.y;
-    if (point.type !== undefined) {
-      this.pointTypes[index] &= ~VarPath.POINT_TYPE_MASK;
-      this.pointTypes[index] != point.type & VarPath.POINT_TYPE_MASK;
+  setPointPosition(pointIndex, x, y) {
+    this.coordinates[pointIndex * 2] = x;
+    this.coordinates[pointIndex * 2 + 1] = y;
+  }
+
+  setPointType(pointIndex, type, smooth) {
+    if (type !== undefined) {
+      this.pointTypes[pointIndex] &= ~VarPath.POINT_TYPE_MASK;
+      this.pointTypes[pointIndex] |= type & VarPath.POINT_TYPE_MASK;
     }
-    if (point.smooth !== undefined) {
-      this.pointTypes[index] &= ~VarPath.SMOOTH_FLAG;
-      this.pointTypes[index] |= (!!point.smooth) * VarPath.SMOOTH_FLAG;
+    if (smooth !== undefined) {
+      this.pointTypes[pointIndex] &= ~VarPath.SMOOTH_FLAG;
+      this.pointTypes[pointIndex] |= (!!smooth) * VarPath.SMOOTH_FLAG;
     }
+  }
+
+  insertPoint(contourIndex, contourPointIndex, point) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const pointIndex = this._getAbsolutePointIndex(contourIndex, contourPointIndex, true);
+    this._insertPoint(contourIndex, pointIndex, point);
+  }
+
+  appendPoint(contourIndex, point) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    this._insertPoint(contourIndex, contour.endPoint + 1, point);
+  }
+
+  deletePoint(contourIndex, contourPointIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const pointIndex = this._getAbsolutePointIndex(contourIndex, contourPointIndex);
+    this.coordinates.splice(pointIndex * 2, 2);
+    this.pointTypes.splice(pointIndex, 1);
+    for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
+      this.contourInfo[ci].endPoint--;
+    }
+  }
+
+  _insertPoint(contourIndex, pointIndex, point) {
+    this.coordinates.splice(pointIndex * 2, 0, point.x, point.y);
+    this.pointTypes.splice(pointIndex, 0, 0);
+    for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
+      this.contourInfo[ci].endPoint++;
+    }
+    this.setPointType(pointIndex, point.type, point.smooth);
+  }
+
+  _normalizeContourIndex(contourIndex) {
+    const originalContourIndex = contourIndex;
+    if (contourIndex < 0) {
+      contourIndex += this.contourInfo.length;
+    }
+    if (this.contourInfo[contourIndex] === undefined) {
+      throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
+    }
+    return contourIndex;
+  }
+
+  _getAbsolutePointIndex(contourIndex, contourPointIndex, forInsert = false) {
+    const startPoint = this._getContourStartPoint(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    const numPoints = contour.endPoint + 1 - startPoint;
+    const originalContourPointIndex = contourPointIndex;
+    if (contourPointIndex < 0) {
+      contourPointIndex += numPoints;
+    }
+    if (contourPointIndex < 0 || contourPointIndex >= numPoints + (forInsert ? 1 : 0)) {
+      throw new Error(`contourPointIndex out of bounds: ${originalContourPointIndex}`)
+    }
+    return startPoint + contourPointIndex;
+  }
+
+  _getContourStartPoint(contourIndex) {
+    return contourIndex === 0 ? 0 : this.contourInfo[contourIndex - 1].endPoint + 1;
   }
 
   *iterPoints() {
@@ -125,16 +188,9 @@ export default class VarPath {
   }
 
   *iterPointsOfContour(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
-    if (contour === undefined) {
-      return;
-    }
-    let startPoint;
-    if (contourIndex <= 0) {
-      startPoint = 0;
-    } else {
-      startPoint = this.contourInfo[contourIndex - 1].endPoint + 1;
-    }
+    const startPoint = this._getContourStartPoint(contourIndex);
     yield* this._iterPointsFromTo(startPoint, contour.endPoint);
   }
 

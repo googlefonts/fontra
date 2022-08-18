@@ -368,8 +368,9 @@ describe("VarPath Tests", () => {
     expect(pts.length).to.equal(4);
     expect(pts[0]).to.deep.equal({"x": 0, "y": 0, "type": 0, "smooth": false});
     expect(pts[3]).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
-    expect(Array.from(p.iterPointsOfContour(-1))).to.deep.equal([]);
-    expect(Array.from(p.iterPointsOfContour(1))).to.deep.equal([]);
+    expect(pts[3]).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
+    expect(Array.from(p.iterPointsOfContour(-1)).length).to.equal(4);
+    expect(() => {Array.from(p.iterPointsOfContour(1))}).to.throw("contourIndex out of bounds: 1");
   });
 
   it("getControlBounds", () => {
@@ -412,6 +413,135 @@ describe("VarPath Tests", () => {
       {"op": "lineTo", "args": [0, 0]},
       {"op": "closePath", "args": []},
     ]);
+  });
+
+  it("test setPoint[Position]", () => {
+    const p1 = simpleTestPath();
+    const mp = new MockPath2D();
+    p1.setPointPosition(1, 23, 45);
+    p1.setPoint(2, {"x": 65, "y": 43, "type": VarPath.OFF_CURVE_QUAD});
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [23, 45], "op": "lineTo"},
+      {"args": [65, 43, 100, 0], "op": "quadraticCurveTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+  it("test insertPoint 0", () => {
+    const p1 = simpleTestPath();
+    p1.insertPoint(-1, 0, {"x": 12, "y": 13});
+    const mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [12, 13], "op": "moveTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [0, 100], "op": "lineTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0], "op": "lineTo"},
+      {"args": [12, 13], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+  it("test insertPoint 1", () => {
+    const p1 = simpleTestPath();
+    p1.insertPoint(-1, 1, {"x": 12, "y": 13});
+    const mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [12, 13], "op": "lineTo"},
+      {"args": [0, 100], "op": "lineTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0], "op": "lineTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+  it("test appendPoint", () => {
+    const p1 = simpleTestPath();
+    p1.appendPoint(-1, {"x": 12, "y": 13});
+    const mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [0, 100], "op": "lineTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0], "op": "lineTo"},
+      {"args": [12, 13], "op": "lineTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+  it("test appendPoint via insertPoint", () => {
+    const p1 = simpleTestPath();
+    p1.insertPoint(-1, 4, {"x": 12, "y": 13});
+    const mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [0, 100], "op": "lineTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0], "op": "lineTo"},
+      {"args": [12, 13], "op": "lineTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+  it("test appendPoint with contour index", () => {
+    const p1 = simpleTestPath();
+    const t = new Transform().translate(10, 10).scale(2);
+    const p2 = simpleTestPath().transformed(t);
+    const p3 = p1.concat(p2);
+    p3.appendPoint(1, {"x": 12, "y": 13});
+    const mp = new MockPath2D();
+    p3.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [0, 100], "op": "lineTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0], "op": "lineTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+      {"args": [10, 10], "op": "moveTo"},
+      {"args": [10, 210], "op": "lineTo"},
+      {"args": [210, 210], "op": "lineTo"},
+      {"args": [210, 10], "op": "lineTo"},
+      {"args": [12, 13], "op": "lineTo"},
+      {"args": [10, 10], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+  it("test appendPoint index error", () => {
+    const p1 = simpleTestPath();
+    expect(() => {p1.appendPoint(1, {"x": 12, "y": 13})}).to.throw("contourIndex out of bounds: 1");
+  });
+
+  it("test deletePoint", () => {
+    const p1 = simpleTestPath();
+    p1.setPointType(3, VarPath.OFF_CURVE_QUAD);
+    p1.deletePoint(0, 1);
+    const mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0, 0, 0], "op": "quadraticCurveTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+  it("test deletePoint index error", () => {
+    const p1 = simpleTestPath();
+    expect(() => {p1.deletePoint(0, 4)}).to.throw("contourPointIndex out of bounds: 4");
+    expect(() => {p1.deletePoint(0, 5)}).to.throw("contourPointIndex out of bounds: 5");
   });
 
 })
