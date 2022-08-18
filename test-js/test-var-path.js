@@ -368,8 +368,9 @@ describe("VarPath Tests", () => {
     expect(pts.length).to.equal(4);
     expect(pts[0]).to.deep.equal({"x": 0, "y": 0, "type": 0, "smooth": false});
     expect(pts[3]).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
-    expect(Array.from(p.iterPointsOfContour(-1))).to.deep.equal([]);
-    expect(Array.from(p.iterPointsOfContour(1))).to.deep.equal([]);
+    expect(pts[3]).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
+    expect(Array.from(p.iterPointsOfContour(-1)).length).to.equal(4);
+    expect(() => {Array.from(p.iterPointsOfContour(1))}).to.throw("contourIndex out of bounds: 1");
   });
 
   it("getControlBounds", () => {

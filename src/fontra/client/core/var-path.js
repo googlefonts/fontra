@@ -191,16 +191,9 @@ export default class VarPath {
   }
 
   *iterPointsOfContour(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
-    if (contour === undefined) {
-      return;
-    }
-    let startPoint;
-    if (contourIndex <= 0) {
-      startPoint = 0;
-    } else {
-      startPoint = this.contourInfo[contourIndex - 1].endPoint + 1;
-    }
+    const startPoint = this._getContourStartPoint(contourIndex);
     yield* this._iterPointsFromTo(startPoint, contour.endPoint);
   }
 
