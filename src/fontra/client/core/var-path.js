@@ -125,14 +125,14 @@ export default class VarPath {
 
   insertPoint(contourIndex, contourPointIndex, point) {
     contourIndex = this._normalizeContourIndex(contourIndex);
-    this._insertPoint(contourIndex, contourPointIndex, point);
+    const pointIndex = this._absolutePointIndex(contourIndex, contourPointIndex)
+    this._insertPoint(contourIndex, pointIndex, point);
   }
 
   appendPoint(contourIndex, point) {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
-    const startPoint = this._contourStartPoint(contourIndex);
-    this._insertPoint(contourIndex, contour.endPoint + 1 - startPoint, point);
+    this._insertPoint(contourIndex, contour.endPoint + 1, point);
   }
 
   deletePoint(pointIndex) {
@@ -147,18 +147,7 @@ export default class VarPath {
     }
   }
 
-  _insertPoint(contourIndex, contourPointIndex, point) {
-    const startPoint = this._contourStartPoint(contourIndex);
-    const contour = this.contourInfo[contourIndex];
-    const numPoints = contour.endPoint + 1 - startPoint;
-    const originalContourPointIndex = contourPointIndex;
-    if (contourPointIndex < 0) {
-      contourPointIndex += numPoints;
-    }
-    if (contourPointIndex < 0 || contourPointIndex > numPoints) {
-      throw new Error(`contourPointIndex out of bounds: ${originalContourPointIndex}`)
-    }
-    const pointIndex = startPoint + contourPointIndex;
+  _insertPoint(contourIndex, pointIndex, point) {
     this.coordinates.splice(pointIndex * 2, 0, point.x, point.y);
     this.pointTypes.splice(pointIndex, 0, 0);
     for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
@@ -176,6 +165,20 @@ export default class VarPath {
       throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
     }
     return contourIndex;
+  }
+
+  _absolutePointIndex(contourIndex, contourPointIndex) {
+    const startPoint = this._contourStartPoint(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    const numPoints = contour.endPoint + 1 - startPoint;
+    const originalContourPointIndex = contourPointIndex;
+    if (contourPointIndex < 0) {
+      contourPointIndex += numPoints;
+    }
+    if (contourPointIndex < 0 || contourPointIndex > numPoints) {
+      throw new Error(`contourPointIndex out of bounds: ${originalContourPointIndex}`)
+    }
+    return startPoint + contourPointIndex;
   }
 
   _contourStartPoint(contourIndex) {
