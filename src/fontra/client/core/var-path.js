@@ -135,7 +135,7 @@ export default class VarPath {
     this._insertPoint(contourIndex, contour.endPoint + 1, point);
   }
 
-  deletePoint(pointIndex) {
+  deletePointAbsolute(pointIndex) {
     const contourIndex = this.getContourIndex(pointIndex);
     if (contourIndex === undefined) {
       throw new Error(`pointIndex out of bounds: ${pointIndex}`)
