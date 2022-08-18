@@ -89,12 +89,12 @@ export default class VarPath {
     return lo
   }
 
-  getPoint(index) {
+  getPoint(pointIndex) {
     const point = {
-      x: this.coordinates[index * 2],
-      y: this.coordinates[index * 2 + 1],
-      type: this.pointTypes[index] & VarPath.POINT_TYPE_MASK,
-      smooth: !!(this.pointTypes[index] & VarPath.SMOOTH_FLAG),
+      x: this.coordinates[pointIndex * 2],
+      y: this.coordinates[pointIndex * 2 + 1],
+      type: this.pointTypes[pointIndex] & VarPath.POINT_TYPE_MASK,
+      smooth: !!(this.pointTypes[pointIndex] & VarPath.SMOOTH_FLAG),
     };
     if (point.x === undefined) {
       return undefined;
@@ -102,24 +102,24 @@ export default class VarPath {
     return point;
   }
 
-  setPoint(index, point) {
+  setPoint(pointIndex, point) {
     this.setPointPosition(point.x, point.y);
     this.setPointType(point.type, point.smooth);
   }
 
-  setPointPosition(index, x, y) {
-    this.coordinates[index * 2] = x;
-    this.coordinates[index * 2 + 1] = y;
+  setPointPosition(pointIndex, x, y) {
+    this.coordinates[pointIndex * 2] = x;
+    this.coordinates[pointIndex * 2 + 1] = y;
   }
 
-  setPointType(index, type, smooth) {
+  setPointType(pointIndex, type, smooth) {
     if (type !== undefined) {
-      this.pointTypes[index] &= ~VarPath.POINT_TYPE_MASK;
-      this.pointTypes[index] != type & VarPath.POINT_TYPE_MASK;
+      this.pointTypes[pointIndex] &= ~VarPath.POINT_TYPE_MASK;
+      this.pointTypes[pointIndex] != type & VarPath.POINT_TYPE_MASK;
     }
     if (smooth !== undefined) {
-      this.pointTypes[index] &= ~VarPath.SMOOTH_FLAG;
-      this.pointTypes[index] |= (!!smooth) * VarPath.SMOOTH_FLAG;
+      this.pointTypes[pointIndex] &= ~VarPath.SMOOTH_FLAG;
+      this.pointTypes[pointIndex] |= (!!smooth) * VarPath.SMOOTH_FLAG;
     }
   }
 
