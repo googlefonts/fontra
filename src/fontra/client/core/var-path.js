@@ -125,7 +125,7 @@ export default class VarPath {
 
   insertPoint(contourIndex, contourPointIndex, point) {
     contourIndex = this._normalizeContourIndex(contourIndex);
-    const pointIndex = this._absolutePointIndex(contourIndex, contourPointIndex, true);
+    const pointIndex = this._getAbsolutePointIndex(contourIndex, contourPointIndex, true);
     this._insertPoint(contourIndex, pointIndex, point);
   }
 
@@ -137,7 +137,7 @@ export default class VarPath {
 
   deletePoint(contourIndex, contourPointIndex) {
     contourIndex = this._normalizeContourIndex(contourIndex);
-    const pointIndex = this._absolutePointIndex(contourIndex, contourPointIndex);
+    const pointIndex = this._getAbsolutePointIndex(contourIndex, contourPointIndex);
     this.coordinates.splice(pointIndex * 2, 2);
     this.pointTypes.splice(pointIndex, 1);
     for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
@@ -165,8 +165,8 @@ export default class VarPath {
     return contourIndex;
   }
 
-  _absolutePointIndex(contourIndex, contourPointIndex, forInsert = false) {
-    const startPoint = this._contourStartPoint(contourIndex);
+  _getAbsolutePointIndex(contourIndex, contourPointIndex, forInsert = false) {
+    const startPoint = this._getContourStartPoint(contourIndex);
     const contour = this.contourInfo[contourIndex];
     const numPoints = contour.endPoint + 1 - startPoint;
     const originalContourPointIndex = contourPointIndex;
@@ -179,7 +179,7 @@ export default class VarPath {
     return startPoint + contourPointIndex;
   }
 
-  _contourStartPoint(contourIndex) {
+  _getContourStartPoint(contourIndex) {
     if (contourIndex === 0) {
       return 0;
     }
