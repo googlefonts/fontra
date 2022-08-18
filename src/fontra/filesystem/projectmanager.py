@@ -78,7 +78,7 @@ class FileSystemProjectManager:
         response.set_cookie("fontra-require-login", "false")
         return response
 
-    async def projectAvailable(self, token, path):
+    async def projectAvailable(self, path, token):
         projectPath = self.rootPath.joinpath(*path.split("/"))
         return projectPath.exists()
 

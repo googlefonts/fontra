@@ -159,7 +159,7 @@ class FontraServer:
             return response
 
         path = request.match_info["path"]
-        if not await self.projectManager.projectAvailable(authToken, path):
+        if not await self.projectManager.projectAvailable(path, authToken):
             return web.HTTPNotFound()
 
         try:
