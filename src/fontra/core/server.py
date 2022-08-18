@@ -130,7 +130,9 @@ class FontraServer:
         if not authToken:
             return web.HTTPUnauthorized()
         projectList = await self.projectManager.getProjectList(authToken)
-        return web.Response(text=json.dumps(projectList), content_type="application/json")
+        return web.Response(
+            text=json.dumps(projectList), content_type="application/json"
+        )
 
     async def staticContentHandler(self, packageName, request):
         ifModSince = request.if_modified_since
