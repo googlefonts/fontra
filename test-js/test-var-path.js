@@ -467,7 +467,7 @@ describe("VarPath Tests", () => {
     const t = new Transform().translate(10, 10).scale(2);
     const p2 = simpleTestPath().transformed(t);
     const p3 = p1.concat(p2);
-    p3.appendPoint(0, {"x": 12, "y": 13});
+    p3.appendPoint(1, {"x": 12, "y": 13});
     const mp = new MockPath2D();
     p3.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
@@ -475,13 +475,13 @@ describe("VarPath Tests", () => {
       {"args": [0, 100], "op": "lineTo"},
       {"args": [100, 100], "op": "lineTo"},
       {"args": [100, 0], "op": "lineTo"},
-      {"args": [12, 13], "op": "lineTo"},
       {"args": [0, 0], "op": "lineTo"},
       {"args": [], "op": "closePath"},
       {"args": [10, 10], "op": "moveTo"},
       {"args": [10, 210], "op": "lineTo"},
       {"args": [210, 210], "op": "lineTo"},
       {"args": [210, 10], "op": "lineTo"},
+      {"args": [12, 13], "op": "lineTo"},
       {"args": [10, 10], "op": "lineTo"},
       {"args": [], "op": "closePath"},
     ]);

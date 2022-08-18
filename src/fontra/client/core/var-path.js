@@ -131,7 +131,8 @@ export default class VarPath {
   appendPoint(contourIndex, point) {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
-    this._insertPoint(contourIndex, contour.endPoint + 1, point);
+    const startPoint = this._contourStartPoint(contourIndex);
+    this._insertPoint(contourIndex, contour.endPoint + 1 - startPoint, point);
   }
 
   deletePoint(pointIndex) {
