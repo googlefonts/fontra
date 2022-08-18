@@ -103,8 +103,8 @@ export default class VarPath {
   }
 
   setPoint(pointIndex, point) {
-    this.setPointPosition(point.x, point.y);
-    this.setPointType(point.type, point.smooth);
+    this.setPointPosition(pointIndex, point.x, point.y);
+    this.setPointType(pointIndex, point.type, point.smooth);
   }
 
   setPointPosition(pointIndex, x, y) {
@@ -115,7 +115,7 @@ export default class VarPath {
   setPointType(pointIndex, type, smooth) {
     if (type !== undefined) {
       this.pointTypes[pointIndex] &= ~VarPath.POINT_TYPE_MASK;
-      this.pointTypes[pointIndex] != type & VarPath.POINT_TYPE_MASK;
+      this.pointTypes[pointIndex] |= type & VarPath.POINT_TYPE_MASK;
     }
     if (smooth !== undefined) {
       this.pointTypes[pointIndex] &= ~VarPath.SMOOTH_FLAG;

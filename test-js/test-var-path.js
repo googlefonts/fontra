@@ -414,6 +414,21 @@ describe("VarPath Tests", () => {
     ]);
   });
 
+  it("test setPoint[Position]", () => {
+    const p1 = simpleTestPath();
+    const mp = new MockPath2D();
+    p1.setPointPosition(1, 23, 45);
+    p1.setPoint(2, {"x": 65, "y": 43, "type": VarPath.OFF_CURVE_QUAD});
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [23, 45], "op": "lineTo"},
+      {"args": [65, 43, 100, 0], "op": "quadraticCurveTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
   it("test insertPoint 0", () => {
     const p1 = simpleTestPath();
     p1.insertPoint(-1, 0, {"x": 12, "y": 13});
