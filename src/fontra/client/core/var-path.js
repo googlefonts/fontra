@@ -135,7 +135,7 @@ export default class VarPath {
     const newPointIndex = contour.endPoint + 1;
     this.coordinates.splice(newPointIndex * 2, 0, 0, 0);
     contour.endPoint += 1;
-    for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
+    for (let ci = contourIndex + 1; ci < this.contourInfo.length; ci++) {
       contour.endPoint++;
     }
     this.setPoint(newPointIndex, point);
