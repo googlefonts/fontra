@@ -255,7 +255,7 @@ describe("VarPath Tests", () => {
     p.moveTo(0, 0);
     p.lineTo(0, 100);
     p.curveTo(30, 130, 70, 130, 100, 100);
-    p.qCurveTo(130, 70, 130, 30, 100, 0);
+    p.quadraticCurveTo(130, 70, 130, 30, 100, 0);
     p.closePath();
     p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(

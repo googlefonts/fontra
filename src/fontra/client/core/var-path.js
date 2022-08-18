@@ -207,10 +207,10 @@ export default class VarPath {
     this._appendPoint(x3, y3, VarPath.ON_CURVE);
   }
 
-  qCurveTo(...args) {
+  quadraticCurveTo(...args) {
     const numArgs = args.length;
     if (numArgs % 2) {
-      throw new Error("number of arguments to qCurveTo must be even");
+      throw new Error("number of arguments to quadraticCurveTo must be even");
     }
     for (let i = 0; i < numArgs - 2; i += 2) {
       this._appendPoint(args[i], args[i + 1], VarPath.OFF_CURVE_QUAD);
