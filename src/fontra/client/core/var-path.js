@@ -158,8 +158,6 @@ export default class VarPath {
       throw new Error(`contourPointIndex out of bounds: ${originalContourPointIndex}`)
     }
     const pointIndex = startPoint + contourPointIndex;
-
-
     this.coordinates.splice(pointIndex * 2, 0, point.x, point.y);
     this.pointTypes.splice(pointIndex, 0, 0);
     for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
