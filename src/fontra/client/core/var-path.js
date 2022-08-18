@@ -120,6 +120,27 @@ export default class VarPath {
     }
   }
 
+  appendPoint(point, contourIndex) {
+    const originalContourIndex = contourIndex;
+    if (contourIndex === undefined) {
+      contourIndex = -1;
+    }
+    if (contourIndex < 0) {
+      contourIndex += this.contourInfo.length;
+    }
+    const contour = this.contourInfo[contourIndex];
+    if (contour === undefined) {
+      throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
+    }
+    const newPointIndex = contour.endPoint + 1;
+    this.coordinates.splice(newPointIndex * 2, 0, 0, 0);
+    contour.endPoint += 1;
+    for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
+      contour.endPoint++;
+    }
+    this.setPoint(newPointIndex, point);
+  }
+
   *iterPoints() {
     yield* this._iterPointsFromTo(0, this.pointTypes.length - 1);
   }
