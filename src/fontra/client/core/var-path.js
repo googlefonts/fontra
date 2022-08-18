@@ -123,20 +123,15 @@ export default class VarPath {
     }
   }
 
-  appendPoint(contourIndex, point) {
-    this._appendPrependPoint(contourIndex, point, false);
+  insertPoint(contourIndex, contourPointIndex, point) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    this._insertPoint(contourIndex, contourPointIndex, point);
   }
 
-  _appendPrependPoint(contourIndex, point, isPrepend) {
+  appendPoint(contourIndex, point) {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
-    const newPointIndex = contour.endPoint + 1;
-    this.coordinates.splice(newPointIndex * 2, 0, point.x, point.y);
-    this.pointTypes.splice(newPointIndex, 0, 0);
-    for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
-      this.contourInfo[ci].endPoint++;
-    }
-    this.setPointType(newPointIndex, point.type, point.smooth);
+    this._insertPoint(contourIndex, contour.endPoint + 1, point);
   }
 
   deletePoint(pointIndex) {
@@ -151,6 +146,28 @@ export default class VarPath {
     }
   }
 
+  _insertPoint(contourIndex, contourPointIndex, point) {
+    const startPoint = this._contourStartPoint(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    const numPoints = contour.endPoint + 1 - startPoint;
+    const originalContourPointIndex = contourPointIndex;
+    if (contourPointIndex < 0) {
+      contourPointIndex += numPoints;
+    }
+    if (contourPointIndex < 0 || contourPointIndex > numPoints) {
+      throw new Error(`contourPointIndex out of bounds: ${originalContourPointIndex}`)
+    }
+    const pointIndex = startPoint + contourPointIndex;
+
+
+    this.coordinates.splice(pointIndex * 2, 0, point.x, point.y);
+    this.pointTypes.splice(pointIndex, 0, 0);
+    for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
+      this.contourInfo[ci].endPoint++;
+    }
+    this.setPointType(pointIndex, point.type, point.smooth);
+  }
+
   _normalizeContourIndex(contourIndex) {
     const originalContourIndex = contourIndex;
     if (contourIndex < 0) {
@@ -160,6 +177,13 @@ export default class VarPath {
       throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
     }
     return contourIndex;
+  }
+
+  _contourStartPoint(contourIndex) {
+    if (contourIndex === 0) {
+      return 0;
+    }
+    return this.contourInfo[contourIndex - 1].endPoint + 1;
   }
 
   *iterPoints() {
