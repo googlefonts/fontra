@@ -123,7 +123,11 @@ export default class VarPath {
     }
   }
 
-  appendPoint(point, contourIndex) {
+  appendPoint(contourIndex, point) {
+    this._appendPrependPoint(contourIndex, point, false);
+  }
+
+  _appendPrependPoint(contourIndex, point, isPrepend) {
     const originalContourIndex = contourIndex;
     if (contourIndex < 0) {
       contourIndex += this.contourInfo.length;

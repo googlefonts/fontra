@@ -416,7 +416,7 @@ describe("VarPath Tests", () => {
 
   it("test appendPoint", () => {
     const p1 = simpleTestPath();
-    p1.appendPoint({"x": 12, "y": 13}, -1);
+    p1.appendPoint(-1, {"x": 12, "y": 13});
     const mp = new MockPath2D();
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
@@ -435,7 +435,7 @@ describe("VarPath Tests", () => {
     const t = new Transform().translate(10, 10).scale(2);
     const p2 = simpleTestPath().transformed(t);
     const p3 = p1.concat(p2);
-    p3.appendPoint({"x": 12, "y": 13}, 0);
+    p3.appendPoint(0, {"x": 12, "y": 13});
     const mp = new MockPath2D();
     p3.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
@@ -457,7 +457,7 @@ describe("VarPath Tests", () => {
 
   it("test appendPoint index error", () => {
     const p1 = simpleTestPath();
-    expect(() => {p1.appendPoint({"x": 12, "y": 13}, 1)}).to.throw("contourIndex out of bounds: 1");
+    expect(() => {p1.appendPoint(1, {"x": 12, "y": 13})}).to.throw("contourIndex out of bounds: 1");
   });
 
   it("test deletePoint", () => {
