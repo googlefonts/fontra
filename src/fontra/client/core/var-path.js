@@ -125,7 +125,7 @@ export default class VarPath {
 
   insertPoint(contourIndex, contourPointIndex, point) {
     contourIndex = this._normalizeContourIndex(contourIndex);
-    const pointIndex = this._absolutePointIndex(contourIndex, contourPointIndex);
+    const pointIndex = this._absolutePointIndex(contourIndex, contourPointIndex, true);
     this._insertPoint(contourIndex, pointIndex, point);
   }
 
@@ -177,7 +177,7 @@ export default class VarPath {
     return contourIndex;
   }
 
-  _absolutePointIndex(contourIndex, contourPointIndex) {
+  _absolutePointIndex(contourIndex, contourPointIndex, forInsert = false) {
     const startPoint = this._contourStartPoint(contourIndex);
     const contour = this.contourInfo[contourIndex];
     const numPoints = contour.endPoint + 1 - startPoint;
@@ -185,7 +185,7 @@ export default class VarPath {
     if (contourPointIndex < 0) {
       contourPointIndex += numPoints;
     }
-    if (contourPointIndex < 0 || contourPointIndex > numPoints) {
+    if (contourPointIndex < 0 || contourPointIndex >= numPoints + (forInsert ? 1 : 0)) {
       throw new Error(`contourPointIndex out of bounds: ${originalContourPointIndex}`)
     }
     return startPoint + contourPointIndex;

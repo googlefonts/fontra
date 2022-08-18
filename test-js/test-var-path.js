@@ -462,6 +462,23 @@ describe("VarPath Tests", () => {
     ]);
   });
 
+  it("test appendPoint via insertPoint", () => {
+    const p1 = simpleTestPath();
+    p1.insertPoint(-1, 4, {"x": 12, "y": 13});
+    const mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [0, 100], "op": "lineTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0], "op": "lineTo"},
+      {"args": [12, 13], "op": "lineTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+
   it("test appendPoint with contour index", () => {
     const p1 = simpleTestPath();
     const t = new Transform().translate(10, 10).scale(2);
@@ -494,7 +511,7 @@ describe("VarPath Tests", () => {
 
   it("test deletePoint", () => {
     const p1 = simpleTestPath();
-    p1.deletePointAbsolute(2);
+    p1.deletePoint(0, 2);
     const mp = new MockPath2D();
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
@@ -508,10 +525,8 @@ describe("VarPath Tests", () => {
 
   it("test deletePoint index error", () => {
     const p1 = simpleTestPath();
-    expect(() => {p1.deletePointAbsolute(-2)}).to.throw("pointIndex out of bounds: -2");
-    expect(() => {p1.deletePointAbsolute(-1)}).to.throw("pointIndex out of bounds: -1");
-    expect(() => {p1.deletePointAbsolute(4)}).to.throw("pointIndex out of bounds: 4");
-    expect(() => {p1.deletePointAbsolute(5)}).to.throw("pointIndex out of bounds: 5");
+    expect(() => {p1.deletePoint(0, 4)}).to.throw("contourPointIndex out of bounds: 4");
+    expect(() => {p1.deletePoint(0, 5)}).to.throw("contourPointIndex out of bounds: 5");
   });
 
 })
