@@ -180,10 +180,7 @@ export default class VarPath {
   }
 
   _getContourStartPoint(contourIndex) {
-    if (contourIndex === 0) {
-      return 0;
-    }
-    return this.contourInfo[contourIndex - 1].endPoint + 1;
+    return contourIndex === 0 ? 0 : this.contourInfo[contourIndex - 1].endPoint + 1;
   }
 
   *iterPoints() {
