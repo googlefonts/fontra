@@ -414,6 +414,22 @@ describe("VarPath Tests", () => {
     ]);
   });
 
+  it("test insertPoint 0", () => {
+    const p1 = simpleTestPath();
+    p1.insertPoint(-1, 0, {"x": 12, "y": 13});
+    const mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [12, 13], "op": "moveTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [0, 100], "op": "lineTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0], "op": "lineTo"},
+      {"args": [12, 13], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
   it("test appendPoint", () => {
     const p1 = simpleTestPath();
     p1.appendPoint(-1, {"x": 12, "y": 13});
