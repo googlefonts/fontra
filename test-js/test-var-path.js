@@ -254,7 +254,7 @@ describe("VarPath Tests", () => {
     const mp = new MockPath2D();
     p.moveTo(0, 0);
     p.lineTo(0, 100);
-    p.curveTo(30, 130, 70, 130, 100, 100);
+    p.cubicCurveTo(30, 130, 70, 130, 100, 100);
     p.quadraticCurveTo(130, 70, 130, 30, 100, 0);
     p.closePath();
     p.drawToPath2d(mp);
@@ -375,7 +375,7 @@ describe("VarPath Tests", () => {
   it("getControlBounds", () => {
     const p = new VarPath();
     p.moveTo(0, 75);
-    p.curveTo(25, 100, 75, 100, 100, 25);
+    p.cubicCurveTo(25, 100, 75, 100, 100, 25);
     p.lineTo(70, 0);
     p.closePath();
     const t = new Transform().scale(1.5, 2);

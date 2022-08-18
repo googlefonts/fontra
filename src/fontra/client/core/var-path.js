@@ -201,7 +201,7 @@ export default class VarPath {
     this._appendPoint(x, y, VarPath.ON_CURVE);
   }
 
-  curveTo(x1, y1, x2, y2, x3, y3) {
+  cubicCurveTo(x1, y1, x2, y2, x3, y3) {
     this._appendPoint(x1, y1, VarPath.OFF_CURVE_CUBIC);
     this._appendPoint(x2, y2, VarPath.OFF_CURVE_CUBIC);
     this._appendPoint(x3, y3, VarPath.ON_CURVE);
