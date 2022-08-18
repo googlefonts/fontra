@@ -1,6 +1,6 @@
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { getRemoteProxy } from "/core/remote.js";
-import { autoReload, parseCookies, themeSwitchFromLocalStorage } from "/core/utils.js";
+import { autoReload, themeSwitchFromLocalStorage } from "/core/utils.js";
 
 
 export async function startupLandingPage(authenticateFunc) {
@@ -10,17 +10,12 @@ export async function startupLandingPage(authenticateFunc) {
   }
   themeSwitchFromLocalStorage();
 
-  const cookies = parseCookies(document.cookie);
-  const protocol = window.location.protocol === "http:" ? "ws" : "wss";
-  const wsURL = `${protocol}://${window.location.host}/websocket/`;
-
   if (authenticateFunc) {
     if (!authenticateFunc()) {
       return;
     }
   }
-  const remoteFontEngine = await getRemoteProxy(wsURL);
-  const projectList = await loaderSpinner(remoteFontEngine.getProjectList());
+  const projectList = await loaderSpinner(fetchJSON("/projectlist"));
   const projectListContainer = document.querySelector("#project-list");
   projectListContainer.classList.remove("hidden");
 
@@ -31,4 +26,10 @@ export async function startupLandingPage(authenticateFunc) {
     projectElement.append(project);
     projectListContainer.appendChild(projectElement);
   }
+}
+
+
+async function fetchJSON(url) {
+  const response = await fetch(url);
+  return await response.json();
 }

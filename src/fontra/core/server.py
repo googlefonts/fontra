@@ -5,6 +5,7 @@ from functools import partial
 from http.cookies import SimpleCookie
 from importlib import resources
 from importlib.metadata import entry_points
+import json
 import logging
 import mimetypes
 import traceback
@@ -36,6 +37,7 @@ class FontraServer:
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
         routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))
+        routes.append(web.get("/projectlist", self.projectListHandler))
         for ep in entry_points(group="fontra.webcontent"):
             routes.append(
                 web.get(
@@ -122,6 +124,13 @@ class FontraServer:
         if subject is None:
             raise RemoteObjectConnectionException("unauthorized")
         return subject
+
+    async def projectListHandler(self, request):
+        authToken = await self.projectManager.authorize(request)
+        if not authToken:
+            return web.HTTPUnauthorized()
+        projectList = await self.projectManager.getProjectList(authToken)
+        return web.Response(text=json.dumps(projectList), content_type="application/json")
 
     async def staticContentHandler(self, packageName, request):
         ifModSince = request.if_modified_since

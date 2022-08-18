@@ -50,9 +50,6 @@ def getFileSystemBackend(path):
 
 
 class FileSystemProjectManager:
-
-    remoteMethodNames = {"getProjectList"}
-
     def __init__(self, rootPath, maxFolderDepth=3, readOnly=False):
         self.rootPath = rootPath
         self.maxFolderDepth = maxFolderDepth
@@ -83,9 +80,6 @@ class FileSystemProjectManager:
         return projectPath.exists()
 
     async def getRemoteSubject(self, path, token):
-        if path == "/":
-            return self
-
         assert path[0] == "/"
         path = path[1:]
         fontHandler = self.fontHandlers.get(path)
@@ -98,7 +92,7 @@ class FileSystemProjectManager:
             self.fontHandlers[path] = fontHandler
         return fontHandler
 
-    async def getProjectList(self, *, connection):
+    async def getProjectList(self, token):
         projectPaths = []
         rootItems = self.rootPath.parts
         paths = sorted(_iterFolder(self.rootPath, self.extensions, self.maxFolderDepth))
