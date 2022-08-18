@@ -455,4 +455,9 @@ describe("VarPath Tests", () => {
     ]);
   });
 
+  it("test appendPoint index error", () => {
+    const p1 = simpleTestPath();
+    expect(() => {p1.appendPoint({"x": 12, "y": 13}, 1)}).to.throw("contourIndex out of bounds: 1");
+  });
+
 })
