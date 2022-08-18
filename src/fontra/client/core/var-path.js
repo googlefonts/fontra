@@ -128,14 +128,8 @@ export default class VarPath {
   }
 
   _appendPrependPoint(contourIndex, point, isPrepend) {
-    const originalContourIndex = contourIndex;
-    if (contourIndex < 0) {
-      contourIndex += this.contourInfo.length;
-    }
+    contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
-    if (contour === undefined) {
-      throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
-    }
     const newPointIndex = contour.endPoint + 1;
     this.coordinates.splice(newPointIndex * 2, 0, point.x, point.y);
     this.pointTypes.splice(newPointIndex, 0, 0);
@@ -155,6 +149,17 @@ export default class VarPath {
     for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
       this.contourInfo[ci].endPoint--;
     }
+  }
+
+  _normalizeContourIndex(contourIndex) {
+    const originalContourIndex = contourIndex;
+    if (contourIndex < 0) {
+      contourIndex += this.contourInfo.length;
+    }
+    if (this.contourInfo[contourIndex] === undefined) {
+      throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
+    }
+    return contourIndex;
   }
 
   *iterPoints() {
