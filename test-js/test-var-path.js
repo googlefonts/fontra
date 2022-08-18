@@ -460,4 +460,26 @@ describe("VarPath Tests", () => {
     expect(() => {p1.appendPoint({"x": 12, "y": 13}, 1)}).to.throw("contourIndex out of bounds: 1");
   });
 
+  it("test deletePoint", () => {
+    const p1 = simpleTestPath();
+    p1.deletePoint(2);
+    const mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"args": [0, 0], "op": "moveTo"},
+      {"args": [0, 100], "op": "lineTo"},
+      {"args": [100, 0], "op": "lineTo"},
+      {"args": [0, 0], "op": "lineTo"},
+      {"args": [], "op": "closePath"},
+    ]);
+  });
+
+  it("test deletePoint index error", () => {
+    const p1 = simpleTestPath();
+    expect(() => {p1.deletePoint(-2)}).to.throw("pointIndex out of bounds: -2");
+    expect(() => {p1.deletePoint(-1)}).to.throw("pointIndex out of bounds: -1");
+    expect(() => {p1.deletePoint(4)}).to.throw("pointIndex out of bounds: 4");
+    expect(() => {p1.deletePoint(5)}).to.throw("pointIndex out of bounds: 5");
+  });
+
 })

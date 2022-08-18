@@ -144,6 +144,18 @@ export default class VarPath {
     this.setPointType(newPointIndex, point.type, point.smooth);
   }
 
+  deletePoint(pointIndex) {
+    const contourIndex = this.getContourIndex(pointIndex);
+    if (contourIndex === undefined) {
+      throw new Error(`pointIndex out of bounds: ${pointIndex}`)
+    }
+    this.coordinates.splice(pointIndex * 2, 2);
+    this.pointTypes.splice(pointIndex, 2);
+    for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
+      this.contourInfo[ci].endPoint--;
+    }
+  }
+
   *iterPoints() {
     yield* this._iterPointsFromTo(0, this.pointTypes.length - 1);
   }
