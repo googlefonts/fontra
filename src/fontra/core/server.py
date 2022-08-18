@@ -61,7 +61,7 @@ class FontraServer:
         )
         self.httpApp.add_routes(routes)
         self.httpApp.on_shutdown.append(self.closeActiveWebsockets)
-        self.httpApp.on_shutdown.append(self.projectManager.close)
+        self.httpApp.on_shutdown.append(self.closeProjectManager)
         self._activeWebsockets = set()
 
     def run(self):
@@ -83,6 +83,9 @@ class FontraServer:
             await websocket.close(
                 code=WSCloseCode.GOING_AWAY, message="Server shutdown"
             )
+
+    async def closeProjectManager(self, httpApp):
+        await self.projectManager.close()
 
     async def websocketHandler(self, request):
         path = "/" + request.match_info["path"]
