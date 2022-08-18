@@ -10,8 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class FontHandler:
-    def __init__(self, backend):
+    def __init__(self, backend, readOnly=False):
         self.backend = backend
+        self.readOnly = readOnly
         self.connections = set()
         self.remoteMethodNames = {
             "editBegin",
@@ -146,7 +147,7 @@ class FontHandler:
         glyphName = change["p"][1]
         glyph = await self.getChangedGlyph(glyphName)
         applyChange(dict(glyphs={glyphName: glyph}), change, glyphChangeFunctions)
-        if hasattr(self.backend, "putGlyph"):
+        if hasattr(self.backend, "putGlyph") and not self.readOnly:
             await self.backend.putGlyph(glyphName, glyph)
 
     def iterGlyphMadeOf(self, glyphName):

@@ -16,12 +16,14 @@ class FileSystemProjectManagerFactory:
     def addArguments(parser):
         parser.add_argument("root", type=existingFolder)
         parser.add_argument("--max-folder-depth", type=int, default=3)
+        parser.add_argument("--read-only", action="store_true")
 
     @staticmethod
     def getProjectManager(arguments):
         return FileSystemProjectManager(
             rootPath=arguments.root,
             maxFolderDepth=arguments.max_folder_depth,
+            readOnly=arguments.read_only,
         )
 
 
@@ -51,9 +53,10 @@ class FileSystemProjectManager:
 
     remoteMethodNames = {"getProjectList"}
 
-    def __init__(self, rootPath, maxFolderDepth=3):
+    def __init__(self, rootPath, maxFolderDepth=3, readOnly=False):
         self.rootPath = rootPath
         self.maxFolderDepth = maxFolderDepth
+        self.readOnly = readOnly
         backendEntryPoints = entry_points(group="fontra.filesystem.backends")
         self.extensions = {f".{ep.name}" for ep in backendEntryPoints}
         self.fontHandlers = {}
@@ -91,7 +94,7 @@ class FileSystemProjectManager:
             if not projectPath.exists():
                 raise FileNotFoundError(projectPath)
             backend = getFileSystemBackend(projectPath)
-            fontHandler = FontHandler(backend)
+            fontHandler = FontHandler(backend, readOnly=self.readOnly)
             self.fontHandlers[path] = fontHandler
         return fontHandler
 
