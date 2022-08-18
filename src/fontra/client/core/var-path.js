@@ -125,9 +125,6 @@ export default class VarPath {
 
   appendPoint(point, contourIndex) {
     const originalContourIndex = contourIndex;
-    if (contourIndex === undefined) {
-      contourIndex = -1;
-    }
     if (contourIndex < 0) {
       contourIndex += this.contourInfo.length;
     }

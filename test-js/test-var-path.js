@@ -416,7 +416,7 @@ describe("VarPath Tests", () => {
 
   it("test appendPoint", () => {
     const p1 = simpleTestPath();
-    p1.appendPoint({"x": 12, "y": 13});
+    p1.appendPoint({"x": 12, "y": 13}, -1);
     const mp = new MockPath2D();
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
