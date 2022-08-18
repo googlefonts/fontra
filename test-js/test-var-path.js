@@ -494,7 +494,6 @@ describe("VarPath Tests", () => {
     ]);
   });
 
-
   it("test appendPoint with contour index", () => {
     const p1 = simpleTestPath();
     const t = new Transform().translate(10, 10).scale(2);
