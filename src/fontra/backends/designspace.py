@@ -1,10 +1,13 @@
 import logging
+import math
 import os
 from fontTools.designspaceLib import DesignSpaceDocument
+from fontTools.misc.transform import Transform
+from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReader
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
-from .pen import PathBuilderPointPen
+from .pen import PathBuilderPointPen, drawPathToPointPen
 
 
 logger = logging.getLogger(__name__)
@@ -32,6 +35,7 @@ class DesignspaceBackend:
         self.axes = axes
         self.loadSources()
         self.buildFileNameMapping()
+        self.savedGlyphModificationTimes = {}
 
     def close(self):
         pass
@@ -111,6 +115,14 @@ class DesignspaceBackend:
 
         return glyph
 
+    async def putGlyph(self, glyphName, glyph):
+        modTimes = set()
+        for layer in glyph["layers"]:
+            glyphSet = self.ufoGlyphSets[layer["name"]]
+            writeUFOLayerGlyph(glyphSet, glyphName, layer["glyph"])
+            modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
+        self.savedGlyphModificationTimes[glyphName] = modTimes
+
     async def getGlobalAxes(self):
         return self.axes
 
@@ -118,7 +130,9 @@ class DesignspaceBackend:
         return self.dsDoc.lib
 
     def watchExternalChanges(self):
-        return ufoWatcher(self.ufoPaths, self.glifFileNames)
+        return ufoWatcher(
+            self.ufoPaths, self.glifFileNames, self.savedGlyphModificationTimes
+        )
 
 
 class UFOBackend:
@@ -169,7 +183,7 @@ class UFOBackend:
             fileName: glyphName
             for glyphName, fileName in self.glyphSets[self.layerName].contents.items()
         }
-        return ufoWatcher([self.path], glifFileNames)
+        return ufoWatcher([self.path], glifFileNames, {})
 
 
 class UFOGlyph:
@@ -205,6 +219,28 @@ def serializeGlyph(glyphSet, glyphName):
     return glyphDict, glyph
 
 
+def writeUFOLayerGlyph(glyphSet, glyphName, glyphData):
+    layerGlyph = UFOGlyph()
+    glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
+    pen = RecordingPointPen()
+    pathData = glyphData.get("path")
+    xAdvance = glyphData.get("xAdvance")
+    yAdvance = glyphData.get("yAdvance")
+    if xAdvance is not None:
+        layerGlyph.width = xAdvance
+    if yAdvance is not None:
+        layerGlyph.height = yAdvance
+    if pathData is not None:
+        drawPathToPointPen(pathData, pen)
+    for component in glyphData.get("components", ()):
+        pen.addComponent(
+            component["name"], makeAffineTransform(component["transformation"])
+        )
+    glyphSet.writeGlyph(
+        glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
+    )
+
+
 def getReverseCmapFromGlyphSet(glyphSet):
     revCmap = {}
     for glyphName in glyphSet.keys():
@@ -215,12 +251,14 @@ def getReverseCmapFromGlyphSet(glyphSet):
     return revCmap
 
 
-async def ufoWatcher(ufoPaths, glifFileNames):
+async def ufoWatcher(ufoPaths, glifFileNames, savedGlyphModificationTimes):
     async for changes in watchfiles.awatch(*ufoPaths):
         glyphNames = set()
         for change, path in changes:
             glyphName = glifFileNames.get(os.path.basename(path))
-            if glyphName is not None:
+            if glyphName is not None and round(
+                os.stat(path).st_mtime, 5
+            ) not in savedGlyphModificationTimes.get(glyphName, ()):
                 glyphNames.add(glyphName)
         if glyphNames:
             yield glyphNames
@@ -239,3 +277,15 @@ def uniqueNameMaker():
         return uniqueName
 
     return makeUniqueName
+
+
+def makeAffineTransform(transformation):
+    t = Transform()
+    t = t.translate(
+        transformation["x"] + transformation["tcenterx"],
+        transformation["y"] + transformation["tcentery"],
+    )
+    t = t.rotate(transformation["rotation"] * (math.pi / 180))
+    t = t.scale(transformation["scalex"], transformation["scaley"])
+    t = t.translate(-transformation["tcenterx"], -transformation["tcentery"])
+    return t
