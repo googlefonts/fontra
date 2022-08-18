@@ -139,7 +139,7 @@ export default class VarPath {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const pointIndex = this._absolutePointIndex(contourIndex, contourPointIndex);
     this.coordinates.splice(pointIndex * 2, 2);
-    this.pointTypes.splice(pointIndex, 2);
+    this.pointTypes.splice(pointIndex, 1);
     for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
       this.contourInfo[ci].endPoint--;
     }

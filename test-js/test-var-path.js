@@ -526,14 +526,14 @@ describe("VarPath Tests", () => {
 
   it("test deletePoint", () => {
     const p1 = simpleTestPath();
-    p1.deletePoint(0, 2);
+    p1.setPointType(3, VarPath.OFF_CURVE_QUAD);
+    p1.deletePoint(0, 1);
     const mp = new MockPath2D();
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
       {"args": [0, 0], "op": "moveTo"},
-      {"args": [0, 100], "op": "lineTo"},
-      {"args": [100, 0], "op": "lineTo"},
-      {"args": [0, 0], "op": "lineTo"},
+      {"args": [100, 100], "op": "lineTo"},
+      {"args": [100, 0, 0, 0], "op": "quadraticCurveTo"},
       {"args": [], "op": "closePath"},
     ]);
   });
