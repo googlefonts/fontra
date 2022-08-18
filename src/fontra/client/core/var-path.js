@@ -138,18 +138,6 @@ export default class VarPath {
   deletePoint(contourIndex, contourPointIndex) {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const pointIndex = this._absolutePointIndex(contourIndex, contourPointIndex);
-    this._deletePointAbsolute(contourIndex, pointIndex);
-  }
-
-  deletePointAbsolute(pointIndex) {
-    const contourIndex = this.getContourIndex(pointIndex);
-    if (contourIndex === undefined) {
-      throw new Error(`pointIndex out of bounds: ${pointIndex}`)
-    }
-    this._deletePointAbsolute(contourIndex, pointIndex);
-  }
-
-  _deletePointAbsolute(contourIndex, pointIndex) {
     this.coordinates.splice(pointIndex * 2, 2);
     this.pointTypes.splice(pointIndex, 2);
     for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
