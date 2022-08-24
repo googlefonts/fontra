@@ -337,12 +337,34 @@ getGlyphTestData = [
             ],
         },
     ),
+    (
+        "ttf",
+        {
+            "name": "period",
+            "unicodes": [ord(".")],
+            "layers": [
+                {
+                    "glyph": {
+                        "path": {
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [60, 0, 60, 120, 110, 120, 110, 0],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                        "xAdvance": 170,
+                    },
+                    "name": "<default>",
+                }
+            ],
+            "sources": [{"layerName": "<default>", "location": {}}],
+        },
+    ),
 ]
 
 
 testFontPaths = {
     "designspace": dataDir / "mutatorsans" / "MutatorSans.designspace",
     "ufo": dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo",
+    "ttf": dataDir / "mutatorsans" / "MutatorSans.ttf",
 }
 
 
