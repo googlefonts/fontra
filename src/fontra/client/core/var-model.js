@@ -15,7 +15,7 @@ export class VariationModel {
       console.log("locations:", locations);
       throw new VariationError("locations must be unique");
     }
-    if (! locationsSet.has("{}")) {
+    if (!locationsSet.has("{}")) {
       throw new VariationError("locations must contain {} default");
     }
     this.locations = sortedLocations(locations, axisOrder);
