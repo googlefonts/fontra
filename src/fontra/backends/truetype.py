@@ -72,23 +72,43 @@ def unpackAxes(font):
     fvar = font.get("fvar")
     if fvar is None:
         return []
+    avar = font.get("avar")
+    avarMapping = (
+        {k: sorted(v.items()) for k, v in avar.segments.items()}
+        if avar is not None
+        else {}
+    )
     axisList = []
     for axis in fvar.axes:
-        axisDict = {
-            "minValue": axis.minValue,
-            "defaultValue": axis.defaultValue,
-            "maxValue": axis.maxValue,
-            "name": axis.axisTag,
-        }
         normMin = -1 if axis.minValue < axis.defaultValue else 0
         normMax = 1 if axis.maxValue > axis.defaultValue else 0
-        # TODO: add avar mapping
-        axisDict["mapping"] = [
-            (axis.minValue, normMin),
-            (axis.defaultValue, 0),
-            (axis.maxValue, normMax),
-        ]
-        axisList.append(axisDict)
+        posExtent = axis.maxValue - axis.defaultValue
+        negExtent = axis.defaultValue - axis.minValue
+        mapping = avarMapping.get(axis.axisTag, [])
+        if mapping:
+            mapping = [
+                (
+                    axis.defaultValue
+                    + (inValue * posExtent if inValue >= 0 else inValue * negExtent),
+                    outValue,
+                )
+                for inValue, outValue in mapping
+            ]
+        else:
+            mapping = [
+                (axis.minValue, normMin),
+                (axis.defaultValue, 0),
+                (axis.maxValue, normMax),
+            ]
+        axisList.append(
+            {
+                "minValue": axis.minValue,
+                "defaultValue": axis.defaultValue,
+                "maxValue": axis.maxValue,
+                "name": axis.axisTag,
+                "mapping": mapping,
+            }
+        )
     return axisList
 
 
