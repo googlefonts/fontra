@@ -389,9 +389,9 @@ getGlyphTestData = [
                 },
             ],
             "sources": [
-                {"layerName": "<default>", "location": {}, "name": "<default>"},
-                {"layerName": "wdth=1", "location": {"wdth": 1.0}, "name": "wdth=1"},
-                {"layerName": "wght=1", "location": {"wght": 1.0}, "name": "wght=1"},
+                {"layerName": "<default>", "location": {"wdth": 0, "wght": 0}, "name": "<default>"},
+                {"layerName": "wdth=1", "location": {"wdth": 1.0, "wght": 0}, "name": "wdth=1"},
+                {"layerName": "wght=1", "location": {"wdth": 0, "wght": 1.0}, "name": "wght=1"},
                 {
                     "layerName": "wdth=1,wght=1",
                     "location": {"wdth": 1.0, "wght": 1.0},
