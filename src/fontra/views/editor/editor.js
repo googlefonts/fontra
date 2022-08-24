@@ -1008,7 +1008,7 @@ function compare(a, b) {
 
 function glyphLinesFromText(text, cmap, reverseCmap) {
   const glyphLines = [];
-  for (const line of splitLines(text)) {
+  for (const line of text.split(/\r?\n/)) {
     glyphLines.push(glyphNamesFromText(line, cmap, reverseCmap));
   }
   return glyphLines;
@@ -1063,25 +1063,6 @@ function glyphNamesFromText(text, cmap, reverseCmap) {
     }
   }
   return glyphNames;
-}
-
-
-function splitLines(text) {
-  const lines = [];
-  let previousLineEmpty = false;
-  for (const line of text.split(/\r?\n/)) {
-    if (line.length === 0) {
-      if (previousLineEmpty) {
-        // turn double empty lines into a single empty line,
-        // working around a weirdness of element.innerText
-        previousLineEmpty = false;
-        continue;
-      }
-      previousLineEmpty = true;
-    }
-    lines.push(line);
-  }
-  return lines;
 }
 
 
