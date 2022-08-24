@@ -19,6 +19,7 @@ class TTFBackend:
             revCmap[glyphName].append(code)
         self.revCmap = dict(revCmap)
         self.glyphSet = self.font.getGlyphSet()
+        self.variationGlyphSets = {}
         return self
 
     def close(self):
@@ -37,7 +38,15 @@ class TTFBackend:
         layers = [{"name": defaultLayerName, "glyph": glyphDict}]
         sources = [{"location": {}, "name": defaultLayerName, "layerName": defaultLayerName}]
         for variation in self.variations.get(glyphName, []):
-            ...
+            loc = {k: v[1] for k, v in variation.axes.items()}
+            locStr = locationToString(loc)
+            varGlyphSet = self.variationGlyphSets.get(locStr)
+            if varGlyphSet is None:
+                varGlyphSet = self.font.getGlyphSet(location=loc, normalized=True)
+                self.variationGlyphSets[locStr] = varGlyphSet
+            varGlyphDict = serializeGlyph(varGlyphSet, glyphName)
+            layers.append({"name": locStr, "glyph": varGlyphDict})
+            sources.append({"location": loc, "name": locStr, "layerName": locStr})
         glyph["unicodes"] = self.revCmap.get(glyphName, [])
         glyph["layers"] = layers
         glyph["sources"] = sources
