@@ -353,9 +353,51 @@ getGlyphTestData = [
                         "xAdvance": 170,
                     },
                     "name": "<default>",
-                }
+                },
+                {
+                    "glyph": {
+                        "path": {
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [120, 0, 120, 220, 170, 220, 170, 0],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                        "xAdvance": 290,
+                    },
+                    "name": "wdth=1",
+                },
+                {
+                    "glyph": {
+                        "path": {
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [30, 0, 30, 300, 220, 300, 220, 0],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                        "xAdvance": 250,
+                    },
+                    "name": "wght=1",
+                },
+                {
+                    "glyph": {
+                        "path": {
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [60, 0, 60, 300, 250, 300, 250, 0],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                        "xAdvance": 310,
+                    },
+                    "name": "wdth=1,wght=1",
+                },
             ],
-            "sources": [{"layerName": "<default>", "location": {}, "name": "<default>"}],
+            "sources": [
+                {"layerName": "<default>", "location": {}, "name": "<default>"},
+                {"layerName": "wdth=1", "location": {"wdth": 1.0}, "name": "wdth=1"},
+                {"layerName": "wght=1", "location": {"wght": 1.0}, "name": "wght=1"},
+                {
+                    "layerName": "wdth=1,wght=1",
+                    "location": {"wdth": 1.0, "wght": 1.0},
+                    "name": "wdth=1,wght=1",
+                },
+            ],
         },
     ),
 ]
