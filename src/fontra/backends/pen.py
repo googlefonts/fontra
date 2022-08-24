@@ -33,7 +33,7 @@ class PathBuilderPointPen:
     def beginPath(self, **kwargs):
         self._currentContour = []
 
-    def addPoint(self, pt, segmentType, smooth=False, *args, **kwargs):
+    def addPoint(self, pt, segmentType=None, smooth=False, *args, **kwargs):
         self._currentContour.append((pt, segmentType, smooth))
 
     def endPath(self):
