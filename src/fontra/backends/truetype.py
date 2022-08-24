@@ -10,6 +10,9 @@ class TTFBackend:
         self = cls()
         self.path = path
         self.font = TTFont(path, lazy=True)
+        self.globalAxes = unpackAxes(self.font)
+        gvar = self.font.get("gvar")
+        self.variations = gvar.variations if gvar is not None else {}
         self.cmap = self.font.getBestCmap()
         revCmap = defaultdict(list)
         for code, glyphName in self.cmap.items():
@@ -28,25 +31,47 @@ class TTFBackend:
         return glyphName in self.glyphSet
 
     async def getGlyph(self, glyphName):
-        layerName = "<default>"
+        defaultLayerName = "<default>"
         glyph = {"name": glyphName}
         glyphDict = serializeGlyph(self.glyphSet, glyphName)
-        layers = [{"name": layerName, "glyph": glyphDict}]
-        glyph["sources"] = [
-            {
-                "location": {},
-                "layerName": layerName,
-            }
-        ]
+        layers = [{"name": defaultLayerName, "glyph": glyphDict}]
+        sources = [{"location": {}, "name": defaultLayerName, "layerName": defaultLayerName}]
+        for variation in self.variations.get(glyphName, []):
+            ...
         glyph["unicodes"] = self.revCmap.get(glyphName, [])
         glyph["layers"] = layers
+        glyph["sources"] = sources
         return glyph
 
     async def getGlobalAxes(self):
-        return []
+        return self.globalAxes
 
     async def getFontLib(self):
         return []
+
+
+def unpackAxes(font):
+    fvar = font.get("fvar")
+    if fvar is None:
+        return []
+    axisList = []
+    for axis in fvar.axes:
+        axisDict = {
+            "minValue": axis.minValue,
+            "defaultValue": axis.defaultValue,
+            "maxValue": axis.maxValue,
+            "name": axis.axisTag,
+        }
+        normMin = -1 if axis.minValue < axis.defaultValue else 0
+        normMax = 1 if axis.maxValue > axis.defaultValue else 0
+        # TODO: add avar mapping
+        axisDict["mapping"] = [
+            (axis.minValue, normMin),
+            (axis.defaultValue, 0),
+            (axis.maxValue, normMax),
+        ]
+        axisList.append(axisDict)
+    return axisList
 
 
 def serializeGlyph(glyphSet, glyphName):
@@ -62,3 +87,13 @@ def serializeGlyph(glyphSet, glyphName):
     glyphDict["xAdvance"] = ttGlyph.width
     # TODO: yAdvance, verticalOrigin
     return glyphDict
+
+
+def locationToString(loc):
+    parts = []
+    for k, v in sorted(loc.items()):
+        iv = int(v)
+        if iv == v:
+            v = iv
+        parts.append(f"{k}={v}")
+    return ",".join(parts)

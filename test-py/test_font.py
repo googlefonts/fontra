@@ -355,7 +355,7 @@ getGlyphTestData = [
                     "name": "<default>",
                 }
             ],
-            "sources": [{"layerName": "<default>", "location": {}}],
+            "sources": [{"layerName": "<default>", "location": {}, "name": "<default>"}],
         },
     ),
 ]
