@@ -36,7 +36,9 @@ class TTFBackend:
         glyph = {"name": glyphName}
         glyphDict = serializeGlyph(self.glyphSet, glyphName)
         layers = [{"name": defaultLayerName, "glyph": glyphDict}]
-        sources = [{"location": {}, "name": defaultLayerName, "layerName": defaultLayerName}]
+        sources = [
+            {"location": {}, "name": defaultLayerName, "layerName": defaultLayerName}
+        ]
         for variation in self.variations.get(glyphName, []):
             loc = {k: v[1] for k, v in variation.axes.items()}
             locStr = locationToString(loc)
