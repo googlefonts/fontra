@@ -1,5 +1,5 @@
 from collections import defaultdict
-from fontTools.pens.pointPen import SegmentToPointPen
+from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
 from .pen import PathBuilderPointPen
 
@@ -115,7 +115,7 @@ def unpackAxes(font):
 def serializeGlyph(glyphSet, glyphName):
     pen = PathBuilderPointPen()
     ttGlyph = glyphSet[glyphName]
-    ttGlyph.draw(SegmentToPointPen(pen))
+    ttGlyph.drawPoints(GuessSmoothPointPen(pen))
     path = pen.getPath()
     glyphDict = {}
     if path is not None:
