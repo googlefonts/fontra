@@ -93,6 +93,7 @@ def unpackAxes(font):
                     outValue,
                 )
                 for inValue, outValue in mapping
+                if normMin <= outValue <= normMax
             ]
         else:
             mapping = [
