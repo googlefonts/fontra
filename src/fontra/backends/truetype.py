@@ -36,19 +36,26 @@ class TTFBackend:
         glyph = {"name": glyphName}
         glyphDict = serializeGlyph(self.glyphSet, glyphName)
         layers = [{"name": defaultLayerName, "glyph": glyphDict}]
+        defaultLocation = {axis["name"]: 0 for axis in self.globalAxes}
         sources = [
-            {"location": {}, "name": defaultLayerName, "layerName": defaultLayerName}
+            {
+                "location": defaultLocation,
+                "name": defaultLayerName,
+                "layerName": defaultLayerName,
+            }
         ]
         for variation in self.variations.get(glyphName, []):
-            loc = {k: v[1] for k, v in variation.axes.items()}
-            locStr = locationToString(loc)
+            sparseLoc = {k: v[1] for k, v in variation.axes.items()}
+            fullLoc = defaultLocation.copy()
+            fullLoc.update(sparseLoc)
+            locStr = locationToString(sparseLoc)
             varGlyphSet = self.variationGlyphSets.get(locStr)
             if varGlyphSet is None:
-                varGlyphSet = self.font.getGlyphSet(location=loc, normalized=True)
+                varGlyphSet = self.font.getGlyphSet(location=fullLoc, normalized=True)
                 self.variationGlyphSets[locStr] = varGlyphSet
             varGlyphDict = serializeGlyph(varGlyphSet, glyphName)
             layers.append({"name": locStr, "glyph": varGlyphDict})
-            sources.append({"location": loc, "name": locStr, "layerName": locStr})
+            sources.append({"location": fullLoc, "name": locStr, "layerName": locStr})
         glyph["unicodes"] = self.revCmap.get(glyphName, [])
         glyph["layers"] = layers
         glyph["sources"] = sources
@@ -103,6 +110,7 @@ def serializeGlyph(glyphSet, glyphName):
 def locationToString(loc):
     parts = []
     for k, v in sorted(loc.items()):
+        v = round(v, 5)  # enough to differentiate all 2.14 fixed values
         iv = int(v)
         if iv == v:
             v = iv
