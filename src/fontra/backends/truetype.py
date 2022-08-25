@@ -1,4 +1,3 @@
-from collections import defaultdict
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
 from .pen import PathBuilderPointPen
@@ -14,10 +13,12 @@ class TTFBackend:
         gvar = self.font.get("gvar")
         self.variations = gvar.variations if gvar is not None else {}
         self.cmap = self.font.getBestCmap()
-        revCmap = defaultdict(list)
+        revCmap = {}
+        for glyphName in self.font.getGlyphOrder():
+            revCmap[glyphName] = []
         for code, glyphName in self.cmap.items():
             revCmap[glyphName].append(code)
-        self.revCmap = dict(revCmap)
+        self.revCmap = revCmap
         self.glyphSet = self.font.getGlyphSet()
         self.variationGlyphSets = {}
         return self
