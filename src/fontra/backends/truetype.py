@@ -16,7 +16,7 @@ class TTFBackend:
         revCmap = {}
         for glyphName in self.font.getGlyphOrder():
             revCmap[glyphName] = []
-        for code, glyphName in self.cmap.items():
+        for code, glyphName in sorted(self.cmap.items()):
             revCmap[glyphName].append(code)
         self.revCmap = revCmap
         self.glyphSet = self.font.getGlyphSet()
