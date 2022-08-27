@@ -1,4 +1,4 @@
 aiohttp==3.8.1
 # fonttools[ufo,unicode]==4.37.1
-git+https://github.com/fonttools/fonttools.git@varglyphset-cff  # TEMPORARY until fonttools/fonttools#2784 is merged/released
+fonttools[ufo,unicode] @ git+https://github.com/fonttools/fonttools.git@varglyphset-cff  # TEMPORARY until fonttools/fonttools#2784 is merged/released
 watchfiles==0.16.1
