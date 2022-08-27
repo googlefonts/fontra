@@ -94,7 +94,6 @@ class TTFBackend:
                 for varDataIndex in vsIndices
                 for loc in getLocationsFromVarstore(varDataIndex, varStore, fvarAxes)
             }
-
         return [dict(loc) for loc in sorted(locations)]
 
     async def getGlobalAxes(self):
