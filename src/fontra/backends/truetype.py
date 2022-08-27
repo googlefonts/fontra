@@ -80,7 +80,7 @@ class TTFBackend:
         elif (
             self.charStrings is not None
             and glyphName in self.charStrings
-            and self.charStrings.varStore is not None
+            and getattr(self.charStrings, "varStore", None) is not None
         ):
             cs = self.charStrings[glyphName]
             subrs = getattr(cs.private, "Subrs", [])
