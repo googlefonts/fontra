@@ -45,7 +45,7 @@ class TTFBackend:
                 "layerName": defaultLayerName,
             }
         ]
-        for variation in self.variations.get(glyphName, []):
+        for variation in self._getGlyphVariationLocations(glyphName):
             sparseLoc = {k: v[1] for k, v in variation.axes.items()}
             fullLoc = defaultLocation.copy()
             fullLoc.update(sparseLoc)
@@ -61,6 +61,11 @@ class TTFBackend:
         glyph["layers"] = layers
         glyph["sources"] = sources
         return glyph
+
+    def _getGlyphVariationLocations(self, glyphName):
+        # TODO/FIXME: This misses variations that only exist in HVAR/VVAR
+        # TODO/FIXME: this needs to be updated for CFF2
+        return self.variations.get(glyphName, [])
 
     async def getGlobalAxes(self):
         return self.globalAxes
