@@ -111,7 +111,7 @@ export class VariableGlyphController {
         if (sourceValue === undefined) {
           sourceValue = axisDefaultValue;
         }
-        if (varValue !== sourceValue) {
+        if (Math.abs(varValue - sourceValue) > 0.000000001) {
           found = false;
           break;
         }
