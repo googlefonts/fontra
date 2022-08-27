@@ -11,7 +11,7 @@ class TTFBackend:
         self.font = TTFont(path, lazy=True)
         self.globalAxes = unpackAxes(self.font)
         gvar = self.font.get("gvar")
-        self.variations = gvar.variations if gvar is not None else {}
+        self.gvarVariations = gvar.variations if gvar is not None else {}
         self.cmap = self.font.getBestCmap()
         revCmap = {}
         for glyphName in self.font.getGlyphOrder():
@@ -65,7 +65,7 @@ class TTFBackend:
     def _getGlyphVariationLocations(self, glyphName):
         # TODO/FIXME: This misses variations that only exist in HVAR/VVAR
         # TODO/FIXME: this needs to be updated for CFF2
-        return self.variations.get(glyphName, [])
+        return self.gvarVariations.get(glyphName, [])
 
     async def getGlobalAxes(self):
         return self.globalAxes
