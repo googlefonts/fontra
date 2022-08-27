@@ -89,9 +89,11 @@ class TTFBackend:
             vsIndices = sorted(collector.vsIndices)
             fvarAxes = self.font["fvar"].axes
             varStore = self.charStrings.varStore.otVarStore
-            for varDataIndex in vsIndices:
-                for loc in getLocationsFromVarstore(varDataIndex, varStore, fvarAxes):
-                    locations.add(tuplifyLocation(loc))
+            locations = {
+                tuplifyLocation(loc)
+                for varDataIndex in vsIndices
+                for loc in getLocationsFromVarstore(varDataIndex, varStore, fvarAxes)
+            }
 
         return [dict(loc) for loc in sorted(locations)]
 
