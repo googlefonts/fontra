@@ -430,26 +430,6 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": "wdth=0.56909,wght=0.63574",
-                    "glyph": {
-                        "path": {
-                            "coordinates": [
-                                64.21937227249146,
-                                0,
-                                203.22327852249146,
-                                0,
-                                203.22327852249146,
-                                255.16320705413818,
-                                64.21937227249146,
-                                255.16320705413818,
-                            ],
-                            "pointTypes": [0, 0, 0, 0],
-                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
-                        },
-                        "xAdvance": 267.4426507949829,
-                    },
-                },
-                {
                     "name": "wdth=1",
                     "glyph": {
                         "path": {
@@ -470,26 +450,6 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": "wdth=1,wght=0.63574",
-                    "glyph": {
-                        "path": {
-                            "coordinates": [
-                                81.85546875,
-                                0,
-                                220.859375,
-                                0,
-                                220.859375,
-                                270.859375,
-                                81.85546875,
-                                270.859375,
-                            ],
-                            "pointTypes": [0, 0, 0, 0],
-                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
-                        },
-                        "xAdvance": 302.71484375,
-                    },
-                },
-                {
                     "name": "wdth=1,wght=1",
                     "glyph": {
                         "path": {
@@ -507,26 +467,6 @@ getGlyphTestData = [
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
                         "xAdvance": 310.0,
-                    },
-                },
-                {
-                    "name": "wght=0.63574",
-                    "glyph": {
-                        "path": {
-                            "coordinates": [
-                                40.927734375,
-                                0,
-                                179.931640625,
-                                0,
-                                179.931640625,
-                                234.43359375,
-                                40.927734375,
-                                234.43359375,
-                            ],
-                            "pointTypes": [0, 0, 0, 0],
-                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
-                        },
-                        "xAdvance": 220.859375,
                     },
                 },
                 {
@@ -557,29 +497,14 @@ getGlyphTestData = [
                     "layerName": "<default>",
                 },
                 {
-                    "location": {"wdth": 0.569091796875, "wght": 0.6357421875},
-                    "name": "wdth=0.56909,wght=0.63574",
-                    "layerName": "wdth=0.56909,wght=0.63574",
-                },
-                {
                     "location": {"wdth": 1.0, "wght": 0},
                     "name": "wdth=1",
                     "layerName": "wdth=1",
                 },
                 {
-                    "location": {"wdth": 1.0, "wght": 0.6357421875},
-                    "name": "wdth=1,wght=0.63574",
-                    "layerName": "wdth=1,wght=0.63574",
-                },
-                {
                     "location": {"wdth": 1.0, "wght": 1.0},
                     "name": "wdth=1,wght=1",
                     "layerName": "wdth=1,wght=1",
-                },
-                {
-                    "location": {"wdth": 0, "wght": 0.6357421875},
-                    "name": "wght=0.63574",
-                    "layerName": "wght=0.63574",
                 },
                 {
                     "location": {"wdth": 0, "wght": 1.0},

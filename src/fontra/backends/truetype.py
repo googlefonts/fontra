@@ -86,13 +86,11 @@ class TTFBackend:
             subrs = getattr(cs.private, "Subrs", [])
             collector = VarIndexCollector(subrs, cs.globalSubrs, cs.private)
             collector.execute(cs)
-            vsIndices = [
-                vi for vi in sorted(collector.vsIndices) if vi != NO_VARIATION_INDEX
-            ]
+            vsIndices = sorted(collector.vsIndices)
             fvarAxes = self.font["fvar"].axes
             varStore = self.charStrings.varStore.otVarStore
-            for varIdx in vsIndices:
-                for loc in getLocationsFromVarstore(varIdx, varStore, fvarAxes):
+            for varDataIndex in vsIndices:
+                for loc in getLocationsFromVarstore(varDataIndex, varStore, fvarAxes):
                     locations.add(tuplifyLocation(loc))
 
         return [dict(loc) for loc in sorted(locations)]
@@ -108,9 +106,9 @@ def tuplifyLocation(loc):
     return tuple(sorted(loc.items()))
 
 
-def getLocationsFromVarstore(varIdx, varStore, fvarAxes):
+def getLocationsFromVarstore(varDataIndex, varStore, fvarAxes):
     regions = varStore.VarRegionList.Region
-    for regionIndex in varStore.VarData[varIdx >> 16].VarRegionIndex:
+    for regionIndex in varStore.VarData[varDataIndex].VarRegionIndex:
         location = {
             fvarAxes[i].axisTag: reg.PeakCoord
             for i, reg in enumerate(regions[regionIndex].VarRegionAxis)
