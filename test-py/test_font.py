@@ -369,17 +369,6 @@ getGlyphTestData = [
                     "glyph": {
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
-                            "coordinates": [30, 0, 30, 300, 220, 300, 220, 0],
-                            "pointTypes": [0, 0, 0, 0],
-                        },
-                        "xAdvance": 250,
-                    },
-                    "name": "wght=1",
-                },
-                {
-                    "glyph": {
-                        "path": {
-                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 60, 300, 250, 300, 250, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
@@ -387,16 +376,27 @@ getGlyphTestData = [
                     },
                     "name": "wdth=1,wght=1",
                 },
+                {
+                    "glyph": {
+                        "path": {
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [30, 0, 30, 300, 220, 300, 220, 0],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                        "xAdvance": 250,
+                    },
+                    "name": "wght=1",
+                },
             ],
             "sources": [
                 {"layerName": "<default>", "location": {"wdth": 0, "wght": 0}, "name": "<default>"},
                 {"layerName": "wdth=1", "location": {"wdth": 1.0, "wght": 0}, "name": "wdth=1"},
-                {"layerName": "wght=1", "location": {"wdth": 0, "wght": 1.0}, "name": "wght=1"},
                 {
                     "layerName": "wdth=1,wght=1",
                     "location": {"wdth": 1.0, "wght": 1.0},
                     "name": "wdth=1,wght=1",
                 },
+                {"layerName": "wght=1", "location": {"wdth": 0, "wght": 1.0}, "name": "wght=1"},
             ],
         },
     ),

@@ -1,5 +1,7 @@
+from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
+from fontTools.ttLib.tables.otTables import NO_VARIATION_INDEX
 from .pen import PathBuilderPointPen
 
 
@@ -11,7 +13,13 @@ class TTFBackend:
         self.font = TTFont(path, lazy=True)
         self.globalAxes = unpackAxes(self.font)
         gvar = self.font.get("gvar")
-        self.gvarVariations = gvar.variations if gvar is not None else {}
+        self.gvarVariations = gvar.variations if gvar is not None else None
+        self.charStrings = (
+            list(self.font["CFF2"].cff.values())[0].CharStrings
+            if "CFF2" in self.font
+            else None
+        )
+        self.cff2 = self.font.get("CFF2")
         self.cmap = self.font.getBestCmap()
         revCmap = {}
         for glyphName in self.font.getGlyphOrder():
@@ -45,8 +53,7 @@ class TTFBackend:
                 "layerName": defaultLayerName,
             }
         ]
-        for variation in self._getGlyphVariationLocations(glyphName):
-            sparseLoc = {k: v[1] for k, v in variation.axes.items()}
+        for sparseLoc in self._getGlyphVariationLocations(glyphName):
             fullLoc = defaultLocation.copy()
             fullLoc.update(sparseLoc)
             locStr = locationToString(sparseLoc)
@@ -64,14 +71,52 @@ class TTFBackend:
 
     def _getGlyphVariationLocations(self, glyphName):
         # TODO/FIXME: This misses variations that only exist in HVAR/VVAR
-        # TODO/FIXME: this needs to be updated for CFF2
-        return self.gvarVariations.get(glyphName, [])
+        locations = set()
+        if self.gvarVariations is not None:
+            locations = {
+                tuplifyLocation({k: v[1] for k, v in variation.axes.items()})
+                for variation in self.gvarVariations.get(glyphName, [])
+            }
+        elif (
+            self.charStrings is not None
+            and glyphName in self.charStrings
+            and self.charStrings.varStore is not None
+        ):
+            cs = self.charStrings[glyphName]
+            subrs = getattr(cs.private, "Subrs", [])
+            collector = VarIndexCollector(subrs, cs.globalSubrs, cs.private)
+            collector.execute(cs)
+            vsIndices = [
+                vi for vi in sorted(collector.vsIndices) if vi != NO_VARIATION_INDEX
+            ]
+            fvarAxes = self.font["fvar"].axes
+            varStore = self.charStrings.varStore.otVarStore
+            for varIdx in vsIndices:
+                for loc in getLocationsFromVarstore(varIdx, varStore, fvarAxes):
+                    locations.add(tuplifyLocation(loc))
+
+        return [dict(loc) for loc in sorted(locations)]
 
     async def getGlobalAxes(self):
         return self.globalAxes
 
     async def getFontLib(self):
         return []
+
+
+def tuplifyLocation(loc):
+    return tuple(sorted(loc.items()))
+
+
+def getLocationsFromVarstore(varIdx, varStore, fvarAxes):
+    regions = varStore.VarRegionList.Region
+    for regionIndex in varStore.VarData[varIdx >> 16].VarRegionIndex:
+        location = {
+            fvarAxes[i].axisTag: reg.PeakCoord
+            for i, reg in enumerate(regions[regionIndex].VarRegionAxis)
+            if reg.PeakCoord != 0
+        }
+        yield location
 
 
 def unpackAxes(font):
@@ -143,3 +188,13 @@ def locationToString(loc):
             v = iv
         parts.append(f"{k}={v}")
     return ",".join(parts)
+
+
+class VarIndexCollector(SimpleT2Decompiler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.vsIndices = set()
+
+    def op_vsindex(self, index):
+        super().op_vsindex(index)
+        self.vsIndices.add(self.vsIndex)
