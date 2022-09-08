@@ -21,7 +21,7 @@ via the `fontra` subcommand. There is one built-in Project Manager, called
 
     $ fontra filesystem path/to/folder/containing/font
 
-Project managers are registered with the "fontra.projectmanagers" entry-points
+Project managers are registered with the `fontra.projectmanagers` entry-points
 key.
 
 An example Project Manager plug-in can be found in the fontra-rcjk project.
@@ -29,13 +29,13 @@ An example Project Manager plug-in can be found in the fontra-rcjk project.
 ## View plug-in API
 
 A view plug-in generally contains a collection of web assets, bundled as a
-Python package. They are registered under the "fontra.views" entry-points key.
+Python package. They are registered under the `fontra.views` entry-points key.
 
 ## File System back-end plug-in API
 
 The filesystem Project Manager has a plug-in API for font format backends,
 a.k.a. storage backends. These backends are registered under the
-"fontra.filesystem.backends" entry-points key. Example from Fontra's own
+`fontra.filesystem.backends` entry-points key. Example from Fontra's own
 pyproject.toml file:
 
     [project.entry-points."fontra.filesystem.backends"]
@@ -49,15 +49,15 @@ files and `*.ufo` files respectively.
 ## Static Content additions
 
 Python packages can be used to serve additional static web content, such as
-.js, .css, images, etc. This is done via the "fontra.webcontent" key. Example
+.js, .css, images, etc. This is done via the `fontra.webcontent` key. Example
 snippet from a "pyproject.toml" file:
 
     [project.entry-points."fontra.webcontent"]
     filesystem = "fontra.filesystem"
 
 This adds a "virtual folder" to the web server under the name "filesystem", and
-static content from the folder of the "fontra.filesystem" Python package will
+static content from the folder of the `fontra.filesystem` Python package will
 be available via that folder. For example, a file called "example.css" that is
-part of the "fontra.filesystem" package will be visible in the browser as:
+part of the `fontra.filesystem` package will be visible in the browser as:
 
     http://localhost:8000/filesystem/example.css
