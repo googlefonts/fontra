@@ -28,7 +28,7 @@ An example Project Manager plug-in can be found in the fontra-rcjk project.
 
 ## View plug-in API
 
-A view plug-in generally contains a collection of web assets, budled as a
+A view plug-in generally contains a collection of web assets, bundled as a
 Python package. They are registered under the "fontra.views" entry-points key.
 
 ## File System back-end plug-in API
