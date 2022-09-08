@@ -41,10 +41,12 @@ pyproject.toml file:
     [project.entry-points."fontra.filesystem.backends"]
     designspace = "fontra.backends.designspace:DesignspaceBackend"
     ufo = "fontra.backends.designspace:UFOBackend"
+    ttf = "fontra.backends.truetype:TTFBackend"
+    otf = "fontra.backends.truetype:TTFBackend"
 
 The backend *name* is the filename extension used for that format. The *value*
 points to a class in a Python package. The above entries match `*.designspace`
-files and `*.ufo` files respectively.
+, `*.ufo`, `*.ttf` and `*.otf` files respectively.
 
 ## Static Content additions
 
