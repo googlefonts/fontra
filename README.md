@@ -26,6 +26,6 @@
 
     `http://localhost:8000/`
 
-- To use Fontra with .rcjk data on disk, or to connect to a remote rcjk server, install the `fontra-rcjk` plugin package. Then you can start it with a robocjk server hostname, using the `rcjk` subcommand provided by the `fontra-rcjk` plugin:
+- To use Fontra with .rcjk data on disk, or to connect to a remote rcjk server, install the [`fontra-rcjk`](https://github.com/BlackFoundryCom/fontra-rcjk) plugin package. Then you can start it with a robocjk server hostname, using the `rcjk` subcommand provided by the `fontra-rcjk` plugin:
 
     `fontra rcjk some-robocjk-server.some-domain.com`
