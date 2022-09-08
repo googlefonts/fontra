@@ -1,7 +1,6 @@
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables.otTables import NO_VARIATION_INDEX
 from .pen import PathBuilderPointPen
 
 
