@@ -1,6 +1,6 @@
 # Fontra
 
-- Checkout the repo, cd into the root of the repo
+- Check out the repo, cd into the root of the repo
 
 - Create a Python venv in the root of the repo:
 
@@ -18,7 +18,7 @@
 
     `pip install -e .`
 
-- Start the fontra server with a path to a folder containing fonts (.designspace or .ufo), using the `filesystem` subcommand:
+- Start the fontra server with a path to a folder containing fonts (.designspace, .ufo, .ttf or .otf), using the `filesystem` subcommand:
 
     `fontra filesystem /path/to/a/folder`
 
