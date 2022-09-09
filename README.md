@@ -1,5 +1,14 @@
 # Fontra
 
+![Fontra Icon](https://github.com/BlackFoundryCom/fontra/blob/main/src/fontra/client/images/fontra-icon.svg?raw=true)
+
+Fontra is an in-development browser-based Font editor. It consists of two main parts:
+
+- Fontra client — runs in the browser, written in JavaScript
+- Fontra server — runs locally or on a remote server, written in Python
+
+## Installing Fontra
+
 - Check out the repo, cd into the root of the repo
 
 - Create a Python venv in the root of the repo:
