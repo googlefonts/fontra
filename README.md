@@ -1,6 +1,6 @@
 # Fontra
 
-![Fontra Icon](https://github.com/BlackFoundryCom/fontra/blob/main/src/fontra/client/images/fontra-icon.svg?raw=true)
+![Fontra Icon](https://github.com/BlackFoundryCom/fontra/blob/main/fontra-icon.svg?raw=true)
 
 Fontra is an in-development browser-based Font editor. It consists of two main parts:
 
