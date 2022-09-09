@@ -11,7 +11,6 @@ dependencies = [
     "aiohttp>=3.8.1",
     "fonttools[ufo,unicode]>=4.37.1",
     "watchfiles>=0.10",
-    "websockets>=10.1",
 ]
 dynamic = ["version"]
 requires-python = ">=3.10"
