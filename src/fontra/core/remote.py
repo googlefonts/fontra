@@ -72,8 +72,8 @@ class RemoteObjectConnection:
             clientCallID = message["client-call-id"]
             methodName = message["method-name"]
             arguments = message.get("arguments", [])
-            if methodName in subject.remoteMethodNames:
-                methodHandler = getattr(subject, methodName)
+            methodHandler = getattr(subject, methodName, None)
+            if getattr(methodHandler, "fontraRemoteMethod", False):
                 returnValue = await methodHandler(*arguments, connection=self)
                 response = {"client-call-id": clientCallID, "return-value": returnValue}
             else:

@@ -9,26 +9,16 @@ from .changes import applyChange, baseChangeFunctions
 logger = logging.getLogger(__name__)
 
 
+def remoteMethod(method):
+    method.fontraRemoteMethod = True
+    return method
+
+
 class FontHandler:
     def __init__(self, backend, readOnly=False):
         self.backend = backend
         self.readOnly = readOnly
         self.connections = set()
-        self.remoteMethodNames = {
-            "editBegin",
-            "editSetRollback",
-            "editDo",
-            "editEnd",
-            "editAtomic",
-            "getGlyph",
-            "unloadGlyph",
-            "getGlyphNames",
-            "getReverseCmap",
-            "getFontLib",
-            "getGlobalAxes",
-            "getUnitsPerEm",
-            "subscribeLiveGlyphChanges",
-        }
         self.glyphUsedBy = {}
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
@@ -57,6 +47,7 @@ class FontHandler:
         finally:
             self.connections.remove(connection)
 
+    @remoteMethod
     def getGlyph(self, glyphName, *, connection):
         loadedGlyphNames = self.clientData[connection.clientUUID].setdefault(
             "loadedGlyphNames", set()
@@ -85,36 +76,46 @@ class FontHandler:
         self.updateGlyphDependencies(glyphName, glyphData)
         return glyphData
 
+    @remoteMethod
     async def unloadGlyph(self, glyphName, *, connection):
         loadedGlyphNames = self.clientData[connection.clientUUID]["loadedGlyphNames"]
         loadedGlyphNames.discard(glyphName)
 
+    @remoteMethod
     async def getReverseCmap(self, *, connection):
         return await self.backend.getReverseCmap()
 
+    @remoteMethod
     async def getGlobalAxes(self, *, connection):
         return await self.backend.getGlobalAxes()
 
+    @remoteMethod
     async def getUnitsPerEm(self, *, connection):
         return await self.backend.getUnitsPerEm()
 
+    @remoteMethod
     async def getFontLib(self, *, connection):
         return await self.backend.getFontLib()
 
+    @remoteMethod
     async def subscribeLiveGlyphChanges(self, glyphNames, *, connection):
         self.clientData[connection.clientUUID]["subscribedLiveGlyphNames"] = set(
             glyphNames
         )
 
+    @remoteMethod
     async def editBegin(self, *, connection):
         ...
 
+    @remoteMethod
     async def editSetRollback(self, rollbackChange, *, connection):
         ...
 
+    @remoteMethod
     async def editDo(self, liveChange, *, connection):
         await self.broadcastChange(liveChange, connection, True)
 
+    @remoteMethod
     async def editEnd(self, finalChange, *, connection):
         if finalChange is None:
             return
@@ -123,6 +124,7 @@ class FontHandler:
         await self.broadcastChange(finalChange, connection, False)
         # return {"error": "computer says no"}
 
+    @remoteMethod
     async def editAtomic(self, change, rollbackChange, *, connection):
         await self.editBegin(connection=connection)
         await self.editSetRollback(rollbackChange, connection=connection)
