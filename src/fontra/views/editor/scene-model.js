@@ -383,6 +383,7 @@ function mergeAxisInfo(axisInfos) {
 
 async function buildScene(fontController, glyphLines, globalLocation, localLocations, align = "center") {
   let y = 0;
+  const lineDistance = 1.1 * fontController.unitsPerEm;  // TODO make factor user-configurable
   const positionedLines = [];
   for (const glyphLine of glyphLines) {
     const positionedLine = {"glyphs": []};
@@ -425,7 +426,7 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
       item.bounds = offsetRect(bounds, item.x, item.y);
     });
 
-    y -= 1100;  // TODO #1: use UPM from font, #2 make user-configurable
+    y -= lineDistance;
     if (positionedLine.glyphs.length) {
       positionedLine.bounds = unionRect(
         ...positionedLine.glyphs.map(glyph => glyph.bounds)
