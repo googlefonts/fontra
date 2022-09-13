@@ -47,6 +47,7 @@ class EditBehavior {
       }
     }
     this.rollbackChange = makeRollbackChange(contours, participatingPointIndices, components);
+    this.roundFunc = Math.round;
   }
 
   makeChangeForDelta(delta) {
@@ -72,10 +73,16 @@ class EditBehavior {
       "constrainDelta": this.constrainDelta,
     };
     const pathChanges = this.pointEditFuncs?.map(
-      editFunc => makePointChange(...editFunc(transform))
+      editFunc => {
+        const [pointIndex, x, y] = editFunc(transform);
+        return makePointChange(pointIndex, this.roundFunc(x), this.roundFunc(y));
+      }
     );
     const componentChanges = this.componentEditFuncs?.map(
-      editFunc => makeComponentOriginChange(...editFunc(transform))
+      editFunc => {
+        const [componentIndex, x, y] = editFunc(transform);
+        return makeComponentOriginChange(componentIndex, this.roundFunc(x), this.roundFunc(y));
+      }
     );
     const changes = [];
     if (pathChanges && pathChanges.length) {
