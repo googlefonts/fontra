@@ -26,6 +26,7 @@ class FontHandler:
             "getReverseCmap",
             "getFontLib",
             "getGlobalAxes",
+            "getUnitsPerEm",
             "subscribeLiveGlyphChanges",
         }
         self.glyphUsedBy = {}
@@ -93,6 +94,9 @@ class FontHandler:
 
     async def getGlobalAxes(self, *, connection):
         return await self.backend.getGlobalAxes()
+
+    async def getUnitsPerEm(self, *, connection):
+        return await self.backend.getUnitsPerEm()
 
     async def getFontLib(self, *, connection):
         return await self.backend.getFontLib()
