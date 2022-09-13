@@ -26,6 +26,7 @@ class FontHandler:
             "getReverseCmap",
             "getFontLib",
             "getGlobalAxes",
+            "getUnitsPerEm",
             "subscribeLiveGlyphChanges",
         }
         self.glyphUsedBy = {}
