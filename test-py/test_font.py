@@ -510,3 +510,18 @@ async def test_getFontLib(backendName, expectedLibLen):
     font = getTestFont(backendName)
     lib = await font.getFontLib()
     assert expectedLibLen == len(lib)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "backendName, expectedUnitsPerEm",
+    [
+        ("designspace", 1000),
+        ("ufo", 1000),
+        ("ttf", 1000),
+    ],
+)
+async def test_getUnitsPerEm(backendName, expectedUnitsPerEm):
+    font = getTestFont(backendName)
+    unitsPerEm = await font.getUnitsPerEm()
+    assert expectedUnitsPerEm == unitsPerEm

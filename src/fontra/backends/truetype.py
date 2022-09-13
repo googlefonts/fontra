@@ -99,6 +99,9 @@ class TTFBackend:
     async def getGlobalAxes(self):
         return self.globalAxes
 
+    async def getUnitsPerEm(self):
+        return self.font["head"].unitsPerEm
+
     async def getFontLib(self):
         return []
 

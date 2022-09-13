@@ -1,3 +1,4 @@
+from functools import cached_property
 import logging
 import math
 import os
@@ -40,13 +41,16 @@ class DesignspaceBackend:
     def close(self):
         pass
 
-    @property
-    def defaultSource(self):
-        return self._getSourceFromSourceDescriptor(self.dsDoc.default)
+    @cached_property
+    def defaultFontInfo(self):
+        fontInfo = UFOFontInfo()
+        reader = self.ufoReaders[self.dsDoc.default.path]
+        reader.readInfo(fontInfo)
+        return fontInfo
 
     def loadSources(self):
-        readers = {}
         fontraLayerNames = {}
+        self.ufoReaders = {}
         self.ufoGlyphSets = {}
         self.globalSources = []
         self.defaultSourceGlyphSet = None
@@ -54,9 +58,9 @@ class DesignspaceBackend:
         for sourceIndex, source in enumerate(self.dsDoc.sources):
             sourceStyleName = makeUniqueStyleName(source.styleName)
             path = source.path
-            reader = readers.get(path)
+            reader = self.ufoReaders.get(path)
             if reader is None:
-                reader = readers[path] = UFOReader(path)
+                reader = self.ufoReaders[path] = UFOReader(path)
             for ufoLayerName in reader.getLayerNames():
                 key = (path, ufoLayerName)
                 fontraLayerName = fontraLayerNames.get(key)
@@ -80,7 +84,6 @@ class DesignspaceBackend:
             if source == self.dsDoc.default:
                 self.defaultSourceGlyphSet = self.ufoGlyphSets[fontraLayerName]
             self.globalSources.append(sourceDict)
-        self.ufoPaths = sorted(readers)
 
     def buildFileNameMapping(self):
         glifFileNames = {}
@@ -126,12 +129,17 @@ class DesignspaceBackend:
     async def getGlobalAxes(self):
         return self.axes
 
+    async def getUnitsPerEm(self):
+        return self.defaultFontInfo.unitsPerEm
+
     async def getFontLib(self):
         return self.dsDoc.lib
 
     def watchExternalChanges(self):
         return ufoWatcher(
-            self.ufoPaths, self.glifFileNames, self.savedGlyphModificationTimes
+            sorted(self.ufoReaders),
+            self.glifFileNames,
+            self.savedGlyphModificationTimes,
         )
 
 
@@ -146,6 +154,8 @@ class UFOBackend:
             layerName: self.reader.getGlyphSet(layerName=layerName)
             for layerName in self.reader.getLayerNames()
         }
+        self.fontInfo = UFOFontInfo()
+        self.reader.readInfo(self.fontInfo)
         return self
 
     def close(self):
@@ -175,6 +185,9 @@ class UFOBackend:
     async def getGlobalAxes(self):
         return []
 
+    async def getUnitsPerEm(self):
+        return self.fontInfo.unitsPerEm
+
     async def getFontLib(self):
         return self.reader.readLib()
 
@@ -189,6 +202,10 @@ class UFOBackend:
 class UFOGlyph:
     unicodes = ()
     width = 0
+
+
+class UFOFontInfo:
+    unitsPerEm = 1000
 
 
 def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
