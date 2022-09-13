@@ -54,8 +54,7 @@ class TTFBackend:
             }
         ]
         for sparseLoc in self._getGlyphVariationLocations(glyphName):
-            fullLoc = defaultLocation.copy()
-            fullLoc.update(sparseLoc)
+            fullLoc = defaultLocation | sparseLoc
             locStr = locationToString(sparseLoc)
             varGlyphSet = self.variationGlyphSets.get(locStr)
             if varGlyphSet is None:
