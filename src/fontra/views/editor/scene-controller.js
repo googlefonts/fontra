@@ -116,6 +116,33 @@ export class SceneController {
     }
   }
 
+  async handleDragPenTool(eventStream, initialEvent) {
+    const initialPoint = this.localPoint(initialEvent);
+    const undoInfo = {
+      "label": "draw point",
+      "selection": this.selection,
+      "location": this.getLocation(),
+    }
+
+    const editContext = await this.getGlyphEditContext(this, undoInfo);
+    if (!editContext) {
+      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
+      // TODO: dialog with options:
+      // - go to closest source
+      // - insert new source here
+      // - cancel
+      return;
+    }
+
+    const instance = editContext.glyphController.instance;
+    console.log(instance.path);
+    // await editContext.editBegin();
+    // await editContext.editSetRollback(rollbackChange);
+    // await editContext.editDo(editChange);
+    // await editContext.editEnd(editChange);
+
+  }
+
   async handleDragHandTool(eventStream, initialEvent) {
     const initialX = initialEvent.x;
     const initialY = initialEvent.y;
