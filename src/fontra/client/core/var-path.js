@@ -242,6 +242,23 @@ export default class VarPath {
     this.contourInfo.push({endPoint: this.coordinates.length / 2 - 1, isClosed: false});
   }
 
+  deleteContour(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    const startPoint = this._getContourStartPoint(contourIndex);
+    const numPoints = contour.endPoint + 1 - startPoint;
+    // delete coordinates
+    this.coordinates.splice(startPoint * 2, numPoints * 2);
+    // delete point types
+    this.pointTypes.splice(startPoint, numPoints);
+    // delete contour info
+    this.contourInfo.splice(contourIndex, 1);
+    // update endPoints
+    for (let i = contourIndex; i < this.contourInfo.length; i++) {
+      this.contourInfo[i].endPoint -= numPoints;
+    }
+  }
+
   _appendPoint(x, y, pointType) {
     this.contourInfo[this.contourInfo.length - 1].endPoint += 1;
     this.coordinates.push(x, y);
@@ -371,6 +388,27 @@ export default class VarPath {
       result.contourInfo[i].endPoint += endPointOffset;
     }
     return result;
+  }
+
+  _checkIntegrity() {
+    let bad = false;
+    let startPoint = 0;
+    for (const contourInfo of this.contourInfo) {
+      if (contourInfo.endPoint < startPoint - 1) {
+        console.log("endPoint before start point");
+        bad = true;
+      }
+      startPoint = contourInfo.endPoint + 1;
+    }
+    if (startPoint !== this.pointTypes.length) {
+      console.log("bad final end point");
+      bad = true;
+    }
+    if (this.coordinates.length !== this.pointTypes.length * 2) {
+      console.log("coordinates length does not match point types length");
+      bad = true;
+    }
+    return bad;
   }
 
 }
