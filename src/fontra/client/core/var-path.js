@@ -238,7 +238,7 @@ export default class VarPath {
     );
   }
 
-  appendEmptyPath() {
+  appendEmptyContour() {
     this.contourInfo.push({endPoint: this.coordinates.length / 2 - 1, isClosed: false});
   }
 
@@ -249,7 +249,7 @@ export default class VarPath {
   }
 
   moveTo(x, y) {
-    this.appendEmptyPath();
+    this.appendEmptyContour();
     this._appendPoint(x, y, VarPath.ON_CURVE);
   }
 
