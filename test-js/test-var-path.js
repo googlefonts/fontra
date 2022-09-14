@@ -575,6 +575,7 @@ describe("VarPath Tests", () => {
 
     p1 = p.copy();
     p1.deleteContour(0);
+    expect(p1._checkIntegrity()).to.equal(false);
     mp = new MockPath2D();
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
@@ -592,6 +593,7 @@ describe("VarPath Tests", () => {
 
     p1 = p.copy();
     p1.deleteContour(1);
+    expect(p1._checkIntegrity()).to.equal(false);
     mp = new MockPath2D();
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
@@ -608,6 +610,7 @@ describe("VarPath Tests", () => {
 
     p1 = p.copy();
     p1.deleteContour(2);
+    expect(p1._checkIntegrity()).to.equal(false);
     mp = new MockPath2D();
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
@@ -621,6 +624,29 @@ describe("VarPath Tests", () => {
       {"op": "lineTo", "args": [6, 7]},
       {"op": "closePath", "args": []},
     ]);
+
+    p1 = p.copy();
+    p1.deleteContour(2);
+    p1.deleteContour(0);
+    expect(p1._checkIntegrity()).to.equal(false);
+    mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"op": "moveTo", "args": [6, 7]},
+      {"op": "lineTo", "args": [8, 9]},
+      {"op": "lineTo", "args": [10, 11]},
+      {"op": "lineTo", "args": [6, 7]},
+      {"op": "closePath", "args": []},
+    ]);
+
+    p1 = p.copy();
+    p1.deleteContour(0);
+    p1.deleteContour(0);
+    p1.deleteContour(0);
+    expect(p1._checkIntegrity()).to.equal(false);
+    mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([]);
 
   });
 
