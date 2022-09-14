@@ -60,11 +60,13 @@ export function applyChange(subject, change, changeFunctions) {
 
   if (functionName) {
     const changeFunc = changeFunctions[functionName];
-    const arg = change["v"];
-    if (arg !== undefined) {
+    let arg, args;
+    if ((arg = change["v"]) !== undefined) {
       changeFunc(subject, change["k"], arg);
+    } else if ((args = change["a"]) !== undefined) {
+      changeFunc(subject, change["k"], ...args);
     } else {
-      changeFunc(subject, change["k"], ...change["a"]);
+      changeFunc(subject, change["k"]);
     }
   }
 

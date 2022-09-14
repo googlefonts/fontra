@@ -38,11 +38,12 @@ def applyChange(subject, change, changeFunctions):
 
     if functionName is not None:
         changeFunc = changeFunctions[functionName]
-        arg = change.get("v")
-        if arg is not None:
+        if (arg := change.get("v")) is not None:
             changeFunc(subject, change["k"], arg)
+        elif (args := change.get("a")) is not None:
+            changeFunc(subject, change["k"], *args)
         else:
-            changeFunc(subject, change["k"], *change["a"])
+            changeFunc(subject, change["k"])
 
     for subChange in children:
         applyChange(subject, subChange, changeFunctions)
