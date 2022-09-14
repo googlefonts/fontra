@@ -544,4 +544,84 @@ describe("VarPath Tests", () => {
     expect(() => {p1.deletePoint(0, 5)}).to.throw("contourPointIndex out of bounds: 5");
   });
 
+  it("test deleteContour", () => {
+    const p = new VarPath();
+    p.coordinates = new VarArray(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
+    const on = VarPath.ON_CURVE;
+    const off = VarPath.OFF_CURVE_QUAD;
+    p.pointTypes = [on, off, on, on, on, on, on, off, off, on];
+    p.contourInfo = [{endPoint: 2, isClosed: true}, {endPoint: 5, isClosed: true}, {endPoint: 9, isClosed: true}];
+    expect(p._checkIntegrity()).to.equal(false);
+    let p1, mp;
+    p1 = p.copy();
+    mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"op": "moveTo", "args": [0, 1]},
+      {"op": "quadraticCurveTo", "args": [2, 3, 4, 5]},
+      {"op": "lineTo", "args": [0, 1]},
+      {"op": "closePath", "args": []},
+      {"op": "moveTo", "args": [6, 7]},
+      {"op": "lineTo", "args": [8, 9]},
+      {"op": "lineTo", "args": [10, 11]},
+      {"op": "lineTo", "args": [6, 7]},
+      {"op": "closePath", "args": []},
+      {"op": "moveTo", "args": [12, 13]},
+      {"op": "quadraticCurveTo", "args": [14, 15, 15, 16]},
+      {"op": "quadraticCurveTo", "args": [16, 17, 18, 19]},
+      {"op": "lineTo", "args": [12, 13]},
+      {"op": "closePath", "args": []},
+    ]);
+
+    p1 = p.copy();
+    p1.deleteContour(0);
+    mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"op": "moveTo", "args": [6, 7]},
+      {"op": "lineTo", "args": [8, 9]},
+      {"op": "lineTo", "args": [10, 11]},
+      {"op": "lineTo", "args": [6, 7]},
+      {"op": "closePath", "args": []},
+      {"op": "moveTo", "args": [12, 13]},
+      {"op": "quadraticCurveTo", "args": [14, 15, 15, 16]},
+      {"op": "quadraticCurveTo", "args": [16, 17, 18, 19]},
+      {"op": "lineTo", "args": [12, 13]},
+      {"op": "closePath", "args": []},
+    ]);
+
+    p1 = p.copy();
+    p1.deleteContour(1);
+    mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"op": "moveTo", "args": [0, 1]},
+      {"op": "quadraticCurveTo", "args": [2, 3, 4, 5]},
+      {"op": "lineTo", "args": [0, 1]},
+      {"op": "closePath", "args": []},
+      {"op": "moveTo", "args": [12, 13]},
+      {"op": "quadraticCurveTo", "args": [14, 15, 15, 16]},
+      {"op": "quadraticCurveTo", "args": [16, 17, 18, 19]},
+      {"op": "lineTo", "args": [12, 13]},
+      {"op": "closePath", "args": []},
+    ]);
+
+    p1 = p.copy();
+    p1.deleteContour(2);
+    mp = new MockPath2D();
+    p1.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      {"op": "moveTo", "args": [0, 1]},
+      {"op": "quadraticCurveTo", "args": [2, 3, 4, 5]},
+      {"op": "lineTo", "args": [0, 1]},
+      {"op": "closePath", "args": []},
+      {"op": "moveTo", "args": [6, 7]},
+      {"op": "lineTo", "args": [8, 9]},
+      {"op": "lineTo", "args": [10, 11]},
+      {"op": "lineTo", "args": [6, 7]},
+      {"op": "closePath", "args": []},
+    ]);
+
+  });
+
 })
