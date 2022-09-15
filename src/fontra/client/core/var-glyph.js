@@ -52,7 +52,7 @@ class Source {
 }
 
 
-class StaticGlyph {
+export class StaticGlyph {
 
   static fromObject(obj) {
     const source = new StaticGlyph();
