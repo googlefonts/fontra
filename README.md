@@ -2,7 +2,7 @@
 
 ![Fontra Icon](https://github.com/BlackFoundryCom/fontra/blob/main/fontra-icon.svg?raw=true)
 
-Fontra is an in-development browser-based Font editor. It consists of two main parts:
+Fontra is an in-development browser-based font editor. It consists of two main parts:
 
 - Fontra client — runs in the browser, written in JavaScript
 - Fontra server — runs locally or on a remote machine, written in Python
