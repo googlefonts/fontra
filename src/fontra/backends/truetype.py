@@ -1,7 +1,6 @@
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables.otTables import NO_VARIATION_INDEX
 from .pen import PathBuilderPointPen
 
 
@@ -79,21 +78,20 @@ class TTFBackend:
         elif (
             self.charStrings is not None
             and glyphName in self.charStrings
-            and self.charStrings.varStore is not None
+            and getattr(self.charStrings, "varStore", None) is not None
         ):
             cs = self.charStrings[glyphName]
             subrs = getattr(cs.private, "Subrs", [])
             collector = VarIndexCollector(subrs, cs.globalSubrs, cs.private)
             collector.execute(cs)
-            vsIndices = [
-                vi for vi in sorted(collector.vsIndices) if vi != NO_VARIATION_INDEX
-            ]
+            vsIndices = sorted(collector.vsIndices)
             fvarAxes = self.font["fvar"].axes
             varStore = self.charStrings.varStore.otVarStore
-            for varIdx in vsIndices:
-                for loc in getLocationsFromVarstore(varIdx, varStore, fvarAxes):
-                    locations.add(tuplifyLocation(loc))
-
+            locations = {
+                tuplifyLocation(loc)
+                for varDataIndex in vsIndices
+                for loc in getLocationsFromVarstore(varDataIndex, varStore, fvarAxes)
+            }
         return [dict(loc) for loc in sorted(locations)]
 
     async def getGlobalAxes(self):
@@ -110,9 +108,9 @@ def tuplifyLocation(loc):
     return tuple(sorted(loc.items()))
 
 
-def getLocationsFromVarstore(varIdx, varStore, fvarAxes):
+def getLocationsFromVarstore(varDataIndex, varStore, fvarAxes):
     regions = varStore.VarRegionList.Region
-    for regionIndex in varStore.VarData[varIdx >> 16].VarRegionIndex:
+    for regionIndex in varStore.VarData[varDataIndex].VarRegionIndex:
         location = {
             fvarAxes[i].axisTag: reg.PeakCoord
             for i, reg in enumerate(regions[regionIndex].VarRegionAxis)

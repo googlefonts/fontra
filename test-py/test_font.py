@@ -412,6 +412,108 @@ getGlyphTestData = [
             ],
         },
     ),
+    (
+        "otf",
+        {
+            "name": "period",
+            "unicodes": [46],
+            "layers": [
+                {
+                    "name": "<default>",
+                    "glyph": {
+                        "path": {
+                            "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
+                            "pointTypes": [0, 0, 0, 0],
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                        },
+                        "xAdvance": 170,
+                    },
+                },
+                {
+                    "name": "wdth=1",
+                    "glyph": {
+                        "path": {
+                            "coordinates": [
+                                120.0,
+                                0,
+                                170.0,
+                                0,
+                                170.0,
+                                220.0,
+                                120.0,
+                                220.0,
+                            ],
+                            "pointTypes": [0, 0, 0, 0],
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                        },
+                        "xAdvance": 290.0,
+                    },
+                },
+                {
+                    "name": "wdth=1,wght=1",
+                    "glyph": {
+                        "path": {
+                            "coordinates": [
+                                60.0,
+                                0,
+                                250.0,
+                                0,
+                                250.0,
+                                300.0,
+                                60.0,
+                                300.0,
+                            ],
+                            "pointTypes": [0, 0, 0, 0],
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                        },
+                        "xAdvance": 310.0,
+                    },
+                },
+                {
+                    "name": "wght=1",
+                    "glyph": {
+                        "path": {
+                            "coordinates": [
+                                30.0,
+                                0,
+                                220.0,
+                                0,
+                                220.0,
+                                300.0,
+                                30.0,
+                                300.0,
+                            ],
+                            "pointTypes": [0, 0, 0, 0],
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                        },
+                        "xAdvance": 250.0,
+                    },
+                },
+            ],
+            "sources": [
+                {
+                    "location": {"wdth": 0, "wght": 0},
+                    "name": "<default>",
+                    "layerName": "<default>",
+                },
+                {
+                    "location": {"wdth": 1.0, "wght": 0},
+                    "name": "wdth=1",
+                    "layerName": "wdth=1",
+                },
+                {
+                    "location": {"wdth": 1.0, "wght": 1.0},
+                    "name": "wdth=1,wght=1",
+                    "layerName": "wdth=1,wght=1",
+                },
+                {
+                    "location": {"wdth": 0, "wght": 1.0},
+                    "name": "wght=1",
+                    "layerName": "wght=1",
+                },
+            ],
+        },
+    ),
 ]
 
 
@@ -419,6 +521,7 @@ testFontPaths = {
     "designspace": dataDir / "mutatorsans" / "MutatorSans.designspace",
     "ufo": dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo",
     "ttf": dataDir / "mutatorsans" / "MutatorSans.ttf",
+    "otf": dataDir / "mutatorsans" / "MutatorSans.otf",
 }
 
 
