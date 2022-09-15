@@ -225,13 +225,14 @@ export class VariableGlyphController {
 }
 
 
-class StaticGlyphController {
+export class StaticGlyphController {
 
   constructor(name, instance, sourceIndex) {
     this.name = name;
     this.instance = instance;
     this.sourceIndex = sourceIndex;
     this.canEdit = sourceIndex !== undefined;
+    this.components = [];
   }
 
   async setupComponents(getGlyphFunc, parentLocation) {
