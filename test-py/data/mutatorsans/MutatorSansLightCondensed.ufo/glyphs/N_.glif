@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <glyph name="N" format="2">
   <advance width="460"/>
   <unicode hex="004E"/>
+  <unicode hex="006E"/>
   <outline>
     <contour>
       <point x="60" y="0" type="line"/>

@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <glyph name="P" format="2">
   <advance width="1101"/>
   <unicode hex="0050"/>
+  <unicode hex="0070"/>
   <outline>
     <contour>
       <point x="120" y="0" type="line"/>
