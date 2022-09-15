@@ -1,7 +1,7 @@
 import { applyChange, baseChangeFunctions, consolidateChanges } from "./changes.js";
-import { VariableGlyphController } from "./glyph-controller.js";
+import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
-import { VariableGlyph } from "./var-glyph.js";
+import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 import { throttleCalls } from "./utils.js";
 
@@ -135,6 +135,10 @@ export class FontController {
     const getGlyphFunc = this.getGlyph.bind(this);
     const instanceController = await varGlyph.instantiateController(location, getGlyphFunc);
     return instanceController;
+  }
+
+  getDummyGlyphInstanceController() {
+    return new StaticGlyphController("<dummy>", StaticGlyph.fromObject({"xAdvance": 0}), undefined);
   }
 
   async getSourceIndex(glyphName, location) {

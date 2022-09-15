@@ -392,7 +392,7 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
       const location = {...localLocations[glyphInfo.glyphName], ...globalLocation}
       let glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName, location);
       if (!glyphInstance) {
-        glyphInstance = {"xAdvance": 0};  // Dummy missing glyph
+        glyphInstance = fontController.getDummyGlyphInstanceController();
       }
       positionedLine.glyphs.push({
         "x": x,
