@@ -156,6 +156,7 @@ class UFOBackend:
         }
         self.fontInfo = UFOFontInfo()
         self.reader.readInfo(self.fontInfo)
+        self.savedGlyphModificationTimes = {}
         return self
 
     def close(self):
@@ -182,6 +183,14 @@ class UFOBackend:
         glyph["layers"] = layers
         return glyph
 
+    async def putGlyph(self, glyphName, glyph):
+        modTimes = set()
+        for layer in glyph["layers"]:
+            glyphSet = self.glyphSets[layer["name"]]
+            writeUFOLayerGlyph(glyphSet, glyphName, layer["glyph"])
+            modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
+        self.savedGlyphModificationTimes[glyphName] = modTimes
+
     async def getGlobalAxes(self):
         return []
 
@@ -196,7 +205,7 @@ class UFOBackend:
             fileName: glyphName
             for glyphName, fileName in self.glyphSets[self.layerName].contents.items()
         }
-        return ufoWatcher([self.path], glifFileNames, {})
+        return ufoWatcher([self.path], glifFileNames, self.savedGlyphModificationTimes)
 
 
 class UFOGlyph:
