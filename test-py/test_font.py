@@ -49,7 +49,7 @@ getGlyphTestData = [
         "ufo",
         {
             "name": "Aacute",
-            "unicodes": [ord("Á")],
+            "unicodes": [ord("Á"), ord("á")],
             "sources": [
                 {
                     "location": {},
@@ -182,7 +182,7 @@ getGlyphTestData = [
         "designspace",
         {
             "name": "Aacute",
-            "unicodes": [ord("Á")],
+            "unicodes": [ord("Á"), ord("á")],
             "sources": [
                 {
                     "name": "LightCondensed",
@@ -550,8 +550,8 @@ async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
 
 
 getReverseCmapTestData = [
-    ("designspace", 49, {"A": [ord("A")], "B": [ord("B")]}),
-    ("ufo", 49, {"A": [ord("A")], "B": [ord("B")]}),
+    ("designspace", 49, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
+    ("ufo", 49, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
 ]
 
 
