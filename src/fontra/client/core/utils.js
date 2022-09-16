@@ -153,7 +153,7 @@ export function hasShortcutModifierKey(event) {
   if (navigator.platform.toLowerCase().indexOf("mac") >= 0) {
     return event.metaKey;
   } else {
-    return event.controlKey;
+    return event.ctrlKey;
   }
 }
 
