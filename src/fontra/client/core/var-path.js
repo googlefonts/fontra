@@ -132,11 +132,6 @@ export default class VarPath {
     this._moveEndPoints(contourIndex, -numPoints);
   }
 
-  _replacePoints(startPoint, numPoints, coordinates, pointTypes) {
-    this.coordinates.splice(startPoint * 2, numPoints * 2, ...coordinates);
-    this.pointTypes.splice(startPoint, numPoints, ...pointTypes);
-  }
-
   getPoint(pointIndex) {
     const point = {
       x: this.coordinates[pointIndex * 2],
@@ -196,6 +191,11 @@ export default class VarPath {
     this.pointTypes.splice(pointIndex, 0, 0);
     this.setPointType(pointIndex, point.type, point.smooth);
     this._moveEndPoints(contourIndex, 1);
+  }
+
+  _replacePoints(startPoint, numPoints, coordinates, pointTypes) {
+    this.coordinates.splice(startPoint * 2, numPoints * 2, ...coordinates);
+    this.pointTypes.splice(startPoint, numPoints, ...pointTypes);
   }
 
   _moveEndPoints(fromContourIndex, offset) {
