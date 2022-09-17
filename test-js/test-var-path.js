@@ -828,4 +828,11 @@ describe("VarPackedPath Tests", () => {
     expect(p._checkIntegrity()).to.equal(false);
   });
 
+  it("test fromUnpackedContours", () => {
+    const p1 = complexTestPath();
+    const p2 = VarPackedPath.fromUnpackedContours(p1.unpackedContours());
+    expect(p1).to.deep.equal(p2);
+    expect(p1.unpackedContours()).to.deep.equal(p2.unpackedContours());
+  });
+
 })

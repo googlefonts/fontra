@@ -37,6 +37,14 @@ export class VarPackedPath {
     return path;
   }
 
+  static fromUnpackedContours(unpackedContours) {
+    const path = new VarPackedPath();
+    for (const contour of unpackedContours) {
+      path.appendUnpackedContour(contour);
+    }
+    return path;
+  }
+
   unpackedContours() {
     return Array.from(this.iterUnpackedContours());
   }
@@ -115,6 +123,10 @@ export class VarPackedPath {
 
   setUnpackedContour(contourIndex, unpackedContour) {
     this.setContour(contourIndex, packContour(unpackedContour));
+  }
+
+  appendUnpackedContour(unpackedContour) {
+    this.appendContour(packContour(unpackedContour));
   }
 
   getContour(contourIndex) {
