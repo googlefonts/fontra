@@ -161,8 +161,7 @@ export default class VarPackedPath {
         :
         POINT_TYPE_OFF_CURVE_QUAD
       );
-    }
-    if (this.pointTypes[pointIndex] & VarPackedPath.SMOOTH_FLAG) {
+    } else if (this.pointTypes[pointIndex] & VarPackedPath.SMOOTH_FLAG) {
       point["smooth"] = true;
     }
     return point;
