@@ -41,13 +41,12 @@ describe("VarPackedPath Tests", () => {
   
   it("empty copy", () => {
     const p = new VarPackedPath();
+    expect(p.unpackedContours()).to.deep.equal([]);
     const p2 = p.copy();
-    const mp = new MockPath2D();
     expect(p2.coordinates).to.deep.equal([]);
     expect(p2.pointTypes).to.deep.equal([]);
     expect(p2.contourInfo).to.deep.equal([]);
-    p2.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal([]);
+    expect(p2.unpackedContours()).to.deep.equal([]);
   })
 
   it("constructor", () => {
@@ -71,32 +70,32 @@ describe("VarPackedPath Tests", () => {
 
   it("draw", () => {
     const p = simpleTestPath();
-    const mp = new MockPath2D();
-    p.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal(
-      [
-        {"args": [0, 0], "op": "moveTo"},
-        {"args": [0, 100], "op": "lineTo"},
-        {"args": [100, 100], "op": "lineTo"},
-        {"args": [100, 0], "op": "lineTo"},
-        {"args": [0, 0], "op": "lineTo"},
-        {"args": [], "op": "closePath"},
-      ],
-    );
+    expect(p.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0},
+          {"x": 0, "y": 100},
+          {"x": 100, "y": 100},
+          {"x": 100, "y": 0},
+        ],
+        "isClosed": true,
+      }
+    ]);
   })
 
   it("open path", () => {
     const p = simpleTestPath(false);
-    const mp = new MockPath2D();
-    p.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal(
-      [
-        {"args": [0, 0], "op": "moveTo"},
-        {"args": [0, 100], "op": "lineTo"},
-        {"args": [100, 100], "op": "lineTo"},
-        {"args": [100, 0], "op": "lineTo"},
-      ],
-    );
+    expect(p.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0},
+          {"x": 0, "y": 100},
+          {"x": 100, "y": 100},
+          {"x": 100, "y": 0},
+        ],
+        "isClosed": false,
+      }
+    ]);
   })
 
   it("closed path dangling off curves", () => {
@@ -105,16 +104,17 @@ describe("VarPackedPath Tests", () => {
       [VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
-    const mp = new MockPath2D();
-    p.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal(
-      [
-        {"args": [0, 100], "op": "moveTo"},
-        {"args": [100, 100, 100, 0], "op": "quadraticCurveTo"},
-        {"args": [0, 0, 0, 100], "op": "quadraticCurveTo"},
-        {"args": [], "op": "closePath"},
-      ],
-    );
+    expect(p.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0, "type": "quad"},
+          {"x": 0, "y": 100},
+          {"x": 100, "y": 100, "type": "quad"},
+          {"x": 100, "y": 0},
+        ],
+        "isClosed": true,
+      }
+    ]);
   })
 
   it("open path dangling off curves", () => {
