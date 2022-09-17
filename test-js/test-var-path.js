@@ -718,6 +718,7 @@ describe("VarPackedPath Tests", () => {
     p1.deleteContour(0);
     expect(p1._checkIntegrity()).to.equal(false);
     expect(p1.unpackedContours()).to.deep.equal([]);
+    expect(p1.numContours).to.equal(0);
 
   });
 
@@ -736,7 +737,7 @@ describe("VarPackedPath Tests", () => {
 
   it("test setContour", () => {
     const p = complexTestPath();
-    p.setContour(1, p.getContour(0))
+    p.setContour(1, p.getContour(0));
     expect(p.getContour(0)).to.deep.equal(
       {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,0],"isClosed":true}
     );
@@ -746,6 +747,64 @@ describe("VarPackedPath Tests", () => {
     expect(p.getContour(2)).to.deep.equal(
       {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
     );
+    expect(p.numContours).to.equal(3);
+    expect(p._checkIntegrity()).to.equal(false);
+  });
+
+  it("test insertContour", () => {
+    const p = complexTestPath();
+    p.insertContour(0, p.getContour(-1));
+    expect(p.getContour(0)).to.deep.equal(
+      {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
+    );
+    expect(p.getContour(1)).to.deep.equal(
+      {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,0],"isClosed":true}
+    );
+    expect(p.getContour(2)).to.deep.equal(
+      {"coordinates":[6,7,8,9,10,11],"pointTypes":[0,0,0],"isClosed":true}
+    );
+    expect(p.getContour(3)).to.deep.equal(
+      {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
+    );
+    expect(p.numContours).to.equal(4);
+    expect(p._checkIntegrity()).to.equal(false);
+  });
+
+  it("test insertContour 1", () => {
+    const p = complexTestPath();
+    p.insertContour(1, p.getContour(-1));
+    expect(p.getContour(0)).to.deep.equal(
+      {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,0],"isClosed":true}
+    );
+    expect(p.getContour(1)).to.deep.equal(
+      {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
+    );
+    expect(p.getContour(2)).to.deep.equal(
+      {"coordinates":[6,7,8,9,10,11],"pointTypes":[0,0,0],"isClosed":true}
+    );
+    expect(p.getContour(3)).to.deep.equal(
+      {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
+    );
+    expect(p.numContours).to.equal(4);
+    expect(p._checkIntegrity()).to.equal(false);
+  });
+
+  it("test appendContour", () => {
+    const p = complexTestPath();
+    p.appendContour(p.getContour(1));
+    expect(p.getContour(0)).to.deep.equal(
+      {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,0],"isClosed":true}
+    );
+    expect(p.getContour(1)).to.deep.equal(
+      {"coordinates":[6,7,8,9,10,11],"pointTypes":[0,0,0],"isClosed":true}
+    );
+    expect(p.getContour(2)).to.deep.equal(
+      {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
+    );
+    expect(p.getContour(3)).to.deep.equal(
+      {"coordinates":[6,7,8,9,10,11],"pointTypes":[0,0,0],"isClosed":true}
+    );
+    expect(p.numContours).to.equal(4);
     expect(p._checkIntegrity()).to.equal(false);
   });
 
