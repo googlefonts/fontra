@@ -4,6 +4,10 @@ import { pointInRect } from "./rectangle.js";
 import { convexHull } from "./convex-hull.js";
 
 
+export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
+export const POINT_TYPE_OFF_CURVE_CUBIC = "cubic";
+
+
 export default class VarPackedPath {
 
   // point types
@@ -140,9 +144,20 @@ export default class VarPackedPath {
     const point = {
       x: this.coordinates[pointIndex * 2],
       y: this.coordinates[pointIndex * 2 + 1],
-      type: this.pointTypes[pointIndex] & VarPackedPath.POINT_TYPE_MASK,
-      smooth: !!(this.pointTypes[pointIndex] & VarPackedPath.SMOOTH_FLAG),
     };
+    const pointType = this.pointTypes[pointIndex] & VarPackedPath.POINT_TYPE_MASK;
+    if (pointType) {
+      point["type"] = (
+        pointType === VarPackedPath.OFF_CURVE_CUBIC
+        ?
+        POINT_TYPE_OFF_CURVE_CUBIC
+        :
+        POINT_TYPE_OFF_CURVE_QUAD
+      );
+    }
+    if (this.pointTypes[pointIndex] & VarPackedPath.SMOOTH_FLAG) {
+      point["smooth"] = true;
+    }
     if (point.x === undefined) {
       return undefined;
     }

@@ -283,10 +283,10 @@ describe("VarPackedPath Tests", () => {
     }
     expect(points).to.deep.equal(
       [
-        {x: 0, y: 0, type: 0, smooth: false},
-        {x: 0, y: 100, type: 2, smooth: false},
-        {x: 100, y: 100, type: 2, smooth: false},
-        {x: 100, y: 0, type: 0, smooth: false},
+        {x: 0, y: 0},
+        {x: 0, y: 100, type: "cubic"},
+        {x: 100, y: 100, type: "cubic"},
+        {x: 100, y: 0},
       ],
     );
   })
@@ -333,8 +333,8 @@ describe("VarPackedPath Tests", () => {
   it("getPoint", () => {
     const p = simpleTestPath();
     expect(p.getPoint(-1)).to.deep.equal(undefined);
-    expect(p.getPoint(0)).to.deep.equal({"x": 0, "y": 0, "type": 0, "smooth": false});
-    expect(p.getPoint(3)).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
+    expect(p.getPoint(0)).to.deep.equal({"x": 0, "y": 0});
+    expect(p.getPoint(3)).to.deep.equal({"x": 100, "y": 0});
     expect(p.getPoint(4)).to.deep.equal(undefined);
   });
 
@@ -366,9 +366,9 @@ describe("VarPackedPath Tests", () => {
     const p = simpleTestPath();
     const pts = Array.from(p.iterPointsOfContour(0));
     expect(pts.length).to.equal(4);
-    expect(pts[0]).to.deep.equal({"x": 0, "y": 0, "type": 0, "smooth": false});
-    expect(pts[3]).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
-    expect(pts[3]).to.deep.equal({"x": 100, "y": 0, "type": 0, "smooth": false});
+    expect(pts[0]).to.deep.equal({"x": 0, "y": 0});
+    expect(pts[3]).to.deep.equal({"x": 100, "y": 0});
+    expect(pts[3]).to.deep.equal({"x": 100, "y": 0});
     expect(Array.from(p.iterPointsOfContour(-1)).length).to.equal(4);
     expect(() => {Array.from(p.iterPointsOfContour(1))}).to.throw("contourIndex out of bounds: 1");
   });
