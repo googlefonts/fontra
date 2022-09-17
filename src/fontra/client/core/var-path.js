@@ -114,7 +114,7 @@ export default class VarPath {
   }
 
   appendContour(contour) {
-    this.insertContour(thos.contourInfo.length, contour);
+    this.insertContour(this.contourInfo.length, contour);
   }
 
   insertContour(contourIndex, contour) {
