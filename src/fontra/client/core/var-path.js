@@ -178,20 +178,7 @@ export class VarPackedPath {
   }
 
   setPointType(pointIndex, type, smooth) {
-    if (type) {
-      this.pointTypes[pointIndex] = (
-        type === POINT_TYPE_OFF_CURVE_CUBIC
-        ?
-        VarPackedPath.OFF_CURVE_CUBIC
-        :
-        VarPackedPath.OFF_CURVE_QUAD
-      );
-    } else {
-      this.pointTypes[pointIndex] = VarPackedPath.ON_CURVE;
-    }
-    if (smooth) {
-      this.pointTypes[pointIndex] |= VarPackedPath.SMOOTH_FLAG;
-    }
+    this.pointTypes[pointIndex] = getPointType(type, smooth);
   }
 
   insertPoint(contourIndex, contourPointIndex, point) {
@@ -563,4 +550,22 @@ function pointTypesEquals(a, b) {
     }
   }
   return true;
+}
+
+
+function getPointType(type, smooth) {
+  let pointType = VarPackedPath.ON_CURVE;
+  if (type) {
+    pointType = (
+      type === POINT_TYPE_OFF_CURVE_CUBIC
+      ?
+      VarPackedPath.OFF_CURVE_CUBIC
+      :
+      VarPackedPath.OFF_CURVE_QUAD
+    );
+  }
+  if (smooth) {
+    pointType |= VarPackedPath.SMOOTH_FLAG;
+  }
+  return pointType;
 }
