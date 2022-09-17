@@ -155,6 +155,18 @@ describe("VarPackedPath Tests", () => {
         "isClosed": true,
       }
     ]);
+
+    const mp = new MockPath2D();
+    p.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 0], "op": "moveTo"},
+        {"args": [0, 100, 50, 100], "op": "quadraticCurveTo"},
+        {"args": [100, 100, 100, 50], "op": "quadraticCurveTo"},
+        {"args": [100, 0, 0, 0], "op": "quadraticCurveTo"},
+        {"args": [], "op": "closePath"},
+      ],
+    );
   })
 
   it("quad blob", () => {
@@ -163,6 +175,19 @@ describe("VarPackedPath Tests", () => {
       [VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.OFF_CURVE_QUAD],
       [{endPoint: 3, isClosed: true}],
     );
+
+    expect(p.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0, "type": "quad"},
+          {"x": 0, "y": 100, "type": "quad"},
+          {"x": 100, "y": 100, "type": "quad"},
+          {"x": 100, "y": 0, "type": "quad"},
+        ],
+        "isClosed": true,
+      }
+    ]);
+
     const mp = new MockPath2D();
     p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
