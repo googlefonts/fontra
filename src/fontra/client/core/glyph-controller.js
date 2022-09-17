@@ -7,7 +7,7 @@ import {
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
-import VarPackedPath from "./var-path.js";
+import { VarPackedPath } from "./var-path.js";
 
 
 export class VariableGlyphController {

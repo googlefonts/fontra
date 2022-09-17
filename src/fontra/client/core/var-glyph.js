@@ -1,4 +1,4 @@
-import VarPackedPath from "./var-path.js";
+import { VarPackedPath } from "./var-path.js";
 
 
 export class VariableGlyph {
