@@ -586,8 +586,7 @@ function getPointType(type, smooth) {
       :
       VarPackedPath.OFF_CURVE_QUAD
     );
-  }
-  if (smooth) {
+  } else if (smooth) {
     pointType |= VarPackedPath.SMOOTH_FLAG;
   }
   return pointType;
