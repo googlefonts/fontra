@@ -1,7 +1,7 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import VarPath from "../src/fontra/client/core/var-path.js";
+import VarPackedPath from "../src/fontra/client/core/var-path.js";
 import VarArray from "../src/fontra/client/core/var-array.js";
 import { Transform } from "../src/fontra/client/core/transform.js";
 
@@ -29,18 +29,18 @@ class MockPath2D {
 
 
 function simpleTestPath(isClosed=true) {
-  return new VarPath(
+  return new VarPackedPath(
     new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-    [VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE],
+    [VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE],
     [{endPoint: 3, isClosed: isClosed}],
   );
 }
 
 
-describe("VarPath Tests", () => {
+describe("VarPackedPath Tests", () => {
   
   it("empty copy", () => {
-    const p = new VarPath();
+    const p = new VarPackedPath();
     const p2 = p.copy();
     const mp = new MockPath2D();
     expect(p2.coordinates).to.deep.equal([]);
@@ -53,7 +53,7 @@ describe("VarPath Tests", () => {
   it("constructor", () => {
     const p = simpleTestPath();
     expect(p.coordinates).to.deep.equal([0, 0, 0, 100, 100, 100, 100, 0]);
-    expect(p.pointTypes).to.deep.equal([VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE]);
+    expect(p.pointTypes).to.deep.equal([VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE]);
     expect(p.contourInfo).to.deep.equal([{endPoint: 3, isClosed: true}]);
   })
 
@@ -62,10 +62,10 @@ describe("VarPath Tests", () => {
     const p2 = p.copy();
     // modify original
     p.coordinates[0] = 1000;
-    p.pointTypes[0] = VarPath.OFF_CURVE_QUAD
+    p.pointTypes[0] = VarPackedPath.OFF_CURVE_QUAD
     p.contourInfo[0].isClosed = false;
     expect(p2.coordinates).to.deep.equal([0, 0, 0, 100, 100, 100, 100, 0]);
-    expect(p2.pointTypes).to.deep.equal([VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE, VarPath.ON_CURVE]);
+    expect(p2.pointTypes).to.deep.equal([VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE, VarPackedPath.ON_CURVE]);
     expect(p2.contourInfo).to.deep.equal([{endPoint: 3, isClosed: true}]);
   })
 
@@ -100,9 +100,9 @@ describe("VarPath Tests", () => {
   })
 
   it("closed path dangling off curves", () => {
-    const p = new VarPath(
+    const p = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.OFF_CURVE_QUAD, VarPath.ON_CURVE, VarPath.OFF_CURVE_QUAD, VarPath.ON_CURVE],
+      [VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
@@ -118,9 +118,9 @@ describe("VarPath Tests", () => {
   })
 
   it("open path dangling off curves", () => {
-    const p = new VarPath(
+    const p = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.OFF_CURVE_QUAD, VarPath.ON_CURVE, VarPath.OFF_CURVE_QUAD, VarPath.ON_CURVE],
+      [VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: false}],
     );
     const mp = new MockPath2D();
@@ -134,9 +134,9 @@ describe("VarPath Tests", () => {
   })
 
   it("quad", () => {
-    const p = new VarPath(
+    const p = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.OFF_CURVE_QUAD, VarPath.OFF_CURVE_QUAD, VarPath.OFF_CURVE_QUAD],
+      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.OFF_CURVE_QUAD],
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
@@ -153,9 +153,9 @@ describe("VarPath Tests", () => {
   })
 
   it("quad blob", () => {
-    const p = new VarPath(
+    const p = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.OFF_CURVE_QUAD, VarPath.OFF_CURVE_QUAD, VarPath.OFF_CURVE_QUAD, VarPath.OFF_CURVE_QUAD],
+      [VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.OFF_CURVE_QUAD, VarPackedPath.OFF_CURVE_QUAD],
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
@@ -173,9 +173,9 @@ describe("VarPath Tests", () => {
   })
 
   it("cubic", () => {
-    const p = new VarPath(
+    const p = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.OFF_CURVE_CUBIC, VarPath.OFF_CURVE_CUBIC, VarPath.ON_CURVE],
+      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
@@ -191,9 +191,9 @@ describe("VarPath Tests", () => {
   })
 
   it("add", () => {
-    const p1 = new VarPath(
+    const p1 = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.OFF_CURVE_CUBIC, VarPath.OFF_CURVE_CUBIC, VarPath.ON_CURVE],
+      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
     const p2 = p1.copy();
@@ -211,9 +211,9 @@ describe("VarPath Tests", () => {
   })
 
   it("sub", () => {
-    const p1 = new VarPath(
+    const p1 = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.OFF_CURVE_CUBIC, VarPath.OFF_CURVE_CUBIC, VarPath.ON_CURVE],
+      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
     const p2 = p1.copy();
@@ -231,9 +231,9 @@ describe("VarPath Tests", () => {
   })
 
   it("mul", () => {
-    const p = new VarPath(
+    const p = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.OFF_CURVE_CUBIC, VarPath.OFF_CURVE_CUBIC, VarPath.ON_CURVE],
+      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
     const mp = new MockPath2D();
@@ -250,7 +250,7 @@ describe("VarPath Tests", () => {
   })
 
   it("pen-ish methods", () => {
-    const p = new VarPath();
+    const p = new VarPackedPath();
     const mp = new MockPath2D();
     p.moveTo(0, 0);
     p.lineTo(0, 100);
@@ -272,9 +272,9 @@ describe("VarPath Tests", () => {
   })
 
   it("iterPoints", () => {
-    const p = new VarPath(
+    const p = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPath.ON_CURVE, VarPath.OFF_CURVE_CUBIC, VarPath.OFF_CURVE_CUBIC, VarPath.ON_CURVE],
+      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
     const points = [];
@@ -339,7 +339,7 @@ describe("VarPath Tests", () => {
   });
 
   it("getContourIndex", () => {
-    const p = new VarPath(
+    const p = new VarPackedPath(
       new VarArray(),  // dummy
       [],  // dummy
       [
@@ -374,7 +374,7 @@ describe("VarPath Tests", () => {
   });
 
   it("getControlBounds", () => {
-    const p = new VarPath();
+    const p = new VarPackedPath();
     p.moveTo(0, 75);
     p.cubicCurveTo(25, 100, 75, 100, 100, 25);
     p.lineTo(70, 0);
@@ -386,17 +386,17 @@ describe("VarPath Tests", () => {
   });
 
   it("empty getControlBounds", () => {
-    const p = new VarPath();
+    const p = new VarPackedPath();
     expect(p.getControlBounds()).to.deep.equal(undefined);
   });
 
   it("test firstOnCurve bug", () => {
     const p1 = simpleTestPath();
     const p2 = p1.concat(p1);
-    p2.pointTypes[0] = VarPath.OFF_CURVE_CUBIC;
-    p2.pointTypes[1] = VarPath.OFF_CURVE_CUBIC;
-    p2.pointTypes[5] = VarPath.OFF_CURVE_CUBIC;
-    p2.pointTypes[6] = VarPath.OFF_CURVE_CUBIC;
+    p2.pointTypes[0] = VarPackedPath.OFF_CURVE_CUBIC;
+    p2.pointTypes[1] = VarPackedPath.OFF_CURVE_CUBIC;
+    p2.pointTypes[5] = VarPackedPath.OFF_CURVE_CUBIC;
+    p2.pointTypes[6] = VarPackedPath.OFF_CURVE_CUBIC;
     expect(p2.coordinates.length).to.equal(16);
     expect(p2.contourInfo.length).to.equal(2);
     expect(p2.contourInfo[0].endPoint).to.equal(3);
@@ -419,7 +419,7 @@ describe("VarPath Tests", () => {
     const p1 = simpleTestPath();
     const mp = new MockPath2D();
     p1.setPointPosition(1, 23, 45);
-    p1.setPoint(2, {"x": 65, "y": 43, "type": VarPath.OFF_CURVE_QUAD});
+    p1.setPoint(2, {"x": 65, "y": 43, "type": VarPackedPath.OFF_CURVE_QUAD});
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
       {"args": [0, 0], "op": "moveTo"},
@@ -526,7 +526,7 @@ describe("VarPath Tests", () => {
 
   it("test deletePoint", () => {
     const p1 = simpleTestPath();
-    p1.setPointType(3, VarPath.OFF_CURVE_QUAD);
+    p1.setPointType(3, VarPackedPath.OFF_CURVE_QUAD);
     p1.deletePoint(0, 1);
     const mp = new MockPath2D();
     p1.drawToPath2d(mp);
@@ -545,10 +545,10 @@ describe("VarPath Tests", () => {
   });
 
   it("test deleteContour", () => {
-    const p = new VarPath();
+    const p = new VarPackedPath();
     p.coordinates = new VarArray(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
-    const on = VarPath.ON_CURVE;
-    const off = VarPath.OFF_CURVE_QUAD;
+    const on = VarPackedPath.ON_CURVE;
+    const off = VarPackedPath.OFF_CURVE_QUAD;
     p.pointTypes = [on, off, on, on, on, on, on, off, off, on];
     p.contourInfo = [{endPoint: 2, isClosed: true}, {endPoint: 5, isClosed: true}, {endPoint: 9, isClosed: true}];
     expect(p._checkIntegrity()).to.equal(false);
