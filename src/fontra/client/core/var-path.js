@@ -114,7 +114,12 @@ export default class VarPath {
   }
 
   insertContour(contourIndex, contour) {
-
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const startPoint = this._getContourStartPoint(contourIndex);
+    this._replacePoints(startPoint, 0, ...contour.coordinates, contour.pointTypes);
+    const contourInfo = {"endPoint": startPoint - 1, "isClosed": contour.isClosed};
+    this.contourInfo.splice(contourIndex, 0, contourInfo)
+    this._moveEndPoints(contourIndex, contour.pointTypes.length);
   }
 
   deleteContour(contourIndex) {
