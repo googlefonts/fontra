@@ -33,6 +33,10 @@ export default class VarPath {
     return path;
   }
 
+  get numContours() {
+    return this.contourInfo.length;
+  }
+
   get numPoints() {
     return this.pointTypes.length;
   }
@@ -148,10 +152,14 @@ export default class VarPath {
   _insertPoint(contourIndex, pointIndex, point) {
     this.coordinates.splice(pointIndex * 2, 0, point.x, point.y);
     this.pointTypes.splice(pointIndex, 0, 0);
-    for (let ci = contourIndex; ci < this.contourInfo.length; ci++) {
-      this.contourInfo[ci].endPoint++;
-    }
     this.setPointType(pointIndex, point.type, point.smooth);
+    this._moveEndPoints(contourIndex, 1);
+  }
+
+  _moveEndPoints(fromContourIndex, offset) {
+    for (let ci = fromContourIndex; ci < this.contourInfo.length; ci++) {
+      this.contourInfo[ci].endPoint += offset;
+    }
   }
 
   _normalizeContourIndex(contourIndex) {
