@@ -293,10 +293,6 @@ export default class VarPath {
     );
   }
 
-  appendEmptyContour() {
-    this.appendContour({"coordinates": [], "pointTypes": [], "isClosed": false})
-  }
-
   _appendPoint(x, y, pointType) {
     this.contourInfo[this.contourInfo.length - 1].endPoint += 1;
     this.coordinates.push(x, y);
@@ -304,7 +300,7 @@ export default class VarPath {
   }
 
   moveTo(x, y) {
-    this.appendEmptyContour();
+    this.appendContour({"coordinates": [], "pointTypes": [], "isClosed": false})
     this._appendPoint(x, y, VarPath.ON_CURVE);
   }
 
