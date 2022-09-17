@@ -294,7 +294,7 @@ export default class VarPath {
   }
 
   appendEmptyContour() {
-    this.contourInfo.push({endPoint: this.coordinates.length / 2 - 1, isClosed: false});
+    this.appendContour({"coordinates": [], "pointTypes": [], "isClosed": false})
   }
 
   _appendPoint(x, y, pointType) {
