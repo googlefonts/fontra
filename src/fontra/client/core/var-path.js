@@ -93,6 +93,25 @@ export default class VarPath {
     return lo
   }
 
+  getContour(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    const startPoint = this._getContourStartPoint(contourIndex);
+    return {
+      "coordinates": this.coordinates.slice(startPoint * 2, (contour.endPoint + 1) * 2),
+      "pointTypes": this.pointTypes.slice(startPoint, contour.endPoint + 1),
+      "isClosed": contour.isClosed,
+    };
+  }
+
+  setContour(contourIndex, contour) {
+
+  }
+
+  insertContour(contourIndex, contour) {
+
+  }
+
   getPoint(pointIndex) {
     const point = {
       x: this.coordinates[pointIndex * 2],
