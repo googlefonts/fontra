@@ -114,7 +114,7 @@ export default class VarPath {
   }
 
   insertContour(contourIndex, contour) {
-    contourIndex = this._normalizeContourIndex(contourIndex);
+    contourIndex = this._normalizeContourIndex(contourIndex, true);
     const startPoint = this._getContourStartPoint(contourIndex);
     this._replacePoints(startPoint, 0, contour.coordinates, contour.pointTypes);
     const contourInfo = {"endPoint": startPoint - 1, "isClosed": contour.isClosed};
@@ -204,12 +204,13 @@ export default class VarPath {
     }
   }
 
-  _normalizeContourIndex(contourIndex) {
+  _normalizeContourIndex(contourIndex, forInsert = false) {
     const originalContourIndex = contourIndex;
+    const numContours = this.contourInfo.length;
     if (contourIndex < 0) {
-      contourIndex += this.contourInfo.length;
+      contourIndex += numContours;
     }
-    if (this.contourInfo[contourIndex] === undefined) {
+    if (contourIndex < 0 || contourIndex >= numContours + (forInsert ? 1 : 0)) {
       throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
     }
     return contourIndex;
