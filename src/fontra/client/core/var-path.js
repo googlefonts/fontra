@@ -112,6 +112,23 @@ export default class VarPath {
 
   }
 
+  deleteContour(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    const startPoint = this._getContourStartPoint(contourIndex);
+    const numPoints = contour.endPoint + 1 - startPoint;
+    // delete coordinates
+    this.coordinates.splice(startPoint * 2, numPoints * 2);
+    // delete point types
+    this.pointTypes.splice(startPoint, numPoints);
+    // delete contour info
+    this.contourInfo.splice(contourIndex, 1);
+    // update endPoints
+    for (let i = contourIndex; i < this.contourInfo.length; i++) {
+      this.contourInfo[i].endPoint -= numPoints;
+    }
+  }
+
   getPoint(pointIndex) {
     const point = {
       x: this.coordinates[pointIndex * 2],
@@ -267,23 +284,6 @@ export default class VarPath {
 
   appendEmptyContour() {
     this.contourInfo.push({endPoint: this.coordinates.length / 2 - 1, isClosed: false});
-  }
-
-  deleteContour(contourIndex) {
-    contourIndex = this._normalizeContourIndex(contourIndex);
-    const contour = this.contourInfo[contourIndex];
-    const startPoint = this._getContourStartPoint(contourIndex);
-    const numPoints = contour.endPoint + 1 - startPoint;
-    // delete coordinates
-    this.coordinates.splice(startPoint * 2, numPoints * 2);
-    // delete point types
-    this.pointTypes.splice(startPoint, numPoints);
-    // delete contour info
-    this.contourInfo.splice(contourIndex, 1);
-    // update endPoints
-    for (let i = contourIndex; i < this.contourInfo.length; i++) {
-      this.contourInfo[i].endPoint -= numPoints;
-    }
   }
 
   _appendPoint(x, y, pointType) {
