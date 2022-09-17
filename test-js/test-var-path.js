@@ -430,11 +430,12 @@ describe("VarPackedPath Tests", () => {
 
   it("getUnpackedContour", () => {
     const p = simpleTestPath();
+    p.pointTypes[0] |= VarPackedPath.SMOOTH_FLAG;
     const u = p.getUnpackedContour(0);
     expect(u.isClosed).to.equal(true);
     const pts = u.points;
     expect(pts.length).to.equal(4);
-    expect(pts[0]).to.deep.equal({"x": 0, "y": 0});
+    expect(pts[0]).to.deep.equal({"x": 0, "y": 0, "smooth": true});
     expect(pts[3]).to.deep.equal({"x": 100, "y": 0});
     expect(pts[3]).to.deep.equal({"x": 100, "y": 0});
     expect(p.getUnpackedContour(-1).points.length).to.equal(4);
