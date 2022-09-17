@@ -128,9 +128,7 @@ export default class VarPath {
     const startPoint = this._getContourStartPoint(contourIndex);
     const numPoints = contour.endPoint + 1 - startPoint;
     this._replacePoints(startPoint, numPoints, [], []);
-    // delete contour info
     this.contourInfo.splice(contourIndex, 1);
-    // update endPoints
     this._moveEndPoints(contourIndex, -numPoints);
   }
 
