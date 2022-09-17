@@ -608,91 +608,103 @@ describe("VarPackedPath Tests", () => {
     p.pointTypes = [on, off, on, on, on, on, on, off, off, on];
     p.contourInfo = [{endPoint: 2, isClosed: true}, {endPoint: 5, isClosed: true}, {endPoint: 9, isClosed: true}];
     expect(p._checkIntegrity()).to.equal(false);
-    let p1, mp;
+    let p1;
     p1 = p.copy();
-    mp = new MockPath2D();
-    p1.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal([
-      {"op": "moveTo", "args": [0, 1]},
-      {"op": "quadraticCurveTo", "args": [2, 3, 4, 5]},
-      {"op": "lineTo", "args": [0, 1]},
-      {"op": "closePath", "args": []},
-      {"op": "moveTo", "args": [6, 7]},
-      {"op": "lineTo", "args": [8, 9]},
-      {"op": "lineTo", "args": [10, 11]},
-      {"op": "lineTo", "args": [6, 7]},
-      {"op": "closePath", "args": []},
-      {"op": "moveTo", "args": [12, 13]},
-      {"op": "quadraticCurveTo", "args": [14, 15, 15, 16]},
-      {"op": "quadraticCurveTo", "args": [16, 17, 18, 19]},
-      {"op": "lineTo", "args": [12, 13]},
-      {"op": "closePath", "args": []},
+
+    expect(p1.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 1},
+          {"x": 2, "y": 3, "type": "quad"},
+          {"x": 4, "y": 5},
+        ],
+        "isClosed": true,
+      },
+      {
+        "points": [{"x": 6, "y": 7}, {"x": 8, "y": 9}, {"x": 10, "y": 11}],
+        "isClosed": true,
+      },
+      {
+        "points": [
+          {"x": 12, "y": 13},
+          {"x": 14, "y": 15, "type": "quad"},
+          {"x": 16, "y": 17, "type": "quad"},
+          {"x": 18, "y": 19},
+        ],
+        "isClosed": true,
+      },
     ]);
 
     p1 = p.copy();
     p1.deleteContour(0);
     expect(p1._checkIntegrity()).to.equal(false);
-    mp = new MockPath2D();
-    p1.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal([
-      {"op": "moveTo", "args": [6, 7]},
-      {"op": "lineTo", "args": [8, 9]},
-      {"op": "lineTo", "args": [10, 11]},
-      {"op": "lineTo", "args": [6, 7]},
-      {"op": "closePath", "args": []},
-      {"op": "moveTo", "args": [12, 13]},
-      {"op": "quadraticCurveTo", "args": [14, 15, 15, 16]},
-      {"op": "quadraticCurveTo", "args": [16, 17, 18, 19]},
-      {"op": "lineTo", "args": [12, 13]},
-      {"op": "closePath", "args": []},
+    expect(p1.unpackedContours()).to.deep.equal([
+      {
+        "points": [{"x": 6, "y": 7}, {"x": 8, "y": 9}, {"x": 10, "y": 11}],
+        "isClosed": true,
+      },
+      {
+        "points": [
+          {"x": 12, "y": 13},
+          {"x": 14, "y": 15, "type": "quad"},
+          {"x": 16, "y": 17, "type": "quad"},
+          {"x": 18, "y": 19},
+        ],
+        "isClosed": true,
+      },
     ]);
 
     p1 = p.copy();
     p1.deleteContour(1);
     expect(p1._checkIntegrity()).to.equal(false);
-    mp = new MockPath2D();
-    p1.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal([
-      {"op": "moveTo", "args": [0, 1]},
-      {"op": "quadraticCurveTo", "args": [2, 3, 4, 5]},
-      {"op": "lineTo", "args": [0, 1]},
-      {"op": "closePath", "args": []},
-      {"op": "moveTo", "args": [12, 13]},
-      {"op": "quadraticCurveTo", "args": [14, 15, 15, 16]},
-      {"op": "quadraticCurveTo", "args": [16, 17, 18, 19]},
-      {"op": "lineTo", "args": [12, 13]},
-      {"op": "closePath", "args": []},
+
+    expect(p1.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 1},
+          {"x": 2, "y": 3, "type": "quad"},
+          {"x": 4, "y": 5},
+        ],
+        "isClosed": true,
+      },
+      {
+        "points": [
+          {"x": 12, "y": 13},
+          {"x": 14, "y": 15, "type": "quad"},
+          {"x": 16, "y": 17, "type": "quad"},
+          {"x": 18, "y": 19},
+        ],
+        "isClosed": true,
+      },
     ]);
 
     p1 = p.copy();
     p1.deleteContour(2);
     expect(p1._checkIntegrity()).to.equal(false);
-    mp = new MockPath2D();
-    p1.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal([
-      {"op": "moveTo", "args": [0, 1]},
-      {"op": "quadraticCurveTo", "args": [2, 3, 4, 5]},
-      {"op": "lineTo", "args": [0, 1]},
-      {"op": "closePath", "args": []},
-      {"op": "moveTo", "args": [6, 7]},
-      {"op": "lineTo", "args": [8, 9]},
-      {"op": "lineTo", "args": [10, 11]},
-      {"op": "lineTo", "args": [6, 7]},
-      {"op": "closePath", "args": []},
+    expect(p1.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 1},
+          {"x": 2, "y": 3, "type": "quad"},
+          {"x": 4, "y": 5},
+        ],
+        "isClosed": true,
+      },
+      {
+        "points": [{"x": 6, "y": 7}, {"x": 8, "y": 9}, {"x": 10, "y": 11}],
+        "isClosed": true,
+      },
     ]);
 
     p1 = p.copy();
     p1.deleteContour(2);
     p1.deleteContour(0);
     expect(p1._checkIntegrity()).to.equal(false);
-    mp = new MockPath2D();
-    p1.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal([
-      {"op": "moveTo", "args": [6, 7]},
-      {"op": "lineTo", "args": [8, 9]},
-      {"op": "lineTo", "args": [10, 11]},
-      {"op": "lineTo", "args": [6, 7]},
-      {"op": "closePath", "args": []},
+    expect(p1.unpackedContours()).to.deep.equal([
+      {
+        "points": [{"x": 6, "y": 7}, {"x": 8, "y": 9}, {"x": 10, "y": 11}],
+        "isClosed": true,
+      },
     ]);
 
     p1 = p.copy();
@@ -700,9 +712,7 @@ describe("VarPackedPath Tests", () => {
     p1.deleteContour(0);
     p1.deleteContour(0);
     expect(p1._checkIntegrity()).to.equal(false);
-    mp = new MockPath2D();
-    p1.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal([]);
+    expect(p1.unpackedContours()).to.deep.equal([]);
 
   });
 
