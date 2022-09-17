@@ -431,6 +431,7 @@ describe("VarPackedPath Tests", () => {
   it("getUnpackedContour", () => {
     const p = simpleTestPath();
     const u = p.getUnpackedContour(0);
+    expect(u.isClosed).to.equal(true);
     const pts = u.points;
     expect(pts.length).to.equal(4);
     expect(pts[0]).to.deep.equal({"x": 0, "y": 0});
