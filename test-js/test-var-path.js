@@ -41,6 +41,16 @@ function simpleTestPath(isClosed=true) {
 }
 
 
+function complexTestPath() {
+  const p = new VarPackedPath();
+  p.coordinates = new VarArray(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
+  const on = VarPackedPath.ON_CURVE;
+  const off = VarPackedPath.OFF_CURVE_QUAD;
+  p.pointTypes = [on, off, on, on, on, on, on, off, off, on];
+  p.contourInfo = [{endPoint: 2, isClosed: true}, {endPoint: 5, isClosed: true}, {endPoint: 9, isClosed: true}];
+  return p;
+}
+
 describe("VarPackedPath Tests", () => {
   
   it("empty copy", () => {
@@ -601,12 +611,7 @@ describe("VarPackedPath Tests", () => {
   });
 
   it("test deleteContour", () => {
-    const p = new VarPackedPath();
-    p.coordinates = new VarArray(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19);
-    const on = VarPackedPath.ON_CURVE;
-    const off = VarPackedPath.OFF_CURVE_QUAD;
-    p.pointTypes = [on, off, on, on, on, on, on, off, off, on];
-    p.contourInfo = [{endPoint: 2, isClosed: true}, {endPoint: 5, isClosed: true}, {endPoint: 9, isClosed: true}];
+    const p = complexTestPath();
     expect(p._checkIntegrity()).to.equal(false);
     let p1;
     p1 = p.copy();
@@ -714,6 +719,34 @@ describe("VarPackedPath Tests", () => {
     expect(p1._checkIntegrity()).to.equal(false);
     expect(p1.unpackedContours()).to.deep.equal([]);
 
+  });
+
+  it("test getContour", () => {
+    const p = complexTestPath();
+    expect(p.getContour(0)).to.deep.equal(
+      {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,0],"isClosed":true}
+    );
+    expect(p.getContour(1)).to.deep.equal(
+      {"coordinates":[6,7,8,9,10,11],"pointTypes":[0,0,0],"isClosed":true}
+    );
+    expect(p.getContour(2)).to.deep.equal(
+      {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
+    );
+  });
+
+  it("test setContour", () => {
+    const p = complexTestPath();
+    p.setContour(1, p.getContour(0))
+    expect(p.getContour(0)).to.deep.equal(
+      {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,0],"isClosed":true}
+    );
+    expect(p.getContour(1)).to.deep.equal(
+      {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,0],"isClosed":true}
+    );
+    expect(p.getContour(2)).to.deep.equal(
+      {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
+    );
+    expect(p._checkIntegrity()).to.equal(false);
   });
 
 })

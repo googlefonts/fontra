@@ -117,7 +117,7 @@ export class VarPackedPath {
     const startPoint = this._getContourStartPoint(contourIndex);
     const numOldPoints = this.contourInfo[contourIndex].endPoint + 1 - startPoint;
     this._replacePoints(startPoint, numOldPoints, contour.coordinates, contour.pointTypes);
-    this._moveEndPoints(contourIndex, contour.pointTypes.length - numPoints);
+    this._moveEndPoints(contourIndex, contour.pointTypes.length - numOldPoints);
     this.contourInfo[contourIndex].isClosed = contour.isClosed;
   }
 
