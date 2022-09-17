@@ -145,6 +145,9 @@ export default class VarPackedPath {
       x: this.coordinates[pointIndex * 2],
       y: this.coordinates[pointIndex * 2 + 1],
     };
+    if (point.x === undefined) {
+      return undefined;
+    }
     const pointType = this.pointTypes[pointIndex] & VarPackedPath.POINT_TYPE_MASK;
     if (pointType) {
       point["type"] = (
@@ -157,9 +160,6 @@ export default class VarPackedPath {
     }
     if (this.pointTypes[pointIndex] & VarPackedPath.SMOOTH_FLAG) {
       point["smooth"] = true;
-    }
-    if (point.x === undefined) {
-      return undefined;
     }
     return point;
   }
