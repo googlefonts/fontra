@@ -208,6 +208,19 @@ describe("VarPackedPath Tests", () => {
       [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
       [{endPoint: 3, isClosed: true}],
     );
+
+    expect(p.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0},
+          {"x": 0, "y": 100, "type": "cubic"},
+          {"x": 100, "y": 100, "type": "cubic"},
+          {"x": 100, "y": 0},
+        ],
+        "isClosed": true,
+      }
+    ]);
+
     const mp = new MockPath2D();
     p.drawToPath2d(mp);
     expect(mp.items).to.deep.equal(
@@ -228,16 +241,18 @@ describe("VarPackedPath Tests", () => {
     );
     const p2 = p1.copy();
     const p3 = p1.addItemwise(p2);
-    const mp = new MockPath2D();
-    p3.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal(
-      [
-        {"args": [0, 0], "op": "moveTo"},
-        {"args": [0, 200, 200, 200, 200, 0], "op": "bezierCurveTo"},
-        {"args": [0, 0], "op": "lineTo"},
-        {"args": [], "op": "closePath"},
-      ],
-    );
+
+    expect(p3.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0},
+          {"x": 0, "y": 200, "type": "cubic"},
+          {"x": 200, "y": 200, "type": "cubic"},
+          {"x": 200, "y": 0},
+        ],
+        "isClosed": true,
+      }
+    ]);
   })
 
   it("sub", () => {
@@ -248,16 +263,18 @@ describe("VarPackedPath Tests", () => {
     );
     const p2 = p1.copy();
     const p3 = p1.subItemwise(p2);
-    const mp = new MockPath2D();
-    p3.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal(
-      [
-        {"args": [0, 0], "op": "moveTo"},
-        {"args": [0, 0, 0, 0, 0, 0], "op": "bezierCurveTo"},
-        {"args": [0, 0], "op": "lineTo"},
-        {"args": [], "op": "closePath"},
-      ],
-    );
+
+    expect(p3.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0},
+          {"x": 0, "y": 0, "type": "cubic"},
+          {"x": 0, "y": 0, "type": "cubic"},
+          {"x": 0, "y": 0},
+        ],
+        "isClosed": true,
+      }
+    ]);
   })
 
   it("mul", () => {
@@ -268,15 +285,18 @@ describe("VarPackedPath Tests", () => {
     );
     const mp = new MockPath2D();
     const p2 = p.mulScalar(2);
-    p2.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal(
-      [
-        {"args": [0, 0], "op": "moveTo"},
-        {"args": [0, 200, 200, 200, 200, 0], "op": "bezierCurveTo"},
-        {"args": [0, 0], "op": "lineTo"},
-        {"args": [], "op": "closePath"},
-      ],
-    );
+
+    expect(p2.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0},
+          {"x": 0, "y": 200, "type": "cubic"},
+          {"x": 200, "y": 200, "type": "cubic"},
+          {"x": 200, "y": 0},
+        ],
+        "isClosed": true,
+      }
+    ]);
   })
 
   it("pen-ish methods", () => {
