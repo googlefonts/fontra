@@ -113,6 +113,10 @@ export default class VarPath {
     this.contourInfo[contourIndex].isClosed = contour.isClosed;
   }
 
+  appendContour(contour) {
+    this.insertContour(thos.contourInfo.length, contour);
+  }
+
   insertContour(contourIndex, contour) {
     contourIndex = this._normalizeContourIndex(contourIndex, true);
     const startPoint = this._getContourStartPoint(contourIndex);
