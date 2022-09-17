@@ -106,7 +106,6 @@ export class VarPackedPath {
   }
 
   _getUnpackedContour(contourIndex) {
-    contourIndex = this._normalizeContourIndex(contourIndex);
     const contourInfo = this.contourInfo[contourIndex];
     return {
       "points": Array.from(this.iterPointsOfContour(contourIndex)),
