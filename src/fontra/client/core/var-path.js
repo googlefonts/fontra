@@ -37,6 +37,10 @@ export default class VarPackedPath {
     return path;
   }
 
+  unpackedContours() {
+    return Array.from(this.iterUnpackedContours());
+  }
+
   get numContours() {
     return this.contourInfo.length;
   }
@@ -267,6 +271,16 @@ export default class VarPackedPath {
   *_iterPointsFromTo(startPoint, endPoint) {
     for (let index = startPoint; index <= endPoint; index++) {
       yield this.getPoint(index);
+    }
+  }
+
+  *iterUnpackedContours() {
+    for (let i = 0; i < this.contourInfo.length; i++) {
+      const contourInfo = this.contourInfo[i];
+      yield {
+        "points": Array.from(this.iterPointsOfContour(i)),
+        "isClosed": contourInfo.isClosed,
+      };
     }
   }
 
