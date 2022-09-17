@@ -1,7 +1,11 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import VarPackedPath from "../src/fontra/client/core/var-path.js";
+import {
+  POINT_TYPE_OFF_CURVE_CUBIC,
+  POINT_TYPE_OFF_CURVE_QUAD,
+  VarPackedPath,
+} from "../src/fontra/client/core/var-path.js";
 import VarArray from "../src/fontra/client/core/var-array.js";
 import { Transform } from "../src/fontra/client/core/transform.js";
 
@@ -471,7 +475,7 @@ describe("VarPackedPath Tests", () => {
     const p1 = simpleTestPath();
     const mp = new MockPath2D();
     p1.setPointPosition(1, 23, 45);
-    p1.setPoint(2, {"x": 65, "y": 43, "type": VarPackedPath.OFF_CURVE_QUAD});
+    p1.setPoint(2, {"x": 65, "y": 43, "type": POINT_TYPE_OFF_CURVE_QUAD});
     p1.drawToPath2d(mp);
     expect(mp.items).to.deep.equal([
       {"args": [0, 0], "op": "moveTo"},
@@ -578,7 +582,7 @@ describe("VarPackedPath Tests", () => {
 
   it("test deletePoint", () => {
     const p1 = simpleTestPath();
-    p1.setPointType(3, VarPackedPath.OFF_CURVE_QUAD);
+    p1.setPointType(3, POINT_TYPE_OFF_CURVE_QUAD);
     p1.deletePoint(0, 1);
     const mp = new MockPath2D();
     p1.drawToPath2d(mp);

@@ -8,7 +8,7 @@ export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
 export const POINT_TYPE_OFF_CURVE_CUBIC = "cubic";
 
 
-export default class VarPackedPath {
+export class VarPackedPath {
 
   // point types
   static ON_CURVE = 0x00;
@@ -178,13 +178,19 @@ export default class VarPackedPath {
   }
 
   setPointType(pointIndex, type, smooth) {
-    if (type !== undefined) {
-      this.pointTypes[pointIndex] &= ~VarPackedPath.POINT_TYPE_MASK;
-      this.pointTypes[pointIndex] |= type & VarPackedPath.POINT_TYPE_MASK;
+    if (type) {
+      this.pointTypes[pointIndex] = (
+        type === POINT_TYPE_OFF_CURVE_CUBIC
+        ?
+        VarPackedPath.OFF_CURVE_CUBIC
+        :
+        VarPackedPath.OFF_CURVE_QUAD
+      );
+    } else {
+      this.pointTypes[pointIndex] = VarPackedPath.ON_CURVE;
     }
-    if (smooth !== undefined) {
-      this.pointTypes[pointIndex] &= ~VarPackedPath.SMOOTH_FLAG;
-      this.pointTypes[pointIndex] |= (!!smooth) * VarPackedPath.SMOOTH_FLAG;
+    if (smooth) {
+      this.pointTypes[pointIndex] |= VarPackedPath.SMOOTH_FLAG;
     }
   }
 
