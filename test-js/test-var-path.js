@@ -360,24 +360,26 @@ describe("VarPackedPath Tests", () => {
     const p1 = simpleTestPath();
     const p2 = p1.copy();
     const p3 = p1.concat(p2);
-    const mp = new MockPath2D();
-    p3.drawToPath2d(mp);
-    expect(mp.items).to.deep.equal(
-      [
-        {"args": [0, 0], "op": "moveTo"},
-        {"args": [0, 100], "op": "lineTo"},
-        {"args": [100, 100], "op": "lineTo"},
-        {"args": [100, 0], "op": "lineTo"},
-        {"args": [0, 0], "op": "lineTo"},
-        {"args": [], "op": "closePath"},
-        {"args": [0, 0], "op": "moveTo"},
-        {"args": [0, 100], "op": "lineTo"},
-        {"args": [100, 100], "op": "lineTo"},
-        {"args": [100, 0], "op": "lineTo"},
-        {"args": [0, 0], "op": "lineTo"},
-        {"args": [], "op": "closePath"},
-      ],
-    );
+    expect(p3.unpackedContours()).to.deep.equal([
+      {
+        "points": [
+          {"x": 0, "y": 0},
+          {"x": 0, "y": 100},
+          {"x": 100, "y": 100},
+          {"x": 100, "y": 0},
+        ],
+        "isClosed": true,
+      },
+      {
+        "points": [
+          {"x": 0, "y": 0},
+          {"x": 0, "y": 100},
+          {"x": 100, "y": 100},
+          {"x": 100, "y": 0},
+        ],
+        "isClosed": true,
+      },
+    ]);
   });
 
   it("getPoint", () => {
