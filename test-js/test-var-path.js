@@ -810,4 +810,21 @@ describe("VarPackedPath Tests", () => {
     expect(p._checkIntegrity()).to.equal(false);
   });
 
+  it("test setUnpackedContour", () => {
+    const p = complexTestPath();
+    p.pointTypes[2] |= VarPackedPath.SMOOTH_FLAG;
+    p.setUnpackedContour(1, p.getUnpackedContour(0));
+    expect(p.getContour(0)).to.deep.equal(
+      {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,8],"isClosed":true}
+    );
+    expect(p.getContour(1)).to.deep.equal(
+      {"coordinates":[0,1,2,3,4,5],"pointTypes":[0,1,8],"isClosed":true}
+    );
+    expect(p.getContour(2)).to.deep.equal(
+      {"coordinates":[12,13,14,15,16,17,18,19],"pointTypes":[0,1,1,0],"isClosed":true}
+    );
+    expect(p.numContours).to.equal(3);
+    expect(p._checkIntegrity()).to.equal(false);
+  });
+
 })

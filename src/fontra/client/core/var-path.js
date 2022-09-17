@@ -113,6 +113,10 @@ export class VarPackedPath {
     };
   }
 
+  setUnpackedContour(contourIndex, unpackedContour) {
+    this.setContour(contourIndex, packContour(unpackedContour));
+  }
+
   getContour(contourIndex) {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
@@ -575,4 +579,21 @@ function getPointType(type, smooth) {
     pointType |= VarPackedPath.SMOOTH_FLAG;
   }
   return pointType;
+}
+
+
+function packContour(unpackedContour) {
+  const coordinates = new VarArray(unpackedContour.points.length * 2);
+  const pointTypes = new Array(unpackedContour.points.length);
+  for (let i = 0; i < unpackedContour.points.length; i++) {
+    const point = unpackedContour.points[i];
+    coordinates[i * 2] = point.x;
+    coordinates[i * 2 + 1] = point.y;
+    pointTypes[i] = getPointType(point.type, point.smooth);
+  }
+  return {
+    "coordinates": coordinates,
+    "pointTypes": pointTypes,
+    "isClosed": unpackedContour.isClosed,
+  };
 }
