@@ -124,9 +124,7 @@ export default class VarPath {
     // delete contour info
     this.contourInfo.splice(contourIndex, 1);
     // update endPoints
-    for (let i = contourIndex; i < this.contourInfo.length; i++) {
-      this.contourInfo[i].endPoint -= numPoints;
-    }
+    this._moveEndPoints(contourIndex, -numPoints)
   }
 
   getPoint(pointIndex) {
