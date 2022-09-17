@@ -428,15 +428,16 @@ describe("VarPackedPath Tests", () => {
     expect(p.getContourIndex(21)).to.equal(undefined);
   });
 
-  it("iterPointsOfContour", () => {
+  it("getUnpackedContour", () => {
     const p = simpleTestPath();
-    const pts = Array.from(p.iterPointsOfContour(0));
+    const u = p.getUnpackedContour(0);
+    const pts = u.points;
     expect(pts.length).to.equal(4);
     expect(pts[0]).to.deep.equal({"x": 0, "y": 0});
     expect(pts[3]).to.deep.equal({"x": 100, "y": 0});
     expect(pts[3]).to.deep.equal({"x": 100, "y": 0});
-    expect(Array.from(p.iterPointsOfContour(-1)).length).to.equal(4);
-    expect(() => {Array.from(p.iterPointsOfContour(1))}).to.throw("contourIndex out of bounds: 1");
+    expect(p.getUnpackedContour(-1).points.length).to.equal(4);
+    expect(() => {p.getUnpackedContour(1)}).to.throw("contourIndex out of bounds: 1");
   });
 
   it("getControlBounds", () => {

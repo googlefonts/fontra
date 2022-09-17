@@ -108,7 +108,7 @@ export class VarPackedPath {
   _getUnpackedContour(contourIndex) {
     const contourInfo = this.contourInfo[contourIndex];
     return {
-      "points": Array.from(this.iterPointsOfContour(contourIndex)),
+      "points": Array.from(this._iterPointsOfContour(contourIndex)),
       "isClosed": contourInfo.isClosed,
     };
   }
@@ -265,8 +265,7 @@ export class VarPackedPath {
     yield* this._iterPointsFromTo(0, this.pointTypes.length - 1);
   }
 
-  *iterPointsOfContour(contourIndex) {
-    contourIndex = this._normalizeContourIndex(contourIndex);
+  *_iterPointsOfContour(contourIndex) {
     const contour = this.contourInfo[contourIndex];
     const startPoint = this._getContourStartPoint(contourIndex);
     yield* this._iterPointsFromTo(startPoint, contour.endPoint);
