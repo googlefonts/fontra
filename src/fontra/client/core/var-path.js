@@ -101,6 +101,19 @@ export class VarPackedPath {
     return lo
   }
 
+  getUnpackedContour(contourIndex) {
+    return this._getUnpackedContour(this._normalizeContourIndex(contourIndex));
+  }
+
+  _getUnpackedContour(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const contourInfo = this.contourInfo[contourIndex];
+    return {
+      "points": Array.from(this.iterPointsOfContour(contourIndex)),
+      "isClosed": contourInfo.isClosed,
+    };
+  }
+
   getContour(contourIndex) {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
@@ -268,11 +281,7 @@ export class VarPackedPath {
 
   *iterUnpackedContours() {
     for (let i = 0; i < this.contourInfo.length; i++) {
-      const contourInfo = this.contourInfo[i];
-      yield {
-        "points": Array.from(this.iterPointsOfContour(i)),
-        "isClosed": contourInfo.isClosed,
-      };
+      yield this._getUnpackedContour(i);
     }
   }
 
