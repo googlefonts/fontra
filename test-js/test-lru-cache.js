@@ -9,8 +9,6 @@ describe("LRUCache Tests", () => {
   it("empty", () => {
     const lru = new LRUCache(4);
     expect(lru.size).to.equal(0);
-    console.log(lru.head);
-    console.log(lru.tail);
     expect(lru._dllLength()).to.equal(0);
   });
 
