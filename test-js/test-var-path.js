@@ -356,32 +356,35 @@ describe("VarPackedPath Tests", () => {
     );
   })
 
-  it("iterPointsInRect", () => {
-    const p = new VarPackedPath(
-      new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
-      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
-      [{endPoint: 3, isClosed: true}],
-    );
-    const allPoints = Array.from(p.iterPoints());
-    for (const [i, pt] of enumerate(allPoints)) {
-      pt.pointIndex = i;
-    }
-    const testData = [
-      [{"xMin": -100, "yMin": -100, "xMax": 200, "yMax": 200}, [0, 1, 2, 3]],
-      [{"xMin": 50, "yMin": -100, "xMax": 200, "yMax": 200}, [2, 3]],
-      [{"xMin": -100, "yMin": 50, "xMax": 200, "yMax": 200}, [1, 2]],
-      [{"xMin": 50, "yMin": 50, "xMax": 200, "yMax": 200}, [2]],
-      [{"xMin": 150, "yMin": 150, "xMax": 200, "yMax": 200}, []],
-    ]
-    for (const [rect, expectedIndices] of testData) {
+  const iterPointsInRectTestData = [
+    [{"xMin": -100, "yMin": -100, "xMax": 200, "yMax": 200}, [0, 1, 2, 3]],
+    [{"xMin": 50, "yMin": -100, "xMax": 200, "yMax": 200}, [2, 3]],
+    [{"xMin": -100, "yMin": 50, "xMax": 200, "yMax": 200}, [1, 2]],
+    [{"xMin": 50, "yMin": 50, "xMax": 200, "yMax": 200}, [2]],
+    [{"xMin": 150, "yMin": 150, "xMax": 200, "yMax": 200}, []],
+  ]
+
+  const iterPointsInRectTestPath = new VarPackedPath(
+    new VarArray(0, 0, 0, 100, 100, 100, 100, 0),
+    [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
+    [{endPoint: 3, isClosed: true}],
+  );
+
+  const iterPointsInRectTestPoints = Array.from(iterPointsInRectTestPath.iterPoints());
+  for (const [i, pt] of enumerate(iterPointsInRectTestPoints)) {
+    pt.pointIndex = i;
+  }
+
+  for (const [rect, expectedIndices] of iterPointsInRectTestData) {
+    it("iterPointsInRect", () => {
       const indices = [];
-      for (const pt of p.iterPointsInRect(rect)) {
+      for (const pt of iterPointsInRectTestPath.iterPointsInRect(rect)) {
         indices.push(pt.pointIndex);
-        expect(pt).to.deep.equal(allPoints[pt.pointIndex]);
+        expect(pt).to.deep.equal(iterPointsInRectTestPoints[pt.pointIndex]);
       }
       expect(indices).to.deep.equal(expectedIndices);
-    }
-  })
+    });
+  }
 
   it("transformed", () => {
     const t = new Transform().scale(2);
