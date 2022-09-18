@@ -1,10 +1,21 @@
 {
   "inputPaths": {
-    "emptyPath": []
+    "emptyPath": [],
+    "oneContour": [
+      {
+        "points": [
+          {
+            "x": 10,
+            "y": 20
+          }
+        ],
+        "isClosed": false
+      }
+    ]
   },
   "tests": [
     {
-      "testName": "change simple array",
+      "testName": "insertContour",
       "inputPathName": "emptyPath",
       "change": {
         "f": "insertContour",
@@ -33,6 +44,15 @@
           "isClosed": false
         }
       ]
+    },
+    {
+      "testName": "deleteContour",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "deleteContour",
+        "a": [0]
+      },
+      "expectedPath": []
     }
   ]
 }
