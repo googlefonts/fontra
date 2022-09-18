@@ -50,8 +50,8 @@ filesystem = "fontra.filesystem"
 [project.entry-points."fontra.filesystem.backends"]
 designspace = "fontra.backends.designspace:DesignspaceBackend"
 ufo = "fontra.backends.designspace:UFOBackend"
-ttf = "fontra.backends.truetype:TTFBackend"
-otf = "fontra.backends.truetype:TTFBackend"
+ttf = "fontra.backends.opentype:TTFBackend"
+otf = "fontra.backends.opentype:TTFBackend"
 
 
 [build-system]
