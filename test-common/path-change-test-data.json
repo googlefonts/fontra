@@ -50,9 +50,34 @@
       "inputPathName": "oneContour",
       "change": {
         "f": "deleteContour",
-        "a": [0]
+        "a": [
+          0
+        ]
       },
       "expectedPath": []
+    },
+    {
+      "testName": "set coordinates",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "=xy",
+        "a": [
+          0,
+          12,
+          13
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 12,
+              "y": 13
+            }
+          ],
+          "isClosed": false
+        }
+      ]
     }
   ]
 }
