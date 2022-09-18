@@ -1100,8 +1100,7 @@ function makeFieldChange(path, value) {
   return {
     "p": path,
     "f": "=",
-    "k": key,
-    "v": value,
+    "a": [key, value],
   };
 }
 

@@ -35,12 +35,8 @@ export const baseChangeFunctions = {
 // "f": function name, to be lookud up in the changeFunctions dict
 // Optional: can be omitted if the change has children
 //
-// "k": a key or index into the "subject"
-//
-// "v": "value", a single argument for the change function
 // "a": "arguments", an array of arguments for the change function
-// If the change has a change function ("f" key), it MUST also have
-// a "v" key/value or an "a" key/value, but NOT both
+// Optional: if omitted, defaults to an empty array
 //
 // "c": Array of child changes. Optional.
 //
@@ -60,14 +56,8 @@ export function applyChange(subject, change, changeFunctions) {
 
   if (functionName) {
     const changeFunc = changeFunctions[functionName];
-    let arg, args;
-    if ((arg = change["v"]) !== undefined) {
-      changeFunc(subject, change["k"], arg);
-    } else if ((args = change["a"]) !== undefined) {
-      changeFunc(subject, change["k"], ...args);
-    } else {
-      changeFunc(subject, change["k"]);
-    }
+    const args = change["a"] || [];
+    changeFunc(subject, ...args);
   }
 
   for (const subChange of children) {
