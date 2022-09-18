@@ -4,7 +4,7 @@ from fontTools.ttLib import TTFont
 from .pen import PathBuilderPointPen
 
 
-class TTFBackend:
+class OTFBackend:
     @classmethod
     def fromPath(cls, path):
         self = cls()
