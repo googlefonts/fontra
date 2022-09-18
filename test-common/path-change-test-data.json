@@ -1,0 +1,38 @@
+{
+  "inputPaths": {
+    "emptyPath": []
+  },
+  "tests": [
+    {
+      "testName": "change simple array",
+      "inputPathName": "emptyPath",
+      "change": {
+        "f": "insertContour",
+        "a": [
+          0,
+          {
+            "coordinates": [
+              10,
+              20
+            ],
+            "pointTypes": [
+              0
+            ],
+            "isClosed": false
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    }
+  ]
+}
