@@ -2,6 +2,7 @@ import VarArray from "./var-array.js"
 import { VariationError } from "./errors.js"
 import { pointInRect } from "./rectangle.js";
 import { convexHull } from "./convex-hull.js";
+import { enumerate } from "./utils.js";
 
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
@@ -320,12 +321,10 @@ export class VarPackedPath {
   }
 
   *iterPointsInRect(rect) {
-    let pointIndex = 0;
-    for (const point of this.iterPoints()) {
+    for (const [pointIndex, point] of enumerate(this.iterPoints())) {
       if (pointInRect(point.x, point.y, rect)) {
         yield {...point, pointIndex: pointIndex};
       }
-      pointIndex++;
     }
   }
 
