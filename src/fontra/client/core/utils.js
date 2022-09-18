@@ -196,3 +196,12 @@ export function boolInt(v) {
   // Return 1 if `v` is true-y, 0 if `v` is false-y
   return v ? 1 : 0;
 }
+
+
+export function *enumerate(iterable, start = 0) {
+  let i = start;
+  for (const item of iterable) {
+    yield [i, item];
+    i++;
+  }
+}
