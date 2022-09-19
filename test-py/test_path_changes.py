@@ -7,9 +7,7 @@ from fontra.core.packedpath import packPath
 
 
 testDataPath = (
-    pathlib.Path(__file__).parent.parent
-    / "test-common"
-    / "path-change-test-data.json"
+    pathlib.Path(__file__).parent.parent / "test-common" / "path-change-test-data.json"
 )
 
 pathChangeTestData = json.loads(testDataPath.read_text(encoding="utf-8"))
