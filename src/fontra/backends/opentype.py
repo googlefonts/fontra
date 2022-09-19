@@ -1,7 +1,7 @@
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
-from .pen import PathBuilderPointPen
+from ..core.packedpath import PackedPathPointPen
 
 
 class OTFBackend:
@@ -165,7 +165,7 @@ def unpackAxes(font):
 
 
 def serializeGlyph(glyphSet, glyphName):
-    pen = PathBuilderPointPen()
+    pen = PackedPathPointPen()
     ttGlyph = glyphSet[glyphName]
     ttGlyph.drawPoints(GuessSmoothPointPen(pen))
     path = pen.getPath()

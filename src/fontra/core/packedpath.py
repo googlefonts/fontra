@@ -12,7 +12,7 @@ SMOOTH_FLAG = 0x08
 POINT_TYPE_MASK = 0x07
 
 
-class PathBuilderPointPen:
+class PackedPathPointPen:
     def __init__(self):
         self.coordinates = []
         self.pointTypes = []
@@ -144,7 +144,7 @@ _pointToSegmentType = {
 }
 
 
-def drawPathToPointPen(path, pen):
+def drawPackedPathToPointPen(path, pen):
     startPoint = 0
     for contourInfo in path["contourInfo"]:
         endPoint = contourInfo["endPoint"] + 1
