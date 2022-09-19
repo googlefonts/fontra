@@ -207,7 +207,7 @@ export class VarPackedPath {
   }
 
   setPointType(pointIndex, type, smooth) {
-    this.pointTypes[pointIndex] = getPointType(type, smooth);
+    this.pointTypes[pointIndex] = packPointType(type, smooth);
   }
 
   insertPoint(contourIndex, contourPointIndex, point) {
@@ -575,7 +575,7 @@ function pointTypesEquals(a, b) {
 }
 
 
-function getPointType(type, smooth) {
+function packPointType(type, smooth) {
   let pointType = VarPackedPath.ON_CURVE;
   if (type) {
     pointType = (
@@ -599,7 +599,7 @@ function packContour(unpackedContour) {
     const point = unpackedContour.points[i];
     coordinates[i * 2] = point.x;
     coordinates[i * 2 + 1] = point.y;
-    pointTypes[i] = getPointType(point.type, point.smooth);
+    pointTypes[i] = packPointType(point.type, point.smooth);
   }
   return {
     "coordinates": coordinates,
