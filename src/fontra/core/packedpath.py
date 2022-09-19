@@ -174,3 +174,114 @@ def drawPackedPathToPointPen(path, pen):
 def pairwise(iterable):
     it = iter(iterable)
     return zip(it, it)
+
+
+def deleteContour(path, contourIndex):
+    contourIndex = _normalizeContourIndex(path, contourIndex)
+    contour = path["contourInfo"][contourIndex]
+    startPoint = _getContourStartPoint(path, contourIndex)
+    numPoints = contour["endPoint"] + 1 - startPoint
+    _replacePoints(path, startPoint, numPoints, [], [])
+    del path["contourInfo"][contourIndex]
+    _moveEndPoints(path, contourIndex, -numPoints)
+
+
+def insertContour(path, contourIndex, contour):
+    contourIndex = _normalizeContourIndex(path, contourIndex, True)
+    startPoint = _getContourStartPoint(path, contourIndex)
+    _replacePoints(path, startPoint, 0, contour["coordinates"], contour["pointTypes"])
+    contourInfo = {"endPoint": startPoint - 1, "isClosed": contour["isClosed"]}
+    path["contourInfo"].insert(contourIndex, contourInfo)
+    _moveEndPoints(path, contourIndex, len(contour["pointTypes"]))
+
+
+def _getContourStartPoint(path, contourIndex):
+    return (
+        0
+        if contourIndex == 0
+        else path["contourInfo"][contourIndex - 1]["endPoint"] + 1
+    )
+
+
+def _normalizeContourIndex(path, contourIndex, forInsert=False):
+    originalContourIndex = contourIndex
+    numContours = len(path["contourInfo"])
+    if contourIndex < 0:
+        contourIndex += numContours
+    bias = 1 if forInsert else 0
+    if contourIndex < 0 or contourIndex >= numContours + bias:
+        raise IndexError(f"contourIndex out of bounds: {originalContourIndex}")
+    return contourIndex
+
+
+def _replacePoints(path, startPoint, numPoints, coordinates, pointTypes):
+    dblIndex = startPoint * 2
+    path["coordinates"][dblIndex : dblIndex + numPoints * 2] = coordinates
+    path["pointTypes"][startPoint : startPoint + numPoints] = pointTypes
+
+
+def _moveEndPoints(path, fromContourIndex, offset):
+    for contourInfo in path["contourInfo"][fromContourIndex:]:
+        contourInfo["endPoint"] += offset
+
+
+def unpackPath(packedPath):
+    unpackedPath = []
+    coordinates = packedPath["coordinates"]
+    pointTypes = packedPath["pointTypes"]
+    startIndex = 0
+    for contourInfo in packedPath["contourInfo"]:
+        endIndex = contourInfo["endIndex"] + 1
+        points = list(_iterPoints(coordinates, pointTypes, startIndex, endIndex))
+        unpackedPath.append(dict(points=points, isClosed=contourInfo["isClosed"]))
+        startIndex = endIndex
+    return unpackedPath
+
+
+def _iterPoints(coordinates, pointTypes, startIndex, endIndex):
+    for i in range(startIndex, endIndex):
+        point = dict(x=coordinates[i * 2], y=coordinates[i * 2 + 1])
+        pointType = pointTypes[i] & POINT_TYPE_MASK
+        if pointType:
+            point["type"] = "cubic" if pointType == OFF_CURVE_CUBIC else "quad"
+        elif pointTypes[i] & SMOOTH_FLAG:
+            point["smooth"] = True
+        yield point
+
+
+def packPath(unpackedPath):
+    coordinates = []
+    pointTypes = []
+    contourInfo = []
+    packedContours = [packContour(c) for c in unpackedPath]
+    for packedContour in packedContours:
+        coordinates.extend(packedContour["coordinates"])
+        pointTypes.extend(packedContour["pointTypes"])
+        contourInfo.append(
+            dict(endPoint=len(pointTypes) - 1, isClosed=packedContour["isClosed"])
+        )
+    return dict(coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo)
+
+
+def packContour(unpackedContour):
+    coordinates = []
+    pointTypes = []
+    for point in unpackedContour["points"]:
+        coordinates.append(point["x"])
+        coordinates.append(point["y"])
+        pointTypes.append(packPointType(point.get("type"), point.get("smooth")))
+    return dict(
+        coordinates=coordinates,
+        pointTypes=pointTypes,
+        isClosed=unpackedContour["isClosed"],
+    )
+
+
+def packPointType(type, smooth):
+    if type:
+        pointType = OFF_CURVE_CUBIC if type == "cubic" else OFF_CURVE_QUAD
+    elif smooth:
+        pointType = ON_CURVE | SMOOTH_FLAG
+    else:
+        pointType = ON_CURVE
+    return pointType
