@@ -533,7 +533,7 @@ function drawLineSegment(path, segment) {
 
 
 function drawQuadSegment(path, segment) {
-  let [x1, y1] = [segment[0], segment[1]]
+  let [x1, y1] = [segment[0], segment[1]];
   const lastIndex = segment.length - 2;
   for (let i = 2; i < lastIndex; i += 2) {
     const [x2, y2] = [segment[i], segment[i + 1]];
