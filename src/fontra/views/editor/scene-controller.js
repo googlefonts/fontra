@@ -117,6 +117,9 @@ export class SceneController {
   }
 
   async handleDragPenTool(eventStream, initialEvent) {
+    if (!this.sceneModel.selectedGlyphIsEditing) {
+      return;
+    }
     const initialPoint = this.localPoint(initialEvent);
     const undoInfo = {
       "label": "draw point",
