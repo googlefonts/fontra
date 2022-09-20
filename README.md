@@ -31,12 +31,12 @@ Fontra is an in-development browser-based font editor. It consists of two main p
 
 - Start the fontra server with a path to a folder containing fonts (.designspace, .ufo, .ttf or .otf), using the `filesystem` subcommand:
 
-    `fontra filesystem /path/to/a/folder`
+    `fontra --launch filesystem /path/to/a/folder`
 
-- Then navigate to:
+- The default browser will then navigate to:
 
     `http://localhost:8000/`
 
 - To use Fontra with .rcjk data on disk, or to connect to a remote rcjk server, install the [`fontra-rcjk`](https://github.com/BlackFoundryCom/fontra-rcjk) plugin package. Then you can start it with a robocjk server hostname, using the `rcjk` subcommand provided by the `fontra-rcjk` plugin:
 
-    `fontra rcjk some-robocjk-server.some-domain.com`
+    `fontra --launch rcjk some-robocjk-server.some-domain.com`
