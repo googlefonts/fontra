@@ -32,12 +32,9 @@ def main():
         host=host,
         httpPort=httpPort,
         projectManager=manager,
+        launchWebBrowser=args.launch,
     )
     server.setup()
-    if args.launch:
-        import webbrowser
-
-        webbrowser.open(f"http://{host}:{httpPort}/")
     server.run()
 
 

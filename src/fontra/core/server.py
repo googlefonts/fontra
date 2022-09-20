@@ -23,6 +23,7 @@ class FontraServer:
     host: str
     httpPort: int
     projectManager: object
+    launchWebBrowser: False
     cookieMaxAge: int = 7 * 24 * 60 * 60
     allowedFileExtensions: set = frozenset(["css", "html", "ico", "js", "svg", "woff2"])
 
@@ -62,6 +63,8 @@ class FontraServer:
             web.get("/{path:.*}", partial(self.staticContentHandler, "fontra.client"))
         )
         self.httpApp.add_routes(routes)
+        if self.launchWebBrowser:
+            self.httpApp.on_startup.append(self.launchWebBrowserCallback)
         self.httpApp.on_shutdown.append(self.closeActiveWebsockets)
         self.httpApp.on_shutdown.append(self.closeProjectManager)
         self._activeWebsockets = set()
@@ -79,6 +82,19 @@ class FontraServer:
         print("|                                                   |")
         print("+---------------------------------------------------+")
         web.run_app(self.httpApp, host=host, port=httpPort)
+
+    async def launchWebBrowserCallback(self, httpApp):
+        import asyncio, webbrowser
+
+        # Create async task with a delay, so the aiohttp startup won't
+        # wait for this, and gets a chance to fail before the browser
+        # is launched.
+
+        async def _launcher():
+            await asyncio.sleep(0.1)
+            webbrowser.open(f"http://{self.host}:{self.httpPort}/")
+
+        asyncio.create_task(_launcher())
 
     async def closeActiveWebsockets(self, httpApp):
         for websocket in list(self._activeWebsockets):
