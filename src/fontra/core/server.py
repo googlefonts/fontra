@@ -72,12 +72,13 @@ class FontraServer:
     def run(self):
         host = self.host
         httpPort = self.httpPort
+        navigating = "Navigating to:" if self.launchWebBrowser else "Navigate to:  "
         pad = " " * (22 - len(str(httpPort)) - len(host))
         print("+---------------------------------------------------+")
         print("|                                                   |")
         print("|      Fontra!                                      |")
         print("|                                                   |")
-        print("|      Navigate to:                                 |")
+        print(f"|      {navigating}                               |")
         print(f"|      http://{host}:{httpPort}/{pad}              |")
         print("|                                                   |")
         print("+---------------------------------------------------+")
