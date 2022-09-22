@@ -13,6 +13,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="localhost")
     parser.add_argument("--http-port", default=8000, type=int)
+    parser.add_argument(
+        "--launch", action="store_true", help="Launch the default browser"
+    )
     subParsers = parser.add_subparsers(required=True)
     for entryPoint in entry_points(group="fontra.projectmanagers"):
         subParser = subParsers.add_parser(entryPoint.name)
@@ -29,6 +32,7 @@ def main():
         host=host,
         httpPort=httpPort,
         projectManager=manager,
+        launchWebBrowser=args.launch,
     )
     server.setup()
     server.run()
