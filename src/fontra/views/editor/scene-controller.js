@@ -116,6 +116,13 @@ export class SceneController {
     }
   }
 
+  handleHover(event) {
+    const handlerName = hyphenatedToCamelCase("handle-hover-" + this.selectedToolIdentifier);
+    if (this[handlerName]) {
+      this[handlerName](event);
+    }
+  }
+
   async handleDragPenTool(eventStream, initialEvent) {
     if (!this.sceneModel.selectedGlyphIsEditing) {
       this.handleDragPointerTool(eventStream, initialEvent);
@@ -311,13 +318,6 @@ export class SceneController {
       await editContext.editDo(editChange);
     }
     await editContext.editEnd(editChange);
-  }
-
-  handleHover(event) {
-    const handlerName = hyphenatedToCamelCase("handle-hover-" + this.selectedToolIdentifier);
-    if (this[handlerName]) {
-      this[handlerName](event);
-    }
   }
 
   handleHoverHandTool(event) {
