@@ -20,7 +20,7 @@ export class SceneController {
 
     this.sceneModel.fontController.addEditListener(async (...args) => await this.editListenerCallback(...args));
     this.canvasController.canvas.addEventListener("keydown", event => this.handleKeyDown(event));
-    this.selectedToolIdentifier = "edit-tool";
+    this.selectedToolIdentifier = "pointer-tool";
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
@@ -118,7 +118,7 @@ export class SceneController {
 
   async handleDragPenTool(eventStream, initialEvent) {
     if (!this.sceneModel.selectedGlyphIsEditing) {
-      this.handleDragEditTool(eventStream, initialEvent);
+      this.handleDragPointerTool(eventStream, initialEvent);
       return;
     }
     const initialPoint = this.localPoint(initialEvent);
@@ -149,7 +149,7 @@ export class SceneController {
 
   handleHoverPenTool(event) {
     if (!this.sceneModel.selectedGlyphIsEditing) {
-      this.handleHoverEditTool(event);
+      this.handleHoverPointerTool(event);
       return;
     }
   }
@@ -168,7 +168,7 @@ export class SceneController {
     this.canvasController.canvas.style.cursor = "grab";
   }
 
-  async handleDragEditTool(eventStream, initialEvent) {
+  async handleDragPointerTool(eventStream, initialEvent) {
     const point = this.localPoint(initialEvent);
     const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
     if (initialEvent.detail >= 2 || initialEvent.myTapCount >= 2) {
@@ -324,7 +324,7 @@ export class SceneController {
     this.canvasController.canvas.style.cursor = "grab";
   }
 
-  handleHoverEditTool(event) {
+  handleHoverPointerTool(event) {
     const point = this.localPoint(event);
     const size = this.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
