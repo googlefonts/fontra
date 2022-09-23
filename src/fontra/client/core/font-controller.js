@@ -277,8 +277,21 @@ function reverseUndoRecord(undoRecord) {
   return {
     "change": undoRecord.rollbackChange,
     "rollbackChange": undoRecord.change,
-    "info": undoRecord.info,
+    "info": reverseUndoInfo(undoRecord.info),
   };
+}
+
+
+function reverseUndoInfo(undoInfo) {
+  const map = {
+    "redoSelection": "undoSelection",
+    "undoSelection": "redoSelection",
+  };
+  const revUndoInfo = {};
+  for (const [k, v] of Object.entries(undoInfo)) {
+    revUndoInfo[map[k] || k] = v;
+  }
+  return revUndoInfo;
 }
 
 

@@ -60,7 +60,8 @@ export class SceneController {
     }
     const undoInfo = {
       "label": "nudge selection",
-      "selection": this.selection,
+      "undoSelection": this.selection,
+      "redoSelection": this.selection,
       "location": this.getLocation(),
     }
     const editContext = await this.getGlyphEditContext(this, undoInfo);
@@ -128,9 +129,17 @@ export class SceneController {
       return;
     }
     const initialPoint = this.localPoint(initialEvent);
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    const glyphPoint = {
+      "x": Math.round(initialPoint.x - positionedGlyph.x),
+      "y": Math.round(initialPoint.y - positionedGlyph.y),
+    }
+    const newPointIndex = positionedGlyph.glyph.instance.path.numPoints;
+    const newSelection = new Set([`point/${newPointIndex}`]);
     const undoInfo = {
       "label": "draw point",
-      "selection": this.selection,
+      "undoSelection": this.selection,
+      "redoSelection": newSelection,
       "location": this.getLocation(),
     }
 
@@ -139,13 +148,39 @@ export class SceneController {
       return;
     }
 
+    this.selection = newSelection;
     const instance = editContext.glyphController.instance;
-    console.log(instance.path);
+    const newContourIndex = instance.path.numContours;
+    const rollbackChange = {
+      "p": ["path"],
+      "f": "deleteContour",
+      "a": [newContourIndex],
+    }
+    const editChange = {
+      "p": ["path"],
+      "f": "insertContour",
+      "a": [
+        newContourIndex,
+        {
+          "coordinates": [
+            glyphPoint.x,
+            glyphPoint.y,
+            glyphPoint.x + 100,
+            glyphPoint.y + 100,
+          ],
+          "pointTypes": [
+            0, 0
+          ],
+          "isClosed": false
+        }
+      ]
+    }
+
     // await editContext.editBegin();
     // await editContext.editSetRollback(rollbackChange);
     // await editContext.editDo(editChange);
     // await editContext.editEnd(editChange);
-
+    await editContext.editAtomic(editChange, rollbackChange);
   }
 
   handleHoverPenTool(event) {
@@ -277,7 +312,8 @@ export class SceneController {
     const initialPoint = this.localPoint(initialEvent);
     const undoInfo = {
       "label": "drag selection",
-      "selection": this.selection,
+      "undoSelection": this.selection,
+      "redoSelection": this.selection,
       "location": this.getLocation(),
     }
 
@@ -497,7 +533,7 @@ export class SceneController {
     }
     const undoInfo = await this.sceneModel.fontController.undoRedoGlyph(glyphName, isRedo);
     if (undoInfo !== undefined) {
-      this.selection = undoInfo.selection;
+      this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
         await this.setLocation(undoInfo.location);
       }
