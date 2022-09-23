@@ -162,15 +162,8 @@ export class SceneController {
       "a": [
         newContourIndex,
         {
-          "coordinates": [
-            glyphPoint.x,
-            glyphPoint.y,
-            glyphPoint.x + 100,
-            glyphPoint.y + 100,
-          ],
-          "pointTypes": [
-            0, 0
-          ],
+          "coordinates": [glyphPoint.x, glyphPoint.y],
+          "pointTypes": [0],
           "isClosed": false
         }
       ]
