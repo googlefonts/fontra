@@ -65,7 +65,6 @@ export class SceneController {
     }
     const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
-      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
       return;
     }
     let [dx, dy] = arrowKeyDeltas[event.key];
@@ -137,11 +136,6 @@ export class SceneController {
 
     const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
-      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
-      // TODO: dialog with options:
-      // - go to closest source
-      // - insert new source here
-      // - cancel
       return;
     }
 
@@ -289,11 +283,6 @@ export class SceneController {
 
     const editContext = await this.getGlyphEditContext(this, undoInfo);
     if (!editContext) {
-      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
-      // TODO: dialog with options:
-      // - go to closest source
-      // - insert new source here
-      // - cancel
       return;
     }
 
@@ -479,6 +468,11 @@ export class SceneController {
   async getGlyphEditContext(senderID, undoInfo) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
+      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
+      // TODO: dialog with options:
+      // - go to closest source
+      // - insert new source here
+      // - cancel
       return null;
     }
     return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this, undoInfo);
