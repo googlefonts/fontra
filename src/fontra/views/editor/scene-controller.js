@@ -118,6 +118,7 @@ export class SceneController {
 
   async handleDragPenTool(eventStream, initialEvent) {
     if (!this.sceneModel.selectedGlyphIsEditing) {
+      this.handleDragEditTool(eventStream, initialEvent);
       return;
     }
     const initialPoint = this.localPoint(initialEvent);
@@ -144,6 +145,13 @@ export class SceneController {
     // await editContext.editDo(editChange);
     // await editContext.editEnd(editChange);
 
+  }
+
+  handleHoverPenTool(event) {
+    if (!this.sceneModel.selectedGlyphIsEditing) {
+      this.handleHoverEditTool(event);
+      return;
+    }
   }
 
   async handleDragHandTool(eventStream, initialEvent) {
