@@ -56,6 +56,7 @@ export function throttleCalls(func, minTime) {
   return (...args) => {
     if (timeoutID !== null) {
       clearTimeout(timeoutID);
+      timeoutID = null
     }
     const now = Date.now();
     if (now - lastTime > minTime) {
@@ -69,6 +70,7 @@ export function throttleCalls(func, minTime) {
         func(...args);
       }, minTime);
     }
+    return timeoutID;
   };
 }
 
