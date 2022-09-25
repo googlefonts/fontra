@@ -388,6 +388,11 @@ class GlyphEditContext {
   }
 
   async editAtomic(change, rollback) {
+    // This single call is equivalent to this sequence:
+    //    editContext.editBegin();
+    //    editContext.setRollback(rollback)
+    //    editContext.editIncremental(change);
+    //    editContext.editEnd(change);
     applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
