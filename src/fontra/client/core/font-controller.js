@@ -327,6 +327,7 @@ class GlyphEditContext {
     this.senderID = senderID;
     this.undoInfo = undoInfo;
     this.throttledEditDo = throttleCalls(async change => {fontController.font.editDo(change)}, 50);
+    this._throttledEditDoTimeoutID = null;
   }
 
   async setup() {
@@ -359,11 +360,12 @@ class GlyphEditContext {
     applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
-    /* await */ this.throttledEditDo(change);
+    this._throttledEditDoTimeoutID = this.throttledEditDo(change);
     await this.fontController.notifyEditListeners("editDo", this.senderID, change);
   }
 
   async editEnd(change) {
+    clearTimeout(this._throttledEditDoTimeoutID);
     applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
