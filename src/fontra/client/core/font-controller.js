@@ -377,15 +377,14 @@ class GlyphEditContext {
     await this.fontController.notifyEditListeners("editIncremental", this.senderID, change);
   }
 
-  async editEnd(change) {
-    clearTimeout(this._throttledEditIncrementalTimeoutID);
-    applyChange(this.glyphController.instance, change, glyphChangeFunctions);
-    await this.fontController.glyphChanged(this.glyphController.name);
-    change = consolidateChanges(change, this.baseChangePath);
-    const error = await this.fontController.font.editEnd(change);
+  async editEnd(finalChange) {
+    // This records the final change: it should *not* be applied incrementally,
+    // It represents the full change from the moment editBegin was called.
+    finalChange = consolidateChanges(finalChange, this.baseChangePath);
+    const error = await this.fontController.font.editEnd(finalChange);
     // TODO handle error
-    await this.fontController.notifyEditListeners("editEnd", this.senderID, change);
-    this.fontController.pushUndoRecord(change, this.rollback, this.undoInfo);
+    await this.fontController.notifyEditListeners("editEnd", this.senderID, finalChange);
+    this.fontController.pushUndoRecord(finalChange, this.rollback, this.undoInfo);
   }
 
   async editAtomic(change, rollback) {
