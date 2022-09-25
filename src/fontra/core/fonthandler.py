@@ -112,7 +112,7 @@ class FontHandler:
         ...
 
     @remoteMethod
-    async def editDo(self, liveChange, *, connection):
+    async def editIncremental(self, liveChange, *, connection):
         await self.broadcastChange(liveChange, connection, True)
 
     @remoteMethod

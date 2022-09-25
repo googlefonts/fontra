@@ -34,7 +34,7 @@ export class SceneController {
         break;
       case "editEnd":
         delete this.sceneModel.ghostPath;
-      case "editDo":
+      case "editIncremental":
       case "editAtomic":
         await this.sceneModel.updateScene();
         this.canvasController.setNeedsUpdate();
@@ -171,7 +171,7 @@ export class SceneController {
 
     // await editContext.editBegin();
     // await editContext.editSetRollback(rollbackChange);
-    // await editContext.editDo(editChange);
+    // await editContext.editIncremental(editChange);
     // await editContext.editEnd(editChange);
     await editContext.editAtomic(editChange, rollbackChange);
   }
@@ -333,7 +333,7 @@ export class SceneController {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       editChange = editBehavior.makeChangeForDelta(delta)
-      await editContext.editDo(editChange);
+      await editContext.editIncremental(editChange);
     }
     await editContext.editEnd(editChange);
   }

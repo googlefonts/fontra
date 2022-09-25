@@ -707,7 +707,7 @@ export class EditorController {
       // The edit comes from the selection info box itself, so we shouldn't update it
       return;
     }
-    if (editMethodName === "editDo" || editMethodName === "editAtomic") {
+    if (editMethodName === "editIncremental" || editMethodName === "editAtomic") {
       this.updateSelectionInfo();
     }
   }
@@ -850,7 +850,7 @@ export class EditorController {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
         change = makeFieldChange(localChangePath, info.value);
-        await editContext.editDo(change);
+        await editContext.editIncremental(change);
       }
     };
 

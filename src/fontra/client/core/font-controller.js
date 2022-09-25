@@ -326,8 +326,8 @@ class GlyphEditContext {
     this.instance = glyphController.instance;
     this.senderID = senderID;
     this.undoInfo = undoInfo;
-    this.throttledEditDo = throttleCalls(async change => {fontController.font.editDo(change)}, 50);
-    this._throttledEditDoTimeoutID = null;
+    this.throttledEditIncremental = throttleCalls(async change => {fontController.font.editIncremental(change)}, 50);
+    this._throttledEditIncrementalTimeoutID = null;
   }
 
   async setup() {
@@ -347,8 +347,8 @@ class GlyphEditContext {
       // cover the previous changes, so we need to make sure to start fresh.
       applyChange(this.glyphController.instance, this.localRollback, glyphChangeFunctions);
       await this.fontController.glyphChanged(this.glyphController.name);
-      /* await */ this.fontController.font.editDo(this.rollback);
-      await this.fontController.notifyEditListeners("editDo", this.senderID, this.rollback);
+      /* await */ this.fontController.font.editIncremental(this.rollback);
+      await this.fontController.notifyEditListeners("editIncremental", this.senderID, this.rollback);
     }
     this.localRollback = rollback;
     this.rollback = consolidateChanges(rollback, this.baseChangePath);
@@ -356,16 +356,16 @@ class GlyphEditContext {
     await this.fontController.notifyEditListeners("editSetRollback", this.senderID, this.rollback);
   }
 
-  async editDo(change) {
+  async editIncremental(change) {
     applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
-    this._throttledEditDoTimeoutID = this.throttledEditDo(change);
-    await this.fontController.notifyEditListeners("editDo", this.senderID, change);
+    this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
+    await this.fontController.notifyEditListeners("editIncremental", this.senderID, change);
   }
 
   async editEnd(change) {
-    clearTimeout(this._throttledEditDoTimeoutID);
+    clearTimeout(this._throttledEditIncrementalTimeoutID);
     applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
