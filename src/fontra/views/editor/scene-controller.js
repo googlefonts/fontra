@@ -333,8 +333,9 @@ export class SceneController {
       const currentPoint = this.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       editChange = editBehavior.makeChangeForDelta(delta)
-      await editContext.editIncremental(editChange);
+      await editContext.editIncrementalMayDrop(editChange);
     }
+    await editContext.editIncremental(editChange);
     await editContext.editEnd(editChange);
   }
 

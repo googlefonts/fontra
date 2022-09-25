@@ -850,7 +850,7 @@ export class EditorController {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
         change = makeFieldChange(localChangePath, info.value);
-        await editContext.editIncremental(change);
+        await editContext.editIncrementalMayDrop(change);
       }
     };
 
@@ -861,6 +861,7 @@ export class EditorController {
       if (keyString !== info.key) {
         throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
       }
+      await editContext.editIncremental(change);
       await editContext.editEnd(change);
       breakdown();
     };

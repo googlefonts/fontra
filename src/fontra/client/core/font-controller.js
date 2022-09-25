@@ -357,10 +357,23 @@ class GlyphEditContext {
   }
 
   async editIncremental(change) {
+    return await this._editIncremental(change, false);
+  }
+
+  async editIncrementalMayDrop(change) {
+    return await this._editIncremental(change, true);
+  }
+
+  async _editIncremental(change, allowThrottle) {
     applyChange(this.glyphController.instance, change, glyphChangeFunctions);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
-    this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
+    if (allowThrottle) {
+      this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
+    } else {
+      clearTimeout(this._throttledEditIncrementalTimeoutID);
+      this.fontController.font.editIncremental(change);
+    }
     await this.fontController.notifyEditListeners("editIncremental", this.senderID, change);
   }
 
