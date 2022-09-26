@@ -58,6 +58,13 @@ export class VarPackedPath {
     return this.pointTypes.length;
   }
 
+  getNumPointsOfContour(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const startPoint = this._getContourStartPoint(contourIndex);
+    const contourInfo = this.contourInfo[contourIndex];
+    return contourInfo.endPoint + 1 - startPoint;
+  }
+
   getControlBounds() {
     if (!this.coordinates.length) {
       return undefined;

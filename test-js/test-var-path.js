@@ -881,4 +881,13 @@ describe("VarPackedPath Tests", () => {
     expect(() => p.getContourIndexAndPointIndex(10)).to.throw("pointIndex out of bounds: 10");
   });
 
+  it("test getNumPointsOfContour", () => {
+    const p = complexTestPath();
+    p.deletePoint(0, 0);
+    expect(p.getNumPointsOfContour(0)).to.equal(2);
+    expect(p.getNumPointsOfContour(1)).to.equal(3);
+    expect(p.getNumPointsOfContour(2)).to.equal(4);
+    expect(() => p.getNumPointsOfContour(3)).to.throw("contourIndex out of bounds: 3");
+  });
+
 })
