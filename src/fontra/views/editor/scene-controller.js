@@ -1,7 +1,13 @@
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "../core/set-ops.js";
-import { arrowKeyDeltas, boolInt, hasShortcutModifierKey, hyphenatedToCamelCase } from "../core/utils.js";
+import {
+  arrowKeyDeltas,
+  boolInt,
+  hasShortcutModifierKey,
+  hyphenatedToCamelCase,
+  roundPoint,
+} from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 
@@ -128,7 +134,7 @@ export class SceneController {
       this.handleDragPointerTool(eventStream, initialEvent);
       return;
     }
-    const glyphPoint = this.selectedGlyphPoint(initialEvent);
+    const glyphPoint = roundPoint(this.selectedGlyphPoint(initialEvent));
     const editContext = await this.getGlyphEditContext(this);
     if (!editContext) {
       return;
@@ -398,8 +404,8 @@ export class SceneController {
       return undefined;
     }
     return {
-      "x": Math.round(canvasPoint.x - positionedGlyph.x),
-      "y": Math.round(canvasPoint.y - positionedGlyph.y),
+      "x": canvasPoint.x - positionedGlyph.x,
+      "y": canvasPoint.y - positionedGlyph.y,
     }
   }
 
