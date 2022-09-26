@@ -129,8 +129,14 @@ export class SceneController {
       return;
     }
     const glyphPoint = this.selectedGlyphPoint(initialEvent);
-    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
-    const newPointIndex = positionedGlyph.glyph.instance.path.numPoints;
+    const editContext = await this.getGlyphEditContext(this);
+    if (!editContext) {
+      return;
+    }
+
+    const instance = editContext.glyphController.instance;
+    const newContourIndex = instance.path.numContours;
+    const newPointIndex = instance.path.numPoints;
     const newSelection = new Set([`point/${newPointIndex}`]);
     const undoInfo = {
       "label": "draw point",
@@ -139,14 +145,7 @@ export class SceneController {
       "location": this.getLocation(),
     }
 
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-
     this.selection = newSelection;
-    const instance = editContext.glyphController.instance;
-    const newContourIndex = instance.path.numContours;
     const rollbackChange = {
       "p": ["path"],
       "f": "deleteContour",
