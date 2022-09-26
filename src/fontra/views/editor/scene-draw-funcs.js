@@ -372,6 +372,10 @@ function _drawSelectionLayer(model, controller, context, glyph, drawingParameter
     }
     if (tp === "point") {
       const pt = glyph.path.getPoint(index);
+      if (pt === undefined) {
+        // Selection is not valid
+        continue;
+      }
       if (drawHoverStroke) {
         strokeNode(context, pt, cornerNodeSize + hoverStrokeOffset, smoothNodeSize + hoverStrokeOffset, handleNodeSize + hoverStrokeOffset);
       }
