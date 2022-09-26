@@ -164,12 +164,12 @@ export class FontController {
     }
   }
 
-  async getGlyphEditContext(glyphController, senderID, undoInfo) {
+  async getGlyphEditContext(glyphController, senderID) {
     if (!glyphController.canEdit) {
       // log warning here, or should the caller do that?
       return null;
     }
-    const editContext = new GlyphEditContext(this, glyphController, senderID, undoInfo);
+    const editContext = new GlyphEditContext(this, glyphController, senderID);
     await editContext.setup();
     return editContext;
   }
@@ -322,12 +322,11 @@ export const glyphChangeFunctions = {
 
 class GlyphEditContext {
 
-  constructor(fontController, glyphController, senderID, undoInfo) {
+  constructor(fontController, glyphController, senderID) {
     this.fontController = fontController;
     this.glyphController = glyphController;
     this.instance = glyphController.instance;
     this.senderID = senderID;
-    this.undoInfo = undoInfo;
     this.throttledEditIncremental = throttleCalls(async change => {fontController.font.editIncremental(change)}, 50);
     this._throttledEditIncrementalTimeoutID = null;
   }
@@ -379,17 +378,17 @@ class GlyphEditContext {
     await this.fontController.notifyEditListeners("editIncremental", this.senderID, change);
   }
 
-  async editEnd(finalChange) {
+  async editEnd(finalChange, undoInfo) {
     // This records the final change: it should *not* be applied incrementally,
     // It represents the full change from the moment editBegin was called.
     finalChange = consolidateChanges(finalChange, this.baseChangePath);
     const error = await this.fontController.font.editEnd(finalChange);
     // TODO handle error
     await this.fontController.notifyEditListeners("editEnd", this.senderID, finalChange);
-    this.fontController.pushUndoRecord(finalChange, this.rollback, this.undoInfo);
+    this.fontController.pushUndoRecord(finalChange, this.rollback, undoInfo);
   }
 
-  async editAtomic(change, rollback) {
+  async editAtomic(change, rollback, undoInfo) {
     // This single call is equivalent to this sequence:
     //    editContext.editBegin();
     //    editContext.setRollback(rollback)
@@ -402,7 +401,7 @@ class GlyphEditContext {
     const error = await this.fontController.font.editAtomic(change, rollback);
     // TODO: handle error, rollback
     await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
-    this.fontController.pushUndoRecord(change, rollback, this.undoInfo);
+    this.fontController.pushUndoRecord(change, rollback, undoInfo);
   }
 
 }

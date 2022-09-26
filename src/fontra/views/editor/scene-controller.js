@@ -64,7 +64,7 @@ export class SceneController {
       "redoSelection": this.selection,
       "location": this.getLocation(),
     }
-    const editContext = await this.getGlyphEditContext(this, undoInfo);
+    const editContext = await this.getGlyphEditContext(this);
     if (!editContext) {
       return;
     }
@@ -77,7 +77,7 @@ export class SceneController {
     const editBehavior = behaviorFactory.getBehavior(event.altKey ? "alternate" : "default");
     const delta = {"x": dx, "y": dy};
     const editChange = editBehavior.makeChangeForDelta(delta)
-    await editContext.editAtomic(editChange, editBehavior.rollbackChange);
+    await editContext.editAtomic(editChange, editBehavior.rollbackChange, undoInfo);
   }
 
   addEventListener(eventName, handler, options) {
@@ -143,7 +143,7 @@ export class SceneController {
       "location": this.getLocation(),
     }
 
-    const editContext = await this.getGlyphEditContext(this, undoInfo);
+    const editContext = await this.getGlyphEditContext(this);
     if (!editContext) {
       return;
     }
@@ -172,8 +172,8 @@ export class SceneController {
     // await editContext.editBegin();
     // await editContext.editSetRollback(rollbackChange);
     // await editContext.editIncremental(editChange);
-    // await editContext.editEnd(editChange);
-    await editContext.editAtomic(editChange, rollbackChange);
+    // await editContext.editEnd(editChange, undoInfo);
+    await editContext.editAtomic(editChange, rollbackChange, undoInfo);
   }
 
   handleHoverPenTool(event) {
@@ -310,7 +310,7 @@ export class SceneController {
       "location": this.getLocation(),
     }
 
-    const editContext = await this.getGlyphEditContext(this, undoInfo);
+    const editContext = await this.getGlyphEditContext(this);
     if (!editContext) {
       return;
     }
@@ -336,7 +336,7 @@ export class SceneController {
       await editContext.editIncrementalMayDrop(editChange);
     }
     await editContext.editIncremental(editChange);
-    await editContext.editEnd(editChange);
+    await editContext.editEnd(editChange, undoInfo);
   }
 
   handleHoverHandTool(event) {
@@ -495,7 +495,7 @@ export class SceneController {
     return this.sceneModel.getSceneBounds();
   }
 
-  async getGlyphEditContext(senderID, undoInfo) {
+  async getGlyphEditContext(senderID) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
       console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
@@ -505,7 +505,7 @@ export class SceneController {
       // - cancel
       return null;
     }
-    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this, undoInfo);
+    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
   }
 
   getSelectionBox() {

@@ -799,19 +799,20 @@ export class EditorController {
     let localChangePath;
     let change;
     let rollbackChange;
+    let unfoInfo;
 
     const setup = async info => {
       keyString = info.key;
       localChangePath = JSON.parse(keyString);
       const plen = localChangePath.length;
       const undoLabelField = plen == 1 ? `${localChangePath[plen - 1]}` : `${localChangePath[plen - 2]}.${localChangePath[plen - 1]}`;
-      const undoInfo = {
+      undoInfo = {
         "label": `edit ${undoLabelField}`,
         "undoSelection": this.sceneController.selection,
         "redoSelection": this.sceneController.selection,
         "location": this.sceneController.getLocation(),
       }
-      editContext = await this.sceneController.getGlyphEditContext(this, undoInfo);
+      editContext = await this.sceneController.getGlyphEditContext(this);
       if (!editContext) {
         console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
         return false;
@@ -843,7 +844,7 @@ export class EditorController {
           return;
         }
         change = makeFieldChange(localChangePath, info.value);
-        await editContext.editAtomic(change, rollbackChange);
+        await editContext.editAtomic(change, rollbackChange, undoInfo);
         breakdown();
       } else {
         if (keyString !== info.key) {
@@ -862,7 +863,7 @@ export class EditorController {
         throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
       }
       await editContext.editIncremental(change);
-      await editContext.editEnd(change);
+      await editContext.editEnd(change, undoInfo);
       breakdown();
     };
   }
