@@ -255,7 +255,7 @@ export class VarPackedPath {
       contourIndex += numContours;
     }
     if (contourIndex < 0 || contourIndex >= numContours + (forInsert ? 1 : 0)) {
-      throw new Error(`contourIndex out of bounds: ${originalContourIndex}`)
+      throw new Error(`contourIndex out of bounds: ${originalContourIndex}`);
     }
     return contourIndex;
   }
@@ -269,7 +269,7 @@ export class VarPackedPath {
       contourPointIndex += numPoints;
     }
     if (contourPointIndex < 0 || contourPointIndex >= numPoints + (forInsert ? 1 : 0)) {
-      throw new Error(`contourPointIndex out of bounds: ${originalContourPointIndex}`)
+      throw new Error(`contourPointIndex out of bounds: ${originalContourPointIndex}`);
     }
     return startPoint + contourPointIndex;
   }
