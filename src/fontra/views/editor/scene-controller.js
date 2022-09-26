@@ -135,34 +135,66 @@ export class SceneController {
     }
 
     const instance = editContext.glyphController.instance;
-    const newContourIndex = instance.path.numContours;
-    const newPointIndex = instance.path.numPoints;
-    const newSelection = new Set([`point/${newPointIndex}`]);
+    const path = instance.path;
+
+    let editChange, rollbackChange, newSelection;
+    if (this.selection.size === 1) {
+      const sel = [...this.selection][0];
+      const [tp, pointIndex] = sel.split("/");
+      const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+      const numPointsContour = path.getNumPointsOfContour(contourIndex);
+      if (
+        !path.contourInfo[contourIndex].isClosed
+        && (contourPointIndex === 0 || contourPointIndex === numPointsContour - 1)
+      ) {
+        // Let's append or prepend a point
+        const newContourPointIndex = (contourPointIndex || numPointsContour === 1) ? contourPointIndex + 1 : 0;
+        const newPointIndex = path.getAbsolutePointIndex(contourIndex, newContourPointIndex, true);
+        newSelection = new Set([`point/${newPointIndex}`]);
+        rollbackChange = {
+          "p": ["path"],
+          "f": "deletePoint",
+          "a": [contourIndex, newContourPointIndex],
+        }
+        editChange = {
+          "p": ["path"],
+          "f": "insertPoint",
+          "a": [contourIndex, newContourPointIndex, glyphPoint],
+        }
+      }
+    }
+
+    if (editChange === undefined) {
+      // Let's add a new contour
+      const newContourIndex = path.numContours;
+      const newPointIndex = path.numPoints;
+      newSelection = new Set([`point/${newPointIndex}`]);
+      rollbackChange = {
+        "p": ["path"],
+        "f": "deleteContour",
+        "a": [newContourIndex],
+      }
+      editChange = {
+        "p": ["path"],
+        "f": "insertContour",
+        "a": [
+          newContourIndex,
+          {
+            "coordinates": [glyphPoint.x, glyphPoint.y],
+            "pointTypes": [0],
+            "isClosed": false
+          }
+        ]
+      }
+    }
+
     const undoInfo = {
       "label": "draw point",
       "undoSelection": this.selection,
       "redoSelection": newSelection,
       "location": this.getLocation(),
     }
-
     this.selection = newSelection;
-    const rollbackChange = {
-      "p": ["path"],
-      "f": "deleteContour",
-      "a": [newContourIndex],
-    }
-    const editChange = {
-      "p": ["path"],
-      "f": "insertContour",
-      "a": [
-        newContourIndex,
-        {
-          "coordinates": [glyphPoint.x, glyphPoint.y],
-          "pointTypes": [0],
-          "isClosed": false
-        }
-      ]
-    }
 
     // await editContext.editBegin();
     // await editContext.editSetRollback(rollbackChange);
