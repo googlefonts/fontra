@@ -214,6 +214,7 @@ export class SceneController {
       this.handleHoverPointerTool(event);
       return;
     }
+    this.canvasController.canvas.style.cursor = "crosshair";
   }
 
   async handleDragHandTool(eventStream, initialEvent) {
