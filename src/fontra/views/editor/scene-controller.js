@@ -155,7 +155,8 @@ export class SceneController {
           && (contourPointIndex === 0 || contourPointIndex === numPointsContour - 1)
         ) {
           // Let's append or prepend a point
-          const newContourPointIndex = (contourPointIndex || numPointsContour === 1) ? contourPointIndex + 1 : 0;
+          const isAppend = !!(contourPointIndex || numPointsContour === 1);
+          const newContourPointIndex = isAppend ? contourPointIndex + 1 : 0;
           const newPointIndex = path.getAbsolutePointIndex(contourIndex, newContourPointIndex, true);
           newSelection = new Set([`point/${newPointIndex}`]);
           rollbackChange = {
