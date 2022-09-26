@@ -195,12 +195,35 @@ def insertContour(path, contourIndex, contour):
     _moveEndPoints(path, contourIndex, len(contour["pointTypes"]))
 
 
+def deletePoint(path, contourIndex, contourPointIndex):
+    contourIndex = _normalizeContourIndex(path, contourIndex)
+    pointIndex = _getAbsolutePointIndex(path, contourIndex, contourPointIndex)
+    _replacePoints(path, pointIndex, 1, [], [])
+    _moveEndPoints(path, contourIndex, -1)
+
+
 def _getContourStartPoint(path, contourIndex):
     return (
         0
         if contourIndex == 0
         else path["contourInfo"][contourIndex - 1]["endPoint"] + 1
     )
+
+
+def _getAbsolutePointIndex(path, contourIndex, contourPointIndex, forInsert=False):
+    startPoint = _getContourStartPoint(path, contourIndex)
+    contour = path["contourInfo"][contourIndex]
+    numPoints = contour["endPoint"] + 1 - startPoint
+    originalContourPointIndex = contourPointIndex
+    if contourPointIndex < 0:
+        contourPointIndex += numPoints
+    if contourPointIndex < 0 or (
+        contourPointIndex >= numPoints + (1 if forInsert else 0)
+    ):
+        raise IndexError(
+            f"contourPointIndex out of bounds: {originalContourPointIndex}"
+        )
+    return startPoint + contourPointIndex
 
 
 def _normalizeContourIndex(path, contourIndex, forInsert=False):

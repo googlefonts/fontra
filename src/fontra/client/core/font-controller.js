@@ -314,6 +314,7 @@ export const glyphChangeFunctions = {
   "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
   "insertContour": (path, contourIndex, contour) => path.insertContour(contourIndex, contour),
   "deleteContour": (path, contourIndex) => path.deleteContour(contourIndex),
+  "deletePoint": (path, contourIndex, contourPointIndex) => path.deletePoint(contourIndex, contourPointIndex),
   ...baseChangeFunctions,
 };
 

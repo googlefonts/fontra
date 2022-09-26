@@ -1,5 +1,5 @@
 from .changes import baseChangeFunctions
-from .packedpath import deleteContour, insertContour
+from .packedpath import deleteContour, insertContour, deletePoint
 
 
 def setPointPosition(path, pointIndex, x, y):
@@ -13,6 +13,7 @@ glyphChangeFunctions = {
     "=xy": setPointPosition,
     "insertContour": insertContour,
     "deleteContour": deleteContour,
+    "deletePoint": deletePoint,
 }
 
 

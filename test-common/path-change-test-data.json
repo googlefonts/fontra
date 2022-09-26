@@ -78,6 +78,24 @@
           "isClosed": false
         }
       ]
+    },
+    {
+      "testName": "delete point",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "deletePoint",
+        "a": [
+          0,
+          0
+        ]
+      },
+      "expectedPath": [
+      {
+        "points": [],
+        "isClosed": false
+      }
+        
+      ]
     }
   ]
 }
