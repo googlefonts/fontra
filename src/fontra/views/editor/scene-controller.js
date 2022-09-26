@@ -128,12 +128,8 @@ export class SceneController {
       this.handleDragPointerTool(eventStream, initialEvent);
       return;
     }
-    const initialPoint = this.localPoint(initialEvent);
+    const glyphPoint = this.selectedGlyphPoint(initialEvent);
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
-    const glyphPoint = {
-      "x": Math.round(initialPoint.x - positionedGlyph.x),
-      "y": Math.round(initialPoint.y - positionedGlyph.y),
-    }
     const newPointIndex = positionedGlyph.glyph.instance.path.numPoints;
     const newSelection = new Set([`point/${newPointIndex}`]);
     const undoInfo = {
@@ -361,6 +357,19 @@ export class SceneController {
       this._currentLocalPoint = this.canvasController.localPoint(event);
     }
     return this._currentLocalPoint;
+  }
+
+  selectedGlyphPoint(event) {
+    // Return the event location in the selected-glyph coordinate system
+    const canvasPoint = this.localPoint(event);
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    if (positionedGlyph === undefined) {
+      return undefined;
+    }
+    return {
+      "x": Math.round(canvasPoint.x - positionedGlyph.x),
+      "y": Math.round(canvasPoint.y - positionedGlyph.y),
+    }
   }
 
   get onePixelUnit() {
