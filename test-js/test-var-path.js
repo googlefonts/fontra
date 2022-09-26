@@ -866,4 +866,19 @@ describe("VarPackedPath Tests", () => {
     expect(p1.unpackedContours()).to.deep.equal(p2.unpackedContours());
   });
 
+  it("test getContourIndexAndPointIndex", () => {
+    const p = complexTestPath();
+    expect(p.getContourIndexAndPointIndex(0)).to.deep.equal([0, 0]);
+    expect(p.getContourIndexAndPointIndex(1)).to.deep.equal([0, 1]);
+    expect(p.getContourIndexAndPointIndex(2)).to.deep.equal([0, 2]);
+    expect(p.getContourIndexAndPointIndex(3)).to.deep.equal([1, 0]);
+    expect(p.getContourIndexAndPointIndex(4)).to.deep.equal([1, 1]);
+    expect(p.getContourIndexAndPointIndex(5)).to.deep.equal([1, 2]);
+    expect(p.getContourIndexAndPointIndex(6)).to.deep.equal([2, 0]);
+    expect(p.getContourIndexAndPointIndex(7)).to.deep.equal([2, 1]);
+    expect(p.getContourIndexAndPointIndex(8)).to.deep.equal([2, 2]);
+    expect(p.getContourIndexAndPointIndex(9)).to.deep.equal([2, 3]);
+    expect(() => p.getContourIndexAndPointIndex(10)).to.throw("pointIndex out of bounds: 10");
+  });
+
 })
