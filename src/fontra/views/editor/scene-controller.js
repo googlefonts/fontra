@@ -147,25 +147,27 @@ export class SceneController {
     if (this.selection.size === 1) {
       const sel = [...this.selection][0];
       const [tp, pointIndex] = sel.split("/");
-      const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
-      const numPointsContour = path.getNumPointsOfContour(contourIndex);
-      if (
-        !path.contourInfo[contourIndex].isClosed
-        && (contourPointIndex === 0 || contourPointIndex === numPointsContour - 1)
-      ) {
-        // Let's append or prepend a point
-        const newContourPointIndex = (contourPointIndex || numPointsContour === 1) ? contourPointIndex + 1 : 0;
-        const newPointIndex = path.getAbsolutePointIndex(contourIndex, newContourPointIndex, true);
-        newSelection = new Set([`point/${newPointIndex}`]);
-        rollbackChange = {
-          "p": ["path"],
-          "f": "deletePoint",
-          "a": [contourIndex, newContourPointIndex],
-        }
-        editChange = {
-          "p": ["path"],
-          "f": "insertPoint",
-          "a": [contourIndex, newContourPointIndex, glyphPoint],
+      if (pointIndex < path.numPoints) {
+        const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+        const numPointsContour = path.getNumPointsOfContour(contourIndex);
+        if (
+          !path.contourInfo[contourIndex].isClosed
+          && (contourPointIndex === 0 || contourPointIndex === numPointsContour - 1)
+        ) {
+          // Let's append or prepend a point
+          const newContourPointIndex = (contourPointIndex || numPointsContour === 1) ? contourPointIndex + 1 : 0;
+          const newPointIndex = path.getAbsolutePointIndex(contourIndex, newContourPointIndex, true);
+          newSelection = new Set([`point/${newPointIndex}`]);
+          rollbackChange = {
+            "p": ["path"],
+            "f": "deletePoint",
+            "a": [contourIndex, newContourPointIndex],
+          }
+          editChange = {
+            "p": ["path"],
+            "f": "insertPoint",
+            "a": [contourIndex, newContourPointIndex, glyphPoint],
+          }
         }
       }
     }
