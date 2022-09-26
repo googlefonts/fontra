@@ -232,6 +232,66 @@
           "isClosed": false
         }
       ]
+    },
+    {
+      "testName": "insert point 1",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "insertPoint",
+        "a": [
+          0,
+          0,
+          {
+            "x": 4,
+            "y": 5
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 4,
+              "y": 5
+            },
+            {
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "insert point 2",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "insertPoint",
+        "a": [
+          0,
+          1,
+          {
+            "x": 4,
+            "y": 5
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 10,
+              "y": 20
+            },
+            {
+              "x": 4,
+              "y": 5
+            }
+          ],
+          "isClosed": false
+        }
+      ]
     }
   ]
 }

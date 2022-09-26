@@ -202,6 +202,21 @@ def deletePoint(path, contourIndex, contourPointIndex):
     _moveEndPoints(path, contourIndex, -1)
 
 
+def insertPoint(path, contourIndex, contourPointIndex, point):
+    contourIndex = _normalizeContourIndex(path, contourIndex)
+    pointIndex = _getAbsolutePointIndex(path, contourIndex, contourPointIndex, True)
+    _insertPoint(path, contourIndex, pointIndex, point)
+
+
+def _insertPoint(path, contourIndex, pointIndex, point):
+    dblIndex = pointIndex * 2
+    path["coordinates"][dblIndex:dblIndex] = [point["x"], point["y"]]
+    path["pointTypes"].insert(
+        pointIndex, packPointType(point.get("type"), point.get("smooth"))
+    )
+    _moveEndPoints(path, contourIndex, 1)
+
+
 def _getContourStartPoint(path, contourIndex):
     return (
         0
