@@ -98,15 +98,15 @@ const consolidateChangesTestCases = [
       {"p": ["sub2"], "f": "=", "a": [1, 2]},
     ]},
   },
-  // {
-  //   "testName": "two changes + prefix + different p 1.1; delete empty p",
-  //   "changes": [{"p": [], "f": "=", "a": [0, 0]}, {"p": ["sub2"], "f": "=", "a": [1, 2]}],
-  //   "prefixPath": ["element"],
-  //   "consolidated": {"p": ["element"], "c": [
-  //     {"f": "=", "a": [0, 0]},
-  //     {"p": ["sub2"], "f": "=", "a": [1, 2]},
-  //   ]},
-  // },
+  {
+    "testName": "two changes + prefix + different p 1.1; delete empty p",
+    "changes": [{"p": [], "f": "=", "a": [0, 0]}, {"p": ["sub2"], "f": "=", "a": [1, 2]}],
+    "prefixPath": ["element"],
+    "consolidated": {"p": ["element"], "c": [
+      {"f": "=", "a": [0, 0]},
+      {"p": ["sub2"], "f": "=", "a": [1, 2]},
+    ]},
+  },
   {
     "testName": "two changes + prefix + different p 2",
     "changes": [{"p": ["sub1"], "f": "=", "a": [0, 0]}, {"p": ["sub2"], "f": "=", "a": [1, 2]}],
