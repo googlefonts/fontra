@@ -90,9 +90,9 @@ const consolidateChangesTestCases = [
     "testName": "two changes + prefix + same p",
     "changes": [{"p": ["sub"], "f": "=", "a": [0, 0]}, {"p": ["sub"], "f": "=", "a": [1, 2]}],
     "prefixPath": ["element"],
-    "consolidated": {"p": ["element"], "c": [
-      {"p": ["sub"], "f": "=", "a": [0, 0]},
-      {"p": ["sub"], "f": "=", "a": [1, 2]},
+    "consolidated": {"p": ["element", "sub"], "c": [
+      {"f": "=", "a": [0, 0]},
+      {"f": "=", "a": [1, 2]},
     ]},
   },
 ];
