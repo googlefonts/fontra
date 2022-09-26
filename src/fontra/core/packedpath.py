@@ -176,6 +176,13 @@ def pairwise(iterable):
     return zip(it, it)
 
 
+def setPointPosition(path, pointIndex, x, y):
+    coords = path["coordinates"]
+    i = pointIndex * 2
+    coords[i] = x
+    coords[i + 1] = y
+
+
 def deleteContour(path, contourIndex):
     contourIndex = _normalizeContourIndex(path, contourIndex)
     contour = path["contourInfo"][contourIndex]
