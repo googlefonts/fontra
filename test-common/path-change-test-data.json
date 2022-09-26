@@ -11,6 +11,26 @@
         ],
         "isClosed": false
       }
+    ],
+    "twoContours": [
+      {
+        "points": [
+          {
+            "x": 10,
+            "y": 20
+          }
+        ],
+        "isClosed": false
+      },
+      {
+        "points": [
+          {
+            "x": 60,
+            "y": 50
+          }
+        ],
+        "isClosed": false
+      }
     ]
   },
   "tests": [
@@ -57,6 +77,27 @@
       "expectedPath": []
     },
     {
+      "testName": "deleteContour 2",
+      "inputPathName": "twoContours",
+      "change": {
+        "f": "deleteContour",
+        "a": [
+          1
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    },
+    {
       "testName": "set coordinates",
       "inputPathName": "oneContour",
       "change": {
@@ -90,11 +131,10 @@
         ]
       },
       "expectedPath": [
-      {
-        "points": [],
-        "isClosed": false
-      }
-        
+        {
+          "points": [],
+          "isClosed": false
+        }
       ]
     }
   ]
