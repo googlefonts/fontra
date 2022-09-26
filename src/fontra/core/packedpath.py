@@ -209,11 +209,8 @@ def insertPoint(path, contourIndex, contourPointIndex, point):
 
 
 def _insertPoint(path, contourIndex, pointIndex, point):
-    dblIndex = pointIndex * 2
-    path["coordinates"][dblIndex:dblIndex] = [point["x"], point["y"]]
-    path["pointTypes"].insert(
-        pointIndex, packPointType(point.get("type"), point.get("smooth"))
-    )
+    pointType = packPointType(point.get("type"), point.get("smooth"))
+    _replacePoints(path, pointIndex, 0, [point["x"], point["y"]], [pointType])
     _moveEndPoints(path, contourIndex, 1)
 
 
