@@ -136,6 +136,32 @@
           "isClosed": false
         }
       ]
+    },
+    {
+      "testName": "delete point 2",
+      "inputPathName": "twoContours",
+      "change": {
+        "f": "deletePoint",
+        "a": [
+          1,
+          0
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "isClosed": false
+        },
+        {
+          "points": [],
+          "isClosed": false
+        }
+      ]
     }
   ]
 }
