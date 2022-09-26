@@ -204,6 +204,10 @@ export class SceneController {
     }
     this.selection = newSelection;
 
+    if (await shouldInitiateDrag(eventStream, initialEvent)) {
+      // console.log("Now drag a new off-curve point");
+    }
+
     // await editContext.editBegin();
     // await editContext.editSetRollback(rollbackChange);
     // await editContext.editIncremental(editChange);
