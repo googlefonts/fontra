@@ -110,6 +110,17 @@ export class VarPackedPath {
     return lo
   }
 
+  getContourIndexAndPointIndex(pointIndex) {
+    // Given an absolute pointIndex, return [contourIndex, contourPointIndex].
+    // Throws an Error if the pointIndex is out of bounds.
+    const contourIndex = this.getContourIndex(pointIndex);
+    if (contourIndex === undefined) {
+      throw new Error(`pointIndex out of bounds: ${pointIndex}`);
+    }
+    const startPoint = this._getContourStartPoint(contourIndex);
+    return [contourIndex, pointIndex - startPoint];
+  }
+
   getUnpackedContour(contourIndex) {
     return this._getUnpackedContour(this._normalizeContourIndex(contourIndex));
   }
