@@ -42,6 +42,12 @@ const consolidateChangesTestCases = [
     "consolidated": {"f": "=", "a": [0, 0]},
   },
   {
+    "testName": "no-op + empty p",
+    "changes": {"p": [], "f": "=", "a": [0, 0]},
+    "prefixPath": undefined,
+    "consolidated": {"f": "=", "a": [0, 0]},
+  },
+  {
     "testName": "no-op + prefix",
     "changes": {"f": "=", "a": [0, 0]},
     "prefixPath": ["element"],
@@ -72,13 +78,37 @@ const consolidateChangesTestCases = [
     "consolidated": {"c": [{"f": "=", "a": [0, 0]}, {"f": "=", "a": [1, 2]}]},
   },
   {
+    "testName": "two changes + empty p",
+    "changes": [{"p": [], "f": "=", "a": [0, 0]}, {"f": "=", "a": [1, 2]}],
+    "prefixPath": undefined,
+    "consolidated": {"c": [{"f": "=", "a": [0, 0]}, {"f": "=", "a": [1, 2]}]},
+  },
+  {
     "testName": "two changes + prefix",
     "changes": [{"f": "=", "a": [0, 0]}, {"f": "=", "a": [1, 2]}],
     "prefixPath": ["element"],
     "consolidated": {"p": ["element"], "c": [{"f": "=", "a": [0, 0]}, {"f": "=", "a": [1, 2]}]},
   },
   {
-    "testName": "two changes + prefix + different p",
+    "testName": "two changes + prefix + different p 1",
+    "changes": [{"f": "=", "a": [0, 0]}, {"p": ["sub2"], "f": "=", "a": [1, 2]}],
+    "prefixPath": ["element"],
+    "consolidated": {"p": ["element"], "c": [
+      {"f": "=", "a": [0, 0]},
+      {"p": ["sub2"], "f": "=", "a": [1, 2]},
+    ]},
+  },
+  // {
+  //   "testName": "two changes + prefix + different p 1.1; delete empty p",
+  //   "changes": [{"p": [], "f": "=", "a": [0, 0]}, {"p": ["sub2"], "f": "=", "a": [1, 2]}],
+  //   "prefixPath": ["element"],
+  //   "consolidated": {"p": ["element"], "c": [
+  //     {"f": "=", "a": [0, 0]},
+  //     {"p": ["sub2"], "f": "=", "a": [1, 2]},
+  //   ]},
+  // },
+  {
+    "testName": "two changes + prefix + different p 2",
     "changes": [{"p": ["sub1"], "f": "=", "a": [0, 0]}, {"p": ["sub2"], "f": "=", "a": [1, 2]}],
     "prefixPath": ["element"],
     "consolidated": {"p": ["element"], "c": [
