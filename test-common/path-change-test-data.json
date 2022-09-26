@@ -31,6 +31,34 @@
         ],
         "isClosed": false
       }
+    ],
+    "twoContoursMorePoints": [
+      {
+        "points": [
+          {
+            "x": 10,
+            "y": 20
+          },
+          {
+            "x": 16,
+            "y": 22
+          }
+        ],
+        "isClosed": false
+      },
+      {
+        "points": [
+          {
+            "x": 60,
+            "y": 50
+          },
+          {
+            "x": 63,
+            "y": 51
+          }
+        ],
+        "isClosed": false
+      }
     ]
   },
   "tests": [
@@ -159,6 +187,48 @@
         },
         {
           "points": [],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "delete point 3",
+      "inputPathName": "twoContoursMorePoints",
+      "change": {
+        "c": [
+          {
+            "f": "deletePoint",
+            "a": [
+              1,
+              0
+            ]
+          },
+          {
+            "f": "deletePoint",
+            "a": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 16,
+              "y": 22
+            }
+          ],
+          "isClosed": false
+        },
+        {
+          "points": [
+            {
+              "x": 63,
+              "y": 51
+            }
+          ],
           "isClosed": false
         }
       ]
