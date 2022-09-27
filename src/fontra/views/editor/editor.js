@@ -30,6 +30,9 @@ import {
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
+import { HandTool } from "./edit-tools-hand.js";
+import { PenTool } from "./edit-tools-pen.js";
+import { PointerTool } from "./edit-tools-pointer.js";
 
 
 const drawingParametersLight = {
@@ -251,6 +254,11 @@ export class EditorController {
   }
 
   initTools() {
+    this.tools = {
+      "pointer-tool": new PointerTool(this),
+      "pen-tool": new PenTool(this),
+      "hand-tool": new HandTool(this),
+    };
     const editTools = document.querySelector("#edit-tools");
     for (const editToolItem of editTools.children) {
       const toolElement = editToolItem.firstChild;
@@ -259,6 +267,7 @@ export class EditorController {
         this.setSelectedTool(toolElement.id);
       }
     }
+    this.setSelectedTool("pointer-tool");
 
     const zoomTools = document.querySelector("#zoom-tools");
     for (const zoomToolItem of zoomTools.children) {
@@ -391,7 +400,7 @@ export class EditorController {
     for (const editToolItem of editTools.children) {
       editToolItem.classList.toggle("selected", editToolItem.firstChild.id === toolIdentifier);
     }
-    this.sceneController.setSelectedTool(toolIdentifier);
+    this.sceneController.setSelectedTool(this.tools[toolIdentifier]);
   }
 
   themeChanged(event) {

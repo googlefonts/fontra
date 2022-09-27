@@ -1,14 +1,6 @@
 import { MouseTracker } from "../core/mouse-tracker.js";
-import { centeredRect, normalizeRect } from "../core/rectangle.js";
-import { lenientIsEqualSet, isEqualSet, isSuperset, union, symmetricDifference } from "../core/set-ops.js";
-import {
-  arrowKeyDeltas,
-  boolInt,
-  hasShortcutModifierKey,
-  hyphenatedToCamelCase,
-  roundPoint,
-} from "../core/utils.js";
-import { EditBehaviorFactory } from "./edit-behavior.js";
+import { lenientIsEqualSet, isEqualSet } from "../core/set-ops.js";
+import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
 
 
 export class SceneController {
@@ -26,7 +18,7 @@ export class SceneController {
 
     this.sceneModel.fontController.addEditListener(async (...args) => await this.editListenerCallback(...args));
     this.canvasController.canvas.addEventListener("keydown", event => this.handleKeyDown(event));
-    this.selectedToolIdentifier = "pointer-tool";
+    this.selectedTool = undefined;
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
@@ -48,8 +40,8 @@ export class SceneController {
     }
   }
 
-  setSelectedTool(toolIdentifier) {
-    this.selectedToolIdentifier = toolIdentifier;
+  setSelectedTool(tool) {
+    this.selectedTool = tool;
   }
 
   handleKeyDown(event) {
@@ -116,284 +108,14 @@ export class SceneController {
       eventStream.done();
       return;
     }
-    const handlerName = hyphenatedToCamelCase("handle-drag-" + this.selectedToolIdentifier);
-    if (this[handlerName]) {
-      await this[handlerName](eventStream, initialEvent);
+    if (this.selectedTool) {
+      await this.selectedTool.handleDrag(eventStream, initialEvent);
     }
   }
 
   handleHover(event) {
-    const handlerName = hyphenatedToCamelCase("handle-hover-" + this.selectedToolIdentifier);
-    if (this[handlerName]) {
-      this[handlerName](event);
-    }
-  }
-
-  async handleDragPenTool(eventStream, initialEvent) {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
-      this.handleDragPointerTool(eventStream, initialEvent);
-      return;
-    }
-    const glyphPoint = roundPoint(this.selectedGlyphPoint(initialEvent));
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-
-    const instance = editContext.glyphController.instance;
-    const path = instance.path;
-
-    let editChange, rollbackChange, newSelection;
-    if (this.selection.size === 1) {
-      const sel = [...this.selection][0];
-      const [tp, pointIndex] = sel.split("/");
-      if (pointIndex < path.numPoints) {
-        const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
-        const numPointsContour = path.getNumPointsOfContour(contourIndex);
-        if (
-          !path.contourInfo[contourIndex].isClosed
-          && (contourPointIndex === 0 || contourPointIndex === numPointsContour - 1)
-        ) {
-          // Let's append or prepend a point
-          const isAppend = !!(contourPointIndex || numPointsContour === 1);
-          const newContourPointIndex = isAppend ? contourPointIndex + 1 : 0;
-          const newPointIndex = path.getAbsolutePointIndex(contourIndex, newContourPointIndex, true);
-          newSelection = new Set([`point/${newPointIndex}`]);
-          rollbackChange = {
-            "p": ["path"],
-            "f": "deletePoint",
-            "a": [contourIndex, newContourPointIndex],
-          }
-          editChange = {
-            "p": ["path"],
-            "f": "insertPoint",
-            "a": [contourIndex, newContourPointIndex, glyphPoint],
-          }
-        }
-      }
-    }
-
-    if (editChange === undefined) {
-      // Let's add a new contour
-      const newContourIndex = path.numContours;
-      const newPointIndex = path.numPoints;
-      newSelection = new Set([`point/${newPointIndex}`]);
-      rollbackChange = {
-        "p": ["path"],
-        "f": "deleteContour",
-        "a": [newContourIndex],
-      }
-      editChange = {
-        "p": ["path"],
-        "f": "insertContour",
-        "a": [
-          newContourIndex,
-          {
-            "coordinates": [glyphPoint.x, glyphPoint.y],
-            "pointTypes": [0],
-            "isClosed": false
-          }
-        ]
-      }
-    }
-
-    const undoInfo = {
-      "label": "draw point",
-      "undoSelection": this.selection,
-      "redoSelection": newSelection,
-      "location": this.getLocation(),
-    }
-    this.selection = newSelection;
-
-    if (await shouldInitiateDrag(eventStream, initialEvent)) {
-      // console.log("Now drag a new off-curve point");
-    }
-
-    // await editContext.editBegin();
-    // await editContext.editSetRollback(rollbackChange);
-    // await editContext.editIncremental(editChange);
-    // await editContext.editEnd(editChange, undoInfo);
-    await editContext.editAtomic(editChange, rollbackChange, undoInfo);
-  }
-
-  handleHoverPenTool(event) {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
-      this.handleHoverPointerTool(event);
-      return;
-    }
-    this.canvasController.canvas.style.cursor = "crosshair";
-  }
-
-  async handleDragHandTool(eventStream, initialEvent) {
-    const initialX = initialEvent.x;
-    const initialY = initialEvent.y;
-    const originalOriginX = this.canvasController.origin.x;
-    const originalOriginY = this.canvasController.origin.y;
-    this.canvasController.canvas.style.cursor = "grabbing";
-    for await (const event of eventStream) {
-      this.canvasController.origin.x = originalOriginX + event.x - initialX;
-      this.canvasController.origin.y = originalOriginY + event.y - initialY;
-      this.canvasController.setNeedsUpdate();
-    }
-    this.canvasController.canvas.style.cursor = "grab";
-  }
-
-  async handleDragPointerTool(eventStream, initialEvent) {
-    const point = this.localPoint(initialEvent);
-    const selection = this.sceneModel.selectionAtPoint(point, this.mouseClickMargin);
-    if (initialEvent.detail >= 2 || initialEvent.myTapCount >= 2) {
-      this.handleDoubleCick(selection, point);
-      initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
-      return;
-    }
-
-    if (!this.sceneModel.selectedGlyphIsEditing) {
-      this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
-      this.selectedGlyphIsEditing = false;
-      return;
-    }
-
-    const initialSelection = this.selection;
-    let initiateDrag = false;
-    let initiateRectSelect = false;
-
-    if (selection.size > 0) {
-      if (event.shiftKey) {
-        this.selection = symmetricDifference(this.selection, selection);
-        if (isSuperset(this.selection, selection)) {
-          initiateDrag = true;
-        }
-      } else if (isSuperset(this.selection, selection)) {
-        initiateDrag = true;
-      } else {
-        this.selection = selection;
-        initiateDrag = true;
-      }
-    } else {
-      if (!event.shiftKey) {
-        this.selection = selection;
-      }
-      initiateRectSelect = true;
-    }
-
-    if (initiateRectSelect || initiateDrag) {
-      if (!await shouldInitiateDrag(eventStream, initialEvent)) {
-        initiateRectSelect = false;
-        initiateDrag = false;
-        const selectedGlyph = this.sceneModel.glyphAtPoint(point);
-        if (selectedGlyph && selectedGlyph != this.selectedGlyph) {
-          this.selectedGlyph = selectedGlyph;
-          this.selectedGlyphIsEditing = false;
-          return;
-        }
-      }
-    }
-
-    this.hoveredGlyph = undefined;
-
-    if (initiateRectSelect) {
-      return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
-    }
-    if (initiateDrag) {
-      return await this.handleDragSelection(eventStream, initialEvent);
-    }
-  }
-
-  handleDoubleCick(selection, point) {
-    if (!selection || !selection.size) {
-      this.selectedGlyph = this.sceneModel.glyphAtPoint(point);
-      this.selectedGlyphIsEditing = !!this.selectedGlyph;
-    } else {
-      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-      const componentIndices = new Array();
-      for (const selItem of this.selection) {
-        const [tp, index] = selItem.split("/");
-        if (tp === "component") {
-          componentIndices.push(index);
-        }
-      }
-      if (componentIndices.length) {
-        componentIndices.sort();
-        this.doubleClickedComponentIndices = componentIndices;
-        this._dispatchEvent("doubleClickedComponents");
-      }
-    }
-  }
-
-  async handleRectSelect(eventStream, initialEvent, initialSelection) {
-    const initialPoint = this.localPoint(initialEvent);
-    for await (const event of eventStream) {
-      const currentPoint = this.localPoint(event);
-      const selRect = normalizeRect({
-        "xMin": initialPoint.x,
-        "yMin": initialPoint.y,
-        "xMax": currentPoint.x,
-        "yMax": currentPoint.y,
-      });
-      const selection = this.sceneModel.selectionAtRect(selRect);
-      this.selectionRect = selRect;
-
-      if (event.shiftKey) {
-        this.selection = symmetricDifference(initialSelection, selection);
-      } else {
-        this.selection = selection;
-      }
-    }
-    this.selectionRect = undefined;
-  }
-
-  async handleDragSelection(eventStream, initialEvent) {
-    const initialPoint = this.localPoint(initialEvent);
-    const undoInfo = {
-      "label": "drag selection",
-      "undoSelection": this.selection,
-      "redoSelection": this.selection,
-      "location": this.getLocation(),
-    }
-
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-
-    const behaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
-    let behaviorName = getBehaviorName(initialEvent);
-    let editBehavior = behaviorFactory.getBehavior(behaviorName);
-
-    await editContext.editBegin();
-    await editContext.editSetRollback(editBehavior.rollbackChange);
-    let editChange;
-
-    for await (const event of eventStream) {
-      const newEditBehaviorName = getBehaviorName(event);
-      if (behaviorName !== newEditBehaviorName) {
-        behaviorName = newEditBehaviorName;
-        editBehavior = behaviorFactory.getBehavior(behaviorName);
-        await editContext.editSetRollback(editBehavior.rollbackChange);
-      }
-      const currentPoint = this.localPoint(event);
-      const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      editChange = editBehavior.makeChangeForDelta(delta)
-      await editContext.editIncrementalMayDrop(editChange);
-    }
-    await editContext.editIncremental(editChange);
-    await editContext.editEnd(editChange, undoInfo);
-  }
-
-  handleHoverHandTool(event) {
-    this.canvasController.canvas.style.cursor = "grab";
-  }
-
-  handleHoverPointerTool(event) {
-    const point = this.localPoint(event);
-    const size = this.mouseClickMargin;
-    const selRect = centeredRect(point.x, point.y, size);
-    this.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
-    this.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
-    if (this.hoverSelection?.size) {
-      this.canvasController.canvas.style.cursor = "pointer";
-    } else {
-      this.canvasController.canvas.style.cursor = "default";
+    if (this.selectedTool) {
+      this.selectedTool.handleHover(event);
     }
   }
 
@@ -591,37 +313,4 @@ export class SceneController {
     return undoInfo !== undefined;
   }
 
-}
-
-
-const MINIMUM_DRAG_DISTANCE = 2;
-
-
-async function shouldInitiateDrag(eventStream, initialEvent) {
-  // drop events until the pointer moved a minimal distance
-  const initialX = initialEvent.pageX;
-  const initialY = initialEvent.pageY;
-
-  for await (const event of eventStream) {
-    const x = event.pageX;
-    const y = event.pageY;
-    if (
-      Math.abs(initialX - x) > MINIMUM_DRAG_DISTANCE ||
-      Math.abs(initialY - y) > MINIMUM_DRAG_DISTANCE
-    ) {
-      return true;
-    }
-  }
-  return false;
-}
-
-
-function getBehaviorName(event) {
-  const behaviorNames = [
-    "default",
-    "constrain",
-    "alternate",
-    "alternate-constrain",
-  ];
-  return behaviorNames[boolInt(event.shiftKey) + 2 * boolInt(event.altKey)];
 }
