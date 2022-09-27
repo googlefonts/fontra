@@ -1,6 +1,6 @@
 from dataclasses import asdict
-from dacite import Config, from_dict
 import pytest
+from fontra.core.classes import from_dict
 from fontra.core.packedpath import (
     PackedPath,
     PackedPathPointPen,
@@ -134,7 +134,7 @@ async def test_packedPathPointPenRoundTrip(path):
 
 @pytest.mark.parametrize("path", pathTestData)
 async def test_unpackPathRoundTrip(path):
-    path = from_dict(PackedPath, path, config=Config(cast=[PointType]))
+    path = from_dict(PackedPath, path)
     unpackedPath = unpackPath(path)
     repackedPath = packPath(unpackedPath)
     assert path == repackedPath

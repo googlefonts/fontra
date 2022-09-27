@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
+from functools import partial
 from enum import IntEnum
-from .packedpath import PackedPath
+import dacite
+from .packedpath import PackedPath, PointType
 
 
 @dataclass(kw_only=True)
@@ -73,3 +75,7 @@ class GlobalAxis:
     defaultValue: float
     maxValue: float
     mapping: list[tuple[int, int]] = field(default_factory=list)
+
+
+_castConfig = dacite.Config(cast=[PointType])
+from_dict = partial(dacite.from_dict, config=_castConfig)
