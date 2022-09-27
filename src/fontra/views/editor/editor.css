@@ -91,14 +91,14 @@
   padding-bottom: 1em;
 }
 
-.glyphs-search-input {
+input[type="text"],
+textarea {
   background-color: var(--editor-glyphs-search-input-background-color);
   color: var(--editor-glyphs-search-input-foreground-color);
   border-radius: 0.5em;
   border: 0.5px solid lightgray;
   outline: none;
-  padding: 0.2em;
-  padding-left: 0.8em;
+  padding: 0.2em 0.5em;
   font-family: fontra-ui-regular, sans-serif;
   font-size: 1.1rem;
 }
@@ -308,16 +308,6 @@
 }
 
 #text-entry-textarea {
-  font-size: 1.1rem;
-  font-family: fontra-ui-regular, sans-serif;
-  white-space: normal;
-  outline: none;
-  cursor: auto;
-  display: inline;
-  border: 0.5px solid lightgray;
-  border-radius: 0.5em;
   overflow-x: scroll;
-  /*white-space: pre;*/
-  /*overflow-wrap: normal;*/
   width: 12em;
 }
