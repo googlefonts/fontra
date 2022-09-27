@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import pytest
 from fontra.core.packedpath import PackedPathPointPen, drawPackedPathToPointPen
 
@@ -120,4 +121,4 @@ pathTestData = [
 async def test_getGlyph(path):
     pen = PackedPathPointPen()
     drawPackedPathToPointPen(path, pen)
-    assert path == pen.getPath()
+    assert path == asdict(pen.getPath())

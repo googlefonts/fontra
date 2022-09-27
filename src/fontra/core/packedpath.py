@@ -1,8 +1,30 @@
+from dataclasses import dataclass, field
+from enum import IntEnum
 import logging
 import math
 
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ContourInfo:
+    endPoint: int
+    isClosed: bool = False
+
+
+class PointType(IntEnum):
+    ON_CURVE = 0x00
+    OFF_CURVE_QUAD = 0x01
+    OFF_CURVE_CUBIC = 0x02
+    ON_CURVE_SMOOTH = 0x08
+
+
+@dataclass
+class PackedPath:
+    coordinates: list[float] = field(default_factory=list)
+    pointTypes: list[PointType] = field(default_factory=list)
+    contourInfo: list[ContourInfo] = field(default_factory=list)
 
 
 ON_CURVE = 0x00
@@ -21,10 +43,10 @@ class PackedPathPointPen:
         self._currentContour = None
 
     def getPath(self):
-        return dict(
-            coordinates=self.coordinates,
-            pointTypes=self.pointTypes,
-            contourInfo=self.contourInfo,
+        return PackedPath(
+            self.coordinates,
+            [PointType(tp) for tp in self.pointTypes],
+            self.contourInfo,
         )
 
     def beginPath(self, **kwargs):
@@ -67,11 +89,13 @@ class PackedPathPointPen:
                         pointTypes[j] = OFF_CURVE_QUAD
             self.pointTypes.extend(pointTypes)
         self.contourInfo.append(
-            dict(endPoint=len(self.coordinates) // 2 - 1, isClosed=isClosed)
+            ContourInfo(endPoint=len(self.coordinates) // 2 - 1, isClosed=isClosed)
         )
         self._currentContour = None
 
     def addComponent(self, glyphName, transformation, **kwargs):
+        from .classes import Component, Transformation
+
         xx, xy, yx, yy, dx, dy = transformation
         rotation, scalex, scaley, skewx, skewy = decomposeTwoByTwo((xx, xy, yx, yy))
         # TODO rotation is problematic with interpolation: should interpolation
@@ -80,26 +104,20 @@ class PackedPathPointPen:
         # way to have reasonable behavior in common cases.
         if rotation == -0.0:
             rotation = 0.0
-        if abs(skewx) > 0.00001:
-            logger.warn(f"x skew is not yet supported ({glyphName}, {skewx})")
-        if abs(skewy) > 0.00001:
-            logger.warn(f"y skew is not yet supported ({glyphName}, {skewy})")
-        transformation = dict(
-            x=dx,
-            y=dy,
-            scalex=scalex,
-            scaley=scaley,
+
+        transformation = Transformation(
+            translateX=dx,
+            translateY=dy,
             rotation=math.degrees(rotation),
-            tcenterx=0,
-            tcentery=0,
+            scaleX=scalex,
+            scaleY=scaley,
+            skewX=-skewx,
+            skewY=skewy,
+            tCenterX=0,
+            tCenterY=0,
         )
 
-        self.components.append(
-            {
-                "name": glyphName,
-                "transformation": transformation,
-            }
-        )
+        self.components.append(Component(glyphName, transformation))
 
 
 def decomposeTwoByTwo(twoByTwo):
@@ -174,7 +192,7 @@ def pairwise(iterable):
 
 
 def setPointPosition(path, pointIndex, x, y):
-    coords = path["coordinates"]
+    coords = path.coordinates
     i = pointIndex * 2
     coords[i] = x
     coords[i + 1] = y
@@ -182,11 +200,11 @@ def setPointPosition(path, pointIndex, x, y):
 
 def deleteContour(path, contourIndex):
     contourIndex = _normalizeContourIndex(path, contourIndex)
-    contour = path["contourInfo"][contourIndex]
+    contour = path.contourInfo[contourIndex]
     startPoint = _getContourStartPoint(path, contourIndex)
-    numPoints = contour["endPoint"] + 1 - startPoint
+    numPoints = contour.endPoint + 1 - startPoint
     _replacePoints(path, startPoint, numPoints, [], [])
-    del path["contourInfo"][contourIndex]
+    del path.contourInfo[contourIndex]
     _moveEndPoints(path, contourIndex, -numPoints)
 
 
@@ -194,8 +212,8 @@ def insertContour(path, contourIndex, contour):
     contourIndex = _normalizeContourIndex(path, contourIndex, True)
     startPoint = _getContourStartPoint(path, contourIndex)
     _replacePoints(path, startPoint, 0, contour["coordinates"], contour["pointTypes"])
-    contourInfo = {"endPoint": startPoint - 1, "isClosed": contour["isClosed"]}
-    path["contourInfo"].insert(contourIndex, contourInfo)
+    contourInfo = ContourInfo(endPoint=startPoint - 1, isClosed=contour["isClosed"])
+    path.contourInfo.insert(contourIndex, contourInfo)
     _moveEndPoints(path, contourIndex, len(contour["pointTypes"]))
 
 
@@ -219,17 +237,13 @@ def _insertPoint(path, contourIndex, pointIndex, point):
 
 
 def _getContourStartPoint(path, contourIndex):
-    return (
-        0
-        if contourIndex == 0
-        else path["contourInfo"][contourIndex - 1]["endPoint"] + 1
-    )
+    return 0 if contourIndex == 0 else path.contourInfo[contourIndex - 1].endPoint + 1
 
 
 def _getAbsolutePointIndex(path, contourIndex, contourPointIndex, forInsert=False):
     startPoint = _getContourStartPoint(path, contourIndex)
-    contour = path["contourInfo"][contourIndex]
-    numPoints = contour["endPoint"] + 1 - startPoint
+    contour = path.contourInfo[contourIndex]
+    numPoints = contour.endPoint + 1 - startPoint
     originalContourPointIndex = contourPointIndex
     if contourPointIndex < 0:
         contourPointIndex += numPoints
@@ -244,7 +258,7 @@ def _getAbsolutePointIndex(path, contourIndex, contourPointIndex, forInsert=Fals
 
 def _normalizeContourIndex(path, contourIndex, forInsert=False):
     originalContourIndex = contourIndex
-    numContours = len(path["contourInfo"])
+    numContours = len(path.contourInfo)
     if contourIndex < 0:
         contourIndex += numContours
     bias = 1 if forInsert else 0
@@ -255,24 +269,24 @@ def _normalizeContourIndex(path, contourIndex, forInsert=False):
 
 def _replacePoints(path, startPoint, numPoints, coordinates, pointTypes):
     dblIndex = startPoint * 2
-    path["coordinates"][dblIndex : dblIndex + numPoints * 2] = coordinates
-    path["pointTypes"][startPoint : startPoint + numPoints] = pointTypes
+    path.coordinates[dblIndex : dblIndex + numPoints * 2] = coordinates
+    path.pointTypes[startPoint : startPoint + numPoints] = pointTypes
 
 
 def _moveEndPoints(path, fromContourIndex, offset):
-    for contourInfo in path["contourInfo"][fromContourIndex:]:
-        contourInfo["endPoint"] += offset
+    for contourInfo in path.contourInfo[fromContourIndex:]:
+        contourInfo.endPoint += offset
 
 
 def unpackPath(packedPath):
     unpackedPath = []
-    coordinates = packedPath["coordinates"]
-    pointTypes = packedPath["pointTypes"]
+    coordinates = packedPath.coordinates
+    pointTypes = packedPath.pointTypes
     startIndex = 0
-    for contourInfo in packedPath["contourInfo"]:
-        endIndex = contourInfo["endIndex"] + 1
+    for contourInfo in packedPath.contourInfo:
+        endIndex = contourInfo.endIndex + 1
         points = list(_iterPoints(coordinates, pointTypes, startIndex, endIndex))
-        unpackedPath.append(dict(points=points, isClosed=contourInfo["isClosed"]))
+        unpackedPath.append(dict(points=points, isClosed=contourInfo.isClosed))
         startIndex = endIndex
     return unpackedPath
 
@@ -297,9 +311,13 @@ def packPath(unpackedPath):
         coordinates.extend(packedContour["coordinates"])
         pointTypes.extend(packedContour["pointTypes"])
         contourInfo.append(
-            dict(endPoint=len(pointTypes) - 1, isClosed=packedContour["isClosed"])
+            ContourInfo(
+                endPoint=len(pointTypes) - 1, isClosed=packedContour["isClosed"]
+            )
         )
-    return dict(coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo)
+    return PackedPath(
+        coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo
+    )
 
 
 def packContour(unpackedContour):
