@@ -107,8 +107,8 @@ class PackedPathPointPen:
             rotation=math.degrees(rotation),
             scaleX=scalex,
             scaleY=scaley,
-            skewX=-skewx,
-            skewY=skewy,
+            skewX=math.degrees(-skewx),
+            skewY=math.degrees(skewy),
             tCenterX=0,
             tCenterY=0,
         )
