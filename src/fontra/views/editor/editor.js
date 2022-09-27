@@ -808,7 +808,7 @@ export class EditorController {
     let localChangePath;
     let change;
     let rollbackChange;
-    let unfoInfo;
+    let undoInfo;
 
     const setup = async info => {
       keyString = info.key;
