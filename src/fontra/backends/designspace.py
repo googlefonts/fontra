@@ -121,9 +121,9 @@ class DesignspaceBackend:
 
     async def putGlyph(self, glyphName, glyph):
         modTimes = set()
-        for layer in glyph["layers"]:
-            glyphSet = self.ufoGlyphSets[layer["name"]]
-            writeUFOLayerGlyph(glyphSet, glyphName, layer["glyph"])
+        for layer in glyph.layers:
+            glyphSet = self.ufoGlyphSets[layer.name]
+            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph)
             modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
@@ -183,9 +183,9 @@ class UFOBackend:
 
     async def putGlyph(self, glyphName, glyph):
         modTimes = set()
-        for layer in glyph["layers"]:
-            glyphSet = self.glyphSets[layer["name"]]
-            writeUFOLayerGlyph(glyphSet, glyphName, layer["glyph"])
+        for layer in glyph.layers:
+            glyphSet = self.glyphSets[layer.name]
+            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph)
             modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
@@ -239,20 +239,14 @@ def serializeGlyph(glyphSet, glyphName):
     return staticGlyph, glyph
 
 
-def writeUFOLayerGlyph(glyphSet, glyphName, glyphData):
+def writeUFOLayerGlyph(glyphSet, glyphName, glyph):
     layerGlyph = UFOGlyph()
     glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     pen = RecordingPointPen()
-    pathData = glyphData.get("path")
-    xAdvance = glyphData.get("xAdvance")
-    yAdvance = glyphData.get("yAdvance")
-    if xAdvance is not None:
-        layerGlyph.width = xAdvance
-    if yAdvance is not None:
-        layerGlyph.height = yAdvance
-    if pathData is not None:
-        drawPackedPathToPointPen(pathData, pen)
-    for component in glyphData.get("components", ()):
+    layerGlyph.width = glyph.xAdvance
+    layerGlyph.height = glyph.yAdvance
+    drawPackedPathToPointPen(glyph.path, pen)
+    for component in glyph.components:
         pen.addComponent(
             component["name"], makeAffineTransform(component["transformation"])
         )
