@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from functools import partial
+from typing import Optional
 import dacite
 from .packedpath import PackedPath, PointType
 
@@ -31,9 +32,9 @@ class Component:
 class StaticGlyph:
     path: PackedPath = field(default_factory=PackedPath)
     components: list[Component] = field(default_factory=list)
-    xAdvance: float = 0
-    yAdvance: float = 0
-    verticalOrigin: float = 0
+    xAdvance: Optional[float] = None
+    yAdvance: Optional[float] = None
+    verticalOrigin: Optional[float] = None
 
 
 @dataclass
