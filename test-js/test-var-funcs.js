@@ -72,6 +72,12 @@ describe("var-funcs tests", () => {
       expect(addItemwise(undefined, undefined)).to.equal(undefined);
     })
 
+    it("add null", () => {
+      expect(() => addItemwise(123, null)).to.throw("incompatible object types: typeof 123 != typeof null");
+      expect(() => addItemwise(null, 123)).to.throw("incompatible object types: typeof null != typeof 123");
+      expect(addItemwise(null, null)).to.equal(null);
+    })
+
   });
 
   describe("testing subtraction", () => {
@@ -138,6 +144,12 @@ describe("var-funcs tests", () => {
       expect(subItemwise(undefined, undefined)).to.equal(undefined);
     })
 
+    it("sub null", () => {
+      expect(() => subItemwise(123, null)).to.throw("incompatible object types: typeof 123 != typeof null");
+      expect(() => subItemwise(null, 123)).to.throw("incompatible object types: typeof null != typeof 123");
+      expect(subItemwise(null, null)).to.equal(null);
+    })
+
   });
 
   describe("testing multiplication", () => {
@@ -180,6 +192,10 @@ describe("var-funcs tests", () => {
 
     it("mul undefined", () => {
       expect(mulScalar(undefined, 3)).to.equal(undefined);
+    })
+
+    it("mul null", () => {
+      expect(mulScalar(null, 3)).to.equal(null);
     })
 
   });
