@@ -503,7 +503,7 @@ function makeAffineTransform(transformation) {
   t = t.translate(transformation.translateX + transformation.tCenterX, transformation.translateY + transformation.tCenterY);
   t = t.rotate(transformation.rotation * (Math.PI / 180));
   t = t.scale(transformation.scaleX, transformation.scaleY);
-  t = t.skew(-transformation.skewX, transformation.skewY);
+  t = t.skew(-transformation.skewX * (Math.PI / 180), transformation.skewY * (Math.PI / 180));
   t = t.translate(-transformation.tCenterX, -transformation.tCenterY);
   return t;
 }
