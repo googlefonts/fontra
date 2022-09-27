@@ -26,6 +26,83 @@ class PackedPath:
     pointTypes: list[PointType] = field(default_factory=list)
     contourInfo: list[ContourInfo] = field(default_factory=list)
 
+    def setPointPosition(self, pointIndex, x, y):
+        coords = self.coordinates
+        i = pointIndex * 2
+        coords[i] = x
+        coords[i + 1] = y
+
+    def deleteContour(self, contourIndex):
+        contourIndex = self._normalizeContourIndex(contourIndex)
+        contour = self.contourInfo[contourIndex]
+        startPoint = self._getContourStartPoint(contourIndex)
+        numPoints = contour.endPoint + 1 - startPoint
+        self._replacePoints(startPoint, numPoints, [], [])
+        del self.contourInfo[contourIndex]
+        self._moveEndPoints(contourIndex, -numPoints)
+
+    def insertContour(self, contourIndex, contour):
+        contourIndex = self._normalizeContourIndex(contourIndex, True)
+        startPoint = self._getContourStartPoint(contourIndex)
+        self._replacePoints(
+            startPoint, 0, contour["coordinates"], contour["pointTypes"]
+        )
+        contourInfo = ContourInfo(endPoint=startPoint - 1, isClosed=contour["isClosed"])
+        self.contourInfo.insert(contourIndex, contourInfo)
+        self._moveEndPoints(contourIndex, len(contour["pointTypes"]))
+
+    def deletePoint(self, contourIndex, contourPointIndex):
+        contourIndex = self._normalizeContourIndex(contourIndex)
+        pointIndex = self._getAbsolutePointIndex(contourIndex, contourPointIndex)
+        self._replacePoints(pointIndex, 1, [], [])
+        self._moveEndPoints(contourIndex, -1)
+
+    def insertPoint(self, contourIndex, contourPointIndex, point):
+        contourIndex = self._normalizeContourIndex(contourIndex)
+        pointIndex = self._getAbsolutePointIndex(contourIndex, contourPointIndex, True)
+        pointType = packPointType(point.get("type"), point.get("smooth"))
+        self._replacePoints(pointIndex, 0, [point["x"], point["y"]], [pointType])
+        self._moveEndPoints(contourIndex, 1)
+
+    def _getContourStartPoint(self, contourIndex):
+        return (
+            0 if contourIndex == 0 else self.contourInfo[contourIndex - 1].endPoint + 1
+        )
+
+    def _getAbsolutePointIndex(self, contourIndex, contourPointIndex, forInsert=False):
+        startPoint = self._getContourStartPoint(contourIndex)
+        contour = self.contourInfo[contourIndex]
+        numPoints = contour.endPoint + 1 - startPoint
+        originalContourPointIndex = contourPointIndex
+        if contourPointIndex < 0:
+            contourPointIndex += numPoints
+        if contourPointIndex < 0 or (
+            contourPointIndex >= numPoints + (1 if forInsert else 0)
+        ):
+            raise IndexError(
+                f"contourPointIndex out of bounds: {originalContourPointIndex}"
+            )
+        return startPoint + contourPointIndex
+
+    def _normalizeContourIndex(self, contourIndex, forInsert=False):
+        originalContourIndex = contourIndex
+        numContours = len(self.contourInfo)
+        if contourIndex < 0:
+            contourIndex += numContours
+        bias = 1 if forInsert else 0
+        if contourIndex < 0 or contourIndex >= numContours + bias:
+            raise IndexError(f"contourIndex out of bounds: {originalContourIndex}")
+        return contourIndex
+
+    def _replacePoints(self, startPoint, numPoints, coordinates, pointTypes):
+        dblIndex = startPoint * 2
+        self.coordinates[dblIndex : dblIndex + numPoints * 2] = coordinates
+        self.pointTypes[startPoint : startPoint + numPoints] = pointTypes
+
+    def _moveEndPoints(self, fromContourIndex, offset):
+        for contourInfo in self.contourInfo[fromContourIndex:]:
+            contourInfo.endPoint += offset
+
 
 class PackedPathPointPen:
     def __init__(self):
@@ -190,93 +267,6 @@ def drawPackedPathToPointPen(path, pen):
 def pairwise(iterable):
     it = iter(iterable)
     return zip(it, it)
-
-
-def setPointPosition(path, pointIndex, x, y):
-    coords = path.coordinates
-    i = pointIndex * 2
-    coords[i] = x
-    coords[i + 1] = y
-
-
-def deleteContour(path, contourIndex):
-    contourIndex = _normalizeContourIndex(path, contourIndex)
-    contour = path.contourInfo[contourIndex]
-    startPoint = _getContourStartPoint(path, contourIndex)
-    numPoints = contour.endPoint + 1 - startPoint
-    _replacePoints(path, startPoint, numPoints, [], [])
-    del path.contourInfo[contourIndex]
-    _moveEndPoints(path, contourIndex, -numPoints)
-
-
-def insertContour(path, contourIndex, contour):
-    contourIndex = _normalizeContourIndex(path, contourIndex, True)
-    startPoint = _getContourStartPoint(path, contourIndex)
-    _replacePoints(path, startPoint, 0, contour["coordinates"], contour["pointTypes"])
-    contourInfo = ContourInfo(endPoint=startPoint - 1, isClosed=contour["isClosed"])
-    path.contourInfo.insert(contourIndex, contourInfo)
-    _moveEndPoints(path, contourIndex, len(contour["pointTypes"]))
-
-
-def deletePoint(path, contourIndex, contourPointIndex):
-    contourIndex = _normalizeContourIndex(path, contourIndex)
-    pointIndex = _getAbsolutePointIndex(path, contourIndex, contourPointIndex)
-    _replacePoints(path, pointIndex, 1, [], [])
-    _moveEndPoints(path, contourIndex, -1)
-
-
-def insertPoint(path, contourIndex, contourPointIndex, point):
-    contourIndex = _normalizeContourIndex(path, contourIndex)
-    pointIndex = _getAbsolutePointIndex(path, contourIndex, contourPointIndex, True)
-    _insertPoint(path, contourIndex, pointIndex, point)
-
-
-def _insertPoint(path, contourIndex, pointIndex, point):
-    pointType = packPointType(point.get("type"), point.get("smooth"))
-    _replacePoints(path, pointIndex, 0, [point["x"], point["y"]], [pointType])
-    _moveEndPoints(path, contourIndex, 1)
-
-
-def _getContourStartPoint(path, contourIndex):
-    return 0 if contourIndex == 0 else path.contourInfo[contourIndex - 1].endPoint + 1
-
-
-def _getAbsolutePointIndex(path, contourIndex, contourPointIndex, forInsert=False):
-    startPoint = _getContourStartPoint(path, contourIndex)
-    contour = path.contourInfo[contourIndex]
-    numPoints = contour.endPoint + 1 - startPoint
-    originalContourPointIndex = contourPointIndex
-    if contourPointIndex < 0:
-        contourPointIndex += numPoints
-    if contourPointIndex < 0 or (
-        contourPointIndex >= numPoints + (1 if forInsert else 0)
-    ):
-        raise IndexError(
-            f"contourPointIndex out of bounds: {originalContourPointIndex}"
-        )
-    return startPoint + contourPointIndex
-
-
-def _normalizeContourIndex(path, contourIndex, forInsert=False):
-    originalContourIndex = contourIndex
-    numContours = len(path.contourInfo)
-    if contourIndex < 0:
-        contourIndex += numContours
-    bias = 1 if forInsert else 0
-    if contourIndex < 0 or contourIndex >= numContours + bias:
-        raise IndexError(f"contourIndex out of bounds: {originalContourIndex}")
-    return contourIndex
-
-
-def _replacePoints(path, startPoint, numPoints, coordinates, pointTypes):
-    dblIndex = startPoint * 2
-    path.coordinates[dblIndex : dblIndex + numPoints * 2] = coordinates
-    path.pointTypes[startPoint : startPoint + numPoints] = pointTypes
-
-
-def _moveEndPoints(path, fromContourIndex, offset):
-    for contourInfo in path.contourInfo[fromContourIndex:]:
-        contourInfo.endPoint += offset
 
 
 def unpackPath(packedPath):
