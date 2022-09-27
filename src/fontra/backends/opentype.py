@@ -170,10 +170,8 @@ def serializeGlyph(glyphSet, glyphName):
     ttGlyph.drawPoints(GuessSmoothPointPen(pen))
     path = pen.getPath()
     glyphDict = {}
-    if path is not None:
-        glyphDict["path"] = path
-    if pen.components:
-        glyphDict["components"] = pen.components
+    glyphDict["path"] = path
+    glyphDict["components"] = pen.components
     glyphDict["xAdvance"] = ttGlyph.width
     # TODO: yAdvance, verticalOrigin
     return glyphDict

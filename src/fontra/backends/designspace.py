@@ -235,10 +235,8 @@ def serializeGlyph(glyphSet, glyphName):
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     path = pen.getPath()
     glyphDict = {}
-    if path is not None:
-        glyphDict["path"] = path
-    if pen.components:
-        glyphDict["components"] = pen.components
+    glyphDict["path"] = path
+    glyphDict["components"] = pen.components
     glyphDict["xAdvance"] = glyph.width
     # TODO: anchors
     # TODO: yAdvance, verticalOrigin
