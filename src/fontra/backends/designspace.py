@@ -9,7 +9,7 @@ from fontTools.ufoLib import UFOReader
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
 from ..core.classes import VariableGlyph, StaticGlyph, Source, Layer
-from ..core.packedpath import PackedPathPointPen, drawPackedPathToPointPen
+from ..core.packedpath import PackedPathPointPen
 
 
 logger = logging.getLogger(__name__)
@@ -245,7 +245,7 @@ def writeUFOLayerGlyph(glyphSet, glyphName, glyph):
     pen = RecordingPointPen()
     layerGlyph.width = glyph.xAdvance
     layerGlyph.height = glyph.yAdvance
-    drawPackedPathToPointPen(glyph.path, pen)
+    glyph.path.drawPoints(pen)
     for component in glyph.components:
         pen.addComponent(
             component["name"], makeAffineTransform(component["transformation"])

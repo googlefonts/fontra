@@ -56,6 +56,37 @@ class PackedPath:
             startIndex = endIndex
         return unpackedContours
 
+    def drawPoints(self, pen):
+        startPoint = 0
+        for contourInfo in self.contourInfo:
+            endPoint = contourInfo.endPoint + 1
+            coordinates = self.coordinates[startPoint * 2 : endPoint * 2]
+            points = list(pairwise(coordinates))
+            pointTypes = self.pointTypes[startPoint:endPoint]
+            assert len(points) == len(pointTypes)
+            pen.beginPath()
+            segmentType = (
+                _pointToSegmentType.get(pointTypes[-1], "line")
+                if contourInfo.isClosed
+                else "move"
+            )
+            for point, pointType in zip(points, pointTypes):
+                isSmooth = False
+                pointSegmentType = None
+                if pointType == PointType.ON_CURVE:
+                    pointSegmentType = segmentType
+                elif pointType == PointType.ON_CURVE_SMOOTH:
+                    pointSegmentType = segmentType
+                    isSmooth = True
+                pen.addPoint(
+                    point,
+                    segmentType=pointSegmentType,
+                    smooth=isSmooth,
+                )
+                segmentType = _pointToSegmentType.get(pointType, "line")
+            pen.endPath()
+            startPoint = endPoint
+
     def setPointPosition(self, pointIndex, x, y):
         coords = self.coordinates
         i = pointIndex * 2
@@ -260,38 +291,6 @@ _pointToSegmentType = {
     PointType.OFF_CURVE_CUBIC: "curve",
     PointType.OFF_CURVE_QUAD: "qcurve",
 }
-
-
-def drawPackedPathToPointPen(path, pen):
-    startPoint = 0
-    for contourInfo in path.contourInfo:
-        endPoint = contourInfo.endPoint + 1
-        coordinates = path.coordinates[startPoint * 2 : endPoint * 2]
-        points = list(pairwise(coordinates))
-        pointTypes = path.pointTypes[startPoint:endPoint]
-        assert len(points) == len(pointTypes)
-        pen.beginPath()
-        segmentType = (
-            _pointToSegmentType.get(pointTypes[-1], "line")
-            if contourInfo.isClosed
-            else "move"
-        )
-        for point, pointType in zip(points, pointTypes):
-            isSmooth = False
-            pointSegmentType = None
-            if pointType == PointType.ON_CURVE:
-                pointSegmentType = segmentType
-            elif pointType == PointType.ON_CURVE_SMOOTH:
-                pointSegmentType = segmentType
-                isSmooth = True
-            pen.addPoint(
-                point,
-                segmentType=pointSegmentType,
-                smooth=isSmooth,
-            )
-            segmentType = _pointToSegmentType.get(pointType, "line")
-        pen.endPath()
-        startPoint = endPoint
 
 
 def pairwise(iterable):
