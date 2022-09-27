@@ -10,7 +10,7 @@ export class SceneController {
     this.canvasController = canvasController;
 
     this.mouseTracker = new MouseTracker({
-      drag: async (eventStream, initialEvent) => this.handleDrag(eventStream, initialEvent),
+      drag: async (eventStream, initialEvent) => await this.handleDrag(eventStream, initialEvent),
       hover: event => this.handleHover(event),
       element: canvasController.canvas,
     });
