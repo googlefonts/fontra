@@ -9,6 +9,7 @@ keywords = ["font", "fonts"]
 license = {text = "GNU General Public License v3"}
 dependencies = [
     "aiohttp>=3.8.1",
+    "dacite>=1.6.0",
     "fonttools[ufo,unicode]>=4.37.2",
     "watchfiles>=0.10",
 ]
