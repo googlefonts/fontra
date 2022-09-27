@@ -1,5 +1,8 @@
 def setItem(subject, key, value):
-    subject[key] = value
+    if isinstance(subject, (dict, list, tuple)):
+        subject[key] = value
+    else:
+        setattr(subject, key, value)
 
 
 baseChangeFunctions = {
@@ -30,7 +33,10 @@ def applyChange(subject, change, changeFunctions):
     children = change.get("c", [])
 
     for pathElement in path:
-        subject = subject[pathElement]
+        if isinstance(subject, (dict, list, tuple)):
+            subject = subject[pathElement]
+        else:
+            subject = getattr(subject, pathElement)
 
     if functionName is not None:
         changeFunc = changeFunctions[functionName]

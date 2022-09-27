@@ -1,4 +1,5 @@
 import asyncio
+from dataclasses import asdict, is_dataclass
 import logging
 import traceback
 
@@ -75,6 +76,8 @@ class RemoteObjectConnection:
             methodHandler = getattr(subject, methodName, None)
             if getattr(methodHandler, "fontraRemoteMethod", False):
                 returnValue = await methodHandler(*arguments, connection=self)
+                if is_dataclass(returnValue):
+                    returnValue = asdict(returnValue)
                 response = {"client-call-id": clientCallID, "return-value": returnValue}
             else:
                 response = {

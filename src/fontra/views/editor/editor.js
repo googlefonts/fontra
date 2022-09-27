@@ -763,7 +763,7 @@ export class EditorController {
         });
         formContents.push({"type": "header", "label": "Transformation"});
 
-        for (const key of ["x", "y", "rotation", "scalex", "scaley", "tcenterx", "tcentery"]) {
+        for (const key of ["translateX", "translateY", "rotation", "scaleX", "scaleY", "skewX", "skewY", "tCenterX", "tCenterY"]) {
           const value = component.transformation[key];
           formContents.push({
             "type": "edit-number",

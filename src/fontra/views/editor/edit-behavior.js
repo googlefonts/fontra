@@ -159,7 +159,7 @@ function makePointChange(pointIndex, x, y) {
 function makeComponentOriginChange(componentIndex, x, y) {
   return {
     "p": [componentIndex, "transformation"],
-    "c": [{"f": "=", "a": ["x", x]}, {"f": "=", "a": ["y", y]}],
+    "c": [{"f": "=", "a": ["translateX", x]}, {"f": "=", "a": ["translateY", y]}],
   };
 }
 
@@ -216,8 +216,8 @@ function unpackComponents(components, selectedComponentIndices) {
   const unpackedComponents = new Array(components.length);
   for (const componentIndex of selectedComponentIndices) {
     unpackedComponents[componentIndex] = {
-      "x": components[componentIndex].transformation.x,
-      "y": components[componentIndex].transformation.y,
+      "x": components[componentIndex].transformation.translateX,
+      "y": components[componentIndex].transformation.translateY,
     };
   }
   return unpackedComponents;

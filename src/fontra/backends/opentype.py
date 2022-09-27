@@ -1,6 +1,7 @@
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
+from ..core.classes import VariableGlyph, StaticGlyph, Source, Layer
 from ..core.packedpath import PackedPathPointPen
 
 
@@ -41,16 +42,16 @@ class OTFBackend:
 
     async def getGlyph(self, glyphName):
         defaultLayerName = "<default>"
-        glyph = {"name": glyphName}
-        glyphDict = serializeGlyph(self.glyphSet, glyphName)
-        layers = [{"name": defaultLayerName, "glyph": glyphDict}]
+        glyph = VariableGlyph(glyphName)
+        staticGlyph = serializeGlyph(self.glyphSet, glyphName)
+        layers = [Layer(name=defaultLayerName, glyph=staticGlyph)]
         defaultLocation = {axis["name"]: 0 for axis in self.globalAxes}
         sources = [
-            {
-                "location": defaultLocation,
-                "name": defaultLayerName,
-                "layerName": defaultLayerName,
-            }
+            Source(
+                location=defaultLocation,
+                name=defaultLayerName,
+                layerName=defaultLayerName,
+            )
         ]
         for sparseLoc in self._getGlyphVariationLocations(glyphName):
             fullLoc = defaultLocation | sparseLoc
@@ -60,11 +61,11 @@ class OTFBackend:
                 varGlyphSet = self.font.getGlyphSet(location=fullLoc, normalized=True)
                 self.variationGlyphSets[locStr] = varGlyphSet
             varGlyphDict = serializeGlyph(varGlyphSet, glyphName)
-            layers.append({"name": locStr, "glyph": varGlyphDict})
-            sources.append({"location": fullLoc, "name": locStr, "layerName": locStr})
-        glyph["unicodes"] = self.revCmap.get(glyphName, [])
-        glyph["layers"] = layers
-        glyph["sources"] = sources
+            layers.append(Layer(name=locStr, glyph=varGlyphDict))
+            sources.append(Source(location=fullLoc, name=locStr, layerName=locStr))
+        glyph.unicodes = self.revCmap.get(glyphName, [])
+        glyph.layers = layers
+        glyph.sources = sources
         return glyph
 
     def _getGlyphVariationLocations(self, glyphName):
@@ -169,12 +170,12 @@ def serializeGlyph(glyphSet, glyphName):
     ttGlyph = glyphSet[glyphName]
     ttGlyph.drawPoints(GuessSmoothPointPen(pen))
     path = pen.getPath()
-    glyphDict = {}
-    glyphDict["path"] = path
-    glyphDict["components"] = pen.components
-    glyphDict["xAdvance"] = ttGlyph.width
+    staticGlyph = StaticGlyph()
+    staticGlyph.path = path
+    staticGlyph.components = pen.components
+    staticGlyph.xAdvance = ttGlyph.width
     # TODO: yAdvance, verticalOrigin
-    return glyphDict
+    return staticGlyph
 
 
 def locationToString(loc):

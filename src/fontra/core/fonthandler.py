@@ -72,9 +72,9 @@ class FontHandler:
         return asyncio.create_task(self._getGlyphFromBackend(glyphName))
 
     async def _getGlyphFromBackend(self, glyphName):
-        glyphData = await self.backend.getGlyph(glyphName)
-        self.updateGlyphDependencies(glyphName, glyphData)
-        return glyphData
+        glyph = await self.backend.getGlyph(glyphName)
+        self.updateGlyphDependencies(glyphName, glyph)
+        return glyph
 
     @remoteMethod
     async def unloadGlyph(self, glyphName, *, connection):
@@ -166,12 +166,12 @@ class FontHandler:
             yield dependantGlyphName
             yield from self.iterGlyphUsedBy(dependantGlyphName)
 
-    def updateGlyphDependencies(self, glyphName, glyphData):
+    def updateGlyphDependencies(self, glyphName, glyph):
         # Zap previous used-by data for this glyph, if any
         for componentName in self.glyphMadeOf.get(glyphName, ()):
             if componentName in self.glyphUsedBy:
                 self.glyphUsedBy[componentName].discard(glyphName)
-        componentNames = set(_iterAllComponentNames(glyphData))
+        componentNames = set(_iterAllComponentNames(glyph))
         if componentNames:
             self.glyphMadeOf[glyphName] = componentNames
         elif glyphName in self.glyphMadeOf:
@@ -210,7 +210,7 @@ class FontHandler:
         )
 
 
-def _iterAllComponentNames(glyphData):
-    for layer in glyphData["layers"]:
-        for compo in layer["glyph"].get("components", ()):
-            yield compo["name"]
+def _iterAllComponentNames(glyph):
+    for layer in glyph.layers:
+        for compo in layer.glyph.components:
+            yield compo.name

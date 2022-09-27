@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+from enum import IntEnum
 import logging
 import math
 
@@ -5,11 +7,24 @@ import math
 logger = logging.getLogger(__name__)
 
 
-ON_CURVE = 0x00
-OFF_CURVE_QUAD = 0x01
-OFF_CURVE_CUBIC = 0x02
-SMOOTH_FLAG = 0x08
-POINT_TYPE_MASK = 0x07
+@dataclass
+class ContourInfo:
+    endPoint: int
+    isClosed: bool = False
+
+
+class PointType(IntEnum):
+    ON_CURVE = 0x00
+    OFF_CURVE_QUAD = 0x01
+    OFF_CURVE_CUBIC = 0x02
+    ON_CURVE_SMOOTH = 0x08
+
+
+@dataclass
+class PackedPath:
+    coordinates: list[float] = field(default_factory=list)
+    pointTypes: list[PointType] = field(default_factory=list)
+    contourInfo: list[ContourInfo] = field(default_factory=list)
 
 
 class PackedPathPointPen:
@@ -21,10 +36,10 @@ class PackedPathPointPen:
         self._currentContour = None
 
     def getPath(self):
-        return dict(
-            coordinates=self.coordinates,
-            pointTypes=self.pointTypes,
-            contourInfo=self.contourInfo,
+        return PackedPath(
+            self.coordinates,
+            [PointType(tp) for tp in self.pointTypes],
+            self.contourInfo,
         )
 
     def beginPath(self, **kwargs):
@@ -41,17 +56,20 @@ class PackedPathPointPen:
             segmentType is None for _, segmentType, _ in self._currentContour
         )
         if isQuadBlob:
-            self.pointTypes.extend([OFF_CURVE_QUAD] * len(self._currentContour))
+            self.pointTypes.extend(
+                [PointType.OFF_CURVE_QUAD] * len(self._currentContour)
+            )
             for pt, _, _ in self._currentContour:
                 self.coordinates.extend(pt)
         else:
             pointTypes = []
             for pt, segmentType, smooth in self._currentContour:
-                smoothFlag = SMOOTH_FLAG if smooth else 0x00
                 if segmentType is None:
-                    pointTypes.append(OFF_CURVE_CUBIC)
+                    pointTypes.append(PointType.OFF_CURVE_CUBIC)
                 elif segmentType in {"move", "line", "curve", "qcurve"}:
-                    pointTypes.append(ON_CURVE | smoothFlag)
+                    pointTypes.append(
+                        PointType.ON_CURVE_SMOOTH if smooth else PointType.ON_CURVE
+                    )
                 else:
                     raise TypeError(f"unexpected segment type: {segmentType}")
 
@@ -62,16 +80,18 @@ class PackedPathPointPen:
                 if segmentType == "qcurve":
                     stopIndex = i - len(pointTypes) if isClosed else -1
                     for j in range(i - 1, stopIndex, -1):
-                        if pointTypes[j] != OFF_CURVE_CUBIC:
+                        if pointTypes[j] != PointType.OFF_CURVE_CUBIC:
                             break
-                        pointTypes[j] = OFF_CURVE_QUAD
+                        pointTypes[j] = PointType.OFF_CURVE_QUAD
             self.pointTypes.extend(pointTypes)
         self.contourInfo.append(
-            dict(endPoint=len(self.coordinates) // 2 - 1, isClosed=isClosed)
+            ContourInfo(endPoint=len(self.coordinates) // 2 - 1, isClosed=isClosed)
         )
         self._currentContour = None
 
     def addComponent(self, glyphName, transformation, **kwargs):
+        from .classes import Component, Transformation
+
         xx, xy, yx, yy, dx, dy = transformation
         rotation, scalex, scaley, skewx, skewy = decomposeTwoByTwo((xx, xy, yx, yy))
         # TODO rotation is problematic with interpolation: should interpolation
@@ -80,26 +100,20 @@ class PackedPathPointPen:
         # way to have reasonable behavior in common cases.
         if rotation == -0.0:
             rotation = 0.0
-        if abs(skewx) > 0.00001:
-            logger.warn(f"x skew is not yet supported ({glyphName}, {skewx})")
-        if abs(skewy) > 0.00001:
-            logger.warn(f"y skew is not yet supported ({glyphName}, {skewy})")
-        transformation = dict(
-            x=dx,
-            y=dy,
-            scalex=scalex,
-            scaley=scaley,
+
+        transformation = Transformation(
+            translateX=dx,
+            translateY=dy,
             rotation=math.degrees(rotation),
-            tcenterx=0,
-            tcentery=0,
+            scaleX=scalex,
+            scaleY=scaley,
+            skewX=math.degrees(-skewx),
+            skewY=math.degrees(skewy),
+            tCenterX=0,
+            tCenterY=0,
         )
 
-        self.components.append(
-            {
-                "name": glyphName,
-                "transformation": transformation,
-            }
-        )
+        self.components.append(Component(glyphName, transformation))
 
 
 def decomposeTwoByTwo(twoByTwo):
@@ -136,31 +150,36 @@ def decomposeTwoByTwo(twoByTwo):
 
 
 _pointToSegmentType = {
-    OFF_CURVE_CUBIC: "curve",
-    OFF_CURVE_QUAD: "qcurve",
+    PointType.OFF_CURVE_CUBIC: "curve",
+    PointType.OFF_CURVE_QUAD: "qcurve",
 }
 
 
 def drawPackedPathToPointPen(path, pen):
     startPoint = 0
-    for contourInfo in path["contourInfo"]:
-        endPoint = contourInfo["endPoint"] + 1
-        coordinates = path["coordinates"][startPoint * 2 : endPoint * 2]
+    for contourInfo in path.contourInfo:
+        endPoint = contourInfo.endPoint + 1
+        coordinates = path.coordinates[startPoint * 2 : endPoint * 2]
         points = list(pairwise(coordinates))
-        pointTypes = path["pointTypes"][startPoint:endPoint]
+        pointTypes = path.pointTypes[startPoint:endPoint]
         assert len(points) == len(pointTypes)
         pen.beginPath()
         segmentType = (
-            _pointToSegmentType.get(pointTypes[-1] & POINT_TYPE_MASK, "line")
-            if contourInfo["isClosed"]
+            _pointToSegmentType.get(pointTypes[-1], "line")
+            if contourInfo.isClosed
             else "move"
         )
         for point, pointType in zip(points, pointTypes):
-            isSmooth = bool(pointType & SMOOTH_FLAG)
-            pointType = pointType & POINT_TYPE_MASK
+            isSmooth = False
+            pointSegmentType = None
+            if pointType == PointType.ON_CURVE:
+                pointSegmentType = segmentType
+            elif pointType == PointType.ON_CURVE_SMOOTH:
+                pointSegmentType = segmentType
+                isSmooth = True
             pen.addPoint(
                 point,
-                segmentType=segmentType if pointType == 0 else None,
+                segmentType=pointSegmentType,
                 smooth=isSmooth,
             )
             segmentType = _pointToSegmentType.get(pointType, "line")
@@ -174,7 +193,7 @@ def pairwise(iterable):
 
 
 def setPointPosition(path, pointIndex, x, y):
-    coords = path["coordinates"]
+    coords = path.coordinates
     i = pointIndex * 2
     coords[i] = x
     coords[i + 1] = y
@@ -182,11 +201,11 @@ def setPointPosition(path, pointIndex, x, y):
 
 def deleteContour(path, contourIndex):
     contourIndex = _normalizeContourIndex(path, contourIndex)
-    contour = path["contourInfo"][contourIndex]
+    contour = path.contourInfo[contourIndex]
     startPoint = _getContourStartPoint(path, contourIndex)
-    numPoints = contour["endPoint"] + 1 - startPoint
+    numPoints = contour.endPoint + 1 - startPoint
     _replacePoints(path, startPoint, numPoints, [], [])
-    del path["contourInfo"][contourIndex]
+    del path.contourInfo[contourIndex]
     _moveEndPoints(path, contourIndex, -numPoints)
 
 
@@ -194,8 +213,8 @@ def insertContour(path, contourIndex, contour):
     contourIndex = _normalizeContourIndex(path, contourIndex, True)
     startPoint = _getContourStartPoint(path, contourIndex)
     _replacePoints(path, startPoint, 0, contour["coordinates"], contour["pointTypes"])
-    contourInfo = {"endPoint": startPoint - 1, "isClosed": contour["isClosed"]}
-    path["contourInfo"].insert(contourIndex, contourInfo)
+    contourInfo = ContourInfo(endPoint=startPoint - 1, isClosed=contour["isClosed"])
+    path.contourInfo.insert(contourIndex, contourInfo)
     _moveEndPoints(path, contourIndex, len(contour["pointTypes"]))
 
 
@@ -219,17 +238,13 @@ def _insertPoint(path, contourIndex, pointIndex, point):
 
 
 def _getContourStartPoint(path, contourIndex):
-    return (
-        0
-        if contourIndex == 0
-        else path["contourInfo"][contourIndex - 1]["endPoint"] + 1
-    )
+    return 0 if contourIndex == 0 else path.contourInfo[contourIndex - 1].endPoint + 1
 
 
 def _getAbsolutePointIndex(path, contourIndex, contourPointIndex, forInsert=False):
     startPoint = _getContourStartPoint(path, contourIndex)
-    contour = path["contourInfo"][contourIndex]
-    numPoints = contour["endPoint"] + 1 - startPoint
+    contour = path.contourInfo[contourIndex]
+    numPoints = contour.endPoint + 1 - startPoint
     originalContourPointIndex = contourPointIndex
     if contourPointIndex < 0:
         contourPointIndex += numPoints
@@ -244,7 +259,7 @@ def _getAbsolutePointIndex(path, contourIndex, contourPointIndex, forInsert=Fals
 
 def _normalizeContourIndex(path, contourIndex, forInsert=False):
     originalContourIndex = contourIndex
-    numContours = len(path["contourInfo"])
+    numContours = len(path.contourInfo)
     if contourIndex < 0:
         contourIndex += numContours
     bias = 1 if forInsert else 0
@@ -255,24 +270,24 @@ def _normalizeContourIndex(path, contourIndex, forInsert=False):
 
 def _replacePoints(path, startPoint, numPoints, coordinates, pointTypes):
     dblIndex = startPoint * 2
-    path["coordinates"][dblIndex : dblIndex + numPoints * 2] = coordinates
-    path["pointTypes"][startPoint : startPoint + numPoints] = pointTypes
+    path.coordinates[dblIndex : dblIndex + numPoints * 2] = coordinates
+    path.pointTypes[startPoint : startPoint + numPoints] = pointTypes
 
 
 def _moveEndPoints(path, fromContourIndex, offset):
-    for contourInfo in path["contourInfo"][fromContourIndex:]:
-        contourInfo["endPoint"] += offset
+    for contourInfo in path.contourInfo[fromContourIndex:]:
+        contourInfo.endPoint += offset
 
 
 def unpackPath(packedPath):
     unpackedPath = []
-    coordinates = packedPath["coordinates"]
-    pointTypes = packedPath["pointTypes"]
+    coordinates = packedPath.coordinates
+    pointTypes = packedPath.pointTypes
     startIndex = 0
-    for contourInfo in packedPath["contourInfo"]:
-        endIndex = contourInfo["endIndex"] + 1
+    for contourInfo in packedPath.contourInfo:
+        endIndex = contourInfo.endPoint + 1
         points = list(_iterPoints(coordinates, pointTypes, startIndex, endIndex))
-        unpackedPath.append(dict(points=points, isClosed=contourInfo["isClosed"]))
+        unpackedPath.append(dict(points=points, isClosed=contourInfo.isClosed))
         startIndex = endIndex
     return unpackedPath
 
@@ -280,10 +295,12 @@ def unpackPath(packedPath):
 def _iterPoints(coordinates, pointTypes, startIndex, endIndex):
     for i in range(startIndex, endIndex):
         point = dict(x=coordinates[i * 2], y=coordinates[i * 2 + 1])
-        pointType = pointTypes[i] & POINT_TYPE_MASK
-        if pointType:
-            point["type"] = "cubic" if pointType == OFF_CURVE_CUBIC else "quad"
-        elif pointTypes[i] & SMOOTH_FLAG:
+        pointType = pointTypes[i]
+        if pointType == PointType.OFF_CURVE_CUBIC:
+            point["type"] = "cubic"
+        elif pointType == PointType.OFF_CURVE_CUBIC:
+            point["type"] = "quad"
+        elif pointType == PointType.ON_CURVE_SMOOTH:
             point["smooth"] = True
         yield point
 
@@ -297,9 +314,13 @@ def packPath(unpackedPath):
         coordinates.extend(packedContour["coordinates"])
         pointTypes.extend(packedContour["pointTypes"])
         contourInfo.append(
-            dict(endPoint=len(pointTypes) - 1, isClosed=packedContour["isClosed"])
+            ContourInfo(
+                endPoint=len(pointTypes) - 1, isClosed=packedContour["isClosed"]
+            )
         )
-    return dict(coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo)
+    return PackedPath(
+        coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo
+    )
 
 
 def packContour(unpackedContour):
@@ -318,9 +339,11 @@ def packContour(unpackedContour):
 
 def packPointType(type, smooth):
     if type:
-        pointType = OFF_CURVE_CUBIC if type == "cubic" else OFF_CURVE_QUAD
+        pointType = (
+            PointType.OFF_CURVE_CUBIC if type == "cubic" else PointType.OFF_CURVE_QUAD
+        )
     elif smooth:
-        pointType = ON_CURVE | SMOOTH_FLAG
+        pointType = PointType.ON_CURVE_SMOOTH
     else:
-        pointType = ON_CURVE
+        pointType = PointType.ON_CURVE
     return pointType

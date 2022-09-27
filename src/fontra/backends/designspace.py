@@ -8,6 +8,7 @@ from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReader
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
+from ..core.classes import VariableGlyph, StaticGlyph, Source, Layer
 from ..core.packedpath import PackedPathPointPen, drawPackedPathToPointPen
 
 
@@ -96,33 +97,33 @@ class DesignspaceBackend:
         return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
 
     async def getGlyph(self, glyphName):
-        glyph = {"name": glyphName, "unicodes": []}
+        glyph = VariableGlyph(glyphName)
 
         sources = []
         for globalSource in self.globalSources:
             glyphSet = self.ufoGlyphSets[globalSource["layerName"]]
             if glyphName not in glyphSet:
                 continue
-            sources.append(dict(globalSource))
-        glyph["sources"] = sources
+            sources.append(Source(**globalSource))
+        glyph.sources = sources
 
         layers = []
         for fontraLayerName, glyphSet in self.ufoGlyphSets.items():
             if glyphName not in glyphSet:
                 continue
-            glyphDict, ufoGlyph = serializeGlyph(glyphSet, glyphName)
+            staticGlyph, ufoGlyph = serializeGlyph(glyphSet, glyphName)
             if glyphSet == self.defaultSourceGlyphSet:
-                glyph["unicodes"] = ufoGlyph.unicodes
-            layers.append({"name": fontraLayerName, "glyph": glyphDict})
-        glyph["layers"] = layers
+                glyph.unicodes = ufoGlyph.unicodes
+            layers.append(Layer(fontraLayerName, staticGlyph))
+        glyph.layers = layers
 
         return glyph
 
     async def putGlyph(self, glyphName, glyph):
         modTimes = set()
-        for layer in glyph["layers"]:
-            glyphSet = self.ufoGlyphSets[layer["name"]]
-            writeUFOLayerGlyph(glyphSet, glyphName, layer["glyph"])
+        for layer in glyph.layers:
+            glyphSet = self.ufoGlyphSets[layer.name]
+            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph)
             modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
@@ -169,25 +170,22 @@ class UFOBackend:
         return glyphName in self.glyphSets[self.layerName]
 
     async def getGlyph(self, glyphName):
-        glyph = {"name": glyphName}
+        glyph = VariableGlyph(glyphName)
         layers, sourceGlyph = serializeGlyphLayers(
             self.glyphSets, glyphName, self.layerName
         )
-        glyph["sources"] = [
-            {
-                "location": {},
-                "layerName": self.layerName,
-            }
+        glyph.sources = [
+            Source(name=self.layerName, location={}, layerName=self.layerName)
         ]
-        glyph["unicodes"] = sourceGlyph.unicodes
-        glyph["layers"] = layers
+        glyph.unicodes = sourceGlyph.unicodes
+        glyph.layers = layers
         return glyph
 
     async def putGlyph(self, glyphName, glyph):
         modTimes = set()
-        for layer in glyph["layers"]:
-            glyphSet = self.glyphSets[layer["name"]]
-            writeUFOLayerGlyph(glyphSet, glyphName, layer["glyph"])
+        for layer in glyph.layers:
+            glyphSet = self.glyphSets[layer.name]
+            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph)
             modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
@@ -223,7 +221,7 @@ def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
     for layerName, glyphSet in glyphSets.items():
         if glyphName in glyphSet:
             glyphDict, glyph = serializeGlyph(glyphSet, glyphName)
-            layers.append({"name": layerName, "glyph": glyphDict})
+            layers.append(Layer(name=layerName, glyph=glyphDict))
             if layerName == sourceLayerName:
                 sourceLayerGlyph = glyph
     return layers, sourceLayerGlyph
@@ -233,30 +231,22 @@ def serializeGlyph(glyphSet, glyphName):
     glyph = UFOGlyph()
     pen = PackedPathPointPen()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
-    path = pen.getPath()
-    glyphDict = {}
-    glyphDict["path"] = path
-    glyphDict["components"] = pen.components
-    glyphDict["xAdvance"] = glyph.width
+    staticGlyph = StaticGlyph(
+        path=pen.getPath(), components=pen.components, xAdvance=glyph.width
+    )
     # TODO: anchors
     # TODO: yAdvance, verticalOrigin
-    return glyphDict, glyph
+    return staticGlyph, glyph
 
 
-def writeUFOLayerGlyph(glyphSet, glyphName, glyphData):
+def writeUFOLayerGlyph(glyphSet, glyphName, glyph):
     layerGlyph = UFOGlyph()
     glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     pen = RecordingPointPen()
-    pathData = glyphData.get("path")
-    xAdvance = glyphData.get("xAdvance")
-    yAdvance = glyphData.get("yAdvance")
-    if xAdvance is not None:
-        layerGlyph.width = xAdvance
-    if yAdvance is not None:
-        layerGlyph.height = yAdvance
-    if pathData is not None:
-        drawPackedPathToPointPen(pathData, pen)
-    for component in glyphData.get("components", ()):
+    layerGlyph.width = glyph.xAdvance
+    layerGlyph.height = glyph.yAdvance
+    drawPackedPathToPointPen(glyph.path, pen)
+    for component in glyph.components:
         pen.addComponent(
             component["name"], makeAffineTransform(component["transformation"])
         )

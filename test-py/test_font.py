@@ -1,7 +1,9 @@
 import contextlib
+from dataclasses import asdict
 from importlib.metadata import entry_points
 import pathlib
 import pytest
+from fontra.core.classes import VariableGlyph
 
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -13,10 +15,12 @@ getGlyphTestData = [
         {
             "name": "period",
             "unicodes": [ord(".")],
+            "axes": [],
             "sources": [
                 {
                     "location": {},
                     "layerName": "foreground",
+                    "name": "foreground",
                 }
             ],
             "layers": [
@@ -24,6 +28,8 @@ getGlyphTestData = [
                     "name": "foreground",
                     "glyph": {
                         "xAdvance": 170,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
@@ -36,6 +42,8 @@ getGlyphTestData = [
                     "name": "background",
                     "glyph": {
                         "xAdvance": 170,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [62, 0, 112, 0, 112, 120, 62, 120],
@@ -52,10 +60,12 @@ getGlyphTestData = [
         {
             "name": "Aacute",
             "unicodes": [ord("Á"), ord("á")],
+            "axes": [],
             "sources": [
                 {
                     "location": {},
                     "layerName": "foreground",
+                    "name": "foreground",
                 }
             ],
             "layers": [
@@ -70,30 +80,38 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 0,
-                                    "y": 0,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 0,
+                                    "translateY": 0,
                                 },
                             },
                             {
                                 "name": "acute",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 99,
-                                    "y": 20,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 99,
+                                    "translateY": 20,
                                 },
                             },
                         ],
                         "xAdvance": 396,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
             ],
@@ -104,6 +122,7 @@ getGlyphTestData = [
         {
             "name": "period",
             "unicodes": [ord(".")],
+            "axes": [],
             "sources": [
                 {
                     "name": "LightCondensed",
@@ -131,6 +150,8 @@ getGlyphTestData = [
                     "name": "LightCondensed/foreground",
                     "glyph": {
                         "xAdvance": 170,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
@@ -143,6 +164,8 @@ getGlyphTestData = [
                     "name": "LightCondensed/background",
                     "glyph": {
                         "xAdvance": 170,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [62, 0, 112, 0, 112, 120, 62, 120],
@@ -155,6 +178,8 @@ getGlyphTestData = [
                     "name": "BoldCondensed/foreground",
                     "glyph": {
                         "xAdvance": 250,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [30, 0, 220, 0, 220, 300, 30, 300],
@@ -167,6 +192,8 @@ getGlyphTestData = [
                     "name": "LightWide/foreground",
                     "glyph": {
                         "xAdvance": 290,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [120, 0, 170, 0, 170, 220, 120, 220],
@@ -179,6 +206,8 @@ getGlyphTestData = [
                     "name": "BoldWide/foreground",
                     "glyph": {
                         "xAdvance": 310,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 250, 0, 250, 300, 60, 300],
@@ -195,6 +224,7 @@ getGlyphTestData = [
         {
             "name": "Aacute",
             "unicodes": [ord("Á"), ord("á")],
+            "axes": [],
             "sources": [
                 {
                     "name": "LightCondensed",
@@ -229,30 +259,38 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 0,
-                                    "y": 0,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 0,
+                                    "translateY": 0,
                                 },
                             },
                             {
                                 "name": "acute",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 99,
-                                    "y": 20,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 99,
+                                    "translateY": 20,
                                 },
                             },
                         ],
                         "xAdvance": 396,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
                 {
@@ -266,30 +304,38 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 0,
-                                    "y": 0,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 0,
+                                    "translateY": 0,
                                 },
                             },
                             {
                                 "name": "acute",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 204,
-                                    "y": 0,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 204,
+                                    "translateY": 0,
                                 },
                             },
                         ],
                         "xAdvance": 740,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
                 {
@@ -303,30 +349,38 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 0,
-                                    "y": 0,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 0,
+                                    "translateY": 0,
                                 },
                             },
                             {
                                 "name": "acute",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 494,
-                                    "y": 20,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 494,
+                                    "translateY": 20,
                                 },
                             },
                         ],
                         "xAdvance": 1190,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
                 {
@@ -340,30 +394,38 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 0,
-                                    "y": 0,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 0,
+                                    "translateY": 0,
                                 },
                             },
                             {
                                 "name": "acute",
+                                "location": {},
                                 "transformation": {
                                     "rotation": 0.0,
-                                    "scalex": 1.0,
-                                    "scaley": 1.0,
-                                    "tcenterx": 0,
-                                    "tcentery": 0,
-                                    "x": 484,
-                                    "y": 20,
+                                    "scaleX": 1.0,
+                                    "scaleY": 1.0,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                    "translateX": 484,
+                                    "translateY": 20,
                                 },
                             },
                         ],
                         "xAdvance": 1290,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
             ],
@@ -374,6 +436,7 @@ getGlyphTestData = [
         {
             "name": "period",
             "unicodes": [ord(".")],
+            "axes": [],
             "layers": [
                 {
                     "glyph": {
@@ -384,6 +447,8 @@ getGlyphTestData = [
                         },
                         "components": [],
                         "xAdvance": 170,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                     "name": "<default>",
                 },
@@ -396,6 +461,8 @@ getGlyphTestData = [
                         },
                         "components": [],
                         "xAdvance": 290,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                     "name": "wdth=1",
                 },
@@ -408,6 +475,8 @@ getGlyphTestData = [
                         },
                         "components": [],
                         "xAdvance": 310,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                     "name": "wdth=1,wght=1",
                 },
@@ -420,6 +489,8 @@ getGlyphTestData = [
                         },
                         "components": [],
                         "xAdvance": 250,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                     "name": "wght=1",
                 },
@@ -453,6 +524,7 @@ getGlyphTestData = [
         {
             "name": "period",
             "unicodes": [46],
+            "axes": [],
             "layers": [
                 {
                     "name": "<default>",
@@ -464,6 +536,8 @@ getGlyphTestData = [
                         },
                         "components": [],
                         "xAdvance": 170,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
                 {
@@ -485,6 +559,8 @@ getGlyphTestData = [
                         },
                         "components": [],
                         "xAdvance": 290.0,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
                 {
@@ -506,6 +582,8 @@ getGlyphTestData = [
                         },
                         "components": [],
                         "xAdvance": 310.0,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
                 {
@@ -527,6 +605,8 @@ getGlyphTestData = [
                         },
                         "components": [],
                         "xAdvance": 250.0,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
                     },
                 },
             ],
@@ -612,6 +692,7 @@ async def test_getGlyph(backendName, expectedGlyph):
     font = getTestFont(backendName)
     with contextlib.closing(font):
         glyph = await font.getGlyph(expectedGlyph["name"])
+        glyph = asdict(glyph)
         assert glyph == expectedGlyph
 
 

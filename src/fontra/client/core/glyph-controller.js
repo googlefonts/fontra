@@ -500,10 +500,11 @@ function mergeLocations(loc1, loc2) {
 
 function makeAffineTransform(transformation) {
   let t = new Transform();
-  t = t.translate(transformation.x + transformation.tcenterx, transformation.y + transformation.tcentery);
+  t = t.translate(transformation.translateX + transformation.tCenterX, transformation.translateY + transformation.tCenterY);
   t = t.rotate(transformation.rotation * (Math.PI / 180));
-  t = t.scale(transformation.scalex, transformation.scaley);
-  t = t.translate(-transformation.tcenterx, -transformation.tcentery);
+  t = t.scale(transformation.scaleX, transformation.scaleY);
+  t = t.skew(-transformation.skewX * (Math.PI / 180), transformation.skewY * (Math.PI / 180));
+  t = t.translate(-transformation.tCenterX, -transformation.tCenterY);
   return t;
 }
 
