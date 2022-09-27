@@ -1,4 +1,4 @@
-import VarPath from "./var-path.js";
+import { VarPackedPath } from "./var-path.js";
 
 
 export class VariableGlyph {
@@ -60,9 +60,9 @@ export class StaticGlyph {
     source.yAdvance = obj.yAdvance;
     source.verticalOrigin = obj.verticalOrigin;
     if (obj.path) {
-      source.path = VarPath.fromObject(obj.path);
+      source.path = VarPackedPath.fromObject(obj.path);
     } else {
-      source.path = new VarPath();
+      source.path = new VarPackedPath();
     }
     source.components = obj.components || [];
     return source

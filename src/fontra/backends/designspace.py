@@ -8,7 +8,7 @@ from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReader
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
-from .pen import PathBuilderPointPen, drawPathToPointPen
+from ..core.packedpath import PackedPathPointPen, drawPackedPathToPointPen
 
 
 logger = logging.getLogger(__name__)
@@ -231,14 +231,12 @@ def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
 
 def serializeGlyph(glyphSet, glyphName):
     glyph = UFOGlyph()
-    pen = PathBuilderPointPen()
+    pen = PackedPathPointPen()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     path = pen.getPath()
     glyphDict = {}
-    if path is not None:
-        glyphDict["path"] = path
-    if pen.components:
-        glyphDict["components"] = pen.components
+    glyphDict["path"] = path
+    glyphDict["components"] = pen.components
     glyphDict["xAdvance"] = glyph.width
     # TODO: anchors
     # TODO: yAdvance, verticalOrigin
@@ -257,7 +255,7 @@ def writeUFOLayerGlyph(glyphSet, glyphName, glyphData):
     if yAdvance is not None:
         layerGlyph.height = yAdvance
     if pathData is not None:
-        drawPathToPointPen(pathData, pen)
+        drawPackedPathToPointPen(pathData, pen)
     for component in glyphData.get("components", ()):
         pen.addComponent(
             component["name"], makeAffineTransform(component["transformation"])

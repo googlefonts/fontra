@@ -4,7 +4,7 @@ from collections import defaultdict
 import functools
 import logging
 from .changes import applyChange, baseChangeFunctions
-
+from .glyphchanges import glyphChangeFunctions
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ class FontHandler:
         ...
 
     @remoteMethod
-    async def editDo(self, liveChange, *, connection):
+    async def editIncremental(self, liveChange, *, connection):
         await self.broadcastChange(liveChange, connection, True)
 
     @remoteMethod
@@ -214,18 +214,3 @@ def _iterAllComponentNames(glyphData):
     for layer in glyphData["layers"]:
         for compo in layer["glyph"].get("components", ()):
             yield compo["name"]
-
-
-def setPointPosition(path, pointIndex, x, y):
-    coords = path["coordinates"]
-    i = pointIndex * 2
-    coords[i] = x
-    coords[i + 1] = y
-
-
-glyphChangeFunctions = {
-    "=xy": setPointPosition,
-}
-
-
-glyphChangeFunctions.update(baseChangeFunctions)

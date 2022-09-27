@@ -1,5 +1,4 @@
 export function consolidateChanges(changes, prefixPath) {
-  // TODO: consolidate common path prefix in changes
   let change;
   let path = prefixPath || [];
   if (!Array.isArray(changes)) {
@@ -9,6 +8,28 @@ export function consolidateChanges(changes, prefixPath) {
     change = {...changes[0]};
     path = path.concat(change.p || []);
   } else {
+    const commonPrefix = findCommonPrefix(changes);
+    const numCommonElements = commonPrefix.length;
+    if (numCommonElements) {
+      changes = changes.map(change => {
+        const newChange = {...change};
+        newChange.p = change.p.slice(numCommonElements);
+        if (!newChange.p.length) {
+          delete newChange.p;
+        }
+        return newChange;
+      });
+      path = path.concat(commonPrefix);
+    } else {
+      // Zap empty p
+      changes = changes.map(change => {
+        const newChange = {...change};
+        if (newChange.p && !newChange.p.length) {
+          delete newChange.p;
+        }
+        return newChange;
+      });
+    }
     change = {"c": changes};
   }
   if (path.length) {
@@ -19,6 +40,30 @@ export function consolidateChanges(changes, prefixPath) {
   return change;
 }
 
+
+function findCommonPrefix(changes) {
+  const commonPrefix = [];
+  for (const change of changes) {
+    if (!change.p || !change.p.length) {
+      return commonPrefix;
+    }
+  }
+  let index = 0;
+  while (true) {
+    let pathElement = changes[0].p[index];
+    if (!pathElement) {
+      return commonPrefix;
+    }
+    for (let i = 1; i < changes.length; i++) {
+      if (changes[i].p[index] !== pathElement) {
+        return commonPrefix;
+      }
+    }
+    commonPrefix.push(pathElement);
+    index++;
+  }
+  return commonPrefix;
+}
 
 export const baseChangeFunctions = {
   "=": (subject, key, value) => subject[key] = value,
@@ -35,12 +80,8 @@ export const baseChangeFunctions = {
 // "f": function name, to be lookud up in the changeFunctions dict
 // Optional: can be omitted if the change has children
 //
-// "k": a key or index into the "subject"
-//
-// "v": "value", a single argument for the change function
 // "a": "arguments", an array of arguments for the change function
-// If the change has a change function ("f" key), it MUST also have
-// a "v" key/value or an "a" key/value, but NOT both
+// Optional: if omitted, defaults to an empty array
 //
 // "c": Array of child changes. Optional.
 //
@@ -60,12 +101,8 @@ export function applyChange(subject, change, changeFunctions) {
 
   if (functionName) {
     const changeFunc = changeFunctions[functionName];
-    const arg = change["v"];
-    if (arg !== undefined) {
-      changeFunc(subject, change["k"], arg);
-    } else {
-      changeFunc(subject, change["k"], ...change["a"]);
-    }
+    const args = change["a"] || [];
+    changeFunc(subject, ...args);
   }
 
   for (const subChange of children) {

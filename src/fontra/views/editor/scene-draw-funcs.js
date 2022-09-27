@@ -295,7 +295,7 @@ export const drawStartPointsLayer = requireEditingGlyph(glyphTranslate(
   for (const contourInfo of glyph.path.contourInfo) {
     const startPoint = glyph.path.getPoint(startPointIndex);
     let angle;
-    if (startPointIndex <= contourInfo.endPoint) {
+    if (startPointIndex < contourInfo.endPoint) {
       const nextPoint = glyph.path.getPoint(startPointIndex + 1);
       const direction = subVectors(nextPoint, startPoint);
       angle = Math.atan2(direction.y, direction.x);
@@ -372,6 +372,10 @@ function _drawSelectionLayer(model, controller, context, glyph, drawingParameter
     }
     if (tp === "point") {
       const pt = glyph.path.getPoint(index);
+      if (pt === undefined) {
+        // Selection is not valid
+        continue;
+      }
       if (drawHoverStroke) {
         strokeNode(context, pt, cornerNodeSize + hoverStrokeOffset, smoothNodeSize + hoverStrokeOffset, handleNodeSize + hoverStrokeOffset);
       }

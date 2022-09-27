@@ -7,7 +7,7 @@ import {
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
-import VarPath from "./var-path.js";
+import { VarPackedPath } from "./var-path.js";
 
 
 export class VariableGlyphController {
@@ -486,7 +486,7 @@ function joinPaths(paths) {
   if (paths.length) {
     return paths.reduce((p1, p2) => p1.concat(p2));
   }
-  return new VarPath();
+  return new VarPackedPath();
 }
 
 

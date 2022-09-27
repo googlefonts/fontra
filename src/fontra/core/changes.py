@@ -17,12 +17,8 @@ baseChangeFunctions = {
 # "f": function name, to be lookud up in the changeFunctions dict
 # Optional: can be omitted if the change has children
 #
-# "k": a key or index into the "subject"
-#
-# "v": "value", a single argument for the change function
 # "a": "arguments", an array of arguments for the change function
-# If the change has a change function ("f" key), it MUST also have
-# a "v" key/value or an "a" key/value, but NOT both
+# Optional: if omitted, defaults to an empty array
 #
 # "c": Array of child changes. Optional.
 #
@@ -38,11 +34,8 @@ def applyChange(subject, change, changeFunctions):
 
     if functionName is not None:
         changeFunc = changeFunctions[functionName]
-        arg = change.get("v")
-        if arg is not None:
-            changeFunc(subject, change["k"], arg)
-        else:
-            changeFunc(subject, change["k"], *change["a"])
+        args = change.get("a", [])
+        changeFunc(subject, *args)
 
     for subChange in children:
         applyChange(subject, subChange, changeFunctions)

@@ -1,0 +1,297 @@
+{
+  "inputPaths": {
+    "emptyPath": [],
+    "oneContour": [
+      {
+        "points": [
+          {
+            "x": 10,
+            "y": 20
+          }
+        ],
+        "isClosed": false
+      }
+    ],
+    "twoContours": [
+      {
+        "points": [
+          {
+            "x": 10,
+            "y": 20
+          }
+        ],
+        "isClosed": false
+      },
+      {
+        "points": [
+          {
+            "x": 60,
+            "y": 50
+          }
+        ],
+        "isClosed": false
+      }
+    ],
+    "twoContoursMorePoints": [
+      {
+        "points": [
+          {
+            "x": 10,
+            "y": 20
+          },
+          {
+            "x": 16,
+            "y": 22
+          }
+        ],
+        "isClosed": false
+      },
+      {
+        "points": [
+          {
+            "x": 60,
+            "y": 50
+          },
+          {
+            "x": 63,
+            "y": 51
+          }
+        ],
+        "isClosed": false
+      }
+    ]
+  },
+  "tests": [
+    {
+      "testName": "insertContour",
+      "inputPathName": "emptyPath",
+      "change": {
+        "f": "insertContour",
+        "a": [
+          0,
+          {
+            "coordinates": [
+              10,
+              20
+            ],
+            "pointTypes": [
+              0
+            ],
+            "isClosed": false
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "deleteContour",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "deleteContour",
+        "a": [
+          0
+        ]
+      },
+      "expectedPath": []
+    },
+    {
+      "testName": "deleteContour 2",
+      "inputPathName": "twoContours",
+      "change": {
+        "f": "deleteContour",
+        "a": [
+          1
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "set coordinates",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "=xy",
+        "a": [
+          0,
+          12,
+          13
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 12,
+              "y": 13
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "delete point",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "deletePoint",
+        "a": [
+          0,
+          0
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "delete point 2",
+      "inputPathName": "twoContours",
+      "change": {
+        "f": "deletePoint",
+        "a": [
+          1,
+          0
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "isClosed": false
+        },
+        {
+          "points": [],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "delete point 3",
+      "inputPathName": "twoContoursMorePoints",
+      "change": {
+        "c": [
+          {
+            "f": "deletePoint",
+            "a": [
+              1,
+              0
+            ]
+          },
+          {
+            "f": "deletePoint",
+            "a": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 16,
+              "y": 22
+            }
+          ],
+          "isClosed": false
+        },
+        {
+          "points": [
+            {
+              "x": 63,
+              "y": 51
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "insert point 1",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "insertPoint",
+        "a": [
+          0,
+          0,
+          {
+            "x": 4,
+            "y": 5
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 4,
+              "y": 5
+            },
+            {
+              "x": 10,
+              "y": 20
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    },
+    {
+      "testName": "insert point 2",
+      "inputPathName": "oneContour",
+      "change": {
+        "f": "insertPoint",
+        "a": [
+          0,
+          1,
+          {
+            "x": 4,
+            "y": 5
+          }
+        ]
+      },
+      "expectedPath": [
+        {
+          "points": [
+            {
+              "x": 10,
+              "y": 20
+            },
+            {
+              "x": 4,
+              "y": 5
+            }
+          ],
+          "isClosed": false
+        }
+      ]
+    }
+  ]
+}

@@ -56,6 +56,7 @@ export function throttleCalls(func, minTime) {
   return (...args) => {
     if (timeoutID !== null) {
       clearTimeout(timeoutID);
+      timeoutID = null
     }
     const now = Date.now();
     if (now - lastTime > minTime) {
@@ -69,6 +70,7 @@ export function throttleCalls(func, minTime) {
         func(...args);
       }, minTime);
     }
+    return timeoutID;
   };
 }
 
@@ -195,4 +197,18 @@ export function sign(v) {
 export function boolInt(v) {
   // Return 1 if `v` is true-y, 0 if `v` is false-y
   return v ? 1 : 0;
+}
+
+
+export function *enumerate(iterable, start = 0) {
+  let i = start;
+  for (const item of iterable) {
+    yield [i, item];
+    i++;
+  }
+}
+
+
+export function roundPoint(point) {
+  return {"x": Math.round(point.x), "y": Math.round(point.y)};
 }

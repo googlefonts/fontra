@@ -164,7 +164,7 @@ function _findPointMatch(matchTree, neighborIndices, contourPoints) {
     pointType = DOESNT_EXIST;
   } else {
     const smooth = boolInt(point.smooth);
-    const oncurve = boolInt(point.type === 0);
+    const oncurve = boolInt(!point.type);
     const selected = boolInt(point.selected);
     pointType = POINT_TYPES[smooth][oncurve][selected];
   }

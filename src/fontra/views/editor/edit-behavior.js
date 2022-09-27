@@ -152,14 +152,14 @@ function makePointTranslateFunction(delta) {
 
 
 function makePointChange(pointIndex, x, y) {
-  return {"f": "=xy", "k": pointIndex, "a": [x, y]};
+  return {"f": "=xy", "a": [pointIndex, x, y]};
 }
 
 
 function makeComponentOriginChange(componentIndex, x, y) {
   return {
     "p": [componentIndex, "transformation"],
-    "c": [{"f": "=", "k": "x", "v": x}, {"f": "=", "k": "y", "v": y}],
+    "c": [{"f": "=", "a": ["x", x]}, {"f": "=", "a": ["y", y]}],
   };
 }
 

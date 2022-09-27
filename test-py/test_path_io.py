@@ -1,5 +1,5 @@
 import pytest
-from fontra.backends.pen import PathBuilderPointPen, drawPathToPointPen
+from fontra.core.packedpath import PackedPathPointPen, drawPackedPathToPointPen
 
 
 pathTestData = [
@@ -118,6 +118,6 @@ pathTestData = [
 
 @pytest.mark.parametrize("path", pathTestData)
 async def test_getGlyph(path):
-    pen = PathBuilderPointPen()
-    drawPathToPointPen(path, pen)
+    pen = PackedPathPointPen()
+    drawPackedPathToPointPen(path, pen)
     assert path == pen.getPath()

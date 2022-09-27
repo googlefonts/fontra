@@ -30,6 +30,9 @@ import {
 import { SceneController } from "./scene-controller.js"
 import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
+import { HandTool } from "./edit-tools-hand.js";
+import { PenTool } from "./edit-tools-pen.js";
+import { PointerTool } from "./edit-tools-pointer.js";
 
 
 const drawingParametersLight = {
@@ -251,6 +254,11 @@ export class EditorController {
   }
 
   initTools() {
+    this.tools = {
+      "pointer-tool": new PointerTool(this),
+      "pen-tool": new PenTool(this),
+      "hand-tool": new HandTool(this),
+    };
     const editTools = document.querySelector("#edit-tools");
     for (const editToolItem of editTools.children) {
       const toolElement = editToolItem.firstChild;
@@ -259,6 +267,7 @@ export class EditorController {
         this.setSelectedTool(toolElement.id);
       }
     }
+    this.setSelectedTool("pointer-tool");
 
     const zoomTools = document.querySelector("#zoom-tools");
     for (const zoomToolItem of zoomTools.children) {
@@ -391,7 +400,7 @@ export class EditorController {
     for (const editToolItem of editTools.children) {
       editToolItem.classList.toggle("selected", editToolItem.firstChild.id === toolIdentifier);
     }
-    this.sceneController.setSelectedTool(toolIdentifier);
+    this.sceneController.setSelectedTool(this.tools[toolIdentifier]);
   }
 
   themeChanged(event) {
@@ -707,7 +716,7 @@ export class EditorController {
       // The edit comes from the selection info box itself, so we shouldn't update it
       return;
     }
-    if (editMethodName === "editDo" || editMethodName === "editAtomic") {
+    if (editMethodName === "editIncremental" || editMethodName === "editAtomic") {
       this.updateSelectionInfo();
     }
   }
@@ -799,18 +808,20 @@ export class EditorController {
     let localChangePath;
     let change;
     let rollbackChange;
+    let unfoInfo;
 
     const setup = async info => {
       keyString = info.key;
       localChangePath = JSON.parse(keyString);
       const plen = localChangePath.length;
       const undoLabelField = plen == 1 ? `${localChangePath[plen - 1]}` : `${localChangePath[plen - 2]}.${localChangePath[plen - 1]}`;
-      const undoInfo = {
+      undoInfo = {
         "label": `edit ${undoLabelField}`,
-        "selection": this.sceneController.selection,
+        "undoSelection": this.sceneController.selection,
+        "redoSelection": this.sceneController.selection,
         "location": this.sceneController.getLocation(),
       }
-      editContext = await this.sceneController.getGlyphEditContext(this, undoInfo);
+      editContext = await this.sceneController.getGlyphEditContext(this);
       if (!editContext) {
         console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
         return false;
@@ -842,14 +853,14 @@ export class EditorController {
           return;
         }
         change = makeFieldChange(localChangePath, info.value);
-        await editContext.editAtomic(change, rollbackChange);
+        await editContext.editAtomic(change, rollbackChange, undoInfo);
         breakdown();
       } else {
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
         change = makeFieldChange(localChangePath, info.value);
-        await editContext.editDo(change);
+        await editContext.editIncrementalMayDrop(change);
       }
     };
 
@@ -860,7 +871,8 @@ export class EditorController {
       if (keyString !== info.key) {
         throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
       }
-      await editContext.editEnd(change);
+      await editContext.editIncremental(change);
+      await editContext.editEnd(change, undoInfo);
       breakdown();
     };
   }
@@ -1100,8 +1112,7 @@ function makeFieldChange(path, value) {
   return {
     "p": path,
     "f": "=",
-    "k": key,
-    "v": value,
+    "a": [key, value],
   };
 }
 
