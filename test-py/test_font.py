@@ -60,6 +60,11 @@ getGlyphTestData = [
                 {
                     "name": "foreground",
                     "glyph": {
+                        "path": {
+                            "contourInfo": [],
+                            "coordinates": [],
+                            "pointTypes": [],
+                        },
                         "components": [
                             {
                                 "name": "A",
@@ -209,6 +214,11 @@ getGlyphTestData = [
                 {
                     "name": "LightCondensed/foreground",
                     "glyph": {
+                        "path": {
+                            "contourInfo": [],
+                            "coordinates": [],
+                            "pointTypes": [],
+                        },
                         "components": [
                             {
                                 "name": "A",
@@ -241,6 +251,11 @@ getGlyphTestData = [
                 {
                     "name": "BoldCondensed/foreground",
                     "glyph": {
+                        "path": {
+                            "contourInfo": [],
+                            "coordinates": [],
+                            "pointTypes": [],
+                        },
                         "components": [
                             {
                                 "name": "A",
@@ -273,6 +288,11 @@ getGlyphTestData = [
                 {
                     "name": "LightWide/foreground",
                     "glyph": {
+                        "path": {
+                            "contourInfo": [],
+                            "coordinates": [],
+                            "pointTypes": [],
+                        },
                         "components": [
                             {
                                 "name": "A",
@@ -305,6 +325,11 @@ getGlyphTestData = [
                 {
                     "name": "BoldWide/foreground",
                     "glyph": {
+                        "path": {
+                            "contourInfo": [],
+                            "coordinates": [],
+                            "pointTypes": [],
+                        },
                         "components": [
                             {
                                 "name": "A",

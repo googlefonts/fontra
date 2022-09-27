@@ -21,14 +21,11 @@ class PackedPathPointPen:
         self._currentContour = None
 
     def getPath(self):
-        if self.coordinates:
-            return dict(
-                coordinates=self.coordinates,
-                pointTypes=self.pointTypes,
-                contourInfo=self.contourInfo,
-            )
-        else:
-            return None
+        return dict(
+            coordinates=self.coordinates,
+            pointTypes=self.pointTypes,
+            contourInfo=self.contourInfo,
+        )
 
     def beginPath(self, **kwargs):
         self._currentContour = []
