@@ -13,6 +13,8 @@ export function addItemwise(a, b) {
     return a + b;
   } else if (a === undefined && b === undefined) {
     return undefined;
+  } else if (a === null && b === null) {
+    return null;
   } else if (a.addItemwise !== undefined) {
     return a.addItemwise(b);
   }
@@ -32,6 +34,8 @@ export function subItemwise(a, b) {
     return a - b;
   } else if (a === undefined && b === undefined) {
     return undefined;
+  } else if (a === null && b === null) {
+    return null;
   } else if (a.subItemwise !== undefined) {
     return a.subItemwise(b);
   }
@@ -46,6 +50,8 @@ export function mulScalar(o, scalar) {
     return o * scalar;
   } else if (o === undefined) {
     return undefined;
+  } else if (o === null) {
+    return null;
   } else if (o.mulScalar !== undefined) {
     return o.mulScalar(scalar);
   }
