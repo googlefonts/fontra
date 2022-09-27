@@ -26,6 +26,36 @@ class PackedPath:
     pointTypes: list[PointType] = field(default_factory=list)
     contourInfo: list[ContourInfo] = field(default_factory=list)
 
+    @classmethod
+    def fromUnpackedContours(cls, unpackedContours):
+        coordinates = []
+        pointTypes = []
+        contourInfo = []
+        packedContours = [_packContour(c) for c in unpackedContours]
+        for packedContour in packedContours:
+            coordinates.extend(packedContour["coordinates"])
+            pointTypes.extend(packedContour["pointTypes"])
+            contourInfo.append(
+                ContourInfo(
+                    endPoint=len(pointTypes) - 1, isClosed=packedContour["isClosed"]
+                )
+            )
+        return cls(
+            coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo
+        )
+
+    def unpackedContours(self):
+        unpackedContours = []
+        coordinates = self.coordinates
+        pointTypes = self.pointTypes
+        startIndex = 0
+        for contourInfo in self.contourInfo:
+            endIndex = contourInfo.endPoint + 1
+            points = list(_iterPoints(coordinates, pointTypes, startIndex, endIndex))
+            unpackedContours.append(dict(points=points, isClosed=contourInfo.isClosed))
+            startIndex = endIndex
+        return unpackedContours
+
     def setPointPosition(self, pointIndex, x, y):
         coords = self.coordinates
         i = pointIndex * 2
@@ -269,19 +299,6 @@ def pairwise(iterable):
     return zip(it, it)
 
 
-def unpackPath(packedPath):
-    unpackedPath = []
-    coordinates = packedPath.coordinates
-    pointTypes = packedPath.pointTypes
-    startIndex = 0
-    for contourInfo in packedPath.contourInfo:
-        endIndex = contourInfo.endPoint + 1
-        points = list(_iterPoints(coordinates, pointTypes, startIndex, endIndex))
-        unpackedPath.append(dict(points=points, isClosed=contourInfo.isClosed))
-        startIndex = endIndex
-    return unpackedPath
-
-
 def _iterPoints(coordinates, pointTypes, startIndex, endIndex):
     for i in range(startIndex, endIndex):
         point = dict(x=coordinates[i * 2], y=coordinates[i * 2 + 1])
@@ -295,25 +312,7 @@ def _iterPoints(coordinates, pointTypes, startIndex, endIndex):
         yield point
 
 
-def packPath(unpackedPath):
-    coordinates = []
-    pointTypes = []
-    contourInfo = []
-    packedContours = [packContour(c) for c in unpackedPath]
-    for packedContour in packedContours:
-        coordinates.extend(packedContour["coordinates"])
-        pointTypes.extend(packedContour["pointTypes"])
-        contourInfo.append(
-            ContourInfo(
-                endPoint=len(pointTypes) - 1, isClosed=packedContour["isClosed"]
-            )
-        )
-    return PackedPath(
-        coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo
-    )
-
-
-def packContour(unpackedContour):
+def _packContour(unpackedContour):
     coordinates = []
     pointTypes = []
     for point in unpackedContour["points"]:

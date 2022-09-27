@@ -3,7 +3,7 @@ import pathlib
 import pytest
 from fontra.core.changes import applyChange
 from fontra.core.glyphchanges import glyphChangeFunctions
-from fontra.core.packedpath import packPath
+from fontra.core.packedpath import PackedPath
 
 
 testDataPath = (
@@ -19,7 +19,7 @@ pathChangeTestData = [
         testCase["testName"],
         testCase["inputPathName"],
         testCase["change"],
-        packPath(testCase["expectedPath"]),
+        PackedPath.fromUnpackedContours(testCase["expectedPath"]),
     )
     for testCase in pathChangeTestData["tests"]
 ]
@@ -29,6 +29,6 @@ pathChangeTestData = [
     "testName, inputPathName, change, expectedData", pathChangeTestData
 )
 def test_applyChange(testName, inputPathName, change, expectedData):
-    subject = packPath(pathChangeTestInputData[inputPathName])
+    subject = PackedPath.fromUnpackedContours(pathChangeTestInputData[inputPathName])
     applyChange(subject, change, glyphChangeFunctions)
     assert subject == expectedData

@@ -6,8 +6,6 @@ from fontra.core.packedpath import (
     PackedPathPointPen,
     PointType,
     drawPackedPathToPointPen,
-    packPath,
-    unpackPath,
 )
 
 
@@ -138,7 +136,7 @@ async def test_packedPathPointPenRoundTrip(path):
 @pytest.mark.parametrize("path", pathTestData)
 async def test_unpackPathRoundTrip(path):
     path = from_dict(PackedPath, path)
-    unpackedPath = unpackPath(path)
-    repackedPath = packPath(unpackedPath)
+    unpackedPath = path.unpackedContours()
+    repackedPath = PackedPath.fromUnpackedContours(unpackedPath)
     assert path == repackedPath
     assert asdict(path) == asdict(repackedPath)
