@@ -231,7 +231,6 @@ def serializeGlyph(glyphSet, glyphName):
     glyph = UFOGlyph()
     pen = PackedPathPointPen()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
-    path = pen.getPath()
     staticGlyph = StaticGlyph(
         path=pen.getPath(), components=pen.components, xAdvance=glyph.width
     )
