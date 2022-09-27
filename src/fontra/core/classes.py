@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from functools import partial
-from enum import IntEnum
 import dacite
 from .packedpath import PackedPath, PointType
 
