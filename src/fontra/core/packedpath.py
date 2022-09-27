@@ -157,16 +157,16 @@ _pointToSegmentType = {
 
 def drawPackedPathToPointPen(path, pen):
     startPoint = 0
-    for contourInfo in path["contourInfo"]:
-        endPoint = contourInfo["endPoint"] + 1
-        coordinates = path["coordinates"][startPoint * 2 : endPoint * 2]
+    for contourInfo in path.contourInfo:
+        endPoint = contourInfo.endPoint + 1
+        coordinates = path.coordinates[startPoint * 2 : endPoint * 2]
         points = list(pairwise(coordinates))
-        pointTypes = path["pointTypes"][startPoint:endPoint]
+        pointTypes = path.pointTypes[startPoint:endPoint]
         assert len(points) == len(pointTypes)
         pen.beginPath()
         segmentType = (
             _pointToSegmentType.get(pointTypes[-1], "line")
-            if contourInfo["isClosed"]
+            if contourInfo.isClosed
             else "move"
         )
         for point, pointType in zip(points, pointTypes):

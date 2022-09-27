@@ -127,9 +127,12 @@ pathTestData = [
 
 @pytest.mark.parametrize("path", pathTestData)
 async def test_packedPathPointPenRoundTrip(path):
+    path = from_dict(PackedPath, path)
     pen = PackedPathPointPen()
     drawPackedPathToPointPen(path, pen)
-    assert path == asdict(pen.getPath())
+    repackedPath = pen.getPath()
+    assert path == repackedPath
+    assert asdict(path) == asdict(repackedPath)
 
 
 @pytest.mark.parametrize("path", pathTestData)
