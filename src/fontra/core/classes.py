@@ -40,8 +40,8 @@ class StaticGlyph:
 @dataclass
 class Source:
     name: str
-    location: Location
     layerName: str
+    location: Location = field(default_factory=Location)
 
 
 @dataclass
