@@ -59,10 +59,10 @@ class PackedPath:
     def drawPoints(self, pen):
         startPoint = 0
         for contourInfo in self.contourInfo:
-            endPoint = contourInfo.endPoint + 1
-            coordinates = self.coordinates[startPoint * 2 : endPoint * 2]
+            endIndex = contourInfo.endPoint + 1
+            coordinates = self.coordinates[startPoint * 2 : endIndex * 2]
             points = list(pairwise(coordinates))
-            pointTypes = self.pointTypes[startPoint:endPoint]
+            pointTypes = self.pointTypes[startPoint:endIndex]
             assert len(points) == len(pointTypes)
             pen.beginPath()
             segmentType = (
@@ -85,7 +85,7 @@ class PackedPath:
                 )
                 segmentType = _pointToSegmentType.get(pointType, "line")
             pen.endPath()
-            startPoint = endPoint
+            startPoint = endIndex
 
     def setPointPosition(self, pointIndex, x, y):
         coords = self.coordinates
