@@ -30,9 +30,9 @@ export class PenTool extends BaseTool {
     const instance = editContext.glyphController.instance;
     const path = instance.path;
 
-    const selection = this.sceneController.selection;
+    const initialSelection = this.sceneController.selection;
 
-    let [contourIndex, contourPointIndex, isAppend] = getAppendIndices(selection, path);
+    let [contourIndex, contourPointIndex, isAppend] = getAppendIndices(initialSelection, path);
 
     if (contourIndex === undefined) {
       // Let's add a new contour
@@ -56,7 +56,7 @@ export class PenTool extends BaseTool {
 
     const undoInfo = {
       "label": "draw point",
-      "undoSelection": selection,
+      "undoSelection": initialSelection,
       "redoSelection": newSelection,
       "location": this.sceneController.getLocation(),
     }
