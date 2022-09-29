@@ -31,25 +31,8 @@ export class PenTool extends BaseTool {
     const path = instance.path;
 
     const selection = this.sceneController.selection;
-    let contourIndex, contourPointIndex;
 
-    if (selection.size === 1) {
-      const sel = [...selection][0];
-      const [tp, pointIndex] = sel.split("/");
-      if (pointIndex < path.numPoints) {
-        const [selContourIndex, selContourPointIndex] = path.getContourAndPointIndex(pointIndex);
-        const numPointsContour = path.getNumPointsOfContour(selContourIndex);
-        if (
-          !path.contourInfo[selContourIndex].isClosed
-          && (selContourPointIndex === 0 || selContourPointIndex === numPointsContour - 1)
-        ) {
-          // Let's append or prepend a point to an existing contour
-          contourIndex = selContourIndex;
-          const isAppend = !!(selContourPointIndex || numPointsContour === 1);
-          contourPointIndex = isAppend ? selContourPointIndex + 1 : 0;
-        }
-      }
-    }
+    let [contourIndex, contourPointIndex, isAppend] = this._getAppendIndices(selection, path);
 
     if (contourIndex === undefined) {
       // Let's add a new contour
@@ -112,6 +95,27 @@ export class PenTool extends BaseTool {
 
   }
 
+  _getAppendIndices(selection, path) {
+    if (selection.size === 1) {
+      const sel = [...selection][0];
+      const [tp, pointIndex] = sel.split("/");
+      if (pointIndex < path.numPoints) {
+        const [selContourIndex, selContourPointIndex] = path.getContourAndPointIndex(pointIndex);
+        const numPointsContour = path.getNumPointsOfContour(selContourIndex);
+        if (
+          !path.contourInfo[selContourIndex].isClosed
+          && (selContourPointIndex === 0 || selContourPointIndex === numPointsContour - 1)
+        ) {
+          // Let's append or prepend a point to an existing contour
+          const contourIndex = selContourIndex;
+          const isAppend = !!(selContourPointIndex || numPointsContour === 1);
+          const contourPointIndex = isAppend ? selContourPointIndex + 1 : 0;
+          return [contourIndex, contourPointIndex, isAppend];
+        }
+      }
+    }
+    return [undefined, undefined, undefined];
+  }
 }
 
 
