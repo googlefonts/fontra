@@ -1,6 +1,7 @@
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { lenientIsEqualSet, isEqualSet } from "../core/set-ops.js";
 import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
+import { EditBehaviorFactory } from "./edit-behavior.js";
 
 
 export class SceneController {
