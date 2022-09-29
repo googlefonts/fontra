@@ -39,17 +39,8 @@ export class PenTool extends BaseTool {
       contourIndex = path.numContours;
       contourPointIndex = 0;
 
-      rollbackChanges.push({
-        "p": ["path"],
-        "f": "deleteContour",
-        "a": [contourIndex],
-      });
-
-      editChanges.push({
-        "p": ["path"],
-        "f": "insertContour",
-        "a": [contourIndex, emptyContour()],
-      });
+      rollbackChanges.push(deleteContour(contourIndex));
+      editChanges.push(appendEmptyContour(contourIndex));
     }
 
     let newPointIndex;
@@ -60,17 +51,8 @@ export class PenTool extends BaseTool {
     }
     const newSelection = new Set([`point/${newPointIndex}`]);
 
-    rollbackChanges.push({
-      "p": ["path"],
-      "f": "deletePoint",
-      "a": [contourIndex, contourPointIndex],
-    });
-
-    editChanges.push({
-      "p": ["path"],
-      "f": "insertPoint",
-      "a": [contourIndex, contourPointIndex, glyphPoint],
-    });
+    rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
+    editChanges.push(insertPoint(contourIndex, contourPointIndex, glyphPoint));
 
     const undoInfo = {
       "label": "draw point",
@@ -116,6 +98,40 @@ export class PenTool extends BaseTool {
     }
     return [undefined, undefined, undefined];
   }
+}
+
+
+function deleteContour(contourIndex) {
+  return {
+    "p": ["path"],
+    "f": "deleteContour",
+    "a": [contourIndex],
+  };
+}
+
+function appendEmptyContour(contourIndex) {
+  return {
+    "p": ["path"],
+    "f": "insertContour",
+    "a": [contourIndex, emptyContour()],
+  };
+}
+
+function deletePoint(contourIndex, contourPointIndex) {
+  return {
+    "p": ["path"],
+    "f": "deletePoint",
+    "a": [contourIndex, contourPointIndex],
+  };
+}
+
+
+function insertPoint(contourIndex, contourPointIndex, point) {
+  return {
+    "p": ["path"],
+    "f": "insertPoint",
+    "a": [contourIndex, contourPointIndex, point],
+  };
 }
 
 
