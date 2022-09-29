@@ -125,7 +125,6 @@ function deletePoint(contourIndex, contourPointIndex) {
   };
 }
 
-
 function insertPoint(contourIndex, contourPointIndex, point) {
   return {
     "p": ["path"],
@@ -133,7 +132,6 @@ function insertPoint(contourIndex, contourPointIndex, point) {
     "a": [contourIndex, contourPointIndex, point],
   };
 }
-
 
 function emptyContour() {
   return {"coordinates": [], "pointTypes": [], "isClosed": false};
