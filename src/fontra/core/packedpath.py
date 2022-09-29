@@ -231,7 +231,7 @@ class PackedPathPointPen:
         from .classes import Component, Transformation
 
         xx, xy, yx, yy, dx, dy = transformation
-        rotation, scalex, scaley, skewx, skewy = decomposeTwoByTwo((xx, xy, yx, yy))
+        rotation, scaleX, scaleY, skewX, skewY = decomposeTwoByTwo((xx, xy, yx, yy))
         # TODO rotation is problematic with interpolation: should interpolation
         # go clockwise or counter-clockwise? That ambiguous, and get more complicated
         # with > 2 masters. Perhaps we can "normalize" the rotations angles in some
@@ -243,10 +243,10 @@ class PackedPathPointPen:
             translateX=dx,
             translateY=dy,
             rotation=math.degrees(rotation),
-            scaleX=scalex,
-            scaleY=scaley,
-            skewX=math.degrees(-skewx),
-            skewY=math.degrees(skewy),
+            scaleX=scaleX,
+            scaleY=scaleY,
+            skewX=math.degrees(-skewX),
+            skewY=math.degrees(skewY),
             tCenterX=0,
             tCenterY=0,
         )
@@ -257,34 +257,34 @@ class PackedPathPointPen:
 def decomposeTwoByTwo(twoByTwo):
     """Decompose a 2x2 transformation matrix into components:
     - rotation
-    - scalex
-    - scaley
-    - skewx
-    - skewy
+    - scaleX
+    - scaleY
+    - skewX
+    - skewY
     """
     a, b, c, d = twoByTwo
     delta = a * d - b * c
 
     rotation = 0
-    scalex = scaley = 0
-    skewx = skewy = 0
+    scaleX = scaleY = 0
+    skewX = skewY = 0
 
     # Apply the QR-like decomposition.
     if a != 0 or b != 0:
         r = math.sqrt(a * a + b * b)
         rotation = math.acos(a / r) if b > 0 else -math.acos(a / r)
-        scalex, scaley = (r, delta / r)
-        skewx, skewy = (math.atan((a * c + b * d) / (r * r)), 0)
+        scaleX, scaleY = (r, delta / r)
+        skewX, skewY = (math.atan((a * c + b * d) / (r * r)), 0)
     elif c != 0 or d != 0:
         s = math.sqrt(c * c + d * d)
         rotation = math.pi / 2 - (math.acos(-c / s) if d > 0 else -math.acos(c / s))
-        scalex, scaley = (delta / s, s)
-        skewx, skewy = (0, math.atan((a * c + b * d) / (s * s)))
+        scaleX, scaleY = (delta / s, s)
+        skewX, skewY = (0, math.atan((a * c + b * d) / (s * s)))
     else:
         # a = b = c = d = 0
         pass
 
-    return rotation, scalex, scaley, skewx, skewy
+    return rotation, scaleX, scaleY, skewX, skewY
 
 
 _pointToSegmentType = {
