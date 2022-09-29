@@ -1,4 +1,5 @@
 import { roundPoint } from "../core/utils.js";
+import { consolidateChanges } from "../core/changes.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 
 
@@ -23,63 +24,70 @@ export class PenTool extends BaseTool {
       return;
     }
 
+    let rollbackChanges = [];
+    let editChanges = [];
+
     const instance = editContext.glyphController.instance;
     const path = instance.path;
 
     const selection = this.sceneController.selection;
-    let editChange, rollbackChange, newSelection;
+    let contourIndex, contourPointIndex;
+
     if (selection.size === 1) {
       const sel = [...selection][0];
       const [tp, pointIndex] = sel.split("/");
       if (pointIndex < path.numPoints) {
-        const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
-        const numPointsContour = path.getNumPointsOfContour(contourIndex);
+        const [selContourIndex, selContourPointIndex] = path.getContourAndPointIndex(pointIndex);
+        const numPointsContour = path.getNumPointsOfContour(selContourIndex);
         if (
-          !path.contourInfo[contourIndex].isClosed
-          && (contourPointIndex === 0 || contourPointIndex === numPointsContour - 1)
+          !path.contourInfo[selContourIndex].isClosed
+          && (selContourPointIndex === 0 || selContourPointIndex === numPointsContour - 1)
         ) {
-          // Let's append or prepend a point
-          const isAppend = !!(contourPointIndex || numPointsContour === 1);
-          const newContourPointIndex = isAppend ? contourPointIndex + 1 : 0;
-          const newPointIndex = path.getAbsolutePointIndex(contourIndex, newContourPointIndex, true);
-          newSelection = new Set([`point/${newPointIndex}`]);
-          rollbackChange = {
-            "p": ["path"],
-            "f": "deletePoint",
-            "a": [contourIndex, newContourPointIndex],
-          }
-          editChange = {
-            "p": ["path"],
-            "f": "insertPoint",
-            "a": [contourIndex, newContourPointIndex, glyphPoint],
-          }
+          // Let's append or prepend a point to an existing contour
+          contourIndex = selContourIndex;
+          const isAppend = !!(selContourPointIndex || numPointsContour === 1);
+          contourPointIndex = isAppend ? selContourPointIndex + 1 : 0;
         }
       }
     }
 
-    if (editChange === undefined) {
+    if (contourIndex === undefined) {
       // Let's add a new contour
-      const newContourIndex = path.numContours;
-      const newPointIndex = path.numPoints;
-      newSelection = new Set([`point/${newPointIndex}`]);
-      rollbackChange = {
+      contourIndex = path.numContours;
+      contourPointIndex = 0;
+
+      rollbackChanges.push({
         "p": ["path"],
         "f": "deleteContour",
-        "a": [newContourIndex],
-      }
-      editChange = {
+        "a": [contourIndex],
+      });
+
+      editChanges.push({
         "p": ["path"],
         "f": "insertContour",
-        "a": [
-          newContourIndex,
-          {
-            "coordinates": [glyphPoint.x, glyphPoint.y],
-            "pointTypes": [0],
-            "isClosed": false
-          }
-        ]
-      }
+        "a": [contourIndex, emptyContour()],
+      });
     }
+
+    let newPointIndex;
+    if (contourIndex >= path.numContours) {
+      newPointIndex = path.numPoints;
+    } else {
+      newPointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex, true);
+    }
+    const newSelection = new Set([`point/${newPointIndex}`]);
+
+    rollbackChanges.push({
+      "p": ["path"],
+      "f": "deletePoint",
+      "a": [contourIndex, contourPointIndex],
+    });
+
+    editChanges.push({
+      "p": ["path"],
+      "f": "insertPoint",
+      "a": [contourIndex, contourPointIndex, glyphPoint],
+    });
 
     const undoInfo = {
       "label": "draw point",
@@ -93,6 +101,9 @@ export class PenTool extends BaseTool {
       // console.log("Now drag a new off-curve point");
     }
 
+    const editChange = consolidateChanges(editChanges);
+    const rollbackChange = consolidateChanges([...rollbackChanges].reverse());
+
     // await editContext.editBegin();
     // await editContext.editSetRollback(rollbackChange);
     // await editContext.editIncremental(editChange);
@@ -101,4 +112,9 @@ export class PenTool extends BaseTool {
 
   }
 
+}
+
+
+function emptyContour() {
+  return {"coordinates": [], "pointTypes": [], "isClosed": false};
 }
