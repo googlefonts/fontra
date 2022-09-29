@@ -54,12 +54,6 @@ export class PenTool extends BaseTool {
     rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
     editChanges.push(insertPoint(contourIndex, contourPointIndex, glyphPoint));
 
-    const undoInfo = {
-      "label": "draw point",
-      "undoSelection": initialSelection,
-      "redoSelection": newSelection,
-      "location": this.sceneController.getLocation(),
-    }
     this.sceneController.selection = newSelection;
 
     if (await shouldInitiateDrag(eventStream, initialEvent)) {
@@ -68,6 +62,13 @@ export class PenTool extends BaseTool {
 
     const editChange = consolidateChanges(editChanges);
     const rollbackChange = consolidateChanges([...rollbackChanges].reverse());
+
+    const undoInfo = {
+      "label": "draw point",
+      "undoSelection": initialSelection,
+      "redoSelection": newSelection,
+      "location": this.sceneController.getLocation(),
+    }
 
     // await editContext.editBegin();
     // await editContext.editSetRollback(rollbackChange);
