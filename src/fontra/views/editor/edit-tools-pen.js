@@ -1,4 +1,4 @@
-import { roundPoint } from "../core/utils.js";
+import { reversed, roundPoint } from "../core/utils.js";
 import { consolidateChanges } from "../core/changes.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 
@@ -61,7 +61,7 @@ export class PenTool extends BaseTool {
     }
 
     const editChange = consolidateChanges(editChanges);
-    const rollbackChange = consolidateChanges([...rollbackChanges].reverse());
+    const rollbackChange = consolidateChanges([...reversed(rollbackChanges)]);
 
     const undoInfo = {
       "label": "draw point",
