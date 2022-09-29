@@ -49,19 +49,44 @@ export class PenTool extends BaseTool {
     } else {
       newPointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex, true);
     }
-    const newSelection = new Set([`point/${newPointIndex}`]);
+    let newSelection = new Set([`point/${newPointIndex}`]);
 
     rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
     editChanges.push(insertPoint(contourIndex, contourPointIndex, glyphPoint));
 
     this.sceneController.selection = newSelection;
 
-    if (await shouldInitiateDrag(eventStream, initialEvent)) {
-      // console.log("Now drag a new off-curve point");
-    }
+    await editContext.editBegin();
+    await editContext.editSetRollback(consolidateChanges([...reversed(rollbackChanges)]));
+    await editContext.editIncremental(consolidateChanges(editChanges));
 
-    const editChange = consolidateChanges(editChanges);
-    const rollbackChange = consolidateChanges([...reversed(rollbackChanges)]);
+    const event = await shouldInitiateDrag(eventStream, initialEvent)
+    if (event) {
+      // Drag a new off-curve point
+      if (isAppend) {
+        newPointIndex += 1;
+        contourPointIndex += 1;
+        newSelection = new Set([`point/${newPointIndex}`]);
+        this.sceneController.selection = newSelection;
+      }
+      const glyphPoint = roundPoint(this.sceneController.selectedGlyphPoint(event));
+
+      rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
+      editChanges.push(insertPoint(contourIndex, contourPointIndex, {...glyphPoint, "type": "quad"}));
+
+      await editContext.editSetRollback(consolidateChanges([...reversed(rollbackChanges)]));
+      await editContext.editIncremental(consolidateChanges(editChanges));
+
+      let moveChange;
+      for await (const event of eventStream) {
+        const glyphPoint = roundPoint(this.sceneController.selectedGlyphPoint(event));
+        moveChange = movePoint(newPointIndex, glyphPoint.x, glyphPoint.y);
+        await editContext.editIncremental(moveChange);
+      }
+      if (moveChange) {
+        editChanges.push(moveChange);
+      }
+    }
 
     const undoInfo = {
       "label": "draw point",
@@ -70,12 +95,7 @@ export class PenTool extends BaseTool {
       "location": this.sceneController.getLocation(),
     }
 
-    // await editContext.editBegin();
-    // await editContext.editSetRollback(rollbackChange);
-    // await editContext.editIncremental(editChange);
-    // await editContext.editEnd(editChange, undoInfo);
-    await editContext.editAtomic(editChange, rollbackChange, undoInfo);
-
+    await editContext.editEnd(consolidateChanges(editChanges), undoInfo);
   }
 
 }
@@ -100,7 +120,7 @@ function getAppendIndices(selection, path) {
       }
     }
   }
-  return [undefined, undefined, undefined];
+  return [undefined, undefined, true];
 }
 
 
@@ -133,6 +153,14 @@ function insertPoint(contourIndex, contourPointIndex, point) {
     "p": ["path"],
     "f": "insertPoint",
     "a": [contourIndex, contourPointIndex, point],
+  };
+}
+
+function movePoint(pointIndex, x, y) {
+  return {
+    "p": ["path"],
+    "f": "=xy",
+    "a": [pointIndex, x, y],
   };
 }
 
