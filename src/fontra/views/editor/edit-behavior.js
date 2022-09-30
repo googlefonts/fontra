@@ -365,6 +365,9 @@ const actionFactories = {
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
+      if (!intersection) {
+        return point;
+      }
       return intersection;
     };
   },
@@ -376,6 +379,9 @@ const actionFactories = {
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
+      if (!intersection) {
+        return point;
+      }
       return intersection;
     };
   },
@@ -387,6 +393,9 @@ const actionFactories = {
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
       const [intersection, t1, t2] = vector.intersect(pt1, pt2, point, vector.addVectors(point, perpVector));
+      if (!intersection) {
+        return point;
+      }
       return intersection;
     };
   },
@@ -402,7 +411,7 @@ const actionFactories = {
         vector.addVectors(next, nextHandle),
       );
       if (!intersection) {
-        // TODO: fallback to midPoint?
+        return point;
       }
       return intersection;
     };
@@ -418,7 +427,7 @@ const actionFactories = {
         nextNext,
       );
       if (!intersection) {
-        // TODO: fallback to midPoint?
+        return thePoint;
       }
       return intersection;
     };
@@ -435,7 +444,7 @@ const actionFactories = {
         vector.addVectors(next, handleNext),
       );
       if (!intersection) {
-        // TODO: fallback to midPoint?
+        return thePoint;
       }
       return intersection;
     };
