@@ -349,6 +349,10 @@ const actionFactories = {
     const handleLength = Math.hypot(handle.x, handle.y);
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const delta = vector.subVectors(prev, prevPrev);
+      if (!delta.x && !delta.y) {
+        // The angle is undefined, atan2 will return 0, let's just not touch the point
+        return thePoint;
+      }
       const angle = Math.atan2(delta.y, delta.x);
       const handlePoint = {
         "x": prev.x + handleLength * Math.cos(angle),
