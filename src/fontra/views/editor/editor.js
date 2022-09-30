@@ -533,7 +533,7 @@ export class EditorController {
   };
 
   async keyDownHandler(event) {
-    if (event.key === " " && !event.repeat) {
+    if (event.code === "Space" && !event.repeat) {
       this.spaceKeyDownHandler();
       return;
     }
@@ -580,7 +580,7 @@ export class EditorController {
   }
 
   keyUpHandler(event) {
-    if (event.key === " ") {
+    if (event.code === "Space") {
       this.spaceKeyUpHandler();
       return;
     }
