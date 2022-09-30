@@ -411,7 +411,7 @@ const actionFactories = {
         vector.addVectors(next, nextHandle),
       );
       if (!intersection) {
-        // TODO: fallback to midPoint?
+        return point;
       }
       return intersection;
     };
@@ -427,7 +427,7 @@ const actionFactories = {
         nextNext,
       );
       if (!intersection) {
-        // TODO: fallback to midPoint?
+        return thePoint;
       }
       return intersection;
     };
@@ -444,7 +444,7 @@ const actionFactories = {
         vector.addVectors(next, handleNext),
       );
       if (!intersection) {
-        // TODO: fallback to midPoint?
+        return thePoint;
       }
       return intersection;
     };
