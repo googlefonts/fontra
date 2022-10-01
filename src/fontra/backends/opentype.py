@@ -194,6 +194,6 @@ class VarIndexCollector(SimpleT2Decompiler):
         super().__init__(*args, **kwargs)
         self.vsIndices = set()
 
-    def op_vsindex(self, index):
-        super().op_vsindex(index)
+    def op_blend(self, index):
+        super().op_blend(index)
         self.vsIndices.add(self.vsIndex)
