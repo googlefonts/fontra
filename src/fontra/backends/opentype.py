@@ -19,7 +19,6 @@ class OTFBackend:
             if "CFF2" in self.font
             else None
         )
-        self.cff2 = self.font.get("CFF2")
         self.cmap = self.font.getBestCmap()
         revCmap = {}
         for glyphName in self.font.getGlyphOrder():
