@@ -228,10 +228,10 @@ def checkAndFixCFF2Compatibility(glyphName, layers):
             unpackedContours = layer.glyph.path.unpackedContours()
             unpackedContourses[layerIndex] = unpackedContours
             assert len(contourLengths) == len(unpackedContours)
-            for i in range(len(contourLengths)):
-                contourLengths[i] = max(
-                    contourLengths[i], len(unpackedContours[i]["points"])
-                )
+            contourLengths = [
+                max(cl, len(unpackedContours[i]["points"]))
+                for i, cl in enumerate(contourLengths)
+            ]
     if contourLengths is None:
         # All good, nothing to do
         return
