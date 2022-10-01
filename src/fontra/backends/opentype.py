@@ -2,7 +2,7 @@ from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
 from ..core.classes import VariableGlyph, StaticGlyph, Source, Layer
-from ..core.packedpath import PackedPathPointPen
+from ..core.packedpath import PackedPath, PackedPathPointPen
 
 
 class OTFBackend:
@@ -64,6 +64,8 @@ class OTFBackend:
             layers.append(Layer(name=locStr, glyph=varGlyph))
             sources.append(Source(location=fullLoc, name=locStr, layerName=locStr))
         glyph.unicodes = self.revCmap.get(glyphName, [])
+        if self.charStrings is not None:
+            checkAndFixCFF2Compatibility(glyphName, layers)
         glyph.layers = layers
         glyph.sources = sources
         return glyph
@@ -197,3 +199,49 @@ class VarIndexCollector(SimpleT2Decompiler):
     def op_blend(self, index):
         super().op_blend(index)
         self.vsIndices.add(self.vsIndex)
+
+
+def checkAndFixCFF2Compatibility(glyphName, layers):
+    #
+    # https://github.com/fonttools/fonttools/issues/2838
+    #
+    # Via ttGlyphSet.py, we're using SegmentToPointPen to convert CFF/T2 segments
+    # to points, which normally leads to closing curve-to points being removed.
+    #
+    # However, as the fonttools issue above shows, in some situations, it does
+    # not close onto the starting point at *some* locations, due to rounding errors
+    # in the source deltas.
+    #
+    # This functions detects those cases and compensates for it by appending the
+    # starting point at the end of the contours that *do* close nicely.
+    #
+    # This is a somewhat ugly trade-off to keep interpolation compatibility.
+    #
+    firstPath = layers[0].glyph.path
+    firstPointTypes = firstPath.pointTypes
+    unpackedContourses = [None] * len(layers)
+    contourLengths = None
+    for layerIndex, layer in enumerate(layers):
+        if layer.glyph.path.pointTypes != firstPointTypes:
+            if contourLengths is None:
+                unpackedContourses[0] = firstPath.unpackedContours()
+                contourLengths = [len(c["points"]) for c in unpackedContourses[0]]
+            unpackedContours = layer.glyph.path.unpackedContours()
+            unpackedContourses[layerIndex] = unpackedContours
+            assert len(contourLengths) == len(unpackedContours)
+            for i in range(len(contourLengths)):
+                contourLengths[i] = max(
+                    contourLengths[i], len(unpackedContours[i]["points"])
+                )
+    if contourLengths is None:
+        return
+    for layerIndex, layer in enumerate(layers):
+        if unpackedContourses[layerIndex] is None:
+            unpackedContourses[layerIndex] = layer.glyph.path.unpackedContours()
+        unpackedContours = unpackedContourses[layerIndex]
+        for i, contourLength in enumerate(contourLengths):
+            if len(unpackedContours[i]["points"]) + 1 == contourLength:
+                firstPoint = unpackedContours[i]["points"][0]
+                firstPoint["smooth"] = False
+                unpackedContours[i]["points"].append(firstPoint)
+        layer.glyph.path = PackedPath.fromUnpackedContours(unpackedContours)
