@@ -233,6 +233,7 @@ def checkAndFixCFF2Compatibility(glyphName, layers):
                     contourLengths[i], len(unpackedContours[i]["points"])
                 )
     if contourLengths is None:
+        # All good, nothing to do
         return
     for layerIndex, layer in enumerate(layers):
         if unpackedContourses[layerIndex] is None:
