@@ -60,8 +60,8 @@ class OTFBackend:
             if varGlyphSet is None:
                 varGlyphSet = self.font.getGlyphSet(location=fullLoc, normalized=True)
                 self.variationGlyphSets[locStr] = varGlyphSet
-            varGlyphDict = serializeGlyph(varGlyphSet, glyphName)
-            layers.append(Layer(name=locStr, glyph=varGlyphDict))
+            varGlyph = serializeGlyph(varGlyphSet, glyphName)
+            layers.append(Layer(name=locStr, glyph=varGlyph))
             sources.append(Source(location=fullLoc, name=locStr, layerName=locStr))
         glyph.unicodes = self.revCmap.get(glyphName, [])
         glyph.layers = layers
