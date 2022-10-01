@@ -749,3 +749,13 @@ async def test_getUnitsPerEm(backendName, expectedUnitsPerEm):
     font = getTestFont(backendName)
     unitsPerEm = await font.getUnitsPerEm()
     assert expectedUnitsPerEm == unitsPerEm
+
+
+@pytest.mark.asyncio
+async def test_cff2InterpolationCompatibility():
+    # Test the workaround for https://github.com/fonttools/fonttools/issues/2838
+    font = getTestFont("otf")
+    glyph = await font.getGlyph("S")
+    firstPointTypes = glyph.layers[0].glyph.path.pointTypes
+    for layer in glyph.layers:
+        assert layer.glyph.path.pointTypes == firstPointTypes
