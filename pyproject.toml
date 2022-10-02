@@ -72,13 +72,19 @@ packages = ["src/fontra"]
 
 [tool.hatch.build]
 include = [
-    "*.html",
-    "*.ico",
     "*.css",
     "*.html",
+    "*.html",
+    "*.ico",
     "*.js",
+    "*.json",
+    "*.md",
+    "*.py",
     "*.svg",
+    "*.txt",
     "*.woff2",
+    "/src",
+    "/test-py",
 ]
 
 
