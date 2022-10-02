@@ -2,6 +2,7 @@ import argparse
 from importlib.metadata import entry_points
 import logging
 from .core.server import FontraServer
+from . import __version__ as fontraVersion
 
 
 def main():
@@ -16,6 +17,14 @@ def main():
     parser.add_argument(
         "--launch", action="store_true", help="Launch the default browser"
     )
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=fontraVersion,
+        help="Show Fontra's version number and exit",
+    )
+
     subParsers = parser.add_subparsers(required=True)
     for entryPoint in entry_points(group="fontra.projectmanagers"):
         subParser = subParsers.add_parser(entryPoint.name)
