@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "setuptools-scm[toml]"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 
@@ -79,10 +79,11 @@ include = [
 [tool.hatch.version]
 path = "src/fontra/_version.py"
 pattern = "version = '(?P<version>.+)'"
+source = "vcs"
 
 
-[tool.setuptools_scm]
-write_to = "src/fontra/_version.py"
+[tool.hatch.build.hooks.vcs]
+version-file = "src/fontra/_version.py"
 
 
 [tool.pytest.ini_options]
