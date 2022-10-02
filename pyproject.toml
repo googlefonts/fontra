@@ -1,3 +1,8 @@
+[build-system]
+requires = ["hatchling", "setuptools-scm[toml]"]
+build-backend = "hatchling.build"
+
+
 [project]
 name = "fontra"
 description = "A browser-based font editor"
@@ -55,13 +60,12 @@ ttf = "fontra.backends.opentype:OTFBackend"
 otf = "fontra.backends.opentype:OTFBackend"
 
 
-[build-system]
-requires = ["setuptools", "setuptools-scm[toml]"]
-build-backend = "setuptools.build_meta"
+[tool.hatch.build.targets.wheel]
+packages = ["src/fontra"]
 
 
-[tool.setuptools.package-data]
-fontra = [
+[tool.hatch.build]
+include = [
     "*.html",
     "*.ico",
     "*.css",
@@ -70,6 +74,11 @@ fontra = [
     "*.svg",
     "*.woff2",
 ]
+
+
+[tool.hatch.version]
+path = "src/fontra/_version.py"
+pattern = "version = '(?P<version>.+)'"
 
 
 [tool.setuptools_scm]
