@@ -1,4 +1,5 @@
-from contextlib import asynccontextmanager
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
@@ -9,6 +10,7 @@ import json
 import logging
 import mimetypes
 import traceback
+from typing import Any
 from urllib.parse import quote
 from aiohttp import WSCloseCode, web
 from .remote import RemoteObjectConnection, RemoteObjectConnectionException
@@ -22,10 +24,12 @@ class FontraServer:
 
     host: str
     httpPort: int
-    projectManager: object
-    launchWebBrowser: False
+    projectManager: Any
+    launchWebBrowser: bool = False
     cookieMaxAge: int = 7 * 24 * 60 * 60
-    allowedFileExtensions: set = frozenset(["css", "html", "ico", "js", "svg", "woff2"])
+    allowedFileExtensions: frozenset[str] = frozenset(
+        ["css", "html", "ico", "js", "svg", "woff2"]
+    )
 
     def setup(self):
         self.startupTime = datetime.now(timezone.utc).replace(microsecond=0)
