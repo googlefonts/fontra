@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import cached_property
 import logging
 import math
@@ -6,6 +8,7 @@ from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.misc.transform import Transform
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReader
+from fontTools.ufoLib.glifLib import GlyphSet
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
 from ..core.classes import VariableGlyph, StaticGlyph, Source, Layer
@@ -239,7 +242,7 @@ def serializeGlyph(glyphSet, glyphName):
     return staticGlyph, glyph
 
 
-def writeUFOLayerGlyph(glyphSet, glyphName, glyph):
+def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -> None:
     layerGlyph = UFOGlyph()
     glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     pen = RecordingPointPen()
@@ -248,7 +251,7 @@ def writeUFOLayerGlyph(glyphSet, glyphName, glyph):
     glyph.path.drawPoints(pen)
     for component in glyph.components:
         pen.addComponent(
-            component["name"], makeAffineTransform(component["transformation"])
+            component.name, makeAffineTransform(component.transformation)
         )
     glyphSet.writeGlyph(
         glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
