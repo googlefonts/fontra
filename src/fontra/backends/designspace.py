@@ -250,9 +250,7 @@ def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -
     layerGlyph.height = glyph.yAdvance
     glyph.path.drawPoints(pen)
     for component in glyph.components:
-        pen.addComponent(
-            component.name, makeAffineTransform(component.transformation)
-        )
+        pen.addComponent(component.name, makeAffineTransform(component.transformation))
     glyphSet.writeGlyph(
         glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
     )
