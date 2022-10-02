@@ -78,7 +78,6 @@ include = [
 
 [tool.hatch.version]
 path = "src/fontra/_version.py"
-pattern = "version = '(?P<version>.+)'"
 source = "vcs"
 
 
