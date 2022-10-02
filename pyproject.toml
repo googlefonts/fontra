@@ -70,24 +70,6 @@ otf = "fontra.backends.opentype:OTFBackend"
 packages = ["src/fontra"]
 
 
-[tool.hatch.build]
-include = [
-    "*.css",
-    "*.html",
-    "*.html",
-    "*.ico",
-    "*.js",
-    "*.json",
-    "*.md",
-    "*.py",
-    "*.svg",
-    "*.txt",
-    "*.woff2",
-    "/src",
-    "/test-py",
-]
-
-
 [tool.hatch.version]
 source = "vcs"
 
