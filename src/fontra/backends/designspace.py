@@ -282,6 +282,10 @@ async def ufoWatcher(ufoPaths, glifFileNames, savedGlyphModificationTimes):
             mtime = datetime.fromtimestamp(mtime).timestamp()
             savedMTimes = savedGlyphModificationTimes.get(glyphName, ())
             if mtime not in savedMTimes:
+                logger.info(
+                    f"external change '{glyphName}' {mtime} "
+                    f"{savedMTimes} {mtime in savedMTimes}"
+                )
                 glyphNames.add(glyphName)
         if glyphNames:
             yield glyphNames
