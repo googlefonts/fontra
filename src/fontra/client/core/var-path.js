@@ -565,10 +565,17 @@ function drawQuadSegment(path, segment) {
 
 
 function drawCubicSegment(path, segment) {
-  if (segment.length === 6) {
+  if (segment.length === 4) {
+    // Only one handle, fall back to quad
+    path.quadraticCurveTo(...segment);
+  } else if (segment.length === 6) {
     path.bezierCurveTo(...segment);
-  } else if (segment.length >= 2) {
-    // TODO warn or error
+  } else if (segment.length >= 8) {
+    // Ignore all but the first and last off curve points
+    // FontTools has "super bezier" in this case. Was nice.
+    path.lineTo(...segment.slice(0, 2), ...segment.slice(-2));
+  } else {
+    // Fall back to line
     path.lineTo(...segment.slice(-2));
   }
 }
