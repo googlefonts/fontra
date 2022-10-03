@@ -573,7 +573,7 @@ function drawCubicSegment(path, segment) {
   } else if (segment.length >= 8) {
     // Ignore all but the first and last off curve points
     // FontTools has "super bezier" in this case. Was nice.
-    path.lineTo(...segment.slice(0, 2), ...segment.slice(-2));
+    path.bezierCurveTo(...segment.slice(0, 2), ...segment.slice(-4));
   } else {
     // Fall back to line
     path.lineTo(...segment.slice(-2));
