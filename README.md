@@ -15,7 +15,9 @@ Fontra is an in-development browser-based font editor. It consists of two main p
 
 - Create a Python venv in the root of the repo:
 
-    `python3 -m venv venv --prompt=fontra`
+    `python3.10 -m venv venv --prompt=fontra`
+
+    (Replace `python3.10` with `python3.11` if you have 3.11 instead.)
 
 - Activate venv:
 
