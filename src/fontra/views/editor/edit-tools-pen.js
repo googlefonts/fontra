@@ -212,7 +212,7 @@ function oppositeHandle(anchorPoint, handlePoint) {
 }
 
 
-function shiftConstrain(anchor, handle) {
-  const delta = constrainHorVerDiag(vector.subVectors(handle, anchor));
-  return vector.addVectors(anchor, delta);
+function shiftConstrain(anchorPoint, handlePoint) {
+  const delta = constrainHorVerDiag(vector.subVectors(handlePoint, anchorPoint));
+  return vector.addVectors(anchorPoint, delta);
 }
