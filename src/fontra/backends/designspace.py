@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from functools import cached_property
 import logging
 import math
@@ -127,7 +128,7 @@ class DesignspaceBackend:
         for layer in glyph.layers:
             glyphSet = self.ufoGlyphSets[layer.name]
             writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph)
-            modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
+            modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
     async def getGlobalAxes(self):
@@ -189,7 +190,7 @@ class UFOBackend:
         for layer in glyph.layers:
             glyphSet = self.glyphSets[layer.name]
             writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph)
-            modTimes.add(round(glyphSet.getGLIFModificationTime(glyphName), 5))
+            modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
     async def getGlobalAxes(self):
@@ -271,9 +272,16 @@ async def ufoWatcher(ufoPaths, glifFileNames, savedGlyphModificationTimes):
         glyphNames = set()
         for change, path in changes:
             glyphName = glifFileNames.get(os.path.basename(path))
-            if glyphName is not None and round(
-                os.stat(path).st_mtime, 5
-            ) not in savedGlyphModificationTimes.get(glyphName, ()):
+            if glyphName is None:
+                continue
+            mtime = os.stat(path).st_mtime
+            # Round-trip through datetime, as that's effectively what is happening
+            # in getGLIFModificationTime, deep down in the fs package. It makes sure
+            # we're comparing timestamps that are actually comparable, as they're
+            # rounded somewhat, compared to the raw st_mtime timestamp.
+            mtime = datetime.fromtimestamp(mtime).timestamp()
+            savedMTimes = savedGlyphModificationTimes.get(glyphName, ())
+            if mtime not in savedMTimes:
                 glyphNames.add(glyphName)
         if glyphNames:
             yield glyphNames
