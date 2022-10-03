@@ -2,6 +2,7 @@ import { consolidateChanges } from "../core/changes.js";
 import { reversed, roundPoint } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
+import { constrainHorVerDiag } from "./edit-behavior.js";
 
 
 export class PenTool extends BaseTool {
@@ -67,7 +68,7 @@ export class PenTool extends BaseTool {
       rollbackChanges.splice(-1);
       editChanges.splice(-1);
 
-      let handleOut = roundPoint(this.sceneController.selectedGlyphPoint(event));
+      let handleOut = this._getHandle(event, anchorPoint);
       let handleIn = oppositeHandle(anchorPoint, handleOut);
 
       let handleInIndex, anchorIndex, handleOutIndex;
@@ -102,7 +103,7 @@ export class PenTool extends BaseTool {
 
       let moveChanges;
       for await (const event of eventStream) {
-        handleOut = roundPoint(this.sceneController.selectedGlyphPoint(event));
+        let handleOut = this._getHandle(event, anchorPoint);
         handleIn = oppositeHandle(anchorPoint, handleOut);
         moveChanges = [
           movePoint(contourStartPoint + handleInIndex, handleIn.x, handleIn.y),
@@ -123,6 +124,14 @@ export class PenTool extends BaseTool {
     }
 
     await editContext.editEnd(consolidateChanges(editChanges), undoInfo);
+  }
+
+  _getHandle(event, anchorPoint) {
+    let handleOut = this.sceneController.selectedGlyphPoint(event);
+    if (event.shiftKey) {
+      handleOut = shiftConstrain(anchorPoint, handleOut);
+    }
+    return roundPoint(handleOut);
   }
 
 }
@@ -200,4 +209,10 @@ function oppositeHandle(anchorPoint, handlePoint) {
   return vector.addVectors(
     anchorPoint, vector.mulVector(vector.subVectors(handlePoint, anchorPoint), -1)
   );
+}
+
+
+function shiftConstrain(anchor, handle) {
+  const delta = constrainHorVerDiag(vector.subVectors(handle, anchor));
+  return vector.addVectors(anchor, delta);
 }
