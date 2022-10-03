@@ -1,3 +1,8 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+
 [project]
 name = "fontra"
 description = "A browser-based font editor"
@@ -32,6 +37,12 @@ classifiers = [
 ]
 
 
+[project.urls]
+Documentation = "https://github.com/BlackFoundryCom/fontra#readme"
+Issues = "https://github.com/BlackFoundryCom/fontra/issues"
+Source = "https://github.com/BlackFoundryCom/fontra"
+
+
 [project.scripts]
 fontra = "fontra.__main__:main"
 
@@ -55,25 +66,48 @@ ttf = "fontra.backends.opentype:OTFBackend"
 otf = "fontra.backends.opentype:OTFBackend"
 
 
-[build-system]
-requires = ["setuptools", "setuptools-scm[toml]"]
-build-backend = "setuptools.build_meta"
+[tool.hatch.build.targets.wheel]
+packages = ["src/fontra"]
 
 
-[tool.setuptools.package-data]
-fontra = [
-    "*.html",
-    "*.ico",
-    "*.css",
-    "*.html",
-    "*.js",
-    "*.svg",
-    "*.woff2",
+[tool.hatch.version]
+source = "vcs"
+
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/fontra/_version.py"
+
+
+[tool.hatch.envs.default]
+dependencies = [
+  "pytest-asyncio",
+  "pytest-cov",
+  "pytest",
 ]
 
 
-[tool.setuptools_scm]
-write_to = "src/fontra/_version.py"
+[tool.hatch.envs.default.scripts]
+pytest-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/fontra --cov=test-py"
+
+
+[[tool.hatch.envs.test.matrix]]
+python = ["310", "311"]
+
+
+[tool.coverage.run]
+branch = true
+parallel = true
+omit = [
+  "src/fontra/_version.py",
+]
+
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
 
 
 [tool.pytest.ini_options]
