@@ -272,6 +272,8 @@ async def ufoWatcher(ufoPaths, glifFileNames, savedGlyphModificationTimes):
         glyphNames = set()
         for change, path in changes:
             glyphName = glifFileNames.get(os.path.basename(path))
+            if glyphName is None:
+                continue
             mtime = os.stat(path).st_mtime
             # Round-trip through datetime, as that's effectively what is happening
             # in getGLIFModificationTime, deep down in the fs package. It makes sure
@@ -279,7 +281,7 @@ async def ufoWatcher(ufoPaths, glifFileNames, savedGlyphModificationTimes):
             # rounded somewhat, compared to the raw st_mtime timestamp.
             mtime = datetime.fromtimestamp(mtime).timestamp()
             savedMTimes = savedGlyphModificationTimes.get(glyphName, ())
-            if glyphName is not None and mtime not in savedMTimes:
+            if mtime not in savedMTimes:
                 glyphNames.add(glyphName)
         if glyphNames:
             yield glyphNames
