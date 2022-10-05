@@ -164,7 +164,7 @@ class FontraServer:
         modulePath = packageName + ".".join(pathItems[:-1])
         resourceName = pathItems[-1]
         try:
-            data = resources.read_binary(modulePath, resourceName)
+            data = getResourcePath(modulePath, resourceName).read_bytes()
         except (FileNotFoundError, IsADirectoryError, ModuleNotFoundError):
             return web.HTTPNotFound()
         ext = resourceName.rsplit(".", 1)[-1].lower()
@@ -195,12 +195,18 @@ class FontraServer:
             return web.HTTPNotFound()
 
         try:
-            html = resources.read_text(
+            html = getResourcePath(
                 self.viewEntryPoints[viewName], f"{viewName}.html"
-            )
+            ).read_text()
         except (FileNotFoundError, ModuleNotFoundError):
             return web.HTTPNotFound()
 
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
+
+
+def getResourcePath(modulePath, resourceName):
+    moduleParts = modulePath.split(".")
+    moduleRoot = resources.files(moduleParts[0])
+    return moduleRoot.joinpath(*moduleParts[1:], resourceName)
