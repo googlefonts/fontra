@@ -15,7 +15,13 @@ logger = logging.getLogger(__name__)
 class FileSystemProjectManagerFactory:
     @staticmethod
     def addArguments(parser):
-        parser.add_argument("root", type=existingFolder)
+        parser.add_argument(
+            "root",
+            type=existingFolder,
+            help="A path to an existing folder containing font files. Or pass "
+            "the special value '-', to bypass the landing page, and use full "
+            "(url-quoted) OS FS paths as part of the view URL.",
+        )
         parser.add_argument("--max-folder-depth", type=int, default=3)
         parser.add_argument("--read-only", action="store_true")
 
