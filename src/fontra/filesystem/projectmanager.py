@@ -4,6 +4,7 @@ from importlib import resources
 from importlib.metadata import entry_points
 import logging
 import pathlib
+from urllib.parse import unquote
 from aiohttp import web
 from ..core.fonthandler import FontHandler
 
@@ -28,6 +29,8 @@ class FileSystemProjectManagerFactory:
 
 
 def existingFolder(path):
+    if path == "-":
+        return None
     path = pathlib.Path(path).resolve()
     if not path.is_dir():
         raise argparse.ArgumentError("not a directory")
@@ -76,6 +79,9 @@ class FileSystemProjectManager:
         return response
 
     async def projectAvailable(self, path, token):
+        if self.rootPath is None:
+            path = pathlib.Path(unquote(path)).resolve()
+            return path.suffix.lower() in self.extensions and path.exists()
         projectPath = self.rootPath.joinpath(*path.split("/"))
         return projectPath.exists()
 
@@ -84,7 +90,10 @@ class FileSystemProjectManager:
         path = path[1:]
         fontHandler = self.fontHandlers.get(path)
         if fontHandler is None:
-            projectPath = self.rootPath.joinpath(*path.split("/"))
+            if self.rootPath is None:
+                projectPath = pathlib.Path(unquote(path))
+            else:
+                projectPath = self.rootPath.joinpath(*path.split("/"))
             if not projectPath.exists():
                 raise FileNotFoundError(projectPath)
             backend = getFileSystemBackend(projectPath)
@@ -93,6 +102,8 @@ class FileSystemProjectManager:
         return fontHandler
 
     async def getProjectList(self, token):
+        if self.rootPath is None:
+            return []
         projectPaths = []
         rootItems = self.rootPath.parts
         paths = sorted(_iterFolder(self.rootPath, self.extensions, self.maxFolderDepth))
