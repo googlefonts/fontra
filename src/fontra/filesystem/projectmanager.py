@@ -4,7 +4,6 @@ from importlib import resources
 from importlib.metadata import entry_points
 import logging
 import pathlib
-from urllib.parse import unquote
 from aiohttp import web
 from ..core.fonthandler import FontHandler
 
@@ -85,27 +84,30 @@ class FileSystemProjectManager:
         return response
 
     async def projectAvailable(self, path, token):
-        if self.rootPath is None:
-            path = pathlib.Path(unquote(path)).resolve()
-            return path.suffix.lower() in self.extensions and path.exists()
-        projectPath = self.rootPath.joinpath(*path.split("/"))
-        return projectPath.exists()
+        return bool(self._getProjectPath(path))
 
     async def getRemoteSubject(self, path, token):
         assert path[0] == "/"
         path = path[1:]
         fontHandler = self.fontHandlers.get(path)
         if fontHandler is None:
-            if self.rootPath is None:
-                projectPath = pathlib.Path(unquote(path))
-            else:
-                projectPath = self.rootPath.joinpath(*path.split("/"))
-            if not projectPath.exists():
+            projectPath = self._getProjectPath(path)
+            if projectPath is None:
                 raise FileNotFoundError(projectPath)
             backend = getFileSystemBackend(projectPath)
             fontHandler = FontHandler(backend, readOnly=self.readOnly)
             self.fontHandlers[path] = fontHandler
         return fontHandler
+
+    def _getProjectPath(self, path):
+        projectPath = (
+            pathlib.Path(path).resolve()
+            if self.rootPath is None
+            else self.rootPath.joinpath(*path.split("/"))
+        )
+        if projectPath.suffix.lower() in self.extensions and projectPath.exists():
+            return projectPath
+        return None
 
     async def getProjectList(self, token):
         if self.rootPath is None:
