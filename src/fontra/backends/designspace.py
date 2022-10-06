@@ -12,7 +12,7 @@ from fontTools.ufoLib import UFOReader
 from fontTools.ufoLib.glifLib import GlyphSet
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
-from ..core.classes import VariableGlyph, StaticGlyph, Source, Layer
+from ..core.classes import Layer, StaticGlyph, Source, Transformation, VariableGlyph
 from ..core.packedpath import PackedPathPointPen
 
 
@@ -306,13 +306,16 @@ def uniqueNameMaker():
     return makeUniqueName
 
 
-def makeAffineTransform(transformation):
+def makeAffineTransform(transformation: Transformation) -> Transform:
     t = Transform()
     t = t.translate(
-        transformation["x"] + transformation["tcenterx"],
-        transformation["y"] + transformation["tcentery"],
+        transformation.translateX + transformation.tCenterX,
+        transformation.translateY + transformation.tCenterY,
     )
-    t = t.rotate(transformation["rotation"] * (math.pi / 180))
-    t = t.scale(transformation["scalex"], transformation["scaley"])
-    t = t.translate(-transformation["tcenterx"], -transformation["tcentery"])
+    t = t.rotate(transformation.rotation * (math.pi / 180))
+    t = t.scale(transformation.scaleX, transformation.scaleY)
+    t = t.skew(
+        -transformation.skewX * (math.pi / 180), transformation.skewY * (math.pi / 180)
+    )
+    t = t.translate(-transformation.tCenterX, -transformation.tCenterY)
     return t
