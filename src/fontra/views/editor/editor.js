@@ -540,7 +540,7 @@ export class EditorController {
     if (hasShortcutModifierKey(event)) {
       // console.log("shortcut?", event.key);
       let didHandleShortcut = false;
-      switch (event.key) {
+      switch (event.key.toLowerCase()) {
         case "-":
           this.zoomOut();
           didHandleShortcut = true;
