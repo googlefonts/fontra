@@ -106,8 +106,8 @@ export class SceneController {
 
   async handleDrag(eventStream, initialEvent) {
     if(initialEvent.ctrlKey) {
-      // Show contextual menu, if applicable
       eventStream.done();
+      // Show contextual menu, if applicable
       return;
     }
     if (this.selectedTool) {
