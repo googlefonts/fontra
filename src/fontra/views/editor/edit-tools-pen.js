@@ -73,6 +73,7 @@ class PointAdder {
     this.path = path;
     this.initialSelection = initialSelection;
     this.anchorPoint = anchorPoint;
+    this.isNewContour = false;
     this._rollbackChanges = [];
     this._editChanges = [];
     this._moveChanges = [];
@@ -80,6 +81,7 @@ class PointAdder {
 
     if (contourIndex === undefined) {
       // Let's add a new contour
+      this.isNewContour = true;
       contourIndex = path.numContours;
       contourPointIndex = 0;
 
@@ -110,25 +112,15 @@ class PointAdder {
     this._editChanges.splice(-1);
 
     const handleOut = this._getHandle(point, this.anchorPoint, constrain);
-    const handleIn = oppositeHandle(this.anchorPoint, handleOut);
-
-    let insertIndices;
-    if (this.isAppend) {
-      this.handleInIndex = this.contourPointIndex;
-      const anchorIndex = this.contourPointIndex + 1;
-      this.handleOutIndex = this.contourPointIndex + 2;
-      insertIndices = [this.handleInIndex, anchorIndex, this.handleOutIndex];
-    } else {
-      this.handleInIndex = 2;
-      this.handleOutIndex = 0;
-      insertIndices = [0, 0, 0];
-    }
-
-    const newPoints = [
-      {...handleIn, "type": "cubic"},
-      {...this.anchorPoint, "smooth": true},
-      {...handleOut, "type": "cubic"},
-    ];
+    const [handleInIndex, handleOutIndex, insertIndices, newPoints] = (
+      this.isNewContour
+      ?
+      this._getIndicesAndPointsHandleOut(handleOut)
+      :
+      this._getIndicesAndPointsHandleInOut(handleOut)
+    );
+    this.handleInIndex = handleInIndex;
+    this.handleOutIndex = handleOutIndex;
 
     for (let i = 0; i < newPoints.length; i++) {
       this._rollbackChanges.push(deletePoint(this.contourIndex, insertIndices[i]));
@@ -136,6 +128,46 @@ class PointAdder {
     }
 
     this._newSelection = new Set([`point/${this.contourStartPoint + this.handleOutIndex}`]);
+  }
+
+  _getIndicesAndPointsHandleOut(handleOut) {
+    let handleInIndex, handleOutIndex, insertIndices;
+    if (this.isAppend) {
+      handleInIndex = undefined;
+      const anchorIndex = this.contourPointIndex;
+      handleOutIndex = this.contourPointIndex + 1;
+      insertIndices = [anchorIndex, handleOutIndex];
+    } else {
+      handleInIndex = undefined;
+      handleOutIndex = 0;
+      insertIndices = [0, 0];
+    }
+    const newPoints = [
+      {...this.anchorPoint},
+      {...handleOut, "type": "cubic"},
+    ];
+    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
+  }
+
+  _getIndicesAndPointsHandleInOut(handleOut) {
+    const handleIn = oppositeHandle(this.anchorPoint, handleOut);
+    let handleInIndex, handleOutIndex, insertIndices;
+    if (this.isAppend) {
+      handleInIndex = this.contourPointIndex;
+      const anchorIndex = this.contourPointIndex + 1;
+      handleOutIndex = this.contourPointIndex + 2;
+      insertIndices = [handleInIndex, anchorIndex, handleOutIndex];
+    } else {
+      handleInIndex = 2;
+      handleOutIndex = 0;
+      insertIndices = [0, 0, 0];
+    }
+    const newPoints = [
+      {...handleIn, "type": "cubic"},
+      {...this.anchorPoint, "smooth": true},
+      {...handleOut, "type": "cubic"},
+    ];
+    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
   }
 
   getSelection() {
@@ -152,11 +184,16 @@ class PointAdder {
 
   getIncrementalChange(point, constrain) {
     const handleOut = this._getHandle(point, this.anchorPoint, constrain);
-    const handleIn = oppositeHandle(this.anchorPoint, handleOut);
-    this._moveChanges = [
-      movePoint(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y),
-      movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y),
-    ];
+    this._moveChanges = [];
+    if (this.handleInIndex !== undefined) {
+      const handleIn = oppositeHandle(this.anchorPoint, handleOut);
+      this._moveChanges.push(
+        movePoint(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y)
+      );
+    }
+    this._moveChanges.push(
+      movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y)
+    );
     return consolidateChanges(this._moveChanges);
   }
 
