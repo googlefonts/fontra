@@ -48,9 +48,14 @@ export class PenTool extends BaseTool {
       await editContext.editSetRollback(pointAdder.getRollbackChange());
       await editContext.editIncremental(pointAdder.getInitialChange());
 
+      let moveChange;
       for await (const event of eventStream) {
         const point = this.sceneController.selectedGlyphPoint(event);
-        await editContext.editIncremental(pointAdder.getIncrementalChange(point, event.shiftKey));
+        moveChange = pointAdder.getIncrementalChange(point, event.shiftKey);
+        await editContext.editIncrementalMayDrop(moveChange);
+      }
+      if (moveChange) {
+        await editContext.editIncremental(moveChange);
       }
     }
 
