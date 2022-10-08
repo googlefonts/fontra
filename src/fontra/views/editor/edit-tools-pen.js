@@ -25,24 +25,66 @@ export class PenTool extends BaseTool {
       return;
     }
 
-    const anchorPoint = roundPoint(this.sceneController.selectedGlyphPoint(initialEvent));
-    let rollbackChanges = [];
-    let editChanges = [];
-
-    const instance = editContext.glyphController.instance;
-    const path = instance.path;
-
     const initialSelection = this.sceneController.selection;
 
-    let [contourIndex, contourPointIndex, isAppend] = getAppendIndices(initialSelection, path);
+    const anchorPoint = roundPoint(this.sceneController.selectedGlyphPoint(initialEvent));
+    const pointAdder = new PointAdder(
+      editContext.glyphController.instance.path,
+      initialSelection,
+      anchorPoint,
+    );
+
+    this.sceneController.selection = pointAdder.getSelection();
+
+    await editContext.editBegin();
+    await editContext.editSetRollback(pointAdder.getRollbackChange());
+    await editContext.editIncremental(pointAdder.getInitialChange());
+
+    const event = await shouldInitiateDrag(eventStream, initialEvent)
+    if (event) {
+      const point = this.sceneController.selectedGlyphPoint(event);
+      pointAdder.startDragging(point, event.shiftKey);
+      this.sceneController.selection = pointAdder.getSelection();
+      await editContext.editSetRollback(pointAdder.getRollbackChange());
+      await editContext.editIncremental(pointAdder.getInitialChange());
+
+      for await (const event of eventStream) {
+        const point = this.sceneController.selectedGlyphPoint(event);
+        await editContext.editIncremental(pointAdder.getIncrementalChange(point, event.shiftKey));
+      }
+    }
+
+    const undoInfo = {
+      "label": "draw point",
+      "undoSelection": initialSelection,
+      "redoSelection": this.sceneController.selection,
+      "location": this.sceneController.getLocation(),
+    }
+
+    await editContext.editEnd(pointAdder.getFinalChange(), undoInfo);
+  }
+
+}
+
+
+class PointAdder {
+
+  constructor(path, initialSelection, anchorPoint) {
+    this.path = path;
+    this.initialSelection = initialSelection;
+    this.anchorPoint = anchorPoint;
+    this._rollbackChanges = [];
+    this._editChanges = [];
+    this._moveChanges = [];
+    let [contourIndex, contourPointIndex, isAppend] = getAppendIndices(path, initialSelection);
 
     if (contourIndex === undefined) {
       // Let's add a new contour
       contourIndex = path.numContours;
       contourPointIndex = 0;
 
-      rollbackChanges.push(deleteContour(contourIndex));
-      editChanges.push(appendEmptyContour(contourIndex));
+      this._rollbackChanges.push(deleteContour(contourIndex));
+      this._editChanges.push(appendEmptyContour(contourIndex));
     }
 
     let contourStartPoint;
@@ -51,84 +93,79 @@ export class PenTool extends BaseTool {
     } else {
       contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0, true);
     }
-    let newSelection = new Set([`point/${contourStartPoint + contourPointIndex}`]);
+    this._newSelection = new Set([`point/${contourStartPoint + contourPointIndex}`]);
 
-    rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
-    editChanges.push(insertPoint(contourIndex, contourPointIndex, anchorPoint));
+    this._rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
+    this._editChanges.push(insertPoint(contourIndex, contourPointIndex, anchorPoint));
 
-    this.sceneController.selection = newSelection;
-
-    await editContext.editBegin();
-    await editContext.editSetRollback(consolidateChanges([...reversed(rollbackChanges)]));
-    await editContext.editIncremental(consolidateChanges(editChanges));
-
-    const event = await shouldInitiateDrag(eventStream, initialEvent)
-    if (event) {
-      // Let's start over, revert the last insertPoint
-      rollbackChanges.splice(-1);
-      editChanges.splice(-1);
-
-      let handleOut = this._getHandle(event, anchorPoint);
-      let handleIn = oppositeHandle(anchorPoint, handleOut);
-
-      let handleInIndex, anchorIndex, handleOutIndex;
-      let insertIndices;
-      if (isAppend) {
-        handleInIndex = contourPointIndex;
-        anchorIndex = contourPointIndex + 1;
-        handleOutIndex = contourPointIndex + 2;
-        insertIndices = [handleInIndex, anchorIndex, handleOutIndex];
-      } else {
-        handleInIndex = 2;
-        anchorIndex = 1;
-        handleOutIndex = 0;
-        insertIndices = [0, 0, 0];
-      }
-
-      const newPoints = [
-        {...handleIn, "type": "cubic"},
-        {...anchorPoint, "smooth": true},
-        {...handleOut, "type": "cubic"},
-      ];
-      for (let i = 0; i < 3; i++) {
-        rollbackChanges.push(deletePoint(contourIndex, insertIndices[i]));
-        editChanges.push(insertPoint(contourIndex, insertIndices[i], newPoints[i]));
-      }
-
-      newSelection = new Set([`point/${contourStartPoint + handleOutIndex}`]);
-      this.sceneController.selection = newSelection;
-
-      await editContext.editSetRollback(consolidateChanges([...reversed(rollbackChanges)]));
-      await editContext.editIncremental(consolidateChanges(editChanges));
-
-      let moveChanges;
-      for await (const event of eventStream) {
-        let handleOut = this._getHandle(event, anchorPoint);
-        handleIn = oppositeHandle(anchorPoint, handleOut);
-        moveChanges = [
-          movePoint(contourStartPoint + handleInIndex, handleIn.x, handleIn.y),
-          movePoint(contourStartPoint + handleOutIndex, handleOut.x, handleOut.y),
-        ];
-        await editContext.editIncremental(consolidateChanges(moveChanges));
-      }
-      if (moveChanges) {
-        editChanges.push(...moveChanges);
-      }
-    }
-
-    const undoInfo = {
-      "label": "draw point",
-      "undoSelection": initialSelection,
-      "redoSelection": newSelection,
-      "location": this.sceneController.getLocation(),
-    }
-
-    await editContext.editEnd(consolidateChanges(editChanges), undoInfo);
+    this.contourIndex = contourIndex;
+    this.contourPointIndex = contourPointIndex;
+    this.isAppend = isAppend;
+    this.contourStartPoint = contourStartPoint;
   }
 
-  _getHandle(event, anchorPoint) {
-    let handleOut = this.sceneController.selectedGlyphPoint(event);
-    if (event.shiftKey) {
+  startDragging(point, constrain) {
+    // Let's start over, revert the last insertPoint
+    this._rollbackChanges.splice(-1);
+    this._editChanges.splice(-1);
+
+    const handleOut = this._getHandle(point, this.anchorPoint, constrain);
+    const handleIn = oppositeHandle(this.anchorPoint, handleOut);
+
+    let insertIndices;
+    if (this.isAppend) {
+      this.handleInIndex = this.contourPointIndex;
+      const anchorIndex = this.contourPointIndex + 1;
+      this.handleOutIndex = this.contourPointIndex + 2;
+      insertIndices = [this.handleInIndex, anchorIndex, this.handleOutIndex];
+    } else {
+      this.handleInIndex = 2;
+      this.handleOutIndex = 0;
+      insertIndices = [0, 0, 0];
+    }
+
+    const newPoints = [
+      {...handleIn, "type": "cubic"},
+      {...this.anchorPoint, "smooth": true},
+      {...handleOut, "type": "cubic"},
+    ];
+
+    for (let i = 0; i < 3; i++) {
+      this._rollbackChanges.push(deletePoint(this.contourIndex, insertIndices[i]));
+      this._editChanges.push(insertPoint(this.contourIndex, insertIndices[i], newPoints[i]));
+    }
+
+    this._newSelection = new Set([`point/${this.contourStartPoint + this.handleOutIndex}`]);
+  }
+
+  getSelection() {
+    return this._newSelection;
+  }
+
+  getRollbackChange() {
+    return consolidateChanges([...reversed(this._rollbackChanges)]);
+  }
+
+  getInitialChange() {
+    return consolidateChanges(this._editChanges);
+  }
+
+  getIncrementalChange(point, constrain) {
+    const handleOut = this._getHandle(point, this.anchorPoint, constrain);
+    const handleIn = oppositeHandle(this.anchorPoint, handleOut);
+    this._moveChanges = [
+      movePoint(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y),
+      movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y),
+    ];
+    return consolidateChanges(this._moveChanges);
+  }
+
+  getFinalChange() {
+    return consolidateChanges(this._editChanges.concat(this._moveChanges));
+  }
+
+  _getHandle(handleOut, anchorPoint, constrain) {
+    if (constrain) {
       handleOut = shiftConstrain(anchorPoint, handleOut);
     }
     return roundPoint(handleOut);
@@ -137,7 +174,7 @@ export class PenTool extends BaseTool {
 }
 
 
-function getAppendIndices(selection, path) {
+function getAppendIndices(path, selection) {
   if (selection.size === 1) {
     const sel = [...selection][0];
     const [tp, pointIndex] = sel.split("/");
