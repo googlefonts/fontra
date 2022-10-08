@@ -130,7 +130,7 @@ class PointAdder {
       {...handleOut, "type": "cubic"},
     ];
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < newPoints.length; i++) {
       this._rollbackChanges.push(deletePoint(this.contourIndex, insertIndices[i]));
       this._editChanges.push(insertPoint(this.contourIndex, insertIndices[i], newPoints[i]));
     }
