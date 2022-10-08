@@ -20,12 +20,12 @@ export class PenTool extends BaseTool {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
       return;
     }
-    const anchorPoint = roundPoint(this.sceneController.selectedGlyphPoint(initialEvent));
     const editContext = await this.sceneController.getGlyphEditContext(this);
     if (!editContext) {
       return;
     }
 
+    const anchorPoint = roundPoint(this.sceneController.selectedGlyphPoint(initialEvent));
     let rollbackChanges = [];
     let editChanges = [];
 
