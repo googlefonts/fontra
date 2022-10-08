@@ -40,10 +40,8 @@ export class PenTool extends BaseTool {
     await editContext.editSetRollback(pointAdder.getRollbackChange());
     await editContext.editIncremental(pointAdder.getInitialChange());
 
-    const event = await shouldInitiateDrag(eventStream, initialEvent)
-    if (event) {
-      const point = this.sceneController.selectedGlyphPoint(event);
-      pointAdder.startDragging(point, event.shiftKey);
+    if (await shouldInitiateDrag(eventStream, initialEvent)) {
+      pointAdder.startDragging();
       this.sceneController.selection = pointAdder.getSelection();
       await editContext.editSetRollback(pointAdder.getRollbackChange());
       await editContext.editIncremental(pointAdder.getInitialChange());
@@ -111,18 +109,17 @@ class PointAdder {
     this.contourStartPoint = contourStartPoint;
   }
 
-  startDragging(point, constrain) {
+  startDragging() {
     // Let's start over, revert the last insertPoint
     this._rollbackChanges.splice(-1);
     this._editChanges.splice(-1);
 
-    const handleOut = this._getHandle(point, this.anchorPoint, constrain);
     const [handleInIndex, handleOutIndex, insertIndices, newPoints] = (
       this.isNewContour
       ?
-      this._getIndicesAndPointsHandleOut(handleOut)
+      this._getIndicesAndPointsHandleOut()
       :
-      this._getIndicesAndPointsHandleInOut(handleOut)
+      this._getIndicesAndPointsHandleInOut()
     );
     this.handleInIndex = handleInIndex;
     this.handleOutIndex = handleOutIndex;
@@ -135,7 +132,7 @@ class PointAdder {
     this._newSelection = new Set([`point/${this.contourStartPoint + this.handleOutIndex}`]);
   }
 
-  _getIndicesAndPointsHandleOut(handleOut) {
+  _getIndicesAndPointsHandleOut() {
     let handleInIndex, handleOutIndex, insertIndices;
     if (this.isAppend) {
       handleInIndex = undefined;
@@ -149,13 +146,12 @@ class PointAdder {
     }
     const newPoints = [
       {...this.anchorPoint},
-      {...handleOut, "type": "cubic"},
+      {...this.anchorPoint, "type": "cubic"},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
   }
 
-  _getIndicesAndPointsHandleInOut(handleOut) {
-    const handleIn = oppositeHandle(this.anchorPoint, handleOut);
+  _getIndicesAndPointsHandleInOut() {
     let handleInIndex, handleOutIndex, insertIndices;
     if (this.isAppend) {
       handleInIndex = this.contourPointIndex;
@@ -168,9 +164,9 @@ class PointAdder {
       insertIndices = [0, 0, 0];
     }
     const newPoints = [
-      {...handleIn, "type": "cubic"},
+      {...this.anchorPoint, "type": "cubic"},
       {...this.anchorPoint, "smooth": true},
-      {...handleOut, "type": "cubic"},
+      {...this.anchorPoint, "type": "cubic"},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
   }
