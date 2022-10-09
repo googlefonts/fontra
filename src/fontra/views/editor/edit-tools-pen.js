@@ -185,16 +185,15 @@ class PointAdder {
 
   getIncrementalChange(point, constrain) {
     const handleOut = getHandle(point, this.anchorPoint, constrain);
-    this._moveChanges = [];
+    this._moveChanges = [
+      movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y)
+    ];
     if (this.handleInIndex !== undefined) {
       const handleIn = oppositeHandle(this.anchorPoint, handleOut);
       this._moveChanges.push(
         movePoint(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y)
       );
     }
-    this._moveChanges.push(
-      movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y)
-    );
     return consolidateChanges(this._moveChanges);
   }
 
