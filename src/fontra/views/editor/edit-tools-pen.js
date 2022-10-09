@@ -171,6 +171,7 @@ class AddContourAndPointsBehavior {
     this.contourPointIndex = contourPointIndex;
     this.shouldAppend = shouldAppend;
     this.anchorPoint = anchorPoint;
+    this.curveType = "cubic";
 
     this._rollbackChanges = [];
     this._editChanges = [];
@@ -228,7 +229,7 @@ class AddContourAndPointsBehavior {
     }
     const newPoints = [
       {...this.anchorPoint},
-      {...this.anchorPoint, "type": "cubic"},
+      {...this.anchorPoint, "type": this.curveType},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
   }
@@ -285,9 +286,9 @@ class AddPointsBehavior extends AddContourAndPointsBehavior {
       insertIndices = [0, 0, 0];
     }
     const newPoints = [
-      {...this.anchorPoint, "type": "cubic"},
+      {...this.anchorPoint, "type": this.curveType},
       {...this.anchorPoint, "smooth": true},
-      {...this.anchorPoint, "type": "cubic"},
+      {...this.anchorPoint, "type": this.curveType},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
   }
@@ -317,7 +318,7 @@ class AddHandleBehavior extends AddContourAndPointsBehavior {
       insertIndices = [0];
     }
     const newPoints = [
-      {...this.anchorPoint, "type": "cubic"},
+      {...this.anchorPoint, "type": this.curveType},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
   }
