@@ -27,28 +27,28 @@ export class PenTool extends BaseTool {
 
     const initialSelection = this.sceneController.selection;
 
-    const pointAdder = getPenToolBehavior(
+    const behavior = getPenToolBehavior(
       this.sceneController,
       initialEvent,
       editContext.glyphController.instance.path,
     );
 
-    this.sceneController.selection = pointAdder.getSelection();
+    this.sceneController.selection = behavior.getSelection();
 
     await editContext.editBegin();
-    await editContext.editSetRollback(pointAdder.getRollbackChange());
-    await editContext.editIncremental(pointAdder.getInitialChange());
+    await editContext.editSetRollback(behavior.getRollbackChange());
+    await editContext.editIncremental(behavior.getInitialChange());
 
     if (await shouldInitiateDrag(eventStream, initialEvent)) {
-      pointAdder.startDragging();
-      this.sceneController.selection = pointAdder.getSelection();
-      await editContext.editSetRollback(pointAdder.getRollbackChange());
-      await editContext.editIncremental(pointAdder.getInitialChange());
+      behavior.startDragging();
+      this.sceneController.selection = behavior.getSelection();
+      await editContext.editSetRollback(behavior.getRollbackChange());
+      await editContext.editIncremental(behavior.getInitialChange());
 
       let moveChange;
       for await (const event of eventStream) {
         const point = this.sceneController.selectedGlyphPoint(event);
-        moveChange = pointAdder.getIncrementalChange(point, event.shiftKey);
+        moveChange = behavior.getIncrementalChange(point, event.shiftKey);
         await editContext.editIncrementalMayDrop(moveChange);
       }
       if (moveChange) {
@@ -63,7 +63,7 @@ export class PenTool extends BaseTool {
       "location": this.sceneController.getLocation(),
     }
 
-    await editContext.editEnd(pointAdder.getFinalChange(), undoInfo);
+    await editContext.editEnd(behavior.getFinalChange(), undoInfo);
   }
 
 }
