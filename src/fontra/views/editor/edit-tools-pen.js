@@ -160,7 +160,7 @@ class DeleteHandleBehavior {
 
 }
 
-class AddContourAndPointsBehavior {
+class AddPointsBehavior {
 
   wantDrag = true;
   wantInitialChange = true;
@@ -194,8 +194,7 @@ class AddContourAndPointsBehavior {
   }
 
   _setupContourChanges(contourIndex) {
-    this._rollbackChanges.push(deleteContour(contourIndex));
-    this._editChanges.push(appendEmptyContour(contourIndex));
+    // Nothing to do
   }
 
   startDragging() {
@@ -218,17 +217,18 @@ class AddContourAndPointsBehavior {
   _getIndicesAndPoints() {
     let handleInIndex, handleOutIndex, insertIndices;
     if (this.shouldAppend) {
-      handleInIndex = undefined;
-      const anchorIndex = this.contourPointIndex;
-      handleOutIndex = this.contourPointIndex + 1;
-      insertIndices = [anchorIndex, handleOutIndex];
+      handleInIndex = this.contourPointIndex;
+      const anchorIndex = this.contourPointIndex + 1;
+      handleOutIndex = this.contourPointIndex + 2;
+      insertIndices = [handleInIndex, anchorIndex, handleOutIndex];
     } else {
-      handleInIndex = undefined;
+      handleInIndex = 2;
       handleOutIndex = 0;
-      insertIndices = [0, 0];
+      insertIndices = [0, 0, 0];
     }
     const newPoints = [
-      {...this.anchorPoint},
+      {...this.anchorPoint, "type": this.curveType},
+      {...this.anchorPoint, "smooth": true},
       {...this.anchorPoint, "type": this.curveType},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
@@ -267,27 +267,27 @@ class AddContourAndPointsBehavior {
 }
 
 
-class AddPointsBehavior extends AddContourAndPointsBehavior {
+class AddContourAndPointsBehavior extends AddPointsBehavior {
 
   _setupContourChanges(contourIndex) {
-    // Nothing to do
+    this._rollbackChanges.push(deleteContour(contourIndex));
+    this._editChanges.push(appendEmptyContour(contourIndex));
   }
 
   _getIndicesAndPoints() {
     let handleInIndex, handleOutIndex, insertIndices;
     if (this.shouldAppend) {
-      handleInIndex = this.contourPointIndex;
-      const anchorIndex = this.contourPointIndex + 1;
-      handleOutIndex = this.contourPointIndex + 2;
-      insertIndices = [handleInIndex, anchorIndex, handleOutIndex];
+      handleInIndex = undefined;
+      const anchorIndex = this.contourPointIndex;
+      handleOutIndex = this.contourPointIndex + 1;
+      insertIndices = [anchorIndex, handleOutIndex];
     } else {
-      handleInIndex = 2;
+      handleInIndex = undefined;
       handleOutIndex = 0;
-      insertIndices = [0, 0, 0];
+      insertIndices = [0, 0];
     }
     const newPoints = [
-      {...this.anchorPoint, "type": this.curveType},
-      {...this.anchorPoint, "smooth": true},
+      {...this.anchorPoint},
       {...this.anchorPoint, "type": this.curveType},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
@@ -295,16 +295,12 @@ class AddPointsBehavior extends AddContourAndPointsBehavior {
 
 }
 
-class AddHandleBehavior extends AddContourAndPointsBehavior {
+class AddHandleBehavior extends AddPointsBehavior {
 
   wantInitialChange = false;
 
   _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
     this._newSelection = new Set();
-  }
-
-  _setupContourChanges(contourIndex) {
-    // Nothing to do
   }
 
   _getIndicesAndPoints() {
