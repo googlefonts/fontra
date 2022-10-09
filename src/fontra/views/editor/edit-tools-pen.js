@@ -79,7 +79,6 @@ class AddPointsBehavior {
 
   constructor(path, initialSelection, anchorPoint) {
     this.path = path;
-    this.initialSelection = initialSelection;
     this.anchorPoint = anchorPoint;
     this.isNewContour = false;
     this._rollbackChanges = [];
