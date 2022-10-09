@@ -39,15 +39,23 @@ export class PenTool extends BaseTool {
       return;
     }
 
-    this.sceneController.selection = behavior.getSelection();
+    let didEdit = false;
 
-    await editContext.editBegin();
-    await editContext.editSetRollback(behavior.getRollbackChange());
-    await editContext.editIncremental(behavior.getInitialChange());
+    if (behavior.wantInitialChange) {
+      this.sceneController.selection = behavior.getSelection();
+      await editContext.editBegin();
+      didEdit = true;
+      await editContext.editSetRollback(behavior.getRollbackChange());
+      await editContext.editIncremental(behavior.getInitialChange());
+    }
 
     if (behavior.wantDrag && await shouldInitiateDrag(eventStream, initialEvent)) {
       behavior.startDragging();
       this.sceneController.selection = behavior.getSelection();
+      if (!behavior.wantInitialChange) {
+        await editContext.editBegin();
+        didEdit = true;
+      }
       await editContext.editSetRollback(behavior.getRollbackChange());
       await editContext.editIncremental(behavior.getInitialChange());
 
@@ -62,14 +70,15 @@ export class PenTool extends BaseTool {
       }
     }
 
-    const undoInfo = {
-      "label": behavior.undoLabel,
-      "undoSelection": initialSelection,
-      "redoSelection": this.sceneController.selection,
-      "location": this.sceneController.getLocation(),
+    if (didEdit) {
+      const undoInfo = {
+        "label": behavior.undoLabel,
+        "undoSelection": initialSelection,
+        "redoSelection": this.sceneController.selection,
+        "location": this.sceneController.getLocation(),
+      }
+      await editContext.editEnd(behavior.getFinalChange(), undoInfo);
     }
-
-    await editContext.editEnd(behavior.getFinalChange(), undoInfo);
   }
 
 }
@@ -90,15 +99,15 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
         contourPointIndex--;
       }
       const point = path.getContourPoint(contourIndex, contourPointIndex);
-      if (!point.type) {
-        // It's an on-curve point, do nothing
-        return null;
+      if (point.type) {
+        if (path.getNumPointsOfContour(contourIndex) < 2) {
+          // Contour is a single off-curve point, let's not touch it
+          return null;
+        }
+        return new DeleteHandleBehavior(path, contourIndex, contourPointIndex, shouldAppend);
+      } else {
+        behaviorClass = AddHandleBehavior;
       }
-      if (path.getNumPointsOfContour(contourIndex) < 2) {
-        // Contour is a single off-curve point, let's not touch it
-        return null;
-      }
-      return new DeleteHandleBehavior(path, contourIndex, contourPointIndex, shouldAppend);
     }
 
   } else {
@@ -114,6 +123,7 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
 class DeleteHandleBehavior {
 
   wantDrag = false;
+  wantInitialChange = true;
   undoLabel = "delete handle";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend) {
@@ -153,6 +163,7 @@ class DeleteHandleBehavior {
 class AddContourAndPointsBehavior {
 
   wantDrag = true;
+  wantInitialChange = true;
   undoLabel = "draw point";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
@@ -172,8 +183,11 @@ class AddContourAndPointsBehavior {
       path.numPoints : path.getAbsolutePointIndex(contourIndex, 0, true)
     );
 
-    this._newSelection = new Set([`point/${this.contourStartPoint + contourPointIndex}`]);
+    this._setupInitialChanges(contourIndex, contourPointIndex, anchorPoint);
+  }
 
+  _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
+    this._newSelection = new Set([`point/${this.contourStartPoint + contourPointIndex}`]);
     this._rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
     this._editChanges.push(insertPoint(contourIndex, contourPointIndex, anchorPoint));
   }
@@ -273,6 +287,36 @@ class AddPointsBehavior extends AddContourAndPointsBehavior {
     const newPoints = [
       {...this.anchorPoint, "type": "cubic"},
       {...this.anchorPoint, "smooth": true},
+      {...this.anchorPoint, "type": "cubic"},
+    ];
+    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
+  }
+
+}
+
+class AddHandleBehavior extends AddContourAndPointsBehavior {
+
+  wantInitialChange = false;
+
+  _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
+    this._newSelection = new Set();
+  }
+
+  _setupContourChanges(contourIndex) {
+    // Nothing to do
+  }
+
+  _getIndicesAndPoints() {
+    let handleOutIndex, insertIndices;
+    const handleInIndex = undefined;
+    if (this.shouldAppend) {
+      handleOutIndex = this.contourPointIndex + 1;
+      insertIndices = [handleOutIndex];
+    } else {
+      handleOutIndex = 0;
+      insertIndices = [0];
+    }
+    const newPoints = [
       {...this.anchorPoint, "type": "cubic"},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
