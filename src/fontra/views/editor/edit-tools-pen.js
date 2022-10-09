@@ -1,5 +1,7 @@
 import { consolidateChanges } from "../core/changes.js";
+import { isEqualSet } from "../core/set-ops.js";
 import { reversed, roundPoint } from "../core/utils.js";
+import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
@@ -33,13 +35,17 @@ export class PenTool extends BaseTool {
       editContext.glyphController.instance.path,
     );
 
+    if (!behavior) {
+      return;
+    }
+
     this.sceneController.selection = behavior.getSelection();
 
     await editContext.editBegin();
     await editContext.editSetRollback(behavior.getRollbackChange());
     await editContext.editIncremental(behavior.getInitialChange());
 
-    if (await shouldInitiateDrag(eventStream, initialEvent)) {
+    if (behavior.wantDrag && await shouldInitiateDrag(eventStream, initialEvent)) {
       behavior.startDragging();
       this.sceneController.selection = behavior.getSelection();
       await editContext.editSetRollback(behavior.getRollbackChange());
@@ -57,7 +63,7 @@ export class PenTool extends BaseTool {
     }
 
     const undoInfo = {
-      "label": "draw point",
+      "label": behavior.undoLabel,
       "undoSelection": initialSelection,
       "redoSelection": this.sceneController.selection,
       "location": this.sceneController.getLocation(),
@@ -75,7 +81,27 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
   let [contourIndex, contourPointIndex, shouldAppend] = getAppendIndices(path, sceneController.selection);
   let behaviorClass = AddPointsBehavior;
 
-  if (contourIndex === undefined) {
+  if (contourIndex !== undefined) {
+    const clickedSelection = sceneController.sceneModel.selectionAtPoint(
+      sceneController.localPoint(initialEvent), sceneController.mouseClickMargin
+    );
+    if (isEqualSet(clickedSelection, sceneController.selection)) {
+      if (shouldAppend) {
+        contourPointIndex--;
+      }
+      const point = path.getContourPoint(contourIndex, contourPointIndex);
+      if (!point.type) {
+        // It's an on-curve point, do nothing
+        return null;
+      }
+      if (path.getNumPointsOfContour(contourIndex) < 2) {
+        // Contour is a single off-curve point, let's not touch it
+        return null;
+      }
+      return new DeleteHandleBehavior(path, contourIndex, contourPointIndex, shouldAppend);
+    }
+
+  } else {
     // Let's add a new contour
     behaviorClass = AddContourAndPointsBehavior;
     contourIndex = path.numContours;
@@ -85,7 +111,49 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
 }
 
 
+class DeleteHandleBehavior {
+
+  wantDrag = false;
+  undoLabel = "delete handle";
+
+  constructor(path, contourIndex, contourPointIndex, shouldAppend) {
+    const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
+    const currentAnchorIndex = shouldAppend ? pointIndex - 1 : pointIndex + 1;
+    const point = path.getPoint(pointIndex);
+    this._rollbackChanges = [
+      setPointType(currentAnchorIndex, path.pointTypes[currentAnchorIndex]),
+      insertPoint(contourIndex, contourPointIndex, point),
+    ];
+    this._editChanges = [
+      setPointType(currentAnchorIndex, VarPackedPath.ON_CURVE),
+      deletePoint(contourIndex, contourPointIndex),
+    ];
+    const newSelectedPointIndex = shouldAppend ? pointIndex - 1 : pointIndex;
+    this._newSelection = new Set([`point/${newSelectedPointIndex}`]);
+  }
+
+  getSelection() {
+    return this._newSelection;
+  }
+
+  getRollbackChange() {
+    return consolidateChanges([...reversed(this._rollbackChanges)]);
+  }
+
+  getInitialChange() {
+    return consolidateChanges(this._editChanges);
+  }
+
+  getFinalChange() {
+    return consolidateChanges(this._editChanges);
+  }
+
+}
+
 class AddContourAndPointsBehavior {
+
+  wantDrag = true;
+  undoLabel = "draw point";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
     this.contourIndex = contourIndex;
@@ -275,6 +343,15 @@ function movePoint(pointIndex, x, y) {
     "a": [pointIndex, x, y],
   };
 }
+
+function setPointType(pointIndex, pointType) {
+  return {
+    "p": ["path", "pointTypes"],
+    "f": "=",
+    "a": [pointIndex, pointType],
+  };
+}
+
 
 function emptyContour() {
   return {"coordinates": [], "pointTypes": [], "isClosed": false};
