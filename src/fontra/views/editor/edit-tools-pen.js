@@ -71,45 +71,48 @@ export class PenTool extends BaseTool {
 
 function getPenToolBehavior(sceneController, initialEvent, path) {
   const anchorPoint = roundPoint(sceneController.selectedGlyphPoint(initialEvent));
-  return new AddPointsBehavior(path, sceneController.selection, anchorPoint);
+
+  let [contourIndex, contourPointIndex, shouldAppend] = getAppendIndices(path, sceneController.selection);
+  let addContour = false;
+
+  if (contourIndex === undefined) {
+    // Let's add a new contour
+    addContour = true;
+    contourIndex = path.numContours;
+    contourPointIndex = 0;
+  }
+  return new AddPointsBehavior(path, contourIndex, contourPointIndex, shouldAppend, addContour, anchorPoint);
 }
 
 
 class AddPointsBehavior {
 
-  constructor(path, initialSelection, anchorPoint) {
+  constructor(path, contourIndex, contourPointIndex, shouldAppend, addContour, anchorPoint) {
+    this.contourIndex = contourIndex;
+    this.contourPointIndex = contourPointIndex;
+    this.shouldAppend = shouldAppend;
+    this.addContour = addContour;
     this.anchorPoint = anchorPoint;
-    this.isNewContour = false;
+
     this._rollbackChanges = [];
     this._editChanges = [];
     this._moveChanges = [];
-    let [contourIndex, contourPointIndex, shouldAppend] = getAppendIndices(path, initialSelection);
 
-    if (contourIndex === undefined) {
-      // Let's add a new contour
-      this.isNewContour = true;
-      contourIndex = path.numContours;
-      contourPointIndex = 0;
-
+    if (addContour) {
       this._rollbackChanges.push(deleteContour(contourIndex));
       this._editChanges.push(appendEmptyContour(contourIndex));
     }
 
-    let contourStartPoint;
     if (contourIndex >= path.numContours) {
-      contourStartPoint = path.numPoints;
+      this.contourStartPoint = path.numPoints;
     } else {
-      contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0, true);
+      this.contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0, true);
     }
-    this._newSelection = new Set([`point/${contourStartPoint + contourPointIndex}`]);
+
+    this._newSelection = new Set([`point/${this.contourStartPoint + contourPointIndex}`]);
 
     this._rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
     this._editChanges.push(insertPoint(contourIndex, contourPointIndex, anchorPoint));
-
-    this.contourIndex = contourIndex;
-    this.contourPointIndex = contourPointIndex;
-    this.shouldAppend = shouldAppend;
-    this.contourStartPoint = contourStartPoint;
   }
 
   startDragging() {
@@ -118,7 +121,7 @@ class AddPointsBehavior {
     this._editChanges.splice(-1);
 
     const [handleInIndex, handleOutIndex, insertIndices, newPoints] = (
-      this.isNewContour
+      this.addContour
       ?
       this._getIndicesAndPointsHandleOut()
       :
