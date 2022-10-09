@@ -73,35 +73,31 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
   const anchorPoint = roundPoint(sceneController.selectedGlyphPoint(initialEvent));
 
   let [contourIndex, contourPointIndex, shouldAppend] = getAppendIndices(path, sceneController.selection);
-  let addContour = false;
+  let behaviorClass = AddPointsBehavior;
 
   if (contourIndex === undefined) {
     // Let's add a new contour
-    addContour = true;
+    behaviorClass = AddContourAndPointsBehavior;
     contourIndex = path.numContours;
     contourPointIndex = 0;
   }
-  return new AddPointsBehavior(path, contourIndex, contourPointIndex, shouldAppend, addContour, anchorPoint);
+  return new behaviorClass(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint);
 }
 
 
-class AddPointsBehavior {
+class AddContourAndPointsBehavior {
 
-  constructor(path, contourIndex, contourPointIndex, shouldAppend, addContour, anchorPoint) {
+  constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
     this.contourIndex = contourIndex;
     this.contourPointIndex = contourPointIndex;
     this.shouldAppend = shouldAppend;
-    this.addContour = addContour;
     this.anchorPoint = anchorPoint;
 
     this._rollbackChanges = [];
     this._editChanges = [];
     this._moveChanges = [];
 
-    if (addContour) {
-      this._rollbackChanges.push(deleteContour(contourIndex));
-      this._editChanges.push(appendEmptyContour(contourIndex));
-    }
+    this._setupContourChanges(contourIndex);
 
     this.contourStartPoint = (
       contourIndex >= path.numContours ?
@@ -114,18 +110,17 @@ class AddPointsBehavior {
     this._editChanges.push(insertPoint(contourIndex, contourPointIndex, anchorPoint));
   }
 
+  _setupContourChanges(contourIndex) {
+    this._rollbackChanges.push(deleteContour(contourIndex));
+    this._editChanges.push(appendEmptyContour(contourIndex));
+  }
+
   startDragging() {
     // Let's start over, revert the last insertPoint
     this._rollbackChanges.splice(-1);
     this._editChanges.splice(-1);
 
-    const [handleInIndex, handleOutIndex, insertIndices, newPoints] = (
-      this.addContour
-      ?
-      this._getIndicesAndPointsHandleOut()
-      :
-      this._getIndicesAndPointsHandleInOut()
-    );
+    const [handleInIndex, handleOutIndex, insertIndices, newPoints] = this._getIndicesAndPoints();
     this.handleInIndex = handleInIndex;
     this.handleOutIndex = handleOutIndex;
 
@@ -137,7 +132,7 @@ class AddPointsBehavior {
     this._newSelection = new Set([`point/${this.contourStartPoint + this.handleOutIndex}`]);
   }
 
-  _getIndicesAndPointsHandleOut() {
+  _getIndicesAndPoints() {
     let handleInIndex, handleOutIndex, insertIndices;
     if (this.shouldAppend) {
       handleInIndex = undefined;
@@ -151,26 +146,6 @@ class AddPointsBehavior {
     }
     const newPoints = [
       {...this.anchorPoint},
-      {...this.anchorPoint, "type": "cubic"},
-    ];
-    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
-  }
-
-  _getIndicesAndPointsHandleInOut() {
-    let handleInIndex, handleOutIndex, insertIndices;
-    if (this.shouldAppend) {
-      handleInIndex = this.contourPointIndex;
-      const anchorIndex = this.contourPointIndex + 1;
-      handleOutIndex = this.contourPointIndex + 2;
-      insertIndices = [handleInIndex, anchorIndex, handleOutIndex];
-    } else {
-      handleInIndex = 2;
-      handleOutIndex = 0;
-      insertIndices = [0, 0, 0];
-    }
-    const newPoints = [
-      {...this.anchorPoint, "type": "cubic"},
-      {...this.anchorPoint, "smooth": true},
       {...this.anchorPoint, "type": "cubic"},
     ];
     return [handleInIndex, handleOutIndex, insertIndices, newPoints];
@@ -204,6 +179,35 @@ class AddPointsBehavior {
 
   getFinalChange() {
     return consolidateChanges(this._editChanges.concat(this._moveChanges));
+  }
+
+}
+
+
+class AddPointsBehavior extends AddContourAndPointsBehavior {
+
+  _setupContourChanges(contourIndex) {
+    // Nothing to do
+  }
+
+  _getIndicesAndPoints() {
+    let handleInIndex, handleOutIndex, insertIndices;
+    if (this.shouldAppend) {
+      handleInIndex = this.contourPointIndex;
+      const anchorIndex = this.contourPointIndex + 1;
+      handleOutIndex = this.contourPointIndex + 2;
+      insertIndices = [handleInIndex, anchorIndex, handleOutIndex];
+    } else {
+      handleInIndex = 2;
+      handleOutIndex = 0;
+      insertIndices = [0, 0, 0];
+    }
+    const newPoints = [
+      {...this.anchorPoint, "type": "cubic"},
+      {...this.anchorPoint, "smooth": true},
+      {...this.anchorPoint, "type": "cubic"},
+    ];
+    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
   }
 
 }
