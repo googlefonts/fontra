@@ -103,11 +103,10 @@ class AddPointsBehavior {
       this._editChanges.push(appendEmptyContour(contourIndex));
     }
 
-    if (contourIndex >= path.numContours) {
-      this.contourStartPoint = path.numPoints;
-    } else {
-      this.contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0, true);
-    }
+    this.contourStartPoint = (
+      contourIndex >= path.numContours ?
+      path.numPoints : path.getAbsolutePointIndex(contourIndex, 0, true)
+    );
 
     this._newSelection = new Set([`point/${this.contourStartPoint + contourPointIndex}`]);
 
