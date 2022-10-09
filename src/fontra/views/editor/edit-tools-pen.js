@@ -27,11 +27,10 @@ export class PenTool extends BaseTool {
 
     const initialSelection = this.sceneController.selection;
 
-    const anchorPoint = roundPoint(this.sceneController.selectedGlyphPoint(initialEvent));
-    const pointAdder = new PointAdder(
+    const pointAdder = getPenToolBehavior(
+      this.sceneController,
+      initialEvent,
       editContext.glyphController.instance.path,
-      initialSelection,
-      anchorPoint,
     );
 
     this.sceneController.selection = pointAdder.getSelection();
@@ -70,7 +69,13 @@ export class PenTool extends BaseTool {
 }
 
 
-class PointAdder {
+function getPenToolBehavior(sceneController, initialEvent, path) {
+  const anchorPoint = roundPoint(sceneController.selectedGlyphPoint(initialEvent));
+  return new AddPointBehavior(path, sceneController.selection, anchorPoint);
+}
+
+
+class AddPointBehavior {
 
   constructor(path, initialSelection, anchorPoint) {
     this.path = path;
