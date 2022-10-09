@@ -87,8 +87,8 @@ export class PenTool extends BaseTool {
 function getPenToolBehavior(sceneController, initialEvent, path) {
   const anchorPoint = roundPoint(sceneController.selectedGlyphPoint(initialEvent));
 
-  let [contourIndex, contourPointIndex, shouldAppend] = getAppendIndices(path, sceneController.selection);
-  let behaviorClass = AddPointsBehavior;
+  let [contourIndex, contourPointIndex, shouldAppend, isOnCurve] = getAppendIndices(path, sceneController.selection);
+  let behaviorClass = isOnCurve ? AddPointsSingleHandleBehavior : AddPointsBehavior;
 
   if (contourIndex !== undefined) {
     const clickedSelection = sceneController.sceneModel.selectionAtPoint(
@@ -267,12 +267,7 @@ class AddPointsBehavior {
 }
 
 
-class AddContourAndPointsBehavior extends AddPointsBehavior {
-
-  _setupContourChanges(contourIndex) {
-    this._rollbackChanges.push(deleteContour(contourIndex));
-    this._editChanges.push(appendEmptyContour(contourIndex));
-  }
+class AddPointsSingleHandleBehavior extends AddPointsBehavior {
 
   _getIndicesAndPoints() {
     let handleInIndex, handleOutIndex, insertIndices;
@@ -294,6 +289,17 @@ class AddContourAndPointsBehavior extends AddPointsBehavior {
   }
 
 }
+
+
+class AddContourAndPointsBehavior extends AddPointsSingleHandleBehavior {
+
+  _setupContourChanges(contourIndex) {
+    this._rollbackChanges.push(deleteContour(contourIndex));
+    this._editChanges.push(appendEmptyContour(contourIndex));
+  }
+
+}
+
 
 class AddHandleBehavior extends AddPointsBehavior {
 
@@ -327,6 +333,7 @@ function getAppendIndices(path, selection) {
     const sel = [...selection][0];
     const [tp, pointIndex] = sel.split("/");
     if (pointIndex < path.numPoints) {
+      const isOnCurve = !path.getPoint(pointIndex).type;
       const [selContourIndex, selContourPointIndex] = path.getContourAndPointIndex(pointIndex);
       const numPointsContour = path.getNumPointsOfContour(selContourIndex);
       if (
@@ -337,11 +344,11 @@ function getAppendIndices(path, selection) {
         const contourIndex = selContourIndex;
         const shouldAppend = !!(selContourPointIndex || numPointsContour === 1);
         const contourPointIndex = shouldAppend ? selContourPointIndex + 1 : 0;
-        return [contourIndex, contourPointIndex, shouldAppend];
+        return [contourIndex, contourPointIndex, shouldAppend, isOnCurve];
       }
     }
   }
-  return [undefined, undefined, true];
+  return [undefined, undefined, true, undefined];
 }
 
 
