@@ -228,6 +228,18 @@ export class VarPackedPath {
     this.pointTypes[pointIndex] = packPointType(type, smooth);
   }
 
+  getContourPoint(contourIndex, contourPointIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const pointIndex = this.getAbsolutePointIndex(contourIndex, contourPointIndex, false);
+    return this.getPoint(pointIndex);
+  }
+
+  setContourPoint(contourIndex, contourPointIndex, point) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const pointIndex = this.getAbsolutePointIndex(contourIndex, contourPointIndex, false);
+    this.setPoint(pointIndex, point);
+  }
+
   insertPoint(contourIndex, contourPointIndex, point) {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const pointIndex = this.getAbsolutePointIndex(contourIndex, contourPointIndex, true);
