@@ -184,7 +184,7 @@ class PointAdder {
   }
 
   getIncrementalChange(point, constrain) {
-    const handleOut = this._getHandle(point, this.anchorPoint, constrain);
+    const handleOut = getHandle(point, this.anchorPoint, constrain);
     this._moveChanges = [];
     if (this.handleInIndex !== undefined) {
       const handleIn = oppositeHandle(this.anchorPoint, handleOut);
@@ -200,13 +200,6 @@ class PointAdder {
 
   getFinalChange() {
     return consolidateChanges(this._editChanges.concat(this._moveChanges));
-  }
-
-  _getHandle(handleOut, anchorPoint, constrain) {
-    if (constrain) {
-      handleOut = shiftConstrain(anchorPoint, handleOut);
-    }
-    return roundPoint(handleOut);
   }
 
 }
@@ -280,12 +273,19 @@ function emptyContour() {
 }
 
 
+function getHandle(handleOut, anchorPoint, constrain) {
+  if (constrain) {
+    handleOut = shiftConstrain(anchorPoint, handleOut);
+  }
+  return roundPoint(handleOut);
+}
+
+
 function oppositeHandle(anchorPoint, handlePoint) {
   return vector.addVectors(
     anchorPoint, vector.mulVector(vector.subVectors(handlePoint, anchorPoint), -1)
   );
 }
-
 
 function shiftConstrain(anchorPoint, handlePoint) {
   const delta = constrainHorVerDiag(vector.subVectors(handlePoint, anchorPoint));
