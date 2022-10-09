@@ -83,7 +83,7 @@ class AddPointsBehavior {
     this._rollbackChanges = [];
     this._editChanges = [];
     this._moveChanges = [];
-    let [contourIndex, contourPointIndex, isAppend] = getAppendIndices(path, initialSelection);
+    let [contourIndex, contourPointIndex, shouldAppend] = getAppendIndices(path, initialSelection);
 
     if (contourIndex === undefined) {
       // Let's add a new contour
@@ -108,7 +108,7 @@ class AddPointsBehavior {
 
     this.contourIndex = contourIndex;
     this.contourPointIndex = contourPointIndex;
-    this.isAppend = isAppend;
+    this.shouldAppend = shouldAppend;
     this.contourStartPoint = contourStartPoint;
   }
 
@@ -137,7 +137,7 @@ class AddPointsBehavior {
 
   _getIndicesAndPointsHandleOut() {
     let handleInIndex, handleOutIndex, insertIndices;
-    if (this.isAppend) {
+    if (this.shouldAppend) {
       handleInIndex = undefined;
       const anchorIndex = this.contourPointIndex;
       handleOutIndex = this.contourPointIndex + 1;
@@ -156,7 +156,7 @@ class AddPointsBehavior {
 
   _getIndicesAndPointsHandleInOut() {
     let handleInIndex, handleOutIndex, insertIndices;
-    if (this.isAppend) {
+    if (this.shouldAppend) {
       handleInIndex = this.contourPointIndex;
       const anchorIndex = this.contourPointIndex + 1;
       handleOutIndex = this.contourPointIndex + 2;
@@ -220,9 +220,9 @@ function getAppendIndices(path, selection) {
       ) {
         // Let's append or prepend a point to an existing contour
         const contourIndex = selContourIndex;
-        const isAppend = !!(selContourPointIndex || numPointsContour === 1);
-        const contourPointIndex = isAppend ? selContourPointIndex + 1 : 0;
-        return [contourIndex, contourPointIndex, isAppend];
+        const shouldAppend = !!(selContourPointIndex || numPointsContour === 1);
+        const contourPointIndex = shouldAppend ? selContourPointIndex + 1 : 0;
+        return [contourIndex, contourPointIndex, shouldAppend];
       }
     }
   }
