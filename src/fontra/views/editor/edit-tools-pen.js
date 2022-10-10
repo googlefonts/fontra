@@ -184,17 +184,28 @@ class CloseContourNoDragBehavior {
   undoLabel = "close contour";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
-    if (!shouldAppend) {
-      // going backwards; connect, but make the connecting point the start point
-    }
-    const pointIndex = path.getAbsolutePointIndex(contourIndex, 0);
+    const firstPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
     this._rollbackChanges = [
       openCloseContour(contourIndex, path.contourInfo[contourIndex].isClosed),
     ];
     this._editChanges = [
       openCloseContour(contourIndex, true),
     ];
-    this._newSelection = new Set([`point/${pointIndex}`]);
+    if (!shouldAppend) {
+      // going backwards; connect, but make the connecting point the start point
+      const numPoints = path.getNumPointsOfContour(contourIndex);
+      const firstPoint = path.getPoint(firstPointIndex);
+      const lastPoint = path.getPoint(firstPointIndex + numPoints - 1);
+      this._rollbackChanges.push(
+        insertPoint(contourIndex, numPoints - 1, lastPoint),
+        deletePoint(contourIndex, 0),
+      );
+      this._editChanges.push(
+        deletePoint(contourIndex, numPoints - 1),
+        insertPoint(contourIndex, 0, lastPoint),
+      );
+    }
+    this._newSelection = new Set([`point/${firstPointIndex}`]);
   }
 
   getSelection() {
