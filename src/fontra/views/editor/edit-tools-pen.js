@@ -489,7 +489,7 @@ function movePoint(pointIndex, x, y) {
   };
 }
 
-function setPointType(pointIndex, pointType) {
+export function setPointType(pointIndex, pointType) {
   return {
     "p": ["path", "pointTypes"],
     "f": "=",
