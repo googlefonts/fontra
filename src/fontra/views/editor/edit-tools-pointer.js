@@ -125,7 +125,7 @@ export class PointerTool extends BaseTool {
     const changePath = ["path", "pointTypes"]
     for (const pointIndex of pointIndices) {
       const pointType = path.pointTypes[pointIndex];
-      const [prevPoint, nextPoint] = neighborPoints(path, pointIndex);
+      const [prevIndex, prevPoint, nexIndex, nextPoint] = neighborPoints(path, pointIndex);
       if (
         ((!prevPoint || !nextPoint) || (!prevPoint.type && !nextPoint.type)) &&
         pointType !== VarPackedPath.SMOOTH_FLAG
@@ -139,6 +139,9 @@ export class PointerTool extends BaseTool {
         )
         rollbackChanges.push(setPointType(pointIndex, pointType));
         editChanges.push(setPointType(pointIndex, newPointType));
+        if (newPointType === VarPackedPath.SMOOTH_FLAG) {
+          console.log("need fixing up neighbors of", pointIndex);
+        }
       }
     }
 
@@ -231,6 +234,7 @@ function getBehaviorName(event) {
 
 function neighborPoints(path, pointIndex) {
   const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+  const contourStartIndex = path.getAbsolutePointIndex(contourIndex, 0);
   const numPoints = path.getNumPointsOfContour(contourIndex);
   const isClosed = path.contourInfo[contourIndex].isClosed;
   let prevIndex = contourPointIndex - 1;
@@ -241,10 +245,16 @@ function neighborPoints(path, pointIndex) {
   }
   let prevPoint, nextPoint;
   if (prevIndex >= 0) {
-    prevPoint = path.getContourPoint(contourIndex, prevIndex);
+    prevIndex += contourStartIndex;
+    prevPoint = path.getPoint(prevIndex);
+  } else {
+    prevIndex = undefined;
   }
   if (nextIndex < numPoints) {
-    nextPoint = path.getContourPoint(contourIndex, nextIndex);
+    nextIndex += contourStartIndex;
+    nextPoint = path.getPoint(nextIndex);
+  } else {
+    nextIndex = undefined;
   }
-  return [prevPoint, nextPoint];
+  return [prevIndex, prevPoint, nextIndex, nextPoint];
 }
