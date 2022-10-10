@@ -248,6 +248,44 @@ describe("VarPackedPath Tests", () => {
     );
   })
 
+  it("cubic 1 off-curve point", () => {
+    const p = new VarPackedPath(
+      new VarArray(0, 0, 0, 100, 100, 0),
+      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
+      [{endPoint: 2, isClosed: true}],
+    );
+    expect(p._checkIntegrity()).to.equal(false);
+    const mp = new MockPath2D();
+    p.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 0], "op": "moveTo"},
+        {"args": [0, 100, 100, 0], "op": "quadraticCurveTo"},
+        {"args": [0, 0], "op": "lineTo"},
+        {"args": [], "op": "closePath"},
+      ],
+    );
+  })
+
+  it("cubic 3 off-curve points", () => {
+    const p = new VarPackedPath(
+      new VarArray(0, 0, 0, 100, 55, 55, 100, 100, 100, 0),
+      [VarPackedPath.ON_CURVE, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.OFF_CURVE_CUBIC, VarPackedPath.ON_CURVE],
+      [{endPoint: 4, isClosed: true}],
+    );
+    expect(p._checkIntegrity()).to.equal(false);
+    const mp = new MockPath2D();
+    p.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal(
+      [
+        {"args": [0, 0], "op": "moveTo"},
+        {"args": [0, 100, 100, 100, 100, 0], "op": "bezierCurveTo"},
+        {"args": [0, 0], "op": "lineTo"},
+        {"args": [], "op": "closePath"},
+      ],
+    );
+  })
+
   it("add", () => {
     const p1 = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),

@@ -120,7 +120,6 @@ class FontHandler:
             return
         # TODO: locking/checking
         await self.updateServerGlyph(finalChange)
-        await self.broadcastChange(finalChange, connection, False)
         # return {"error": "computer says no"}
 
     @remoteMethod
@@ -128,6 +127,7 @@ class FontHandler:
         await self.editBegin(connection=connection)
         await self.editSetRollback(rollbackChange, connection=connection)
         await self.editEnd(change, connection=connection)
+        await self.broadcastChange(change, connection, False)
 
     async def broadcastChange(self, change, sourceConnection, isLiveChange):
         if isLiveChange:

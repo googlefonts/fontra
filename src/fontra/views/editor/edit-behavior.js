@@ -306,7 +306,7 @@ function makeContourPointEditFuncs(contour, behavior) {
 }
 
 
-function constrainHorVerDiag(vector) {
+export function constrainHorVerDiag(vector) {
   const constrainedVector = {...vector};
   const ax = Math.abs(vector.x);
   const ay = Math.abs(vector.y);
