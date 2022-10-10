@@ -481,7 +481,7 @@ function insertPoint(contourIndex, contourPointIndex, point) {
   };
 }
 
-function movePoint(pointIndex, x, y) {
+export function movePoint(pointIndex, x, y) {
   return {
     "p": ["path"],
     "f": "=xy",
