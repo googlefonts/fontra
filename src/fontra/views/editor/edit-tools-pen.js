@@ -275,9 +275,12 @@ class AddPointsBehavior {
 
   getIncrementalChange(point, constrain) {
     const handleOut = getHandle(point, this.anchorPoint, constrain);
-    this._moveChanges = [
-      movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y)
-    ];
+    this._moveChanges = [];
+    if (this.handleOutIndex !== undefined) {
+      this._moveChanges.push(
+        movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y)
+      );
+    }
     if (this.handleInIndex !== undefined) {
       const handleIn = oppositeHandle(this.anchorPoint, handleOut);
       this._moveChanges.push(
@@ -396,14 +399,14 @@ class CloseContourDragBehavior extends AddPointsBehavior {
   }
 
   _getIndicesAndPoints() {
-    let handleOutIndex, insertIndices;
-    const handleInIndex = undefined;
+    let handleInIndex, insertIndices;
+    const handleOutIndex = undefined;
     if (this.shouldAppend) {
-      handleOutIndex = this.contourPointIndex;
-      insertIndices = [handleOutIndex];
+      handleInIndex = this.contourPointIndex;
+      insertIndices = [handleInIndex];
     } else {
-      handleOutIndex = 1;
-      insertIndices = [handleOutIndex];
+      handleInIndex = 1;
+      insertIndices = [handleInIndex];
     }
     const newPoints = [
       {...this.anchorPoint, "type": this.curveType},
