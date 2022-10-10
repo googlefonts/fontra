@@ -105,10 +105,24 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
           // Contour is a single off-curve point, let's not touch it
           return null;
         }
-        return new DeleteHandleBehavior(path, contourIndex, contourPointIndex, shouldAppend);
+        behaviorClass = DeleteHandleBehavior;
       } else {
         // on-curve
         behaviorClass = AddHandleBehavior;
+      }
+    } else if (clickedSelection.size === 1) {
+      const sel = [...clickedSelection][0];
+      const [tp, pointIndex] = sel.split("/");
+      if (tp === "point") {
+        const [clickedContourIndex, clickedContourPointIndex] = path.getContourAndPointIndex(pointIndex);
+        const numClickedContourPoints = path.getNumPointsOfContour(clickedContourIndex);
+        if (clickedContourPointIndex === 0 || clickedContourPointIndex === numClickedContourPoints - 1) {
+          if (clickedContourIndex === contourIndex) {
+            behaviorClass = CloseContourNoDragBehavior;
+          } else {
+            console.log("connect!!")
+          }
+        }
       }
     }
 
@@ -128,7 +142,7 @@ class DeleteHandleBehavior {
   wantInitialChange = true;
   undoLabel = "delete handle";
 
-  constructor(path, contourIndex, contourPointIndex, shouldAppend) {
+  constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
     const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
     const currentAnchorIndex = shouldAppend ? pointIndex - 1 : pointIndex + 1;
     const point = path.getPoint(pointIndex);
@@ -161,6 +175,43 @@ class DeleteHandleBehavior {
   }
 
 }
+
+
+class CloseContourNoDragBehavior {
+
+  wantDrag = false;
+  wantInitialChange = true;
+  undoLabel = "close contour";
+
+  constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
+    const pointIndex = path.getAbsolutePointIndex(contourIndex, 0);
+    this._rollbackChanges = [
+      openCloseContour(contourIndex, path.contourInfo[contourIndex].isClosed),
+    ];
+    this._editChanges = [
+      openCloseContour(contourIndex, true),
+    ];
+    this._newSelection = new Set([`point/${pointIndex}`]);
+  }
+
+  getSelection() {
+    return this._newSelection;
+  }
+
+  getRollbackChange() {
+    return consolidateChanges([...reversed(this._rollbackChanges)]);
+  }
+
+  getInitialChange() {
+    return consolidateChanges(this._editChanges);
+  }
+
+  getFinalChange() {
+    return consolidateChanges(this._editChanges);
+  }
+
+}
+
 
 class AddPointsBehavior {
 
@@ -400,6 +451,14 @@ function setPointType(pointIndex, pointType) {
     "p": ["path", "pointTypes"],
     "f": "=",
     "a": [pointIndex, pointType],
+  };
+}
+
+function openCloseContour(contourIndex, close) {
+  return {
+    "p": ["path", "contourInfo", contourIndex],
+    "f": "=",
+    "a": ["isClosed", close],
   };
 }
 
