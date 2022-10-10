@@ -3,9 +3,10 @@ import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
 import { boolInt, modulo } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
+import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
-import { setPointType } from "./edit-tools-pen.js";
+import { movePoint, setPointType } from "./edit-tools-pen.js";
 
 
 export class PointerTool extends BaseTool {
@@ -125,7 +126,7 @@ export class PointerTool extends BaseTool {
     const changePath = ["path", "pointTypes"]
     for (const pointIndex of pointIndices) {
       const pointType = path.pointTypes[pointIndex];
-      const [prevIndex, prevPoint, nexIndex, nextPoint] = neighborPoints(path, pointIndex);
+      const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(path, pointIndex);
       if (
         ((!prevPoint || !nextPoint) || (!prevPoint.type && !nextPoint.type)) &&
         pointType !== VarPackedPath.SMOOTH_FLAG
@@ -140,7 +141,25 @@ export class PointerTool extends BaseTool {
         rollbackChanges.push(setPointType(pointIndex, pointType));
         editChanges.push(setPointType(pointIndex, newPointType));
         if (newPointType === VarPackedPath.SMOOTH_FLAG) {
-          console.log("need fixing up neighbors of", pointIndex);
+          const anchorPoint = path.getPoint(pointIndex);
+          if (prevPoint?.type && nextPoint?.type) {
+            // Fix-up both incoming and outgoing handles
+            const [newPrevPoint, newNextPoint] = alignHandles(prevPoint, anchorPoint, nextPoint);
+            rollbackChanges.push(movePointRound(prevIndex, prevPoint.x, prevPoint.y));
+            rollbackChanges.push(movePointRound(nextIndex, nextPoint.x, nextPoint.y));
+            editChanges.push(movePointRound(prevIndex, newPrevPoint.x, newPrevPoint.y))
+            editChanges.push(movePointRound(nextIndex, newNextPoint.x, newNextPoint.y))
+          } else if (prevPoint?.type) {
+            // Fix-up incoming handle
+            const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
+            rollbackChanges.push(movePointRound(prevIndex, prevPoint.x, prevPoint.y));
+            editChanges.push(movePointRound(prevIndex, newPrevPoint.x, newPrevPoint.y))
+          } else if (nextPoint?.type) {
+            // Fix-up outgoing handle
+            const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
+            rollbackChanges.push(movePointRound(nextIndex, nextPoint.x, nextPoint.y));
+            editChanges.push(movePointRound(nextIndex, newNextPoint.x, newNextPoint.y))
+          }
         }
       }
     }
@@ -257,4 +276,34 @@ function neighborPoints(path, pointIndex) {
     nextIndex = undefined;
   }
   return [prevIndex, prevPoint, nextIndex, nextPoint];
+}
+
+
+function alignHandle(refPoint1, anchorPoint, handlePoint) {
+  const direction = vector.subVectors(anchorPoint, refPoint1);
+  return alignHandleAlongDirection(direction, anchorPoint, handlePoint);
+}
+
+
+function alignHandles(handleIn, anchorPoint, handleOut) {
+  const handleVectorIn = vector.subVectors(anchorPoint, handleIn);
+  const handleVectorOut = vector.subVectors(anchorPoint, handleOut);
+  const directionIn = vector.subVectors(handleVectorOut, handleVectorIn);
+  const directionOut = vector.subVectors(handleVectorIn, handleVectorOut);
+  return [
+    alignHandleAlongDirection(directionIn, anchorPoint, handleIn),
+    alignHandleAlongDirection(directionOut, anchorPoint, handleOut),
+  ];
+}
+
+
+function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
+  const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
+  const handleVector = vector.mulVector(vector.normalizeVector(direction), length);
+  return vector.addVectors(anchorPoint, handleVector);
+}
+
+
+function movePointRound(pointIndex, x, y) {
+  return movePoint(pointIndex, Math.round(x), Math.round(y));
 }
