@@ -1,6 +1,6 @@
 import { consolidateChanges } from "../core/changes.js";
 import { isEqualSet } from "../core/set-ops.js";
-import { reversed, roundPoint } from "../core/utils.js";
+import { reversed } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
@@ -85,7 +85,7 @@ export class PenTool extends BaseTool {
 
 
 function getPenToolBehavior(sceneController, initialEvent, path) {
-  const anchorPoint = roundPoint(sceneController.selectedGlyphPoint(initialEvent));
+  const anchorPoint = vector.roundVector(sceneController.selectedGlyphPoint(initialEvent));
 
   let [contourIndex, contourPointIndex, shouldAppend, isOnCurve] = getAppendIndices(path, sceneController.selection);
   let behaviorClass = isOnCurve ? AddPointsSingleHandleBehavior : AddPointsBehavior;
@@ -515,7 +515,7 @@ function getHandle(handleOut, anchorPoint, constrain) {
   if (constrain) {
     handleOut = shiftConstrain(anchorPoint, handleOut);
   }
-  return roundPoint(handleOut);
+  return vector.roundVector(handleOut);
 }
 
 

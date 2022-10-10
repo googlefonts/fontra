@@ -32,6 +32,11 @@ export function normalizeVector(vector) {
 }
 
 
+export function roundVector(vector) {
+  return {"x": Math.round(vector.x), "y": Math.round(vector.y)};
+}
+
+
 const _EPSILON = 1e-10;
 
 
