@@ -408,7 +408,7 @@ export class EditorController {
   }
 
   get isThemeDark() {
-    const themeValue = localStorage.getItem(THEME_KEY);
+    const themeValue = localStorage.getItem(THEME_KEY) || "automatic";
     if (themeValue === "automatic") {
       return window.matchMedia("(prefers-color-scheme: dark)").matches;
     } else {
