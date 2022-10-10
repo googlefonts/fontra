@@ -145,20 +145,20 @@ export class PointerTool extends BaseTool {
           if (prevPoint?.type && nextPoint?.type) {
             // Fix-up both incoming and outgoing handles
             const [newPrevPoint, newNextPoint] = alignHandles(prevPoint, anchorPoint, nextPoint);
-            rollbackChanges.push(movePointRound(prevIndex, prevPoint.x, prevPoint.y));
-            rollbackChanges.push(movePointRound(nextIndex, nextPoint.x, nextPoint.y));
-            editChanges.push(movePointRound(prevIndex, newPrevPoint.x, newPrevPoint.y))
-            editChanges.push(movePointRound(nextIndex, newNextPoint.x, newNextPoint.y))
+            rollbackChanges.push(movePoint(prevIndex, prevPoint.x, prevPoint.y));
+            rollbackChanges.push(movePoint(nextIndex, nextPoint.x, nextPoint.y));
+            editChanges.push(movePoint(prevIndex, newPrevPoint.x, newPrevPoint.y))
+            editChanges.push(movePoint(nextIndex, newNextPoint.x, newNextPoint.y))
           } else if (prevPoint?.type) {
             // Fix-up incoming handle
             const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
-            rollbackChanges.push(movePointRound(prevIndex, prevPoint.x, prevPoint.y));
-            editChanges.push(movePointRound(prevIndex, newPrevPoint.x, newPrevPoint.y))
+            rollbackChanges.push(movePoint(prevIndex, prevPoint.x, prevPoint.y));
+            editChanges.push(movePoint(prevIndex, newPrevPoint.x, newPrevPoint.y))
           } else if (nextPoint?.type) {
             // Fix-up outgoing handle
             const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
-            rollbackChanges.push(movePointRound(nextIndex, nextPoint.x, nextPoint.y));
-            editChanges.push(movePointRound(nextIndex, newNextPoint.x, newNextPoint.y))
+            rollbackChanges.push(movePoint(nextIndex, nextPoint.x, nextPoint.y));
+            editChanges.push(movePoint(nextIndex, newNextPoint.x, newNextPoint.y))
           }
         }
       }
@@ -300,10 +300,5 @@ function alignHandles(handleIn, anchorPoint, handleOut) {
 function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
   const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
   const handleVector = vector.mulVector(vector.normalizeVector(direction), length);
-  return vector.addVectors(anchorPoint, handleVector);
-}
-
-
-function movePointRound(pointIndex, x, y) {
-  return movePoint(pointIndex, Math.round(x), Math.round(y));
+  return vector.roundVector(vector.addVectors(anchorPoint, handleVector));
 }
