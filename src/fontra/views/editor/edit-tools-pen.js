@@ -184,6 +184,9 @@ class CloseContourNoDragBehavior {
   undoLabel = "close contour";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
+    if (!shouldAppend) {
+      // going backwards; connect, but make the connecting point the start point
+    }
     const pointIndex = path.getAbsolutePointIndex(contourIndex, 0);
     this._rollbackChanges = [
       openCloseContour(contourIndex, path.contourInfo[contourIndex].isClosed),
