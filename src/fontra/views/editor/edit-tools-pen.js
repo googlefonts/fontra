@@ -100,12 +100,14 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
       }
       const point = path.getContourPoint(contourIndex, contourPointIndex);
       if (point.type) {
+        // off-curve
         if (path.getNumPointsOfContour(contourIndex) < 2) {
           // Contour is a single off-curve point, let's not touch it
           return null;
         }
         return new DeleteHandleBehavior(path, contourIndex, contourPointIndex, shouldAppend);
       } else {
+        // on-curve
         behaviorClass = AddHandleBehavior;
       }
     }
