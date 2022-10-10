@@ -118,11 +118,12 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
         const numClickedContourPoints = path.getNumPointsOfContour(clickedContourIndex);
         if (clickedContourPointIndex === 0 || clickedContourPointIndex === numClickedContourPoints - 1) {
           if (clickedContourIndex === contourIndex) {
+            const clickedPoint = path.getContourPoint(clickedContourIndex, clickedContourPointIndex);
             const selectedPoint = path.getContourPoint(contourIndex, contourPointIndex - (shouldAppend ? 1 : 0));
-            if (selectedPoint.type) {
-              behaviorClass = CloseContourDragBehavior;
-            } else {
+            if (clickedPoint.type || !selectedPoint.type) {
               behaviorClass = CloseContourNoDragBehavior;
+            } else {
+              behaviorClass = CloseContourDragBehavior;
             }
           } else {
             console.log("connect!!")
