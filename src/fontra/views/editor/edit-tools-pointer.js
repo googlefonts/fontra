@@ -126,7 +126,10 @@ export class PointerTool extends BaseTool {
     for (const pointIndex of pointIndices) {
       const pointType = path.pointTypes[pointIndex];
       const [prevPoint, nextPoint] = neighborPoints(path, pointIndex);
-      if (!prevPoint.type && !nextPoint.type && pointType !== VarPackedPath.SMOOTH_FLAG) {
+      if (
+        ((!prevPoint || !nextPoint) || (!prevPoint.type && !nextPoint.type)) &&
+        pointType !== VarPackedPath.SMOOTH_FLAG
+      ) {
         continue;
       }
       if (pointType === VarPackedPath.ON_CURVE || pointType === VarPackedPath.SMOOTH_FLAG) {
