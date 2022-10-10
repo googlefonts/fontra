@@ -166,7 +166,7 @@ class AddPointsBehavior {
 
   wantDrag = true;
   wantInitialChange = true;
-  undoLabel = "draw point";
+  undoLabel = "add point";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
     this.contourIndex = contourIndex;
@@ -306,6 +306,7 @@ class AddContourAndPointsBehavior extends AddPointsSingleHandleBehavior {
 class AddHandleBehavior extends AddPointsBehavior {
 
   wantInitialChange = false;
+  undoLabel = "add handle";
 
   _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
     this._newSelection = new Set();
