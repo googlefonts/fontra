@@ -207,8 +207,3 @@ export function *enumerate(iterable, start = 0) {
     i++;
   }
 }
-
-
-export function roundPoint(point) {
-  return {"x": Math.round(point.x), "y": Math.round(point.y)};
-}

@@ -1,8 +1,12 @@
+import { consolidateChanges } from "../core/changes.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
-import { boolInt } from "../core/utils.js";
+import { boolInt, modulo } from "../core/utils.js";
+import { VarPackedPath } from "../core/var-path.js";
+import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
+import { movePoint, setPointType } from "./edit-tools-pen.js";
 
 
 export class PointerTool extends BaseTool {
@@ -26,7 +30,7 @@ export class PointerTool extends BaseTool {
     const point = sceneController.localPoint(initialEvent);
     const selection = this.sceneModel.selectionAtPoint(point, sceneController.mouseClickMargin);
     if (initialEvent.detail >= 2 || initialEvent.myTapCount >= 2) {
-      this.handleDoubleCick(selection, point);
+      await this.handleDoubleCick(selection, point);
       initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
       return;
     }
@@ -83,17 +87,21 @@ export class PointerTool extends BaseTool {
     }
   }
 
-  handleDoubleCick(selection, point) {
+  async handleDoubleCick(selection, point) {
     const sceneController = this.sceneController;
     if (!selection || !selection.size) {
       sceneController.selectedGlyph = this.sceneModel.glyphAtPoint(point);
       sceneController.selectedGlyphIsEditing = !!sceneController.selectedGlyph;
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-      const componentIndices = new Array();
+      const pointIndices = [];
+      const componentIndices = [];
       for (const selItem of sceneController.selection) {
-        const [tp, index] = selItem.split("/");
-        if (tp === "component") {
+        let [tp, index] = selItem.split("/");
+        index = parseInt(index);
+        if (tp === "point") {
+          pointIndices.push(index);
+        } else if (tp === "component") {
           componentIndices.push(index);
         }
       }
@@ -101,7 +109,69 @@ export class PointerTool extends BaseTool {
         componentIndices.sort();
         sceneController.doubleClickedComponentIndices = componentIndices;
         sceneController._dispatchEvent("doubleClickedComponents");
+      } else if (pointIndices.length) {
+        await this.handlePointsDoubleClick(pointIndices);
       }
+    }
+  }
+
+  async handlePointsDoubleClick(pointIndices) {
+    const editContext = await this.sceneController.getGlyphEditContext(this.sceneController);
+    if (!editContext) {
+      return;
+    }
+    const path = editContext.instance.path;
+    const rollbackChanges = [];
+    const editChanges = [];
+    const changePath = ["path", "pointTypes"]
+    for (const pointIndex of pointIndices) {
+      const pointType = path.pointTypes[pointIndex];
+      const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(path, pointIndex);
+      if (
+        ((!prevPoint || !nextPoint) || (!prevPoint.type && !nextPoint.type)) &&
+        pointType !== VarPackedPath.SMOOTH_FLAG
+      ) {
+        continue;
+      }
+      if (pointType === VarPackedPath.ON_CURVE || pointType === VarPackedPath.SMOOTH_FLAG) {
+        const newPointType = (
+          pointType === VarPackedPath.ON_CURVE ?
+          VarPackedPath.SMOOTH_FLAG : VarPackedPath.ON_CURVE
+        )
+        rollbackChanges.push(setPointType(pointIndex, pointType));
+        editChanges.push(setPointType(pointIndex, newPointType));
+        if (newPointType === VarPackedPath.SMOOTH_FLAG) {
+          const anchorPoint = path.getPoint(pointIndex);
+          if (prevPoint?.type && nextPoint?.type) {
+            // Fix-up both incoming and outgoing handles
+            const [newPrevPoint, newNextPoint] = alignHandles(prevPoint, anchorPoint, nextPoint);
+            rollbackChanges.push(movePoint(prevIndex, prevPoint.x, prevPoint.y));
+            rollbackChanges.push(movePoint(nextIndex, nextPoint.x, nextPoint.y));
+            editChanges.push(movePoint(prevIndex, newPrevPoint.x, newPrevPoint.y))
+            editChanges.push(movePoint(nextIndex, newNextPoint.x, newNextPoint.y))
+          } else if (prevPoint?.type) {
+            // Fix-up incoming handle
+            const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
+            rollbackChanges.push(movePoint(prevIndex, prevPoint.x, prevPoint.y));
+            editChanges.push(movePoint(prevIndex, newPrevPoint.x, newPrevPoint.y))
+          } else if (nextPoint?.type) {
+            // Fix-up outgoing handle
+            const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
+            rollbackChanges.push(movePoint(nextIndex, nextPoint.x, nextPoint.y));
+            editChanges.push(movePoint(nextIndex, newNextPoint.x, newNextPoint.y))
+          }
+        }
+      }
+    }
+
+    if (editChanges.length) {
+      const undoInfo = {
+        "label": "toggle smooth",
+        "undoSelection": this.sceneController.selection,
+        "redoSelection": this.sceneController.selection,
+        "location": this.sceneController.getLocation(),
+      }
+      await editContext.editAtomic(consolidateChanges(editChanges), consolidateChanges(rollbackChanges), undoInfo);
     }
   }
 
@@ -178,4 +248,57 @@ function getBehaviorName(event) {
     "alternate-constrain",
   ];
   return behaviorNames[boolInt(event.shiftKey) + 2 * boolInt(event.altKey)];
+}
+
+
+function neighborPoints(path, pointIndex) {
+  const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+  const contourStartIndex = path.getAbsolutePointIndex(contourIndex, 0);
+  const numPoints = path.getNumPointsOfContour(contourIndex);
+  const isClosed = path.contourInfo[contourIndex].isClosed;
+  let prevIndex = contourPointIndex - 1;
+  let nextIndex = contourPointIndex + 1;
+  if (path.contourInfo[contourIndex].isClosed) {
+    prevIndex = modulo(prevIndex, numPoints);
+    nextIndex = modulo(nextIndex, numPoints);
+  }
+  let prevPoint, nextPoint;
+  if (prevIndex >= 0) {
+    prevIndex += contourStartIndex;
+    prevPoint = path.getPoint(prevIndex);
+  } else {
+    prevIndex = undefined;
+  }
+  if (nextIndex < numPoints) {
+    nextIndex += contourStartIndex;
+    nextPoint = path.getPoint(nextIndex);
+  } else {
+    nextIndex = undefined;
+  }
+  return [prevIndex, prevPoint, nextIndex, nextPoint];
+}
+
+
+function alignHandle(refPoint1, anchorPoint, handlePoint) {
+  const direction = vector.subVectors(anchorPoint, refPoint1);
+  return alignHandleAlongDirection(direction, anchorPoint, handlePoint);
+}
+
+
+function alignHandles(handleIn, anchorPoint, handleOut) {
+  const handleVectorIn = vector.subVectors(anchorPoint, handleIn);
+  const handleVectorOut = vector.subVectors(anchorPoint, handleOut);
+  const directionIn = vector.subVectors(handleVectorOut, handleVectorIn);
+  const directionOut = vector.subVectors(handleVectorIn, handleVectorOut);
+  return [
+    alignHandleAlongDirection(directionIn, anchorPoint, handleIn),
+    alignHandleAlongDirection(directionOut, anchorPoint, handleOut),
+  ];
+}
+
+
+function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
+  const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
+  const handleVector = vector.mulVector(vector.normalizeVector(direction), length);
+  return vector.roundVector(vector.addVectors(anchorPoint, handleVector));
 }

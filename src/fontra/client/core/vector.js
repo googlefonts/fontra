@@ -23,6 +23,20 @@ export function vectorLength(vector) {
 }
 
 
+export function normalizeVector(vector) {
+  const length = Math.hypot(vector.x, vector.y);
+  if (length < _EPSILON) {
+    return vector;
+  }
+  return mulVector(vector, 1 / length);
+}
+
+
+export function roundVector(vector) {
+  return {"x": Math.round(vector.x), "y": Math.round(vector.y)};
+}
+
+
 const _EPSILON = 1e-10;
 
 
