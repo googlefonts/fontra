@@ -565,11 +565,8 @@ export class EditorController {
             // the undo shortcut will still reach text elements
             event.preventDefault();
             event.stopImmediatePropagation();
-            await this.sceneController.doUndoRedo(isRedo);
+            await this.doUndoRedo(isRedo);
             didHandleShortcut = true;
-            // Hmmm would be nice if the following was done automatically
-            await this.updateSlidersAndSources();
-            this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
           }
           break;
         default:
@@ -580,6 +577,13 @@ export class EditorController {
         event.preventDefault();
       }
     }
+  }
+
+  async doUndoRedo(isRedo) {
+    await this.sceneController.doUndoRedo(isRedo);
+    // Hmmm would be nice if the following was done automatically
+    await this.updateSlidersAndSources();
+    this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
   }
 
   keyUpHandler(event) {
@@ -610,14 +614,31 @@ export class EditorController {
     event.preventDefault();
 
     const menuItems = [
-      {"title": "Undo", "callback": () => console.log("Undo!")},
-      {"title": "Redo", "callback": () => console.log("Redo!")},
+      ...this._getUndoRedoMenuItems(),
       "-",
       {"title": "Something else", "callback": () => console.log("Something else!")},
       {"title": "Disabled", "disabled": true},
     ]
     this.contextMenu = new ContextMenu("context-menu", menuItems);
 
+  }
+
+  _getUndoRedoMenuItems() {
+    const items = [];
+    for (const title of ["Undo", "Redo"]) {
+      const isRedo = title === "Redo";
+      const info = this.sceneController.getUndoRedoInfo(isRedo);
+      const item = {};
+      if (info) {
+        item.title = `${title} ${info.label}`;
+        item.callback = () => this.doUndoRedo(isRedo);
+      } else {
+        item.title = title;
+        item.disabled = true;
+      }
+      items.push(item);
+    }
+    return items;
   }
 
   dismissContextMenu(event) {
