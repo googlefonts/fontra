@@ -1,5 +1,6 @@
 import { CanvasController } from "../core/canvas-controller.js";
 import { matchChange } from "../core/changes.js";
+import { ContextMenu } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
 import {
@@ -167,6 +168,9 @@ export class EditorController {
     });
 
     this.canvasController.canvas.addEventListener("contextmenu", event => this.contextMenuHandler(event));
+    window.addEventListener("click", event => this.dismissContextMenu(event));
+    window.addEventListener("blur", event => this.dismissContextMenu(event));
+
     window.addEventListener("keydown", event => this.keyDownHandler(event));
     window.addEventListener("keyup", event => this.keyUpHandler(event));
 
@@ -538,7 +542,9 @@ export class EditorController {
       this.spaceKeyDownHandler();
       return;
     }
-    if (hasShortcutModifierKey(event)) {
+    if (event.key === "Escape") {
+      this.dismissContextMenu();
+    } else if (hasShortcutModifierKey(event)) {
       // console.log("shortcut?", event.key);
       let didHandleShortcut = false;
       switch (event.key.toLowerCase()) {
@@ -563,11 +569,8 @@ export class EditorController {
             // the undo shortcut will still reach text elements
             event.preventDefault();
             event.stopImmediatePropagation();
-            await this.sceneController.doUndoRedo(isRedo);
+            await this.doUndoRedo(isRedo);
             didHandleShortcut = true;
-            // Hmmm would be nice if the following was done automatically
-            await this.updateSlidersAndSources();
-            this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
           }
           break;
         default:
@@ -578,6 +581,13 @@ export class EditorController {
         event.preventDefault();
       }
     }
+  }
+
+  async doUndoRedo(isRedo) {
+    await this.sceneController.doUndoRedo(isRedo);
+    // Hmmm would be nice if the following was done automatically
+    await this.updateSlidersAndSources();
+    this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
   }
 
   keyUpHandler(event) {
@@ -606,7 +616,48 @@ export class EditorController {
 
   contextMenuHandler(event) {
     event.preventDefault();
-    // console.log("context menu");
+
+    const menuItems = [
+      ...this._getUndoRedoMenuItems(),
+      // "-",
+      // {"title": "Something else", "callback": () => console.log("Something else!")},
+      // {"title": "Something two", "callback": () => console.log("Something two!")},
+      // {"title": "Disabled", "disabled": true},
+    ]
+    this.contextMenu = new ContextMenu("context-menu", menuItems);
+
+  }
+
+  _getUndoRedoMenuItems() {
+    const items = [];
+    for (const title of ["Undo", "Redo"]) {
+      const isRedo = title === "Redo";
+      const info = this.sceneController.getUndoRedoInfo(isRedo);
+      const item = {};
+      if (info) {
+        item.title = `${title} ${info.label}`;
+        item.callback = () => this.doUndoRedo(isRedo);
+      } else {
+        item.title = title;
+        item.disabled = true;
+      }
+      items.push(item);
+    }
+    return items;
+  }
+
+  dismissContextMenu(event) {
+    if (!this.contextMenu) {
+      return;
+    }
+    if (event) {
+      const el = this.contextMenu.element;
+      if (event.target === el || event.target.offsetParent === el) {
+        return;
+      }
+    }
+    this.contextMenu.dismiss();
+    delete this.contextMenu;
   }
 
   async externalChange(change) {

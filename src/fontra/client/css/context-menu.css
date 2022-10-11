@@ -1,0 +1,90 @@
+:root {
+  --fontra-red-color: #F11759;  /* TODO make more global? */
+  --context-menu-background-color-light: #F0F0F0;
+  --context-menu-background-color-dark: #333;
+
+  --context-menu-foreground-color-light: black;
+  --context-menu-foreground-color-dark: white;
+
+  --context-menu-background-active-color-light: var(--fontra-red-color);
+  --context-menu-background-active-color-dark: var(--fontra-red-color);
+
+  --context-menu-foreground-active-color-light: white;
+  --context-menu-foreground-active-color-dark: white;
+}
+
+:root {
+  --context-menu-background-color: var(--context-menu-background-color-light);
+  --context-menu-foreground-color: var(--context-menu-foreground-color-light);
+  --context-menu-background-active-color: var(--context-menu-background-active-color-light);
+  --context-menu-foreground-active-color: var(--context-menu-foreground-active-color-light);
+}
+
+:root.dark-theme {
+  --context-menu-background-color: var(--context-menu-background-color-dark);
+  --context-menu-foreground-color: var(--context-menu-foreground-color-dark);
+  --context-menu-background-active-color: var(--context-menu-background-active-color-dark);
+  --context-menu-foreground-active-color: var(--context-menu-foreground-active-color-dark);
+}
+
+
+@media (prefers-color-scheme: dark) {
+
+  :root {
+    --context-menu-background-color: var(--context-menu-background-color-dark);
+    --context-menu-foreground-color: var(--context-menu-foreground-color-dark);
+    --context-menu-background-active-color: var(--context-menu-background-active-color-dark);
+    --context-menu-foreground-active-color: var(--context-menu-foreground-active-color-dark);
+  }
+
+  :root.light-theme {
+    --context-menu-background-color: var(--context-menu-background-color-light);
+    --context-menu-foreground-color: var(--context-menu-foreground-color-light);
+    --context-menu-background-active-color: var(--context-menu-background-active-color-light);
+    --context-menu-foreground-active-color: var(--context-menu-foreground-active-color-light);
+  }
+
+}
+
+
+#context-menu {
+  display: none;
+  position: absolute;
+  z-index: 10000;
+  color: var(--context-menu-foreground-color);
+  background-color: var(--context-menu-background-color);
+  border-radius: 6px;
+  border: solid gray 0.5px;
+  outline: none;
+  box-shadow: 3px 3px 10px #00000020;
+  font-size: 1.1rem;
+  user-select: none;
+  cursor: default;
+}
+
+#context-menu.visible {
+  display: inherit;
+}
+
+.context-menu-item-divider {
+  border: none;
+  border-top: 1px solid #80808080;
+  /*width: 90%;*/
+  height: 1px;
+  /*grid-column: 1 / span 2;*/
+}
+
+.context-menu-item {
+  padding: 0.2em 1.5em 0.2em 1em; /* top, right, bottom, left */
+  color: #808080A0;
+}
+
+.context-menu-item.enabled {
+  color: inherit;
+}
+
+.context-menu-item.enabled.selected {
+  color: var(--context-menu-foreground-active-color-light);
+  background-color: var(--context-menu-background-active-color-light);
+  cursor: pointer;
+}
