@@ -542,9 +542,7 @@ export class EditorController {
       this.spaceKeyDownHandler();
       return;
     }
-    if (event.key === "Escape") {
-      this.dismissContextMenu();
-    } else if (hasShortcutModifierKey(event)) {
+    if (hasShortcutModifierKey(event)) {
       // console.log("shortcut?", event.key);
       let didHandleShortcut = false;
       switch (event.key.toLowerCase()) {

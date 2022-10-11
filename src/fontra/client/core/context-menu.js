@@ -65,6 +65,9 @@ export class ContextMenu {
 
   handleKeyDown(event) {
     switch(event.key) {
+      case "Escape":
+        this.dismiss();
+        break;
       case "ArrowDown":
         this.selectPrevNext(true);
         break;
