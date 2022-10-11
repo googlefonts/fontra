@@ -54,7 +54,7 @@ export class SceneController {
   }
 
   async handleArrowKeys(event) {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyphIsEditing || !this.selection.size) {
       return;
     }
     const undoInfo = {
