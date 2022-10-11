@@ -31,6 +31,10 @@ export class MouseTracker {
   }
 
   handleMouseDown(event) {
+    if (event.button === 2 || event.ctrlKey) {
+      // We're not handling contextual menus
+      return;
+    }
     if (this._lastMouseDownEvent !== undefined && event.type !== this._lastMouseDownEvent.type) {
       // Ignore MouseEvents that com after TouchEvent, yet don't
       // do event.preventDefault().
