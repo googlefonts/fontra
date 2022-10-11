@@ -1,5 +1,6 @@
 import { CanvasController } from "../core/canvas-controller.js";
 import { matchChange } from "../core/changes.js";
+import { ContextMenu } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
 import {
@@ -167,6 +168,7 @@ export class EditorController {
     });
 
     this.canvasController.canvas.addEventListener("contextmenu", event => this.contextMenuHandler(event));
+    window.addEventListener("click", event => this.dismissContextMenu(event));
     window.addEventListener("keydown", event => this.keyDownHandler(event));
     window.addEventListener("keyup", event => this.keyUpHandler(event));
 
@@ -606,7 +608,30 @@ export class EditorController {
 
   contextMenuHandler(event) {
     event.preventDefault();
-    // console.log("context menu");
+
+    const menuItems = [
+      {"title": "Undo", "callback": () => console.log("Undo!")},
+      {"title": "Redo", "callback": () => console.log("Redo!")},
+      "-",
+      {"title": "Something else", "callback": () => console.log("Something else!")},
+      {"title": "Disabled", "disabled": true},
+    ]
+    this.contextMenu = new ContextMenu("context-menu", menuItems);
+
+  }
+
+  dismissContextMenu(event) {
+    if (!this.contextMenu) {
+      return;
+    }
+    if (event) {
+      const el = this.contextMenu.element;
+      if (event.target === el || event.target.offsetParent === el) {
+        return;
+      }
+    }
+    this.contextMenu.dismiss();
+    delete this.contextMenu;
   }
 
   async externalChange(change) {
