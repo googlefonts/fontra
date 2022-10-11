@@ -27,10 +27,12 @@ export class ContextMenu {
       }
     }
 
-    const {clientX: mouseX, clientY: mouseY} = event;
-    const [normalizedX, normalizedY] = normalizedPosition(mouseX, mouseY);
-
     this.element.classList.add("visible");
+
+    const container = document.querySelector("body");
+    const {clientX: mouseX, clientY: mouseY} = event;
+    const [normalizedX, normalizedY] = normalizedPosition(container, this.element, mouseX, mouseY);
+
     this.element.style.top = `${normalizedY - 5}px`;
     this.element.style.left = `${normalizedX}px`;
   }
@@ -42,7 +44,29 @@ export class ContextMenu {
 }
 
 
-function normalizedPosition(x, y) {
-  // TODO
-  return [x, y];
+function normalizedPosition(container, contextMenu, mouseX, mouseY) {
+  const {
+    left: containerOffsetX,
+    top: containerOffsetY,
+  } = container.getBoundingClientRect();
+
+  const containerX = mouseX - containerOffsetX;
+  const containerY = mouseY - containerOffsetY;
+
+  const outOfBoundsOnX = containerX + contextMenu.clientWidth > container.clientWidth;
+
+  const outOfBoundsOnY = containerY + contextMenu.clientHeight > container.clientHeight;
+
+  let normalizedX = mouseX;
+  let normalizedY = mouseY;
+
+  if (outOfBoundsOnX) {
+    normalizedX = containerOffsetX + container.clientWidth - contextMenu.clientWidth;
+  }
+
+  if (outOfBoundsOnY) {
+    normalizedY = containerOffsetY + container.clientHeight - contextMenu.clientHeight;
+  }
+
+  return [normalizedX, normalizedY];
 }
