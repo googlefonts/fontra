@@ -55,6 +55,7 @@
   background-color: var(--context-menu-background-color);
   border-radius: 6px;
   border: solid gray 0.5px;
+  outline: none;
   box-shadow: 3px 3px 10px #00000020;
   font-size: 1.1rem;
   user-select: none;
@@ -82,13 +83,7 @@
   color: inherit;
 }
 
-.context-menu-item.enabled:hover {
-  color: var(--context-menu-foreground-active-color-light);
-  background-color: var(--context-menu-background-active-color-light);
-  cursor: pointer;
-}
-
-.context-menu-item.enabled:active {
+.context-menu-item.enabled.selected {
   color: var(--context-menu-foreground-active-color-light);
   background-color: var(--context-menu-background-active-color-light);
   cursor: pointer;

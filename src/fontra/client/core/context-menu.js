@@ -1,7 +1,14 @@
+import { reversed } from "./utils.js";
+
+
 export class ContextMenu {
 
   constructor(elementID, menuItems) {
     this.element = document.querySelector(`#${elementID}`);
+
+    this.element.classList.add("visible");
+    this.element.focus();
+    this.element.onkeydown = event => this.handleKeyDown(event);
 
     this.element.innerHTML = "";
     this.element.oncontextmenu = event => event.preventDefault();  // No context menu on our context menu please
@@ -17,17 +24,24 @@ export class ContextMenu {
         itemElement.classList.add("context-menu-item");
         itemElement.classList.toggle("enabled", !item.disabled);
         itemElement.innerText = item.title;
-        itemElement.onclick = event => {
-          if (item.callback) {
-            item.callback(event);
+        if (!item.disabled) {
+          itemElement.onmouseenter = event => this.selectItem(itemElement);
+          itemElement.onmousemove = event => {
+            if (!itemElement.classList.contains("selected")) {
+              this.selectItem(itemElement);
+            }
           }
-          this.dismiss();
-        };
+          itemElement.onmouseleave = event => itemElement.classList.remove("selected");
+          itemElement.onclick = event => {
+            if (item.callback) {
+              item.callback(event);
+            }
+            this.dismiss();
+          };
+        }
         this.element.appendChild(itemElement);
       }
     }
-
-    this.element.classList.add("visible");
 
     const container = document.querySelector("body");
     const {clientX: mouseX, clientY: mouseY} = event;
@@ -39,6 +53,73 @@ export class ContextMenu {
 
   dismiss() {
     this.element.classList.remove("visible");
+  }
+
+  selectItem(itemElement) {
+    const selectedItem = this.findSelectedItem();
+    if (selectedItem && selectedItem !== itemElement) {
+      selectedItem.classList.remove("selected");
+    }
+    itemElement.classList.add("selected");
+  }
+
+  handleKeyDown(event) {
+    switch(event.key) {
+      case "ArrowDown":
+        this.selectPrevNext(true);
+        break;
+      case "ArrowUp":
+        this.selectPrevNext(false);
+        break;
+      case "Enter":
+        const selectedItem = this.findSelectedItem();
+        if (selectedItem) {
+          selectedItem.onclick(event);
+        }
+        break;
+    }
+  }
+
+  findSelectedItem() {
+    let selectedItem;
+    for (const item of this.element.children) {
+      if (item.classList.contains("selected")) {
+        return item;
+      }
+    }
+  }
+
+  selectPrevNext(isNext) {
+    const selectedChild = this.findSelectedItem();
+
+    if (selectedChild) {
+      let sibling;
+      if (isNext) {
+        sibling = selectedChild.nextElementSibling;
+      } else {
+        sibling = selectedChild.previousElementSibling;
+      }
+      while (sibling) {
+        if (sibling.classList.contains("enabled")) {
+          sibling.classList.add("selected");
+          selectedChild.classList.remove("selected");
+          break;
+        }
+        if (isNext) {
+          sibling = sibling.nextElementSibling;
+        } else {
+          sibling = sibling.previousElementSibling;
+        }
+      }
+    } else {
+      const f = isNext ? a => a : reversed;
+      for (const item of f(this.element.children)) {
+        if (item.classList.contains("enabled")) {
+          this.selectItem(item);
+          break;
+        }
+      }
+    }
   }
 
 }

@@ -621,6 +621,7 @@ export class EditorController {
       ...this._getUndoRedoMenuItems(),
       "-",
       {"title": "Something else", "callback": () => console.log("Something else!")},
+      {"title": "Something two", "callback": () => console.log("Something two!")},
       {"title": "Disabled", "disabled": true},
     ]
     this.contextMenu = new ContextMenu("context-menu", menuItems);
