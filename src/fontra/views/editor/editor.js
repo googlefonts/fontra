@@ -166,6 +166,7 @@ export class EditorController {
       }
     });
 
+    this.canvasController.canvas.addEventListener("contextmenu", event => this.contextMenuHandler(event));
     window.addEventListener("keydown", event => this.keyDownHandler(event));
     window.addEventListener("keyup", event => this.keyUpHandler(event));
 
@@ -601,6 +602,11 @@ export class EditorController {
     this.canvasController.setNeedsUpdate();
     const overlay = document.querySelector("#overlay-layer");
     overlay.classList.remove("overlay-layer-hidden");
+  }
+
+  contextMenuHandler(event) {
+    event.preventDefault();
+    // console.log("context menu");
   }
 
   async externalChange(change) {
