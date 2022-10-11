@@ -4,6 +4,7 @@ export class ContextMenu {
     this.element = document.querySelector(`#${elementID}`);
 
     this.element.innerHTML = "";
+    this.element.oncontextmenu = event => event.preventDefault();  // No context menu on our context menu please
 
     for (const item of menuItems) {
       const el = document.createElement("div");
