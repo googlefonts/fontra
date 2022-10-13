@@ -376,26 +376,16 @@ class CloseContourDragBehavior extends AddPointsBehavior {
   _setupContourChanges(contourIndex) {
     const path = this.path;
     this.firstPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
-    this._rollbackChanges = [
-      openCloseContour(contourIndex, path.contourInfo[contourIndex].isClosed),
-    ];
-    this._editChanges = [
-      openCloseContour(contourIndex, true),
-    ];
-    if (!this.shouldAppend) {
-      // going backwards; connect, but make the connecting point the start point
-      const numPoints = path.getNumPointsOfContour(contourIndex);
-      const firstPoint = path.getPoint(this.firstPointIndex);
-      const lastPoint = path.getPoint(this.firstPointIndex + numPoints - 1);
-      this._rollbackChanges.push(
-        insertPoint(contourIndex, numPoints - 1, lastPoint),
-        deletePoint(contourIndex, 0),
-      );
-      this._editChanges.push(
-        deletePoint(contourIndex, numPoints - 1),
-        insertPoint(contourIndex, 0, lastPoint),
-      );
-    }
+    this.record(path => {
+      path.openCloseContour(contourIndex, true);
+      if (!this.shouldAppend) {
+        // going backwards; connect, but make the connecting point the start point
+        const numPoints = path.getNumPointsOfContour(contourIndex);
+        const lastPoint = path.getPoint(this.firstPointIndex + numPoints - 1);
+        path.deletePoint(contourIndex, numPoints - 1);
+        path.insertPoint(contourIndex, 0, lastPoint);
+      }
+    });
   }
 
   _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
