@@ -498,7 +498,7 @@ function mergeLocations(loc1, loc2) {
 }
 
 
-function makeAffineTransform(transformation) {
+export function makeAffineTransform(transformation) {
   let t = new Transform();
   t = t.translate(transformation.translateX + transformation.tCenterX, transformation.translateY + transformation.tCenterY);
   t = t.rotate(transformation.rotation * (Math.PI / 180));
