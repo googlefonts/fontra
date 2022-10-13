@@ -149,11 +149,19 @@ class BehaviorBase {
     this.path = path;
     this._rollbackChanges = [];
     this._editChanges = [];
+    this._incrementalChanges = [];
   }
 
   record(func) {
     const recorder = new PackedPathChangeRecorder(this.path, this._rollbackChanges, this._editChanges);
     func(recorder);
+  }
+
+  recordIncremental(func) {
+    this._incrementalChanges = [];
+    const recorder = new PackedPathChangeRecorder(this.path, undefined, this._incrementalChanges);
+    func(recorder);
+    return consolidateChanges(this._incrementalChanges);
   }
 
   dropLastChange() {
@@ -167,6 +175,10 @@ class BehaviorBase {
 
   getInitialChange() {
     return consolidateChanges(this._editChanges);
+  }
+
+  getFinalChange() {
+    return consolidateChanges(this._editChanges.concat(this._incrementalChanges));
   }
 
 }
@@ -195,10 +207,6 @@ class DeleteHandleBehavior extends BehaviorBase {
     return this._newSelection;
   }
 
-  getFinalChange() {
-    return consolidateChanges(this._editChanges);
-  }
-
 }
 
 
@@ -215,8 +223,6 @@ class AddPointsBehavior extends BehaviorBase {
     this.shouldAppend = shouldAppend;
     this.anchorPoint = anchorPoint;
     this.curveType = "cubic";
-
-    this._moveChanges = [];
 
     this._setupContourChanges(contourIndex);
 
@@ -284,23 +290,15 @@ class AddPointsBehavior extends BehaviorBase {
 
   getIncrementalChange(point, constrain) {
     const handleOut = getHandle(point, this.anchorPoint, constrain);
-    this._moveChanges = [];
-    if (this.handleOutIndex !== undefined) {
-      this._moveChanges.push(
-        movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y)
-      );
-    }
-    if (this.handleInIndex !== undefined) {
-      const handleIn = oppositeHandle(this.anchorPoint, handleOut);
-      this._moveChanges.push(
-        movePoint(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y)
-      );
-    }
-    return consolidateChanges(this._moveChanges);
-  }
-
-  getFinalChange() {
-    return consolidateChanges(this._editChanges.concat(this._moveChanges));
+    return this.recordIncremental(path => {
+      if (this.handleOutIndex !== undefined) {
+        path.setPointPosition(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y);
+      }
+      if (this.handleInIndex !== undefined) {
+        const handleIn = oppositeHandle(this.anchorPoint, handleOut);
+        path.setPointPosition(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y);
+      }
+    });
   }
 
 }
