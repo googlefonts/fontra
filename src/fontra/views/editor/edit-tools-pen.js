@@ -156,6 +156,11 @@ class BehaviorBase {
     func(recorder);
   }
 
+  dropLastChange() {
+    this._rollbackChanges.splice(-1);
+    this._editChanges.splice(-1);
+  }
+
   getRollbackChange() {
     return consolidateChanges([...reversed(this._rollbackChanges)]);
   }
@@ -234,8 +239,7 @@ class AddPointsBehavior extends BehaviorBase {
 
   _setupDraggingChanges() {
     // Let's start over, revert the last insertPoint
-    this._rollbackChanges.splice(-1);
-    this._editChanges.splice(-1);
+    this.dropLastChange();
   }
 
   startDragging() {
@@ -245,10 +249,11 @@ class AddPointsBehavior extends BehaviorBase {
     this.handleInIndex = handleInIndex;
     this.handleOutIndex = handleOutIndex;
 
-    for (let i = 0; i < insertIndices.length; i++) {
-      this._rollbackChanges.push(deletePoint(this.contourIndex, insertIndices[i]));
-      this._editChanges.push(insertPoint(this.contourIndex, insertIndices[i], newPoints[i]));
-    }
+    this.record(path => {
+      for (let i = 0; i < insertIndices.length; i++) {
+        path.insertPoint(this.contourIndex, insertIndices[i], newPoints[i]);
+      }
+    });
 
     this._newSelection = new Set([`point/${this.contourStartPoint + this.handleOutIndex}`]);
   }
