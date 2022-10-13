@@ -450,6 +450,9 @@ export class SceneController {
         recorder.insertContour(contourInsertIndex, contour);
         contourInsertIndex++;
       }
+      for (const nestedCompo of compoInstance.components) {
+        console.log("nest", nestedCompo);
+      }
     }
     if (recorder.hasChange) {
       const newSelection = new Set();
