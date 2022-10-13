@@ -156,6 +156,14 @@ class BehaviorBase {
     func(recorder);
   }
 
+  getRollbackChange() {
+    return consolidateChanges([...reversed(this._rollbackChanges)]);
+  }
+
+  getInitialChange() {
+    return consolidateChanges(this._editChanges);
+  }
+
 }
 
 
@@ -180,14 +188,6 @@ class DeleteHandleBehavior extends BehaviorBase {
 
   getSelection() {
     return this._newSelection;
-  }
-
-  getRollbackChange() {
-    return consolidateChanges([...reversed(this._rollbackChanges)]);
-  }
-
-  getInitialChange() {
-    return consolidateChanges(this._editChanges);
   }
 
   getFinalChange() {
@@ -276,14 +276,6 @@ class AddPointsBehavior extends BehaviorBase {
 
   getSelection() {
     return this._newSelection;
-  }
-
-  getRollbackChange() {
-    return consolidateChanges([...reversed(this._rollbackChanges)]);
-  }
-
-  getInitialChange() {
-    return consolidateChanges(this._editChanges);
   }
 
   getIncrementalChange(point, constrain) {
