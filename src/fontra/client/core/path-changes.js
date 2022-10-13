@@ -51,6 +51,14 @@ export class PackedPathChangeRecorder {
       change(["path", "contourInfo", contourIndex], "=", "isClosed", close));
   }
 
+  setPointPosition(pointIndex, x, y) {
+    if (this.rollbackChanges) {
+      const [oldX, oldY] = this.path.getPointPosition(pointIndex);
+      this.rollbackChanges.push(change(["path"], "=xy", pointIndex, oldX, oldY));
+    }
+    this.editChanges.push(change(["path"], "=xy", pointIndex, x, y));
+  }
+
   setPointType(pointIndex, pointType) {
     this.rollbackChanges.push(
       change(["path", "pointTypes"], "=", pointIndex, this.path.pointTypes[pointIndex]));
