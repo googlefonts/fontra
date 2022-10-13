@@ -444,22 +444,6 @@ function getAppendIndices(path, selection) {
 }
 
 
-export function movePoint(pointIndex, x, y) {
-  return {
-    "p": ["path"],
-    "f": "=xy",
-    "a": [pointIndex, x, y],
-  };
-}
-
-export function setPointType(pointIndex, pointType) {
-  return {
-    "p": ["path", "pointTypes"],
-    "f": "=",
-    "a": [pointIndex, pointType],
-  };
-}
-
 function emptyContour() {
   return {"coordinates": [], "pointTypes": [], "isClosed": false};
 }
@@ -478,6 +462,7 @@ function oppositeHandle(anchorPoint, handlePoint) {
     anchorPoint, vector.mulVector(vector.subVectors(handlePoint, anchorPoint), -1)
   );
 }
+
 
 function shiftConstrain(anchorPoint, handlePoint) {
   const delta = constrainHorVerDiag(vector.subVectors(handlePoint, anchorPoint));
