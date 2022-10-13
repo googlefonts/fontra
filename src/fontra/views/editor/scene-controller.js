@@ -337,7 +337,8 @@ export class SceneController {
     }
     const path = editContext.instance.path;
     const {point: pointSelection} = splitSelection(this.selection);
-    const [selectedContours, newSelection] = getSelectedContoursAndNewSelection(path, pointSelection);
+    const selectedContours = getSelectedContours(path, pointSelection);
+    const newSelection = reversePointSelection(path, pointSelection);
 
     const recorder = new PackedPathChangeRecorder(path);
     for (const contourIndex of selectedContours) {
@@ -362,11 +363,10 @@ export class SceneController {
 }
 
 
-function getSelectedContoursAndNewSelection(path, pointSelection) {
+function reversePointSelection(path, pointSelection) {
   const newSelection = [];
-  const selectedContours = new Set();
   for (const pointIndex of pointSelection) {
-    const contourIndex = path.getContourIndex(pointIndex)
+    const contourIndex = path.getContourIndex(pointIndex);
     const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
     const numPoints = path.getNumPointsOfContour(contourIndex);
     let newPointIndex = pointIndex;
@@ -375,10 +375,18 @@ function getSelectedContoursAndNewSelection(path, pointSelection) {
       newPointIndex = contourStartPoint + numPoints - (newPointIndex - contourStartPoint)
     }
     newSelection.push(`point/${newPointIndex}`);
-    selectedContours.add(contourIndex);
   }
   newSelection.sort((a, b) => (a > b) - (a < b));
-  return [[...selectedContours], new Set(newSelection)];
+  return new Set(newSelection)
+}
+
+
+function getSelectedContours(path, pointSelection) {
+  const selectedContours = new Set();
+  for (const pointIndex of pointSelection) {
+    selectedContours.add(path.getContourIndex(pointIndex));
+  }
+  return [...selectedContours];
 }
 
 
