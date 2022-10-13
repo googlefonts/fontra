@@ -207,3 +207,14 @@ export function *enumerate(iterable, start = 0) {
     i++;
   }
 }
+
+
+export function *range(start, stop, step = 1) {
+  if (stop === undefined) {
+    stop = start;
+    start = 0;
+  }
+  for (let i = start; i < stop; i += step) {
+    yield i;
+  }
+}

@@ -1,4 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
+import { PackedPathChangeRecorder } from "../core/path-changes.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
 import { boolInt, modulo } from "../core/utils.js";
@@ -6,7 +7,6 @@ import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
-import { movePoint, setPointType } from "./edit-tools-pen.js";
 
 
 export class PointerTool extends BaseTool {
@@ -123,6 +123,7 @@ export class PointerTool extends BaseTool {
     const path = editContext.instance.path;
     const rollbackChanges = [];
     const editChanges = [];
+    const recorder = new PackedPathChangeRecorder(path, rollbackChanges, editChanges);
     const changePath = ["path", "pointTypes"]
     for (const pointIndex of pointIndices) {
       const pointType = path.pointTypes[pointIndex];
@@ -138,27 +139,22 @@ export class PointerTool extends BaseTool {
           pointType === VarPackedPath.ON_CURVE ?
           VarPackedPath.SMOOTH_FLAG : VarPackedPath.ON_CURVE
         )
-        rollbackChanges.push(setPointType(pointIndex, pointType));
-        editChanges.push(setPointType(pointIndex, newPointType));
+        recorder.setPointType(pointIndex, newPointType);
         if (newPointType === VarPackedPath.SMOOTH_FLAG) {
           const anchorPoint = path.getPoint(pointIndex);
           if (prevPoint?.type && nextPoint?.type) {
             // Fix-up both incoming and outgoing handles
             const [newPrevPoint, newNextPoint] = alignHandles(prevPoint, anchorPoint, nextPoint);
-            rollbackChanges.push(movePoint(prevIndex, prevPoint.x, prevPoint.y));
-            rollbackChanges.push(movePoint(nextIndex, nextPoint.x, nextPoint.y));
-            editChanges.push(movePoint(prevIndex, newPrevPoint.x, newPrevPoint.y))
-            editChanges.push(movePoint(nextIndex, newNextPoint.x, newNextPoint.y))
+            recorder.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
+            recorder.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
           } else if (prevPoint?.type) {
             // Fix-up incoming handle
             const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
-            rollbackChanges.push(movePoint(prevIndex, prevPoint.x, prevPoint.y));
-            editChanges.push(movePoint(prevIndex, newPrevPoint.x, newPrevPoint.y))
+            recorder.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
           } else if (nextPoint?.type) {
             // Fix-up outgoing handle
             const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
-            rollbackChanges.push(movePoint(nextIndex, nextPoint.x, nextPoint.y));
-            editChanges.push(movePoint(nextIndex, newNextPoint.x, newNextPoint.y))
+            recorder.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
           }
         }
       }

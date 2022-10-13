@@ -219,6 +219,10 @@ export class VarPackedPath {
     this.setPointType(pointIndex, point.type, point.smooth);
   }
 
+  getPointPosition(pointIndex) {
+    return [this.coordinates[pointIndex * 2], this.coordinates[pointIndex * 2 + 1]];
+  }
+
   setPointPosition(pointIndex, x, y) {
     this.coordinates[pointIndex * 2] = x;
     this.coordinates[pointIndex * 2 + 1] = y;

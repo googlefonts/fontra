@@ -1,4 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
+import { PackedPathChangeRecorder } from "../core/path-changes.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { reversed } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
@@ -142,30 +143,30 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
 }
 
 
-class DeleteHandleBehavior {
+class BehaviorBase {
 
-  wantDrag = false;
-  wantInitialChange = true;
-  undoLabel = "delete handle";
-
-  constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
-    const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
-    const currentAnchorIndex = shouldAppend ? pointIndex - 1 : pointIndex + 1;
-    const point = path.getPoint(pointIndex);
-    this._rollbackChanges = [
-      setPointType(currentAnchorIndex, path.pointTypes[currentAnchorIndex]),
-      insertPoint(contourIndex, contourPointIndex, point),
-    ];
-    this._editChanges = [
-      setPointType(currentAnchorIndex, VarPackedPath.ON_CURVE),
-      deletePoint(contourIndex, contourPointIndex),
-    ];
-    const newSelectedPointIndex = shouldAppend ? pointIndex - 1 : pointIndex;
-    this._newSelection = new Set([`point/${newSelectedPointIndex}`]);
+  constructor(path) {
+    this.path = path;
+    this._rollbackChanges = [];
+    this._editChanges = [];
+    this._incrementalChanges = [];
   }
 
-  getSelection() {
-    return this._newSelection;
+  record(func) {
+    const recorder = new PackedPathChangeRecorder(this.path, this._rollbackChanges, this._editChanges);
+    func(recorder);
+  }
+
+  recordIncremental(func) {
+    this._incrementalChanges = [];
+    const recorder = new PackedPathChangeRecorder(this.path, undefined, this._incrementalChanges);
+    func(recorder);
+    return consolidateChanges(this._incrementalChanges);
+  }
+
+  dropLastChange() {
+    this._rollbackChanges.splice(-1);
+    this._editChanges.splice(-1);
   }
 
   getRollbackChange() {
@@ -177,29 +178,51 @@ class DeleteHandleBehavior {
   }
 
   getFinalChange() {
-    return consolidateChanges(this._editChanges);
+    return consolidateChanges(this._editChanges.concat(this._incrementalChanges));
   }
 
 }
 
 
-class AddPointsBehavior {
+class DeleteHandleBehavior extends BehaviorBase {
+
+  wantDrag = false;
+  wantInitialChange = true;
+  undoLabel = "delete handle";
+
+  constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
+    super(path);
+    const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
+    const currentAnchorIndex = shouldAppend ? pointIndex - 1 : pointIndex + 1;
+    const point = path.getPoint(pointIndex);
+    this.record(path => {
+      path.setPointType(currentAnchorIndex, VarPackedPath.ON_CURVE);
+      path.deletePoint(contourIndex, contourPointIndex);
+    });
+    const newSelectedPointIndex = shouldAppend ? pointIndex - 1 : pointIndex;
+    this._newSelection = new Set([`point/${newSelectedPointIndex}`]);
+  }
+
+  getSelection() {
+    return this._newSelection;
+  }
+
+}
+
+
+class AddPointsBehavior extends BehaviorBase {
 
   wantDrag = true;
   wantInitialChange = true;
   undoLabel = "add point";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
-    this.path = path;
+    super(path);
     this.contourIndex = contourIndex;
     this.contourPointIndex = contourPointIndex;
     this.shouldAppend = shouldAppend;
     this.anchorPoint = anchorPoint;
     this.curveType = "cubic";
-
-    this._rollbackChanges = [];
-    this._editChanges = [];
-    this._moveChanges = [];
 
     this._setupContourChanges(contourIndex);
 
@@ -213,8 +236,7 @@ class AddPointsBehavior {
 
   _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
     this._newSelection = new Set([`point/${this.contourStartPoint + contourPointIndex}`]);
-    this._rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
-    this._editChanges.push(insertPoint(contourIndex, contourPointIndex, anchorPoint));
+    this.record(path => path.insertPoint(contourIndex, contourPointIndex, anchorPoint));
   }
 
   _setupContourChanges(contourIndex) {
@@ -223,8 +245,7 @@ class AddPointsBehavior {
 
   _setupDraggingChanges() {
     // Let's start over, revert the last insertPoint
-    this._rollbackChanges.splice(-1);
-    this._editChanges.splice(-1);
+    this.dropLastChange();
   }
 
   startDragging() {
@@ -234,10 +255,11 @@ class AddPointsBehavior {
     this.handleInIndex = handleInIndex;
     this.handleOutIndex = handleOutIndex;
 
-    for (let i = 0; i < insertIndices.length; i++) {
-      this._rollbackChanges.push(deletePoint(this.contourIndex, insertIndices[i]));
-      this._editChanges.push(insertPoint(this.contourIndex, insertIndices[i], newPoints[i]));
-    }
+    this.record(path => {
+      for (let i = 0; i < insertIndices.length; i++) {
+        path.insertPoint(this.contourIndex, insertIndices[i], newPoints[i]);
+      }
+    });
 
     this._newSelection = new Set([`point/${this.contourStartPoint + this.handleOutIndex}`]);
   }
@@ -266,33 +288,17 @@ class AddPointsBehavior {
     return this._newSelection;
   }
 
-  getRollbackChange() {
-    return consolidateChanges([...reversed(this._rollbackChanges)]);
-  }
-
-  getInitialChange() {
-    return consolidateChanges(this._editChanges);
-  }
-
   getIncrementalChange(point, constrain) {
     const handleOut = getHandle(point, this.anchorPoint, constrain);
-    this._moveChanges = [];
-    if (this.handleOutIndex !== undefined) {
-      this._moveChanges.push(
-        movePoint(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y)
-      );
-    }
-    if (this.handleInIndex !== undefined) {
-      const handleIn = oppositeHandle(this.anchorPoint, handleOut);
-      this._moveChanges.push(
-        movePoint(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y)
-      );
-    }
-    return consolidateChanges(this._moveChanges);
-  }
-
-  getFinalChange() {
-    return consolidateChanges(this._editChanges.concat(this._moveChanges));
+    return this.recordIncremental(path => {
+      if (this.handleOutIndex !== undefined) {
+        path.setPointPosition(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y);
+      }
+      if (this.handleInIndex !== undefined) {
+        const handleIn = oppositeHandle(this.anchorPoint, handleOut);
+        path.setPointPosition(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y);
+      }
+    });
   }
 
 }
@@ -325,8 +331,7 @@ class AddPointsSingleHandleBehavior extends AddPointsBehavior {
 class AddContourAndPointsBehavior extends AddPointsSingleHandleBehavior {
 
   _setupContourChanges(contourIndex) {
-    this._rollbackChanges.push(deleteContour(contourIndex));
-    this._editChanges.push(appendEmptyContour(contourIndex));
+    this.record(path => path.insertContour(contourIndex, emptyContour()))
   }
 
 }
@@ -369,26 +374,16 @@ class CloseContourDragBehavior extends AddPointsBehavior {
   _setupContourChanges(contourIndex) {
     const path = this.path;
     this.firstPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
-    this._rollbackChanges = [
-      openCloseContour(contourIndex, path.contourInfo[contourIndex].isClosed),
-    ];
-    this._editChanges = [
-      openCloseContour(contourIndex, true),
-    ];
-    if (!this.shouldAppend) {
-      // going backwards; connect, but make the connecting point the start point
-      const numPoints = path.getNumPointsOfContour(contourIndex);
-      const firstPoint = path.getPoint(this.firstPointIndex);
-      const lastPoint = path.getPoint(this.firstPointIndex + numPoints - 1);
-      this._rollbackChanges.push(
-        insertPoint(contourIndex, numPoints - 1, lastPoint),
-        deletePoint(contourIndex, 0),
-      );
-      this._editChanges.push(
-        deletePoint(contourIndex, numPoints - 1),
-        insertPoint(contourIndex, 0, lastPoint),
-      );
-    }
+    this.record(path => {
+      path.openCloseContour(contourIndex, true);
+      if (!this.shouldAppend) {
+        // going backwards; connect, but make the connecting point the start point
+        const numPoints = path.getNumPointsOfContour(contourIndex);
+        const lastPoint = path.getPoint(this.firstPointIndex + numPoints - 1);
+        path.deletePoint(contourIndex, numPoints - 1);
+        path.insertPoint(contourIndex, 0, lastPoint);
+      }
+    });
   }
 
   _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
@@ -449,63 +444,6 @@ function getAppendIndices(path, selection) {
 }
 
 
-function deleteContour(contourIndex) {
-  return {
-    "p": ["path"],
-    "f": "deleteContour",
-    "a": [contourIndex],
-  };
-}
-
-function appendEmptyContour(contourIndex) {
-  return {
-    "p": ["path"],
-    "f": "insertContour",
-    "a": [contourIndex, emptyContour()],
-  };
-}
-
-function deletePoint(contourIndex, contourPointIndex) {
-  return {
-    "p": ["path"],
-    "f": "deletePoint",
-    "a": [contourIndex, contourPointIndex],
-  };
-}
-
-function insertPoint(contourIndex, contourPointIndex, point) {
-  return {
-    "p": ["path"],
-    "f": "insertPoint",
-    "a": [contourIndex, contourPointIndex, point],
-  };
-}
-
-export function movePoint(pointIndex, x, y) {
-  return {
-    "p": ["path"],
-    "f": "=xy",
-    "a": [pointIndex, x, y],
-  };
-}
-
-export function setPointType(pointIndex, pointType) {
-  return {
-    "p": ["path", "pointTypes"],
-    "f": "=",
-    "a": [pointIndex, pointType],
-  };
-}
-
-function openCloseContour(contourIndex, close) {
-  return {
-    "p": ["path", "contourInfo", contourIndex],
-    "f": "=",
-    "a": ["isClosed", close],
-  };
-}
-
-
 function emptyContour() {
   return {"coordinates": [], "pointTypes": [], "isClosed": false};
 }
@@ -524,6 +462,7 @@ function oppositeHandle(anchorPoint, handlePoint) {
     anchorPoint, vector.mulVector(vector.subVectors(handlePoint, anchorPoint), -1)
   );
 }
+
 
 function shiftConstrain(anchorPoint, handlePoint) {
   const delta = constrainHorVerDiag(vector.subVectors(handlePoint, anchorPoint));
