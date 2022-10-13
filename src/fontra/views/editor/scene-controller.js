@@ -372,9 +372,12 @@ function reversePointSelection(path, pointSelection) {
     const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
     const numPoints = path.getNumPointsOfContour(contourIndex);
     let newPointIndex = pointIndex;
-    if (newPointIndex != contourStartPoint) {
-      // reverse selection
-      newPointIndex = contourStartPoint + numPoints - (newPointIndex - contourStartPoint)
+    if (path.contourInfo[contourIndex].isClosed) {
+      if (newPointIndex != contourStartPoint) {
+        newPointIndex = contourStartPoint + numPoints - (newPointIndex - contourStartPoint);
+      }
+    } else {
+      newPointIndex = contourStartPoint + numPoints - 1 - (newPointIndex - contourStartPoint);
     }
     newSelection.push(`point/${newPointIndex}`);
   }
