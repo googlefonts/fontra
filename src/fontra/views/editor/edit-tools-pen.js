@@ -225,8 +225,7 @@ class AddPointsBehavior extends BehaviorBase {
 
   _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
     this._newSelection = new Set([`point/${this.contourStartPoint + contourPointIndex}`]);
-    this._rollbackChanges.push(deletePoint(contourIndex, contourPointIndex));
-    this._editChanges.push(insertPoint(contourIndex, contourPointIndex, anchorPoint));
+    this.record(path => path.insertPoint(contourIndex, contourPointIndex, anchorPoint));
   }
 
   _setupContourChanges(contourIndex) {
@@ -329,8 +328,7 @@ class AddPointsSingleHandleBehavior extends AddPointsBehavior {
 class AddContourAndPointsBehavior extends AddPointsSingleHandleBehavior {
 
   _setupContourChanges(contourIndex) {
-    this._rollbackChanges.push(deleteContour(contourIndex));
-    this._editChanges.push(appendEmptyContour(contourIndex));
+    this.record(path => path.insertContour(contourIndex, emptyContour()))
   }
 
 }
