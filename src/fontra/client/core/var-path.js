@@ -633,7 +633,7 @@ function packPointType(type, smooth) {
 }
 
 
-function packContour(unpackedContour) {
+export function packContour(unpackedContour) {
   const coordinates = new VarArray(unpackedContour.points.length * 2);
   const pointTypes = new Array(unpackedContour.points.length);
   for (let i = 0; i < unpackedContour.points.length; i++) {
