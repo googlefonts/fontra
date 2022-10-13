@@ -617,7 +617,7 @@ export class EditorController {
     const menuItems = [
       ...this._getUndoRedoMenuItems(),
     ]
-    const sceneContextItems = this.sceneController.getContextMenuItems();
+    const sceneContextItems = this.sceneController.getContextMenuItems(event);
     if (sceneContextItems?.length) {
       menuItems.push("-");
       menuItems.push(...sceneContextItems);

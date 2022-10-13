@@ -1,7 +1,7 @@
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { PackedPathChangeRecorder } from "../core/path-changes.js";
 import { packContour } from "../core/var-path.js";
-import { lenientIsEqualSet, isEqualSet } from "../core/set-ops.js";
+import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
 import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
@@ -93,10 +93,15 @@ export class SceneController {
     this._eventElement.dispatchEvent(event);
   }
 
-  getContextMenuItems() {
+  getContextMenuItems(event) {
     if (!this.selectedGlyphIsEditing) {
       return;
     }
+    const clickedSelection = this.sceneModel.selectionAtPoint(this.localPoint(event), this.mouseClickMargin);
+    if (!isSuperset(this.selection, clickedSelection)) {
+      this.selection = clickedSelection;
+    }
+
     const {
       point: pointSelection,
       component: componentSelection,
