@@ -112,6 +112,11 @@ export class SceneController {
         "disabled": !pointSelection?.length,
         "callback": () => this.reverseSelectedContoursDirection(),
       },
+      {
+        "title": "Set Start Point",
+        "disabled": true,
+        // "callback": () => this.setStartPoint(),
+      },
     ]
     return contextMenuItems
   }
