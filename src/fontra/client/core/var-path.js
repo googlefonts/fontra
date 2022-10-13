@@ -328,6 +328,12 @@ export class VarPackedPath {
     }
   }
 
+  *iterContours() {
+    for (let i = 0; i < this.contourInfo.length; i++) {
+      yield this.getContour(i);
+    }
+  }
+
   *iterUnpackedContours() {
     for (let i = 0; i < this.contourInfo.length; i++) {
       yield this._getUnpackedContour(i);
