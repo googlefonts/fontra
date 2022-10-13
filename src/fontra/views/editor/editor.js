@@ -614,18 +614,15 @@ export class EditorController {
 
   contextMenuHandler(event) {
     event.preventDefault();
-
-    const sceneContextItems = this.sceneController.getContextMenuItems();
-
     const menuItems = [
       ...this._getUndoRedoMenuItems(),
     ]
+    const sceneContextItems = this.sceneController.getContextMenuItems();
     if (sceneContextItems?.length) {
       menuItems.push("-");
       menuItems.push(...sceneContextItems);
     }
     this.contextMenu = new ContextMenu("context-menu", menuItems);
-
   }
 
   _getUndoRedoMenuItems() {
