@@ -117,6 +117,11 @@ export class SceneController {
         "disabled": !pointSelection?.length,
         "callback": () => this.setStartPoint(),
       },
+      {
+        "title": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
+        "disabled": !componentSelection?.length,
+        "callback": () => this.decomposeSelectedComponents(),
+      },
     ]
     return contextMenuItems
   }
@@ -418,6 +423,17 @@ export class SceneController {
     }
   }
 
+  async decomposeSelectedComponents() {
+    const editContext = await this.getGlyphEditContext(this);
+    if (!editContext) {
+      return;
+    }
+    const components = editContext.instance.components;
+    const {component: componentSelection} = splitSelection(this.selection);
+    for (const index of componentSelection) {
+      console.log(index, components[index]);
+    }
+  }
 }
 
 
