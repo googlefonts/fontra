@@ -47,8 +47,8 @@ export class ContextMenu {
     const {clientX: mouseX, clientY: mouseY} = event;
     const [normalizedX, normalizedY] = normalizedPosition(container, this.element, mouseX, mouseY);
 
-    this.element.style.top = `${normalizedY - 5}px`;
-    this.element.style.left = `${normalizedX}px`;
+    this.element.style.top = `${normalizedY - 1}px`;
+    this.element.style.left = `${normalizedX + 1}px`;
   }
 
   dismiss() {
