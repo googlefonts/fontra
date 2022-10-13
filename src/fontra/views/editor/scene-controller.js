@@ -1,5 +1,7 @@
+import { makeAffineTransform } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { PackedPathChangeRecorder } from "../core/path-changes.js";
+import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
 import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
@@ -428,12 +430,40 @@ export class SceneController {
     if (!editContext) {
       return;
     }
+    const globalLocation = this.getGlobalLocation();
+    const path = editContext.instance.path;
+    let contourInsertIndex = path.contourInfo.length;
     const components = editContext.instance.components;
     const {component: componentSelection} = splitSelection(this.selection);
+    componentSelection.sort((a, b) => (a > b) - (a < b));
+
+    const recorder = new PackedPathChangeRecorder(path)
     for (const index of componentSelection) {
-      console.log(index, components[index]);
+      const component = components[index];
+      const baseGlyph = await this.sceneModel.fontController.getGlyph(component.name);
+      let location = {...globalLocation, ...component.location};
+      location = baseGlyph.mapLocationGlobalToLocal(location);
+      const compoInstance = baseGlyph.instantiate(normalizeLocation(location, baseGlyph.combinedAxes));
+      const t = makeAffineTransform(component.transformation);
+      const compoPath = compoInstance.path.transformed(t);
+      for (const contour of compoPath.iterContours()) {
+        recorder.insertContour(contourInsertIndex, contour);
+        contourInsertIndex++;
+      }
+    }
+    if (recorder.hasChange) {
+      const newSelection = new Set();
+      const undoInfo = {
+        "label": "Decompose Component",  // TODO: FIXME dynamic plural
+        "undoSelection": this.selection,
+        "redoSelection": newSelection,
+        "location": this.getLocation(),
+      }
+      this.selection = newSelection;
+      await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
     }
   }
+
 }
 
 
