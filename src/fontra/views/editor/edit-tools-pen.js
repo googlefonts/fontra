@@ -1,4 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
+import { PackedPathChangeRecorder } from "../core/path-changes.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { reversed } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
@@ -142,24 +143,37 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
 }
 
 
-class DeleteHandleBehavior {
+class BehaviorBase {
+
+  constructor(path) {
+    this.path = path;
+    this._rollbackChanges = [];
+    this._editChanges = [];
+  }
+
+  record(func) {
+    const recorder = new PackedPathChangeRecorder(this.path, this._rollbackChanges, this._editChanges);
+    func(recorder);
+  }
+
+}
+
+
+class DeleteHandleBehavior extends BehaviorBase {
 
   wantDrag = false;
   wantInitialChange = true;
   undoLabel = "delete handle";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
+    super(path);
     const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
     const currentAnchorIndex = shouldAppend ? pointIndex - 1 : pointIndex + 1;
     const point = path.getPoint(pointIndex);
-    this._rollbackChanges = [
-      setPointType(currentAnchorIndex, path.pointTypes[currentAnchorIndex]),
-      insertPoint(contourIndex, contourPointIndex, point),
-    ];
-    this._editChanges = [
-      setPointType(currentAnchorIndex, VarPackedPath.ON_CURVE),
-      deletePoint(contourIndex, contourPointIndex),
-    ];
+    this.record(path => {
+      path.setPointType(currentAnchorIndex, VarPackedPath.ON_CURVE);
+      path.deletePoint(contourIndex, contourPointIndex);
+    });
     const newSelectedPointIndex = shouldAppend ? pointIndex - 1 : pointIndex;
     this._newSelection = new Set([`point/${newSelectedPointIndex}`]);
   }
@@ -183,22 +197,20 @@ class DeleteHandleBehavior {
 }
 
 
-class AddPointsBehavior {
+class AddPointsBehavior extends BehaviorBase {
 
   wantDrag = true;
   wantInitialChange = true;
   undoLabel = "add point";
 
   constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
-    this.path = path;
+    super(path);
     this.contourIndex = contourIndex;
     this.contourPointIndex = contourPointIndex;
     this.shouldAppend = shouldAppend;
     this.anchorPoint = anchorPoint;
     this.curveType = "cubic";
 
-    this._rollbackChanges = [];
-    this._editChanges = [];
     this._moveChanges = [];
 
     this._setupContourChanges(contourIndex);
