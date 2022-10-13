@@ -1,4 +1,6 @@
 import { MouseTracker } from "../core/mouse-tracker.js";
+import { PackedPathChangeRecorder } from "../core/path-changes.js";
+import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet } from "../core/set-ops.js";
 import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
@@ -89,6 +91,24 @@ export class SceneController {
       "detail": detail || this,
     });
     this._eventElement.dispatchEvent(event);
+  }
+
+  getContextMenuItems() {
+    if (!this.selectedGlyphIsEditing) {
+      return;
+    }
+    const {
+      point: pointSelection,
+      component: componentSelection,
+    } = splitSelection(this.selection);
+    const contextMenuItems = [
+      {
+        "title": "Reverse Contour Direction",
+        "disabled": !pointSelection?.length,
+        "callback": () => this.reverseSelectedContoursDirection(),
+      },
+    ]
+    return contextMenuItems
   }
 
   getSelectedGlyphName() {
@@ -310,4 +330,55 @@ export class SceneController {
     return undoInfo !== undefined;
   }
 
+  async reverseSelectedContoursDirection() {
+    const editContext = await this.getGlyphEditContext(this);
+    if (!editContext) {
+      return;
+    }
+    const path = editContext.instance.path;
+    const {point: pointSelection} = splitSelection(this.selection);
+    const selectedContours = getSelectedContours(path, pointSelection);
+
+    const recorder = new PackedPathChangeRecorder(path);
+    for (const contourIndex of selectedContours) {
+      const contour = path.getUnpackedContour(contourIndex);
+      contour.points.reverse();
+      const [lastPoint] = contour.points.splice(-1, 1);
+      contour.points.splice(0, 0, lastPoint);
+      const packedContour = packContour(contour);
+      recorder.deleteContour(contourIndex);
+      recorder.insertContour(contourIndex, packedContour);
+    }
+    const undoInfo = {
+      "label": "Reverse Contour Direction",
+      "undoSelection": this.selection,
+      "redoSelection": this.selection,
+      "location": this.getLocation(),
+    }
+    await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
+  }
+
+}
+
+
+function getSelectedContours(path, pointSelection) {
+  const selectedContours = new Set();
+  for (const pointIndex of pointSelection) {
+    selectedContours.add(path.getContourIndex(pointIndex));
+  }
+  return [...selectedContours];
+}
+
+
+function splitSelection(selection) {
+  const result = {};
+  for (const item of selection) {
+    let [tp, index] = item.split("/");
+    index = parseInt(index);
+    if (result[tp] === undefined) {
+      result[tp] = [];
+    }
+    result[tp].push(index);
+  }
+  return result;
 }

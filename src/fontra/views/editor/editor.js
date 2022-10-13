@@ -615,6 +615,8 @@ export class EditorController {
   contextMenuHandler(event) {
     event.preventDefault();
 
+    const sceneContextItems = this.sceneController.getContextMenuItems();
+
     const menuItems = [
       ...this._getUndoRedoMenuItems(),
       // "-",
@@ -622,6 +624,10 @@ export class EditorController {
       // {"title": "Something two", "callback": () => console.log("Something two!")},
       // {"title": "Disabled", "disabled": true},
     ]
+    if (sceneContextItems?.length) {
+      menuItems.push("-");
+      menuItems.push(...sceneContextItems);
+    }
     this.contextMenu = new ContextMenu("context-menu", menuItems);
 
   }
