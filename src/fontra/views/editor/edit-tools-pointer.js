@@ -121,9 +121,7 @@ export class PointerTool extends BaseTool {
       return;
     }
     const path = editContext.instance.path;
-    const rollbackChanges = [];
-    const editChanges = [];
-    const recorder = new PackedPathChangeRecorder(path, rollbackChanges, editChanges);
+    const recorder = new PackedPathChangeRecorder(path);
     const changePath = ["path", "pointTypes"]
     for (const pointIndex of pointIndices) {
       const pointType = path.pointTypes[pointIndex];
@@ -160,14 +158,14 @@ export class PointerTool extends BaseTool {
       }
     }
 
-    if (editChanges.length) {
+    if (recorder.hasChange) {
       const undoInfo = {
         "label": "toggle smooth",
         "undoSelection": this.sceneController.selection,
         "redoSelection": this.sceneController.selection,
         "location": this.sceneController.getLocation(),
       }
-      await editContext.editAtomic(consolidateChanges(editChanges), consolidateChanges(rollbackChanges), undoInfo);
+      await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
     }
   }
 

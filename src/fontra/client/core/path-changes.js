@@ -1,4 +1,5 @@
-import { range } from "./utils.js";
+import { consolidateChanges } from "./changes.js";
+import { range, reversed } from "./utils.js";
 
 
 export class PackedPathChangeRecorder {
@@ -9,6 +10,22 @@ export class PackedPathChangeRecorder {
     this.editChanges = editChanges || [];
     this.contourIndices = [...range(path.contourInfo.length)];
     this.contourPointIndices = new Array(path.contourInfo.length);
+  }
+
+  get hasChange() {
+    return !!this.editChanges.length;
+  }
+
+  get rollbackChange() {
+    if (this.rollbackChanges.length) {
+      return consolidateChanges([...reversed(this.rollbackChanges)])
+    }
+  }
+
+  get editChange() {
+    if (this.editChanges.length) {
+      return consolidateChanges(this.editChanges);
+    }
   }
 
   deleteContour(contourIndex) {
