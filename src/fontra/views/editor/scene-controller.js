@@ -114,8 +114,8 @@ export class SceneController {
       },
       {
         "title": "Set Start Point",
-        "disabled": true,
-        // "callback": () => this.setStartPoint(),
+        "disabled": !pointSelection?.length,
+        "callback": () => this.setStartPoint(),
       },
     ]
     return contextMenuItems
@@ -370,6 +370,53 @@ export class SceneController {
     }
     this.selection = newSelection;
     await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
+  }
+
+  async setStartPoint() {
+    const editContext = await this.getGlyphEditContext(this);
+    if (!editContext) {
+      return;
+    }
+    const path = editContext.instance.path;
+    const {point: pointSelection} = splitSelection(this.selection);
+    const selectedContours = getSelectedContours(path, pointSelection);
+    const contourToPointMap = new Map();
+    for (const pointIndex of pointSelection) {
+      const contourIndex = path.getContourIndex(pointIndex);
+      const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
+      if (contourToPointMap.has(contourIndex)) {
+        continue;
+      }
+      contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
+    }
+    const recorder = new PackedPathChangeRecorder(path);
+    const newSelection = new Set();
+    contourToPointMap.forEach((contourPointIndex, contourIndex) => {
+      if (contourPointIndex === 0) {
+        // Already start point
+        return;
+      }
+      if (!path.contourInfo[contourIndex].isClosed) {
+        // Open path, ignore
+        return;
+      }
+      const contour = path.getUnpackedContour(contourIndex);
+      const head = contour.points.splice(0, contourPointIndex);
+      contour.points.push(...head);
+      recorder.deleteContour(contourIndex);
+      recorder.insertContour(contourIndex, packContour(contour));
+      newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
+    });
+    if (recorder.hasChange) {
+      const undoInfo = {
+        "label": "Set Start Point",
+        "undoSelection": this.selection,
+        "redoSelection": newSelection,
+        "location": this.getLocation(),
+      }
+      this.selection = newSelection;
+      await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
+    }
   }
 
 }
