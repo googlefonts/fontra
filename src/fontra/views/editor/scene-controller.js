@@ -447,7 +447,8 @@ export class SceneController {
       const t = makeAffineTransform(component.transformation);
       const compoPath = compoInstance.path.transformed(t);
       for (const contour of compoPath.iterContours()) {
-        // TODO: round coordinates
+        // Hm, rounding should be optional
+        // contour.coordinates = contour.coordinates.map(c => Math.round(c));
         recorder.insertContour(contourInsertIndex, contour);
         contourInsertIndex++;
       }
