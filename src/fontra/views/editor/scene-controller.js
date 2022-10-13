@@ -337,7 +337,7 @@ export class SceneController {
     }
     const path = editContext.instance.path;
     const {point: pointSelection} = splitSelection(this.selection);
-    const selectedContours = getSelectedContours(path, pointSelection);
+    const [selectedContours, newSelection] = getSelectedContoursAndNewSelection(path, pointSelection);
 
     const recorder = new PackedPathChangeRecorder(path);
     for (const contourIndex of selectedContours) {
@@ -352,21 +352,33 @@ export class SceneController {
     const undoInfo = {
       "label": "Reverse Contour Direction",
       "undoSelection": this.selection,
-      "redoSelection": this.selection,
+      "redoSelection": newSelection,
       "location": this.getLocation(),
     }
+    this.selection = newSelection;
     await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
   }
 
 }
 
 
-function getSelectedContours(path, pointSelection) {
+function getSelectedContoursAndNewSelection(path, pointSelection) {
+  const newSelection = [];
   const selectedContours = new Set();
   for (const pointIndex of pointSelection) {
-    selectedContours.add(path.getContourIndex(pointIndex));
+    const contourIndex = path.getContourIndex(pointIndex)
+    const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
+    const numPoints = path.getNumPointsOfContour(contourIndex);
+    let newPointIndex = pointIndex;
+    if (newPointIndex != contourStartPoint) {
+      // reverse selection
+      newPointIndex = contourStartPoint + numPoints - (newPointIndex - contourStartPoint)
+    }
+    newSelection.push(`point/${newPointIndex}`);
+    selectedContours.add(contourIndex);
   }
-  return [...selectedContours];
+  newSelection.sort((a, b) => (a > b) - (a < b));
+  return [[...selectedContours], new Set(newSelection)];
 }
 
 
