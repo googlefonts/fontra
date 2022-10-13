@@ -446,38 +446,6 @@ function getAppendIndices(path, selection) {
 }
 
 
-function deleteContour(contourIndex) {
-  return {
-    "p": ["path"],
-    "f": "deleteContour",
-    "a": [contourIndex],
-  };
-}
-
-function appendEmptyContour(contourIndex) {
-  return {
-    "p": ["path"],
-    "f": "insertContour",
-    "a": [contourIndex, emptyContour()],
-  };
-}
-
-function deletePoint(contourIndex, contourPointIndex) {
-  return {
-    "p": ["path"],
-    "f": "deletePoint",
-    "a": [contourIndex, contourPointIndex],
-  };
-}
-
-function insertPoint(contourIndex, contourPointIndex, point) {
-  return {
-    "p": ["path"],
-    "f": "insertPoint",
-    "a": [contourIndex, contourPointIndex, point],
-  };
-}
-
 export function movePoint(pointIndex, x, y) {
   return {
     "p": ["path"],
@@ -493,15 +461,6 @@ export function setPointType(pointIndex, pointType) {
     "a": [pointIndex, pointType],
   };
 }
-
-function openCloseContour(contourIndex, close) {
-  return {
-    "p": ["path", "contourInfo", contourIndex],
-    "f": "=",
-    "a": ["isClosed", close],
-  };
-}
-
 
 function emptyContour() {
   return {"coordinates": [], "pointTypes": [], "isClosed": false};
