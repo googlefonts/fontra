@@ -379,7 +379,6 @@ export class SceneController {
     }
     const path = editContext.instance.path;
     const {point: pointSelection} = splitSelection(this.selection);
-    const selectedContours = getSelectedContours(path, pointSelection);
     const contourToPointMap = new Map();
     for (const pointIndex of pointSelection) {
       const contourIndex = path.getContourIndex(pointIndex);
