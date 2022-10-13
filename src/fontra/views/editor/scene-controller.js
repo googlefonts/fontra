@@ -344,8 +344,10 @@ export class SceneController {
     for (const contourIndex of selectedContours) {
       const contour = path.getUnpackedContour(contourIndex);
       contour.points.reverse();
-      const [lastPoint] = contour.points.splice(-1, 1);
-      contour.points.splice(0, 0, lastPoint);
+      if (contour.isClosed) {
+        const [lastPoint] = contour.points.splice(-1, 1);
+        contour.points.splice(0, 0, lastPoint);
+      }
       const packedContour = packContour(contour);
       recorder.deleteContour(contourIndex);
       recorder.insertContour(contourIndex, packedContour);
