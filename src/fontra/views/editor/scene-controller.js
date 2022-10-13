@@ -98,7 +98,7 @@ export class SceneController {
       return;
     }
     const clickedSelection = this.sceneModel.selectionAtPoint(this.localPoint(event), this.mouseClickMargin);
-    if (!isSuperset(this.selection, clickedSelection)) {
+    if (!clickedSelection.size || !isSuperset(this.selection, clickedSelection)) {
       this.selection = clickedSelection;
     }
 
