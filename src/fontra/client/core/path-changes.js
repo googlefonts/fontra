@@ -60,8 +60,13 @@ export class PackedPathChangeRecorder {
 
   _getContourPointIndices(contourIndex) {
     if (this.contourPointIndices[contourIndex] === undefined) {
-      this.contourPointIndices[contourIndex] =
-        [...range(this.path.getNumPointsOfContour(this.contourIndices[contourIndex]))];
+      const realContourIndex = this.contourIndices[contourIndex];
+      if (realContourIndex !== undefined) {
+        this.contourPointIndices[contourIndex] =
+          [...range(this.path.getNumPointsOfContour(this.contourIndices[contourIndex]))];
+        } else {
+          this.contourPointIndices[contourIndex] = []; // ????
+        }
     }
     return this.contourPointIndices[contourIndex];
   }
