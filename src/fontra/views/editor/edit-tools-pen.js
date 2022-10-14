@@ -146,20 +146,20 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
 class BehaviorBase {
 
   constructor(path) {
-    this.path = path;
+    this.path = path.copy();
     this._rollbackChanges = [];
     this._editChanges = [];
     this._incrementalChanges = [];
   }
 
   record(func) {
-    const recorder = new PackedPathChangeRecorder(this.path, this._rollbackChanges, this._editChanges);
+    const recorder = new PackedPathChangeRecorder(this.path, this._rollbackChanges, this._editChanges, true);
     func(recorder);
   }
 
   recordIncremental(func) {
     this._incrementalChanges = [];
-    const recorder = new PackedPathChangeRecorder(this.path, undefined, this._incrementalChanges);
+    const recorder = new PackedPathChangeRecorder(this.path, undefined, this._incrementalChanges, true);
     func(recorder);
     return consolidateChanges(this._incrementalChanges);
   }
