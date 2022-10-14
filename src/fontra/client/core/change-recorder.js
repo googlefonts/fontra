@@ -2,10 +2,9 @@ import { consolidateChanges } from "./changes.js";
 import { range, reversed } from "./utils.js";
 
 
-export class PackedPathChangeRecorder {
+class BaseRecorder {
 
-  constructor(path, rollbackChanges, editChanges, noCopy = false) {
-    this.path = noCopy ? path : path.copy();
+  constructor(rollbackChanges, editChanges) {
     this.rollbackChanges = rollbackChanges || [];
     this.editChanges = editChanges || [];
   }
@@ -24,6 +23,22 @@ export class PackedPathChangeRecorder {
     if (this.editChanges.length) {
       return consolidateChanges(this.editChanges);
     }
+  }
+
+}
+
+export class InstanceChangeRecorder extends BaseRecorder {
+  constructor(instance) {
+    super();
+  }
+}
+
+
+export class PackedPathChangeRecorder extends BaseRecorder {
+
+  constructor(path, rollbackChanges, editChanges, noCopy = false) {
+    super(rollbackChanges, editChanges);
+    this.path = noCopy ? path : path.copy();
   }
 
   deleteContour(contourIndex) {
