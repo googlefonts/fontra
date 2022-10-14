@@ -266,7 +266,13 @@ export class FontController {
     await this.applyChange(undoRecord.rollbackChange);
     const error = await this.font.editAtomic(undoRecord.rollbackChange, undoRecord.change);
     // TODO handle error
-    /* await */ this.notifyEditListeners("editAtomic", this, undoRecord.rollbackChange, undoRecord.change);
+    // Do not call this.notifyEditListeners() right away, but next time through the event loop;
+    // It's a bit messy, but our caller sets the selection based on our return value; but the
+    // edit listeners need that new selection. TODO: think of a better solution...
+    setTimeout(
+      () => this.notifyEditListeners("editAtomic", this, undoRecord.rollbackChange, undoRecord.change),
+      0,
+    );
     return undoRecord["info"];
   }
 
