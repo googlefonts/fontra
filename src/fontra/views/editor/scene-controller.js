@@ -1,4 +1,4 @@
-import { makeAffineTransform } from "../core/glyph-controller.js";
+import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { PackedPathChangeRecorder } from "../core/path-changes.js";
 import { normalizeLocation } from "../core/var-model.js";
@@ -432,29 +432,25 @@ export class SceneController {
     }
     const globalLocation = this.getGlobalLocation();
     const path = editContext.instance.path;
-    let contourInsertIndex = path.contourInfo.length;
     const components = editContext.instance.components;
     const {component: componentSelection} = splitSelection(this.selection);
     componentSelection.sort((a, b) => (a > b) - (a < b));
 
+    const {path: newPath, components: newComponents} = await decomposeComponents(
+      components, componentSelection, globalLocation,
+      glyphName => this.sceneModel.fontController.getGlyph(glyphName),
+    )
+
     const recorder = new PackedPathChangeRecorder(path)
-    for (const index of componentSelection) {
-      const component = components[index];
-      const baseGlyph = await this.sceneModel.fontController.getGlyph(component.name);
-      let location = {...globalLocation, ...component.location};
-      location = baseGlyph.mapLocationGlobalToLocal(location);
-      const compoInstance = baseGlyph.instantiate(normalizeLocation(location, baseGlyph.combinedAxes));
-      const t = makeAffineTransform(component.transformation);
-      const compoPath = compoInstance.path.transformed(t);
-      for (const contour of compoPath.iterContours()) {
-        // Hm, rounding should be optional
-        // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-        recorder.insertContour(contourInsertIndex, contour);
-        contourInsertIndex++;
-      }
-      for (const nestedCompo of compoInstance.components) {
-        console.log("nest", nestedCompo);
-      }
+    let contourInsertIndex = path.contourInfo.length;
+    for (const contour of newPath.iterContours()) {
+      // Hm, rounding should be optional
+      // contour.coordinates = contour.coordinates.map(c => Math.round(c));
+      recorder.insertContour(contourInsertIndex, contour);
+      contourInsertIndex++;
+    }
+    for (const nestedCompo of newComponents) {
+      console.log("nest ---", nestedCompo);
     }
     if (recorder.hasChange) {
       const newSelection = new Set();

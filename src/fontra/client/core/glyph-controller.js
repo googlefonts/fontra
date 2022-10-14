@@ -425,6 +425,30 @@ function flattenComponentPaths(item) {
 }
 
 
+export async function decomposeComponents(components, componentIndices, parentLocation, getGlyphFunc) {
+  if (!componentIndices) {
+    componentIndices = range(instance.components.length);
+  }
+
+  const newPaths = [];
+  const newComponents = [];
+  for (const index of componentIndices) {
+    const component = components[index];
+    const baseGlyph = await getGlyphFunc(component.name);
+    let location = {...parentLocation, ...component.location};
+    const normLocation = baseGlyph.mapLocationGlobalToLocal(location);
+    const compoInstance = baseGlyph.instantiate(normalizeLocation(normLocation, baseGlyph.combinedAxes));
+    const t = makeAffineTransform(component.transformation);
+    newPaths.push(compoInstance.path.transformed(t));
+    for (const nestedCompo of compoInstance.components) {
+      console.log("nest", nestedCompo);
+    }
+  }
+  const newPath = joinPaths(newPaths);
+  return {"path": newPath, "components": newComponents};
+}
+
+
 function makeAxisMapFunc(axis) {
   if (!axis.mapping) {
     return v => v;
