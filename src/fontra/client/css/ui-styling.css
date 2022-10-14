@@ -104,6 +104,7 @@
   grid-template-columns: min-content min-content;
   gap: 0.35rem 0.35rem;
   overflow-y: scroll;
+  user-select: none;
 }
 
 .ui-form:nth-child(even) {
