@@ -28,9 +28,48 @@ class BaseRecorder {
 }
 
 export class InstanceChangeRecorder extends BaseRecorder {
+
   constructor(instance) {
     super();
+    this.instance = instance;
   }
+
+  get path() {
+    if (this._path === undefined) {
+      this._path = this.instance.path.copy();
+    }
+    return new PackedPathChangeRecorder(this._path, this.rollbackChanges, this.editChanges, true);
+  }
+
+  get components() {
+    if (this._components === undefined) {
+      this._components = copyComponents(this.instance.components);
+    }
+    return new ComponentsChangeRecorder(this._components, this.rollbackChanges, this.editChanges);
+  }
+
+}
+
+
+class ComponentsChangeRecorder extends BaseRecorder {
+
+  constructor(components, rollbackChanges, editChanges) {
+    super(rollbackChanges, editChanges);
+    this.components = components;
+  }
+
+  deleteComponent(componentIndex) {
+    this.rollbackChanges.push(change(["components"], "+", componentIndex, this.components[componentIndex]));
+    this.editChanges.push(change(["components"], "-", componentIndex));
+    this.components.splice(componentIndex, 1);
+  }
+
+  insertComponent(componentIndex, component) {
+    this.rollbackChanges.push(change(["components"], "-", componentIndex));
+    this.editChanges.push(change(["components"], "+", componentIndex, component));
+    this.components.splice(componentIndex, 0, component);
+  }
+
 }
 
 
@@ -106,4 +145,15 @@ function change(path, func, ...args) {
     "f": func,
     "a": args,
   };
+}
+
+
+function copyComponents(components) {
+  return components.map(compo => {
+    return {
+      "name": compo.name,
+      "transformation": {...compo.transformation},
+      "location": {...compo.location},
+    };
+  });
 }

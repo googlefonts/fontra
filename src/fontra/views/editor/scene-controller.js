@@ -1,6 +1,6 @@
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
-import { PackedPathChangeRecorder } from "../core/change-recorder.js";
+import { InstanceChangeRecorder, PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
@@ -432,7 +432,6 @@ export class SceneController {
       return;
     }
     const globalLocation = this.getGlobalLocation();
-    const path = editContext.instance.path;
     const components = editContext.instance.components;
     const {component: componentSelection} = splitSelection(this.selection);
     componentSelection.sort((a, b) => (a > b) - (a < b));
@@ -442,28 +441,26 @@ export class SceneController {
       glyphName => this.sceneModel.fontController.getGlyph(glyphName),
     )
 
-    const recorder = new PackedPathChangeRecorder(path)
-    let contourInsertIndex = path.contourInfo.length;
+    const instanceRecorder = new InstanceChangeRecorder(editContext.instance);
+    const pathRecorder = instanceRecorder.path;
+    let contourInsertIndex = editContext.instance.path.contourInfo.length;
     let componentInsertIndex = components.length;
     for (const contour of newPath.iterContours()) {
       // Hm, rounding should be optional
       // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-      recorder.insertContour(contourInsertIndex, contour);
+      pathRecorder.insertContour(contourInsertIndex, contour);
       contourInsertIndex++;
     }
-    // TODO: the following should be improved by implementing an
-    // InstanceChangeRecorder
+    const componentRecorder = instanceRecorder.components;
     for (const nestedCompo of newComponents) {
-      recorder.rollbackChanges.push(_deleteComponentChange(componentInsertIndex));
-      recorder.editChanges.push(_insertComponentChange(componentInsertIndex, nestedCompo));
+      componentRecorder.insertComponent(componentInsertIndex, nestedCompo);
       componentInsertIndex++;
     }
     componentSelection.reverse();
     for (const componentIndex of componentSelection) {
-      recorder.rollbackChanges.push(_insertComponentChange(componentIndex, components[componentIndex]));
-      recorder.editChanges.push(_deleteComponentChange(componentIndex));
+      componentRecorder.deleteComponent(componentIndex);
     }
-    if (recorder.hasChange) {
+    if (instanceRecorder.hasChange) {
       const newSelection = new Set();
       const undoInfo = {
         "label": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
@@ -472,28 +469,10 @@ export class SceneController {
         "location": this.getLocation(),
       }
       this.selection = newSelection;
-      await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
+      await editContext.editAtomic(instanceRecorder.editChange, instanceRecorder.rollbackChange, undoInfo);
     }
   }
 
-}
-
-
-function _insertComponentChange(componentIndex, component) {
-  return {
-    "p": ["components"],
-    "f": "+",
-    "a": [componentIndex, component],
-  };
-}
-
-
-function _deleteComponentChange(componentIndex) {
-  return {
-    "p": ["components"],
-    "f": "-",
-    "a": [componentIndex],
-  };
 }
 
 
