@@ -466,7 +466,7 @@ export class SceneController {
     if (recorder.hasChange) {
       const newSelection = new Set();
       const undoInfo = {
-        "label": "Decompose Component",  // TODO: FIXME dynamic plural
+        "label": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
         "undoSelection": this.selection,
         "redoSelection": newSelection,
         "location": this.getLocation(),
