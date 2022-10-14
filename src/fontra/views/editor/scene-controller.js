@@ -188,6 +188,7 @@ export class SceneController {
   set selection(selection) {
     if (!lenientIsEqualSet(selection, this.selection)) {
       this.sceneModel.selection = selection || new Set();
+      this.sceneModel.hoverSelection = new Set();
       this.canvasController.setNeedsUpdate();
       this._dispatchEvent("selectionChanged");
     }
@@ -443,14 +444,24 @@ export class SceneController {
 
     const recorder = new PackedPathChangeRecorder(path)
     let contourInsertIndex = path.contourInfo.length;
+    let componentInsertIndex = components.length;
     for (const contour of newPath.iterContours()) {
       // Hm, rounding should be optional
       // contour.coordinates = contour.coordinates.map(c => Math.round(c));
       recorder.insertContour(contourInsertIndex, contour);
       contourInsertIndex++;
     }
+    // TODO: the following should be improved by implementing an
+    // InstanceChangeRecorder
     for (const nestedCompo of newComponents) {
-      console.log("nest ---", nestedCompo);
+      recorder.rollbackChanges.push(_deleteComponentChange(componentInsertIndex));
+      recorder.editChanges.push(_insertComponentChange(componentInsertIndex, nestedCompo));
+      componentInsertIndex++;
+    }
+    componentSelection.reverse();
+    for (const componentIndex of componentSelection) {
+      recorder.rollbackChanges.push(_insertComponentChange(componentIndex, components[componentIndex]));
+      recorder.editChanges.push(_deleteComponentChange(componentIndex));
     }
     if (recorder.hasChange) {
       const newSelection = new Set();
@@ -465,6 +476,24 @@ export class SceneController {
     }
   }
 
+}
+
+
+function _insertComponentChange(componentIndex, component) {
+  return {
+    "p": ["components"],
+    "f": "+",
+    "a": [componentIndex, component],
+  };
+}
+
+
+function _deleteComponentChange(componentIndex) {
+  return {
+    "p": ["components"],
+    "f": "-",
+    "a": [componentIndex],
+  };
 }
 
 
