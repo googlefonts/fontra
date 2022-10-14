@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { PackedPathChangeRecorder } from "../core/path-changes.js";
+import { PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { reversed } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";

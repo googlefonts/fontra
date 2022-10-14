@@ -1,6 +1,6 @@
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
-import { PackedPathChangeRecorder } from "../core/path-changes.js";
+import { PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
