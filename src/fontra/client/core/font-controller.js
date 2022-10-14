@@ -266,7 +266,7 @@ export class FontController {
     await this.applyChange(undoRecord.rollbackChange);
     const error = await this.font.editAtomic(undoRecord.rollbackChange, undoRecord.change);
     // TODO handle error
-    await this.notifyEditListeners("editAtomic", this, undoRecord.rollbackChange, undoRecord.change);
+    /* await */ this.notifyEditListeners("editAtomic", this, undoRecord.rollbackChange, undoRecord.change);
     return undoRecord["info"];
   }
 
