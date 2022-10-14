@@ -5,8 +5,18 @@ def setItem(subject, key, value):
         setattr(subject, key, value)
 
 
+def delItem(subject, index):
+    del subject[index]
+
+
+def insertItem(subject, index, value):
+    subject.insert(index, value)
+
+
 baseChangeFunctions = {
     "=": setItem,
+    "-": delItem,
+    "+": insertItem,
 }
 
 
