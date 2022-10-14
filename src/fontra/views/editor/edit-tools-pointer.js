@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { PackedPathChangeRecorder } from "../core/path-changes.js";
+import { PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
 import { boolInt, modulo } from "../core/utils.js";

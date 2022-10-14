@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { PackedPathChangeRecorder } from "../core/path-changes.js";
+import { PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { reversed } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
@@ -195,9 +195,9 @@ class DeleteHandleBehavior extends BehaviorBase {
     const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
     const currentAnchorIndex = shouldAppend ? pointIndex - 1 : pointIndex + 1;
     const point = path.getPoint(pointIndex);
-    this.record(path => {
-      path.setPointType(currentAnchorIndex, VarPackedPath.ON_CURVE);
-      path.deletePoint(contourIndex, contourPointIndex);
+    this.record(recorder => {
+      recorder.setPointType(currentAnchorIndex, VarPackedPath.ON_CURVE);
+      recorder.deletePoint(contourIndex, contourPointIndex);
     });
     const newSelectedPointIndex = shouldAppend ? pointIndex - 1 : pointIndex;
     this._newSelection = new Set([`point/${newSelectedPointIndex}`]);
@@ -236,7 +236,7 @@ class AddPointsBehavior extends BehaviorBase {
 
   _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
     this._newSelection = new Set([`point/${this.contourStartPoint + contourPointIndex}`]);
-    this.record(path => path.insertPoint(contourIndex, contourPointIndex, anchorPoint));
+    this.record(recorder => recorder.insertPoint(contourIndex, contourPointIndex, anchorPoint));
   }
 
   _setupContourChanges(contourIndex) {
@@ -255,9 +255,9 @@ class AddPointsBehavior extends BehaviorBase {
     this.handleInIndex = handleInIndex;
     this.handleOutIndex = handleOutIndex;
 
-    this.record(path => {
+    this.record(recorder => {
       for (let i = 0; i < insertIndices.length; i++) {
-        path.insertPoint(this.contourIndex, insertIndices[i], newPoints[i]);
+        recorder.insertPoint(this.contourIndex, insertIndices[i], newPoints[i]);
       }
     });
 
@@ -290,13 +290,13 @@ class AddPointsBehavior extends BehaviorBase {
 
   getIncrementalChange(point, constrain) {
     const handleOut = getHandle(point, this.anchorPoint, constrain);
-    return this.recordIncremental(path => {
+    return this.recordIncremental(recorder => {
       if (this.handleOutIndex !== undefined) {
-        path.setPointPosition(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y);
+        recorder.setPointPosition(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y);
       }
       if (this.handleInIndex !== undefined) {
         const handleIn = oppositeHandle(this.anchorPoint, handleOut);
-        path.setPointPosition(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y);
+        recorder.setPointPosition(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y);
       }
     });
   }
@@ -331,7 +331,7 @@ class AddPointsSingleHandleBehavior extends AddPointsBehavior {
 class AddContourAndPointsBehavior extends AddPointsSingleHandleBehavior {
 
   _setupContourChanges(contourIndex) {
-    this.record(path => path.insertContour(contourIndex, emptyContour()))
+    this.record(recorder => recorder.insertContour(contourIndex, emptyContour()))
   }
 
 }
@@ -374,14 +374,14 @@ class CloseContourDragBehavior extends AddPointsBehavior {
   _setupContourChanges(contourIndex) {
     const path = this.path;
     this.firstPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
-    this.record(path => {
-      path.openCloseContour(contourIndex, true);
+    this.record(recorder => {
+      recorder.openCloseContour(contourIndex, true);
       if (!this.shouldAppend) {
         // going backwards; connect, but make the connecting point the start point
         const numPoints = path.getNumPointsOfContour(contourIndex);
         const lastPoint = path.getPoint(this.firstPointIndex + numPoints - 1);
-        path.deletePoint(contourIndex, numPoints - 1);
-        path.insertPoint(contourIndex, 0, lastPoint);
+        recorder.deletePoint(contourIndex, numPoints - 1);
+        recorder.insertPoint(contourIndex, 0, lastPoint);
       }
     });
   }
