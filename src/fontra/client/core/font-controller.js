@@ -264,7 +264,8 @@ export class FontController {
     }
     // Hmmm, would be nice to have this abstracted more
     await this.applyChange(undoRecord.rollbackChange);
-    const error = await this.font.editAtomic(undoRecord.rollbackChange, undoRecord.change);
+    const error = await this.font.editFinal(
+      undoRecord.rollbackChange, undoRecord.change, undoRecord.info.label, true);
     // TODO handle error
     // Do not call this.notifyEditListeners() right away, but next time through the event loop;
     // It's a bit messy, but our caller sets the selection based on our return value; but the
@@ -344,7 +345,6 @@ class GlyphEditContext {
   }
 
   async editBegin() {
-    /* await */ this.fontController.font.editBegin();
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
   }
 
@@ -359,7 +359,6 @@ class GlyphEditContext {
     }
     this.localRollback = rollback;
     this.rollback = consolidateChanges(rollback, this.baseChangePath);
-    /* await */ this.fontController.font.editSetRollback(this.rollback);
     await this.fontController.notifyEditListeners("editSetRollback", this.senderID, this.rollback);
   }
 
@@ -388,7 +387,7 @@ class GlyphEditContext {
     // This records the final change: it should *not* be applied incrementally,
     // It represents the full change from the moment editBegin was called.
     finalChange = consolidateChanges(finalChange, this.baseChangePath);
-    const error = await this.fontController.font.editEnd(finalChange);
+    const error = await this.fontController.font.editFinal(finalChange, this.rollback, undoInfo.label);
     // TODO handle error
     await this.fontController.notifyEditListeners("editEnd", this.senderID, finalChange);
     this.fontController.pushUndoRecord(finalChange, this.rollback, undoInfo);
@@ -404,7 +403,7 @@ class GlyphEditContext {
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
-    const error = await this.fontController.font.editAtomic(change, rollback);
+    const error = await this.fontController.font.editFinal(change, rollback, undoInfo.label, true);
     // TODO: handle error, rollback
     await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
     this.fontController.pushUndoRecord(change, rollback, undoInfo);

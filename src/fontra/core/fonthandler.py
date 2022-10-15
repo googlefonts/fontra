@@ -103,31 +103,17 @@ class FontHandler:
         )
 
     @remoteMethod
-    async def editBegin(self, *, connection):
-        ...
-
-    @remoteMethod
-    async def editSetRollback(self, rollbackChange, *, connection):
-        ...
-
-    @remoteMethod
     async def editIncremental(self, liveChange, *, connection):
         await self.broadcastChange(liveChange, connection, True)
 
     @remoteMethod
-    async def editEnd(self, finalChange, *, connection):
-        if finalChange is None:
-            return
+    async def editFinal(self, finalChange, rollbackChange, editLabel, broadcast=False, *, connection):
+        # TODO: use finalChange, rollbackChange, editLabel for history recording
         # TODO: locking/checking
         await self.updateServerGlyph(finalChange)
         # return {"error": "computer says no"}
-
-    @remoteMethod
-    async def editAtomic(self, change, rollbackChange, *, connection):
-        await self.editBegin(connection=connection)
-        await self.editSetRollback(rollbackChange, connection=connection)
-        await self.editEnd(change, connection=connection)
-        await self.broadcastChange(change, connection, False)
+        if broadcast:
+            await self.broadcastChange(finalChange, connection, False)
 
     async def broadcastChange(self, change, sourceConnection, isLiveChange):
         if isLiveChange:
