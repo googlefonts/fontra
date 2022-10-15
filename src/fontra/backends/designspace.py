@@ -251,7 +251,9 @@ def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -
     layerGlyph.height = glyph.yAdvance
     glyph.path.drawPoints(pen)
     for component in glyph.components:
-        pen.addComponent(component.name, makeAffineTransform(component.transformation))
+        pen.addComponent(
+            component.name, cleanAffine(makeAffineTransform(component.transformation))
+        )
     glyphSet.writeGlyph(
         glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
     )
@@ -319,3 +321,9 @@ def makeAffineTransform(transformation: Transformation) -> Transform:
     )
     t = t.translate(-transformation.tCenterX, -transformation.tCenterY)
     return t
+
+
+def cleanAffine(t):
+    """Convert any integer float values into ints. This is to prevent glifLib
+    from writing float values that can be integers."""
+    return tuple(int(v) if int(v) == v else v for v in t)
