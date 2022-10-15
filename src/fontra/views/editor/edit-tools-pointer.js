@@ -122,7 +122,6 @@ export class PointerTool extends BaseTool {
     }
     const path = editContext.instance.path;
     const recorder = new PackedPathChangeRecorder(path);
-    const changePath = ["path", "pointTypes"]
     for (const pointIndex of pointIndices) {
       const pointType = path.pointTypes[pointIndex];
       const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(path, pointIndex);
