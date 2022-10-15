@@ -32,7 +32,7 @@ baseChangeFunctions = {
 # "p": an array of path items, eg. ["glyphs", "Aring"]
 # Optional: can be omitted if empty.
 #
-# "f": function name, to be lookud up in the changeFunctions dict
+# "f": function name, to be looked up in the changeFunctions dict
 # Optional: can be omitted if the change has children
 #
 # "a": "arguments", an array of arguments for the change function
