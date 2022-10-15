@@ -66,9 +66,10 @@ function findCommonPrefix(changes) {
 }
 
 export const baseChangeFunctions = {
-  "=": (subject, key, value) => subject[key] = value,
-  "-": (subject, index) => subject.splice(index, 1),
-  "+": (subject, index, value) => subject.splice(index, 0, value),
+  "=": (subject, key, item) => subject[key] = item,
+  "-": (subject, index, deleteCount = 1) => subject.splice(index, deleteCount),
+  "+": (subject, index, ...items) => subject.splice(index, 0, ...items),
+  ":": (subject, index, deleteCount, ...items) => subject.splice(index, deleteCount, ...items),
 };
 
 

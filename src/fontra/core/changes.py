@@ -1,22 +1,27 @@
-def setItem(subject, key, value):
-    if isinstance(subject, (dict, list, tuple)):
-        subject[key] = value
+def setItem(subject, key, item):
+    if isinstance(subject, (dict, list)):
+        subject[key] = item
     else:
-        setattr(subject, key, value)
+        setattr(subject, key, item)
 
 
-def delItem(subject, index):
-    del subject[index]
+def delItems(subject, index, deleteCount=1):
+    spliceItems(subject, index, deleteCount)
 
 
-def insertItem(subject, index, value):
-    subject.insert(index, value)
+def insertItems(subject, index, *items):
+    spliceItems(subject, index, 0, *items)
+
+
+def spliceItems(subject, index, deleteCount, *items):
+    subject[index : index + deleteCount] = items
 
 
 baseChangeFunctions = {
     "=": setItem,
-    "-": delItem,
-    "+": insertItem,
+    "-": delItems,
+    "+": insertItems,
+    ":": spliceItems,
 }
 
 
