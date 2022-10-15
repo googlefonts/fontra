@@ -3,7 +3,7 @@ import asyncio
 from collections import defaultdict
 import functools
 import logging
-from .changes import applyChange, baseChangeFunctions
+from .changes import applyChange
 from .glyphchanges import glyphChangeFunctions
 
 logger = logging.getLogger(__name__)
