@@ -10,7 +10,7 @@ def setItem(subject, key, item, *, itemCast=None):
         setattr(subject, key, item)
 
 
-def delItems(subject, index, deleteCount=1):
+def delItems(subject, index, deleteCount=1, itemCast=None):
     spliceItems(subject, index, deleteCount)
 
 
@@ -59,17 +59,15 @@ def applyChange(subject, change, changeFunctions, itemCast=None):
         if isinstance(subject, (dict, list, tuple)):
             subject = subject[pathElement]
         else:
-            itemCast = getItemCast(subject, pathElement)
+            itemCast = getItemCast(subject, pathElement, "subtype")
             subject = getattr(subject, pathElement)
 
     if functionName is not None:
         changeFunc = changeFunctions[functionName]
         args = change.get("a", [])
-        if (
-            itemCast is not None
-            and changeFunc.__kwdefaults__ is not None
-            and "itemCast" in changeFunc.__kwdefaults__
-        ):
+        if functionName in baseChangeFunctions:
+            if itemCast is None and args:
+                itemCast = getItemCast(subject, args[0], "type")
             changeFunc(subject, *args, itemCast=itemCast)
         else:
             changeFunc(subject, *args)
@@ -78,11 +76,11 @@ def applyChange(subject, change, changeFunctions, itemCast=None):
         applyChange(subject, subChange, changeFunctions, itemCast=itemCast)
 
 
-def getItemCast(subject, attrName):
+def getItemCast(subject, attrName, fieldKey):
     classFields = classSchema.get(type(subject))
     if classFields is not None:
         fieldDef = classFields[attrName]
-        subtype = fieldDef.get("subtype")
+        subtype = fieldDef.get(fieldKey)
         if subtype is not None:
             return classCastFuncs.get(subtype)
     return None
