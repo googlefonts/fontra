@@ -108,6 +108,13 @@ def makeSchema(*classes, schema=None):
     return schema
 
 
+def makeCastFuncs(schema, config=None):
+    castFuncs = {}
+    for cls in schema.keys():
+        castFuncs[cls.__name__] = partial(dacite.from_dict, cls, config=config)
+    return castFuncs
+
+
 def classesToStrings(schema):
     return {
         cls.__name__: {
@@ -121,16 +128,15 @@ def classesToStrings(schema):
     }
 
 
-classesSchema = makeSchema(VariableGlyph)
-
-
 _castConfig = dacite.Config(cast=[PointType])
 from_dict = partial(dacite.from_dict, config=_castConfig)
+classSchema = makeSchema(VariableGlyph)
+classCastFuncs = makeCastFuncs(classSchema, config=_castConfig)
 
 
 if __name__ == "__main__":
     import json
 
-    schema = classesToStrings(classesSchema)
+    schema = classesToStrings(classSchema)
     print("// This file is generated, don't edit!")
-    print("const classesSchema =", json.dumps(schema, indent=2))
+    print("export const classSchema =", json.dumps(schema, indent=2))
