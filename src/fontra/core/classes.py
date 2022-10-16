@@ -111,7 +111,7 @@ def makeSchema(*classes, schema=None):
 def makeCastFuncs(schema, config=None):
     castFuncs = {}
     for cls in schema.keys():
-        castFuncs[cls.__name__] = partial(dacite.from_dict, cls, config=config)
+        castFuncs[cls] = partial(dacite.from_dict, cls, config=config)
     return castFuncs
 
 
