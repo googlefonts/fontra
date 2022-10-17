@@ -271,7 +271,7 @@ export class FontController {
     // It's a bit messy, but our caller sets the selection based on our return value; but the
     // edit listeners need that new selection. TODO: think of a better solution...
     setTimeout(
-      () => this.notifyEditListeners("editAtomic", this, undoRecord.rollbackChange, undoRecord.change),
+      () => this.notifyEditListeners("editFinal", this),
       0,
     );
     return undoRecord["info"];
@@ -332,24 +332,7 @@ class GlyphEditContext {
     const varGlyph = await this.fontController.getGlyph(this.glyphController.name);
     const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[this.glyphController.sourceIndex].layerName);
     this.baseChangePath = ["glyphs", this.glyphController.name, "layers", layerIndex, "glyph"];
-  }
-
-  async editBegin() {
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
-  }
-
-  async editSetRollback(rollback) {
-    if (this.localRollback) {
-      // Rollback was set before. This means that changes coming in now may not
-      // cover the previous changes, so we need to make sure to start fresh.
-      applyChange(this.glyphController.instance, this.localRollback);
-      await this.fontController.glyphChanged(this.glyphController.name);
-      /* await */ this.fontController.font.editIncremental(this.rollback);
-      await this.fontController.notifyEditListeners("editIncremental", this.senderID, this.rollback);
-    }
-    this.localRollback = rollback;
-    this.rollback = consolidateChanges(rollback, this.baseChangePath);
-    await this.fontController.notifyEditListeners("editSetRollback", this.senderID, this.rollback);
   }
 
   async editIncremental(change) {
@@ -361,7 +344,7 @@ class GlyphEditContext {
   }
 
   async _editIncremental(change, allowThrottle) {
-    applyChange(this.glyphController.instance, change);
+    // applyChange(this.glyphController.instance, change);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
     if (allowThrottle) {
@@ -370,32 +353,19 @@ class GlyphEditContext {
       clearTimeout(this._throttledEditIncrementalTimeoutID);
       this.fontController.font.editIncremental(change);
     }
-    await this.fontController.notifyEditListeners("editIncremental", this.senderID, change);
+    await this.fontController.notifyEditListeners("editIncremental", this.senderID);
   }
 
-  async editEnd(finalChange, undoInfo) {
-    // This records the final change: it should *not* be applied incrementally,
-    // It represents the full change from the moment editBegin was called.
-    finalChange = consolidateChanges(finalChange, this.baseChangePath);
-    const error = await this.fontController.font.editFinal(finalChange, this.rollback, undoInfo.label);
-    // TODO handle error
-    await this.fontController.notifyEditListeners("editEnd", this.senderID, finalChange);
-    this.fontController.pushUndoRecord(finalChange, this.rollback, undoInfo);
-  }
-
-  async editAtomic(change, rollback, undoInfo) {
-    // This single call is equivalent to this sequence:
-    //    editContext.editBegin();
-    //    editContext.setRollback(rollback)
-    //    editContext.editIncremental(change);
-    //    editContext.editEnd(change);
-    applyChange(this.glyphController.instance, change);
-    await this.fontController.glyphChanged(this.glyphController.name);
+  async editFinal(change, rollback, undoInfo, broadcast = false) {
+    if (broadcast) {
+      await this.fontController.glyphChanged(this.glyphController.name);
+    }
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
-    const error = await this.fontController.font.editFinal(change, rollback, undoInfo.label, true);
+    const error = await this.fontController.font.editFinal(change, rollback, undoInfo.label, broadcast);
     // TODO: handle error, rollback
-    await this.fontController.notifyEditListeners("editAtomic", this.senderID, change, rollback);
+    await this.fontController.notifyEditListeners("editFinal", this.senderID);
+    await this.fontController.notifyEditListeners("editEnd", this.senderID);
     this.fontController.pushUndoRecord(change, rollback, undoInfo);
   }
 

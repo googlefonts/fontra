@@ -1,3 +1,4 @@
+import { applyChange } from "../core/changes.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { InstanceChangeRecorder, PackedPathChangeRecorder } from "../core/change-recorder.js";
@@ -37,8 +38,9 @@ export class SceneController {
         break;
       case "editEnd":
         delete this.sceneModel.ghostPath;
+        break;
       case "editIncremental":
-      case "editAtomic":
+      case "editFinal":
         await this.sceneModel.updateScene();
         this.canvasController.setNeedsUpdate();
         break;
@@ -80,7 +82,8 @@ export class SceneController {
     const editBehavior = behaviorFactory.getBehavior(event.altKey ? "alternate" : "default");
     const delta = {"x": dx, "y": dy};
     const editChange = editBehavior.makeChangeForDelta(delta)
-    await editContext.editAtomic(editChange, editBehavior.rollbackChange, undoInfo);
+    applyChange(editContext.instance, editChange);
+    await editContext.editFinal(editChange, editBehavior.rollbackChange, undoInfo, true);
   }
 
   addEventListener(eventName, handler, options) {

@@ -1,4 +1,4 @@
-import { consolidateChanges } from "../core/changes.js";
+import { applyChange, consolidateChanges } from "../core/changes.js";
 import { PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
@@ -210,24 +210,24 @@ export class PointerTool extends BaseTool {
     let behaviorName = getBehaviorName(initialEvent);
     let editBehavior = behaviorFactory.getBehavior(behaviorName);
 
-    await editContext.editBegin();
-    await editContext.editSetRollback(editBehavior.rollbackChange);
     let editChange;
 
     for await (const event of eventStream) {
       const newEditBehaviorName = getBehaviorName(event);
       if (behaviorName !== newEditBehaviorName) {
+        applyChange(editContext.instance, editBehavior.rollbackChange);
+        await editContext.editIncremental(editBehavior.rollbackChange);
         behaviorName = newEditBehaviorName;
         editBehavior = behaviorFactory.getBehavior(behaviorName);
-        await editContext.editSetRollback(editBehavior.rollbackChange);
       }
       const currentPoint = sceneController.localPoint(event);
       const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
       editChange = editBehavior.makeChangeForDelta(delta)
+      applyChange(editContext.instance, editChange);
       await editContext.editIncrementalMayDrop(editChange);
     }
-    await editContext.editIncremental(editChange);
-    await editContext.editEnd(editChange, undoInfo);
+    applyChange(editContext.instance, editChange);
+    await editContext.editFinal(editChange, editBehavior.rollbackChange, undoInfo, true);
   }
 
 }
