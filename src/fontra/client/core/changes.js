@@ -1,12 +1,12 @@
 export function consolidateChanges(changes, prefixPath) {
   let change;
-  let path = prefixPath || [];
+  let path;
   if (!Array.isArray(changes)) {
     changes = [changes];
   }
   if (changes.length === 1) {
     change = {...changes[0]};
-    path = path.concat(change.p || []);
+    path = change.p;
   } else {
     const commonPrefix = findCommonPrefix(changes);
     const numCommonElements = commonPrefix.length;
@@ -19,7 +19,7 @@ export function consolidateChanges(changes, prefixPath) {
         }
         return newChange;
       });
-      path = path.concat(commonPrefix);
+      path = commonPrefix;
     } else {
       // Zap empty p
       changes = changes.map(change => {
@@ -32,12 +32,22 @@ export function consolidateChanges(changes, prefixPath) {
     }
     change = {"c": changes};
   }
-  if (path.length) {
+  if (path?.length) {
     change["p"] = path;
   } else {
     delete change["p"];
   }
+  if (prefixPath?.length) {
+    change = addPathPrefix(change, prefixPath);
+  }
   return change;
+}
+
+
+function addPathPrefix(change, prefixPath) {
+  const prefixedChanged = {...change};
+  prefixedChanged.p = prefixPath.concat(prefixedChanged.p || []);
+  return prefixedChanged;
 }
 
 
