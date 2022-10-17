@@ -2,7 +2,7 @@ from copy import deepcopy
 import json
 import pathlib
 import pytest
-from fontra.core.changes import applyChange, baseChangeFunctions
+from fontra.core.changes import applyChange
 
 
 testDataPath = (
@@ -29,5 +29,5 @@ applyChangeTestData = [
 )
 def test_applyChange(testName, inputDataName, change, expectedData):
     subject = deepcopy(applyChangeTestInputData[inputDataName])
-    applyChange(subject, change, baseChangeFunctions)
+    applyChange(subject, change)
     assert subject == expectedData

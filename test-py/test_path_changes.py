@@ -2,7 +2,6 @@ import json
 import pathlib
 import pytest
 from fontra.core.changes import applyChange
-from fontra.core.glyphchanges import glyphChangeFunctions
 from fontra.core.packedpath import PackedPath
 
 
@@ -30,5 +29,5 @@ pathChangeTestData = [
 )
 def test_applyChange(testName, inputPathName, change, expectedData):
     subject = PackedPath.fromUnpackedContours(pathChangeTestInputData[inputPathName])
-    applyChange(subject, change, glyphChangeFunctions)
+    applyChange(subject, change)
     assert subject == expectedData

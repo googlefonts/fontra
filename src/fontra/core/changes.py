@@ -32,6 +32,22 @@ baseChangeFunctions = {
 }
 
 
+# TODO: Refactor. These don't really belong here, and should ideally be registered from outside
+changeFunctions = {
+    **baseChangeFunctions,
+    "=xy": lambda path, pointIndex, x, y: path.setPointPosition(pointIndex, x, y),
+    "insertContour": lambda path, contourIndex, contour: path.insertContour(
+        contourIndex, contour
+    ),
+    "deleteContour": lambda path, contourIndex: path.deleteContour(contourIndex),
+    "deletePoint": lambda path, contourIndex, contourPointIndex: path.deletePoint(
+        contourIndex, contourPointIndex
+    ),
+    "insertPoint": lambda path, contourIndex, contourPointIndex, point: path.insertPoint(
+        contourIndex, contourPointIndex, point
+    ),
+}
+
 #
 # A "change" object is a simple JS object containing several
 # keys.
@@ -49,7 +65,7 @@ baseChangeFunctions = {
 #
 
 
-def applyChange(subject, change, changeFunctions, itemCast=None):
+def applyChange(subject, change, itemCast=None):
     path = change.get("p", [])
     functionName = change.get("f")
     children = change.get("c", [])
@@ -73,7 +89,7 @@ def applyChange(subject, change, changeFunctions, itemCast=None):
             changeFunc(subject, *args)
 
     for subChange in children:
-        applyChange(subject, subChange, changeFunctions, itemCast=itemCast)
+        applyChange(subject, subChange, itemCast=itemCast)
 
 
 def getItemCast(subject, attrName, fieldKey):

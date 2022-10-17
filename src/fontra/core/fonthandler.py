@@ -4,7 +4,6 @@ from collections import defaultdict
 import functools
 import logging
 from .changes import applyChange
-from .glyphchanges import glyphChangeFunctions
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +136,7 @@ class FontHandler:
         assert change["p"][0] == "glyphs", change["p"]
         glyphName = change["p"][1]
         glyph = await self.getChangedGlyph(glyphName)
-        applyChange(dict(glyphs={glyphName: glyph}), change, glyphChangeFunctions)
+        applyChange(dict(glyphs={glyphName: glyph}), change)
         if hasattr(self.backend, "putGlyph") and not self.readOnly:
             await self.backend.putGlyph(glyphName, glyph)
 
