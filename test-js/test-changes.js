@@ -168,6 +168,12 @@ const consolidateChangesTestCases = [
     "prefixPath": undefined,
     "consolidated": {},
   },
+  {
+    "testName": "nested no-op changes with path",
+    "changes": {"p": ["item"], "c": [{"p": ["sub1"]}, {"p": ["sub2"]}]},
+    "prefixPath": undefined,
+    "consolidated": {},
+  },
 ];
 
 

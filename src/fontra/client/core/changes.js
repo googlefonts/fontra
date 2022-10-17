@@ -98,9 +98,12 @@ export function consolidateChanges(changes, prefixPath) {
 
 
 function unnestSingleChildren(change) {
-  const numChildren = change.c?.length;
-  if (!numChildren) {
-    if (numChildren === 0) {
+  const children = change.c?.map(
+    child => unnestSingleChildren(child)
+  ).filter(isNotEmpty);
+
+  if (!children?.length) {
+    if (children?.length === 0) {
       // Remove empty children array
       change = {...change};
       delete change.c;
@@ -112,9 +115,6 @@ function unnestSingleChildren(change) {
     return change;
   }
   // Recursively unnest and prune
-  const children = change.c.map(
-    child => unnestSingleChildren(child)
-  ).filter(isNotEmpty);
   if (children.length !== 1) {
     change = {...change};
     change.c = children;
