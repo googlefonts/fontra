@@ -380,7 +380,8 @@ export class SceneController {
       "location": this.getLocation(),
     }
     this.selection = newSelection;
-    await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
+    applyChange(editContext.instance, recorder.editChange);
+    await editContext.editFinal(recorder.editChange, recorder.rollbackChange, undoInfo, true);
   }
 
   async setStartPoint() {
@@ -425,7 +426,8 @@ export class SceneController {
         "location": this.getLocation(),
       }
       this.selection = newSelection;
-      await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
+      applyChange(editContext.instance, recorder.editChange);
+      await editContext.editFinal(recorder.editChange, recorder.rollbackChange, undoInfo, true);
     }
   }
 
@@ -472,7 +474,8 @@ export class SceneController {
         "location": this.getLocation(),
       }
       this.selection = newSelection;
-      await editContext.editAtomic(instanceRecorder.editChange, instanceRecorder.rollbackChange, undoInfo);
+      applyChange(editContext.instance, instanceRecorder.editChange);
+      await editContext.editFinal(instanceRecorder.editChange, instanceRecorder.rollbackChange, undoInfo, true);
     }
   }
 
