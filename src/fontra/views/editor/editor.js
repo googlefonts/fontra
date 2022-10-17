@@ -1,5 +1,5 @@
 import { CanvasController } from "../core/canvas-controller.js";
-import { matchChange } from "../core/changes.js";
+import { applyChange, matchChange } from "../core/changes.js";
 import { ContextMenu } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
@@ -770,7 +770,7 @@ export class EditorController {
       // The edit comes from the selection info box itself, so we shouldn't update it
       return;
     }
-    if (editMethodName === "editIncremental" || editMethodName === "editAtomic") {
+    if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
       this.updateSelectionInfo();
     }
   }
@@ -896,8 +896,6 @@ export class EditorController {
       if (!(await setup(info))) {
         return;
       }
-      await editContext.editBegin();
-      await editContext.editSetRollback(rollbackChange);
     };
 
     this.infoForm.onDoChange = async info => {
@@ -907,13 +905,15 @@ export class EditorController {
           return;
         }
         change = makeFieldChange(localChangePath, info.value);
-        await editContext.editAtomic(change, rollbackChange, undoInfo);
+        applyChange(editContext.instance, change);
+        await editContext.editFinal(change, rollbackChange, undoInfo, true);
         breakdown();
       } else {
         if (keyString !== info.key) {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
         change = makeFieldChange(localChangePath, info.value);
+        apply(editContext.instance, change);
         await editContext.editIncrementalMayDrop(change);
       }
     };
@@ -925,8 +925,8 @@ export class EditorController {
       if (keyString !== info.key) {
         throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
       }
-      await editContext.editIncremental(change);
-      await editContext.editEnd(change, undoInfo);
+      applyChange(editContext.instance, change);
+      await editContext.editFinal(change, rollbackChange, undoInfo, true);
       breakdown();
     };
   }
