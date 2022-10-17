@@ -172,6 +172,7 @@ function findCommonPrefix(changes) {
   return commonPrefix;
 }
 
+
 const baseChangeFunctions = {
   "=": (subject, key, item) => subject[key] = item,
   "-": (subject, index, deleteCount = 1) => subject.splice(index, deleteCount),
