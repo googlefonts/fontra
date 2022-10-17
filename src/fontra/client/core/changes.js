@@ -37,8 +37,47 @@ export function consolidateChanges(changes, prefixPath) {
   } else {
     delete change["p"];
   }
+
+  change = unnestSingleChildren(change);
+
   if (prefixPath?.length) {
     change = addPathPrefix(change, prefixPath);
+  }
+
+  return change;
+}
+
+
+function unnestSingleChildren(change) {
+  const numChildren = change.c?.length;
+  if (!numChildren) {
+    if (numChildren === 0) {
+      // Remove empty children array
+      change = {...change};
+      delete change.c;
+    }
+    return change;
+  }
+  // Recursively unnest
+  const children = change.c.map(child => unnestSingleChildren(child));
+  if (numChildren !== 1) {
+    change = {...change};
+    change.c = children;
+    return change;
+  }
+  const child = children[0];
+  let path;
+  const childPath = child.p || [];
+  if (change.p?.length) {
+    path = change.p.concat(childPath);
+  } else {
+    path = childPath;
+  }
+  change = {...child};
+  if (path.length) {
+    change.p = path;
+  } else {
+    delete change.p;
   }
   return change;
 }

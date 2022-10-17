@@ -134,6 +134,24 @@ const consolidateChangesTestCases = [
       {"f": "=", "a": [1, 2]},
     ]},
   },
+  {
+    "testName": "unnest single child",
+    "changes": {"c": [{"f": "=", "a": [0, 0]}]},
+    "prefixPath": undefined,
+    "consolidated": {"f": "=", "a": [0, 0]},
+  },
+  {
+    "testName": "deep unnest single child",
+    "changes": {"c": [{"c": [{"f": "=", "a": [0, 0]}]}]},
+    "prefixPath": undefined,
+    "consolidated": {"f": "=", "a": [0, 0]},
+  },
+  {
+    "testName": "deep unnest single child of multiple children",
+    "changes": {"c": [{"c": [{"f": "=", "a": [0, 0]}]}, {"f": "=", "a": [1, 2]}]},
+    "prefixPath": undefined,
+    "consolidated": {"c": [{"f": "=", "a": [0, 0]}, {"f": "=", "a": [1, 2]}]},
+  },
 ];
 
 
