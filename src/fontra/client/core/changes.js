@@ -105,11 +105,17 @@ function unnestSingleChildren(change) {
       change = {...change};
       delete change.c;
     }
+    if (!change.f) {
+      // This change doesn't do anything
+      change = {};
+    }
     return change;
   }
-  // Recursively unnest
-  const children = change.c.map(child => unnestSingleChildren(child));
-  if (numChildren !== 1) {
+  // Recursively unnest and prune
+  const children = change.c.map(
+    child => unnestSingleChildren(child)
+  ).filter(isNotEmpty);
+  if (children.length !== 1) {
     change = {...change};
     change.c = children;
     return change;
@@ -267,4 +273,12 @@ function lastItem(array) {
   if (array.length) {
     return array[array.length - 1];
   }
+}
+
+
+function isNotEmpty(obj) {
+  for (const _ in obj) {
+    return true;
+  }
+  return false;
 }

@@ -162,6 +162,12 @@ const consolidateChangesTestCases = [
     "prefixPath": undefined,
     "consolidated": {},
   },
+  {
+    "testName": "no-op change with path",
+    "changes": {"p": ["item"]},
+    "prefixPath": undefined,
+    "consolidated": {},
+  },
 ];
 
 
@@ -201,7 +207,7 @@ describe("ChangeCollector tests", () => {
   it("ChangeCollector sub", () => {
     const coll = new ChangeCollector();
     const sub1 = coll.subCollector("item");
-    expect(coll.change).to.deep.equal({"p": ["item"]});
+    expect(coll.change).to.deep.equal({});
     sub1.addChange("=", 1);
     expect(coll.change).to.deep.equal({"p": ["item"], "f": "=", "a": [1]});
     sub1.addChange("+", 2);
@@ -224,7 +230,7 @@ describe("ChangeCollector tests", () => {
   it("ChangeCollector sub rollback", () => {
     const coll = new ChangeCollector();
     const sub1 = coll.subCollector("item");
-    expect(coll.rollbackChange).to.deep.equal({"p": ["item"]});
+    expect(coll.rollbackChange).to.deep.equal({});
     sub1.addRollbackChange("=", 1);
     expect(coll.rollbackChange).to.deep.equal({"p": ["item"], "f": "=", "a": [1]});
     sub1.addRollbackChange("+", 2);
