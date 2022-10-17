@@ -124,12 +124,12 @@ const baseChangeFunctions = {
 
 // TODO: Refactor. These don't really belong here, and should ideally be registered from outside
 const changeFunctions = {
+  ...baseChangeFunctions,
   "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
   "insertContour": (path, contourIndex, contour) => path.insertContour(contourIndex, contour),
   "deleteContour": (path, contourIndex) => path.deleteContour(contourIndex),
   "deletePoint": (path, contourIndex, contourPointIndex) => path.deletePoint(contourIndex, contourPointIndex),
   "insertPoint": (path, contourIndex, contourPointIndex, point) => path.insertPoint(contourIndex, contourPointIndex, point),
-  ...baseChangeFunctions,
 };
 
 
