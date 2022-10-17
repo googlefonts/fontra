@@ -1,4 +1,4 @@
-import { consolidateChanges } from "../core/changes.js";
+import { applyChange, consolidateChanges } from "../core/changes.js";
 import { PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { reversed } from "../core/utils.js";
@@ -44,29 +44,34 @@ export class PenTool extends BaseTool {
 
     if (behavior.wantInitialChange) {
       this.sceneController.selection = behavior.getSelection();
-      await editContext.editBegin();
       didEdit = true;
-      await editContext.editSetRollback(behavior.getRollbackChange());
-      await editContext.editIncremental(behavior.getInitialChange());
+      const change = behavior.getInitialChange();
+      applyChange(editContext.instance, change);
+      await editContext.editIncremental(change);
     }
 
     if (behavior.wantDrag && await shouldInitiateDrag(eventStream, initialEvent)) {
+      const rollbackChange = behavior.getRollbackChange();
+      applyChange(editContext.instance, rollbackChange);
+      await editContext.editIncremental(rollbackChange);
       behavior.startDragging();
       this.sceneController.selection = behavior.getSelection();
       if (!behavior.wantInitialChange) {
-        await editContext.editBegin();
         didEdit = true;
       }
-      await editContext.editSetRollback(behavior.getRollbackChange());
-      await editContext.editIncremental(behavior.getInitialChange());
+      const change = behavior.getInitialChange();
+      applyChange(editContext.instance, change);
+      await editContext.editIncremental(change);
 
       let moveChange;
       for await (const event of eventStream) {
         const point = this.sceneController.selectedGlyphPoint(event);
         moveChange = behavior.getIncrementalChange(point, event.shiftKey);
+        applyChange(editContext.instance, moveChange);
         await editContext.editIncrementalMayDrop(moveChange);
       }
       if (moveChange) {
+        applyChange(editContext.instance, moveChange);
         await editContext.editIncremental(moveChange);
       }
     }
@@ -78,7 +83,7 @@ export class PenTool extends BaseTool {
         "redoSelection": this.sceneController.selection,
         "location": this.sceneController.getLocation(),
       }
-      await editContext.editEnd(behavior.getFinalChange(), undoInfo);
+      await editContext.editFinal(behavior.getFinalChange(), behavior.getRollbackChange(), undoInfo, false);
     }
   }
 
