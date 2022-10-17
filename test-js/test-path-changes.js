@@ -3,7 +3,6 @@ const expect = chai.expect;
 import fs from "fs";
 
 import { applyChange } from "../src/fontra/client/core/changes.js";
-import { glyphChangeFunctions } from "../src/fontra/client/core/font-controller.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
 
 import { fileURLToPath } from 'url'
@@ -27,7 +26,7 @@ describe("Path Changes Tests", () => {
 
     const subject = VarPackedPath.fromUnpackedContours(copyObject(inputPaths[inputPathName]));
     it(`Apply Path Changes test #${i} -- ${testName}`, () => {
-      applyChange(subject, test["change"], glyphChangeFunctions);
+      applyChange(subject, test["change"]);
       expect(subject).to.deep.equal(expectedPath);
     });
   }

@@ -1,4 +1,4 @@
-import { applyChange, baseChangeFunctions, consolidateChanges } from "./changes.js";
+import { applyChange, consolidateChanges } from "./changes.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
@@ -180,7 +180,7 @@ export class FontController {
       const glyphSet = {};
       const root = {"glyphs": glyphSet};
       glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
-      applyChange(root, change, glyphChangeFunctions);
+      applyChange(root, change);
       this.glyphChanged(glyphName);
       if (isExternalChange) {
         // The undo stack is local, so any external change invalidates it
@@ -317,16 +317,6 @@ function makeCmapFromReverseCmap(reverseCmap) {
 }
 
 
-export const glyphChangeFunctions = {
-  "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
-  "insertContour": (path, contourIndex, contour) => path.insertContour(contourIndex, contour),
-  "deleteContour": (path, contourIndex) => path.deleteContour(contourIndex),
-  "deletePoint": (path, contourIndex, contourPointIndex) => path.deletePoint(contourIndex, contourPointIndex),
-  "insertPoint": (path, contourIndex, contourPointIndex, point) => path.insertPoint(contourIndex, contourPointIndex, point),
-  ...baseChangeFunctions,
-};
-
-
 class GlyphEditContext {
 
   constructor(fontController, glyphController, senderID) {
@@ -352,7 +342,7 @@ class GlyphEditContext {
     if (this.localRollback) {
       // Rollback was set before. This means that changes coming in now may not
       // cover the previous changes, so we need to make sure to start fresh.
-      applyChange(this.glyphController.instance, this.localRollback, glyphChangeFunctions);
+      applyChange(this.glyphController.instance, this.localRollback);
       await this.fontController.glyphChanged(this.glyphController.name);
       /* await */ this.fontController.font.editIncremental(this.rollback);
       await this.fontController.notifyEditListeners("editIncremental", this.senderID, this.rollback);
@@ -371,7 +361,7 @@ class GlyphEditContext {
   }
 
   async _editIncremental(change, allowThrottle) {
-    applyChange(this.glyphController.instance, change, glyphChangeFunctions);
+    applyChange(this.glyphController.instance, change);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
     if (allowThrottle) {
@@ -399,7 +389,7 @@ class GlyphEditContext {
     //    editContext.setRollback(rollback)
     //    editContext.editIncremental(change);
     //    editContext.editEnd(change);
-    applyChange(this.glyphController.instance, change, glyphChangeFunctions);
+    applyChange(this.glyphController.instance, change);
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);

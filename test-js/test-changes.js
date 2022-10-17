@@ -2,7 +2,7 @@ import chai from "chai";
 const expect = chai.expect;
 import fs from "fs";
 
-import { applyChange, baseChangeFunctions, consolidateChanges } from "../src/fontra/client/core/changes.js";
+import { applyChange, consolidateChanges } from "../src/fontra/client/core/changes.js";
 
 
 import { fileURLToPath } from 'url'
@@ -26,7 +26,7 @@ describe("Changes Tests", () => {
 
     const subject = copyObject(inputData[inputDataName]);
     it(`Apply Changes test #${i} -- ${testName}`, () => {
-      applyChange(subject, test["change"], baseChangeFunctions);
+      applyChange(subject, test["change"]);
       expect(subject).to.deep.equal(expectedData);
     });
   }

@@ -114,11 +114,22 @@ function findCommonPrefix(changes) {
   return commonPrefix;
 }
 
-export const baseChangeFunctions = {
+const baseChangeFunctions = {
   "=": (subject, key, item) => subject[key] = item,
   "-": (subject, index, deleteCount = 1) => subject.splice(index, deleteCount),
   "+": (subject, index, ...items) => subject.splice(index, 0, ...items),
   ":": (subject, index, deleteCount, ...items) => subject.splice(index, deleteCount, ...items),
+};
+
+
+// TODO: Refactor. These don't really belong here, and should ideally be registered from outside
+const changeFunctions = {
+  "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
+  "insertContour": (path, contourIndex, contour) => path.insertContour(contourIndex, contour),
+  "deleteContour": (path, contourIndex) => path.deleteContour(contourIndex),
+  "deletePoint": (path, contourIndex, contourPointIndex) => path.deletePoint(contourIndex, contourPointIndex),
+  "insertPoint": (path, contourIndex, contourPointIndex, point) => path.insertPoint(contourIndex, contourPointIndex, point),
+  ...baseChangeFunctions,
 };
 
 
@@ -139,7 +150,7 @@ export const baseChangeFunctions = {
 //
 
 
-export function applyChange(subject, change, changeFunctions) {
+export function applyChange(subject, change) {
   const path = change["p"] || [];
   const functionName = change["f"];
   const children = change["c"] || [];
@@ -158,7 +169,7 @@ export function applyChange(subject, change, changeFunctions) {
   }
 
   for (const subChange of children) {
-    applyChange(subject, subChange, changeFunctions);
+    applyChange(subject, subChange);
   }
 }
 
