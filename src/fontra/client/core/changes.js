@@ -92,6 +92,9 @@ function addPathPrefix(change, prefixPath) {
 
 function findCommonPrefix(changes) {
   const commonPrefix = [];
+  if (!changes.length) {
+    return commonPrefix;
+  }
   for (const change of changes) {
     if (!change.p || !change.p.length) {
       return commonPrefix;

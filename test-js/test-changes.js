@@ -152,6 +152,12 @@ const consolidateChangesTestCases = [
     "prefixPath": undefined,
     "consolidated": {"c": [{"f": "=", "a": [0, 0]}, {"f": "=", "a": [1, 2]}]},
   },
+  {
+    "testName": "empty change list",
+    "changes": [],
+    "prefixPath": undefined,
+    "consolidated": {},
+  },
 ];
 
 
