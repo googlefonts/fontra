@@ -24,7 +24,7 @@ export function consolidateChanges(changes, prefixPath) {
       // Zap empty p
       changes = changes.map(change => {
         const newChange = {...change};
-        if (newChange.p && !newChange.p.length) {
+        if (!newChange.p?.length) {
           delete newChange.p;
         }
         return newChange;
