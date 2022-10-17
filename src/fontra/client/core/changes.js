@@ -1,3 +1,52 @@
+export class ChangeCollector {
+
+  constructor() {
+    this._forwardChanges = [];
+    this._rollbackChanges = [];
+  }
+
+  get hasChange() {
+    return !!this._forwardChanges.length;
+  }
+
+  get change() {
+    return consolidateChanges(this._forwardChanges);
+  }
+
+  get hasRollbackChange() {
+    return !!this._rollbackChanges.length;
+  }
+
+  get rollbackChange() {
+    return consolidateChanges(this._rollbackChanges);
+  }
+
+  addChange(func, ...args) {
+    this._forwardChanges.push({f: func, a: args});
+  }
+
+  addRollbackChange(func, ...args) {
+    this._rollbackChanges.splice(0, 0, {f: func, a: args});
+  }
+
+  subCollector(...path) {
+    const sub = new ChangeCollector();
+    if (equalPath(path, lastItem(this._forwardChanges)?.p)) {
+      sub._forwardChanges = lastItem(this._forwardChanges).c;
+    } else {
+      this._forwardChanges.push({p: path, c: sub._forwardChanges});
+    }
+    if (equalPath(path, this._rollbackChanges[0]?.p)) {
+      sub._rollbackChanges = this._rollbackChanges[0].c;
+    } else {
+      this._rollbackChanges.splice(0, 0, {p: path, c: sub._rollbackChanges});
+    }
+    return sub;
+  }
+
+}
+
+
 export function consolidateChanges(changes, prefixPath) {
   let change;
   let path;
@@ -198,4 +247,24 @@ export function matchChange(change, matchPath) {
   }
 
   return false;
+}
+
+
+function equalPath(p1, p2) {
+  if (p1.length !== p2?.length) {
+    return false;
+  }
+  for (let i = 0; i < p1.length; i++) {
+    if (p1[i] !== p2[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+function lastItem(array) {
+  if (array.length) {
+    return array[array.length - 1];
+  }
 }

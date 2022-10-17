@@ -2,7 +2,11 @@ import chai from "chai";
 const expect = chai.expect;
 import fs from "fs";
 
-import { applyChange, consolidateChanges } from "../src/fontra/client/core/changes.js";
+import {
+  ChangeCollector,
+  applyChange,
+  consolidateChanges,
+} from "../src/fontra/client/core/changes.js";
 
 
 import { fileURLToPath } from 'url'
@@ -170,6 +174,77 @@ describe("consolidateChanges tests", () => {
     });
   }
 });
+
+
+describe("ChangeCollector tests", () => {
+
+  it("ChangeCollector basic", () => {
+    const coll = new ChangeCollector();
+    expect(coll.hasChange).to.equal(false);
+    expect(coll.hasRollbackChange).to.equal(false);
+    expect(coll.change).to.deep.equal({});
+    expect(coll.rollbackChange).to.deep.equal({});
+
+    coll.addChange("=", 1);
+    expect(coll.change).to.deep.equal({"f": "=", "a": [1]});
+
+    coll.addChange("+", 2, 3);
+    expect(coll.change).to.deep.equal({"c": [{"f": "=", "a": [1]}, {"f": "+", "a": [2, 3]}]});
+
+    coll.addRollbackChange("+", 2);
+    expect(coll.rollbackChange).to.deep.equal({"f": "+", "a": [2]});
+
+    coll.addRollbackChange(".", 3, 4);
+    expect(coll.rollbackChange).to.deep.equal({"c": [{"f": ".", "a": [3, 4]}, {"f": "+", "a": [2]}]});
+  });
+
+  it("ChangeCollector sub", () => {
+    const coll = new ChangeCollector();
+    const sub1 = coll.subCollector("item");
+    expect(coll.change).to.deep.equal({"p": ["item"]});
+    sub1.addChange("=", 1);
+    expect(coll.change).to.deep.equal({"p": ["item"], "f": "=", "a": [1]});
+    sub1.addChange("+", 2);
+    expect(coll.change).to.deep.equal({"p": ["item"], c: [{"f": "=", "a": [1]}, {"f": "+", "a": [2]}]});
+    const sub2 = coll.subCollector("item");
+    sub2.addChange("+", 5);
+    expect(coll.change).to.deep.equal(
+      {"p": ["item"], c: [{"f": "=", "a": [1]}, {"f": "+", "a": [2]}, {"f": "+", "a": [5]}]}
+    );
+    const sub3 = coll.subCollector("sub");
+    sub3.addChange("-", 6);
+    expect(coll.change).to.deep.equal(
+      {"c": [
+        {"p": ["item"], c: [{"f": "=", "a": [1]}, {"f": "+", "a": [2]}, {"f": "+", "a": [5]}]},
+        {"p": ["sub"], "f": "-", "a": [6]},
+      ]},
+    );
+  });
+
+  it("ChangeCollector sub rollback", () => {
+    const coll = new ChangeCollector();
+    const sub1 = coll.subCollector("item");
+    expect(coll.rollbackChange).to.deep.equal({"p": ["item"]});
+    sub1.addRollbackChange("=", 1);
+    expect(coll.rollbackChange).to.deep.equal({"p": ["item"], "f": "=", "a": [1]});
+    sub1.addRollbackChange("+", 2);
+    expect(coll.rollbackChange).to.deep.equal({"p": ["item"], c: [{"f": "+", "a": [2]}, {"f": "=", "a": [1]}]});
+    const sub2 = coll.subCollector("item");
+    sub2.addRollbackChange("+", 5);
+    expect(coll.rollbackChange).to.deep.equal(
+      {"p": ["item"], c: [{"f": "+", "a": [5]}, {"f": "+", "a": [2]}, {"f": "=", "a": [1]}]}
+    );
+    const sub3 = coll.subCollector("sub");
+    sub3.addRollbackChange("-", 6);
+    expect(coll.rollbackChange).to.deep.equal(
+      {"c": [
+        {"p": ["sub"], "f": "-", "a": [6]},
+        {"p": ["item"], c: [{"f": "+", "a": [5]}, {"f": "+", "a": [2]}, {"f": "=", "a": [1]}]},
+      ]},
+    );
+  });
+
+})
 
 
 function copyObject(obj) {
