@@ -164,7 +164,8 @@ export class PointerTool extends BaseTool {
         "redoSelection": this.sceneController.selection,
         "location": this.sceneController.getLocation(),
       }
-      await editContext.editAtomic(recorder.editChange, recorder.rollbackChange, undoInfo);
+      applyChange(editContext.instance, recorder.editChange);
+      await editContext.editFinal(recorder.editChange, recorder.rollbackChange, undoInfo, true);
     }
   }
 
