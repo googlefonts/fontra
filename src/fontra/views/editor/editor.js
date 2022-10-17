@@ -913,7 +913,7 @@ export class EditorController {
           throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
         }
         change = makeFieldChange(localChangePath, info.value);
-        apply(editContext.instance, change);
+        applyChange(editContext.instance, change);
         await editContext.editIncrementalMayDrop(change);
       }
     };
