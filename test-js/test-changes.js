@@ -280,6 +280,21 @@ describe("ChangeCollector tests", () => {
     );
   });
 
+  it("ChangeCollector concat", () => {
+    const coll1 = new ChangeCollector();
+    const coll2 = new ChangeCollector();
+    const coll3 = coll1.concat(coll2);
+    expect(coll3.change).to.deep.equal({});
+    expect(coll3.rollbackChange).to.deep.equal({});
+    coll1.addChange("+", 1);
+    coll1.addRollbackChange("+", 2);
+    coll2.addChange("-", 3);
+    coll2.addRollbackChange("-", 4);
+    const coll4 = coll1.concat(coll2);
+    expect(coll4.change).to.deep.equal({"c": [{"f": "+", "a": [1]}, {"f": "-", "a": [3]}]});
+    expect(coll4.rollbackChange).to.deep.equal({"c": [{"f": "-", "a": [4]}, {"f": "+", "a": [2]}]});
+  });
+
 })
 
 

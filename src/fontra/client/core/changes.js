@@ -1,8 +1,8 @@
 export class ChangeCollector {
 
-  constructor() {
-    this._forwardChanges = [];
-    this._rollbackChanges = [];
+  constructor(forwardChanges, rollbackChanges) {
+    this._forwardChanges = forwardChanges || [];
+    this._rollbackChanges = rollbackChanges || [];
   }
 
   get hasChange() {
@@ -42,6 +42,13 @@ export class ChangeCollector {
       this._rollbackChanges.splice(0, 0, {p: path, c: sub._rollbackChanges});
     }
     return sub;
+  }
+
+  concat(other) {
+    return new ChangeCollector(
+      this._forwardChanges.concat(other._forwardChanges),
+      other._rollbackChanges.concat(this._rollbackChanges),
+    );
   }
 
 }
