@@ -293,6 +293,12 @@ describe("ChangeCollector tests", () => {
     const coll4 = coll1.concat(coll2);
     expect(coll4.change).to.deep.equal({"c": [{"f": "+", "a": [1]}, {"f": "-", "a": [3]}]});
     expect(coll4.rollbackChange).to.deep.equal({"c": [{"f": "-", "a": [4]}, {"f": "+", "a": [2]}]});
+    const coll5 = new ChangeCollector();
+    coll5.addChange(":", 5);
+    coll5.addRollbackChange(":", 6);
+    const coll6 = coll1.concat(coll2, coll5);
+    expect(coll6.change).to.deep.equal({"c": [{"f": "+", "a": [1]}, {"f": "-", "a": [3]}, {"f": ":", "a": [5]}]});
+    expect(coll6.rollbackChange).to.deep.equal({"c": [{"f": ":", "a": [6]}, {"f": "-", "a": [4]}, {"f": "+", "a": [2]}]});
   });
 
 })

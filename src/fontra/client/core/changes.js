@@ -44,11 +44,14 @@ export class ChangeCollector {
     return sub;
   }
 
-  concat(other) {
-    return new ChangeCollector(
-      this._forwardChanges.concat(other._forwardChanges),
-      other._rollbackChanges.concat(this._rollbackChanges),
-    );
+  concat(...others) {
+    const forwardChanges = [...this._forwardChanges];
+    const rollbackChanges = [...this._rollbackChanges];
+    for (const other of others) {
+      forwardChanges.push(...other._forwardChanges);
+      rollbackChanges.splice(0, 0, ...other._rollbackChanges);
+    }
+    return new ChangeCollector(forwardChanges, rollbackChanges);
   }
 
 }
