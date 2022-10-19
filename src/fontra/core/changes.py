@@ -10,6 +10,15 @@ def setItem(subject, key, item, *, itemCast=None):
         setattr(subject, key, item)
 
 
+def delAttr(subject, key, *, itemCast=None):
+    if isinstance(subject, list):
+        raise TypeError("can't call delattr on list")
+    elif isinstance(subject, dict):
+        del subject[key]
+    else:
+        delattr(subject, key)
+
+
 def delItems(subject, index, deleteCount=1, itemCast=None):
     spliceItems(subject, index, deleteCount)
 
@@ -26,6 +35,7 @@ def spliceItems(subject, index, deleteCount, *items, itemCast=None):
 
 baseChangeFunctions = {
     "=": setItem,
+    "d": delAttr,
     "-": delItems,
     "+": insertItems,
     ":": spliceItems,
