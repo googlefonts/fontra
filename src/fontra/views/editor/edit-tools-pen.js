@@ -1,5 +1,5 @@
-import { applyChange, consolidateChanges } from "../core/changes.js";
-import { PackedPathChangeRecorder } from "../core/change-recorder.js";
+import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
+import { recordChanges } from "../core/change-recorder.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { reversed } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
@@ -23,404 +23,81 @@ export class PenTool extends BaseTool {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
       return;
     }
-    const editContext = await this.sceneController.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
 
-    const initialSelection = this.sceneController.selection;
+    this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
+      const initialSelection = this.sceneController.selection;
 
-    const behavior = getPenToolBehavior(
-      this.sceneController,
-      initialEvent,
-      editContext.glyphController.instance.path,
-    );
+      const behavior = getPenToolBehavior(this.sceneController, initialEvent, instance);
 
-    if (!behavior) {
-      return;
-    }
+      const initialChanges = recordChanges(instance, instanceProxy => {
+        behavior.setupContour(instanceProxy);
+        behavior.initialPointChange(instanceProxy);
+      });
+      this.sceneController.selection = behavior.selection;
+      await sendIncrementalChange(initialChanges);
+      let preDragChanges = new ChangeCollector();
+      let dragChanges = new ChangeCollector();
 
-    let didEdit = false;
-
-    if (behavior.wantInitialChange) {
-      this.sceneController.selection = behavior.getSelection();
-      didEdit = true;
-      const change = behavior.getInitialChange();
-      applyChange(editContext.instance, change);
-      await editContext.editIncremental(change);
-    }
-
-    if (behavior.wantDrag && await shouldInitiateDrag(eventStream, initialEvent)) {
-      const rollbackChange = behavior.getRollbackChange();
-      applyChange(editContext.instance, rollbackChange);
-      await editContext.editIncremental(rollbackChange);
-      behavior.startDragging();
-      this.sceneController.selection = behavior.getSelection();
-      if (!behavior.wantInitialChange) {
-        didEdit = true;
+      if (await shouldInitiateDrag(eventStream, initialEvent)) {
+        preDragChanges = recordChanges(instance, instanceProxy => {
+          behavior.setupDrag(instanceProxy);
+        });
+        this.sceneController.selection = behavior.selection;
+        await sendIncrementalChange(preDragChanges);
+        for await (const event of eventStream) {
+          dragChanges = recordChanges(instance, instanceProxy => {
+            behavior.drag(instanceProxy, event);
+          });
+          await sendIncrementalChange(dragChanges, true);  // true: "may drop"
+        }
+        await sendIncrementalChange(dragChanges);
       }
-      const change = behavior.getInitialChange();
-      applyChange(editContext.instance, change);
-      await editContext.editIncremental(change);
 
-      let moveChange;
-      for await (const event of eventStream) {
-        const point = this.sceneController.selectedGlyphPoint(event);
-        moveChange = behavior.getIncrementalChange(point, event.shiftKey);
-        applyChange(editContext.instance, moveChange);
-        await editContext.editIncrementalMayDrop(moveChange);
-      }
-      if (moveChange) {
-        applyChange(editContext.instance, moveChange);
-        await editContext.editIncremental(moveChange);
-      }
-    }
+      const finalChange = initialChanges.concat(preDragChanges, dragChanges);
 
-    if (didEdit) {
       const undoInfo = {
         "label": behavior.undoLabel,
         "undoSelection": initialSelection,
         "redoSelection": this.sceneController.selection,
         "location": this.sceneController.getLocation(),
       }
-      await editContext.editFinal(behavior.getFinalChange(), behavior.getRollbackChange(), undoInfo, false);
-    }
-  }
-
-}
-
-
-function getPenToolBehavior(sceneController, initialEvent, path) {
-  const anchorPoint = vector.roundVector(sceneController.selectedGlyphPoint(initialEvent));
-
-  let [contourIndex, contourPointIndex, shouldAppend, isOnCurve] = getAppendIndices(path, sceneController.selection);
-  let behaviorClass = isOnCurve ? AddPointsSingleHandleBehavior : AddPointsBehavior;
-
-  if (contourIndex !== undefined) {
-    const clickedSelection = sceneController.sceneModel.selectionAtPoint(
-      sceneController.localPoint(initialEvent), sceneController.mouseClickMargin
-    );
-    if (isEqualSet(clickedSelection, sceneController.selection)) {
-      if (shouldAppend) {
-        contourPointIndex--;
-      }
-      const point = path.getContourPoint(contourIndex, contourPointIndex);
-      if (point.type) {
-        // off-curve
-        if (path.getNumPointsOfContour(contourIndex) < 2) {
-          // Contour is a single off-curve point, let's not touch it
-          return null;
-        }
-        behaviorClass = DeleteHandleBehavior;
-      } else {
-        // on-curve
-        behaviorClass = AddHandleBehavior;
-      }
-    } else if (clickedSelection.size === 1) {
-      const sel = [...clickedSelection][0];
-      const [tp, pointIndex] = sel.split("/");
-      if (tp === "point") {
-        const [clickedContourIndex, clickedContourPointIndex] = path.getContourAndPointIndex(pointIndex);
-        const numClickedContourPoints = path.getNumPointsOfContour(clickedContourIndex);
-        if (clickedContourPointIndex === 0 || clickedContourPointIndex === numClickedContourPoints - 1) {
-          if (clickedContourIndex === contourIndex) {
-            const clickedPoint = path.getContourPoint(clickedContourIndex, clickedContourPointIndex);
-            const selectedPoint = path.getContourPoint(contourIndex, contourPointIndex - (shouldAppend ? 1 : 0));
-            if (clickedPoint.type || !selectedPoint.type) {
-              behaviorClass = CloseContourNoDragBehavior;
-            } else {
-              behaviorClass = CloseContourDragBehavior;
-            }
-          } else {
-            console.log("connect!!")
-          }
-        }
-      }
-    }
-
-  } else {
-    // Let's add a new contour
-    behaviorClass = AddContourAndPointsBehavior;
-    contourIndex = path.numContours;
-    contourPointIndex = 0;
-  }
-  return new behaviorClass(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint);
-}
-
-
-class BehaviorBase {
-
-  constructor(path) {
-    this.path = path.copy();
-    this._rollbackChanges = [];
-    this._editChanges = [];
-    this._incrementalChanges = [];
-  }
-
-  record(func) {
-    const recorder = new PackedPathChangeRecorder(this.path, this._rollbackChanges, this._editChanges, true);
-    func(recorder);
-  }
-
-  recordIncremental(func) {
-    this._incrementalChanges = [];
-    const recorder = new PackedPathChangeRecorder(this.path, undefined, this._incrementalChanges, true);
-    func(recorder);
-    return consolidateChanges(this._incrementalChanges);
-  }
-
-  dropLastChange() {
-    this._rollbackChanges.splice(-1);
-    this._editChanges.splice(-1);
-  }
-
-  getRollbackChange() {
-    return consolidateChanges([...reversed(this._rollbackChanges)]);
-  }
-
-  getInitialChange() {
-    return consolidateChanges(this._editChanges);
-  }
-
-  getFinalChange() {
-    return consolidateChanges(this._editChanges.concat(this._incrementalChanges));
-  }
-
-}
-
-
-class DeleteHandleBehavior extends BehaviorBase {
-
-  wantDrag = false;
-  wantInitialChange = true;
-  undoLabel = "delete handle";
-
-  constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
-    super(path);
-    const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
-    const currentAnchorIndex = shouldAppend ? pointIndex - 1 : pointIndex + 1;
-    const point = path.getPoint(pointIndex);
-    this.record(recorder => {
-      recorder.setPointType(currentAnchorIndex, VarPackedPath.ON_CURVE);
-      recorder.deletePoint(contourIndex, contourPointIndex);
-    });
-    const newSelectedPointIndex = shouldAppend ? pointIndex - 1 : pointIndex;
-    this._newSelection = new Set([`point/${newSelectedPointIndex}`]);
-  }
-
-  getSelection() {
-    return this._newSelection;
-  }
-
-}
-
-
-class AddPointsBehavior extends BehaviorBase {
-
-  wantDrag = true;
-  wantInitialChange = true;
-  undoLabel = "add point";
-
-  constructor(path, contourIndex, contourPointIndex, shouldAppend, anchorPoint) {
-    super(path);
-    this.contourIndex = contourIndex;
-    this.contourPointIndex = contourPointIndex;
-    this.shouldAppend = shouldAppend;
-    this.anchorPoint = anchorPoint;
-    this.curveType = "cubic";
-
-    this._setupContourChanges(contourIndex);
-
-    this.contourStartPoint = (
-      contourIndex >= path.numContours ?
-      path.numPoints : path.getAbsolutePointIndex(contourIndex, 0, true)
-    );
-
-    this._setupInitialChanges(contourIndex, contourPointIndex, anchorPoint);
-  }
-
-  _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
-    this._newSelection = new Set([`point/${this.contourStartPoint + contourPointIndex}`]);
-    this.record(recorder => recorder.insertPoint(contourIndex, contourPointIndex, anchorPoint));
-  }
-
-  _setupContourChanges(contourIndex) {
-    // Nothing to do
-  }
-
-  _setupDraggingChanges() {
-    // Let's start over, revert the last insertPoint
-    this.dropLastChange();
-  }
-
-  startDragging() {
-    this._setupDraggingChanges();
-
-    const [handleInIndex, handleOutIndex, insertIndices, newPoints] = this._getIndicesAndPoints();
-    this.handleInIndex = handleInIndex;
-    this.handleOutIndex = handleOutIndex;
-
-    this.record(recorder => {
-      for (let i = 0; i < insertIndices.length; i++) {
-        recorder.insertPoint(this.contourIndex, insertIndices[i], newPoints[i]);
-      }
+      return {"change": finalChange, "undoInfo": undoInfo};
     });
 
-    this._newSelection = new Set([`point/${this.contourStartPoint + this.handleOutIndex}`]);
-  }
-
-  _getIndicesAndPoints() {
-    let handleInIndex, handleOutIndex, insertIndices;
-    if (this.shouldAppend) {
-      handleInIndex = this.contourPointIndex;
-      const anchorIndex = this.contourPointIndex + 1;
-      handleOutIndex = this.contourPointIndex + 2;
-      insertIndices = [handleInIndex, anchorIndex, handleOutIndex];
-    } else {
-      handleInIndex = 2;
-      handleOutIndex = 0;
-      insertIndices = [0, 0, 0];
-    }
-    const newPoints = [
-      {...this.anchorPoint, "type": this.curveType},
-      {...this.anchorPoint, "smooth": true},
-      {...this.anchorPoint, "type": this.curveType},
-    ];
-    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
-  }
-
-  getSelection() {
-    return this._newSelection;
-  }
-
-  getIncrementalChange(point, constrain) {
-    const handleOut = getHandle(point, this.anchorPoint, constrain);
-    return this.recordIncremental(recorder => {
-      if (this.handleOutIndex !== undefined) {
-        recorder.setPointPosition(this.contourStartPoint + this.handleOutIndex, handleOut.x, handleOut.y);
-      }
-      if (this.handleInIndex !== undefined) {
-        const handleIn = oppositeHandle(this.anchorPoint, handleOut);
-        recorder.setPointPosition(this.contourStartPoint + this.handleInIndex, handleIn.x, handleIn.y);
-      }
-    });
   }
 
 }
 
 
-class AddPointsSingleHandleBehavior extends AddPointsBehavior {
-
-  _getIndicesAndPoints() {
-    let handleInIndex, handleOutIndex, insertIndices;
-    if (this.shouldAppend) {
-      handleInIndex = undefined;
-      const anchorIndex = this.contourPointIndex;
-      handleOutIndex = this.contourPointIndex + 1;
-      insertIndices = [anchorIndex, handleOutIndex];
-    } else {
-      handleInIndex = undefined;
-      handleOutIndex = 0;
-      insertIndices = [0, 0];
-    }
-    const newPoints = [
-      {...this.anchorPoint},
-      {...this.anchorPoint, "type": this.curveType},
-    ];
-    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
-  }
-
+function getPenToolBehavior(sceneController, initialEvent, instance) {
+  const behavior = new DummyBehavior();
+  return behavior;
 }
 
 
-class AddContourAndPointsBehavior extends AddPointsSingleHandleBehavior {
+class DummyBehavior {
 
-  _setupContourChanges(contourIndex) {
-    this.record(recorder => recorder.insertContour(contourIndex, emptyContour()))
+  undoLabel = "add point(s)"
+
+  constructor() {
+    this.selection = new Set();
   }
 
-}
-
-
-class AddHandleBehavior extends AddPointsBehavior {
-
-  wantInitialChange = false;
-  undoLabel = "add handle";
-
-  _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
-    this._newSelection = new Set();
+  setupContour(instance) {
+    console.log("setupContour", instance);
   }
 
-  _getIndicesAndPoints() {
-    let handleOutIndex, insertIndices;
-    const handleInIndex = undefined;
-    if (this.shouldAppend) {
-      handleOutIndex = this.contourPointIndex + 1;
-      insertIndices = [handleOutIndex];
-    } else {
-      handleOutIndex = 0;
-      insertIndices = [0];
-    }
-    const newPoints = [
-      {...this.anchorPoint, "type": this.curveType},
-    ];
-    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
+  initialPointChange(instance) {
+    console.log("initialPointChange", instance);
   }
 
-}
-
-
-class CloseContourDragBehavior extends AddPointsBehavior {
-
-  wantDrag = true;
-  wantInitialChange = true;
-  undoLabel = "close contour";
-
-  _setupContourChanges(contourIndex) {
-    const path = this.path;
-    this.firstPointIndex = path.getAbsolutePointIndex(contourIndex, 0);
-    this.record(recorder => {
-      recorder.openCloseContour(contourIndex, true);
-      if (!this.shouldAppend) {
-        // going backwards; connect, but make the connecting point the start point
-        const numPoints = path.getNumPointsOfContour(contourIndex);
-        const lastPoint = path.getPoint(this.firstPointIndex + numPoints - 1);
-        recorder.deletePoint(contourIndex, numPoints - 1);
-        recorder.insertPoint(contourIndex, 0, lastPoint);
-      }
-    });
+  setupDrag(instance) {
+    console.log("setupDrag", instance);
   }
 
-  _setupInitialChanges(contourIndex, contourPointIndex, anchorPoint) {
-    this._newSelection = new Set([`point/${this.firstPointIndex}`]);
+  drag(instance, event) {
+    console.log("drag", instance, event);
   }
-
-  _setupDraggingChanges() {
-    // Nothing to do
-  }
-
-  _getIndicesAndPoints() {
-    let handleInIndex, insertIndices;
-    const handleOutIndex = undefined;
-    if (this.shouldAppend) {
-      handleInIndex = this.contourPointIndex;
-      insertIndices = [handleInIndex];
-    } else {
-      handleInIndex = 1;
-      insertIndices = [handleInIndex];
-    }
-    const newPoints = [
-      {...this.anchorPoint, "type": this.curveType},
-    ];
-    return [handleInIndex, handleOutIndex, insertIndices, newPoints];
-  }
-
-}
-
-
-class CloseContourNoDragBehavior extends CloseContourDragBehavior {
-
-  wantDrag = false;
 
 }
 
