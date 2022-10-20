@@ -26,5 +26,13 @@
       <string>support.S.middle</string>
       <string>glyphs.support.S_.middle</string>
     </array>
+    <array>
+      <string>varco_flip</string>
+      <string>glyphs.varco_flip</string>
+    </array>
+    <array>
+      <string>varco_flop</string>
+      <string>glyphs.varco_flop</string>
+    </array>
   </array>
 </plist>

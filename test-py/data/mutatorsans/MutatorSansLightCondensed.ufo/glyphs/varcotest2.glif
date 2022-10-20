@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="varcotest2" format="2">
+  <advance width="500"/>
+  <outline>
+    <contour>
+      <point x="70" y="278" type="line"/>
+      <point x="309" y="278" type="line"/>
+      <point x="309" y="380" type="line"/>
+      <point x="379" y="380" type="line"/>
+      <point x="379" y="664" type="line"/>
+      <point x="204" y="664" type="line"/>
+      <point x="204" y="588" type="line"/>
+      <point x="70" y="588" type="line"/>
+    </contour>
+  </outline>
+  <lib>
+    <dict>
+      <key>com.black-foundry.glyph-designspace</key>
+      <dict>
+        <key>axes</key>
+        <array>
+          <dict>
+            <key>default</key>
+            <integer>0</integer>
+            <key>maximum</key>
+            <integer>100</integer>
+            <key>minimum</key>
+            <integer>0</integer>
+            <key>name</key>
+            <string>flip</string>
+          </dict>
+          <dict>
+            <key>default</key>
+            <integer>0</integer>
+            <key>maximum</key>
+            <integer>100</integer>
+            <key>minimum</key>
+            <integer>0</integer>
+            <key>name</key>
+            <string>flop</string>
+          </dict>
+        </array>
+        <key>sources</key>
+        <array>
+          <dict>
+            <key>location</key>
+            <dict>
+              <key>flip</key>
+              <integer>0</integer>
+              <key>flop</key>
+              <integer>0</integer>
+            </dict>
+          </dict>
+          <dict>
+            <key>layername</key>
+            <string>varco_flip</string>
+            <key>location</key>
+            <dict>
+              <key>flip</key>
+              <integer>100</integer>
+              <key>flop</key>
+              <integer>0</integer>
+            </dict>
+          </dict>
+          <dict>
+            <key>layername</key>
+            <string>varco_flop</string>
+            <key>location</key>
+            <dict>
+              <key>flip</key>
+              <integer>0</integer>
+              <key>flop</key>
+              <integer>100</integer>
+            </dict>
+          </dict>
+        </array>
+      </dict>
+    </dict>
+  </lib>
+</glyph>
