@@ -148,9 +148,7 @@ export function consolidateChanges(changes, prefixPath) {
 
 
 function unnestSingleChildren(change) {
-  const children = change.c?.map(
-    child => unnestSingleChildren(child)
-  ).filter(isNotEmpty);
+  const children = change.c?.map(unnestSingleChildren).filter(isNotEmpty);
 
   if (!children?.length) {
     if (children?.length === 0) {
