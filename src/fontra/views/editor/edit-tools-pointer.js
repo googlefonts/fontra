@@ -1,5 +1,5 @@
 import { applyChange, consolidateChanges } from "../core/changes.js";
-import { PackedPathChangeRecorder } from "../core/change-recorder.js";
+import { recordChanges } from "../core/change-recorder.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
 import { boolInt, modulo } from "../core/utils.js";
@@ -116,57 +116,54 @@ export class PointerTool extends BaseTool {
   }
 
   async handlePointsDoubleClick(pointIndices) {
-    const editContext = await this.sceneController.getGlyphEditContext(this.sceneController);
-    if (!editContext) {
-      return;
-    }
-    const path = editContext.instance.path;
-    const recorder = new PackedPathChangeRecorder(path);
-    for (const pointIndex of pointIndices) {
-      const pointType = path.pointTypes[pointIndex];
-      const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(path, pointIndex);
-      if (
-        ((!prevPoint || !nextPoint) || (!prevPoint.type && !nextPoint.type)) &&
-        pointType !== VarPackedPath.SMOOTH_FLAG
-      ) {
-        continue;
-      }
-      if (pointType === VarPackedPath.ON_CURVE || pointType === VarPackedPath.SMOOTH_FLAG) {
-        const newPointType = (
-          pointType === VarPackedPath.ON_CURVE ?
-          VarPackedPath.SMOOTH_FLAG : VarPackedPath.ON_CURVE
-        )
-        recorder.setPointType(pointIndex, newPointType);
-        if (newPointType === VarPackedPath.SMOOTH_FLAG) {
-          const anchorPoint = path.getPoint(pointIndex);
-          if (prevPoint?.type && nextPoint?.type) {
-            // Fix-up both incoming and outgoing handles
-            const [newPrevPoint, newNextPoint] = alignHandles(prevPoint, anchorPoint, nextPoint);
-            recorder.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
-            recorder.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
-          } else if (prevPoint?.type) {
-            // Fix-up incoming handle
-            const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
-            recorder.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
-          } else if (nextPoint?.type) {
-            // Fix-up outgoing handle
-            const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
-            recorder.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
+    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
+      const changes = recordChanges(instance, instance => {
+        const path = instance.path;
+        for (const pointIndex of pointIndices) {
+          const pointType = path.pointTypes[pointIndex];
+          const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(path, pointIndex);
+          if (
+            ((!prevPoint || !nextPoint) || (!prevPoint.type && !nextPoint.type)) &&
+            pointType !== VarPackedPath.SMOOTH_FLAG
+          ) {
+            continue;
+          }
+          if (pointType === VarPackedPath.ON_CURVE || pointType === VarPackedPath.SMOOTH_FLAG) {
+            const newPointType = (
+              pointType === VarPackedPath.ON_CURVE ?
+              VarPackedPath.SMOOTH_FLAG : VarPackedPath.ON_CURVE
+            )
+            path.pointTypes[pointIndex] = newPointType;
+            if (newPointType === VarPackedPath.SMOOTH_FLAG) {
+              const anchorPoint = path.getPoint(pointIndex);
+              if (prevPoint?.type && nextPoint?.type) {
+                // Fix-up both incoming and outgoing handles
+                const [newPrevPoint, newNextPoint] = alignHandles(prevPoint, anchorPoint, nextPoint);
+                path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
+                path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
+              } else if (prevPoint?.type) {
+                // Fix-up incoming handle
+                const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
+                path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
+              } else if (nextPoint?.type) {
+                // Fix-up outgoing handle
+                const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
+                path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
+              }
+            }
           }
         }
+      });
+      if (changes.hasChange) {
+        const undoInfo = {
+          "label": "toggle smooth",
+          "undoSelection": this.sceneController.selection,
+          "redoSelection": this.sceneController.selection,
+          "location": this.sceneController.getLocation(),
+        }
+        return {"change": changes, "undoInfo": undoInfo, "broadcast": true};
       }
-    }
-
-    if (recorder.hasChange) {
-      const undoInfo = {
-        "label": "toggle smooth",
-        "undoSelection": this.sceneController.selection,
-        "redoSelection": this.sceneController.selection,
-        "location": this.sceneController.getLocation(),
-      }
-      applyChange(editContext.instance, recorder.editChange);
-      await editContext.editFinal(recorder.editChange, recorder.rollbackChange, undoInfo, true);
-    }
+    });
   }
 
   async handleRectSelect(eventStream, initialEvent, initialSelection) {
