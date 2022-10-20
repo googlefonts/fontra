@@ -277,16 +277,18 @@ def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -
     glyph.path.drawPoints(pen)
     variableComponents = []
     for component in glyph.components:
-        if not component.location:
-            pen.addComponent(
-                component.name,
-                cleanAffine(makeAffineTransform(component.transformation)),
-            )
-        else:
+        if component.location:
+            # It's a variable component
             varCoDict = {"base": component.name, "location": component.location}
             if component.transformation != Transformation():
                 varCoDict["transformation"] = asdict(component.transformation)
             variableComponents.append(varCoDict)
+        else:
+            # It's a regular component
+            pen.addComponent(
+                component.name,
+                cleanAffine(makeAffineTransform(component.transformation)),
+            )
 
     if variableComponents:
         layerGlyph.lib[VARIABLE_COMPONENTS_LIB_KEY] = variableComponents
