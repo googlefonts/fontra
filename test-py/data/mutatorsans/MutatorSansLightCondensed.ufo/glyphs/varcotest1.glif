@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<glyph name="varcotest1" format="2">
+  <advance width="500"/>
+  <outline>
+  </outline>
+  <lib>
+    <dict>
+      <key>com.black-foundry.variable-components</key>
+      <array>
+        <dict>
+          <key>base</key>
+          <string>A</string>
+          <key>location</key>
+          <dict>
+            <key>weight</key>
+            <integer>500</integer>
+          </dict>
+        </dict>
+      </array>
+    </dict>
+  </lib>
+</glyph>

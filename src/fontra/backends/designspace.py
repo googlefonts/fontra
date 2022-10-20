@@ -12,7 +12,14 @@ from fontTools.ufoLib import UFOReader
 from fontTools.ufoLib.glifLib import GlyphSet
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
-from ..core.classes import Layer, StaticGlyph, Source, Transformation, VariableGlyph
+from ..core.classes import (
+    Component,
+    Layer,
+    StaticGlyph,
+    Source,
+    Transformation,
+    VariableGlyph,
+)
 from ..core.packedpath import PackedPathPointPen
 
 
@@ -117,7 +124,7 @@ class DesignspaceBackend:
                 continue
             staticGlyph, ufoGlyph = serializeGlyph(glyphSet, glyphName)
             if glyphSet == self.defaultSourceGlyphSet:
-                glyph.unicodes = ufoGlyph.unicodes
+                glyph.unicodes = list(ufoGlyph.unicodes)
             layers.append(Layer(fontraLayerName, staticGlyph))
         glyph.layers = layers
 
@@ -181,7 +188,7 @@ class UFOBackend:
         glyph.sources = [
             Source(name=self.layerName, location={}, layerName=self.layerName)
         ]
-        glyph.unicodes = sourceGlyph.unicodes
+        glyph.unicodes = list(sourceGlyph.unicodes)
         glyph.layers = layers
         return glyph
 
@@ -233,14 +240,28 @@ def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
 
 def serializeGlyph(glyphSet, glyphName):
     glyph = UFOGlyph()
+    glyph.lib = {}
     pen = PackedPathPointPen()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
+    components = [*pen.components] + unpackVariableComponents(glyph.lib)
     staticGlyph = StaticGlyph(
-        path=pen.getPath(), components=pen.components, xAdvance=glyph.width
+        path=pen.getPath(), components=components, xAdvance=glyph.width
     )
     # TODO: anchors
     # TODO: yAdvance, verticalOrigin
     return staticGlyph, glyph
+
+
+def unpackVariableComponents(lib):
+    key = "com.black-foundry.variable-components"
+    components = []
+    for componentDict in lib.get(key, ()):
+        glyphName = componentDict["base"]
+        transformationDict = componentDict.get("transformation", {})
+        transformation = Transformation(**transformationDict)
+        location = componentDict.get("location", {})
+        components.append(Component(glyphName, transformation, location))
+    return components
 
 
 def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -> None:

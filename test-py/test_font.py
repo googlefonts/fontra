@@ -432,6 +432,53 @@ getGlyphTestData = [
         },
     ),
     (
+        "designspace",
+        {
+            "name": "varcotest1",
+            "unicodes": [],
+            "axes": [],
+            "sources": [
+                {
+                    "name": "LightCondensed",
+                    "location": {"weight": 150.0, "width": 0.0},
+                    "layerName": "LightCondensed/foreground",
+                },
+            ],
+            "layers": [
+                {
+                    "name": "LightCondensed/foreground",
+                    "glyph": {
+                        "path": {
+                            "contourInfo": [],
+                            "coordinates": [],
+                            "pointTypes": [],
+                        },
+                        "components": [
+                            {
+                                "name": "A",
+                                "location": {"weight": 500},
+                                "transformation": {
+                                    "translateX": 0,
+                                    "translateY": 0,
+                                    "rotation": 0,
+                                    "scaleX": 1,
+                                    "scaleY": 1,
+                                    "skewX": 0,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                },
+                            },
+                        ],
+                        "xAdvance": 500,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
+                    },
+                },
+            ],
+        },
+    ),
+    (
         "ttf",
         {
             "name": "period",
@@ -652,8 +699,8 @@ def getTestFont(backendName):
 
 
 getGlyphNamesTestData = [
-    ("designspace", 49, ["A", "Aacute", "Adieresis", "B"]),
-    ("ufo", 49, ["A", "Aacute", "Adieresis", "B"]),
+    ("designspace", 50, ["A", "Aacute", "Adieresis", "B"]),
+    ("ufo", 50, ["A", "Aacute", "Adieresis", "B"]),
 ]
 
 
@@ -670,8 +717,8 @@ async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
 
 
 getReverseCmapTestData = [
-    ("designspace", 49, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
-    ("ufo", 49, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
+    ("designspace", 50, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
+    ("ufo", 50, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
 ]
 
 
