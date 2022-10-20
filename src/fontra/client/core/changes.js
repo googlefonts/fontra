@@ -1,60 +1,97 @@
 export class ChangeCollector {
 
-  constructor() {
+  constructor(parentCollector, path) {
+    this._parentCollector = parentCollector;
+    this._path = path;
+    this._forwardChanges = undefined;
+    this._rollbackChanges = undefined;
+  }
+
+  static _fromChangeArrays(forwardChanges, rollbackChanges) {
+    const collector = new ChangeCollector();
+    collector._forwardChanges = forwardChanges;
+    collector._rollbackChanges = rollbackChanges;
+    return collector;
+  }
+
+  _ensureForwardChanges() {
+    if (this._forwardChanges) {
+      return;
+    }
     this._forwardChanges = [];
+    if (this._parentCollector) {
+      this._parentCollector._ensureForwardChanges();
+      if (equalPath(this._path, lastItem(this._parentCollector._forwardChanges)?.p)) {
+        this._forwardChanges = lastItem(this._parentCollector._forwardChanges).c;
+      } else {
+        this._parentCollector._forwardChanges.push({p: this._path, c: this._forwardChanges});
+      }
+    }
+  }
+
+  _ensureRollbackChanges() {
+    if (this._rollbackChanges) {
+      return;
+    }
     this._rollbackChanges = [];
+    if (this._parentCollector) {
+      this._parentCollector._ensureRollbackChanges();
+      if (equalPath(this._path, this._parentCollector._rollbackChanges[0]?.p)) {
+        this._rollbackChanges = this._parentCollector._rollbackChanges[0].c;
+      } else {
+        this._parentCollector._rollbackChanges.splice(0, 0, {p: this._path, c: this._rollbackChanges});
+      }
+    }
   }
 
   get hasChange() {
-    return !!this._forwardChanges.length;
+    return !!this._forwardChanges?.length;
   }
 
   get change() {
-    return consolidateChanges(this._forwardChanges);
+    return consolidateChanges(this._forwardChanges || {});
   }
 
   get hasRollbackChange() {
-    return !!this._rollbackChanges.length;
+    return !!this._rollbackChanges?.length;
   }
 
   get rollbackChange() {
-    return consolidateChanges(this._rollbackChanges);
+    return consolidateChanges(this._rollbackChanges || {});
   }
 
   addChange(func, ...args) {
+    this._ensureForwardChanges();
     this._forwardChanges.push({f: func, a: args});
   }
 
   addRollbackChange(func, ...args) {
+    this._ensureRollbackChanges();
     this._rollbackChanges.splice(0, 0, {f: func, a: args});
   }
 
   subCollector(...path) {
-    const sub = new ChangeCollector();
-    if (equalPath(path, lastItem(this._forwardChanges)?.p)) {
-      sub._forwardChanges = lastItem(this._forwardChanges).c;
-    } else {
-      this._forwardChanges.push({p: path, c: sub._forwardChanges});
-    }
-    if (equalPath(path, this._rollbackChanges[0]?.p)) {
-      sub._rollbackChanges = this._rollbackChanges[0].c;
-    } else {
-      this._rollbackChanges.splice(0, 0, {p: path, c: sub._rollbackChanges});
-    }
-    return sub;
+    return new ChangeCollector(this, path);
   }
 
   concat(...others) {
-    const combined = new ChangeCollector();
-    const forwardChanges = combined._forwardChanges;
-    const rollbackChanges = combined._rollbackChanges;
-    forwardChanges.push(...this._forwardChanges);
-    rollbackChanges.push(...this._rollbackChanges);
-    for (const other of others) {
-      forwardChanges.push(...other._forwardChanges);
-      rollbackChanges.splice(0, 0, ...other._rollbackChanges);
+    const forwardChanges = [];
+    const rollbackChanges = [];
+    if (this.hasChange) {
+      forwardChanges.push(...this._forwardChanges);
     }
-    return combined;
+    if (this.hasRollbackChange) {
+      rollbackChanges.push(...this._rollbackChanges);
+    }
+    for (const other of others) {
+      if (other.hasChange) {
+        forwardChanges.push(...other._forwardChanges);
+      }
+      if (other.hasRollbackChange) {
+        rollbackChanges.splice(0, 0, ...other._rollbackChanges);
+      }
+    }
+    return ChangeCollector._fromChangeArrays(forwardChanges, rollbackChanges);
   }
 
 }
