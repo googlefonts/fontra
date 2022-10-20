@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from datetime import datetime
 from functools import cached_property
 import logging
@@ -24,6 +25,9 @@ from ..core.packedpath import PackedPathPointPen
 
 
 logger = logging.getLogger(__name__)
+
+
+VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
 
 
 class DesignspaceBackend:
@@ -253,9 +257,8 @@ def serializeGlyph(glyphSet, glyphName):
 
 
 def unpackVariableComponents(lib):
-    key = "com.black-foundry.variable-components"
     components = []
-    for componentDict in lib.get(key, ()):
+    for componentDict in lib.get(VARIABLE_COMPONENTS_LIB_KEY, ()):
         glyphName = componentDict["base"]
         transformationDict = componentDict.get("transformation", {})
         transformation = Transformation(**transformationDict)
@@ -266,15 +269,30 @@ def unpackVariableComponents(lib):
 
 def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -> None:
     layerGlyph = UFOGlyph()
+    layerGlyph.lib = {}
     glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     pen = RecordingPointPen()
     layerGlyph.width = glyph.xAdvance
     layerGlyph.height = glyph.yAdvance
     glyph.path.drawPoints(pen)
+    variableComponents = []
     for component in glyph.components:
-        pen.addComponent(
-            component.name, cleanAffine(makeAffineTransform(component.transformation))
-        )
+        if not component.location:
+            pen.addComponent(
+                component.name,
+                cleanAffine(makeAffineTransform(component.transformation)),
+            )
+        else:
+            varCoDict = {"base": component.name, "location": component.location}
+            if component.transformation != Transformation():
+                varCoDict["transformation"] = asdict(component.transformation)
+            variableComponents.append(varCoDict)
+
+    if variableComponents:
+        layerGlyph.lib[VARIABLE_COMPONENTS_LIB_KEY] = variableComponents
+    else:
+        layerGlyph.lib.pop(VARIABLE_COMPONENTS_LIB_KEY, None)
+
     glyphSet.writeGlyph(
         glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
     )

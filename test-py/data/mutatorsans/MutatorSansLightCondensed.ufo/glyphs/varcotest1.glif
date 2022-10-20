@@ -15,6 +15,27 @@
             <key>weight</key>
             <integer>500</integer>
           </dict>
+          <key>transformation</key>
+          <dict>
+            <key>rotation</key>
+            <integer>-10</integer>
+            <key>scaleX</key>
+            <integer>1</integer>
+            <key>scaleY</key>
+            <integer>1</integer>
+            <key>skewX</key>
+            <integer>0</integer>
+            <key>skewY</key>
+            <integer>0</integer>
+            <key>tCenterX</key>
+            <integer>250</integer>
+            <key>tCenterY</key>
+            <integer>300</integer>
+            <key>translateX</key>
+            <integer>0</integer>
+            <key>translateY</key>
+            <integer>0</integer>
+          </dict>
         </dict>
       </array>
     </dict>
