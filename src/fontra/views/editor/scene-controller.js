@@ -309,6 +309,41 @@ export class SceneController {
     return this.sceneModel.getSceneBounds();
   }
 
+  async editInstance(editFunc, senderID) {
+    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    if (!glyphController.canEdit) {
+      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
+      // TODO: dialog with options:
+      // - go to closest source
+      // - insert new source here
+      // - cancel
+      return null;
+    }
+    const editContext = await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
+    const sendIncrementalChange = async (change, mayDrop = false) => {
+      if (change.hasChange) {
+        if (mayDrop) {
+          await editContext.editIncrementalMayDrop(change.change);
+        } else {
+          await editContext.editIncremental(change.change);
+        }
+      }
+    };
+    // editContext.editBegin();
+    let result;
+    try {
+      result = await editFunc(sendIncrementalChange, editContext.instance);
+    } catch(error) {
+      throw error;
+    }
+    if (result) {
+      const {"change": change, "undoInfo": undoInfo, "broadcast": broadcast} = result;
+      editContext.editFinal(change.change, change.rollbackChange, undoInfo, broadcast);
+    } else {
+      // editContext.editCancel();
+    }
+  }
+
   async getGlyphEditContext(senderID) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
