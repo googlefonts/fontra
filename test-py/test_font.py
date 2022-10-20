@@ -464,7 +464,7 @@ getGlyphTestData = [
                                     "scaleX": 1,
                                     "scaleY": 1,
                                     "skewX": 0,
-                                    "skewY": 0,
+                                    "skewY": 20,
                                     "tCenterX": 250,
                                     "tCenterY": 300,
                                 },

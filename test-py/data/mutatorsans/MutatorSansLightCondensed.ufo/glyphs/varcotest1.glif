@@ -26,7 +26,7 @@
             <key>skewX</key>
             <integer>0</integer>
             <key>skewY</key>
-            <integer>0</integer>
+            <integer>20</integer>
             <key>tCenterX</key>
             <integer>250</integer>
             <key>tCenterY</key>
