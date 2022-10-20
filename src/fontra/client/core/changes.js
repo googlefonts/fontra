@@ -1,8 +1,8 @@
 export class ChangeCollector {
 
-  constructor(forwardChanges, rollbackChanges) {
-    this._forwardChanges = forwardChanges || [];
-    this._rollbackChanges = rollbackChanges || [];
+  constructor() {
+    this._forwardChanges = [];
+    this._rollbackChanges = [];
   }
 
   get hasChange() {
@@ -45,13 +45,16 @@ export class ChangeCollector {
   }
 
   concat(...others) {
-    const forwardChanges = [...this._forwardChanges];
-    const rollbackChanges = [...this._rollbackChanges];
+    const combined = new ChangeCollector();
+    const forwardChanges = combined._forwardChanges;
+    const rollbackChanges = combined._rollbackChanges;
+    forwardChanges.push(...this._forwardChanges);
+    rollbackChanges.push(...this._rollbackChanges);
     for (const other of others) {
       forwardChanges.push(...other._forwardChanges);
       rollbackChanges.splice(0, 0, ...other._rollbackChanges);
     }
-    return new ChangeCollector(forwardChanges, rollbackChanges);
+    return combined;
   }
 
 }
