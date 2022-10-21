@@ -1,7 +1,7 @@
 import { applyChange } from "../core/changes.js";
+import { recordChanges, InstanceChangeRecorder, PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
-import { InstanceChangeRecorder, PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
@@ -389,36 +389,35 @@ export class SceneController {
   }
 
   async reverseSelectedContoursDirection() {
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-    const path = editContext.instance.path;
-    const {point: pointSelection} = splitSelection(this.selection);
-    const selectedContours = getSelectedContours(path, pointSelection);
-    const newSelection = reversePointSelection(path, pointSelection);
+    await this.editInstance((sendIncrementalChange, instance) => {
+      const path = instance.path;
+      const {point: pointSelection} = splitSelection(this.selection);
+      const selectedContours = getSelectedContours(path, pointSelection);
+      const newSelection = reversePointSelection(path, pointSelection);
 
-    const recorder = new PackedPathChangeRecorder(path);
-    for (const contourIndex of selectedContours) {
-      const contour = path.getUnpackedContour(contourIndex);
-      contour.points.reverse();
-      if (contour.isClosed) {
-        const [lastPoint] = contour.points.splice(-1, 1);
-        contour.points.splice(0, 0, lastPoint);
+      const changes = recordChanges(instance, instance => {
+        for (const contourIndex of selectedContours) {
+          const contour = path.getUnpackedContour(contourIndex);
+          contour.points.reverse();
+          if (contour.isClosed) {
+            const [lastPoint] = contour.points.splice(-1, 1);
+            contour.points.splice(0, 0, lastPoint);
+          }
+          const packedContour = packContour(contour);
+          instance.path.deleteContour(contourIndex);
+          instance.path.insertContour(contourIndex, packedContour);
+        }
+      });
+
+      this.selection = newSelection;
+      const undoInfo = {
+        "label": "Reverse Contour Direction",
+        "undoSelection": this.selection,
+        "redoSelection": newSelection,
+        "location": this.getLocation(),
       }
-      const packedContour = packContour(contour);
-      recorder.deleteContour(contourIndex);
-      recorder.insertContour(contourIndex, packedContour);
-    }
-    const undoInfo = {
-      "label": "Reverse Contour Direction",
-      "undoSelection": this.selection,
-      "redoSelection": newSelection,
-      "location": this.getLocation(),
-    }
-    this.selection = newSelection;
-    applyChange(editContext.instance, recorder.editChange);
-    await editContext.editFinal(recorder.editChange, recorder.rollbackChange, undoInfo, true);
+      return {"change": changes, "undoInfo": undoInfo, "broadcast": true};
+    });
   }
 
   async setStartPoint() {
