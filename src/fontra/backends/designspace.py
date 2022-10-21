@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from datetime import datetime
 from functools import cached_property
 import logging
@@ -12,11 +13,23 @@ from fontTools.ufoLib import UFOReader
 from fontTools.ufoLib.glifLib import GlyphSet
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
-from ..core.classes import Layer, StaticGlyph, Source, Transformation, VariableGlyph
+from ..core.classes import (
+    Component,
+    Layer,
+    LocalAxis,
+    StaticGlyph,
+    Source,
+    Transformation,
+    VariableGlyph,
+)
 from ..core.packedpath import PackedPathPointPen
 
 
 logger = logging.getLogger(__name__)
+
+
+VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
+GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
 
 
 class DesignspaceBackend:
@@ -54,9 +67,10 @@ class DesignspaceBackend:
         return fontInfo
 
     def loadSources(self):
-        fontraLayerNames = {}
-        self.ufoReaders = {}
-        self.ufoGlyphSets = {}
+        self.ufoReaders = {}  # keyed by path
+        self.ufoGlyphSets = {}  # keyed by fontraLayerName
+        self.fontraLayerNames = {}  # key: (path, ufoLayerName), value: fontraLayerName
+        self.ufoLayers = {}  # key: fontraLayerName, value: (path, ufoLayerName)
         self.globalSources = []
         self.defaultSourceGlyphSet = None
         makeUniqueStyleName = uniqueNameMaker()
@@ -68,10 +82,11 @@ class DesignspaceBackend:
                 reader = self.ufoReaders[path] = UFOReader(path)
             for ufoLayerName in reader.getLayerNames():
                 key = (path, ufoLayerName)
-                fontraLayerName = fontraLayerNames.get(key)
+                fontraLayerName = self.fontraLayerNames.get(key)
                 if fontraLayerName is None:
                     fontraLayerName = f"{sourceStyleName}/{ufoLayerName}"
-                    fontraLayerNames[key] = fontraLayerName
+                    self.fontraLayerNames[key] = fontraLayerName
+                    self.ufoLayers[fontraLayerName] = key
                     self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
                         ufoLayerName
                     )
@@ -80,7 +95,7 @@ class DesignspaceBackend:
                 if source.layerName is not None
                 else reader.getDefaultLayerName()
             )
-            fontraLayerName = fontraLayerNames[(path, sourceLayerName)]
+            fontraLayerName = self.fontraLayerNames[(path, sourceLayerName)]
             sourceDict = dict(
                 location=source.location,
                 name=sourceStyleName,
@@ -117,11 +132,43 @@ class DesignspaceBackend:
                 continue
             staticGlyph, ufoGlyph = serializeGlyph(glyphSet, glyphName)
             if glyphSet == self.defaultSourceGlyphSet:
-                glyph.unicodes = ufoGlyph.unicodes
+                localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
+                if localDS is not None:
+                    glyph.axes, glyph.sources = self._unpackLocalDesignSpace(
+                        localDS, *self.ufoLayers[fontraLayerName]
+                    )
+                glyph.unicodes = list(ufoGlyph.unicodes)
             layers.append(Layer(fontraLayerName, staticGlyph))
         glyph.layers = layers
 
         return glyph
+
+    def _unpackLocalDesignSpace(self, dsDict, ufoPath, ufoLayerName):
+        axes = [
+            LocalAxis(
+                name=axis["name"],
+                minValue=axis["minimum"],
+                defaultValue=axis["default"],
+                maxValue=axis["maximum"],
+            )
+            for axis in dsDict["axes"]
+        ]
+        sources = []
+        for source in dsDict["sources"]:
+            fileName = source.get("filename")
+            if fileName is not None:
+                raise NotImplemented
+                # ufoPath = ...
+            ufoLayerName = source.get("layername", ufoLayerName)
+            fontraLayerName = self.fontraLayerNames[ufoPath, ufoLayerName]
+            sources.append(
+                Source(
+                    name=fontraLayerName,
+                    location=source["location"],
+                    layerName=fontraLayerName,
+                )
+            )
+        return axes, sources
 
     async def putGlyph(self, glyphName, glyph):
         modTimes = set()
@@ -181,7 +228,7 @@ class UFOBackend:
         glyph.sources = [
             Source(name=self.layerName, location={}, layerName=self.layerName)
         ]
-        glyph.unicodes = sourceGlyph.unicodes
+        glyph.unicodes = list(sourceGlyph.unicodes)
         glyph.layers = layers
         return glyph
 
@@ -233,27 +280,57 @@ def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
 
 def serializeGlyph(glyphSet, glyphName):
     glyph = UFOGlyph()
+    glyph.lib = {}
     pen = PackedPathPointPen()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
+    components = [*pen.components] + unpackVariableComponents(glyph.lib)
     staticGlyph = StaticGlyph(
-        path=pen.getPath(), components=pen.components, xAdvance=glyph.width
+        path=pen.getPath(), components=components, xAdvance=glyph.width
     )
     # TODO: anchors
     # TODO: yAdvance, verticalOrigin
     return staticGlyph, glyph
 
 
+def unpackVariableComponents(lib):
+    components = []
+    for componentDict in lib.get(VARIABLE_COMPONENTS_LIB_KEY, ()):
+        glyphName = componentDict["base"]
+        transformationDict = componentDict.get("transformation", {})
+        transformation = Transformation(**transformationDict)
+        location = componentDict.get("location", {})
+        components.append(Component(glyphName, transformation, location))
+    return components
+
+
 def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -> None:
     layerGlyph = UFOGlyph()
+    layerGlyph.lib = {}
     glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     pen = RecordingPointPen()
     layerGlyph.width = glyph.xAdvance
     layerGlyph.height = glyph.yAdvance
     glyph.path.drawPoints(pen)
+    variableComponents = []
     for component in glyph.components:
-        pen.addComponent(
-            component.name, cleanAffine(makeAffineTransform(component.transformation))
-        )
+        if component.location:
+            # It's a variable component
+            varCoDict = {"base": component.name, "location": component.location}
+            if component.transformation != Transformation():
+                varCoDict["transformation"] = asdict(component.transformation)
+            variableComponents.append(varCoDict)
+        else:
+            # It's a regular component
+            pen.addComponent(
+                component.name,
+                cleanAffine(makeAffineTransform(component.transformation)),
+            )
+
+    if variableComponents:
+        layerGlyph.lib[VARIABLE_COMPONENTS_LIB_KEY] = variableComponents
+    else:
+        layerGlyph.lib.pop(VARIABLE_COMPONENTS_LIB_KEY, None)
+
     glyphSet.writeGlyph(
         glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
     )

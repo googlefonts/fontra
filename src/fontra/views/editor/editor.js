@@ -828,14 +828,24 @@ export class EditorController {
           });
         }
         const baseGlyph = await this.fontController.getGlyph(component.name);
-        if (baseGlyph?.axes && baseGlyph.axes.length && component.location) {
-          formContents.push({"type": "header", "label": "Location"});
-          for (const axis of baseGlyph.axes) {
+        if (baseGlyph && component.location) {
+          const locationItems = [];
+          const axes = Object.fromEntries(baseGlyph.axes.map(axis => [axis.name, axis]));
+          // Add global axes, if in location and not in baseGlyph.axes
+          // TODO: this needs more thinking, as the axes of *nested* components
+          // may also be of interest. Also: we need to be able to *add* such a value
+          // to component.location.
+          for (const axis of this.fontController.globalAxes) {
+            if (axis.name in component.location && !(axis.name in axes)) {
+              axes[axis.name] = axis;
+            }
+          }
+          for (const axis of Object.values(axes)) {
             let value = component.location[axis.name];
             if (value === undefined) {
               value = axis.defaultValue;
             }
-            formContents.push({
+            locationItems.push({
               "type": "edit-number-slider",
               "key": componentKey("location", axis.name),
               "label": axis.name,
@@ -844,6 +854,10 @@ export class EditorController {
               "maxValue": axis.maxValue,
               "disabled": !canEdit,
             });
+          }
+          if (locationItems.length) {
+            formContents.push({"type": "header", "label": "Location"});
+            formContents.push(...locationItems);
           }
         }
       }

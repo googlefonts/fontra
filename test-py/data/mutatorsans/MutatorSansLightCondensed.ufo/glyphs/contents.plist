@@ -100,5 +100,9 @@
     <string>semicolon.glif</string>
     <key>space</key>
     <string>space.glif</string>
+    <key>varcotest1</key>
+    <string>varcotest1.glif</string>
+    <key>varcotest2</key>
+    <string>varcotest2.glif</string>
   </dict>
 </plist>

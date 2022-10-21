@@ -432,6 +432,206 @@ getGlyphTestData = [
         },
     ),
     (
+        "designspace",
+        {
+            "name": "varcotest1",
+            "unicodes": [],
+            "axes": [],
+            "sources": [
+                {
+                    "name": "LightCondensed",
+                    "location": {"weight": 150.0, "width": 0.0},
+                    "layerName": "LightCondensed/foreground",
+                },
+            ],
+            "layers": [
+                {
+                    "name": "LightCondensed/foreground",
+                    "glyph": {
+                        "path": {
+                            "contourInfo": [],
+                            "coordinates": [],
+                            "pointTypes": [],
+                        },
+                        "components": [
+                            {
+                                "name": "A",
+                                "location": {"weight": 500},
+                                "transformation": {
+                                    "translateX": 0,
+                                    "translateY": 0,
+                                    "rotation": -10,
+                                    "scaleX": 1,
+                                    "scaleY": 1,
+                                    "skewX": 0,
+                                    "skewY": 20,
+                                    "tCenterX": 250,
+                                    "tCenterY": 300,
+                                },
+                            },
+                            {
+                                "name": "varcotest2",
+                                "location": {"flip": 70, "flop": 30},
+                                "transformation": {
+                                    "translateX": 527,
+                                    "translateY": 410,
+                                    "rotation": 0,
+                                    "scaleX": 0.5,
+                                    "scaleY": 0.5,
+                                    "skewX": -20,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                },
+                            },
+                            {
+                                "name": "varcotest2",
+                                "location": {"flip": 20, "flop": 80},
+                                "transformation": {
+                                    "translateX": 627,
+                                    "translateY": -175,
+                                    "rotation": 10,
+                                    "scaleX": 0.75,
+                                    "scaleY": 0.75,
+                                    "skewX": 0,
+                                    "skewY": 20,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                },
+                            },
+                        ],
+                        "xAdvance": 900,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
+                    },
+                },
+            ],
+        },
+    ),
+    (
+        "designspace",
+        {
+            "name": "varcotest2",
+            "unicodes": [],
+            "axes": [
+                {"defaultValue": 0, "maxValue": 100, "minValue": 0, "name": "flip"},
+                {"defaultValue": 0, "maxValue": 100, "minValue": 0, "name": "flop"},
+            ],
+            "sources": [
+                {
+                    "layerName": "LightCondensed/foreground",
+                    "location": {"flip": 0, "flop": 0},
+                    "name": "LightCondensed/foreground",
+                },
+                {
+                    "layerName": "LightCondensed/varco_flip",
+                    "location": {"flip": 100, "flop": 0},
+                    "name": "LightCondensed/varco_flip",
+                },
+                {
+                    "layerName": "LightCondensed/varco_flop",
+                    "location": {"flip": 0, "flop": 100},
+                    "name": "LightCondensed/varco_flop",
+                },
+            ],
+            "layers": [
+                {
+                    "glyph": {
+                        "components": [],
+                        "path": {
+                            "contourInfo": [{"endPoint": 7, "isClosed": True}],
+                            "coordinates": [
+                                70,
+                                278,
+                                309,
+                                278,
+                                309,
+                                380,
+                                379,
+                                380,
+                                379,
+                                664,
+                                204,
+                                664,
+                                204,
+                                588,
+                                70,
+                                588,
+                            ],
+                            "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
+                        },
+                        "verticalOrigin": None,
+                        "xAdvance": 500,
+                        "yAdvance": None,
+                    },
+                    "name": "LightCondensed/foreground",
+                },
+                {
+                    "glyph": {
+                        "components": [],
+                        "path": {
+                            "contourInfo": [{"endPoint": 7, "isClosed": True}],
+                            "coordinates": [
+                                70,
+                                278,
+                                452,
+                                278,
+                                452,
+                                380,
+                                522,
+                                380,
+                                522,
+                                664,
+                                204,
+                                664,
+                                204,
+                                588,
+                                70,
+                                588,
+                            ],
+                            "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
+                        },
+                        "verticalOrigin": None,
+                        "xAdvance": 500,
+                        "yAdvance": None,
+                    },
+                    "name": "LightCondensed/varco_flip",
+                },
+                {
+                    "glyph": {
+                        "components": [],
+                        "path": {
+                            "contourInfo": [{"endPoint": 7, "isClosed": True}],
+                            "coordinates": [
+                                70,
+                                37,
+                                309,
+                                37,
+                                309,
+                                139,
+                                379,
+                                139,
+                                379,
+                                664,
+                                204,
+                                664,
+                                204,
+                                588,
+                                70,
+                                588,
+                            ],
+                            "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
+                        },
+                        "verticalOrigin": None,
+                        "xAdvance": 500,
+                        "yAdvance": None,
+                    },
+                    "name": "LightCondensed/varco_flop",
+                },
+            ],
+        },
+    ),
+    (
         "ttf",
         {
             "name": "period",
@@ -652,8 +852,8 @@ def getTestFont(backendName):
 
 
 getGlyphNamesTestData = [
-    ("designspace", 49, ["A", "Aacute", "Adieresis", "B"]),
-    ("ufo", 49, ["A", "Aacute", "Adieresis", "B"]),
+    ("designspace", 51, ["A", "Aacute", "Adieresis", "B"]),
+    ("ufo", 51, ["A", "Aacute", "Adieresis", "B"]),
 ]
 
 
@@ -670,8 +870,8 @@ async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
 
 
 getReverseCmapTestData = [
-    ("designspace", 49, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
-    ("ufo", 49, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
+    ("designspace", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
+    ("ufo", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
 ]
 
 
