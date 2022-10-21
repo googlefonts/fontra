@@ -111,9 +111,6 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
           "setupDrag": insertHandleOut,
           "drag": dragHandle,
         };
-        behaviorFuncs.setup = [setupExistingAnchorPoint];
-        behaviorFuncs.setupDrag = insertHandleOut;
-        behaviorFuncs.drag = dragHandle;
       }
     } else if (clickedSelection.size === 1) {
       const sel = [...clickedSelection][0];
