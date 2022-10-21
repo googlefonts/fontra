@@ -5,7 +5,7 @@ import { MouseTracker } from "../core/mouse-tracker.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
-import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
+import { arrowKeyDeltas, hasShortcutModifierKey, reversed } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 
@@ -488,8 +488,9 @@ export class SceneController {
           path.appendContour(contour);
         }
         components.push(...newComponents);
-        componentSelection.reverse();
-        for (const componentIndex of componentSelection) {
+
+        // Next, delete the components we decomposed
+        for (const componentIndex of reversed(componentSelection)) {
           components.splice(componentIndex, 1);
         }
       });
