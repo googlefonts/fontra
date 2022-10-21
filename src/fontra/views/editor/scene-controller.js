@@ -485,7 +485,7 @@ export class SceneController {
         for (const contour of newPath.iterContours()) {
           // Hm, rounding should be optional
           // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-          path.insertContour(path.contourInfo.length, contour);
+          path.appendContour(contour);
         }
         components.push(...newComponents);
         componentSelection.reverse();
