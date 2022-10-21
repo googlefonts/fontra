@@ -481,13 +481,11 @@ export class SceneController {
 
   async decomposeSelectedComponents() {
     await this.editInstance(async (sendIncrementalChange, instance) => {
-      const globalLocation = this.getGlobalLocation();
-      const components = instance.components;
       const {component: componentSelection} = splitSelection(this.selection);
       componentSelection.sort((a, b) => (a > b) - (a < b));
 
       const {path: newPath, components: newComponents} = await decomposeComponents(
-        components, componentSelection, globalLocation,
+        instance.components, componentSelection, this.getGlobalLocation(),
         glyphName => this.sceneModel.fontController.getGlyph(glyphName),
       )
 
