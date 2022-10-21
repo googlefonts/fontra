@@ -334,9 +334,11 @@ export class SceneController {
     try {
       result = await editFunc(sendIncrementalChange, editContext.instance);
     } catch(error) {
+      // editContext.editCancel();
       throw error;
     }
-    if (result) {
+    const {"change": change, "undoInfo": undoInfo, "broadcast": broadcast} = result || {};
+    if (change && change.hasChange) {
       const {"change": change, "undoInfo": undoInfo, "broadcast": broadcast} = result;
       editContext.editFinal(change.change, change.rollbackChange, undoInfo, broadcast);
     } else {
