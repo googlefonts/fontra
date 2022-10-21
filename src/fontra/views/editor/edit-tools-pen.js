@@ -75,7 +75,7 @@ const AppendModes = {
 function getPenToolBehavior(sceneController, initialEvent, path) {
   const appendInfo = getAppendInfo(path, sceneController.selection);
 
-  let behaviorFuncs = {};
+  let behaviorFuncs;
 
   if (appendInfo.createContour) {
     // Let's add a new contour
