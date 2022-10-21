@@ -24,9 +24,7 @@ export class PenTool extends BaseTool {
       return;
     }
 
-    this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
-      const initialSelection = this.sceneController.selection;
-
+    await this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
       const behavior = getPenToolBehavior(this.sceneController, initialEvent, instance);
 
       const initialChanges = recordChanges(instance, instanceProxy => {
@@ -55,13 +53,10 @@ export class PenTool extends BaseTool {
 
       const finalChange = initialChanges.concat(preDragChanges, dragChanges);
 
-      const undoInfo = {
-        "label": behavior.undoLabel,
-        "undoSelection": initialSelection,
-        "redoSelection": this.sceneController.selection,
-        "location": this.sceneController.getLocation(),
-      }
-      return {"change": finalChange, "undoInfo": undoInfo};
+      return {
+        "change": finalChange,
+        "undoLabel": behavior.undoLabel,
+      };
     });
 
   }

@@ -329,20 +329,37 @@ export class SceneController {
         }
       }
     };
+    const initialSelection = this.selection;
     // editContext.editBegin();
     let result;
     try {
       result = await editFunc(sendIncrementalChange, editContext.instance);
     } catch(error) {
+      // this.selection = initialSelection;  // ???
       // editContext.editCancel();
       throw error;
     }
-    const {"change": change, "undoInfo": undoInfo, "broadcast": broadcast} = result || {};
+
+    const {
+      "change": change,
+      "selection": newSelection,  // Optional
+      "undoLabel": undoLabel,
+      "broadcast": broadcast,
+    } = result || {};
+
     if (change && change.hasChange) {
-      const {"change": change, "undoInfo": undoInfo, "broadcast": broadcast} = result;
-      this.selection = undoInfo.redoSelection;
+      if (newSelection) {
+        this.selection = newSelection;
+      }
+      const undoInfo = {
+        "label": undoLabel,
+        "undoSelection": initialSelection,
+        "redoSelection": this.selection,
+        "location": this.getLocation(),
+      }
       editContext.editFinal(change.change, change.rollbackChange, undoInfo, broadcast);
     } else {
+      this.selection = initialSelection;
       // editContext.editCancel();
     }
   }
@@ -409,14 +426,12 @@ export class SceneController {
           instance.path.insertContour(contourIndex, packedContour);
         }
       });
-
-      const undoInfo = {
-        "label": "Reverse Contour Direction",
-        "undoSelection": this.selection,
-        "redoSelection": newSelection,
-        "location": this.getLocation(),
-      }
-      return {"change": changes, "undoInfo": undoInfo, "broadcast": true};
+      return {
+        "change": changes,
+        "selection": newSelection,
+        "undoLabel": "Reverse Contour Direction",
+        "broadcast": true,
+      };
     });
   }
 
@@ -455,13 +470,12 @@ export class SceneController {
         });
       });
 
-      const undoInfo = {
-        "label": "Set Start Point",
-        "undoSelection": this.selection,
-        "redoSelection": newSelection,
-        "location": this.getLocation(),
-      }
-      return {"change": changes, "undoInfo": undoInfo, "broadcast": true};
+      return {
+        "change": changes,
+        "selection": newSelection,
+        "undoLabel": "Set Start Point",
+        "broadcast": true,
+      };
     });
   }
 
@@ -494,14 +508,12 @@ export class SceneController {
         }
       });
 
-      const newSelection = new Set();
-      const undoInfo = {
-        "label": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
-        "undoSelection": this.selection,
-        "redoSelection": newSelection,
-        "location": this.getLocation(),
-      }
-      return {"change": changes, "undoInfo": undoInfo, "broadcast": true};
+      return {
+        "change": changes,
+        "selection": new Set(),
+        "undoLabel": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
+        "broadcast": true,
+      };
     });
   }
 

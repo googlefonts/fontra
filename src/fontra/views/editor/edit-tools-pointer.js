@@ -154,13 +154,11 @@ export class PointerTool extends BaseTool {
           }
         }
       });
-      const undoInfo = {
-        "label": "toggle smooth",
-        "undoSelection": this.sceneController.selection,
-        "redoSelection": this.sceneController.selection,
-        "location": this.sceneController.getLocation(),
-      }
-      return {"change": changes, "undoInfo": undoInfo, "broadcast": true};
+      return {
+        "change": changes,
+        "undoLabel": "toggle smooth",
+        "broadcast": true,
+      };
     });
   }
 
