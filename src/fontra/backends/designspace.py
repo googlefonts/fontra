@@ -16,6 +16,7 @@ import watchfiles
 from ..core.classes import (
     Component,
     Layer,
+    LocalAxis,
     StaticGlyph,
     Source,
     Transformation,
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
+GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
 
 
 class DesignspaceBackend:
@@ -65,9 +67,10 @@ class DesignspaceBackend:
         return fontInfo
 
     def loadSources(self):
-        fontraLayerNames = {}
-        self.ufoReaders = {}
-        self.ufoGlyphSets = {}
+        self.ufoReaders = {}  # keyed by path
+        self.ufoGlyphSets = {}  # keyed by fontraLayerName
+        self.fontraLayerNames = {}  # key: (path, ufoLayerName), value: fontraLayerName
+        self.ufoLayers = {}  # key: fontraLayerName, value: (path, ufoLayerName)
         self.globalSources = []
         self.defaultSourceGlyphSet = None
         makeUniqueStyleName = uniqueNameMaker()
@@ -79,10 +82,11 @@ class DesignspaceBackend:
                 reader = self.ufoReaders[path] = UFOReader(path)
             for ufoLayerName in reader.getLayerNames():
                 key = (path, ufoLayerName)
-                fontraLayerName = fontraLayerNames.get(key)
+                fontraLayerName = self.fontraLayerNames.get(key)
                 if fontraLayerName is None:
                     fontraLayerName = f"{sourceStyleName}/{ufoLayerName}"
-                    fontraLayerNames[key] = fontraLayerName
+                    self.fontraLayerNames[key] = fontraLayerName
+                    self.ufoLayers[fontraLayerName] = key
                     self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
                         ufoLayerName
                     )
@@ -91,7 +95,7 @@ class DesignspaceBackend:
                 if source.layerName is not None
                 else reader.getDefaultLayerName()
             )
-            fontraLayerName = fontraLayerNames[(path, sourceLayerName)]
+            fontraLayerName = self.fontraLayerNames[(path, sourceLayerName)]
             sourceDict = dict(
                 location=source.location,
                 name=sourceStyleName,
@@ -128,11 +132,43 @@ class DesignspaceBackend:
                 continue
             staticGlyph, ufoGlyph = serializeGlyph(glyphSet, glyphName)
             if glyphSet == self.defaultSourceGlyphSet:
+                localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
+                if localDS is not None:
+                    glyph.axes, glyph.sources = self._unpackLocalDesignSpace(
+                        localDS, *self.ufoLayers[fontraLayerName]
+                    )
                 glyph.unicodes = list(ufoGlyph.unicodes)
             layers.append(Layer(fontraLayerName, staticGlyph))
         glyph.layers = layers
 
         return glyph
+
+    def _unpackLocalDesignSpace(self, dsDict, ufoPath, ufoLayerName):
+        axes = [
+            LocalAxis(
+                name=axis["name"],
+                minValue=axis["minimum"],
+                defaultValue=axis["default"],
+                maxValue=axis["maximum"],
+            )
+            for axis in dsDict["axes"]
+        ]
+        sources = []
+        for source in dsDict["sources"]:
+            fileName = source.get("filename")
+            if fileName is not None:
+                raise NotImplemented
+                # ufoPath = ...
+            ufoLayerName = source.get("layername", ufoLayerName)
+            fontraLayerName = self.fontraLayerNames[ufoPath, ufoLayerName]
+            sources.append(
+                Source(
+                    name=fontraLayerName,
+                    location=source["location"],
+                    layerName=fontraLayerName,
+                )
+            )
+        return axes, sources
 
     async def putGlyph(self, glyphName, glyph):
         modTimes = set()
