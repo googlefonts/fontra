@@ -409,7 +409,9 @@ export class SceneController {
         }
       });
 
-      this.selection = newSelection;
+      if (changes.hasChange) {
+        this.selection = newSelection;
+      }
       const undoInfo = {
         "label": "Reverse Contour Direction",
         "undoSelection": this.selection,
@@ -421,50 +423,56 @@ export class SceneController {
   }
 
   async setStartPoint() {
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-    const path = editContext.instance.path;
-    const {point: pointSelection} = splitSelection(this.selection);
-    const contourToPointMap = new Map();
-    for (const pointIndex of pointSelection) {
-      const contourIndex = path.getContourIndex(pointIndex);
-      const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
-      if (contourToPointMap.has(contourIndex)) {
-        continue;
+
+    await this.editInstance((sendIncrementalChange, instance) => {
+
+      const path = instance.path;
+      const {point: pointSelection} = splitSelection(this.selection);
+      const contourToPointMap = new Map();
+      for (const pointIndex of pointSelection) {
+        const contourIndex = path.getContourIndex(pointIndex);
+        const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
+        if (contourToPointMap.has(contourIndex)) {
+          continue;
+        }
+        contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
       }
-      contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
-    }
-    const recorder = new PackedPathChangeRecorder(path);
-    const newSelection = new Set();
-    contourToPointMap.forEach((contourPointIndex, contourIndex) => {
-      if (contourPointIndex === 0) {
-        // Already start point
-        return;
+
+      const newSelection = new Set();
+
+      const changes = recordChanges(instance, instance => {
+
+        contourToPointMap.forEach((contourPointIndex, contourIndex) => {
+          if (contourPointIndex === 0) {
+            // Already start point
+            newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
+            return;
+          }
+          if (!path.contourInfo[contourIndex].isClosed) {
+            // Open path, ignore
+            return;
+          }
+          const contour = path.getUnpackedContour(contourIndex);
+          const head = contour.points.splice(0, contourPointIndex);
+          contour.points.push(...head);
+          instance.path.deleteContour(contourIndex);
+          instance.path.insertContour(contourIndex, packContour(contour));
+          newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
+        });
+
+      });
+
+      if (changes.hasChange) {
+        this.selection = newSelection;
       }
-      if (!path.contourInfo[contourIndex].isClosed) {
-        // Open path, ignore
-        return;
-      }
-      const contour = path.getUnpackedContour(contourIndex);
-      const head = contour.points.splice(0, contourPointIndex);
-      contour.points.push(...head);
-      recorder.deleteContour(contourIndex);
-      recorder.insertContour(contourIndex, packContour(contour));
-      newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
-    });
-    if (recorder.hasChange) {
       const undoInfo = {
         "label": "Set Start Point",
         "undoSelection": this.selection,
         "redoSelection": newSelection,
         "location": this.getLocation(),
       }
-      this.selection = newSelection;
-      applyChange(editContext.instance, recorder.editChange);
-      await editContext.editFinal(recorder.editChange, recorder.rollbackChange, undoInfo, true);
-    }
+      return {"change": changes, "undoInfo": undoInfo, "broadcast": true};
+    });
   }
 
   async decomposeSelectedComponents() {
