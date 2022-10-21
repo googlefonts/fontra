@@ -1,5 +1,5 @@
 import { applyChange } from "../core/changes.js";
-import { recordChanges, InstanceChangeRecorder, PackedPathChangeRecorder } from "../core/change-recorder.js";
+import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { normalizeLocation } from "../core/var-model.js";
@@ -466,40 +466,37 @@ export class SceneController {
   }
 
   async decomposeSelectedComponents() {
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-    const globalLocation = this.getGlobalLocation();
-    const components = editContext.instance.components;
-    const {component: componentSelection} = splitSelection(this.selection);
-    componentSelection.sort((a, b) => (a > b) - (a < b));
+    await this.editInstance(async (sendIncrementalChange, instance) => {
 
-    const {path: newPath, components: newComponents} = await decomposeComponents(
-      components, componentSelection, globalLocation,
-      glyphName => this.sceneModel.fontController.getGlyph(glyphName),
-    )
+      const globalLocation = this.getGlobalLocation();
+      const components = instance.components;
+      const {component: componentSelection} = splitSelection(this.selection);
+      componentSelection.sort((a, b) => (a > b) - (a < b));
 
-    const instanceRecorder = new InstanceChangeRecorder(editContext.instance);
-    const pathRecorder = instanceRecorder.path;
-    let contourInsertIndex = editContext.instance.path.contourInfo.length;
-    let componentInsertIndex = components.length;
-    for (const contour of newPath.iterContours()) {
-      // Hm, rounding should be optional
-      // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-      pathRecorder.insertContour(contourInsertIndex, contour);
-      contourInsertIndex++;
-    }
-    const componentRecorder = instanceRecorder.components;
-    for (const nestedCompo of newComponents) {
-      componentRecorder.insertComponent(componentInsertIndex, nestedCompo);
-      componentInsertIndex++;
-    }
-    componentSelection.reverse();
-    for (const componentIndex of componentSelection) {
-      componentRecorder.deleteComponent(componentIndex);
-    }
-    if (instanceRecorder.hasChange) {
+      const {path: newPath, components: newComponents} = await decomposeComponents(
+        components, componentSelection, globalLocation,
+        glyphName => this.sceneModel.fontController.getGlyph(glyphName),
+      )
+
+      let contourInsertIndex = instance.path.contourInfo.length;
+
+      const changes = recordChanges(instance, instance => {
+        const path = instance.path;
+        const components = instance.components;
+
+        for (const contour of newPath.iterContours()) {
+          // Hm, rounding should be optional
+          // contour.coordinates = contour.coordinates.map(c => Math.round(c));
+          path.insertContour(contourInsertIndex, contour);
+          contourInsertIndex++;
+        }
+        components.push(...newComponents);
+        componentSelection.reverse();
+        for (const componentIndex of componentSelection) {
+          components.splice(componentIndex, 1);
+        }
+      });
+
       const newSelection = new Set();
       const undoInfo = {
         "label": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
@@ -507,10 +504,8 @@ export class SceneController {
         "redoSelection": newSelection,
         "location": this.getLocation(),
       }
-      this.selection = newSelection;
-      applyChange(editContext.instance, instanceRecorder.editChange);
-      await editContext.editFinal(instanceRecorder.editChange, instanceRecorder.rollbackChange, undoInfo, true);
-    }
+      return {"change": changes, "undoInfo": undoInfo, "broadcast": true};
+    });
   }
 
 }
