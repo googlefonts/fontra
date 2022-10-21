@@ -478,8 +478,6 @@ export class SceneController {
         glyphName => this.sceneModel.fontController.getGlyph(glyphName),
       )
 
-      let contourInsertIndex = instance.path.contourInfo.length;
-
       const changes = recordChanges(instance, instance => {
         const path = instance.path;
         const components = instance.components;
@@ -487,8 +485,7 @@ export class SceneController {
         for (const contour of newPath.iterContours()) {
           // Hm, rounding should be optional
           // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-          path.insertContour(contourInsertIndex, contour);
-          contourInsertIndex++;
+          path.insertContour(path.contourInfo.length, contour);
         }
         components.push(...newComponents);
         componentSelection.reverse();
