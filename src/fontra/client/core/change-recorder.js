@@ -123,6 +123,7 @@ function getProxy(subject, changes) {
       return true;
     }
   }
+
   return new Proxy(subject, handler);
 }
 
