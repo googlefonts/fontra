@@ -108,8 +108,8 @@ export class SceneController {
     }
 
     const {
-      point: pointSelection,
-      component: componentSelection,
+      "point": pointSelection,
+      "component": componentSelection,
     } = splitSelection(this.selection);
     const contextMenuItems = [
       {
@@ -409,7 +409,7 @@ export class SceneController {
   async reverseSelectedContoursDirection() {
     await this.editInstance((sendIncrementalChange, instance) => {
       const path = instance.path;
-      const {point: pointSelection} = splitSelection(this.selection);
+      const {"point": pointSelection} = splitSelection(this.selection);
       const selectedContours = getSelectedContours(path, pointSelection);
       const newSelection = reversePointSelection(path, pointSelection);
 
@@ -438,7 +438,7 @@ export class SceneController {
   async setStartPoint() {
     await this.editInstance((sendIncrementalChange, instance) => {
       const path = instance.path;
-      const {point: pointSelection} = splitSelection(this.selection);
+      const {"point": pointSelection} = splitSelection(this.selection);
       const contourToPointMap = new Map();
       for (const pointIndex of pointSelection) {
         const contourIndex = path.getContourIndex(pointIndex);
@@ -481,10 +481,10 @@ export class SceneController {
 
   async decomposeSelectedComponents() {
     await this.editInstance(async (sendIncrementalChange, instance) => {
-      const {component: componentSelection} = splitSelection(this.selection);
+      const {"component": componentSelection} = splitSelection(this.selection);
       componentSelection.sort((a, b) => (a > b) - (a < b));
 
-      const {path: newPath, components: newComponents} = await decomposeComponents(
+      const {"path": newPath, "components": newComponents} = await decomposeComponents(
         instance.components, componentSelection, this.getGlobalLocation(),
         glyphName => this.sceneModel.fontController.getGlyph(glyphName),
       )
