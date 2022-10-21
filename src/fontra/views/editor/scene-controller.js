@@ -467,7 +467,6 @@ export class SceneController {
 
   async decomposeSelectedComponents() {
     await this.editInstance(async (sendIncrementalChange, instance) => {
-
       const globalLocation = this.getGlobalLocation();
       const components = instance.components;
       const {component: componentSelection} = splitSelection(this.selection);
