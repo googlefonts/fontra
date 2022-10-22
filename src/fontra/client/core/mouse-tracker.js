@@ -62,6 +62,7 @@ export class MouseTracker {
   }
 
   handleMouseMove(event) {
+    this._checkEventStreamDone();
     if (this._eventStream !== undefined) {
       // in mouse drag
       this._eventStream.put(event);
@@ -74,14 +75,20 @@ export class MouseTracker {
 
   handleMouseUp(event) {
     delete window._fontraMouseTracker;
-    this._eventStream.put(event);
-    this._eventStream.done();
+    this._checkEventStreamDone();
+    this._eventStream?.put(event);
+    this._eventStream?.done();
     this._eventStream = undefined;
   }
 
   handleModifierKeyChange(event) {
-    if (this._eventStream !== undefined && modifierKeys.indexOf(event.key) >= 0) {
-      this._eventStream.put(event);
+    this._checkEventStreamDone();
+    this._eventStream?.put(event);
+  }
+
+  _checkEventStreamDone() {
+    if (this._eventStream?.isDone()) {
+      this._eventStream = undefined;
     }
   }
 
