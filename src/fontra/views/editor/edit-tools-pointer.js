@@ -29,7 +29,7 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(initialEvent);
     const selection = this.sceneModel.selectionAtPoint(point, sceneController.mouseClickMargin);
-    if (initialEvent.detail >= 2 || initialEvent.myTapCount >= 2) {
+    if (initialEvent.detail == 2 || initialEvent.myTapCount == 2) {
       await this.handleDoubleCick(selection, point);
       initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
       eventStream.done();
