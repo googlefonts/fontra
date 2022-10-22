@@ -1,3 +1,4 @@
+import { QueueIterator } from "./queue-iterator.js";
 import { capitalizeFirstLetter, hyphenatedToCamelCase } from "./utils.js";
 
 
@@ -13,8 +14,14 @@ export class Form {
     }
     this.container.classList.add("ui-form");
     this.setFieldDescriptions(fieldDescriptions);
-    this.callQueue = new CallQueue();
-    this.callQueue.start();
+    this.callQueue = new QueueIterator();
+    this._readCallQueue();
+  }
+
+  async _readCallQueue() {
+    for await (const func of this.callQueue) {
+      await func();
+    }
   }
 
   setFieldDescriptions(fieldDescriptions) {
@@ -199,37 +206,6 @@ function setSliderCallbacks(sliderElement, callbacks) {
   sliderElement.onchange = event => {
     sliderDragging = false;
     callbacks.endEdit();
-  }
-
-}
-
-
-class CallQueue {
-
-  // Queue for async function calls, to ensure they are called
-  // in a specific order, instead of scheduled individually.
-
-  constructor() {
-    this.queue = [];
-  }
-
-  async start() {
-    while (true) {
-      const func = this.queue.shift();
-      if (func !== undefined) {
-        await func();
-      } else {
-        await new Promise(resolve => {
-          this.signal = resolve;
-        });
-        delete this.signal;
-      }
-    }
-  }
-
-  put(func) {
-    this.queue.push(func);
-    this.signal?.call();
   }
 
 }
