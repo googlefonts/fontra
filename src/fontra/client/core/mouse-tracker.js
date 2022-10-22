@@ -11,6 +11,7 @@ export class MouseTracker {
     this._hoverFunc = options.hover;
     this._eventStream = undefined;
     this._lastMouseDownEvent = undefined;
+    this._getTapCount = getTapCounter();
     this._addEventListeners(options.element);
   }
 
@@ -47,13 +48,7 @@ export class MouseTracker {
     if (this._eventStream !== undefined && !this._eventStream.isDone()) {
       console.log("assert -- unfinished event stream");
     }
-    event.myTapCount = 1;
-    if (this._lastMouseDownEvent !== undefined && areEventsClose(event, this._lastMouseDownEvent)) {
-      const timeSince = event.timeStamp - this._lastMouseDownEvent.timeStamp;
-      if((timeSince < 600) && (timeSince > 0)) {
-        event.myTapCount = 2;
-      }
-    }
+    event.myTapCount = this._getTapCount(event);
     this._lastMouseDownEvent = event;
 
     window._fontraMouseTracker = this;
@@ -92,6 +87,26 @@ export class MouseTracker {
     }
   }
 
+}
+
+
+function getTapCounter() {
+  let lastEvent;
+  let tapCount = 1;
+  return event => {
+    if (lastEvent && areEventsClose(event, lastEvent)) {
+      const timeSince = event.timeStamp - lastEvent.timeStamp;
+      if ((timeSince < 600) && (timeSince > 0)) {
+        tapCount += 1;
+      } else {
+        tapCount = 1;
+      }
+    } else {
+      tapCount = 1;
+    }
+    lastEvent = event;
+    return tapCount;
+  };
 }
 
 
