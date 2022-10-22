@@ -1,11 +1,11 @@
 import { applyChange } from "../core/changes.js";
+import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
-import { InstanceChangeRecorder, PackedPathChangeRecorder } from "../core/change-recorder.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
-import { arrowKeyDeltas, hasShortcutModifierKey } from "../core/utils.js";
+import { arrowKeyDeltas, hasShortcutModifierKey, reversed } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 
@@ -108,8 +108,8 @@ export class SceneController {
     }
 
     const {
-      point: pointSelection,
-      component: componentSelection,
+      "point": pointSelection,
+      "component": componentSelection,
     } = splitSelection(this.selection);
     const contextMenuItems = [
       {
@@ -309,6 +309,61 @@ export class SceneController {
     return this.sceneModel.getSceneBounds();
   }
 
+  async editInstance(editFunc, senderID) {
+    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    if (!glyphController.canEdit) {
+      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
+      // TODO: dialog with options:
+      // - go to closest source
+      // - insert new source here
+      // - cancel
+      return null;
+    }
+    const editContext = await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
+    const sendIncrementalChange = async (change, mayDrop = false) => {
+      if (change.hasChange) {
+        if (mayDrop) {
+          await editContext.editIncrementalMayDrop(change.change);
+        } else {
+          await editContext.editIncremental(change.change);
+        }
+      }
+    };
+    const initialSelection = this.selection;
+    // editContext.editBegin();
+    let result;
+    try {
+      result = await editFunc(sendIncrementalChange, editContext.instance);
+    } catch(error) {
+      // this.selection = initialSelection;  // ???
+      // editContext.editCancel();
+      throw error;
+    }
+
+    const {
+      "change": change,
+      "selection": newSelection,  // Optional
+      "undoLabel": undoLabel,
+      "broadcast": broadcast,
+    } = result || {};
+
+    if (change && change.hasChange) {
+      if (newSelection) {
+        this.selection = newSelection;
+      }
+      const undoInfo = {
+        "label": undoLabel,
+        "undoSelection": initialSelection,
+        "redoSelection": this.selection,
+        "location": this.getLocation(),
+      }
+      editContext.editFinal(change.change, change.rollbackChange, undoInfo, broadcast);
+    } else {
+      this.selection = initialSelection;
+      // editContext.editCancel();
+    }
+  }
+
   async getGlyphEditContext(senderID) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
@@ -352,131 +407,112 @@ export class SceneController {
   }
 
   async reverseSelectedContoursDirection() {
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-    const path = editContext.instance.path;
-    const {point: pointSelection} = splitSelection(this.selection);
-    const selectedContours = getSelectedContours(path, pointSelection);
-    const newSelection = reversePointSelection(path, pointSelection);
+    await this.editInstance((sendIncrementalChange, instance) => {
+      const path = instance.path;
+      const {"point": pointSelection} = splitSelection(this.selection);
+      const selectedContours = getSelectedContours(path, pointSelection);
+      const newSelection = reversePointSelection(path, pointSelection);
 
-    const recorder = new PackedPathChangeRecorder(path);
-    for (const contourIndex of selectedContours) {
-      const contour = path.getUnpackedContour(contourIndex);
-      contour.points.reverse();
-      if (contour.isClosed) {
-        const [lastPoint] = contour.points.splice(-1, 1);
-        contour.points.splice(0, 0, lastPoint);
-      }
-      const packedContour = packContour(contour);
-      recorder.deleteContour(contourIndex);
-      recorder.insertContour(contourIndex, packedContour);
-    }
-    const undoInfo = {
-      "label": "Reverse Contour Direction",
-      "undoSelection": this.selection,
-      "redoSelection": newSelection,
-      "location": this.getLocation(),
-    }
-    this.selection = newSelection;
-    applyChange(editContext.instance, recorder.editChange);
-    await editContext.editFinal(recorder.editChange, recorder.rollbackChange, undoInfo, true);
+      const changes = recordChanges(instance, instance => {
+        for (const contourIndex of selectedContours) {
+          const contour = path.getUnpackedContour(contourIndex);
+          contour.points.reverse();
+          if (contour.isClosed) {
+            const [lastPoint] = contour.points.splice(-1, 1);
+            contour.points.splice(0, 0, lastPoint);
+          }
+          const packedContour = packContour(contour);
+          instance.path.deleteContour(contourIndex);
+          instance.path.insertContour(contourIndex, packedContour);
+        }
+      });
+      return {
+        "change": changes,
+        "selection": newSelection,
+        "undoLabel": "Reverse Contour Direction",
+        "broadcast": true,
+      };
+    });
   }
 
   async setStartPoint() {
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-    const path = editContext.instance.path;
-    const {point: pointSelection} = splitSelection(this.selection);
-    const contourToPointMap = new Map();
-    for (const pointIndex of pointSelection) {
-      const contourIndex = path.getContourIndex(pointIndex);
-      const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
-      if (contourToPointMap.has(contourIndex)) {
-        continue;
+    await this.editInstance((sendIncrementalChange, instance) => {
+      const path = instance.path;
+      const {"point": pointSelection} = splitSelection(this.selection);
+      const contourToPointMap = new Map();
+      for (const pointIndex of pointSelection) {
+        const contourIndex = path.getContourIndex(pointIndex);
+        const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
+        if (contourToPointMap.has(contourIndex)) {
+          continue;
+        }
+        contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
       }
-      contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
-    }
-    const recorder = new PackedPathChangeRecorder(path);
-    const newSelection = new Set();
-    contourToPointMap.forEach((contourPointIndex, contourIndex) => {
-      if (contourPointIndex === 0) {
-        // Already start point
-        return;
-      }
-      if (!path.contourInfo[contourIndex].isClosed) {
-        // Open path, ignore
-        return;
-      }
-      const contour = path.getUnpackedContour(contourIndex);
-      const head = contour.points.splice(0, contourPointIndex);
-      contour.points.push(...head);
-      recorder.deleteContour(contourIndex);
-      recorder.insertContour(contourIndex, packContour(contour));
-      newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
+      const newSelection = new Set();
+
+      const changes = recordChanges(instance, instance => {
+        contourToPointMap.forEach((contourPointIndex, contourIndex) => {
+          if (contourPointIndex === 0) {
+            // Already start point
+            newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
+            return;
+          }
+          if (!path.contourInfo[contourIndex].isClosed) {
+            // Open path, ignore
+            return;
+          }
+          const contour = path.getUnpackedContour(contourIndex);
+          const head = contour.points.splice(0, contourPointIndex);
+          contour.points.push(...head);
+          instance.path.deleteContour(contourIndex);
+          instance.path.insertContour(contourIndex, packContour(contour));
+          newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
+        });
+      });
+
+      return {
+        "change": changes,
+        "selection": newSelection,
+        "undoLabel": "Set Start Point",
+        "broadcast": true,
+      };
     });
-    if (recorder.hasChange) {
-      const undoInfo = {
-        "label": "Set Start Point",
-        "undoSelection": this.selection,
-        "redoSelection": newSelection,
-        "location": this.getLocation(),
-      }
-      this.selection = newSelection;
-      applyChange(editContext.instance, recorder.editChange);
-      await editContext.editFinal(recorder.editChange, recorder.rollbackChange, undoInfo, true);
-    }
   }
 
   async decomposeSelectedComponents() {
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
-    const globalLocation = this.getGlobalLocation();
-    const components = editContext.instance.components;
-    const {component: componentSelection} = splitSelection(this.selection);
-    componentSelection.sort((a, b) => (a > b) - (a < b));
+    await this.editInstance(async (sendIncrementalChange, instance) => {
+      const {"component": componentSelection} = splitSelection(this.selection);
+      componentSelection.sort((a, b) => (a > b) - (a < b));
 
-    const {path: newPath, components: newComponents} = await decomposeComponents(
-      components, componentSelection, globalLocation,
-      glyphName => this.sceneModel.fontController.getGlyph(glyphName),
-    )
+      const {"path": newPath, "components": newComponents} = await decomposeComponents(
+        instance.components, componentSelection, this.getGlobalLocation(),
+        glyphName => this.sceneModel.fontController.getGlyph(glyphName),
+      )
 
-    const instanceRecorder = new InstanceChangeRecorder(editContext.instance);
-    const pathRecorder = instanceRecorder.path;
-    let contourInsertIndex = editContext.instance.path.contourInfo.length;
-    let componentInsertIndex = components.length;
-    for (const contour of newPath.iterContours()) {
-      // Hm, rounding should be optional
-      // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-      pathRecorder.insertContour(contourInsertIndex, contour);
-      contourInsertIndex++;
-    }
-    const componentRecorder = instanceRecorder.components;
-    for (const nestedCompo of newComponents) {
-      componentRecorder.insertComponent(componentInsertIndex, nestedCompo);
-      componentInsertIndex++;
-    }
-    componentSelection.reverse();
-    for (const componentIndex of componentSelection) {
-      componentRecorder.deleteComponent(componentIndex);
-    }
-    if (instanceRecorder.hasChange) {
-      const newSelection = new Set();
-      const undoInfo = {
-        "label": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
-        "undoSelection": this.selection,
-        "redoSelection": newSelection,
-        "location": this.getLocation(),
-      }
-      this.selection = newSelection;
-      applyChange(editContext.instance, instanceRecorder.editChange);
-      await editContext.editFinal(instanceRecorder.editChange, instanceRecorder.rollbackChange, undoInfo, true);
-    }
+      const changes = recordChanges(instance, instance => {
+        const path = instance.path;
+        const components = instance.components;
+
+        for (const contour of newPath.iterContours()) {
+          // Hm, rounding should be optional
+          // contour.coordinates = contour.coordinates.map(c => Math.round(c));
+          path.appendContour(contour);
+        }
+        components.push(...newComponents);
+
+        // Next, delete the components we decomposed
+        for (const componentIndex of reversed(componentSelection)) {
+          components.splice(componentIndex, 1);
+        }
+      });
+
+      return {
+        "change": changes,
+        "selection": new Set(),
+        "undoLabel": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
+        "broadcast": true,
+      };
+    });
   }
 
 }
