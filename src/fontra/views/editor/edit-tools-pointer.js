@@ -32,12 +32,14 @@ export class PointerTool extends BaseTool {
     if (initialEvent.detail >= 2 || initialEvent.myTapCount >= 2) {
       await this.handleDoubleCick(selection, point);
       initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
+      eventStream.done();
       return;
     }
 
     if (!this.sceneModel.selectedGlyphIsEditing) {
       sceneController.selectedGlyph = this.sceneModel.glyphAtPoint(point);
       sceneController.selectedGlyphIsEditing = false;
+      eventStream.done();
       return;
     }
 
@@ -72,6 +74,7 @@ export class PointerTool extends BaseTool {
         if (selectedGlyph && selectedGlyph != sceneController.selectedGlyph) {
           sceneController.selectedGlyph = selectedGlyph;
           sceneController.selectedGlyphIsEditing = false;
+          eventStream.done();
           return;
         }
       }
