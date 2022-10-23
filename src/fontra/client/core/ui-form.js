@@ -84,7 +84,7 @@ export class Form {
     inputElement.value = fieldItem.value || "";
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = event => {
-      this._dispatchEvent("doChange", {"key": fieldItem.key, "value": inputElement.value});
+      this._fieldChanging(fieldItem.key, inputElement.value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = value => inputElement.value = value;
@@ -98,7 +98,7 @@ export class Form {
     inputElement.step = "any";
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = event => {
-      this._dispatchEvent("doChange", {"key": fieldItem.key, "value": parseFloat(inputElement.value)});
+      this._fieldChanging(fieldItem.key, parseFloat(inputElement.value), undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = value => inputElement.value = value;
@@ -117,26 +117,33 @@ export class Form {
       el.value = fieldItem.value;
       el.disabled = fieldItem.disabled;
     }
-    setSliderCallbacks(
-      sliderElement,
-      {
-        beginChange: () => {
-          // console.log("begin drag");
-          this._dispatchEvent("beginChange", {"key": fieldItem.key});
-        },
-        change: () => {
-          inputElement.value = myRound(sliderElement.value, 3);
-          this._dispatchEvent("doChange", {"key": fieldItem.key, "value": parseFloat(inputElement.value)});
-        },
-        endEdit: () => {
-          this._dispatchEvent("endChange", {"key": fieldItem.key});
+
+    {
+      // Slider change closure
+      let valueStream = undefined;
+      sliderElement.oninput = event => {
+        // Continuous changes
+        inputElement.value = myRound(sliderElement.value, 3);
+        const value = parseFloat(inputElement.value);
+        if (!valueStream) {
+          valueStream = new QueueIterator();
+          this._fieldChanging(fieldItem.key, value, valueStream);
         }
+        valueStream.put(value);
+        this._dispatchEvent("doChange", {"key": fieldItem.key, "value": value});
+      };
+      sliderElement.onchange = event => {
+        // Single change, or final change after continuous changes
+        valueStream?.done();
+        valueStream = undefined;
+        this._dispatchEvent("endChange", {"key": fieldItem.key});
       }
-    );
+    }
+
     inputElement.onchange = event => {
       sliderElement.value = inputElement.value;
       inputElement.value = sliderElement.value;  // Use slider's clamping
-      this._dispatchEvent("doChange", {"key": fieldItem.key, "value": parseFloat(inputElement.value)});
+      this._fieldChanging(fieldItem.key, parseFloat(inputElement.value), undefined);
     };
     this._fieldGetters[fieldItem.key] = () => sliderElement.value;
     this._fieldSetters[fieldItem.key] = value => {
@@ -151,16 +158,24 @@ export class Form {
     this.container.addEventListener(eventName, handler, options);
   }
 
+  _fieldChanging(fieldKey, value, valueStream) {
+    if (valueStream) {
+      this._dispatchEvent("beginChange", {"key": fieldKey});
+    } else {
+      this._dispatchEvent("doChange", {"key": fieldKey, "value": value});
+    }
+    const handlerName = "onFieldChange";
+    if (this[handlerName] !== undefined) {
+      this[handlerName](fieldKey, value, valueStream);
+    }
+  }
+
   _dispatchEvent(eventName, detail) {
     const event = new CustomEvent(eventName, {
       "bubbles": false,
       "detail": detail,
     });
     this.container.dispatchEvent(event);
-    const handlerName = "on" + capitalizeFirstLetter(eventName);
-    if (this[handlerName] !== undefined) {
-      this.callQueue.put(async () => await this[handlerName](detail));
-    }
   }
 
   getKeys() {
@@ -189,23 +204,4 @@ export class Form {
 function myRound(n, digits) {
   const f = 10 ** digits;
   return Math.round(n * f) / f;
-}
-
-
-function setSliderCallbacks(sliderElement, callbacks) {
-  let sliderDragging = false;
-
-  sliderElement.oninput = event => {
-    if (!sliderDragging) {
-      sliderDragging = true;
-      callbacks.beginChange();
-    }
-    callbacks.change();
-  }
-
-  sliderElement.onchange = event => {
-    sliderDragging = false;
-    callbacks.endEdit();
-  }
-
 }
