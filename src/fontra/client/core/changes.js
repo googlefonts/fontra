@@ -7,7 +7,13 @@ export class ChangeCollector {
     this._rollbackChanges = undefined;
   }
 
-  static _fromChangeArrays(forwardChanges, rollbackChanges) {
+  static fromChanges(forwardChanges, rollbackChanges) {
+    if (!Array.isArray(forwardChanges)) {
+      forwardChanges = [forwardChanges];
+    }
+    if (!Array.isArray(rollbackChanges)) {
+      rollbackChanges = [rollbackChanges];
+    }
     const collector = new ChangeCollector();
     collector._forwardChanges = forwardChanges;
     collector._rollbackChanges = rollbackChanges;
@@ -91,7 +97,7 @@ export class ChangeCollector {
         rollbackChanges.splice(0, 0, ...other._rollbackChanges);
       }
     }
-    return ChangeCollector._fromChangeArrays(forwardChanges, rollbackChanges);
+    return ChangeCollector.fromChanges(forwardChanges, rollbackChanges);
   }
 
 }
