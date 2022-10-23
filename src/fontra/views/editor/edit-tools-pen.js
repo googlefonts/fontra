@@ -56,7 +56,7 @@ export class PenTool extends BaseTool {
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
 
       return {
-        "change": finalChanges,
+        "changes": finalChanges,
         "undoLabel": behavior.undoLabel,
       };
     });

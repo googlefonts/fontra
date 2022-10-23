@@ -158,7 +158,7 @@ export class PointerTool extends BaseTool {
         }
       });
       return {
-        "change": changes,
+        "changes": changes,
         "undoLabel": "toggle smooth",
         "broadcast": true,
       };

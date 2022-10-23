@@ -77,7 +77,7 @@ export class SceneController {
 
       const changes = ChangeCollector.fromChanges(editChange, editBehavior.rollbackChange);
       return {
-        "change": changes,
+        "changes": changes,
         "undoLabel": "nudge selection",
         "broadcast": true,
       };
@@ -318,12 +318,12 @@ export class SceneController {
       return null;
     }
     const editContext = await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
-    const sendIncrementalChange = async (change, mayDrop = false) => {
-      if (change.hasChange) {
+    const sendIncrementalChange = async (changes, mayDrop = false) => {
+      if (changes.hasChange) {
         if (mayDrop) {
-          await editContext.editIncrementalMayDrop(change.change);
+          await editContext.editIncrementalMayDrop(changes.change);
         } else {
-          await editContext.editIncremental(change.change);
+          await editContext.editIncremental(changes.change);
         }
       }
     };
@@ -339,13 +339,13 @@ export class SceneController {
     }
 
     const {
-      "change": change,
+      "changes": changes,
       "selection": newSelection,  // Optional
       "undoLabel": undoLabel,
       "broadcast": broadcast,
     } = result || {};
 
-    if (change && change.hasChange) {
+    if (changes && changes.hasChange) {
       if (newSelection) {
         this.selection = newSelection;
       }
@@ -355,7 +355,7 @@ export class SceneController {
         "redoSelection": this.selection,
         "location": this.getLocation(),
       }
-      editContext.editFinal(change.change, change.rollbackChange, undoInfo, broadcast);
+      editContext.editFinal(changes.change, changes.rollbackChange, undoInfo, broadcast);
     } else {
       this.selection = initialSelection;
       // editContext.editCancel();
@@ -425,7 +425,7 @@ export class SceneController {
         }
       });
       return {
-        "change": changes,
+        "changes": changes,
         "selection": newSelection,
         "undoLabel": "Reverse Contour Direction",
         "broadcast": true,
@@ -469,7 +469,7 @@ export class SceneController {
       });
 
       return {
-        "change": changes,
+        "changes": changes,
         "selection": newSelection,
         "undoLabel": "Set Start Point",
         "broadcast": true,
@@ -505,7 +505,7 @@ export class SceneController {
       });
 
       return {
-        "change": changes,
+        "changes": changes,
         "selection": new Set(),
         "undoLabel": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
         "broadcast": true,

@@ -897,7 +897,7 @@ export class EditorController {
         const plen = changePath.length;
         const undoLabel = plen == 1 ? `${changePath[plen - 1]}` : `${changePath[plen - 2]}.${changePath[plen - 1]}`;
         return {
-          "change": changes,
+          "changes": changes,
           "undoLabel": undoLabel,
           "broadcast": !valueStream,
         };
