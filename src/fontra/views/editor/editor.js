@@ -1,5 +1,6 @@
 import { CanvasController } from "../core/canvas-controller.js";
 import { applyChange, matchChange } from "../core/changes.js";
+import { recordChanges } from "../core/change-recorder.js";
 import { ContextMenu } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
@@ -871,78 +872,36 @@ export class EditorController {
   }
 
   async _setupSelectionInfoHandlers(glyphName) {
-    let editContext;
-    let keyString;
-    let localChangePath;
-    let change;
-    let rollbackChange;
-    let undoInfo;
+    this.infoForm.onFieldChange = async (fieldKey, value, valueStream) => {
+      const changePath = JSON.parse(fieldKey);
+      await this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
+        let changes;
 
-    const setup = async info => {
-      keyString = info.key;
-      localChangePath = JSON.parse(keyString);
-      const plen = localChangePath.length;
-      const undoLabelField = plen == 1 ? `${localChangePath[plen - 1]}` : `${localChangePath[plen - 2]}.${localChangePath[plen - 1]}`;
-      undoInfo = {
-        "label": `edit ${undoLabelField}`,
-        "undoSelection": this.sceneController.selection,
-        "redoSelection": this.sceneController.selection,
-        "location": this.sceneController.getLocation(),
-      }
-      editContext = await this.sceneController.getGlyphEditContext(this);
-      if (!editContext) {
-        console.log(`can't edit glyph '${glyphController.name}': location is not a source`);
-        return false;
-      }
-      rollbackChange = makeFieldChange(localChangePath, getNestedValue(editContext.instance, localChangePath));
-      return true;
-    };
-
-    const breakdown = () => {
-      editContext = undefined;
-      keyString = undefined;
-      localChangePath = undefined;
-      change = undefined;
-      rollbackChange = undefined;
-    };
-
-    this.infoForm.onBeginChange = async info => {
-      if (!(await setup(info))) {
-        return;
-      }
-    };
-
-    this.infoForm.onDoChange = async info => {
-      let isAtomicEdit = (editContext === undefined);
-      if (isAtomicEdit) {
-        if (!(await setup(info))) {
-          return;
+        if (valueStream) {
+          const orgValue = getNestedValue(instance, changePath);
+          for await (const value of valueStream) {
+            setNestedValue(instance, changePath, orgValue);  // Ensure getting the correct undo change
+            changes = recordChanges(instance, instance => {
+              setNestedValue(instance, changePath, value);
+            });
+            sendIncrementalChange(changes);
+          }
+        } else {
+          changes = recordChanges(instance, instance => {
+            setNestedValue(instance, changePath, value);
+          });
         }
-        change = makeFieldChange(localChangePath, info.value);
-        applyChange(editContext.instance, change);
-        await editContext.editFinal(change, rollbackChange, undoInfo, true);
-        breakdown();
-      } else {
-        if (keyString !== info.key) {
-          throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
-        }
-        change = makeFieldChange(localChangePath, info.value);
-        applyChange(editContext.instance, change);
-        await editContext.editIncrementalMayDrop(change);
-      }
-    };
 
-    this.infoForm.onEndChange = async info => {
-      if (!editContext) {
-        return;
-      }
-      if (keyString !== info.key) {
-        throw new Error(`assert -- non-matching key ${keyString} vs. ${info.key}`);
-      }
-      applyChange(editContext.instance, change);
-      await editContext.editFinal(change, rollbackChange, undoInfo, true);
-      breakdown();
-    };
+        const plen = changePath.length;
+        const undoLabel = plen == 1 ? `${changePath[plen - 1]}` : `${changePath[plen - 2]}.${changePath[plen - 1]}`;
+        return {
+          "change": changes,
+          "undoLabel": undoLabel,
+          "broadcast": !valueStream,
+        };
+
+      }, this);
+    }
   }
 
   setAutoViewBox() {
@@ -1174,17 +1133,6 @@ function clearSearchParams(searchParams) {
 }
 
 
-function makeFieldChange(path, value) {
-  const key = path.slice(-1)[0];
-  path = path.slice(0, -1);
-  return {
-    "p": path,
-    "f": "=",
-    "a": [key, value],
-  };
-}
-
-
 function getNestedValue(subject, path) {
   for (const pathElement of path) {
     subject = subject[pathElement];
@@ -1193,6 +1141,14 @@ function getNestedValue(subject, path) {
     }
   }
   return subject;
+}
+
+
+function setNestedValue(subject, path, value) {
+  const key = path.slice(-1)[0];
+  path = path.slice(0, -1);
+  subject = getNestedValue(subject, path);
+  subject[key] = value;
 }
 
 
