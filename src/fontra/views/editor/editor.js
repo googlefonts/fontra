@@ -885,7 +885,7 @@ export class EditorController {
             changes = recordChanges(instance, instance => {
               setNestedValue(instance, changePath, value);
             });
-            sendIncrementalChange(changes);
+            sendIncrementalChange(changes, true);  // true: "may drop"
           }
         } else {
           // Simple, atomic change
@@ -899,7 +899,7 @@ export class EditorController {
         return {
           "changes": changes,
           "undoLabel": undoLabel,
-          "broadcast": !valueStream,
+          "broadcast": true,
         };
       }, this);
     }
