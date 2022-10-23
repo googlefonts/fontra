@@ -1,4 +1,4 @@
-import { applyChange } from "../core/changes.js";
+import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
@@ -63,27 +63,25 @@ export class SceneController {
     if (!this.sceneModel.selectedGlyphIsEditing || !this.selection.size) {
       return;
     }
-    const undoInfo = {
-      "label": "nudge selection",
-      "undoSelection": this.selection,
-      "redoSelection": this.selection,
-      "location": this.getLocation(),
-    }
-    const editContext = await this.getGlyphEditContext(this);
-    if (!editContext) {
-      return;
-    }
     let [dx, dy] = arrowKeyDeltas[event.key];
     if (event.shiftKey) {
       dx *= 10;
       dy *= 10;
     }
-    const behaviorFactory = new EditBehaviorFactory(editContext.instance, this.selection);
-    const editBehavior = behaviorFactory.getBehavior(event.altKey ? "alternate" : "default");
     const delta = {"x": dx, "y": dy};
-    const editChange = editBehavior.makeChangeForDelta(delta)
-    applyChange(editContext.instance, editChange);
-    await editContext.editFinal(editChange, editBehavior.rollbackChange, undoInfo, true);
+    await this.editInstance((sendIncrementalChange, instance) => {
+      const behaviorFactory = new EditBehaviorFactory(instance, this.selection);
+      const editBehavior = behaviorFactory.getBehavior(event.altKey ? "alternate" : "default");
+      const editChange = editBehavior.makeChangeForDelta(delta)
+      applyChange(instance, editChange);
+
+      const changes = ChangeCollector.fromChanges(editChange, editBehavior.rollbackChange);
+      return {
+        "change": changes,
+        "undoLabel": "nudge selection",
+        "broadcast": true,
+      };
+    });
   }
 
   addEventListener(eventName, handler, options) {
