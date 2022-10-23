@@ -899,7 +899,6 @@ export class EditorController {
           "undoLabel": undoLabel,
           "broadcast": !valueStream,
         };
-
       }, this);
     }
   }
