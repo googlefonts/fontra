@@ -878,6 +878,7 @@ export class EditorController {
         let changes;
 
         if (valueStream) {
+          // Continuous changes (eg. slider drag)
           const orgValue = getNestedValue(instance, changePath);
           for await (const value of valueStream) {
             setNestedValue(instance, changePath, orgValue);  // Ensure getting the correct undo change
@@ -887,6 +888,7 @@ export class EditorController {
             sendIncrementalChange(changes);
           }
         } else {
+          // Simple, atomic change
           changes = recordChanges(instance, instance => {
             setNestedValue(instance, changePath, value);
           });
