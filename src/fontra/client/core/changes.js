@@ -154,7 +154,7 @@ export function consolidateChanges(changes, prefixPath) {
 
 
 function unnestSingleChildren(change) {
-  const children = change.c?.map(unnestSingleChildren).filter(isNotEmpty);
+  const children = change.c?.map(unnestSingleChildren).filter(hasChange);
 
   if (!children?.length) {
     if (children?.length === 0) {
@@ -332,7 +332,7 @@ function lastItem(array) {
 }
 
 
-export function isNotEmpty(obj) {
+export function hasChange(obj) {
   for (const _ in obj) {
     return true;
   }
