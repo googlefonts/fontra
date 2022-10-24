@@ -1,4 +1,4 @@
-import { applyChange, consolidateChanges } from "../core/changes.js";
+import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
@@ -190,41 +190,37 @@ export class PointerTool extends BaseTool {
 
   async handleDragSelection(eventStream, initialEvent) {
     const sceneController = this.sceneController;
-    const initialPoint = sceneController.localPoint(initialEvent);
-    const undoInfo = {
-      "label": "drag selection",
-      "undoSelection": sceneController.selection,
-      "redoSelection": sceneController.selection,
-      "location": sceneController.getLocation(),
-    }
+    await sceneController.editInstance(async (sendIncrementalChange, instance) => {
 
-    const editContext = await sceneController.getGlyphEditContext(sceneController);
-    if (!editContext) {
-      return;
-    }
+      const initialPoint = sceneController.localPoint(initialEvent);
 
-    const behaviorFactory = new EditBehaviorFactory(editContext.instance, sceneController.selection);
-    let behaviorName = getBehaviorName(initialEvent);
-    let editBehavior = behaviorFactory.getBehavior(behaviorName);
+      const behaviorFactory = new EditBehaviorFactory(instance, sceneController.selection);
+      let behaviorName = getBehaviorName(initialEvent);
+      let editBehavior = behaviorFactory.getBehavior(behaviorName);
 
-    let editChange;
+      let editChange;
 
-    for await (const event of eventStream) {
-      const newEditBehaviorName = getBehaviorName(event);
-      if (behaviorName !== newEditBehaviorName) {
-        applyChange(editContext.instance, editBehavior.rollbackChange);
-        await editContext.editIncremental(editBehavior.rollbackChange);
-        behaviorName = newEditBehaviorName;
-        editBehavior = behaviorFactory.getBehavior(behaviorName);
+      for await (const event of eventStream) {
+        const newEditBehaviorName = getBehaviorName(event);
+        if (behaviorName !== newEditBehaviorName) {
+          applyChange(instance, editBehavior.rollbackChange);
+          await sendIncrementalChange(editBehavior.rollbackChange);
+          behaviorName = newEditBehaviorName;
+          editBehavior = behaviorFactory.getBehavior(behaviorName);
+        }
+        const currentPoint = sceneController.localPoint(event);
+        const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
+        editChange = editBehavior.makeChangeForDelta(delta)
+        applyChange(instance, editChange);
+        await sendIncrementalChange(editChange, true);  // true: "may drop"
       }
-      const currentPoint = sceneController.localPoint(event);
-      const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-      editChange = editBehavior.makeChangeForDelta(delta)
-      applyChange(editContext.instance, editChange);
-      await editContext.editIncrementalMayDrop(editChange);
-    }
-    applyChange(editContext.instance, editChange);
-    await editContext.editFinal(editChange, editBehavior.rollbackChange, undoInfo, true);
+      const changes = ChangeCollector.fromChanges(editChange, editBehavior.rollbackChange);
+      return {
+        "undoLabel": "drag selection",
+        "changes": changes,
+        "broadcast": true,
+      }
+    });
   }
 
 }
