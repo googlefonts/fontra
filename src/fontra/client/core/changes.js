@@ -333,6 +333,8 @@ function lastItem(array) {
 
 
 export function hasChange(obj) {
+  // This assumes a change object that has passed through consolidateChanges,
+  // And therefore is a simple empty object {} when the change is a no-op.
   for (const _ in obj) {
     return true;
   }
