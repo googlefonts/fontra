@@ -34,7 +34,7 @@ export class PenTool extends BaseTool {
         behavior.initialChanges(instance.path, initialEvent);
       });
       this.sceneController.selection = behavior.selection;
-      await sendIncrementalChange(initialChanges);
+      await sendIncrementalChange(initialChanges.change);
       let preDragChanges = new ChangeCollector();
       let dragChanges = new ChangeCollector();
 
@@ -43,14 +43,14 @@ export class PenTool extends BaseTool {
           behavior.setupDrag(instance.path, initialEvent);
         });
         this.sceneController.selection = behavior.selection;
-        await sendIncrementalChange(preDragChanges);
+        await sendIncrementalChange(preDragChanges.change);
         for await (const event of eventStream) {
           dragChanges = recordChanges(instance, instance => {
             behavior.drag(instance.path, event);
           });
-          await sendIncrementalChange(dragChanges, true);  // true: "may drop"
+          await sendIncrementalChange(dragChanges.change, true);  // true: "may drop"
         }
-        await sendIncrementalChange(dragChanges);
+        await sendIncrementalChange(dragChanges.change);
       }
 
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);

@@ -1,4 +1,4 @@
-import { ChangeCollector, applyChange } from "../core/changes.js";
+import { ChangeCollector, applyChange, isNotEmpty } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
@@ -318,12 +318,12 @@ export class SceneController {
       return null;
     }
     const editContext = await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
-    const sendIncrementalChange = async (changes, mayDrop = false) => {
-      if (changes.hasChange) {
+    const sendIncrementalChange = async (change, mayDrop = false) => {
+      if (change && isNotEmpty(change)) {
         if (mayDrop) {
-          await editContext.editIncrementalMayDrop(changes.change);
+          await editContext.editIncrementalMayDrop(change);
         } else {
-          await editContext.editIncremental(changes.change);
+          await editContext.editIncremental(change);
         }
       }
     };
