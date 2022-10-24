@@ -885,7 +885,7 @@ export class EditorController {
             changes = recordChanges(instance, instance => {
               setNestedValue(instance, changePath, value);
             });
-            sendIncrementalChange(changes.change, true);  // true: "may drop"
+            await sendIncrementalChange(changes.change, true);  // true: "may drop"
           }
         } else {
           // Simple, atomic change
