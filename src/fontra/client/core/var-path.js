@@ -103,7 +103,7 @@ export class VarPackedPath {
     let lo = 0;
     let hi = this.contourInfo.length;
     while (lo < hi) {
-      const mid = Math.floor((lo + hi) / 2);
+      const mid = (lo + hi) >> 1;  // Math.floor((lo + hi) / 2)
       if (pointIndex <= this.contourInfo[mid].endPoint) {
         hi = mid;
       }
