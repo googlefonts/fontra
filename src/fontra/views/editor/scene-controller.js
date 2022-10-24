@@ -362,19 +362,6 @@ export class SceneController {
     }
   }
 
-  async getGlyphEditContext(senderID) {
-    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
-    if (!glyphController.canEdit) {
-      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
-      // TODO: dialog with options:
-      // - go to closest source
-      // - insert new source here
-      // - cancel
-      return null;
-    }
-    return await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
-  }
-
   getSelectionBox() {
     return this.sceneModel.getSelectionBox();
   }
