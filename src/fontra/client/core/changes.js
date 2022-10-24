@@ -332,7 +332,7 @@ function lastItem(array) {
 }
 
 
-function isNotEmpty(obj) {
+export function isNotEmpty(obj) {
   for (const _ in obj) {
     return true;
   }
