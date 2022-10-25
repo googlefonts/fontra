@@ -335,19 +335,12 @@ class GlyphEditContext {
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
   }
 
-  async editIncremental(change) {
-    return await this._editIncremental(change, false);
-  }
-
-  async editIncrementalMayDrop(change) {
-    return await this._editIncremental(change, true);
-  }
-
-  async _editIncremental(change, allowThrottle) {
-    // applyChange(this.glyphController.instance, change);
+  async editIncremental(change, mayDrop = false) {
+    // If mayDrop is true, the call is not guaranteed to be broadcast, and is throttled
+    // at a maximum number of changes per second, to prevent flooding the network
     await this.fontController.glyphChanged(this.glyphController.name);
     change = consolidateChanges(change, this.baseChangePath);
-    if (allowThrottle) {
+    if (mayDrop) {
       this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
     } else {
       clearTimeout(this._throttledEditIncrementalTimeoutID);

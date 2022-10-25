@@ -320,11 +320,7 @@ export class SceneController {
     const editContext = await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
     const sendIncrementalChange = async (change, mayDrop = false) => {
       if (change && hasChange(change)) {
-        if (mayDrop) {
-          await editContext.editIncrementalMayDrop(change);
-        } else {
-          await editContext.editIncremental(change);
-        }
+        await editContext.editIncremental(change, mayDrop);
       }
     };
     const initialSelection = this.selection;
