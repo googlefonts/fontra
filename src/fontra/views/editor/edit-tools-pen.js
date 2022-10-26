@@ -3,6 +3,7 @@ import { recordChanges } from "../core/change-recorder.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
+import { parseSelection } from "../core/utils.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 
@@ -113,9 +114,9 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
         };
       }
     } else if (clickedSelection.size === 1) {
-      const sel = [...clickedSelection][0];
-      const [tp, pointIndex] = sel.split("/");
-      if (tp === "point") {
+      const {"point": pointSelection} = parseSelection(clickedSelection);
+      const pointIndex = pointSelection[0];
+      if (pointIndex !== undefined) {
         const [clickedContourIndex, clickedContourPointIndex] = path.getContourAndPointIndex(pointIndex);
         const numClickedContourPoints = path.getNumPointsOfContour(clickedContourIndex);
         if (clickedContourPointIndex === 0 || clickedContourPointIndex === numClickedContourPoints - 1) {
@@ -319,9 +320,9 @@ function getPointSelectionAbs(pointIndex) {
 
 function getAppendInfo(path, selection) {
   if (selection.size === 1) {
-    const sel = [...selection][0];
-    const [tp, pointIndex] = sel.split("/");
-    if (pointIndex < path.numPoints) {
+    const {"point": pointSelection} = parseSelection(selection);
+    const pointIndex = pointSelection[0];
+    if (pointIndex !== undefined && pointIndex < path.numPoints) {
       const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
       const numPointsContour = path.getNumPointsOfContour(contourIndex);
       if (
