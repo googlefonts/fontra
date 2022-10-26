@@ -1,5 +1,5 @@
-import { union } from "../core/set-ops.js";
-import { withSavedState } from "../core/utils.js";
+import { isSuperset, union } from "../core/set-ops.js";
+import { parseSelection, withSavedState } from "../core/utils.js";
 import { subVectors } from "../core/vector.js";
 
 
@@ -330,60 +330,21 @@ export const drawNodesLayer = requireEditingGlyph(glyphTranslate(
 
 
 export const drawComponentSelectionLayer = requireEditingGlyph(glyphTranslate(
-(model, controller, context, glyph, drawingParameters) => {
-  _drawSelectionLayer(model, controller, context, glyph, drawingParameters, "component");
-}
-));
+  (model, controller, context, glyph, drawingParameters) => {
+    const isHoverSelected = model.selection?.size && isSuperset(model.selection, model.hoverSelection);
+    const {"component": hoveredComponentIndices} = parseSelection(model.hoverSelection);
+    const hoveredComponentIndex = hoveredComponentIndices?.[0];
+    const combinedSelection = lenientUnion(model.selection, model.hoverSelection);
+    const {"component": combinedComponentIndices} = parseSelection(combinedSelection);
 
+    const hoveredComponentStrokeColor = drawingParameters.hoveredComponentStrokeColor;
+    const selectedComponentStrokeColor = drawingParameters.selectedComponentStrokeColor;
+    const hoveredComponentLineWidth = drawingParameters.hoveredComponentLineWidth;
+    const selectedComponentLineWidth = drawingParameters.selectedComponentLineWidth;
 
-export const drawPathSelectionLayer = requireEditingGlyph(glyphTranslate(
-(model, controller, context, glyph, drawingParameters) => {
-  _drawSelectionLayer(model, controller, context, glyph, drawingParameters, "point");
-}
-));
-
-
-function _drawSelectionLayer(model, controller, context, glyph, drawingParameters, drawType) {
-  const selection = model.selection;
-  const hoverSelection = model.hoverSelection;
-  const combinedSelection = lenientUnion(selection, hoverSelection);
-  const selectionStrings = Array.from(combinedSelection);
-  selectionStrings.sort();
-
-  const cornerNodeSize = drawingParameters.cornerNodeSize;
-  const smoothNodeSize = drawingParameters.smoothNodeSize;
-  const handleNodeSize = drawingParameters.handleNodeSize;
-  const hoveredComponentStrokeColor = drawingParameters.hoveredComponentStrokeColor;
-  const selectedComponentStrokeColor = drawingParameters.selectedComponentStrokeColor;
-  const hoveredComponentLineWidth = drawingParameters.hoveredComponentLineWidth;
-  const selectedComponentLineWidth = drawingParameters.selectedComponentLineWidth;
-
-  context.strokeStyle = drawingParameters.hoveredNodeStrokeColor;
-  context.lineWidth = drawingParameters.hoveredNodeLineWidth;
-  const hoverStrokeOffset = 4 * controller.onePixelUnit
-  context.fillStyle = drawingParameters.selectedNodeFillColor;
-
-  for (const selItem of selectionStrings) {
-    const drawHoverStroke = hoverSelection?.has(selItem);
-    const drawSelectionFill = selection.has(selItem);
-    const [tp, index] = selItem.split("/");
-    if (tp != drawType) {
-      continue;
-    }
-    if (tp === "point") {
-      const pt = glyph.path.getPoint(index);
-      if (pt === undefined) {
-        // Selection is not valid
-        continue;
-      }
-      if (drawHoverStroke) {
-        strokeNode(context, pt, cornerNodeSize + hoverStrokeOffset, smoothNodeSize + hoverStrokeOffset, handleNodeSize + hoverStrokeOffset);
-      }
-      if (drawSelectionFill) {
-        fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize);
-      }
-    } else if (tp === "component") {
-      const componentPath = glyph.components[index].path2d;
+    for (const componentIndex of combinedComponentIndices || []) {
+      const drawSelectionFill = isHoverSelected || componentIndex !== hoveredComponentIndex;
+      const componentPath = glyph.components[componentIndex].path2d;
       context.save();
       context.lineJoin = "round";
       context.lineWidth = drawSelectionFill ? selectedComponentLineWidth : hoveredComponentLineWidth;
@@ -392,7 +353,41 @@ function _drawSelectionLayer(model, controller, context, glyph, drawingParameter
       context.restore();
     }
   }
-}
+));
+
+
+export const drawPathSelectionLayer = requireEditingGlyph(glyphTranslate(
+  (model, controller, context, glyph, drawingParameters) => {
+    const {"point": hoveredPointIndices} = parseSelection(model.hoverSelection);
+    const {"point": selectedPointIndices} = parseSelection(model.selection);
+
+    const cornerNodeSize = drawingParameters.cornerNodeSize;
+    const smoothNodeSize = drawingParameters.smoothNodeSize;
+    const handleNodeSize = drawingParameters.handleNodeSize;
+
+    context.strokeStyle = drawingParameters.hoveredNodeStrokeColor;
+    context.lineWidth = drawingParameters.hoveredNodeLineWidth;
+    const hoverStrokeOffset = 4 * controller.onePixelUnit
+    context.fillStyle = drawingParameters.selectedNodeFillColor;
+
+    for (const pointIndex of hoveredPointIndices || []) {
+      const pt = glyph.path.getPoint(pointIndex);
+      if (pt === undefined) {
+        // Selection is not valid
+        continue;
+      }
+      strokeNode(context, pt, cornerNodeSize + hoverStrokeOffset, smoothNodeSize + hoverStrokeOffset, handleNodeSize + hoverStrokeOffset);
+    }
+    for (const pointIndex of selectedPointIndices || []) {
+      const pt = glyph.path.getPoint(pointIndex);
+      if (pt === undefined) {
+        // Selection is not valid
+        continue;
+      }
+      fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize);
+    }
+  }
+));
 
 
 export function drawRectangleSelectionLayer(model, controller) {
