@@ -2,7 +2,7 @@ import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
-import { boolInt, modulo } from "../core/utils.js";
+import { boolInt, modulo, parseSelection } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
@@ -97,22 +97,15 @@ export class PointerTool extends BaseTool {
       sceneController.selectedGlyphIsEditing = !!sceneController.selectedGlyph;
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-      const pointIndices = [];
-      const componentIndices = [];
-      for (const selItem of sceneController.selection) {
-        let [tp, index] = selItem.split("/");
-        index = parseInt(index);
-        if (tp === "point") {
-          pointIndices.push(index);
-        } else if (tp === "component") {
-          componentIndices.push(index);
-        }
-      }
-      if (componentIndices.length) {
+      const {
+        "point": pointIndices,
+        "component": componentIndices,
+      } = parseSelection(sceneController.selection);
+      if (componentIndices?.length) {
         componentIndices.sort();
         sceneController.doubleClickedComponentIndices = componentIndices;
         sceneController._dispatchEvent("doubleClickedComponents");
-      } else if (pointIndices.length) {
+      } else if (pointIndices?.length) {
         await this.handlePointsDoubleClick(pointIndices);
       }
     }
