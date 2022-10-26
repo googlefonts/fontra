@@ -25,6 +25,7 @@ import {
   autoReload,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
+  parseSelection,
   scheduleCalls,
   themeSwitchFromLocalStorage,
   throttleCalls,
@@ -797,69 +798,68 @@ export class EditorController {
         "disabled": !canEdit,
       });
     }
+    const {
+      "component": componentIndices,
+    } = parseSelection(this.sceneController.selection);
+
     const selection = Array.from(this.sceneController.selection || []);
     selection.sort(selectionCompare);
 
-    for (const selItem of selection) {
-      let [tp, index] = selItem.split("/");
-
+    for (const index of componentIndices || []) {
       const componentKey = (...path) => JSON.stringify(["components", index, ...path]);
 
-      if (tp === "component") {
-        index = parseInt(index);
-        formContents.push({"type": "divider"});
-        const component = instance.components[index];
-        formContents.push({"type": "header", "label": `Component #${index}`});
-        formContents.push({
-          "type": "edit-text",
-          "key": componentKey("name"),
-          "label": "Base glyph",
-          "value": component.name,
-        });
-        formContents.push({"type": "header", "label": "Transformation"});
+      formContents.push({"type": "divider"});
+      const component = instance.components[index];
+      formContents.push({"type": "header", "label": `Component #${index}`});
+      formContents.push({
+        "type": "edit-text",
+        "key": componentKey("name"),
+        "label": "Base glyph",
+        "value": component.name,
+      });
+      formContents.push({"type": "header", "label": "Transformation"});
 
-        for (const key of ["translateX", "translateY", "rotation", "scaleX", "scaleY", "skewX", "skewY", "tCenterX", "tCenterY"]) {
-          const value = component.transformation[key];
-          formContents.push({
-            "type": "edit-number",
-            "key": componentKey("transformation", key),
-            "label": key,
+      for (const key of ["translateX", "translateY", "rotation", "scaleX", "scaleY", "skewX", "skewY", "tCenterX", "tCenterY"]) {
+        const value = component.transformation[key];
+        formContents.push({
+          "type": "edit-number",
+          "key": componentKey("transformation", key),
+          "label": key,
+          "value": value,
+          "disabled": !canEdit,
+        });
+      }
+      const baseGlyph = await this.fontController.getGlyph(component.name);
+      if (baseGlyph && component.location) {
+        const locationItems = [];
+        const axes = Object.fromEntries(baseGlyph.axes.map(axis => [axis.name, axis]));
+        // Add global axes, if in location and not in baseGlyph.axes
+        // TODO: this needs more thinking, as the axes of *nested* components
+        // may also be of interest. Also: we need to be able to *add* such a value
+        // to component.location.
+        for (const axis of this.fontController.globalAxes) {
+          if (axis.name in component.location && !(axis.name in axes)) {
+            axes[axis.name] = axis;
+          }
+        }
+        for (const axis of Object.values(axes)) {
+          let value = component.location[axis.name];
+          if (value === undefined) {
+            value = axis.defaultValue;
+          }
+          locationItems.push({
+            "type": "edit-number-slider",
+            "key": componentKey("location", axis.name),
+            "label": axis.name,
             "value": value,
+            "minValue": axis.minValue,
+            "maxValue": axis.maxValue,
             "disabled": !canEdit,
           });
         }
-        const baseGlyph = await this.fontController.getGlyph(component.name);
-        if (baseGlyph && component.location) {
-          const locationItems = [];
-          const axes = Object.fromEntries(baseGlyph.axes.map(axis => [axis.name, axis]));
-          // Add global axes, if in location and not in baseGlyph.axes
-          // TODO: this needs more thinking, as the axes of *nested* components
-          // may also be of interest. Also: we need to be able to *add* such a value
-          // to component.location.
-          for (const axis of this.fontController.globalAxes) {
-            if (axis.name in component.location && !(axis.name in axes)) {
-              axes[axis.name] = axis;
-            }
-          }
-          for (const axis of Object.values(axes)) {
-            let value = component.location[axis.name];
-            if (value === undefined) {
-              value = axis.defaultValue;
-            }
-            locationItems.push({
-              "type": "edit-number-slider",
-              "key": componentKey("location", axis.name),
-              "label": axis.name,
-              "value": value,
-              "minValue": axis.minValue,
-              "maxValue": axis.maxValue,
-              "disabled": !canEdit,
-            });
-          }
-          if (locationItems.length) {
-            formContents.push({"type": "header", "label": "Location"});
-            formContents.push(...locationItems);
-          }
+        if (locationItems.length) {
+          formContents.push({"type": "header", "label": "Location"});
+          formContents.push(...locationItems);
         }
       }
     }
