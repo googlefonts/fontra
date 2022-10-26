@@ -5,7 +5,7 @@ import { MouseTracker } from "../core/mouse-tracker.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
-import { arrowKeyDeltas, hasShortcutModifierKey, reversed } from "../core/utils.js";
+import { arrowKeyDeltas, hasShortcutModifierKey, parseSelection, reversed } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 
@@ -108,7 +108,7 @@ export class SceneController {
     const {
       "point": pointSelection,
       "component": componentSelection,
-    } = splitSelection(this.selection);
+    } = parseSelection(this.selection);
     const contextMenuItems = [
       {
         "title": "Reverse Contour Direction",
@@ -390,7 +390,7 @@ export class SceneController {
   async reverseSelectedContoursDirection() {
     await this.editInstance((sendIncrementalChange, instance) => {
       const path = instance.path;
-      const {"point": pointSelection} = splitSelection(this.selection);
+      const {"point": pointSelection} = parseSelection(this.selection);
       const selectedContours = getSelectedContours(path, pointSelection);
       const newSelection = reversePointSelection(path, pointSelection);
 
@@ -419,7 +419,7 @@ export class SceneController {
   async setStartPoint() {
     await this.editInstance((sendIncrementalChange, instance) => {
       const path = instance.path;
-      const {"point": pointSelection} = splitSelection(this.selection);
+      const {"point": pointSelection} = parseSelection(this.selection);
       const contourToPointMap = new Map();
       for (const pointIndex of pointSelection) {
         const contourIndex = path.getContourIndex(pointIndex);
@@ -462,7 +462,7 @@ export class SceneController {
 
   async decomposeSelectedComponents() {
     await this.editInstance(async (sendIncrementalChange, instance) => {
-      const {"component": componentSelection} = splitSelection(this.selection);
+      const {"component": componentSelection} = parseSelection(this.selection);
       componentSelection.sort((a, b) => (a > b) - (a < b));
 
       const {"path": newPath, "components": newComponents} = await decomposeComponents(
@@ -526,18 +526,4 @@ function getSelectedContours(path, pointSelection) {
     selectedContours.add(path.getContourIndex(pointIndex));
   }
   return [...selectedContours];
-}
-
-
-function splitSelection(selection) {
-  const result = {};
-  for (const item of selection) {
-    let [tp, index] = item.split("/");
-    index = parseInt(index);
-    if (result[tp] === undefined) {
-      result[tp] = [];
-    }
-    result[tp].push(index);
-  }
-  return result;
 }

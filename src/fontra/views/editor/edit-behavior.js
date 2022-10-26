@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { reversed, sign } from "../core/utils.js";
+import { parseSelection, reversed, sign } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import {
   NIL, SEL, UNS, SHA, SMO, OFF, ANY,
@@ -10,7 +10,7 @@ import {
 export class EditBehaviorFactory {
 
   constructor(instance, selection) {
-    const selectionByType = splitSelectionByType(selection);
+    const selectionByType = parseSelection(selection);
     this.contours = unpackContours(instance.path, selectionByType["point"] || []);
     this.components = unpackComponents(instance.components, selectionByType["component"] || []);
     this.behaviors = {};
@@ -161,23 +161,6 @@ function makeComponentOriginChange(componentIndex, x, y) {
     "p": [componentIndex, "transformation"],
     "c": [{"f": "=", "a": ["translateX", x]}, {"f": "=", "a": ["translateY", y]}],
   };
-}
-
-
-function splitSelectionByType(selection) {
-  const result = {};
-  for (const selItem of selection) {
-    let [tp, index] = selItem.split("/");
-    if (result[tp] === undefined) {
-      result[tp] = [];
-    }
-    result[tp].push(Number(index));
-  }
-  for (const indices of Object.values(result)) {
-    // Ensure indices are sorted
-    indices.sort((a, b) => a - b);
-  }
-  return result;
 }
 
 
