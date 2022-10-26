@@ -324,14 +324,14 @@ export class SceneModel {
         "component": selectedComponentIndices,
       } = parseSelection(this.selection);
 
-      for (const pointIndex of selectedPointIndices || []) {
+      selectedPointIndices?.forEach(pointIndex => {
         const pt = instance.path.getPoint(pointIndex);
         boundses.push(offsetRect(centeredRect(pt.x, pt.y, 0, 0), x, y));
-      }
+      });
 
-      for (const componentIndex of selectedComponentIndices || []) {
+      selectedComponentIndices?.forEach(componentIndex => {
         boundses.push(offsetRect(instance.components[componentIndex].controlBounds, x, y));
-      }
+      });
 
       if (boundses.length) {
         bounds = unionRect(...boundses)
