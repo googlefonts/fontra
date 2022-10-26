@@ -802,9 +802,6 @@ export class EditorController {
       "component": componentIndices,
     } = parseSelection(this.sceneController.selection);
 
-    const selection = Array.from(this.sceneController.selection || []);
-    selection.sort(selectionCompare);
-
     for (const index of componentIndices || []) {
       const componentKey = (...path) => JSON.stringify(["components", index, ...path]);
 
@@ -1150,19 +1147,6 @@ function setNestedValue(subject, path, value) {
   path = path.slice(0, -1);
   subject = getNestedValue(subject, path);
   subject[key] = value;
-}
-
-
-function selectionCompare(a, b) {
-  const [a0, a1] = a.split("/");
-  const [b0, b1] = b.split("/");
-  if (a0 === b0) {
-    return parseInt(a1) - parseInt(b1);
-  } else if (a0 < b0) {
-    return -1;
-  } else {
-    return 1;
-  }
 }
 
 
