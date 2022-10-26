@@ -218,3 +218,20 @@ export function *range(start, stop, step = 1) {
     yield i;
   }
 }
+
+
+export function parseSelection(selection) {
+  const result = {};
+  for (const item of selection) {
+    const [tp, index] = item.split("/");
+    if (result[tp] === undefined) {
+      result[tp] = [];
+    }
+    result[tp].push(parseInt(index));
+  }
+  for (const indices of Object.values(result)) {
+    // Ensure indices are sorted
+    indices.sort((a, b) => a - b);
+  }
+  return result;
+}
