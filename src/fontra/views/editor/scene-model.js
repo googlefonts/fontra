@@ -1,6 +1,7 @@
 import { getAxisBaseName } from "../core/glyph-controller.js"
 import { centeredRect, isEmptyRect, offsetRect, pointInRect, sectRect, unionRect } from "../core/rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
+import { parseSelection } from "../core/utils.js";
 import { mapForward, mapBackward } from "../core/var-model.js";
 import { isEqualSet, updateSet } from "../core/set-ops.js";
 
@@ -317,19 +318,21 @@ export class SceneModel {
       const [x, y] = [positionedGlyph.x, positionedGlyph.y];
       const instance = this.getSelectedStaticGlyphController();
       const boundses = [];
-      for (const selItem of this.selection) {
-        let [tp, index] = selItem.split("/");
-        index = Number(index);
-        switch (tp) {
-          case "point":
-            const pt = instance.path.getPoint(index);
-            boundses.push(offsetRect(centeredRect(pt.x, pt.y, 0, 0), x, y));
-            break;
-          case "component":
-            boundses.push(offsetRect(instance.components[index].controlBounds, x, y));
-            break;
-        }
+
+      const {
+        "point": selectedPointIndices,
+        "component": selectedComponentIndices,
+      } = parseSelection(this.selection);
+
+      for (const pointIndex of selectedPointIndices || []) {
+        const pt = instance.path.getPoint(pointIndex);
+        boundses.push(offsetRect(centeredRect(pt.x, pt.y, 0, 0), x, y));
       }
+
+      for (const componentIndex of selectedComponentIndices || []) {
+        boundses.push(offsetRect(instance.components[componentIndex].controlBounds, x, y));
+      }
+
       if (boundses.length) {
         bounds = unionRect(...boundses)
       }
