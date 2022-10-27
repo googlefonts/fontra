@@ -244,7 +244,7 @@ export class EditorController {
     ];
     this.glyphNamesList = new List("glyphs-list", columnDescriptions);
     this.glyphNamesList.itemEqualFunc = (itemA, itemB) => itemA.glyphName === itemB.glyphName;
-    this.glyphNamesList.addEventListener("listSelectionChanged", async event => {
+    this.glyphNamesList.addEventListener("rowDoubleClicked", async event => {
       const list = event.detail;
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
