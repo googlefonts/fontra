@@ -1,9 +1,11 @@
 export class SVGPath2D {
 
-  constructor(scaleFactor = 1, numDigits = 1) {
+  constructor(scaleFactor = 1, numDigits = 1, offsetX = 0, offsetY = 0) {
     const precisionFactor = 10 ** numDigits;
     this.numerator = scaleFactor * precisionFactor;
     this.denominator = precisionFactor;
+    this.offsetX = offsetX * this.denominator;
+    this.offsetY = offsetY * this.denominator;
     this.items = [];
   }
 
@@ -13,7 +15,7 @@ export class SVGPath2D {
 
 
   _format(x, y) {
-    return formatCoordinate(x, y, this.numerator, this.denominator);
+    return formatCoordinate(x, y, this.numerator, this.denominator, this.offsetX, this.offsetY);
   }
 
   moveTo(x, y) {
@@ -38,8 +40,8 @@ export class SVGPath2D {
 }
 
 
-function formatCoordinate(x, y, numerator, denominator) {
-  x = Math.round(x * numerator) / denominator;
-  y = Math.round(y * numerator) / denominator;
+function formatCoordinate(x, y, numerator, denominator, dx, dy) {
+  x = Math.round(x * numerator + dx) / denominator;
+  y = Math.round(y * numerator + dy) / denominator;
   return `${x},${y}`;
 }

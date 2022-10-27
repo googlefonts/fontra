@@ -102,4 +102,22 @@ describe("SVGPath2D tests", () => {
     expect(p.getPath()).to.equal("M0,0L0,33.333L33.333,33.333L33.333,0");
   });
 
+  it("offset 20 30", () => {
+    const p = new SVGPath2D(1, 1, 20, 30);
+    p.moveTo(0, 0);
+    p.lineTo(0, 100);
+    p.lineTo(100, 100);
+    p.lineTo(100, 0);
+    expect(p.getPath()).to.equal("M20,30L20,130L120,130L120,30");
+  });
+
+  it("scale 2 offset 20 30", () => {
+    const p = new SVGPath2D(2, 1, 20, 30);
+    p.moveTo(0, 0);
+    p.lineTo(0, 100);
+    p.lineTo(100, 100);
+    p.lineTo(100, 0);
+    expect(p.getPath()).to.equal("M20,30L20,230L220,230L220,30");
+  });
+
 });
