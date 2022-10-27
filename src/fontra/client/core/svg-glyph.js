@@ -13,7 +13,6 @@ export class SVGPath2D {
     return this.items.join("");
   }
 
-
   _format(x, y) {
     return formatCoordinate(x, y, this.numerator, this.denominator, this.offsetX, this.offsetY);
   }
