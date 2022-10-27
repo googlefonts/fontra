@@ -123,7 +123,9 @@ export class List {
   }
 
   setSelectedItemIndex(rowIndex, shouldDispatchEvent = false) {
-    rowIndex = Number(rowIndex);
+    if (!isNaN(rowIndex)) {
+      rowIndex = Number(rowIndex);
+    }
     if (rowIndex === this.selectedItemIndex) {
       // nothing to do
       return;
@@ -155,6 +157,10 @@ export class List {
   }
 
   _keyDownHandler(event) {
+    if (event.key === "Enter" && this.selectedItemIndex !== undefined) {
+      this._dispatchEvent("rowDoubleClicked");
+      return;
+    }
     if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
       return;
     }
