@@ -168,14 +168,6 @@ export const arrowKeyDeltas = {
 }
 
 
-export function *reversed(seq) {
-  // Like Python's reversed(seq) builtin
-  for (let i = seq.length - 1; i >= 0; i--) {
-    yield seq[i];
-  }
-}
-
-
 export function modulo(v, n) {
   // Modulo with Python behavior for negative values of `v`
   // Assumes `n` to be positive
@@ -197,6 +189,14 @@ export function sign(v) {
 export function boolInt(v) {
   // Return 1 if `v` is true-y, 0 if `v` is false-y
   return v ? 1 : 0;
+}
+
+
+export function *reversed(seq) {
+  // Like Python's reversed(seq) builtin
+  for (let i = seq.length - 1; i >= 0; i--) {
+    yield seq[i];
+  }
 }
 
 
