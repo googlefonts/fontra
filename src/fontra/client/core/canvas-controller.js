@@ -25,7 +25,7 @@ export class CanvasController {
       this.draw();
       // console.log('Size changed');
     });
-    resizeObserver.observe(this.canvas);
+    resizeObserver.observe(this.canvas.parentElement);
 
     window.addEventListener("resize", event => this.handleResize(event));
     canvas.addEventListener("wheel", event => this.handleWheel(event));
@@ -57,14 +57,19 @@ export class CanvasController {
     return this.canvas.parentElement.getBoundingClientRect().height;
   }
 
+  get devicePixelRatio() {
+    // return 1;  // To test normal resolution on Retina displays
+    return window.devicePixelRatio;
+  }
+
   setupSize() {
     const width = this.canvasWidth;
     const height = this.canvasHeight;
-    const scale = window.devicePixelRatio; // Change to 1 on retina screens to see blurry canvas.
+    const scale = this.devicePixelRatio;
     this.canvas.width = Math.floor(width * scale);
     this.canvas.height = Math.floor(height * scale);
-    this.canvas.style.width = width;
-    this.canvas.style.height = height;
+    this.canvas.style.width = width + "px";
+    this.canvas.style.height = height + "px";
   }
 
   setNeedsUpdate() {
@@ -88,7 +93,7 @@ export class CanvasController {
 
   draw() {
     this.needsUpdate = false;
-    const scale = window.devicePixelRatio;
+    const scale = this.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     if (!this.sceneView) {
       return;
@@ -180,8 +185,8 @@ export class CanvasController {
   }
 
   canvasPoint(point) {
-    const x = point.x * this.magnification + this.canvas.offsetLeft + this.origin.x;
-    const y = -point.y * this.magnification + this.canvas.offsetTop + this.origin.y;
+    const x = point.x * this.magnification + this.origin.x;
+    const y = -point.y * this.magnification + this.origin.y;
     return {x: x, y: y}
   }
 
