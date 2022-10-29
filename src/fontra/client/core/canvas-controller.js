@@ -63,8 +63,8 @@ export class CanvasController {
   }
 
   setupSize() {
-    const width = this.canvasWidth;
-    const height = this.canvasHeight;
+    const width = Math.floor(this.canvasWidth);
+    const height = Math.floor(this.canvasHeight);
     const scale = this.devicePixelRatio;
     this.canvas.width = Math.floor(width * scale);
     this.canvas.height = Math.floor(height * scale);
@@ -197,8 +197,10 @@ export class CanvasController {
   getViewBox() {
     const width = this.canvasWidth;
     const height = this.canvasHeight;
-    const bottomLeft = this.localPoint({x: 0, y: 0});
-    const topRight = this.localPoint({x: width, y: height});
+    const left = this.canvas.offsetLeft;
+    const top = this.canvas.offsetTop;
+    const bottomLeft = this.localPoint({x: 0 + left, y: 0 + top});
+    const topRight = this.localPoint({x: width + left, y: height + top});
     return normalizeRect(
       {xMin: bottomLeft.x, yMin: bottomLeft.y, xMax: topRight.x, yMax: topRight.y}
     );
