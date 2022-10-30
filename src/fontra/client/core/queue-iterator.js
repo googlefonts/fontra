@@ -27,6 +27,10 @@ export class QueueIterator {
     return this._done;
   }
 
+  isFull() {
+    return this._queue.length >= this._maxQueueSize;
+  }
+
   [Symbol.asyncIterator]() {
     return this;
   }
