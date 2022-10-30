@@ -257,6 +257,7 @@ export class EditorController {
       await this.sceneController.setLocation(event.detail.values);
       this.sourcesList.setSelectedItemIndex(await this.sceneController.getSelectedSource());
       this.updateWindowLocationAndSelectionInfo();
+      this.autoViewBox = false;
     }));
   }
 
@@ -306,6 +307,7 @@ export class EditorController {
       await this.sceneController.setSelectedSource(event.detail.getSelectedItem().sourceIndex);
       this.sliders.values = this.sceneController.getLocation();
       this.updateWindowLocationAndSelectionInfo();
+      this.autoViewBox = false;
     });
   }
 
