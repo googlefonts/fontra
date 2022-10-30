@@ -85,6 +85,11 @@ export class MouseTracker {
     if (this._eventStream?.isDone()) {
       this._eventStream = undefined;
     }
+    if (this._eventStream?.isFull()) {
+      // No one is reading the queue, we should stop putting items in it
+      this._eventStream.done();
+      this._eventStream = undefined;
+    }
   }
 
 }
