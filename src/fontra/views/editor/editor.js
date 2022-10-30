@@ -721,7 +721,9 @@ export class EditorController {
     }
     clearSearchParams(url.searchParams);
 
-    viewInfo["viewBox"] = rectToArray(viewBox).map(Math.round);
+    if (Object.values(viewBox).every(value => !isNaN(value))) {
+      viewInfo["viewBox"] = rectToArray(viewBox).map(Math.round);
+    }
     if (this.enteredText) {
       viewInfo["text"] = this.enteredText;
     }
