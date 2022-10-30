@@ -687,7 +687,10 @@ export class EditorController {
     }
     if (viewInfo["viewBox"]) {
       this.autoViewBox = false;
-      this.canvasController.setViewBox(rectFromArray(viewInfo["viewBox"]));
+      const viewBox = viewInfo["viewBox"];
+      if (viewBox.every(value => !isNaN(value))) {
+        this.canvasController.setViewBox(rectFromArray(viewBox));
+      }
     }
     this.textEntryElement.value = viewInfo["text"] || "";
     if (viewInfo["text"]) {
