@@ -179,8 +179,8 @@ export class CanvasController {
     if (event.x === undefined) {
       event = {"x": event.pageX, "y": event.pageY};
     }
-    const x = (event.x - this.canvas.offsetLeft - this.origin.x) / this.magnification;
-    const y = -(event.y - this.canvas.offsetTop - this.origin.y) / this.magnification;
+    const x = (event.x - this.canvas.parentElement.offsetLeft - this.origin.x) / this.magnification;
+    const y = -(event.y - this.canvas.parentElement.offsetTop - this.origin.y) / this.magnification;
     return {x: x, y: y}
   }
 
@@ -197,8 +197,8 @@ export class CanvasController {
   getViewBox() {
     const width = this.canvasWidth;
     const height = this.canvasHeight;
-    const left = this.canvas.offsetLeft;
-    const top = this.canvas.offsetTop;
+    const left = this.canvas.parentElement.offsetLeft;
+    const top = this.canvas.parentElement.offsetTop;
     const bottomLeft = this.localPoint({x: 0 + left, y: 0 + top});
     const topRight = this.localPoint({x: width + left, y: height + top});
     return normalizeRect(
