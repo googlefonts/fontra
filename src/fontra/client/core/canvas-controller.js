@@ -63,13 +63,25 @@ export class CanvasController {
   }
 
   setupSize() {
-    const width = Math.floor(this.canvasWidth);
-    const height = Math.floor(this.canvasHeight);
+    const width = this.canvasWidth;
+    const height = this.canvasHeight;
     const scale = this.devicePixelRatio;
     this.canvas.width = Math.floor(width * scale);
     this.canvas.height = Math.floor(height * scale);
     this.canvas.style.width = width + "px";
     this.canvas.style.height = height + "px";
+    const parentOffsetX = this.canvas.parentElement.offsetLeft;
+    const parentOffsetY = this.canvas.parentElement.offsetTop;
+
+    if (this.previousOffsets) {
+      // Try to keep the scroll position constant relative to the
+      // parent container
+      const dx = this.previousOffsets["parentOffsetX"] - parentOffsetX;
+      const dy = this.previousOffsets["parentOffsetY"] - parentOffsetY;
+      this.origin.x += dx;
+      this.origin.y += dy;
+    }
+    this.previousOffsets = {parentOffsetX, parentOffsetY};
   }
 
   setNeedsUpdate() {
