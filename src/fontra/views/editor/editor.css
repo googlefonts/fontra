@@ -171,13 +171,8 @@ textarea {
   outline: none;
 }
 
-#overlay-layer {
-  position: absolute;  /* but relative to canvas-container */
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 2fr 1fr 2fr;
-  gap: 1em;
-  pointer-events: none;
+.cleanable-overlay.overlay-layer-hidden {
+  display: none;
 }
 
 .overlay-items {
@@ -199,10 +194,6 @@ textarea {
 
 .overlay-items-info {
   justify-self: end;
-}
-
-#overlay-layer.overlay-layer-hidden {
-  display: none;
 }
 
 .overlay-item {

@@ -613,15 +613,17 @@ export class EditorController {
     }
     this.canvasController.sceneView = this.cleanSceneView;
     this.canvasController.setNeedsUpdate();
-    const overlay = document.querySelector("#overlay-layer");
-    overlay.classList.add("overlay-layer-hidden");
+    for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
+      overlay.classList.add("overlay-layer-hidden");
+    }
   }
 
   spaceKeyUpHandler(event) {
     this.canvasController.sceneView = this.defaultSceneView;
     this.canvasController.setNeedsUpdate();
-    const overlay = document.querySelector("#overlay-layer");
-    overlay.classList.remove("overlay-layer-hidden");
+    for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
+      overlay.classList.remove("overlay-layer-hidden");
+    }
   }
 
   contextMenuHandler(event) {
