@@ -315,6 +315,14 @@ export class EditorController {
     // The following execCommand seems to make empty lines behave a bit better
     document.execCommand("defaultParagraphSeparator", false, "br");
 
+    for (const sidebarTab of document.querySelectorAll(".sidebar-tab")) {
+      sidebarTab.addEventListener("click", event => {
+        const methodName = hyphenatedToCamelCase("toggle-" + sidebarTab.dataset.sidebarName);
+        const onOff = event.target.classList.contains("selected");
+        this[methodName]?.call(this, onOff);
+      })
+    }
+
     const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
     this.textEntryElement = document.querySelector("#text-entry-textarea");
 
@@ -762,7 +770,7 @@ export class EditorController {
     this.updateWindowLocation();
   }
 
-  toggleSelectionInfoOverlay(onOff) {
+  toggleSidebarSelectionInfo(onOff) {
     if (onOff) {
       this.updateSelectionInfo();
     }
