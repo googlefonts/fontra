@@ -21,7 +21,8 @@ html, body {
 
 :root {
   --sidebar-tab-width: 1.55em;
-  --sidebar-content-width: 20em;
+  --sidebar-content-width-left: 18em;
+  --sidebar-content-width-right: 22em;
 }
 
 .editor-container {
@@ -42,8 +43,12 @@ html, body {
   transition: 120ms;  /* timing should match timer in tabClick() */
 }
 
-.sidebar-container.visible {
-  width: var(--sidebar-content-width);
+.sidebar-container.left.visible {
+  width: var(--sidebar-content-width-left);
+}
+
+.sidebar-container.right.visible {
+  width: var(--sidebar-content-width-right);
 }
 
 .sidebar-container.left {
@@ -172,17 +177,18 @@ html, body {
   display: none;
 
   box-sizing: border-box;
-  width: var(--sidebar-content-width);
   height: 100%;
   /*padding: 1em;*/
 }
 
 .sidebar-container.left > .sidebar-content {
   float: right;
+  width: var(--sidebar-content-width-left);
 }
 
 .sidebar-container.right > .sidebar-content {
   float: left;
+  width: var(--sidebar-content-width-right);
 }
 
 .sidebar-container > .sidebar-content.selected {
