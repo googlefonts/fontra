@@ -1,116 +1,416 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
-    <meta charset="utf-8"/>
-    <title>Fontra</title>
-    <link href="/css/ui-styling.css" rel="stylesheet">
-    <link href="/css/slider.css" rel="stylesheet">
-    <link href="/css/context-menu.css" rel="stylesheet">
-    <link href="/css/core.css" rel="stylesheet">
-    <link href="/editor/editor.css" rel="stylesheet">
-  </head>
+<head>
+  <meta charset="utf-8"/>
+  <title>Fontra</title>
+  <link href="/css/ui-styling.css" rel="stylesheet">
+  <link href="/css/slider.css" rel="stylesheet">
+  <link href="/css/context-menu.css" rel="stylesheet">
+  <link href="/css/core.css" rel="stylesheet">
+  <link href="/editor/editor.css" rel="stylesheet">
+</head>
 
-  <body>
+<style type="text/css">
 
-    <div id="global-loader-spinner"></div>
+/* TODO: this should move to editor.css */
 
-    <div class="editor-container">
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
 
-      <div class="canvas-container">
+:root {
+  --sidebar-tab-width: 1.55em;
+  --sidebar-content-width-left: 18em;
+  --sidebar-content-width-right: 22em;
+}
 
-        <div id="overlay-layer">
+.editor-container {
+  display: grid;
+  position: relative;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: 100%;
+  height: 100%;
+}
 
-          <div class="overlay-items overlay-items-navigation">
+.sidebar-container {
+  z-index: 100;
 
-            <div class="overlay-item" id="glyph-search-overlay">
-              <div class="overlay-item-fontra-icon">magnifyingglass</div>
+  background-color: var(--editor-overlay-item-background-color);
+  width: 0;
+  height: 100%;
+  transition: 120ms;  /* timing should match timer in tabClick() */
+}
 
-              <div class="overlay-content glyphs-navigation">
-                <div class="glyphs-search">
-                  <input
-                    type="text"
-                    class="glyphs-search-input"
-                    id="glyphs-search-input"
-                    placeholder="Search glyphs"
-                    autocomplete="off"
-                    oninput="window.editorController.glyphSearchFieldChanged(value)">
-                </div>
-                <div id="glyphs-list" tabindex="1">
-                  <!-- contents will be filled dynamically -->
-                </div>
-              </div>
+.sidebar-container.left.visible {
+  width: var(--sidebar-content-width-left);
+}
 
-            </div>
+.sidebar-container.right.visible {
+  width: var(--sidebar-content-width-right);
+}
 
-            <div class="overlay-item" id="sliders-overlay">
-              <div class="overlay-item-fontra-icon">sliders</div>
-              <div class="overlay-content sliders-and-sources">
-                <div class="axis-sliders" id="axis-sliders">
-                  <!-- contents will be filled dynamically -->
-                </div>
-                <div class="sources-list" id="sources-list" tabindex="1">
-                  <!-- contents will be filled dynamically -->
-                </div>
-              </div>
-            </div>
+.sidebar-container.left {
+  grid-column: 1;
+}
 
-            <div class="overlay-item" id="text-entry-overlay">
-              <div class="overlay-item-fontra-icon">texttool</div>
-              <div class="overlay-content text-entry">
-                <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
-              </div>
-            </div>
+.main-container {
+  position: relative;
+  grid-column: 2;
+}
 
-          </div>
+.sidebar-container.right {
+  grid-column: 3;
+}
 
-          <div class="overlay-items overlay-items-tools">
-            <div id="edit-tools" class="tools-item">
-              <div class="tool-button selected"><div id="pointer-tool" class="tool-icon">pointer</div></div>
-              <div class="tool-button"><div id="pen-tool" class="tool-icon">pointeradd</div></div>
-              <div class="tool-button"><div id="hand-tool" class="tool-icon">hand</div></div>
-            </div>
-            <div id="zoom-tools" class="tools-item">
-              <div class="tool-button"><div id="zoom-out" class="tool-icon">minus</div></div>
-              <div class="tool-button"><div id="zoom-in" class="tool-icon">plus</div></div>
-              <div class="tool-button"><div id="zoom-fit-selection" class="tool-icon">bullseye</div></div>
-            </div>
-          </div>
+.main-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 
-          <div class="overlay-items overlay-items-info">
+.main-overlay-container {
+  position: absolute;
+  display: grid;
+  grid-template-columns: 3.5em 2fr 1fr 2fr 3.5em;
 
-            <div class="overlay-item" id="selection-info-overlay">
-              <div class="overlay-item-fontra-icon">info</div>
-              <div class="overlay-content">
-                <div id="selection-info">
-                  <!-- contents will be filled dynamically -->
-                </div>
-              </div>
-            </div>
+  box-sizing: border-box;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 
-          </div>
+  pointer-events: none;
+}
 
-        </div><!-- overlay-layer -->
+.tab-overlay-container {
+  display: grid;
+  gap: 1em;
+  padding-top: 1em;
+  align-content: start;
+}
 
-        <div id="mini-console"></div>
-        <div id="context-menu" tabindex="0"></div>
+.tab-overlay-container.left {
+  grid-column: 1;
+  justify-content: start;
+  justify-items: start;
+}
 
-        <canvas id="edit-canvas" tabindex="1"></canvas>
+.tab-overlay-container.right {
+  grid-column: 5;
+  justify-content: end;
+  justify-items: end;
+}
 
-      </div><!-- canvas-container -->
+.sidebar-shadow-box {
+  z-index: 10;
+  position: absolute;
 
-    </div><!-- editor-container -->
+  box-shadow: 0px 0px 8px #0006;
+  top: 0;
+  width: 50px;  /* arbitrary > blur radius */
+  height: 100%;
+}
 
-  </body>
+.tab-overlay-container.left > .sidebar-shadow-box {
+  left: -50px;
+}
 
-  <script type="module">
-    import { EditorController } from "/editor/editor.js";
+.tab-overlay-container.right > .sidebar-shadow-box {
+  right: -50px;
+}
 
-    async function startApp() {
-      window.editorController = await EditorController.fromWebSocket();
+.sidebar-tab {
+  z-index: 0;  /* below the shadow box */
+
+  box-sizing: border-box;
+  width: var(--sidebar-tab-width);
+  height: 1.4em;
+  background-color: var(--editor-overlay-item-background-color);
+  box-shadow: 0px 3px 8px #0006;
+
+  padding: 0.25em 0.25em 0.45em 0.25em;
+  font-family: fontra-icons, sans-serif;
+  font-size: 2em;
+  line-height: 0.7em;
+
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+
+  animation-duration: 120ms;
+  animation-direction: alternate;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 2;
+}
+
+.sidebar-tab.selected {
+  z-index: 20;  /* elevate it above the shadow box */
+}
+
+@keyframes tab-slide-out-animation {
+  100% { width: calc(var(--sidebar-tab-width) + 0.1em); }
+}
+
+@keyframes tab-slide-in-animation {
+  100% { width: calc(var(--sidebar-tab-width) - 0.1em); }
+}
+
+.sidebar-tab:hover {
+  animation-name: tab-slide-out-animation;
+}
+
+.sidebar-tab.selected:hover {
+  animation-name: tab-slide-in-animation;
+}
+
+.tab-overlay-container.left > .sidebar-tab {
+  border-radius: 0 0.4em 0.4em 0;
+  text-align: right;
+}
+
+.tab-overlay-container.right > .sidebar-tab {
+  border-radius: 0.4em 0 0 0.4em;
+  text-align: left;
+}
+
+.sidebar-content {
+  display: none;
+
+  box-sizing: border-box;
+  height: 100%;
+  /*padding: 1em;*/
+}
+
+.sidebar-container.left > .sidebar-content {
+  float: right;
+  width: var(--sidebar-content-width-left);
+}
+
+.sidebar-container.right > .sidebar-content {
+  float: left;
+  width: var(--sidebar-content-width-right);
+}
+
+.sidebar-container > .sidebar-content.selected {
+  display: inherit;
+}
+
+/* overlay content styling */
+
+.tool-overlay-container {
+  display: grid;
+  margin: 0;
+}
+
+#text-entry-overlay {
+  margin: 1em;
+}
+
+/* sidebar content styling */
+
+.sidebar-glyph-search {
+  box-sizing: border-box;
+  height: 100%;
+  display: grid;
+  gap: 1em;
+  padding: 1em;
+  grid-template-rows: auto 1fr;
+}
+
+#glyphs-search-input {
+  border-radius: 2em;
+  height: 1.8em;
+  box-sizing: border-box;
+  width: 100%;
+  background-color: var(--editor-glyphs-search-input-background-color);
+  color: var(--editor-glyphs-search-input-foreground-color);
+  border: none;
+  padding-left: 0.8em;
+  padding-right: 0.8em;
+}
+
+.designspace-sliders {
+  box-sizing: border-box;
+  /*height: 100%;*/
+  display: grid;
+  gap: 1em;
+  padding: 1em;
+  grid-template-rows: auto 1fr;
+}
+
+.sidebar-selection-info {
+  box-sizing: border-box;
+  padding: 1em;
+}
+
+</style>
+
+
+<script>
+
+// TODO: this should move to a module, perhaps ui-sidebar.js
+
+function tabClick(event, side) {
+  const sidebarContainer = document.querySelector(`.sidebar-container.${side}`);
+  const clickedTab = event.target;
+  const sidebars = {};
+  for (const sideBarContent of document.querySelectorAll(
+      `.sidebar-container.${side} > .sidebar-content`)) {
+    sidebars[sideBarContent.dataset.sidebarName] = sideBarContent;
+  }
+
+  for (const item of document.querySelectorAll(
+      `.tab-overlay-container.${side} > .sidebar-tab`)) {
+    const sidebarContent = sidebars[item.dataset.sidebarName];
+    if (item === clickedTab) {
+      const isSelected = item.classList.contains("selected");
+      item.classList.toggle("selected", !isSelected);
+      sidebarContainer.classList.toggle("visible", !isSelected);
+      if (isSelected) {
+        setTimeout(() => {
+          sidebarContent.classList.remove("selected");
+        }, 120);  // timing should match sidebar-container transition
+      } else {
+        sidebarContent.classList.add("selected");
+      }
+    } else {
+      item.classList.remove("selected");
+      sidebarContent.classList.remove("selected");
     }
+  }
 
-    startApp();
-  </script>
+}
+
+function init() {
+  for (const item of document.querySelectorAll(
+      ".tab-overlay-container.left > .sidebar-tab")) {
+    item.onclick = event => tabClick(event, "left");
+  }
+
+  for (const item of document.querySelectorAll(
+      ".tab-overlay-container.right > .sidebar-tab")) {
+    item.onclick = event => tabClick(event, "right");
+  }
+
+}
+
+</script>
+
+<body onload="init()">
+
+<div id="global-loader-spinner"></div>
+
+<div class="editor-container">
+
+  <div class="sidebar-container left cleanable-overlay">
+
+    <div class="sidebar-content" data-sidebar-name="glyph-search">
+      <div class="sidebar-glyph-search">
+        <div class="glyphs-search">
+          <input
+            type="text"
+            class="glyphs-search-input"
+            id="glyphs-search-input"
+            placeholder="Search glyphs"
+            autocomplete="off"
+            oninput="window.editorController.glyphSearchFieldChanged(value)">
+        </div>
+        <div id="glyphs-list" tabindex="1">
+          <!-- contents will be filled dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-content" data-sidebar-name="designspace-sliders">
+      <div class="designspace-sliders">
+        <div class="axis-sliders" id="axis-sliders">
+          <!-- contents will be filled dynamically -->
+        </div>
+        <div class="sources-list" id="sources-list" tabindex="1">
+          <!-- contents will be filled dynamically -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="main-container">
+
+    <canvas id="edit-canvas" tabindex="1"></canvas>
+
+    <div id="mini-console"></div>
+    <div id="context-menu" tabindex="0"></div>
+
+    <div class="main-overlay-container cleanable-overlay">
+
+      <div class="tab-overlay-container left">
+        <div class="sidebar-shadow-box"></div>
+        <div class="sidebar-tab" data-sidebar-name="glyph-search">magnifyingglass</div>
+        <div class="sidebar-tab" data-sidebar-name="designspace-sliders">sliders</div>
+      </div>
+
+      <div class="overlay-item" id="text-entry-overlay">
+        <div class="overlay-item-fontra-icon">texttool</div>
+        <div class="overlay-content text-entry">
+          <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
+        </div>
+      </div>
+
+      <div class="tool-overlay-container">
+
+        <div class="overlay-items overlay-items-tools"><!-- ???? -->
+          <div id="edit-tools" class="tools-item">
+            <div class="tool-button selected"><div id="pointer-tool" class="tool-icon">pointer</div></div>
+            <div class="tool-button"><div id="pen-tool" class="tool-icon">pointeradd</div></div>
+            <div class="tool-button"><div id="hand-tool" class="tool-icon">hand</div></div>
+          </div>
+          <div id="zoom-tools" class="tools-item">
+            <div class="tool-button"><div id="zoom-out" class="tool-icon">minus</div></div>
+            <div class="tool-button"><div id="zoom-in" class="tool-icon">plus</div></div>
+            <div class="tool-button"><div id="zoom-fit-selection" class="tool-icon">bullseye</div></div>
+          </div>
+        </div>
+
+      </div><!-- tool-overlay-container -->
+
+      <!-- <div></div> --><!-- overlay filler -->
+
+      <div class="tab-overlay-container right">
+        <div class="sidebar-shadow-box"></div>
+        <div class="sidebar-tab" data-sidebar-name="sidebar-selection-info">info</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="sidebar-container right cleanable-overlay">
+    <div class="sidebar-content" data-sidebar-name="sidebar-selection-info">
+
+      <div class="sidebar-selection-info">
+        <div id="selection-info">
+          <!-- contents will be filled dynamically -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+
+<script type="module">
+  import { EditorController } from "/editor/editor.js";
+
+  async function startApp() {
+    window.editorController = await EditorController.fromWebSocket();
+  }
+
+  startApp();
+</script>
 
 </html>
