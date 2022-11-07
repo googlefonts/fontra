@@ -1,116 +1,116 @@
 <!DOCTYPE html>
 <html>
 
-  <head>
-    <meta charset="utf-8"/>
-    <title>Fontra</title>
-    <link href="/css/ui-styling.css" rel="stylesheet">
-    <link href="/css/slider.css" rel="stylesheet">
-    <link href="/css/context-menu.css" rel="stylesheet">
-    <link href="/css/core.css" rel="stylesheet">
-    <link href="/editor/editor.css" rel="stylesheet">
-  </head>
+<head>
+  <meta charset="utf-8"/>
+  <title>Fontra</title>
+  <link href="/css/ui-styling.css" rel="stylesheet">
+  <link href="/css/slider.css" rel="stylesheet">
+  <link href="/css/context-menu.css" rel="stylesheet">
+  <link href="/css/core.css" rel="stylesheet">
+  <link href="/editor/editor.css" rel="stylesheet">
+</head>
 
-  <body>
+<body>
 
-    <div id="global-loader-spinner"></div>
+<div id="global-loader-spinner"></div>
 
-    <div class="editor-container">
+<div class="editor-container">
 
-      <div class="canvas-container">
+  <div class="canvas-container">
 
-        <div id="overlay-layer">
+    <div id="overlay-layer">
 
-          <div class="overlay-items overlay-items-navigation">
+      <div class="overlay-items overlay-items-navigation">
 
-            <div class="overlay-item" id="glyph-search-overlay">
-              <div class="overlay-item-fontra-icon">magnifyingglass</div>
+        <div class="overlay-item" id="glyph-search-overlay">
+          <div class="overlay-item-fontra-icon">magnifyingglass</div>
 
-              <div class="overlay-content glyphs-navigation">
-                <div class="glyphs-search">
-                  <input
-                    type="text"
-                    class="glyphs-search-input"
-                    id="glyphs-search-input"
-                    placeholder="Search glyphs"
-                    autocomplete="off"
-                    oninput="window.editorController.glyphSearchFieldChanged(value)">
-                </div>
-                <div id="glyphs-list" tabindex="1">
-                  <!-- contents will be filled dynamically -->
-                </div>
-              </div>
-
+          <div class="overlay-content glyphs-navigation">
+            <div class="glyphs-search">
+              <input
+                type="text"
+                class="glyphs-search-input"
+                id="glyphs-search-input"
+                placeholder="Search glyphs"
+                autocomplete="off"
+                oninput="window.editorController.glyphSearchFieldChanged(value)">
             </div>
-
-            <div class="overlay-item" id="sliders-overlay">
-              <div class="overlay-item-fontra-icon">sliders</div>
-              <div class="overlay-content sliders-and-sources">
-                <div class="axis-sliders" id="axis-sliders">
-                  <!-- contents will be filled dynamically -->
-                </div>
-                <div class="sources-list" id="sources-list" tabindex="1">
-                  <!-- contents will be filled dynamically -->
-                </div>
-              </div>
-            </div>
-
-            <div class="overlay-item" id="text-entry-overlay">
-              <div class="overlay-item-fontra-icon">texttool</div>
-              <div class="overlay-content text-entry">
-                <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
-              </div>
-            </div>
-
-          </div>
-
-          <div class="overlay-items overlay-items-tools">
-            <div id="edit-tools" class="tools-item">
-              <div class="tool-button selected"><div id="pointer-tool" class="tool-icon">pointer</div></div>
-              <div class="tool-button"><div id="pen-tool" class="tool-icon">pointeradd</div></div>
-              <div class="tool-button"><div id="hand-tool" class="tool-icon">hand</div></div>
-            </div>
-            <div id="zoom-tools" class="tools-item">
-              <div class="tool-button"><div id="zoom-out" class="tool-icon">minus</div></div>
-              <div class="tool-button"><div id="zoom-in" class="tool-icon">plus</div></div>
-              <div class="tool-button"><div id="zoom-fit-selection" class="tool-icon">bullseye</div></div>
+            <div id="glyphs-list" tabindex="1">
+              <!-- contents will be filled dynamically -->
             </div>
           </div>
 
-          <div class="overlay-items overlay-items-info">
+        </div>
 
-            <div class="overlay-item" id="selection-info-overlay">
-              <div class="overlay-item-fontra-icon">info</div>
-              <div class="overlay-content">
-                <div id="selection-info">
-                  <!-- contents will be filled dynamically -->
-                </div>
-              </div>
+        <div class="overlay-item" id="sliders-overlay">
+          <div class="overlay-item-fontra-icon">sliders</div>
+          <div class="overlay-content sliders-and-sources">
+            <div class="axis-sliders" id="axis-sliders">
+              <!-- contents will be filled dynamically -->
             </div>
-
+            <div class="sources-list" id="sources-list" tabindex="1">
+              <!-- contents will be filled dynamically -->
+            </div>
           </div>
+        </div>
 
-        </div><!-- overlay-layer -->
+        <div class="overlay-item" id="text-entry-overlay">
+          <div class="overlay-item-fontra-icon">texttool</div>
+          <div class="overlay-content text-entry">
+            <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
+          </div>
+        </div>
 
-        <div id="mini-console"></div>
-        <div id="context-menu" tabindex="0"></div>
+      </div>
 
-        <canvas id="edit-canvas" tabindex="1"></canvas>
+      <div class="overlay-items overlay-items-tools">
+        <div id="edit-tools" class="tools-item">
+          <div class="tool-button selected"><div id="pointer-tool" class="tool-icon">pointer</div></div>
+          <div class="tool-button"><div id="pen-tool" class="tool-icon">pointeradd</div></div>
+          <div class="tool-button"><div id="hand-tool" class="tool-icon">hand</div></div>
+        </div>
+        <div id="zoom-tools" class="tools-item">
+          <div class="tool-button"><div id="zoom-out" class="tool-icon">minus</div></div>
+          <div class="tool-button"><div id="zoom-in" class="tool-icon">plus</div></div>
+          <div class="tool-button"><div id="zoom-fit-selection" class="tool-icon">bullseye</div></div>
+        </div>
+      </div>
 
-      </div><!-- canvas-container -->
+      <div class="overlay-items overlay-items-info">
 
-    </div><!-- editor-container -->
+        <div class="overlay-item" id="selection-info-overlay">
+          <div class="overlay-item-fontra-icon">info</div>
+          <div class="overlay-content">
+            <div id="selection-info">
+              <!-- contents will be filled dynamically -->
+            </div>
+          </div>
+        </div>
 
-  </body>
+      </div>
 
-  <script type="module">
-    import { EditorController } from "/editor/editor.js";
+    </div><!-- overlay-layer -->
 
-    async function startApp() {
-      window.editorController = await EditorController.fromWebSocket();
-    }
+    <div id="mini-console"></div>
+    <div id="context-menu" tabindex="0"></div>
 
-    startApp();
-  </script>
+    <canvas id="edit-canvas" tabindex="1"></canvas>
+
+  </div><!-- canvas-container -->
+
+</div><!-- editor-container -->
+
+</body>
+
+<script type="module">
+  import { EditorController } from "/editor/editor.js";
+
+  async function startApp() {
+    window.editorController = await EditorController.fromWebSocket();
+  }
+
+  startApp();
+</script>
 
 </html>
