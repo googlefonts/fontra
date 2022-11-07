@@ -43,8 +43,11 @@ export class ContextMenu {
       }
     }
 
-    const container = document.querySelector("body");
-    const {clientX: mouseX, clientY: mouseY} = event;
+    const container = this.element.parentElement;
+    let {clientX: mouseX, clientY: mouseY} = event;
+    mouseX -= container.offsetLeft;
+    mouseY -= container.offsetTop;
+
     const [normalizedX, normalizedY] = normalizedPosition(container, this.element, mouseX, mouseY);
 
     this.element.style.top = `${normalizedY - 1}px`;
