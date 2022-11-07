@@ -109,7 +109,7 @@ input[type="text"],
 textarea {
   background-color: var(--editor-text-entry-input-background-color);
   color: var(--editor-text-entry-input-foreground-color);
-  border-radius: 0.5em;
+  border-radius: 0.25em;
   border: 0.5px solid lightgray;
   outline: none;
   padding: 0.2em 0.5em;
@@ -207,15 +207,15 @@ textarea {
 
 .overlay-item {
   background-color: var(--editor-overlay-item-background-color);
-  border-radius: 0.75em;
+  border-radius: 0.8em;
   padding: 0.4em;
   box-shadow: 1.5px 1.5px 5px #0006;
   cursor: pointer;
   transition: 0.15s;
   display: flex;
-  width: 2.2em;
-  height: 2.2em;
-  max-height: calc(100% - 1em);
+  box-sizing: border-box;
+  height: 2.8em;
+  width: 2.8em;
   pointer-events: auto;
   overflow: hidden;
 }
@@ -273,13 +273,14 @@ textarea {
 
 .overlay-item-fontra-icon {
   display: inline;
-  font-family: fontra-icons;
-  font-size: 1.8rem;
   user-select: none;
   text-align: center;
   width: 100%;
   position: relative;
-  line-height: 1.65rem;
+  font-family: fontra-icons;
+  font-size: 2em;
+  line-height: 0.7em;
+  padding: 0.06em 0 0 0;
   transition: all 0.125s ease-in-out;
 }
 
