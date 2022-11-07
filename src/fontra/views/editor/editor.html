@@ -271,14 +271,14 @@ function tabClick(event, side) {
       sidebarContainer.classList.toggle("visible", !isSelected);
       if (isSelected) {
         setTimeout(() => {
-          sidebarContent.classList.remove("selected");
+          sidebarContent?.classList.remove("selected");
         }, 120);  // timing should match sidebar-container transition
       } else {
-        sidebarContent.classList.add("selected");
+        sidebarContent?.classList.add("selected");
       }
     } else {
       item.classList.remove("selected");
-      sidebarContent.classList.remove("selected");
+      sidebarContent?.classList.remove("selected");
     }
   }
 
