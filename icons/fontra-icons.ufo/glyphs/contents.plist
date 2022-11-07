@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
+    <key>_geartooth</key>
+    <string>_geartooth.glif</string>
     <key>a</key>
     <string>a.glif</string>
     <key>b</key>
@@ -18,6 +20,8 @@
     <string>f.glif</string>
     <key>g</key>
     <string>g.glif</string>
+    <key>gear</key>
+    <string>gear.glif</string>
     <key>h</key>
     <string>h.glif</string>
     <key>hand</key>
