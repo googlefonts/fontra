@@ -77,6 +77,8 @@
       <string>plus</string>
       <string>minus</string>
       <string>hand</string>
+      <string>gear</string>
+      <string>_geartooth</string>
     </array>
   </dict>
 </plist>
