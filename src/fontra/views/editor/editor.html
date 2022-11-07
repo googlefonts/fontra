@@ -11,95 +11,372 @@
   <link href="/editor/editor.css" rel="stylesheet">
 </head>
 
-<body>
+<style type="text/css">
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
+
+:root {
+  --sidebar-tab-width: 1.55em;
+  --sidebar-content-width: 20em;
+}
+
+.editor-container {
+  display: grid;
+  position: relative;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: 100%;
+  height: 100%;
+  background-color: #F0F0F0;
+}
+
+.sidebar-container {
+  z-index: 100;
+
+  background-color: white;  /* var(--XXX) */
+  width: 0;
+  height: 100%;
+  transition: 120ms;  /* timing should match timer in tabClick() */
+}
+
+.sidebar-container.visible {
+  width: var(--sidebar-content-width);
+}
+
+.sidebar-container.left {
+  grid-column: 1;
+}
+
+.main-container {
+  position: relative;
+  grid-column: 2;
+}
+
+.sidebar-container.right {
+  grid-column: 3;
+}
+
+.main-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.main-overlay-container {
+  position: absolute;
+  display: grid;
+  grid-template-columns: auto 2fr 1fr 2fr auto;
+
+  box-sizing: border-box;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  pointer-events: none;
+}
+
+.tab-overlay-container {
+  display: grid;
+  gap: 1em;
+  padding-top: 1em;
+  align-content: start;
+}
+
+.tab-overlay-container.left {
+  grid-column: 1;
+  justify-content: start;
+  justify-items: start;
+}
+
+.tab-overlay-container.right {
+  grid-column: 5;
+  justify-content: end;
+  justify-items: end;
+}
+
+.sidebar-shadow-box {
+  z-index: 10;
+  position: absolute;
+
+  box-shadow: 0px 0px 8px #0006;
+  width: 50px;  /* arbitrary > blur radius */
+  height: 100%;
+}
+
+.tab-overlay-container.left > .sidebar-shadow-box {
+  left: -50px;
+}
+
+.tab-overlay-container.right > .sidebar-shadow-box {
+  right: -50px;
+}
+
+.sidebar-tab {
+  z-index: 0;  /* below the shadow box */
+
+  box-sizing: border-box;
+  width: var(--sidebar-tab-width);
+  background-color: white;
+  box-shadow: 0px 3px 8px #0006;
+
+  padding: 0.25em 0.25em 0.45em 0.25em;
+  font-family: fontra-icons, sans-serif;
+  font-size: 2em;
+  line-height: 0.7em;
+
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+
+  animation-duration: 120ms;
+  animation-direction: alternate;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 2;
+}
+
+.sidebar-tab.selected {
+  z-index: 20;  /* elevate it above the shadow box */
+}
+
+@keyframes tab-slide-out-animation {
+  100% { width: calc(var(--sidebar-tab-width) + 0.1em); }
+}
+
+@keyframes tab-slide-in-animation {
+  100% { width: calc(var(--sidebar-tab-width) - 0.1em); }
+}
+
+.sidebar-tab:hover {
+  animation-name: tab-slide-out-animation;
+}
+
+.sidebar-tab.selected:hover {
+  animation-name: tab-slide-in-animation;
+}
+
+.tab-overlay-container.left > .sidebar-tab {
+  border-radius: 0 0.4em 0.4em 0;
+  text-align: right;
+}
+
+.tab-overlay-container.right > .sidebar-tab {
+  border-radius: 0.4em 0 0 0.4em;
+  text-align: left;
+}
+
+.sidebar-content {
+  display: none;
+
+  box-sizing: border-box;
+  width: var(--sidebar-content-width);
+  height: 100%;
+  /*padding: 1em;*/
+}
+
+.sidebar-container.left > .sidebar-content {
+  float: right;
+}
+
+.sidebar-container.right > .sidebar-content {
+  float: left;
+}
+
+.sidebar-container > .sidebar-content.selected {
+  display: inherit;
+}
+
+/* overlay content styling */
+
+.tool-overlay-container {
+  display: grid;
+  margin: 0;
+}
+
+#text-entry-overlay {
+  margin: 1em;
+}
+
+/* sidebar content styling */
+
+.sidebar-glyph-search {
+  box-sizing: border-box;
+  height: 100%;
+  display: grid;
+  gap: 1em;
+  padding: 1em;
+  grid-template-rows: auto 1fr;
+}
+
+.designspace-sliders {
+  box-sizing: border-box;
+  /*height: 100%;*/
+  display: grid;
+  gap: 1em;
+  padding: 1em;
+  grid-template-rows: auto 1fr;
+}
+
+.sidebar-selection-info {
+  box-sizing: border-box;
+  padding: 1em;
+}
+
+</style>
+
+
+<script>
+
+function tabClick(event, side) {
+  const sidebarContainer = document.querySelector(`.sidebar-container.${side}`);
+  const clickedTab = event.target;
+  const sidebars = {};
+  for (const sideBarContent of document.querySelectorAll(
+      `.sidebar-container.${side} > .sidebar-content`)) {
+    sidebars[sideBarContent.dataset.sidebarName] = sideBarContent;
+  }
+
+  for (const item of document.querySelectorAll(
+      `.tab-overlay-container.${side} > .sidebar-tab`)) {
+    const sidebarContent = sidebars[item.dataset.sidebarName];
+    if (item === clickedTab) {
+      const isSelected = item.classList.contains("selected");
+      item.classList.toggle("selected", !isSelected);
+      sidebarContainer.classList.toggle("visible", !isSelected);
+      if (isSelected) {
+        setTimeout(() => {
+          sidebarContent.classList.remove("selected");
+        }, 120);  // timing should match sidebar-container transition
+      } else {
+        sidebarContent.classList.add("selected");
+      }
+    } else {
+      item.classList.remove("selected");
+      sidebarContent.classList.remove("selected");
+    }
+  }
+
+}
+
+function init() {
+  for (const item of document.querySelectorAll(
+      ".tab-overlay-container.left > .sidebar-tab")) {
+    item.onclick = event => tabClick(event, "left");
+  }
+
+  for (const item of document.querySelectorAll(
+      ".tab-overlay-container.right > .sidebar-tab")) {
+    item.onclick = event => tabClick(event, "right");
+  }
+
+}
+
+</script>
+
+<body onload="init()">
 
 <div id="global-loader-spinner"></div>
 
 <div class="editor-container">
 
-  <div class="canvas-container">
+  <div class="sidebar-container left">
 
-    <div id="overlay-layer">
-
-      <div class="overlay-items overlay-items-navigation">
-
-        <div class="overlay-item" id="glyph-search-overlay">
-          <div class="overlay-item-fontra-icon">magnifyingglass</div>
-
-          <div class="overlay-content glyphs-navigation">
-            <div class="glyphs-search">
-              <input
-                type="text"
-                class="glyphs-search-input"
-                id="glyphs-search-input"
-                placeholder="Search glyphs"
-                autocomplete="off"
-                oninput="window.editorController.glyphSearchFieldChanged(value)">
-            </div>
-            <div id="glyphs-list" tabindex="1">
-              <!-- contents will be filled dynamically -->
-            </div>
-          </div>
-
+    <div class="sidebar-content" data-sidebar-name="glyph-search">
+      <div class="sidebar-glyph-search">
+        <div class="glyphs-search">
+          <input
+            type="text"
+            class="glyphs-search-input"
+            id="glyphs-search-input"
+            placeholder="Search glyphs"
+            autocomplete="off"
+            oninput="window.editorController.glyphSearchFieldChanged(value)">
         </div>
-
-        <div class="overlay-item" id="sliders-overlay">
-          <div class="overlay-item-fontra-icon">sliders</div>
-          <div class="overlay-content sliders-and-sources">
-            <div class="axis-sliders" id="axis-sliders">
-              <!-- contents will be filled dynamically -->
-            </div>
-            <div class="sources-list" id="sources-list" tabindex="1">
-              <!-- contents will be filled dynamically -->
-            </div>
-          </div>
-        </div>
-
-        <div class="overlay-item" id="text-entry-overlay">
-          <div class="overlay-item-fontra-icon">texttool</div>
-          <div class="overlay-content text-entry">
-            <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="overlay-items overlay-items-tools">
-        <div id="edit-tools" class="tools-item">
-          <div class="tool-button selected"><div id="pointer-tool" class="tool-icon">pointer</div></div>
-          <div class="tool-button"><div id="pen-tool" class="tool-icon">pointeradd</div></div>
-          <div class="tool-button"><div id="hand-tool" class="tool-icon">hand</div></div>
-        </div>
-        <div id="zoom-tools" class="tools-item">
-          <div class="tool-button"><div id="zoom-out" class="tool-icon">minus</div></div>
-          <div class="tool-button"><div id="zoom-in" class="tool-icon">plus</div></div>
-          <div class="tool-button"><div id="zoom-fit-selection" class="tool-icon">bullseye</div></div>
+        <div id="glyphs-list" tabindex="1">
+          <!-- contents will be filled dynamically -->
         </div>
       </div>
+    </div>
 
-      <div class="overlay-items overlay-items-info">
-
-        <div class="overlay-item" id="selection-info-overlay">
-          <div class="overlay-item-fontra-icon">info</div>
-          <div class="overlay-content">
-            <div id="selection-info">
-              <!-- contents will be filled dynamically -->
-            </div>
-          </div>
+    <div class="sidebar-content" data-sidebar-name="designspace-sliders">
+      <div class="designspace-sliders">
+        <div class="axis-sliders" id="axis-sliders">
+          <!-- contents will be filled dynamically -->
         </div>
-
+        <div class="sources-list" id="sources-list" tabindex="1">
+          <!-- contents will be filled dynamically -->
+        </div>
       </div>
+    </div>
 
-    </div><!-- overlay-layer -->
+  </div>
+
+  <div class="main-container">
+
+    <canvas id="edit-canvas" tabindex="1"></canvas>
 
     <div id="mini-console"></div>
     <div id="context-menu" tabindex="0"></div>
 
-    <canvas id="edit-canvas" tabindex="1"></canvas>
+    <div class="main-overlay-container">
 
-  </div><!-- canvas-container -->
+      <div class="tab-overlay-container left">
+        <div class="sidebar-shadow-box"></div>
+        <div class="sidebar-tab" data-sidebar-name="glyph-search">magnifyingglass</div>
+        <div class="sidebar-tab" data-sidebar-name="designspace-sliders">sliders</div>
+      </div>
 
-</div><!-- editor-container -->
+      <div class="overlay-item" id="text-entry-overlay">
+        <div class="overlay-item-fontra-icon">texttool</div>
+        <div class="overlay-content text-entry">
+          <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
+        </div>
+      </div>
+
+      <div class="tool-overlay-container">
+
+        <div class="overlay-items overlay-items-tools"><!-- ???? -->
+          <div id="edit-tools" class="tools-item">
+            <div class="tool-button selected"><div id="pointer-tool" class="tool-icon">pointer</div></div>
+            <div class="tool-button"><div id="pen-tool" class="tool-icon">pointeradd</div></div>
+            <div class="tool-button"><div id="hand-tool" class="tool-icon">hand</div></div>
+          </div>
+          <div id="zoom-tools" class="tools-item">
+            <div class="tool-button"><div id="zoom-out" class="tool-icon">minus</div></div>
+            <div class="tool-button"><div id="zoom-in" class="tool-icon">plus</div></div>
+            <div class="tool-button"><div id="zoom-fit-selection" class="tool-icon">bullseye</div></div>
+          </div>
+        </div>
+
+      </div><!-- tool-overlay-container -->
+
+      <!-- <div></div> --><!-- overlay filler -->
+
+      <div class="tab-overlay-container right">
+        <div class="sidebar-shadow-box"></div>
+        <div class="sidebar-tab" data-sidebar-name="sidebar-selection-info">info</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="sidebar-container right">
+    <div class="sidebar-content" data-sidebar-name="sidebar-selection-info">
+
+      <div class="sidebar-selection-info">
+        <div id="selection-info">
+          <!-- contents will be filled dynamically -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
 
 </body>
 
