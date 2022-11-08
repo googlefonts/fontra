@@ -33,8 +33,8 @@
 :root {
   --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-light);
   --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-light);
-  --editor-glyphs-text-entry-background-color: var(--editor-glyphs-text-entry-background-color-light);
-  --editor-glyphs-text-entry-foreground-color: var(--editor-glyphs-text-entry-foreground-color-light);
+  --editor-text-entry-input-background-color: var(--editor-text-entry-input-background-color-light);
+  --editor-text-entry-input-foreground-color: var(--editor-text-entry-input-foreground-color-light);
   --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
   --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-light);
   --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-light);
@@ -46,8 +46,8 @@
 :root.dark-theme {
   --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-dark);
   --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-dark);
-  --editor-glyphs-text-entry-background-color: var(--editor-glyphs-text-entry-background-color-dark);
-  --editor-glyphs-text-entry-foreground-color: var(--editor-glyphs-text-entry-foreground-color-dark);
+  --editor-text-entry-input-background-color: var(--editor-text-entry-input-background-color-dark);
+  --editor-text-entry-input-foreground-color: var(--editor-text-entry-input-foreground-color-dark);
   --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-dark);
   --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-dark);
   --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-dark);
@@ -75,8 +75,8 @@
   :root.light-theme {
     --editor-glyphs-search-input-background-color: var(--editor-glyphs-search-input-background-color-light);
     --editor-glyphs-search-input-foreground-color: var(--editor-glyphs-search-input-foreground-color-light);
-    --editor-glyphs-text-entry-background-color: var(--editor-glyphs-text-entry-background-color-light);
-    --editor-glyphs-text-entry-foreground-color: var(--editor-glyphs-text-entry-foreground-color-light);
+    --editor-text-entry-input-background-color: var(--editor-text-entry-input-background-color-light);
+    --editor-text-entry-input-foreground-color: var(--editor-text-entry-input-foreground-color-light);
     --editor-overlay-item-background-color: var(--editor-overlay-item-background-color-light);
     --editor-tool-button-hover-background-color: var(--editor-tool-button-hover-background-color-light);
     --editor-tool-button-active-background-color: var(--editor-tool-button-active-background-color-light);
