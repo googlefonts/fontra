@@ -149,7 +149,7 @@ export function drawUndefinedGlyphsLayer(model, controller) {
   const context = controller.context;
   context.fillStyle = controller.drawingParameters.undefinedFlyphFillColor;
   context.textAlign = "center";
-  const fontSize = 30;
+  const fontSize = 36;
   const glyphNameFont = `${fontSize}px fontra-ui-regular, sans-serif`;
   const placeholderFont = "300px fontra-ui-regular, sans-serif";
   for (const glyphLine of model.positionedLines) {
@@ -164,7 +164,7 @@ export function drawUndefinedGlyphsLayer(model, controller) {
             const uniStr = getUniStringFromUnicode(glyph.character.codePointAt(0));
             context.fillText(uniStr, glyph.glyph.xAdvance / 2, -1.2 * fontSize);
             context.font = placeholderFont;
-            context.fillText(glyph.character, glyph.glyph.xAdvance / 2, -200);
+            context.fillText(glyph.character, glyph.glyph.xAdvance / 2, -220);
           }
         });
       }
