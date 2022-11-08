@@ -188,7 +188,7 @@ export class SceneModel {
       return sourcesInfo;
     }
     const glyph = await this.getSelectedVariableGlyphController();
-    for (let i = 0; i < glyph.sources.length; i++) {
+    for (let i = 0; i < glyph?.sources.length; i++) {
       let name = glyph.sources[i].name;
       if (!name) {
         name = `source${i}`;
@@ -352,7 +352,7 @@ export class SceneModel {
 
 function getAxisInfoFromGlyph(glyph) {
   const axisInfo = {};
-  for (const axis of glyph.axes) {
+  for (const axis of glyph?.axes || []) {
     const baseName = getAxisBaseName(axis.name);
     if (axisInfo[baseName]) {
       continue;
