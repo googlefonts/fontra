@@ -1,5 +1,5 @@
 import { isSuperset, union } from "../core/set-ops.js";
-import { parseSelection, withSavedState } from "../core/utils.js";
+import { getUniStringFromUnicode, parseSelection, withSavedState } from "../core/utils.js";
 import { subVectors } from "../core/vector.js";
 
 
@@ -140,6 +140,37 @@ export const drawCJKDesignFrameLayer = requireEditingGlyph(glyphTranslate(
   context.fill("evenodd");
 }
 ));
+
+
+export function drawUndefinedGlyphsLayer(model, controller) {
+  if (!model.positionedLines) {
+    return;
+  }
+  const context = controller.context;
+  context.fillStyle = controller.drawingParameters.undefinedFlyphFillColor;
+  context.textAlign = "center";
+  const fontSize = 30;
+  const glyphNameFont = `${fontSize}px fontra-ui-regular, sans-serif`;
+  const placeholderFont = "300px fontra-ui-regular, sans-serif";
+  for (const glyphLine of model.positionedLines) {
+    for (const glyph of glyphLine.glyphs) {
+      if (glyph.isUndefined) {
+        withSavedState(context, () => {
+          context.font = glyphNameFont;
+          context.translate(glyph.x, glyph.y);
+          context.scale(1, -1);
+          context.fillText(glyph.glyphName, glyph.glyph.xAdvance / 2, 0);
+          if (glyph.character) {
+            const uniStr = getUniStringFromUnicode(glyph.character.codePointAt(0));
+            context.fillText(uniStr, glyph.glyph.xAdvance / 2, -1.2 * fontSize);
+            context.font = placeholderFont;
+            context.fillText(glyph.character, glyph.glyph.xAdvance / 2, -200);
+          }
+        });
+      }
+    }
+  }
+}
 
 
 export const drawSelectedBaselineLayer = requireEditingGlyph(glyphTranslate(

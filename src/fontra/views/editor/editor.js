@@ -23,6 +23,7 @@ import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js"
 import {
   THEME_KEY,
   autoReload,
+  getUniStringFromUnicode,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
   parseSelection,
@@ -40,6 +41,7 @@ import { PointerTool } from "./edit-tools-pointer.js";
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
+  undefinedFlyphFillColor: "#0006",
   hoveredGlyphStrokeColor: "#BBB8",
   selectedGlyphStrokeColor: "#7778",
   nodeFillColor: "#BBB",
@@ -78,6 +80,7 @@ const drawingParametersLight = {
 const drawingParametersDark = {
   ...drawingParametersLight,
   glyphFillColor: "#FFF",
+  undefinedFlyphFillColor: "#FFF6",
   hoveredGlyphStrokeColor: "#CCC8",
   selectedGlyphStrokeColor: "#FFF8",
   nodeFillColor: "#BBB",
@@ -201,6 +204,7 @@ export class EditorController {
       sceneDraw.drawHoveredEmptyGlyphLayer,
       sceneDraw.drawMultiGlyphsLayer,
       sceneDraw.drawCJKDesignFrameLayer,
+      sceneDraw.drawUndefinedGlyphsLayer,
       // sceneDraw.drawSelectedBaselineLayer,
       sceneDraw.drawSidebearingsLayer,
       sceneDraw.drawGhostPathLayer,
@@ -1009,11 +1013,6 @@ function rectScaleAroundCenter(rect, scaleFactor, center) {
 function getCharFromUnicode(codePoint) {
   return codePoint !== undefined ? String.fromCodePoint(codePoint) : ""
 
-}
-
-
-function getUniStringFromUnicode(codePoint) {
-  return codePoint !== undefined ? "U+" + codePoint.toString(16).toUpperCase().padStart(4, "0") : ""
 }
 
 
