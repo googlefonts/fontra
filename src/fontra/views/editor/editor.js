@@ -804,14 +804,18 @@ export class EditorController {
       // If the info form is not visible, do nothing
       return;
     }
+    const varGlyphController = await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const glyphController = this.sceneController.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController?.instance;
     const glyphName = glyphController?.name;
+    const unicodes = varGlyphController?.glyph.unicodes || [];
+    const unicodesStr = unicodes.map(code => getUniStringFromUnicode(code)).join(" ");
     const canEdit = glyphController?.canEdit;
 
     const formContents = [];
     if (glyphName) {
       formContents.push({"key": "glyphName", "type": "text", "label": "Glyph name", "value": glyphName});
+      formContents.push({"key": "unicodes", "type": "text", "label": "Unicode", "value": unicodesStr});
       formContents.push({
         "type": "edit-number",
         "key": "[\"xAdvance\"]",
