@@ -149,22 +149,26 @@ export function drawUndefinedGlyphsLayer(model, controller) {
   const context = controller.context;
   context.fillStyle = controller.drawingParameters.undefinedFlyphFillColor;
   context.textAlign = "center";
-  const fontSize = 36;
-  const glyphNameFont = `${fontSize}px fontra-ui-regular, sans-serif`;
-  const placeholderFont = "300px fontra-ui-regular, sans-serif";
+  const lineDistance = 1.2;
   for (const glyphLine of model.positionedLines) {
     for (const glyph of glyphLine.glyphs) {
       if (glyph.isUndefined) {
+        const glyphNameFontSize = 0.1 * glyph.glyph.xAdvance;
+        const placeholderFontSize = 0.75 * glyph.glyph.xAdvance;
         withSavedState(context, () => {
-          context.font = glyphNameFont;
+          context.font = `${glyphNameFontSize}px fontra-ui-regular, sans-serif`;
           context.translate(glyph.x, glyph.y);
           context.scale(1, -1);
           context.fillText(glyph.glyphName, glyph.glyph.xAdvance / 2, 0);
           if (glyph.character) {
             const uniStr = getUniStringFromUnicode(glyph.character.codePointAt(0));
-            context.fillText(uniStr, glyph.glyph.xAdvance / 2, -1.2 * fontSize);
-            context.font = placeholderFont;
-            context.fillText(glyph.character, glyph.glyph.xAdvance / 2, -220);
+            context.fillText(uniStr, glyph.glyph.xAdvance / 2, -lineDistance * glyphNameFontSize);
+            context.font = `${placeholderFontSize}px fontra-ui-regular, sans-serif`;
+            context.fillText(
+              glyph.character,
+              glyph.glyph.xAdvance / 2,
+              -lineDistance * glyphNameFontSize - 0.4 * placeholderFontSize,
+            );
           }
         });
       }
