@@ -135,7 +135,7 @@
   border: solid 1px var(--ui-form-input-border-color);
   background-color: var(--ui-form-input-background-color);
   color: var(--ui-form-input-foreground-color);
-  width: 12.5em;
+  width: 9.5em;
 }
 
 .ui-form-value input[type=number] {
@@ -143,5 +143,5 @@
 }
 
 .ui-form-value input[type=range] {
-  width: 8em;
+  width: 7em;
 }
