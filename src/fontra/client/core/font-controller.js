@@ -142,7 +142,8 @@ export class FontController {
   }
 
   getDummyGlyphInstanceController(glyphName = "<dummy>") {
-    return new StaticGlyphController(glyphName, StaticGlyph.fromObject({"xAdvance": this.unitsPerEm / 2}), undefined);
+    const dummyGlyph = StaticGlyph.fromObject({"xAdvance": this.unitsPerEm / 2});
+    return new StaticGlyphController(glyphName, dummyGlyph, undefined);
   }
 
   async getSourceIndex(glyphName, location) {
