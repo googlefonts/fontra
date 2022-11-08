@@ -137,8 +137,8 @@ export class FontController {
     return instanceController;
   }
 
-  getDummyGlyphInstanceController() {
-    return new StaticGlyphController("<dummy>", StaticGlyph.fromObject({"xAdvance": this.unitsPerEm / 2}), undefined);
+  getDummyGlyphInstanceController(glyphName = "<dummy>") {
+    return new StaticGlyphController(glyphName, StaticGlyph.fromObject({"xAdvance": this.unitsPerEm / 2}), undefined);
   }
 
   async getSourceIndex(glyphName, location) {

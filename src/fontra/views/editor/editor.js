@@ -1113,6 +1113,10 @@ function glyphNamesFromText(text, cmap, reverseCmap) {
       char = String.fromCodePoint(charCode);
     }
     if (glyphName !== "") {
+      if (!glyphName && char) {
+        // TODO: ask the server to suggest a name
+        glyphName = "uni" + char.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")
+      }
       glyphNames.push({character: char, glyphName: glyphName});
     }
   }
