@@ -4,6 +4,7 @@ from collections import defaultdict
 import functools
 import logging
 from .changes import applyChange
+from .glyphnames import getSuggestedGlyphName
 
 logger = logging.getLogger(__name__)
 
@@ -192,6 +193,10 @@ class FontHandler:
                 for connection, connGlyphNames in connections
             ]
         )
+
+    @remoteMethod
+    async def getSuggestedGlyphName(self, codePoint, *, connection):
+        return getSuggestedGlyphName(codePoint)
 
 
 def _iterAllComponentNames(glyph):

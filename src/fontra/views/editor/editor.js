@@ -497,10 +497,11 @@ export class EditorController {
   async setGlyphLinesFromText(text) {
     this.enteredText = text;
     await this.fontController.ensureInitialized;
-    const glyphLines = glyphLinesFromText(
+    const glyphLines = await glyphLinesFromText(
       this.enteredText,
       this.fontController.cmap,
       this.fontController.reverseCmap,
+      codePoint => this.fontController.getSuggestedGlyphName(codePoint),
     );
     await this.setGlyphLines(glyphLines);
     await this.updateSlidersAndSources();
@@ -1060,10 +1061,10 @@ function compare(a, b) {
 }
 
 
-function glyphLinesFromText(text, cmap, reverseCmap) {
+async function glyphLinesFromText(text, cmap, reverseCmap, getSuggestedGlyphNameFunc) {
   const glyphLines = [];
   for (const line of text.split(/\r?\n/)) {
-    glyphLines.push(glyphNamesFromText(line, cmap, reverseCmap));
+    glyphLines.push(await glyphNamesFromText(line, cmap, reverseCmap, getSuggestedGlyphNameFunc));
   }
   return glyphLines;
 }
@@ -1071,7 +1072,7 @@ function glyphLinesFromText(text, cmap, reverseCmap) {
 
 const glyphNameRE = /[//\s]/g;
 
-function glyphNamesFromText(text, cmap, reverseCmap) {
+async function glyphNamesFromText(text, cmap, reverseCmap, getSuggestedGlyphNameFunc) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -1114,8 +1115,7 @@ function glyphNamesFromText(text, cmap, reverseCmap) {
     }
     if (glyphName !== "") {
       if (!glyphName && char) {
-        // TODO: ask the server to suggest a name
-        glyphName = "uni" + char.codePointAt(0).toString(16).toUpperCase().padStart(4, "0")
+        glyphName = await getSuggestedGlyphNameFunc(char.codePointAt(0));
       }
       glyphNames.push({character: char, glyphName: glyphName});
     }
