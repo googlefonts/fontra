@@ -84,8 +84,7 @@ export class PointerTool extends BaseTool {
 
     if (initiateRectSelect) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
-    }
-    if (initiateDrag) {
+    } else if (initiateDrag) {
       return await this.handleDragSelection(eventStream, initialEvent);
     }
   }
