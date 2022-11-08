@@ -235,3 +235,8 @@ export function parseSelection(selection) {
   }
   return result;
 }
+
+
+export function getUniStringFromUnicode(codePoint) {
+  return codePoint !== undefined ? "U+" + codePoint.toString(16).toUpperCase().padStart(4, "0") : ""
+}
