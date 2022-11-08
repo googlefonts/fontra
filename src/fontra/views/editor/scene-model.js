@@ -394,13 +394,17 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
     for (const glyphInfo of glyphLine) {
       const location = {...localLocations[glyphInfo.glyphName], ...globalLocation}
       let glyphInstance = await fontController.getGlyphInstance(glyphInfo.glyphName, location);
-      if (!glyphInstance) {
+      const isUndefined = !glyphInstance;
+      if (isUndefined) {
         glyphInstance = fontController.getDummyGlyphInstanceController(glyphInfo.glyphName);
       }
       positionedLine.glyphs.push({
         "x": x,
         "y": y,
         "glyph": glyphInstance,
+        "glyphName": glyphInfo.glyphName,
+        "character": glyphInfo.character,
+        "isUndefined": isUndefined,
       })
       x += glyphInstance.xAdvance;
     }
