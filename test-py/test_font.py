@@ -870,8 +870,8 @@ async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
 
 
 getReverseCmapTestData = [
-    ("designspace", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
-    ("ufo", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")]}),
+    ("designspace", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")], "I.narrow": []}),
+    ("ufo", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")], "I.narrow": []}),
 ]
 
 
