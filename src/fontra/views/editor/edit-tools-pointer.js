@@ -94,6 +94,14 @@ export class PointerTool extends BaseTool {
     if (!selection || !selection.size) {
       sceneController.selectedGlyph = this.sceneModel.glyphAtPoint(point);
       sceneController.selectedGlyphIsEditing = !!sceneController.selectedGlyph;
+      const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
+      if (positionedGlyph?.isUndefined) {
+        sceneController.selectedGlyph = undefined;
+        sceneController.selectedGlyphIsEditing = false;
+        // Create a new glyph
+        // Or: ask user if they want to create a new glyph
+        console.log("Create a new glyph?", positionedGlyph.character, positionedGlyph.glyphName);
+      }
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const {
