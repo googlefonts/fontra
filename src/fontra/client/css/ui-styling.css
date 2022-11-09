@@ -103,6 +103,7 @@
   display: grid;
   grid-template-columns: min-content min-content;
   gap: 0.35rem 0.35rem;
+  overflow-x: hidden;
   overflow-y: scroll;
   user-select: none;
 }
