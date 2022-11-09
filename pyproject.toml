@@ -16,6 +16,7 @@ dependencies = [
     "aiohttp>=3.8.1",
     "dacite>=1.6.0",
     "fonttools[ufo,unicode]>=4.37.2",
+    "glyphsLib>=6.0.4",
     "watchfiles>=0.10",
 ]
 dynamic = ["version"]
