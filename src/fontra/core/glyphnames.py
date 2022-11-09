@@ -32,14 +32,18 @@ def getUnicodeFromGlyphName(glyphName):
     if info is not None:
         codePoint = int(info["unicode"], 16)
     elif glyphName.startswith("uni"):
-        try:
-            codePoint = int(glyphName[3:], 16)
-        except ValueError:
-            pass
+        uniStr = glyphName[3:]
+        if 4 <= len(uniStr) <= 5:
+            try:
+                codePoint = int(uniStr, 16)
+            except ValueError:
+                pass
     elif glyphName.startswith("u"):
-        try:
-            codePoint = int(glyphName[1:], 16)
-        except ValueError:
-            pass
+        uniStr = glyphName[1:]
+        if len(uniStr) == 5:
+            try:
+                codePoint = int(uniStr, 16)
+            except ValueError:
+                pass
 
     return codePoint
