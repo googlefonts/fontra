@@ -805,10 +805,16 @@ export class EditorController {
       return;
     }
     const varGlyphController = await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-    const glyphController = this.sceneController.sceneModel.getSelectedStaticGlyphController();
+    const positionedGlyph = this.sceneController.sceneModel.getSelectedPositionedGlyph();
+    const glyphController = positionedGlyph?.glyph;
     const instance = glyphController?.instance;
     const glyphName = glyphController?.name;
     const unicodes = varGlyphController?.glyph.unicodes || [];
+    if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
+      // Glyph does not yet exist in the font, so varGlyphController is undefined,
+      // But we can grab the unicode from positionedGlyph.character anyway.
+      unicodes.push(positionedGlyph.character.codePointAt(0));
+    }
     const unicodesStr = unicodes.map(code => getUniStringFromUnicode(code)).join(" ");
     const canEdit = glyphController?.canEdit;
 
