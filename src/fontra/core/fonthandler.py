@@ -4,7 +4,8 @@ from collections import defaultdict
 import functools
 import logging
 from .changes import applyChange
-from .glyphnames import getSuggestedGlyphName
+from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
+
 
 logger = logging.getLogger(__name__)
 
@@ -197,6 +198,10 @@ class FontHandler:
     @remoteMethod
     async def getSuggestedGlyphName(self, codePoint, *, connection):
         return getSuggestedGlyphName(codePoint)
+
+    @remoteMethod
+    async def getUnicodeFromGlyphName(self, glyphName, *, connection):
+        return getUnicodeFromGlyphName(glyphName)
 
 
 def _iterAllComponentNames(glyph):

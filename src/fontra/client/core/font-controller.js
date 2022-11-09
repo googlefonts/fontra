@@ -50,6 +50,10 @@ export class FontController {
     return await this.font.getSuggestedGlyphName(codePoint);
   }
 
+  async getUnicodeFromGlyphName(glyphName) {
+    return await this.font.getUnicodeFromGlyphName(glyphName);
+  }
+
   async hasGlyph(glyphName) {
     return glyphName in this.reverseCmap;
   }
