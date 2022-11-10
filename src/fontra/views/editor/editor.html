@@ -250,58 +250,7 @@ html, body {
 
 </style>
 
-
-<script>
-
-// TODO: this should move to a module, perhaps ui-sidebar.js
-
-function tabClick(event, side) {
-  const sidebarContainer = document.querySelector(`.sidebar-container.${side}`);
-  const clickedTab = event.target;
-  const sidebars = {};
-  for (const sideBarContent of document.querySelectorAll(
-      `.sidebar-container.${side} > .sidebar-content`)) {
-    sidebars[sideBarContent.dataset.sidebarName] = sideBarContent;
-  }
-
-  for (const item of document.querySelectorAll(
-      `.tab-overlay-container.${side} > .sidebar-tab`)) {
-    const sidebarContent = sidebars[item.dataset.sidebarName];
-    if (item === clickedTab) {
-      const isSelected = item.classList.contains("selected");
-      item.classList.toggle("selected", !isSelected);
-      sidebarContainer.classList.toggle("visible", !isSelected);
-      if (isSelected) {
-        setTimeout(() => {
-          sidebarContent?.classList.remove("selected");
-        }, 120);  // timing should match sidebar-container transition
-      } else {
-        sidebarContent?.classList.add("selected");
-      }
-    } else {
-      item.classList.remove("selected");
-      sidebarContent?.classList.remove("selected");
-    }
-  }
-
-}
-
-function init() {
-  for (const item of document.querySelectorAll(
-      ".tab-overlay-container.left > .sidebar-tab")) {
-    item.onclick = event => tabClick(event, "left");
-  }
-
-  for (const item of document.querySelectorAll(
-      ".tab-overlay-container.right > .sidebar-tab")) {
-    item.onclick = event => tabClick(event, "right");
-  }
-
-}
-
-</script>
-
-<body onload="init()">
+<body>
 
 <div id="global-loader-spinner"></div>
 

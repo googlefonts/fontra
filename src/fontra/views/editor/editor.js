@@ -318,14 +318,47 @@ export class EditorController {
 
   initSidebars() {
     for (const sidebarTab of document.querySelectorAll(".sidebar-tab")) {
+      const methodName = hyphenatedToCamelCase("toggle-" + sidebarTab.dataset.sidebarName);
+      const side = sidebarTab.parentElement.classList.contains("left") ? "left" : "right";
       sidebarTab.addEventListener("click", event => {
-        const methodName = hyphenatedToCamelCase("toggle-" + sidebarTab.dataset.sidebarName);
+        this.tabClick(event, side);
         const onOff = event.target.classList.contains("selected");
-        console.log(methodName);
         this[methodName]?.call(this, onOff);
       })
     }
   }
+
+  tabClick(event, side) {
+    const sidebarContainer = document.querySelector(`.sidebar-container.${side}`);
+    const clickedTab = event.target;
+    const sidebars = {};
+    for (const sideBarContent of document.querySelectorAll(
+        `.sidebar-container.${side} > .sidebar-content`)) {
+      sidebars[sideBarContent.dataset.sidebarName] = sideBarContent;
+    }
+
+    for (const item of document.querySelectorAll(
+        `.tab-overlay-container.${side} > .sidebar-tab`)) {
+      const sidebarContent = sidebars[item.dataset.sidebarName];
+      if (item === clickedTab) {
+        const isSelected = item.classList.contains("selected");
+        item.classList.toggle("selected", !isSelected);
+        sidebarContainer.classList.toggle("visible", !isSelected);
+        if (isSelected) {
+          setTimeout(() => {
+            sidebarContent?.classList.remove("selected");
+          }, 120);  // timing should match sidebar-container transition
+        } else {
+          sidebarContent?.classList.add("selected");
+        }
+      } else {
+        item.classList.remove("selected");
+        sidebarContent?.classList.remove("selected");
+      }
+    }
+
+  }
+
 
   initOverlayItems(canvas) {
     // The following execCommand seems to make empty lines behave a bit better
