@@ -161,6 +161,7 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event)
     });
 
+    this.initSidebars();
     this.initOverlayItems(canvas);
     this.initMiniConsole();
     this.infoForm = new Form("selection-info");
@@ -315,17 +316,20 @@ export class EditorController {
     });
   }
 
-  initOverlayItems(canvas) {
-    // The following execCommand seems to make empty lines behave a bit better
-    document.execCommand("defaultParagraphSeparator", false, "br");
-
+  initSidebars() {
     for (const sidebarTab of document.querySelectorAll(".sidebar-tab")) {
       sidebarTab.addEventListener("click", event => {
         const methodName = hyphenatedToCamelCase("toggle-" + sidebarTab.dataset.sidebarName);
         const onOff = event.target.classList.contains("selected");
+        console.log(methodName);
         this[methodName]?.call(this, onOff);
       })
     }
+  }
+
+  initOverlayItems(canvas) {
+    // The following execCommand seems to make empty lines behave a bit better
+    document.execCommand("defaultParagraphSeparator", false, "br");
 
     const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
     this.textEntryElement = document.querySelector("#text-entry-textarea");
