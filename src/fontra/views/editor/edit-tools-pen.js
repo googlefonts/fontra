@@ -198,6 +198,7 @@ function setupAnchorPoint(context, path, point, shiftConstrain) {
 
 function setupExistingAnchorPoint(context, path, point, shiftConstrain) {
   context.anchorIndex = context.contourPointIndex;
+  context.anchorPoint = path.getContourPoint(context.contourIndex, context.contourPointIndex);
 }
 
 
