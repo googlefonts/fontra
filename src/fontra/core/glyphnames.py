@@ -40,10 +40,12 @@ def getUnicodeFromGlyphName(glyphName):
                 pass
     elif glyphName.startswith("u"):
         uniStr = glyphName[1:]
-        if len(uniStr) == 5:
+        if 5 <= len(uniStr) <= 6:
             try:
                 codePoint = int(uniStr, 16)
             except ValueError:
                 pass
+            if codePoint > 0x10FFFF:
+                codePoint = None
 
     return codePoint

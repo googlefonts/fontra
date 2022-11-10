@@ -35,6 +35,8 @@ def test_getSuggestedGlyphName(codePoint, expectedGlyphName):
         ("universe", None),
         ("ugly", None),
         ("blahblah", None),
+        ("u10FFFF", 0x10FFFF),
+        ("u110000", None),
     ],
 )
 def test_getUnicodeFromGlyphName(glyphName, expectedCodePoint):
