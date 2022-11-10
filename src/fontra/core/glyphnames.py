@@ -33,14 +33,14 @@ def getUnicodeFromGlyphName(glyphName):
         codePoint = int(info["unicode"], 16)
     elif glyphName.startswith("uni"):
         uniStr = glyphName[3:]
-        if 4 <= len(uniStr) <= 5:
+        if 4 <= len(uniStr) <= 5 and uniStr.upper() == uniStr:
             try:
                 codePoint = int(uniStr, 16)
             except ValueError:
                 pass
     elif glyphName.startswith("u"):
         uniStr = glyphName[1:]
-        if 5 <= len(uniStr) <= 6:
+        if 5 <= len(uniStr) <= 6 and uniStr.upper() == uniStr:
             try:
                 codePoint = int(uniStr, 16)
             except ValueError:

@@ -27,6 +27,7 @@ def test_getSuggestedGlyphName(codePoint, expectedGlyphName):
         ("alef-hb", ord("א")),
         ("galh-ko", ord("갏")),
         ("uni354D", ord("㕍")),
+        ("uni354d", None),
         ("uni354", None),
         ("uni123456", None),
         ("u12345", 0x12345),
@@ -36,6 +37,7 @@ def test_getSuggestedGlyphName(codePoint, expectedGlyphName):
         ("ugly", None),
         ("blahblah", None),
         ("u10FFFF", 0x10FFFF),
+        ("u10ffff", None),
         ("u110000", None),
     ],
 )
