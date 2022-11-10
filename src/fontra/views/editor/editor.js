@@ -341,7 +341,13 @@ export class EditorController {
         `.tab-overlay-container.${side} > .sidebar-tab`)) {
       const sidebarContent = sidebars[item.dataset.sidebarName];
       if (item === clickedTab) {
+        const isSidebarVisible = sidebarContainer.classList.contains("visible");
         const isSelected = item.classList.contains("selected");
+        if (isSelected == isSidebarVisible) {
+          // Sidebar visibility will change
+          // this.updateWindowLocation();
+          // dispatch event?
+        }
         item.classList.toggle("selected", !isSelected);
         sidebarContainer.classList.toggle("visible", !isSelected);
         if (isSelected) {
