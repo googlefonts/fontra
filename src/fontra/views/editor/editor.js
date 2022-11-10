@@ -1003,6 +1003,17 @@ export class EditorController {
     const selBox = this.sceneController.getSelectionBox();
     const center = rectCenter(selBox || viewBox);
     viewBox = rectScaleAroundCenter(viewBox, factor, center);
+
+    const adjustFactor = this.canvasController.getProposedViewBoxClampAdjustment(viewBox);
+    if (adjustFactor !== 1) {
+      // The viewBox is too large or too small
+      if (Math.abs(adjustFactor * factor - 1) < 0.00000001) {
+        // Already at min/max magnification
+        return;
+      }
+      viewBox = rectScaleAroundCenter(viewBox, adjustFactor, center);
+    }
+
     this.animateToViewBox(viewBox);
   }
 

@@ -219,17 +219,30 @@ export class CanvasController {
   }
 
   setViewBox(viewBox) {
-    const localCenter = rectCenter(viewBox);
+    this.magnification = this._getProposedViewBoxMagnification(viewBox);
+    const canvasCenter = this.canvasPoint(rectCenter(viewBox));
+    this.origin.x = this.canvasWidth / 2 + this.origin.x - canvasCenter.x;
+    this.origin.y = this.canvasHeight / 2 + this.origin.y - canvasCenter.y;
+    this._updateDrawingParameters();
+    this.setNeedsUpdate();
+  }
+
+  getProposedViewBoxClampAdjustment(viewBox) {
+    const magnification = this._getProposedViewBoxMagnification(viewBox);
+    if (magnification < MIN_MAGNIFICATION) {
+      return magnification / MIN_MAGNIFICATION;
+    } else if (magnification > MAX_MAGNIFICATION) {
+      return magnification / MAX_MAGNIFICATION;
+    }
+    return 1;
+  }
+
+  _getProposedViewBoxMagnification(viewBox) {
     const width = this.canvasWidth;
     const height = this.canvasHeight;
     const magnificationX = Math.abs(width / (viewBox.xMax - viewBox.xMin));
     const magnificationY = Math.abs(height / (viewBox.yMax - viewBox.yMin));
-    this.magnification = Math.min(magnificationX, magnificationY);
-    const canvasCenter = this.canvasPoint(localCenter);
-    this.origin.x = width / 2 + this.origin.x - canvasCenter.x;
-    this.origin.y = height / 2 + this.origin.y - canvasCenter.y;
-    this._updateDrawingParameters();
-    this.setNeedsUpdate();
+    return Math.min(magnificationX, magnificationY);
   }
 
   _dispatchEvent(eventName, detail) {
