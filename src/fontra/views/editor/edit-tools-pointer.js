@@ -2,6 +2,7 @@ import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
+import { dialog }from "../core/ui-dialog.js";
 import { boolInt, modulo, parseSelection } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
@@ -30,9 +31,9 @@ export class PointerTool extends BaseTool {
     const point = sceneController.localPoint(initialEvent);
     const selection = this.sceneModel.selectionAtPoint(point, sceneController.mouseClickMargin);
     if (initialEvent.detail == 2 || initialEvent.myTapCount == 2) {
-      await this.handleDoubleCick(selection, point);
       initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
       eventStream.done();
+      await this.handleDoubleCick(selection, point);
       return;
     }
 
@@ -100,7 +101,20 @@ export class PointerTool extends BaseTool {
         sceneController.selectedGlyphIsEditing = false;
         // Create a new glyph
         // Or: ask user if they want to create a new glyph
-        console.log("Create a new glyph?", positionedGlyph.character, positionedGlyph.glyphName);
+        const uniHex = positionedGlyph.character?.codePointAt(0).toString(16).toUpperCase().padStart(4, "0");
+        const charMsg = positionedGlyph.character ? ` for character “${positionedGlyph.character}” (U+${uniHex})` : "";
+        const result = await dialog(
+          `Create a new glyph “${positionedGlyph.glyphName}”?`,
+          `Click “Okay” if you want to create a new glyph named “${positionedGlyph.glyphName}”${charMsg}.`,
+          [
+            {"title": "No", "resultValue": "no", "isCancelButton": true},
+            {"title": "Okay", "resultValue": "ok", "isDefaultButton": true},
+          ],
+        )
+        if (result === "ok") {
+          // TODO: actually create a new glyph
+          console.log("Create a new glyph:", positionedGlyph.character, positionedGlyph.glyphName);
+        }
       }
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
