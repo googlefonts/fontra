@@ -316,7 +316,7 @@ export class SceneController {
       // - cancel
       const result = await dialog(
         `Can’t edit glyph “${this.getSelectedGlyphName()}”`,
-        "Location is not at a source",
+        "Location is not at a source.",
         [{"title": "Okay", "resultValue": "ok"}],
       );
       return null;
