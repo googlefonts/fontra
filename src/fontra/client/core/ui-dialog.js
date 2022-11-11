@@ -46,6 +46,8 @@ export function dialog(headline, message, buttonDefs, autoDismissTimeout) {
     if (buttonDef.isDefaultButton) {
       buttonElement.classList.add("default");
       defaultButtonElement = buttonElement;
+    } else if (buttonDef.isCancelButton) {
+      cancelButtonElement = buttonElement;
     }
     buttonElement.value = buttonDef.title;
     buttonElement.onclick = event => {
