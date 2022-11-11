@@ -2,12 +2,12 @@ import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
+import { dialog }from "../core/ui-dialog.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
 import { arrowKeyDeltas, hasShortcutModifierKey, parseSelection, reversed } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
-
 
 export class SceneController {
 
@@ -310,11 +310,15 @@ export class SceneController {
   async editInstance(editFunc, senderID) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
-      console.log(`can't edit glyph '${this.getSelectedGlyphName()}': location is not a source`);
-      // TODO: dialog with options:
+      // TODO: add options to dialog:
       // - go to closest source
       // - insert new source here
       // - cancel
+      const result = await dialog(
+        `Can’t edit glyph “${this.getSelectedGlyphName()}”`,
+        "Location is not at a source",
+        [{"title": "Okay", "resultValue": "ok"}],
+      );
       return null;
     }
     const editContext = await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
