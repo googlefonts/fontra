@@ -318,6 +318,7 @@ export class SceneController {
         `Can’t edit glyph “${this.getSelectedGlyphName()}”`,
         "Location is not at a source.",
         [{"title": "Okay", "resultValue": "ok"}],
+        2500,  /* auto dismiss after a timeout */
       );
       return null;
     }

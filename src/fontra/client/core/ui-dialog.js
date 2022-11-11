@@ -1,7 +1,7 @@
 import { enumerate } from "./utils.js";
 
 
-export function dialog(headline, message, buttonDefs) {
+export function dialog(headline, message, buttonDefs, autoDismissTimeout) {
   /* return a Promise the the result of the user action, or null for cancel */
 
   const dialogDone = result => {
@@ -68,6 +68,10 @@ export function dialog(headline, message, buttonDefs) {
 
   /* prevent clicks on the dialog itself to propagate to the container */
   content.onclick = event => event.stopImmediatePropagation();
+
+  if (autoDismissTimeout) {
+    setTimeout(() => dialogDone(null), autoDismissTimeout);
+  }
 
   container.classList.add("visible");
   content.focus();
