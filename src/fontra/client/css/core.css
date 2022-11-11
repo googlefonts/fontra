@@ -24,6 +24,8 @@
 
 
 :root {
+  --fontra-red-color: #F11759;
+
   --foreground-color-light: black;
   --background-color-light: #F6F6F6;
   --foreground-color-dark: white;
