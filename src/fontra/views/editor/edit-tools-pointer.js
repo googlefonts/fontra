@@ -112,6 +112,11 @@ export class PointerTool extends BaseTool {
           ],
         )
         if (result === "ok") {
+          dialog(
+            "⚠️ Work In Progress ⚠️",
+            "Creating a new glyph has not yet been implemented.",
+            [{"title": "Okay", "isDefaultButton": true}],
+          );
           // TODO: actually create a new glyph
           console.log("Create a new glyph:", positionedGlyph.character, positionedGlyph.glyphName);
         }
