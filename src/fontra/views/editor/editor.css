@@ -5,7 +5,7 @@
   --editor-glyphs-search-input-foreground-color-light: black;
   --editor-glyphs-search-input-foreground-color-dark: white;
 
-  --editor-text-entry-input-background-color-light: white;
+  --editor-text-entry-input-background-color-light: #EEE;
   --editor-text-entry-input-background-color-dark: #333;
 
   --editor-text-entry-input-foreground-color-light: black;
@@ -115,6 +115,7 @@ textarea {
   padding: 0.2em 0.5em;
   font-family: fontra-ui-regular, sans-serif;
   font-size: 1.1rem;
+  resize: none;
 }
 
 
@@ -175,40 +176,12 @@ textarea {
   display: none;
 }
 
-.overlay-items {
+.tools-overlay {
   display: flex;
   flex-direction: row;
   gap: 1em;
   padding: 1em;
-  /*width: min-content;*/
-  /*height: 100%;*/
-}
-
-.overlay-items-navigation {
-
-}
-
-.overlay-items-tools {
   justify-self: center;
-}
-
-.overlay-items-info {
-  justify-self: end;
-}
-
-.overlay-item {
-  background-color: var(--editor-overlay-item-background-color);
-  border-radius: 0.8em;
-  padding: 0.4em;
-  box-shadow: 1.5px 1.5px 5px #0006;
-  cursor: pointer;
-  transition: 0.15s;
-  display: flex;
-  box-sizing: border-box;
-  height: 2.8em;
-  width: 2.8em;
-  pointer-events: auto;
-  overflow: hidden;
 }
 
 .tools-item {
@@ -257,44 +230,6 @@ textarea {
   color: var(--background-color);
 }
 
-.overlay-item-expanded {
-  width: max-content;
-  height: max-content;
-}
-
-.overlay-item-fontra-icon {
-  display: inline;
-  user-select: none;
-  text-align: center;
-  width: 100%;
-  position: relative;
-  font-family: fontra-icons;
-  font-size: 2em;
-  line-height: 0.7em;
-  padding: 0.06em 0 0 0;
-  transition: all 0.125s ease-in-out;
-}
-
-.overlay-item-fontra-icon:hover {
-  transform: scale(1.1, 1.1)
-}
-
-.overlay-item-fontra-icon:active {
-  transform: scale(1.1, 1.1)
-}
-
-.overlay-item > .overlay-content {
-  display: none;
-}
-
-.overlay-item-expanded > .overlay-content {
-  display: inherit;
-}
-
-.overlay-item-expanded > .overlay-item-fontra-icon {
-  display: none;
-}
-
 #mini-console {
   display: none;  /* will be set to 'inherit' when needed */
   z-index: 3;
@@ -313,5 +248,4 @@ textarea {
 
 #text-entry-textarea {
   overflow-x: scroll;
-  width: 12em;
 }

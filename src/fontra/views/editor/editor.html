@@ -23,7 +23,7 @@ html, body {
 
 :root {
   --sidebar-tab-width: 1.55em;
-  --sidebar-content-width-left: 18em;
+  --sidebar-content-width-left: 20em;
   --sidebar-content-width-right: 22em;
 }
 
@@ -74,7 +74,7 @@ html, body {
 .main-overlay-container {
   position: absolute;
   display: grid;
-  grid-template-columns: 3.5em 2fr 1fr 2fr 3.5em;
+  grid-template-columns: 3.5em 1fr 3.5em;
 
   box-sizing: border-box;
   top: 0;
@@ -210,6 +210,15 @@ html, body {
 
 /* sidebar content styling */
 
+.sidebar-text-entry {
+  box-sizing: border-box;
+  height: 100%;
+  display: grid;
+  gap: 1em;
+  padding: 1em;
+  grid-template-rows: auto 1fr;
+}
+
 .sidebar-glyph-search {
   box-sizing: border-box;
   height: 100%;
@@ -262,6 +271,12 @@ html, body {
 
   <div class="sidebar-container left cleanable-overlay">
 
+    <div class="sidebar-content" data-sidebar-name="text-entry">
+      <div class="sidebar-text-entry">
+        <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
+      </div>
+    </div>
+
     <div class="sidebar-content" data-sidebar-name="glyph-search">
       <div class="sidebar-glyph-search">
         <div class="glyphs-search">
@@ -303,22 +318,16 @@ html, body {
 
       <div class="tab-overlay-container left">
         <div class="sidebar-shadow-box"></div>
+        <div class="sidebar-tab" data-sidebar-name="text-entry">texttool</div>
         <div class="sidebar-tab" data-sidebar-name="glyph-search">magnifyingglass</div>
         <div class="sidebar-tab" data-sidebar-name="designspace-sliders">sliders</div>
         <!-- <div class="sidebar-tab" data-sidebar-name="layers">layers</div> -->
         <!-- <div class="sidebar-tab" data-sidebar-name="settings">gear</div> -->
       </div>
 
-      <div class="overlay-item" id="text-entry-overlay">
-        <div class="overlay-item-fontra-icon">texttool</div>
-        <div class="overlay-content text-entry">
-          <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
-        </div>
-      </div>
-
       <div class="tool-overlay-container">
 
-        <div class="overlay-items overlay-items-tools"><!-- ???? -->
+        <div class="tools-overlay">
           <div id="edit-tools" class="tools-item">
             <div class="tool-button selected"><div id="pointer-tool" class="tool-icon">pointer</div></div>
             <div class="tool-button"><div id="pen-tool" class="tool-icon">pointeradd</div></div>
