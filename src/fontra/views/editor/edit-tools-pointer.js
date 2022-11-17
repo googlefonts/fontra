@@ -105,10 +105,10 @@ export class PointerTool extends BaseTool {
         const charMsg = positionedGlyph.character ? ` for character “${positionedGlyph.character}” (U+${uniHex})` : "";
         const result = await dialog(
           `Create a new glyph “${positionedGlyph.glyphName}”?`,
-          `Click “Okay” if you want to create a new glyph named “${positionedGlyph.glyphName}”${charMsg}.`,
+          `Click “Create” if you want to create a new glyph named “${positionedGlyph.glyphName}”${charMsg}.`,
           [
-            {"title": "No", "resultValue": "no", "isCancelButton": true},
-            {"title": "Okay", "resultValue": "ok", "isDefaultButton": true},
+            {"title": "Cancel", "resultValue": "no", "isCancelButton": true},
+            {"title": "Create", "resultValue": "ok", "isDefaultButton": true},
           ],
         )
         if (result === "ok") {
