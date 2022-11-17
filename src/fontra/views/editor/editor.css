@@ -5,7 +5,7 @@
   --editor-glyphs-search-input-foreground-color-light: black;
   --editor-glyphs-search-input-foreground-color-dark: white;
 
-  --editor-text-entry-input-background-color-light: white;
+  --editor-text-entry-input-background-color-light: #EEE;
   --editor-text-entry-input-background-color-dark: #333;
 
   --editor-text-entry-input-foreground-color-light: black;
@@ -115,6 +115,7 @@ textarea {
   padding: 0.2em 0.5em;
   font-family: fontra-ui-regular, sans-serif;
   font-size: 1.1rem;
+  resize: none;
 }
 
 
@@ -313,5 +314,4 @@ textarea {
 
 #text-entry-textarea {
   overflow-x: scroll;
-  width: 12em;
 }

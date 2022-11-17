@@ -162,7 +162,6 @@ export class EditorController {
     });
 
     this.initSidebars();
-    this.initOverlayItems(canvas);
     this.initMiniConsole();
     this.infoForm = new Form("selection-info");
 
@@ -326,6 +325,12 @@ export class EditorController {
         this[methodName]?.call(this, onOff);
       })
     }
+
+    this.textEntryElement = document.querySelector("#text-entry-textarea");
+    this.textEntryElement.addEventListener("input", () => {
+      this.textFieldChangedCallback(this.textEntryElement);
+      this.fixTextEntryHeight();
+    }, false);
   }
 
   tabClick(event, side) {
@@ -365,75 +370,9 @@ export class EditorController {
 
   }
 
-
-  initOverlayItems(canvas) {
-    // The following execCommand seems to make empty lines behave a bit better
-    document.execCommand("defaultParagraphSeparator", false, "br");
-
-    const overlayItems = Array.from(document.querySelectorAll(".overlay-item"));
-    this.textEntryElement = document.querySelector("#text-entry-textarea");
-
-    const collapseAll = () => {
-      for (const item of overlayItems) {
-        item.classList.remove("overlay-item-expanded");
-        this._callToggleOverlayItem(item.id, false);
-      }
-      this.canvasController.canvas.focus();
-    }
-
-    const collapseOnEscapeKey = event => {
-      if (event.key === "Escape") {
-        collapseAll();
-      }
-    }
-
-    this.textEntryElement.addEventListener("input", () => {
-      this.textFieldChangedCallback(this.textEntryElement);
-      this.fixTextEntryHeight();
-    }, false);
-
-    for (const item of overlayItems) {
-      item.onkeydown = event => collapseOnEscapeKey(event);
-      const overlayClick = overlayItem => {
-        if (overlayItems.indexOf(overlayItem) == -1) {
-          return;
-        }
-        for (const item of overlayItems) {
-          if (item.classList.contains("overlay-item-expanded") !== (item === overlayItem)) {
-            const v = item.classList.toggle("overlay-item-expanded", item === overlayItem);
-            if (item === overlayItem && item.id === "text-entry-overlay") {
-              this.textEntryElement.focus();
-            }
-            this._callToggleOverlayItem(item.id, item === overlayItem);
-          }
-        }
-      };
-      item.onclick = event => overlayClick(item);
-      for (const child of item.children) {
-        if (child.className === "overlay-item-fontra-icon") {
-          child.onclick = event => overlayClick(item);
-        }
-      }
-    }
-
-    canvas.addEventListener("mousedown", event => {
-      const point = this.sceneController.localPoint(event);
-      const sel = this.sceneController.sceneModel.glyphAtPoint(point, false);
-      if (!sel) {
-        collapseAll();
-      }
-    });
-    window.addEventListener("keydown", event => collapseOnEscapeKey(event));
-  }
-
   fixTextEntryHeight() {
     this.textEntryElement.style.height = "auto";
-    this.textEntryElement.style.height = this.textEntryElement.scrollHeight + "px";
-  }
-
-  _callToggleOverlayItem(itemId, onOff) {
-    const methodName = hyphenatedToCamelCase("toggle-" + itemId);
-    this[methodName]?.call(this, onOff);
+    this.textEntryElement.style.height = (this.textEntryElement.scrollHeight + 14) + "px";
   }
 
   initMiniConsole() {
@@ -827,9 +766,10 @@ export class EditorController {
     }
   }
 
-  toggleTextEntryOverlay(onOff) {
+  toggleTextEntry(onOff) {
     if (onOff) {
       this.fixTextEntryHeight();
+      this.textEntryElement.focus();
     }
   }
 
