@@ -230,11 +230,6 @@ textarea {
   color: var(--background-color);
 }
 
-.overlay-item-expanded {
-  width: max-content;
-  height: max-content;
-}
-
 #mini-console {
   display: none;  /* will be set to 'inherit' when needed */
   z-index: 3;
