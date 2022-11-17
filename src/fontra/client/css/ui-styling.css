@@ -183,7 +183,7 @@
   outline: none;  /* to catch key events we need to focus, but we don't want a focus border */
   max-width: 32em;
   overflow-wrap: normal;
-  font-size: 1.3em;
+  font-size: 1.15em;
   background-color: var(--editor-overlay-item-background-color);
   padding: 1em;
   border-radius: 0.5em;
