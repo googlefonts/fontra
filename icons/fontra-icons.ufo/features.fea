@@ -15,7 +15,7 @@ feature rlig {
   sub m i n u s by minus;
   sub h a n d by hand;
   sub g e a r by gear;
-  sub a l i g n l e f t by alignleft
-  sub a l i g n c e n t e r by aligncenter
-  sub a l i g n r i g h t by alignright
+  sub a l i g n l e f t by alignleft;
+  sub a l i g n c e n t e r by aligncenter;
+  sub a l i g n r i g h t by alignright;
 } rlig;
