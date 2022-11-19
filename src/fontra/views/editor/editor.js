@@ -707,6 +707,7 @@ export class EditorController {
     for (const key of url.searchParams.keys()) {
       viewInfo[key] = JSON.parse(url.searchParams.get(key));
     }
+    this.sceneController.sceneModel.textAlignment = viewInfo["align"] || "center";
     if (viewInfo["viewBox"]) {
       this.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
@@ -766,6 +767,9 @@ export class EditorController {
     const selArray = Array.from(this.sceneController.selection);
     if (selArray.length) {
       viewInfo["selection"] = Array.from(selArray);
+    }
+    if (this.sceneController.sceneModel.textAlignment !== "center") {
+      viewInfo["align"] = this.sceneController.sceneModel.textAlignment;
     }
     for (const [key, value] of Object.entries(viewInfo)) {
       url.searchParams.set(key, JSON.stringify(value));
