@@ -389,7 +389,12 @@ export class EditorController {
   }
 
   async setTextAlignment(align) {
+    const viewBox = this.canvasController.getViewBox();
+    const [minXPre, maxXPre] = this.sceneController.sceneModel.getTextHorizontalExtents();
     await this.sceneController.setTextAlignment(align);
+    const [minXPost, maxXPost] = this.sceneController.sceneModel.getTextHorizontalExtents();
+    this.canvasController.setViewBox(offsetRect(viewBox, minXPost - minXPre, 0));
+    this.updateWindowLocation();
   }
 
   initMiniConsole() {

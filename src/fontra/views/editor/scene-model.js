@@ -204,8 +204,19 @@ export class SceneModel {
     return sourcesInfo;
   }
 
+  getTextHorizontalExtents() {
+    switch (this.textAlignment) {
+      case "left":
+        return [0, this.longestLineLength];
+      case "center":
+        return [-this.longestLineLength / 2, this.longestLineLength / 2];
+      case "right":
+        return [-this.longestLineLength, 0];
+    }
+  }
+
   async updateScene() {
-    this.positionedLines = await buildScene(
+    [this.positionedLines, this.longestLineLength] = await buildScene(
       this.fontController, this.glyphLines, this.getGlobalLocation(), this._localLocations,
       this.textAlignment,
     );
@@ -395,6 +406,7 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
   let y = 0;
   const lineDistance = 1.1 * fontController.unitsPerEm;  // TODO make factor user-configurable
   const positionedLines = [];
+  let longestLineLength = 0;
   for (const glyphLine of glyphLines) {
     const positionedLine = {"glyphs": []};
     let x = 0;
@@ -415,6 +427,8 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
       })
       x += glyphInstance.xAdvance;
     }
+
+    longestLineLength = Math.max(longestLineLength, x);
 
     let offset = 0;
     if (align === "center") {
@@ -448,7 +462,7 @@ async function buildScene(fontController, glyphLines, globalLocation, localLocat
       positionedLines.push(positionedLine);
     }
   }
-  return positionedLines;
+  return [positionedLines, longestLineLength];
 }
 
 
