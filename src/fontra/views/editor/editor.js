@@ -331,6 +331,19 @@ export class EditorController {
       this.textFieldChangedCallback(this.textEntryElement);
       this.fixTextEntryHeight();
     }, false);
+
+    const textAlignMenuElement = document.querySelector("#text-align-menu");
+    for (const el of textAlignMenuElement.children) {
+      el.onclick = event => {
+        if (event.target.classList.contains("selected")) {
+          return;
+        }
+        for (const el of textAlignMenuElement.children) {
+          el.classList.toggle("selected", el === event.target);
+        }
+        this.setTextAlignment(el.innerText.slice(5));
+      }
+    }
   }
 
   tabClick(event, side) {
@@ -350,7 +363,7 @@ export class EditorController {
         const isSelected = item.classList.contains("selected");
         if (isSelected == isSidebarVisible) {
           // Sidebar visibility will change
-          // this.updateWindowLocation();
+          this.updateWindowLocation();
           // dispatch event?
         }
         item.classList.toggle("selected", !isSelected);
@@ -373,6 +386,15 @@ export class EditorController {
   fixTextEntryHeight() {
     this.textEntryElement.style.height = "auto";
     this.textEntryElement.style.height = (this.textEntryElement.scrollHeight + 14) + "px";
+  }
+
+  async setTextAlignment(align) {
+    const viewBox = this.canvasController.getViewBox();
+    const [minXPre, maxXPre] = this.sceneController.sceneModel.getTextHorizontalExtents();
+    await this.sceneController.setTextAlignment(align);
+    const [minXPost, maxXPost] = this.sceneController.sceneModel.getTextHorizontalExtents();
+    this.canvasController.setViewBox(offsetRect(viewBox, minXPost - minXPre, 0));
+    this.updateWindowLocation();
   }
 
   initMiniConsole() {
@@ -685,6 +707,7 @@ export class EditorController {
     for (const key of url.searchParams.keys()) {
       viewInfo[key] = JSON.parse(url.searchParams.get(key));
     }
+    this.sceneController.sceneModel.textAlignment = viewInfo["align"] || "center";
     if (viewInfo["viewBox"]) {
       this.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
@@ -744,6 +767,9 @@ export class EditorController {
     const selArray = Array.from(this.sceneController.selection);
     if (selArray.length) {
       viewInfo["selection"] = Array.from(selArray);
+    }
+    if (this.sceneController.sceneModel.textAlignment !== "center") {
+      viewInfo["align"] = this.sceneController.sceneModel.textAlignment;
     }
     for (const [key, value] of Object.entries(viewInfo)) {
       url.searchParams.set(key, JSON.stringify(value));

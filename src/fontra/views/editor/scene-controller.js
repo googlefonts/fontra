@@ -260,6 +260,11 @@ export class SceneController {
     this.canvasController.setNeedsUpdate();
   }
 
+  async setTextAlignment(align) {
+    await this.sceneModel.setTextAlignment(align);
+    this.canvasController.setNeedsUpdate();
+  }
+
   getLocation() {
     return this.sceneModel.getLocation();
   }

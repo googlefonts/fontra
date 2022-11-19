@@ -6,6 +6,12 @@
     <string>_geartooth.glif</string>
     <key>a</key>
     <string>a.glif</string>
+    <key>aligncenter</key>
+    <string>aligncenter.glif</string>
+    <key>alignleft</key>
+    <string>alignleft.glif</string>
+    <key>alignright</key>
+    <string>alignright.glif</string>
     <key>b</key>
     <string>b.glif</string>
     <key>bullseye</key>
