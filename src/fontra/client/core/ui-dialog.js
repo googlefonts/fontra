@@ -4,7 +4,12 @@ import { enumerate } from "./utils.js";
 export function dialog(headline, message, buttonDefs, autoDismissTimeout) {
   /* return a Promise the the result of the user action, or null for cancel */
 
+  let dismissTimeoutID;
   const dialogDone = result => {
+    if (dismissTimeoutID) {
+      clearTimeout(dismissTimeoutID);
+      dismissTimeoutID = undefined;
+    }
     container.innerHTML = "";
     container.classList.remove("visible");
     currentActiveElement.focus();
@@ -72,7 +77,7 @@ export function dialog(headline, message, buttonDefs, autoDismissTimeout) {
   content.onclick = event => event.stopImmediatePropagation();
 
   if (autoDismissTimeout) {
-    setTimeout(() => dialogDone(null), autoDismissTimeout);
+    dismissTimeoutID = setTimeout(() => dialogDone(null), autoDismissTimeout);
   }
 
   container.classList.add("visible");
