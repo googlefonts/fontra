@@ -332,13 +332,13 @@ export class EditorController {
       this.fixTextEntryHeight();
     }, false);
 
-    const textAlignMenuElement = document.querySelector("#text-align-menu");
-    for (const el of textAlignMenuElement.children) {
+    this.textAlignMenuElement = document.querySelector("#text-align-menu");
+    for (const el of this.textAlignMenuElement.children) {
       el.onclick = event => {
         if (event.target.classList.contains("selected")) {
           return;
         }
-        for (const el of textAlignMenuElement.children) {
+        for (const el of this.textAlignMenuElement.children) {
           el.classList.toggle("selected", el === event.target);
         }
         this.setTextAlignment(el.innerText.slice(5));
@@ -708,6 +708,7 @@ export class EditorController {
       viewInfo[key] = JSON.parse(url.searchParams.get(key));
     }
     this.sceneController.sceneModel.textAlignment = viewInfo["align"] || "center";
+    this.updateTextAlignmentUI();
     if (viewInfo["viewBox"]) {
       this.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
@@ -796,6 +797,12 @@ export class EditorController {
     if (onOff) {
       this.fixTextEntryHeight();
       this.textEntryElement.focus();
+    }
+  }
+
+  updateTextAlignmentUI() {
+    for (const el of this.textAlignMenuElement.children) {
+      el.classList.toggle("selected", el.innerText.slice(5) === this.sceneController.sceneModel.textAlignment);
     }
   }
 
