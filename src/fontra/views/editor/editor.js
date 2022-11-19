@@ -363,7 +363,7 @@ export class EditorController {
         const isSelected = item.classList.contains("selected");
         if (isSelected == isSidebarVisible) {
           // Sidebar visibility will change
-          // this.updateWindowLocation();
+          this.updateWindowLocation();
           // dispatch event?
         }
         item.classList.toggle("selected", !isSelected);
