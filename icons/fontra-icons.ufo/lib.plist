@@ -79,6 +79,9 @@
       <string>hand</string>
       <string>gear</string>
       <string>_geartooth</string>
+      <string>alignleft</string>
+      <string>aligncenter</string>
+      <string>alignright</string>
     </array>
   </dict>
 </plist>
