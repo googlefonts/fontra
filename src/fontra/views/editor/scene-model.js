@@ -20,6 +20,7 @@ export class SceneModel {
     this.hoveredGlyph = undefined;
     this._globalLocation = undefined;  // see getGlobalLocation()
     this._localLocations = {};  // glyph name -> local location
+    this.textAlignment = "center";
   }
 
   getSelectedPositionedGlyph() {
@@ -78,6 +79,11 @@ export class SceneModel {
     this.selectedGlyph = undefined;
     this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
+    await this.updateScene();
+  }
+
+  async setTextAlignment(align) {
+    this.textAlignment = align;
     await this.updateScene();
   }
 
@@ -200,7 +206,8 @@ export class SceneModel {
 
   async updateScene() {
     this.positionedLines = await buildScene(
-      this.fontController, this.glyphLines, this.getGlobalLocation(), this._localLocations
+      this.fontController, this.glyphLines, this.getGlobalLocation(), this._localLocations,
+      this.textAlignment,
     );
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
     if (!this._previousUsedGlyphNames || !isEqualSet(usedGlyphNames, this._previousUsedGlyphNames)) {

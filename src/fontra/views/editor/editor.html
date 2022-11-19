@@ -214,9 +214,38 @@ html, body {
   box-sizing: border-box;
   height: 100%;
   display: grid;
-  gap: 1em;
+  gap: 0.5em;
   padding: 1em;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto auto 1fr;
+}
+
+#text-align-menu {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: start;
+  gap: 0.5em;
+}
+
+#text-align-menu > div {
+  position: relative;
+  font-family: fontra-icons;
+  font-size: 1.5em;
+  padding: 0.02em 0.3em 0.2em 0.3em;
+  border-radius: 0.5em;
+  cursor: pointer;
+  user-select: none;
+}
+
+#text-align-menu > div:hover {
+  background-color: #C0C0C050;
+}
+
+#text-align-menu > div:active {
+  background-color: #C0C0C080;
+}
+
+#text-align-menu > div.selected {
+  background-color: #C0C0C060;
 }
 
 .sidebar-glyph-search {
@@ -273,7 +302,15 @@ html, body {
 
     <div class="sidebar-content" data-sidebar-name="text-entry">
       <div class="sidebar-text-entry">
+
         <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
+
+        <div id="text-align-menu">
+          <div>alignleft</div>
+          <div class="selected">aligncenter</div>
+          <div>alignright</div>
+        </div>
+
       </div>
     </div>
 

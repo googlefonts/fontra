@@ -331,6 +331,19 @@ export class EditorController {
       this.textFieldChangedCallback(this.textEntryElement);
       this.fixTextEntryHeight();
     }, false);
+
+    const textAlignMenuElement = document.querySelector("#text-align-menu");
+    for (const el of textAlignMenuElement.children) {
+      el.onclick = event => {
+        if (event.target.classList.contains("selected")) {
+          return;
+        }
+        for (const el of textAlignMenuElement.children) {
+          el.classList.toggle("selected", el === event.target);
+        }
+        this.setTextAlignment(el.innerText.slice(5));
+      }
+    }
   }
 
   tabClick(event, side) {
@@ -373,6 +386,10 @@ export class EditorController {
   fixTextEntryHeight() {
     this.textEntryElement.style.height = "auto";
     this.textEntryElement.style.height = (this.textEntryElement.scrollHeight + 14) + "px";
+  }
+
+  async setTextAlignment(align) {
+    await this.sceneController.setTextAlignment(align);
   }
 
   initMiniConsole() {
