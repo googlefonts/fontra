@@ -21,6 +21,7 @@ export class SceneModel {
     this._globalLocation = undefined;  // see getGlobalLocation()
     this._localLocations = {};  // glyph name -> local location
     this.textAlignment = "center";
+    this.longestLineLength = 0;
   }
 
   getSelectedPositionedGlyph() {
@@ -84,7 +85,9 @@ export class SceneModel {
 
   async setTextAlignment(align) {
     this.textAlignment = align;
-    await this.updateScene();
+    if (this.glyphLines?.length) {
+      await this.updateScene();
+    }
   }
 
   getLocation() {
