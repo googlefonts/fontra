@@ -19,6 +19,7 @@ import { SceneView } from "../core/scene-view.js"
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
+import { ValueController } from "../core/value-controller.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js"
 import {
   THEME_KEY,
@@ -333,15 +334,25 @@ export class EditorController {
     }, false);
 
     this.textAlignMenuElement = document.querySelector("#text-align-menu");
+    this.textAlignValueController = new ValueController("center");
+
+    const updateTextAlignmentUI = async () => {
+      for await (const align of this.textAlignValueController.observe(this)) {
+        this.setTextAlignment(align);
+        for (const el of this.textAlignMenuElement.children) {
+          el.classList.toggle("selected", align === el.innerText.slice(5));
+        }
+      }
+    }
+
+    updateTextAlignmentUI();
+
     for (const el of this.textAlignMenuElement.children) {
       el.onclick = event => {
         if (event.target.classList.contains("selected")) {
           return;
         }
-        for (const el of this.textAlignMenuElement.children) {
-          el.classList.toggle("selected", el === event.target);
-        }
-        this.setTextAlignment(el.innerText.slice(5));
+        this.textAlignValueController.set(el.innerText.slice(5));
       }
     }
   }
@@ -707,8 +718,7 @@ export class EditorController {
     for (const key of url.searchParams.keys()) {
       viewInfo[key] = JSON.parse(url.searchParams.get(key));
     }
-    this.sceneController.sceneModel.textAlignment = viewInfo["align"] || "center";
-    this.updateTextAlignmentUI();
+    this.textAlignValueController.set(viewInfo["align"] || "center");
     if (viewInfo["viewBox"]) {
       this.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
@@ -797,12 +807,6 @@ export class EditorController {
     if (onOff) {
       this.fixTextEntryHeight();
       this.textEntryElement.focus();
-    }
-  }
-
-  updateTextAlignmentUI() {
-    for (const el of this.textAlignMenuElement.children) {
-      el.classList.toggle("selected", el.innerText.slice(5) === this.sceneController.sceneModel.textAlignment);
     }
   }
 
