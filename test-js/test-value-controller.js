@@ -38,6 +38,14 @@ describe("ValueController Tests", () => {
     expect(() => vc.set(10, "obs1")).to.throw("can't set value: unknown observer senderID");
   });
 
+  it("falsey senderID throw test", async () => {
+    const vc = new ValueController(1);
+    expect(() => vc.observe()).to.throw("missing/falsey senderID argument");
+    expect(() => vc.observe(null)).to.throw("missing/falsey senderID argument");
+    expect(() => vc.observe(undefined)).to.throw("missing/falsey senderID argument");
+    expect(() => vc.observe("")).to.throw("missing/falsey senderID argument");
+  });
+
   it("double observe throw test", async () => {
     const vc = new ValueController(1);
     const obs1 = vc.observe("obs1");
