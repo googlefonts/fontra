@@ -41,7 +41,7 @@ describe("ValueController Tests", () => {
   it("double observe throw test", async () => {
     const vc = new ValueController(1);
     const obs1 = vc.observe("obs1");
-    expect(() => vc.observe("obs1")).to.throw("already observing with senderID obs1");
+    expect(() => vc.observe("obs1")).to.throw("senderID must be unique");
   });
 
 });

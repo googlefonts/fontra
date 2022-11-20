@@ -26,7 +26,7 @@ export class ValueController {
       throw new Error("missing/falsey senderID argument");
     }
     if (this._observers.has(senderID)) {
-      throw new Error(`already observing with senderID ${senderID}`);
+      throw new Error("senderID must be unique");
     }
     const valueStream = new QueueIterator();
     valueStream.put(this._value);
