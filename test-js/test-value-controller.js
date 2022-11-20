@@ -6,7 +6,8 @@ import { ValueController } from "../src/fontra/client/core/value-controller.js";
 
 
 describe("ValueController Tests", () => {
-  it("test", async () => {
+
+  it("basic tests", async () => {
     const vc = new ValueController(1);
     const obs1 = vc.observe("obs1");
     const obs2 = vc.observe("obs2");
@@ -36,6 +37,7 @@ describe("ValueController Tests", () => {
 
     expect(() => vc.set(10, "obs1")).to.throw("can't set value: unknown observer senderID");
   });
+
 });
 
 
