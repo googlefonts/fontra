@@ -38,6 +38,12 @@ describe("ValueController Tests", () => {
     expect(() => vc.set(10, "obs1")).to.throw("can't set value: unknown observer senderID");
   });
 
+  it("double observe throw test", async () => {
+    const vc = new ValueController(1);
+    const obs1 = vc.observe("obs1");
+    expect(() => vc.observe("obs1")).to.throw("already observing with senderID obs1");
+  });
+
 });
 
 

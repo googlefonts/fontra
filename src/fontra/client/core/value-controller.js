@@ -25,6 +25,9 @@ export class ValueController {
     if (!senderID) {
       throw new Error("missing/falsey senderID argument");
     }
+    if (this._observers.has(senderID)) {
+      throw new Error(`already observing with senderID ${senderID}`);
+    }
     const valueStream = new QueueIterator();
     valueStream.put(this._value);
     this._observers.set(senderID, valueStream);
