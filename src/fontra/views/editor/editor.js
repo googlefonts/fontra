@@ -391,6 +391,7 @@ export class EditorController {
   }
 
   fixTextEntryHeight() {
+    // This adapts the text entry height to its content
     this.textEntryElement.style.height = "auto";
     this.textEntryElement.style.height = (this.textEntryElement.scrollHeight + 14) + "px";
   }
