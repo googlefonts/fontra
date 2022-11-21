@@ -19,7 +19,6 @@ export class ValueController {
         setTimeout(() => valueCallback(value), 0);
       }
     });
-
   }
 
   addObserver(observerID, valueCallback) {
