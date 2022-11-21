@@ -333,21 +333,17 @@ export class EditorController {
       this.fixTextEntryHeight();
     }, false);
 
-    this.textAlignMenuElement = document.querySelector("#text-align-menu");
-    this.textAlignValueController = new ValueController("center");
+    const textAlignMenuElement = document.querySelector("#text-align-menu");
+    this.textAlignValueController = new ValueController();
 
-    const updateTextAlignmentUI = async () => {
-      for await (const align of this.textAlignValueController.observe(this)) {
-        this.setTextAlignment(align);
-        for (const el of this.textAlignMenuElement.children) {
-          el.classList.toggle("selected", align === el.innerText.slice(5));
-        }
+    this.textAlignValueController.addObserver("editor", align => {
+      this.setTextAlignment(align);
+      for (const el of textAlignMenuElement.children) {
+        el.classList.toggle("selected", align === el.innerText.slice(5));
       }
-    }
+    });
 
-    updateTextAlignmentUI();
-
-    for (const el of this.textAlignMenuElement.children) {
+    for (const el of textAlignMenuElement.children) {
       el.onclick = event => {
         if (event.target.classList.contains("selected")) {
           return;
@@ -400,8 +396,13 @@ export class EditorController {
   }
 
   async setTextAlignment(align) {
-    const viewBox = this.canvasController.getViewBox();
     const [minXPre, maxXPre] = this.sceneController.sceneModel.getTextHorizontalExtents();
+    if (minXPre === 0 && maxXPre === 0) {
+      // It's early, the scene is still empty, don't manipulate the view box
+      await this.sceneController.setTextAlignment(align);
+      return;
+    }
+    const viewBox = this.canvasController.getViewBox();
     await this.sceneController.setTextAlignment(align);
     const [minXPost, maxXPost] = this.sceneController.sceneModel.getTextHorizontalExtents();
     this.canvasController.setViewBox(offsetRect(viewBox, minXPost - minXPre, 0));
