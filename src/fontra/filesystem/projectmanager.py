@@ -70,10 +70,6 @@ class FileSystemProjectManager:
         for fontHandler in self.fontHandlers.values():
             await fontHandler.close()
 
-    @contextmanager
-    def useConnection(self, connection):
-        yield
-
     async def authorize(self, request):
         return "yes"  # arbitrary non-false string token
 
