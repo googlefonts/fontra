@@ -105,8 +105,8 @@
   /*padding-bottom: 1em;*/
 }
 
-input[type="text"],
-textarea {
+.glyphs-search-input,
+#text-entry-textarea {
   background-color: var(--editor-text-entry-input-background-color);
   color: var(--editor-text-entry-input-foreground-color);
   border-radius: 0.25em;
