@@ -375,12 +375,15 @@ export class EditorController {
         }
         item.classList.toggle("selected", !isSelected);
         sidebarContainer.classList.toggle("visible", !isSelected);
+        const shadowBox = document.querySelector(`.tab-overlay-container.${side} > .sidebar-shadow-box`);
         if (isSelected) {
           setTimeout(() => {
             sidebarContent?.classList.remove("selected");
+            shadowBox?.classList.remove("visible");
           }, 120);  // timing should match sidebar-container transition
         } else {
           sidebarContent?.classList.add("selected");
+          shadowBox?.classList.add("visible");
         }
       } else {
         item.classList.remove("selected");
