@@ -24,7 +24,7 @@ class FontHandler:
         self.glyphUsedBy = {}
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
-        self.changedGlyphs = {}
+        self.changedGlyphs = {}  # TODO: should perhaps be a LRU cache
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.watchExternalChanges())
         self._processGlyphWritesEvent = asyncio.Event()
