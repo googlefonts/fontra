@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 import asyncio
 from collections import defaultdict
+from copy import deepcopy
 import functools
 import logging
 from .changes import applyChange
@@ -26,11 +27,15 @@ class FontHandler:
         self.changedGlyphs = {}
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.watchExternalChanges())
+        self._processGlyphWritesEvent = asyncio.Event()
+        self._processGlyphWritesTask = asyncio.create_task(self.processGlyphWrites())
+        self._glyphsScheduledForWrite = {}
 
     async def close(self):
         self.backend.close()
         if hasattr(self, "_watcherTask"):
             self._watcherTask.cancel()
+        self._processGlyphWritesTask.cancel()
 
     async def watchExternalChanges(self):
         async for glyphNames in self.backend.watchExternalChanges():
@@ -38,6 +43,16 @@ class FontHandler:
                 await self.reloadGlyphs(glyphNames)
             except Exception as e:
                 logger.error("exception in external changes watcher: %r", e)
+
+    async def processGlyphWrites(self):
+        while True:
+            await self._processGlyphWritesEvent.wait()
+            while self._glyphsScheduledForWrite:
+                glyphName, glyph = popFirstItem(self._glyphsScheduledForWrite)
+                logger.info(f"write {glyphName} to backend")
+                await self.backend.putGlyph(glyphName, glyph)
+                await asyncio.sleep(0)
+            self._processGlyphWritesEvent.clear()
 
     @contextmanager
     def useConnection(self, connection):
@@ -140,7 +155,13 @@ class FontHandler:
         glyph = await self.getChangedGlyph(glyphName)
         applyChange(dict(glyphs={glyphName: glyph}), change)
         if hasattr(self.backend, "putGlyph") and not self.readOnly:
-            await self.backend.putGlyph(glyphName, glyph)
+            self.scheduleGlyphWrite(glyphName, glyph)
+
+    def scheduleGlyphWrite(self, glyphName, glyph):
+        shouldSignal = not self._glyphsScheduledForWrite
+        self._glyphsScheduledForWrite[glyphName] = deepcopy(glyph)
+        if shouldSignal:
+            self._processGlyphWritesEvent.set()
 
     def iterGlyphMadeOf(self, glyphName):
         for dependantGlyphName in self.glyphMadeOf.get(glyphName, ()):
@@ -208,3 +229,8 @@ def _iterAllComponentNames(glyph):
     for layer in glyph.layers:
         for compo in layer.glyph.components:
             yield compo.name
+
+
+def popFirstItem(d):
+    key = next(iter(d))
+    return (key, d.pop(key))
