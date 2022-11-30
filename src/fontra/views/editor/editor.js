@@ -16,6 +16,7 @@ import {
 } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js"
+import { dialog }from "../core/ui-dialog.js";
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
@@ -715,6 +716,15 @@ export class EditorController {
       this.updateSelectionInfo();
     }
     this.canvasController.setNeedsUpdate();
+  }
+
+  async messageFromServer(headline, message) {
+    // don't await for the dialog result, the server doesn't need an answer
+    dialog(
+      headline,
+      message,
+      [{"title": "Okay", "isDefaultButton": true}],
+    )
   }
 
   async setupFromWindowLocation() {

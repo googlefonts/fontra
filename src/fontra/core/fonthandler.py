@@ -4,6 +4,7 @@ from collections import defaultdict
 from copy import deepcopy
 import functools
 import logging
+import traceback
 from .changes import applyChange
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 
@@ -50,14 +51,20 @@ class FontHandler:
         while True:
             await self._processGlyphWritesEvent.wait()
             while self._glyphsScheduledForWrite:
-                glyphName, glyph = popFirstItem(self._glyphsScheduledForWrite)
+                glyphName, (glyph, connection) = popFirstItem(
+                    self._glyphsScheduledForWrite
+                )
                 logger.info(f"write {glyphName} to backend")
                 try:
                     await self.backend.putGlyph(glyphName, glyph)
                 except Exception as e:
                     logger.error("exception while writing glyph: %r", e)
-                    # TODO: notify the source connection
+                    traceback.print_exc(e)
                     await self.reloadGlyphs([glyphName])
+                    await connection.proxy.messageFromServer(
+                        "The glyph could not be saved.",
+                        f"The edit has been reverted.\n\n{e}",
+                    )
                 await asyncio.sleep(0)
             self._processGlyphWritesEvent.clear()
 
@@ -135,7 +142,7 @@ class FontHandler:
     ):
         # TODO: use finalChange, rollbackChange, editLabel for history recording
         # TODO: locking/checking
-        await self.updateServerGlyph(finalChange)
+        await self.updateServerGlyph(finalChange, connection)
         # return {"error": "computer says no"}
         if broadcast:
             await self.broadcastChange(finalChange, connection, False)
@@ -158,17 +165,17 @@ class FontHandler:
             *[connection.proxy.externalChange(change) for connection in connections]
         )
 
-    async def updateServerGlyph(self, change):
+    async def updateServerGlyph(self, change, connection):
         assert change["p"][0] == "glyphs", change["p"]
         glyphName = change["p"][1]
         glyph = await self.getChangedGlyph(glyphName)
         applyChange(dict(glyphs={glyphName: glyph}), change)
         if not self.readOnly:
-            self.scheduleGlyphWrite(glyphName, glyph)
+            self.scheduleGlyphWrite(glyphName, glyph, connection)
 
-    def scheduleGlyphWrite(self, glyphName, glyph):
+    def scheduleGlyphWrite(self, glyphName, glyph, connection):
         shouldSignal = not self._glyphsScheduledForWrite
-        self._glyphsScheduledForWrite[glyphName] = deepcopy(glyph)
+        self._glyphsScheduledForWrite[glyphName] = (deepcopy(glyph), connection)
         if shouldSignal:
             self._processGlyphWritesEvent.set()
 
