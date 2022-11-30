@@ -50,7 +50,12 @@ class FontHandler:
             while self._glyphsScheduledForWrite:
                 glyphName, glyph = popFirstItem(self._glyphsScheduledForWrite)
                 logger.info(f"write {glyphName} to backend")
-                await self.backend.putGlyph(glyphName, glyph)
+                try:
+                    await self.backend.putGlyph(glyphName, glyph)
+                except Exception as e:
+                    logger.error("exception while writing glyph: %r", e)
+                    # TODO: notify the source connection
+                    await self.reloadGlyphs([glyphName])
                 await asyncio.sleep(0)
             self._processGlyphWritesEvent.clear()
 
