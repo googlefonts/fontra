@@ -19,6 +19,8 @@ def remoteMethod(method):
 class FontHandler:
     def __init__(self, backend, readOnly=False):
         self.backend = backend
+        if not hasattr(self.backend, "putGlyph"):
+            readOnly = True
         self.readOnly = readOnly
         self.connections = set()
         self.glyphUsedBy = {}
@@ -161,7 +163,7 @@ class FontHandler:
         glyphName = change["p"][1]
         glyph = await self.getChangedGlyph(glyphName)
         applyChange(dict(glyphs={glyphName: glyph}), change)
-        if hasattr(self.backend, "putGlyph") and not self.readOnly:
+        if not self.readOnly:
             self.scheduleGlyphWrite(glyphName, glyph)
 
     def scheduleGlyphWrite(self, glyphName, glyph):
