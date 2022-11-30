@@ -128,7 +128,9 @@ class FontHandler:
         await self.broadcastChange(liveChange, connection, True)
 
     @remoteMethod
-    async def editFinal(self, finalChange, rollbackChange, editLabel, broadcast=False, *, connection):
+    async def editFinal(
+        self, finalChange, rollbackChange, editLabel, broadcast=False, *, connection
+    ):
         # TODO: use finalChange, rollbackChange, editLabel for history recording
         # TODO: locking/checking
         await self.updateServerGlyph(finalChange)
