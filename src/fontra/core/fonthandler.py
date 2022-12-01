@@ -1,8 +1,10 @@
 from contextlib import contextmanager
 import asyncio
 from collections import defaultdict
+from copy import deepcopy
 import functools
 import logging
+import traceback
 from .changes import applyChange
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 
@@ -18,19 +20,25 @@ def remoteMethod(method):
 class FontHandler:
     def __init__(self, backend, readOnly=False):
         self.backend = backend
+        if not hasattr(self.backend, "putGlyph"):
+            readOnly = True
         self.readOnly = readOnly
         self.connections = set()
         self.glyphUsedBy = {}
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
-        self.changedGlyphs = {}
+        self.changedGlyphs = {}  # TODO: should perhaps be a LRU cache
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.watchExternalChanges())
+        self._processGlyphWritesEvent = asyncio.Event()
+        self._processGlyphWritesTask = asyncio.create_task(self.processGlyphWrites())
+        self._glyphsScheduledForWrite = {}
 
     async def close(self):
         self.backend.close()
         if hasattr(self, "_watcherTask"):
             self._watcherTask.cancel()
+        self._processGlyphWritesTask.cancel()
 
     async def watchExternalChanges(self):
         async for glyphNames in self.backend.watchExternalChanges():
@@ -38,6 +46,27 @@ class FontHandler:
                 await self.reloadGlyphs(glyphNames)
             except Exception as e:
                 logger.error("exception in external changes watcher: %r", e)
+
+    async def processGlyphWrites(self):
+        while True:
+            await self._processGlyphWritesEvent.wait()
+            while self._glyphsScheduledForWrite:
+                glyphName, (glyph, connection) = popFirstItem(
+                    self._glyphsScheduledForWrite
+                )
+                logger.info(f"write {glyphName} to backend")
+                try:
+                    await self.backend.putGlyph(glyphName, glyph)
+                except Exception as e:
+                    logger.error("exception while writing glyph: %r", e)
+                    traceback.print_exc(e)
+                    await self.reloadGlyphs([glyphName])
+                    await connection.proxy.messageFromServer(
+                        "The glyph could not be saved.",
+                        f"The edit has been reverted.\n\n{e}",
+                    )
+                await asyncio.sleep(0)
+            self._processGlyphWritesEvent.clear()
 
     @contextmanager
     def useConnection(self, connection):
@@ -108,10 +137,12 @@ class FontHandler:
         await self.broadcastChange(liveChange, connection, True)
 
     @remoteMethod
-    async def editFinal(self, finalChange, rollbackChange, editLabel, broadcast=False, *, connection):
+    async def editFinal(
+        self, finalChange, rollbackChange, editLabel, broadcast=False, *, connection
+    ):
         # TODO: use finalChange, rollbackChange, editLabel for history recording
         # TODO: locking/checking
-        await self.updateServerGlyph(finalChange)
+        await self.updateServerGlyph(finalChange, connection)
         # return {"error": "computer says no"}
         if broadcast:
             await self.broadcastChange(finalChange, connection, False)
@@ -134,13 +165,19 @@ class FontHandler:
             *[connection.proxy.externalChange(change) for connection in connections]
         )
 
-    async def updateServerGlyph(self, change):
+    async def updateServerGlyph(self, change, connection):
         assert change["p"][0] == "glyphs", change["p"]
         glyphName = change["p"][1]
         glyph = await self.getChangedGlyph(glyphName)
         applyChange(dict(glyphs={glyphName: glyph}), change)
-        if hasattr(self.backend, "putGlyph") and not self.readOnly:
-            await self.backend.putGlyph(glyphName, glyph)
+        if not self.readOnly:
+            self.scheduleGlyphWrite(glyphName, glyph, connection)
+
+    def scheduleGlyphWrite(self, glyphName, glyph, connection):
+        shouldSignal = not self._glyphsScheduledForWrite
+        self._glyphsScheduledForWrite[glyphName] = (deepcopy(glyph), connection)
+        if shouldSignal:
+            self._processGlyphWritesEvent.set()
 
     def iterGlyphMadeOf(self, glyphName):
         for dependantGlyphName in self.glyphMadeOf.get(glyphName, ()):
@@ -208,3 +245,8 @@ def _iterAllComponentNames(glyph):
     for layer in glyph.layers:
         for compo in layer.glyph.components:
             yield compo.name
+
+
+def popFirstItem(d):
+    key = next(iter(d))
+    return (key, d.pop(key))
