@@ -719,7 +719,7 @@ export class EditorController {
   }
 
   async messageFromServer(headline, message) {
-    // don't await for the dialog result, the server doesn't need an answer
+    // don't await the dialog result, the server doesn't need an answer
     dialog(
       headline,
       message,
