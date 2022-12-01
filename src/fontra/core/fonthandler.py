@@ -59,7 +59,7 @@ class FontHandler:
                     await self.backend.putGlyph(glyphName, glyph)
                 except Exception as e:
                     logger.error("exception while writing glyph: %r", e)
-                    traceback.print_exc(e)
+                    traceback.print_exc()
                     await self.reloadGlyphs([glyphName])
                     await connection.proxy.messageFromServer(
                         "The glyph could not be saved.",
