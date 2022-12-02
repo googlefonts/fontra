@@ -56,15 +56,22 @@ class FontHandler:
                 )
                 logger.info(f"write {glyphName} to backend")
                 try:
-                    await self.backend.putGlyph(glyphName, glyph)
+                    errorMessage = await self.backend.putGlyph(glyphName, glyph)
                 except Exception as e:
                     logger.error("exception while writing glyph: %r", e)
                     traceback.print_exc()
                     await self.reloadGlyphs([glyphName])
                     await connection.proxy.messageFromServer(
-                        "The glyph could not be saved.",
+                        "The glyph could not be saved due to an error.",
                         f"The edit has been reverted.\n\n{e}",
                     )
+                else:
+                    if errorMessage:
+                        await self.reloadGlyphs([glyphName])
+                        await connection.proxy.messageFromServer(
+                            "The glyph could not be saved.",
+                            f"The edit has been reverted.\n\n{errorMessage}",
+                        )
                 await asyncio.sleep(0)
             self._processGlyphWritesEvent.clear()
 
