@@ -710,6 +710,10 @@ export class EditorController {
 
   async reloadGlyphs(glyphNames) {
     if (glyphNames.includes(this.sceneController.getSelectedGlyphName())) {
+      // If the glyph being edited is among the glyphs to be reloaded,
+      // cancel the edit, but wait for the cancellation to be completed,
+      // or else the reload and edit can get mixed up and the glyph data
+      // will be out of sync.
       await this.sceneController.cancelEditing("Someone else made an edit just before you.");
     }
     await this.fontController.reloadGlyphs(glyphNames);
