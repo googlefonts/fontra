@@ -220,6 +220,20 @@ export function *range(start, stop, step = 1) {
 }
 
 
+export async function tryFinally(func, finallyFunc) {
+  let error;
+  try {
+    await func();
+  } catch(e) {
+    error = e;
+  }
+  await finallyFunc();
+  if (error) {
+    throw error;
+  }
+}
+
+
 export function parseSelection(selection) {
   const result = {};
   for (const item of selection) {
