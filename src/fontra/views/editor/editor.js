@@ -709,6 +709,9 @@ export class EditorController {
   }
 
   async reloadGlyphs(glyphNames) {
+    if (glyphNames.includes(this.sceneController.getSelectedGlyphName())) {
+      await this.sceneController.cancelEditing("Someone else made an edit just before you.");
+    }
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneController.sceneModel.updateScene();
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();

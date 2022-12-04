@@ -6,8 +6,9 @@ import { dialog }from "../core/ui-dialog.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
-import { arrowKeyDeltas, hasShortcutModifierKey, parseSelection, reversed } from "../core/utils.js";
+import { arrowKeyDeltas, hasShortcutModifierKey, parseSelection, reversed, tryFinally } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
+
 
 export class SceneController {
 
@@ -312,7 +313,31 @@ export class SceneController {
     return this.sceneModel.getSceneBounds();
   }
 
+  cancelEditing(reason) {
+    if (this._glyphEditingDonePromise) {
+      this._cancelGlyphEditing = reason;
+    }
+    return this._glyphEditingDonePromise;
+  }
+
   async editInstance(editFunc, senderID) {
+    if (this._glyphEditingDonePromise) {
+      throw new Error("can't call editInstance() while it's still running");
+    }
+    let editingDone;
+    this._glyphEditingDonePromise = new Promise(resolve => {
+      editingDone = resolve;
+    });
+    await tryFinally(async () => {
+      return await this._editInstance(editFunc, senderID);
+    }, () => {
+      editingDone();
+      delete this._glyphEditingDonePromise;
+      delete this._cancelGlyphEditing;
+    });
+  }
+
+  async _editInstance(editFunc, senderID) {
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
       // TODO: add options to dialog:
@@ -325,7 +350,7 @@ export class SceneController {
         [{"title": "Okay", "resultValue": "ok"}],
         2500,  /* auto dismiss after a timeout */
       );
-      return null;
+      return;
     }
     const editContext = await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
     const sendIncrementalChange = async (change, mayDrop = false) => {
@@ -339,8 +364,8 @@ export class SceneController {
     try {
       result = await editFunc(sendIncrementalChange, editContext.instance);
     } catch(error) {
-      // this.selection = initialSelection;  // ???
-      // editContext.editCancel();
+      this.selection = initialSelection;
+      editContext.editCancel();
       throw error;
     }
 
@@ -361,10 +386,21 @@ export class SceneController {
         "redoSelection": this.selection,
         "location": this.getLocation(),
       }
-      editContext.editFinal(changes.change, changes.rollbackChange, undoInfo, broadcast);
+      if (!this._cancelGlyphEditing) {
+        editContext.editFinal(changes.change, changes.rollbackChange, undoInfo, broadcast);
+      } else {
+        applyChange(editContext.instance, changes.rollbackChange);
+        await editContext.editIncremental(changes.rollbackChange, false);
+        editContext.editCancel();
+        dialog(
+          "The glyph could not be saved.",
+          `The edit has been reverted.\n\n${this._cancelGlyphEditing}`,
+          [{"title": "Okay", "resultValue": "ok"}],
+        );
+      }
     } else {
       this.selection = initialSelection;
-      // editContext.editCancel();
+      editContext.editCancel();
     }
   }
 
