@@ -371,6 +371,11 @@ class GlyphEditContext {
     this.fontController.pushUndoRecord(change, rollback, undoInfo);
   }
 
+  async editCancel() {
+    await this.fontController.glyphChanged(this.glyphController.name);
+    await this.fontController.notifyEditListeners("editEnd", this.senderID);
+  }
+
 }
 
 
