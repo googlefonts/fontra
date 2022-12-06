@@ -174,7 +174,7 @@ class DesignspaceBackend:
         modTimes = set()
         for layer in glyph.layers:
             glyphSet = self.ufoGlyphSets[layer.name]
-            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph)
+            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph, glyph)
             modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
@@ -236,7 +236,7 @@ class UFOBackend:
         modTimes = set()
         for layer in glyph.layers:
             glyphSet = self.glyphSets[layer.name]
-            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph)
+            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph, glyph)
             modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
@@ -304,7 +304,10 @@ def unpackVariableComponents(lib):
 
 
 def writeUFOLayerGlyph(
-    glyphSet: GlyphSet, glyphName: str, staticGlyph: StaticGlyph
+    glyphSet: GlyphSet,
+    glyphName: str,
+    staticGlyph: StaticGlyph,
+    varGlyph: VariableGlyph,
 ) -> None:
     layerGlyph = UFOGlyph()
     layerGlyph.lib = {}
@@ -312,6 +315,7 @@ def writeUFOLayerGlyph(
     if glyphName in glyphSet:
         writeGlyphSetContents = False
         glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
+    layerGlyph.unicodes = varGlyph.unicodes
     pen = RecordingPointPen()
     layerGlyph.width = staticGlyph.xAdvance
     layerGlyph.height = staticGlyph.yAdvance
