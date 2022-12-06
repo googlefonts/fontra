@@ -306,7 +306,10 @@ def unpackVariableComponents(lib):
 def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -> None:
     layerGlyph = UFOGlyph()
     layerGlyph.lib = {}
-    glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
+    writeGlyphSetContents = True
+    if glyphName in glyphSet:
+        writeGlyphSetContents = False
+        glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     pen = RecordingPointPen()
     layerGlyph.width = glyph.xAdvance
     layerGlyph.height = glyph.yAdvance
@@ -334,6 +337,8 @@ def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -
     glyphSet.writeGlyph(
         glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
     )
+    if writeGlyphSetContents:
+        glyphSet.writeContents()
 
 
 def getReverseCmapFromGlyphSet(glyphSet):
