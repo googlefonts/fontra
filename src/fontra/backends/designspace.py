@@ -271,8 +271,8 @@ def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
     sourceLayerGlyph = None
     for layerName, glyphSet in glyphSets.items():
         if glyphName in glyphSet:
-            glyphDict, glyph = serializeGlyph(glyphSet, glyphName)
-            layers.append(Layer(name=layerName, glyph=glyphDict))
+            staticGlyph, glyph = serializeGlyph(glyphSet, glyphName)
+            layers.append(Layer(name=layerName, glyph=staticGlyph))
             if layerName == sourceLayerName:
                 sourceLayerGlyph = glyph
     return layers, sourceLayerGlyph
