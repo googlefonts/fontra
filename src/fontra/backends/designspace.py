@@ -303,7 +303,9 @@ def unpackVariableComponents(lib):
     return components
 
 
-def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -> None:
+def writeUFOLayerGlyph(
+    glyphSet: GlyphSet, glyphName: str, staticGlyph: StaticGlyph
+) -> None:
     layerGlyph = UFOGlyph()
     layerGlyph.lib = {}
     writeGlyphSetContents = True
@@ -311,11 +313,11 @@ def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -
         writeGlyphSetContents = False
         glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     pen = RecordingPointPen()
-    layerGlyph.width = glyph.xAdvance
-    layerGlyph.height = glyph.yAdvance
-    glyph.path.drawPoints(pen)
+    layerGlyph.width = staticGlyph.xAdvance
+    layerGlyph.height = staticGlyph.yAdvance
+    staticGlyph.path.drawPoints(pen)
     variableComponents = []
-    for component in glyph.components:
+    for component in staticGlyph.components:
         if component.location:
             # It's a variable component
             varCoDict = {"base": component.name, "location": component.location}
