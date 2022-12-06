@@ -130,7 +130,7 @@ class DesignspaceBackend:
         for fontraLayerName, glyphSet in self.ufoGlyphSets.items():
             if glyphName not in glyphSet:
                 continue
-            staticGlyph, ufoGlyph = serializeGlyph(glyphSet, glyphName)
+            staticGlyph, ufoGlyph = serializeStaticGlyph(glyphSet, glyphName)
             if glyphSet == self.defaultSourceGlyphSet:
                 localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
                 if localDS is not None:
@@ -271,14 +271,14 @@ def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
     sourceLayerGlyph = None
     for layerName, glyphSet in glyphSets.items():
         if glyphName in glyphSet:
-            staticGlyph, glyph = serializeGlyph(glyphSet, glyphName)
+            staticGlyph, glyph = serializeStaticGlyph(glyphSet, glyphName)
             layers.append(Layer(name=layerName, glyph=staticGlyph))
             if layerName == sourceLayerName:
                 sourceLayerGlyph = glyph
     return layers, sourceLayerGlyph
 
 
-def serializeGlyph(glyphSet, glyphName):
+def serializeStaticGlyph(glyphSet, glyphName):
     glyph = UFOGlyph()
     glyph.lib = {}
     pen = PackedPathPointPen()
