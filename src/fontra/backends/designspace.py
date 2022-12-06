@@ -112,6 +112,12 @@ class DesignspaceBackend:
                 glifFileNames[fileName] = glyphName
         self.glifFileNames = glifFileNames
 
+    def updateGlyphSetContents(self, glyphSet):
+        glyphSet.writeContents()
+        glifFileNames = self.glifFileNames
+        for glyphName, fileName in glyphSet.contents.items():
+            glifFileNames[fileName] = glyphName
+
     async def getReverseCmap(self):
         return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
 
@@ -174,9 +180,50 @@ class DesignspaceBackend:
         modTimes = set()
         for layer in glyph.layers:
             glyphSet = self.ufoGlyphSets[layer.name]
-            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph, glyph)
+            writeGlyphSetContents = glyphName not in glyphSet
+            layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
+                glyphSet, glyphName, layer.glyph, glyph
+            )
+            if glyphSet == self.defaultSourceGlyphSet:
+                localDS = self._packLocalDesignSpace(glyph)
+                if localDS:
+                    layerGlyph.lib[GLYPH_DESIGNSPACE_LIB_KEY] = localDS
+                else:
+                    layerGlyph.lib.pop(GLYPH_DESIGNSPACE_LIB_KEY, None)
+
+            glyphSet.writeGlyph(
+                glyphName, layerGlyph, drawPointsFunc=drawPointsFunc, validate=False
+            )
+            if writeGlyphSetContents:
+                # FIXME: this is inefficient if we write many glyphs
+                self.updateGlyphSetContents(glyphSet)
+
             modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
         self.savedGlyphModificationTimes[glyphName] = modTimes
+
+    def _packLocalDesignSpace(self, glyph):
+        localDS = {}
+        axes = [
+            dict(
+                name=axis.name,
+                minimum=axis.minValue,
+                default=axis.defaultValue,
+                maximum=axis.maxValue,
+            )
+            for axis in glyph.axes
+        ]
+        sources = []
+        for source in glyph.sources:
+            ufoPath, ufoLayerName = self.ufoLayers[source.layerName]
+            sourceDict = {}
+            sourceDict["layername"] = ufoLayerName  # could skip if default layer name
+            sourceDict["location"] = source.location
+            sources.append(sourceDict)
+        if axes:
+            localDS["axes"] = axes
+        if sources:
+            localDS["sources"] = sources
+        return localDS
 
     async def getGlobalAxes(self):
         return self.axes
@@ -236,7 +283,18 @@ class UFOBackend:
         modTimes = set()
         for layer in glyph.layers:
             glyphSet = self.glyphSets[layer.name]
-            writeUFOLayerGlyph(glyphSet, glyphName, layer.glyph, glyph)
+            writeGlyphSetContents = glyphName not in glyphSet
+            layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
+                glyphSet, glyphName, layer.glyph, glyph
+            )
+            if layer.name == self.layerName:
+                ...
+            glyphSet.writeGlyph(
+                glyphName, layerGlyph, drawPointsFunc=drawPointsFunc, validate=False
+            )
+            if writeGlyphSetContents:
+                # FIXME: this is inefficient if we write many glyphs
+                glyphSet.writeContents()
             modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
@@ -303,7 +361,7 @@ def unpackVariableComponents(lib):
     return components
 
 
-def writeUFOLayerGlyph(
+def buildUFOLayerGlyph(
     glyphSet: GlyphSet,
     glyphName: str,
     staticGlyph: StaticGlyph,
@@ -311,9 +369,9 @@ def writeUFOLayerGlyph(
 ) -> None:
     layerGlyph = UFOGlyph()
     layerGlyph.lib = {}
-    writeGlyphSetContents = True
     if glyphName in glyphSet:
-        writeGlyphSetContents = False
+        # We read the existing glyph so we don't lose any data that
+        # Fontra doesn't understand
         glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     layerGlyph.unicodes = varGlyph.unicodes
     pen = RecordingPointPen()
@@ -340,12 +398,7 @@ def writeUFOLayerGlyph(
     else:
         layerGlyph.lib.pop(VARIABLE_COMPONENTS_LIB_KEY, None)
 
-    glyphSet.writeGlyph(
-        glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
-    )
-    if writeGlyphSetContents:
-        # FIXME: this is inefficient if we write many glyphs
-        glyphSet.writeContents()
+    return layerGlyph, pen.replay
 
 
 def getReverseCmapFromGlyphSet(glyphSet):
