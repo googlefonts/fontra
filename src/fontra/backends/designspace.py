@@ -338,6 +338,7 @@ def writeUFOLayerGlyph(glyphSet: GlyphSet, glyphName: str, glyph: StaticGlyph) -
         glyphName, layerGlyph, drawPointsFunc=pen.replay, validate=False
     )
     if writeGlyphSetContents:
+        # FIXME: this is inefficient if we write many glyphs
         glyphSet.writeContents()
 
 
