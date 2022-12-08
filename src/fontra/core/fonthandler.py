@@ -30,8 +30,10 @@ class FontHandler:
         self.changedGlyphs = {}  # TODO: should perhaps be a LRU cache
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.watchExternalChanges())
+            self._watcherTask.add_done_callback(taskDoneHelper)
         self._processGlyphWritesEvent = asyncio.Event()
         self._processGlyphWritesTask = asyncio.create_task(self.processGlyphWrites())
+        self._processGlyphWritesTask.add_done_callback(taskDoneHelper)
         self._glyphsScheduledForWrite = {}
 
     async def close(self):
@@ -257,3 +259,8 @@ def _iterAllComponentNames(glyph):
 def popFirstItem(d):
     key = next(iter(d))
     return (key, d.pop(key))
+
+
+def taskDoneHelper(task):
+    if not task.cancelled() and task.exception() is not None:
+        logger.exception("fatal exception in asyncio task", exc_info=task.exception())
