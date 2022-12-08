@@ -263,4 +263,4 @@ def popFirstItem(d):
 
 def taskDoneHelper(task):
     if not task.cancelled() and task.exception() is not None:
-        logger.exception("fatal exception in asyncio task", exc_info=task.exception())
+        logger.exception(f"fatal exception in asyncio task {task}", exc_info=task.exception())
