@@ -33,6 +33,7 @@ class FontHandler:
             self._watcherTask.add_done_callback(taskDoneHelper)
         self._processGlyphWritesEvent = asyncio.Event()
         self._processGlyphWritesTask = asyncio.create_task(self.processGlyphWrites())
+        self._processGlyphWritesTask.add_done_callback(self._processGlyphWritesTaskDone)
         self._processGlyphWritesTask.add_done_callback(taskDoneHelper)
         self._glyphsScheduledForWrite = {}
 
@@ -48,6 +49,10 @@ class FontHandler:
                 await self.reloadGlyphs(glyphNames)
             except Exception as e:
                 logger.error("exception in external changes watcher: %r", e)
+
+    def _processGlyphWritesTaskDone(self, task):
+        # Signal that the glyph-writes-"thread" is no longer running
+        self._glyphsScheduledForWrite = None
 
     async def processGlyphWrites(self):
         while True:
@@ -180,9 +185,18 @@ class FontHandler:
         glyph = await self.getChangedGlyph(glyphName)
         applyChange(dict(glyphs={glyphName: glyph}), change)
         if not self.readOnly:
-            self.scheduleGlyphWrite(glyphName, glyph, connection)
+            await self.scheduleGlyphWrite(glyphName, glyph, connection)
 
-    def scheduleGlyphWrite(self, glyphName, glyph, connection):
+    async def scheduleGlyphWrite(self, glyphName, glyph, connection):
+        if self._glyphsScheduledForWrite is None:
+            # The glyph-writes-"thread" is no longer running
+            await self.reloadGlyphs([glyphName])
+            await connection.proxy.messageFromServer(
+                "The glyph could not be saved.",
+                "The edit has been reverted.\n\n"  # no trailing comma
+                "The Fontra server got itself into trouble, please contact an admin.",
+            )
+            return
         shouldSignal = not self._glyphsScheduledForWrite
         self._glyphsScheduledForWrite[glyphName] = (deepcopy(glyph), connection)
         if shouldSignal:
@@ -263,4 +277,6 @@ def popFirstItem(d):
 
 def taskDoneHelper(task):
     if not task.cancelled() and task.exception() is not None:
-        logger.exception(f"fatal exception in asyncio task {task}", exc_info=task.exception())
+        logger.exception(
+            f"fatal exception in asyncio task {task}", exc_info=task.exception()
+        )
