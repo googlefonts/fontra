@@ -75,7 +75,7 @@ class DesignspaceBackend:
         self.defaultSourceGlyphSet = None
         makeUniqueStyleName = uniqueNameMaker()
         for sourceIndex, source in enumerate(self.dsDoc.sources):
-            sourceStyleName = makeUniqueStyleName(source.styleName)
+            sourceStyleName = makeUniqueStyleName(source.styleName or "default")
             path = source.path
             reader = self.ufoReaders.get(path)
             if reader is None:
@@ -245,74 +245,9 @@ class DesignspaceBackend:
 class UFOBackend:
     @classmethod
     def fromPath(cls, path):
-        self = cls()
-        self.path = path
-        self.reader = UFOReader(path)
-        self.layerName = self.reader.getDefaultLayerName()
-        self.glyphSets = {
-            layerName: self.reader.getGlyphSet(layerName=layerName)
-            for layerName in self.reader.getLayerNames()
-        }
-        self.fontInfo = UFOFontInfo()
-        self.reader.readInfo(self.fontInfo)
-        self.savedGlyphModificationTimes = {}
-        return self
-
-    def close(self):
-        pass
-
-    async def getReverseCmap(self):
-        return getReverseCmapFromGlyphSet(self.glyphSets[self.layerName])
-
-    def hasGlyph(self, glyphName):
-        return glyphName in self.glyphSets[self.layerName]
-
-    async def getGlyph(self, glyphName):
-        glyph = VariableGlyph(glyphName)
-        layers, sourceGlyph = serializeGlyphLayers(
-            self.glyphSets, glyphName, self.layerName
-        )
-        glyph.sources = [
-            Source(name=self.layerName, location={}, layerName=self.layerName)
-        ]
-        glyph.unicodes = list(sourceGlyph.unicodes)
-        glyph.layers = layers
-        return glyph
-
-    async def putGlyph(self, glyphName, glyph):
-        modTimes = set()
-        for layer in glyph.layers:
-            glyphSet = self.glyphSets[layer.name]
-            writeGlyphSetContents = glyphName not in glyphSet
-            layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
-                glyphSet, glyphName, layer.glyph, glyph
-            )
-            if layer.name == self.layerName:
-                ...
-            glyphSet.writeGlyph(
-                glyphName, layerGlyph, drawPointsFunc=drawPointsFunc, validate=False
-            )
-            if writeGlyphSetContents:
-                # FIXME: this is inefficient if we write many glyphs
-                glyphSet.writeContents()
-            modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
-        self.savedGlyphModificationTimes[glyphName] = modTimes
-
-    async def getGlobalAxes(self):
-        return []
-
-    async def getUnitsPerEm(self):
-        return self.fontInfo.unitsPerEm
-
-    async def getFontLib(self):
-        return self.reader.readLib()
-
-    def watchExternalChanges(self):
-        glifFileNames = {
-            fileName: glyphName
-            for glyphName, fileName in self.glyphSets[self.layerName].contents.items()
-        }
-        return ufoWatcher([self.path], glifFileNames, self.savedGlyphModificationTimes)
+        dsDoc = DesignSpaceDocument()
+        dsDoc.addSourceDescriptor(path=os.fspath(path))
+        return DesignspaceBackend(dsDoc)
 
 
 class UFOGlyph:
