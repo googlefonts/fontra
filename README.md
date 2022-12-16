@@ -118,6 +118,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 ### Font-level viewing / editing
 
+- Create new font project
 - Cell-based font overview
 - List-based font overview
 - Edit kerning
