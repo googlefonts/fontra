@@ -216,6 +216,11 @@ class DesignspaceBackend:
         sources = []
         for source in glyph.sources:
             ufoPath, ufoLayerName = self.ufoLayers[source.layerName]
+            if asdict(source) in self.globalSources:
+                # this source is part of the global sources as defined
+                # in the .designspace file, so should not be written
+                # to a local designspace
+                continue
             sourceDict = {}
             sourceDict["layername"] = ufoLayerName  # could skip if default layer name
             sourceDict["location"] = source.location
