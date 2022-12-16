@@ -110,6 +110,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Edit kerning
 - Edit OpenType features
 - Edit variation axes
+- Visualize and edit variation axis mapping (avar)
 
 ### Multiple windows
 
