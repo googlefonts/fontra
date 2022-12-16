@@ -136,6 +136,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Basic multi-user server deployment with database storage ✅ (Via [fontra-rcjk](https://github.com/BlackFoundryCom/fontra-rcjk), [django-robo-cjk](https://github.com/BlackFoundryCom/django-robo-cjk), behind [NGINX](https://www.nginx.com/))
 - Research GitHub REST API: can Fontra be a GitHub gateway in a practical way?
 - Research database solutions for server-based font storage
+- Desktop app with integrated browser and auto-update feature (made with Electron or similar)
 
 ### Scripting
 
