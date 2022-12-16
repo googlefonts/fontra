@@ -61,7 +61,7 @@ class LocalAxis:
     maxValue: float
 
 
-@dataclass
+@dataclass(slots=True)
 class VariableGlyph:
     name: str
     axes: list[LocalAxis] = field(default_factory=list)
