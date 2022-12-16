@@ -62,7 +62,6 @@ class OTFBackend:
             varGlyph = serializeGlyph(varGlyphSet, glyphName)
             layers.append(Layer(name=locStr, glyph=varGlyph))
             sources.append(Source(location=fullLoc, name=locStr, layerName=locStr))
-        glyph.unicodes = self.revCmap.get(glyphName, [])
         if self.charStrings is not None:
             checkAndFixCFF2Compatibility(glyphName, layers)
         glyph.layers = layers

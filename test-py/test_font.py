@@ -14,7 +14,6 @@ getGlyphTestData = [
         "ufo",
         {
             "name": "period",
-            "unicodes": [ord(".")],
             "axes": [],
             "sources": [
                 {
@@ -59,7 +58,6 @@ getGlyphTestData = [
         "ufo",
         {
             "name": "Aacute",
-            "unicodes": [ord("Á"), ord("á")],
             "axes": [],
             "sources": [
                 {
@@ -121,7 +119,6 @@ getGlyphTestData = [
         "designspace",
         {
             "name": "period",
-            "unicodes": [ord(".")],
             "axes": [],
             "sources": [
                 {
@@ -223,7 +220,6 @@ getGlyphTestData = [
         "designspace",
         {
             "name": "Aacute",
-            "unicodes": [ord("Á"), ord("á")],
             "axes": [],
             "sources": [
                 {
@@ -435,7 +431,6 @@ getGlyphTestData = [
         "designspace",
         {
             "name": "varcotest1",
-            "unicodes": [],
             "axes": [],
             "sources": [
                 {
@@ -512,7 +507,6 @@ getGlyphTestData = [
         "designspace",
         {
             "name": "varcotest2",
-            "unicodes": [],
             "axes": [
                 {"defaultValue": 0, "maxValue": 100, "minValue": 0, "name": "flip"},
                 {"defaultValue": 0, "maxValue": 100, "minValue": 0, "name": "flop"},
@@ -635,7 +629,6 @@ getGlyphTestData = [
         "ttf",
         {
             "name": "period",
-            "unicodes": [ord(".")],
             "axes": [],
             "layers": [
                 {
@@ -723,7 +716,6 @@ getGlyphTestData = [
         "otf",
         {
             "name": "period",
-            "unicodes": [46],
             "axes": [],
             "layers": [
                 {

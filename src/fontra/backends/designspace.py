@@ -54,6 +54,7 @@ class DesignspaceBackend:
         self.axes = axes
         self.loadSources()
         self.buildFileNameMapping()
+        self.reverseCmap = getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
         self.savedGlyphModificationTimes = {}
 
     def close(self):
@@ -119,7 +120,7 @@ class DesignspaceBackend:
             glifFileNames[fileName] = glyphName
 
     async def getReverseCmap(self):
-        return getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
+        return self.reverseCmap
 
     async def getGlyph(self, glyphName):
         glyph = VariableGlyph(glyphName)
@@ -143,7 +144,6 @@ class DesignspaceBackend:
                     glyph.axes, glyph.sources = self._unpackLocalDesignSpace(
                         localDS, *self.ufoLayers[fontraLayerName]
                     )
-                glyph.unicodes = list(ufoGlyph.unicodes)
             layers.append(Layer(fontraLayerName, staticGlyph))
         glyph.layers = layers
 
@@ -178,11 +178,12 @@ class DesignspaceBackend:
 
     async def putGlyph(self, glyphName, glyph):
         modTimes = set()
+        unicodes = self.reverseCmap.get(glyphName, [])
         for layer in glyph.layers:
             glyphSet = self.ufoGlyphSets[layer.name]
             writeGlyphSetContents = glyphName not in glyphSet
             layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
-                glyphSet, glyphName, layer.glyph, glyph
+                glyphSet, glyphName, layer.glyph, unicodes
             )
             if glyphSet == self.defaultSourceGlyphSet:
                 localDS = self._packLocalDesignSpace(glyph)
@@ -300,7 +301,7 @@ def buildUFOLayerGlyph(
     glyphSet: GlyphSet,
     glyphName: str,
     staticGlyph: StaticGlyph,
-    varGlyph: VariableGlyph,
+    unicodes: list[int],
 ) -> None:
     layerGlyph = UFOGlyph()
     layerGlyph.lib = {}
@@ -308,7 +309,7 @@ def buildUFOLayerGlyph(
         # We read the existing glyph so we don't lose any data that
         # Fontra doesn't understand
         glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
-    layerGlyph.unicodes = varGlyph.unicodes
+    layerGlyph.unicodes = unicodes
     pen = RecordingPointPen()
     layerGlyph.width = staticGlyph.xAdvance
     layerGlyph.height = staticGlyph.yAdvance

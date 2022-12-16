@@ -852,7 +852,7 @@ export class EditorController {
     const glyphController = positionedGlyph?.glyph;
     const instance = glyphController?.instance;
     const glyphName = glyphController?.name;
-    const unicodes = varGlyphController?.glyph.unicodes || [];
+    const unicodes = this.fontController.reverseCmap[glyphName] || [];
     if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
       // Glyph does not yet exist in the font, so varGlyphController is undefined,
       // But we can grab the unicode from positionedGlyph.character anyway.
