@@ -86,10 +86,10 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Full screen mode
 - Right-to-left mode
 - Vertical top-to-bottom mode
+- Enter “edit mode” for glyph by double-clicking on a glyph in the text ✅
 
 ### Glyph editing
 
-- Enter “edit mode” for glyph by double-clicking on a glyph in the text ✅
 - Basic outline editing (move points) ✅
 - Basic pen tool (draw points) ✅
 - Edit (variable) component parameters ✅
