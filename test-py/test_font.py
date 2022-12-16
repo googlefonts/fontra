@@ -19,13 +19,13 @@ getGlyphTestData = [
             "sources": [
                 {
                     "location": {},
-                    "layerName": "foreground",
-                    "name": "foreground",
+                    "layerName": "default/foreground",
+                    "name": "default",
                 }
             ],
             "layers": [
                 {
-                    "name": "foreground",
+                    "name": "default/foreground",
                     "glyph": {
                         "xAdvance": 170,
                         "yAdvance": None,
@@ -39,7 +39,7 @@ getGlyphTestData = [
                     },
                 },
                 {
-                    "name": "background",
+                    "name": "default/background",
                     "glyph": {
                         "xAdvance": 170,
                         "yAdvance": None,
@@ -64,13 +64,13 @@ getGlyphTestData = [
             "sources": [
                 {
                     "location": {},
-                    "layerName": "foreground",
-                    "name": "foreground",
+                    "layerName": "default/foreground",
+                    "name": "default",
                 }
             ],
             "layers": [
                 {
-                    "name": "foreground",
+                    "name": "default/foreground",
                     "glyph": {
                         "path": {
                             "contourInfo": [],
@@ -924,7 +924,7 @@ async def test_getGlobalAxes(backendName, expectedGlobalAxes):
 
 getLibTestData = [
     ("designspace", 0),
-    ("ufo", 17),
+    ("ufo", 0),
 ]
 
 
