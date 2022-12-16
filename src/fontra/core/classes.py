@@ -65,7 +65,6 @@ class LocalAxis:
 class VariableGlyph:
     name: str
     axes: list[LocalAxis] = field(default_factory=list)
-    unicodes: list[int] = field(default_factory=list)
     sources: list[Source] = field(default_factory=list)
     layers: list[Layer] = field(default_factory=list)
 

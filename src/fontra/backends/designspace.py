@@ -143,7 +143,6 @@ class DesignspaceBackend:
                     glyph.axes, glyph.sources = self._unpackLocalDesignSpace(
                         localDS, *self.ufoLayers[fontraLayerName]
                     )
-                glyph.unicodes = list(ufoGlyph.unicodes)
             layers.append(Layer(fontraLayerName, staticGlyph))
         glyph.layers = layers
 
