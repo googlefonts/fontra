@@ -1,3 +1,4 @@
 # Copyright holders
 
-Black Foundry SAS
+Google LLC
+
