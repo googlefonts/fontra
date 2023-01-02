@@ -288,7 +288,7 @@ export function applyChange(subject, change) {
 }
 
 
-export function matchChange(change, matchPath) {
+export function matchChangePath(change, matchPath) {
   const path = change["p"] || [];
   const children = change["c"] || [];
   matchPath = Array.from(matchPath);
@@ -303,7 +303,7 @@ export function matchChange(change, matchPath) {
   }
 
   for (const subChange of children) {
-    if (matchChange(subChange, matchPath)) {
+    if (matchChangePath(subChange, matchPath)) {
       return true;
     }
   }

@@ -1,5 +1,5 @@
 import { CanvasController } from "../core/canvas-controller.js";
-import { applyChange, matchChange } from "../core/changes.js";
+import { applyChange, matchChangePath } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { ContextMenu } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
@@ -702,7 +702,7 @@ export class EditorController {
     await this.fontController.applyChange(change, true);
     await this.sceneController.sceneModel.updateScene();
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
-    if (selectedGlyphName !== undefined && matchChange(change, ["glyphs", selectedGlyphName])) {
+    if (selectedGlyphName !== undefined && matchChangePath(change, ["glyphs", selectedGlyphName])) {
       this.updateSelectionInfo();
     }
     this.canvasController.setNeedsUpdate();
