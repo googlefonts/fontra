@@ -7,7 +7,6 @@ export class VariableGlyph {
     const glyph = new VariableGlyph();
     glyph.name = obj.name;
     glyph.axes = obj.axes || [];
-    glyph.unicodes = obj.unicodes || [];
     glyph.sources = obj.sources.map(source => Source.fromObject(source));
     glyph.layers = obj.layers.map(layer => {
       return {
