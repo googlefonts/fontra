@@ -1,7 +1,7 @@
 from dataclasses import asdict
 import pytest
 from fontra.core.classes import from_dict
-from fontra.core.packedpath import PackedPath, PackedPathPointPen, PointType
+from fontra.core.packedpath import PackedPath, PackedPathPointPen
 
 
 pathTestData = [
