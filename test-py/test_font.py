@@ -3,7 +3,6 @@ from dataclasses import asdict
 from importlib.metadata import entry_points
 import pathlib
 import pytest
-from fontra.core.classes import VariableGlyph
 
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
