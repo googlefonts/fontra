@@ -195,9 +195,10 @@ def filterChangePattern(change, matchPattern, inverse=False):
     else:
         result = {"c": filteredChildren}
 
-    if len(result) == 1 and "p" in result:
-        # no-op change
-        return None
+    if result is not None:
+        if len(result) == 1 and "p" in result:
+            # no-op change
+            return None
 
     return result
 
