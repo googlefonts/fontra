@@ -145,7 +145,7 @@ def matchChangePattern(change, matchPattern):
     return False
 
 
-def filterChangePattern(change, matchPattern):
+def filterChangePattern(change, matchPattern, inverse=False):
     """Return a subset of the `change` according to the `matchPattern`, or `None`
     if the `change` doesn't match `matchPattern` at all. If there is a match,
     all parts of the change that do not match are not included in the returned
@@ -160,23 +160,25 @@ def filterChangePattern(change, matchPattern):
     for pathElement in change.get("p", []):
         childNode = node.get(pathElement, _MISSING)
         if childNode is _MISSING:
-            return None
+            return change if inverse else None
         matchedPath.append(pathElement)
         if childNode is None:
             # leaf node
-            return change
+            return None if inverse else change
         node = childNode
 
     filteredChildren = []
     for childChange in change.get("c", []):
-        childChange = filterChangePattern(childChange, node)
+        childChange = filterChangePattern(childChange, node, inverse)
         if childChange is not None:
             filteredChildren.append(childChange)
 
     if not filteredChildren:
-        return None
-
-    if len(filteredChildren) == 1:
+        result = {k: v for k, v in change.items() if k != "c"} if inverse else None
+    elif inverse:
+        result = {**change}
+        result["c"] = filteredChildren
+    elif len(filteredChildren) == 1:
         if matchedPath:
             # consolidate
             result = {**filteredChildren[0]}
@@ -189,6 +191,10 @@ def filterChangePattern(change, matchPattern):
         result = {"p": matchedPath, "c": filteredChildren}
     else:
         result = {"c": filteredChildren}
+
+    if len(result) == 1 and "p" in result:
+        # no-op change
+        return None
 
     return result
 
