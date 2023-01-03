@@ -187,9 +187,10 @@ def _normalizeChange(change):
     children = change.get("c", ())
 
     if "f" not in change and len(children) == 1:
-        onlyChild = children[0]
-        result = {**onlyChild}
-        result["p"] = change.get("p", []) + onlyChild.get("p", [])
+        # Turn only child into root change
+        result = {**children[0]}
+        # Prefix child path with original root path
+        result["p"] = change.get("p", []) + result.get("p", [])
     else:
         result = {**change}
 
