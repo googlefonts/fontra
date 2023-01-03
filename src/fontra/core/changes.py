@@ -154,6 +154,9 @@ def filterChangePattern(change, matchPattern, inverse=False):
     A `matchPattern` is tree in the form of a dict, where keys are change path
     elements, and values are either nested pattern dicts or `None`, to indicate
     a leaf node.
+
+    If `inverse` is True, `matchPattern` is used to exclude the change items
+    that match from the return value.
     """
     node = matchPattern
     matchedPath = []
