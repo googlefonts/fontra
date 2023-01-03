@@ -176,29 +176,40 @@ def filterChangePattern(change, matchPattern, inverse=False):
         if childChange is not None:
             filteredChildren.append(childChange)
 
-    if not filteredChildren:
-        result = {k: v for k, v in change.items() if k != "c"} if inverse else None
-    elif inverse:
-        result = {**change}
-        result["c"] = filteredChildren
-    elif len(filteredChildren) == 1:
-        if matchedPath:
-            # consolidate
-            result = {**filteredChildren[0]}
-            path = matchedPath + result.get("p", [])
-            if path:
-                result["p"] = path
-        else:
-            result = filteredChildren[0]
-    elif matchedPath:
-        result = {"p": matchedPath, "c": filteredChildren}
-    else:
-        result = {"c": filteredChildren}
+    result = {**change}
+    if not inverse:
+        result.pop("f", None)
+        result.pop("a", None)
 
-    if result is not None:
-        if len(result) == 1 and "p" in result:
-            # no-op change
-            return None
+    result["c"] = filteredChildren
+
+    return _normalizeChange(result)
+
+
+def _normalizeChange(change):
+    children = change.get("c", ())
+
+    if "f" not in change and len(children) == 1:
+        onlyChild = children[0]
+        result = {**onlyChild}
+        result["p"] = change.get("p", []) + onlyChild.get("p", [])
+    else:
+        result = {**change}
+
+    if not result.get("p"):
+        # remove empty path
+        result.pop("p", None)
+
+    if not result.get("c"):
+        # remove empty children list
+        result.pop("c", None)
+
+    if len(result) == 1 and "p" in result:
+        # nothing left but a path: no-op change
+        result.pop("p", None)
+
+    if not result:
+        result = None
 
     return result
 

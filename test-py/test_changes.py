@@ -204,7 +204,7 @@ def test_filterChangePattern(change, pattern, expectedResult):
         (
             {},
             {},
-            {},
+            None,
         ),
         (
             {"p": ["A"], "f": "*"},
@@ -264,12 +264,12 @@ def test_filterChangePattern(change, pattern, expectedResult):
         (
             {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
             {"A": None},
-            {"c": [{"p": ["B"], "f": "!"}]},
+            {"p": ["B"], "f": "!"},
         ),
         (
             {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
             {"B": None},
-            {"c": [{"p": ["A"], "f": "*"}]},
+            {"p": ["A"], "f": "*"},
         ),
         (
             {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
@@ -279,12 +279,12 @@ def test_filterChangePattern(change, pattern, expectedResult):
         (
             {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
             {"A": {"B": None}},
-            {"p": ["A"], "c": [{"p": ["C"], "f": "!"}]},
+            {"p": ["A", "C"], "f": "!"},
         ),
         (
             {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
             {"A": {"C": None}},
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}]},
+            {"p": ["A", "B"], "f": "*"},
         ),
         (
             {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
