@@ -110,3 +110,102 @@ def getItemCast(subject, attrName, fieldKey):
         if subtype is not None:
             return classCastFuncs.get(subtype)
     return None
+
+
+_MISSING = object()
+
+
+def matchChangePattern(change, matchPattern):
+    node = matchPattern
+    for pathElement in change.get("p", []):
+        childNode = node.get(pathElement, _MISSING)
+        if childNode is _MISSING:
+            return False
+        if childNode is None:
+            # leaf node
+            return True
+        node = childNode
+
+    for childChange in change.get("c", []):
+        if matchChangePattern(childChange, node):
+            return True
+
+    return False
+
+
+def filterChangePattern(change, matchPattern):
+    node = matchPattern
+    matchedPath = []
+    for pathElement in change.get("p", []):
+        childNode = node.get(pathElement, _MISSING)
+        if childNode is _MISSING:
+            return None
+        matchedPath.append(pathElement)
+        if childNode is None:
+            # leaf node
+            return change
+        node = childNode
+
+    filteredChildren = []
+    for childChange in change.get("c", []):
+        childChange = filterChangePattern(childChange, node)
+        if childChange is not None:
+            filteredChildren.append(childChange)
+
+    if not filteredChildren:
+        return None
+
+    if len(filteredChildren) == 1:
+        if matchedPath:
+            # consolidate
+            result = {**filteredChildren[0]}
+            path = matchedPath + result.get("p", [])
+            if path:
+                result["p"] = path
+        else:
+            result = filteredChildren[0]
+    elif matchedPath:
+        result = {"p": matchedPath, "c": filteredChildren}
+    else:
+        result = {"c": filteredChildren}
+
+    return result
+
+
+def addPathToPattern(matchPattern, path):
+    node = matchPattern
+    lastIndex = len(path) - 1
+    for i, pathElement in enumerate(path):
+        childNode = node.get(pathElement, _MISSING)
+        if childNode is None:
+            # leaf node, path is already included
+            return
+        if childNode is _MISSING:
+            if i == lastIndex:
+                newNode = None  # leaf
+            else:
+                newNode = {}
+            childNode = node[pathElement] = newNode
+        node = childNode
+
+
+def removePathFromPattern(matchPattern, path):
+    assert path
+    firstPathElement = path[0]
+    childNode = matchPattern.get(firstPathElement, _MISSING)
+    if childNode is _MISSING:
+        # path wasn't part of the pattern
+        return
+    if len(path) == 1:
+        if childNode is None:
+            del matchPattern[firstPathElement]
+        else:
+            # a deeper path is still part of the pattern, ignore
+            pass
+    else:
+        if childNode is None:
+            # path wasn't part of the pattern
+            return
+        removePathFromPattern(childNode, path[1:])
+        if not childNode:
+            del matchPattern[firstPathElement]
