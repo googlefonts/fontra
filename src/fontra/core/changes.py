@@ -195,15 +195,15 @@ def _normalizeChange(change):
         result = {**change}
 
     if not result.get("p"):
-        # remove empty path
+        # Remove empty path
         result.pop("p", None)
 
     if not result.get("c"):
-        # remove empty children list
+        # Remove empty children list
         result.pop("c", None)
 
     if len(result) == 1 and "p" in result:
-        # nothing left but a path: no-op change
+        # Nothing left but a path: no-op change
         result.pop("p", None)
 
     if not result:
