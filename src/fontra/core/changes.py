@@ -145,7 +145,7 @@ def matchChangePattern(change, matchPattern):
     return False
 
 
-def filterChangePattern(change, matchPattern):
+def filterChangePattern(change, matchPattern, inverse=False):
     """Return a subset of the `change` according to the `matchPattern`, or `None`
     if the `change` doesn't match `matchPattern` at all. If there is a match,
     all parts of the change that do not match are not included in the returned
@@ -154,41 +154,60 @@ def filterChangePattern(change, matchPattern):
     A `matchPattern` is tree in the form of a dict, where keys are change path
     elements, and values are either nested pattern dicts or `None`, to indicate
     a leaf node.
+
+    If `inverse` is True, `matchPattern` is used to exclude the change items
+    that match from the return value.
     """
     node = matchPattern
-    matchedPath = []
     for pathElement in change.get("p", []):
         childNode = node.get(pathElement, _MISSING)
         if childNode is _MISSING:
-            return None
-        matchedPath.append(pathElement)
+            return change if inverse else None
         if childNode is None:
             # leaf node
-            return change
+            return None if inverse else change
         node = childNode
 
     filteredChildren = []
     for childChange in change.get("c", []):
-        childChange = filterChangePattern(childChange, node)
+        childChange = filterChangePattern(childChange, node, inverse)
         if childChange is not None:
             filteredChildren.append(childChange)
 
-    if not filteredChildren:
-        return None
+    result = {**change, "c": filteredChildren}
+    if not inverse:
+        # We've at most matched one or more children, but not the root change
+        result.pop("f", None)
+        result.pop("a", None)
 
-    if len(filteredChildren) == 1:
-        if matchedPath:
-            # consolidate
-            result = {**filteredChildren[0]}
-            path = matchedPath + result.get("p", [])
-            if path:
-                result["p"] = path
-        else:
-            result = filteredChildren[0]
-    elif matchedPath:
-        result = {"p": matchedPath, "c": filteredChildren}
+    return _normalizeChange(result)
+
+
+def _normalizeChange(change):
+    children = change.get("c", ())
+
+    if "f" not in change and len(children) == 1:
+        # Turn only child into root change
+        result = {**children[0]}
+        # Prefix child path with original root path
+        result["p"] = change.get("p", []) + result.get("p", [])
     else:
-        result = {"c": filteredChildren}
+        result = {**change}
+
+    if not result.get("p"):
+        # Remove empty path
+        result.pop("p", None)
+
+    if not result.get("c"):
+        # Remove empty children list
+        result.pop("c", None)
+
+    if len(result) == 1 and "p" in result:
+        # Nothing left but a path: no-op change
+        result.pop("p", None)
+
+    if not result:
+        result = None
 
     return result
 
