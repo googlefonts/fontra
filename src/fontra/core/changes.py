@@ -174,13 +174,11 @@ def filterChangePattern(change, matchPattern, inverse=False):
         if childChange is not None:
             filteredChildren.append(childChange)
 
-    result = {**change}
+    result = {**change, "c": filteredChildren}
     if not inverse:
         # We've at most matched one or more children, but not the root change
         result.pop("f", None)
         result.pop("a", None)
-
-    result["c"] = filteredChildren
 
     return _normalizeChange(result)
 
