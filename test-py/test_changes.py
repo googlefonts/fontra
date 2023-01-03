@@ -5,6 +5,7 @@ import pytest
 from fontra.core.changes import (
     addPathToPattern,
     applyChange,
+    collectChangePaths,
     filterChangePattern,
     matchChangePattern,
     removePathFromPattern,
@@ -52,7 +53,7 @@ def test_applyChange(testName, inputDataName, change, expectedData):
 )
 def test_addPathToPattern(pattern, path, expectedPattern):
     pattern = deepcopy(pattern)
-    addPathToPattern (pattern, path)
+    addPathToPattern(pattern, path)
     assert expectedPattern == pattern
 
 
@@ -195,3 +196,53 @@ def test_matchChangePattern(change, pattern, expectedResult):
 def test_filterChangePattern(change, pattern, expectedResult):
     result = filterChangePattern(change, pattern)
     assert expectedResult == result
+
+
+@pytest.mark.parametrize(
+    "change, depth, expectedPaths",
+    [
+        (
+            {},
+            2,
+            [],
+        ),
+        (
+            {"p": ["A"]},
+            1,
+            [("A",)],
+        ),
+        (
+            {"p": ["A"]},
+            2,
+            [],
+        ),
+        (
+            {"p": ["A", "B"]},
+            2,
+            [("A", "B")],
+        ),
+        (
+            {"c": [{"p": ["A"]}, {"p": ["B"]}]},
+            1,
+            [("A",), ("B",)],
+        ),
+        (
+            {"p": ["A"], "c": [{"p": ["B"]}, {"p": ["C"]}]},
+            2,
+            [("A", "B"), ("A", "C")],
+        ),
+        (
+            {"p": ["A"], "c": [{"p": ["B"], "c": [{"p": ["D"]}]}, {"p": ["C"]}]},
+            2,
+            [("A", "B"), ("A", "C")],
+        ),
+        (
+            {"p": ["A"], "c": [{"p": ["B"], "c": [{"p": ["D"]}]}, {"p": ["C"]}]},
+            3,
+            [("A", "B", "D")],
+        ),
+    ],
+)
+def test_collectChangePaths(change, depth, expectedPaths):
+    paths = collectChangePaths(change, depth)
+    assert expectedPaths == paths

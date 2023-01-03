@@ -209,3 +209,16 @@ def removePathFromPattern(matchPattern, path):
         removePathFromPattern(childNode, path[1:])
         if not childNode:
             del matchPattern[firstPathElement]
+
+
+def collectChangePaths(change, depth):
+    return sorted(set(_collectChangePaths(change, depth)))
+
+
+def _collectChangePaths(change, depth, prefix=()):
+    path = prefix + tuple(change.get("p", ()))
+    if len(path) >= depth:
+        yield path[:depth]
+        return
+    for childChange in change.get("c", []):
+        yield from _collectChangePaths(childChange, depth, path)
