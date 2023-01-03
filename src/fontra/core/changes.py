@@ -159,12 +159,10 @@ def filterChangePattern(change, matchPattern, inverse=False):
     that match from the return value.
     """
     node = matchPattern
-    matchedPath = []
     for pathElement in change.get("p", []):
         childNode = node.get(pathElement, _MISSING)
         if childNode is _MISSING:
             return change if inverse else None
-        matchedPath.append(pathElement)
         if childNode is None:
             # leaf node
             return None if inverse else change
@@ -178,6 +176,7 @@ def filterChangePattern(change, matchPattern, inverse=False):
 
     result = {**change}
     if not inverse:
+        # We've at most matched one or more children, but not the root change
         result.pop("f", None)
         result.pop("a", None)
 
