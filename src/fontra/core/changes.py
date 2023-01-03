@@ -75,7 +75,12 @@ changeFunctions = {
 #
 
 
-def applyChange(subject, change, itemCast=None):
+def applyChange(subject, change):
+    """Apply `change` to `subject`."""
+    _applyChange(subject, change)
+
+
+def _applyChange(subject, change, *, itemCast=None):
     path = change.get("p", [])
     functionName = change.get("f")
     children = change.get("c", [])
@@ -99,7 +104,7 @@ def applyChange(subject, change, itemCast=None):
             changeFunc(subject, *args)
 
     for subChange in children:
-        applyChange(subject, subChange, itemCast=itemCast)
+        _applyChange(subject, subChange, itemCast=itemCast)
 
 
 def getItemCast(subject, attrName, fieldKey):
@@ -110,3 +115,141 @@ def getItemCast(subject, attrName, fieldKey):
         if subtype is not None:
             return classCastFuncs.get(subtype)
     return None
+
+
+_MISSING = object()
+
+
+def matchChangePattern(change, matchPattern):
+    """Return `True` or `False`, depending on whether the `change` matches
+    the `matchPattern`.
+
+    A `matchPattern` is tree in the form of a dict, where keys are change path
+    elements, and values are either nested pattern dicts or `None`, to indicate
+    a leaf node.
+    """
+    node = matchPattern
+    for pathElement in change.get("p", []):
+        childNode = node.get(pathElement, _MISSING)
+        if childNode is _MISSING:
+            return False
+        if childNode is None:
+            # leaf node
+            return True
+        node = childNode
+
+    for childChange in change.get("c", []):
+        if matchChangePattern(childChange, node):
+            return True
+
+    return False
+
+
+def filterChangePattern(change, matchPattern):
+    """Return a subset of the `change` according to the `matchPattern`, or `None`
+    if the `change` doesn't match `matchPattern` at all. If there is a match,
+    all parts of the change that do not match are not included in the returned
+    change object.
+
+    A `matchPattern` is tree in the form of a dict, where keys are change path
+    elements, and values are either nested pattern dicts or `None`, to indicate
+    a leaf node.
+    """
+    node = matchPattern
+    matchedPath = []
+    for pathElement in change.get("p", []):
+        childNode = node.get(pathElement, _MISSING)
+        if childNode is _MISSING:
+            return None
+        matchedPath.append(pathElement)
+        if childNode is None:
+            # leaf node
+            return change
+        node = childNode
+
+    filteredChildren = []
+    for childChange in change.get("c", []):
+        childChange = filterChangePattern(childChange, node)
+        if childChange is not None:
+            filteredChildren.append(childChange)
+
+    if not filteredChildren:
+        return None
+
+    if len(filteredChildren) == 1:
+        if matchedPath:
+            # consolidate
+            result = {**filteredChildren[0]}
+            path = matchedPath + result.get("p", [])
+            if path:
+                result["p"] = path
+        else:
+            result = filteredChildren[0]
+    elif matchedPath:
+        result = {"p": matchedPath, "c": filteredChildren}
+    else:
+        result = {"c": filteredChildren}
+
+    return result
+
+
+def addPathToPattern(matchPattern, path):
+    """Add `path` to `matchPattern`, so `matchPattern` will match `path`.
+    If the pattern already matches a prefix of `path`, this function does
+    nothing.
+    """
+    node = matchPattern
+    lastIndex = len(path) - 1
+    for i, pathElement in enumerate(path):
+        childNode = node.get(pathElement, _MISSING)
+        if childNode is None:
+            # leaf node, path is already included
+            return
+        if childNode is _MISSING:
+            if i == lastIndex:
+                newNode = None  # leaf
+            else:
+                newNode = {}
+            childNode = node[pathElement] = newNode
+        node = childNode
+
+
+def removePathFromPattern(matchPattern, path):
+    """Remove `path` from `matchPattern`, so `matchPattern` no longer matches `path`.
+    If the pattern matches a prefix of `path`, or if `path` was not included in
+    `matchPattern` to begin with, this function does nothing.
+    """
+    assert path
+    firstPathElement = path[0]
+    childNode = matchPattern.get(firstPathElement, _MISSING)
+    if childNode is _MISSING:
+        # path wasn't part of the pattern
+        return
+    if len(path) == 1:
+        if childNode is None:
+            del matchPattern[firstPathElement]
+        else:
+            # a deeper path is still part of the pattern, ignore
+            pass
+    else:
+        if childNode is None:
+            # path wasn't part of the pattern
+            return
+        removePathFromPattern(childNode, path[1:])
+        if not childNode:
+            del matchPattern[firstPathElement]
+
+
+def collectChangePaths(change, depth):
+    """Return a sorted list of paths of the specified `depth` that the `change`
+    includes."""
+    return sorted(set(_collectChangePaths(change, depth)))
+
+
+def _collectChangePaths(change, depth, prefix=()):
+    path = prefix + tuple(change.get("p", ()))
+    if len(path) >= depth:
+        yield path[:depth]
+        return
+    for childChange in change.get("c", []):
+        yield from _collectChangePaths(childChange, depth, path)
