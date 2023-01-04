@@ -289,21 +289,49 @@ export function applyChange(subject, change) {
 
 
 export function matchChangePath(change, matchPath) {
-  const path = change["p"] || [];
-  const children = change["c"] || [];
-  matchPath = Array.from(matchPath);
+  return matchChangePattern(change, pathToPattern(matchPath));
+}
 
-  for (const pathElement of path) {
-    if (pathElement !== matchPath.shift()) {
+
+function pathToPattern(matchPath) {
+  const pattern = {};
+  let node;
+  if (matchPath.length == 1) {
+    node = null;
+  } else if (matchPath.length > 1) {
+    node = pathToPattern(matchPath.slice(1));
+  }
+  if (node !== undefined) {
+    pattern[matchPath[0]] = node;
+  }
+  return pattern;
+}
+
+
+export function matchChangePattern(change, matchPattern) {
+  //
+  // Return `true` or `false`, depending on whether the `change` matches
+  // the `matchPattern`.
+  //
+  // A `matchPattern` is tree in the form of a dict, where keys are change path
+  // elements, and values are either nested pattern dicts or `None`, to indicate
+  // a leaf node.
+  //
+  let node = matchPattern;
+  for (const pathElement of change.p || []) {
+    const childNode = node[pathElement];
+    if (childNode === undefined) {
       return false;
     }
-    if (!matchPath.length) {
+    if (childNode === null) {
+      // leaf node
       return true;
     }
+    node = childNode;
   }
 
-  for (const subChange of children) {
-    if (matchChangePath(subChange, matchPath)) {
+  for (const childChange of change.c || []) {
+    if (matchChangePattern(childChange, node)) {
       return true;
     }
   }
