@@ -6,6 +6,8 @@ import {
   ChangeCollector,
   applyChange,
   consolidateChanges,
+  matchChangePath,
+  matchChangePattern,
 } from "../src/fontra/client/core/changes.js";
 
 
@@ -36,6 +38,53 @@ describe("applyChange Tests", () => {
   }
 
 });
+
+
+
+describe("matchChangePattern Tests", () => {
+
+  const test_data_path = join(dirname(__dirname), "test-common/match-change-pattern-test-data.json");
+  const tests = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
+
+  for (let i = 0; i < tests.length; i++) {
+    const [change, pattern, expectedResult] = tests[i];
+
+    it(`matchChangePattern Test #${i}`, () => {
+      const result = matchChangePattern(change, pattern);
+      expect(result).to.equal(expectedResult);
+    });
+  }
+
+});
+
+
+describe("matchChangePath Tests", () => {
+
+  const tests = [
+    [{}, [], false],
+    [{"p": ["A"]}, ["A"], true],
+    [{"p": ["A"]}, ["A", "B"], false],
+    [{"p": ["A", "B"]}, ["A"], true],
+    [{"p": ["A", "B"]}, ["A", "B"], true],
+    [{"p": ["A"]}, ["B"], false],
+    [{"c": [{"p": ["A"]}]}, ["A"], true],
+    [{"p": ["A"], "c": [{"p": ["B"]}]}, ["A", "B"], true],
+    [{"p": ["A"], "c": [{"p": ["B"]}]}, ["A", "C"], false],
+    [{"p": ["A"], "c": [{"p": ["B"]}]}, ["B", "B"], false],
+  ];
+
+  for (let i = 0; i < tests.length; i++) {
+    const [change, path, expectedResult] = tests[i];
+
+    it(`matchChangePath Test #${i}`, () => {
+      const result = matchChangePath(change, path);
+      expect(result).to.equal(expectedResult);
+    });
+  }
+
+});
+
+
 
 
 const consolidateChangesTestCases = [
