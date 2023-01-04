@@ -40,7 +40,6 @@ describe("applyChange Tests", () => {
 });
 
 
-
 describe("matchChangePattern Tests", () => {
 
   const test_data_path = join(dirname(__dirname), "test-common/match-change-pattern-test-data.json");
