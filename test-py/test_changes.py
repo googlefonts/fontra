@@ -22,6 +22,12 @@ matchChangePatternTestDataPath = (
     / "match-change-pattern-test-data.json"
 )
 
+collectChangePathsTestDataPath = (
+    pathlib.Path(__file__).parent.parent
+    / "test-common"
+    / "collect-change-paths-test-data.json"
+)
+
 applyChangeTestData = json.loads(applyChangeTestDataPath.read_text(encoding="utf-8"))
 applyChangeTestInputData = applyChangeTestData["inputData"]
 
@@ -309,49 +315,9 @@ def test_filterChangePattern_inverse(change, pattern, expectedResult):
 
 @pytest.mark.parametrize(
     "change, depth, expectedPaths",
-    [
-        (
-            {},
-            2,
-            [],
-        ),
-        (
-            {"p": ["A"]},
-            1,
-            [("A",)],
-        ),
-        (
-            {"p": ["A"]},
-            2,
-            [],
-        ),
-        (
-            {"p": ["A", "B"]},
-            2,
-            [("A", "B")],
-        ),
-        (
-            {"c": [{"p": ["A"]}, {"p": ["B"]}]},
-            1,
-            [("A",), ("B",)],
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"]}, {"p": ["C"]}]},
-            2,
-            [("A", "B"), ("A", "C")],
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "c": [{"p": ["D"]}]}, {"p": ["C"]}]},
-            2,
-            [("A", "B"), ("A", "C")],
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "c": [{"p": ["D"]}]}, {"p": ["C"]}]},
-            3,
-            [("A", "B", "D")],
-        ),
-    ],
+    json.loads(collectChangePathsTestDataPath.read_text(encoding="utf-8")),
 )
 def test_collectChangePaths(change, depth, expectedPaths):
     paths = collectChangePaths(change, depth)
+    expectedPaths = [tuple(p) for p in expectedPaths]
     assert expectedPaths == paths
