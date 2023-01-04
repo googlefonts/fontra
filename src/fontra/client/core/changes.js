@@ -289,26 +289,22 @@ export function applyChange(subject, change) {
 
 
 export function matchChangePath(change, matchPath) {
-  const path = change["p"] || [];
-  const children = change["c"] || [];
-  matchPath = Array.from(matchPath);
+  return matchChangePattern(change, pathToPattern(matchPath));
+}
 
-  for (const pathElement of path) {
-    if (pathElement !== matchPath.shift()) {
-      return false;
-    }
-    if (!matchPath.length) {
-      return true;
-    }
+
+function pathToPattern(matchPath) {
+  const pattern = {};
+  let node;
+  if (matchPath.length == 1) {
+    node = null;
+  } else if (matchPath.length > 1) {
+    node = pathToPattern(matchPath.slice(1));
   }
-
-  for (const subChange of children) {
-    if (matchChangePath(subChange, matchPath)) {
-      return true;
-    }
+  if (node !== undefined) {
+    pattern[matchPath[0]] = node;
   }
-
-  return false;
+  return pattern;
 }
 
 
