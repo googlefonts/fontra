@@ -166,6 +166,7 @@ class FontHandler:
 
     @remoteMethod
     async def subscribeLiveGlyphChanges(self, glyphNames, *, connection):
+        # TODO: replace this method with something more generic
         matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
         matchPattern["glyphs"] = dict.fromkeys(glyphNames)
 
