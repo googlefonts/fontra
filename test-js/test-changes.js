@@ -5,6 +5,7 @@ import fs from "fs";
 import {
   ChangeCollector,
   applyChange,
+  collectChangePaths,
   consolidateChanges,
   matchChangePath,
   matchChangePattern,
@@ -78,6 +79,23 @@ describe("matchChangePath Tests", () => {
     it(`matchChangePath Test #${i}`, () => {
       const result = matchChangePath(change, path);
       expect(result).to.equal(expectedResult);
+    });
+  }
+
+});
+
+
+describe("collectChangePaths Tests", () => {
+
+  const test_data_path = join(dirname(__dirname), "test-common/collect-change-paths-test-data.json");
+  const tests = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
+
+  for (let i = 0; i < tests.length; i++) {
+    const [change, depth, expectedPaths] = tests[i];
+
+    it(`collectChangePaths Test #${i}`, () => {
+      const paths = collectChangePaths(change, depth);
+      expect(paths).to.deep.equal(expectedPaths);
     });
   }
 

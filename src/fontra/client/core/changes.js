@@ -340,6 +340,39 @@ export function matchChangePattern(change, matchPattern) {
 }
 
 
+export function collectChangePaths(change, depth) {
+  //
+  // Return a sorted list of paths of the specified `depth` that the `change`
+  // includes.
+  //
+  const pathsSet = new Set();
+  for (const path of iterateChangePaths(change, depth)) {
+    pathsSet.add(JSON.stringify(path));
+  }
+  const paths = [...pathsSet];
+  paths.sort();
+  return paths.map(item => JSON.parse(item));
+
+}
+
+
+function *iterateChangePaths(change, depth, prefix) {
+  if (!prefix) {
+    prefix = [];
+  }
+  const path = prefix.concat(change.p || []);
+  if (path.length >= depth) {
+    yield path.slice(0, depth);
+    return;
+  }
+  for (const childChange of change.c || []) {
+    for (const resultPath of iterateChangePaths(childChange, depth, path)) {
+      yield resultPath;
+    }
+  }
+}
+
+
 function equalPath(p1, p2) {
   if (p1.length !== p2?.length) {
     return false;
