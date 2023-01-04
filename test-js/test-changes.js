@@ -85,8 +85,6 @@ describe("matchChangePath Tests", () => {
 });
 
 
-
-
 const consolidateChangesTestCases = [
   {
     "testName": "no-op",
