@@ -12,11 +12,15 @@ from fontra.core.changes import (
 )
 
 
-testDataPath = (
+applyChangeTestDataPath = (
     pathlib.Path(__file__).parent.parent / "test-common" / "apply-change-test-data.json"
 )
 
-applyChangeTestData = json.loads(testDataPath.read_text(encoding="utf-8"))
+matchChangePatternTestDataPath = (
+    pathlib.Path(__file__).parent.parent / "test-common" / "match-change-pattern-test-data.json"
+)
+
+applyChangeTestData = json.loads(applyChangeTestDataPath.read_text(encoding="utf-8"))
 applyChangeTestInputData = applyChangeTestData["inputData"]
 
 
@@ -75,18 +79,7 @@ def test_removePathFromPattern(pattern, path, expectedPattern):
 
 @pytest.mark.parametrize(
     "change, pattern, expectedResult",
-    [
-        ({}, {}, False),
-        ({"p": ["A"]}, {"A": None}, True),
-        ({"p": ["A"]}, {"A": {"B": None}}, False),
-        ({"p": ["A", "B"]}, {"A": None}, True),
-        ({"p": ["A", "B"]}, {"A": {"B": None}}, True),
-        ({"p": ["A"]}, {"B": None}, False),
-        ({"c": [{"p": ["A"]}]}, {"A": None}, True),
-        ({"p": ["A"], "c": [{"p": ["B"]}]}, {"A": {"B": None}}, True),
-        ({"p": ["A"], "c": [{"p": ["B"]}]}, {"A": {"C": None}}, False),
-        ({"p": ["A"], "c": [{"p": ["B"]}]}, {"B": {"B": None}}, False),
-    ],
+    json.loads(matchChangePatternTestDataPath.read_text(encoding="utf-8")),
 )
 def test_matchChangePattern(change, pattern, expectedResult):
     result = matchChangePattern(change, pattern)
