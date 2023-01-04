@@ -330,10 +330,11 @@ export function matchChangePattern(change, matchPattern) {
     node = childNode;
   }
 
-  for (const childChange of change.c || [])
+  for (const childChange of change.c || []) {
     if (matchChangePattern(childChange, node)) {
       return true;
     }
+  }
 
   return false;
 }
