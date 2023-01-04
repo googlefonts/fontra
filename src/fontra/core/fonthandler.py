@@ -5,11 +5,22 @@ from copy import deepcopy
 import functools
 import logging
 import traceback
-from .changes import applyChange
+from .changes import (
+    addPathToPattern,
+    applyChange,
+    collectChangePaths,
+    filterChangePattern,
+    matchChangePattern,
+    removePathFromPattern,
+)
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 
 
 logger = logging.getLogger(__name__)
+
+
+CHANGES_PATTERN_KEY = "changes-match-pattern"
+LIVE_CHANGES_PATTERN_KEY = "live-changes-match-pattern"
 
 
 def remoteMethod(method):
@@ -91,17 +102,12 @@ class FontHandler:
             self.connections.remove(connection)
 
     @remoteMethod
-    def getGlyph(self, glyphName, *, connection):
-        loadedGlyphNames = self.clientData[connection.clientUUID].setdefault(
-            "loadedGlyphNames", set()
-        )
-        loadedGlyphNames.add(glyphName)
+    async def getGlyph(self, glyphName, *, connection):
+        await self.subscribeChanges(["glyphs", glyphName], connection=connection)
         glyph = self.changedGlyphs.get(glyphName)
-        if glyph is not None:
-            fut = asyncio.get_running_loop().create_future()
-            fut.set_result(glyph)
-            return fut
-        return self._getGlyph(glyphName)
+        if glyph is None:
+            glyph = await self._getGlyph(glyphName)
+        return glyph
 
     async def getChangedGlyph(self, glyphName):
         glyph = self.changedGlyphs.get(glyphName)
@@ -120,11 +126,6 @@ class FontHandler:
         return glyph
 
     @remoteMethod
-    async def unloadGlyph(self, glyphName, *, connection):
-        loadedGlyphNames = self.clientData[connection.clientUUID]["loadedGlyphNames"]
-        loadedGlyphNames.discard(glyphName)
-
-    @remoteMethod
     async def getReverseCmap(self, *, connection):
         return await self.backend.getReverseCmap()
 
@@ -140,11 +141,34 @@ class FontHandler:
     async def getFontLib(self, *, connection):
         return await self.backend.getFontLib()
 
+    def _getClientData(self, connection, key, default=None):
+        return self.clientData[connection.clientUUID].setdefault(key, default)
+
+    @remoteMethod
+    async def subscribeChanges(self, path, *, connection):
+        matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
+        addPathToPattern(matchPattern, path)
+
+    @remoteMethod
+    async def unsubscribeChanges(self, path, *, connection):
+        matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
+        removePathFromPattern(matchPattern, path)
+
+    @remoteMethod
+    async def subscribeLiveChanges(self, path, *, connection):
+        matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
+        addPathToPattern(matchPattern, path)
+
+    @remoteMethod
+    async def unsubscribeLiveChanges(self, path, *, connection):
+        matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
+        removePathFromPattern(matchPattern, path)
+
     @remoteMethod
     async def subscribeLiveGlyphChanges(self, glyphNames, *, connection):
-        self.clientData[connection.clientUUID]["subscribedLiveGlyphNames"] = set(
-            glyphNames
-        )
+        # TODO: replace this method with something more generic
+        matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
+        matchPattern["glyphs"] = dict.fromkeys(glyphNames)
 
     @remoteMethod
     async def editIncremental(self, liveChange, *, connection):
@@ -156,36 +180,37 @@ class FontHandler:
     ):
         # TODO: use finalChange, rollbackChange, editLabel for history recording
         # TODO: locking/checking
-        await self.updateServerGlyph(finalChange, connection)
+        await self.updateServerGlyphs(finalChange, connection)
         # return {"error": "computer says no"}
         if broadcast:
             await self.broadcastChange(finalChange, connection, False)
 
     async def broadcastChange(self, change, sourceConnection, isLiveChange):
         if isLiveChange:
-            subscribedGlyphNamesKey = "subscribedLiveGlyphNames"
+            matchPatternKey = LIVE_CHANGES_PATTERN_KEY
         else:
-            subscribedGlyphNamesKey = "loadedGlyphNames"
-        assert change["p"][0] == "glyphs", change["p"]
-        glyphName = change["p"][1]
+            matchPatternKey = CHANGES_PATTERN_KEY
         connections = []
         for connection in self.connections:
-            subscribedGlyphNames = self.clientData[connection.clientUUID].get(
-                subscribedGlyphNamesKey, ()
-            )
-            if connection != sourceConnection and glyphName in subscribedGlyphNames:
+            matchPattern = self._getClientData(connection, matchPatternKey, {})
+            if connection != sourceConnection and matchChangePattern(
+                change, matchPattern
+            ):
                 connections.append(connection)
         await asyncio.gather(
             *[connection.proxy.externalChange(change) for connection in connections]
         )
 
-    async def updateServerGlyph(self, change, connection):
-        assert change["p"][0] == "glyphs", change["p"]
-        glyphName = change["p"][1]
-        glyph = await self.getChangedGlyph(glyphName)
-        applyChange(dict(glyphs={glyphName: glyph}), change)
+    async def updateServerGlyphs(self, change, connection):
+        change = filterChangePattern(change, {"glyphs": None})
+        glyphNames = [glyphName for _, glyphName in collectChangePaths(change, 2)]
+        glyphs = {
+            glyphName: await self.getChangedGlyph(glyphName) for glyphName in glyphNames
+        }
+        applyChange(dict(glyphs=glyphs), change)
         if not self.readOnly:
-            await self.scheduleGlyphWrite(glyphName, glyph, connection)
+            for glyphName in glyphNames:
+                await self.scheduleGlyphWrite(glyphName, glyphs[glyphName], connection)
 
     async def scheduleGlyphWrite(self, glyphName, glyph, connection):
         if self._glyphsScheduledForWrite is None:
@@ -238,9 +263,8 @@ class FontHandler:
         logger.info(f"broadcasting external glyph changes: {glyphNames}")
         connections = []
         for connection in self.connections:
-            subscribedGlyphNames = self.clientData[connection.clientUUID].get(
-                "loadedGlyphNames", ()
-            )
+            matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
+            subscribedGlyphNames = matchPattern.get("glyphs", {})
             connGlyphNames = [
                 glyphName
                 for glyphName in glyphNames
