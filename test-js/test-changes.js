@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 
-describe("Changes Tests", () => {
+describe("applyChange Tests", () => {
 
   const test_data_path = join(dirname(__dirname), "test-common/apply-change-test-data.json");
   const test_data = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
@@ -29,7 +29,7 @@ describe("Changes Tests", () => {
     const expectedData = test["expectedData"];
 
     const subject = copyObject(inputData[inputDataName]);
-    it(`Apply Changes test #${i} -- ${testName}`, () => {
+    it(`applyChange Test #${i} -- ${testName}`, () => {
       applyChange(subject, test["change"]);
       expect(subject).to.deep.equal(expectedData);
     });
