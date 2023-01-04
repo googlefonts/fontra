@@ -17,7 +17,9 @@ applyChangeTestDataPath = (
 )
 
 matchChangePatternTestDataPath = (
-    pathlib.Path(__file__).parent.parent / "test-common" / "match-change-pattern-test-data.json"
+    pathlib.Path(__file__).parent.parent
+    / "test-common"
+    / "match-change-pattern-test-data.json"
 )
 
 applyChangeTestData = json.loads(applyChangeTestDataPath.read_text(encoding="utf-8"))
