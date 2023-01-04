@@ -262,13 +262,13 @@ def removePathFromPattern(matchPattern, path):
 def collectChangePaths(change, depth):
     """Return a sorted list of paths of the specified `depth` that the `change`
     includes."""
-    return sorted(set(_collectChangePaths(change, depth)))
+    return sorted(set(_iterateChangePaths(change, depth)))
 
 
-def _collectChangePaths(change, depth, prefix=()):
+def _iterateChangePaths(change, depth, prefix=()):
     path = prefix + tuple(change.get("p", ()))
     if len(path) >= depth:
         yield path[:depth]
         return
     for childChange in change.get("c", []):
-        yield from _collectChangePaths(childChange, depth, path)
+        yield from _iterateChangePaths(childChange, depth, path)
