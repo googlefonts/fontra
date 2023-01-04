@@ -312,6 +312,37 @@ export function matchChangePath(change, matchPath) {
 }
 
 
+export function matchChangePattern(change, matchPattern) {
+  //
+  // Return `true` or `false`, depending on whether the `change` matches
+  // the `matchPattern`.
+  //
+  // A `matchPattern` is tree in the form of a dict, where keys are change path
+  // elements, and values are either nested pattern dicts or `None`, to indicate
+  // a leaf node.
+  //
+  let node = matchPattern;
+  for (const pathElement of change.p || []) {
+    const childNode = node[pathElement];
+    if (childNode === undefined) {
+      return false;
+    }
+    if (childNode === null) {
+      // leaf node
+      return true;
+    }
+    node = childNode;
+  }
+
+  for (const childChange of change.c || [])
+    if (matchChangePattern(childChange, node)) {
+      return true;
+    }
+
+  return false;
+}
+
+
 function equalPath(p1, p2) {
   if (p1.length !== p2?.length) {
     return false;
