@@ -249,14 +249,12 @@ export class FontController {
   }
 
   pushUndoRecord(change, rollbackChange, undoInfo) {
-    if (change.p[0] !== "glyphs" || rollbackChange.p[0] !== "glyphs") {
-      // Doesn't currently happen, deal with it later.
-      return;
+    const glyphNames = collectGlyphNames(change);
+    const rbgn = collectGlyphNames(rollbackChange);
+    if (glyphNames.length !== 1 || rbgn.length !== 1 || glyphNames[0] !== rbgn[0]) {
+      throw new Error("assertion -- change inconsistency for glyph undo");
     }
-    const glyphName = change.p[1];
-    if (rollbackChange.p[1] !== glyphName) {
-      console.log("internal inconsistency: undo rollback doesn't match change");
-    }
+    const glyphName = glyphNames[0];
     if (this.undoStacks[glyphName] === undefined) {
       this.undoStacks[glyphName] = new UndoStack();
     }
