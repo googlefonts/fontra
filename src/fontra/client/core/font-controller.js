@@ -1,4 +1,9 @@
-import { applyChange, consolidateChanges } from "./changes.js";
+import {
+  applyChange,
+  collectChangePaths,
+  consolidateChanges,
+  matchChangePath,
+} from "./changes.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
@@ -184,16 +189,20 @@ export class FontController {
   }
 
   async applyChange(change, isExternalChange) {
-    if (change.p[0] === "glyphs") {
-      const glyphName = change.p[1];
+    if (matchChangePath(change, ["glyphs"])) {
+      const glyphNames = collectGlyphNames(change);
       const glyphSet = {};
+      for (const glyphName of glyphNames) {
+        glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
+      }
       const root = {"glyphs": glyphSet};
-      glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
       applyChange(root, change);
-      this.glyphChanged(glyphName);
-      if (isExternalChange) {
-        // The undo stack is local, so any external change invalidates it
-        delete this.undoStacks[glyphName];
+      for (const glyphName of glyphNames) {
+        this.glyphChanged(glyphName);
+        if (isExternalChange) {
+          // The undo stack is local, so any external change invalidates it
+          delete this.undoStacks[glyphName];
+        }
       }
     }
   }
@@ -416,4 +425,11 @@ function _popUndoRedoRecord(popStack, pushStack) {
   const [undoRecord] = popStack.splice(-1, 1);
   pushStack.push(undoRecord);
   return undoRecord;
+}
+
+
+function collectGlyphNames(change) {
+  return collectChangePaths(change, 2).filter(
+    item => item[0] === "glyphs" && item[1] !== undefined
+  ).map(item => item[1]);
 }
