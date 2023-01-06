@@ -16,9 +16,13 @@ export function makeMappingFromReverseMapping(revCmap, strict = true) {
   const cmap = {};
   for (const [glyphName, unicodes] of Object.entries(revCmap)) {
     for (const codepoint of unicodes) {
-      if (strict && codepoint in cmap) {
-        // Possibly a warning is good enough, but let's be strict for now
-        throw new Error("assertion -- invalid reverse cmap: duplicate code point");
+      if (codepoint in cmap) {
+        const message = `invalid reverse cmap: duplicate code point (${codepoint})`;
+        if (strict) {
+          throw new Error(message);
+        } else {
+          console.log(message);
+        }
       }
       cmap[codepoint] = glyphName;
     }
