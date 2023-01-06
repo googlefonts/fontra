@@ -1,24 +1,45 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import { getCmapWrapper, makeReverseMapping } from "../src/fontra/client/core/cmap.js";
+import {
+  getCmapWrapper,
+  makeMappingFromReverseMapping,
+  makeReverseMapping,
+} from "../src/fontra/client/core/cmap.js";
 import { enumerate } from "../src/fontra/client/core/utils.js";
-
-
-const makeReverseMapping_testData = [
-  [{}, {}],
-  [{1: "one"}, {"one": [1]}],
-  [{1: "one", 2: "two"}, {"one": [1], "two": [2]}],
-  [{1: "double", 2: "double"}, {"double": [1, 2]}],
-  [{2: "double", 1: "double"}, {"double": [1, 2]}],
-];
 
 
 describe("getCmapWrapper tests", () => {
 
+  const makeReverseMapping_testData = [
+    [{}, {}],
+    [{1: "one"}, {"one": [1]}],
+    [{1: "one", 2: "two"}, {"one": [1], "two": [2]}],
+    [{1: "double", 2: "double"}, {"double": [1, 2]}],
+    [{2: "double", 1: "double"}, {"double": [1, 2]}],
+  ];
+
   for (const [i, [cmap, expectedRevCmap]] of enumerate(makeReverseMapping_testData)) {
-    it("makeReverseMapping test empty", () => {
+    it(`makeReverseMapping test ${i}`, () => {
       expect(makeReverseMapping(cmap)).to.deep.equal(expectedRevCmap);
+    });
+  }
+
+  const makeMappingFromReverseMapping_testData = [
+    [{}, {}, null],
+    [{"one": [1]}, {1: "one"}, null],
+    [{"one": [1], "two": [2]}, {1: "one", 2: "two"}, null],
+    [{"double": [1, 2]}, {1: "double", 2: "double"}, null],
+    [{"one": [1], "two": [1]}, null, "duplicate code point"],
+  ];
+
+  for (const [i, [revCmap, expectedCmap, error]] of enumerate(makeMappingFromReverseMapping_testData)) {
+    it(`makeMappingFromReverseMapping test ${i}`, () => {
+      if (!error) {
+        expect(makeMappingFromReverseMapping(revCmap)).to.deep.equal(expectedCmap);
+      } else {
+        expect(() => makeMappingFromReverseMapping(revCmap)).to.throw(error);
+      }
     });
   }
 
