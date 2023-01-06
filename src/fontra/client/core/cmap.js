@@ -16,11 +16,11 @@ export function makeReverseMapping(cmap) {
   // Return a `revCmap` constructed from `cmap`
   const revCmap = {};
   for (const [codeStr, glyphName] of Object.entries(cmap)) {
-    const codepoint = parseInt(codeStr);
+    const codePoint = parseInt(codeStr);
     if (revCmap[glyphName]) {
-      arrayInsertSortedItem(revCmap[glyphName], codepoint);
+      arrayInsertSortedItem(revCmap[glyphName], codePoint);
     } else {
-      revCmap[glyphName] = [codepoint];
+      revCmap[glyphName] = [codePoint];
     }
   }
   return revCmap;
@@ -33,20 +33,20 @@ export function makeMappingFromReverseMapping(revCmap, strict = true) {
   // point is defined multiple times.
   const cmap = {};
   for (const [glyphName, unicodes] of Object.entries(revCmap)) {
-    for (const codepoint of unicodes) {
-      if (codepoint in cmap) {
-        const message = `invalid reverse cmap: duplicate code point (${codepoint})`;
+    for (const codePoint of unicodes) {
+      if (codePoint in cmap) {
+        const message = `invalid reverse cmap: duplicate code point (${codePoint})`;
         if (strict) {
           throw new Error(message);
         }
         console.log(message);
-        if (cmap[codepoint] < glyphName) {
+        if (cmap[codePoint] < glyphName) {
           // Keep the glyph name that would be sorted lowest.
           // This is completely arbitrary, but ensures determinism.
           continue;
         }
       }
-      cmap[codepoint] = glyphName;
+      cmap[codePoint] = glyphName;
     }
   }
   return cmap;
@@ -64,14 +64,14 @@ export function getCmapWrapper(cmap, revCmap) {
       const existingValue = cmap[prop];
       cmap[prop] = value;
       if (!isNaN(prop)) {
-        const codepoint = parseInt(prop);
+        const codePoint = parseInt(prop);
         if (existingValue) {
-          removeReverseMapping(revCmap, existingValue, codepoint);
+          removeReverseMapping(revCmap, existingValue, codePoint);
         }
         if (revCmap[value]) {
-          arrayInsertSortedItem(revCmap[value], codepoint);
+          arrayInsertSortedItem(revCmap[value], codePoint);
         } else {
-          revCmap[value] = [codepoint];
+          revCmap[value] = [codePoint];
         }
       }
       return true;
@@ -85,9 +85,9 @@ export function getCmapWrapper(cmap, revCmap) {
       const existingValue = cmap[prop];
       delete cmap[prop];
       if (!isNaN(prop)) {
-        const codepoint = parseInt(prop);
+        const codePoint = parseInt(prop);
         if (existingValue) {
-          removeReverseMapping(revCmap, existingValue, codepoint);
+          removeReverseMapping(revCmap, existingValue, codePoint);
         }
       }
       return true;
@@ -98,9 +98,9 @@ export function getCmapWrapper(cmap, revCmap) {
 }
 
 
-function removeReverseMapping(revCmap, glyphName, codepoint) {
+function removeReverseMapping(revCmap, glyphName, codePoint) {
   //
-  // Given a `revCmap`, remove the `codepoint` from the `glyphName` mapping,
+  // Given a `revCmap`, remove the `codePoint` from the `glyphName` mapping,
   // if it exists. If no mapping is left for `glyphName`, remove the mapping
   // entirely.
   //
@@ -108,7 +108,7 @@ function removeReverseMapping(revCmap, glyphName, codepoint) {
   if (!unicodes) {
     return;
   }
-  arrayDiscardItem(unicodes, codepoint);
+  arrayDiscardItem(unicodes, codePoint);
   if (!unicodes.length) {
     delete revCmap[glyphName];
   }
