@@ -26,19 +26,21 @@ describe("getCmapWrapper tests", () => {
   }
 
   const makeMappingFromReverseMapping_testData = [
-    [{}, {}, null],
-    [{"one": [1]}, {1: "one"}, null],
-    [{"one": [1], "two": [2]}, {1: "one", 2: "two"}, null],
-    [{"double": [1, 2]}, {1: "double", 2: "double"}, null],
-    [{"one": [1], "two": [1]}, null, "duplicate code point"],
+    [{}, {}, true, null],
+    [{"one": [1]}, {1: "one"}, true, null],
+    [{"one": [1], "two": [2]}, {1: "one", 2: "two"}, true, null],
+    [{"double": [1, 2]}, {1: "double", 2: "double"}, true, null],
+    [{"one": [1], "two": [1]}, null, true, "duplicate code point"],
+    [{"one": [1], "two": [1]}, {1: "two"}, false, null],
+    [{"two": [1], "one": [1]}, {1: "one"}, false, null],
   ];
 
-  for (const [i, [revCmap, expectedCmap, error]] of enumerate(makeMappingFromReverseMapping_testData)) {
+  for (const [i, [revCmap, expectedCmap, strict, error]] of enumerate(makeMappingFromReverseMapping_testData)) {
     it(`makeMappingFromReverseMapping test ${i}`, () => {
       if (!error) {
-        expect(makeMappingFromReverseMapping(revCmap)).to.deep.equal(expectedCmap);
+        expect(makeMappingFromReverseMapping(revCmap, strict)).to.deep.equal(expectedCmap);
       } else {
-        expect(() => makeMappingFromReverseMapping(revCmap)).to.throw(error);
+        expect(() => makeMappingFromReverseMapping(revCmap, strict)).to.throw(error);
       }
     });
   }
