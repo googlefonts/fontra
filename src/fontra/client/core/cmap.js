@@ -11,6 +11,11 @@
 // For the sake of determinism, this module tries to keep the code point arrays
 // in sorted order, even though the order has no intrinsic meaning.
 //
+// This module provides functions to convert `cmap` to `revCmap` and vice versa,
+// as well as a `cmap` proxy object that keeps a matching `revCmap` up-to-date
+// under `cmap` modifications.
+//
+
 
 export function makeReverseMapping(cmap) {
   // Return a `revCmap` constructed from `cmap`
@@ -59,6 +64,9 @@ export function getCmapWrapper(cmap, revCmap) {
   // while keeping the matching `revCmap` synchronized.
   //
   // `cmap` and `revCmap` are expected to be synchronized on input.
+  //
+  // Any changes made to `cmap` via the `cmap` proxy will be reflected in
+  // the `revCmap` object.
   //
 
   const handler = {
