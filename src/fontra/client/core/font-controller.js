@@ -4,6 +4,7 @@ import {
   consolidateChanges,
   matchChangePath,
 } from "./changes.js";
+import { makeMappingFromReverseMapping } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
@@ -33,7 +34,7 @@ export class FontController {
 
   async initialize() {
     this.reverseCmap = await this.font.getReverseCmap();
-    this.cmap = makeCmapFromReverseCmap(this.reverseCmap);
+    this.cmap = makeMappingFromReverseMapping(this.reverseCmap, false);
     this.globalAxes = await this.font.getGlobalAxes();
     this.unitsPerEm = await this.font.getUnitsPerEm();
     this.fontLib = await this.font.getFontLib();
@@ -315,21 +316,6 @@ function reverseUndoInfo(undoInfo) {
     revUndoInfo[map[k] || k] = v;
   }
   return revUndoInfo;
-}
-
-
-function makeCmapFromReverseCmap(reverseCmap) {
-  const cmap = {};
-  for (const [glyphName, codePoints] of Object.entries(reverseCmap)) {
-    for (const codePoint of codePoints) {
-      const mappedGlyphName = cmap[codePoint];
-      if (mappedGlyphName !== undefined && glyphName > mappedGlyphName) {
-        continue;
-      }
-      cmap[codePoint] = glyphName;
-    }
-  }
-  return cmap;
 }
 
 
