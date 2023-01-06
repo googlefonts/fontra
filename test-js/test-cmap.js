@@ -73,6 +73,17 @@ describe("getCmapWrapper tests", () => {
     expect(revCmap).to.deep.equal({"spacey": [32], "double": [33], "doubly": [34]});
   });
 
+  it("getCmapWrapper replace items with same", () => {
+    const cmapData = {"32": "space", "33": "double", "34": "double"};
+    const revCmap = makeReverseMapping(cmapData);
+    const cmap = getCmapWrapper(cmapData, revCmap);
+
+    cmap[32] = "space";
+    cmap[34] = "double";
+    expect(cmapData).to.deep.equal({"32": "space", "33": "double", "34": "double"});
+    expect(revCmap).to.deep.equal({"space": [32], "double": [33, 34]});
+  });
+
   it("getCmapWrapper delete items", () => {
     const cmapData = {"32": "space", "33": "double", "34": "double"};
     const revCmap = makeReverseMapping(cmapData);
