@@ -1,8 +1,8 @@
 //
 // A `cmap` is an object with integer numbers representing unicode code points
 // as keys, and glyph names as values. Note: we're using a JS Object, not Map,
-// so the code point keys are stored as string representations of the integers.
-// Multiple code points may map to the same glyph.
+// so the code point keys are stored as (decimal) string representations of the
+// integers. Multiple code points may map to the same glyph name.
 //
 // A `revCmap` ("reverse cmap") maps glyph names to arrays of (integer) code
 // points. A code point may only occur one time in the entire mapping.
