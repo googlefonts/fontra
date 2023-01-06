@@ -41,6 +41,8 @@ export function makeMappingFromReverseMapping(revCmap, strict = true) {
         }
         console.log(message);
         if (cmap[codepoint] < glyphName) {
+          // Keep the glyph name that would be sorted lowest.
+          // This is completely arbitrary, but ensures determinism.
           continue;
         }
       }
