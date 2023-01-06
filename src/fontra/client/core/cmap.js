@@ -66,8 +66,10 @@ export function getCmapWrapper(cmap, revCmap) {
   // `cmap` and `revCmap` are expected to be synchronized on input.
   //
   // Any changes made to `cmap` via the `cmap` proxy will be reflected in
-  // the `revCmap` object.
+  // the `revCmap` object. The reverse is not true: `revCmap` should not
+  // be modified directly, but *only* via the `cmap` proxy.
   //
+  // TODO: if needed we could provide getRevCmapWrapper(cmap, revCmap) as well.
 
   const handler = {
     set(cmap, prop, value) {
