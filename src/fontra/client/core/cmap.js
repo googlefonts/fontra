@@ -38,8 +38,10 @@ export function makeMappingFromReverseMapping(revCmap, strict = true) {
         const message = `invalid reverse cmap: duplicate code point (${codepoint})`;
         if (strict) {
           throw new Error(message);
-        } else {
-          console.log(message);
+        }
+        console.log(message);
+        if (cmap[codepoint] < glyphName) {
+          continue;
         }
       }
       cmap[codepoint] = glyphName;

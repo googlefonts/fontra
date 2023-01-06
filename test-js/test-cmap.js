@@ -31,7 +31,7 @@ describe("getCmapWrapper tests", () => {
     [{"one": [1], "two": [2]}, {1: "one", 2: "two"}, true, null],
     [{"double": [1, 2]}, {1: "double", 2: "double"}, true, null],
     [{"one": [1], "two": [1]}, null, true, "duplicate code point"],
-    [{"one": [1], "two": [1]}, {1: "two"}, false, null],
+    [{"one": [1], "two": [1]}, {1: "one"}, false, null],
     [{"two": [1], "one": [1]}, {1: "one"}, false, null],
   ];
 
