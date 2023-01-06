@@ -3,13 +3,14 @@ const expect = chai.expect;
 
 import {
   getCmapWrapper,
+  getReverseCmapWrapper,
   makeMappingFromReverseMapping,
   makeReverseMapping,
 } from "../src/fontra/client/core/cmap.js";
 import { enumerate } from "../src/fontra/client/core/utils.js";
 
 
-describe("getCmapWrapper tests", () => {
+describe("cmap tests", () => {
 
   const makeReverseMapping_testData = [
     [{}, {}],
@@ -48,6 +49,53 @@ describe("getCmapWrapper tests", () => {
   it("makeReverseMapping test simple", () => {
     const cmap = {};
     expect(makeReverseMapping(cmap)).to.deep.equal({});
+  });
+
+  it("getReverseCmapWrapper add items", () => {
+    const cmap = {};
+    const revCmapData = {};
+    const revCmap = getReverseCmapWrapper(revCmapData, cmap);
+
+    revCmap["space"] = [32];
+    revCmap["double"] = [33, 34];
+
+    expect(cmap).to.deep.equal({"32": "space", "33": "double", "34": "double"});
+    expect(revCmapData).to.deep.equal({"space": [32], "double": [33, 34]});
+  });
+
+  it("getReverseCmapWrapper replace items", () => {
+    const cmap = {"32": "space", "33": "test"};
+    const revCmapData = makeReverseMapping(cmap);
+    const revCmap = getReverseCmapWrapper(revCmapData, cmap);
+
+    revCmap["space"] = [32, 34];
+    expect(cmap).to.deep.equal({"32": "space", "33": "test", "34": "space"});
+    expect(revCmap).to.deep.equal({"space": [32, 34], "test": [33]});
+  });
+
+  it("getReverseCmapWrapper replace items with same", () => {
+    const cmap = {"32": "space", "33": "test"};
+    const revCmapData = makeReverseMapping(cmap);
+    const revCmap = getReverseCmapWrapper(revCmapData, cmap);
+
+    revCmap["space"] = [32];
+    revCmap["test"] = [33];
+    expect(cmap).to.deep.equal({"32": "space", "33": "test"});
+    expect(revCmap).to.deep.equal({"space": [32], "test": [33]});
+  });
+
+  it("getReverseCmapWrapper delete items", () => {
+    const cmap = {"32": "space", "33": "test"};
+    const revCmapData = makeReverseMapping(cmap);
+    const revCmap = getReverseCmapWrapper(revCmapData, cmap);
+
+    delete revCmap["space"];
+    expect(cmap).to.deep.equal({"33": "test"});
+    expect(revCmap).to.deep.equal({"test": [33]});
+
+    delete revCmap["test"];
+    expect(cmap).to.deep.equal({});
+    expect(revCmap).to.deep.equal({});
   });
 
   it("getCmapWrapper add items", () => {

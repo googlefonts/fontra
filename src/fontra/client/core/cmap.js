@@ -12,8 +12,8 @@
 // in sorted order, even though the order has no intrinsic meaning.
 //
 // This module provides functions to convert `cmap` to `revCmap` and vice versa,
-// as well as a `cmap` proxy object that keeps a matching `revCmap` up-to-date
-// under `cmap` modifications.
+// as well as `cmap` and `revCmap` proxy objects that keep their matching
+// counterpart (`revCmap` and `cmap` respectively) up-to-date.
 //
 
 
@@ -58,6 +58,45 @@ export function makeMappingFromReverseMapping(revCmap, strict = true) {
 }
 
 
+export function getReverseCmapWrapper(revCmap, cmap) {
+  //
+  // Return a wrapper (Proxy) for `revCmap`, that behaves exactly like `revCmap`,
+  // while keeping the matching `cmap` synchronized.
+  //
+  // `revCmap` and `cmap` are expected to be synchronized on input.
+  //
+  // Any changes made to `revCmap` via the `revCmap` proxy will be reflected in
+  // the `cmap` object.
+  //
+
+  const handler = {
+    set(revCmap, prop, value) {
+      if (!Array.isArray(value)) {
+        throw new Error("value expected to be an array of code points");
+      }
+      const existingCodePoints = revCmap[prop] || [];
+      revCmap[prop] = value;
+      existingCodePoints.forEach(codePoint => delete cmap[codePoint]);
+      value.forEach(codePoint => cmap[codePoint] = prop);
+      return true;
+    },
+
+    get(revCmap, prop) {
+      return revCmap[prop];
+    },
+
+    deleteProperty(revCmap, prop) {
+      const existingCodePoints = revCmap[prop] || [];
+      delete revCmap[prop];
+      existingCodePoints.forEach(codePoint => delete cmap[codePoint]);
+      return true;
+    }
+  }
+
+  return new Proxy(revCmap, handler);
+}
+
+
 export function getCmapWrapper(cmap, revCmap) {
   //
   // Return a wrapper (Proxy) for `cmap`, that behaves exactly like `cmap`,
@@ -66,10 +105,8 @@ export function getCmapWrapper(cmap, revCmap) {
   // `cmap` and `revCmap` are expected to be synchronized on input.
   //
   // Any changes made to `cmap` via the `cmap` proxy will be reflected in
-  // the `revCmap` object. The reverse is not true: `revCmap` should not
-  // be modified directly, but *only* via the `cmap` proxy.
+  // the `revCmap` object.
   //
-  // TODO: if needed we could provide getRevCmapWrapper(cmap, revCmap) as well.
 
   const handler = {
     set(cmap, prop, value) {
