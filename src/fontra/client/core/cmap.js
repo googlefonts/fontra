@@ -58,6 +58,8 @@ export function getCmapWrapper(cmap, revCmap) {
   // Return a wrapper (Proxy) for `cmap`, that behaves exactly like `cmap`,
   // while keeping the matching `revCmap` synchronized.
   //
+  // `cmap` and `revCmap` are expected to be synchronized on input.
+  //
 
   const handler = {
     set(cmap, prop, value) {
