@@ -1,3 +1,17 @@
+export function makeReverseMapping(cmap) {
+  const revCmap = {};
+  for (const [codeStr, glyphName] of Object.entries(cmap)) {
+    const codepoint = parseInt(codeStr);
+    if (revCmap[glyphName]) {
+      arrayInsertSortedItem(revCmap[glyphName], codepoint);
+    } else {
+      revCmap[glyphName] = [codepoint];
+    }
+  }
+  return revCmap;
+}
+
+
 export function getCmapWrapper(cmap, revCmap) {
 
   const handler = {
