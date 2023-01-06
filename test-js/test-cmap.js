@@ -41,7 +41,7 @@ describe("getCmapWrapper tests", () => {
 
   it("getCmapWrapper replace items", () => {
     const cmapData = {"32": "space", "33": "double", "34": "double"};
-    const revCmap = {"space": [32], "double": [33, 34]};
+    const revCmap = makeReverseMapping(cmapData);
     const cmap = getCmapWrapper(cmapData, revCmap);
 
     cmap[32] = "spacey";
