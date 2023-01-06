@@ -58,7 +58,7 @@ export function makeMappingFromReverseMapping(revCmap, strict = true) {
 }
 
 
-export function getReverseCmapWrapper(revCmap, cmap) {
+export function getReverseCmapProxy(revCmap, cmap) {
   //
   // Return a wrapper (Proxy) for `revCmap`, that behaves exactly like `revCmap`,
   // while keeping the matching `cmap` synchronized.
@@ -97,7 +97,7 @@ export function getReverseCmapWrapper(revCmap, cmap) {
 }
 
 
-export function getCmapWrapper(cmap, revCmap) {
+export function getCmapProxy(cmap, revCmap) {
   //
   // Return a wrapper (Proxy) for `cmap`, that behaves exactly like `cmap`,
   // while keeping the matching `revCmap` synchronized.

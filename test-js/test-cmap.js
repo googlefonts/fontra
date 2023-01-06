@@ -2,8 +2,8 @@ import chai from "chai";
 const expect = chai.expect;
 
 import {
-  getCmapWrapper,
-  getReverseCmapWrapper,
+  getCmapProxy,
+  getReverseCmapProxy,
   makeMappingFromReverseMapping,
   makeReverseMapping,
 } from "../src/fontra/client/core/cmap.js";
@@ -51,10 +51,10 @@ describe("cmap tests", () => {
     expect(makeReverseMapping(cmap)).to.deep.equal({});
   });
 
-  it("getReverseCmapWrapper add items", () => {
+  it("getReverseCmapProxy add items", () => {
     const cmap = {};
     const revCmapData = {};
-    const revCmap = getReverseCmapWrapper(revCmapData, cmap);
+    const revCmap = getReverseCmapProxy(revCmapData, cmap);
 
     revCmap["space"] = [32];
     revCmap["double"] = [33, 34];
@@ -63,20 +63,20 @@ describe("cmap tests", () => {
     expect(revCmapData).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getReverseCmapWrapper replace items", () => {
+  it("getReverseCmapProxy replace items", () => {
     const cmap = {"32": "space", "33": "test"};
     const revCmapData = makeReverseMapping(cmap);
-    const revCmap = getReverseCmapWrapper(revCmapData, cmap);
+    const revCmap = getReverseCmapProxy(revCmapData, cmap);
 
     revCmap["space"] = [32, 34];
     expect(cmap).to.deep.equal({"32": "space", "33": "test", "34": "space"});
     expect(revCmap).to.deep.equal({"space": [32, 34], "test": [33]});
   });
 
-  it("getReverseCmapWrapper replace items with same", () => {
+  it("getReverseCmapProxy replace items with same", () => {
     const cmap = {"32": "space", "33": "test"};
     const revCmapData = makeReverseMapping(cmap);
-    const revCmap = getReverseCmapWrapper(revCmapData, cmap);
+    const revCmap = getReverseCmapProxy(revCmapData, cmap);
 
     revCmap["space"] = [32];
     revCmap["test"] = [33];
@@ -84,10 +84,10 @@ describe("cmap tests", () => {
     expect(revCmap).to.deep.equal({"space": [32], "test": [33]});
   });
 
-  it("getReverseCmapWrapper delete items", () => {
+  it("getReverseCmapProxy delete items", () => {
     const cmap = {"32": "space", "33": "test"};
     const revCmapData = makeReverseMapping(cmap);
-    const revCmap = getReverseCmapWrapper(revCmapData, cmap);
+    const revCmap = getReverseCmapProxy(revCmapData, cmap);
 
     delete revCmap["space"];
     expect(cmap).to.deep.equal({"33": "test"});
@@ -98,10 +98,10 @@ describe("cmap tests", () => {
     expect(revCmap).to.deep.equal({});
   });
 
-  it("getCmapWrapper add items", () => {
+  it("getCmapProxy add items", () => {
     const cmapData = {};
     const revCmap = {};
-    const cmap = getCmapWrapper(cmapData, revCmap);
+    const cmap = getCmapProxy(cmapData, revCmap);
 
     cmap[32] = "space";
     cmap[33] = "double";
@@ -110,10 +110,10 @@ describe("cmap tests", () => {
     expect(revCmap).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getCmapWrapper replace items", () => {
+  it("getCmapProxy replace items", () => {
     const cmapData = {"32": "space", "33": "double", "34": "double"};
     const revCmap = makeReverseMapping(cmapData);
-    const cmap = getCmapWrapper(cmapData, revCmap);
+    const cmap = getCmapProxy(cmapData, revCmap);
 
     cmap[32] = "spacey";
     cmap[34] = "doubly";
@@ -121,10 +121,10 @@ describe("cmap tests", () => {
     expect(revCmap).to.deep.equal({"spacey": [32], "double": [33], "doubly": [34]});
   });
 
-  it("getCmapWrapper replace items with same", () => {
+  it("getCmapProxy replace items with same", () => {
     const cmapData = {"32": "space", "33": "double", "34": "double"};
     const revCmap = makeReverseMapping(cmapData);
-    const cmap = getCmapWrapper(cmapData, revCmap);
+    const cmap = getCmapProxy(cmapData, revCmap);
 
     cmap[32] = "space";
     cmap[34] = "double";
@@ -132,10 +132,10 @@ describe("cmap tests", () => {
     expect(revCmap).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getCmapWrapper delete items", () => {
+  it("getCmapProxy delete items", () => {
     const cmapData = {"32": "space", "33": "double", "34": "double"};
     const revCmap = makeReverseMapping(cmapData);
-    const cmap = getCmapWrapper(cmapData, revCmap);
+    const cmap = getCmapProxy(cmapData, revCmap);
 
     delete cmap[32];
     expect(cmapData).to.deep.equal({"33": "double", "34": "double"});
@@ -150,10 +150,10 @@ describe("cmap tests", () => {
     expect(revCmap).to.deep.equal({});
   });
 
-  it("getCmapWrapper add items, ensure sorted", () => {
+  it("getCmapProxy add items, ensure sorted", () => {
     const cmapData = {};
     const revCmap = {};
-    const cmap = getCmapWrapper(cmapData, revCmap);
+    const cmap = getCmapProxy(cmapData, revCmap);
 
     cmap[35] = "double";
     expect(revCmap).to.deep.equal({"double": [35]});
