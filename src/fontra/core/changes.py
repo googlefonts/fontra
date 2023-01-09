@@ -259,6 +259,23 @@ def removePathFromPattern(matchPattern, path):
             del matchPattern[firstPathElement]
 
 
+def addPatternToPattern(matchPattern, patternToAdd):
+    """Add `patternToAdd` to `matchPattern`, so `matchPattern` will also match
+    `patternToAdd`. If the pattern already matches a prefix of `patternToAdd`,
+    this function does nothing.
+    """
+    for key, valueB in patternToAdd.items():
+        valueA = matchPattern.get(key, _MISSING)
+        if valueA is _MISSING or valueB is None:
+            matchPattern[key] = valueB
+        elif valueA is not None:
+            addPatternToPattern(valueA, valueB)
+        else:
+            # valueA is None -- matchPattern already matches a prefix of
+            # patternToAdd: nothing to do
+            pass
+
+
 def collectChangePaths(change, depth):
     """Return a sorted list of paths of the specified `depth` that the `change`
     includes."""

@@ -4,6 +4,7 @@ import pathlib
 import pytest
 from fontra.core.changes import (
     addPathToPattern,
+    addPatternToPattern,
     applyChange,
     collectChangePaths,
     filterChangePattern,
@@ -82,6 +83,26 @@ def test_addPathToPattern(pattern, path, expectedPattern):
 def test_removePathFromPattern(pattern, path, expectedPattern):
     pattern = deepcopy(pattern)
     removePathFromPattern(pattern, path)
+    assert expectedPattern == pattern
+
+
+@pytest.mark.parametrize(
+    "pattern, patternToAdd, expectedPattern",
+    [
+        ({}, {}, {}),
+        ({"a": None}, {}, {"a": None}),
+        ({}, {"b": None}, {"b": None}),
+        ({"a": None}, {"b": None}, {"a": None, "b": None}),
+        ({"a": None}, {"a": {"b": None}}, {"a": None}),
+        ({"a": {"b": None}}, {"a": None}, {"a": None}),
+        ({"a": {"b": None}}, {"a": {"b": {"c": None}}}, {"a": {"b": None}}),
+        ({"a": {"b": {"c": None}}}, {"a": {"b": None}}, {"a": {"b": None}}),
+        ({"a": {"b": None}}, {"a": {"c": None}}, {"a": {"b": None, "c": None}}),
+    ],
+)
+def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
+    pattern = deepcopy(pattern)
+    addPatternToPattern(pattern, patternToAdd)
     assert expectedPattern == pattern
 
 
