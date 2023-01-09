@@ -276,6 +276,26 @@ def addPatternToPattern(matchPattern, patternToAdd):
             pass
 
 
+def removePatternFromPattern(matchPattern, patternToRemove):
+    """Remove `patternToRemove` from `matchPattern`, so `matchPattern` no longer
+    matches `patternToRemove`. If the pattern matches a prefix of `patternToRemove`,
+    or if `patternToRemove` was not included in `matchPattern` to begin with, this
+    function does nothing.
+    """
+    for key, valueB in patternToRemove.items():
+        valueA = matchPattern.get(key, _MISSING)
+        if valueA is _MISSING:
+            pass
+        elif valueB is None:
+            del matchPattern[key]
+        elif valueA is None:
+            pass
+        else:
+            removePatternFromPattern(valueA, valueB)
+            if not valueA:
+                del matchPattern[key]
+
+
 def collectChangePaths(change, depth):
     """Return a sorted list of paths of the specified `depth` that the `change`
     includes."""

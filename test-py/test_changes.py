@@ -10,6 +10,7 @@ from fontra.core.changes import (
     filterChangePattern,
     matchChangePattern,
     removePathFromPattern,
+    removePatternFromPattern,
 )
 
 
@@ -103,6 +104,30 @@ def test_removePathFromPattern(pattern, path, expectedPattern):
 def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
     pattern = deepcopy(pattern)
     addPatternToPattern(pattern, patternToAdd)
+    assert expectedPattern == pattern
+
+
+@pytest.mark.parametrize(
+    "pattern, patternToRemove, expectedPattern",
+    [
+        ({}, {}, {}),
+        ({"a": None}, {"a": None}, {}),
+        ({}, {"b": None}, {}),
+        ({"a": None}, {"b": None}, {"a": None}),
+        ({"a": None, "b": None}, {"a": None}, {"b": None}),
+        ({"a": None}, {"a": {"b": None}}, {"a": None}),
+        ({"a": None}, {"a": {"b": {"c": None}}}, {"a": None}),
+        ({"a": {"b": None}}, {"a": None}, {}),
+        ({"a": {"b": None}}, {"a": {"b": {"c": None}}}, {"a": {"b": None}}),
+        ({"a": {"b": {"c": None}}}, {"a": {"b": {"c": None}}}, {}),
+        ({"a": {"b": {"c": None}}}, {"a": {"b": None}}, {}),
+        ({"a": {"b": {"c": None}}}, {"a": None}, {}),
+        ({"a": {"b": None, "c": None}}, {"a": {"c": None}}, {"a": {"b": None}}),
+    ],
+)
+def test_removePatternFromPattern(pattern, patternToRemove, expectedPattern):
+    pattern = deepcopy(pattern)
+    removePatternFromPattern(pattern, patternToRemove)
     assert expectedPattern == pattern
 
 
