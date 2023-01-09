@@ -66,7 +66,9 @@ export function getReverseCmapProxy(revCmap, cmap) {
   // `revCmap` and `cmap` are expected to be synchronized on input.
   //
   // Any changes made to `revCmap` via the `revCmap` proxy will be reflected in
-  // the `cmap` object.
+  // the `cmap` object. This does *not* catch mutations in the code point arrays
+  // themselves, but only wholesale *replacement* the code point arrays. In other
+  // words: you must treat the code point arrays as immutable.
   //
 
   const handler = {
