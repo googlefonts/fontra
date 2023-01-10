@@ -1,3 +1,4 @@
+from copy import deepcopy
 from .classes import classSchema, classCastFuncs
 
 
@@ -272,7 +273,7 @@ def addPatternToPattern(matchPattern, patternToAdd):
     for key, valueB in patternToAdd.items():
         valueA = matchPattern.get(key, _MISSING)
         if valueA is _MISSING or valueB is None:
-            matchPattern[key] = valueB
+            matchPattern[key] = deepcopy(valueB)
         elif valueA is not None:
             addPatternToPattern(valueA, valueB)
         else:
