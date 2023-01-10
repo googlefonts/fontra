@@ -103,7 +103,6 @@ class FontHandler:
 
     @remoteMethod
     async def getGlyph(self, glyphName, *, connection):
-        await self.subscribeChanges(["glyphs", glyphName], connection=connection)
         glyph = self.changedGlyphs.get(glyphName)
         if glyph is None:
             glyph = await self._getGlyph(glyphName)
@@ -181,16 +180,17 @@ class FontHandler:
 
     async def broadcastChange(self, change, sourceConnection, isLiveChange):
         if isLiveChange:
-            matchPatternKey = LIVE_CHANGES_PATTERN_KEY
+            matchPatternKeys = [LIVE_CHANGES_PATTERN_KEY]
         else:
-            matchPatternKey = CHANGES_PATTERN_KEY
+            matchPatternKeys = [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]
 
         connections = [
             connection
             for connection in self.connections
             if connection != sourceConnection
-            and matchChangePattern(
-                change, self._getClientData(connection, matchPatternKey, {})
+            and any(
+                matchChangePattern(change, self._getClientData(connection, k, {}))
+                for k in matchPatternKeys
             )
         ]
 
@@ -260,8 +260,7 @@ class FontHandler:
         logger.info(f"broadcasting external glyph changes: {glyphNames}")
         connections = []
         for connection in self.connections:
-            matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
-            subscribedGlyphNames = matchPattern.get("glyphs", {})
+            subscribedGlyphNames = self._getAllSubscribedGlyphNames(connection)
             connGlyphNames = [
                 glyphName
                 for glyphName in glyphNames
@@ -275,6 +274,13 @@ class FontHandler:
                 for connection, connGlyphNames in connections
             ]
         )
+
+    def _getAllSubscribedGlyphNames(self, connection):
+        subscribedGlyphNames = set()
+        for key in [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]:
+            matchPattern = self._getClientData(connection, key, {})
+            subscribedGlyphNames.update(matchPattern.get("glyphs", {}))
+        return subscribedGlyphNames
 
     @remoteMethod
     async def getSuggestedGlyphName(self, codePoint, *, connection):

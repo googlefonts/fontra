@@ -23,6 +23,7 @@ export class SceneModel {
     this.textAlignment = "center";
     this.longestLineLength = 0;
     this.usedGlyphNames = new Set();
+    this.cachedGlyphNames = new Set();
   }
 
   getSelectedPositionedGlyph() {
@@ -225,19 +226,33 @@ export class SceneModel {
       this.textAlignment,
     );
     const previousUsedGlyphNames = this.usedGlyphNames;
+    const previousCachedGlyphNames = this.cachedGlyphNames;
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
-    if (isEqualSet(usedGlyphNames, previousUsedGlyphNames)) {
-      return;
+    const cachedGlyphNames = difference(this.fontController.getCachedGlyphNames(), usedGlyphNames);
+
+    if (!isEqualSet(usedGlyphNames, previousUsedGlyphNames)) {
+      const unsubscribeGlyphNames = difference(previousUsedGlyphNames, usedGlyphNames);
+      const subscribeGlyphNames = difference(usedGlyphNames, previousUsedGlyphNames);
+      if (unsubscribeGlyphNames.size) {
+        this.fontController.font.unsubscribeLiveChanges(makeGlyphNamesPattern(unsubscribeGlyphNames));
+      }
+      if (subscribeGlyphNames.size) {
+        this.fontController.font.subscribeLiveChanges(makeGlyphNamesPattern(subscribeGlyphNames));
+      }
+      this.usedGlyphNames = usedGlyphNames;
     }
-    const unsubscribeGlyphNames = difference(previousUsedGlyphNames, usedGlyphNames);
-    const subscribeGlyphNames = difference(usedGlyphNames, previousUsedGlyphNames);
-    if (unsubscribeGlyphNames.size) {
-      this.fontController.font.unsubscribeLiveChanges(makeGlyphNamesPattern(unsubscribeGlyphNames));
+
+    if (!isEqualSet(cachedGlyphNames, previousCachedGlyphNames)) {
+      const unsubscribeGlyphNames = difference(previousCachedGlyphNames, cachedGlyphNames);
+      const subscribeGlyphNames = difference(cachedGlyphNames, previousCachedGlyphNames);
+      if (unsubscribeGlyphNames.size) {
+        this.fontController.font.unsubscribeChanges(makeGlyphNamesPattern(unsubscribeGlyphNames));
+      }
+      if (subscribeGlyphNames.size) {
+        this.fontController.font.subscribeChanges(makeGlyphNamesPattern(subscribeGlyphNames));
+      }
+      this.cachedGlyphNames = cachedGlyphNames;
     }
-    if (subscribeGlyphNames.size) {
-      this.fontController.font.subscribeLiveChanges(makeGlyphNamesPattern(subscribeGlyphNames));
-    }
-    this.usedGlyphNames = usedGlyphNames;
   }
 
   selectionAtPoint(point, size) {

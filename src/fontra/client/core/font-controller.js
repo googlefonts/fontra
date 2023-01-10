@@ -41,6 +41,10 @@ export class FontController {
     this._resolveInitialized();
   }
 
+  getCachedGlyphNames() {
+    return this._glyphsPromiseCache.keys();
+  }
+
   codePointForGlyph(glyphName) {
     const reverseCmap = this.reverseCmap;
     const cmap = this.cmap;
