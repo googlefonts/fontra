@@ -184,13 +184,16 @@ class FontHandler:
             matchPatternKey = LIVE_CHANGES_PATTERN_KEY
         else:
             matchPatternKey = CHANGES_PATTERN_KEY
-        connections = []
-        for connection in self.connections:
-            matchPattern = self._getClientData(connection, matchPatternKey, {})
-            if connection != sourceConnection and matchChangePattern(
-                change, matchPattern
-            ):
-                connections.append(connection)
+
+        connections = [
+            connection
+            for connection in self.connections
+            if connection != sourceConnection
+            and matchChangePattern(
+                change, self._getClientData(connection, matchPatternKey, {})
+            )
+        ]
+
         await asyncio.gather(
             *[connection.proxy.externalChange(change) for connection in connections]
         )
