@@ -3,7 +3,7 @@ import { centeredRect, isEmptyRect, offsetRect, pointInRect, sectRect, unionRect
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
 import { parseSelection } from "../core/utils.js";
 import { mapForward, mapBackward } from "../core/var-model.js";
-import { isEqualSet, updateSet } from "../core/set-ops.js";
+import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 
 
 export class SceneModel {
@@ -22,6 +22,8 @@ export class SceneModel {
     this._localLocations = {};  // glyph name -> local location
     this.textAlignment = "center";
     this.longestLineLength = 0;
+    this.usedGlyphNames = new Set();
+    this.cachedGlyphNames = new Set();
   }
 
   getSelectedPositionedGlyph() {
@@ -223,11 +225,29 @@ export class SceneModel {
       this.fontController, this.glyphLines, this.getGlobalLocation(), this._localLocations,
       this.textAlignment,
     );
+
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
-    if (!this._previousUsedGlyphNames || !isEqualSet(usedGlyphNames, this._previousUsedGlyphNames)) {
-      this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
+    const cachedGlyphNames = difference(this.fontController.getCachedGlyphNames(), usedGlyphNames);
+
+    this._adjustSubscriptions(usedGlyphNames, this.usedGlyphNames, true);
+    this._adjustSubscriptions(cachedGlyphNames, this.cachedGlyphNames, false);
+
+    this.usedGlyphNames = usedGlyphNames;
+    this.cachedGlyphNames = cachedGlyphNames;
+  }
+
+  _adjustSubscriptions(currentGlyphNames, previousGlyphNames, isLiveChange) {
+    if (isEqualSet(currentGlyphNames, previousGlyphNames)) {
+      return;
     }
-    this._previousUsedGlyphNames = usedGlyphNames;
+    const unsubscribeGlyphNames = difference(previousGlyphNames, currentGlyphNames);
+    const subscribeGlyphNames = difference(currentGlyphNames, previousGlyphNames);
+    if (unsubscribeGlyphNames.size) {
+      this.fontController.font.unsubscribeChanges(makeGlyphNamesPattern(unsubscribeGlyphNames), isLiveChange);
+    }
+    if (subscribeGlyphNames.size) {
+      this.fontController.font.subscribeChanges(makeGlyphNamesPattern(subscribeGlyphNames), isLiveChange);
+    }
   }
 
   selectionAtPoint(point, size) {
@@ -478,4 +498,13 @@ function getUsedGlyphNames(fontController, positionedLines) {
     }
   }
   return usedGlyphNames;
+}
+
+
+function makeGlyphNamesPattern(glyphNames) {
+  const glyphsObj = {};
+  for (const glyphName of glyphNames) {
+    glyphsObj[glyphName] = null;
+  }
+  return {"glyphs": glyphsObj};
 }

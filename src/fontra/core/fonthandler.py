@@ -6,12 +6,12 @@ import functools
 import logging
 import traceback
 from .changes import (
-    addPathToPattern,
+    addToPattern,
     applyChange,
     collectChangePaths,
     filterChangePattern,
     matchChangePattern,
-    removePathFromPattern,
+    removeFromPattern,
 )
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 
@@ -103,7 +103,6 @@ class FontHandler:
 
     @remoteMethod
     async def getGlyph(self, glyphName, *, connection):
-        await self.subscribeChanges(["glyphs", glyphName], connection=connection)
         glyph = self.changedGlyphs.get(glyphName)
         if glyph is None:
             glyph = await self._getGlyph(glyphName)
@@ -145,30 +144,17 @@ class FontHandler:
         return self.clientData[connection.clientUUID].setdefault(key, default)
 
     @remoteMethod
-    async def subscribeChanges(self, path, *, connection):
-        matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
-        addPathToPattern(matchPattern, path)
+    async def subscribeChanges(self, pathOrPattern, isLiveChange, *, connection):
+        self._adjustMatchPattern(addToPattern, pathOrPattern, isLiveChange, connection)
 
     @remoteMethod
-    async def unsubscribeChanges(self, path, *, connection):
-        matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
-        removePathFromPattern(matchPattern, path)
+    async def unsubscribeChanges(self, pathOrPattern, isLiveChange, *, connection):
+        self._adjustMatchPattern(removeFromPattern, pathOrPattern, isLiveChange, connection)
 
-    @remoteMethod
-    async def subscribeLiveChanges(self, path, *, connection):
-        matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
-        addPathToPattern(matchPattern, path)
-
-    @remoteMethod
-    async def unsubscribeLiveChanges(self, path, *, connection):
-        matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
-        removePathFromPattern(matchPattern, path)
-
-    @remoteMethod
-    async def subscribeLiveGlyphChanges(self, glyphNames, *, connection):
-        # TODO: replace this method with something more generic
-        matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
-        matchPattern["glyphs"] = dict.fromkeys(glyphNames)
+    def _adjustMatchPattern(self, func, pathOrPattern, isLiveChange, connection):
+        key = LIVE_CHANGES_PATTERN_KEY if isLiveChange else CHANGES_PATTERN_KEY
+        matchPattern = self._getClientData(connection, key, {})
+        func(matchPattern, pathOrPattern)
 
     @remoteMethod
     async def editIncremental(self, liveChange, *, connection):
@@ -187,16 +173,20 @@ class FontHandler:
 
     async def broadcastChange(self, change, sourceConnection, isLiveChange):
         if isLiveChange:
-            matchPatternKey = LIVE_CHANGES_PATTERN_KEY
+            matchPatternKeys = [LIVE_CHANGES_PATTERN_KEY]
         else:
-            matchPatternKey = CHANGES_PATTERN_KEY
-        connections = []
-        for connection in self.connections:
-            matchPattern = self._getClientData(connection, matchPatternKey, {})
-            if connection != sourceConnection and matchChangePattern(
-                change, matchPattern
-            ):
-                connections.append(connection)
+            matchPatternKeys = [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]
+
+        connections = [
+            connection
+            for connection in self.connections
+            if connection != sourceConnection
+            and any(
+                matchChangePattern(change, self._getClientData(connection, k, {}))
+                for k in matchPatternKeys
+            )
+        ]
+
         await asyncio.gather(
             *[connection.proxy.externalChange(change) for connection in connections]
         )
@@ -263,8 +253,7 @@ class FontHandler:
         logger.info(f"broadcasting external glyph changes: {glyphNames}")
         connections = []
         for connection in self.connections:
-            matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
-            subscribedGlyphNames = matchPattern.get("glyphs", {})
+            subscribedGlyphNames = self._getAllSubscribedGlyphNames(connection)
             connGlyphNames = [
                 glyphName
                 for glyphName in glyphNames
@@ -278,6 +267,13 @@ class FontHandler:
                 for connection, connGlyphNames in connections
             ]
         )
+
+    def _getAllSubscribedGlyphNames(self, connection):
+        subscribedGlyphNames = set()
+        for key in [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]:
+            matchPattern = self._getClientData(connection, key, {})
+            subscribedGlyphNames.update(matchPattern.get("glyphs", {}))
+        return subscribedGlyphNames
 
     @remoteMethod
     async def getSuggestedGlyphName(self, codePoint, *, connection):

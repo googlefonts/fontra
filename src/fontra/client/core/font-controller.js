@@ -41,6 +41,10 @@ export class FontController {
     this._resolveInitialized();
   }
 
+  getCachedGlyphNames() {
+    return this._glyphsPromiseCache.keys();
+  }
+
   codePointForGlyph(glyphName) {
     const reverseCmap = this.reverseCmap;
     const cmap = this.cmap;
@@ -159,10 +163,6 @@ export class FontController {
   async getSourceIndex(glyphName, location) {
     const glyph = await this.getGlyph(glyphName);
     return glyph?.getSourceIndex(location);
-  }
-
-  async subscribeLiveGlyphChanges(glyphNames) {
-    this.font.subscribeLiveGlyphChanges(glyphNames);
   }
 
   addEditListener(listener) {
