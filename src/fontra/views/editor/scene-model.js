@@ -3,7 +3,7 @@ import { centeredRect, isEmptyRect, offsetRect, pointInRect, sectRect, unionRect
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
 import { parseSelection } from "../core/utils.js";
 import { mapForward, mapBackward } from "../core/var-model.js";
-import { isEqualSet, updateSet } from "../core/set-ops.js";
+import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 
 
 export class SceneModel {
@@ -22,6 +22,7 @@ export class SceneModel {
     this._localLocations = {};  // glyph name -> local location
     this.textAlignment = "center";
     this.longestLineLength = 0;
+    this.usedGlyphNames = new Set();
   }
 
   getSelectedPositionedGlyph() {
@@ -223,11 +224,20 @@ export class SceneModel {
       this.fontController, this.glyphLines, this.getGlobalLocation(), this._localLocations,
       this.textAlignment,
     );
+    const previousUsedGlyphNames = this.usedGlyphNames;
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
-    if (!this._previousUsedGlyphNames || !isEqualSet(usedGlyphNames, this._previousUsedGlyphNames)) {
-      this.fontController.subscribeLiveGlyphChanges(Array.from(usedGlyphNames));
+    if (isEqualSet(usedGlyphNames, previousUsedGlyphNames)) {
+      return;
     }
-    this._previousUsedGlyphNames = usedGlyphNames;
+    const unsubscribeGlyphNames = difference(previousUsedGlyphNames, usedGlyphNames);
+    const subscribeGlyphNames = difference(usedGlyphNames, previousUsedGlyphNames);
+    if (unsubscribeGlyphNames.size) {
+      this.fontController.font.unsubscribeLiveChanges(makeGlyphNamesPattern(unsubscribeGlyphNames));
+    }
+    if (subscribeGlyphNames.size) {
+      this.fontController.font.subscribeLiveChanges(makeGlyphNamesPattern(subscribeGlyphNames));
+    }
+    this.usedGlyphNames = usedGlyphNames;
   }
 
   selectionAtPoint(point, size) {
@@ -478,4 +488,13 @@ function getUsedGlyphNames(fontController, positionedLines) {
     }
   }
   return usedGlyphNames;
+}
+
+
+function makeGlyphNamesPattern(glyphNames) {
+  const glyphsObj = {};
+  for (const glyphName of glyphNames) {
+    glyphsObj[glyphName] = null;
+  }
+  return {"glyphs": glyphsObj};
 }
