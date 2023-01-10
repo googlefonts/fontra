@@ -221,6 +221,33 @@ def pathToPattern(matchPath):
     return pattern
 
 
+def addToPattern(matchPattern, pathOrPattern):
+    """Add `pathOrPattern` to `matchPattern`, so `matchPattern` will match
+    `pathOrPattern`. If the pattern already matches a prefix of `pathOrPattern`,
+    this function does nothing.
+
+    `pathOrPattern` is either a list of path elements, or a pattern dict.
+    """
+    if isinstance(pathOrPattern, list):
+        addPathToPattern(matchPattern, pathOrPattern)
+    else:
+        addPatternToPattern(matchPattern, pathOrPattern)
+
+
+def removeFromPattern(matchPattern, pathOrPattern):
+    """Remove `pathOrPattern` from `matchPattern`, so `matchPattern` no longer
+    matches `pathOrPattern`. If the pattern matches a prefix of `pathOrPattern`,
+    or if `pathOrPattern` was not included in `matchPattern` to begin with, this
+    function does nothing.
+
+    `pathOrPattern` is either a list of path elements, or a pattern dict.
+    """
+    if isinstance(pathOrPattern, list):
+        removePathFromPattern(matchPattern, pathOrPattern)
+    else:
+        removePatternFromPattern(matchPattern, pathOrPattern)
+
+
 def addPathToPattern(matchPattern, path):
     """Add `path` to `matchPattern`, so `matchPattern` will match `path`.
     If the pattern already matches a prefix of `path`, this function does

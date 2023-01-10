@@ -3,15 +3,13 @@ import json
 import pathlib
 import pytest
 from fontra.core.changes import (
-    addPathToPattern,
-    addPatternToPattern,
+    addToPattern,
     applyChange,
     collectChangePaths,
     filterChangePattern,
     matchChangePattern,
     pathToPattern,
-    removePathFromPattern,
-    removePatternFromPattern,
+    removeFromPattern,
 )
 
 
@@ -70,7 +68,7 @@ def test_applyChange(testName, inputDataName, change, expectedData):
 )
 def test_addPathToPattern(pattern, path, expectedPattern):
     pattern = deepcopy(pattern)
-    addPathToPattern(pattern, path)
+    addToPattern(pattern, path)
     assert expectedPattern == pattern
 
 
@@ -86,7 +84,7 @@ def test_addPathToPattern(pattern, path, expectedPattern):
 )
 def test_removePathFromPattern(pattern, path, expectedPattern):
     pattern = deepcopy(pattern)
-    removePathFromPattern(pattern, path)
+    removeFromPattern(pattern, path)
     assert expectedPattern == pattern
 
 
@@ -106,7 +104,7 @@ def test_removePathFromPattern(pattern, path, expectedPattern):
 )
 def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
     pattern = deepcopy(pattern)
-    addPatternToPattern(pattern, patternToAdd)
+    addToPattern(pattern, patternToAdd)
     assert expectedPattern == pattern
 
 
@@ -130,7 +128,7 @@ def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
 )
 def test_removePatternFromPattern(pattern, patternToRemove, expectedPattern):
     pattern = deepcopy(pattern)
-    removePatternFromPattern(pattern, patternToRemove)
+    removeFromPattern(pattern, patternToRemove)
     assert expectedPattern == pattern
 
 
