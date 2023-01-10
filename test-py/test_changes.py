@@ -9,6 +9,7 @@ from fontra.core.changes import (
     collectChangePaths,
     filterChangePattern,
     matchChangePattern,
+    pathToPattern,
     removePathFromPattern,
     removePatternFromPattern,
 )
@@ -367,3 +368,17 @@ def test_collectChangePaths(change, depth, expectedPaths):
     paths = collectChangePaths(change, depth)
     expectedPaths = [tuple(p) for p in expectedPaths]
     assert expectedPaths == paths
+
+
+@pytest.mark.parametrize(
+    "path, expectedPattern",
+    [
+        ([], {}),
+        (["a"], {"a": None}),
+        (["a", "b"], {"a": {"b": None}}),
+        (["a", "b", "c"], {"a": {"b": {"c": None}}}),
+    ],
+)
+def test_pathToPattern(path, expectedPattern):
+    pattern = pathToPattern(path)
+    assert expectedPattern == pattern

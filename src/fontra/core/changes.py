@@ -212,6 +212,15 @@ def _normalizeChange(change):
     return result
 
 
+def pathToPattern(matchPath):
+    pattern = {}
+    if matchPath:
+        pattern[matchPath[0]] = (
+            None if len(matchPath) == 1 else pathToPattern(matchPath[1:])
+        )
+    return pattern
+
+
 def addPathToPattern(matchPattern, path):
     """Add `path` to `matchPattern`, so `matchPattern` will match `path`.
     If the pattern already matches a prefix of `path`, this function does
