@@ -6,12 +6,12 @@ import functools
 import logging
 import traceback
 from .changes import (
-    addPathToPattern,
+    addToPattern,
     applyChange,
     collectChangePaths,
     filterChangePattern,
     matchChangePattern,
-    removePathFromPattern,
+    removeFromPattern,
 )
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 
@@ -145,24 +145,24 @@ class FontHandler:
         return self.clientData[connection.clientUUID].setdefault(key, default)
 
     @remoteMethod
-    async def subscribeChanges(self, path, *, connection):
+    async def subscribeChanges(self, pathOrPattern, *, connection):
         matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
-        addPathToPattern(matchPattern, path)
+        addToPattern(matchPattern, pathOrPattern)
 
     @remoteMethod
-    async def unsubscribeChanges(self, path, *, connection):
+    async def unsubscribeChanges(self, pathOrPattern, *, connection):
         matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
-        removePathFromPattern(matchPattern, path)
+        removeFromPattern(matchPattern, pathOrPattern)
 
     @remoteMethod
-    async def subscribeLiveChanges(self, path, *, connection):
+    async def subscribeLiveChanges(self, pathOrPattern, *, connection):
         matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
-        addPathToPattern(matchPattern, path)
+        addToPattern(matchPattern, pathOrPattern)
 
     @remoteMethod
-    async def unsubscribeLiveChanges(self, path, *, connection):
+    async def unsubscribeLiveChanges(self, pathOrPattern, *, connection):
         matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
-        removePathFromPattern(matchPattern, path)
+        removeFromPattern(matchPattern, pathOrPattern)
 
     @remoteMethod
     async def subscribeLiveGlyphChanges(self, glyphNames, *, connection):
