@@ -226,20 +226,7 @@ def addPathToPattern(matchPattern, path):
     If the pattern already matches a prefix of `path`, this function does
     nothing.
     """
-    node = matchPattern
-    lastIndex = len(path) - 1
-    for i, pathElement in enumerate(path):
-        childNode = node.get(pathElement, _MISSING)
-        if childNode is None:
-            # leaf node, path is already included
-            return
-        if childNode is _MISSING:
-            if i == lastIndex:
-                newNode = None  # leaf
-            else:
-                newNode = {}
-            childNode = node[pathElement] = newNode
-        node = childNode
+    addPatternToPattern(matchPattern, pathToPattern(path))
 
 
 def removePathFromPattern(matchPattern, path):
@@ -247,25 +234,7 @@ def removePathFromPattern(matchPattern, path):
     If the pattern matches a prefix of `path`, or if `path` was not included in
     `matchPattern` to begin with, this function does nothing.
     """
-    assert path
-    firstPathElement = path[0]
-    childNode = matchPattern.get(firstPathElement, _MISSING)
-    if childNode is _MISSING:
-        # path wasn't part of the pattern
-        return
-    if len(path) == 1:
-        if childNode is None:
-            del matchPattern[firstPathElement]
-        else:
-            # a deeper path is still part of the pattern, ignore
-            pass
-    else:
-        if childNode is None:
-            # path wasn't part of the pattern
-            return
-        removePathFromPattern(childNode, path[1:])
-        if not childNode:
-            del matchPattern[firstPathElement]
+    removePatternFromPattern(matchPattern, pathToPattern(path))
 
 
 def addPatternToPattern(matchPattern, patternToAdd):

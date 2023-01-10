@@ -58,12 +58,14 @@ def test_applyChange(testName, inputDataName, change, expectedData):
 @pytest.mark.parametrize(
     "pattern, path, expectedPattern",
     [
+        ({}, [], {}),
+        ({"A": None}, [], {"A": None}),
         ({}, ["A"], {"A": None}),
         ({}, ["A", "B"], {"A": {"B": None}}),
         ({"A": None}, ["A"], {"A": None}),
         ({"A": None}, ["A", "B"], {"A": None}),
         ({"A": None}, ["B", "C"], {"A": None, "B": {"C": None}}),
-        ({"A": {"B": None}}, ["A"], {"A": {"B": None}}),
+        ({"A": {"B": None}}, ["A"], {"A": None}),
     ],
 )
 def test_addPathToPattern(pattern, path, expectedPattern):
@@ -79,7 +81,7 @@ def test_addPathToPattern(pattern, path, expectedPattern):
         ({"A": {"B": None}}, ["A", "B"], {}),
         ({"A": None}, ["A", "B"], {"A": None}),
         ({"A": None, "B": {"C": None}}, ["B", "C"], {"A": None}),
-        ({"A": {"B": None}}, ["A"], {"A": {"B": None}}),
+        ({"A": {"B": None}}, ["A"], {}),
     ],
 )
 def test_removePathFromPattern(pattern, path, expectedPattern):
