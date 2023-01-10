@@ -225,33 +225,28 @@ export class SceneModel {
       this.fontController, this.glyphLines, this.getGlobalLocation(), this._localLocations,
       this.textAlignment,
     );
-    const previousUsedGlyphNames = this.usedGlyphNames;
-    const previousCachedGlyphNames = this.cachedGlyphNames;
+
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
     const cachedGlyphNames = difference(this.fontController.getCachedGlyphNames(), usedGlyphNames);
 
-    if (!isEqualSet(usedGlyphNames, previousUsedGlyphNames)) {
-      const unsubscribeGlyphNames = difference(previousUsedGlyphNames, usedGlyphNames);
-      const subscribeGlyphNames = difference(usedGlyphNames, previousUsedGlyphNames);
-      if (unsubscribeGlyphNames.size) {
-        this.fontController.font.unsubscribeLiveChanges(makeGlyphNamesPattern(unsubscribeGlyphNames));
-      }
-      if (subscribeGlyphNames.size) {
-        this.fontController.font.subscribeLiveChanges(makeGlyphNamesPattern(subscribeGlyphNames));
-      }
-      this.usedGlyphNames = usedGlyphNames;
-    }
+    this._adjustSubscriptions(usedGlyphNames, this.usedGlyphNames, true);
+    this._adjustSubscriptions(cachedGlyphNames, this.cachedGlyphNames, false);
 
-    if (!isEqualSet(cachedGlyphNames, previousCachedGlyphNames)) {
-      const unsubscribeGlyphNames = difference(previousCachedGlyphNames, cachedGlyphNames);
-      const subscribeGlyphNames = difference(cachedGlyphNames, previousCachedGlyphNames);
-      if (unsubscribeGlyphNames.size) {
-        this.fontController.font.unsubscribeChanges(makeGlyphNamesPattern(unsubscribeGlyphNames));
-      }
-      if (subscribeGlyphNames.size) {
-        this.fontController.font.subscribeChanges(makeGlyphNamesPattern(subscribeGlyphNames));
-      }
-      this.cachedGlyphNames = cachedGlyphNames;
+    this.usedGlyphNames = usedGlyphNames;
+    this.cachedGlyphNames = cachedGlyphNames;
+  }
+
+  _adjustSubscriptions(currentGlyphNames, previousGlyphNames, isLiveChange) {
+    if (isEqualSet(currentGlyphNames, previousGlyphNames)) {
+      return;
+    }
+    const unsubscribeGlyphNames = difference(previousGlyphNames, currentGlyphNames);
+    const subscribeGlyphNames = difference(currentGlyphNames, previousGlyphNames);
+    if (unsubscribeGlyphNames.size) {
+      this.fontController.font.unsubscribeChanges(makeGlyphNamesPattern(unsubscribeGlyphNames), isLiveChange);
+    }
+    if (subscribeGlyphNames.size) {
+      this.fontController.font.subscribeChanges(makeGlyphNamesPattern(subscribeGlyphNames), isLiveChange);
     }
   }
 

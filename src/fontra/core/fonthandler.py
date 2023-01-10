@@ -144,24 +144,17 @@ class FontHandler:
         return self.clientData[connection.clientUUID].setdefault(key, default)
 
     @remoteMethod
-    async def subscribeChanges(self, pathOrPattern, *, connection):
-        matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
-        addToPattern(matchPattern, pathOrPattern)
+    async def subscribeChanges(self, pathOrPattern, isLiveChange, *, connection):
+        self._adjustMatchPattern(addToPattern, pathOrPattern, isLiveChange, connection)
 
     @remoteMethod
-    async def unsubscribeChanges(self, pathOrPattern, *, connection):
-        matchPattern = self._getClientData(connection, CHANGES_PATTERN_KEY, {})
-        removeFromPattern(matchPattern, pathOrPattern)
+    async def unsubscribeChanges(self, pathOrPattern, isLiveChange, *, connection):
+        self._adjustMatchPattern(removeFromPattern, pathOrPattern, isLiveChange, connection)
 
-    @remoteMethod
-    async def subscribeLiveChanges(self, pathOrPattern, *, connection):
-        matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
-        addToPattern(matchPattern, pathOrPattern)
-
-    @remoteMethod
-    async def unsubscribeLiveChanges(self, pathOrPattern, *, connection):
-        matchPattern = self._getClientData(connection, LIVE_CHANGES_PATTERN_KEY, {})
-        removeFromPattern(matchPattern, pathOrPattern)
+    def _adjustMatchPattern(self, func, pathOrPattern, isLiveChange, connection):
+        key = LIVE_CHANGES_PATTERN_KEY if isLiveChange else CHANGES_PATTERN_KEY
+        matchPattern = self._getClientData(connection, key, {})
+        func(matchPattern, pathOrPattern)
 
     @remoteMethod
     async def editIncremental(self, liveChange, *, connection):
