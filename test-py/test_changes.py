@@ -3,14 +3,13 @@ import json
 import pathlib
 import pytest
 from fontra.core.changes import (
-    addPathToPattern,
-    addPatternToPattern,
+    addToPattern,
     applyChange,
     collectChangePaths,
     filterChangePattern,
     matchChangePattern,
-    removePathFromPattern,
-    removePatternFromPattern,
+    pathToPattern,
+    removeFromPattern,
 )
 
 
@@ -57,17 +56,19 @@ def test_applyChange(testName, inputDataName, change, expectedData):
 @pytest.mark.parametrize(
     "pattern, path, expectedPattern",
     [
+        ({}, [], {}),
+        ({"A": None}, [], {"A": None}),
         ({}, ["A"], {"A": None}),
         ({}, ["A", "B"], {"A": {"B": None}}),
         ({"A": None}, ["A"], {"A": None}),
         ({"A": None}, ["A", "B"], {"A": None}),
         ({"A": None}, ["B", "C"], {"A": None, "B": {"C": None}}),
-        ({"A": {"B": None}}, ["A"], {"A": {"B": None}}),
+        ({"A": {"B": None}}, ["A"], {"A": None}),
     ],
 )
 def test_addPathToPattern(pattern, path, expectedPattern):
     pattern = deepcopy(pattern)
-    addPathToPattern(pattern, path)
+    addToPattern(pattern, path)
     assert expectedPattern == pattern
 
 
@@ -78,12 +79,12 @@ def test_addPathToPattern(pattern, path, expectedPattern):
         ({"A": {"B": None}}, ["A", "B"], {}),
         ({"A": None}, ["A", "B"], {"A": None}),
         ({"A": None, "B": {"C": None}}, ["B", "C"], {"A": None}),
-        ({"A": {"B": None}}, ["A"], {"A": {"B": None}}),
+        ({"A": {"B": None}}, ["A"], {}),
     ],
 )
 def test_removePathFromPattern(pattern, path, expectedPattern):
     pattern = deepcopy(pattern)
-    removePathFromPattern(pattern, path)
+    removeFromPattern(pattern, path)
     assert expectedPattern == pattern
 
 
@@ -103,7 +104,7 @@ def test_removePathFromPattern(pattern, path, expectedPattern):
 )
 def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
     pattern = deepcopy(pattern)
-    addPatternToPattern(pattern, patternToAdd)
+    addToPattern(pattern, patternToAdd)
     assert expectedPattern == pattern
 
 
@@ -127,7 +128,7 @@ def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
 )
 def test_removePatternFromPattern(pattern, patternToRemove, expectedPattern):
     pattern = deepcopy(pattern)
-    removePatternFromPattern(pattern, patternToRemove)
+    removeFromPattern(pattern, patternToRemove)
     assert expectedPattern == pattern
 
 
@@ -367,3 +368,17 @@ def test_collectChangePaths(change, depth, expectedPaths):
     paths = collectChangePaths(change, depth)
     expectedPaths = [tuple(p) for p in expectedPaths]
     assert expectedPaths == paths
+
+
+@pytest.mark.parametrize(
+    "path, expectedPattern",
+    [
+        ([], {}),
+        (["a"], {"a": None}),
+        (["a", "b"], {"a": {"b": None}}),
+        (["a", "b", "c"], {"a": {"b": {"c": None}}}),
+    ],
+)
+def test_pathToPattern(path, expectedPattern):
+    pattern = pathToPattern(path)
+    assert expectedPattern == pattern
