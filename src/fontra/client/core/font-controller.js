@@ -161,10 +161,6 @@ export class FontController {
     return glyph?.getSourceIndex(location);
   }
 
-  async subscribeLiveGlyphChanges(glyphNames) {
-    this.font.subscribeLiveGlyphChanges(glyphNames);
-  }
-
   addEditListener(listener) {
     this._editListeners.add(listener);
   }
