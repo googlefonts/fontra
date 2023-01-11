@@ -2,10 +2,13 @@
 // A `characterMap` is an object with integer numbers representing unicode code
 // points as keys, and glyph names as values. Note: we're using a JS Object, not
 // Map, so the code point keys are stored as (decimal) string representations of
-// the integers. Multiple code points may map to the same glyph name.
+// the integers. Multiple code points may map to the same glyph name. Each code
+// point maps to exactly one glyph name.
 //
-// A `glyphMap` maps glyph names to arrays of (integer) code points. A code
-// point may only occur one time in the entire mapping.
+// A `glyphMap` is the opposite of a `characterMap`: it maps glyph names to
+// arrays of (integer) code points. A code point may only occur one time in the
+// entire mapping. Code point arrays may contain any number of code points:
+// any glyph can be mapped to zero or more code points.
 //
 // For the sake of determinism, this module tries to keep the code point arrays
 // in sorted order, even though the order has no intrinsic meaning.
