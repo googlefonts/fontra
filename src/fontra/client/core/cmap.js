@@ -17,7 +17,7 @@
 //
 
 
-export function makeReverseMapping(cmap) {
+export function makeGlyphMapFromCharacterMap(cmap) {
   // Return a `revCmap` constructed from `cmap`
   const revCmap = {};
   for (const [codeStr, glyphName] of Object.entries(cmap)) {
@@ -32,7 +32,7 @@ export function makeReverseMapping(cmap) {
 }
 
 
-export function makeMappingFromReverseMapping(revCmap, strict = true) {
+export function makeCharacterMapFromGlyphMap(revCmap, strict = true) {
   // Return a `cmap` constructed from `revCmap`
   // If the `strict` flag is `true` (default), an Error is thrown when a code
   // point is defined multiple times.

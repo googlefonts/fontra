@@ -4,15 +4,15 @@ const expect = chai.expect;
 import {
   getCmapProxy,
   getReverseCmapProxy,
-  makeMappingFromReverseMapping,
-  makeReverseMapping,
+  makeCharacterMapFromGlyphMap,
+  makeGlyphMapFromCharacterMap,
 } from "../src/fontra/client/core/cmap.js";
 import { enumerate } from "../src/fontra/client/core/utils.js";
 
 
 describe("cmap tests", () => {
 
-  const makeReverseMapping_testData = [
+  const makeGlyphMapFromCharacterMap_testData = [
     [{}, {}],
     [{1: "one"}, {"one": [1]}],
     [{1: "one", 2: "two"}, {"one": [1], "two": [2]}],
@@ -20,13 +20,13 @@ describe("cmap tests", () => {
     [{2: "double", 1: "double"}, {"double": [1, 2]}],
   ];
 
-  for (const [i, [cmap, expectedRevCmap]] of enumerate(makeReverseMapping_testData)) {
-    it(`makeReverseMapping test ${i}`, () => {
-      expect(makeReverseMapping(cmap)).to.deep.equal(expectedRevCmap);
+  for (const [i, [cmap, expectedRevCmap]] of enumerate(makeGlyphMapFromCharacterMap_testData)) {
+    it(`makeGlyphMapFromCharacterMap test ${i}`, () => {
+      expect(makeGlyphMapFromCharacterMap(cmap)).to.deep.equal(expectedRevCmap);
     });
   }
 
-  const makeMappingFromReverseMapping_testData = [
+  const makeCharacterMapFromGlyphMap_testData = [
     [{}, {}, true, null],
     [{"one": [1]}, {1: "one"}, true, null],
     [{"one": [1], "two": [2]}, {1: "one", 2: "two"}, true, null],
@@ -36,19 +36,19 @@ describe("cmap tests", () => {
     [{"two": [1], "one": [1]}, {1: "one"}, false, null],
   ];
 
-  for (const [i, [revCmap, expectedCmap, strict, error]] of enumerate(makeMappingFromReverseMapping_testData)) {
-    it(`makeMappingFromReverseMapping test ${i}`, () => {
+  for (const [i, [revCmap, expectedCmap, strict, error]] of enumerate(makeCharacterMapFromGlyphMap_testData)) {
+    it(`makeCharacterMapFromGlyphMap test ${i}`, () => {
       if (!error) {
-        expect(makeMappingFromReverseMapping(revCmap, strict)).to.deep.equal(expectedCmap);
+        expect(makeCharacterMapFromGlyphMap(revCmap, strict)).to.deep.equal(expectedCmap);
       } else {
-        expect(() => makeMappingFromReverseMapping(revCmap, strict)).to.throw(error);
+        expect(() => makeCharacterMapFromGlyphMap(revCmap, strict)).to.throw(error);
       }
     });
   }
 
-  it("makeReverseMapping test simple", () => {
+  it("makeGlyphMapFromCharacterMap test simple", () => {
     const cmap = {};
-    expect(makeReverseMapping(cmap)).to.deep.equal({});
+    expect(makeGlyphMapFromCharacterMap(cmap)).to.deep.equal({});
   });
 
   it("getReverseCmapProxy add items", () => {
@@ -65,7 +65,7 @@ describe("cmap tests", () => {
 
   it("getReverseCmapProxy replace items", () => {
     const cmap = {"32": "space", "33": "test"};
-    const revCmapData = makeReverseMapping(cmap);
+    const revCmapData = makeGlyphMapFromCharacterMap(cmap);
     const revCmap = getReverseCmapProxy(revCmapData, cmap);
 
     revCmap["space"] = [32, 34];
@@ -75,7 +75,7 @@ describe("cmap tests", () => {
 
   it("getReverseCmapProxy replace items with same", () => {
     const cmap = {"32": "space", "33": "test"};
-    const revCmapData = makeReverseMapping(cmap);
+    const revCmapData = makeGlyphMapFromCharacterMap(cmap);
     const revCmap = getReverseCmapProxy(revCmapData, cmap);
 
     revCmap["space"] = [32];
@@ -86,7 +86,7 @@ describe("cmap tests", () => {
 
   it("getReverseCmapProxy delete items", () => {
     const cmap = {"32": "space", "33": "test"};
-    const revCmapData = makeReverseMapping(cmap);
+    const revCmapData = makeGlyphMapFromCharacterMap(cmap);
     const revCmap = getReverseCmapProxy(revCmapData, cmap);
 
     delete revCmap["space"];
@@ -112,7 +112,7 @@ describe("cmap tests", () => {
 
   it("getCmapProxy replace items", () => {
     const cmapData = {"32": "space", "33": "double", "34": "double"};
-    const revCmap = makeReverseMapping(cmapData);
+    const revCmap = makeGlyphMapFromCharacterMap(cmapData);
     const cmap = getCmapProxy(cmapData, revCmap);
 
     cmap[32] = "spacey";
@@ -123,7 +123,7 @@ describe("cmap tests", () => {
 
   it("getCmapProxy replace items with same", () => {
     const cmapData = {"32": "space", "33": "double", "34": "double"};
-    const revCmap = makeReverseMapping(cmapData);
+    const revCmap = makeGlyphMapFromCharacterMap(cmapData);
     const cmap = getCmapProxy(cmapData, revCmap);
 
     cmap[32] = "space";
@@ -134,7 +134,7 @@ describe("cmap tests", () => {
 
   it("getCmapProxy delete items", () => {
     const cmapData = {"32": "space", "33": "double", "34": "double"};
-    const revCmap = makeReverseMapping(cmapData);
+    const revCmap = makeGlyphMapFromCharacterMap(cmapData);
     const cmap = getCmapProxy(cmapData, revCmap);
 
     delete cmap[32];
