@@ -68,9 +68,9 @@ export function getGlyphMapProxy(glyphMap, characterMap) {
   // `glyphMap` and `characterMap` are expected to be synchronized on input.
   //
   // Any changes made to `glyphMap` via the `glyphMap` proxy will be reflected in
-  // the `characterMap` object. This does *not* catch mutations in the code point arrays
-  // themselves, but only wholesale *replacement* the code point arrays. In other
-  // words: you must treat the code point arrays as immutable.
+  // the `characterMap` object. This does *not* catch mutations in the code point
+  // arrays themselves, but only wholesale *replacement* the code point arrays.
+  // In other words: you must treat the code point arrays as immutable.
   //
 
   const handler = {
@@ -103,13 +103,13 @@ export function getGlyphMapProxy(glyphMap, characterMap) {
 
 export function getCharacterMapProxy(characterMap, glyphMap) {
   //
-  // Return a wrapper (Proxy) for `characterMap`, that behaves exactly like `characterMap`,
-  // while keeping the matching `glyphMap` synchronized.
+  // Return a wrapper (Proxy) for `characterMap`, that behaves exactly like
+  // `characterMap`, while keeping the matching `glyphMap` synchronized.
   //
   // `characterMap` and `glyphMap` are expected to be synchronized on input.
   //
-  // Any changes made to `characterMap` via the `characterMap` proxy will be reflected in
-  // the `glyphMap` object.
+  // Any changes made to `characterMap` via the `characterMap` proxy will be
+  // reflected in the `glyphMap` object.
   //
 
   const handler = {
