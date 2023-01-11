@@ -58,7 +58,7 @@ export function makeCharacterMapFromGlyphMap(revCmap, strict = true) {
 }
 
 
-export function getReverseCmapProxy(revCmap, cmap) {
+export function getGlyphMapProxy(revCmap, cmap) {
   //
   // Return a wrapper (Proxy) for `revCmap`, that behaves exactly like `revCmap`,
   // while keeping the matching `cmap` synchronized.

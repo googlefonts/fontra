@@ -3,7 +3,7 @@ const expect = chai.expect;
 
 import {
   getCmapProxy,
-  getReverseCmapProxy,
+  getGlyphMapProxy,
   makeCharacterMapFromGlyphMap,
   makeGlyphMapFromCharacterMap,
 } from "../src/fontra/client/core/cmap.js";
@@ -51,10 +51,10 @@ describe("characterMap tests", () => {
     expect(makeGlyphMapFromCharacterMap(characterMap)).to.deep.equal({});
   });
 
-  it("getReverseCmapProxy add items", () => {
+  it("getGlyphMapProxy add items", () => {
     const characterMap = {};
     const glyphMapData = {};
-    const glyphMap = getReverseCmapProxy(glyphMapData, characterMap);
+    const glyphMap = getGlyphMapProxy(glyphMapData, characterMap);
 
     glyphMap["space"] = [32];
     glyphMap["double"] = [33, 34];
@@ -63,20 +63,20 @@ describe("characterMap tests", () => {
     expect(glyphMapData).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getReverseCmapProxy replace items", () => {
+  it("getGlyphMapProxy replace items", () => {
     const characterMap = {"32": "space", "33": "test"};
     const glyphMapData = makeGlyphMapFromCharacterMap(characterMap);
-    const glyphMap = getReverseCmapProxy(glyphMapData, characterMap);
+    const glyphMap = getGlyphMapProxy(glyphMapData, characterMap);
 
     glyphMap["space"] = [32, 34];
     expect(characterMap).to.deep.equal({"32": "space", "33": "test", "34": "space"});
     expect(glyphMap).to.deep.equal({"space": [32, 34], "test": [33]});
   });
 
-  it("getReverseCmapProxy replace items with same", () => {
+  it("getGlyphMapProxy replace items with same", () => {
     const characterMap = {"32": "space", "33": "test"};
     const glyphMapData = makeGlyphMapFromCharacterMap(characterMap);
-    const glyphMap = getReverseCmapProxy(glyphMapData, characterMap);
+    const glyphMap = getGlyphMapProxy(glyphMapData, characterMap);
 
     glyphMap["space"] = [32];
     glyphMap["test"] = [33];
@@ -84,10 +84,10 @@ describe("characterMap tests", () => {
     expect(glyphMap).to.deep.equal({"space": [32], "test": [33]});
   });
 
-  it("getReverseCmapProxy delete items", () => {
+  it("getGlyphMapProxy delete items", () => {
     const characterMap = {"32": "space", "33": "test"};
     const glyphMapData = makeGlyphMapFromCharacterMap(characterMap);
-    const glyphMap = getReverseCmapProxy(glyphMapData, characterMap);
+    const glyphMap = getGlyphMapProxy(glyphMapData, characterMap);
 
     delete glyphMap["space"];
     expect(characterMap).to.deep.equal({"33": "test"});
