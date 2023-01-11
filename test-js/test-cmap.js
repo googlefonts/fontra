@@ -2,7 +2,7 @@ import chai from "chai";
 const expect = chai.expect;
 
 import {
-  getCmapProxy,
+  getCharacterMapProxy,
   getGlyphMapProxy,
   makeCharacterMapFromGlyphMap,
   makeGlyphMapFromCharacterMap,
@@ -98,10 +98,10 @@ describe("characterMap tests", () => {
     expect(glyphMap).to.deep.equal({});
   });
 
-  it("getCmapProxy add items", () => {
+  it("getCharacterMapProxy add items", () => {
     const characterMapData = {};
     const glyphMap = {};
-    const characterMap = getCmapProxy(characterMapData, glyphMap);
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
     characterMap[32] = "space";
     characterMap[33] = "double";
@@ -110,10 +110,10 @@ describe("characterMap tests", () => {
     expect(glyphMap).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getCmapProxy replace items", () => {
+  it("getCharacterMapProxy replace items", () => {
     const characterMapData = {"32": "space", "33": "double", "34": "double"};
     const glyphMap = makeGlyphMapFromCharacterMap(characterMapData);
-    const characterMap = getCmapProxy(characterMapData, glyphMap);
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
     characterMap[32] = "spacey";
     characterMap[34] = "doubly";
@@ -121,10 +121,10 @@ describe("characterMap tests", () => {
     expect(glyphMap).to.deep.equal({"spacey": [32], "double": [33], "doubly": [34]});
   });
 
-  it("getCmapProxy replace items with same", () => {
+  it("getCharacterMapProxy replace items with same", () => {
     const characterMapData = {"32": "space", "33": "double", "34": "double"};
     const glyphMap = makeGlyphMapFromCharacterMap(characterMapData);
-    const characterMap = getCmapProxy(characterMapData, glyphMap);
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
     characterMap[32] = "space";
     characterMap[34] = "double";
@@ -132,10 +132,10 @@ describe("characterMap tests", () => {
     expect(glyphMap).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getCmapProxy delete items", () => {
+  it("getCharacterMapProxy delete items", () => {
     const characterMapData = {"32": "space", "33": "double", "34": "double"};
     const glyphMap = makeGlyphMapFromCharacterMap(characterMapData);
-    const characterMap = getCmapProxy(characterMapData, glyphMap);
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
     delete characterMap[32];
     expect(characterMapData).to.deep.equal({"33": "double", "34": "double"});
@@ -150,10 +150,10 @@ describe("characterMap tests", () => {
     expect(glyphMap).to.deep.equal({});
   });
 
-  it("getCmapProxy add items, ensure sorted", () => {
+  it("getCharacterMapProxy add items, ensure sorted", () => {
     const characterMapData = {};
     const glyphMap = {};
-    const characterMap = getCmapProxy(characterMapData, glyphMap);
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
     characterMap[35] = "double";
     expect(glyphMap).to.deep.equal({"double": [35]});

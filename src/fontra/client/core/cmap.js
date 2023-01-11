@@ -99,7 +99,7 @@ export function getGlyphMapProxy(revCmap, cmap) {
 }
 
 
-export function getCmapProxy(cmap, revCmap) {
+export function getCharacterMapProxy(cmap, revCmap) {
   //
   // Return a wrapper (Proxy) for `cmap`, that behaves exactly like `cmap`,
   // while keeping the matching `revCmap` synchronized.
