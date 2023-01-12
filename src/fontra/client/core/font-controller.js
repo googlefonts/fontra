@@ -4,7 +4,7 @@ import {
   consolidateChanges,
   matchChangePath,
 } from "./changes.js";
-import { makeMappingFromReverseMapping } from "./cmap.js";
+import { makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
@@ -33,8 +33,8 @@ export class FontController {
   }
 
   async initialize() {
-    this.reverseCmap = await this.font.getReverseCmap();
-    this.cmap = makeMappingFromReverseMapping(this.reverseCmap, false);
+    this.reverseCmap = await this.font.getGlyphMap();
+    this.cmap = makeCharacterMapFromGlyphMap(this.reverseCmap, false);
     this.globalAxes = await this.font.getGlobalAxes();
     this.unitsPerEm = await this.font.getUnitsPerEm();
     this.fontLib = await this.font.getFontLib();
