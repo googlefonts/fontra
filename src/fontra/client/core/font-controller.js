@@ -42,6 +42,10 @@ export class FontController {
     this._resolveInitialized();
   }
 
+  getRootKeys() {
+    return Object.keys(this._rootObject);
+  }
+
   get glyphMap() {
     return this._rootObject["glyphMap"];
   }
