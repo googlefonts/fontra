@@ -861,7 +861,11 @@ async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
 
 
 getGlyphMapTestData = [
-    ("designspace", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")], "I.narrow": []}),
+    (
+        "designspace",
+        51,
+        {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")], "I.narrow": []},
+    ),
     ("ufo", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")], "I.narrow": []}),
 ]
 
