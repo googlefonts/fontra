@@ -2,17 +2,17 @@ import chai from "chai";
 const expect = chai.expect;
 
 import {
-  getCmapProxy,
-  getReverseCmapProxy,
-  makeMappingFromReverseMapping,
-  makeReverseMapping,
+  getCharacterMapProxy,
+  getGlyphMapProxy,
+  makeCharacterMapFromGlyphMap,
+  makeGlyphMapFromCharacterMap,
 } from "../src/fontra/client/core/cmap.js";
 import { enumerate } from "../src/fontra/client/core/utils.js";
 
 
-describe("cmap tests", () => {
+describe("characterMap tests", () => {
 
-  const makeReverseMapping_testData = [
+  const makeGlyphMapFromCharacterMap_testData = [
     [{}, {}],
     [{1: "one"}, {"one": [1]}],
     [{1: "one", 2: "two"}, {"one": [1], "two": [2]}],
@@ -20,13 +20,13 @@ describe("cmap tests", () => {
     [{2: "double", 1: "double"}, {"double": [1, 2]}],
   ];
 
-  for (const [i, [cmap, expectedRevCmap]] of enumerate(makeReverseMapping_testData)) {
-    it(`makeReverseMapping test ${i}`, () => {
-      expect(makeReverseMapping(cmap)).to.deep.equal(expectedRevCmap);
+  for (const [i, [characterMap, expectedGlyphMap]] of enumerate(makeGlyphMapFromCharacterMap_testData)) {
+    it(`makeGlyphMapFromCharacterMap test ${i}`, () => {
+      expect(makeGlyphMapFromCharacterMap(characterMap)).to.deep.equal(expectedGlyphMap);
     });
   }
 
-  const makeMappingFromReverseMapping_testData = [
+  const makeCharacterMapFromGlyphMap_testData = [
     [{}, {}, true, null],
     [{"one": [1]}, {1: "one"}, true, null],
     [{"one": [1], "two": [2]}, {1: "one", 2: "two"}, true, null],
@@ -36,132 +36,132 @@ describe("cmap tests", () => {
     [{"two": [1], "one": [1]}, {1: "one"}, false, null],
   ];
 
-  for (const [i, [revCmap, expectedCmap, strict, error]] of enumerate(makeMappingFromReverseMapping_testData)) {
-    it(`makeMappingFromReverseMapping test ${i}`, () => {
+  for (const [i, [glyphMap, expectedCharacterMap, strict, error]] of enumerate(makeCharacterMapFromGlyphMap_testData)) {
+    it(`makeCharacterMapFromGlyphMap test ${i}`, () => {
       if (!error) {
-        expect(makeMappingFromReverseMapping(revCmap, strict)).to.deep.equal(expectedCmap);
+        expect(makeCharacterMapFromGlyphMap(glyphMap, strict)).to.deep.equal(expectedCharacterMap);
       } else {
-        expect(() => makeMappingFromReverseMapping(revCmap, strict)).to.throw(error);
+        expect(() => makeCharacterMapFromGlyphMap(glyphMap, strict)).to.throw(error);
       }
     });
   }
 
-  it("makeReverseMapping test simple", () => {
-    const cmap = {};
-    expect(makeReverseMapping(cmap)).to.deep.equal({});
+  it("makeGlyphMapFromCharacterMap test simple", () => {
+    const characterMap = {};
+    expect(makeGlyphMapFromCharacterMap(characterMap)).to.deep.equal({});
   });
 
-  it("getReverseCmapProxy add items", () => {
-    const cmap = {};
-    const revCmapData = {};
-    const revCmap = getReverseCmapProxy(revCmapData, cmap);
+  it("getGlyphMapProxy add items", () => {
+    const characterMap = {};
+    const glyphMapData = {};
+    const glyphMap = getGlyphMapProxy(glyphMapData, characterMap);
 
-    revCmap["space"] = [32];
-    revCmap["double"] = [33, 34];
+    glyphMap["space"] = [32];
+    glyphMap["double"] = [33, 34];
 
-    expect(cmap).to.deep.equal({"32": "space", "33": "double", "34": "double"});
-    expect(revCmapData).to.deep.equal({"space": [32], "double": [33, 34]});
+    expect(characterMap).to.deep.equal({"32": "space", "33": "double", "34": "double"});
+    expect(glyphMapData).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getReverseCmapProxy replace items", () => {
-    const cmap = {"32": "space", "33": "test"};
-    const revCmapData = makeReverseMapping(cmap);
-    const revCmap = getReverseCmapProxy(revCmapData, cmap);
+  it("getGlyphMapProxy replace items", () => {
+    const characterMap = {"32": "space", "33": "test"};
+    const glyphMapData = makeGlyphMapFromCharacterMap(characterMap);
+    const glyphMap = getGlyphMapProxy(glyphMapData, characterMap);
 
-    revCmap["space"] = [32, 34];
-    expect(cmap).to.deep.equal({"32": "space", "33": "test", "34": "space"});
-    expect(revCmap).to.deep.equal({"space": [32, 34], "test": [33]});
+    glyphMap["space"] = [32, 34];
+    expect(characterMap).to.deep.equal({"32": "space", "33": "test", "34": "space"});
+    expect(glyphMap).to.deep.equal({"space": [32, 34], "test": [33]});
   });
 
-  it("getReverseCmapProxy replace items with same", () => {
-    const cmap = {"32": "space", "33": "test"};
-    const revCmapData = makeReverseMapping(cmap);
-    const revCmap = getReverseCmapProxy(revCmapData, cmap);
+  it("getGlyphMapProxy replace items with same", () => {
+    const characterMap = {"32": "space", "33": "test"};
+    const glyphMapData = makeGlyphMapFromCharacterMap(characterMap);
+    const glyphMap = getGlyphMapProxy(glyphMapData, characterMap);
 
-    revCmap["space"] = [32];
-    revCmap["test"] = [33];
-    expect(cmap).to.deep.equal({"32": "space", "33": "test"});
-    expect(revCmap).to.deep.equal({"space": [32], "test": [33]});
+    glyphMap["space"] = [32];
+    glyphMap["test"] = [33];
+    expect(characterMap).to.deep.equal({"32": "space", "33": "test"});
+    expect(glyphMap).to.deep.equal({"space": [32], "test": [33]});
   });
 
-  it("getReverseCmapProxy delete items", () => {
-    const cmap = {"32": "space", "33": "test"};
-    const revCmapData = makeReverseMapping(cmap);
-    const revCmap = getReverseCmapProxy(revCmapData, cmap);
+  it("getGlyphMapProxy delete items", () => {
+    const characterMap = {"32": "space", "33": "test"};
+    const glyphMapData = makeGlyphMapFromCharacterMap(characterMap);
+    const glyphMap = getGlyphMapProxy(glyphMapData, characterMap);
 
-    delete revCmap["space"];
-    expect(cmap).to.deep.equal({"33": "test"});
-    expect(revCmap).to.deep.equal({"test": [33]});
+    delete glyphMap["space"];
+    expect(characterMap).to.deep.equal({"33": "test"});
+    expect(glyphMap).to.deep.equal({"test": [33]});
 
-    delete revCmap["test"];
-    expect(cmap).to.deep.equal({});
-    expect(revCmap).to.deep.equal({});
+    delete glyphMap["test"];
+    expect(characterMap).to.deep.equal({});
+    expect(glyphMap).to.deep.equal({});
   });
 
-  it("getCmapProxy add items", () => {
-    const cmapData = {};
-    const revCmap = {};
-    const cmap = getCmapProxy(cmapData, revCmap);
+  it("getCharacterMapProxy add items", () => {
+    const characterMapData = {};
+    const glyphMap = {};
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
-    cmap[32] = "space";
-    cmap[33] = "double";
-    cmap[34] = "double";
-    expect(cmapData).to.deep.equal({"32": "space", "33": "double", "34": "double"});
-    expect(revCmap).to.deep.equal({"space": [32], "double": [33, 34]});
+    characterMap[32] = "space";
+    characterMap[33] = "double";
+    characterMap[34] = "double";
+    expect(characterMapData).to.deep.equal({"32": "space", "33": "double", "34": "double"});
+    expect(glyphMap).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getCmapProxy replace items", () => {
-    const cmapData = {"32": "space", "33": "double", "34": "double"};
-    const revCmap = makeReverseMapping(cmapData);
-    const cmap = getCmapProxy(cmapData, revCmap);
+  it("getCharacterMapProxy replace items", () => {
+    const characterMapData = {"32": "space", "33": "double", "34": "double"};
+    const glyphMap = makeGlyphMapFromCharacterMap(characterMapData);
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
-    cmap[32] = "spacey";
-    cmap[34] = "doubly";
-    expect(cmapData).to.deep.equal({"32": "spacey", "33": "double", "34": "doubly"});
-    expect(revCmap).to.deep.equal({"spacey": [32], "double": [33], "doubly": [34]});
+    characterMap[32] = "spacey";
+    characterMap[34] = "doubly";
+    expect(characterMapData).to.deep.equal({"32": "spacey", "33": "double", "34": "doubly"});
+    expect(glyphMap).to.deep.equal({"spacey": [32], "double": [33], "doubly": [34]});
   });
 
-  it("getCmapProxy replace items with same", () => {
-    const cmapData = {"32": "space", "33": "double", "34": "double"};
-    const revCmap = makeReverseMapping(cmapData);
-    const cmap = getCmapProxy(cmapData, revCmap);
+  it("getCharacterMapProxy replace items with same", () => {
+    const characterMapData = {"32": "space", "33": "double", "34": "double"};
+    const glyphMap = makeGlyphMapFromCharacterMap(characterMapData);
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
-    cmap[32] = "space";
-    cmap[34] = "double";
-    expect(cmapData).to.deep.equal({"32": "space", "33": "double", "34": "double"});
-    expect(revCmap).to.deep.equal({"space": [32], "double": [33, 34]});
+    characterMap[32] = "space";
+    characterMap[34] = "double";
+    expect(characterMapData).to.deep.equal({"32": "space", "33": "double", "34": "double"});
+    expect(glyphMap).to.deep.equal({"space": [32], "double": [33, 34]});
   });
 
-  it("getCmapProxy delete items", () => {
-    const cmapData = {"32": "space", "33": "double", "34": "double"};
-    const revCmap = makeReverseMapping(cmapData);
-    const cmap = getCmapProxy(cmapData, revCmap);
+  it("getCharacterMapProxy delete items", () => {
+    const characterMapData = {"32": "space", "33": "double", "34": "double"};
+    const glyphMap = makeGlyphMapFromCharacterMap(characterMapData);
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
-    delete cmap[32];
-    expect(cmapData).to.deep.equal({"33": "double", "34": "double"});
-    expect(revCmap).to.deep.equal({"double": [33, 34]});
+    delete characterMap[32];
+    expect(characterMapData).to.deep.equal({"33": "double", "34": "double"});
+    expect(glyphMap).to.deep.equal({"double": [33, 34]});
 
-    delete cmap[33];
-    expect(cmapData).to.deep.equal({"34": "double"});
-    expect(revCmap).to.deep.equal({"double": [34]});
+    delete characterMap[33];
+    expect(characterMapData).to.deep.equal({"34": "double"});
+    expect(glyphMap).to.deep.equal({"double": [34]});
 
-    delete cmap[34];
-    expect(cmapData).to.deep.equal({});
-    expect(revCmap).to.deep.equal({});
+    delete characterMap[34];
+    expect(characterMapData).to.deep.equal({});
+    expect(glyphMap).to.deep.equal({});
   });
 
-  it("getCmapProxy add items, ensure sorted", () => {
-    const cmapData = {};
-    const revCmap = {};
-    const cmap = getCmapProxy(cmapData, revCmap);
+  it("getCharacterMapProxy add items, ensure sorted", () => {
+    const characterMapData = {};
+    const glyphMap = {};
+    const characterMap = getCharacterMapProxy(characterMapData, glyphMap);
 
-    cmap[35] = "double";
-    expect(revCmap).to.deep.equal({"double": [35]});
-    cmap[33] = "double";
-    expect(revCmap).to.deep.equal({"double": [33, 35]});
-    cmap[34] = "double";
-    expect(revCmap).to.deep.equal({"double": [33, 34, 35]});
-    expect(cmapData).to.deep.equal({"33": "double", "34": "double", "35": "double"});
+    characterMap[35] = "double";
+    expect(glyphMap).to.deep.equal({"double": [35]});
+    characterMap[33] = "double";
+    expect(glyphMap).to.deep.equal({"double": [33, 35]});
+    characterMap[34] = "double";
+    expect(glyphMap).to.deep.equal({"double": [33, 34, 35]});
+    expect(characterMapData).to.deep.equal({"33": "double", "34": "double", "35": "double"});
   });
 
 });

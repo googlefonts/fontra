@@ -248,10 +248,10 @@ export class EditorController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
-    const reverseCmap = this.fontController.reverseCmap;
+    const glyphMap = this.fontController.glyphMap;
     this.glyphsListItems = [];
-    for (const glyphName in reverseCmap) {
-      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": reverseCmap[glyphName]});
+    for (const glyphName in glyphMap) {
+      this.glyphsListItems.push({"glyphName": glyphName, "unicodes": glyphMap[glyphName]});
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
     this.glyphNamesList.setItems(this.glyphsListItems);
@@ -524,8 +524,8 @@ export class EditorController {
     await this.fontController.ensureInitialized;
     const glyphLines = await glyphLinesFromText(
       this.enteredText,
-      this.fontController.cmap,
-      this.fontController.reverseCmap,
+      this.fontController.characterMap,
+      this.fontController.glyphMap,
       codePoint => this.fontController.getSuggestedGlyphName(codePoint),
       glyphName => this.fontController.getUnicodeFromGlyphName(glyphName),
     );
@@ -852,7 +852,7 @@ export class EditorController {
     const glyphController = positionedGlyph?.glyph;
     const instance = glyphController?.instance;
     const glyphName = glyphController?.name;
-    const unicodes = this.fontController.reverseCmap[glyphName] || [];
+    const unicodes = this.fontController.glyphMap[glyphName] || [];
     if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
       // Glyph does not yet exist in the font, so varGlyphController is undefined,
       // But we can grab the unicode from positionedGlyph.character anyway.
@@ -1124,10 +1124,10 @@ function compare(a, b) {
 }
 
 
-async function glyphLinesFromText(text, cmap, reverseCmap, getSuggestedGlyphNameFunc, getUnicodeFromGlyphNameFunc) {
+async function glyphLinesFromText(text, characterMap, glyphMap, getSuggestedGlyphNameFunc, getUnicodeFromGlyphNameFunc) {
   const glyphLines = [];
   for (const line of text.split(/\r?\n/)) {
-    glyphLines.push(await glyphNamesFromText(line, cmap, reverseCmap, getSuggestedGlyphNameFunc, getUnicodeFromGlyphNameFunc));
+    glyphLines.push(await glyphNamesFromText(line, characterMap, glyphMap, getSuggestedGlyphNameFunc, getUnicodeFromGlyphNameFunc));
   }
   return glyphLines;
 }
@@ -1135,7 +1135,7 @@ async function glyphLinesFromText(text, cmap, reverseCmap, getSuggestedGlyphName
 
 const glyphNameRE = /[//\s]/g;
 
-async function glyphNamesFromText(text, cmap, reverseCmap, getSuggestedGlyphNameFunc, getUnicodeFromGlyphNameFunc) {
+async function glyphNamesFromText(text, characterMap, glyphMap, getSuggestedGlyphNameFunc, getUnicodeFromGlyphNameFunc) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -1143,7 +1143,7 @@ async function glyphNamesFromText(text, cmap, reverseCmap, getSuggestedGlyphName
     if (char == "/") {
       i++;
       if (text[i] == "/") {
-        glyphName = cmap[char.charCodeAt(0)];
+        glyphName = characterMap[char.charCodeAt(0)];
       } else {
         glyphNameRE.lastIndex = i;
         glyphNameRE.test(text);
@@ -1161,13 +1161,13 @@ async function glyphNamesFromText(text, cmap, reverseCmap, getSuggestedGlyphName
           }
         }
         char = undefined;
-        for (const codePoint of reverseCmap[glyphName] || []) {
-          if (cmap[codePoint] === glyphName) {
+        for (const codePoint of glyphMap[glyphName] || []) {
+          if (characterMap[codePoint] === glyphName) {
             char = String.fromCodePoint(codePoint);
             break;
           }
         }
-        if (!char && !reverseCmap[glyphName]) {
+        if (!char && !glyphMap[glyphName]) {
           // Glyph doesn't exist in the font, try to find a unicode value
           const codePoint = await getUnicodeFromGlyphNameFunc(glyphName);
           if (codePoint) {
@@ -1178,7 +1178,7 @@ async function glyphNamesFromText(text, cmap, reverseCmap, getSuggestedGlyphName
       }
     } else {
       const charCode = text.codePointAt(i);
-      glyphName = cmap[charCode];
+      glyphName = characterMap[charCode];
       if (charCode >= 0x10000) {
         i++;
       }

@@ -1,167 +1,169 @@
 //
-// A `cmap` is an object with integer numbers representing unicode code points
-// as keys, and glyph names as values. Note: we're using a JS Object, not Map,
-// so the code point keys are stored as (decimal) string representations of the
-// integers. Multiple code points may map to the same glyph name.
+// A `characterMap` is an object with integer numbers representing unicode code
+// points as keys, and glyph names as values. Note: we're using a JS Object, not
+// Map, so the code point keys are stored as (decimal) string representations of
+// the integers. Multiple code points may map to the same glyph name. Each code
+// point maps to exactly one glyph name.
 //
-// A `revCmap` ("reverse cmap") maps glyph names to arrays of (integer) code
-// points. A code point may only occur one time in the entire mapping.
-// Empty code point arrays are generally avoided: the `revCmap` should then
-// Not contain a mapping for the glyph name at all.
+// A `glyphMap` is the opposite of a `characterMap`: it maps glyph names to
+// arrays of (integer) code points. A code point may only occur one time in the
+// entire mapping. Code point arrays may contain any number of code points:
+// any glyph can be mapped to zero or more code points.
+//
 // For the sake of determinism, this module tries to keep the code point arrays
 // in sorted order, even though the order has no intrinsic meaning.
 //
-// This module provides functions to convert `cmap` to `revCmap` and vice versa,
-// as well as `cmap` and `revCmap` proxy objects that keep their matching
-// counterpart (`revCmap` and `cmap` respectively) up-to-date.
+// This module provides functions to convert `characterMap` to `glyphMap` and vice
+// versa, as well as `characterMap` and `glyphMap` proxy objects that keep their
+// matching counterpart (`glyphMap` and `characterMap` respectively) up-to-date.
 //
 
 
-export function makeReverseMapping(cmap) {
-  // Return a `revCmap` constructed from `cmap`
-  const revCmap = {};
-  for (const [codeStr, glyphName] of Object.entries(cmap)) {
+export function makeGlyphMapFromCharacterMap(characterMap) {
+  // Return a `glyphMap` constructed from `characterMap`
+  const glyphMap = {};
+  for (const [codeStr, glyphName] of Object.entries(characterMap)) {
     const codePoint = parseInt(codeStr);
-    if (revCmap[glyphName]) {
-      arrayInsertSortedItem(revCmap[glyphName], codePoint);
+    if (glyphMap[glyphName]) {
+      arrayInsertSortedItem(glyphMap[glyphName], codePoint);
     } else {
-      revCmap[glyphName] = [codePoint];
+      glyphMap[glyphName] = [codePoint];
     }
   }
-  return revCmap;
+  return glyphMap;
 }
 
 
-export function makeMappingFromReverseMapping(revCmap, strict = true) {
-  // Return a `cmap` constructed from `revCmap`
+export function makeCharacterMapFromGlyphMap(glyphMap, strict = true) {
+  // Return a `characterMap` constructed from `glyphMap`
   // If the `strict` flag is `true` (default), an Error is thrown when a code
   // point is defined multiple times.
-  const cmap = {};
-  for (const [glyphName, unicodes] of Object.entries(revCmap)) {
+  const characterMap = {};
+  for (const [glyphName, unicodes] of Object.entries(glyphMap)) {
     for (const codePoint of unicodes) {
-      if (codePoint in cmap) {
-        const message = `invalid reverse cmap: duplicate code point (${codePoint})`;
+      if (codePoint in characterMap) {
+        const message = `invalid glyph map: duplicate code point (${codePoint})`;
         if (strict) {
           throw new Error(message);
         }
         console.log(message);
-        if (cmap[codePoint] < glyphName) {
+        if (characterMap[codePoint] < glyphName) {
           // Keep the glyph name that would be sorted lowest.
           // This is completely arbitrary, but ensures determinism.
           continue;
         }
       }
-      cmap[codePoint] = glyphName;
+      characterMap[codePoint] = glyphName;
     }
   }
-  return cmap;
+  return characterMap;
 }
 
 
-export function getReverseCmapProxy(revCmap, cmap) {
+export function getGlyphMapProxy(glyphMap, characterMap) {
   //
-  // Return a wrapper (Proxy) for `revCmap`, that behaves exactly like `revCmap`,
-  // while keeping the matching `cmap` synchronized.
+  // Return a wrapper (Proxy) for `glyphMap`, that behaves exactly like `glyphMap`,
+  // while keeping the matching `characterMap` synchronized.
   //
-  // `revCmap` and `cmap` are expected to be synchronized on input.
+  // `glyphMap` and `characterMap` are expected to be synchronized on input.
   //
-  // Any changes made to `revCmap` via the `revCmap` proxy will be reflected in
-  // the `cmap` object. This does *not* catch mutations in the code point arrays
-  // themselves, but only wholesale *replacement* the code point arrays. In other
-  // words: you must treat the code point arrays as immutable.
+  // Any changes made to `glyphMap` via the `glyphMap` proxy will be reflected in
+  // the `characterMap` object. This does *not* catch mutations in the code point
+  // arrays themselves, but only wholesale *replacement* the code point arrays.
+  // In other words: you must treat the code point arrays as immutable.
   //
 
   const handler = {
-    set(revCmap, prop, value) {
+    set(glyphMap, prop, value) {
       if (!Array.isArray(value)) {
         throw new Error("value expected to be an array of code points");
       }
-      const existingCodePoints = revCmap[prop] || [];
-      revCmap[prop] = value;
-      existingCodePoints.forEach(codePoint => delete cmap[codePoint]);
-      value.forEach(codePoint => cmap[codePoint] = prop);
+      const existingCodePoints = glyphMap[prop] || [];
+      glyphMap[prop] = value;
+      existingCodePoints.forEach(codePoint => delete characterMap[codePoint]);
+      value.forEach(codePoint => characterMap[codePoint] = prop);
       return true;
     },
 
-    get(revCmap, prop) {
-      return revCmap[prop];
+    get(glyphMap, prop) {
+      return glyphMap[prop];
     },
 
-    deleteProperty(revCmap, prop) {
-      const existingCodePoints = revCmap[prop] || [];
-      delete revCmap[prop];
-      existingCodePoints.forEach(codePoint => delete cmap[codePoint]);
+    deleteProperty(glyphMap, prop) {
+      const existingCodePoints = glyphMap[prop] || [];
+      delete glyphMap[prop];
+      existingCodePoints.forEach(codePoint => delete characterMap[codePoint]);
       return true;
     }
   }
 
-  return new Proxy(revCmap, handler);
+  return new Proxy(glyphMap, handler);
 }
 
 
-export function getCmapProxy(cmap, revCmap) {
+export function getCharacterMapProxy(characterMap, glyphMap) {
   //
-  // Return a wrapper (Proxy) for `cmap`, that behaves exactly like `cmap`,
-  // while keeping the matching `revCmap` synchronized.
+  // Return a wrapper (Proxy) for `characterMap`, that behaves exactly like
+  // `characterMap`, while keeping the matching `glyphMap` synchronized.
   //
-  // `cmap` and `revCmap` are expected to be synchronized on input.
+  // `characterMap` and `glyphMap` are expected to be synchronized on input.
   //
-  // Any changes made to `cmap` via the `cmap` proxy will be reflected in
-  // the `revCmap` object.
+  // Any changes made to `characterMap` via the `characterMap` proxy will be
+  // reflected in the `glyphMap` object.
   //
 
   const handler = {
-    set(cmap, prop, value) {
-      const existingValue = cmap[prop];
-      cmap[prop] = value;
+    set(characterMap, prop, value) {
+      const existingValue = characterMap[prop];
+      characterMap[prop] = value;
       if (!isNaN(prop)) {
         const codePoint = parseInt(prop);
         if (existingValue) {
-          removeReverseMapping(revCmap, existingValue, codePoint);
+          removeReverseMapping(glyphMap, existingValue, codePoint);
         }
-        if (revCmap[value]) {
-          arrayInsertSortedItem(revCmap[value], codePoint);
+        if (glyphMap[value]) {
+          arrayInsertSortedItem(glyphMap[value], codePoint);
         } else {
-          revCmap[value] = [codePoint];
+          glyphMap[value] = [codePoint];
         }
       }
       return true;
     },
 
-    get(cmap, prop) {
-      return cmap[prop];
+    get(characterMap, prop) {
+      return characterMap[prop];
     },
 
-    deleteProperty(cmap, prop) {
-      const existingValue = cmap[prop];
-      delete cmap[prop];
+    deleteProperty(characterMap, prop) {
+      const existingValue = characterMap[prop];
+      delete characterMap[prop];
       if (!isNaN(prop)) {
         const codePoint = parseInt(prop);
         if (existingValue) {
-          removeReverseMapping(revCmap, existingValue, codePoint);
+          removeReverseMapping(glyphMap, existingValue, codePoint);
         }
       }
       return true;
     }
   }
 
-  return new Proxy(cmap, handler);
+  return new Proxy(characterMap, handler);
 }
 
 
-function removeReverseMapping(revCmap, glyphName, codePoint) {
+function removeReverseMapping(glyphMap, glyphName, codePoint) {
   //
-  // Given a `revCmap`, remove the `codePoint` from the `glyphName` mapping,
+  // Given a `glyphMap`, remove the `codePoint` from the `glyphName` mapping,
   // if it exists. If no mapping is left for `glyphName`, remove the mapping
   // entirely.
   //
-  const unicodes = revCmap[glyphName];
+  const unicodes = glyphMap[glyphName];
   if (!unicodes) {
     return;
   }
   arrayDiscardItem(unicodes, codePoint);
   if (!unicodes.length) {
-    delete revCmap[glyphName];
+    delete glyphMap[glyphName];
   }
 }
 

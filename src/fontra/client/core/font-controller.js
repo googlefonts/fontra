@@ -4,7 +4,7 @@ import {
   consolidateChanges,
   matchChangePath,
 } from "./changes.js";
-import { makeMappingFromReverseMapping } from "./cmap.js";
+import { makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
@@ -33,8 +33,8 @@ export class FontController {
   }
 
   async initialize() {
-    this.reverseCmap = await this.font.getReverseCmap();
-    this.cmap = makeMappingFromReverseMapping(this.reverseCmap, false);
+    this.glyphMap = await this.font.getGlyphMap();
+    this.characterMap = makeCharacterMapFromGlyphMap(this.glyphMap, false);
     this.globalAxes = await this.font.getGlobalAxes();
     this.unitsPerEm = await this.font.getUnitsPerEm();
     this.fontLib = await this.font.getFontLib();
@@ -46,10 +46,9 @@ export class FontController {
   }
 
   codePointForGlyph(glyphName) {
-    const reverseCmap = this.reverseCmap;
-    const cmap = this.cmap;
-    for (const codePoint of reverseCmap[glyphName] || []) {
-      if (cmap[codePoint] === glyphName) {
+    const characterMap = this.characterMap;
+    for (const codePoint of this.glyphMap[glyphName] || []) {
+      if (characterMap[codePoint] === glyphName) {
         return codePoint;
       }
     }
@@ -65,7 +64,7 @@ export class FontController {
   }
 
   async hasGlyph(glyphName) {
-    return glyphName in this.reverseCmap;
+    return glyphName in this.glyphMap;
   }
 
   getGlyph(glyphName) {

@@ -19,13 +19,13 @@ class OTFBackend:
             if "CFF2" in self.font
             else None
         )
-        self.cmap = self.font.getBestCmap()
-        revCmap = {}
+        self.characterMap = self.font.getBestCmap()
+        glyphMap = {}
         for glyphName in self.font.getGlyphOrder():
-            revCmap[glyphName] = []
-        for code, glyphName in sorted(self.cmap.items()):
-            revCmap[glyphName].append(code)
-        self.revCmap = revCmap
+            glyphMap[glyphName] = []
+        for code, glyphName in sorted(self.characterMap.items()):
+            glyphMap[glyphName].append(code)
+        self.glyphMap = glyphMap
         self.glyphSet = self.font.getGlyphSet()
         self.variationGlyphSets = {}
         return self
@@ -33,8 +33,8 @@ class OTFBackend:
     def close(self):
         pass
 
-    async def getReverseCmap(self):
-        return self.revCmap
+    async def getGlyphMap(self):
+        return self.glyphMap
 
     def hasGlyph(self, glyphName):
         return glyphName in self.glyphSet

@@ -125,8 +125,8 @@ class FontHandler:
         return glyph
 
     @remoteMethod
-    async def getReverseCmap(self, *, connection):
-        return await self.backend.getReverseCmap()
+    async def getGlyphMap(self, *, connection):
+        return await self.backend.getGlyphMap()
 
     @remoteMethod
     async def getGlobalAxes(self, *, connection):
