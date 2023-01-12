@@ -243,10 +243,10 @@ export class SceneModel {
     const unsubscribeGlyphNames = difference(previousGlyphNames, currentGlyphNames);
     const subscribeGlyphNames = difference(currentGlyphNames, previousGlyphNames);
     if (unsubscribeGlyphNames.size) {
-      this.fontController.font.unsubscribeChanges(makeGlyphNamesPattern(unsubscribeGlyphNames), isLiveChange);
+      this.fontController.unsubscribeChanges(makeGlyphNamesPattern(unsubscribeGlyphNames), isLiveChange);
     }
     if (subscribeGlyphNames.size) {
-      this.fontController.font.subscribeChanges(makeGlyphNamesPattern(subscribeGlyphNames), isLiveChange);
+      this.fontController.subscribeChanges(makeGlyphNamesPattern(subscribeGlyphNames), isLiveChange);
     }
   }
 

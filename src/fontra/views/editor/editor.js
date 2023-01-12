@@ -233,7 +233,7 @@ export class EditorController {
     for (const rootKey of this.fontController.getRootKeys()) {
       rootSubscriptionPattern[rootKey] = null;
     }
-    await this.fontController.font.subscribeChanges(rootSubscriptionPattern, false);
+    await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphNames();
     await this.initSliders();
     this.initTools();

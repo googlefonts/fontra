@@ -42,6 +42,14 @@ export class FontController {
     this._resolveInitialized();
   }
 
+  subscribeChanges(change, isLiveChange) {
+    this.font.subscribeChanges(change, isLiveChange);
+  }
+
+  unsubscribeChanges(change, isLiveChange) {
+    this.font.unsubscribeChanges(change, isLiveChange);
+  }
+
   getRootKeys() {
     return Object.keys(this._rootObject);
   }
