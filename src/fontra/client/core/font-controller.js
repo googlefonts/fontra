@@ -42,12 +42,12 @@ export class FontController {
     this._resolveInitialized();
   }
 
-  subscribeChanges(change, isLiveChange) {
-    this.font.subscribeChanges(change, isLiveChange);
+  subscribeChanges(change, wantLiveChanges) {
+    this.font.subscribeChanges(change, wantLiveChanges);
   }
 
-  unsubscribeChanges(change, isLiveChange) {
-    this.font.unsubscribeChanges(change, isLiveChange);
+  unsubscribeChanges(change, wantLiveChanges) {
+    this.font.unsubscribeChanges(change, wantLiveChanges);
   }
 
   getRootKeys() {

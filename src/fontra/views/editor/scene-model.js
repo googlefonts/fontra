@@ -236,17 +236,17 @@ export class SceneModel {
     this.cachedGlyphNames = cachedGlyphNames;
   }
 
-  _adjustSubscriptions(currentGlyphNames, previousGlyphNames, isLiveChange) {
+  _adjustSubscriptions(currentGlyphNames, previousGlyphNames, wantLiveChanges) {
     if (isEqualSet(currentGlyphNames, previousGlyphNames)) {
       return;
     }
     const unsubscribeGlyphNames = difference(previousGlyphNames, currentGlyphNames);
     const subscribeGlyphNames = difference(currentGlyphNames, previousGlyphNames);
     if (unsubscribeGlyphNames.size) {
-      this.fontController.unsubscribeChanges(makeGlyphNamesPattern(unsubscribeGlyphNames), isLiveChange);
+      this.fontController.unsubscribeChanges(makeGlyphNamesPattern(unsubscribeGlyphNames), wantLiveChanges);
     }
     if (subscribeGlyphNames.size) {
-      this.fontController.subscribeChanges(makeGlyphNamesPattern(subscribeGlyphNames), isLiveChange);
+      this.fontController.subscribeChanges(makeGlyphNamesPattern(subscribeGlyphNames), wantLiveChanges);
     }
   }
 

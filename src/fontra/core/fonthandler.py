@@ -144,15 +144,15 @@ class FontHandler:
         return self.clientData[connection.clientUUID].setdefault(key, default)
 
     @remoteMethod
-    async def subscribeChanges(self, pathOrPattern, isLiveChange, *, connection):
-        self._adjustMatchPattern(addToPattern, pathOrPattern, isLiveChange, connection)
+    async def subscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
+        self._adjustMatchPattern(addToPattern, pathOrPattern, wantLiveChanges, connection)
 
     @remoteMethod
-    async def unsubscribeChanges(self, pathOrPattern, isLiveChange, *, connection):
-        self._adjustMatchPattern(removeFromPattern, pathOrPattern, isLiveChange, connection)
+    async def unsubscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
+        self._adjustMatchPattern(removeFromPattern, pathOrPattern, wantLiveChanges, connection)
 
-    def _adjustMatchPattern(self, func, pathOrPattern, isLiveChange, connection):
-        key = LIVE_CHANGES_PATTERN_KEY if isLiveChange else CHANGES_PATTERN_KEY
+    def _adjustMatchPattern(self, func, pathOrPattern, wantLiveChanges, connection):
+        key = LIVE_CHANGES_PATTERN_KEY if wantLiveChanges else CHANGES_PATTERN_KEY
         matchPattern = self._getClientData(connection, key, {})
         func(matchPattern, pathOrPattern)
 
@@ -171,8 +171,8 @@ class FontHandler:
         if broadcast:
             await self.broadcastChange(finalChange, connection, False)
 
-    async def broadcastChange(self, change, sourceConnection, isLiveChange):
-        if isLiveChange:
+    async def broadcastChange(self, change, sourceConnection, wantLiveChanges):
+        if wantLiveChanges:
             matchPatternKeys = [LIVE_CHANGES_PATTERN_KEY]
         else:
             matchPatternKeys = [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]
