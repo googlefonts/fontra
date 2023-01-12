@@ -871,10 +871,10 @@ getGlyphMapTestData = [
 async def test_getGlyphMap(backendName, numGlyphs, testMapping):
     font = getTestFont(backendName)
     with contextlib.closing(font):
-        revCmap = await font.getGlyphMap()
-        assert numGlyphs == len(revCmap)
+        glyphMap = await font.getGlyphMap()
+        assert numGlyphs == len(glyphMap)
         for glyphName, unicodes in testMapping.items():
-            assert revCmap[glyphName] == unicodes
+            assert glyphMap[glyphName] == unicodes
 
 
 @pytest.mark.asyncio
