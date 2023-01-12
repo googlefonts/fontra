@@ -33,8 +33,8 @@ export class FontController {
   }
 
   async initialize() {
-    this.reverseCmap = await this.font.getGlyphMap();
-    this.cmap = makeCharacterMapFromGlyphMap(this.reverseCmap, false);
+    this.glyphMap = await this.font.getGlyphMap();
+    this.characterMap = makeCharacterMapFromGlyphMap(this.glyphMap, false);
     this.globalAxes = await this.font.getGlobalAxes();
     this.unitsPerEm = await this.font.getUnitsPerEm();
     this.fontLib = await this.font.getFontLib();
@@ -46,10 +46,10 @@ export class FontController {
   }
 
   codePointForGlyph(glyphName) {
-    const reverseCmap = this.reverseCmap;
-    const cmap = this.cmap;
+    const reverseCmap = this.glyphMap;
+    const characterMap = this.characterMap;
     for (const codePoint of reverseCmap[glyphName] || []) {
-      if (cmap[codePoint] === glyphName) {
+      if (characterMap[codePoint] === glyphName) {
         return codePoint;
       }
     }
@@ -65,7 +65,7 @@ export class FontController {
   }
 
   async hasGlyph(glyphName) {
-    return glyphName in this.reverseCmap;
+    return glyphName in this.glyphMap;
   }
 
   getGlyph(glyphName) {
