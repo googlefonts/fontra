@@ -30,15 +30,32 @@ export class FontController {
       this._resolveInitialized = resolve;
     });
     this.undoStacks = {};  // glyph name -> undo stack
+    this._rootObject = {};
   }
 
   async initialize() {
-    this.glyphMap = await this.font.getGlyphMap();
+    this._rootObject["glyphMap"] = await this.font.getGlyphMap();
     this.characterMap = makeCharacterMapFromGlyphMap(this.glyphMap, false);
-    this.globalAxes = await this.font.getGlobalAxes();
-    this.unitsPerEm = await this.font.getUnitsPerEm();
-    this.fontLib = await this.font.getFontLib();
+    this._rootObject["axes"] = await this.font.getGlobalAxes();
+    this._rootObject["unitsPerEm"] = await this.font.getUnitsPerEm();
+    this._rootObject["lib"] = await this.font.getFontLib();
     this._resolveInitialized();
+  }
+
+  get glyphMap() {
+    return this._rootObject["glyphMap"];
+  }
+
+  get globalAxes() {
+    return this._rootObject["axes"];
+  }
+
+  get unitsPerEm() {
+    return this._rootObject["unitsPerEm"];
+  }
+
+  get fontLib() {
+    return this._rootObject["lib"];
   }
 
   getCachedGlyphNames() {
@@ -189,20 +206,19 @@ export class FontController {
   }
 
   async applyChange(change, isExternalChange) {
-    if (matchChangePath(change, ["glyphs"])) {
-      const glyphNames = collectGlyphNames(change);
-      const glyphSet = {};
-      for (const glyphName of glyphNames) {
-        glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
-      }
-      const root = {"glyphs": glyphSet};
-      applyChange(root, change);
-      for (const glyphName of glyphNames) {
-        this.glyphChanged(glyphName);
-        if (isExternalChange) {
-          // The undo stack is local, so any external change invalidates it
-          delete this.undoStacks[glyphName];
-        }
+    const glyphNames = collectGlyphNames(change);
+    const glyphSet = {};
+    for (const glyphName of glyphNames) {
+      glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
+    }
+    this._rootObject["glyphs"] = glyphSet;
+    applyChange(this._rootObject, change);
+    delete this._rootObject["glyphs"];
+    for (const glyphName of glyphNames) {
+      this.glyphChanged(glyphName);
+      if (isExternalChange) {
+        // The undo stack is local, so any external change invalidates it
+        delete this.undoStacks[glyphName];
       }
     }
   }
