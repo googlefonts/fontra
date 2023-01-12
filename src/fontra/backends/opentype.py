@@ -33,7 +33,7 @@ class OTFBackend:
     def close(self):
         pass
 
-    async def getReverseCmap(self):
+    async def getGlyphMap(self):
         return self.revCmap
 
     def hasGlyph(self, glyphName):

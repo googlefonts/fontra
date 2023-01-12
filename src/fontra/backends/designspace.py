@@ -54,7 +54,7 @@ class DesignspaceBackend:
         self.axes = axes
         self.loadSources()
         self.buildFileNameMapping()
-        self.reverseCmap = getReverseCmapFromGlyphSet(self.defaultSourceGlyphSet)
+        self.reverseCmap = getGlyphMapFromGlyphSet(self.defaultSourceGlyphSet)
         self.savedGlyphModificationTimes = {}
 
     def close(self):
@@ -119,7 +119,7 @@ class DesignspaceBackend:
         for glyphName, fileName in glyphSet.contents.items():
             glifFileNames[fileName] = glyphName
 
-    async def getReverseCmap(self):
+    async def getGlyphMap(self):
         return self.reverseCmap
 
     async def getGlyph(self, glyphName):
@@ -342,7 +342,7 @@ def buildUFOLayerGlyph(
     return layerGlyph, pen.replay
 
 
-def getReverseCmapFromGlyphSet(glyphSet):
+def getGlyphMapFromGlyphSet(glyphSet):
     revCmap = {}
     for glyphName in glyphSet.keys():
         glifData = glyphSet.getGLIF(glyphName)
