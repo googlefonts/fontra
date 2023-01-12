@@ -47,7 +47,7 @@ export class FontController {
 
   codePointForGlyph(glyphName) {
     const characterMap = this.characterMap;
-    for (const codePoint of this.glyphMap || []) {
+    for (const codePoint of this.glyphMap[glyphName] || []) {
       if (characterMap[codePoint] === glyphName) {
         return codePoint;
       }
