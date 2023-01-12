@@ -54,7 +54,7 @@ class DesignspaceBackend:
         self.axes = axes
         self.loadSources()
         self.buildFileNameMapping()
-        self.reverseCmap = getGlyphMapFromGlyphSet(self.defaultSourceGlyphSet)
+        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultSourceGlyphSet)
         self.savedGlyphModificationTimes = {}
 
     def close(self):
@@ -120,7 +120,7 @@ class DesignspaceBackend:
             glifFileNames[fileName] = glyphName
 
     async def getGlyphMap(self):
-        return self.reverseCmap
+        return self.glyphMap
 
     async def getGlyph(self, glyphName):
         glyph = VariableGlyph(glyphName)
@@ -178,7 +178,7 @@ class DesignspaceBackend:
 
     async def putGlyph(self, glyphName, glyph):
         modTimes = set()
-        unicodes = self.reverseCmap.get(glyphName, [])
+        unicodes = self.glyphMap.get(glyphName, [])
         for layer in glyph.layers:
             glyphSet = self.ufoGlyphSets[layer.name]
             writeGlyphSetContents = glyphName not in glyphSet
@@ -343,13 +343,13 @@ def buildUFOLayerGlyph(
 
 
 def getGlyphMapFromGlyphSet(glyphSet):
-    revCmap = {}
+    glyphMap = {}
     for glyphName in glyphSet.keys():
         glifData = glyphSet.getGLIF(glyphName)
         gn, unicodes = extractGlyphNameAndUnicodes(glifData)
         assert gn == glyphName, (gn, glyphName)
-        revCmap[glyphName] = unicodes
-    return revCmap
+        glyphMap[glyphName] = unicodes
+    return glyphMap
 
 
 async def ufoWatcher(ufoPaths, glifFileNames, savedGlyphModificationTimes):
