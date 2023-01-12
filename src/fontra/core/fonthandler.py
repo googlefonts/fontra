@@ -247,6 +247,7 @@ class FontHandler:
             self.glyphUsedBy[componentName].add(glyphName)
 
     async def reloadGlyphs(self, glyphNames):
+        glyphNames = set(glyphNames)
         # XXX TODO For now, just drop any local changes
         for glyphName in glyphNames:
             if glyphName in self.changedGlyphs:
@@ -258,11 +259,7 @@ class FontHandler:
         connections = []
         for connection in self.connections:
             subscribedGlyphNames = self._getAllSubscribedGlyphNames(connection)
-            connGlyphNames = [
-                glyphName
-                for glyphName in glyphNames
-                if glyphName in subscribedGlyphNames
-            ]
+            connGlyphNames = sorted(glyphNames & subscribedGlyphNames)
             if connGlyphNames:
                 connections.append((connection, connGlyphNames))
         await asyncio.gather(
