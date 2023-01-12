@@ -240,12 +240,29 @@ class DesignspaceBackend:
     async def getFontLib(self):
         return self.dsDoc.lib
 
-    def watchExternalChanges(self):
-        return ufoWatcher(
-            sorted(self.ufoReaders),
-            self.glifFileNames,
-            self.savedGlyphModificationTimes,
-        )
+    async def watchExternalChanges(self):
+        ufoPaths = sorted(self.ufoReaders)
+        async for changes in watchfiles.awatch(*ufoPaths):
+            glyphNames = set()
+            for change, path in changes:
+                glyphName = self.glifFileNames.get(os.path.basename(path))
+                if glyphName is None:
+                    continue
+                mtime = os.stat(path).st_mtime
+                # Round-trip through datetime, as that's effectively what is happening
+                # in getGLIFModificationTime, deep down in the fs package. It makes sure
+                # we're comparing timestamps that are actually comparable, as they're
+                # rounded somewhat, compared to the raw st_mtime timestamp.
+                mtime = datetime.fromtimestamp(mtime).timestamp()
+                savedMTimes = self.savedGlyphModificationTimes.get(glyphName, ())
+                if mtime not in savedMTimes:
+                    logger.info(
+                        f"external change '{glyphName}' {mtime} "
+                        f"{savedMTimes} {mtime in savedMTimes}"
+                    )
+                    glyphNames.add(glyphName)
+            if glyphNames:
+                yield glyphNames
 
 
 class UFOBackend:
@@ -350,30 +367,6 @@ def getGlyphMapFromGlyphSet(glyphSet):
         assert gn == glyphName, (gn, glyphName)
         glyphMap[glyphName] = unicodes
     return glyphMap
-
-
-async def ufoWatcher(ufoPaths, glifFileNames, savedGlyphModificationTimes):
-    async for changes in watchfiles.awatch(*ufoPaths):
-        glyphNames = set()
-        for change, path in changes:
-            glyphName = glifFileNames.get(os.path.basename(path))
-            if glyphName is None:
-                continue
-            mtime = os.stat(path).st_mtime
-            # Round-trip through datetime, as that's effectively what is happening
-            # in getGLIFModificationTime, deep down in the fs package. It makes sure
-            # we're comparing timestamps that are actually comparable, as they're
-            # rounded somewhat, compared to the raw st_mtime timestamp.
-            mtime = datetime.fromtimestamp(mtime).timestamp()
-            savedMTimes = savedGlyphModificationTimes.get(glyphName, ())
-            if mtime not in savedMTimes:
-                logger.info(
-                    f"external change '{glyphName}' {mtime} "
-                    f"{savedMTimes} {mtime in savedMTimes}"
-                )
-                glyphNames.add(glyphName)
-        if glyphNames:
-            yield glyphNames
 
 
 def uniqueNameMaker():
