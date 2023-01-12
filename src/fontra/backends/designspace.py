@@ -262,7 +262,7 @@ class DesignspaceBackend:
                     )
                     glyphNames.add(glyphName)
             if glyphNames:
-                yield glyphNames
+                yield None, {"glyphs": dict.fromkeys(glyphNames)}
 
 
 class UFOBackend:
