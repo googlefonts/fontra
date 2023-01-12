@@ -55,9 +55,12 @@ class FontHandler:
         self._processGlyphWritesTask.cancel()
 
     async def processExternalChanges(self):
-        async for glyphNames in self.backend.watchExternalChanges():
+        async for change, reloadPattern in self.backend.watchExternalChanges():
             try:
-                await self.reloadGlyphs(glyphNames)
+                if change is not None:
+                    await self.broadcastChange(change, None, False)
+                if reloadPattern is not None:
+                    await self.reloadData(reloadPattern)
             except Exception as e:
                 logger.error("exception in external changes watcher: %r", e)
 
@@ -245,6 +248,11 @@ class FontHandler:
             if componentName not in self.glyphUsedBy:
                 self.glyphUsedBy[componentName] = set()
             self.glyphUsedBy[componentName].add(glyphName)
+
+    async def reloadData(self, reloadPattern):
+        glyphNames = sorted(reloadPattern.get("glyphs", {}))
+        if glyphNames:
+            await self.reloadGlyphs(glyphNames)
 
     async def reloadGlyphs(self, glyphNames):
         glyphNames = set(glyphNames)
