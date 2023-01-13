@@ -129,3 +129,26 @@ async def test_fontHandler_getData(testFontHandler):
     async with asyncClosing(testFontHandler):
         unitsPerEm = await testFontHandler.getData("unitsPerEm")
         assert 1000 == unitsPerEm
+
+
+@pytest.mark.asyncio
+async def test_fontHandler_setData(testFontHandler):
+    async with asyncClosing(testFontHandler):
+        glyphMap = await testFontHandler.getData("glyphMap")
+        assert [65, 97] == glyphMap["A"]
+        change = {
+            "p": ["glyphMap"],
+            "f": "=",
+            "a": ["A", [97]],
+        }
+        rollbackChange = {
+            "p": ["glyphMap"],
+            "f": "=",
+            "a": ["A", [65, 97]],
+        }
+        await testFontHandler.editFinal(
+            change, rollbackChange, "Test edit", False, connection=None
+        )
+
+        glyphMap = await testFontHandler.getData("glyphMap")
+        assert [97] == glyphMap["A"]
