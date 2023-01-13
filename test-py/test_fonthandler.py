@@ -83,3 +83,39 @@ async def test_fontHandler_externalChange(testFontHandler):
         # watcher cleared the cache
         glyph = await testFontHandler.getChangedGlyph("A")
         assert -100 == glyph.layers[0].glyph.path.coordinates[0]
+
+
+@pytest.mark.asyncio
+async def test_fontHandler_editGlyph(testFontHandler):
+    async with asyncClosing(testFontHandler):
+        await testFontHandler.startTasks()
+        glyph = await testFontHandler.getGlyph("A", connection=None)
+        assert 0 == glyph.layers[0].glyph.path.coordinates[1]
+
+        change = {
+            "p": ["glyphs", "A", "layers", 0, "glyph", "path"],
+            "f": "=xy",
+            "a": [0, 20, 55],
+        }
+        rollbackChange = {
+            "p": ["glyphs", "A", "layers", 0, "glyph", "path"],
+            "f": "=xy",
+            "a": [0, 20, 0],
+        }
+
+        await testFontHandler.editFinal(
+            change, rollbackChange, "Test edit", False, connection=None
+        )
+
+        glyph = await testFontHandler.getGlyph("A", connection=None)
+        assert [20, 55] == glyph.layers[0].glyph.path.coordinates[:2]
+
+        # give the write the opportunity to complete
+        await asyncio.sleep(0.1)
+
+        dsDoc = testFontHandler.backend.dsDoc
+        ufoPath = pathlib.Path(dsDoc.sources[0].path)
+        glifPath = ufoPath / "glyphs" / "A_.glif"
+        glifData = glifPath.read_text()
+        expectedLine = """<point x="20" y="55" type="line"/>"""
+        assert expectedLine in glifData
