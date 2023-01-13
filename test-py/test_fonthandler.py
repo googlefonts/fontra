@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 import pathlib
 import shutil
@@ -56,3 +57,29 @@ async def test_fontHandler_basic(testFontHandler):
     assert "LightCondensed/foreground" == glyph.layers[0].name
     assert 32 == len(glyph.layers[0].glyph.path.coordinates)
     assert 20 == glyph.layers[0].glyph.path.coordinates[0]
+
+
+@pytest.mark.asyncio
+async def test_fontHandler_externalChange(testFontHandler):
+    async with asyncClosing(testFontHandler):
+        await testFontHandler.startTasks()
+        glyph = await testFontHandler.getChangedGlyph("A")
+        assert 20 == glyph.layers[0].glyph.path.coordinates[0]
+
+        dsDoc = testFontHandler.backend.dsDoc
+        ufoPath = pathlib.Path(dsDoc.sources[0].path)
+        glifPath = ufoPath / "glyphs" / "A_.glif"
+        glifData = glifPath.read_text()
+        glifData = glifData.replace('x="20"', 'x="-100"')
+        glifPath.write_text(glifData)
+
+        # We should see the "before", as it's cached
+        glyph = await testFontHandler.getChangedGlyph("A")
+        assert 20 == glyph.layers[0].glyph.path.coordinates[0]
+
+        await asyncio.sleep(0.3)
+
+        # We should see the "after", because the external change
+        # watcher cleared the cache
+        glyph = await testFontHandler.getChangedGlyph("A")
+        assert -100 == glyph.layers[0].glyph.path.coordinates[0]
