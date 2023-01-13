@@ -92,6 +92,7 @@ class FileSystemProjectManager:
                 raise FileNotFoundError(projectPath)
             backend = getFileSystemBackend(projectPath)
             fontHandler = FontHandler(backend, readOnly=self.readOnly)
+            await fontHandler.startTasks()
             self.fontHandlers[path] = fontHandler
         return fontHandler
 
