@@ -52,6 +52,7 @@ async def test_fontHandler_basic(testFontHandler):
     async with asyncClosing(testFontHandler):
         # await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A", connection=None)
-        assert "LightCondensed/foreground" == glyph.layers[0].name
-        assert 32 == len(glyph.layers[0].glyph.path.coordinates)
-        assert 20 == glyph.layers[0].glyph.path.coordinates[0]
+
+    assert "LightCondensed/foreground" == glyph.layers[0].name
+    assert 32 == len(glyph.layers[0].glyph.path.coordinates)
+    assert 20 == glyph.layers[0].glyph.path.coordinates[0]
