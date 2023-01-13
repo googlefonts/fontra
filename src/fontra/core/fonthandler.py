@@ -89,6 +89,9 @@ class FontHandler:
             await self._processGlyphWritesEvent.wait()
             try:
                 await self._processGlyphWritesOneCycle()
+            except Exception as e:
+                self._processGlyphWritesError = e
+                raise
             finally:
                 self._processGlyphWritesEvent.clear()
                 self._writingInProgressEvent.set()
@@ -100,14 +103,17 @@ class FontHandler:
             try:
                 errorMessage = await self.backend.putGlyph(glyphName, glyph)
             except Exception as e:
-                self._processGlyphWritesError = e
                 logger.error("exception while writing glyph: %r", e)
                 traceback.print_exc()
                 await self.reloadGlyphs([glyphName])
-                await connection.proxy.messageFromServer(
-                    "The glyph could not be saved due to an error.",
-                    f"The edit has been reverted.\n\n{e}",
-                )
+                if connection is not None:
+                    await connection.proxy.messageFromServer(
+                        "The glyph could not be saved due to an error.",
+                        f"The edit has been reverted.\n\n{e}",
+                    )
+                else:
+                    # For testing, when connection is None
+                    raise
             else:
                 if errorMessage:
                     await self.reloadGlyphs([glyphName])
