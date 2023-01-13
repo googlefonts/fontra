@@ -148,13 +148,7 @@ class FontHandler:
             self.connections.remove(connection)
 
     @remoteMethod
-    async def getGlyph(self, glyphName, *, connection):
-        glyph = self.localData.get(("glyphs", glyphName))
-        if glyph is None:
-            glyph = await self._getGlyph(glyphName)
-        return glyph
-
-    async def getLocalGlyph(self, glyphName):
+    async def getGlyph(self, glyphName, *, connection=None):
         glyph = self.localData.get(("glyphs", glyphName))
         if glyph is None:
             glyph = await self._getGlyph(glyphName)
@@ -267,7 +261,7 @@ class FontHandler:
                     if key == "glyphs"
                 ]
                 data = glyphSet = {
-                    glyphName: await self.getLocalGlyph(glyphName)
+                    glyphName: await self.getGlyph(glyphName)
                     for glyphName in glyphNames
                 }
             else:
