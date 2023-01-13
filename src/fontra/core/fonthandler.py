@@ -296,7 +296,7 @@ class FontHandler:
             # The write-"thread" is no longer running
             await self.reloadData(_writeKeyToPattern(writeKey))
             await connection.proxy.messageFromServer(
-                "The glyph could not be saved.",
+                "The data could not be saved.",
                 "The edit has been reverted.\n\n"  # no trailing comma
                 "The Fontra server got itself into trouble, please contact an admin.",
             )
