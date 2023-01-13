@@ -16,6 +16,7 @@ from .changes import (
     subtractFromPattern,
 )
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
+from .lrucache import LRUCache
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ class FontHandler:
         self.glyphUsedBy = {}
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
-        self.changedGlyphs = {}  # TODO: should perhaps be a LRU cache
+        self.localData = LRUCache()
         self._glyphsScheduledForWrite = {}
 
     async def startTasks(self):
@@ -133,16 +134,16 @@ class FontHandler:
 
     @remoteMethod
     async def getGlyph(self, glyphName, *, connection):
-        glyph = self.changedGlyphs.get(glyphName)
+        glyph = self.localData.get(("glyphs", glyphName))
         if glyph is None:
             glyph = await self._getGlyph(glyphName)
         return glyph
 
     async def getChangedGlyph(self, glyphName):
-        glyph = self.changedGlyphs.get(glyphName)
+        glyph = self.localData.get(("glyphs", glyphName))
         if glyph is None:
             glyph = await self._getGlyph(glyphName)
-            self.changedGlyphs[glyphName] = glyph
+            self.localData[("glyphs", glyphName)] = glyph
         return glyph
 
     # @functools.lru_cache(250)  # see also reloadGlyphs
@@ -289,8 +290,7 @@ class FontHandler:
         glyphNames = set(glyphNames)
         # XXX TODO For now, just drop any local changes
         for glyphName in glyphNames:
-            if glyphName in self.changedGlyphs:
-                del self.changedGlyphs[glyphName]
+            self.localData.pop(("glyphs", glyphName), None)
 
         # self._getGlyph.cache_clear()
 
