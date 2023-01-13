@@ -122,3 +122,10 @@ async def test_fontHandler_editGlyph(testFontHandler):
 
     # give the event loop a moment to clean up
     await asyncio.sleep(0)
+
+
+@pytest.mark.asyncio
+async def test_fontHandler_getLocalData(testFontHandler):
+    async with asyncClosing(testFontHandler):
+        unitsPerEm = await testFontHandler.getLocalData("unitsPerEm")
+        assert 1000 == unitsPerEm
