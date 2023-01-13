@@ -286,9 +286,7 @@ class FontHandler:
                 if method is None:
                     logger.info(f"No backend write method found for {rootKey}")
                     continue
-                functools.partial(
-                    method, deepcopy(rootObject[rootKey])
-                )
+                functools.partial(method, deepcopy(rootObject[rootKey]))
                 await self.scheduleDataWrite(rootKey, writeFunc, connection)
 
     async def scheduleDataWrite(self, writeKey, writeFunc, connection):
