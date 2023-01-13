@@ -49,6 +49,7 @@ class FontHandler:
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.processExternalChanges())
             self._watcherTask.add_done_callback(taskDoneHelper)
+        self._processGlyphWritesError = None
         self._processGlyphWritesEvent = asyncio.Event()
         self._processGlyphWritesTask = asyncio.create_task(self.processGlyphWrites())
         self._processGlyphWritesTask.add_done_callback(self._processGlyphWritesTaskDone)
@@ -79,6 +80,8 @@ class FontHandler:
         self._glyphsScheduledForWrite = None
 
     async def finishWriting(self):
+        if self._processGlyphWritesError is not None:
+            raise self._processGlyphWritesError
         await self._writingInProgressEvent.wait()
 
     async def processGlyphWrites(self):
@@ -97,6 +100,7 @@ class FontHandler:
             try:
                 errorMessage = await self.backend.putGlyph(glyphName, glyph)
             except Exception as e:
+                self._processGlyphWritesError = e
                 logger.error("exception while writing glyph: %r", e)
                 traceback.print_exc()
                 await self.reloadGlyphs([glyphName])
