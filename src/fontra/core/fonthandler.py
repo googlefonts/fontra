@@ -43,6 +43,9 @@ class FontHandler:
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.changedGlyphs = {}  # TODO: should perhaps be a LRU cache
+        self._glyphsScheduledForWrite = {}
+
+    async def startTasks(self):
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.processExternalChanges())
             self._watcherTask.add_done_callback(taskDoneHelper)
@@ -50,13 +53,13 @@ class FontHandler:
         self._processGlyphWritesTask = asyncio.create_task(self.processGlyphWrites())
         self._processGlyphWritesTask.add_done_callback(self._processGlyphWritesTaskDone)
         self._processGlyphWritesTask.add_done_callback(taskDoneHelper)
-        self._glyphsScheduledForWrite = {}
 
     async def close(self):
         self.backend.close()
         if hasattr(self, "_watcherTask"):
             self._watcherTask.cancel()
-        self._processGlyphWritesTask.cancel()
+        if hasattr(self, "_processGlyphWritesTask"):
+            self._processGlyphWritesTask.cancel()
 
     async def processExternalChanges(self):
         async for change, reloadPattern in self.backend.watchExternalChanges():
