@@ -53,12 +53,15 @@ class FontHandler:
         self._processGlyphWritesTask = asyncio.create_task(self.processGlyphWrites())
         self._processGlyphWritesTask.add_done_callback(self._processGlyphWritesTaskDone)
         self._processGlyphWritesTask.add_done_callback(taskDoneHelper)
+        self._writingInProgressEvent = asyncio.Event()
+        self._writingInProgressEvent.set()
 
     async def close(self):
         self.backend.close()
         if hasattr(self, "_watcherTask"):
             self._watcherTask.cancel()
         if hasattr(self, "_processGlyphWritesTask"):
+            await self.finishWriting()  # shield for cancel?
             self._processGlyphWritesTask.cancel()
 
     async def processExternalChanges(self):
@@ -74,6 +77,9 @@ class FontHandler:
     def _processGlyphWritesTaskDone(self, task):
         # Signal that the glyph-writes-"thread" is no longer running
         self._glyphsScheduledForWrite = None
+
+    async def finishWriting(self):
+        await self._writingInProgressEvent.wait()
 
     async def processGlyphWrites(self):
         while True:
@@ -102,6 +108,7 @@ class FontHandler:
                         )
                 await asyncio.sleep(0)
             self._processGlyphWritesEvent.clear()
+            self._writingInProgressEvent.set()
 
     @contextmanager
     def useConnection(self, connection):
@@ -229,7 +236,8 @@ class FontHandler:
         shouldSignal = not self._glyphsScheduledForWrite
         self._glyphsScheduledForWrite[glyphName] = (deepcopy(glyph), connection)
         if shouldSignal:
-            self._processGlyphWritesEvent.set()
+            self._processGlyphWritesEvent.set()  # write: go!
+            self._writingInProgressEvent.clear()
 
     def iterGlyphMadeOf(self, glyphName):
         for dependantGlyphName in self.glyphMadeOf.get(glyphName, ()):
