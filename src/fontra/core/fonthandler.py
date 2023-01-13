@@ -56,7 +56,7 @@ class FontHandler:
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.localData = LRUCache()
-        self._dataScheduledForWrite = {}
+        self._dataScheduledForWriting = {}
 
     async def startTasks(self):
         if hasattr(self.backend, "watchExternalChanges"):
@@ -90,7 +90,7 @@ class FontHandler:
 
     def _processWritesTaskDone(self, task):
         # Signal that the write-"thread" is no longer running
-        self._dataScheduledForWrite = None
+        self._dataScheduledForWriting = None
 
     async def finishWriting(self):
         if self._processWritesError is not None:
@@ -110,9 +110,9 @@ class FontHandler:
                 self._writingInProgressEvent.set()
 
     async def _processWritesOneCycle(self):
-        while self._dataScheduledForWrite:
+        while self._dataScheduledForWriting:
             writeKey, (writeFunc, connection) = popFirstItem(
-                self._dataScheduledForWrite
+                self._dataScheduledForWriting
             )
             reloadPattern = _writeKeyToPattern(writeKey)
             logger.info(f"write {writeKey} to backend")
@@ -292,7 +292,7 @@ class FontHandler:
                 raise NotImplementedError()
 
     async def scheduleDataWrite(self, writeKey, writeFunc, connection):
-        if self._dataScheduledForWrite is None:
+        if self._dataScheduledForWriting is None:
             # The write-"thread" is no longer running
             await self.reloadData(_writeKeyToPattern(writeKey))
             await connection.proxy.messageFromServer(
@@ -301,8 +301,8 @@ class FontHandler:
                 "The Fontra server got itself into trouble, please contact an admin.",
             )
             return
-        shouldSignal = not self._dataScheduledForWrite
-        self._dataScheduledForWrite[writeKey] = (writeFunc, connection)
+        shouldSignal = not self._dataScheduledForWriting
+        self._dataScheduledForWriting[writeKey] = (writeFunc, connection)
         if shouldSignal:
             self._processWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()
