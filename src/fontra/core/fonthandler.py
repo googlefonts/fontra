@@ -84,31 +84,34 @@ class FontHandler:
     async def processGlyphWrites(self):
         while True:
             await self._processGlyphWritesEvent.wait()
-            while self._glyphsScheduledForWrite:
-                glyphName, (glyph, connection) = popFirstItem(
-                    self._glyphsScheduledForWrite
+            try:
+                await self._processGlyphWritesOneCycle()
+            finally:
+                self._processGlyphWritesEvent.clear()
+                self._writingInProgressEvent.set()
+
+    async def _processGlyphWritesOneCycle(self):
+        while self._glyphsScheduledForWrite:
+            glyphName, (glyph, connection) = popFirstItem(self._glyphsScheduledForWrite)
+            logger.info(f"write {glyphName} to backend")
+            try:
+                errorMessage = await self.backend.putGlyph(glyphName, glyph)
+            except Exception as e:
+                logger.error("exception while writing glyph: %r", e)
+                traceback.print_exc()
+                await self.reloadGlyphs([glyphName])
+                await connection.proxy.messageFromServer(
+                    "The glyph could not be saved due to an error.",
+                    f"The edit has been reverted.\n\n{e}",
                 )
-                logger.info(f"write {glyphName} to backend")
-                try:
-                    errorMessage = await self.backend.putGlyph(glyphName, glyph)
-                except Exception as e:
-                    logger.error("exception while writing glyph: %r", e)
-                    traceback.print_exc()
+            else:
+                if errorMessage:
                     await self.reloadGlyphs([glyphName])
                     await connection.proxy.messageFromServer(
-                        "The glyph could not be saved due to an error.",
-                        f"The edit has been reverted.\n\n{e}",
+                        "The glyph could not be saved.",
+                        f"The edit has been reverted.\n\n{errorMessage}",
                     )
-                else:
-                    if errorMessage:
-                        await self.reloadGlyphs([glyphName])
-                        await connection.proxy.messageFromServer(
-                            "The glyph could not be saved.",
-                            f"The edit has been reverted.\n\n{errorMessage}",
-                        )
-                await asyncio.sleep(0)
-            self._processGlyphWritesEvent.clear()
-            self._writingInProgressEvent.set()
+            await asyncio.sleep(0)
 
     @contextmanager
     def useConnection(self, connection):
