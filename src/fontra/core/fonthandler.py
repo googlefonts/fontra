@@ -139,7 +139,7 @@ class FontHandler:
             glyph = await self._getGlyph(glyphName)
         return glyph
 
-    async def getChangedGlyph(self, glyphName):
+    async def getLocalGlyph(self, glyphName):
         glyph = self.localData.get(("glyphs", glyphName))
         if glyph is None:
             glyph = await self._getGlyph(glyphName)
@@ -233,7 +233,7 @@ class FontHandler:
         change = filterChangePattern(change, {"glyphs": None})
         glyphNames = [glyphName for _, glyphName in collectChangePaths(change, 2)]
         glyphs = {
-            glyphName: await self.getChangedGlyph(glyphName) for glyphName in glyphNames
+            glyphName: await self.getLocalGlyph(glyphName) for glyphName in glyphNames
         }
         applyChange(dict(glyphs=glyphs), change)
         if not self.readOnly:
