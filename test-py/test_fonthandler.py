@@ -119,3 +119,6 @@ async def test_fontHandler_editGlyph(testFontHandler):
         glifData = glifPath.read_text()
         expectedLine = """<point x="20" y="55" type="line"/>"""
         assert expectedLine in glifData
+
+    # give the event loop a moment to clean up
+    await asyncio.sleep(0)
