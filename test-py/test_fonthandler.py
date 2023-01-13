@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
+import logging
 import pathlib
 import shutil
 import pytest
@@ -132,7 +133,8 @@ async def test_fontHandler_getData(testFontHandler):
 
 
 @pytest.mark.asyncio
-async def test_fontHandler_setData(testFontHandler):
+async def test_fontHandler_setData(testFontHandler, caplog):
+    caplog.set_level(logging.INFO)
     async with asyncClosing(testFontHandler):
         glyphMap = await testFontHandler.getData("glyphMap")
         assert [65, 97] == glyphMap["A"]
@@ -152,3 +154,4 @@ async def test_fontHandler_setData(testFontHandler):
 
         glyphMap = await testFontHandler.getData("glyphMap")
         assert [97] == glyphMap["A"]
+    assert "No backend write method found for glyphMap" == caplog.records[0].message
