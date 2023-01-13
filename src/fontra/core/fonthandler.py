@@ -161,7 +161,6 @@ class FontHandler:
             self.localData[("glyphs", glyphName)] = glyph
         return glyph
 
-    # @functools.lru_cache(250)  # see also reloadGlyphs
     def _getGlyph(self, glyphName):
         return asyncio.create_task(self._getGlyphFromBackend(glyphName))
 
