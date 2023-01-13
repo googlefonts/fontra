@@ -292,10 +292,10 @@ class FontHandler:
                 # TODO
                 raise NotImplementedError()
 
-    async def scheduleDataWrite(self, key, writeFunc, connection):
+    async def scheduleDataWrite(self, writeKey, writeFunc, connection):
         if self._dataScheduledForWrite is None:
             # The write-"thread" is no longer running
-            await self.reloadGlyphs([glyphName])
+            await self.reloadData(_writeKeyToPattern(writeKey))
             await connection.proxy.messageFromServer(
                 "The glyph could not be saved.",
                 "The edit has been reverted.\n\n"  # no trailing comma
@@ -303,7 +303,7 @@ class FontHandler:
             )
             return
         shouldSignal = not self._dataScheduledForWrite
-        self._dataScheduledForWrite[key] = (writeFunc, connection)
+        self._dataScheduledForWrite[writeKey] = (writeFunc, connection)
         if shouldSignal:
             self._processWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()
