@@ -13,6 +13,7 @@ from .changes import (
     collectChangePaths,
     filterChangePattern,
     matchChangePattern,
+    pathToPattern,
     subtractFromPattern,
 )
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
@@ -61,11 +62,11 @@ class FontHandler:
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.processExternalChanges())
             self._watcherTask.add_done_callback(taskDoneHelper)
-        self._processGlyphWritesError = None
-        self._processGlyphWritesEvent = asyncio.Event()
-        self._processGlyphWritesTask = asyncio.create_task(self.processGlyphWrites())
-        self._processGlyphWritesTask.add_done_callback(self._processGlyphWritesTaskDone)
-        self._processGlyphWritesTask.add_done_callback(taskDoneHelper)
+        self._processWritesError = None
+        self._processWritesEvent = asyncio.Event()
+        self._processWritesTask = asyncio.create_task(self.processWrites())
+        self._processWritesTask.add_done_callback(self._processWritesTaskDone)
+        self._processWritesTask.add_done_callback(taskDoneHelper)
         self._writingInProgressEvent = asyncio.Event()
         self._writingInProgressEvent.set()
 
@@ -73,9 +74,9 @@ class FontHandler:
         self.backend.close()
         if hasattr(self, "_watcherTask"):
             self._watcherTask.cancel()
-        if hasattr(self, "_processGlyphWritesTask"):
+        if hasattr(self, "_processWritesTask"):
             await self.finishWriting()  # shield for cancel?
-            self._processGlyphWritesTask.cancel()
+            self._processWritesTask.cancel()
 
     async def processExternalChanges(self):
         async for change, reloadPattern in self.backend.watchExternalChanges():
@@ -87,36 +88,34 @@ class FontHandler:
             except Exception as e:
                 logger.error("exception in external changes watcher: %r", e)
 
-    def _processGlyphWritesTaskDone(self, task):
+    def _processWritesTaskDone(self, task):
         # Signal that the write-"thread" is no longer running
         self._dataScheduledForWrite = None
 
     async def finishWriting(self):
-        if self._processGlyphWritesError is not None:
-            raise self._processGlyphWritesError
+        if self._processWritesError is not None:
+            raise self._processWritesError
         await self._writingInProgressEvent.wait()
 
-    async def processGlyphWrites(self):
+    async def processWrites(self):
         while True:
-            await self._processGlyphWritesEvent.wait()
+            await self._processWritesEvent.wait()
             try:
-                await self._processGlyphWritesOneCycle()
+                await self._processWritesOneCycle()
             except Exception as e:
-                self._processGlyphWritesError = e
+                self._processWritesError = e
                 raise
             finally:
-                self._processGlyphWritesEvent.clear()
+                self._processWritesEvent.clear()
                 self._writingInProgressEvent.set()
 
-    async def _processGlyphWritesOneCycle(self):
+    async def _processWritesOneCycle(self):
         while self._dataScheduledForWrite:
-            key, (writeFunc, connection) = popFirstItem(self._dataScheduledForWrite)
-            if isinstance(key, tuple):
-                assert len(key) == 2
-                reloadPattern = {key[0]: {key[1]: None}}
-            else:
-                reloadPattern = {key: None}
-            logger.info(f"write {key} to backend")
+            writeKey, (writeFunc, connection) = popFirstItem(
+                self._dataScheduledForWrite
+            )
+            reloadPattern = _writeKeyToPattern(writeKey)
+            logger.info(f"write {writeKey} to backend")
             try:
                 errorMessage = await writeFunc()
             except Exception as e:
@@ -295,7 +294,7 @@ class FontHandler:
 
     async def scheduleDataWrite(self, key, writeFunc, connection):
         if self._dataScheduledForWrite is None:
-            # The glyph-writes-"thread" is no longer running
+            # The write-"thread" is no longer running
             await self.reloadGlyphs([glyphName])
             await connection.proxy.messageFromServer(
                 "The glyph could not be saved.",
@@ -306,7 +305,7 @@ class FontHandler:
         shouldSignal = not self._dataScheduledForWrite
         self._dataScheduledForWrite[key] = (writeFunc, connection)
         if shouldSignal:
-            self._processGlyphWritesEvent.set()  # write: go!
+            self._processWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()
 
     def iterGlyphMadeOf(self, glyphName):
@@ -397,3 +396,9 @@ def taskDoneHelper(task):
         logger.exception(
             f"fatal exception in asyncio task {task}", exc_info=task.exception()
         )
+
+
+def _writeKeyToPattern(writeKey):
+    if not isinstance(writeKey, tuple):
+        writeKey = (writeKey,)
+    return pathToPattern(writeKey)
