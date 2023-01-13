@@ -2,9 +2,11 @@ from contextlib import contextmanager
 import asyncio
 from collections import defaultdict
 from copy import deepcopy
+from dataclasses import dataclass
 import functools
 import logging
 import traceback
+from typing import Any
 from .changes import (
     addToPattern,
     applyChange,
@@ -28,12 +30,14 @@ def remoteMethod(method):
     return method
 
 
+@dataclass
 class FontHandler:
-    def __init__(self, backend, readOnly=False):
-        self.backend = backend
+    backend: Any  # TODO: need Backend protocol
+    readOnly: bool = False
+
+    def __post_init__(self):
         if not hasattr(self.backend, "putGlyph"):
-            readOnly = True
-        self.readOnly = readOnly
+            self.readOnly = True
         self.connections = set()
         self.glyphUsedBy = {}
         self.glyphMadeOf = {}
