@@ -226,7 +226,7 @@ class FontHandler:
     ):
         # TODO: use finalChange, rollbackChange, editLabel for history recording
         # TODO: locking/checking
-        await self.updateServerGlyphs(finalChange, connection)
+        await self.updateLocalData(finalChange, connection)
         # return {"error": "computer says no"}
         if broadcast:
             await self.broadcastChange(finalChange, connection, False)
@@ -251,7 +251,7 @@ class FontHandler:
             *[connection.proxy.externalChange(change) for connection in connections]
         )
 
-    async def updateServerGlyphs(self, change, connection):
+    async def updateLocalData(self, change, connection):
         change = filterChangePattern(change, {"glyphs": None})
         glyphNames = [glyphName for _, glyphName in collectChangePaths(change, 2)]
         glyphs = {
