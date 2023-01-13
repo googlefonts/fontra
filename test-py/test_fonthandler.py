@@ -50,7 +50,8 @@ async def testFontHandler(testFontPath):
 @pytest.mark.asyncio
 async def test_fontHandler_basic(testFontHandler):
     async with asyncClosing(testFontHandler):
-        # await testFontHandler.start()
+        # await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A", connection=None)
         assert "LightCondensed/foreground" == glyph.layers[0].name
         assert 32 == len(glyph.layers[0].glyph.path.coordinates)
+        assert 20 == glyph.layers[0].glyph.path.coordinates[0]
