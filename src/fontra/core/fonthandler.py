@@ -170,7 +170,7 @@ class FontHandler:
         data = self.localData.get(key)
         if data is None:
             data = await self._getData(key)
-            self.localData[key] = glyph
+            self.localData[key] = data
         return data
 
     async def _getData(self, key):
