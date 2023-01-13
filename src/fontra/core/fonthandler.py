@@ -31,6 +31,17 @@ def remoteMethod(method):
     return method
 
 
+backendAttrMapping = [
+    ("axes", "getGlobalAxes", "setGlobalAxes"),
+    ("glyphMap", "getGlyphMap", "setGlyphMap"),
+    ("lib", "getFontLib", "setFontLib"),
+    ("unitsPerEm", "getUnitsPerEm", "setUnitsPerEm"),
+]
+
+backendGetterNames = {attr: getter for attr, getter, setter in backendAttrMapping}
+backendSetterNames = {attr: setter for attr, getter, setter in backendAttrMapping}
+
+
 @dataclass
 class FontHandler:
     backend: Any  # TODO: need Backend protocol
@@ -154,6 +165,17 @@ class FontHandler:
         glyph = await self.backend.getGlyph(glyphName)
         self.updateGlyphDependencies(glyphName, glyph)
         return glyph
+
+    async def getLocalData(self, key):
+        data = self.localData.get(key)
+        if data is None:
+            data = await self._getData(key)
+            self.localData[key] = glyph
+        return data
+
+    async def _getData(self, key):
+        getterName = backendGetterNames[key]
+        return await getattr(self.backend, getterName)()
 
     @remoteMethod
     async def getGlyphMap(self, *, connection):
