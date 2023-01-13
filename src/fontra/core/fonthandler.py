@@ -55,7 +55,7 @@ class FontHandler:
         self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.localData = LRUCache()
-        self._glyphsScheduledForWrite = {}
+        self._dataScheduledForWrite = {}
 
     async def startTasks(self):
         if hasattr(self.backend, "watchExternalChanges"):
@@ -88,8 +88,8 @@ class FontHandler:
                 logger.error("exception in external changes watcher: %r", e)
 
     def _processGlyphWritesTaskDone(self, task):
-        # Signal that the glyph-writes-"thread" is no longer running
-        self._glyphsScheduledForWrite = None
+        # Signal that the write-"thread" is no longer running
+        self._dataScheduledForWrite = None
 
     async def finishWriting(self):
         if self._processGlyphWritesError is not None:
@@ -109,18 +109,23 @@ class FontHandler:
                 self._writingInProgressEvent.set()
 
     async def _processGlyphWritesOneCycle(self):
-        while self._glyphsScheduledForWrite:
-            glyphName, (glyph, connection) = popFirstItem(self._glyphsScheduledForWrite)
-            logger.info(f"write {glyphName} to backend")
+        while self._dataScheduledForWrite:
+            key, (writeFunc, connection) = popFirstItem(self._dataScheduledForWrite)
+            if isinstance(key, tuple):
+                assert len(key) == 2
+                reloadPattern = {key[0]: {key[1]: None}}
+            else:
+                reloadPattern = {key: None}
+            logger.info(f"write {key} to backend")
             try:
-                errorMessage = await self.backend.putGlyph(glyphName, glyph)
+                errorMessage = await writeFunc()
             except Exception as e:
-                logger.error("exception while writing glyph: %r", e)
+                logger.error("exception while writing data: %r", e)
                 traceback.print_exc()
-                await self.reloadGlyphs([glyphName])
+                await self.reloadData(reloadPattern)
                 if connection is not None:
                     await connection.proxy.messageFromServer(
-                        "The glyph could not be saved due to an error.",
+                        "The data could not be saved due to an error.",
                         f"The edit has been reverted.\n\n{e}",
                     )
                 else:
@@ -128,9 +133,9 @@ class FontHandler:
                     raise
             else:
                 if errorMessage:
-                    await self.reloadGlyphs([glyphName])
+                    await self.reloadData(reloadPattern)
                     await connection.proxy.messageFromServer(
-                        "The glyph could not be saved.",
+                        "The data could not be saved.",
                         f"The edit has been reverted.\n\n{errorMessage}",
                     )
             await asyncio.sleep(0)
@@ -279,13 +284,17 @@ class FontHandler:
         for rootKey in rootKeys:
             if rootKey == "glyphs":
                 for glyphName in glyphNames:
-                    await self.scheduleGlyphWrite(glyphName, glyphSet[glyphName], connection)
+                    writeFunc = functools.partial(
+                        self.backend.putGlyph, glyphName, deepcopy(glyphSet[glyphName])
+                    )
+                    writeKey = ("glyphs", glyphName)
+                    await self.scheduleDataWrite(writeKey, writeFunc, connection)
             else:
                 # TODO
-                ...
+                raise NotImplementedError()
 
-    async def scheduleGlyphWrite(self, glyphName, glyph, connection):
-        if self._glyphsScheduledForWrite is None:
+    async def scheduleDataWrite(self, key, writeFunc, connection):
+        if self._dataScheduledForWrite is None:
             # The glyph-writes-"thread" is no longer running
             await self.reloadGlyphs([glyphName])
             await connection.proxy.messageFromServer(
@@ -294,8 +303,8 @@ class FontHandler:
                 "The Fontra server got itself into trouble, please contact an admin.",
             )
             return
-        shouldSignal = not self._glyphsScheduledForWrite
-        self._glyphsScheduledForWrite[glyphName] = (deepcopy(glyph), connection)
+        shouldSignal = not self._dataScheduledForWrite
+        self._dataScheduledForWrite[key] = (writeFunc, connection)
         if shouldSignal:
             self._processGlyphWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()
