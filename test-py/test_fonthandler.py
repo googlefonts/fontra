@@ -110,7 +110,7 @@ async def test_fontHandler_editGlyph(testFontHandler):
         glyph = await testFontHandler.getGlyph("A", connection=None)
         assert [20, 55] == glyph.layers[0].glyph.path.coordinates[:2]
 
-        # give the write the opportunity to complete
+        # give the write queue the opportunity to complete
         await asyncio.sleep(0.1)
 
         dsDoc = testFontHandler.backend.dsDoc
