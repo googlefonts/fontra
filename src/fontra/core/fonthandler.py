@@ -282,8 +282,14 @@ class FontHandler:
                     writeKey = ("glyphs", glyphName)
                     await self.scheduleDataWrite(writeKey, writeFunc, connection)
             else:
-                # TODO
-                raise NotImplementedError()
+                method = getattr(self.backend, backendSetterNames[rootKey], None)
+                if method is None:
+                    logger.info(f"No backend write method found for {rootKey}")
+                    continue
+                functools.partial(
+                    method, deepcopy(rootObject[rootKey])
+                )
+                await self.scheduleDataWrite(rootKey, writeFunc, connection)
 
     async def scheduleDataWrite(self, writeKey, writeFunc, connection):
         if self._dataScheduledForWriting is None:
