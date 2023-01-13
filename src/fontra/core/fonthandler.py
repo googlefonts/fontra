@@ -330,6 +330,8 @@ class FontHandler:
         if glyphNames:
             await self.reloadGlyphs(glyphNames)
         else:
+            # TODO: implement reloadGlyphs in terms of reloadData
+            # instead of the other way around
             raise NotImplementedError()
 
     async def reloadGlyphs(self, glyphNames):
