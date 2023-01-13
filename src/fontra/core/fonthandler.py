@@ -163,7 +163,7 @@ class FontHandler:
         self.updateGlyphDependencies(glyphName, glyph)
         return glyph
 
-    async def getLocalData(self, key):
+    async def getData(self, key):
         data = self.localData.get(key)
         if data is None:
             data = await self._getData(key)
@@ -265,7 +265,7 @@ class FontHandler:
                     for glyphName in glyphNames
                 }
             else:
-                data = await self.getLocalData(rootKey)
+                data = await self.getData(rootKey)
             rootObject[rootKey] = data
 
         applyChange(rootObject, change)

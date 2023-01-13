@@ -125,7 +125,7 @@ async def test_fontHandler_editGlyph(testFontHandler):
 
 
 @pytest.mark.asyncio
-async def test_fontHandler_getLocalData(testFontHandler):
+async def test_fontHandler_getData(testFontHandler):
     async with asyncClosing(testFontHandler):
-        unitsPerEm = await testFontHandler.getLocalData("unitsPerEm")
+        unitsPerEm = await testFontHandler.getData("unitsPerEm")
         assert 1000 == unitsPerEm
