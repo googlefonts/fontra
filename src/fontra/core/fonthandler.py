@@ -252,15 +252,37 @@ class FontHandler:
         )
 
     async def updateLocalData(self, change, connection):
-        change = filterChangePattern(change, {"glyphs": None})
-        glyphNames = [glyphName for _, glyphName in collectChangePaths(change, 2)]
-        glyphs = {
-            glyphName: await self.getLocalGlyph(glyphName) for glyphName in glyphNames
-        }
-        applyChange(dict(glyphs=glyphs), change)
-        if not self.readOnly:
-            for glyphName in glyphNames:
-                await self.scheduleGlyphWrite(glyphName, glyphs[glyphName], connection)
+        glyphNames = []
+        glyphSet = {}
+        rootObject = {}
+        rootKeys = [p[0] for p in collectChangePaths(change, 1)]
+        for rootKey in rootKeys:
+            if rootKey == "glyphs":
+                glyphNames = [
+                    glyphName
+                    for key, glyphName in collectChangePaths(change, 2)
+                    if key == "glyphs"
+                ]
+                data = glyphSet = {
+                    glyphName: await self.getLocalGlyph(glyphName)
+                    for glyphName in glyphNames
+                }
+            else:
+                data = await self.getLocalData(rootKey)
+            rootObject[rootKey] = data
+
+        applyChange(rootObject, change)
+
+        if self.readOnly:
+            return
+
+        for rootKey in rootKeys:
+            if rootKey == "glyphs":
+                for glyphName in glyphNames:
+                    await self.scheduleGlyphWrite(glyphName, glyphSet[glyphName], connection)
+            else:
+                # TODO
+                ...
 
     async def scheduleGlyphWrite(self, glyphName, glyph, connection):
         if self._glyphsScheduledForWrite is None:
@@ -307,6 +329,8 @@ class FontHandler:
         glyphNames = sorted(reloadPattern.get("glyphs", {}))
         if glyphNames:
             await self.reloadGlyphs(glyphNames)
+        else:
+            raise NotImplementedError()
 
     async def reloadGlyphs(self, glyphNames):
         glyphNames = set(glyphNames)
