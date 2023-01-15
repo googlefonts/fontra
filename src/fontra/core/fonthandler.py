@@ -16,6 +16,7 @@ from .changes import (
     pathToPattern,
     subtractFromPattern,
 )
+from .classes import Font, classCastFuncs, classSchema
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
 
@@ -255,7 +256,7 @@ class FontHandler:
     async def updateLocalData(self, change, connection):
         glyphNames = []
         glyphSet = None
-        rootObject = {}
+        rootObject = Font()
         rootKeys = [p[0] for p in collectChangePaths(change, 1)]
         for rootKey in rootKeys:
             if rootKey == "glyphs":
@@ -269,34 +270,35 @@ class FontHandler:
                     for glyphName in glyphNames
                 }
                 glyphSet = DictSetDelTracker(glyphSet)
-                data = glyphSet
+                rootObject.glyphs = glyphSet
             else:
-                data = await self.getData(rootKey)
-            rootObject[rootKey] = data
+                setattr(rootObject, rootKey, await self.getData(rootKey))
 
-        rootObject = DictSetDelTracker(rootObject)
+        rootObject._trackAddedAttributeNames()
+
         applyChange(rootObject, change)
 
         if self.readOnly:
             return
 
-        for rootKey in sorted(rootObject.keys()):
+        for rootKey in rootKeys + sorted(rootObject._addedAttributeNames):
             if rootKey == "glyphs":
                 for glyphName in sorted(glyphSet.keys()):
+                    writeKey = ("glyphs", glyphName)
                     if glyphName in glyphSet.newKeys:
-                        self.localData["glyphs"][glyphName] = glyphSet[glyphName]
+                        self.localData[writeKey] = glyphSet[glyphName]
                     writeFunc = functools.partial(
                         self.backend.putGlyph, glyphName, deepcopy(glyphSet[glyphName])
                     )
-                    writeKey = ("glyphs", glyphName)
                     await self.scheduleDataWrite(writeKey, writeFunc, connection)
                 for glyphName in sorted(glyphSet.deletedKeys):
                     writeFunc = functools.partial(self.backend.deleteGlyph, glyphName)
                     writeKey = ("glyphs", glyphName)
+                    _ = self.localData.pop(writeKey, None)
                     await self.scheduleDataWrite(writeKey, writeFunc, connection)
             else:
-                if rootKey in rootObject.newKeys:
-                    self.localData[rootKey] = rootObject[rootKey]
+                if rootKey in rootObject._addedAttributeNames:
+                    self.localData[rootKey] = getattr(rootObject, rootKey)
                 method = getattr(self.backend, backendSetterNames[rootKey], None)
                 if method is None:
                     logger.info(f"No backend write method found for {rootKey}")
