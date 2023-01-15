@@ -253,7 +253,7 @@ class FontHandler:
 
     async def updateLocalData(self, change, connection):
         glyphNames = []
-        glyphSet = {}
+        glyphSet = None
         rootObject = {}
         rootKeys = [p[0] for p in collectChangePaths(change, 1)]
         for rootKey in rootKeys:
@@ -263,28 +263,37 @@ class FontHandler:
                     for key, glyphName in collectChangePaths(change, 2)
                     if key == "glyphs"
                 ]
-                data = glyphSet = {
+                glyphSet = {
                     glyphName: await self.getGlyph(glyphName)
                     for glyphName in glyphNames
                 }
+                glyphSet = DictSetDelTracker(glyphSet)
+                data = glyphSet
             else:
                 data = await self.getData(rootKey)
             rootObject[rootKey] = data
 
+        rootObject = DictSetDelTracker(rootObject)
         applyChange(rootObject, change)
 
         if self.readOnly:
             return
 
-        for rootKey in rootKeys:
+        for rootKey in sorted(rootObject.keys()):
             if rootKey == "glyphs":
-                for glyphName in glyphNames:
+                for glyphName in sorted(glyphSet.keys()):
                     writeFunc = functools.partial(
                         self.backend.putGlyph, glyphName, deepcopy(glyphSet[glyphName])
                     )
                     writeKey = ("glyphs", glyphName)
                     await self.scheduleDataWrite(writeKey, writeFunc, connection)
+                for glyphName in sorted(glyphSet.deletedKeys):
+                    writeFunc = functools.partial(self.backend.deleteGlyph, glyphName)
+                    writeKey = ("glyphs", glyphName)
+                    await self.scheduleDataWrite(writeKey, writeFunc, connection)
             else:
+                if rootKey in rootObject.addedKeys:
+                    self.localData[rootKey] = rootObject[rootKey]
                 method = getattr(self.backend, backendSetterNames[rootKey], None)
                 if method is None:
                     logger.info(f"No backend write method found for {rootKey}")
@@ -402,3 +411,23 @@ def _writeKeyToPattern(writeKey):
     if not isinstance(writeKey, tuple):
         writeKey = (writeKey,)
     return pathToPattern(writeKey)
+
+
+class DictSetDelTracker(UserDict):
+    def __init__(self, data):
+        super().__init__()
+        self.data = data  # no copy
+        self.addedKeys = set()
+        self.deletedKeys = set()
+
+    def __setitem__(self, key, value):
+        isNewItem = key not in self
+        super().__setitem__(key, value)
+        if isNewItem:
+            self.addedKeys.add(key)
+            self.deletedKeys.discard(key)
+
+    def __delitem__(self, key):
+        _ = self.pop(key, None)
+        self.deletedKeys.add(key)
+        self.addedKeys.discard(key)
