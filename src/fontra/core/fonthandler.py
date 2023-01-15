@@ -16,7 +16,7 @@ from .changes import (
     pathToPattern,
     subtractFromPattern,
 )
-from .classes import Font, classCastFuncs, classSchema
+from .classes import Font
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
 
