@@ -273,14 +273,14 @@ class FontHandler:
             else:
                 setattr(rootObject, rootKey, await self.getData(rootKey))
 
-        rootObject._trackAddedAttributeNames()
+        rootObject._trackAssignedAttributeNames()
 
         applyChange(rootObject, change)
 
         if self.readOnly:
             return
 
-        for rootKey in rootKeys + sorted(rootObject._addedAttributeNames):
+        for rootKey in rootKeys + sorted(rootObject._assignedAttributeNames):
             if rootKey == "glyphs":
                 for glyphName in sorted(glyphSet.keys()):
                     writeKey = ("glyphs", glyphName)
@@ -296,7 +296,7 @@ class FontHandler:
                     _ = self.localData.pop(writeKey, None)
                     await self.scheduleDataWrite(writeKey, writeFunc, connection)
             else:
-                if rootKey in rootObject._addedAttributeNames:
+                if rootKey in rootObject._assignedAttributeNames:
                     self.localData[rootKey] = getattr(rootObject, rootKey)
                 method = getattr(self.backend, backendSetterNames[rootKey], None)
                 if method is None:

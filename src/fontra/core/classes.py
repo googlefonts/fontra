@@ -91,13 +91,13 @@ class Font:
     lib: dict = field(default_factory=dict)
     axes: list[GlobalAxis] = field(default_factory=list)
 
-    def _trackAddedAttributeNames(self):
+    def _trackAssignedAttributeNames(self):
         # see fonthandler.py
-        self._addedAttributeNames = set()
+        self._assignedAttributeNames = set()
 
     def __setattr__(self, attrName, value):
-        if hasattr(self, "_addedAttributeNames"):
-            self._addedAttributeNames.add(attrName)
+        if hasattr(self, "_assignedAttributeNames"):
+            self._assignedAttributeNames.add(attrName)
         super().__setattr__(attrName, value)
 
 
