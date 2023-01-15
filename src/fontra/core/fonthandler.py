@@ -171,7 +171,7 @@ class FontHandler:
         return await self.backend.getFontLib()
 
     def _getClientData(self, connection, key, default=None):
-        return self.clientData[connection.clientUUID].setdefault(key, default)
+        return self.clientData[connection.clientUUID].get(key, default)
 
     @remoteMethod
     async def subscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
@@ -188,7 +188,7 @@ class FontHandler:
     def _adjustMatchPattern(self, func, pathOrPattern, wantLiveChanges, connection):
         key = LIVE_CHANGES_PATTERN_KEY if wantLiveChanges else CHANGES_PATTERN_KEY
         matchPattern = self._getClientData(connection, key, {})
-        func(matchPattern, pathOrPattern)
+        self.clientData[connection.clientUUID][key] = func(matchPattern, pathOrPattern)
 
     @remoteMethod
     async def editIncremental(self, liveChange, *, connection):
