@@ -282,6 +282,8 @@ class FontHandler:
         for rootKey in sorted(rootObject.keys()):
             if rootKey == "glyphs":
                 for glyphName in sorted(glyphSet.keys()):
+                    if glyphName in glyphSet.addedKeys:
+                        self.localData["glyphs"][glyphName] = glyphSet[glyphName]
                     writeFunc = functools.partial(
                         self.backend.putGlyph, glyphName, deepcopy(glyphSet[glyphName])
                     )
