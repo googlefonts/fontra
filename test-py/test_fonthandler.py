@@ -179,3 +179,64 @@ async def test_fontHandler_setData_unitsPerEm(testFontHandler, caplog):
         assert 2000 == unitsPerEm
 
     assert "No backend write method found for unitsPerEm" == caplog.records[0].message
+
+
+@pytest.mark.asyncio
+async def test_fontHandler_new_glyph(testFontHandler):
+    async with asyncClosing(testFontHandler):
+        await testFontHandler.startTasks()
+
+        newGlyphName = "testglyph"
+
+        dsDoc = testFontHandler.backend.dsDoc
+        ufoPath = pathlib.Path(dsDoc.sources[0].path)
+        glifPath = ufoPath / "glyphs" / f"{newGlyphName}.glif"
+        assert not glifPath.exists()
+
+        newGlyph = {
+            "name": newGlyphName,
+            "axes": [],
+            "sources": [
+                {
+                    "location": {},
+                    "name": "LightCondensed",
+                    "layerName": "LightCondensed/foreground",
+                }
+            ],
+            "layers": [
+                {
+                    "name": "LightCondensed/foreground",
+                    "glyph": {
+                        "xAdvance": 170,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
+                        "path": {
+                            "contourInfo": [{"endPoint": 3, "isClosed": True}],
+                            "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
+                            "pointTypes": [0, 0, 0, 0],
+                        },
+                        "components": [],
+                    },
+                },
+            ],
+        }
+
+        glyph = await testFontHandler.getGlyph(newGlyphName)
+        assert glyph is None
+        change = {
+            "p": ["glyphs"],
+            "f": "=",
+            "a": [newGlyphName, newGlyph],
+        }
+        rollbackChange = {
+            "p": ["glyphs"],
+            "f": "-",
+            "a": [newGlyphName, 1000],
+        }
+
+        await testFontHandler.editFinal(
+            change, rollbackChange, "Test edit", False, connection=None
+        )
+
+        await testFontHandler.finishWriting()
+        assert glifPath.exists()
