@@ -169,4 +169,5 @@ if __name__ == "__main__":
 
     schema = classesToStrings(classSchema)
     print("// This file is generated, don't edit!")
-    print("export const classSchema =", json.dumps(schema, indent=2))
+    schemaJSON = json.dumps(schema, indent=2)
+    print(f"export const classSchema = {schemaJSON};")
