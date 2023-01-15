@@ -33,14 +33,14 @@ def remoteMethod(method):
 
 
 backendAttrMapping = [
-    ("axes", "getGlobalAxes", "setGlobalAxes"),
-    ("glyphMap", "getGlyphMap", "setGlyphMap"),
-    ("lib", "getFontLib", "setFontLib"),
-    ("unitsPerEm", "getUnitsPerEm", "setUnitsPerEm"),
+    ("axes", "GlobalAxes"),
+    ("glyphMap", "GlyphMap"),
+    ("lib", "FontLib"),
+    ("unitsPerEm", "UnitsPerEm"),
 ]
 
-backendGetterNames = {attr: getter for attr, getter, setter in backendAttrMapping}
-backendSetterNames = {attr: setter for attr, getter, setter in backendAttrMapping}
+backendGetterNames = {attr: "get" + baseName for attr, baseName in backendAttrMapping}
+backendSetterNames = {attr: "set" + baseName for attr, baseName in backendAttrMapping}
 
 
 @dataclass
