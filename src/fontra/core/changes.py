@@ -1,19 +1,20 @@
+from typing import Mapping, MutableMapping, MutableSequence, Sequence
 from .classes import classSchema, classCastFuncs
 
 
 def setItem(subject, key, item, *, itemCast=None):
     if itemCast is not None:
         item = itemCast(item)
-    if isinstance(subject, (dict, list)):
+    if isinstance(subject, (MutableMapping, MutableSequence)):
         subject[key] = item
     else:
         setattr(subject, key, item)
 
 
 def delAttr(subject, key, *, itemCast=None):
-    if isinstance(subject, list):
+    if isinstance(subject, Sequence):
         raise TypeError("can't call delattr on list")
-    elif isinstance(subject, dict):
+    elif isinstance(subject, MutableMapping):
         del subject[key]
     else:
         delattr(subject, key)
@@ -87,7 +88,7 @@ def _applyChange(subject, change, *, itemCast=None):
 
     for pathElement in path:
         itemCast = None
-        if isinstance(subject, (dict, list, tuple)):
+        if isinstance(subject, (Mapping, Sequence)):
             subject = subject[pathElement]
         else:
             itemCast = getItemCast(subject, pathElement, "subtype")
