@@ -11,7 +11,6 @@ from .changes import (
     addToPattern,
     applyChange,
     collectChangePaths,
-    filterChangePattern,
     matchChangePattern,
     pathToPattern,
     subtractFromPattern,
