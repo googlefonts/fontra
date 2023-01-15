@@ -1,4 +1,3 @@
-from copy import deepcopy
 from .classes import classSchema, classCastFuncs
 
 
@@ -223,83 +222,65 @@ def pathToPattern(matchPath):
 
 
 def addToPattern(matchPattern, pathOrPattern):
-    """Add `pathOrPattern` to `matchPattern`, so `matchPattern` will match
-    `pathOrPattern`. If the pattern already matches a prefix of `pathOrPattern`,
-    this function does nothing.
+    """Return a pattern which is the sum of `matchPattern` and `pathOrPattern`:
+    it matches both input arguments.
+
+    If `matchPattern` matches a prefix of `pathOrPattern`, or if `pathOrPattern`
+    is already included in `matchPattern`, the return value will be equal to
+    `matchPattern`.
 
     `pathOrPattern` is either a list of path elements, or a pattern dict.
     """
     if isinstance(pathOrPattern, list):
-        addPathToPattern(matchPattern, pathOrPattern)
-    else:
-        addPatternToPattern(matchPattern, pathOrPattern)
+        pathOrPattern = pathToPattern(pathOrPattern)
+    return _addPatternToPattern(matchPattern, pathOrPattern)
 
 
 def removeFromPattern(matchPattern, pathOrPattern):
-    """Remove `pathOrPattern` from `matchPattern`, so `matchPattern` no longer
-    matches `pathOrPattern`. If the pattern matches a prefix of `pathOrPattern`,
-    or if `pathOrPattern` was not included in `matchPattern` to begin with, this
-    function does nothing.
+    """Return a pattern which is `matchPattern` with `pathOrPattern` subtracted:
+    it does not match `pathOrPattern`.
+
+    If `matchPattern` matches a prefix of `pathOrPattern`, or if `pathOrPattern`
+    was not included in `matchPattern` to begin with, the return value will be
+    equal to `matchPattern`.
 
     `pathOrPattern` is either a list of path elements, or a pattern dict.
     """
     if isinstance(pathOrPattern, list):
-        removePathFromPattern(matchPattern, pathOrPattern)
-    else:
-        removePatternFromPattern(matchPattern, pathOrPattern)
+        pathOrPattern = pathToPattern(pathOrPattern)
+    return _removePatternFromPattern(matchPattern, pathOrPattern)
 
 
-def addPathToPattern(matchPattern, path):
-    """Add `path` to `matchPattern`, so `matchPattern` will match `path`.
-    If the pattern already matches a prefix of `path`, this function does
-    nothing.
-    """
-    addPatternToPattern(matchPattern, pathToPattern(path))
-
-
-def removePathFromPattern(matchPattern, path):
-    """Remove `path` from `matchPattern`, so `matchPattern` no longer matches `path`.
-    If the pattern matches a prefix of `path`, or if `path` was not included in
-    `matchPattern` to begin with, this function does nothing.
-    """
-    removePatternFromPattern(matchPattern, pathToPattern(path))
-
-
-def addPatternToPattern(matchPattern, patternToAdd):
-    """Add `patternToAdd` to `matchPattern`, so `matchPattern` will also match
-    `patternToAdd`. If the pattern already matches a prefix of `patternToAdd`,
-    this function does nothing.
-    """
+def _addPatternToPattern(matchPattern, patternToAdd):
+    result = {**matchPattern}
     for key, valueB in patternToAdd.items():
         valueA = matchPattern.get(key, _MISSING)
         if valueA is _MISSING or valueB is None:
-            matchPattern[key] = deepcopy(valueB)
+            result[key] = valueB
         elif valueA is not None:
-            addPatternToPattern(valueA, valueB)
+            result[key] = _addPatternToPattern(valueA, valueB)
         else:
             # valueA is None -- matchPattern already matches a prefix of
             # patternToAdd: nothing to do
             pass
+    return result
 
 
-def removePatternFromPattern(matchPattern, patternToRemove):
-    """Remove `patternToRemove` from `matchPattern`, so `matchPattern` no longer
-    matches `patternToRemove`. If the pattern matches a prefix of `patternToRemove`,
-    or if `patternToRemove` was not included in `matchPattern` to begin with, this
-    function does nothing.
-    """
+def _removePatternFromPattern(matchPattern, patternToRemove):
+    result = {**matchPattern}
     for key, valueB in patternToRemove.items():
         valueA = matchPattern.get(key, _MISSING)
         if valueA is _MISSING:
             pass
         elif valueB is None:
-            del matchPattern[key]
+            del result[key]
         elif valueA is None:
             pass
         else:
-            removePatternFromPattern(valueA, valueB)
-            if not valueA:
-                del matchPattern[key]
+            result[key] = _removePatternFromPattern(valueA, valueB)
+            if not result[key]:
+                del result[key]
+    return result
 
 
 def collectChangePaths(change, depth):

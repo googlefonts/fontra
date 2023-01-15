@@ -67,9 +67,10 @@ def test_applyChange(testName, inputDataName, change, expectedData):
     ],
 )
 def test_addPathToPattern(pattern, path, expectedPattern):
-    pattern = deepcopy(pattern)
-    addToPattern(pattern, path)
-    assert expectedPattern == pattern
+    orgPattern = deepcopy(pattern)
+    newPattern = addToPattern(pattern, path)
+    assert orgPattern == pattern
+    assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
@@ -83,9 +84,10 @@ def test_addPathToPattern(pattern, path, expectedPattern):
     ],
 )
 def test_removePathFromPattern(pattern, path, expectedPattern):
-    pattern = deepcopy(pattern)
-    removeFromPattern(pattern, path)
-    assert expectedPattern == pattern
+    orgPattern = deepcopy(pattern)
+    newPattern = removeFromPattern(pattern, path)
+    assert orgPattern == pattern
+    assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
@@ -103,9 +105,10 @@ def test_removePathFromPattern(pattern, path, expectedPattern):
     ],
 )
 def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
-    pattern = deepcopy(pattern)
-    addToPattern(pattern, patternToAdd)
-    assert expectedPattern == pattern
+    orgPattern = deepcopy(pattern)
+    newPattern = addToPattern(pattern, patternToAdd)
+    assert orgPattern == pattern
+    assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
@@ -127,9 +130,10 @@ def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
     ],
 )
 def test_removePatternFromPattern(pattern, patternToRemove, expectedPattern):
-    pattern = deepcopy(pattern)
-    removeFromPattern(pattern, patternToRemove)
-    assert expectedPattern == pattern
+    orgPattern = deepcopy(pattern)
+    newPattern = removeFromPattern(pattern, patternToRemove)
+    assert orgPattern == pattern
+    assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
