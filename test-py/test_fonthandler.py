@@ -174,7 +174,6 @@ async def test_fontHandler_setData_unitsPerEm(testFontHandler, caplog):
         await testFontHandler.editFinal(
             change, rollbackChange, "Test edit", False, connection=None
         )
-        await asyncio.sleep(0.1)
 
         unitsPerEm = await testFontHandler.getData("unitsPerEm")
         assert 2000 == unitsPerEm
