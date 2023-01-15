@@ -91,6 +91,15 @@ class Font:
     lib: dict = field(default_factory=dict)
     axes: list[GlobalAxis] = field(default_factory=list)
 
+    def _trackAddedAttributeNames(self):
+        # see fonthandler.py
+        self._addedAttributeNames = set()
+
+    def __setattr__(self, attrName, value):
+        if hasattr(self, "_addedAttributeNames"):
+            self._addedAttributeNames.add(attrName)
+        super().__setattr__(attrName, value)
+
 
 def makeSchema(*classes, schema=None):
     if schema is None:
