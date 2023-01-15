@@ -13,7 +13,7 @@ from .changes import (
     collectChangePaths,
     filterChangePattern,
     matchChangePattern,
-    removeFromPattern,
+    subtractFromPattern,
 )
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 
@@ -182,7 +182,7 @@ class FontHandler:
     @remoteMethod
     async def unsubscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
         self._adjustMatchPattern(
-            removeFromPattern, pathOrPattern, wantLiveChanges, connection
+            subtractFromPattern, pathOrPattern, wantLiveChanges, connection
         )
 
     def _adjustMatchPattern(self, func, pathOrPattern, wantLiveChanges, connection):

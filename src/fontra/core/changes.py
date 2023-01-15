@@ -236,7 +236,7 @@ def addToPattern(matchPattern, pathOrPattern):
     return _addPatternToPattern(matchPattern, pathOrPattern)
 
 
-def removeFromPattern(matchPattern, pathOrPattern):
+def subtractFromPattern(matchPattern, pathOrPattern):
     """Return a pattern which is `matchPattern` with `pathOrPattern` subtracted:
     it does not match `pathOrPattern`.
 
@@ -248,7 +248,7 @@ def removeFromPattern(matchPattern, pathOrPattern):
     """
     if isinstance(pathOrPattern, list):
         pathOrPattern = pathToPattern(pathOrPattern)
-    return _removePatternFromPattern(matchPattern, pathOrPattern)
+    return _subtractPatternFromPattern(matchPattern, pathOrPattern)
 
 
 def _addPatternToPattern(matchPattern, patternToAdd):
@@ -266,7 +266,7 @@ def _addPatternToPattern(matchPattern, patternToAdd):
     return result
 
 
-def _removePatternFromPattern(matchPattern, patternToRemove):
+def _subtractPatternFromPattern(matchPattern, patternToRemove):
     result = {**matchPattern}
     for key, valueB in patternToRemove.items():
         valueA = matchPattern.get(key, _MISSING)
@@ -277,7 +277,7 @@ def _removePatternFromPattern(matchPattern, patternToRemove):
         elif valueA is None:
             pass
         else:
-            result[key] = _removePatternFromPattern(valueA, valueB)
+            result[key] = _subtractPatternFromPattern(valueA, valueB)
             if not result[key]:
                 del result[key]
     return result

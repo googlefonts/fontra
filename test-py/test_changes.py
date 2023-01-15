@@ -9,7 +9,7 @@ from fontra.core.changes import (
     filterChangePattern,
     matchChangePattern,
     pathToPattern,
-    removeFromPattern,
+    subtractFromPattern,
 )
 
 
@@ -83,9 +83,9 @@ def test_addPathToPattern(pattern, path, expectedPattern):
         ({"A": {"B": None}}, ["A"], {}),
     ],
 )
-def test_removePathFromPattern(pattern, path, expectedPattern):
+def test_subtractPathFromPattern(pattern, path, expectedPattern):
     orgPattern = deepcopy(pattern)
-    newPattern = removeFromPattern(pattern, path)
+    newPattern = subtractFromPattern(pattern, path)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
 
@@ -129,9 +129,9 @@ def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
         ({"a": {"b": None, "c": None}}, {"a": {"c": None}}, {"a": {"b": None}}),
     ],
 )
-def test_removePatternFromPattern(pattern, patternToRemove, expectedPattern):
+def test_subtractPatternFromPattern(pattern, patternToRemove, expectedPattern):
     orgPattern = deepcopy(pattern)
-    newPattern = removeFromPattern(pattern, patternToRemove)
+    newPattern = subtractFromPattern(pattern, patternToRemove)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
 
