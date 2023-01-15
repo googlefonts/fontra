@@ -79,6 +79,19 @@ class GlobalAxis:
     mapping: list[tuple[int, int]] = field(default_factory=list)
 
 
+GlyphSet = dict[str, VariableGlyph]
+GlyphMap = dict[str, list[int]]
+
+
+@dataclass
+class Font:
+    unitsPerEm: int = 1000
+    glyphs: GlyphSet = field(default_factory=GlyphSet)
+    glyphMap: GlyphMap = field(default_factory=GlyphMap)
+    lib: dict = field(default_factory=dict)
+    axes: list[GlobalAxis] = field(default_factory=list)
+
+
 def makeSchema(*classes, schema=None):
     if schema is None:
         schema = {}
@@ -100,6 +113,15 @@ def makeSchema(*classes, schema=None):
                     makeSchema(subtype, schema=schema)
             elif tp.__name__ == "list":
                 [subtype] = get_args(tp)
+                fieldDef["subtype"] = subtype
+                if is_dataclass(subtype):
+                    makeSchema(subtype, schema=schema)
+            elif tp.__name__ == "dict":
+                args = get_args(tp)
+                if not args:
+                    continue
+                [keytype, subtype] = args
+                assert keytype == str
                 fieldDef["subtype"] = subtype
                 if is_dataclass(subtype):
                     makeSchema(subtype, schema=schema)
@@ -129,7 +151,7 @@ def classesToStrings(schema):
 
 _castConfig = dacite.Config(cast=[PointType])
 from_dict = partial(dacite.from_dict, config=_castConfig)
-classSchema = makeSchema(VariableGlyph)
+classSchema = makeSchema(Font)
 classCastFuncs = makeCastFuncs(classSchema, config=_castConfig)
 
 
