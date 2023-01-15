@@ -13,7 +13,7 @@ from .changes import (
     collectChangePaths,
     filterChangePattern,
     matchChangePattern,
-    removeFromPattern,
+    subtractFromPattern,
 )
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 
@@ -171,7 +171,10 @@ class FontHandler:
         return await self.backend.getFontLib()
 
     def _getClientData(self, connection, key, default=None):
-        return self.clientData[connection.clientUUID].setdefault(key, default)
+        return self.clientData[connection.clientUUID].get(key, default)
+
+    def _setClientData(self, connection, key, value):
+        self.clientData[connection.clientUUID][key] = value
 
     @remoteMethod
     async def subscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
@@ -182,13 +185,13 @@ class FontHandler:
     @remoteMethod
     async def unsubscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
         self._adjustMatchPattern(
-            removeFromPattern, pathOrPattern, wantLiveChanges, connection
+            subtractFromPattern, pathOrPattern, wantLiveChanges, connection
         )
 
     def _adjustMatchPattern(self, func, pathOrPattern, wantLiveChanges, connection):
         key = LIVE_CHANGES_PATTERN_KEY if wantLiveChanges else CHANGES_PATTERN_KEY
         matchPattern = self._getClientData(connection, key, {})
-        func(matchPattern, pathOrPattern)
+        self._setClientData(connection, key, func(matchPattern, pathOrPattern))
 
     @remoteMethod
     async def editIncremental(self, liveChange, *, connection):

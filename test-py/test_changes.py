@@ -9,7 +9,7 @@ from fontra.core.changes import (
     filterChangePattern,
     matchChangePattern,
     pathToPattern,
-    removeFromPattern,
+    subtractFromPattern,
 )
 
 
@@ -67,9 +67,10 @@ def test_applyChange(testName, inputDataName, change, expectedData):
     ],
 )
 def test_addPathToPattern(pattern, path, expectedPattern):
-    pattern = deepcopy(pattern)
-    addToPattern(pattern, path)
-    assert expectedPattern == pattern
+    orgPattern = deepcopy(pattern)
+    newPattern = addToPattern(pattern, path)
+    assert orgPattern == pattern
+    assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
@@ -82,10 +83,11 @@ def test_addPathToPattern(pattern, path, expectedPattern):
         ({"A": {"B": None}}, ["A"], {}),
     ],
 )
-def test_removePathFromPattern(pattern, path, expectedPattern):
-    pattern = deepcopy(pattern)
-    removeFromPattern(pattern, path)
-    assert expectedPattern == pattern
+def test_subtractPathFromPattern(pattern, path, expectedPattern):
+    orgPattern = deepcopy(pattern)
+    newPattern = subtractFromPattern(pattern, path)
+    assert orgPattern == pattern
+    assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
@@ -103,9 +105,10 @@ def test_removePathFromPattern(pattern, path, expectedPattern):
     ],
 )
 def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
-    pattern = deepcopy(pattern)
-    addToPattern(pattern, patternToAdd)
-    assert expectedPattern == pattern
+    orgPattern = deepcopy(pattern)
+    newPattern = addToPattern(pattern, patternToAdd)
+    assert orgPattern == pattern
+    assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
@@ -126,10 +129,11 @@ def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
         ({"a": {"b": None, "c": None}}, {"a": {"c": None}}, {"a": {"b": None}}),
     ],
 )
-def test_removePatternFromPattern(pattern, patternToRemove, expectedPattern):
-    pattern = deepcopy(pattern)
-    removeFromPattern(pattern, patternToRemove)
-    assert expectedPattern == pattern
+def test_subtractPatternFromPattern(pattern, patternToRemove, expectedPattern):
+    orgPattern = deepcopy(pattern)
+    newPattern = subtractFromPattern(pattern, patternToRemove)
+    assert orgPattern == pattern
+    assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
