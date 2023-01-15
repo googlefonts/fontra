@@ -163,7 +163,8 @@ class FontHandler:
 
     async def _getGlyphFromBackend(self, glyphName):
         glyph = await self.backend.getGlyph(glyphName)
-        self.updateGlyphDependencies(glyphName, glyph)
+        if glyph is not None:
+            self.updateGlyphDependencies(glyphName, glyph)
         return glyph
 
     async def getData(self, key):
