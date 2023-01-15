@@ -282,7 +282,7 @@ class FontHandler:
         for rootKey in sorted(rootObject.keys()):
             if rootKey == "glyphs":
                 for glyphName in sorted(glyphSet.keys()):
-                    if glyphName in glyphSet.addedKeys:
+                    if glyphName in glyphSet.newKeys:
                         self.localData["glyphs"][glyphName] = glyphSet[glyphName]
                     writeFunc = functools.partial(
                         self.backend.putGlyph, glyphName, deepcopy(glyphSet[glyphName])
@@ -294,7 +294,7 @@ class FontHandler:
                     writeKey = ("glyphs", glyphName)
                     await self.scheduleDataWrite(writeKey, writeFunc, connection)
             else:
-                if rootKey in rootObject.addedKeys:
+                if rootKey in rootObject.newKeys:
                     self.localData[rootKey] = rootObject[rootKey]
                 method = getattr(self.backend, backendSetterNames[rootKey], None)
                 if method is None:
@@ -419,17 +419,17 @@ class DictSetDelTracker(UserDict):
     def __init__(self, data):
         super().__init__()
         self.data = data  # no copy
-        self.addedKeys = set()
+        self.newKeys = set()
         self.deletedKeys = set()
 
     def __setitem__(self, key, value):
         isNewItem = key not in self
         super().__setitem__(key, value)
         if isNewItem:
-            self.addedKeys.add(key)
+            self.newKeys.add(key)
             self.deletedKeys.discard(key)
 
     def __delitem__(self, key):
         _ = self.pop(key, None)
         self.deletedKeys.add(key)
-        self.addedKeys.discard(key)
+        self.newKeys.discard(key)
