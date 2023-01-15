@@ -41,6 +41,7 @@ backendAttrMapping = [
 
 backendGetterNames = {attr: "get" + baseName for attr, baseName in backendAttrMapping}
 backendSetterNames = {attr: "set" + baseName for attr, baseName in backendAttrMapping}
+backendDeleterNames = {attr: "delete" + baseName for attr, baseName in backendAttrMapping}
 
 
 @dataclass
