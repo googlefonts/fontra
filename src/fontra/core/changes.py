@@ -253,6 +253,9 @@ def subtractFromPattern(matchPattern, pathOrPattern):
 
 
 def intersectPatterns(patternA, patternB):
+    """Return the intersection of `patternA` and `patternB`. The resulting pattern
+    will only match items that are included in both patterns.
+    """
     result = {}
     for key, valueA in patternA.items():
         valueB = patternB.get(key, _MISSING)
