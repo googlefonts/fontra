@@ -247,10 +247,33 @@ class DesignspaceBackend:
         ufoPaths = sorted(self.ufoReaders)
         async for changes in watchfiles.awatch(*ufoPaths):
             glyphNames = set()
+            newGlyphNames = set()
             for change, path in changes:
-                glyphName = self.glifFileNames.get(os.path.basename(path))
+                fileName = os.path.basename(path)
+                if not fileName.endswith(".glif"):
+                    # TODO: deal with other file types and .designspace
+                    continue
+
+                glyphName = self.glifFileNames.get(fileName)
+
+                if change == watchfiles.Change.deleted:
+                    # TODO: deleted glyph.
+                    # - If in default UFO: delete glyph
+                    # - Else: reload glyph
+                    continue
+                elif change == watchfiles.Change.added:
+                    if glyphName is None:
+                        with open(path, "rb") as f:
+                            glyphName, _ = extractGlyphNameAndUnicodes(f.read())
+                        self.glifFileNames[fileName] = glyphName
+                        newGlyphNames.add(glyphName)
+                        continue
+                else:
+                    assert change == watchfiles.Change.modified
+
                 if glyphName is None:
                     continue
+
                 mtime = os.stat(path).st_mtime
                 # Round-trip through datetime, as that's effectively what is happening
                 # in getGLIFModificationTime, deep down in the fs package. It makes sure
@@ -264,8 +287,35 @@ class DesignspaceBackend:
                         f"{savedMTimes} {mtime in savedMTimes}"
                     )
                     glyphNames.add(glyphName)
+
+            externalChange = None
+            reloadPattern = None
+
+            if newGlyphNames:
+                for glyphSet in self.ufoGlyphSets.values():
+                    glyphSet.rebuildContents()
+            glyphMapChanges = []
+            for glyphName in newGlyphNames:
+                glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
+                gn, unicodes = extractGlyphNameAndUnicodes(glifData)
+                glyphMapChanges.append((glyphName, unicodes))
+
+            if glyphMapChanges:
+                subChanges = [
+                    {"f": "=", "a": [glyphName, unicodes]}
+                    for glyphName, unicodes in glyphMapChanges
+                ]
+                externalChange = {"p": ["glyphMap"]}
+                if len(subChanges) == 1:
+                    externalChange.update(subChanges[0])
+                else:
+                    externalChange["c"] = subChanges
+
             if glyphNames:
-                yield None, {"glyphs": dict.fromkeys(glyphNames)}
+                reloadPattern = {"glyphs": dict.fromkeys(glyphNames)}
+
+            if externalChange or reloadPattern:
+                yield externalChange, reloadPattern
 
 
 class UFOBackend:
