@@ -86,6 +86,7 @@ class FontHandler:
         async for change, reloadPattern in self.backend.watchExternalChanges():
             try:
                 if change is not None:
+                    self.updateLocalDataAndWriteToBackend(change, None, False)
                     await self.broadcastChange(change, None, False)
                 if reloadPattern is not None:
                     await self.reloadData(reloadPattern)
@@ -132,15 +133,19 @@ class FontHandler:
                         f"The edit has been reverted.\n\n{e}",
                     )
                 else:
-                    # For testing, when connection is None
+                    # No connection to inform, let's error
                     raise
             else:
                 if errorMessage:
                     await self.reloadData(reloadPattern)
-                    await connection.proxy.messageFromServer(
-                        "The data could not be saved.",
-                        f"The edit has been reverted.\n\n{errorMessage}",
-                    )
+                    if connection is not None:
+                        await connection.proxy.messageFromServer(
+                            "The data could not be saved.",
+                            f"The edit has been reverted.\n\n{errorMessage}",
+                        )
+                    else:
+                        # This ideally can't happen
+                        assert False, errorMessage
             await asyncio.sleep(0)
 
     @contextmanager
@@ -228,7 +233,7 @@ class FontHandler:
     ):
         # TODO: use finalChange, rollbackChange, editLabel for history recording
         # TODO: locking/checking
-        await self.updateLocalData(finalChange, connection)
+        await self.updateLocalDataAndWriteToBackend(finalChange, connection)
         # return {"error": "computer says no"}
         if broadcast:
             await self.broadcastChange(finalChange, connection, False)
@@ -253,9 +258,18 @@ class FontHandler:
             *[connection.proxy.externalChange(change) for connection in connections]
         )
 
-    async def updateLocalData(self, change, connection):
-        glyphNames = []
-        glyphSet = None
+    async def updateLocalDataAndWriteToBackend(
+        self, change, sourceConnection, writeToBackEnd=True
+    ):
+        if self.readOnly:
+            writeToBackEnd = False
+        rootKeys, rootObject = await self._prepareRootObject(change)
+        applyChange(rootObject, change)
+        await self._updateLocalData(
+            rootKeys, rootObject, sourceConnection, writeToBackEnd
+        )
+
+    async def _prepareRootObject(self, change):
         rootObject = Font()
         rootKeys = [p[0] for p in collectChangePaths(change, 1)]
         for rootKey in rootKeys:
@@ -275,36 +289,44 @@ class FontHandler:
                 setattr(rootObject, rootKey, await self.getData(rootKey))
 
         rootObject._trackAssignedAttributeNames()
+        return rootKeys, rootObject
 
-        applyChange(rootObject, change)
-
-        if self.readOnly:
-            return
-
+    async def _updateLocalData(
+        self, rootKeys, rootObject, sourceConnection, writeToBackEnd
+    ):
         for rootKey in rootKeys + sorted(rootObject._assignedAttributeNames):
             if rootKey == "glyphs":
+                glyphSet = rootObject.glyphs
                 for glyphName in sorted(glyphSet.keys()):
                     writeKey = ("glyphs", glyphName)
                     if glyphName in glyphSet.newKeys:
                         self.localData[writeKey] = glyphSet[glyphName]
+                    if not writeToBackEnd:
+                        continue
                     writeFunc = functools.partial(
-                        self.backend.putGlyph, glyphName, deepcopy(glyphSet[glyphName])
+                        self.backend.putGlyph,
+                        glyphName,
+                        deepcopy(glyphSet[glyphName]),
                     )
-                    await self.scheduleDataWrite(writeKey, writeFunc, connection)
+                    await self.scheduleDataWrite(writeKey, writeFunc, sourceConnection)
                 for glyphName in sorted(glyphSet.deletedKeys):
-                    writeFunc = functools.partial(self.backend.deleteGlyph, glyphName)
                     writeKey = ("glyphs", glyphName)
                     _ = self.localData.pop(writeKey, None)
-                    await self.scheduleDataWrite(writeKey, writeFunc, connection)
+                    if not writeToBackEnd:
+                        continue
+                    writeFunc = functools.partial(self.backend.deleteGlyph, glyphName)
+                    await self.scheduleDataWrite(writeKey, writeFunc, sourceConnection)
             else:
                 if rootKey in rootObject._assignedAttributeNames:
                     self.localData[rootKey] = getattr(rootObject, rootKey)
+                if not writeToBackEnd:
+                    continue
                 method = getattr(self.backend, backendSetterNames[rootKey], None)
                 if method is None:
                     logger.info(f"No backend write method found for {rootKey}")
                     continue
-                functools.partial(method, deepcopy(rootObject[rootKey]))
-                await self.scheduleDataWrite(rootKey, writeFunc, connection)
+                writeFunc = functools.partial(method, deepcopy(rootObject[rootKey]))
+                await self.scheduleDataWrite(rootKey, writeFunc, sourceConnection)
 
     async def scheduleDataWrite(self, writeKey, writeFunc, connection):
         if self._dataScheduledForWriting is None:
