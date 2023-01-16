@@ -7,6 +7,7 @@ from fontra.core.changes import (
     applyChange,
     collectChangePaths,
     filterChangePattern,
+    intersectPatterns,
     matchChangePattern,
     pathToPattern,
     subtractFromPattern,
@@ -134,6 +135,42 @@ def test_subtractPatternFromPattern(pattern, patternToRemove, expectedPattern):
     newPattern = subtractFromPattern(pattern, patternToRemove)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
+
+
+@pytest.mark.parametrize(
+    "patternA, patternB, expectedPattern",
+    [
+        ({}, {}, {}),
+        ({"A": None}, {}, {}),
+        ({}, {"A": None}, {}),
+        ({"A": None}, {"B": None}, {}),
+        ({"A": None}, {"A": None}, {"A": None}),
+        ({"A": None, "B": None}, {"A": None}, {"A": None}),
+        ({"A": None}, {"A": None, "B": None}, {"A": None}),
+        ({"A": {"X": None}}, {"A": {"X": None}}, {"A": {"X": None}}),
+        ({"A": {"X": None}}, {"A": {"Y": None}}, {}),
+        ({"A": {"X": None}}, {"A": {"X": None, "Y": None}}, {"A": {"X": None}}),
+        (
+            {"A": {"B": {"X": None}}},
+            {"A": {"B": {"X": None}}},
+            {"A": {"B": {"X": None}}},
+        ),
+        ({"A": {"B": {"X": None}}}, {"A": {"B": {"Y": None}}}, {}),
+        (
+            {"A": {"B": {"X": None, "Y": None}}},
+            {"A": {"B": {"X": None}}},
+            {"A": {"B": {"X": None}}},
+        ),
+        (
+            {"A": {"B": {"X": None}}},
+            {"A": {"B": {"X": None, "Y": None}}},
+            {"A": {"B": {"X": None}}},
+        ),
+    ],
+)
+def test_intersectPatterns(patternA, patternB, expectedPattern):
+    pattern = intersectPatterns(patternA, patternB)
+    assert expectedPattern == pattern
 
 
 @pytest.mark.parametrize(
