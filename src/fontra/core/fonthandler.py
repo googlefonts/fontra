@@ -203,14 +203,22 @@ class FontHandler:
 
     @remoteMethod
     async def subscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
-        self._adjustMatchPattern(
-            patternUnion, pathOrPattern, wantLiveChanges, connection
+        pattern = (
+            patternFromPath(pathOrPattern)
+            if isinstance(pathOrPattern, list)
+            else pathOrPattern
         )
+        self._adjustMatchPattern(patternUnion, pattern, wantLiveChanges, connection)
 
     @remoteMethod
     async def unsubscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
+        pattern = (
+            patternFromPath(pathOrPattern)
+            if isinstance(pathOrPattern, list)
+            else pathOrPattern
+        )
         self._adjustMatchPattern(
-            patternDifference, pathOrPattern, wantLiveChanges, connection
+            patternDifference, pattern, wantLiveChanges, connection
         )
 
     def _adjustMatchPattern(self, func, pathOrPattern, wantLiveChanges, connection):
