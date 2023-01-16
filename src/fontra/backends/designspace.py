@@ -249,37 +249,25 @@ class DesignspaceBackend:
         async for changes in watchfiles.awatch(*ufoPaths):
             changedItems = self._analyzeExternalChanges(changes)
 
-            externalChange = None
-            reloadPattern = None
-            glyphMapChanges = []
+            glyphMapUpdates = []
 
             for glyphName in changedItems.newGlyphs:
                 glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
                 gn, unicodes = extractGlyphNameAndUnicodes(glifData)
-                glyphMapChanges.append((glyphName, unicodes))
+                glyphMapUpdates.append((glyphName, unicodes))
 
             for glyphName in changedItems.deletedGlyphs:
-                glyphMapChanges.append((glyphName, None))
+                glyphMapUpdates.append((glyphName, None))
 
-            if glyphMapChanges:
-                subChanges = [
-                    {"f": "=", "a": [glyphName, unicodes]}
-                    for glyphName, unicodes in glyphMapChanges
-                    if unicodes is not None
-                ]
-                subChanges += [
-                    {"f": "d", "a": [glyphName]}
-                    for glyphName, unicodes in glyphMapChanges
-                    if unicodes is None
-                ]
-                externalChange = {"p": ["glyphMap"]}
-                if len(subChanges) == 1:
-                    externalChange.update(subChanges[0])
-                else:
-                    externalChange["c"] = subChanges
+            externalChange = (
+                _makeGlyphMapChange(glyphMapUpdates) if glyphMapUpdates else None
+            )
 
-            if changedItems.changedGlyphs:
-                reloadPattern = {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
+            reloadPattern = (
+                {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
+                if changedItems.changedGlyphs
+                else None
+            )
 
             if externalChange or reloadPattern:
                 yield externalChange, reloadPattern
@@ -319,6 +307,7 @@ class DesignspaceBackend:
             # The glyph was deleted from a non-default source,
             # just reload.
         elif change == watchfiles.Change.added:
+            # New glyph
             changedItems.rebuildGlyphSetContents = True
             if glyphName is None:
                 with open(path, "rb") as f:
@@ -327,6 +316,7 @@ class DesignspaceBackend:
                 changedItems.newGlyphs.add(glyphName)
                 return
         else:
+            # Changed glyph
             assert change == watchfiles.Change.modified
 
         if glyphName is None:
@@ -348,6 +338,24 @@ class DesignspaceBackend:
                 f"{savedMTimes} {mtime in savedMTimes}"
             )
             changedItems.changedGlyphs.add(glyphName)
+
+
+def _makeGlyphMapChange(glyphMapUpdates):
+    changes = [
+        {"f": "=", "a": [glyphName, unicodes]}
+        for glyphName, unicodes in glyphMapUpdates
+        if unicodes is not None
+    ] + [
+        {"f": "d", "a": [glyphName]}
+        for glyphName, unicodes in glyphMapUpdates
+        if unicodes is None
+    ]
+    glyphMapChange = {"p": ["glyphMap"]}
+    if len(changes) == 1:
+        glyphMapChange.update(changes[0])
+    else:
+        glyphMapChange["c"] = changes
+    return glyphMapChange
 
 
 class UFOBackend:
