@@ -55,7 +55,7 @@ def test_applyChange(testName, inputDataName, change, expectedData):
 
 
 @pytest.mark.parametrize(
-    "pattern, path, expectedPattern",
+    "patternA, path, expectedPattern",
     [
         ({}, [], {}),
         ({"A": None}, [], {"A": None}),
@@ -67,15 +67,16 @@ def test_applyChange(testName, inputDataName, change, expectedData):
         ({"A": {"B": None}}, ["A"], {"A": None}),
     ],
 )
-def test_addPathToPattern(pattern, path, expectedPattern):
-    orgPattern = deepcopy(pattern)
-    newPattern = patternUnion(pattern, path)
-    assert orgPattern == pattern
+def test_addPathToPattern(patternA, path, expectedPattern):
+    patternB = patternFromPath(path)
+    orgPattern = deepcopy(patternA)
+    newPattern = patternUnion(patternA, patternB)
+    assert orgPattern == patternA
     assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
-    "pattern, path, expectedPattern",
+    "patternA, path, expectedPattern",
     [
         ({"A": None}, ["A"], {}),
         ({"A": {"B": None}}, ["A", "B"], {}),
@@ -84,10 +85,11 @@ def test_addPathToPattern(pattern, path, expectedPattern):
         ({"A": {"B": None}}, ["A"], {}),
     ],
 )
-def test_subtractPathFromPattern(pattern, path, expectedPattern):
-    orgPattern = deepcopy(pattern)
-    newPattern = patternDifference(pattern, path)
-    assert orgPattern == pattern
+def test_subtractPathFromPattern(patternA, path, expectedPattern):
+    patternB = patternFromPath(path)
+    orgPattern = deepcopy(patternA)
+    newPattern = patternDifference(patternA, patternB)
+    assert orgPattern == patternA
     assert expectedPattern == newPattern
 
 
