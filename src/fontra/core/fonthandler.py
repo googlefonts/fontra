@@ -203,20 +203,12 @@ class FontHandler:
 
     @remoteMethod
     async def subscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
-        pattern = (
-            patternFromPath(pathOrPattern)
-            if isinstance(pathOrPattern, list)
-            else pathOrPattern
-        )
+        pattern = _ensurePattern(pathOrPattern)
         self._adjustMatchPattern(patternUnion, pattern, wantLiveChanges, connection)
 
     @remoteMethod
     async def unsubscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
-        pattern = (
-            patternFromPath(pathOrPattern)
-            if isinstance(pathOrPattern, list)
-            else pathOrPattern
-        )
+        pattern = _ensurePattern(pathOrPattern)
         self._adjustMatchPattern(
             patternDifference, pattern, wantLiveChanges, connection
         )
@@ -417,6 +409,14 @@ def _writeKeyToPattern(writeKey):
     if not isinstance(writeKey, tuple):
         writeKey = (writeKey,)
     return patternFromPath(writeKey)
+
+
+def _ensurePattern(pathOrPattern):
+    return (
+        patternFromPath(pathOrPattern)
+        if isinstance(pathOrPattern, list)
+        else pathOrPattern
+    )
 
 
 class DictSetDelTracker(UserDict):
