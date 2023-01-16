@@ -1,19 +1,20 @@
+from typing import Mapping, MutableMapping, MutableSequence, Sequence
 from .classes import classSchema, classCastFuncs
 
 
 def setItem(subject, key, item, *, itemCast=None):
     if itemCast is not None:
         item = itemCast(item)
-    if isinstance(subject, (dict, list)):
+    if isinstance(subject, (MutableMapping, MutableSequence)):
         subject[key] = item
     else:
         setattr(subject, key, item)
 
 
 def delAttr(subject, key, *, itemCast=None):
-    if isinstance(subject, list):
+    if isinstance(subject, Sequence):
         raise TypeError("can't call delattr on list")
-    elif isinstance(subject, dict):
+    elif isinstance(subject, MutableMapping):
         del subject[key]
     else:
         delattr(subject, key)
@@ -87,7 +88,7 @@ def _applyChange(subject, change, *, itemCast=None):
 
     for pathElement in path:
         itemCast = None
-        if isinstance(subject, (dict, list, tuple)):
+        if isinstance(subject, (Mapping, Sequence)):
             subject = subject[pathElement]
         else:
             itemCast = getItemCast(subject, pathElement, "subtype")
@@ -212,64 +213,41 @@ def _normalizeChange(change):
     return result
 
 
-def pathToPattern(matchPath):
+def patternFromPath(matchPath):
+    """Given a list of path elements, return a pattern dict."""
     pattern = {}
     if matchPath:
         pattern[matchPath[0]] = (
-            None if len(matchPath) == 1 else pathToPattern(matchPath[1:])
+            None if len(matchPath) == 1 else patternFromPath(matchPath[1:])
         )
     return pattern
 
 
-def addToPattern(matchPattern, pathOrPattern):
-    """Return a pattern which is the sum of `matchPattern` and `pathOrPattern`:
-    it matches both input arguments.
-
-    If `matchPattern` matches a prefix of `pathOrPattern`, or if `pathOrPattern`
-    is already included in `matchPattern`, the return value will be equal to
-    `matchPattern`.
-
-    `pathOrPattern` is either a list of path elements, or a pattern dict.
+def patternUnion(patternA, patternB):
+    """Return a pattern which is the union of `patternA` and `patternB`:
+    the result will match everything from `patternA` and `patternB`.
     """
-    if isinstance(pathOrPattern, list):
-        pathOrPattern = pathToPattern(pathOrPattern)
-    return _addPatternToPattern(matchPattern, pathOrPattern)
-
-
-def subtractFromPattern(matchPattern, pathOrPattern):
-    """Return a pattern which is `matchPattern` with `pathOrPattern` subtracted:
-    it does not match `pathOrPattern`.
-
-    If `matchPattern` matches a prefix of `pathOrPattern`, or if `pathOrPattern`
-    was not included in `matchPattern` to begin with, the return value will be
-    equal to `matchPattern`.
-
-    `pathOrPattern` is either a list of path elements, or a pattern dict.
-    """
-    if isinstance(pathOrPattern, list):
-        pathOrPattern = pathToPattern(pathOrPattern)
-    return _subtractPatternFromPattern(matchPattern, pathOrPattern)
-
-
-def _addPatternToPattern(matchPattern, patternToAdd):
-    result = {**matchPattern}
-    for key, valueB in patternToAdd.items():
-        valueA = matchPattern.get(key, _MISSING)
+    result = {**patternA}
+    for key, valueB in patternB.items():
+        valueA = patternA.get(key, _MISSING)
         if valueA is _MISSING or valueB is None:
             result[key] = valueB
         elif valueA is not None:
-            result[key] = _addPatternToPattern(valueA, valueB)
+            result[key] = patternUnion(valueA, valueB)
         else:
-            # valueA is None -- matchPattern already matches a prefix of
-            # patternToAdd: nothing to do
+            # valueA is None -- patternA already matches a prefix of
+            # patternB: nothing to do
             pass
     return result
 
 
-def _subtractPatternFromPattern(matchPattern, patternToRemove):
-    result = {**matchPattern}
-    for key, valueB in patternToRemove.items():
-        valueA = matchPattern.get(key, _MISSING)
+def patternDifference(patternA, patternB):
+    """Return a pattern which is `patternA` minus `patternB`: the result will
+    only match the items from `patternA` that are not included in `patternB`.
+    """
+    result = {**patternA}
+    for key, valueB in patternB.items():
+        valueA = patternA.get(key, _MISSING)
         if valueA is _MISSING:
             pass
         elif valueB is None:
@@ -277,9 +255,29 @@ def _subtractPatternFromPattern(matchPattern, patternToRemove):
         elif valueA is None:
             pass
         else:
-            result[key] = _subtractPatternFromPattern(valueA, valueB)
+            result[key] = patternDifference(valueA, valueB)
             if not result[key]:
                 del result[key]
+    return result
+
+
+def patternIntersect(patternA, patternB):
+    """Return the intersection of `patternA` and `patternB`. The resulting pattern
+    will only match items that are included in both patterns.
+    """
+    result = {}
+    for key, valueA in patternA.items():
+        valueB = patternB.get(key, _MISSING)
+        if valueB is _MISSING:
+            continue
+        if valueA is None:
+            result[key] = valueB
+        elif valueB is None:
+            result[key] = valueA
+        else:
+            childResult = patternIntersect(valueA, valueB)
+            if childResult:
+                result[key] = childResult
     return result
 
 

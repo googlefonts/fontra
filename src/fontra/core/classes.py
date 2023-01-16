@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, fields, is_dataclass
+from dataclasses import dataclass, field, is_dataclass
 from functools import partial
 from typing import Optional, get_args, get_type_hints
 import sys
@@ -79,6 +79,28 @@ class GlobalAxis:
     mapping: list[tuple[int, int]] = field(default_factory=list)
 
 
+GlyphSet = dict[str, VariableGlyph]
+GlyphMap = dict[str, list[int]]
+
+
+@dataclass
+class Font:
+    unitsPerEm: int = 1000
+    glyphs: GlyphSet = field(default_factory=GlyphSet)
+    glyphMap: GlyphMap = field(default_factory=GlyphMap)
+    lib: dict = field(default_factory=dict)
+    axes: list[GlobalAxis] = field(default_factory=list)
+
+    def _trackAssignedAttributeNames(self):
+        # see fonthandler.py
+        self._assignedAttributeNames = set()
+
+    def __setattr__(self, attrName, value):
+        if hasattr(self, "_assignedAttributeNames"):
+            self._assignedAttributeNames.add(attrName)
+        super().__setattr__(attrName, value)
+
+
 def makeSchema(*classes, schema=None):
     if schema is None:
         schema = {}
@@ -100,6 +122,15 @@ def makeSchema(*classes, schema=None):
                     makeSchema(subtype, schema=schema)
             elif tp.__name__ == "list":
                 [subtype] = get_args(tp)
+                fieldDef["subtype"] = subtype
+                if is_dataclass(subtype):
+                    makeSchema(subtype, schema=schema)
+            elif tp.__name__ == "dict":
+                args = get_args(tp)
+                if not args:
+                    continue
+                [keytype, subtype] = args
+                assert keytype == str
                 fieldDef["subtype"] = subtype
                 if is_dataclass(subtype):
                     makeSchema(subtype, schema=schema)
@@ -129,7 +160,7 @@ def classesToStrings(schema):
 
 _castConfig = dacite.Config(cast=[PointType])
 from_dict = partial(dacite.from_dict, config=_castConfig)
-classSchema = makeSchema(VariableGlyph)
+classSchema = makeSchema(Font)
 classCastFuncs = makeCastFuncs(classSchema, config=_castConfig)
 
 
@@ -138,4 +169,5 @@ if __name__ == "__main__":
 
     schema = classesToStrings(classSchema)
     print("// This file is generated, don't edit!")
-    print("export const classSchema =", json.dumps(schema, indent=2))
+    schemaJSON = json.dumps(schema, indent=2)
+    print(f"export const classSchema = {schemaJSON};")

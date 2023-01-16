@@ -3,13 +3,14 @@ import json
 import pathlib
 import pytest
 from fontra.core.changes import (
-    addToPattern,
     applyChange,
     collectChangePaths,
     filterChangePattern,
+    patternDifference,
+    patternFromPath,
+    patternIntersect,
+    patternUnion,
     matchChangePattern,
-    pathToPattern,
-    subtractFromPattern,
 )
 
 
@@ -54,7 +55,7 @@ def test_applyChange(testName, inputDataName, change, expectedData):
 
 
 @pytest.mark.parametrize(
-    "pattern, path, expectedPattern",
+    "patternA, path, expectedPattern",
     [
         ({}, [], {}),
         ({"A": None}, [], {"A": None}),
@@ -66,15 +67,16 @@ def test_applyChange(testName, inputDataName, change, expectedData):
         ({"A": {"B": None}}, ["A"], {"A": None}),
     ],
 )
-def test_addPathToPattern(pattern, path, expectedPattern):
-    orgPattern = deepcopy(pattern)
-    newPattern = addToPattern(pattern, path)
-    assert orgPattern == pattern
+def test_addPathToPattern(patternA, path, expectedPattern):
+    patternB = patternFromPath(path)
+    orgPattern = deepcopy(patternA)
+    newPattern = patternUnion(patternA, patternB)
+    assert orgPattern == patternA
     assert expectedPattern == newPattern
 
 
 @pytest.mark.parametrize(
-    "pattern, path, expectedPattern",
+    "patternA, path, expectedPattern",
     [
         ({"A": None}, ["A"], {}),
         ({"A": {"B": None}}, ["A", "B"], {}),
@@ -83,10 +85,11 @@ def test_addPathToPattern(pattern, path, expectedPattern):
         ({"A": {"B": None}}, ["A"], {}),
     ],
 )
-def test_subtractPathFromPattern(pattern, path, expectedPattern):
-    orgPattern = deepcopy(pattern)
-    newPattern = subtractFromPattern(pattern, path)
-    assert orgPattern == pattern
+def test_subtractPathFromPattern(patternA, path, expectedPattern):
+    patternB = patternFromPath(path)
+    orgPattern = deepcopy(patternA)
+    newPattern = patternDifference(patternA, patternB)
+    assert orgPattern == patternA
     assert expectedPattern == newPattern
 
 
@@ -106,7 +109,7 @@ def test_subtractPathFromPattern(pattern, path, expectedPattern):
 )
 def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
     orgPattern = deepcopy(pattern)
-    newPattern = addToPattern(pattern, patternToAdd)
+    newPattern = patternUnion(pattern, patternToAdd)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
 
@@ -131,9 +134,45 @@ def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
 )
 def test_subtractPatternFromPattern(pattern, patternToRemove, expectedPattern):
     orgPattern = deepcopy(pattern)
-    newPattern = subtractFromPattern(pattern, patternToRemove)
+    newPattern = patternDifference(pattern, patternToRemove)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
+
+
+@pytest.mark.parametrize(
+    "patternA, patternB, expectedPattern",
+    [
+        ({}, {}, {}),
+        ({"A": None}, {}, {}),
+        ({}, {"A": None}, {}),
+        ({"A": None}, {"B": None}, {}),
+        ({"A": None}, {"A": None}, {"A": None}),
+        ({"A": None, "B": None}, {"A": None}, {"A": None}),
+        ({"A": None}, {"A": None, "B": None}, {"A": None}),
+        ({"A": {"X": None}}, {"A": {"X": None}}, {"A": {"X": None}}),
+        ({"A": {"X": None}}, {"A": {"Y": None}}, {}),
+        ({"A": {"X": None}}, {"A": {"X": None, "Y": None}}, {"A": {"X": None}}),
+        (
+            {"A": {"B": {"X": None}}},
+            {"A": {"B": {"X": None}}},
+            {"A": {"B": {"X": None}}},
+        ),
+        ({"A": {"B": {"X": None}}}, {"A": {"B": {"Y": None}}}, {}),
+        (
+            {"A": {"B": {"X": None, "Y": None}}},
+            {"A": {"B": {"X": None}}},
+            {"A": {"B": {"X": None}}},
+        ),
+        (
+            {"A": {"B": {"X": None}}},
+            {"A": {"B": {"X": None, "Y": None}}},
+            {"A": {"B": {"X": None}}},
+        ),
+    ],
+)
+def test_patternIntersect(patternA, patternB, expectedPattern):
+    pattern = patternIntersect(patternA, patternB)
+    assert expectedPattern == pattern
 
 
 @pytest.mark.parametrize(
@@ -383,6 +422,6 @@ def test_collectChangePaths(change, depth, expectedPaths):
         (["a", "b", "c"], {"a": {"b": {"c": None}}}),
     ],
 )
-def test_pathToPattern(path, expectedPattern):
-    pattern = pathToPattern(path)
+def test_patternFromPath(path, expectedPattern):
+    pattern = patternFromPath(path)
     assert expectedPattern == pattern

@@ -713,6 +713,20 @@ export class EditorController {
     this.canvasController.setNeedsUpdate();
   }
 
+  async reloadData(reloadPattern) {
+    for (const rootKey of Object.keys(reloadPattern)) {
+      if (rootKey == "glyphs") {
+        const glyphNames = Object.keys(reloadPattern["glyphs"] || {});
+        if (glyphNames.length) {
+          await this.reloadGlyphs(glyphNames);
+        }
+      } else {
+        // TODO
+        console.log("reloading of non-glyph data is not yet implemented");
+      }
+    }
+  }
+
   async reloadGlyphs(glyphNames) {
     if (glyphNames.includes(this.sceneController.getSelectedGlyphName())) {
       // If the glyph being edited is among the glyphs to be reloaded,

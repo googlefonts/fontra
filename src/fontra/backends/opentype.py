@@ -36,10 +36,9 @@ class OTFBackend:
     async def getGlyphMap(self):
         return self.glyphMap
 
-    def hasGlyph(self, glyphName):
-        return glyphName in self.glyphSet
-
     async def getGlyph(self, glyphName):
+        if glyphName not in self.glyphSet:
+            return None
         defaultLayerName = "<default>"
         glyph = VariableGlyph(glyphName)
         staticGlyph = serializeGlyph(self.glyphSet, glyphName)

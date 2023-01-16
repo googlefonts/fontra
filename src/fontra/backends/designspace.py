@@ -123,6 +123,9 @@ class DesignspaceBackend:
         return self.glyphMap
 
     async def getGlyph(self, glyphName):
+        if glyphName not in self.glyphMap:
+            return None
+
         glyph = VariableGlyph(glyphName)
 
         sources = []
