@@ -11,6 +11,7 @@ from .changes import (
     addToPattern,
     applyChange,
     collectChangePaths,
+    intersectPatterns,
     matchChangePattern,
     pathToPattern,
     subtractFromPattern,
@@ -347,42 +348,35 @@ class FontHandler:
             self.glyphUsedBy[componentName].add(glyphName)
 
     async def reloadData(self, reloadPattern):
-        glyphNames = sorted(reloadPattern.get("glyphs", {}))
-        if glyphNames:
-            await self.reloadGlyphs(glyphNames)
-        else:
-            # TODO: implement reloadGlyphs in terms of reloadData
-            # instead of the other way around
-            raise NotImplementedError()
+        # Drop local data to ensure it gets reloaded from the backend
+        for rootKey, value in reloadPattern.items():
+            if rootKey == "glyphs":
+                for glyphName in value:
+                    self.localData.pop(("glyphs", glyphName), None)
+            else:
+                self.localData.pop(rootKey, None)
 
-    async def reloadGlyphs(self, glyphNames):
-        glyphNames = set(glyphNames)
-        # XXX TODO For now, just drop any local changes
-        for glyphName in glyphNames:
-            self.localData.pop(("glyphs", glyphName), None)
+        logger.info(f"broadcasting external changes: {reloadPattern}")
 
-        # self._getGlyph.cache_clear()
-
-        logger.info(f"broadcasting external glyph changes: {glyphNames}")
         connections = []
         for connection in self.connections:
-            subscribedGlyphNames = self._getAllSubscribedGlyphNames(connection)
-            connGlyphNames = sorted(glyphNames & subscribedGlyphNames)
-            if connGlyphNames:
-                connections.append((connection, connGlyphNames))
+            subscribePattern = self._getCombinedSubscribePattern(connection)
+            connReloadPattern = intersectPatterns(subscribePattern, reloadPattern)
+            if connReloadPattern:
+                connections.append((connection, connReloadPattern))
         await asyncio.gather(
             *[
-                connection.proxy.reloadGlyphs(connGlyphNames)
-                for connection, connGlyphNames in connections
+                connection.proxy.reloadData(connReloadPattern)
+                for connection, connReloadPattern in connections
             ]
         )
 
-    def _getAllSubscribedGlyphNames(self, connection):
-        subscribedGlyphNames = set()
-        for key in [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]:
-            matchPattern = self._getClientData(connection, key, {})
-            subscribedGlyphNames.update(matchPattern.get("glyphs", {}))
-        return subscribedGlyphNames
+    def _getCombinedSubscribePattern(self, connection):
+        patternA, patternB = [
+            self._getClientData(connection, key, {})
+            for key in [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]
+        ]
+        return addToPattern(patternA, patternB)
 
     @remoteMethod
     async def getSuggestedGlyphName(self, codePoint, *, connection):
