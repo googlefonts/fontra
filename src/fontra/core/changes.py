@@ -222,7 +222,7 @@ def pathToPattern(matchPath):
     return pattern
 
 
-def addToPattern(matchPattern, pathOrPattern):
+def patternUnion(matchPattern, pathOrPattern):
     """Return a pattern which is the sum of `matchPattern` and `pathOrPattern`:
     it matches both input arguments.
 
@@ -234,10 +234,10 @@ def addToPattern(matchPattern, pathOrPattern):
     """
     if isinstance(pathOrPattern, list):
         pathOrPattern = pathToPattern(pathOrPattern)
-    return _addPatternToPattern(matchPattern, pathOrPattern)
+    return _patternUnion(matchPattern, pathOrPattern)
 
 
-def subtractFromPattern(matchPattern, pathOrPattern):
+def patternDifference(matchPattern, pathOrPattern):
     """Return a pattern which is `matchPattern` with `pathOrPattern` subtracted:
     it does not match `pathOrPattern`.
 
@@ -249,10 +249,10 @@ def subtractFromPattern(matchPattern, pathOrPattern):
     """
     if isinstance(pathOrPattern, list):
         pathOrPattern = pathToPattern(pathOrPattern)
-    return _subtractPatternFromPattern(matchPattern, pathOrPattern)
+    return _patternDifference(matchPattern, pathOrPattern)
 
 
-def intersectPatterns(patternA, patternB):
+def patternIntersect(patternA, patternB):
     """Return the intersection of `patternA` and `patternB`. The resulting pattern
     will only match items that are included in both patterns.
     """
@@ -266,20 +266,20 @@ def intersectPatterns(patternA, patternB):
         elif valueB is None:
             result[key] = valueA
         else:
-            childResult = intersectPatterns(valueA, valueB)
+            childResult = patternIntersect(valueA, valueB)
             if childResult:
                 result[key] = childResult
     return result
 
 
-def _addPatternToPattern(matchPattern, patternToAdd):
+def _patternUnion(matchPattern, patternToAdd):
     result = {**matchPattern}
     for key, valueB in patternToAdd.items():
         valueA = matchPattern.get(key, _MISSING)
         if valueA is _MISSING or valueB is None:
             result[key] = valueB
         elif valueA is not None:
-            result[key] = _addPatternToPattern(valueA, valueB)
+            result[key] = _patternUnion(valueA, valueB)
         else:
             # valueA is None -- matchPattern already matches a prefix of
             # patternToAdd: nothing to do
@@ -287,7 +287,7 @@ def _addPatternToPattern(matchPattern, patternToAdd):
     return result
 
 
-def _subtractPatternFromPattern(matchPattern, patternToRemove):
+def _patternDifference(matchPattern, patternToRemove):
     result = {**matchPattern}
     for key, valueB in patternToRemove.items():
         valueA = matchPattern.get(key, _MISSING)
@@ -298,7 +298,7 @@ def _subtractPatternFromPattern(matchPattern, patternToRemove):
         elif valueA is None:
             pass
         else:
-            result[key] = _subtractPatternFromPattern(valueA, valueB)
+            result[key] = _patternDifference(valueA, valueB)
             if not result[key]:
                 del result[key]
     return result

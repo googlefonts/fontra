@@ -3,14 +3,14 @@ import json
 import pathlib
 import pytest
 from fontra.core.changes import (
-    addToPattern,
     applyChange,
     collectChangePaths,
     filterChangePattern,
-    intersectPatterns,
-    matchChangePattern,
     pathToPattern,
-    subtractFromPattern,
+    patternDifference,
+    patternIntersect,
+    patternUnion,
+    matchChangePattern,
 )
 
 
@@ -69,7 +69,7 @@ def test_applyChange(testName, inputDataName, change, expectedData):
 )
 def test_addPathToPattern(pattern, path, expectedPattern):
     orgPattern = deepcopy(pattern)
-    newPattern = addToPattern(pattern, path)
+    newPattern = patternUnion(pattern, path)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
 
@@ -86,7 +86,7 @@ def test_addPathToPattern(pattern, path, expectedPattern):
 )
 def test_subtractPathFromPattern(pattern, path, expectedPattern):
     orgPattern = deepcopy(pattern)
-    newPattern = subtractFromPattern(pattern, path)
+    newPattern = patternDifference(pattern, path)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
 
@@ -107,7 +107,7 @@ def test_subtractPathFromPattern(pattern, path, expectedPattern):
 )
 def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
     orgPattern = deepcopy(pattern)
-    newPattern = addToPattern(pattern, patternToAdd)
+    newPattern = patternUnion(pattern, patternToAdd)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
 
@@ -132,7 +132,7 @@ def test_addPatternToPattern(pattern, patternToAdd, expectedPattern):
 )
 def test_subtractPatternFromPattern(pattern, patternToRemove, expectedPattern):
     orgPattern = deepcopy(pattern)
-    newPattern = subtractFromPattern(pattern, patternToRemove)
+    newPattern = patternDifference(pattern, patternToRemove)
     assert orgPattern == pattern
     assert expectedPattern == newPattern
 
@@ -168,8 +168,8 @@ def test_subtractPatternFromPattern(pattern, patternToRemove, expectedPattern):
         ),
     ],
 )
-def test_intersectPatterns(patternA, patternB, expectedPattern):
-    pattern = intersectPatterns(patternA, patternB)
+def test_patternIntersect(patternA, patternB, expectedPattern):
+    pattern = patternIntersect(patternA, patternB)
     assert expectedPattern == pattern
 
 

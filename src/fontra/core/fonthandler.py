@@ -8,13 +8,13 @@ import logging
 import traceback
 from typing import Any
 from .changes import (
-    addToPattern,
     applyChange,
     collectChangePaths,
-    intersectPatterns,
+    patternDifference,
+    patternIntersect,
+    patternUnion,
     matchChangePattern,
     pathToPattern,
-    subtractFromPattern,
 )
 from .classes import Font
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
@@ -204,13 +204,13 @@ class FontHandler:
     @remoteMethod
     async def subscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
         self._adjustMatchPattern(
-            addToPattern, pathOrPattern, wantLiveChanges, connection
+            patternUnion, pathOrPattern, wantLiveChanges, connection
         )
 
     @remoteMethod
     async def unsubscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
         self._adjustMatchPattern(
-            subtractFromPattern, pathOrPattern, wantLiveChanges, connection
+            patternDifference, pathOrPattern, wantLiveChanges, connection
         )
 
     def _adjustMatchPattern(self, func, pathOrPattern, wantLiveChanges, connection):
@@ -361,7 +361,7 @@ class FontHandler:
         connections = []
         for connection in self.connections:
             subscribePattern = self._getCombinedSubscribePattern(connection)
-            connReloadPattern = intersectPatterns(subscribePattern, reloadPattern)
+            connReloadPattern = patternIntersect(subscribePattern, reloadPattern)
             if connReloadPattern:
                 connections.append((connection, connReloadPattern))
         await asyncio.gather(
@@ -376,7 +376,7 @@ class FontHandler:
             self._getClientData(connection, key, {})
             for key in [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]
         ]
-        return addToPattern(patternA, patternB)
+        return patternUnion(patternA, patternB)
 
     @remoteMethod
     async def getSuggestedGlyphName(self, codePoint, *, connection):
