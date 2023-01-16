@@ -6,8 +6,8 @@ from fontra.core.changes import (
     applyChange,
     collectChangePaths,
     filterChangePattern,
-    pathToPattern,
     patternDifference,
+    patternFromPath,
     patternIntersect,
     patternUnion,
     matchChangePattern,
@@ -420,6 +420,6 @@ def test_collectChangePaths(change, depth, expectedPaths):
         (["a", "b", "c"], {"a": {"b": {"c": None}}}),
     ],
 )
-def test_pathToPattern(path, expectedPattern):
-    pattern = pathToPattern(path)
+def test_patternFromPath(path, expectedPattern):
+    pattern = patternFromPath(path)
     assert expectedPattern == pattern

@@ -11,10 +11,10 @@ from .changes import (
     applyChange,
     collectChangePaths,
     patternDifference,
+    patternFromPath,
     patternIntersect,
     patternUnion,
     matchChangePattern,
-    pathToPattern,
 )
 from .classes import Font
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
@@ -408,7 +408,7 @@ def taskDoneHelper(task):
 def _writeKeyToPattern(writeKey):
     if not isinstance(writeKey, tuple):
         writeKey = (writeKey,)
-    return pathToPattern(writeKey)
+    return patternFromPath(writeKey)
 
 
 class DictSetDelTracker(UserDict):

@@ -213,11 +213,11 @@ def _normalizeChange(change):
     return result
 
 
-def pathToPattern(matchPath):
+def patternFromPath(matchPath):
     pattern = {}
     if matchPath:
         pattern[matchPath[0]] = (
-            None if len(matchPath) == 1 else pathToPattern(matchPath[1:])
+            None if len(matchPath) == 1 else patternFromPath(matchPath[1:])
         )
     return pattern
 
@@ -233,7 +233,7 @@ def patternUnion(matchPattern, pathOrPattern):
     `pathOrPattern` is either a list of path elements, or a pattern dict.
     """
     if isinstance(pathOrPattern, list):
-        pathOrPattern = pathToPattern(pathOrPattern)
+        pathOrPattern = patternFromPath(pathOrPattern)
     return _patternUnion(matchPattern, pathOrPattern)
 
 
@@ -248,7 +248,7 @@ def patternDifference(matchPattern, pathOrPattern):
     `pathOrPattern` is either a list of path elements, or a pattern dict.
     """
     if isinstance(pathOrPattern, list):
-        pathOrPattern = pathToPattern(pathOrPattern)
+        pathOrPattern = patternFromPath(pathOrPattern)
     return _patternDifference(matchPattern, pathOrPattern)
 
 
