@@ -6,6 +6,7 @@ from functools import cached_property
 import logging
 import math
 import os
+from types import SimpleNamespace
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.misc.transform import Transform
 from fontTools.pens.recordingPen import RecordingPointPen
@@ -246,26 +247,115 @@ class DesignspaceBackend:
     async def watchExternalChanges(self):
         ufoPaths = sorted(self.ufoReaders)
         async for changes in watchfiles.awatch(*ufoPaths):
-            glyphNames = set()
-            for change, path in changes:
-                glyphName = self.glifFileNames.get(os.path.basename(path))
-                if glyphName is None:
-                    continue
-                mtime = os.stat(path).st_mtime
-                # Round-trip through datetime, as that's effectively what is happening
-                # in getGLIFModificationTime, deep down in the fs package. It makes sure
-                # we're comparing timestamps that are actually comparable, as they're
-                # rounded somewhat, compared to the raw st_mtime timestamp.
-                mtime = datetime.fromtimestamp(mtime).timestamp()
-                savedMTimes = self.savedGlyphModificationTimes.get(glyphName, ())
-                if mtime not in savedMTimes:
-                    logger.info(
-                        f"external change '{glyphName}' {mtime} "
-                        f"{savedMTimes} {mtime in savedMTimes}"
-                    )
-                    glyphNames.add(glyphName)
-            if glyphNames:
-                yield None, {"glyphs": dict.fromkeys(glyphNames)}
+            changedItems = self._analyzeExternalChanges(changes)
+
+            glyphMapUpdates = []
+
+            for glyphName in changedItems.newGlyphs:
+                glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
+                gn, unicodes = extractGlyphNameAndUnicodes(glifData)
+                glyphMapUpdates.append((glyphName, unicodes))
+
+            for glyphName in changedItems.deletedGlyphs:
+                glyphMapUpdates.append((glyphName, None))
+
+            externalChange = (
+                _makeGlyphMapChange(glyphMapUpdates) if glyphMapUpdates else None
+            )
+
+            reloadPattern = (
+                {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
+                if changedItems.changedGlyphs
+                else None
+            )
+
+            if externalChange or reloadPattern:
+                yield externalChange, reloadPattern
+
+    def _analyzeExternalChanges(self, changes):
+        changedItems = SimpleNamespace(
+            changedGlyphs=set(),
+            newGlyphs=set(),
+            deletedGlyphs=set(),
+            rebuildGlyphSetContents=False,
+        )
+        for change, path in changes:
+            _, fileSuffix = os.path.splitext(path)
+
+            if fileSuffix == ".glif":
+                self._analyzeExternalGlyphChanges(change, path, changedItems)
+
+        if changedItems.rebuildGlyphSetContents:
+            for glyphSet in self.ufoGlyphSets.values():
+                glyphSet.rebuildContents()
+
+        return changedItems
+
+    def _analyzeExternalGlyphChanges(self, change, path, changedItems):
+        fileName = os.path.basename(path)
+        glyphName = self.glifFileNames.get(fileName)
+
+        if change == watchfiles.Change.deleted:
+            # Deleted glyph
+            changedItems.rebuildGlyphSetContents = True
+            if path.startswith(self.dsDoc.default.path):
+                # The glyph was deleted from the default source,
+                # do a full delete
+                del self.glifFileNames[fileName]
+                changedItems.deletedGlyphs.add(glyphName)
+            # else:
+            # The glyph was deleted from a non-default source,
+            # just reload.
+        elif change == watchfiles.Change.added:
+            # New glyph
+            changedItems.rebuildGlyphSetContents = True
+            if glyphName is None:
+                with open(path, "rb") as f:
+                    glyphName, _ = extractGlyphNameAndUnicodes(f.read())
+                self.glifFileNames[fileName] = glyphName
+                changedItems.newGlyphs.add(glyphName)
+                return
+        else:
+            # Changed glyph
+            assert change == watchfiles.Change.modified
+
+        if glyphName is None:
+            return
+
+        if os.path.exists(path):
+            mtime = os.stat(path).st_mtime
+            # Round-trip through datetime, as that's effectively what is happening
+            # in getGLIFModificationTime, deep down in the fs package. It makes sure
+            # we're comparing timestamps that are actually comparable, as they're
+            # rounded somewhat, compared to the raw st_mtime timestamp.
+            mtime = datetime.fromtimestamp(mtime).timestamp()
+        else:
+            mtime = None
+        savedMTimes = self.savedGlyphModificationTimes.get(glyphName, ())
+        if mtime not in savedMTimes:
+            logger.info(
+                f"external change '{glyphName}' {mtime} "
+                f"{savedMTimes} {mtime in savedMTimes}"
+            )
+            changedItems.changedGlyphs.add(glyphName)
+
+
+def _makeGlyphMapChange(glyphMapUpdates):
+    changes = [
+        {"f": "=", "a": [glyphName, unicodes]}
+        for glyphName, unicodes in glyphMapUpdates
+        if unicodes is not None
+    ] + [
+        {"f": "d", "a": [glyphName]}
+        for glyphName, unicodes in glyphMapUpdates
+        if unicodes is None
+    ]
+    glyphMapChange = {"p": ["glyphMap"]}
+    if len(changes) == 1:
+        glyphMapChange.update(changes[0])
+    else:
+        glyphMapChange["c"] = changes
+    return glyphMapChange
 
 
 class UFOBackend:

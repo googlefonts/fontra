@@ -4,7 +4,7 @@ import {
   consolidateChanges,
   matchChangePath,
 } from "./changes.js";
-import { makeCharacterMapFromGlyphMap } from "./cmap.js";
+import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
@@ -34,8 +34,9 @@ export class FontController {
   }
 
   async initialize() {
-    this._rootObject["glyphMap"] = await this.font.getGlyphMap();
-    this.characterMap = makeCharacterMapFromGlyphMap(this.glyphMap, false);
+    const glyphMap = await this.font.getGlyphMap();
+    this.characterMap = makeCharacterMapFromGlyphMap(glyphMap, false);
+    this._rootObject["glyphMap"] = getGlyphMapProxy(glyphMap, this.characterMap);
     this._rootObject["axes"] = await this.font.getGlobalAxes();
     this._rootObject["unitsPerEm"] = await this.font.getUnitsPerEm();
     this._rootObject["lib"] = await this.font.getFontLib();
@@ -92,11 +93,14 @@ export class FontController {
     return await this.font.getUnicodeFromGlyphName(glyphName);
   }
 
-  async hasGlyph(glyphName) {
+  hasGlyph(glyphName) {
     return glyphName in this.glyphMap;
   }
 
   getGlyph(glyphName) {
+    if (!this.hasGlyph(glyphName)) {
+      return Promise.resolve(null);
+    }
     let glyphPromise = this._glyphsPromiseCache.get(glyphName);
     if (glyphPromise === undefined) {
       glyphPromise = this._getGlyph(glyphName);
@@ -111,9 +115,6 @@ export class FontController {
   }
 
   async _getGlyph(glyphName) {
-    if (!await this.hasGlyph(glyphName)) {
-      return null;
-    }
     let glyph = await this.font.getGlyph(glyphName);
     if (glyph !== null) {
       glyph = VariableGlyph.fromObject(glyph);
@@ -153,6 +154,9 @@ export class FontController {
   }
 
   async getGlyphInstance(glyphName, location, instanceCacheKey) {
+    if (!this.hasGlyph(glyphName)) {
+      return Promise.resolve(null);
+    }
     // instanceCacheKey must be unique for glyphName + location
     if (instanceCacheKey === undefined) {
       instanceCacheKey = glyphName + locationToString(location);
@@ -174,9 +178,6 @@ export class FontController {
   }
 
   async _getGlyphInstance(glyphName, location) {
-    if (!await this.hasGlyph(glyphName)) {
-      return null;
-    }
     const varGlyph = await this.getGlyph(glyphName);
     const getGlyphFunc = this.getGlyph.bind(this);
     const instanceController = await varGlyph.instantiateController(location, getGlyphFunc);

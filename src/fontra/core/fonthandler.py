@@ -86,12 +86,13 @@ class FontHandler:
         async for change, reloadPattern in self.backend.watchExternalChanges():
             try:
                 if change is not None:
-                    self.updateLocalDataAndWriteToBackend(change, None, False)
+                    await self.updateLocalDataAndWriteToBackend(change, None, False)
                     await self.broadcastChange(change, None, False)
                 if reloadPattern is not None:
                     await self.reloadData(reloadPattern)
             except Exception as e:
                 logger.error("exception in external changes watcher: %r", e)
+                traceback.print_exc()
 
     def _processWritesTaskDone(self, task):
         # Signal that the write-"thread" is no longer running
