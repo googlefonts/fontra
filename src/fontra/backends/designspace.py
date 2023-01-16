@@ -248,6 +248,8 @@ class DesignspaceBackend:
         async for changes in watchfiles.awatch(*ufoPaths):
             glyphNames = set()
             newGlyphNames = set()
+            deletedGlyphNames = set()
+            rebuildGlyphSetContents = False
             for change, path in changes:
                 fileName = os.path.basename(path)
                 if not fileName.endswith(".glif"):
@@ -257,11 +259,18 @@ class DesignspaceBackend:
                 glyphName = self.glifFileNames.get(fileName)
 
                 if change == watchfiles.Change.deleted:
-                    # TODO: deleted glyph.
-                    # - If in default UFO: delete glyph
-                    # - Else: reload glyph
-                    continue
+                    # Deleted glyph
+                    rebuildGlyphSetContents = True
+                    if path.startswith(self.dsDoc.default.path):
+                        # The glyph was deleted from the default source,
+                        # do a full delete
+                        del self.glifFileNames[fileName]
+                        deletedGlyphNames.add(glyphName)
+                    # else:
+                        # The glyph was deleted from a non-default source,
+                        # just reload.
                 elif change == watchfiles.Change.added:
+                    rebuildGlyphSetContents = True
                     if glyphName is None:
                         with open(path, "rb") as f:
                             glyphName, _ = extractGlyphNameAndUnicodes(f.read())
@@ -274,12 +283,15 @@ class DesignspaceBackend:
                 if glyphName is None:
                     continue
 
-                mtime = os.stat(path).st_mtime
-                # Round-trip through datetime, as that's effectively what is happening
-                # in getGLIFModificationTime, deep down in the fs package. It makes sure
-                # we're comparing timestamps that are actually comparable, as they're
-                # rounded somewhat, compared to the raw st_mtime timestamp.
-                mtime = datetime.fromtimestamp(mtime).timestamp()
+                if os.path.exists(path):
+                    mtime = os.stat(path).st_mtime
+                    # Round-trip through datetime, as that's effectively what is happening
+                    # in getGLIFModificationTime, deep down in the fs package. It makes sure
+                    # we're comparing timestamps that are actually comparable, as they're
+                    # rounded somewhat, compared to the raw st_mtime timestamp.
+                    mtime = datetime.fromtimestamp(mtime).timestamp()
+                else:
+                    mtime = None
                 savedMTimes = self.savedGlyphModificationTimes.get(glyphName, ())
                 if mtime not in savedMTimes:
                     logger.info(
@@ -291,19 +303,29 @@ class DesignspaceBackend:
             externalChange = None
             reloadPattern = None
 
-            if newGlyphNames:
+            if rebuildGlyphSetContents:
                 for glyphSet in self.ufoGlyphSets.values():
                     glyphSet.rebuildContents()
+
             glyphMapChanges = []
             for glyphName in newGlyphNames:
                 glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
                 gn, unicodes = extractGlyphNameAndUnicodes(glifData)
                 glyphMapChanges.append((glyphName, unicodes))
 
+            for glyphName in deletedGlyphNames:
+                glyphMapChanges.append((glyphName, None))
+
             if glyphMapChanges:
                 subChanges = [
                     {"f": "=", "a": [glyphName, unicodes]}
                     for glyphName, unicodes in glyphMapChanges
+                    if unicodes is not None
+                ]
+                subChanges += [
+                    {"f": "d", "a": [glyphName]}
+                    for glyphName, unicodes in glyphMapChanges
+                    if unicodes is None
                 ]
                 externalChange = {"p": ["glyphMap"]}
                 if len(subChanges) == 1:
