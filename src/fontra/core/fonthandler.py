@@ -233,8 +233,8 @@ class FontHandler:
         if broadcast:
             await self.broadcastChange(finalChange, connection, False)
 
-    async def broadcastChange(self, change, sourceConnection, wantLiveChanges):
-        if wantLiveChanges:
+    async def broadcastChange(self, change, sourceConnection, isLiveChange):
+        if isLiveChange:
             matchPatternKeys = [LIVE_CHANGES_PATTERN_KEY]
         else:
             matchPatternKeys = [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]
