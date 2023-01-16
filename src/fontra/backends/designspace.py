@@ -6,6 +6,7 @@ from functools import cached_property
 import logging
 import math
 import os
+from types import SimpleNamespace
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.misc.transform import Transform
 from fontTools.pens.recordingPen import RecordingPointPen
@@ -246,27 +247,18 @@ class DesignspaceBackend:
     async def watchExternalChanges(self):
         ufoPaths = sorted(self.ufoReaders)
         async for changes in watchfiles.awatch(*ufoPaths):
-            (
-                glyphNames,
-                newGlyphNames,
-                deletedGlyphNames,
-                rebuildGlyphSetContents,
-            ) = self._analyzeExternalChanges(changes)
+            changedItems = self._analyzeExternalChanges(changes)
 
             externalChange = None
             reloadPattern = None
-
-            if rebuildGlyphSetContents:
-                for glyphSet in self.ufoGlyphSets.values():
-                    glyphSet.rebuildContents()
-
             glyphMapChanges = []
-            for glyphName in newGlyphNames:
+
+            for glyphName in changedItems.newGlyphs:
                 glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
                 gn, unicodes = extractGlyphNameAndUnicodes(glifData)
                 glyphMapChanges.append((glyphName, unicodes))
 
-            for glyphName in deletedGlyphNames:
+            for glyphName in changedItems.deletedGlyphs:
                 glyphMapChanges.append((glyphName, None))
 
             if glyphMapChanges:
@@ -286,16 +278,16 @@ class DesignspaceBackend:
                 else:
                     externalChange["c"] = subChanges
 
-            if glyphNames:
-                reloadPattern = {"glyphs": dict.fromkeys(glyphNames)}
+            if changedItems.changedGlyphs:
+                reloadPattern = {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
 
             if externalChange or reloadPattern:
                 yield externalChange, reloadPattern
 
     def _analyzeExternalChanges(self, changes):
-        glyphNames = set()
-        newGlyphNames = set()
-        deletedGlyphNames = set()
+        changedGlyphs = set()
+        newGlyphs = set()
+        deletedGlyphs = set()
         rebuildGlyphSetContents = False
         for change, path in changes:
             fileName = os.path.basename(path)
@@ -312,7 +304,7 @@ class DesignspaceBackend:
                     # The glyph was deleted from the default source,
                     # do a full delete
                     del self.glifFileNames[fileName]
-                    deletedGlyphNames.add(glyphName)
+                    deletedGlyphs.add(glyphName)
                 # else:
                 # The glyph was deleted from a non-default source,
                 # just reload.
@@ -322,7 +314,7 @@ class DesignspaceBackend:
                     with open(path, "rb") as f:
                         glyphName, _ = extractGlyphNameAndUnicodes(f.read())
                     self.glifFileNames[fileName] = glyphName
-                    newGlyphNames.add(glyphName)
+                    newGlyphs.add(glyphName)
                     continue
             else:
                 assert change == watchfiles.Change.modified
@@ -345,9 +337,17 @@ class DesignspaceBackend:
                     f"external change '{glyphName}' {mtime} "
                     f"{savedMTimes} {mtime in savedMTimes}"
                 )
-                glyphNames.add(glyphName)
+                changedGlyphs.add(glyphName)
 
-        return glyphNames, newGlyphNames, deletedGlyphNames, rebuildGlyphSetContents
+        if rebuildGlyphSetContents:
+            for glyphSet in self.ufoGlyphSets.values():
+                glyphSet.rebuildContents()
+
+        return SimpleNamespace(
+            changedGlyphs=changedGlyphs,
+            newGlyphs=newGlyphs,
+            deletedGlyphs=deletedGlyphs,
+        )
 
 
 class UFOBackend:
