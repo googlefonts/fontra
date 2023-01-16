@@ -92,6 +92,7 @@ class FontHandler:
                     await self.reloadData(reloadPattern)
             except Exception as e:
                 logger.error("exception in external changes watcher: %r", e)
+                traceback.print_exc()
 
     def _processWritesTaskDone(self, task):
         # Signal that the write-"thread" is no longer running
