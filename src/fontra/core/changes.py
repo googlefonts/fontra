@@ -252,6 +252,23 @@ def subtractFromPattern(matchPattern, pathOrPattern):
     return _subtractPatternFromPattern(matchPattern, pathOrPattern)
 
 
+def intersectPatterns(patternA, patternB):
+    result = {}
+    for key, valueA in patternA.items():
+        valueB = patternB.get(key, _MISSING)
+        if valueB is _MISSING:
+            continue
+        if valueA is None:
+            result[key] = valueB
+        elif valueB is None:
+            result[key] = valueA
+        else:
+            childResult = intersectPatterns(valueA, valueB)
+            if childResult:
+                result[key] = childResult
+    return result
+
+
 def _addPatternToPattern(matchPattern, patternToAdd):
     result = {**matchPattern}
     for key, valueB in patternToAdd.items():
