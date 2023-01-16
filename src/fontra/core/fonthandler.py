@@ -86,7 +86,7 @@ class FontHandler:
         async for change, reloadPattern in self.backend.watchExternalChanges():
             try:
                 if change is not None:
-                    self.updateLocalDataAndWriteToBackend(change, None, False)
+                    await self.updateLocalDataAndWriteToBackend(change, None, False)
                     await self.broadcastChange(change, None, False)
                 if reloadPattern is not None:
                     await self.reloadData(reloadPattern)
