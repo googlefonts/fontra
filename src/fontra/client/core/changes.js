@@ -289,17 +289,17 @@ export function applyChange(subject, change) {
 
 
 export function matchChangePath(change, matchPath) {
-  return matchChangePattern(change, pathToPattern(matchPath));
+  return matchChangePattern(change, patternFromPath(matchPath));
 }
 
 
-function pathToPattern(matchPath) {
+function patternFromPath(matchPath) {
   const pattern = {};
   let node;
   if (matchPath.length == 1) {
     node = null;
   } else if (matchPath.length > 1) {
-    node = pathToPattern(matchPath.slice(1));
+    node = patternFromPath(matchPath.slice(1));
   }
   if (node !== undefined) {
     pattern[matchPath[0]] = node;
