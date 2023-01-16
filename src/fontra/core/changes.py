@@ -214,6 +214,7 @@ def _normalizeChange(change):
 
 
 def patternFromPath(matchPath):
+    """Given a list of path elements, return a pattern dict."""
     pattern = {}
     if matchPath:
         pattern[matchPath[0]] = (
@@ -223,12 +224,8 @@ def patternFromPath(matchPath):
 
 
 def patternUnion(patternA, patternB):
-    """Return a pattern which is the sum of `patternA` and `patternB`:
-    it matches both input arguments.
-
-    If `patternA` matches a prefix of `patternB`, or if `patternB`
-    is already included in `patternA`, the return value will be equal to
-    `patternA`.
+    """Return a pattern which is the union of `patternA` and `patternB`:
+    the result will match everything from `patternA` and `patternB`.
     """
     result = {**patternA}
     for key, valueB in patternB.items():
@@ -245,12 +242,8 @@ def patternUnion(patternA, patternB):
 
 
 def patternDifference(patternA, patternB):
-    """Return a pattern which is `patternA` with `patternB` subtracted:
-    it does not match `patternB`.
-
-    If `patternA` matches a prefix of `patternB`, or if `patternB`
-    was not included in `patternA` to begin with, the return value will be
-    equal to `patternA`.
+    """Return a pattern which is `patternA` minus `patternB`: the result will
+    only match the items from `patternA` that are not included in `patternB`.
     """
     result = {**patternA}
     for key, valueB in patternB.items():
