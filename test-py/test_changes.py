@@ -14,23 +14,12 @@ from fontra.core.changes import (
 )
 
 
-applyChangeTestDataPath = (
-    pathlib.Path(__file__).parent.parent / "test-common" / "apply-change-test-data.json"
-)
+def getTestData(fileName):
+    path = pathlib.Path(__file__).parent.parent / "test-common" / fileName
+    return json.loads(path.read_text(encoding="utf-8"))
 
-matchChangePatternTestDataPath = (
-    pathlib.Path(__file__).parent.parent
-    / "test-common"
-    / "match-change-pattern-test-data.json"
-)
 
-collectChangePathsTestDataPath = (
-    pathlib.Path(__file__).parent.parent
-    / "test-common"
-    / "collect-change-paths-test-data.json"
-)
-
-applyChangeTestData = json.loads(applyChangeTestDataPath.read_text(encoding="utf-8"))
+applyChangeTestData = getTestData("apply-change-test-data.json")
 applyChangeTestInputData = applyChangeTestData["inputData"]
 
 
@@ -177,7 +166,7 @@ def test_patternIntersect(patternA, patternB, expectedPattern):
 
 @pytest.mark.parametrize(
     "change, pattern, expectedResult",
-    json.loads(matchChangePatternTestDataPath.read_text(encoding="utf-8")),
+    getTestData("match-change-pattern-test-data.json"),
 )
 def test_matchChangePattern(change, pattern, expectedResult):
     result = matchChangePattern(change, pattern)
@@ -405,7 +394,7 @@ def test_filterChangePattern_inverse(change, pattern, expectedResult):
 
 @pytest.mark.parametrize(
     "change, depth, expectedPaths",
-    json.loads(collectChangePathsTestDataPath.read_text(encoding="utf-8")),
+    getTestData("collect-change-paths-test-data.json"),
 )
 def test_collectChangePaths(change, depth, expectedPaths):
     paths = collectChangePaths(change, depth)
