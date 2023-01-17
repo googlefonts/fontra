@@ -382,11 +382,11 @@ export function filterChangePattern(change, matchPattern, inverse) {
     delete result.a;
   }
 
-  return _normalizeChange(result);
+  return normalizeChange(result);
 }
 
 
-function _normalizeChange(change) {
+function normalizeChange(change) {
   let result;
   const children = change.c || [];
 
