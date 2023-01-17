@@ -18,10 +18,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 
+function getTestData(fileName) {
+  const path = join(dirname(__dirname), "test-common/" + fileName);
+  return JSON.parse(fs.readFileSync(path, "utf8"));
+}
+
+
 describe("applyChange Tests", () => {
 
-  const test_data_path = join(dirname(__dirname), "test-common/apply-change-test-data.json");
-  const test_data = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
+  const test_data = getTestData("apply-change-test-data.json");
   const inputData = test_data["inputData"];
   const tests = test_data["tests"];
 
@@ -43,8 +48,7 @@ describe("applyChange Tests", () => {
 
 describe("matchChangePattern Tests", () => {
 
-  const test_data_path = join(dirname(__dirname), "test-common/match-change-pattern-test-data.json");
-  const tests = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
+  const tests = getTestData("match-change-pattern-test-data.json");
 
   for (let i = 0; i < tests.length; i++) {
     const [change, pattern, expectedResult] = tests[i];
@@ -87,8 +91,7 @@ describe("matchChangePath Tests", () => {
 
 describe("collectChangePaths Tests", () => {
 
-  const test_data_path = join(dirname(__dirname), "test-common/collect-change-paths-test-data.json");
-  const tests = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
+  const tests = getTestData("collect-change-paths-test-data.json");
 
   for (let i = 0; i < tests.length; i++) {
     const [change, depth, expectedPaths] = tests[i];
