@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 
 
 function getTestData(fileName) {
-  const path = join(dirname(__dirname), "test-common/" + fileName);
+  const path = join(dirname(__dirname), "test-common", fileName);
   return JSON.parse(fs.readFileSync(path, "utf8"));
 }
 
