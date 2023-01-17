@@ -10,6 +10,7 @@ from typing import Any
 from .changes import (
     applyChange,
     collectChangePaths,
+    filterChangePattern,
     patternDifference,
     patternFromPath,
     patternIntersect,
@@ -187,15 +188,15 @@ class FontHandler:
 
     @remoteMethod
     async def getGlyphMap(self, *, connection):
-        return await self.backend.getGlyphMap()
+        return await self.getData("glyphMap")
 
     @remoteMethod
     async def getGlobalAxes(self, *, connection):
-        return await self.backend.getGlobalAxes()
+        return await self.getData("axes")
 
     @remoteMethod
     async def getUnitsPerEm(self, *, connection):
-        return await self.backend.getUnitsPerEm()
+        return await self.getData("unitsPerEm")
 
     @remoteMethod
     async def getFontLib(self, *, connection):
@@ -264,11 +265,34 @@ class FontHandler:
     ):
         if self.readOnly:
             writeToBackEnd = False
+
+        if not writeToBackEnd:
+            # The change is coming from the backend:
+            # - Only apply the change to data we already have
+            # - Loading it from the backend would give as the already
+            #   changed data, for which the change isn't valid
+            # So: filter the change based on the data we have
+            localPattern = self._getLocalDataPattern()
+            change = filterChangePattern(change, localPattern)
+            if change is None:
+                return
+
         rootKeys, rootObject = await self._prepareRootObject(change)
         applyChange(rootObject, change)
         await self._updateLocalData(
             rootKeys, rootObject, sourceConnection, writeToBackEnd
         )
+
+    def _getLocalDataPattern(self):
+        localPattern = {}
+        for key in self.localData:
+            if isinstance(key, tuple):
+                rootKey, subKey = key
+                subPattern = localPattern.setdefault(rootKey, {})
+                subPattern[subKey] = None
+            else:
+                localPattern[key] = None
+        return localPattern
 
     async def _prepareRootObject(self, change):
         rootObject = Font()
