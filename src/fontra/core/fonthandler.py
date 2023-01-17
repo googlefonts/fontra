@@ -200,7 +200,7 @@ class FontHandler:
 
     @remoteMethod
     async def getFontLib(self, *, connection):
-        return await self.backend.getFontLib()
+        return await self.getData("lib")
 
     def _getClientData(self, connection, key, default=None):
         return self.clientData[connection.clientUUID].get(key, default)
