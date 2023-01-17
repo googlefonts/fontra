@@ -7,6 +7,7 @@ import {
   applyChange,
   collectChangePaths,
   consolidateChanges,
+  filterChangePattern,
   matchChangePath,
   matchChangePattern,
 } from "../src/fontra/client/core/changes.js";
@@ -83,6 +84,22 @@ describe("matchChangePath Tests", () => {
     it(`matchChangePath Test #${i}`, () => {
       const result = matchChangePath(change, path);
       expect(result).to.equal(expectedResult);
+    });
+  }
+
+});
+
+
+describe("filterChangePattern Tests", () => {
+
+  const tests = getTestData("filter-change-pattern-test-data.json");
+
+  for (let i = 0; i < tests.length; i++) {
+    const [change, pattern, inverse, expectedResult] = tests[i];
+
+    it(`filterChangePattern Test #${i}`, () => {
+      const result = filterChangePattern(change, pattern, inverse);
+      expect(result).to.deep.equal(expectedResult);
     });
   }
 

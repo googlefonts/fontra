@@ -340,6 +340,88 @@ export function matchChangePattern(change, matchPattern) {
 }
 
 
+export function filterChangePattern(change, matchPattern, inverse) {
+  //
+  // Return a subset of the `change` according to the `matchPattern`, or `None`
+  // if the `change` doesn't match `matchPattern` at all. If there is a match,
+  // all parts of the change that do not match are not included in the returned
+  // change object.
+
+  // A `matchPattern` is tree in the form of a dict, where keys are change path
+  // elements, and values are either nested pattern dicts or `None`, to indicate
+  // a leaf node.
+
+  // If `inverse` is True, `matchPattern` is used to exclude the change items
+  // that match from the return value.
+  //
+  let node = matchPattern;
+  for (const pathElement of change.p || []) {
+    const childNode = node[pathElement];
+    if (childNode === undefined) {
+      return inverse ? change : null;
+    }
+    if (childNode === null) {
+      // leaf node
+      return inverse ? null : change;
+    }
+    node = childNode;
+  }
+
+  const filteredChildren = [];
+  for (let childChange of change.c || []) {
+    childChange = filterChangePattern(childChange, node, inverse)
+    if (childChange !== null) {
+      filteredChildren.push(childChange);
+    }
+  }
+
+  const result = {...change, "c": filteredChildren};
+  if (!inverse) {
+    // We've at most matched one or more children, but not the root change
+    delete result.f;
+    delete result.a;
+  }
+
+  return _normalizeChange(result);
+}
+
+
+function _normalizeChange(change) {
+  let result;
+  const children = change.c || [];
+
+  if (!("f" in change) && children.length == 1) {
+      // Turn only child into root change
+      result = {...children[0]};
+      // Prefix child path with original root path
+      result["p"] = (change.p || []).concat(result.p || []);
+  } else {
+    result = {...change};
+  }
+
+  if (result.p !== undefined && !result.p.length) {
+    // Remove empty path
+    delete result.p;
+  }
+
+  if (result.c !== undefined && !result.c.length) {
+    // Remove empty children list
+    delete result.c;
+  }
+
+  if (result.p !== undefined && Object.keys(result).length === 1) {
+    // Nothing left but a path: no-op change
+    delete result.p;
+  }
+
+  if (!hasChange(result)) {
+    result = null;
+  }
+
+  return result
+}
+
+
 export function collectChangePaths(change, depth) {
   //
   // Return a sorted list of paths of the specified `depth` that the `change`
