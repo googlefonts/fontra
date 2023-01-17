@@ -14,23 +14,12 @@ from fontra.core.changes import (
 )
 
 
-applyChangeTestDataPath = (
-    pathlib.Path(__file__).parent.parent / "test-common" / "apply-change-test-data.json"
-)
+def getTestData(fileName):
+    path = pathlib.Path(__file__).parent.parent / "test-common" / fileName
+    return json.loads(path.read_text(encoding="utf-8"))
 
-matchChangePatternTestDataPath = (
-    pathlib.Path(__file__).parent.parent
-    / "test-common"
-    / "match-change-pattern-test-data.json"
-)
 
-collectChangePathsTestDataPath = (
-    pathlib.Path(__file__).parent.parent
-    / "test-common"
-    / "collect-change-paths-test-data.json"
-)
-
-applyChangeTestData = json.loads(applyChangeTestDataPath.read_text(encoding="utf-8"))
+applyChangeTestData = getTestData("apply-change-test-data.json")
 applyChangeTestInputData = applyChangeTestData["inputData"]
 
 
@@ -177,7 +166,7 @@ def test_patternIntersect(patternA, patternB, expectedPattern):
 
 @pytest.mark.parametrize(
     "change, pattern, expectedResult",
-    json.loads(matchChangePatternTestDataPath.read_text(encoding="utf-8")),
+    getTestData("match-change-pattern-test-data.json"),
 )
 def test_matchChangePattern(change, pattern, expectedResult):
     result = matchChangePattern(change, pattern)
@@ -185,227 +174,17 @@ def test_matchChangePattern(change, pattern, expectedResult):
 
 
 @pytest.mark.parametrize(
-    "change, pattern, expectedResult",
-    [
-        (
-            {},
-            {},
-            None,
-        ),
-        (
-            {"p": ["A"], "f": "*"},
-            {"A": None},
-            {"p": ["A"], "f": "*"},
-        ),
-        (
-            {"p": ["A"], "f": "*"},
-            {"A": None, "B": None},
-            {"p": ["A"], "f": "*"},
-        ),
-        (
-            {"p": ["A"], "f": "*", "c": [{}]},
-            {"A": None},
-            {"p": ["A"], "f": "*", "c": [{}]},
-        ),
-        (
-            {"p": ["A"], "f": "*"},
-            {"A": {"B": None}},
-            None,
-        ),
-        (
-            {"p": ["A", "B"], "f": "*"},
-            {"A": None},
-            {"p": ["A", "B"], "f": "*"},
-        ),
-        (
-            {"p": ["A", "B"], "f": "*"},
-            {"A": {"B": None}},
-            {"p": ["A", "B"], "f": "*"},
-        ),
-        (
-            {"p": ["A"], "f": "*"},
-            {"B": None},
-            None,
-        ),
-        (
-            {"c": [{"p": ["A"], "f": "*"}], "f": "!"},
-            {"A": None},
-            {"p": ["A"], "f": "*"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}]},
-            {"A": {"B": None}},
-            {"p": ["A", "B"], "f": "*"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"]}]},
-            {"A": {"C": None}},
-            None,
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"]}]},
-            {"B": {"B": None}},
-            None,
-        ),
-        (
-            {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
-            {"A": None},
-            {"p": ["A"], "f": "*"},
-        ),
-        (
-            {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
-            {"B": None},
-            {"p": ["B"], "f": "!"},
-        ),
-        (
-            {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
-            {"C": None},
-            None,
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-            {"A": {"B": None}},
-            {"p": ["A", "B"], "f": "*"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-            {"A": {"C": None}},
-            {"p": ["A", "C"], "f": "!"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-            {"A": {"D": None}},
-            None,
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-            {"A": {"B": None, "C": None}},
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-        ),
-    ],
+    "change, pattern, inverse, expectedResult",
+    getTestData("filter-change-pattern-test-data.json"),
 )
-def test_filterChangePattern(change, pattern, expectedResult):
-    result = filterChangePattern(change, pattern)
-    assert expectedResult == result
-
-
-@pytest.mark.parametrize(
-    "change, pattern, expectedResult",
-    [
-        (
-            {},
-            {},
-            None,
-        ),
-        (
-            {"p": ["A"], "f": "*"},
-            {"A": None},
-            None,
-        ),
-        (
-            {"p": ["A"], "f": "*"},
-            {"A": None, "B": None},
-            None,
-        ),
-        (
-            {"p": ["A"], "f": "*", "c": [{}]},
-            {"A": None},
-            None,
-        ),
-        (
-            {"p": ["A"], "f": "*"},
-            {"A": {"B": None}},
-            {"p": ["A"], "f": "*"},
-        ),
-        (
-            {"p": ["A", "B"], "f": "*"},
-            {"A": None},
-            None,
-        ),
-        (
-            {"p": ["A", "B"], "f": "*"},
-            {"A": {"B": None}},
-            None,
-        ),
-        (
-            {"p": ["A"], "f": "*"},
-            {"B": None},
-            {"p": ["A"], "f": "*"},
-        ),
-        (
-            {"c": [{"p": ["A"], "f": "*"}], "f": "!"},
-            {"A": None},
-            {"f": "!"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}], "f": "!"},
-            {"A": {"B": None}},
-            {"p": ["A"], "f": "!"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}], "f": "!"},
-            {"A": {"C": None}},
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}], "f": "!"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"]}]},
-            {"B": {"B": None}},
-            {"p": ["A"], "c": [{"p": ["B"]}]},
-        ),
-        (
-            {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
-            {"A": None},
-            {"p": ["B"], "f": "!"},
-        ),
-        (
-            {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
-            {"B": None},
-            {"p": ["A"], "f": "*"},
-        ),
-        (
-            {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
-            {"C": None},
-            {"c": [{"p": ["A"], "f": "*"}, {"p": ["B"], "f": "!"}]},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-            {"A": {"B": None}},
-            {"p": ["A", "C"], "f": "!"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-            {"A": {"C": None}},
-            {"p": ["A", "B"], "f": "*"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-            {"A": {"D": None}},
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-        ),
-        (
-            {
-                "p": ["A"],
-                "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}],
-                "f": "*",
-            },
-            {"A": {"B": None, "C": None}},
-            {"p": ["A"], "f": "*"},
-        ),
-        (
-            {"p": ["A"], "c": [{"p": ["B"], "f": "*"}, {"p": ["C"], "f": "!"}]},
-            {"A": {"B": None, "C": None}},
-            None,
-        ),
-    ],
-)
-def test_filterChangePattern_inverse(change, pattern, expectedResult):
-    result = filterChangePattern(change, pattern, inverse=True)
+def test_filterChangePattern_inverse(change, pattern, inverse, expectedResult):
+    result = filterChangePattern(change, pattern, inverse=inverse)
     assert expectedResult == result
 
 
 @pytest.mark.parametrize(
     "change, depth, expectedPaths",
-    json.loads(collectChangePathsTestDataPath.read_text(encoding="utf-8")),
+    getTestData("collect-change-paths-test-data.json"),
 )
 def test_collectChangePaths(change, depth, expectedPaths):
     paths = collectChangePaths(change, depth)

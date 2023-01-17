@@ -13,7 +13,7 @@ const __dirname = dirname(__filename)
 
 describe("Path Changes Tests", () => {
 
-  const test_data_path = join(dirname(__dirname), "test-common/path-change-test-data.json");
+  const test_data_path = join(dirname(__dirname), "test-common", "path-change-test-data.json");
   const test_data = JSON.parse(fs.readFileSync(test_data_path, "utf8"));
   const inputPaths = test_data["inputPaths"];
   const tests = test_data["tests"];
