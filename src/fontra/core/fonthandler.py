@@ -87,7 +87,7 @@ class FontHandler:
         async for change, reloadPattern in self.backend.watchExternalChanges():
             try:
                 if change is not None:
-                    await self.updateLocalDataAndWriteToBackend(change, None, False)
+                    await self.updateLocalDataWithExternalChange(change)
                     await self.broadcastChange(change, None, False)
                 if reloadPattern is not None:
                     await self.reloadData(reloadPattern)
@@ -260,13 +260,16 @@ class FontHandler:
             *[connection.proxy.externalChange(change) for connection in connections]
         )
 
-    async def updateLocalDataAndWriteToBackend(
-        self, change, sourceConnection, writeToBackEnd=True
-    ):
-        if self.readOnly:
-            writeToBackEnd = False
+    async def updateLocalDataWithExternalChange(self, change):
+        await self._updateLocalDataAndWriteToBackend(change, None, True)
 
-        if not writeToBackEnd:
+    async def updateLocalDataAndWriteToBackend(self, change, sourceConnection):
+        await self._updateLocalDataAndWriteToBackend(change, sourceConnection, False)
+
+    async def _updateLocalDataAndWriteToBackend(
+        self, change, sourceConnection, isExternalChange
+    ):
+        if isExternalChange:
             # The change is coming from the backend:
             # - Only apply the change to data we already have
             # - Loading it from the backend would give as the already
@@ -280,7 +283,10 @@ class FontHandler:
         rootKeys, rootObject = await self._prepareRootObject(change)
         applyChange(rootObject, change)
         await self._updateLocalData(
-            rootKeys, rootObject, sourceConnection, writeToBackEnd
+            rootKeys,
+            rootObject,
+            sourceConnection,
+            not isExternalChange and not self.readOnly,
         )
 
     def _getLocalDataPattern(self):
