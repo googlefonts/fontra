@@ -14,6 +14,7 @@ from fontTools.ufoLib import UFOReader
 from fontTools.ufoLib.glifLib import GlyphSet
 from .ufo_utils import extractGlyphNameAndUnicodes
 import watchfiles
+from ..core.changes import applyChange
 from ..core.classes import (
     Component,
     Layer,
@@ -121,7 +122,7 @@ class DesignspaceBackend:
             glifFileNames[fileName] = glyphName
 
     async def getGlyphMap(self):
-        return self.glyphMap
+        return dict(self.glyphMap)
 
     async def getGlyph(self, glyphName):
         if glyphName not in self.glyphMap:
@@ -249,15 +250,17 @@ class DesignspaceBackend:
         async for changes in watchfiles.awatch(*ufoPaths):
             changedItems = self._analyzeExternalChanges(changes)
 
-            glyphMapUpdates = []
+            glyphMapUpdates = {}
+
+            # TODO: update glyphMap for changed non-new glyphs
 
             for glyphName in changedItems.newGlyphs:
                 glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
                 gn, unicodes = extractGlyphNameAndUnicodes(glifData)
-                glyphMapUpdates.append((glyphName, unicodes))
+                glyphMapUpdates[glyphName] = unicodes
 
             for glyphName in changedItems.deletedGlyphs:
-                glyphMapUpdates.append((glyphName, None))
+                glyphMapUpdates[glyphName] = None
 
             externalChange = (
                 _makeGlyphMapChange(glyphMapUpdates) if glyphMapUpdates else None
@@ -268,6 +271,10 @@ class DesignspaceBackend:
                 if changedItems.changedGlyphs
                 else None
             )
+
+            if externalChange:
+                rootObject = {"glyphMap": self.glyphMap}
+                applyChange(rootObject, externalChange)
 
             if externalChange or reloadPattern:
                 yield externalChange, reloadPattern
@@ -343,11 +350,11 @@ class DesignspaceBackend:
 def _makeGlyphMapChange(glyphMapUpdates):
     changes = [
         {"f": "=", "a": [glyphName, unicodes]}
-        for glyphName, unicodes in glyphMapUpdates
+        for glyphName, unicodes in glyphMapUpdates.items()
         if unicodes is not None
     ] + [
         {"f": "d", "a": [glyphName]}
-        for glyphName, unicodes in glyphMapUpdates
+        for glyphName, unicodes in glyphMapUpdates.items()
         if unicodes is None
     ]
     glyphMapChange = {"p": ["glyphMap"]}

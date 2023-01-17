@@ -10,6 +10,7 @@ from typing import Any
 from .changes import (
     applyChange,
     collectChangePaths,
+    filterChangePattern,
     patternDifference,
     patternFromPath,
     patternIntersect,
@@ -86,7 +87,7 @@ class FontHandler:
         async for change, reloadPattern in self.backend.watchExternalChanges():
             try:
                 if change is not None:
-                    await self.updateLocalDataAndWriteToBackend(change, None, False)
+                    await self.updateLocalDataWithExternalChange(change)
                     await self.broadcastChange(change, None, False)
                 if reloadPattern is not None:
                     await self.reloadData(reloadPattern)
@@ -187,19 +188,19 @@ class FontHandler:
 
     @remoteMethod
     async def getGlyphMap(self, *, connection):
-        return await self.backend.getGlyphMap()
+        return await self.getData("glyphMap")
 
     @remoteMethod
     async def getGlobalAxes(self, *, connection):
-        return await self.backend.getGlobalAxes()
+        return await self.getData("axes")
 
     @remoteMethod
     async def getUnitsPerEm(self, *, connection):
-        return await self.backend.getUnitsPerEm()
+        return await self.getData("unitsPerEm")
 
     @remoteMethod
     async def getFontLib(self, *, connection):
-        return await self.backend.getFontLib()
+        return await self.getData("lib")
 
     def _getClientData(self, connection, key, default=None):
         return self.clientData[connection.clientUUID].get(key, default)
@@ -259,16 +260,45 @@ class FontHandler:
             *[connection.proxy.externalChange(change) for connection in connections]
         )
 
-    async def updateLocalDataAndWriteToBackend(
-        self, change, sourceConnection, writeToBackEnd=True
+    async def updateLocalDataWithExternalChange(self, change):
+        await self._updateLocalDataAndWriteToBackend(change, None, True)
+
+    async def updateLocalDataAndWriteToBackend(self, change, sourceConnection):
+        await self._updateLocalDataAndWriteToBackend(change, sourceConnection, False)
+
+    async def _updateLocalDataAndWriteToBackend(
+        self, change, sourceConnection, isExternalChange
     ):
-        if self.readOnly:
-            writeToBackEnd = False
+        if isExternalChange:
+            # The change is coming from the backend:
+            # - Only apply the change to data we already have
+            # - Loading it from the backend would give as the already
+            #   changed data, for which the change isn't valid
+            # So: filter the change based on the data we have
+            localPattern = self._getLocalDataPattern()
+            change = filterChangePattern(change, localPattern)
+            if change is None:
+                return
+
         rootKeys, rootObject = await self._prepareRootObject(change)
         applyChange(rootObject, change)
         await self._updateLocalData(
-            rootKeys, rootObject, sourceConnection, writeToBackEnd
+            rootKeys,
+            rootObject,
+            sourceConnection,
+            not isExternalChange and not self.readOnly,
         )
+
+    def _getLocalDataPattern(self):
+        localPattern = {}
+        for key in self.localData:
+            if isinstance(key, tuple):
+                rootKey, subKey = key
+                subPattern = localPattern.setdefault(rootKey, {})
+                subPattern[subKey] = None
+            else:
+                localPattern[key] = None
+        return localPattern
 
     async def _prepareRootObject(self, change):
         rootObject = Font()

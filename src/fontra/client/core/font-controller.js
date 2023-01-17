@@ -2,6 +2,7 @@ import {
   applyChange,
   collectChangePaths,
   consolidateChanges,
+  filterChangePattern,
   matchChangePath,
 } from "./changes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
@@ -219,6 +220,9 @@ export class FontController {
   }
 
   async applyChange(change, isExternalChange) {
+    const cachedPattern = this.getCachedDataPattern();
+    change = filterChangePattern(change, cachedPattern);
+
     const glyphNames = collectGlyphNames(change);
     const glyphSet = {};
     for (const glyphName of glyphNames) {
@@ -234,6 +238,19 @@ export class FontController {
         delete this.undoStacks[glyphName];
       }
     }
+  }
+
+  getCachedDataPattern() {
+    const cachedPattern = {};
+    for (const rootKey of Object.keys(this._rootObject)) {
+      cachedPattern[rootKey] = null;
+    }
+    const glyphsPattern = {};
+    for (const glyphName of this.getCachedGlyphNames()) {
+      glyphsPattern[glyphName] = null;
+    }
+    cachedPattern["glyphs"] = glyphsPattern;
+    return cachedPattern;
   }
 
   *iterGlyphMadeOf(glyphName) {
