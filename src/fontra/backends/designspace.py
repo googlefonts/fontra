@@ -272,9 +272,9 @@ class DesignspaceBackend:
                 else None
             )
 
-            # if externalChange:
-            #     rootObject = {"glyphMap": self.glyphMap}
-            #     applyChange(rootObject, externalChange)
+            if externalChange:
+                rootObject = {"glyphMap": self.glyphMap}
+                applyChange(rootObject, externalChange)
 
             if externalChange or reloadPattern:
                 yield externalChange, reloadPattern
