@@ -262,9 +262,7 @@ class DesignspaceBackend:
             for glyphName in changedItems.deletedGlyphs:
                 glyphMapUpdates[glyphName] = None
 
-            externalChange = (
-                _makeGlyphMapChange(glyphMapUpdates) if glyphMapUpdates else None
-            )
+            externalChange = makeGlyphMapChange(glyphMapUpdates)
 
             reloadPattern = (
                 {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
@@ -347,7 +345,9 @@ class DesignspaceBackend:
             changedItems.changedGlyphs.add(glyphName)
 
 
-def _makeGlyphMapChange(glyphMapUpdates):
+def makeGlyphMapChange(glyphMapUpdates):
+    if not glyphMapUpdates:
+        return None
     changes = [
         {"f": "=", "a": [glyphName, unicodes]}
         for glyphName, unicodes in glyphMapUpdates.items()
