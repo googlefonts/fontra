@@ -704,9 +704,19 @@ export class EditorController {
   }
 
   async externalChange(change) {
-    await this.fontController.applyChange(change, true);
-    await this.sceneController.sceneModel.updateScene();
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
+    const editState = this.sceneController.sceneModel.getSelectedGlyphState();
+
+    await this.fontController.applyChange(change, true);
+
+    if (matchChangePath(change, ["glyphMap"])) {
+      this.sceneController.sceneModel.updateGlyphLinesCharacterMapping();
+      if (editState?.isEditing && !this.fontController.hasGlyph(selectedGlyphName)) {
+        // The glyph being edited got deleted, change state merely "selected"
+        this.sceneController.sceneModel.setSelectedGlyphState({...editState, "isEditing": false});
+      }
+    }
+    await this.sceneController.sceneModel.updateScene();
     if (selectedGlyphName !== undefined && matchChangePath(change, ["glyphs", selectedGlyphName])) {
       this.updateSelectionInfo();
     }
@@ -1204,10 +1214,12 @@ async function glyphNamesFromText(text, characterMap, glyphMap, getSuggestedGlyp
       char = String.fromCodePoint(charCode);
     }
     if (glyphName !== "") {
+      let isUndefined = false;
       if (!glyphName && char) {
         glyphName = await getSuggestedGlyphNameFunc(char.codePointAt(0));
+        isUndefined = true;
       }
-      glyphNames.push({character: char, glyphName: glyphName});
+      glyphNames.push({character: char, glyphName: glyphName, isUndefined: isUndefined});
     }
   }
   return glyphNames;
