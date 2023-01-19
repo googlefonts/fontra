@@ -1,3 +1,6 @@
+import { getUniStringFromUnicode } from "./utils.js";
+
+
 //
 // A `characterMap` is an object with integer numbers representing unicode code
 // points as keys, and glyph names as values. Note: we're using a JS Object, not
@@ -42,7 +45,10 @@ export function makeCharacterMapFromGlyphMap(glyphMap, strict = true) {
   for (const [glyphName, unicodes] of Object.entries(glyphMap)) {
     for (const codePoint of unicodes) {
       if (codePoint in characterMap) {
-        const message = `invalid glyph map: duplicate code point (${codePoint})`;
+        const message = (
+          "invalid glyph map: duplicate code point " + 
+          `("${glyphName}", "${characterMap[codePoint]}", ${getUniStringFromUnicode(codePoint)})`
+        );
         if (strict) {
           throw new Error(message);
         }
