@@ -3,7 +3,7 @@ import { recordChanges } from "../core/change-recorder.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
 import { dialog }from "../core/ui-dialog.js";
-import { boolInt, modulo, parseSelection } from "../core/utils.js";
+import { boolInt, makeUPlusStringFromCodePoint, modulo, parseSelection } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
@@ -101,8 +101,8 @@ export class PointerTool extends BaseTool {
         sceneController.selectedGlyphIsEditing = false;
         // Create a new glyph
         // Or: ask user if they want to create a new glyph
-        const uniHex = positionedGlyph.character?.codePointAt(0).toString(16).toUpperCase().padStart(4, "0");
-        const charMsg = positionedGlyph.character ? ` for character “${positionedGlyph.character}” (U+${uniHex})` : "";
+        const uniString = makeUPlusStringFromCodePoint(positionedGlyph.character);
+        const charMsg = positionedGlyph.character ? ` for character “${positionedGlyph.character}” (${uniString})` : "";
         const result = await dialog(
           `Create a new glyph “${positionedGlyph.glyphName}”?`,
           `Click “Create” if you want to create a new glyph named “${positionedGlyph.glyphName}”${charMsg}.`,
