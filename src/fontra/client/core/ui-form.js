@@ -134,10 +134,20 @@ export class Form {
       };
       sliderElement.onchange = event => {
         // Single change, or final change after continuous changes
-        valueStream?.done();
-        valueStream = undefined;
-        this._dispatchEvent("endChange", {"key": fieldItem.key});
+        if (valueStream) {
+          valueStream.done();
+          valueStream = undefined;
+          this._dispatchEvent("endChange", {"key": fieldItem.key});
+        }
       }
+      sliderElement.onmouseup = event => {
+        // sliderElement.onchange is ONLY triggered when the final slider value
+        // is different from the initial value. However, we may have been in
+        // a live drag, and we need to handle the end of the slider drag no
+        // matter what the final value. To work around this, we also listen to
+        // "mouseup".
+        sliderElement.onchange(event);
+      };
     }
 
     inputElement.onchange = event => {
