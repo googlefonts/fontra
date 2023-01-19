@@ -1,4 +1,4 @@
-import { getUniStringFromUnicode } from "./utils.js";
+import { makeUPlusStringFromCodePoint } from "./utils.js";
 
 
 //
@@ -47,7 +47,7 @@ export function makeCharacterMapFromGlyphMap(glyphMap, strict = true) {
       if (codePoint in characterMap) {
         const message = (
           "invalid glyph map: duplicate code point " + 
-          `("${glyphName}", "${characterMap[codePoint]}", ${getUniStringFromUnicode(codePoint)})`
+          `("${glyphName}", "${characterMap[codePoint]}", ${makeUPlusStringFromCodePoint(codePoint)})`
         );
         if (strict) {
           throw new Error(message);

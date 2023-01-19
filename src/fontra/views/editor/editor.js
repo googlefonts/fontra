@@ -25,7 +25,7 @@ import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js"
 import {
   THEME_KEY,
   autoReload,
-  getUniStringFromUnicode,
+  makeUPlusStringFromCodePoint,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
   parseSelection,
@@ -245,7 +245,7 @@ export class EditorController {
     const columnDescriptions = [
       {"key": "char", "width": "2em", "get": item => getCharFromUnicode(item.unicodes[0])},
       {"key": "glyphName", "width": "10em", },
-      {"key": "unicode", "width": "5em", "get": item => getUniStringFromUnicode(item.unicodes[0])},
+      {"key": "unicode", "width": "5em", "get": item => makeUPlusStringFromCodePoint(item.unicodes[0])},
     ];
     this.glyphNamesList = new List("glyphs-list", columnDescriptions);
     this.glyphNamesList.addEventListener("listSelectionChanged", async event => {
@@ -887,7 +887,7 @@ export class EditorController {
       // But we can grab the unicode from positionedGlyph.character anyway.
       unicodes.push(positionedGlyph.character.codePointAt(0));
     }
-    const unicodesStr = unicodes.map(code => getUniStringFromUnicode(code)).join(" ");
+    const unicodesStr = unicodes.map(code => makeUPlusStringFromCodePoint(code)).join(" ");
     const canEdit = glyphController?.canEdit;
 
     const formContents = [];

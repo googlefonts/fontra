@@ -1,5 +1,5 @@
 import { isSuperset, union } from "../core/set-ops.js";
-import { getUniStringFromUnicode, parseSelection, withSavedState } from "../core/utils.js";
+import { makeUPlusStringFromCodePoint, parseSelection, withSavedState } from "../core/utils.js";
 import { subVectors } from "../core/vector.js";
 
 
@@ -161,7 +161,7 @@ export function drawUndefinedGlyphsLayer(model, controller) {
           context.scale(1, -1);
           context.fillText(glyph.glyphName, glyph.glyph.xAdvance / 2, 0);
           if (glyph.character) {
-            const uniStr = getUniStringFromUnicode(glyph.character.codePointAt(0));
+            const uniStr = makeUPlusStringFromCodePoint(glyph.character.codePointAt(0));
             context.fillText(uniStr, glyph.glyph.xAdvance / 2, -lineDistance * glyphNameFontSize);
             context.font = `${placeholderFontSize}px fontra-ui-regular, sans-serif`;
             context.fillText(
