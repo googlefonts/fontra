@@ -225,7 +225,13 @@ export class SceneModel {
     // available, but may have a different glyph name, or a character may no longer
     // be available, in which case we set the isUndefined flag
     this.glyphLines = this.glyphLines.map(line => line.map(glyphInfo => {
-      const glyphName = this.fontController.characterMap[glyphInfo.character.codePointAt(0)];
+      const glyphName = (
+        glyphInfo.character
+        ?
+        this.fontController.characterMap[glyphInfo.character.codePointAt(0)]
+        :
+        undefined
+      );
       if (glyphInfo.isUndefined && glyphName) {
         glyphInfo = {
           character: glyphInfo.character,
