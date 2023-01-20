@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import asdict
 from datetime import datetime
 from functools import cached_property
@@ -248,6 +249,7 @@ class DesignspaceBackend:
     async def watchExternalChanges(self):
         ufoPaths = sorted(self.ufoReaders)
         async for changes in watchfiles.awatch(*ufoPaths):
+            changes = cleanupWatchFilesChanges(changes)
             changedItems = self._analyzeExternalChanges(changes)
 
             glyphMapUpdates = {}
@@ -503,3 +505,20 @@ def cleanAffine(t):
     """Convert any integer float values into ints. This is to prevent glifLib
     from writing float values that can be integers."""
     return tuple(int(v) if int(v) == v else v for v in t)
+
+
+def cleanupWatchFilesChanges(changes):
+    # If a path is mentioned with more than one event type, we pick the most
+    # appropriate one among them:
+    # - if there is a delete event and the path does not exist: delete it is
+    # - else: keep the lowest sorted event (order: added, modified, deleted)
+    perPath = {}
+    for change, path in sorted(changes):
+        if path in perPath:
+            if change == watchfiles.Change.deleted and not os.path.exists(path):
+                # File doesn't exist, event to "deleted"
+                perPath[path] = watchfiles.Change.deleted
+            # else: keep the first event
+        else:
+            perPath[path] = change
+    return [(change, path) for path, change in perPath.items()]
