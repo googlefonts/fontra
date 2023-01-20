@@ -253,6 +253,10 @@ export class EditorController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
+    this.buildGlyphNamesListContent();
+  }
+
+  buildGlyphNamesListContent() {
     const glyphMap = this.fontController.glyphMap;
     this.glyphsListItems = [];
     for (const glyphName in glyphMap) {
