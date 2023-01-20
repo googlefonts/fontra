@@ -725,6 +725,7 @@ export class EditorController {
         // The glyph being edited got deleted, change state merely "selected"
         this.sceneController.sceneModel.setSelectedGlyphState({...editState, "isEditing": false});
       }
+      this.buildGlyphNamesListContent();
     }
     await this.sceneController.sceneModel.updateScene();
     if (selectedGlyphName !== undefined && matchChangePath(change, ["glyphs", selectedGlyphName])) {
