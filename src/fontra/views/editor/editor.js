@@ -248,6 +248,7 @@ export class EditorController {
       {"key": "unicode", "width": "5em", "get": item => makeUPlusStringFromCodePoint(item.unicodes[0])},
     ];
     this.glyphNamesList = new List("glyphs-list", columnDescriptions);
+    this.glyphNamesList.itemEqualFunc = (itemA, itemB) => itemA.glyphName === itemB.glyphName;
     this.glyphNamesList.addEventListener("listSelectionChanged", async event => {
       const list = event.detail;
       const item = list.items[list.selectedItemIndex];

@@ -23,6 +23,8 @@ export class List {
     }
     this.columnDescriptions = columnDescriptions
 
+    this.itemEqualFunc = null;
+
     this.contents = document.createElement("div");
     this.contents.className = "contents"
     this.container.appendChild(this.contents);
@@ -52,7 +54,19 @@ export class List {
   }
 
   setSelectedItem(item, shouldDispatchEvent = false) {
-    const index = this.items.indexOf(item);
+    let index = -1;
+    if (item && this.itemEqualFunc) {
+      const itemEqualFunc = this.itemEqualFunc;
+      const items = this.items;
+      for (let i = 0; i < items.length; i++) {
+        if (itemEqualFunc(item, items[i])) {
+          index = i;
+          break;
+        }
+      }
+    } else if (item) {
+      index = this.items.indexOf(item);
+    }
     if (index >= 0) {
       this.setSelectedItemIndex(index, shouldDispatchEvent);
     } else {
