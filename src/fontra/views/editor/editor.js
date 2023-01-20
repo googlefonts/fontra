@@ -253,6 +253,7 @@ export class EditorController {
       const item = list.items[list.selectedItemIndex];
       await this.glyphNameChangedCallback(item.glyphName);
     });
+    this.glyphNamesListFilterFunc = item => true;  // pass all through
     this.buildGlyphNamesListContent();
   }
 
@@ -263,7 +264,14 @@ export class EditorController {
       this.glyphsListItems.push({"glyphName": glyphName, "unicodes": glyphMap[glyphName]});
     }
     this.glyphsListItems.sort(glyphItemSortFunc);
-    this.glyphNamesList.setItems(this.glyphsListItems);
+    this.setFilteredGlyphNamesListContent();
+  }
+
+  setFilteredGlyphNamesListContent() {
+    const filteredGlyphItems = this.glyphsListItems.filter(this.glyphNamesListFilterFunc);
+    const selectedItem = this.glyphNamesList.getSelectedItem();
+    this.glyphNamesList.setItems(filteredGlyphItems);
+    this.glyphNamesList.setSelectedItem(selectedItem);
   }
 
   async initSliders() {
@@ -481,10 +489,8 @@ export class EditorController {
 
   async glyphSearchFieldChanged(value) {
     const searchItems = value.split(/\s+/).filter(item => item.length);
-    const filteredGlyphItems = this.glyphsListItems.filter(item => glyphFilterFunc(item, searchItems));
-    const selectedItem = this.glyphNamesList.getSelectedItem();
-    this.glyphNamesList.setItems(filteredGlyphItems);
-    this.glyphNamesList.setSelectedItem(selectedItem);
+    this.glyphNamesListFilterFunc = item => glyphFilterFunc(item, searchItems);
+    this.setFilteredGlyphNamesListContent();
   }
 
   async glyphNameChangedCallback(glyphName) {
