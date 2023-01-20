@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from dataclasses import asdict
 from datetime import datetime
 from functools import cached_property
