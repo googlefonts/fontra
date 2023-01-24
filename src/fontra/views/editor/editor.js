@@ -714,6 +714,14 @@ export class EditorController {
     delete this.contextMenu;
   }
 
+  async newGlyph(glyphName, codePoint, templateInstance) {
+    await this.fontController.newGlyph(glyphName, codePoint, templateInstance);
+    this.sceneController.sceneModel.updateGlyphLinesCharacterMapping();
+    await this.sceneController.sceneModel.updateScene();
+    this.canvasController.setNeedsUpdate();
+    this.buildGlyphNamesListContent();
+  }
+
   async externalChange(change) {
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     const editState = this.sceneController.sceneModel.getSelectedGlyphState();

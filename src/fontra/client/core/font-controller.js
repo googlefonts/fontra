@@ -143,6 +143,42 @@ export class FontController {
     }
   }
 
+  async newGlyph(glyphName, codePoint, templateInstance) {
+    if (this.glyphMap[glyphName]) {
+      throw new Error(`assert -- glyph "${glyphName}" already exists`);
+    }
+    const sourceName = "<default>";  // TODO: get from backend (via namedLocations?)
+
+    const glyph = VariableGlyph.fromObject({
+      "name": glyphName,
+      "sources": [{"name": sourceName, "location": {}, "layerName": sourceName}],
+      "layers": [{"name": sourceName, glyph: structuredClone(templateInstance)}],
+    });
+    const glyphController = new VariableGlyphController(glyph, this.globalAxes);
+    this._glyphsPromiseCache.put(glyphName, Promise.resolve(glyphController));
+
+    this.glyphMap[glyphName] = [codePoint];
+
+    await this.glyphChanged(glyphName);
+
+    const change = {"c":
+      [
+        {"p": ["glyphs"], "f": "=", "a": [glyphName, glyph]},
+        {"p": ["glyphMap"], "f": "=", "a": [glyphName, [codePoint]]},
+      ],
+    };
+    const rollbackChange = {"c":
+      [
+        {"p": ["glyphs"], "f": "d", "a": [glyphName]},
+        {"p": ["glyphMap"], "f": "d", "a": [glyphName]},
+      ],
+    }
+    const error = await this.font.editFinal(
+      change, rollbackChange, `new glyph "${glyphName}"`, true);
+    // TODO handle error
+    this.notifyEditListeners("editFinal", this);
+  }
+
   async glyphChanged(glyphName) {
     const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)]
     for (const glyphName of glyphNames) {
