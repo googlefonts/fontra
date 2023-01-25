@@ -328,6 +328,7 @@ class FontHandler:
         for rootKey in rootKeys + sorted(rootObject._assignedAttributeNames):
             if rootKey == "glyphs":
                 glyphSet = rootObject.glyphs
+                glyphMap = await self.getData("glyphMap")
                 for glyphName in sorted(glyphSet.keys()):
                     writeKey = ("glyphs", glyphName)
                     if glyphName in glyphSet.newKeys:
@@ -338,6 +339,7 @@ class FontHandler:
                         self.backend.putGlyph,
                         glyphName,
                         deepcopy(glyphSet[glyphName]),
+                        glyphMap.get(glyphName, []),
                     )
                     await self.scheduleDataWrite(writeKey, writeFunc, sourceConnection)
                 for glyphName in sorted(glyphSet.deletedKeys):
