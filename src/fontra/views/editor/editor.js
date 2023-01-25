@@ -893,11 +893,11 @@ export class EditorController {
     const glyphController = positionedGlyph?.glyph;
     const instance = glyphController?.instance;
     const glyphName = glyphController?.name;
-    const unicodes = this.fontController.glyphMap[glyphName] || [];
+    let unicodes = this.fontController.glyphMap[glyphName] || [];
     if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
       // Glyph does not yet exist in the font, so varGlyphController is undefined,
       // But we can grab the unicode from positionedGlyph.character anyway.
-      unicodes.push(positionedGlyph.character.codePointAt(0));
+      unicodes = [positionedGlyph.character.codePointAt(0)];
     }
     const unicodesStr = unicodes.map(code => makeUPlusStringFromCodePoint(code)).join(" ");
     const canEdit = glyphController?.canEdit;
