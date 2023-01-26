@@ -157,14 +157,15 @@ export class FontController {
     const glyphController = new VariableGlyphController(glyph, this.globalAxes);
     this._glyphsPromiseCache.put(glyphName, Promise.resolve(glyphController));
 
-    this.glyphMap[glyphName] = [codePoint];
+    const codePoints = codePoint ? [codePoint] : [];
+    this.glyphMap[glyphName] = codePoints;
 
     await this.glyphChanged(glyphName);
 
     const change = {"c":
       [
         {"p": ["glyphs"], "f": "=", "a": [glyphName, glyph]},
-        {"p": ["glyphMap"], "f": "=", "a": [glyphName, [codePoint]]},
+        {"p": ["glyphMap"], "f": "=", "a": [glyphName, codePoints]},
       ],
     };
     const rollbackChange = {"c":
