@@ -147,6 +147,9 @@ export class FontController {
     if (this.glyphMap[glyphName]) {
       throw new Error(`assert -- glyph "${glyphName}" already exists`);
     }
+    if (codePoint && typeof codePoint != "number") {
+      throw new Error(`assert -- codePoint must be an integer or falsey, got ${typeof codePoint}`);
+    }
     const sourceName = "<default>";  // TODO: get from backend (via namedLocations?)
 
     const glyph = VariableGlyph.fromObject({
@@ -157,7 +160,7 @@ export class FontController {
     const glyphController = new VariableGlyphController(glyph, this.globalAxes);
     this._glyphsPromiseCache.put(glyphName, Promise.resolve(glyphController));
 
-    const codePoints = codePoint ? [codePoint] : [];
+    const codePoints = typeof codePoint == "number" ? [codePoint] : [];
     this.glyphMap[glyphName] = codePoints;
 
     await this.glyphChanged(glyphName);
