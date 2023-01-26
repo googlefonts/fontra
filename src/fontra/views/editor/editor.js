@@ -720,6 +720,7 @@ export class EditorController {
     await this.sceneController.sceneModel.updateScene();
     this.canvasController.setNeedsUpdate();
     this.buildGlyphNamesListContent();
+    this.updateWindowLocationAndSelectionInfo();
   }
 
   async externalChange(change) {
