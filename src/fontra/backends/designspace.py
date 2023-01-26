@@ -188,6 +188,8 @@ class DesignspaceBackend:
         return axes, sources
 
     async def putGlyph(self, glyphName, glyph, unicodes):
+        assert isinstance(unicodes, list)
+        assert all(isinstance(cp, int) for cp in unicodes)
         modTimes = set()
         self.glyphMap[glyphName] = unicodes
         layerNameMapping = {}
