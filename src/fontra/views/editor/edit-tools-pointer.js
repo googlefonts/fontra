@@ -101,7 +101,7 @@ export class PointerTool extends BaseTool {
         sceneController.selectedGlyphIsEditing = false;
         // Create a new glyph
         // Or: ask user if they want to create a new glyph
-        const uniString = makeUPlusStringFromCodePoint(positionedGlyph.character.codePointAt(0));
+        const uniString = makeUPlusStringFromCodePoint(positionedGlyph.character?.codePointAt(0));
         const charMsg = positionedGlyph.character ? ` for character “${positionedGlyph.character}” (${uniString})` : "";
         const result = await dialog(
           `Create a new glyph “${positionedGlyph.glyphName}”?`,
