@@ -255,5 +255,5 @@ export function makeUPlusStringFromCodePoint(codePoint) {
   if (codePoint && typeof codePoint != "number") {
     throw new Error(`codePoint argument must be a number or undefined; ${typeof codePoint} found`);
   }
-  return codePoint !== undefined ? "U+" + codePoint.toString(16).toUpperCase().padStart(4, "0") : ""
+  return !!codePoint ? "U+" + codePoint.toString(16).toUpperCase().padStart(4, "0") : ""
 }
