@@ -113,7 +113,7 @@ export class PointerTool extends BaseTool {
         if (result === "ok") {
           await this.editor.newGlyph(
             positionedGlyph.glyphName,
-            positionedGlyph.character.codePointAt(0),
+            positionedGlyph.character?.codePointAt(0),
             positionedGlyph.glyph.instance,
           );
           sceneController.selectedGlyphIsEditing = true;
