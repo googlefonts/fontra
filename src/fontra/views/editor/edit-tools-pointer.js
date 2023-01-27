@@ -97,7 +97,6 @@ export class PointerTool extends BaseTool {
       sceneController.selectedGlyphIsEditing = !!sceneController.selectedGlyph;
       const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph?.isUndefined) {
-        sceneController.selectedGlyph = undefined;
         sceneController.selectedGlyphIsEditing = false;
         // Create a new glyph
         // Or: ask user if they want to create a new glyph
@@ -112,13 +111,12 @@ export class PointerTool extends BaseTool {
           ],
         )
         if (result === "ok") {
-          dialog(
-            "⚠️ Work In Progress ⚠️",
-            "Creating a new glyph has not yet been implemented.",
-            [{"title": "Okay", "isDefaultButton": true}],
+          await this.editor.newGlyph(
+            positionedGlyph.glyphName,
+            positionedGlyph.character?.codePointAt(0),
+            positionedGlyph.glyph.instance,
           );
-          // TODO: actually create a new glyph
-          console.log("Create a new glyph:", positionedGlyph.character, positionedGlyph.glyphName);
+          sceneController.selectedGlyphIsEditing = true;
         }
       }
     } else {

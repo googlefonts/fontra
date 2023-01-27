@@ -101,6 +101,7 @@ export class RemoteObject {
           returnMessage = {"server-call-id": serverCallID, "return-value": returnValue};
         } catch(error) {
           console.log("exception in receiver call", error.toString());
+          console.error(error, error.stack);
           returnMessage = {"server-call-id": serverCallID, "error": error.toString()};
         }
         this.websocket.send(JSON.stringify(returnMessage));
