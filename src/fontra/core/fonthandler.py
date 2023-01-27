@@ -132,7 +132,7 @@ class FontHandler:
                 if connection is not None:
                     await connection.proxy.messageFromServer(
                         "The data could not be saved due to an error.",
-                        f"The edit has been reverted.\n\n{e}",
+                        f"The edit has been reverted.\n\n{e!r}",
                     )
                 else:
                     # No connection to inform, let's error
