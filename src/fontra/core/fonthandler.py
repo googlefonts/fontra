@@ -139,11 +139,19 @@ class FontHandler:
                     raise
             else:
                 if errorMessage:
-                    await self.reloadData(reloadPattern)
+                    messageDetail = f"The edit has been reverted.\n\n{errorMessage}"
+                    try:
+                        await self.reloadData(reloadPattern)
+                    except Exception as e:
+                        messageDetail = (
+                            f"{errorMessage}\n\n"
+                            "The edit could not be reverted due to an additional error."
+                            f"\n\n{e!r}"
+                        )
                     if connection is not None:
                         await connection.proxy.messageFromServer(
                             "The data could not be saved.",
-                            f"The edit has been reverted.\n\n{errorMessage}",
+                            messageDetail,
                         )
                     else:
                         # This ideally can't happen
