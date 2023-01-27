@@ -103,7 +103,7 @@ class DesignspaceBackend:
             )
             fontraLayerName = self.fontraLayerNames[(path, sourceLayerName)]
             sourceDict = dict(
-                location=fillLocation(source.location, self.defaultLocation),
+                location={**self.defaultLocation, **source.location},
                 name=sourceStyleName,
                 layerName=fontraLayerName,
             )
@@ -231,7 +231,7 @@ class DesignspaceBackend:
 
     def _findGlobalSource(self, location):
         return self.globalSourcesByLocation.get(
-            tuplifyLocation(fillLocation(location, self.defaultLocation))
+            tuplifyLocation({**self.defaultLocation, **location})
         )
 
     def _packLocalDesignSpace(self, glyph):
@@ -554,7 +554,3 @@ def cleanupWatchFilesChanges(changes):
 def tuplifyLocation(loc):
     # TODO: find good place to share this (duplicated from opentype.py)
     return tuple(sorted(loc.items()))
-
-
-def fillLocation(location, defaultLocation):
-    return {**defaultLocation, **location}
