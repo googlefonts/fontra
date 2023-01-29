@@ -11,7 +11,7 @@ Fontra is an in-development browser-based font editor. It consists of two main p
 
 ### Download and install _Fontra Pak_
 
-[Fontra Pak](https://github.com/googlefonts/fontra-pak) is a Fontra distribution for macOS and Windows. It is a self-contained Fontra server application, which allows you to view and edit fonts in the default browser. We don't have releases for it yet, but you can grab the latest nightly build from the topmost [“Build Application”](https://github.com/BlackFoundryCom/fontra-pak/actions) workflow.
+[Fontra Pak](https://github.com/googlefonts/fontra-pak) is a Fontra distribution for macOS and Windows. It is a self-contained Fontra server application, which allows you to view and edit fonts in the default browser. We don't have releases for it yet, but you can grab the latest nightly build from the topmost [“Build Application”](https://github.com/googlefonts/fontra-pak/actions) workflow.
 
 Fontra Pak should also work on Linux and other platforms, but you will have to build it from the sources.
 
@@ -47,7 +47,7 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
 
     `http://localhost:8000/`
 
-- To use Fontra with .rcjk data on disk, or to connect to a remote rcjk server, install the [`fontra-rcjk`](https://github.com/BlackFoundryCom/fontra-rcjk) plugin package. Then you can start it with a robocjk server hostname, using the `rcjk` subcommand provided by the `fontra-rcjk` plugin:
+- To use Fontra with .rcjk data on disk, or to connect to a remote rcjk server, install the [`fontra-rcjk`](https://github.com/googlefonts/fontra-rcjk) plugin package. Then you can start it with a robocjk server hostname, using the `rcjk` subcommand provided by the `fontra-rcjk` plugin:
 
     `fontra --launch rcjk some-robocjk-server.some-domain.com`
 
@@ -133,8 +133,8 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 ### Deployment
 
-- Basic standalone desktop application for macOS and Windows ✅ (Via [Fontra Pak](https://github.com/BlackFoundryCom/fontra-pak))
-- Basic multi-user server deployment with database storage ✅ (Via [fontra-rcjk](https://github.com/BlackFoundryCom/fontra-rcjk), [django-robo-cjk](https://github.com/BlackFoundryCom/django-robo-cjk), behind [NGINX](https://www.nginx.com/))
+- Basic standalone desktop application for macOS and Windows ✅ (Via [Fontra Pak](https://github.com/googlefonts/fontra-pak))
+- Basic multi-user server deployment with database storage ✅ (Via [fontra-rcjk](https://github.com/googlefonts/fontra-rcjk), [django-robo-cjk](https://github.com/googlefonts/django-robo-cjk), behind [NGINX](https://www.nginx.com/))
 - Research GitHub REST API: can Fontra be a GitHub gateway in a practical way?
 - Research database solutions for server-based font storage
 - Desktop app with integrated browser and auto-update feature (made with Electron or similar)
