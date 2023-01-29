@@ -73,8 +73,10 @@ class FileSystemProjectManager:
     async def authorize(self, request):
         return "yes"  # arbitrary non-false string token
 
-    async def projectPageHandler(self, request):
+    async def projectPageHandler(self, request, filterContent=None):
         html = resources.read_text("fontra.filesystem", "landing.html")
+        if filterContent is not None:
+            html = filterContent(html, "text/html")
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("fontra-require-login", "false")
         return response
