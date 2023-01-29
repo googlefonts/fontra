@@ -39,9 +39,9 @@ classifiers = [
 
 
 [project.urls]
-Documentation = "https://github.com/BlackFoundryCom/fontra#readme"
-Issues = "https://github.com/BlackFoundryCom/fontra/issues"
-Source = "https://github.com/BlackFoundryCom/fontra"
+Documentation = "https://github.com/googlefonts/fontra#readme"
+Issues = "https://github.com/googlefonts/fontra/issues"
+Source = "https://github.com/googlefonts/fontra"
 
 
 [project.scripts]
