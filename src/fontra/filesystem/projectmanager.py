@@ -1,5 +1,4 @@
 import argparse
-from contextlib import contextmanager
 from importlib import resources
 from importlib.metadata import entry_points
 import logging
