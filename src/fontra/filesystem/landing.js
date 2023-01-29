@@ -1,13 +1,9 @@
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { getRemoteProxy } from "/core/remote.js";
-import { autoReload, themeSwitchFromLocalStorage } from "/core/utils.js";
+import { themeSwitchFromLocalStorage } from "/core/utils.js";
 
 
 export async function startupLandingPage(authenticateFunc) {
-  if (autoReload()) {
-    // Will reload
-    return;
-  }
   themeSwitchFromLocalStorage();
 
   if (authenticateFunc) {
