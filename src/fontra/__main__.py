@@ -1,6 +1,7 @@
 import argparse
 from importlib.metadata import entry_points
 import logging
+import secrets
 from .core.server import FontraServer
 from . import __version__ as fontraVersion
 
@@ -46,6 +47,7 @@ def main():
         httpPort=httpPort,
         projectManager=manager,
         launchWebBrowser=args.launch,
+        versionToken=secrets.token_hex(4),
     )
     server.setup()
     server.run()

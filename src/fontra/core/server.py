@@ -9,8 +9,9 @@ from importlib.metadata import entry_points
 import json
 import logging
 import mimetypes
+import re
 import traceback
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import quote
 from aiohttp import WSCloseCode, web
 from .remote import RemoteObjectConnection, RemoteObjectConnectionException
@@ -26,6 +27,7 @@ class FontraServer:
     httpPort: int
     projectManager: Any
     launchWebBrowser: bool = False
+    versionToken: Optional[str] = None
     cookieMaxAge: int = 7 * 24 * 60 * 60
     allowedFileExtensions: frozenset[str] = frozenset(
         ["css", "html", "ico", "js", "svg", "woff2"]
@@ -163,6 +165,11 @@ class FontraServer:
         pathItems = [""] + request.match_info["path"].split("/")
         modulePath = packageName + ".".join(pathItems[:-1])
         resourceName = pathItems[-1]
+        if self.versionToken is not None:
+            resourceName, versionToken = splitVersionToken(resourceName)
+            if versionToken is not None:
+                if versionToken != self.versionToken:
+                    return web.HTTPNotFound()
         try:
             data = getResourcePath(modulePath, resourceName).read_bytes()
         except (FileNotFoundError, IsADirectoryError, ModuleNotFoundError):
@@ -171,6 +178,7 @@ class FontraServer:
         if ext not in self.allowedFileExtensions:
             return web.HTTPNotFound()
         contentType, _ = mimetypes.guess_type(resourceName)
+        data = self._addVersionTokenToReferences(data, contentType)
         response = web.Response(body=data, content_type=contentType)
         response.last_modified = self.startupTime
         return response
@@ -179,7 +187,9 @@ class FontraServer:
         return web.HTTPNotFound()
 
     async def rootDocumentHandler(self, request):
-        response = await self.projectManager.projectPageHandler(request)
+        response = await self.projectManager.projectPageHandler(
+            request, self._addVersionTokenToReferences
+        )
         response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
 
@@ -201,12 +211,40 @@ class FontraServer:
         except (FileNotFoundError, ModuleNotFoundError):
             return web.HTTPNotFound()
 
+        html = self._addVersionTokenToReferences(html, "text/html")
+
         response = web.Response(text=html, content_type="text/html")
         response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
+
+    def _addVersionTokenToReferences(self, data, contentType):
+        if self.versionToken is None:
+            return data
+        extensionMapping = {
+            "text/html": self.allowedFileExtensions,
+            "text/css": ["woff2", "svg"],
+            "application/javascript": ["js"],
+        }
+        extensions = extensionMapping.get(contentType)
+        if extensions is not None:
+            pattern = rf'("[^"]+)(\.({"|".join(extensions)})")'
+            repl = rf"\1.{self.versionToken}\2"
+            if isinstance(data, bytes):
+                data = re.sub(pattern, repl, data.decode("utf-8")).encode("utf-8")
+            else:
+                data = re.sub(pattern, repl, data)
+        return data
 
 
 def getResourcePath(modulePath, resourceName):
     moduleParts = modulePath.split(".")
     moduleRoot = resources.files(moduleParts[0])
     return moduleRoot.joinpath(*moduleParts[1:], resourceName)
+
+
+def splitVersionToken(fileName):
+    parts = fileName.rsplit(".", 2)
+    if len(parts) == 3:
+        fileName, versionToken, ext = parts
+        return f"{fileName}.{ext}", versionToken
+    return fileName, None

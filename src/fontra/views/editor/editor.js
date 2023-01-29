@@ -24,7 +24,6 @@ import { ValueController } from "../core/value-controller.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js"
 import {
   THEME_KEY,
-  autoReload,
   makeUPlusStringFromCodePoint,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
@@ -106,10 +105,6 @@ const drawingParametersDark = {
 export class EditorController {
 
   static async fromWebSocket() {
-    if (autoReload()) {
-      // Will reload
-      return;
-    }
     const pathItems = window.location.pathname.split("/");
     // assert pathItems[0] === ""
     // assert pathItems[1] === "editor"
