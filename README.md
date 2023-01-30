@@ -39,7 +39,7 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
 
     `pip install -e .`
     
-- Install particular dependencies in the fontra repo:
+- Install dependencies to run the automated tests:
     
     `pip install -r requirements-dev.txt`
     
