@@ -31,14 +31,26 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
 
     `source venv/bin/activate`
 
-- Install dependencies:
+- Install general dependencies:
 
     `pip install --upgrade pip`
 
     `pip install -r requirements.txt`
 
     `pip install -e .`
+    
+- Install particular dependencies in the fontra repo:
+    
+    `pip install -r requirements-dev.txt`
+    
+    `npm install` 
+    
+- To verify if all is installed correctly, run both test suites:
 
+    `pytest`
+    
+    `npm test`     
+    
 - Start the fontra server with a path to a folder containing fonts (.designspace, .ufo, .ttf or .otf), using the `filesystem` subcommand:
 
     `fontra --launch filesystem /path/to/a/folder`
