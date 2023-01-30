@@ -45,7 +45,7 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
     
     `npm install` 
     
-- To verify if all is installed correctly, run both test suites:
+- To verify if everything is installed correctly, run both test suites:
 
     `pytest`
     
