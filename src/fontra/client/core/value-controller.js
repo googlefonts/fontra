@@ -1,5 +1,4 @@
 export class ValueController {
-
   constructor() {
     this._observers = new Map();
   }
@@ -34,5 +33,4 @@ export class ValueController {
   removeObserver(observerID) {
     this._observers.delete(observerID);
   }
-
 }

@@ -10,4 +10,4 @@ export class VariationError extends Error {
     super(message);
     this.name = "VariationError";
   }
-};
+}

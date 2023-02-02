@@ -1,12 +1,9 @@
 import chai from "chai";
 const expect = chai.expect;
 
-
 import { QueueIterator } from "../src/fontra/client/core/queue-iterator.js";
 
-
 describe("QueueIterator Tests", () => {
-
   it("immediate item, immediate done", async () => {
     const queue = new QueueIterator();
     queue.put(111);
@@ -119,5 +116,4 @@ describe("QueueIterator Tests", () => {
     queue.done();
     expect(() => queue.put(112)).to.throw("can't put item: queue is done");
   });
-
 });

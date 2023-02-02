@@ -1,12 +1,9 @@
 import chai from "chai";
 const expect = chai.expect;
 
-
 import { SVGPath2D } from "../src/fontra/client/core/svg-glyph.js";
 
-
 describe("SVGPath2D tests", () => {
-
   it("empty path", () => {
     const p = new SVGPath2D();
     expect(p.getPath()).to.equal("");
@@ -85,7 +82,7 @@ describe("SVGPath2D tests", () => {
   });
 
   it("scale 1/3", () => {
-    const p = new SVGPath2D(1/3);
+    const p = new SVGPath2D(1 / 3);
     p.moveTo(0, 0);
     p.lineTo(0, 100);
     p.lineTo(100, 100);
@@ -94,7 +91,7 @@ describe("SVGPath2D tests", () => {
   });
 
   it("scale 1/3 precision 3 digits", () => {
-    const p = new SVGPath2D(1/3, 3);
+    const p = new SVGPath2D(1 / 3, 3);
     p.moveTo(0, 0);
     p.lineTo(0, 100);
     p.lineTo(100, 100);
@@ -119,5 +116,4 @@ describe("SVGPath2D tests", () => {
     p.lineTo(100, 0);
     expect(p.getPath()).to.equal("M20,30L20,230L220,230L220,30");
   });
-
 });

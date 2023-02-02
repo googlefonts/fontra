@@ -2,29 +2,38 @@ import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
-import { dialog }from "../core/ui-dialog.js";
+import { dialog } from "../core/ui-dialog.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
-import { arrowKeyDeltas, hasShortcutModifierKey, parseSelection, reversed, tryFinally } from "../core/utils.js";
+import {
+  arrowKeyDeltas,
+  hasShortcutModifierKey,
+  parseSelection,
+  reversed,
+  tryFinally,
+} from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
-
 export class SceneController {
-
   constructor(sceneModel, canvasController) {
     this.sceneModel = sceneModel;
     this.canvasController = canvasController;
 
     this.mouseTracker = new MouseTracker({
-      drag: async (eventStream, initialEvent) => await this.handleDrag(eventStream, initialEvent),
-      hover: event => this.handleHover(event),
+      drag: async (eventStream, initialEvent) =>
+        await this.handleDrag(eventStream, initialEvent),
+      hover: (event) => this.handleHover(event),
       element: canvasController.canvas,
     });
     this._eventElement = document.createElement("div");
 
-    this.sceneModel.fontController.addEditListener(async (...args) => await this.editListenerCallback(...args));
-    this.canvasController.canvas.addEventListener("keydown", event => this.handleKeyDown(event));
+    this.sceneModel.fontController.addEditListener(
+      async (...args) => await this.editListenerCallback(...args)
+    );
+    this.canvasController.canvas.addEventListener("keydown", (event) =>
+      this.handleKeyDown(event)
+    );
     this.selectedTool = undefined;
   }
 
@@ -69,18 +78,23 @@ export class SceneController {
       dx *= 10;
       dy *= 10;
     }
-    const delta = {"x": dx, "y": dy};
+    const delta = { x: dx, y: dy };
     await this.editInstance((sendIncrementalChange, instance) => {
       const behaviorFactory = new EditBehaviorFactory(instance, this.selection);
-      const editBehavior = behaviorFactory.getBehavior(event.altKey ? "alternate" : "default");
-      const editChange = editBehavior.makeChangeForDelta(delta)
+      const editBehavior = behaviorFactory.getBehavior(
+        event.altKey ? "alternate" : "default"
+      );
+      const editChange = editBehavior.makeChangeForDelta(delta);
       applyChange(instance, editChange);
 
-      const changes = ChangeCollector.fromChanges(editChange, editBehavior.rollbackChange);
+      const changes = ChangeCollector.fromChanges(
+        editChange,
+        editBehavior.rollbackChange
+      );
       return {
-        "changes": changes,
-        "undoLabel": "nudge selection",
-        "broadcast": true,
+        changes: changes,
+        undoLabel: "nudge selection",
+        broadcast: true,
       };
     });
   }
@@ -91,8 +105,8 @@ export class SceneController {
 
   _dispatchEvent(eventName, detail) {
     const event = new CustomEvent(eventName, {
-      "bubbles": false,
-      "detail": detail || this,
+      bubbles: false,
+      detail: detail || this,
     });
     this._eventElement.dispatchEvent(event);
   }
@@ -101,33 +115,35 @@ export class SceneController {
     if (!this.selectedGlyphIsEditing) {
       return;
     }
-    const clickedSelection = this.sceneModel.selectionAtPoint(this.localPoint(event), this.mouseClickMargin);
+    const clickedSelection = this.sceneModel.selectionAtPoint(
+      this.localPoint(event),
+      this.mouseClickMargin
+    );
     if (!clickedSelection.size || !isSuperset(this.selection, clickedSelection)) {
       this.selection = clickedSelection;
     }
 
-    const {
-      "point": pointSelection,
-      "component": componentSelection,
-    } = parseSelection(this.selection);
+    const { point: pointSelection, component: componentSelection } = parseSelection(
+      this.selection
+    );
     const contextMenuItems = [
       {
-        "title": "Reverse Contour Direction",
-        "disabled": !pointSelection?.length,
-        "callback": () => this.reverseSelectedContoursDirection(),
+        title: "Reverse Contour Direction",
+        disabled: !pointSelection?.length,
+        callback: () => this.reverseSelectedContoursDirection(),
       },
       {
-        "title": "Set Start Point",
-        "disabled": !pointSelection?.length,
-        "callback": () => this.setStartPoint(),
+        title: "Set Start Point",
+        disabled: !pointSelection?.length,
+        callback: () => this.setStartPoint(),
       },
       {
-        "title": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
-        "disabled": !componentSelection?.length,
-        "callback": () => this.decomposeSelectedComponents(),
+        title: "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
+        disabled: !componentSelection?.length,
+        callback: () => this.decomposeSelectedComponents(),
       },
-    ]
-    return contextMenuItems
+    ];
+    return contextMenuItems;
   }
 
   getSelectedGlyphName() {
@@ -170,9 +186,9 @@ export class SceneController {
       return undefined;
     }
     return {
-      "x": canvasPoint.x - positionedGlyph.x,
-      "y": canvasPoint.y - positionedGlyph.y,
-    }
+      x: canvasPoint.x - positionedGlyph.x,
+      y: canvasPoint.y - positionedGlyph.y,
+    };
   }
 
   get onePixelUnit() {
@@ -325,16 +341,19 @@ export class SceneController {
       throw new Error("can't call editInstance() while it's still running");
     }
     let editingDone;
-    this._glyphEditingDonePromise = new Promise(resolve => {
+    this._glyphEditingDonePromise = new Promise((resolve) => {
       editingDone = resolve;
     });
-    await tryFinally(async () => {
-      return await this._editInstance(editFunc, senderID);
-    }, () => {
-      editingDone();
-      delete this._glyphEditingDonePromise;
-      delete this._cancelGlyphEditing;
-    });
+    await tryFinally(
+      async () => {
+        return await this._editInstance(editFunc, senderID);
+      },
+      () => {
+        editingDone();
+        delete this._glyphEditingDonePromise;
+        delete this._cancelGlyphEditing;
+      }
+    );
   }
 
   async _editInstance(editFunc, senderID) {
@@ -347,12 +366,15 @@ export class SceneController {
       const result = await dialog(
         `Can’t edit glyph “${this.getSelectedGlyphName()}”`,
         "Location is not at a source.",
-        [{"title": "Okay", "resultValue": "ok"}],
-        2500,  /* auto dismiss after a timeout */
+        [{ title: "Okay", resultValue: "ok" }],
+        2500 /* auto dismiss after a timeout */
       );
       return;
     }
-    const editContext = await this.sceneModel.fontController.getGlyphEditContext(glyphController, senderID || this);
+    const editContext = await this.sceneModel.fontController.getGlyphEditContext(
+      glyphController,
+      senderID || this
+    );
     const sendIncrementalChange = async (change, mayDrop = false) => {
       if (change && hasChange(change)) {
         await editContext.editIncremental(change, mayDrop);
@@ -363,17 +385,17 @@ export class SceneController {
     let result;
     try {
       result = await editFunc(sendIncrementalChange, editContext.instance);
-    } catch(error) {
+    } catch (error) {
       this.selection = initialSelection;
       editContext.editCancel();
       throw error;
     }
 
     const {
-      "changes": changes,
-      "selection": newSelection,  // Optional
-      "undoLabel": undoLabel,
-      "broadcast": broadcast,
+      changes: changes,
+      selection: newSelection, // Optional
+      undoLabel: undoLabel,
+      broadcast: broadcast,
     } = result || {};
 
     if (changes && changes.hasChange) {
@@ -381,13 +403,18 @@ export class SceneController {
         this.selection = newSelection;
       }
       const undoInfo = {
-        "label": undoLabel,
-        "undoSelection": initialSelection,
-        "redoSelection": this.selection,
-        "location": this.getLocation(),
-      }
+        label: undoLabel,
+        undoSelection: initialSelection,
+        redoSelection: this.selection,
+        location: this.getLocation(),
+      };
       if (!this._cancelGlyphEditing) {
-        editContext.editFinal(changes.change, changes.rollbackChange, undoInfo, broadcast);
+        editContext.editFinal(
+          changes.change,
+          changes.rollbackChange,
+          undoInfo,
+          broadcast
+        );
       } else {
         applyChange(editContext.instance, changes.rollbackChange);
         await editContext.editIncremental(changes.rollbackChange, false);
@@ -395,7 +422,7 @@ export class SceneController {
         dialog(
           "The glyph could not be saved.",
           `The edit has been reverted.\n\n${this._cancelGlyphEditing}`,
-          [{"title": "Okay", "resultValue": "ok"}],
+          [{ title: "Okay", resultValue: "ok" }]
         );
       }
     } else {
@@ -421,7 +448,10 @@ export class SceneController {
     if (glyphName === undefined) {
       return;
     }
-    const undoInfo = await this.sceneModel.fontController.undoRedoGlyph(glyphName, isRedo);
+    const undoInfo = await this.sceneModel.fontController.undoRedoGlyph(
+      glyphName,
+      isRedo
+    );
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
@@ -436,11 +466,11 @@ export class SceneController {
   async reverseSelectedContoursDirection() {
     await this.editInstance((sendIncrementalChange, instance) => {
       const path = instance.path;
-      const {"point": pointSelection} = parseSelection(this.selection);
+      const { point: pointSelection } = parseSelection(this.selection);
       const selectedContours = getSelectedContours(path, pointSelection);
       const newSelection = reversePointSelection(path, pointSelection);
 
-      const changes = recordChanges(instance, instance => {
+      const changes = recordChanges(instance, (instance) => {
         for (const contourIndex of selectedContours) {
           const contour = path.getUnpackedContour(contourIndex);
           contour.points.reverse();
@@ -454,10 +484,10 @@ export class SceneController {
         }
       });
       return {
-        "changes": changes,
-        "selection": newSelection,
-        "undoLabel": "Reverse Contour Direction",
-        "broadcast": true,
+        changes: changes,
+        selection: newSelection,
+        undoLabel: "Reverse Contour Direction",
+        broadcast: true,
       };
     });
   }
@@ -465,7 +495,7 @@ export class SceneController {
   async setStartPoint() {
     await this.editInstance((sendIncrementalChange, instance) => {
       const path = instance.path;
-      const {"point": pointSelection} = parseSelection(this.selection);
+      const { point: pointSelection } = parseSelection(this.selection);
       const contourToPointMap = new Map();
       for (const pointIndex of pointSelection) {
         const contourIndex = path.getContourIndex(pointIndex);
@@ -477,11 +507,11 @@ export class SceneController {
       }
       const newSelection = new Set();
 
-      const changes = recordChanges(instance, instance => {
+      const changes = recordChanges(instance, (instance) => {
         contourToPointMap.forEach((contourPointIndex, contourIndex) => {
           if (contourPointIndex === 0) {
             // Already start point
-            newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
+            newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
             return;
           }
           if (!path.contourInfo[contourIndex].isClosed) {
@@ -493,30 +523,32 @@ export class SceneController {
           contour.points.push(...head);
           instance.path.deleteContour(contourIndex);
           instance.path.insertContour(contourIndex, packContour(contour));
-          newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`)
+          newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
         });
       });
 
       return {
-        "changes": changes,
-        "selection": newSelection,
-        "undoLabel": "Set Start Point",
-        "broadcast": true,
+        changes: changes,
+        selection: newSelection,
+        undoLabel: "Set Start Point",
+        broadcast: true,
       };
     });
   }
 
   async decomposeSelectedComponents() {
     await this.editInstance(async (sendIncrementalChange, instance) => {
-      const {"component": componentSelection} = parseSelection(this.selection);
+      const { component: componentSelection } = parseSelection(this.selection);
       componentSelection.sort((a, b) => (a > b) - (a < b));
 
-      const {"path": newPath, "components": newComponents} = await decomposeComponents(
-        instance.components, componentSelection, this.getGlobalLocation(),
-        glyphName => this.sceneModel.fontController.getGlyph(glyphName),
-      )
+      const { path: newPath, components: newComponents } = await decomposeComponents(
+        instance.components,
+        componentSelection,
+        this.getGlobalLocation(),
+        (glyphName) => this.sceneModel.fontController.getGlyph(glyphName)
+      );
 
-      const changes = recordChanges(instance, instance => {
+      const changes = recordChanges(instance, (instance) => {
         const path = instance.path;
         const components = instance.components;
 
@@ -534,16 +566,15 @@ export class SceneController {
       });
 
       return {
-        "changes": changes,
-        "selection": new Set(),
-        "undoLabel": "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
-        "broadcast": true,
+        changes: changes,
+        selection: new Set(),
+        undoLabel:
+          "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
+        broadcast: true,
       };
     });
   }
-
 }
-
 
 function reversePointSelection(path, pointSelection) {
   const newSelection = [];
@@ -554,17 +585,18 @@ function reversePointSelection(path, pointSelection) {
     let newPointIndex = pointIndex;
     if (path.contourInfo[contourIndex].isClosed) {
       if (newPointIndex != contourStartPoint) {
-        newPointIndex = contourStartPoint + numPoints - (newPointIndex - contourStartPoint);
+        newPointIndex =
+          contourStartPoint + numPoints - (newPointIndex - contourStartPoint);
       }
     } else {
-      newPointIndex = contourStartPoint + numPoints - 1 - (newPointIndex - contourStartPoint);
+      newPointIndex =
+        contourStartPoint + numPoints - 1 - (newPointIndex - contourStartPoint);
     }
     newSelection.push(`point/${newPointIndex}`);
   }
   newSelection.sort((a, b) => (a > b) - (a < b));
-  return new Set(newSelection)
+  return new Set(newSelection);
 }
-
 
 function getSelectedContours(path, pointSelection) {
   const selectedContours = new Set();

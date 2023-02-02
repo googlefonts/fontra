@@ -1,10 +1,8 @@
 import { BaseTool } from "./edit-tools-base.js";
 
-
 export class HandTool extends BaseTool {
-
   handleHover(event) {
-    this.canvasController.canvas.style.cursor = "grab";    
+    this.canvasController.canvas.style.cursor = "grab";
   }
 
   async handleDrag(eventStream, initialEvent) {
@@ -20,5 +18,4 @@ export class HandTool extends BaseTool {
     }
     this.canvasController.canvas.style.cursor = "grab";
   }
-
 }

@@ -3,9 +3,7 @@ const expect = chai.expect;
 
 import { LRUCache } from "../src/fontra/client/core/lru-cache.js";
 
-
 describe("LRUCache Tests", () => {
-
   it("empty", () => {
     const lru = new LRUCache(4);
     expect(lru.size).to.equal(0);
@@ -30,7 +28,7 @@ describe("LRUCache Tests", () => {
     expect(lru.get("b")).to.equal(2);
     expect(lru.get("c")).to.equal(3);
     deletedKey = lru.put("e", 4);
-    expect(deletedKey).to.deep.equal({"key": 'd', "value": 4});
+    expect(deletedKey).to.deep.equal({ key: "d", value: 4 });
     expect(lru.get("d")).to.equal(undefined);
     expect(lru.get("a")).to.equal(1);
     lru.put("f", 5);
@@ -66,5 +64,4 @@ describe("LRUCache Tests", () => {
     expect(lru._dllKeys()).to.deep.equal([]);
     expect(lru._dllLength()).to.equal(0);
   });
-
 });
