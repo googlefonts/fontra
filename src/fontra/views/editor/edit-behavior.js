@@ -519,7 +519,6 @@ const actionFactories = {
 
 }
 
-
 const defaultRules = [
   //   prev3       prevPrev    prev        the point   next        nextNext    Constrain   Action
 

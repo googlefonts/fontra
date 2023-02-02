@@ -2,16 +2,19 @@ import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
-import { dialog }from "../core/ui-dialog.js";
-import { boolInt, makeUPlusStringFromCodePoint, modulo, parseSelection } from "../core/utils.js";
+import { dialog } from "../core/ui-dialog.js";
+import {
+  boolInt,
+  makeUPlusStringFromCodePoint,
+  modulo,
+  parseSelection,
+} from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 
-
 export class PointerTool extends BaseTool {
-
   handleHover(event) {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(event);
@@ -29,9 +32,12 @@ export class PointerTool extends BaseTool {
   async handleDrag(eventStream, initialEvent) {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(initialEvent);
-    const selection = this.sceneModel.selectionAtPoint(point, sceneController.mouseClickMargin);
+    const selection = this.sceneModel.selectionAtPoint(
+      point,
+      sceneController.mouseClickMargin
+    );
     if (initialEvent.detail == 2 || initialEvent.myTapCount == 2) {
-      initialEvent.preventDefault();  // don't let our dbl click propagate to other elements
+      initialEvent.preventDefault(); // don't let our dbl click propagate to other elements
       eventStream.done();
       await this.handleDoubleCick(selection, point);
       return;
@@ -50,7 +56,10 @@ export class PointerTool extends BaseTool {
 
     if (selection.size > 0) {
       if (event.shiftKey) {
-        sceneController.selection = symmetricDifference(sceneController.selection, selection);
+        sceneController.selection = symmetricDifference(
+          sceneController.selection,
+          selection
+        );
         if (isSuperset(sceneController.selection, selection)) {
           initiateDrag = true;
         }
@@ -68,7 +77,7 @@ export class PointerTool extends BaseTool {
     }
 
     if (initiateRectSelect || initiateDrag) {
-      if (!await shouldInitiateDrag(eventStream, initialEvent)) {
+      if (!(await shouldInitiateDrag(eventStream, initialEvent))) {
         initiateRectSelect = false;
         initiateDrag = false;
         const selectedGlyph = this.sceneModel.glyphAtPoint(point);
@@ -100,31 +109,34 @@ export class PointerTool extends BaseTool {
         sceneController.selectedGlyphIsEditing = false;
         // Create a new glyph
         // Or: ask user if they want to create a new glyph
-        const uniString = makeUPlusStringFromCodePoint(positionedGlyph.character?.codePointAt(0));
-        const charMsg = positionedGlyph.character ? ` for character “${positionedGlyph.character}” (${uniString})` : "";
+        const uniString = makeUPlusStringFromCodePoint(
+          positionedGlyph.character?.codePointAt(0)
+        );
+        const charMsg = positionedGlyph.character
+          ? ` for character “${positionedGlyph.character}” (${uniString})`
+          : "";
         const result = await dialog(
           `Create a new glyph “${positionedGlyph.glyphName}”?`,
           `Click “Create” if you want to create a new glyph named “${positionedGlyph.glyphName}”${charMsg}.`,
           [
-            {"title": "Cancel", "resultValue": "no", "isCancelButton": true},
-            {"title": "Create", "resultValue": "ok", "isDefaultButton": true},
-          ],
-        )
+            { title: "Cancel", resultValue: "no", isCancelButton: true },
+            { title: "Create", resultValue: "ok", isDefaultButton: true },
+          ]
+        );
         if (result === "ok") {
           await this.editor.newGlyph(
             positionedGlyph.glyphName,
             positionedGlyph.character?.codePointAt(0),
-            positionedGlyph.glyph.instance,
+            positionedGlyph.glyph.instance
           );
           sceneController.selectedGlyphIsEditing = true;
         }
       }
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-      const {
-        "point": pointIndices,
-        "component": componentIndices,
-      } = parseSelection(sceneController.selection);
+      const { point: pointIndices, component: componentIndices } = parseSelection(
+        sceneController.selection
+      );
       if (componentIndices?.length) {
         componentIndices.sort();
         sceneController.doubleClickedComponentIndices = componentIndices;
@@ -137,28 +149,38 @@ export class PointerTool extends BaseTool {
 
   async handlePointsDoubleClick(pointIndices) {
     await this.sceneController.editInstance((sendIncrementalChange, instance) => {
-      const changes = recordChanges(instance, instance => {
+      const changes = recordChanges(instance, (instance) => {
         const path = instance.path;
         for (const pointIndex of pointIndices) {
           const pointType = path.pointTypes[pointIndex];
-          const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(path, pointIndex);
+          const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(
+            path,
+            pointIndex
+          );
           if (
-            ((!prevPoint || !nextPoint) || (!prevPoint.type && !nextPoint.type)) &&
+            (!prevPoint || !nextPoint || (!prevPoint.type && !nextPoint.type)) &&
             pointType !== VarPackedPath.SMOOTH_FLAG
           ) {
             continue;
           }
-          if (pointType === VarPackedPath.ON_CURVE || pointType === VarPackedPath.SMOOTH_FLAG) {
-            const newPointType = (
-              pointType === VarPackedPath.ON_CURVE ?
-              VarPackedPath.SMOOTH_FLAG : VarPackedPath.ON_CURVE
-            )
+          if (
+            pointType === VarPackedPath.ON_CURVE ||
+            pointType === VarPackedPath.SMOOTH_FLAG
+          ) {
+            const newPointType =
+              pointType === VarPackedPath.ON_CURVE
+                ? VarPackedPath.SMOOTH_FLAG
+                : VarPackedPath.ON_CURVE;
             path.pointTypes[pointIndex] = newPointType;
             if (newPointType === VarPackedPath.SMOOTH_FLAG) {
               const anchorPoint = path.getPoint(pointIndex);
               if (prevPoint?.type && nextPoint?.type) {
                 // Fix-up both incoming and outgoing handles
-                const [newPrevPoint, newNextPoint] = alignHandles(prevPoint, anchorPoint, nextPoint);
+                const [newPrevPoint, newNextPoint] = alignHandles(
+                  prevPoint,
+                  anchorPoint,
+                  nextPoint
+                );
                 path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
                 path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
               } else if (prevPoint?.type) {
@@ -175,9 +197,9 @@ export class PointerTool extends BaseTool {
         }
       });
       return {
-        "changes": changes,
-        "undoLabel": "toggle smooth",
-        "broadcast": true,
+        changes: changes,
+        undoLabel: "toggle smooth",
+        broadcast: true,
       };
     });
   }
@@ -188,10 +210,10 @@ export class PointerTool extends BaseTool {
     for await (const event of eventStream) {
       const currentPoint = sceneController.localPoint(event);
       const selRect = normalizeRect({
-        "xMin": initialPoint.x,
-        "yMin": initialPoint.y,
-        "xMax": currentPoint.x,
-        "yMax": currentPoint.y,
+        xMin: initialPoint.x,
+        yMin: initialPoint.y,
+        xMax: currentPoint.x,
+        yMax: currentPoint.y,
       });
       const selection = this.sceneModel.selectionAtRect(selRect);
       sceneController.selectionRect = selRect;
@@ -208,10 +230,12 @@ export class PointerTool extends BaseTool {
   async handleDragSelection(eventStream, initialEvent) {
     const sceneController = this.sceneController;
     await sceneController.editInstance(async (sendIncrementalChange, instance) => {
-
       const initialPoint = sceneController.localPoint(initialEvent);
 
-      const behaviorFactory = new EditBehaviorFactory(instance, sceneController.selection);
+      const behaviorFactory = new EditBehaviorFactory(
+        instance,
+        sceneController.selection
+      );
       let behaviorName = getBehaviorName(initialEvent);
       let editBehavior = behaviorFactory.getBehavior(behaviorName);
 
@@ -226,33 +250,31 @@ export class PointerTool extends BaseTool {
           editBehavior = behaviorFactory.getBehavior(behaviorName);
         }
         const currentPoint = sceneController.localPoint(event);
-        const delta = {"x": currentPoint.x - initialPoint.x, "y": currentPoint.y - initialPoint.y};
-        editChange = editBehavior.makeChangeForDelta(delta)
+        const delta = {
+          x: currentPoint.x - initialPoint.x,
+          y: currentPoint.y - initialPoint.y,
+        };
+        editChange = editBehavior.makeChangeForDelta(delta);
         applyChange(instance, editChange);
-        await sendIncrementalChange(editChange, true);  // true: "may drop"
+        await sendIncrementalChange(editChange, true); // true: "may drop"
       }
-      const changes = ChangeCollector.fromChanges(editChange, editBehavior.rollbackChange);
+      const changes = ChangeCollector.fromChanges(
+        editChange,
+        editBehavior.rollbackChange
+      );
       return {
-        "undoLabel": "drag selection",
-        "changes": changes,
-        "broadcast": true,
-      }
+        undoLabel: "drag selection",
+        changes: changes,
+        broadcast: true,
+      };
     });
   }
-
 }
-
 
 function getBehaviorName(event) {
-  const behaviorNames = [
-    "default",
-    "constrain",
-    "alternate",
-    "alternate-constrain",
-  ];
+  const behaviorNames = ["default", "constrain", "alternate", "alternate-constrain"];
   return behaviorNames[boolInt(event.shiftKey) + 2 * boolInt(event.altKey)];
 }
-
 
 function neighborPoints(path, pointIndex) {
   const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
@@ -281,12 +303,10 @@ function neighborPoints(path, pointIndex) {
   return [prevIndex, prevPoint, nextIndex, nextPoint];
 }
 
-
 function alignHandle(refPoint1, anchorPoint, handlePoint) {
   const direction = vector.subVectors(anchorPoint, refPoint1);
   return alignHandleAlongDirection(direction, anchorPoint, handlePoint);
 }
-
 
 function alignHandles(handleIn, anchorPoint, handleOut) {
   const handleVectorIn = vector.subVectors(anchorPoint, handleIn);
@@ -298,7 +318,6 @@ function alignHandles(handleIn, anchorPoint, handleOut) {
     alignHandleAlongDirection(directionOut, anchorPoint, handleOut),
   ];
 }
-
 
 function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
   const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));

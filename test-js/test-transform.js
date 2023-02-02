@@ -3,9 +3,7 @@ const expect = chai.expect;
 
 import { Transform } from "../src/fontra/client/core/transform.js";
 
-
 describe("transform tests", () => {
-
   it("identity", () => {
     const t = new Transform();
     expect(t.toArray()).to.deep.equal([1, 0, 0, 1, 0, 0]);
@@ -41,13 +39,19 @@ describe("transform tests", () => {
 
   it("skew", () => {
     const t = new Transform();
-    expect(t.skew(Math.PI / 4).toArray()).to.deep.equal([1, 0, 0.9999999999999999, 1, 0, 0]);
+    expect(t.skew(Math.PI / 4).toArray()).to.deep.equal([
+      1, 0, 0.9999999999999999, 1, 0, 0,
+    ]);
   });
 
   it("transform", () => {
     const t = new Transform(2, 0, 0, 3, 1, 6);
-    expect(t.transform({xx:4, xy:3, yx:2, yy:1, dx:5, dy:6}).toArray()).to.deep.equal([8, 9, 4, 3, 11, 24]);
-    expect(t.transform([4, 3, 2, 1, 5, 6]).toArray()).to.deep.equal([8, 9, 4, 3, 11, 24]);
+    expect(
+      t.transform({ xx: 4, xy: 3, yx: 2, yy: 1, dx: 5, dy: 6 }).toArray()
+    ).to.deep.equal([8, 9, 4, 3, 11, 24]);
+    expect(t.transform([4, 3, 2, 1, 5, 6]).toArray()).to.deep.equal([
+      8, 9, 4, 3, 11, 24,
+    ]);
   });
 
   it("reverseTransform", () => {
@@ -62,8 +66,7 @@ describe("transform tests", () => {
   it("inverse", () => {
     const t = new Transform().translate(2, 3).scale(4, 5);
     expect(t.transformPoint(10, 20)).to.deep.equal([42, 103]);
-    const it = t.inverse()
+    const it = t.inverse();
     expect(it.transformPoint(42, 103)).to.deep.equal([10, 20]);
   });
-
 });

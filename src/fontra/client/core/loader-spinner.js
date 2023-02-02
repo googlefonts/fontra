@@ -3,28 +3,25 @@ export async function loaderSpinner(promise) {
   let returnValue;
   try {
     returnValue = await promise;
-  } catch(error) {
+  } catch (error) {
     decrementSpinnerStatus();
     throw error;
   }
   decrementSpinnerStatus();
-  return returnValue; 
+  return returnValue;
 }
-
 
 let spinnerStatus = 0;
 let spinnerStartTimerID;
-
 
 function incrementSpinnerStatus() {
   if (spinnerStatus == 0) {
     const spinner = document.querySelector("#global-loader-spinner");
     cancelTimer();
-    spinnerStartTimerID = setTimeout(() => spinner.style.display = "inherit", 300);
+    spinnerStartTimerID = setTimeout(() => (spinner.style.display = "inherit"), 300);
   }
   spinnerStatus += 1;
 }
-
 
 function decrementSpinnerStatus() {
   spinnerStatus -= 1;
@@ -33,10 +30,9 @@ function decrementSpinnerStatus() {
   } else if (spinnerStatus == 0) {
     cancelTimer();
     const spinner = document.querySelector("#global-loader-spinner");
-    spinner.style.display = "none";    
+    spinner.style.display = "none";
   }
 }
-
 
 function cancelTimer() {
   if (spinnerStartTimerID) {

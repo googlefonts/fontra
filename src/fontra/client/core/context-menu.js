@@ -1,17 +1,15 @@
 import { reversed } from "./utils.js";
 
-
 export class ContextMenu {
-
   constructor(elementID, menuItems) {
     this.element = document.querySelector(`#${elementID}`);
 
     this.element.classList.add("visible");
     this.element.focus();
-    this.element.onkeydown = event => this.handleKeyDown(event);
+    this.element.onkeydown = (event) => this.handleKeyDown(event);
 
     this.element.innerHTML = "";
-    this.element.oncontextmenu = event => event.preventDefault();  // No context menu on our context menu please
+    this.element.oncontextmenu = (event) => event.preventDefault(); // No context menu on our context menu please
 
     for (const item of menuItems) {
       const el = document.createElement("div");
@@ -25,14 +23,15 @@ export class ContextMenu {
         itemElement.classList.toggle("enabled", !item.disabled);
         itemElement.innerText = item.title;
         if (!item.disabled) {
-          itemElement.onmouseenter = event => this.selectItem(itemElement);
-          itemElement.onmousemove = event => {
+          itemElement.onmouseenter = (event) => this.selectItem(itemElement);
+          itemElement.onmousemove = (event) => {
             if (!itemElement.classList.contains("selected")) {
               this.selectItem(itemElement);
             }
-          }
-          itemElement.onmouseleave = event => itemElement.classList.remove("selected");
-          itemElement.onclick = event => {
+          };
+          itemElement.onmouseleave = (event) =>
+            itemElement.classList.remove("selected");
+          itemElement.onclick = (event) => {
             if (item.callback) {
               item.callback(event);
             }
@@ -44,11 +43,16 @@ export class ContextMenu {
     }
 
     const container = this.element.parentElement;
-    let {clientX: mouseX, clientY: mouseY} = event;
+    let { clientX: mouseX, clientY: mouseY } = event;
     mouseX -= container.offsetLeft;
     mouseY -= container.offsetTop;
 
-    const [normalizedX, normalizedY] = normalizedPosition(container, this.element, mouseX, mouseY);
+    const [normalizedX, normalizedY] = normalizedPosition(
+      container,
+      this.element,
+      mouseX,
+      mouseY
+    );
 
     this.element.style.top = `${normalizedY - 1}px`;
     this.element.style.left = `${normalizedX + 1}px`;
@@ -67,7 +71,7 @@ export class ContextMenu {
   }
 
   handleKeyDown(event) {
-    switch(event.key) {
+    switch (event.key) {
       case "Escape":
         this.dismiss();
         break;
@@ -118,7 +122,7 @@ export class ContextMenu {
         }
       }
     } else {
-      const f = isNext ? a => a : reversed;
+      const f = isNext ? (a) => a : reversed;
       for (const item of f(this.element.children)) {
         if (item.classList.contains("enabled")) {
           this.selectItem(item);
@@ -127,15 +131,11 @@ export class ContextMenu {
       }
     }
   }
-
 }
 
-
 function normalizedPosition(container, contextMenu, mouseX, mouseY) {
-  const {
-    left: containerOffsetX,
-    top: containerOffsetY,
-  } = container.getBoundingClientRect();
+  const { left: containerOffsetX, top: containerOffsetY } =
+    container.getBoundingClientRect();
 
   const containerX = mouseX - containerOffsetX;
   const containerY = mouseY - containerOffsetY;

@@ -1,5 +1,4 @@
 export class Sliders {
-
   constructor(slidersID, sliderDescriptions) {
     this.container = document.querySelector(`#${slidersID}`);
     this.setSliderDescriptions(sliderDescriptions);
@@ -11,14 +10,14 @@ export class Sliders {
 
   _dispatchListSelectionChanged() {
     const event = new CustomEvent("slidersChanged", {
-      "bubbles": false,
-      "detail": this,
+      bubbles: false,
+      detail: this,
     });
     this.container.dispatchEvent(event);
   }
 
   setSliderDescriptions(sliderDescriptions) {
-    this.container.innerHTML = "";  // Delete previous sliders
+    this.container.innerHTML = ""; // Delete previous sliders
     for (const sliderInfo of sliderDescriptions) {
       if (sliderInfo.isDivider) {
         const divider = document.createElement("hr");
@@ -35,7 +34,7 @@ export class Sliders {
         slider.max = sliderInfo.maxValue;
         slider.value = sliderInfo.defaultValue;
         slider.dataset.name = sliderInfo.name;
-        slider.oninput = event => this._dispatchListSelectionChanged();
+        slider.oninput = (event) => this._dispatchListSelectionChanged();
         label.appendChild(slider);
         label.append(sliderInfo.name);
         this.container.appendChild(label);

@@ -12,25 +12,22 @@ import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 import { throttleCalls } from "./utils.js";
 
-
 const GLYPH_CACHE_SIZE = 1000;
 
-
 export class FontController {
-
-  constructor (font, location) {
+  constructor(font, location) {
     this.font = font;
     this.location = location;
-    this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE);  // glyph name -> var-glyph promise
-    this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE);  // instance cache key -> instance promise
-    this._glyphInstancePromiseCacheKeys = {};  // glyphName -> Set(instance cache keys)
+    this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // glyph name -> var-glyph promise
+    this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // instance cache key -> instance promise
+    this._glyphInstancePromiseCacheKeys = {}; // glyphName -> Set(instance cache keys)
     this._editListeners = new Set();
-    this.glyphUsedBy = {};  // Loaded glyphs only: this is for updating the scene
+    this.glyphUsedBy = {}; // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
     this.ensureInitialized = new Promise((resolve, reject) => {
       this._resolveInitialized = resolve;
     });
-    this.undoStacks = {};  // glyph name -> undo stack
+    this.undoStacks = {}; // glyph name -> undo stack
     this._rootObject = {};
   }
 
@@ -148,14 +145,16 @@ export class FontController {
       throw new Error(`assert -- glyph "${glyphName}" already exists`);
     }
     if (codePoint && typeof codePoint != "number") {
-      throw new Error(`assert -- codePoint must be an integer or falsey, got ${typeof codePoint}`);
+      throw new Error(
+        `assert -- codePoint must be an integer or falsey, got ${typeof codePoint}`
+      );
     }
-    const sourceName = "<default>";  // TODO: get from backend (via namedLocations?)
+    const sourceName = "<default>"; // TODO: get from backend (via namedLocations?)
 
     const glyph = VariableGlyph.fromObject({
-      "name": glyphName,
-      "sources": [{"name": sourceName, "location": {}, "layerName": sourceName}],
-      "layers": [{"name": sourceName, glyph: structuredClone(templateInstance)}],
+      name: glyphName,
+      sources: [{ name: sourceName, location: {}, layerName: sourceName }],
+      layers: [{ name: sourceName, glyph: structuredClone(templateInstance) }],
     });
     const glyphController = new VariableGlyphController(glyph, this.globalAxes);
     this._glyphsPromiseCache.put(glyphName, Promise.resolve(glyphController));
@@ -165,26 +164,30 @@ export class FontController {
 
     await this.glyphChanged(glyphName);
 
-    const change = {"c":
-      [
-        {"p": ["glyphs"], "f": "=", "a": [glyphName, glyph]},
-        {"p": ["glyphMap"], "f": "=", "a": [glyphName, codePoints]},
+    const change = {
+      c: [
+        { p: ["glyphs"], f: "=", a: [glyphName, glyph] },
+        { p: ["glyphMap"], f: "=", a: [glyphName, codePoints] },
       ],
     };
-    const rollbackChange = {"c":
-      [
-        {"p": ["glyphs"], "f": "d", "a": [glyphName]},
-        {"p": ["glyphMap"], "f": "d", "a": [glyphName]},
+    const rollbackChange = {
+      c: [
+        { p: ["glyphs"], f: "d", a: [glyphName] },
+        { p: ["glyphMap"], f: "d", a: [glyphName] },
       ],
-    }
+    };
     const error = await this.font.editFinal(
-      change, rollbackChange, `new glyph "${glyphName}"`, true);
+      change,
+      rollbackChange,
+      `new glyph "${glyphName}"`,
+      true
+    );
     // TODO handle error
     this.notifyEditListeners("editFinal", this);
   }
 
   async glyphChanged(glyphName) {
-    const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)]
+    const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)];
     for (const glyphName of glyphNames) {
       this._purgeInstanceCache(glyphName);
     }
@@ -205,7 +208,10 @@ export class FontController {
     let instancePromise = this._glyphInstancePromiseCache.get(instanceCacheKey);
     if (instancePromise === undefined) {
       instancePromise = this._getGlyphInstance(glyphName, location, instanceCacheKey);
-      const deletedItem = this._glyphInstancePromiseCache.put(instanceCacheKey, instancePromise);
+      const deletedItem = this._glyphInstancePromiseCache.put(
+        instanceCacheKey,
+        instancePromise
+      );
       if (deletedItem !== undefined) {
         const chacheGlyphName = (await deletedItem.value)?.name;
         this._glyphInstancePromiseCacheKeys[chacheGlyphName]?.delete(instanceCacheKey);
@@ -221,12 +227,15 @@ export class FontController {
   async _getGlyphInstance(glyphName, location) {
     const varGlyph = await this.getGlyph(glyphName);
     const getGlyphFunc = this.getGlyph.bind(this);
-    const instanceController = await varGlyph.instantiateController(location, getGlyphFunc);
+    const instanceController = await varGlyph.instantiateController(
+      location,
+      getGlyphFunc
+    );
     return instanceController;
   }
 
   getDummyGlyphInstanceController(glyphName = "<dummy>") {
-    const dummyGlyph = StaticGlyph.fromObject({"xAdvance": this.unitsPerEm / 2});
+    const dummyGlyph = StaticGlyph.fromObject({ xAdvance: this.unitsPerEm / 2 });
     return new StaticGlyphController(glyphName, dummyGlyph, undefined);
   }
 
@@ -320,7 +329,8 @@ export class FontController {
   }
 
   _purgeInstanceCache(glyphName) {
-    for (const instanceCacheKey of this._glyphInstancePromiseCacheKeys[glyphName] || []) {
+    for (const instanceCacheKey of this._glyphInstancePromiseCacheKeys[glyphName] ||
+      []) {
       this._glyphInstancePromiseCache.delete(instanceCacheKey);
     }
     delete this._glyphInstancePromiseCacheKeys[glyphName];
@@ -345,10 +355,10 @@ export class FontController {
       this.undoStacks[glyphName] = new UndoStack();
     }
     const undoRecord = {
-      "change": change,
-      "rollbackChange": rollbackChange,
-      "info": undoInfo,
-    }
+      change: change,
+      rollbackChange: rollbackChange,
+      info: undoInfo,
+    };
     this.undoStacks[glyphName].pushUndoRecord(undoRecord);
   }
 
@@ -367,34 +377,32 @@ export class FontController {
     // Hmmm, would be nice to have this abstracted more
     await this.applyChange(undoRecord.rollbackChange);
     const error = await this.font.editFinal(
-      undoRecord.rollbackChange, undoRecord.change, undoRecord.info.label, true);
+      undoRecord.rollbackChange,
+      undoRecord.change,
+      undoRecord.info.label,
+      true
+    );
     // TODO handle error
     // Do not call this.notifyEditListeners() right away, but next time through the event loop;
     // It's a bit messy, but our caller sets the selection based on our return value; but the
     // edit listeners need that new selection. TODO: think of a better solution...
-    setTimeout(
-      () => this.notifyEditListeners("editFinal", this),
-      0,
-    );
+    setTimeout(() => this.notifyEditListeners("editFinal", this), 0);
     return undoRecord["info"];
   }
-
 }
-
 
 function reverseUndoRecord(undoRecord) {
   return {
-    "change": undoRecord.rollbackChange,
-    "rollbackChange": undoRecord.change,
-    "info": reverseUndoInfo(undoRecord.info),
+    change: undoRecord.rollbackChange,
+    rollbackChange: undoRecord.change,
+    info: reverseUndoInfo(undoRecord.info),
   };
 }
 
-
 function reverseUndoInfo(undoInfo) {
   const map = {
-    "redoSelection": "undoSelection",
-    "undoSelection": "redoSelection",
+    redoSelection: "undoSelection",
+    undoSelection: "redoSelection",
   };
   const revUndoInfo = {};
   for (const [k, v] of Object.entries(undoInfo)) {
@@ -403,22 +411,30 @@ function reverseUndoInfo(undoInfo) {
   return revUndoInfo;
 }
 
-
 class GlyphEditContext {
-
   constructor(fontController, glyphController, senderID) {
     this.fontController = fontController;
     this.glyphController = glyphController;
     this.instance = glyphController.instance;
     this.senderID = senderID;
-    this.throttledEditIncremental = throttleCalls(async change => {fontController.font.editIncremental(change)}, 50);
+    this.throttledEditIncremental = throttleCalls(async (change) => {
+      fontController.font.editIncremental(change);
+    }, 50);
     this._throttledEditIncrementalTimeoutID = null;
   }
 
   async setup() {
     const varGlyph = await this.fontController.getGlyph(this.glyphController.name);
-    const layerIndex = varGlyph.getLayerIndex(varGlyph.sources[this.glyphController.sourceIndex].layerName);
-    this.baseChangePath = ["glyphs", this.glyphController.name, "layers", layerIndex, "glyph"];
+    const layerIndex = varGlyph.getLayerIndex(
+      varGlyph.sources[this.glyphController.sourceIndex].layerName
+    );
+    this.baseChangePath = [
+      "glyphs",
+      this.glyphController.name,
+      "layers",
+      layerIndex,
+      "glyph",
+    ];
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
   }
 
@@ -442,7 +458,12 @@ class GlyphEditContext {
     }
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
-    const error = await this.fontController.font.editFinal(change, rollback, undoInfo.label, broadcast);
+    const error = await this.fontController.font.editFinal(
+      change,
+      rollback,
+      undoInfo.label,
+      broadcast
+    );
     // TODO: handle error, rollback
     await this.fontController.notifyEditListeners("editFinal", this.senderID);
     await this.fontController.notifyEditListeners("editEnd", this.senderID);
@@ -453,12 +474,9 @@ class GlyphEditContext {
     await this.fontController.glyphChanged(this.glyphController.name);
     await this.fontController.notifyEditListeners("editEnd", this.senderID);
   }
-
 }
 
-
 class UndoStack {
-
   constructor() {
     this.undoStack = [];
     this.redoStack = [];
@@ -483,9 +501,7 @@ class UndoStack {
       return _popUndoRedoRecord(this.redoStack, this.undoStack);
     }
   }
-
 }
-
 
 function _popUndoRedoRecord(popStack, pushStack) {
   if (!popStack.length) {
@@ -496,9 +512,8 @@ function _popUndoRedoRecord(popStack, pushStack) {
   return undoRecord;
 }
 
-
 function collectGlyphNames(change) {
-  return collectChangePaths(change, 2).filter(
-    item => item[0] === "glyphs" && item[1] !== undefined
-  ).map(item => item[1]);
+  return collectChangePaths(change, 2)
+    .filter((item) => item[0] === "glyphs" && item[1] !== undefined)
+    .map((item) => item[1]);
 }
