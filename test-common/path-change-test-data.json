@@ -70,13 +70,8 @@
         "a": [
           0,
           {
-            "coordinates": [
-              10,
-              20
-            ],
-            "pointTypes": [
-              0
-            ],
+            "coordinates": [10, 20],
+            "pointTypes": [0],
             "isClosed": false
           }
         ]
@@ -98,9 +93,7 @@
       "inputPathName": "oneContour",
       "change": {
         "f": "deleteContour",
-        "a": [
-          0
-        ]
+        "a": [0]
       },
       "expectedPath": []
     },
@@ -109,9 +102,7 @@
       "inputPathName": "twoContours",
       "change": {
         "f": "deleteContour",
-        "a": [
-          1
-        ]
+        "a": [1]
       },
       "expectedPath": [
         {
@@ -130,11 +121,7 @@
       "inputPathName": "oneContour",
       "change": {
         "f": "=xy",
-        "a": [
-          0,
-          12,
-          13
-        ]
+        "a": [0, 12, 13]
       },
       "expectedPath": [
         {
@@ -153,10 +140,7 @@
       "inputPathName": "oneContour",
       "change": {
         "f": "deletePoint",
-        "a": [
-          0,
-          0
-        ]
+        "a": [0, 0]
       },
       "expectedPath": [
         {
@@ -170,10 +154,7 @@
       "inputPathName": "twoContours",
       "change": {
         "f": "deletePoint",
-        "a": [
-          1,
-          0
-        ]
+        "a": [1, 0]
       },
       "expectedPath": [
         {
@@ -198,17 +179,11 @@
         "c": [
           {
             "f": "deletePoint",
-            "a": [
-              1,
-              0
-            ]
+            "a": [1, 0]
           },
           {
             "f": "deletePoint",
-            "a": [
-              0,
-              0
-            ]
+            "a": [0, 0]
           }
         ]
       },

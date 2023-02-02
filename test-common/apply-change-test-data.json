@@ -1,19 +1,7 @@
 {
   "inputData": {
-    "simpleArray": [
-      1,
-      2,
-      3
-    ],
-    "nestedArray": [
-      1,
-      [
-        2,
-        22,
-        33
-      ],
-      3
-    ]
+    "simpleArray": [1, 2, 3],
+    "nestedArray": [1, [2, 22, 33], 3]
   },
   "tests": [
     {
@@ -23,39 +11,23 @@
         "f": "=",
         "a": [1, 222]
       },
-      "expectedData": [
-        1,
-        222,
-        3
-      ]
+      "expectedData": [1, 222, 3]
     },
     {
       "testName": "change nested array",
       "inputDataName": "nestedArray",
       "change": {
-        "p": [
-          1
-        ],
+        "p": [1],
         "f": "=",
         "a": [2, 444]
       },
-      "expectedData": [
-        1,
-        [
-          2,
-          22,
-          444
-        ],
-        3
-      ]
+      "expectedData": [1, [2, 22, 444], 3]
     },
     {
       "testName": "multiple change nested array",
       "inputDataName": "nestedArray",
       "change": {
-        "p": [
-          1
-        ],
+        "p": [1],
         "c": [
           {
             "f": "=",
@@ -67,15 +39,7 @@
           }
         ]
       },
-      "expectedData": [
-        1,
-        [
-          222,
-          22,
-          444
-        ],
-        3
-      ]
+      "expectedData": [1, [222, 22, 444], 3]
     }
   ]
 }
