@@ -159,7 +159,7 @@ export class EditorController {
     this.sceneController.addEventListener(
       "selectedGlyphIsEditingChanged",
       async (event) => {
-        // console.log("selectedGlyphIsEditingChanged");
+        this.updateWindowLocation();
       }
     );
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
