@@ -342,7 +342,7 @@ export class EditorController {
 
     const zoomTools = document.querySelector("#zoom-tools");
     for (const zoomToolItem of zoomTools.children) {
-      const zoomElement = zoomToolItem.firstChild;
+      const zoomElement = zoomToolItem.firstElementChild;
       const toolIdentifier = zoomElement.id;
       zoomElement.onclick = () => {
         switch (toolIdentifier) {
