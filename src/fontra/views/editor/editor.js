@@ -510,8 +510,9 @@ export class EditorController {
   }
 
   setSelectedTool(toolIdentifier) {
-    const editTools = document.querySelector("#edit-tools");
-    for (const editToolItem of editTools.children) {
+    for (const editToolItem of document.querySelectorAll(
+      "#edit-tools > .tool-button"
+    )) {
       editToolItem.classList.toggle(
         "selected",
         editToolItem.firstElementChild.id === toolIdentifier
