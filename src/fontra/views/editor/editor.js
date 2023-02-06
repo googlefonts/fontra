@@ -332,7 +332,7 @@ export class EditorController {
     };
     const editTools = document.querySelector("#edit-tools");
     for (const editToolItem of editTools.children) {
-      const toolElement = editToolItem.firstChild;
+      const toolElement = editToolItem.firstElementChild;
       const toolIdentifier = toolElement.id;
       toolElement.onclick = () => {
         this.setSelectedTool(toolElement.id);
@@ -514,7 +514,7 @@ export class EditorController {
     for (const editToolItem of editTools.children) {
       editToolItem.classList.toggle(
         "selected",
-        editToolItem.firstChild.id === toolIdentifier
+        editToolItem.firstElementChild.id === toolIdentifier
       );
     }
     this.sceneController.setSelectedTool(this.tools[toolIdentifier]);
