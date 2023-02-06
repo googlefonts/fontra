@@ -330,19 +330,19 @@ export class EditorController {
       "pen-tool": new PenTool(this),
       "hand-tool": new HandTool(this),
     };
-    const editTools = document.querySelector("#edit-tools");
-    for (const editToolItem of editTools.children) {
-      const toolElement = editToolItem.firstElementChild;
+    for (const toolElement of document.querySelectorAll(
+      "#edit-tools > .tool-button > div"
+    )) {
       const toolIdentifier = toolElement.id;
       toolElement.onclick = () => {
-        this.setSelectedTool(toolElement.id);
+        this.setSelectedTool(toolIdentifier);
       };
     }
     this.setSelectedTool("pointer-tool");
 
-    const zoomTools = document.querySelector("#zoom-tools");
-    for (const zoomToolItem of zoomTools.children) {
-      const zoomElement = zoomToolItem.firstElementChild;
+    for (const zoomElement of document.querySelectorAll(
+      "#zoom-tools > .tool-button > div"
+    )) {
       const toolIdentifier = zoomElement.id;
       zoomElement.onclick = () => {
         switch (toolIdentifier) {
@@ -510,8 +510,9 @@ export class EditorController {
   }
 
   setSelectedTool(toolIdentifier) {
-    const editTools = document.querySelector("#edit-tools");
-    for (const editToolItem of editTools.children) {
+    for (const editToolItem of document.querySelectorAll(
+      "#edit-tools > .tool-button"
+    )) {
       editToolItem.classList.toggle(
         "selected",
         editToolItem.firstElementChild.id === toolIdentifier
