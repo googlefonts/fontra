@@ -723,21 +723,24 @@ export class EditorController {
   }
 
   async doSelectAllNone(selectNone) {
-    const positionedGlyph =
+    const newSelection =
       await this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
-    if (positionedGlyph) {
-      const glyphPath = positionedGlyph.glyph.path;
+    if (newSelection && this.sceneController.selectedGlyphIsEditing && !selectNone) {
+      const glyphPath = newSelection.glyph.path;
+      const glyphComponents = newSelection.glyph.components;
       const allPoints = new Set();
 
       for (const [pointIndex] of glyphPath.pointTypes.entries()) {
         allPoints.add(`point/${pointIndex}`);
       }
 
-      this.sceneController.selection = allPoints;
-    }
+      for (const [componentIndex] of glyphComponents.entries()) {
+        allPoints.add(`component/${componentIndex}`);
+      }
 
-    if (selectNone) {
+      this.sceneController.selection = allPoints;
+    } else {
       this.sceneController.selection = new Set();
     }
   }
