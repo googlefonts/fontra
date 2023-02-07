@@ -106,18 +106,18 @@ class ProjectManager {
 class FontHandler {
   backend
   connections
-  changeBegin()
-  changeSetRollback(rollbackChange)
-  changeChanging(liveChange)
-  changeEnd(finalChange)
+  subscribeChanges(...)
+  unsubscribeChanges(...)
+  editIncremental(...)
+  editFinal(...)
   getGlyph(glyphName)
-  getReverseCmap()
+  getGlyphMap()
   getGlobalAxes()
 }
 
 class FontBackend {
   getGlyph(glyphName)
-  getReverseCmap()
+  getGlyphMap()
   getGlobalAxes()
 }
 
