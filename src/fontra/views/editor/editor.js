@@ -695,6 +695,30 @@ export class EditorController {
             }
           }
           break;
+        case "a":
+          const clearSelection = event.shiftKey;
+          const positionedGlyph =
+            this.sceneController.sceneModel.getSelectedPositionedGlyph();
+
+          if (!isTypeableInput(document.activeElement)) {
+            if (positionedGlyph) {
+              const glyphPath = positionedGlyph.glyph.path;
+              const allPoints = new Set();
+
+              for (const [pointIndex] of glyphPath.pointTypes.entries()) {
+                allPoints.add(`point/${pointIndex}`);
+              }
+
+              this.sceneController.selection = allPoints;
+            }
+
+            if (clearSelection) {
+              this.sceneController.selection = new Set();
+            }
+
+            didHandleShortcut = true;
+          }
+          break;
         default:
           // console.log("unhandled", event);
           break;
