@@ -696,26 +696,10 @@ export class EditorController {
           }
           break;
         case "a":
-          const clearSelection = event.shiftKey;
-          const positionedGlyph =
-            this.sceneController.sceneModel.getSelectedPositionedGlyph();
+          const selectNone = event.shiftKey;
 
           if (!isTypeableInput(document.activeElement)) {
-            if (positionedGlyph) {
-              const glyphPath = positionedGlyph.glyph.path;
-              const allPoints = new Set();
-
-              for (const [pointIndex] of glyphPath.pointTypes.entries()) {
-                allPoints.add(`point/${pointIndex}`);
-              }
-
-              this.sceneController.selection = allPoints;
-            }
-
-            if (clearSelection) {
-              this.sceneController.selection = new Set();
-            }
-
+            this.doSelectAllNone(selectNone);
             didHandleShortcut = true;
           }
           break;
@@ -736,6 +720,26 @@ export class EditorController {
     this.sourcesList.setSelectedItemIndex(
       await this.sceneController.getSelectedSource()
     );
+  }
+
+  async doSelectAllNone(selectNone) {
+    const positionedGlyph =
+      await this.sceneController.sceneModel.getSelectedPositionedGlyph();
+
+    if (positionedGlyph) {
+      const glyphPath = positionedGlyph.glyph.path;
+      const allPoints = new Set();
+
+      for (const [pointIndex] of glyphPath.pointTypes.entries()) {
+        allPoints.add(`point/${pointIndex}`);
+      }
+
+      this.sceneController.selection = allPoints;
+    }
+
+    if (selectNone) {
+      this.sceneController.selection = new Set();
+    }
   }
 
   keyUpHandler(event) {
