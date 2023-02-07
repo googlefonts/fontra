@@ -3,7 +3,7 @@
 ```mermaid
 flowchart
   browser([Web browser])---client[Fontra client .js .css .html<br>HTML5 Canvas]
-  client-.HTTP.-server[Fontra server .py<br>aiohttp/websockets]
+  client-.HTTP.-server[Fontra server .py<br>aiohttp]
   client-.WebSocket.-server
   server---ds{{.designspace .ufo<br>backend}}
   server---rcjk{{.rcjk<br>backend}}
@@ -88,51 +88,42 @@ classDiagram
 class FontraServer {
   host
   httpPort
-  webSocketPort
-  contentFolder
-  templatesFolder
   projectManager
 }
 
-class RemoteObjectServer {
-  subjectManager
-}
-
 class RemoteObjectConnection {
+  websocket
   path
   subject
 }
 
 class ProjectManager {
   authorize(request)
-  getRemoteSubject(path, token, remoteIP)
+  getRemoteSubject(path, token)
   getProjectList()
 }
 
 class FontHandler {
   backend
   connections
-  changeBegin()
-  changeSetRollback(rollbackChange)
-  changeChanging(liveChange)
-  changeEnd(finalChange)
+  subscribeChanges(...)
+  unsubscribeChanges(...)
+  editIncremental(...)
+  editFinal(...)
   getGlyph(glyphName)
-  getReverseCmap()
+  getGlyphMap()
   getGlobalAxes()
 }
 
 class FontBackend {
   getGlyph(glyphName)
-  getReverseCmap()
+  getGlyphMap()
   getGlobalAxes()
 }
 
 FontraServer -- HTTPServer
-FontraServer -- RemoteObjectServer
 FontraServer --> ProjectManager
-
-RemoteObjectServer --> RemoteObjectConnection
-RemoteObjectServer --> ProjectManager : subject<br>manager
+FontraServer --> RemoteObjectConnection
 
 ProjectManager --> FontHandler
 FontHandler --> FontBackend
