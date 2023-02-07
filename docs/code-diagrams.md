@@ -99,7 +99,7 @@ class RemoteObjectConnection {
 
 class ProjectManager {
   authorize(request)
-  getRemoteSubject(path, token, remoteIP)
+  getRemoteSubject(path, token)
   getProjectList()
 }
 
