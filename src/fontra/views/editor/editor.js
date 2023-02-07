@@ -722,9 +722,9 @@ export class EditorController {
     );
   }
 
-  async doSelectAllNone(selectNone) {
+  doSelectAllNone(selectNone) {
     const positionedGlyph =
-      await this.sceneController.sceneModel.getSelectedPositionedGlyph();
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
     if (!positionedGlyph || !this.sceneController.selectedGlyphIsEditing) {
       return;
@@ -734,7 +734,7 @@ export class EditorController {
 
     if (!selectNone) {
       const glyphPath = positionedGlyph.glyph.path;
-      const glyphComponents = newSelection.glyph.components;
+      const glyphComponents = positionedGlyph.glyph.components;
 
       for (const [pointIndex] of glyphPath.pointTypes.entries()) {
         newSelection.add(`point/${pointIndex}`);
