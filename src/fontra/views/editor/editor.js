@@ -695,6 +695,14 @@ export class EditorController {
             }
           }
           break;
+        case "a":
+          const selectNone = event.shiftKey;
+
+          if (!isTypeableInput(document.activeElement)) {
+            this.doSelectAllNone(selectNone);
+            didHandleShortcut = true;
+          }
+          break;
         default:
           // console.log("unhandled", event);
           break;
@@ -712,6 +720,32 @@ export class EditorController {
     this.sourcesList.setSelectedItemIndex(
       await this.sceneController.getSelectedSource()
     );
+  }
+
+  doSelectAllNone(selectNone) {
+    const positionedGlyph =
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+
+    if (!positionedGlyph || !this.sceneController.selectedGlyphIsEditing) {
+      return;
+    }
+
+    const newSelection = new Set();
+
+    if (!selectNone) {
+      const glyphPath = positionedGlyph.glyph.path;
+      const glyphComponents = positionedGlyph.glyph.components;
+
+      for (const [pointIndex] of glyphPath.pointTypes.entries()) {
+        newSelection.add(`point/${pointIndex}`);
+      }
+
+      for (const [componentIndex] of glyphComponents.entries()) {
+        newSelection.add(`component/${componentIndex}`);
+      }
+    }
+
+    this.sceneController.selection = newSelection;
   }
 
   keyUpHandler(event) {
