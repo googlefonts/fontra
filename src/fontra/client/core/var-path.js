@@ -657,7 +657,7 @@ function drawCubicSegment(path, segment) {
     // FontTools has "super bezier" in this case. Was nice.
     path.bezierCurveTo(...segment.slice(0, 2), ...segment.slice(-4));
   } else {
-    // Fall back to line
+    // Fall back to line. Can't happen.
     path.lineTo(...segment.slice(-2));
   }
 }
