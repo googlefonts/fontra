@@ -780,6 +780,8 @@ export class EditorController {
     const sceneContextItems = this.sceneController.getContextMenuItems(event);
     if (sceneContextItems?.length) {
       menuItems.push("-");
+      menuItems.push(...this._getSelectAllNoneMenuItems());
+      menuItems.push("-");
       menuItems.push(...sceneContextItems);
     }
     this.contextMenu = new ContextMenu("context-menu", menuItems);
@@ -798,6 +800,27 @@ export class EditorController {
         item.title = title;
         item.disabled = true;
       }
+      items.push(item);
+    }
+    return items;
+  }
+
+  _getSelectAllNoneMenuItems() {
+    const items = [];
+    for (const title of ["Select All", "Select None"]) {
+      const selectedGlyphIsEditing = this.sceneController.selectedGlyphIsEditing;
+      const selectNone = title === "Select None";
+
+      const item = {
+        title: title,
+      };
+
+      if (selectedGlyphIsEditing) {
+        item.callback = () => this.doSelectAllNone(selectNone);
+      } else {
+        item.disabled = true;
+      }
+
       items.push(item);
     }
     return items;
