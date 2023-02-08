@@ -682,6 +682,23 @@ export class EditorController {
           this.zoomFit();
           didHandleShortcut = true;
           break;
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          const toolIndex = parseInt(event.key) - 1;
+
+          if (toolIndex < Object.keys(this.tools).length) {
+            this.setSelectedTool(Object.keys(this.tools)[toolIndex]);
+          }
+
+          didHandleShortcut = true;
+          break;
         case "z":
           const isRedo = event.shiftKey;
           const undoInfo = this.sceneController.getUndoRedoInfo(isRedo);
@@ -707,6 +724,7 @@ export class EditorController {
           // console.log("unhandled", event);
           break;
       }
+
       if (didHandleShortcut) {
         event.preventDefault();
       }
