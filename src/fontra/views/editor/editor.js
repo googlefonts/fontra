@@ -235,6 +235,7 @@ export class EditorController {
       sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,
       sceneDraw.drawPathSelectionLayer,
+      sceneDraw.drawPathConnectTargetPointLayer,
       sceneDraw.drawPathStrokeLayer,
       sceneDraw.drawRectangleSelectionLayer,
     ];
