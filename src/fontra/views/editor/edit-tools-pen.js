@@ -13,7 +13,7 @@ export class PenTool extends BaseTool {
       this.editor.tools["pointer-tool"].handleHover(event);
       return;
     }
-    this.canvasController.canvas.style.cursor = "crosshair";
+    this.setCursor();
 
     const targetPoint = this._getPathConnectTargetPoint(event);
     const prevTargetPoint = this.sceneModel.pathConnectTargetPoint;
@@ -24,6 +24,13 @@ export class PenTool extends BaseTool {
     }
   }
 
+  setCursor() {
+    if (!this.sceneModel.selectedGlyphIsEditing) {
+      this.editor.tools["pointer-tool"].setCursor(event);
+    } else {
+      this.canvasController.canvas.style.cursor = "crosshair";
+    }
+  }
   _getPathConnectTargetPoint(event) {
     // Requirements:
     // - we must have an edited glyph at an editable location

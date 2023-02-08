@@ -22,7 +22,11 @@ export class PointerTool extends BaseTool {
     const selRect = centeredRect(point.x, point.y, size);
     sceneController.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
     sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
-    if (sceneController.hoverSelection?.size) {
+    this.setCursor();
+  }
+
+  setCursor() {
+    if (this.sceneController.hoverSelection?.size) {
       this.canvasController.canvas.style.cursor = "pointer";
     } else {
       this.canvasController.canvas.style.cursor = "default";
