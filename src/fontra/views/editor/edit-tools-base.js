@@ -5,6 +5,10 @@ export class BaseTool {
     this.sceneController = editor.sceneController;
     this.sceneModel = this.sceneController.sceneModel;
   }
+
+  setCursor() {
+    this.canvasController.canvas.style.cursor = "default";
+  }
 }
 
 const MINIMUM_DRAG_DISTANCE = 2;

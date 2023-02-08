@@ -59,6 +59,7 @@ export class SceneController {
 
   setSelectedTool(tool) {
     this.selectedTool = tool;
+    tool.setCursor();
   }
 
   handleKeyDown(event) {

@@ -2,6 +2,10 @@ import { BaseTool } from "./edit-tools-base.js";
 
 export class HandTool extends BaseTool {
   handleHover(event) {
+    this.setCursor();
+  }
+
+  setCursor() {
     this.canvasController.canvas.style.cursor = "grab";
   }
 
