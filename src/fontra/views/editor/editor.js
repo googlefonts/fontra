@@ -682,6 +682,23 @@ export class EditorController {
           this.zoomFit();
           didHandleShortcut = true;
           break;
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          const toolIndex = parseInt(event.key) - 1;
+
+          if (toolIndex < Object.keys(this.tools).length) {
+            this.setSelectedTool(Object.keys(this.tools)[toolIndex]);
+          }
+
+          didHandleShortcut = true;
+          break;
         case "z":
           const isRedo = event.shiftKey;
           const undoInfo = this.sceneController.getUndoRedoInfo(isRedo);
@@ -708,19 +725,6 @@ export class EditorController {
           break;
       }
 
-      const numericRegex = new RegExp("[1-9]");
-      if (numericRegex.test(event.key.toLowerCase())) {
-        const toolIndex = parseInt(event.key.toLowerCase());
-
-        if (toolIndex <= Object.keys(this.tools).length) {
-          this.setSelectedTool(Object.keys(this.tools)[toolIndex - 1]);
-          // update the cursor
-          // Todo: receiving an error in the console on selecting the move tool
-          this.sceneController.handleHover(event);
-        }
-
-        didHandleShortcut = true;
-      }
       if (didHandleShortcut) {
         event.preventDefault();
       }
