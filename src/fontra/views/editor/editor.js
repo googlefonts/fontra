@@ -776,11 +776,13 @@ export class EditorController {
 
   contextMenuHandler(event) {
     event.preventDefault();
-    const menuItems = [...this._getUndoRedoMenuItems()];
+    const menuItems = [
+      ...this._getUndoRedoMenuItems(),
+      "-",
+      ...this._getSelectAllNoneMenuItems(),
+    ];
     const sceneContextItems = this.sceneController.getContextMenuItems(event);
     if (sceneContextItems?.length) {
-      menuItems.push("-");
-      menuItems.push(...this._getSelectAllNoneMenuItems());
       menuItems.push("-");
       menuItems.push(...sceneContextItems);
     }
