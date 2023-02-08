@@ -776,7 +776,11 @@ export class EditorController {
 
   contextMenuHandler(event) {
     event.preventDefault();
-    const menuItems = [...this._getUndoRedoMenuItems()];
+    const menuItems = [
+      ...this._getUndoRedoMenuItems(),
+      "-",
+      ...this._getSelectAllNoneMenuItems(),
+    ];
     const sceneContextItems = this.sceneController.getContextMenuItems(event);
     if (sceneContextItems?.length) {
       menuItems.push("-");
@@ -798,6 +802,27 @@ export class EditorController {
         item.title = title;
         item.disabled = true;
       }
+      items.push(item);
+    }
+    return items;
+  }
+
+  _getSelectAllNoneMenuItems() {
+    const items = [];
+    for (const title of ["Select All", "Select None"]) {
+      const selectedGlyphIsEditing = this.sceneController.selectedGlyphIsEditing;
+      const selectNone = title === "Select None";
+
+      const item = {
+        title: title,
+      };
+
+      if (selectedGlyphIsEditing) {
+        item.callback = () => this.doSelectAllNone(selectNone);
+      } else {
+        item.disabled = true;
+      }
+
       items.push(item);
     }
     return items;
