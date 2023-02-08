@@ -707,6 +707,17 @@ export class EditorController {
           // console.log("unhandled", event);
           break;
       }
+
+      const numericRegex = new RegExp("[1-9]");
+      if (numericRegex.test(event.key.toLowerCase())) {
+        const toolIndex = parseInt(event.key.toLowerCase());
+
+        if (toolIndex <= Object.keys(this.tools).length) {
+          this.setSelectedTool(Object.keys(this.tools)[toolIndex - 1]);
+        }
+
+        didHandleShortcut = true;
+      }
       if (didHandleShortcut) {
         event.preventDefault();
       }
