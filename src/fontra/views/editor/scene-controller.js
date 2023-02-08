@@ -119,13 +119,22 @@ export class SceneController {
       this.localPoint(event),
       this.mouseClickMargin
     );
-    if (!clickedSelection.size || !isSuperset(this.selection, clickedSelection)) {
-      this.selection = clickedSelection;
+    let relevantSelection;
+    if (!clickedSelection.size) {
+      // Clicked on nothing, ignore selection
+      relevantSelection = clickedSelection;
+    } else {
+      if (!isSuperset(this.selection, clickedSelection)) {
+        // Clicked on something that wasn't yet selected; select it
+        this.selection = clickedSelection;
+      } else {
+        // Use the existing selection as context
+      }
+      relevantSelection = this.selection;
     }
 
-    const { point: pointSelection, component: componentSelection } = parseSelection(
-      this.selection
-    );
+    const { point: pointSelection, component: componentSelection } =
+      parseSelection(relevantSelection);
     const contextMenuItems = [
       {
         title: "Reverse Contour Direction",
