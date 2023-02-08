@@ -26,7 +26,7 @@ export class PenTool extends BaseTool {
 
   setCursor() {
     if (!this.sceneModel.selectedGlyphIsEditing) {
-      this.editor.tools["pointer-tool"].setCursor(event);
+      this.editor.tools["pointer-tool"].setCursor();
     } else {
       this.canvasController.canvas.style.cursor = "crosshair";
     }
