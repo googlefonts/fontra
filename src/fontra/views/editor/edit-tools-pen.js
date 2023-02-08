@@ -14,6 +14,66 @@ export class PenTool extends BaseTool {
       return;
     }
     this.canvasController.canvas.style.cursor = "crosshair";
+
+    const targetPoint = this._getPathConnectTargetPoint(event);
+    const prevTargetPoint = this.sceneModel.pathConnectTargetPoint;
+
+    if (!pointsEqual(targetPoint, prevTargetPoint)) {
+      this.sceneModel.pathConnectTargetPoint = targetPoint;
+      this.canvasController.setNeedsUpdate();
+    }
+  }
+
+  _getPathConnectTargetPoint(event) {
+    // Requirements:
+    // - we must have an edited glyph at an editable location
+    // - we must be in append/prepend mode for an existing contour
+    // - the hovered point must be eligible to connect to:
+    //   - must be an on-curve start or end point of an open contour
+    //   - must not be the currently selected point
+
+    const hoveredPointIndex = getHoveredPointIndex(this.sceneController, event);
+
+    if (hoveredPointIndex === undefined) {
+      return;
+    }
+
+    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    if (!glyphController.canEdit) {
+      return undefined;
+    }
+
+    const path = glyphController.instance.path;
+
+    const appendInfo = getAppendInfo(path, this.sceneController.selection);
+    if (appendInfo.createContour) {
+      return undefined;
+    }
+
+    const [contourIndex, contourPointIndex] =
+      path.getContourAndPointIndex(hoveredPointIndex);
+    const contourInfo = path.contourInfo[contourIndex];
+
+    if (
+      appendInfo.contourIndex == contourIndex &&
+      appendInfo.contourPointIndex == contourPointIndex
+    ) {
+      // We're hovering over the source point
+      return undefined;
+    }
+
+    if (
+      contourInfo.isClosed ||
+      (contourPointIndex != 0 && hoveredPointIndex != contourInfo.endPoint)
+    ) {
+      return undefined;
+    }
+    const hoveredPoint = path.getPoint(hoveredPointIndex);
+    if (hoveredPoint.type) {
+      // off-curve point
+      return undefined;
+    }
+    return hoveredPoint;
   }
 
   async handleDrag(eventStream, initialEvent) {
@@ -380,4 +440,24 @@ function oppositeHandle(anchorPoint, handlePoint) {
 function shiftConstrain(anchorPoint, handlePoint) {
   const delta = constrainHorVerDiag(vector.subVectors(handlePoint, anchorPoint));
   return vector.addVectors(anchorPoint, delta);
+}
+
+function getHoveredPointIndex(sceneController, event) {
+  const hoveredSelection = sceneController.sceneModel.selectionAtPoint(
+    sceneController.localPoint(event),
+    sceneController.mouseClickMargin
+  );
+  if (!hoveredSelection.size) {
+    return undefined;
+  }
+
+  const { point: pointSelection } = parseSelection(hoveredSelection);
+  if (!pointSelection.length) {
+    return undefined;
+  }
+  return pointSelection[0];
+}
+
+function pointsEqual(point1, point2) {
+  return point1 === point2 || (point1?.x === point2?.x && point1?.y === point2?.y);
 }

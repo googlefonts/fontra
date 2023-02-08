@@ -60,6 +60,7 @@ const drawingParametersLight = {
   startPointIndicatorColor: "#989898A0",
   hoveredEmptyGlyphColor: "#E8E8E8", // Must be six hex digits
   selectedEmptyGlyphColor: "#D8D8D8", // Must be six hex digits
+  onePixelUnit: 1,
   cornerNodeSize: 8,
   smoothNodeSize: 8,
   handleNodeSize: 6.5,
@@ -235,6 +236,7 @@ export class EditorController {
       sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,
       sceneDraw.drawPathSelectionLayer,
+      sceneDraw.drawPathConnectTargetPointLayer,
       sceneDraw.drawPathStrokeLayer,
       sceneDraw.drawRectangleSelectionLayer,
     ];

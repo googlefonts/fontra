@@ -461,6 +461,23 @@ export const drawPathSelectionLayer = requireEditingGlyph(
   })
 );
 
+export const drawPathConnectTargetPointLayer = requireEditingGlyph(
+  glyphTranslate((model, controller, context, glyph, drawingParameters) => {
+    const targetPoint = model.pathConnectTargetPoint;
+    if (!targetPoint) {
+      return;
+    }
+    context.strokeStyle = drawingParameters.startPointIndicatorColor;
+    context.lineWidth = drawingParameters.startPointIndicatorLineWidth;
+    context.setLineDash([drawingParameters.onePixelUnit * 4]);
+    strokeRoundNode(
+      context,
+      targetPoint,
+      3 * drawingParameters.startPointIndicatorRadius
+    );
+  })
+);
+
 export function drawRectangleSelectionLayer(model, controller) {
   if (model.selectionRect === undefined) {
     return;
