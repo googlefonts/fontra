@@ -714,6 +714,9 @@ export class EditorController {
 
         if (toolIndex <= Object.keys(this.tools).length) {
           this.setSelectedTool(Object.keys(this.tools)[toolIndex - 1]);
+          // update the cursor
+          // Todo: receiving an error in the console on selecting the move tool
+          this.sceneController.handleHover(event);
         }
 
         didHandleShortcut = true;
