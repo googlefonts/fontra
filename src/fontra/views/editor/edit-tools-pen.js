@@ -193,29 +193,22 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
           clickedContourPointIndex === 0 ||
           clickedContourPointIndex === numClickedContourPoints - 1
         ) {
+          const clickedPoint = path.getContourPoint(
+            clickedContourIndex,
+            clickedContourPointIndex
+          );
           if (clickedContourIndex === appendInfo.contourIndex) {
-            const clickedPoint = path.getContourPoint(
-              clickedContourIndex,
-              clickedContourPointIndex
-            );
-            if (clickedPoint.type || !selectedPoint.type) {
-              behaviorFuncs = { setup: [closeContour] };
-            } else {
-              behaviorFuncs = {
-                setup: [closeContour],
-                setupDrag: insertHandleIn,
-                drag: dragHandle,
-              };
-            }
+            // Close the current contour
+            behaviorFuncs = { setup: [closeContour] };
           } else {
             // Connect to other open contour
             appendInfo.targetContourIndex = clickedContourIndex;
             appendInfo.targetContourPointIndex = clickedContourPointIndex;
-            behaviorFuncs = {
-              setup: [connectToContour],
-              setupDrag: insertHandleIn,
-              drag: dragHandle,
-            };
+            behaviorFuncs = { setup: [connectToContour] };
+          }
+          if (!clickedPoint.type && selectedPoint.type) {
+            behaviorFuncs.setupDrag = insertHandleIn;
+            behaviorFuncs.drag = dragHandle;
           }
         }
       }
