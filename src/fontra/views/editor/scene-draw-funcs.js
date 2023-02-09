@@ -467,14 +467,9 @@ export const drawPathConnectTargetPointLayer = requireEditingGlyph(
     if (!targetPoint) {
       return;
     }
-    context.strokeStyle = drawingParameters.startPointIndicatorColor;
-    context.lineWidth = drawingParameters.startPointIndicatorLineWidth;
-    context.setLineDash([drawingParameters.onePixelUnit * 4]);
-    strokeRoundNode(
-      context,
-      targetPoint,
-      3 * drawingParameters.startPointIndicatorRadius
-    );
+    context.fillStyle = drawingParameters.connectPointIndicatorColor;
+    const radius = drawingParameters.connectPointIndicatorCRadius;
+    fillRoundNode(context, targetPoint, 2 * radius);
   })
 );
 
