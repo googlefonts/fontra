@@ -208,7 +208,14 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
               };
             }
           } else {
-            console.log("connect!!");
+            // Connect to other open contour
+            appendInfo.targetContourIndex = clickedContourIndex;
+            appendInfo.targetContourPointIndex = clickedContourPointIndex;
+            behaviorFuncs = {
+              setup: [connectToContour],
+              // setupDrag: insertHandleIn,
+              // drag: dragHandle,
+            };
           }
         }
       }
@@ -377,6 +384,34 @@ function dragHandle(context, path, point, shiftConstrain) {
     const oppositePoint = oppositeHandle(context.anchorPoint, point);
     path.setPointPosition(context.handleInAbsIndex, oppositePoint.x, oppositePoint.y);
   }
+}
+
+function connectToContour(context, path, point, shiftConstrain) {
+  const isPrepend = context.appendMode === AppendModes.PREPEND;
+  const targetContourBefore = context.targetContourIndex < context.contourIndex;
+  const insertIndex = context.contourIndex - (targetContourBefore ? 1 : 0);
+  const deleteIndices = [context.targetContourIndex, context.contourIndex];
+  const sourceContourPoints = path.getUnpackedContour(context.contourIndex).points;
+  const targetContourPoints = path.getUnpackedContour(
+    context.targetContourIndex
+  ).points;
+
+  if (isPrepend === (context.targetContourPointIndex === 0)) {
+    targetContourPoints.reverse();
+  }
+  const newContour = {
+    points: isPrepend
+      ? targetContourPoints.concat(sourceContourPoints)
+      : sourceContourPoints.concat(targetContourPoints),
+    isClosed: false,
+  };
+  if (targetContourBefore) {
+    deleteIndices.reverse();
+  }
+  for (const index of deleteIndices) {
+    path.deleteContour(index);
+  }
+  path.insertUnpackedContour(insertIndex, newContour);
 }
 
 function getPointSelection(path, contourIndex, contourPointIndex) {
