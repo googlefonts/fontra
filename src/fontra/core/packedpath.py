@@ -1,8 +1,7 @@
-from dataclasses import dataclass, field
-from enum import IntEnum
 import logging
 import math
-
+from dataclasses import dataclass, field
+from enum import IntEnum
 
 logger = logging.getLogger(__name__)
 
@@ -105,9 +104,7 @@ class PackedPath:
     def insertContour(self, contourIndex, contour):
         contourIndex = self._normalizeContourIndex(contourIndex, True)
         startPoint = self._getContourStartPoint(contourIndex)
-        self._replacePoints(
-            startPoint, 0, contour["coordinates"], contour["pointTypes"]
-        )
+        self._replacePoints(startPoint, 0, contour["coordinates"], contour["pointTypes"])
         contourInfo = ContourInfo(endPoint=startPoint - 1, isClosed=contour["isClosed"])
         self.contourInfo.insert(contourIndex, contourInfo)
         self._moveEndPoints(contourIndex, len(contour["pointTypes"]))

@@ -1,6 +1,5 @@
 from glyphsLib.glyphdata import GlyphData
 
-
 GLYPHDATA = None
 
 

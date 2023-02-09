@@ -1,26 +1,26 @@
-from contextlib import contextmanager
 import asyncio
-from collections import UserDict, defaultdict
-from copy import deepcopy
-from dataclasses import dataclass
 import functools
 import logging
 import traceback
+from collections import UserDict, defaultdict
+from contextlib import contextmanager
+from copy import deepcopy
+from dataclasses import dataclass
 from typing import Any
+
 from .changes import (
     applyChange,
     collectChangePaths,
     filterChangePattern,
+    matchChangePattern,
     patternDifference,
     patternFromPath,
     patternIntersect,
     patternUnion,
-    matchChangePattern,
 )
 from .classes import Font
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
-
 
 logger = logging.getLogger(__name__)
 
@@ -224,9 +224,7 @@ class FontHandler:
     @remoteMethod
     async def unsubscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
         pattern = _ensurePattern(pathOrPattern)
-        self._adjustMatchPattern(
-            patternDifference, pattern, wantLiveChanges, connection
-        )
+        self._adjustMatchPattern(patternDifference, pattern, wantLiveChanges, connection)
 
     def _adjustMatchPattern(self, func, pathOrPattern, wantLiveChanges, connection):
         key = LIVE_CHANGES_PATTERN_KEY if wantLiveChanges else CHANGES_PATTERN_KEY
@@ -319,8 +317,7 @@ class FontHandler:
                     if key == "glyphs"
                 ]
                 glyphSet = {
-                    glyphName: await self.getGlyph(glyphName)
-                    for glyphName in glyphNames
+                    glyphName: await self.getGlyph(glyphName) for glyphName in glyphNames
                 }
                 glyphSet = DictSetDelTracker(glyphSet)
                 rootObject.glyphs = glyphSet

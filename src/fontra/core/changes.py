@@ -1,5 +1,6 @@
 from typing import Mapping, MutableMapping, MutableSequence, Sequence
-from .classes import classSchema, classCastFuncs
+
+from .classes import classCastFuncs, classSchema
 
 
 def setItem(subject, key, item, *, itemCast=None):
@@ -43,7 +44,8 @@ baseChangeFunctions = {
 }
 
 
-# TODO: Refactor. These don't really belong here, and should ideally be registered from outside
+# TODO: Refactor. These don't really belong here,
+# and should ideally be registered from outside
 changeFunctions = {
     **baseChangeFunctions,
     "=xy": lambda path, pointIndex, x, y: path.setPointPosition(pointIndex, x, y),

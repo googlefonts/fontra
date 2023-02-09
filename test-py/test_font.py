@@ -1,9 +1,9 @@
 import contextlib
+import pathlib
 from dataclasses import asdict
 from importlib.metadata import entry_points
-import pathlib
-import pytest
 
+import pytest
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 

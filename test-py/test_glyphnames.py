@@ -1,4 +1,5 @@
 import pytest
+
 from fontra.core.glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 
 

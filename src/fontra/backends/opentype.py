@@ -1,7 +1,8 @@
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
-from ..core.classes import VariableGlyph, StaticGlyph, Source, Layer
+
+from ..core.classes import Layer, Source, StaticGlyph, VariableGlyph
 from ..core.packedpath import PackedPath, PackedPathPointPen
 
 

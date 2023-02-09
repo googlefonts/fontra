@@ -1,31 +1,32 @@
 from __future__ import annotations
 
-from dataclasses import asdict
-from datetime import datetime
-from functools import cached_property
 import logging
 import math
 import os
+from dataclasses import asdict
+from datetime import datetime
+from functools import cached_property
 from types import SimpleNamespace
+
+import watchfiles
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.misc.transform import Transform
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReader
 from fontTools.ufoLib.glifLib import GlyphSet
-from .ufo_utils import extractGlyphNameAndUnicodes
-import watchfiles
+
 from ..core.changes import applyChange
 from ..core.classes import (
     Component,
     Layer,
     LocalAxis,
-    StaticGlyph,
     Source,
+    StaticGlyph,
     Transformation,
     VariableGlyph,
 )
 from ..core.packedpath import PackedPathPointPen
-
+from .ufo_utils import extractGlyphNameAndUnicodes
 
 logger = logging.getLogger(__name__)
 
@@ -93,9 +94,7 @@ class DesignspaceBackend:
                     fontraLayerName = f"{sourceStyleName}/{ufoLayerName}"
                     self.fontraLayerNames[key] = fontraLayerName
                     self.ufoLayers[fontraLayerName] = key
-                    self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
-                        ufoLayerName
-                    )
+                    self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(ufoLayerName)
             sourceLayerName = (
                 source.layerName
                 if source.layerName is not None
@@ -174,7 +173,7 @@ class DesignspaceBackend:
         for source in dsDict["sources"]:
             fileName = source.get("filename")
             if fileName is not None:
-                raise NotImplemented
+                raise NotImplementedError
                 # ufoPath = ...
             ufoLayerName = source.get("layername", ufoLayerName)
             fontraLayerName = self.fontraLayerNames[ufoPath, ufoLayerName]

@@ -1,7 +1,7 @@
 import logging
 import re
-from fontTools.ufoLib.filenames import userNameToFileName
 
+from fontTools.ufoLib.filenames import userNameToFileName
 
 logger = logging.getLogger(__name__)
 

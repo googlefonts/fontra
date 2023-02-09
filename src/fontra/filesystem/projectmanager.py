@@ -1,11 +1,12 @@
 import argparse
-from importlib import resources
-from importlib.metadata import entry_points
 import logging
 import pathlib
-from aiohttp import web
-from ..core.fonthandler import FontHandler
+from importlib import resources
+from importlib.metadata import entry_points
 
+from aiohttp import web
+
+from ..core.fonthandler import FontHandler
 
 logger = logging.getLogger(__name__)
 

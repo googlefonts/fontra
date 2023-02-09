@@ -1,28 +1,28 @@
 from __future__ import annotations
 
+import json
+import logging
+import mimetypes
+import re
+import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import partial
 from http.cookies import SimpleCookie
 from importlib import resources
 from importlib.metadata import entry_points
-import json
-import logging
-import mimetypes
-import re
-import traceback
 from typing import Any, Optional
 from urllib.parse import quote
-from aiohttp import WSCloseCode, web
-from .remote import RemoteObjectConnection, RemoteObjectConnectionException
 
+from aiohttp import WSCloseCode, web
+
+from .remote import RemoteObjectConnection, RemoteObjectConnectionException
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True)
 class FontraServer:
-
     host: str
     httpPort: int
     projectManager: Any
@@ -91,7 +91,8 @@ class FontraServer:
         web.run_app(self.httpApp, host=host, port=httpPort)
 
     async def launchWebBrowserCallback(self, httpApp):
-        import asyncio, webbrowser
+        import asyncio
+        import webbrowser
 
         # Create async task with a delay, so the aiohttp startup won't
         # wait for this, and gets a chance to fail before the browser
@@ -105,9 +106,7 @@ class FontraServer:
 
     async def closeActiveWebsockets(self, httpApp):
         for websocket in list(self._activeWebsockets):
-            await websocket.close(
-                code=WSCloseCode.GOING_AWAY, message="Server shutdown"
-            )
+            await websocket.close(code=WSCloseCode.GOING_AWAY, message="Server shutdown")
 
     async def closeProjectManager(self, httpApp):
         await self.projectManager.close()
