@@ -149,6 +149,13 @@ export class SceneController {
         callback: () => this.setStartPoint(),
       },
       {
+        title: "Break Contour",
+        disabled: !pointSelection?.length,
+        callback: () => {
+          //to be implemented
+        },
+      },
+      {
         title: "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
         disabled: !componentSelection?.length,
         callback: () => this.decomposeSelectedComponents(),
