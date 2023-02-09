@@ -170,6 +170,7 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event);
     });
 
+    this.initShortCuts();
     this.initSidebars();
     this.initMiniConsole();
     this.infoForm = new Form("selection-info");
@@ -665,75 +666,101 @@ export class EditorController {
     this.setAutoViewBox();
   }
 
-  async keyDownHandler(event) {
-    if (event.code === "Space" && !event.repeat) {
+  initShortCuts() {
+    this.shortCutHandlers = {};
+
+    this.registerShortCut(["Space"], { metaKey: false, repeat: false }, () => {
       this.spaceKeyDownHandler();
-      return;
-    }
-    if (hasShortcutModifierKey(event)) {
-      // console.log("shortcut?", event.key);
-      let didHandleShortcut = false;
-      switch (event.key.toLowerCase()) {
-        case "-":
-          this.zoomOut();
-          didHandleShortcut = true;
-          break;
-        case "+":
-        case "=":
-          this.zoomIn();
-          didHandleShortcut = true;
-          break;
-        case "0":
-          this.zoomFit();
-          didHandleShortcut = true;
-          break;
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9":
-          const toolIndex = parseInt(event.key) - 1;
+    });
 
-          if (toolIndex < Object.keys(this.tools).length) {
-            this.setSelectedTool(Object.keys(this.tools)[toolIndex]);
-          }
-
-          didHandleShortcut = true;
-          break;
-        case "z":
-          const isRedo = event.shiftKey;
-          const undoInfo = this.sceneController.getUndoRedoInfo(isRedo);
-          if (!isTypeableInput(document.activeElement)) {
-            // with the await below, we must immediately stop propagation, or
-            // the undo shortcut will still reach text elements
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            if (undoInfo) {
-              await this.doUndoRedo(isRedo);
-            }
-          }
-          break;
-        case "a":
-          const selectNone = event.shiftKey;
-
-          if (!isTypeableInput(document.activeElement)) {
-            this.doSelectAllNone(selectNone);
-            didHandleShortcut = true;
-          }
-          break;
-        default:
-          // console.log("unhandled", event);
-          break;
+    this.registerShortCut("-", { metaKey: true, globalOverride: true }, () => {
+      this.zoomOut();
+    });
+    this.registerShortCut("+=", { metaKey: true, globalOverride: true }, () => {
+      this.zoomIn();
+    });
+    this.registerShortCut("0", { metaKey: true, globalOverride: true }, () => {
+      this.zoomFit();
+    });
+    this.registerShortCut("123456789", { metaKey: false }, (event) => {
+      const toolIndex = parseInt(event.key) - 1;
+      if (toolIndex < Object.keys(this.tools).length) {
+        this.setSelectedTool(Object.keys(this.tools)[toolIndex]);
       }
+    });
 
-      if (didHandleShortcut) {
-        event.preventDefault();
+    this.registerShortCut("a", { metaKey: true, shiftKey: false }, () => {
+      this.doSelectAllNone(false);
+    });
+    this.registerShortCut("a", { metaKey: true, shiftKey: true }, () => {
+      this.doSelectAllNone(true);
+    });
+
+    this.registerShortCut("z", { metaKey: true, shiftKey: false }, () => {
+      this.doUndoRedo(false);
+    });
+    this.registerShortCut("z", { metaKey: true, shiftKey: true }, () => {
+      this.doUndoRedo(true);
+    });
+  }
+
+  registerShortCut(keysOrCodes, modifiers, callback) {
+    //
+    // Register a shortcut handler
+    //
+    // `keysOrCodes` is a list of event codes or a string or list of key strings.
+    // Any item in the list or string will be seen as a trigger for the handler.
+    //
+    // `modifiers` is an object that allows you to match a specific boolean event
+    // property. For example, { shiftKey: false } requires that the shift key must
+    // not be pressed. If shiftKey is undefined, the state of the shift key is not
+    // taken into account when matching the handler.
+    //
+    // `callback` is a callable that will be called with the event as its single
+    // argument.
+    //
+    for (const keyOrCode of keysOrCodes) {
+      const handlerDef = { ...modifiers, callback };
+      if (!this.shortCutHandlers[keyOrCode]) {
+        this.shortCutHandlers[keyOrCode] = [];
       }
+      this.shortCutHandlers[keyOrCode].push(handlerDef);
     }
+  }
+
+  async keyDownHandler(event) {
+    const callback = this._getShortCutCallback(event);
+    if (callback !== undefined) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      await callback(event);
+    }
+  }
+
+  _getShortCutCallback(event) {
+    let handlerDefs = this.shortCutHandlers[event.key.toLowerCase()];
+    if (!handlerDefs) {
+      handlerDefs = this.shortCutHandlers[event.code];
+    }
+    if (!handlerDefs) {
+      return undefined;
+    }
+    for (const handlerDef of handlerDefs) {
+      if (isTypeableInput(document.activeElement) && !handlerDef.globalOverride) {
+        continue;
+      }
+      if (
+        handlerDef.metaKey !== undefined &&
+        handlerDef.metaKey !== hasShortcutModifierKey(event)
+      ) {
+        continue;
+      }
+      if (!matchEvent(handlerDef, event)) {
+        continue;
+      }
+      return handlerDef.callback;
+    }
+    return undefined;
   }
 
   async doUndoRedo(isRedo) {
@@ -1515,4 +1542,13 @@ function isTypeableInput(element) {
 
 function easeOutQuad(t) {
   return 1 - (1 - t) ** 2;
+}
+
+function matchEvent(handlerDef, event) {
+  for (const prop of ["ctrlKey", "shiftKey", "altKey", "repeat"]) {
+    if (handlerDef[prop] !== undefined && handlerDef[prop] !== event[prop]) {
+      return false;
+    }
+  }
+  return true;
 }
