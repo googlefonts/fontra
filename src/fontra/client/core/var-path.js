@@ -144,6 +144,10 @@ export class VarPackedPath {
     this.appendContour(packContour(unpackedContour));
   }
 
+  insertUnpackedContour(contourIndex, unpackedContour) {
+    this.insertContour(contourIndex, packContour(unpackedContour));
+  }
+
   getContour(contourIndex) {
     contourIndex = this._normalizeContourIndex(contourIndex);
     const contour = this.contourInfo[contourIndex];
