@@ -67,6 +67,24 @@ ttf = "fontra.backends.opentype:OTFBackend"
 otf = "fontra.backends.opentype:OTFBackend"
 
 
+[tool.black]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | venv
+)/
+'''
+
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/fontra"]
 
