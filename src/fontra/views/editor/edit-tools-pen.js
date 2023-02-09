@@ -36,7 +36,7 @@ export class PenTool extends BaseTool {
     // - we must have an edited glyph at an editable location
     // - we must be in append/prepend mode for an existing contour
     // - the hovered point must be eligible to connect to:
-    //   - must be an on-curve start or end point of an open contour
+    //   - must be a start or end point of an open contour
     //   - must not be the currently selected point
 
     const hoveredPointIndex = getHoveredPointIndex(this.sceneController, event);
@@ -75,12 +75,7 @@ export class PenTool extends BaseTool {
     ) {
       return undefined;
     }
-    const hoveredPoint = path.getPoint(hoveredPointIndex);
-    if (hoveredPoint.type) {
-      // off-curve point
-      return undefined;
-    }
-    return hoveredPoint;
+    return path.getPoint(hoveredPointIndex);
   }
 
   async handleDrag(eventStream, initialEvent) {
