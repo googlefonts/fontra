@@ -213,8 +213,8 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
             appendInfo.targetContourPointIndex = clickedContourPointIndex;
             behaviorFuncs = {
               setup: [connectToContour],
-              // setupDrag: insertHandleIn,
-              // drag: dragHandle,
+              setupDrag: insertHandleIn,
+              drag: dragHandle,
             };
           }
         }
@@ -412,6 +412,12 @@ function connectToContour(context, path, point, shiftConstrain) {
     path.deleteContour(index);
   }
   path.insertUnpackedContour(insertIndex, newContour);
+  context.contourIndex = insertIndex;
+  context.anchorIndex =
+    context.appendMode === AppendModes.APPEND
+      ? sourceContourPoints.length
+      : (context.anchorIndex = targetContourPoints.length - 1);
+  context.anchorPoint = path.getContourPoint(context.contourIndex, context.anchorIndex);
 }
 
 function getPointSelection(path, contourIndex, contourPointIndex) {
