@@ -59,6 +59,7 @@ export class SceneController {
 
   setSelectedTool(tool) {
     this.selectedTool = tool;
+    this.hoverSelection = new Set();
     tool.setCursor();
   }
 
