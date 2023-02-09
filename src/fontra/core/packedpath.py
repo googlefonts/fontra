@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 import logging
 import math
@@ -252,6 +252,15 @@ class PackedPathPointPen:
         )
 
         self.components.append(Component(glyphName, transformation))
+
+    def addVarComponent(
+        self, glyphName, transformation, location, identifier=None, **kwargs
+    ):
+        from .classes import Component, Transformation
+
+        # TODO: https://github.com/googlefonts/fontra/issues/245
+        transformation = Transformation(**asdict(transformation))
+        self.components.append(Component(glyphName, transformation, location))
 
 
 def decomposeTwoByTwo(twoByTwo):
