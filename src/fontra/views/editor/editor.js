@@ -705,6 +705,20 @@ export class EditorController {
   }
 
   registerShortCut(keysOrCodes, modifiers, callback) {
+    //
+    // Register a shortcut handler
+    //
+    // `keysOrCodes` is a list of event codes or a string or list of key strings.
+    // Any item in the list or string will be seen as a trigger for the handler.
+    //
+    // `modifiers` is an object that allows you to match a specific boolean event
+    // property. For example, { shiftKey: false } requires that the shift key must
+    // not be pressed. If shiftKey is undefined, the state of the shift key is not
+    // taken into account when matching the handler.
+    //
+    // `callback` is a callable that will be called with the event as its single
+    // argument.
+    //
     for (const keyOrCode of keysOrCodes) {
       const handlerDef = { ...modifiers, callback };
       if (!this.shortCutHandlers[keyOrCode]) {
