@@ -2,6 +2,7 @@ import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
+import { splitPathAtPointIndices } from "../core/path-functions.js";
 import { dialog } from "../core/ui-dialog.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
@@ -138,6 +139,11 @@ export class SceneController {
     const { point: pointSelection, component: componentSelection } =
       parseSelection(relevantSelection);
     const contextMenuItems = [
+      {
+        title: "Break Contour",
+        disabled: !pointSelection?.length,
+        callback: () => this.breakContour(),
+      },
       {
         title: "Reverse Contour Direction",
         disabled: !pointSelection?.length,
@@ -542,6 +548,22 @@ export class SceneController {
         changes: changes,
         selection: newSelection,
         undoLabel: "Set Start Point",
+        broadcast: true,
+      };
+    });
+  }
+
+  async breakContour() {
+    await this.editInstance(async (sendIncrementalChange, instance) => {
+      let numSplits;
+      const { point: pointIndices } = parseSelection(this.selection);
+      const changes = recordChanges(instance, (instance) => {
+        numSplits = splitPathAtPointIndices(instance.path, pointIndices);
+      });
+      return {
+        changes: changes,
+        selection: new Set(),
+        undoLabel: "Break Contour" + (numSplits > 1 ? "s" : ""),
         broadcast: true,
       };
     });
