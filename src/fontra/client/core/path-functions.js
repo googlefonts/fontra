@@ -17,7 +17,7 @@ export function splitPathAtPointIndices(path, pointIndices) {
     const contour = path.getUnpackedContour(contourIndex);
     const isClosed = path.contourInfo[contourIndex].isClosed;
     const points = contour.points;
-    // Filter out off-curve points
+    // Filter out off-curve points, and start and end points of open paths
     const contourPointIndices = selectionByContour
       .get(contourIndex)
       .filter((i) => !points[i].type && (isClosed || (i > 0 && i < points.length - 1)));
