@@ -11,7 +11,10 @@ export function splitPathAtPointIndices(path, pointIndices) {
     selectionByContour.get(contourIndex).push(contourPointIndex);
   }
   const selectedContours = [...selectionByContour.keys()];
-  selectedContours.sort((a, b) => b - a); // Reversed!
+  // Reverse-sort the contour indices, so we can replace contours
+  // with multiple split contours without invalidating the prior
+  // contour indices
+  selectedContours.sort((a, b) => b - a);
 
   for (const contourIndex of selectedContours) {
     const contour = path.getUnpackedContour(contourIndex);
