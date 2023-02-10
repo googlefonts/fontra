@@ -45,6 +45,10 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
 
     `npm install`
 
+- Install `pre-commit` hooks to run formatters and linters:
+
+    `pre-commit install-hooks`
+
 - To verify if everything is installed correctly, run both test suites:
 
     `pytest`
