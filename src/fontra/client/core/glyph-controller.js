@@ -1,3 +1,7 @@
+import {
+  getRepresentation,
+  registerRepresentationFactory,
+} from "./representation-cache.js";
 import { Transform } from "./transform.js";
 import {
   VariationModel,
@@ -255,16 +259,6 @@ export class StaticGlyphController {
     }
   }
 
-  clearCache() {
-    delete this._flattenedPath;
-    delete this._flattenedPath2d;
-    delete this._path2d;
-    delete this._componentsPath;
-    delete this._componentsPath2d;
-    delete this._controlBounds;
-    delete this._convexHull;
-  }
-
   get xAdvance() {
     return this.instance.xAdvance;
   }
@@ -277,62 +271,52 @@ export class StaticGlyphController {
     return this.instance.verticalOrigin;
   }
 
-  get flattenedPath() {
-    if (this._flattenedPath === undefined) {
-      this._flattenedPath = joinPaths([this.instance.path, this.componentsPath]);
-    }
-    return this._flattenedPath;
-  }
-
-  get flattenedPath2d() {
-    if (this._flattenedPath2d === undefined) {
-      this._flattenedPath2d = new Path2D();
-      this.flattenedPath.drawToPath2d(this._flattenedPath2d);
-    }
-    return this._flattenedPath2d;
-  }
-
   get path() {
     return this.instance.path;
   }
 
-  get path2d() {
-    if (this._path2d === undefined) {
-      this._path2d = new Path2D();
-      this.instance.path.drawToPath2d(this._path2d);
-    }
-    return this._path2d;
+  get flattenedPath() {
+    return getRepresentation(this, "flattenedPath");
+  }
+
+  get flattenedPath2d() {
+    return getRepresentation(this, "flattenedPath2d");
   }
 
   get componentsPath() {
-    if (this._componentsPath === undefined) {
-      this._componentsPath = joinPaths(this.components.map((compo) => compo.path));
-    }
-    return this._componentsPath;
-  }
-
-  get componentsPath2d() {
-    if (this._componentsPath2d === undefined) {
-      this._componentsPath2d = new Path2D();
-      this.componentsPath?.drawToPath2d(this._componentsPath2d);
-    }
-    return this._componentsPath2d;
+    return getRepresentation(this, "componentsPath");
   }
 
   get controlBounds() {
-    if (this._controlBounds === undefined) {
-      this._controlBounds = this.flattenedPath.getControlBounds();
-    }
-    return this._controlBounds;
+    return getRepresentation(this, "controlBounds");
   }
 
   get convexHull() {
-    if (this._convexHull === undefined) {
-      this._convexHull = this.flattenedPath.getConvexHull();
-    }
-    return this._convexHull;
+    return getRepresentation(this, "convexHull");
   }
 }
+
+registerRepresentationFactory(StaticGlyphController, "flattenedPath", (glyph) => {
+  return joinPaths([glyph.instance.path, glyph.componentsPath]);
+});
+
+registerRepresentationFactory(StaticGlyphController, "flattenedPath2d", (glyph) => {
+  const flattenedPath2d = new Path2D();
+  glyph.flattenedPath.drawToPath2d(flattenedPath2d);
+  return flattenedPath2d;
+});
+
+registerRepresentationFactory(StaticGlyphController, "componentsPath", (glyph) => {
+  return joinPaths(glyph.components.map((compo) => compo.path));
+});
+
+registerRepresentationFactory(StaticGlyphController, "controlBounds", (glyph) => {
+  return glyph.flattenedPath.getControlBounds();
+});
+
+registerRepresentationFactory(StaticGlyphController, "convexHull", (glyph) => {
+  return glyph.flattenedPath.getConvexHull();
+});
 
 class ComponentController {
   constructor(compo) {
