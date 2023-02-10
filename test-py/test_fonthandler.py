@@ -1,11 +1,13 @@
 import asyncio
-from contextlib import asynccontextmanager
 import logging
 import pathlib
 import shutil
+from contextlib import asynccontextmanager
+
 import pytest
-from fontra.core.fonthandler import FontHandler
+
 from fontra.backends.designspace import DesignspaceBackend
+from fontra.core.fonthandler import FontHandler
 
 
 @asynccontextmanager

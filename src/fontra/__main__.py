@@ -1,9 +1,10 @@
 import argparse
-from importlib.metadata import entry_points
 import logging
 import secrets
-from .core.server import FontraServer
+from importlib.metadata import entry_points
+
 from . import __version__ as fontraVersion
+from .core.server import FontraServer
 
 
 def main():

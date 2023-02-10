@@ -1,8 +1,7 @@
-from dataclasses import asdict, dataclass, field
-from enum import IntEnum
 import logging
 import math
-
+from dataclasses import asdict, dataclass, field
+from enum import IntEnum
 
 logger = logging.getLogger(__name__)
 

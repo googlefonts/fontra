@@ -1,9 +1,10 @@
 import json
 import pathlib
+
 import pytest
+
 from fontra.core.changes import applyChange
 from fontra.core.packedpath import PackedPath
-
 
 testDataPath = (
     pathlib.Path(__file__).parent.parent / "test-common" / "path-change-test-data.json"

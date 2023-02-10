@@ -1,26 +1,26 @@
-from contextlib import contextmanager
 import asyncio
-from collections import UserDict, defaultdict
-from copy import deepcopy
-from dataclasses import dataclass
 import functools
 import logging
 import traceback
+from collections import UserDict, defaultdict
+from contextlib import contextmanager
+from copy import deepcopy
+from dataclasses import dataclass
 from typing import Any
+
 from .changes import (
     applyChange,
     collectChangePaths,
     filterChangePattern,
+    matchChangePattern,
     patternDifference,
     patternFromPath,
     patternIntersect,
     patternUnion,
-    matchChangePattern,
 )
 from .classes import Font
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
-
 
 logger = logging.getLogger(__name__)
 

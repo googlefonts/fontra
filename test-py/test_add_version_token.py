@@ -1,6 +1,6 @@
-from fontra.core.server import addVersionTokenToReferences
 import pytest
 
+from fontra.core.server import addVersionTokenToReferences
 
 VERSION_TOKEN = "dummy"
 EXTENSIONS = ["css", "html", "ico", "js", "svg", "woff2"]

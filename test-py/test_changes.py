@@ -1,16 +1,18 @@
-from copy import deepcopy
 import json
 import pathlib
+from copy import deepcopy
+
 import pytest
+
 from fontra.core.changes import (
     applyChange,
     collectChangePaths,
     filterChangePattern,
+    matchChangePattern,
     patternDifference,
     patternFromPath,
     patternIntersect,
     patternUnion,
-    matchChangePattern,
 )
 
 
