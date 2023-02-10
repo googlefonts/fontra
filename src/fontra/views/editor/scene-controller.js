@@ -2,6 +2,7 @@ import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
+import { splitPathAtPointIndices } from "../core/path-functions.js";
 import { dialog } from "../core/ui-dialog.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
@@ -553,7 +554,19 @@ export class SceneController {
   }
 
   async breakContour() {
-    // Implementation
+    await this.editInstance(async (sendIncrementalChange, instance) => {
+      let numSplits;
+      const changes = recordChanges(instance, (instance) => {
+        const { point: pointIndices } = parseSelection(this.selection);
+        numSplits = splitPathAtPointIndices(instance.path, pointIndices);
+      });
+      return {
+        changes: changes,
+        selection: new Set(),
+        undoLabel: "Break Contour" + (numSplits > 1 ? "s" : ""),
+        broadcast: true,
+      };
+    });
   }
 
   async decomposeSelectedComponents() {
