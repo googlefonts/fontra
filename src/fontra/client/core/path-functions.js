@@ -15,11 +15,12 @@ export function splitPathAtPointIndices(path, pointIndices) {
 
   for (const contourIndex of selectedContours) {
     const contour = path.getUnpackedContour(contourIndex);
+    const isClosed = path.contourInfo[contourIndex].isClosed;
     const points = contour.points;
     // Filter out off-curve points
     const contourPointIndices = selectionByContour
       .get(contourIndex)
-      .filter((i) => !points[i].type);
+      .filter((i) => !points[i].type && (isClosed || (i > 0 && i < points.length - 1)));
     if (!contourPointIndices.length) {
       continue;
     }
@@ -27,7 +28,7 @@ export function splitPathAtPointIndices(path, pointIndices) {
 
     const pointArrays = [points];
     let pointIndexBias = 0;
-    if (path.contourInfo[contourIndex].isClosed) {
+    if (isClosed) {
       const splitPointIndex = contourPointIndices.pop();
       pointArrays[0] = splitClosedPointsArray(points, splitPointIndex);
       pointIndexBias = points.length - splitPointIndex;
