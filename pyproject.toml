@@ -68,7 +68,7 @@ otf = "fontra.backends.opentype:OTFBackend"
 
 
 [tool.black]
-line-length = 89
+line-length = 88
 include = '\.pyi?$'
 exclude = '''
 /(
