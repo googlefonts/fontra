@@ -224,7 +224,9 @@ class FontHandler:
     @remoteMethod
     async def unsubscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
         pattern = _ensurePattern(pathOrPattern)
-        self._adjustMatchPattern(patternDifference, pattern, wantLiveChanges, connection)
+        self._adjustMatchPattern(
+            patternDifference, pattern, wantLiveChanges, connection
+        )
 
     def _adjustMatchPattern(self, func, pathOrPattern, wantLiveChanges, connection):
         key = LIVE_CHANGES_PATTERN_KEY if wantLiveChanges else CHANGES_PATTERN_KEY
@@ -317,7 +319,8 @@ class FontHandler:
                     if key == "glyphs"
                 ]
                 glyphSet = {
-                    glyphName: await self.getGlyph(glyphName) for glyphName in glyphNames
+                    glyphName: await self.getGlyph(glyphName)
+                    for glyphName in glyphNames
                 }
                 glyphSet = DictSetDelTracker(glyphSet)
                 rootObject.glyphs = glyphSet

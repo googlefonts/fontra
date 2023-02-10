@@ -106,7 +106,9 @@ class FontraServer:
 
     async def closeActiveWebsockets(self, httpApp):
         for websocket in list(self._activeWebsockets):
-            await websocket.close(code=WSCloseCode.GOING_AWAY, message="Server shutdown")
+            await websocket.close(
+                code=WSCloseCode.GOING_AWAY, message="Server shutdown"
+            )
 
     async def closeProjectManager(self, httpApp):
         await self.projectManager.close()

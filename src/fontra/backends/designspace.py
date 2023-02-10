@@ -94,7 +94,9 @@ class DesignspaceBackend:
                     fontraLayerName = f"{sourceStyleName}/{ufoLayerName}"
                     self.fontraLayerNames[key] = fontraLayerName
                     self.ufoLayers[fontraLayerName] = key
-                    self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(ufoLayerName)
+                    self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
+                        ufoLayerName
+                    )
             sourceLayerName = (
                 source.layerName
                 if source.layerName is not None
