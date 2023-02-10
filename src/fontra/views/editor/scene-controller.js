@@ -556,8 +556,8 @@ export class SceneController {
   async breakContour() {
     await this.editInstance(async (sendIncrementalChange, instance) => {
       let numSplits;
+      const { point: pointIndices } = parseSelection(this.selection);
       const changes = recordChanges(instance, (instance) => {
-        const { point: pointIndices } = parseSelection(this.selection);
         numSplits = splitPathAtPointIndices(instance.path, pointIndices);
       });
       return {
