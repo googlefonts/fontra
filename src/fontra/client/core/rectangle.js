@@ -34,9 +34,9 @@ export function sectRect(rect1, rect2) {
   //     rect2: Second bounding rectangle
 
   // Returns:
-  //     A rectangle or null.
+  //     A rectangle or undefined.
   //     If the input rectangles intersect, returns the intersecting rectangle.
-  //     Returns ``null`` if the input rectangles do not intersect.
+  //     Returns ``undefined`` if the input rectangles do not intersect.
   const xMin = Math.max(rect1.xMin, rect2.xMin);
   const yMin = Math.max(rect1.yMin, rect2.yMin);
   const xMax = Math.min(rect1.xMax, rect2.xMax);
