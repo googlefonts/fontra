@@ -139,6 +139,11 @@ export class SceneController {
       parseSelection(relevantSelection);
     const contextMenuItems = [
       {
+        title: "Break Contour",
+        disabled: !pointSelection?.length,
+        callback: () => this.breakContour(),
+      },
+      {
         title: "Reverse Contour Direction",
         disabled: !pointSelection?.length,
         callback: () => this.reverseSelectedContoursDirection(),
@@ -147,13 +152,6 @@ export class SceneController {
         title: "Set Start Point",
         disabled: !pointSelection?.length,
         callback: () => this.setStartPoint(),
-      },
-      {
-        title: "Break Contour",
-        disabled: !pointSelection?.length,
-        callback: () => {
-          //to be implemented
-        },
       },
       {
         title: "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
@@ -552,6 +550,10 @@ export class SceneController {
         broadcast: true,
       };
     });
+  }
+
+  async breakContour() {
+    // Implementation
   }
 
   async decomposeSelectedComponents() {
