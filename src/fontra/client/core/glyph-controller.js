@@ -1,3 +1,4 @@
+import { PathHitTester } from "./path-hit-tester.js";
 import {
   getRepresentation,
   registerRepresentationFactory,
@@ -294,6 +295,10 @@ export class StaticGlyphController {
   get convexHull() {
     return getRepresentation(this, "convexHull");
   }
+
+  get pathHitTester() {
+    return getRepresentation(this, "pathHitTester");
+  }
 }
 
 registerRepresentationFactory(StaticGlyphController, "flattenedPath", (glyph) => {
@@ -316,6 +321,10 @@ registerRepresentationFactory(StaticGlyphController, "controlBounds", (glyph) =>
 
 registerRepresentationFactory(StaticGlyphController, "convexHull", (glyph) => {
   return glyph.flattenedPath.getConvexHull();
+});
+
+registerRepresentationFactory(StaticGlyphController, "pathHitTester", (glyph) => {
+  return new PathHitTester(glyph.path);
 });
 
 class ComponentController {
