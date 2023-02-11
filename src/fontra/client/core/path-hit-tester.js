@@ -32,7 +32,9 @@ export class PathHitTester {
 class Contour {
   constructor(segments) {
     this.segments = segments.map((points) => new Segment(points));
-    this.bounds = unionRect(...this.segments.map((s) => s.bounds).filter((b) => b));
+    this.bounds = unionRect(
+      ...this.segments.map((segment) => segment.bounds).filter((bounds) => bounds)
+    );
   }
 }
 
