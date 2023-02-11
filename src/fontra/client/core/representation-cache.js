@@ -11,8 +11,12 @@ export function registerRepresentationFactory(classObject, representationKey, fu
   factories[representationKey] = func;
 }
 
-export function getRepresentation(obj, representationKey) {
-  let representation = obj._representationCache?.[representationKey];
+export function getRepresentation(obj, representationKey, argument) {
+  let cacheKey = representationKey;
+  if (argument !== undefined) {
+    cacheKey = `${cacheKey}.${JSON.stringify(argument)}`;
+  }
+  let representation = obj._representationCache?.[cacheKey];
   if (representation === undefined) {
     if (!obj._representationCache) {
       obj._representationCache = {};
@@ -22,8 +26,8 @@ export function getRepresentation(obj, representationKey) {
     if (!factory) {
       throw new Error(`Can't find representation factory for '${representationKey}'`);
     }
-    representation = factory(obj);
-    obj._representationCache[representationKey] = representation;
+    representation = factory(obj, argument);
+    obj._representationCache[cacheKey] = representation;
   }
   return representation;
 }

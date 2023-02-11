@@ -22,11 +22,26 @@ export class PointerTool extends BaseTool {
     const selRect = centeredRect(point.x, point.y, size);
     sceneController.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
     sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
+    if (!sceneController.hoverSelection?.size && !sceneController.hoveredGlyph) {
+      const glyph = this.sceneModel.getSelectedPositionedGlyph();
+      if (glyph) {
+        const glyphPoint = { x: point.x - glyph.x, y: point.y - glyph.y };
+        const hit = glyph.glyph.pathHitTester.hitTest(glyphPoint, size / 2);
+        if (hit.contourIndex !== undefined) {
+          sceneController.hoverPathHit = hit;
+        } else {
+          sceneController.hoverPathHit = undefined;
+        }
+      }
+    }
     this.setCursor();
   }
 
   setCursor() {
-    if (this.sceneController.hoverSelection?.size) {
+    if (
+      this.sceneController.hoverSelection?.size ||
+      this.sceneController.hoverPathHit
+    ) {
       this.canvasController.canvas.style.cursor = "pointer";
     } else {
       this.canvasController.canvas.style.cursor = "default";
@@ -105,7 +120,7 @@ export class PointerTool extends BaseTool {
 
   async handleDoubleCick(selection, point) {
     const sceneController = this.sceneController;
-    if (!selection || !selection.size) {
+    if (!sceneController.hoverPathHit && (!selection || !selection.size)) {
       sceneController.selectedGlyph = this.sceneModel.glyphAtPoint(point);
       sceneController.selectedGlyphIsEditing = !!sceneController.selectedGlyph;
       const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
@@ -147,6 +162,15 @@ export class PointerTool extends BaseTool {
         sceneController._dispatchEvent("doubleClickedComponents");
       } else if (pointIndices?.length) {
         await this.handlePointsDoubleClick(pointIndices);
+      } else if (sceneController.hoverPathHit) {
+        const contourIndex = sceneController.hoverPathHit.contourIndex;
+        const startPoint = instance.path.getAbsolutePointIndex(contourIndex, 0);
+        const endPoint = instance.path.contourInfo[contourIndex].endPoint;
+        const newSelection = new Set();
+        for (let i = startPoint; i <= endPoint; i++) {
+          newSelection.add(`point/${i}`);
+        }
+        sceneController.selection = newSelection;
       }
     }
   }
