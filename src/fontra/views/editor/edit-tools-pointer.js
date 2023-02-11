@@ -23,15 +23,11 @@ export class PointerTool extends BaseTool {
     sceneController.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
     sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     if (!sceneController.hoverSelection?.size && !sceneController.hoveredGlyph) {
-      const glyph = this.sceneModel.getSelectedPositionedGlyph();
-      if (glyph) {
-        const glyphPoint = { x: point.x - glyph.x, y: point.y - glyph.y };
-        const hit = glyph.glyph.pathHitTester.hitTest(glyphPoint, size / 2);
-        if (hit.contourIndex !== undefined) {
-          sceneController.hoverPathHit = hit;
-        } else {
-          sceneController.hoverPathHit = undefined;
-        }
+      const hit = this.sceneModel.pathHitAtPoint(point, size);
+      if (hit.contourIndex !== undefined) {
+        sceneController.hoverPathHit = hit;
+      } else {
+        sceneController.hoverPathHit = undefined;
       }
     }
     this.setCursor();
