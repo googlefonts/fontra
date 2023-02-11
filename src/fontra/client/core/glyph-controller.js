@@ -323,18 +323,6 @@ registerRepresentationFactory(StaticGlyphController, "convexHull", (glyph) => {
   return glyph.flattenedPath.getConvexHull();
 });
 
-registerRepresentationFactory(
-  StaticGlyphController,
-  "contourPath2d",
-  (glyph, contourIndex) => {
-    const path2d = new Path2D();
-    const path = new VarPackedPath();
-    path.appendContour(glyph.path.getContour(contourIndex));
-    path.drawToPath2d(path2d);
-    return path2d;
-  }
-);
-
 registerRepresentationFactory(StaticGlyphController, "pathHitTester", (glyph) => {
   return new PathHitTester(glyph.path);
 });
