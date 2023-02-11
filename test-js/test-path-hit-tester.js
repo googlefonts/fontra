@@ -28,8 +28,8 @@ describe("PathHitTester Tests", () => {
       20,
       {
         contourIndex: 0,
-        d: 5.009098283124404,
         segmentIndex: 2,
+        d: 5.009098283124404,
         t: 0.509,
         x: 224.99190000000002,
         y: 49.1,
