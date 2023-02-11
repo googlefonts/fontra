@@ -370,6 +370,18 @@ export class SceneModel {
     return selection;
   }
 
+  pathHitAtPoint(point, size) {
+    if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
+      return {};
+    }
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    const glyphPoint = {
+      x: point.x - positionedGlyph.x,
+      y: point.y - positionedGlyph.y,
+    };
+    return positionedGlyph.glyph.pathHitTester.hitTest(glyphPoint, size / 2);
+  }
+
   glyphAtPoint(point, skipEditingGlyph = true) {
     for (let i = this.positionedLines.length - 1; i >= 0; i--) {
       const positionedLine = this.positionedLines[i];
