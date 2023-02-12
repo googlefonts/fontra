@@ -444,6 +444,54 @@ describe("VarPackedPath Tests", () => {
     ]);
   });
 
+  it("drawContourToPath2d", () => {
+    const p = complexTestPath();
+    const mp1 = new MockPath2D();
+    p.drawContourToPath2d(mp1, 0);
+    expect(mp1.items).to.deep.equal([
+      {
+        args: [0, 1],
+        op: "moveTo",
+      },
+      {
+        args: [2, 3, 4, 5],
+        op: "quadraticCurveTo",
+      },
+      {
+        args: [0, 1],
+        op: "lineTo",
+      },
+      {
+        args: [],
+        op: "closePath",
+      },
+    ]);
+    const mp2 = new MockPath2D();
+    p.drawContourToPath2d(mp2, 1);
+    expect(mp2.items).to.deep.equal([
+      {
+        args: [6, 7],
+        op: "moveTo",
+      },
+      {
+        args: [8, 9],
+        op: "lineTo",
+      },
+      {
+        args: [10, 11],
+        op: "lineTo",
+      },
+      {
+        args: [6, 7],
+        op: "lineTo",
+      },
+      {
+        args: [],
+        op: "closePath",
+      },
+    ]);
+  });
+
   it("iterPoints", () => {
     const p = new VarPackedPath(
       new VarArray(0, 0, 0, 100, 100, 100, 100, 0),

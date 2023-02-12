@@ -488,57 +488,66 @@ export class VarPackedPath {
 
   drawToPath2d(path) {
     let startPoint = 0;
-    const coordinates = this.coordinates;
-    const pointTypes = this.pointTypes;
 
     for (const contour of this.contourInfo) {
       const endPoint = contour.endPoint;
-      const numPoints = contour.endPoint + 1 - startPoint;
-
-      var firstOnCurve = null;
-
-      // Determine the index of the first on-curve point, if any
-      for (let i = 0; i < numPoints; i++) {
-        if (
-          (pointTypes[i + startPoint] & VarPackedPath.POINT_TYPE_MASK) ===
-          VarPackedPath.ON_CURVE
-        ) {
-          firstOnCurve = i;
-          break;
-        }
-      }
-
-      if (firstOnCurve !== null) {
-        drawContourToPath(
-          path,
-          coordinates,
-          pointTypes,
-          startPoint,
-          numPoints,
-          firstOnCurve,
-          contour.isClosed
-        );
-      } else {
-        // draw quad blob
-        // create copy of contour points, and insert implied on-curve at front
-        const blobCoordinates = coordinates.slice(startPoint * 2, (endPoint + 1) * 2);
-        const blobPointTypes = pointTypes.slice(startPoint, endPoint + 1);
-        const xMid = (blobCoordinates[0] + blobCoordinates[endPoint * 2]) / 2;
-        const yMid = (blobCoordinates[1] + blobCoordinates[endPoint * 2 + 1]) / 2;
-        blobCoordinates.unshift(xMid, yMid);
-        blobPointTypes.unshift(VarPackedPath.ON_CURVE);
-        drawContourToPath(
-          path,
-          blobCoordinates,
-          blobPointTypes,
-          0,
-          numPoints + 1,
-          0,
-          true
-        );
-      }
-
+      this._drawContourToPath2d(path, startPoint, endPoint, contour.isClosed);
       startPoint = endPoint + 1;
+    }
+  }
+
+  drawContourToPath2d(path, contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const startPoint = this._getContourStartPoint(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    this._drawContourToPath2d(path, startPoint, contour.endPoint, contour.isClosed);
+  }
+
+  _drawContourToPath2d(path, startPoint, endPoint, isClosed) {
+    const coordinates = this.coordinates;
+    const pointTypes = this.pointTypes;
+    const numPoints = endPoint + 1 - startPoint;
+    var firstOnCurve = null;
+
+    // Determine the index of the first on-curve point, if any
+    for (let i = 0; i < numPoints; i++) {
+      if (
+        (pointTypes[i + startPoint] & VarPackedPath.POINT_TYPE_MASK) ===
+        VarPackedPath.ON_CURVE
+      ) {
+        firstOnCurve = i;
+        break;
+      }
+    }
+
+    if (firstOnCurve !== null) {
+      drawContourToPath(
+        path,
+        coordinates,
+        pointTypes,
+        startPoint,
+        numPoints,
+        firstOnCurve,
+        isClosed
+      );
+    } else {
+      // draw quad blob
+      // create copy of contour points, and insert implied on-curve at front
+      const blobCoordinates = coordinates.slice(startPoint * 2, (endPoint + 1) * 2);
+      const blobPointTypes = pointTypes.slice(startPoint, endPoint + 1);
+      const xMid = (blobCoordinates[0] + blobCoordinates[endPoint * 2]) / 2;
+      const yMid = (blobCoordinates[1] + blobCoordinates[endPoint * 2 + 1]) / 2;
+      blobCoordinates.unshift(xMid, yMid);
+      blobPointTypes.unshift(VarPackedPath.ON_CURVE);
+      drawContourToPath(
+        path,
+        blobCoordinates,
+        blobPointTypes,
+        0,
+        numPoints + 1,
+        0,
+        true
+      );
     }
   }
 
