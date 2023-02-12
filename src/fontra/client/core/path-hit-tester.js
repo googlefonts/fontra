@@ -32,21 +32,20 @@ export class PathHitTester {
   }
 
   _ensureContourIsLoaded(contourIndex, contour) {
-    if (!contour.segments) {
-      const collector = new ContourCollector();
-      this.path.drawContourToPath2d(collector, contourIndex);
-      if (collector.contours.length > 1) {
-        throw new Error(
-          `invalid number of contours found: ${collector.contours.length}`
-        );
-      }
-      const segments = collector.contours[0];
-      contour.segments = segments
-        ? segments.map((points) => {
-            return { bezier: new Bezier(points), bounds: polyBounds(points) };
-          })
-        : [];
+    if (contour.segments) {
+      return;
     }
+    const collector = new ContourCollector();
+    this.path.drawContourToPath2d(collector, contourIndex);
+    if (collector.contours.length > 1) {
+      throw new Error(`invalid number of contours found: ${collector.contours.length}`);
+    }
+    const segments = collector.contours[0];
+    contour.segments = segments
+      ? segments.map((points) => {
+          return { bezier: new Bezier(points), bounds: polyBounds(points) };
+        })
+      : [];
   }
 }
 
