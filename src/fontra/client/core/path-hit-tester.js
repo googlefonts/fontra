@@ -1,12 +1,14 @@
 import { Bezier } from "../third-party/bezier.js";
 import { centeredRect, sectRect, unionRect } from "./rectangle.js";
-import { enumerate } from "./utils.js";
+import { enumerate, range } from "./utils.js";
 
 export class PathHitTester {
   constructor(path) {
-    const collector = new ContourCollector();
-    path.drawToPath2d(collector);
-    this.contours = collector.contours.map((segments) => new Contour(segments));
+    this.path = path;
+    this.contours = [];
+    for (const i of range(path.numContours)) {
+      this.contours.push({ bounds: path.getControlBoundsForContour(i) });
+    }
   }
 
   hitTest(point, margin) {
@@ -15,6 +17,7 @@ export class PathHitTester {
       if (!sectRect(targetRect, contour.bounds)) {
         continue;
       }
+      this._ensureContourIsLoaded(contourIndex, contour);
       for (const [segmentIndex, segment] of enumerate(contour.segments)) {
         if (!sectRect(targetRect, segment.bounds)) {
           continue;
@@ -27,14 +30,19 @@ export class PathHitTester {
     }
     return {};
   }
-}
 
-class Contour {
-  constructor(segments) {
-    this.segments = segments.map((points) => new Segment(points));
-    this.bounds = unionRect(
-      ...this.segments.map((segment) => segment.bounds).filter((bounds) => bounds)
-    );
+  _ensureContourIsLoaded(contourIndex, contour) {
+    if (!contour.segments) {
+      const collector = new ContourCollector();
+      this.path.drawContourToPath2d(collector, contourIndex);
+      if (collector.contours.length > 1) {
+        throw new Error(
+          `invalid number of contours found: ${collector.contours.length}`
+        );
+      }
+      const segments = collector.contours[0];
+      contour.segments = segments ? segments.map((points) => new Segment(points)) : [];
+    }
   }
 }
 
