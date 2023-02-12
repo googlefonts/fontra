@@ -41,15 +41,12 @@ export class PathHitTester {
         );
       }
       const segments = collector.contours[0];
-      contour.segments = segments ? segments.map((points) => new Segment(points)) : [];
+      contour.segments = segments
+        ? segments.map((points) => {
+            return { bezier: new Bezier(points), bounds: polyBounds(points) };
+          })
+        : [];
     }
-  }
-}
-
-class Segment {
-  constructor(points) {
-    this.bezier = new Bezier(points);
-    this.bounds = polyBounds(points);
   }
 }
 
