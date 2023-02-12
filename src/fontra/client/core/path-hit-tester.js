@@ -1,5 +1,5 @@
 import { Bezier } from "../third-party/bezier.js";
-import { centeredRect, sectRect, unionRect } from "./rectangle.js";
+import { centeredRect, sectRect } from "./rectangle.js";
 import { enumerate, range } from "./utils.js";
 
 export class PathHitTester {
