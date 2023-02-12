@@ -63,14 +63,26 @@ export class VarPackedPath {
   }
 
   getControlBounds() {
-    if (!this.coordinates.length) {
+    return this._getControlBounds(0, this.pointTypes.length - 1);
+  }
+
+  getControlBoundsForContour(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const startPoint = this._getContourStartPoint(contourIndex);
+    return this._getControlBounds(startPoint, this.contourInfo[contourIndex].endPoint);
+  }
+
+  _getControlBounds(startPoint, endPoint) {
+    const startIndex = startPoint * 2;
+    const endIndex = (endPoint + 1) * 2;
+    if (endIndex - startIndex <= 0) {
       return undefined;
     }
-    let xMin = this.coordinates[0];
-    let yMin = this.coordinates[1];
+    let xMin = this.coordinates[startIndex];
+    let yMin = this.coordinates[startIndex + 1];
     let xMax = xMin;
     let yMax = yMin;
-    for (let i = 2; i < this.coordinates.length; i += 2) {
+    for (let i = startIndex + 2; i < endIndex; i += 2) {
       const x = this.coordinates[i];
       const y = this.coordinates[i + 1];
       xMin = Math.min(x, xMin);

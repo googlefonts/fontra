@@ -664,6 +664,22 @@ describe("VarPackedPath Tests", () => {
     expect(p.getControlBounds()).to.deep.equal(undefined);
   });
 
+  it("getControlBoundsForContour", () => {
+    const p = complexTestPath();
+    expect(p.getControlBoundsForContour(0)).to.deep.equal({
+      xMin: 0,
+      yMin: 1,
+      xMax: 4,
+      yMax: 5,
+    });
+    expect(p.getControlBoundsForContour(1)).to.deep.equal({
+      xMin: 6,
+      yMin: 7,
+      xMax: 10,
+      yMax: 11,
+    });
+  });
+
   it("test firstOnCurve bug", () => {
     const p1 = simpleTestPath();
     const p2 = p1.concat(p1);
