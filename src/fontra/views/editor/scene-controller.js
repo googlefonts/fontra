@@ -59,9 +59,11 @@ export class SceneController {
   }
 
   setSelectedTool(tool) {
+    this.selectedTool?.deactivate();
     this.selectedTool = tool;
     this.hoverSelection = new Set();
-    tool.setCursor();
+    this.selectedTool.activate();
+    this.selectedTool.handleHover({});
   }
 
   handleKeyDown(event) {
@@ -192,7 +194,7 @@ export class SceneController {
     if (event.x !== undefined) {
       this._currentLocalPoint = this.canvasController.localPoint(event);
     }
-    return this._currentLocalPoint;
+    return this._currentLocalPoint || { x: 0, y: 0 };
   }
 
   selectedGlyphPoint(event) {

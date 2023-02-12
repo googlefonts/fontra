@@ -24,6 +24,11 @@ export class PenTool extends BaseTool {
     }
   }
 
+  deactivate() {
+    delete this.sceneModel.pathConnectTargetPoint;
+    this.canvasController.setNeedsUpdate();
+  }
+
   setCursor() {
     if (!this.sceneModel.selectedGlyphIsEditing) {
       this.editor.tools["pointer-tool"].setCursor();

@@ -9,6 +9,14 @@ export class BaseTool {
   setCursor() {
     this.canvasController.canvas.style.cursor = "default";
   }
+
+  activate() {
+    this.setCursor();
+  }
+
+  deactivate() {
+    //
+  }
 }
 
 const MINIMUM_DRAG_DISTANCE = 2;
