@@ -39,18 +39,12 @@ describe("PathHitTester Tests", () => {
   for (let i = 0; i < hitTest_testData.length; i++) {
     const [testPoint, margin, expectedHit] = hitTest_testData[i];
     it(`hitTest test ${i}`, () => {
-      const p = VarPackedPath.fromUnpackedContours([
-        {
-          points: [
-            { x: 0, y: 0 },
-            { x: 0, y: 100 },
-            { x: 200, y: 100 },
-            { x: 250, y: 50, type: "quad" },
-            { x: 200, y: 0 },
-          ],
-          isClosed: true,
-        },
-      ]);
+      const p = new VarPackedPath();
+      p.moveTo(0, 0);
+      p.lineTo(0, 100);
+      p.lineTo(200, 100);
+      p.quadraticCurveTo(250, 50, 200, 0);
+      p.closePath();
       const pcf = new PathHitTester(p);
       const hit = pcf.hitTest(testPoint, margin);
       expect(hit).to.deep.equal(expectedHit);
