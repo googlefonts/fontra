@@ -1,7 +1,7 @@
 import { CanvasController } from "../core/canvas-controller.js";
 import { applyChange, matchChangePath } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
-import { ContextMenu } from "../core/context-menu.js";
+import { ContextMenu, MenuItemDivider } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
 import {
@@ -828,12 +828,12 @@ export class EditorController {
     event.preventDefault();
     const menuItems = [
       ...this._getUndoRedoMenuItems(),
-      "-",
+      MenuItemDivider,
       ...this._getSelectAllNoneMenuItems(),
     ];
     const sceneContextItems = this.sceneController.getContextMenuItems(event);
     if (sceneContextItems?.length) {
-      menuItems.push("-");
+      menuItems.push(MenuItemDivider);
       menuItems.push(...sceneContextItems);
     }
     this.contextMenu = new ContextMenu("context-menu", menuItems);

@@ -1,5 +1,7 @@
 import { reversed } from "./utils.js";
 
+export const MenuItemDivider = { title: "-" };
+
 export class ContextMenu {
   constructor(elementID, menuItems) {
     this.element = document.querySelector(`#${elementID}`);
@@ -13,7 +15,7 @@ export class ContextMenu {
 
     for (const item of menuItems) {
       const el = document.createElement("div");
-      if (item === "-") {
+      if (item === MenuItemDivider || item.title === "-") {
         const dividerElement = document.createElement("hr");
         dividerElement.className = "context-menu-item-divider";
         this.element.appendChild(dividerElement);
