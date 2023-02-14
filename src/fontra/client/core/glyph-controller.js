@@ -4,6 +4,7 @@ import {
   registerRepresentationFactory,
 } from "./representation-cache.js";
 import { Transform } from "./transform.js";
+import { enumerate } from "./utils.js";
 import {
   VariationModel,
   locationToString,
@@ -284,6 +285,10 @@ export class StaticGlyphController {
     return getRepresentation(this, "flattenedPath2d");
   }
 
+  get closedContoursPath2d() {
+    return getRepresentation(this, "closedContoursPath2d");
+  }
+
   get componentsPath() {
     return getRepresentation(this, "componentsPath");
   }
@@ -310,6 +315,25 @@ registerRepresentationFactory(StaticGlyphController, "flattenedPath2d", (glyph) 
   glyph.flattenedPath.drawToPath2d(flattenedPath2d);
   return flattenedPath2d;
 });
+
+registerRepresentationFactory(
+  StaticGlyphController,
+  "closedContoursPath2d",
+  (glyph) => {
+    const closedContoursPath2d = new Path2D();
+    const path = glyph.flattenedPath;
+    if (path.contourInfo.every((contour) => contour.isClosed)) {
+      // No open contours found, just use flattenedPath2d
+      return glyph.flattenedPath2d;
+    }
+    for (const [i, contour] of enumerate(path.contourInfo)) {
+      if (contour.isClosed) {
+        path.drawContourToPath2d(closedContoursPath2d, i);
+      }
+    }
+    return closedContoursPath2d;
+  }
+);
 
 registerRepresentationFactory(StaticGlyphController, "componentsPath", (glyph) => {
   return joinPaths(glyph.components.map((compo) => compo.path));
