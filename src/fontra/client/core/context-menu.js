@@ -21,10 +21,10 @@ export class ContextMenu {
         this.element.appendChild(dividerElement);
       } else {
         const itemElement = document.createElement("div");
-        const itemTitle = typeof item.title === "function" ? item.title() : item.title;
+        const itemTitle = this.buildTitle(item);
         itemElement.classList.add("context-menu-item");
         itemElement.classList.toggle("enabled", !!item.enabled());
-        itemElement.innerText = itemTitle;
+        itemElement.append(itemTitle);
         itemElement.onmouseenter = (event) => this.selectItem(itemElement);
         itemElement.onmousemove = (event) => {
           if (!itemElement.classList.contains("selected")) {
@@ -128,6 +128,17 @@ export class ContextMenu {
         }
       }
     }
+  }
+
+  buildTitle(item) {
+    const titleWrapper = document.createElement("div");
+    const title = document.createElement("span");
+    title.innerText = typeof item.title === "function" ? item.title() : item.title;
+    const shortCut = document.createElement("span");
+    shortCut.innerText = item.shortCut ? item.shortCut.keysOrCodes : "";
+    // console.log(item.shortCut.keysOrCodes);
+    titleWrapper.append(title, shortCut);
+    return titleWrapper;
   }
 }
 
