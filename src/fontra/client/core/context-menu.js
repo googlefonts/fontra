@@ -1,4 +1,4 @@
-import { reversed } from "./utils.js";
+import { reversed, buildShortcut } from "./utils.js";
 
 export const MenuItemDivider = { title: "-" };
 
@@ -134,9 +134,9 @@ export class ContextMenu {
     const titleWrapper = document.createElement("div");
     const title = document.createElement("span");
     title.innerText = typeof item.title === "function" ? item.title() : item.title;
+
     const shortCut = document.createElement("span");
-    shortCut.innerText = item.shortCut ? item.shortCut.keysOrCodes : "";
-    // console.log(item.shortCut.keysOrCodes);
+    shortCut.innerHTML = buildShortcut(item.shortCut);
     titleWrapper.append(title, shortCut);
     return titleWrapper;
   }

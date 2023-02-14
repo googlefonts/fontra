@@ -221,3 +221,23 @@ export function makeUPlusStringFromCodePoint(codePoint) {
     ? "U+" + codePoint.toString(16).toUpperCase().padStart(4, "0")
     : "";
 }
+
+export function buildShortcut(shorCutRegister) {
+  let shorcutCommand = "";
+
+  if (shorCutRegister) {
+    const isMac = navigator.platform.toLowerCase().indexOf("mac") >= 0;
+
+    if (shorCutRegister.shiftKey) {
+      shorcutCommand += isMac ? "&#8679;" : "Shift+"; // ⇧ or Shift
+    }
+    if (shorCutRegister.metaKey) {
+      shorcutCommand += isMac ? "&#8984;" : "Ctrl+"; // ⌘ or Ctrl
+    }
+    if (shorCutRegister.keysOrCodes) {
+      shorcutCommand += shorCutRegister.keysOrCodes.toUpperCase();
+    }
+  }
+
+  return shorcutCommand;
+}
