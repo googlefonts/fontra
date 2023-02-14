@@ -170,6 +170,7 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event);
     });
 
+    this.initContextMenuItems();
     this.initShortCuts();
     this.initSidebars();
     this.initMiniConsole();
@@ -666,6 +667,27 @@ export class EditorController {
     this.setAutoViewBox();
   }
 
+  initContextMenuItems() {
+    this.basicContextMenuItems = [];
+    for (const isRedo of [0, 1]) {
+      this.basicContextMenuItems.push({
+        title: () => this.getUndoRedoLabel(isRedo),
+        enabled: () => this.canUndoRedo(isRedo),
+        callback: () => this.doUndoRedo(isRedo),
+        shortCut: { keysOrCodes: "z", metaKey: true, shiftKey: !!isRedo },
+      });
+    }
+    for (const selectNone of [0, 1]) {
+      this.basicContextMenuItems.push({
+        title: ["Select All", "Select None"][selectNone],
+        enabled: () => this.canSelectAllNone(selectNone),
+        callback: () => this.doSelectAllNone(selectNone),
+        shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: !!selectNone },
+      });
+    }
+    this.glyphEditContextMenuItems = this.sceneController.getContextMenuItems();
+  }
+
   initShortCuts() {
     this.shortCutHandlers = {};
 
@@ -689,19 +711,15 @@ export class EditorController {
       }
     });
 
-    this.registerShortCut("a", { metaKey: true, shiftKey: false }, () => {
-      this.doSelectAllNone(false);
-    });
-    this.registerShortCut("a", { metaKey: true, shiftKey: true }, () => {
-      this.doSelectAllNone(true);
-    });
-
-    this.registerShortCut("z", { metaKey: true, shiftKey: false }, () => {
-      this.doUndoRedo(false);
-    });
-    this.registerShortCut("z", { metaKey: true, shiftKey: true }, () => {
-      this.doUndoRedo(true);
-    });
+    for (const menuItem of this.basicContextMenuItems) {
+      if (menuItem.shortCut) {
+        this.registerShortCut(
+          menuItem.shortCut.keysOrCodes,
+          menuItem.shortCut,
+          menuItem.callback
+        );
+      }
+    }
   }
 
   registerShortCut(keysOrCodes, modifiers, callback) {
@@ -763,6 +781,15 @@ export class EditorController {
     return undefined;
   }
 
+  getUndoRedoLabel(isRedo) {
+    const info = this.sceneController.getUndoRedoInfo(isRedo);
+    return (isRedo ? "Redo" : "Undo") + (info ? " " + info.label : "");
+  }
+
+  canUndoRedo(isRedo) {
+    return !!this.sceneController.getUndoRedoInfo(isRedo);
+  }
+
   async doUndoRedo(isRedo) {
     await this.sceneController.doUndoRedo(isRedo);
     // Hmmm would be nice if the following was done automatically
@@ -770,6 +797,10 @@ export class EditorController {
     this.sourcesList.setSelectedItemIndex(
       await this.sceneController.getSelectedSource()
     );
+  }
+
+  canSelectAllNone(selectNone) {
+    return this.sceneController.selectedGlyphIsEditing;
   }
 
   doSelectAllNone(selectNone) {
@@ -826,56 +857,13 @@ export class EditorController {
 
   contextMenuHandler(event) {
     event.preventDefault();
-    const menuItems = [
-      ...this._getUndoRedoMenuItems(),
-      MenuItemDivider,
-      ...this._getSelectAllNoneMenuItems(),
-    ];
-    const sceneContextItems = this.sceneController.getContextMenuItems(event);
-    if (sceneContextItems?.length) {
+    const menuItems = [...this.basicContextMenuItems];
+    if (this.sceneController.selectedGlyphIsEditing) {
+      this.sceneController.updateContextMenuState(event);
       menuItems.push(MenuItemDivider);
-      menuItems.push(...sceneContextItems);
+      menuItems.push(...this.glyphEditContextMenuItems);
     }
     this.contextMenu = new ContextMenu("context-menu", menuItems);
-  }
-
-  _getUndoRedoMenuItems() {
-    const items = [];
-    for (const title of ["Undo", "Redo"]) {
-      const isRedo = title === "Redo";
-      const info = this.sceneController.getUndoRedoInfo(isRedo);
-      const item = {};
-      if (info) {
-        item.title = `${title} ${info.label}`;
-        item.callback = () => this.doUndoRedo(isRedo);
-      } else {
-        item.title = title;
-        item.disabled = true;
-      }
-      items.push(item);
-    }
-    return items;
-  }
-
-  _getSelectAllNoneMenuItems() {
-    const items = [];
-    for (const title of ["Select All", "Select None"]) {
-      const selectedGlyphIsEditing = this.sceneController.selectedGlyphIsEditing;
-      const selectNone = title === "Select None";
-
-      const item = {
-        title: title,
-      };
-
-      if (selectedGlyphIsEditing) {
-        item.callback = () => this.doSelectAllNone(selectNone);
-      } else {
-        item.disabled = true;
-      }
-
-      items.push(item);
-    }
-    return items;
   }
 
   dismissContextMenu(event) {
