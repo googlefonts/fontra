@@ -98,7 +98,7 @@ export class SceneController {
       );
 
       const connectDetector = this.getPathConnectDetector();
-      if (connectDetector.shouldConnect(false)) {
+      if (connectDetector.shouldConnect()) {
         const connectChanges = recordChanges(instance, (instance) => {
           this.selection = connectContours(
             instance.path,
