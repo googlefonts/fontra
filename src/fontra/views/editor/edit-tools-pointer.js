@@ -285,7 +285,7 @@ export class PointerTool extends BaseTool {
         editChange = editBehavior.makeChangeForDelta(delta);
         applyChange(instance, editChange);
 
-        shouldConnect = connectDetector.shouldConnect();
+        shouldConnect = connectDetector.shouldConnect(true);
 
         await sendIncrementalChange(editChange, true); // true: "may drop"
       }

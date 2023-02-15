@@ -2,7 +2,7 @@ import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
-import { splitPathAtPointIndices } from "../core/path-functions.js";
+import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
 import { dialog } from "../core/ui-dialog.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
@@ -92,10 +92,25 @@ export class SceneController {
       const editChange = editBehavior.makeChangeForDelta(delta);
       applyChange(instance, editChange);
 
-      const changes = ChangeCollector.fromChanges(
+      let changes = ChangeCollector.fromChanges(
         editChange,
         editBehavior.rollbackChange
       );
+
+      const connectDetector = this.getPathConnectDetector();
+      if (connectDetector.shouldConnect(false)) {
+        const connectChanges = recordChanges(instance, (instance) => {
+          this.selection = connectContours(
+            instance.path,
+            connectDetector.connectSourcePointIndex,
+            connectDetector.connectTargetPointIndex
+          );
+        });
+        if (connectChanges.hasChange) {
+          changes = changes.concat(connectChanges);
+        }
+      }
+
       return {
         changes: changes,
         undoLabel: "nudge selection",
@@ -641,7 +656,7 @@ class PathConnectDetector {
     this.connectSourcePointIndex = pointSelection[0];
   }
 
-  shouldConnect() {
+  shouldConnect(showConnectIndicator = false) {
     if (this.connectSourcePointIndex === undefined) {
       return false;
     }
@@ -657,7 +672,7 @@ class PathConnectDetector {
       connectTargetPointIndex !== undefined &&
       connectTargetPointIndex !== this.connectSourcePointIndex &&
       !!this.path.isStartOrEndPoint(connectTargetPointIndex);
-    if (shouldConnect) {
+    if (showConnectIndicator && shouldConnect) {
       sceneController.sceneModel.pathConnectTargetPoint = this.path.getPoint(
         connectTargetPointIndex
       );
