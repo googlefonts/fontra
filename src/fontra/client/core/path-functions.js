@@ -69,3 +69,42 @@ function splitOpenPointsArray(points, splitPointIndex) {
   }
   return [points.slice(0, splitPointIndex + 1), points.slice(splitPointIndex)];
 }
+
+export function connectContours(path, sourcePointIndex, targetPointIndex) {
+  let newSelection = new Set();
+  const [sourceContourIndex, sourceContourPointIndex] =
+    path.getContourAndPointIndex(sourcePointIndex);
+  const [targetContourIndex, targetContourPointIndex] =
+    path.getContourAndPointIndex(targetPointIndex);
+  if (sourceContourIndex == targetContourIndex) {
+    // Close contour
+    path.contourInfo[sourceContourIndex].isClosed = true;
+    if (sourceContourPointIndex) {
+      path.deletePoint(sourceContourIndex, sourceContourPointIndex);
+    } else {
+      // Ensure the target point becomes the start point
+      path.setPoint(sourcePointIndex, path.getPoint(targetPointIndex));
+      path.deletePoint(sourceContourIndex, targetContourPointIndex);
+    }
+    const selectedPointIndex = sourceContourPointIndex
+      ? targetPointIndex
+      : sourcePointIndex;
+    newSelection.add(`point/${selectedPointIndex}`);
+  } else {
+    // Connect contours
+    const sourceContour = path.getUnpackedContour(sourceContourIndex);
+    const targetContour = path.getUnpackedContour(targetContourIndex);
+    if (!!sourceContourPointIndex == !!targetContourPointIndex) {
+      targetContour.points.reverse();
+    }
+    sourceContour.points.splice(
+      sourceContourPointIndex ? -1 : 0,
+      1,
+      ...targetContour.points
+    );
+    path.deleteContour(sourceContourIndex);
+    path.insertUnpackedContour(sourceContourIndex, sourceContour);
+    path.deleteContour(targetContourIndex);
+  }
+  return newSelection;
+}

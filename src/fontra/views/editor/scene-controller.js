@@ -616,6 +616,61 @@ export class SceneController {
       };
     });
   }
+
+  getPathConnectDetector() {
+    return new PathConnectDetector(this);
+  }
+}
+
+class PathConnectDetector {
+  constructor(sceneController) {
+    this.sceneController = sceneController;
+    const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
+    this.path = positionedGlyph.glyph.path;
+    const selection = sceneController.selection;
+    if (selection.size !== 1) {
+      return;
+    }
+    const { point: pointSelection } = parseSelection(selection);
+    if (
+      pointSelection?.length !== 1 ||
+      !this.path.isStartOrEndPoint(pointSelection[0])
+    ) {
+      return;
+    }
+    this.connectSourcePointIndex = pointSelection[0];
+  }
+
+  shouldConnect() {
+    if (this.connectSourcePointIndex === undefined) {
+      return false;
+    }
+
+    const sceneController = this.sceneController;
+    const connectSourcePoint = this.path.getPoint(this.connectSourcePointIndex);
+    const connectTargetPointIndex = this.path.firstPointIndexNearPoint(
+      connectSourcePoint,
+      sceneController.mouseClickMargin,
+      this.connectSourcePointIndex
+    );
+    const shouldConnect =
+      connectTargetPointIndex !== undefined &&
+      connectTargetPointIndex !== this.connectSourcePointIndex &&
+      !!this.path.isStartOrEndPoint(connectTargetPointIndex);
+    if (shouldConnect) {
+      sceneController.sceneModel.pathConnectTargetPoint = this.path.getPoint(
+        connectTargetPointIndex
+      );
+    } else {
+      delete sceneController.sceneModel.pathConnectTargetPoint;
+    }
+    this.connectTargetPointIndex = connectTargetPointIndex;
+    return shouldConnect;
+  }
+
+  clearConnectIndicator() {
+    delete this.sceneController.sceneModel.pathConnectTargetPoint;
+  }
 }
 
 function reversePointSelection(path, pointSelection) {
