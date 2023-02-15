@@ -255,11 +255,14 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     await sceneController.editInstance(async (sendIncrementalChange, instance) => {
       const initialPoint = sceneController.localPoint(initialEvent);
+      const connectDetector = new PathConnectDetector(sceneController);
+      let shouldConnect = false;
 
       const behaviorFactory = new EditBehaviorFactory(
         instance,
         sceneController.selection
       );
+
       let behaviorName = getBehaviorName(initialEvent);
       let editBehavior = behaviorFactory.getBehavior(behaviorName);
 
@@ -280,19 +283,125 @@ export class PointerTool extends BaseTool {
         };
         editChange = editBehavior.makeChangeForDelta(delta);
         applyChange(instance, editChange);
+
+        shouldConnect = connectDetector.shouldConnect();
+
         await sendIncrementalChange(editChange, true); // true: "may drop"
       }
-      const changes = ChangeCollector.fromChanges(
+      let changes = ChangeCollector.fromChanges(
         editChange,
         editBehavior.rollbackChange
       );
+      if (shouldConnect) {
+        connectDetector.clearConnectIndicator();
+        const connectChanges = recordChanges(instance, (instance) => {
+          sceneController.selection = connectContours(
+            instance.path,
+            connectDetector.connectSourcePointIndex,
+            connectDetector.connectTargetPointIndex
+          );
+        });
+        if (connectChanges.hasChange) {
+          changes = changes.concat(connectChanges);
+        }
+      }
       return {
-        undoLabel: "drag selection",
+        undoLabel: "drag selection" + (shouldConnect ? " and connect contours" : ""),
         changes: changes,
         broadcast: true,
       };
     });
   }
+}
+
+class PathConnectDetector {
+  constructor(sceneController) {
+    this.sceneController = sceneController;
+    const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
+    this.path = positionedGlyph.glyph.path;
+    const selection = sceneController.selection;
+    if (selection.size !== 1) {
+      return;
+    }
+    const { point: pointSelection } = parseSelection(selection);
+    if (
+      pointSelection?.length !== 1 ||
+      !this.path.isStartOrEndPoint(pointSelection[0])
+    ) {
+      return;
+    }
+    this.connectSourcePointIndex = pointSelection[0];
+  }
+
+  shouldConnect() {
+    if (this.connectSourcePointIndex === undefined) {
+      return false;
+    }
+
+    const sceneController = this.sceneController;
+    const connectSourcePoint = this.path.getPoint(this.connectSourcePointIndex);
+    const connectTargetPointIndex = this.path.firstPointIndexNearPoint(
+      connectSourcePoint,
+      sceneController.mouseClickMargin,
+      this.connectSourcePointIndex
+    );
+    const shouldConnect =
+      connectTargetPointIndex !== undefined &&
+      connectTargetPointIndex !== this.connectSourcePointIndex &&
+      !!this.path.isStartOrEndPoint(connectTargetPointIndex);
+    if (shouldConnect) {
+      sceneController.sceneModel.pathConnectTargetPoint = this.path.getPoint(
+        connectTargetPointIndex
+      );
+    } else {
+      delete sceneController.sceneModel.pathConnectTargetPoint;
+    }
+    this.connectTargetPointIndex = connectTargetPointIndex;
+    return shouldConnect;
+  }
+
+  clearConnectIndicator() {
+    delete this.sceneController.sceneModel.pathConnectTargetPoint;
+  }
+}
+
+function connectContours(path, sourcePointIndex, targetPointIndex) {
+  let newSelection = new Set();
+  const [sourceContourIndex, sourceContourPointIndex] =
+    path.getContourAndPointIndex(sourcePointIndex);
+  const [targetContourIndex, targetContourPointIndex] =
+    path.getContourAndPointIndex(targetPointIndex);
+  if (sourceContourIndex == targetContourIndex) {
+    // Close contour
+    path.contourInfo[sourceContourIndex].isClosed = true;
+    if (sourceContourPointIndex) {
+      path.deletePoint(sourceContourIndex, sourceContourPointIndex);
+    } else {
+      // Ensure the target point becomes the start point
+      path.setPoint(sourcePointIndex, path.getPoint(targetPointIndex));
+      path.deletePoint(sourceContourIndex, targetContourPointIndex);
+    }
+    const selectedPointIndex = sourceContourPointIndex
+      ? targetPointIndex
+      : sourcePointIndex;
+    newSelection.add(`point/${selectedPointIndex}`);
+  } else {
+    // Connect contours
+    const sourceContour = path.getUnpackedContour(sourceContourIndex);
+    const targetContour = path.getUnpackedContour(targetContourIndex);
+    if (!!sourceContourPointIndex == !!targetContourPointIndex) {
+      targetContour.points.reverse();
+    }
+    sourceContour.points.splice(
+      sourceContourPointIndex ? -1 : 0,
+      1,
+      ...targetContour.points
+    );
+    path.deleteContour(sourceContourIndex);
+    path.insertUnpackedContour(sourceContourIndex, sourceContour);
+    path.deleteContour(targetContourIndex);
+  }
+  return newSelection;
 }
 
 function getBehaviorName(event) {
