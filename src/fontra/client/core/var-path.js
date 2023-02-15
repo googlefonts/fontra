@@ -359,6 +359,8 @@ export class VarPackedPath {
   firstPointIndexNearPoint(point, margin) {
     const rect = centeredRect(point.x, point.y, margin);
     for (const hit of this.iterPointsInRect(rect)) {
+      // TODO: we may have to filter or sort for the case when a handle coincides with
+      // its anchor, to get a consistent result despite which of the two comes first.
       return hit.pointIndex;
     }
   }
