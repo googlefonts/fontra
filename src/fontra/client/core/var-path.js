@@ -356,12 +356,14 @@ export class VarPackedPath {
     return 0;
   }
 
-  firstPointIndexNearPoint(point, margin) {
+  firstPointIndexNearPoint(point, margin, skipPointIndex) {
     const rect = centeredRect(point.x, point.y, margin);
     for (const hit of this.iterPointsInRect(rect)) {
       // TODO: we may have to filter or sort for the case when a handle coincides with
       // its anchor, to get a consistent result despite which of the two comes first.
-      return hit.pointIndex;
+      if (hit.pointIndex !== skipPointIndex) {
+        return hit.pointIndex;
+      }
     }
   }
 
