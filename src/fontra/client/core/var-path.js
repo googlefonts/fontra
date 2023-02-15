@@ -356,7 +356,16 @@ export class VarPackedPath {
     return 0;
   }
 
-  firstPointIndexNearPoint(point, margin, skipPointIndex) {
+  firstPointIndexNearPoint(point, margin, skipPointIndex = undefined) {
+    //
+    // Given `point` and a `margin`, return the index of the first point
+    // that is within `margin` of `point`. Return undefined if no such
+    // point was found.
+    //
+    // If `skipPointIndex` is given, skip that particular point index.
+    // This is useful if you want to find a point that is not a specific
+    // point nearby.
+    //
     const rect = centeredRect(point.x, point.y, margin);
     for (const hit of this.iterPointsInRect(rect)) {
       // TODO: we may have to filter or sort for the case when a handle coincides with
