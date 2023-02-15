@@ -1,6 +1,6 @@
 import VarArray from "./var-array.js";
 import { VariationError } from "./errors.js";
-import { pointInRect } from "./rectangle.js";
+import { centeredRect, pointInRect } from "./rectangle.js";
 import { convexHull } from "./convex-hull.js";
 import { enumerate } from "./utils.js";
 
@@ -336,6 +336,44 @@ export class VarPackedPath {
 
   _getContourStartPoint(contourIndex) {
     return contourIndex === 0 ? 0 : this.contourInfo[contourIndex - 1].endPoint + 1;
+  }
+
+  isStartOrEndPoint(pointIndex) {
+    //
+    // Returns -1 if `pointIndex` references the start point of an open contour,
+    // returns 1 if `pointIndex` references the end point of an open contour.
+    // Returns 0 in all other cases.
+    //
+    const [contourIndex, contourPointIndex] = this.getContourAndPointIndex(pointIndex);
+    const contour = this.contourInfo[contourIndex];
+    if (!contour.isClosed) {
+      if (contourPointIndex === 0) {
+        return -1;
+      } else if (pointIndex === contour.endPoint) {
+        return 1;
+      }
+    }
+    return 0;
+  }
+
+  firstPointIndexNearPoint(point, margin, skipPointIndex = undefined) {
+    //
+    // Given `point` and a `margin`, return the index of the first point
+    // that is within `margin` of `point`. Return undefined if no such
+    // point was found.
+    //
+    // If `skipPointIndex` is given, skip that particular point index.
+    // This is useful if you want to find a point that is not a specific
+    // point nearby.
+    //
+    const rect = centeredRect(point.x, point.y, margin);
+    for (const hit of this.iterPointsInRect(rect)) {
+      // TODO: we may have to filter or sort for the case when a handle coincides with
+      // its anchor, to get a consistent result despite which of the two comes first.
+      if (hit.pointIndex !== skipPointIndex) {
+        return hit.pointIndex;
+      }
+    }
   }
 
   *iterPoints() {

@@ -308,15 +308,16 @@ export class SceneModel {
       return new Set();
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
-    const selRect = centeredRect(
-      point.x - positionedGlyph.x,
-      point.y - positionedGlyph.y,
+    const glyphPoint = {
+      x: point.x - positionedGlyph.x,
+      y: point.y - positionedGlyph.y,
+    };
+    const pointIndex = positionedGlyph.glyph.path.firstPointIndexNearPoint(
+      glyphPoint,
       size
     );
-    for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
-      // TODO: we may have to filter or sort for the case when a handle coincides with
-      // its anchor, to get a consistent result despite which of the two comes first.
-      return new Set([`point/${hit.pointIndex}`]);
+    if (pointIndex !== undefined) {
+      return new Set([`point/${pointIndex}`]);
     }
     const components = positionedGlyph.glyph.components;
     const x = point.x - positionedGlyph.x;

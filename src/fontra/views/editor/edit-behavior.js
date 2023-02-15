@@ -15,12 +15,10 @@ import {
 
 export class EditBehaviorFactory {
   constructor(instance, selection) {
-    const selectionByType = parseSelection(selection);
-    this.contours = unpackContours(instance.path, selectionByType["point"] || []);
-    this.components = unpackComponents(
-      instance.components,
-      selectionByType["component"] || []
-    );
+    const { point: pointSelection, component: componentSelection } =
+      parseSelection(selection);
+    this.contours = unpackContours(instance.path, pointSelection || []);
+    this.components = unpackComponents(instance.components, componentSelection || []);
     this.behaviors = {};
   }
 

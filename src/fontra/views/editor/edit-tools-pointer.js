@@ -1,5 +1,6 @@
 import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
+import { connectContours } from "../core/path-functions.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
 import { isSuperset, symmetricDifference } from "../core/set-ops.js";
 import { dialog } from "../core/ui-dialog.js";
@@ -255,11 +256,14 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     await sceneController.editInstance(async (sendIncrementalChange, instance) => {
       const initialPoint = sceneController.localPoint(initialEvent);
+      const connectDetector = sceneController.getPathConnectDetector();
+      let shouldConnect = false;
 
       const behaviorFactory = new EditBehaviorFactory(
         instance,
         sceneController.selection
       );
+
       let behaviorName = getBehaviorName(initialEvent);
       let editBehavior = behaviorFactory.getBehavior(behaviorName);
 
@@ -280,14 +284,30 @@ export class PointerTool extends BaseTool {
         };
         editChange = editBehavior.makeChangeForDelta(delta);
         applyChange(instance, editChange);
+
+        shouldConnect = connectDetector.shouldConnect(true);
+
         await sendIncrementalChange(editChange, true); // true: "may drop"
       }
-      const changes = ChangeCollector.fromChanges(
+      let changes = ChangeCollector.fromChanges(
         editChange,
         editBehavior.rollbackChange
       );
+      if (shouldConnect) {
+        connectDetector.clearConnectIndicator();
+        const connectChanges = recordChanges(instance, (instance) => {
+          sceneController.selection = connectContours(
+            instance.path,
+            connectDetector.connectSourcePointIndex,
+            connectDetector.connectTargetPointIndex
+          );
+        });
+        if (connectChanges.hasChange) {
+          changes = changes.concat(connectChanges);
+        }
+      }
       return {
-        undoLabel: "drag selection",
+        undoLabel: "drag selection" + (shouldConnect ? " and connect contours" : ""),
         changes: changes,
         broadcast: true,
       };

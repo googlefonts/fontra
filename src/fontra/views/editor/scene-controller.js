@@ -2,7 +2,7 @@ import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
-import { splitPathAtPointIndices } from "../core/path-functions.js";
+import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
 import { dialog } from "../core/ui-dialog.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
@@ -92,10 +92,25 @@ export class SceneController {
       const editChange = editBehavior.makeChangeForDelta(delta);
       applyChange(instance, editChange);
 
-      const changes = ChangeCollector.fromChanges(
+      let changes = ChangeCollector.fromChanges(
         editChange,
         editBehavior.rollbackChange
       );
+
+      const connectDetector = this.getPathConnectDetector();
+      if (connectDetector.shouldConnect()) {
+        const connectChanges = recordChanges(instance, (instance) => {
+          this.selection = connectContours(
+            instance.path,
+            connectDetector.connectSourcePointIndex,
+            connectDetector.connectTargetPointIndex
+          );
+        });
+        if (connectChanges.hasChange) {
+          changes = changes.concat(connectChanges);
+        }
+      }
+
       return {
         changes: changes,
         undoLabel: "nudge selection",
@@ -615,6 +630,61 @@ export class SceneController {
         broadcast: true,
       };
     });
+  }
+
+  getPathConnectDetector() {
+    return new PathConnectDetector(this);
+  }
+}
+
+class PathConnectDetector {
+  constructor(sceneController) {
+    this.sceneController = sceneController;
+    const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
+    this.path = positionedGlyph.glyph.path;
+    const selection = sceneController.selection;
+    if (selection.size !== 1) {
+      return;
+    }
+    const { point: pointSelection } = parseSelection(selection);
+    if (
+      pointSelection?.length !== 1 ||
+      !this.path.isStartOrEndPoint(pointSelection[0])
+    ) {
+      return;
+    }
+    this.connectSourcePointIndex = pointSelection[0];
+  }
+
+  shouldConnect(showConnectIndicator = false) {
+    if (this.connectSourcePointIndex === undefined) {
+      return false;
+    }
+
+    const sceneController = this.sceneController;
+    const connectSourcePoint = this.path.getPoint(this.connectSourcePointIndex);
+    const connectTargetPointIndex = this.path.firstPointIndexNearPoint(
+      connectSourcePoint,
+      sceneController.mouseClickMargin,
+      this.connectSourcePointIndex
+    );
+    const shouldConnect =
+      connectTargetPointIndex !== undefined &&
+      connectTargetPointIndex !== this.connectSourcePointIndex &&
+      !!this.path.isStartOrEndPoint(connectTargetPointIndex);
+    if (showConnectIndicator && shouldConnect) {
+      sceneController.sceneModel.pathConnectTargetPoint = this.path.getPoint(
+        connectTargetPointIndex
+      );
+    } else {
+      delete sceneController.sceneModel.pathConnectTargetPoint;
+    }
+    this.connectTargetPointIndex = connectTargetPointIndex;
+    return shouldConnect;
+  }
+
+  clearConnectIndicator() {
+    delete this.sceneController.sceneModel.pathConnectTargetPoint;
   }
 }
 
