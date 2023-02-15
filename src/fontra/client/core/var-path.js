@@ -338,6 +338,24 @@ export class VarPackedPath {
     return contourIndex === 0 ? 0 : this.contourInfo[contourIndex - 1].endPoint + 1;
   }
 
+  isStartOrEndPoint(pointIndex) {
+    //
+    // Returns -1 if `pointIndex` references the start point of an open contour,
+    // returns 1 if `pointIndex` references the end point of an open contour.
+    // Returns 0 in all other cases.
+    //
+    const [contourIndex, contourPointIndex] = this.getContourAndPointIndex(pointIndex);
+    const contour = this.contourInfo[contourIndex];
+    if (!contour.isClosed) {
+      if (contourPointIndex === 0) {
+        return -1;
+      } else if (pointIndex === contour.endPoint) {
+        return 1;
+      }
+    }
+    return 0;
+  }
+
   *iterPoints() {
     yield* this._iterPointsFromTo(0, this.pointTypes.length - 1);
   }
