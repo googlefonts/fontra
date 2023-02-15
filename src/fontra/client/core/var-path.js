@@ -1,6 +1,6 @@
 import VarArray from "./var-array.js";
 import { VariationError } from "./errors.js";
-import { pointInRect } from "./rectangle.js";
+import { centeredRect, pointInRect } from "./rectangle.js";
 import { convexHull } from "./convex-hull.js";
 import { enumerate } from "./utils.js";
 
@@ -354,6 +354,13 @@ export class VarPackedPath {
       }
     }
     return 0;
+  }
+
+  firstPointIndexNearPoint(point, margin) {
+    const rect = centeredRect(point.x, point.y, margin);
+    for (const hit of this.iterPointsInRect(rect)) {
+      return hit.pointIndex;
+    }
   }
 
   *iterPoints() {
