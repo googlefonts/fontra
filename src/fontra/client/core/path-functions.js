@@ -72,6 +72,7 @@ function splitOpenPointsArray(points, splitPointIndex) {
 
 export function connectContours(path, sourcePointIndex, targetPointIndex) {
   let newSelection = new Set();
+  let selectedPointIndex;
   const [sourceContourIndex, sourceContourPointIndex] =
     path.getContourAndPointIndex(sourcePointIndex);
   const [targetContourIndex, targetContourPointIndex] =
@@ -86,10 +87,7 @@ export function connectContours(path, sourcePointIndex, targetPointIndex) {
       path.setPoint(sourcePointIndex, path.getPoint(targetPointIndex));
       path.deletePoint(sourceContourIndex, targetContourPointIndex);
     }
-    const selectedPointIndex = sourceContourPointIndex
-      ? targetPointIndex
-      : sourcePointIndex;
-    newSelection.add(`point/${selectedPointIndex}`);
+    selectedPointIndex = sourceContourPointIndex ? targetPointIndex : sourcePointIndex;
   } else {
     // Connect contours
     const sourceContour = path.getUnpackedContour(sourceContourIndex);
@@ -105,6 +103,16 @@ export function connectContours(path, sourcePointIndex, targetPointIndex) {
     path.deleteContour(sourceContourIndex);
     path.insertUnpackedContour(sourceContourIndex, sourceContour);
     path.deleteContour(targetContourIndex);
+
+    selectedPointIndex = path.getAbsolutePointIndex(
+      targetContourIndex < sourceContourIndex
+        ? sourceContourIndex - 1
+        : sourceContourIndex,
+      sourceContourPointIndex
+        ? sourceContourPointIndex
+        : targetContour.points.length - 1
+    );
   }
+  newSelection.add(`point/${selectedPointIndex}`);
   return newSelection;
 }
