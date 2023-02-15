@@ -71,7 +71,6 @@ function splitOpenPointsArray(points, splitPointIndex) {
 }
 
 export function connectContours(path, sourcePointIndex, targetPointIndex) {
-  let newSelection = new Set();
   let selectedPointIndex;
   const [sourceContourIndex, sourceContourPointIndex] =
     path.getContourAndPointIndex(sourcePointIndex);
@@ -113,6 +112,5 @@ export function connectContours(path, sourcePointIndex, targetPointIndex) {
         : targetContour.points.length - 1
     );
   }
-  newSelection.add(`point/${selectedPointIndex}`);
-  return newSelection;
+  return new Set([`point/${selectedPointIndex}`]);
 }
