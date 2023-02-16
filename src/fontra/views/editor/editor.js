@@ -684,7 +684,7 @@ export class EditorController {
         title: "Cut",
         enabled: () => this.canCut(),
         callback: () => this.doCut(),
-        shortCut: { keysOrCodes: "c", metaKey: true, shiftKey: true },
+        shortCut: { keysOrCodes: "x", metaKey: true, shiftKey: false },
       },
       {
         title: "Copy",
