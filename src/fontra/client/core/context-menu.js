@@ -192,34 +192,3 @@ function normalizedPosition(container, contextMenu, mouseX, mouseY) {
 
   return [normalizedX, normalizedY];
 }
-
-function getShortCutKey(keysOrCodes) {
-  //
-  // Get a shortcut key from the shortCutDefinition Object
-  //
-  // It provides us with an easy mapping for the shortcuts
-  // 'specialChar' are all the symbols that we see on keyboards, such as ⌘, ↑, etc.
-  // As a fallback it returns the key as a string
-  //
-
-  // Compare all alises with all key codes of a shortcut definition
-  const key = keysOrCodes[0];
-  const shortCutKey = shortCutKeyMap[key] || key; // fall back to key if there's no mapping
-  // const shortCutKey = shortCutAliases.find((shortCut) => {
-  //   if (typeof keysOrCodes === "object") {
-  //     let validKey;
-  //     for (const keyCode of keysOrCodes) {
-  //       validKey = shortCut.key.toLowerCase() === keyCode.toLowerCase();
-  //     }
-  //     return validKey;
-  //   }
-  // });
-
-  // if (shortCutKey) {
-  //   return shortCutKey.specialChar ? shortCutKey.specialChar : shortCutKey.fallbackChar;
-  // } else {
-  //   return keysOrCodes.charAt(0).toUpperCase();
-  // }
-
-  return shortCutKey;
-}
