@@ -677,6 +677,47 @@ export class EditorController {
         shortCut: { keysOrCodes: "z", metaKey: true, shiftKey: isRedo },
       });
     }
+    this.basicContextMenuItems.push(MenuItemDivider);
+
+    this.basicContextMenuItems.push(
+      {
+        title: "Cut",
+        enabled: () => this.canCut(),
+        callback: () => this.doCut(),
+        shortCut: { keysOrCodes: "x", metaKey: true, shiftKey: false },
+      },
+      {
+        title: "Copy",
+        enabled: () => this.canCopy(),
+        callback: () => this.doCopy(),
+        shortCut: { keysOrCodes: "c", metaKey: true, shiftKey: false },
+      },
+      {
+        title: "Paste",
+        enabled: () => this.canPaste(),
+        callback: () => this.doPaste(),
+        shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: false },
+      },
+      {
+        title: "Deep Paste",
+        enabled: () => this.canDeepPaste(),
+        callback: () => this.doDeepPaste(),
+        shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: true },
+      },
+      {
+        title: "Delete",
+        enabled: () => this.canDelete(),
+        callback: () => this.doDelete(),
+        shortCut: {
+          keysOrCodes: ["Delete", "Backspace"],
+          metaKey: false,
+          shiftKey: false,
+        },
+      }
+    );
+
+    this.basicContextMenuItems.push(MenuItemDivider);
+
     for (const selectNone of [false, true]) {
       this.basicContextMenuItems.push({
         title: selectNone ? "Select None" : "Select All",
@@ -737,6 +778,7 @@ export class EditorController {
     // `callback` is a callable that will be called with the event as its single
     // argument.
     //
+
     for (const keyOrCode of keysOrCodes) {
       const handlerDef = { ...modifiers, callback };
       if (!this.shortCutHandlers[keyOrCode]) {
@@ -797,6 +839,46 @@ export class EditorController {
     this.sourcesList.setSelectedItemIndex(
       await this.sceneController.getSelectedSource()
     );
+  }
+
+  canCut() {
+    return true;
+  }
+
+  doCut() {
+    console.log("cut");
+  }
+
+  canCopy() {
+    return true;
+  }
+
+  doCopy() {
+    console.log("copy");
+  }
+
+  canPaste() {
+    return true;
+  }
+
+  doPaste() {
+    console.log("paste");
+  }
+
+  canDeepPaste() {
+    return true;
+  }
+
+  doDeepPaste() {
+    console.log("deep paste");
+  }
+
+  canDelete() {
+    return true;
+  }
+
+  doDelete() {
+    console.log("delete");
   }
 
   canSelectAllNone(selectNone) {

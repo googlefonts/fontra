@@ -1,6 +1,12 @@
-import { reversed } from "./utils.js";
+import { reversed, capitalizeFirstLetter } from "./utils.js";
 
 export const MenuItemDivider = { title: "-" };
+export const shortCutKeyMap = {
+  // If the definition specifies multiple keys, e.g ["Delete", "Backspace"],
+  // we are taking the first key for comparison with the map
+  ArrowUp: "↑",
+  Delete: "⌫",
+};
 
 export class ContextMenu {
   constructor(elementID, menuItems) {
@@ -153,7 +159,8 @@ export class ContextMenu {
         shorcutCommand += isMac ? "&#8984;" : "Ctrl+"; // ⌘ or Ctrl
       }
       if (shortCutDefinition.keysOrCodes) {
-        shorcutCommand += shortCutDefinition.keysOrCodes.toUpperCase();
+        const key = shortCutDefinition.keysOrCodes[0];
+        shorcutCommand += shortCutKeyMap[key] || capitalizeFirstLetter(key);
       }
     }
 
