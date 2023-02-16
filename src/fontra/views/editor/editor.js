@@ -679,7 +679,7 @@ export class EditorController {
     }
     this.basicContextMenuItems.push(MenuItemDivider);
 
-    const basicEditCommands = [
+    this.basicContextMenuItems.push(
       {
         title: "Cut",
         enabled: () => this.canCut(),
@@ -713,12 +713,9 @@ export class EditorController {
           metaKey: false,
           shiftKey: false,
         },
-      },
-    ];
+      }
+    );
 
-    for (const command of basicEditCommands) {
-      this.basicContextMenuItems.push(command);
-    }
     this.basicContextMenuItems.push(MenuItemDivider);
 
     for (const selectNone of [false, true]) {
@@ -848,36 +845,36 @@ export class EditorController {
     return true;
   }
 
-  canCopy() {
-    return true;
-  }
-
-  canPaste() {
-    return true;
-  }
-
-  canDeepPaste() {
-    return true;
-  }
-
-  canDelete() {
-    return true;
-  }
-
   doCut() {
     console.log("cut");
+  }
+
+  canCopy() {
+    return true;
   }
 
   doCopy() {
     console.log("copy");
   }
 
+  canPaste() {
+    return true;
+  }
+
   doPaste() {
     console.log("paste");
   }
 
+  canDeepPaste() {
+    return true;
+  }
+
   doDeepPaste() {
     console.log("deep paste");
+  }
+
+  canDelete() {
+    return true;
   }
 
   doDelete() {
