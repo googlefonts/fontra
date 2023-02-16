@@ -21,10 +21,9 @@ export class ContextMenu {
         this.element.appendChild(dividerElement);
       } else {
         const itemElement = document.createElement("div");
-        const itemTitle = this.buildTitle(item);
         itemElement.classList.add("context-menu-item");
         itemElement.classList.toggle("enabled", !!item.enabled());
-        itemElement.append(itemTitle);
+        itemElement.append(this.buildTitle(item));
         itemElement.onmouseenter = (event) => this.selectItem(itemElement);
         itemElement.onmousemove = (event) => {
           if (!itemElement.classList.contains("selected")) {
