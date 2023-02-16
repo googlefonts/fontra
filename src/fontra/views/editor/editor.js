@@ -949,7 +949,7 @@ export class EditorController {
   }
 
   dismissContextMenu(event) {
-    if (!this.contextMenu) {
+    if (!this.contextMenu || event.ctrlKey) {
       return;
     }
     if (event) {
