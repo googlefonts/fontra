@@ -21,10 +21,9 @@ export class ContextMenu {
         this.element.appendChild(dividerElement);
       } else {
         const itemElement = document.createElement("div");
-        const itemTitle = typeof item.title === "function" ? item.title() : item.title;
         itemElement.classList.add("context-menu-item");
         itemElement.classList.toggle("enabled", !!item.enabled());
-        itemElement.innerText = itemTitle;
+        itemElement.append(this.buildTitle(item));
         itemElement.onmouseenter = (event) => this.selectItem(itemElement);
         itemElement.onmousemove = (event) => {
           if (!itemElement.classList.contains("selected")) {
@@ -128,6 +127,37 @@ export class ContextMenu {
         }
       }
     }
+  }
+
+  buildTitle(item) {
+    const titleWrapper = document.createElement("div");
+    const title = document.createElement("span");
+    title.innerText = typeof item.title === "function" ? item.title() : item.title;
+
+    const shortCut = document.createElement("span");
+    shortCut.innerHTML = this.buildShortCutString(item.shortCut);
+    titleWrapper.append(title, shortCut);
+    return titleWrapper;
+  }
+
+  buildShortCutString(shortCutDefinition) {
+    let shorcutCommand = "";
+
+    if (shortCutDefinition) {
+      const isMac = navigator.platform.toLowerCase().indexOf("mac") >= 0;
+
+      if (shortCutDefinition.shiftKey) {
+        shorcutCommand += isMac ? "&#8679;" : "Shift+"; // ⇧ or Shift
+      }
+      if (shortCutDefinition.metaKey) {
+        shorcutCommand += isMac ? "&#8984;" : "Ctrl+"; // ⌘ or Ctrl
+      }
+      if (shortCutDefinition.keysOrCodes) {
+        shorcutCommand += shortCutDefinition.keysOrCodes.toUpperCase();
+      }
+    }
+
+    return shorcutCommand;
   }
 }
 
