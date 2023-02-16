@@ -153,7 +153,7 @@ export class ContextMenu {
         shorcutCommand += isMac ? "&#8984;" : "Ctrl+"; // ⌘ or Ctrl
       }
       if (shortCutDefinition.keysOrCodes) {
-        shorcutCommand += shortCutDefinition.keysOrCodes.toUpperCase();
+        shorcutCommand += getShortCutKey(shortCutDefinition);
       }
     }
 
@@ -184,4 +184,49 @@ function normalizedPosition(container, contextMenu, mouseX, mouseY) {
   }
 
   return [normalizedX, normalizedY];
+}
+
+function getShortCutKey(shortCutDefinition) {
+  //
+  // Get a shortcut key from the shortCutDefinition Object
+  //
+  // It provides us with an easy mapping for the shortcuts
+  // 'specialChar' are all the symbols that we see on keyboards, such as ⌘, ↑, etc.
+  // 'fallbackChar' gives us an html entity character as a fallback
+  //
+
+  const shortCutAliases = [
+    {
+      key: "ArrowUp",
+      specialChar: "↑",
+      fallbackChar: "&#8593;",
+    },
+    {
+      key: "Backspace",
+      specialChar: "⌫",
+      fallbackChar: "&#9003;",
+    },
+    {
+      key: "Home",
+      specialChar: "",
+      fallbackChar: "Home",
+    },
+  ];
+
+  // Compare all alises with all key codes of a shortcut definition
+  const shortCutKey = shortCutAliases.find((shortCut) => {
+    if (typeof shortCutDefinition.keysOrCodes === "object") {
+      let validKey;
+      for (const keyCode of shortCutDefinition.keysOrCodes) {
+        validKey = shortCut.key.toLowerCase() === keyCode.toLowerCase();
+      }
+      return validKey;
+    }
+  });
+
+  if (shortCutKey) {
+    return shortCutKey.specialChar ? shortCutKey.specialChar : shortCutKey.fallbackChar;
+  } else {
+    return shortCutDefinition.keysOrCodes.charAt(0).toUpperCase();
+  }
 }

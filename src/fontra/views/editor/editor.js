@@ -708,7 +708,11 @@ export class EditorController {
         title: "Delete",
         enabled: () => this.canDelete(),
         callback: () => this.doDelete(),
-        shortCut: { keysOrCodes: ["Backspace"], metaKey: false, shiftKey: false },
+        shortCut: {
+          keysOrCodes: ["Delete", "Backspace"],
+          metaKey: false,
+          shiftKey: false,
+        },
       },
     ];
 
