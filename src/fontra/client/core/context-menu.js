@@ -159,8 +159,8 @@ export class ContextMenu {
         shorcutCommand += isMac ? "&#8984;" : "Ctrl+"; // ⌘ or Ctrl
       }
       if (shortCutDefinition.keysOrCodes) {
-        const key = shortCutDefinition.keysOrCodes;
-        shorcutCommand += shortCutKeyMap[key[0]] || capitalizeFirstLetter(key);
+        const key = shortCutDefinition.keysOrCodes[0];
+        shorcutCommand += shortCutKeyMap[key] || capitalizeFirstLetter(key);
       }
     }
 
