@@ -1,5 +1,5 @@
 import { QueueIterator } from "./queue-iterator.js";
-import { capitalizeFirstLetter, hyphenatedToCamelCase } from "./utils.js";
+import { hyphenatedToCamelCase } from "./utils.js";
 
 export class Form {
   constructor(formID, fieldDescriptions) {
