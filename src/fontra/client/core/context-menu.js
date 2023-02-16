@@ -1,4 +1,4 @@
-import { reversed } from "./utils.js";
+import { reversed, capitalizeFirstLetter } from "./utils.js";
 
 export const MenuItemDivider = { title: "-" };
 export const shortCutKeyMap = {
@@ -159,8 +159,8 @@ export class ContextMenu {
         shorcutCommand += isMac ? "&#8984;" : "Ctrl+"; // ⌘ or Ctrl
       }
       if (shortCutDefinition.keysOrCodes) {
-        const key = shortCutDefinition.keysOrCodes[0];
-        shorcutCommand += shortCutKeyMap[key] || key.charAt(0).toUpperCase();
+        const key = shortCutDefinition.keysOrCodes;
+        shorcutCommand += shortCutKeyMap[key[0]] || capitalizeFirstLetter(key);
       }
     }
 
