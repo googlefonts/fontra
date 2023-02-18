@@ -2,7 +2,7 @@ import VarArray from "./var-array.js";
 import { VariationError } from "./errors.js";
 import { centeredRect, pointInRect } from "./rectangle.js";
 import { convexHull } from "./convex-hull.js";
-import { enumerate } from "./utils.js";
+import { enumerate, range } from "./utils.js";
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
 export const POINT_TYPE_OFF_CURVE_CUBIC = "cubic";
@@ -554,50 +554,68 @@ export class VarPackedPath {
   }
 
   _drawContourToPath2d(path, startPoint, endPoint, isClosed) {
-    const coordinates = this.coordinates;
-    const pointTypes = this.pointTypes;
-    const numPoints = endPoint + 1 - startPoint;
-    var firstOnCurve = null;
-
-    // Determine the index of the first on-curve point, if any
-    for (let i = 0; i < numPoints; i++) {
-      if (
-        (pointTypes[i + startPoint] & VarPackedPath.POINT_TYPE_MASK) ===
-        VarPackedPath.ON_CURVE
-      ) {
-        firstOnCurve = i;
-        break;
+    let needMoveTo = true;
+    for (const segment of this._iterDecomposedSegments(
+      startPoint,
+      endPoint,
+      isClosed
+    )) {
+      if (needMoveTo) {
+        path.moveTo(...segment.coordinates.slice(0, 2));
+        needMoveTo = false;
+      }
+      switch (segment.type) {
+        case "line":
+          path.lineTo(...segment.coordinates.slice(2));
+          break;
+        case "quad":
+          path.quadraticCurveTo(...segment.coordinates.slice(2));
+          break;
+        case "cubic":
+          path.bezierCurveTo(...segment.coordinates.slice(2));
+          break;
+        default:
+          throw new Error(`unknown operator: ${segment.segmentType}`);
       }
     }
+    if (isClosed) {
+      path.closePath();
+    }
+  }
 
-    if (firstOnCurve !== null) {
-      drawContourToPath(
-        path,
-        coordinates,
-        pointTypes,
-        startPoint,
-        numPoints,
-        firstOnCurve,
-        isClosed
-      );
-    } else {
-      // draw quad blob
-      // create copy of contour points, and insert implied on-curve at front
-      const blobCoordinates = coordinates.slice(startPoint * 2, (endPoint + 1) * 2);
-      const blobPointTypes = pointTypes.slice(startPoint, endPoint + 1);
-      const xMid = (blobCoordinates[0] + blobCoordinates[endPoint * 2]) / 2;
-      const yMid = (blobCoordinates[1] + blobCoordinates[endPoint * 2 + 1]) / 2;
-      blobCoordinates.unshift(xMid, yMid);
-      blobPointTypes.unshift(VarPackedPath.ON_CURVE);
-      drawContourToPath(
-        path,
-        blobCoordinates,
-        blobPointTypes,
-        0,
-        numPoints + 1,
-        0,
-        true
-      );
+  *iterContourDecomposedSegments(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const startPoint = this._getContourStartPoint(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+    for (const segment of this._iterDecomposedSegments(
+      startPoint,
+      contour.endPoint,
+      contour.isClosed
+    )) {
+      segment.points = coordinatesToPoints(segment.coordinates);
+      delete segment.coordinates;
+      yield segment;
+    }
+  }
+
+  *_iterDecomposedSegments(startPoint, endPoint, isClosed, filterCoords = null) {
+    const coordinates = this.coordinates;
+    let needMoveTo = true;
+    for (const segment of iterContourSegmentPointIndices(
+      this.pointTypes,
+      startPoint,
+      endPoint,
+      isClosed
+    )) {
+      // fill in coordinates
+      const coordinates = this.coordinates;
+      const segmentCoordinates = [];
+      for (const pointIndex of segment.pointIndices) {
+        const pointIndex2 = pointIndex * 2;
+        segmentCoordinates.push(coordinates[pointIndex2], coordinates[pointIndex2 + 1]);
+      }
+      segment.coordinates = segmentCoordinates;
+      yield* decomposeSegment(segment, filterCoords);
     }
   }
 
@@ -647,83 +665,152 @@ export class VarPackedPath {
   }
 }
 
-function drawContourToPath(
-  path,
-  coordinates,
-  pointTypes,
-  startPoint,
-  numPoints,
-  firstOnCurve,
-  isClosed
-) {
-  let currentSegment = [];
-  let segmentFunc = drawLineSegment;
-  const lastIndex = isClosed ? numPoints : numPoints - 1 - firstOnCurve;
-  for (let i = 0; i <= lastIndex; i++) {
-    const index = isClosed
-      ? startPoint + ((firstOnCurve + i) % numPoints)
-      : startPoint + firstOnCurve + i;
-    const pointType = pointTypes[index] & VarPackedPath.POINT_TYPE_MASK;
-    const x = coordinates[index * 2];
-    const y = coordinates[index * 2 + 1];
-    if (i === 0) {
-      path.moveTo(x, y);
-    } else {
-      currentSegment.push(x, y);
+function* iterContourSegmentPointIndices(pointTypes, startPoint, endPoint, isClosed) {
+  const numPoints = endPoint - startPoint + 1;
+  let firstOnCurve = null;
+  // Determine the index of the first on-curve point, if any
+  for (let i = 0; i < numPoints; i++) {
+    if (
+      (pointTypes[i + startPoint] & VarPackedPath.POINT_TYPE_MASK) ===
+      VarPackedPath.ON_CURVE
+    ) {
+      firstOnCurve = i;
+      break;
+    }
+  }
+  if (firstOnCurve === null) {
+    // quad blob
+    // Maybe TODO: cubic blob, see glyf-1 spec
+    yield {
+      type: "quadBlob", // or "cubicBlob"
+      pointIndices: [...range(startPoint, endPoint + 1)],
+    };
+  } else {
+    let currentSegment = [];
+    let segmentType = "line";
+    const lastIndex = isClosed ? numPoints : numPoints - 1 - firstOnCurve;
+    for (let i = 0; i <= lastIndex; i++) {
+      const pointIndex = isClosed
+        ? startPoint + ((firstOnCurve + i) % numPoints)
+        : startPoint + firstOnCurve + i;
+      const pointType = pointTypes[pointIndex] & VarPackedPath.POINT_TYPE_MASK;
+      currentSegment.push(pointIndex);
+      if (i === 0) {
+        continue;
+      }
       switch (pointType) {
         case VarPackedPath.ON_CURVE:
-          segmentFunc(path, currentSegment);
-          currentSegment = [];
-          segmentFunc = drawLineSegment;
+          yield { type: segmentType, pointIndices: currentSegment };
+          currentSegment = [pointIndex];
+          segmentType = "line";
           break;
         case VarPackedPath.OFF_CURVE_QUAD:
-          segmentFunc = drawQuadSegment;
+          segmentType = "quad";
           break;
         case VarPackedPath.OFF_CURVE_CUBIC:
-          segmentFunc = drawCubicSegment;
+          segmentType = "cubic";
           break;
         default:
           throw new Error("illegal point type");
       }
     }
-  }
-  if (isClosed) {
-    path.closePath();
+    if (currentSegment.length > 1) {
+      // dangling off curve
+      // currentSegment.push(null)
+      // yield { type: segmentType, pointIndices: currentSegment };
+    }
   }
 }
 
-function drawLineSegment(path, segment) {
-  path.lineTo(...segment);
-}
-
-function drawQuadSegment(path, segment) {
-  let [x1, y1] = [segment[0], segment[1]];
-  const lastIndex = segment.length - 2;
-  for (let i = 2; i < lastIndex; i += 2) {
-    const [x2, y2] = [segment[i], segment[i + 1]];
-    const xMid = (x1 + x2) / 2;
-    const yMid = (y1 + y2) / 2;
-    path.quadraticCurveTo(x1, y1, xMid, yMid);
-    [x1, y1] = [x2, y2];
-  }
-  path.quadraticCurveTo(x1, y1, segment[lastIndex], segment[lastIndex + 1]);
-}
-
-function drawCubicSegment(path, segment) {
-  if (segment.length === 4) {
-    // Only one handle, fall back to quad
-    path.quadraticCurveTo(...segment);
-  } else if (segment.length === 6) {
-    path.bezierCurveTo(...segment);
-  } else if (segment.length >= 8) {
-    // Ignore all but the first and last off curve points
-    // FontTools has "super bezier" in this case. Was nice.
-    path.bezierCurveTo(...segment.slice(0, 2), ...segment.slice(-4));
-  } else {
-    // Fall back to line. Can't happen.
-    path.lineTo(...segment.slice(-2));
+function* decomposeSegment(parentSegment, filterCoords) {
+  for (const segment of decomposeSegmentFuncs[parentSegment.type](parentSegment)) {
+    if (filterCoords) {
+      segment.coordinates = filterCoords(segment.coordinates);
+    }
+    segment.parentPointIndices = parentSegment.pointIndices;
+    yield segment;
   }
 }
+
+const decomposeSegmentFuncs = {
+  *line(segment) {
+    if (segment.coordinates.length !== 4) {
+      throw new Error(`assert -- wrong coordinates length: ${coordinates.length}`);
+    }
+    yield segment;
+  },
+
+  *cubic(segment) {
+    if (segment.coordinates.length <= 6) {
+      // Only one handle, fall back to quad
+      yield* this.quad(segment);
+    } else if (segment.coordinates.length === 8) {
+      yield segment;
+    } else if (segment.coordinates.length >= 8) {
+      // Ignore all but the first and last off curve points
+      // Alternatively: Super bezier? Implied on-curve as per glyf-1?
+      const coordinates = segment.coordinates;
+      const pointIndices = segment.pointIndices;
+      yield {
+        type: "cubic",
+        coordinates: [...coordinates.slice(0, 4), ...coordinates.slice(-4)],
+        pointIndices: [
+          pointIndices[0],
+          pointIndices[1],
+          pointIndices.at(-2),
+          pointIndices.at(-1),
+        ],
+      };
+    } else {
+      throw new Error("assert -- wrong coordinates length for cubic");
+    }
+  },
+
+  *quad(segment) {
+    if (segment.coordinates.length < 6) {
+      throw new Error(
+        `assert -- not enough coordinates for quad: ${coordinates.length}`
+      );
+    }
+    const coordinates = segment.coordinates;
+    const pointIndices = [...segment.pointIndices];
+    let [x0, y0] = [coordinates[0], coordinates[1]];
+    let [x1, y1] = [coordinates[2], coordinates[3]];
+    const lastIndex = coordinates.length - 2;
+    for (let i = 4; i < lastIndex; i += 2) {
+      const [x2, y2] = [coordinates[i], coordinates[i + 1]];
+      const xMid = (x1 + x2) / 2;
+      const yMid = (y1 + y2) / 2;
+      yield {
+        type: "quad",
+        coordinates: [x0, y0, x1, y1, xMid, yMid],
+        pointIndices: pointIndices.slice(0, 3),
+      };
+      pointIndices.shift();
+      [x0, y0] = [x1, y1];
+      [x1, y1] = [x2, y2];
+    }
+    yield {
+      type: "quad",
+      coordinates: [x0, y0, x1, y1, coordinates[lastIndex], coordinates[lastIndex + 1]],
+      pointIndices: pointIndices.slice(0, 3),
+    };
+  },
+
+  *quadBlob(segment) {
+    const coordinates = segment.coordinates;
+    const pointIndices = segment.pointIndices;
+    const lastIndex = coordinates.length - 2;
+    const [x0, y0] = [coordinates[0], coordinates[1]];
+    const [xN, yN] = [coordinates[lastIndex], coordinates[lastIndex + 1]];
+    const mid = [(x0 + xN) / 2, (y0 + yN) / 2];
+    yield* this.quad({
+      type: "quad",
+      coordinates: [...mid, ...coordinates, ...mid],
+      pointIndices: [pointIndices.at(-1), ...pointIndices, pointIndices[0]],
+    });
+  },
+};
 
 function arrayEquals(a, b) {
   // Oh well
@@ -772,4 +859,12 @@ export function packContour(unpackedContour) {
     pointTypes: pointTypes,
     isClosed: unpackedContour.isClosed,
   };
+}
+
+function coordinatesToPoints(coordinates) {
+  const points = [];
+  for (let i = 0; i < coordinates.length; i += 2) {
+    points.push({ x: coordinates[i], y: coordinates[i + 1] });
+  }
+  return points;
 }
