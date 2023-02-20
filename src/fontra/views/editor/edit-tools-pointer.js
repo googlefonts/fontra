@@ -2,7 +2,7 @@ import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { connectContours } from "../core/path-functions.js";
 import { centeredRect, normalizeRect } from "../core/rectangle.js";
-import { isSuperset, symmetricDifference } from "../core/set-ops.js";
+import { isSuperset, difference, symmetricDifference, union } from "../core/set-ops.js";
 import { dialog } from "../core/ui-dialog.js";
 import {
   boolInt,
@@ -23,12 +23,11 @@ export class PointerTool extends BaseTool {
     const selRect = centeredRect(point.x, point.y, size);
     sceneController.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
     sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
+    sceneController.hoverPathHit = undefined;
     if (!sceneController.hoverSelection?.size && !sceneController.hoveredGlyph) {
       const hit = this.sceneModel.pathHitAtPoint(point, size);
       if (hit.contourIndex !== undefined) {
         sceneController.hoverPathHit = hit;
-      } else {
-        sceneController.hoverPathHit = undefined;
       }
     }
     this.setCursor();
@@ -48,10 +47,14 @@ export class PointerTool extends BaseTool {
   async handleDrag(eventStream, initialEvent) {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(initialEvent);
-    const selection = this.sceneModel.selectionAtPoint(
-      point,
-      sceneController.mouseClickMargin
-    );
+    const size = sceneController.mouseClickMargin;
+    const selection = this.sceneModel.selectionAtPoint(point, size);
+    if (!selection.size) {
+      const hit = this.sceneModel.pathHitAtPoint(point, size);
+      if (hit.contourIndex !== undefined) {
+        hit.segment.parentPointIndices.forEach((i) => selection.add(`point/${i}`));
+      }
+    }
     if (initialEvent.detail == 2 || initialEvent.myTapCount == 2) {
       initialEvent.preventDefault(); // don't let our dbl click propagate to other elements
       eventStream.done();
@@ -70,25 +73,21 @@ export class PointerTool extends BaseTool {
     let initiateDrag = false;
     let initiateRectSelect = false;
 
-    if (selection.size > 0) {
-      if (event.shiftKey) {
-        sceneController.selection = symmetricDifference(
-          sceneController.selection,
-          selection
-        );
-        if (isSuperset(sceneController.selection, selection)) {
-          initiateDrag = true;
-        }
-      } else if (isSuperset(sceneController.selection, selection)) {
-        initiateDrag = true;
-      } else {
-        sceneController.selection = selection;
-        initiateDrag = true;
-      }
-    } else {
-      if (!event.shiftKey) {
-        sceneController.selection = selection;
-      }
+    const modeFunc = getSelectModeFunction(event);
+    const newSelection = modeFunc(sceneController.selection, selection);
+    if (
+      !selection.size ||
+      event.shiftKey ||
+      event.altKey ||
+      !isSuperset(sceneController.selection, selection)
+    ) {
+      sceneController.selection = newSelection;
+    }
+
+    if (isSuperset(sceneController.selection, selection)) {
+      initiateDrag = true;
+    }
+    if (!selection.size) {
       initiateRectSelect = true;
     }
 
@@ -157,7 +156,7 @@ export class PointerTool extends BaseTool {
         componentIndices.sort();
         sceneController.doubleClickedComponentIndices = componentIndices;
         sceneController._dispatchEvent("doubleClickedComponents");
-      } else if (pointIndices?.length) {
+      } else if (pointIndices?.length && !sceneController.hoverPathHit) {
         await this.handlePointsDoubleClick(pointIndices);
       } else if (sceneController.hoverPathHit) {
         const contourIndex = sceneController.hoverPathHit.contourIndex;
@@ -243,11 +242,8 @@ export class PointerTool extends BaseTool {
       const selection = this.sceneModel.selectionAtRect(selRect);
       sceneController.selectionRect = selRect;
 
-      if (event.shiftKey) {
-        sceneController.selection = symmetricDifference(initialSelection, selection);
-      } else {
-        sceneController.selection = selection;
-      }
+      const modeFunc = getSelectModeFunction(event);
+      sceneController.selection = modeFunc(initialSelection, selection);
     }
     sceneController.selectionRect = undefined;
   }
@@ -367,4 +363,18 @@ function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
   const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
   const handleVector = vector.mulVector(vector.normalizeVector(direction), length);
   return vector.roundVector(vector.addVectors(anchorPoint, handleVector));
+}
+
+function replace(setA, setB) {
+  return setB;
+}
+
+function getSelectModeFunction(event) {
+  return event.shiftKey
+    ? event.altKey
+      ? difference
+      : symmetricDifference
+    : event.altKey
+    ? union
+    : replace;
 }
