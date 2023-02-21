@@ -57,7 +57,7 @@ export function insertPoint(path, intersection) {
       if (point3.type) {
         path.insertPoint(
           contourIndex,
-          segment.pointIndices[2] + absToRel,
+          segment.pointIndices[1] + absToRel + 1,
           impliedPoint(point2, point3)
         );
       }
