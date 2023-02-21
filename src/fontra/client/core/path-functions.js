@@ -8,6 +8,7 @@ export function insertPoint(path, intersection) {
   );
   const absToRel = contourPointIndex - segment.parentPointIndices[0];
   if (segment.points.length === 2) {
+    // insert point in line
     let contourPointIndex = segment.pointIndices[1] + absToRel;
     if (!contourPointIndex) {
       contourPointIndex = path.getNumPointsOfContour(contourIndex);
@@ -19,6 +20,7 @@ export function insertPoint(path, intersection) {
     const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
     selection.add(`point/${pointIndex}`);
   } else {
+    // insert point in curve
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
     if (firstOffCurve.type === "cubic") {
       //
