@@ -102,7 +102,7 @@ export class PenTool extends BaseTool {
           );
         });
         this.sceneController.selection = selection;
-        return { changes: changes, undoLabel: "insert point" };
+        return { changes: changes, undoLabel: "insert point", broadcast: true };
       }
 
       const behavior = getPenToolBehavior(
