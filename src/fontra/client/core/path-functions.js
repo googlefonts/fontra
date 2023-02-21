@@ -1,7 +1,33 @@
 import { reversed } from "../core/utils.js";
 
 export function insertPoint(path, intersection) {
-  // console.log("!!!", intersection);
+  const selection = new Set();
+  const segment = intersection.segment;
+  const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(
+    segment.parentPointIndices[0]
+  );
+  const absToRel = contourPointIndex - segment.parentPointIndices[0];
+  if (segment.points.length === 2) {
+    let contourPointIndex = segment.pointIndices[1] + absToRel;
+    if (!contourPointIndex) {
+      contourPointIndex = path.getNumPointsOfContour(contourIndex);
+    }
+    path.insertPoint(contourIndex, contourPointIndex, {
+      x: intersection.x,
+      y: intersection.y,
+    });
+    const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
+    selection.add(`point/${pointIndex}`);
+  } else {
+    const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
+    if (firstOffCurve.type === "cubic") {
+      //
+    } else {
+      // quad
+    }
+    console.log("curve", firstOffCurve.type);
+  }
+  return selection;
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
