@@ -1,4 +1,5 @@
-import { reversed } from "../core/utils.js";
+import { reversed } from "./utils.js";
+import { roundVector } from "./vector.js";
 
 export function insertPoint(path, intersection) {
   const selection = new Set();
@@ -21,13 +22,32 @@ export function insertPoint(path, intersection) {
     selection.add(`point/${pointIndex}`);
   } else {
     // insert point in curve
+    let deleteIndices;
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
     if (firstOffCurve.type === "cubic") {
+      const insertIndex = segment.parentPointIndices.at(-1);
       //
+      const { left, right } = segment.bezier.split(intersection.t);
+      const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
+        roundVector
+      );
+      points[0].type = "cubic";
+      points[1].type = "cubic";
+      points[2].smooth = true;
+      points[3].type = "cubic";
+      points[4].type = "cubic";
+      for (const point of reversed(points)) {
+        path.insertPoint(contourIndex, insertIndex, point);
+      }
+      deleteIndices = segment.parentPointIndices.slice(1, -1);
     } else {
       // quad
+      deleteIndices = [];
     }
-    console.log("curve", firstOffCurve.type);
+    deleteIndices.sort((a, b) => b - a); // reverse sort
+    deleteIndices.forEach((pointIndex) =>
+      path.deletePoint(contourIndex, pointIndex + absToRel)
+    );
   }
   return selection;
 }
