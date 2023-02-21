@@ -8,23 +8,22 @@ export function insertPoint(path, intersection) {
     segment.parentPointIndices[0]
   );
   const absToRel = contourPointIndex - segment.parentPointIndices[0];
+  let insertIndex = segment.pointIndices.at(-1) + absToRel;
+  if (!insertIndex) {
+    insertIndex = path.getNumPointsOfContour(contourIndex);
+  }
   if (segment.points.length === 2) {
     // insert point in line
-    let contourPointIndex = segment.pointIndices[1] + absToRel;
-    if (!contourPointIndex) {
-      contourPointIndex = path.getNumPointsOfContour(contourIndex);
-    }
-    path.insertPoint(contourIndex, contourPointIndex, {
+    path.insertPoint(contourIndex, insertIndex, {
       x: intersection.x,
       y: intersection.y,
     });
-    selectedPointIndex = contourPointIndex;
+    selectedPointIndex = insertIndex;
   } else {
     // insert point in curve
     let deleteIndices;
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
     if (firstOffCurve.type === "cubic") {
-      const insertIndex = segment.parentPointIndices.at(-1);
       const { left, right } = segment.bezier.split(intersection.t);
       const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
         roundVector
@@ -37,12 +36,27 @@ export function insertPoint(path, intersection) {
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
       }
+      // selectionBias is non-zero if the cubic segment has more than
+      // two off-curve points, which is currently invalid. We delete all
+      // off-curve, and replace with clean cubic segments, but this messes
+      // with the selection index
+      const selectionBias = segment.parentPointIndices.length - 4;
       deleteIndices = segment.parentPointIndices.slice(1, -1);
-      selectedPointIndex = insertIndex;
+      console.log("insertIndex", insertIndex);
+      console.log("deleteIndices", deleteIndices);
+      selectedPointIndex = insertIndex - selectionBias;
     } else {
       // quad
-      // console.log(intersection);
       deleteIndices = [];
+      // const point1 = path.getPoint(segment.pointIndices[0]);
+      // const point2 = path.getPoint(segment.pointIndices[1]);
+      // const point3 = path.getPoint(segment.pointIndices[2]);
+      // if (point1.type) {
+      //   console.log("insert implied 1");
+      // }
+      // if (point3.type) {
+      //   console.log("insert implied 2");
+      // }
     }
     deleteIndices.sort((a, b) => b - a); // reverse sort
     deleteIndices.forEach((pointIndex) =>
