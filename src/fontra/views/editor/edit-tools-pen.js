@@ -101,6 +101,7 @@ export class PenTool extends BaseTool {
             this.sceneModel.pathConnectTargetPoint
           );
         });
+        delete this.sceneModel.pathConnectTargetPoint;
         this.sceneController.selection = selection;
         return { changes: changes, undoLabel: "insert point", broadcast: true };
       }
