@@ -42,8 +42,6 @@ export function insertPoint(path, intersection) {
       // with the selection index
       const selectionBias = segment.parentPointIndices.length - 4;
       deleteIndices = segment.parentPointIndices.slice(1, -1);
-      console.log("insertIndex", insertIndex);
-      console.log("deleteIndices", deleteIndices);
       selectedPointIndex = insertIndex - selectionBias;
     } else {
       // quad
