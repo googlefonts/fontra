@@ -7,10 +7,11 @@ export function insertPoint(path, intersection) {
   const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(
     segment.parentPointIndices[0]
   );
+  const numContourPoints = path.getNumPointsOfContour(contourIndex);
   const absToRel = contourPointIndex - segment.parentPointIndices[0];
   let insertIndex = segment.pointIndices.at(-1) + absToRel;
   if (!insertIndex) {
-    insertIndex = path.getNumPointsOfContour(contourIndex);
+    insertIndex = numContourPoints;
   }
   if (segment.points.length === 2) {
     // insert point in line
@@ -33,6 +34,11 @@ export function insertPoint(path, intersection) {
       points[2].smooth = true;
       points[3].type = "cubic";
       points[4].type = "cubic";
+
+      deleteIndices = segment.parentPointIndices.slice(1, -1);
+      if (insertIndex < deleteIndices.length) {
+        insertIndex = numContourPoints;
+      }
       for (const point of reversed(points)) {
         path.insertPoint(contourIndex, insertIndex, point);
       }
@@ -41,7 +47,6 @@ export function insertPoint(path, intersection) {
       // off-curve, and replace with clean cubic segments, but this messes
       // with the selection index
       const selectionBias = segment.parentPointIndices.length - 4;
-      deleteIndices = segment.parentPointIndices.slice(1, -1);
       selectedPointIndex = insertIndex - selectionBias;
     } else {
       // quad
