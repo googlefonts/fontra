@@ -46,19 +46,21 @@ export class PenTool extends BaseTool {
 
     const hoveredPointIndex = getHoveredPointIndex(this.sceneController, event);
 
-    if (hoveredPointIndex === undefined) {
-      return;
-    }
-
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
       return undefined;
     }
-
     const path = glyphController.instance.path;
 
     const appendInfo = getAppendInfo(path, this.sceneController.selection);
-    if (appendInfo.createContour) {
+    if (hoveredPointIndex === undefined && appendInfo.createContour) {
+      const point = this.sceneController.localPoint(event);
+      const size = this.sceneController.mouseClickMargin;
+      const hit = this.sceneModel.pathHitAtPoint(point, size);
+      return hit;
+    }
+
+    if (hoveredPointIndex === undefined) {
       return undefined;
     }
 
