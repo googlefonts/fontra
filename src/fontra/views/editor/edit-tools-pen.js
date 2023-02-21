@@ -1,5 +1,6 @@
 import { ChangeCollector } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
+import { insertPoint } from "../core/path-functions.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
@@ -92,6 +93,13 @@ export class PenTool extends BaseTool {
     }
 
     await this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
+      if (this.sceneModel.pathConnectTargetPoint?.segment) {
+        const changes = recordChanges(instance, (instance) => {
+          insertPoint(instance.path, this.sceneModel.pathConnectTargetPoint);
+        });
+        return { changes: changes, undoLabel: "insert point" };
+      }
+
       const behavior = getPenToolBehavior(
         this.sceneController,
         initialEvent,

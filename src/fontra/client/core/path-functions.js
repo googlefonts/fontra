@@ -1,5 +1,9 @@
 import { reversed } from "../core/utils.js";
 
+export function insertPoint(path, intersection) {
+  // console.log("!!!", intersection);
+}
+
 export function splitPathAtPointIndices(path, pointIndices) {
   let numSplits = 0;
   const selectionByContour = new Map();
