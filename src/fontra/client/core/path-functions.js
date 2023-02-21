@@ -84,7 +84,11 @@ export function insertPoint(path, intersection) {
 }
 
 function impliedPoint(pointA, pointB) {
-  return { x: (pointA.x + pointB.x) / 2, y: (pointA.y + pointB.y) / 2, smooth: true };
+  return {
+    x: Math.round((pointA.x + pointB.x) / 2),
+    y: Math.round((pointA.y + pointB.y) / 2),
+    smooth: true,
+  };
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
