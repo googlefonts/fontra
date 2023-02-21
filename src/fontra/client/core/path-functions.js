@@ -2,7 +2,7 @@ import { reversed } from "./utils.js";
 import { roundVector } from "./vector.js";
 
 export function insertPoint(path, intersection) {
-  const selection = new Set();
+  let selectedPointIndex;
   const segment = intersection.segment;
   const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(
     segment.parentPointIndices[0]
@@ -18,15 +18,13 @@ export function insertPoint(path, intersection) {
       x: intersection.x,
       y: intersection.y,
     });
-    const pointIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex);
-    selection.add(`point/${pointIndex}`);
+    selectedPointIndex = contourPointIndex;
   } else {
     // insert point in curve
     let deleteIndices;
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
     if (firstOffCurve.type === "cubic") {
       const insertIndex = segment.parentPointIndices.at(-1);
-      //
       const { left, right } = segment.bezier.split(intersection.t);
       const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
         roundVector
@@ -40,6 +38,7 @@ export function insertPoint(path, intersection) {
         path.insertPoint(contourIndex, insertIndex, point);
       }
       deleteIndices = segment.parentPointIndices.slice(1, -1);
+      selectedPointIndex = insertIndex;
     } else {
       // quad
       deleteIndices = [];
@@ -48,6 +47,11 @@ export function insertPoint(path, intersection) {
     deleteIndices.forEach((pointIndex) =>
       path.deletePoint(contourIndex, pointIndex + absToRel)
     );
+  }
+  const selection = new Set();
+  if (selectedPointIndex !== undefined) {
+    selectedPointIndex = path.getAbsolutePointIndex(contourIndex, selectedPointIndex);
+    selection.add(`point/${selectedPointIndex}`);
   }
   return selection;
 }
