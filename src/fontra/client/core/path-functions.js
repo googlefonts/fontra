@@ -10,11 +10,11 @@ export function insertPoint(path, intersection) {
   const numContourPoints = path.getNumPointsOfContour(contourIndex);
   const absToRel = contourPointIndex - segment.parentPointIndices[0];
   let insertIndex = segment.pointIndices.at(-1) + absToRel;
-  if (!insertIndex) {
-    insertIndex = numContourPoints;
-  }
   if (segment.points.length === 2) {
     // insert point in line
+    if (insertIndex <= 0) {
+      insertIndex = numContourPoints;
+    }
     path.insertPoint(contourIndex, insertIndex, {
       x: intersection.x,
       y: intersection.y,
