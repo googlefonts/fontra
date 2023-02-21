@@ -51,15 +51,24 @@ export function insertPoint(path, intersection) {
     } else {
       // quad
       deleteIndices = [];
-      // const point1 = path.getPoint(segment.pointIndices[0]);
-      // const point2 = path.getPoint(segment.pointIndices[1]);
-      // const point3 = path.getPoint(segment.pointIndices[2]);
-      // if (point1.type) {
-      //   console.log("insert implied 1");
-      // }
-      // if (point3.type) {
-      //   console.log("insert implied 2");
-      // }
+      const point1 = path.getPoint(segment.pointIndices[0]);
+      const point2 = path.getPoint(segment.pointIndices[1]);
+      const point3 = path.getPoint(segment.pointIndices[2]);
+      if (point3.type) {
+        path.insertPoint(
+          contourIndex,
+          segment.pointIndices[2] + absToRel,
+          impliedPoint(point2, point3)
+        );
+      }
+      if (point1.type) {
+        path.insertPoint(
+          contourIndex,
+          segment.pointIndices[1] + absToRel,
+          impliedPoint(point1, point2)
+        );
+      }
+      // TODO: Insert split
     }
     deleteIndices.sort((a, b) => b - a); // reverse sort
     deleteIndices.forEach((pointIndex) =>
@@ -72,6 +81,10 @@ export function insertPoint(path, intersection) {
     selection.add(`point/${selectedPointIndex}`);
   }
   return selection;
+}
+
+function impliedPoint(pointA, pointB) {
+  return { x: (pointA.x + pointB.x) / 2, y: (pointA.y + pointB.y) / 2, smooth: true };
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
