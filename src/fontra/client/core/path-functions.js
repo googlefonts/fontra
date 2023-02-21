@@ -41,6 +41,7 @@ export function insertPoint(path, intersection) {
       selectedPointIndex = insertIndex;
     } else {
       // quad
+      // console.log(intersection);
       deleteIndices = [];
     }
     deleteIndices.sort((a, b) => b - a); // reverse sort
