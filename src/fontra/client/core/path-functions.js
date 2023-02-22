@@ -22,10 +22,9 @@ export function insertPoint(path, intersection) {
     selectedPointIndex = insertIndex;
   } else {
     // insert point in curve
-    let deleteIndices;
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
+    const { left, right } = segment.bezier.split(intersection.t);
     if (firstOffCurve.type === "cubic") {
-      const { left, right } = segment.bezier.split(intersection.t);
       const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
         roundVector
       );
@@ -35,7 +34,7 @@ export function insertPoint(path, intersection) {
       points[3].type = "cubic";
       points[4].type = "cubic";
 
-      deleteIndices = segment.parentPointIndices.slice(1, -1);
+      const deleteIndices = segment.parentPointIndices.slice(1, -1);
       if (insertIndex < deleteIndices.length) {
         insertIndex = numContourPoints;
       }
@@ -48,32 +47,37 @@ export function insertPoint(path, intersection) {
       // with the selection index
       const selectionBias = segment.parentPointIndices.length - 4;
       selectedPointIndex = insertIndex - selectionBias;
+      deleteIndices.sort((a, b) => b - a); // reverse sort
+      deleteIndices.forEach((pointIndex) =>
+        path.deletePoint(contourIndex, pointIndex + absToRel)
+      );
     } else {
       // quad
-      deleteIndices = [];
+      const points = [left.points[1], left.points[2], right.points[1]].map(roundVector);
+      points[0].type = "quad";
+      points[1].smooth = true;
+      points[2].type = "quad";
+
       const point1 = path.getPoint(segment.pointIndices[0]);
       const point2 = path.getPoint(segment.pointIndices[1]);
       const point3 = path.getPoint(segment.pointIndices[2]);
+      insertIndex = segment.pointIndices[1] + absToRel;
       if (point3.type) {
-        path.insertPoint(
-          contourIndex,
-          segment.pointIndices[1] + absToRel + 1,
-          impliedPoint(point2, point3)
-        );
+        path.insertPoint(contourIndex, insertIndex + 1, impliedPoint(point2, point3));
       }
       if (point1.type) {
-        path.insertPoint(
-          contourIndex,
-          segment.pointIndices[1] + absToRel,
-          impliedPoint(point1, point2)
-        );
+        path.insertPoint(contourIndex, insertIndex, impliedPoint(point1, point2));
+        insertIndex++;
       }
-      // TODO: Insert split
+      // Delete off-curve
+      path.deletePoint(contourIndex, insertIndex);
+
+      // Insert split
+      for (const point of reversed(points)) {
+        path.insertPoint(contourIndex, insertIndex, point);
+      }
+      selectedPointIndex = insertIndex + 1;
     }
-    deleteIndices.sort((a, b) => b - a); // reverse sort
-    deleteIndices.forEach((pointIndex) =>
-      path.deletePoint(contourIndex, pointIndex + absToRel)
-    );
   }
   const selection = new Set();
   if (selectedPointIndex !== undefined) {
