@@ -209,3 +209,16 @@ export function connectContours(path, sourcePointIndex, targetPointIndex) {
   }
   return new Set([`point/${selectedPointIndex}`]);
 }
+
+export function deleteSelectedPoints(path, pointIndices) {
+  for (const pointIndex of reversed(pointIndices)) {
+    const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+    const numContourPoints = path.getNumPointsOfContour(contourIndex);
+
+    if (numContourPoints > 1) {
+      path.deletePoint(contourIndex, contourPointIndex);
+    } else {
+      path.deleteContour(contourIndex);
+    }
+  }
+}
