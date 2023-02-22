@@ -1,4 +1,99 @@
-import { reversed } from "../core/utils.js";
+import { reversed } from "./utils.js";
+import { roundVector } from "./vector.js";
+
+export function insertPoint(path, intersection) {
+  let selectedPointIndex;
+  const segment = intersection.segment;
+  const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(
+    segment.parentPointIndices[0]
+  );
+  const numContourPoints = path.getNumPointsOfContour(contourIndex);
+  const absToRel = contourPointIndex - segment.parentPointIndices[0];
+  let insertIndex = segment.pointIndices.at(-1) + absToRel;
+  if (segment.points.length === 2) {
+    // insert point in line
+    if (insertIndex <= 0) {
+      insertIndex = numContourPoints;
+    }
+    path.insertPoint(contourIndex, insertIndex, {
+      x: intersection.x,
+      y: intersection.y,
+    });
+    selectedPointIndex = insertIndex;
+  } else {
+    // insert point in curve
+    const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
+    const { left, right } = segment.bezier.split(intersection.t);
+    if (firstOffCurve.type === "cubic") {
+      const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
+        roundVector
+      );
+      points[0].type = "cubic";
+      points[1].type = "cubic";
+      points[2].smooth = true;
+      points[3].type = "cubic";
+      points[4].type = "cubic";
+
+      const deleteIndices = segment.parentPointIndices.slice(1, -1);
+      if (insertIndex < deleteIndices.length) {
+        insertIndex = numContourPoints;
+      }
+      for (const point of reversed(points)) {
+        path.insertPoint(contourIndex, insertIndex, point);
+      }
+      // selectionBias is non-zero if the cubic segment has more than
+      // two off-curve points, which is currently invalid. We delete all
+      // off-curve, and replace with clean cubic segments, but this messes
+      // with the selection index
+      const selectionBias = segment.parentPointIndices.length - 4;
+      selectedPointIndex = insertIndex - selectionBias;
+      deleteIndices.sort((a, b) => b - a); // reverse sort
+      deleteIndices.forEach((pointIndex) =>
+        path.deletePoint(contourIndex, pointIndex + absToRel)
+      );
+    } else {
+      // quad
+      const points = [left.points[1], left.points[2], right.points[1]].map(roundVector);
+      points[0].type = "quad";
+      points[1].smooth = true;
+      points[2].type = "quad";
+
+      const point1 = path.getPoint(segment.pointIndices[0]);
+      const point2 = path.getPoint(segment.pointIndices[1]);
+      const point3 = path.getPoint(segment.pointIndices[2]);
+      insertIndex = segment.pointIndices[1] + absToRel;
+      if (point3.type) {
+        path.insertPoint(contourIndex, insertIndex + 1, impliedPoint(point2, point3));
+      }
+      if (point1.type) {
+        path.insertPoint(contourIndex, insertIndex, impliedPoint(point1, point2));
+        insertIndex++;
+      }
+      // Delete off-curve
+      path.deletePoint(contourIndex, insertIndex);
+
+      // Insert split
+      for (const point of reversed(points)) {
+        path.insertPoint(contourIndex, insertIndex, point);
+      }
+      selectedPointIndex = insertIndex + 1;
+    }
+  }
+  const selection = new Set();
+  if (selectedPointIndex !== undefined) {
+    selectedPointIndex = path.getAbsolutePointIndex(contourIndex, selectedPointIndex);
+    selection.add(`point/${selectedPointIndex}`);
+  }
+  return selection;
+}
+
+function impliedPoint(pointA, pointB) {
+  return {
+    x: Math.round((pointA.x + pointB.x) / 2),
+    y: Math.round((pointA.y + pointB.y) / 2),
+    smooth: true,
+  };
+}
 
 export function splitPathAtPointIndices(path, pointIndices) {
   let numSplits = 0;

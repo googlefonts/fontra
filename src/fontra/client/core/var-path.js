@@ -787,7 +787,7 @@ const decomposeSegmentFuncs = {
         pointIndices: pointIndices.slice(0, 3),
       };
       pointIndices.shift();
-      [x0, y0] = [x1, y1];
+      [x0, y0] = [xMid, yMid];
       [x1, y1] = [x2, y2];
     }
     yield {

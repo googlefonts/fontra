@@ -62,8 +62,12 @@ export class SceneController {
     this.selectedTool?.deactivate();
     this.selectedTool = tool;
     this.hoverSelection = new Set();
-    this.selectedTool.activate();
-    this.selectedTool.handleHover({});
+    this.updateHoverState();
+  }
+
+  updateHoverState() {
+    // Do this too soon and we'll risk stale hover info
+    setTimeout(() => this.selectedTool.handleHover({}), 0);
   }
 
   handleKeyDown(event) {

@@ -1,5 +1,6 @@
 import { ChangeCollector } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
+import { insertPoint } from "../core/path-functions.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
@@ -46,19 +47,21 @@ export class PenTool extends BaseTool {
 
     const hoveredPointIndex = getHoveredPointIndex(this.sceneController, event);
 
-    if (hoveredPointIndex === undefined) {
-      return;
-    }
-
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
       return undefined;
     }
-
     const path = glyphController.instance.path;
 
     const appendInfo = getAppendInfo(path, this.sceneController.selection);
-    if (appendInfo.createContour) {
+    if (hoveredPointIndex === undefined && appendInfo.createContour) {
+      const point = this.sceneController.localPoint(event);
+      const size = this.sceneController.mouseClickMargin;
+      const hit = this.sceneModel.pathHitAtPoint(point, size);
+      return hit;
+    }
+
+    if (hoveredPointIndex === undefined) {
       return undefined;
     }
 
@@ -90,6 +93,19 @@ export class PenTool extends BaseTool {
     }
 
     await this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
+      if (this.sceneModel.pathConnectTargetPoint?.segment) {
+        let selection;
+        const changes = recordChanges(instance, (instance) => {
+          selection = insertPoint(
+            instance.path,
+            this.sceneModel.pathConnectTargetPoint
+          );
+        });
+        delete this.sceneModel.pathConnectTargetPoint;
+        this.sceneController.selection = selection;
+        return { changes: changes, undoLabel: "insert point", broadcast: true };
+      }
+
       const behavior = getPenToolBehavior(
         this.sceneController,
         initialEvent,
