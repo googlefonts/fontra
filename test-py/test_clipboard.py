@@ -17,7 +17,7 @@ from fontra.core.packedpath import ContourInfo, PackedPath
             "</svg>",
             StaticGlyph(
                 path=PackedPath(
-                    coordinates=[60.0, 120.0, 110.0, 120.0, 110.0, 0.0, 60.0, 0.0],
+                    coordinates=[60.0, 0.0, 110.0, 0.0, 110.0, 120.0, 60.0, 120.0],
                     pointTypes=[0, 0, 0, 0],
                     contourInfo=[ContourInfo(endPoint=3, isClosed=True)],
                 ),
