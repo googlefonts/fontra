@@ -221,3 +221,16 @@ export function makeUPlusStringFromCodePoint(codePoint) {
     ? "U+" + codePoint.toString(16).toUpperCase().padStart(4, "0")
     : "";
 }
+
+export async function writeToClipboard(clipboardObject) {
+  if (!clipboardObject) return;
+
+  const clipboardItemObject = {};
+  for (const [key, value] of Object.entries(clipboardObject)) {
+    clipboardItemObject[key] = new Blob([value], {
+      type: key,
+    });
+  }
+
+  navigator.clipboard.write([new ClipboardItem(clipboardItemObject)]);
+}

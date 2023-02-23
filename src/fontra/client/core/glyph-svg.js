@@ -51,3 +51,22 @@ function formatCoordinate(x, y, numerator, denominator, dx, dy) {
   y = Math.round(y * numerator + dy) / denominator;
   return `${x},${y}`;
 }
+
+export function pathToSVG(path, bounds) {
+  const svgPath = new SVGPath2D();
+  path.drawToPath2d(svgPath);
+  const pathString = svgPath.getPath();
+
+  const xMin = Math.floor(bounds.xMin);
+  const yMin = Math.floor(bounds.yMin);
+  const xMax = Math.ceil(bounds.xMax);
+  const yMax = Math.ceil(bounds.yMax);
+  const width = xMax - xMin;
+  const height = yMax - yMin;
+
+  const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"
+  viewBox="${xMin} 0 ${width} ${height}">
+  <path transform="matrix(1 0 0 -1 0 ${yMax})" d="${pathString}"/>
+</svg>`;
+  return svgString;
+}
