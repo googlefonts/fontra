@@ -1,7 +1,8 @@
+import pytest
+
 from fontra.core.classes import StaticGlyph
 from fontra.core.clipboard import parseClipboard
 from fontra.core.packedpath import ContourInfo, PackedPath, PointType
-import pytest
 
 
 @pytest.mark.parametrize(

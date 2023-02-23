@@ -4,8 +4,8 @@ from fontTools.pens.pointPen import (
     PointToSegmentPen,
     SegmentToPointPen,
 )
-from fontTools.ufoLib.glifLib import readGlyphFromString
 from fontTools.svgLib import SVGPath
+from fontTools.ufoLib.glifLib import readGlyphFromString
 
 from .classes import StaticGlyph
 from .packedpath import PackedPathPointPen
