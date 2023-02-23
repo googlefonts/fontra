@@ -91,6 +91,11 @@ export class FontController {
     return await this.font.getUnicodeFromGlyphName(glyphName);
   }
 
+  async parseClipboard(data) {
+    const result = await this.font.parseClipboard(data);
+    return result ? StaticGlyph.fromObject(result) : undefined;
+  }
+
   hasGlyph(glyphName) {
     return glyphName in this.glyphMap;
   }
