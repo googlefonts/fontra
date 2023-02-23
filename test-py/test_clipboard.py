@@ -8,7 +8,7 @@ from fontra.core.packedpath import ContourInfo, PackedPath
 @pytest.mark.parametrize(
     "inputData, expectedResult",
     [
-        ("dasasdad", None),
+        ("dasasdad", None),  # unparsable
         (
             '<svg xmlns="http://www.w3.org/2000/svg" width="50" '
             'height="120" viewBox="60 0 50 120">'
