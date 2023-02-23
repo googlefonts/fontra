@@ -7,6 +7,7 @@ from fontTools.pens.pointPen import (
 from fontTools.svgLib import SVGPath
 from fontTools.ufoLib.glifLib import readGlyphFromString
 
+from ..backends.designspace import UFOGlyph
 from .classes import StaticGlyph
 from .packedpath import PackedPathPointPen
 
@@ -27,10 +28,6 @@ def parseSVG(data):
     boundsPen = ControlBoundsPen(None)
     path.drawPoints(PointToSegmentPen(boundsPen))
     return StaticGlyph(path=path, xAdvance=boundsPen.bounds[2])
-
-
-class UFOGlyph:
-    width = 500
 
 
 def parseGLIF(data):
