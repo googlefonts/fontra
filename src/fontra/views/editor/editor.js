@@ -876,7 +876,6 @@ export class EditorController {
     };
 
     writeToClipboard(clipboardObject);
-    console.log("Glyph copied!");
   }
 
   canPaste() {
