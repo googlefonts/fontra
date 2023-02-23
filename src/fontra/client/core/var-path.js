@@ -208,6 +208,13 @@ export class VarPackedPath {
     this._moveEndPoints(contourIndex, -numPoints);
   }
 
+  appendPath(path) {
+    const numContours = path.contourInfo.length;
+    for (let i = 0; i < numContours; i++) {
+      this.appendContour(path.getContour(i));
+    }
+  }
+
   getPoint(pointIndex) {
     const point = {
       x: this.coordinates[pointIndex * 2],

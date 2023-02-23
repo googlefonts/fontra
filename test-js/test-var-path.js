@@ -1144,4 +1144,30 @@ describe("VarPackedPath Tests", () => {
     expect(p.getNumPointsOfContour(2)).to.equal(4);
     expect(() => p.getNumPointsOfContour(3)).to.throw("contourIndex out of bounds: 3");
   });
+
+  it("test appendPath", () => {
+    const p1 = simpleTestPath();
+    const p2 = simpleTestPath().transformed(new Transform(1, 0, 0, 1, 20, 50));
+    p1.appendPath(p2);
+    expect(p1.unpackedContours()).to.deep.equal([
+      {
+        points: [
+          { x: 0, y: 0 },
+          { x: 0, y: 100 },
+          { x: 100, y: 100 },
+          { x: 100, y: 0 },
+        ],
+        isClosed: true,
+      },
+      {
+        points: [
+          { x: 20, y: 50 },
+          { x: 20, y: 150 },
+          { x: 120, y: 150 },
+          { x: 120, y: 50 },
+        ],
+        isClosed: true,
+      },
+    ]);
+  });
 });
