@@ -31,6 +31,8 @@ import {
   scheduleCalls,
   themeSwitchFromLocalStorage,
   throttleCalls,
+  readClipboard,
+  readClipboardTypes,
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
@@ -880,8 +882,24 @@ export class EditorController {
     return true;
   }
 
-  doPaste() {
-    console.log("paste");
+  async doPaste() {
+    const clipboard = await readClipboard();
+    const plainText = clipboard["text/plain"];
+    const pastedGlyph = await this.fontController.parseClipboard(plainText);
+    if (!pastedGlyph) {
+      return;
+    }
+    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
+      const changes = recordChanges(instance, (instance) => {
+        instance.path.appendPath(pastedGlyph.path);
+      });
+      return {
+        changes: changes,
+        selection: new Set(),
+        undoLabel: "Paste",
+        broadcast: true,
+      };
+    });
   }
 
   canDeepPaste() {
