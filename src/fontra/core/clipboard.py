@@ -1,9 +1,7 @@
 from fontTools.pens.boundsPen import ControlBoundsPen
-from fontTools.pens.pointPen import (
-    GuessSmoothPointPen,
-    PointToSegmentPen,
-    SegmentToPointPen,
-)
+from fontTools.pens.pointPen import GuessSmoothPointPen, SegmentToPointPen
+from fontTools.pens.recordingPen import RecordingPen
+from fontTools.pens.transformPen import TransformPointPen
 from fontTools.svgLib import SVGPath
 from fontTools.ufoLib.glifLib import readGlyphFromString
 
@@ -21,13 +19,19 @@ def parseClipboard(data):
 
 
 def parseSVG(data):
-    svgPath = SVGPath.fromstring(data)
-    pen = PackedPathPointPen()
-    svgPath.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
-    path = pen.getPath()
+    data = data.encode("utf-8")
+    svgPath = SVGPath.fromstring(data, transform=(1, 0, 0, -1, 0, 0))
+    recPen = RecordingPen()
+    svgPath.draw(recPen)
     boundsPen = ControlBoundsPen(None)
-    path.drawPoints(PointToSegmentPen(boundsPen))
-    return StaticGlyph(path=path, xAdvance=boundsPen.bounds[2])
+    recPen.replay(boundsPen)
+    xMin, yMin, xMax, yMax = boundsPen.bounds
+
+    pen = PackedPathPointPen()
+    tPen = TransformPointPen(pen, (1, 0, 0, 1, 0, -yMin))
+    recPen.replay(SegmentToPointPen(GuessSmoothPointPen(tPen)))
+
+    return StaticGlyph(path=pen.getPath(), xAdvance=xMax)
 
 
 def parseGLIF(data):

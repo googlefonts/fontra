@@ -405,6 +405,9 @@ export const drawComponentSelectionLayer = requireEditingGlyph(
     const selectedComponentLineWidth = drawingParameters.selectedComponentLineWidth;
 
     for (const componentIndex of combinedComponentIndices || []) {
+      if (componentIndex >= glyph.components.length) {
+        continue;
+      }
       const drawSelectionFill =
         isHoverSelected || componentIndex !== hoveredComponentIndex;
       const componentPath = glyph.components[componentIndex].path2d;

@@ -31,6 +31,9 @@ import {
   scheduleCalls,
   themeSwitchFromLocalStorage,
   throttleCalls,
+  range,
+  readClipboard,
+  readClipboardTypes,
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
@@ -873,15 +876,48 @@ export class EditorController {
     };
 
     writeToClipboard(clipboardObject);
-    console.log("Glyph copied!");
   }
 
   canPaste() {
     return true;
   }
 
-  doPaste() {
-    console.log("paste");
+  async doPaste() {
+    const clipboard = await readClipboard();
+    const plainText = clipboard["text/plain"];
+    const pastedGlyph = await this.fontController.parseClipboard(plainText);
+    if (!pastedGlyph) {
+      return;
+    }
+    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
+      const selection = new Set();
+      for (const pointIndex of range(
+        instance.path.numPoints,
+        instance.path.numPoints + pastedGlyph.path.numPoints
+      )) {
+        selection.add(`point/${pointIndex}`);
+      }
+      for (const componentIndex of range(
+        instance.components.length,
+        instance.components.length + pastedGlyph.components.length
+      )) {
+        selection.add(`component/${componentIndex}`);
+      }
+      const changes = recordChanges(instance, (instance) => {
+        instance.path.appendPath(pastedGlyph.path);
+        instance.components.splice(
+          instance.components.length,
+          0,
+          ...pastedGlyph.components
+        );
+      });
+      return {
+        changes: changes,
+        selection: selection,
+        undoLabel: "Paste",
+        broadcast: true,
+      };
+    });
   }
 
   canDeepPaste() {
