@@ -21,6 +21,7 @@ def parseClipboard(data):
 
 
 def parseSVG(data):
+    data = data.encode("utf-8")
     svgPath = SVGPath.fromstring(data)
     pen = PackedPathPointPen()
     svgPath.draw(SegmentToPointPen(GuessSmoothPointPen(pen)))
