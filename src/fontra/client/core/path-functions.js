@@ -97,14 +97,7 @@ function impliedPoint(pointA, pointB) {
 
 export function splitPathAtPointIndices(path, pointIndices) {
   let numSplits = 0;
-  const selectionByContour = new Map();
-  for (const pointIndex of pointIndices) {
-    const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
-    if (!selectionByContour.has(contourIndex)) {
-      selectionByContour.set(contourIndex, []);
-    }
-    selectionByContour.get(contourIndex).push(contourPointIndex);
-  }
+  const selectionByContour = getSelectionByContour(path, pointIndices);
   const selectedContours = [...selectionByContour.keys()];
   // Reverse-sort the contour indices, so we can replace contours
   // with multiple split contours without invalidating the prior
@@ -221,4 +214,16 @@ export function deleteSelectedPoints(path, pointIndices) {
       path.deleteContour(contourIndex);
     }
   }
+}
+
+export function getSelectionByContour(path, pointIndices) {
+  const selectionByContour = new Map();
+  for (const pointIndex of pointIndices) {
+    const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+    if (!selectionByContour.has(contourIndex)) {
+      selectionByContour.set(contourIndex, []);
+    }
+    selectionByContour.get(contourIndex).push(contourPointIndex);
+  }
+  return selectionByContour;
 }
