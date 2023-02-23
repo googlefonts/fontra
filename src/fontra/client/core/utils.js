@@ -234,3 +234,24 @@ export async function writeToClipboard(clipboardObject) {
 
   navigator.clipboard.write([new ClipboardItem(clipboardItemObject)]);
 }
+
+export async function readClipboardTypes() {
+  const clipboardContents = await navigator.clipboard.read();
+  const clipboardTypes = [];
+  for (const item of clipboardContents) {
+    clipboardTypes.push(...item.types);
+  }
+  return clipboardTypes;
+}
+
+export async function readClipboard() {
+  const clipboardObject = {};
+  const clipboardContents = await navigator.clipboard.read();
+  for (const item of clipboardContents) {
+    for (const type of item.types) {
+      const blob = await item.getType(type);
+      clipboardObject[type] = await blob.text();
+    }
+  }
+  return clipboardObject;
+}
