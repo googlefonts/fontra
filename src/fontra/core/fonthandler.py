@@ -19,6 +19,7 @@ from .changes import (
     patternUnion,
 )
 from .classes import Font
+from .clipboard import parseClipboard
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
 
@@ -448,6 +449,10 @@ class FontHandler:
     @remoteMethod
     async def getUnicodeFromGlyphName(self, glyphName, *, connection):
         return getUnicodeFromGlyphName(glyphName)
+
+    @remoteMethod
+    async def parseClipboard(self, data, *, connection):
+        return parseClipboard(data)
 
 
 def _iterAllComponentNames(glyph):
