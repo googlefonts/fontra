@@ -10,12 +10,16 @@ on:
       - "src/fontra/client/**"
       - "test-js/**"
       - ".github/workflows/node.js.yml"
+      - "package-lock.json"
+      - "package.json"
   pull_request:
     branches: [main]
     paths:
       - "src/fontra/client/**"
       - "test-js/**"
       - ".github/workflows/node.js.yml"
+      - "package-lock.json"
+      - "package.json"
 
 jobs:
   build:
