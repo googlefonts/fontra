@@ -73,6 +73,7 @@ function getVarPackedPathProxyMethods(subject, changes) {
 
 export const proxyMethodsMap = {
   Array: getArrayProxyMethods,
+  VarArray: getArrayProxyMethods,
   VarPackedPath: getVarPackedPathProxyMethods, // Poss. need to change the key to VarPackedPath.name when minifying
 };
 
