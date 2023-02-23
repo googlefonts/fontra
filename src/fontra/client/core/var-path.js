@@ -209,19 +209,10 @@ export class VarPackedPath {
   }
 
   appendPath(path) {
-    this.coordinates.push(...path.coordinates);
-    this.pointTypes.push(...path.pointTypes);
-    const endPointOffset = this.contourInfo.length
-      ? this.contourInfo.at(-1).endPoint + 1
-      : 0;
-    this.contourInfo.push(
-      ...path.contourInfo.map((contour) => {
-        return {
-          endPoint: contour.endPoint + endPointOffset,
-          isClosed: contour.isClosed,
-        };
-      })
-    );
+    const numContours = path.contourInfo.length;
+    for (let i = 0; i < numContours; i++) {
+      this.appendContour(path.getContour(i));
+    }
   }
 
   getPoint(pointIndex) {
