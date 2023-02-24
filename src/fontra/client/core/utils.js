@@ -244,14 +244,14 @@ export async function readClipboardTypes() {
   return clipboardTypes;
 }
 
-export async function readClipboard() {
+export async function readClipboard(type) {
   const clipboardObject = {};
   const clipboardContents = await navigator.clipboard.read();
   for (const item of clipboardContents) {
-    for (const type of item.types) {
+    if (item.types.includes(type)) {
       const blob = await item.getType(type);
-      clipboardObject[type] = await blob.text();
+      return await blob.text();
     }
   }
-  return clipboardObject;
+  return undefined;
 }
