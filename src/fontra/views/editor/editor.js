@@ -21,7 +21,9 @@ import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
 import { ValueController } from "../core/value-controller.js";
+import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
+import { joinPaths } from "../core/var-path.js";
 import {
   THEME_KEY,
   makeUPlusStringFromCodePoint,
@@ -43,7 +45,10 @@ import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
-import { deleteSelectedPoints } from "../core/path-functions.js";
+import {
+  deleteSelectedPoints,
+  filterPathByPointIndices,
+} from "../core/path-functions.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 
 const drawingParametersLight = {
@@ -849,33 +854,108 @@ export class EditorController {
   }
 
   canCut() {
-    return true;
+    return !!this.sceneController.selection.size;
   }
 
-  doCut() {
-    console.log("cut");
+  async doCut() {
+    if (!this.sceneController.selection.size) {
+      return;
+    }
+    let copyResult;
+    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
+      const changes = recordChanges(instance, (instance) => {
+        copyResult = this._prepareCopyOrCut(instance, true);
+      });
+      this.sceneController.selection = new Set();
+      return {
+        changes: changes,
+        undoLabel: "Cut",
+        broadcast: true,
+      };
+    });
+    const { instance, path } = copyResult;
+    await this._writeInstanceToClipboard(instance, path);
   }
 
   canCopy() {
     return this.sceneController.selectedGlyph;
   }
 
-  doCopy() {
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
-    const glyphController = positionedGlyph?.glyph;
-    if (!glyphController) return;
+  async doCopy() {
+    const { instance, path } = this._prepareCopyOrCut();
+    if (!instance) {
+      return;
+    }
+    await this._writeInstanceToClipboard(instance, path);
+  }
 
-    const bounds = glyphController.controlBounds;
-    const svgString = pathToSVG(glyphController.flattenedPath, bounds);
+  async _writeInstanceToClipboard(instance, path) {
+    const bounds = path.getControlBounds();
+    if (!bounds) {
+      return;
+    }
+    const svgString = pathToSVG(path, bounds);
 
     const clipboardObject = {
       "text/plain": svgString,
       "text/html": svgString,
-      // "web image/svg+xml": svgString,
+      "web image/svg+xml": svgString,
+      "web fontra/static-glyph": JSON.stringify(instance),
     };
 
-    writeToClipboard(clipboardObject);
+    await writeToClipboard(clipboardObject);
+  }
+
+  _prepareCopyOrCut(editInstance, doCut = false) {
+    if (doCut !== !!editInstance) {
+      throw new Error("assert -- inconsistent editInstance vs doCut argument");
+    }
+    const positionedGlyph =
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+    const glyphController = positionedGlyph?.glyph;
+    if (!glyphController) {
+      return {};
+    }
+
+    if (!editInstance) {
+      editInstance = glyphController.instance;
+    }
+
+    if (!this.sceneController.selection.size) {
+      // No selection, fall back to "all", unless doCut is true
+      return doCut
+        ? {}
+        : {
+            instance: glyphController.instance,
+            path: glyphController.flattenedPath,
+          };
+    }
+
+    const { point: pointIndices, component: componentIndices } = parseSelection(
+      this.sceneController.selection
+    );
+    let path;
+    let components;
+    const paths = [];
+    if (pointIndices) {
+      path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
+      paths.push(path);
+    }
+    if (componentIndices) {
+      paths.push(...componentIndices.map((i) => glyphController.components[i].path));
+      components = componentIndices.map((i) => glyphController.instance.components[i]);
+      if (doCut) {
+        for (const componentIndex of reversed(componentIndices)) {
+          editInstance.components.splice(componentIndex, 1);
+        }
+      }
+    }
+    const instance = StaticGlyph.fromObject({
+      ...glyphController.instance,
+      path: path,
+      components: components,
+    });
+    return { instance: instance, path: joinPaths(paths) };
   }
 
   canPaste() {
@@ -883,9 +963,16 @@ export class EditorController {
   }
 
   async doPaste() {
-    const clipboard = await readClipboard();
-    const plainText = clipboard["text/plain"];
-    const pastedGlyph = await this.fontController.parseClipboard(plainText);
+    let pastedGlyph;
+    const customJSON = await readClipboard("web fontra/static-glyph");
+    if (customJSON) {
+      pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
+    } else {
+      const plainText = readClipboard("text/plain");
+      if (plainText) {
+        pastedGlyph = await this.fontController.parseClipboard(plainText);
+      }
+    }
     if (!pastedGlyph) {
       return;
     }
