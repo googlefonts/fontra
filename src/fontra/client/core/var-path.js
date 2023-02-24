@@ -635,6 +635,19 @@ export class VarPackedPath {
     }
   }
 
+  *iterContourSegmentPointIndices(contourIndex) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    const startPoint = this._getContourStartPoint(contourIndex);
+    const contour = this.contourInfo[contourIndex];
+
+    yield* iterContourSegmentPointIndices(
+      this.pointTypes,
+      startPoint,
+      contour.endPoint,
+      contour.isClosed
+    );
+  }
+
   transformed(transformation) {
     const coordinates = new VarArray(this.coordinates.length);
     for (let i = 0; i < this.coordinates.length; i += 2) {
@@ -883,4 +896,11 @@ function coordinatesToPoints(coordinates) {
     points.push({ x: coordinates[i], y: coordinates[i + 1] });
   }
   return points;
+}
+
+export function joinPaths(paths) {
+  if (paths.length) {
+    return paths.reduce((p1, p2) => p1.concat(p2));
+  }
+  return new VarPackedPath();
 }
