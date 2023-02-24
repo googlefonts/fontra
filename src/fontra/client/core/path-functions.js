@@ -1,4 +1,5 @@
 import { reversed } from "./utils.js";
+import { VarPackedPath } from "./var-path.js";
 import { roundVector } from "./vector.js";
 
 export function insertPoint(path, intersection) {
@@ -93,6 +94,43 @@ function impliedPoint(pointA, pointB) {
     y: Math.round((pointA.y + pointB.y) / 2),
     smooth: true,
   };
+}
+
+export function filterPathByPointIndices(path, pointIndices, doCut = false) {
+  const selectionByContour = getSelectionByContour(path, pointIndices);
+  const newUnpackedContours = [];
+  const remainingUnpackedContours = new Map();
+  for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
+    const numContourPoints = path.getNumPointsOfContour(contourIndex);
+    const indexSet = new Set(contourPointIndices);
+    for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
+      if (segment.pointIndices.slice(1, -1).some((i) => indexSet.has(i))) {
+        segment.pointIndices.forEach((i) => indexSet.add(i));
+      }
+    }
+    if (indexSet.size === numContourPoints) {
+      // Easy: the whole contour is copied
+      newUnpackedContours.push(path.getUnpackedContour(contourIndex));
+      remainingUnpackedContours.set(contourIndex, []);
+      continue;
+    }
+    // TODO: implement the splitting
+  }
+  if (doCut) {
+    // replace selected contours with remainingUnpackedContours
+    const remainingContourIndices = [...remainingUnpackedContours.keys()];
+    // Reverse-sort the contour indices, so we can replace contours
+    // with multiple split contours without invalidating the prior
+    // contour indices
+    remainingContourIndices.sort((a, b) => b - a);
+    for (const contourIndex of remainingContourIndices) {
+      path.deleteContour(contourIndex);
+      for (const contour of reversed(remainingUnpackedContours.get(contourIndex))) {
+        path.insertUnpackedContour(contourIndex, contour);
+      }
+    }
+  }
+  return VarPackedPath.fromUnpackedContours(newUnpackedContours);
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
