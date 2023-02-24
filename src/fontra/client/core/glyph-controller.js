@@ -13,7 +13,7 @@ import {
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
-import { VarPackedPath } from "./var-path.js";
+import { VarPackedPath, joinPaths } from "./var-path.js";
 
 export class VariableGlyphController {
   constructor(glyph, globalAxes) {
@@ -549,13 +549,6 @@ function mapLocationFoldNLI(location, axes) {
     userLocation[baseName] = axisValue;
   }
   return userLocation;
-}
-
-function joinPaths(paths) {
-  if (paths.length) {
-    return paths.reduce((p1, p2) => p1.concat(p2));
-  }
-  return new VarPackedPath();
 }
 
 function mergeLocations(loc1, loc2) {
