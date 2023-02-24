@@ -25,6 +25,12 @@ from fontra.core.packedpath import ContourInfo, PackedPath
             ),
         ),
         (
+            '<svg xmlns="http://www.w3.org/2000/svg" width="50" '
+            'height="120" viewBox="60 0 50 120">'
+            "</svg>",
+            None,
+        ),
+        (
             "<?xml version='1.0' encoding='UTF-8'?>"
             '<glyph name="period" format="2">'
             '  <advance width="170"/>'

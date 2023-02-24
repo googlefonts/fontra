@@ -25,6 +25,8 @@ def parseSVG(data):
     svgPath.draw(recPen)
     boundsPen = ControlBoundsPen(None)
     recPen.replay(boundsPen)
+    if boundsPen.bounds is None:
+        return None
     xMin, yMin, xMax, yMax = boundsPen.bounds
 
     pen = PackedPathPointPen()
