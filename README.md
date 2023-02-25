@@ -118,11 +118,11 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Pen tool for quadratic curves
 - Decent outline editing (adding/removing points, removing contours)
 - Advanced outline editing (select/edit segments)
-- Connecting open paths
+- Connecting open paths ✅
 - Knife tool
 - Shape tool
 - Measure tool
-- Copy / paste
+- Copy / paste ✅
 - Create new glyphs ✅
 - Add / remove (variable) components
 - Anchors
