@@ -23,49 +23,49 @@ Fontra Pak should also work on Linux and other platforms, but you will have to b
 
 - Create a Python venv in the root of the repo:
 
-    `python3.10 -m venv venv --prompt=fontra`
+  `python3.10 -m venv venv --prompt=fontra`
 
-    (Replace `python3.10` with `python3.11` if you have 3.11 instead.)
+  (Replace `python3.10` with `python3.11` if you have 3.11 instead.)
 
 - Activate venv:
 
-    `source venv/bin/activate`
+  `source venv/bin/activate`
 
 - Install general dependencies:
 
-    `pip install --upgrade pip`
+  `pip install --upgrade pip`
 
-    `pip install -r requirements.txt`
+  `pip install -r requirements.txt`
 
-    `pip install -e .`
+  `pip install -e .`
 
 - Install dependencies to run the automated tests:
 
-    `pip install -r requirements-dev.txt`
+  `pip install -r requirements-dev.txt`
 
-    `npm install`
+  `npm install`
 
 - Install `pre-commit` hooks to run formatters and linters:
 
-    `pre-commit install-hooks`
+  `pre-commit install-hooks`
 
 - To verify if everything is installed correctly, run both test suites:
 
-    `pytest`
+  `pytest`
 
-    `npm test`
+  `npm test`
 
 - Start the fontra server with a path to a folder containing fonts (.designspace, .ufo, .ttf or .otf), using the `filesystem` subcommand:
 
-    `fontra --launch filesystem /path/to/a/folder`
+  `fontra --launch filesystem /path/to/a/folder`
 
 - The default browser will then navigate to:
 
-    `http://localhost:8000/`
+  `http://localhost:8000/`
 
 - To use Fontra with .rcjk data on disk, or to connect to a remote rcjk server, install the [`fontra-rcjk`](https://github.com/googlefonts/fontra-rcjk) plugin package. Then you can start it with a robocjk server hostname, using the `rcjk` subcommand provided by the `fontra-rcjk` plugin:
 
-    `fontra --launch rcjk some-robocjk-server.some-domain.com`
+  `fontra --launch rcjk some-robocjk-server.some-domain.com`
 
 ## Roadmap
 
