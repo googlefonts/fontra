@@ -200,6 +200,7 @@ export class FontController {
       const varGlyph = await this.getGlyph(glyphName);
       varGlyph.clearDeltasCache();
     }
+    this.updateGlyphDependencies(await this.getGlyph(glyphName));
   }
 
   async getGlyphInstance(glyphName, location, instanceCacheKey) {
