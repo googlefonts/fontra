@@ -1,4 +1,5 @@
-import { reversed } from "./utils.js";
+import { range, reversed } from "./utils.js";
+import { VarPackedPath } from "./var-path.js";
 import { roundVector } from "./vector.js";
 
 export function insertPoint(path, intersection) {
@@ -95,16 +96,74 @@ function impliedPoint(pointA, pointB) {
   };
 }
 
+export function filterPathByPointIndices(path, pointIndices, doCut = false) {
+  const selectionByContour = getSelectionByContour(path, pointIndices);
+  const filteredUnpackedContours = [];
+  const remainingUnpackedContours = doCut ? new Map() : null;
+  for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
+    const contour = path.getUnpackedContour(contourIndex);
+    const numContourPoints = contour.points.length;
+    const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
+    const indexSet = new Set(contourPointIndices);
+    for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
+      const indices = segment.pointIndices.map((i) => i - startPoint);
+      const firstPointIndex = indices[0];
+      const lastPointIndex = indices.at(-1);
+      if (
+        (indices.length > 2 && indices.slice(1, -1).some((i) => indexSet.has(i))) ||
+        (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
+      ) {
+        indices.forEach((i) => indexSet.add(i));
+      }
+    }
+    if (indexSet.size === numContourPoints) {
+      // Easy: the whole contour is copied
+      filteredUnpackedContours.push(contour);
+      remainingUnpackedContours?.set(contourIndex, []);
+      continue;
+    }
+    // Split
+    const filteredIndices = [...indexSet];
+    filteredIndices.sort((a, b) => a - b);
+    const filteredRanges = splitContourPointRanges(
+      filteredIndices,
+      contour.isClosed,
+      numContourPoints
+    );
+    filteredUnpackedContours.push(
+      ...rangesToContours(path, startPoint, filteredRanges)
+    );
+    if (doCut) {
+      const remainingRanges = invertContourPointRanges(
+        filteredRanges,
+        contour.isClosed,
+        numContourPoints
+      );
+      remainingUnpackedContours.set(contourIndex, [
+        ...rangesToContours(path, startPoint, remainingRanges),
+      ]);
+    }
+  }
+  if (doCut) {
+    // replace selected contours with remainingUnpackedContours
+    const remainingContourIndices = [...remainingUnpackedContours.keys()];
+    // Reverse-sort the contour indices, so we can replace contours
+    // with multiple split contours without invalidating the prior
+    // contour indices
+    remainingContourIndices.sort((a, b) => b - a);
+    for (const contourIndex of remainingContourIndices) {
+      path.deleteContour(contourIndex);
+      for (const contour of reversed(remainingUnpackedContours.get(contourIndex))) {
+        path.insertUnpackedContour(contourIndex, contour);
+      }
+    }
+  }
+  return VarPackedPath.fromUnpackedContours(filteredUnpackedContours);
+}
+
 export function splitPathAtPointIndices(path, pointIndices) {
   let numSplits = 0;
-  const selectionByContour = new Map();
-  for (const pointIndex of pointIndices) {
-    const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
-    if (!selectionByContour.has(contourIndex)) {
-      selectionByContour.set(contourIndex, []);
-    }
-    selectionByContour.get(contourIndex).push(contourPointIndex);
-  }
+  const selectionByContour = getSelectionByContour(path, pointIndices);
   const selectedContours = [...selectionByContour.keys()];
   // Reverse-sort the contour indices, so we can replace contours
   // with multiple split contours without invalidating the prior
@@ -220,5 +279,81 @@ export function deleteSelectedPoints(path, pointIndices) {
     } else {
       path.deleteContour(contourIndex);
     }
+  }
+}
+
+export function getSelectionByContour(path, pointIndices) {
+  const selectionByContour = new Map();
+  for (const pointIndex of pointIndices) {
+    const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+    if (!selectionByContour.has(contourIndex)) {
+      selectionByContour.set(contourIndex, []);
+    }
+    selectionByContour.get(contourIndex).push(contourPointIndex);
+  }
+  return selectionByContour;
+}
+
+function splitContourPointRanges(indices, isClosed, numContourPoints) {
+  const ranges = [];
+  let currentRange;
+  for (const i of indices) {
+    if (currentRange && currentRange.at(-1) + 1 === i) {
+      currentRange.push(i);
+    } else {
+      currentRange = [i];
+      ranges.push(currentRange);
+    }
+  }
+  _wrapStartRange(ranges, isClosed, numContourPoints);
+  return ranges;
+}
+
+function invertContourPointRanges(ranges, isClosed, numContourPoints) {
+  const invRanges = [];
+  let prevEnd = isClosed ? undefined : 0;
+  for (const rng of ranges) {
+    if (prevEnd !== undefined && prevEnd !== rng[0]) {
+      invRanges.push([...range(prevEnd, rng[0] + 1)]);
+    }
+    prevEnd = rng.at(-1);
+  }
+  if (isClosed) {
+    const firstIndex = ranges[0][0];
+    const lastIndex = ranges.at(-1).at(-1);
+    let remainingIndex = lastIndex;
+    const closingRange = [remainingIndex];
+    do {
+      remainingIndex = (remainingIndex + 1) % numContourPoints;
+      closingRange.push(remainingIndex);
+    } while (remainingIndex !== firstIndex);
+    invRanges.push(closingRange);
+  } else {
+    if (!invRanges.length || (prevEnd && prevEnd !== numContourPoints - 1)) {
+      invRanges.push([...range(prevEnd, numContourPoints)]);
+    }
+    _wrapStartRange(invRanges, isClosed, numContourPoints);
+  }
+  return invRanges;
+}
+
+function _wrapStartRange(ranges, isClosed, numContourPoints) {
+  if (
+    ranges.length > 1 &&
+    isClosed &&
+    ranges[0][0] === 0 &&
+    ranges.at(-1).at(-1) + 1 === numContourPoints
+  ) {
+    const firstRange = ranges.shift();
+    ranges.at(-1).push(...firstRange);
+  }
+}
+
+function* rangesToContours(path, startPoint, ranges) {
+  for (const contourPointIndices of ranges) {
+    const points = contourPointIndices.map((i) => path.getPoint(i + startPoint));
+    delete points[0].smooth;
+    delete points.at(-1).smooth;
+    yield { points: points, isClosed: false };
   }
 }
