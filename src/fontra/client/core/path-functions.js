@@ -1,4 +1,4 @@
-import { reversed } from "./utils.js";
+import { range, reversed } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 import { roundVector } from "./vector.js";
 
@@ -98,23 +98,51 @@ function impliedPoint(pointA, pointB) {
 
 export function filterPathByPointIndices(path, pointIndices, doCut = false) {
   const selectionByContour = getSelectionByContour(path, pointIndices);
-  const newUnpackedContours = [];
-  const remainingUnpackedContours = new Map();
+  const filteredUnpackedContours = [];
+  const remainingUnpackedContours = doCut ? new Map() : null;
   for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
-    const numContourPoints = path.getNumPointsOfContour(contourIndex);
+    const contour = path.getUnpackedContour(contourIndex);
+    const numContourPoints = contour.points.length;
+    const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
     const indexSet = new Set(contourPointIndices);
     for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
-      if (segment.pointIndices.slice(1, -1).some((i) => indexSet.has(i))) {
-        segment.pointIndices.forEach((i) => indexSet.add(i));
+      const indices = segment.pointIndices.map((i) => i - startPoint);
+      const firstPointIndex = indices[0];
+      const lastPointIndex = indices.at(-1);
+      if (
+        (indices.length > 2 && indices.slice(1, -1).some((i) => indexSet.has(i))) ||
+        (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
+      ) {
+        indices.forEach((i) => indexSet.add(i));
       }
     }
     if (indexSet.size === numContourPoints) {
       // Easy: the whole contour is copied
-      newUnpackedContours.push(path.getUnpackedContour(contourIndex));
-      remainingUnpackedContours.set(contourIndex, []);
+      filteredUnpackedContours.push(contour);
+      remainingUnpackedContours?.set(contourIndex, []);
       continue;
     }
-    // TODO: implement the splitting
+    // Split
+    const filteredIndices = [...indexSet];
+    filteredIndices.sort((a, b) => a - b);
+    const filteredRanges = splitContourPointRanges(
+      filteredIndices,
+      contour.isClosed,
+      numContourPoints
+    );
+    filteredUnpackedContours.push(
+      ...rangesToContours(path, startPoint, filteredRanges)
+    );
+    if (doCut) {
+      const remainingRanges = invertContourPointRanges(
+        filteredRanges,
+        contour.isClosed,
+        numContourPoints
+      );
+      remainingUnpackedContours.set(contourIndex, [
+        ...rangesToContours(path, startPoint, remainingRanges),
+      ]);
+    }
   }
   if (doCut) {
     // replace selected contours with remainingUnpackedContours
@@ -130,7 +158,7 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
       }
     }
   }
-  return VarPackedPath.fromUnpackedContours(newUnpackedContours);
+  return VarPackedPath.fromUnpackedContours(filteredUnpackedContours);
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
@@ -264,4 +292,68 @@ export function getSelectionByContour(path, pointIndices) {
     selectionByContour.get(contourIndex).push(contourPointIndex);
   }
   return selectionByContour;
+}
+
+function splitContourPointRanges(indices, isClosed, numContourPoints) {
+  const ranges = [];
+  let currentRange;
+  for (const i of indices) {
+    if (currentRange && currentRange.at(-1) + 1 === i) {
+      currentRange.push(i);
+    } else {
+      currentRange = [i];
+      ranges.push(currentRange);
+    }
+  }
+  _wrapStartRange(ranges, isClosed, numContourPoints);
+  return ranges;
+}
+
+function invertContourPointRanges(ranges, isClosed, numContourPoints) {
+  const invRanges = [];
+  let prevEnd = isClosed ? undefined : 0;
+  for (const rng of ranges) {
+    if (prevEnd !== undefined && prevEnd !== rng[0]) {
+      invRanges.push([...range(prevEnd, rng[0] + 1)]);
+    }
+    prevEnd = rng.at(-1);
+  }
+  if (isClosed) {
+    const firstIndex = ranges[0][0];
+    const lastIndex = ranges.at(-1).at(-1);
+    let remainingIndex = lastIndex;
+    const closingRange = [remainingIndex];
+    do {
+      remainingIndex = (remainingIndex + 1) % numContourPoints;
+      closingRange.push(remainingIndex);
+    } while (remainingIndex !== firstIndex);
+    invRanges.push(closingRange);
+  } else {
+    if (!invRanges.length || (prevEnd && prevEnd !== numContourPoints - 1)) {
+      invRanges.push([...range(prevEnd, numContourPoints)]);
+    }
+    _wrapStartRange(invRanges, isClosed, numContourPoints);
+  }
+  return invRanges;
+}
+
+function _wrapStartRange(ranges, isClosed, numContourPoints) {
+  if (
+    ranges.length > 1 &&
+    isClosed &&
+    ranges[0][0] === 0 &&
+    ranges.at(-1).at(-1) + 1 === numContourPoints
+  ) {
+    const firstRange = ranges.shift();
+    ranges.at(-1).push(...firstRange);
+  }
+}
+
+function* rangesToContours(path, startPoint, ranges) {
+  for (const contourPointIndices of ranges) {
+    const points = contourPointIndices.map((i) => path.getPoint(i + startPoint));
+    delete points[0].smooth;
+    delete points.at(-1).smooth;
+    yield { points: points, isClosed: false };
+  }
 }
