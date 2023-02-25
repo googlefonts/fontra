@@ -19,7 +19,7 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
-        types_or: [css, javascript, json, xml, yaml]
+        types_or: [css, javascript, json, xml, yaml, markdown]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0

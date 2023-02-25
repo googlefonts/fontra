@@ -44,7 +44,7 @@ pyproject.toml file:
     ttf = "fontra.backends.truetype:TTFBackend"
     otf = "fontra.backends.truetype:TTFBackend"
 
-The backend *name* is the filename extension used for that format. The *value*
+The backend _name_ is the filename extension used for that format. The _value_
 points to a class in a Python package. The above entries match `*.designspace`
 , `*.ufo`, `*.ttf` and `*.otf` files respectively.
 

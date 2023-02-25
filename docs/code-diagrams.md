@@ -130,3 +130,4 @@ FontHandler --> FontBackend
 FontHandler ..> RemoteObjectConnection : broadcast<br>changes
 
 RemoteObjectConnection --> FontHandler : subject
+```
