@@ -77,9 +77,7 @@ class FileSystemProjectManager:
         html = resources.read_text("fontra.filesystem", "landing.html")
         if filterContent is not None:
             html = filterContent(html, "text/html")
-        response = web.Response(text=html, content_type="text/html")
-        response.set_cookie("fontra-require-login", "false")
-        return response
+        return web.Response(text=html, content_type="text/html")
 
     async def projectAvailable(self, path, token):
         return bool(self._getProjectPath(path))
