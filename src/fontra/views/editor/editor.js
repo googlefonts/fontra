@@ -869,7 +869,7 @@ export class EditorController {
       this.sceneController.selection = new Set();
       return {
         changes: changes,
-        undoLabel: "Cut",
+        undoLabel: "Cut Selection",
         broadcast: true,
       };
     });
