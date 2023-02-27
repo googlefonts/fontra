@@ -191,7 +191,6 @@ class FontraServer:
         response = await self.projectManager.projectPageHandler(
             request, self._addVersionTokenToReferences
         )
-        response.set_cookie("fontra-version-token", str(self.startupTime))
         return response
 
     async def viewPathHandler(self, viewName, request):
@@ -214,9 +213,7 @@ class FontraServer:
 
         html = self._addVersionTokenToReferences(html, "text/html")
 
-        response = web.Response(text=html, content_type="text/html")
-        response.set_cookie("fontra-version-token", str(self.startupTime))
-        return response
+        return web.Response(text=html, content_type="text/html")
 
     def _addVersionTokenToReferences(self, data, contentType):
         if self.versionToken is None:
