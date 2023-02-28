@@ -968,7 +968,7 @@ export class EditorController {
     if (customJSON) {
       pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
     } else {
-      const plainText = readClipboard("text/plain");
+      const plainText = await readClipboard("text/plain");
       if (plainText) {
         pastedGlyph = await this.fontController.parseClipboard(plainText);
       }
