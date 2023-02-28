@@ -590,41 +590,35 @@ export class SceneController {
   }
 
   async decomposeSelectedComponents() {
-    await this.editInstance(async (sendIncrementalChange, instance) => {
-      const { component: componentSelection } = parseSelection(this.selection);
-      componentSelection.sort((a, b) => (a > b) - (a < b));
+    const { component: componentSelection } = parseSelection(this.selection);
+    componentSelection.sort((a, b) => (a > b) - (a < b));
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
 
-      const { path: newPath, components: newComponents } = await decomposeComponents(
-        instance.components,
-        componentSelection,
-        this.getGlobalLocation(),
-        (glyphName) => this.sceneModel.fontController.getGlyph(glyphName)
-      );
+    const { path: newPath, components: newComponents } = await decomposeComponents(
+      instance.components,
+      componentSelection,
+      this.getGlobalLocation(),
+      (glyphName) => this.sceneModel.fontController.getGlyph(glyphName)
+    );
 
-      const changes = recordChanges(instance, (instance) => {
-        const path = instance.path;
-        const components = instance.components;
+    await this.editInstanceAndRecordChanges((instance) => {
+      const path = instance.path;
+      const components = instance.components;
 
-        for (const contour of newPath.iterContours()) {
-          // Hm, rounding should be optional
-          // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-          path.appendContour(contour);
-        }
-        components.push(...newComponents);
+      for (const contour of newPath.iterContours()) {
+        // Hm, rounding should be optional
+        // contour.coordinates = contour.coordinates.map(c => Math.round(c));
+        path.appendContour(contour);
+      }
+      components.push(...newComponents);
 
-        // Next, delete the components we decomposed
-        for (const componentIndex of reversed(componentSelection)) {
-          components.splice(componentIndex, 1);
-        }
-      });
+      // Next, delete the components we decomposed
+      for (const componentIndex of reversed(componentSelection)) {
+        components.splice(componentIndex, 1);
+      }
 
       this.selection = new Set();
-      return {
-        changes: changes,
-        undoLabel:
-          "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
-        broadcast: true,
-      };
+      return "Decompose Component" + (componentSelection?.length === 1 ? "" : "s");
     });
   }
 
