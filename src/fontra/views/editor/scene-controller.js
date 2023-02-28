@@ -381,6 +381,20 @@ export class SceneController {
     return this._glyphEditingDonePromise;
   }
 
+  async editInstanceAndRecordChanges(editFunc, senderID) {
+    await this.editInstance((sendIncrementalChange, instance) => {
+      let undoLabel;
+      const changes = recordChanges(instance, (instance) => {
+        undoLabel = editFunc(instance);
+      });
+      return {
+        changes: changes,
+        undoLabel: undoLabel,
+        broadcast: true,
+      };
+    }, senderID);
+  }
+
   async editInstance(editFunc, senderID) {
     if (this._glyphEditingDonePromise) {
       throw new Error("can't call editInstance() while it's still running");
@@ -505,31 +519,25 @@ export class SceneController {
   }
 
   async reverseSelectedContoursDirection() {
-    await this.editInstance((sendIncrementalChange, instance) => {
+    await this.editInstanceAndRecordChanges((instance) => {
       const path = instance.path;
       const { point: pointSelection } = parseSelection(this.selection);
       const selectedContours = getSelectedContours(path, pointSelection);
       const newSelection = reversePointSelection(path, pointSelection);
 
-      const changes = recordChanges(instance, (instance) => {
-        for (const contourIndex of selectedContours) {
-          const contour = path.getUnpackedContour(contourIndex);
-          contour.points.reverse();
-          if (contour.isClosed) {
-            const [lastPoint] = contour.points.splice(-1, 1);
-            contour.points.splice(0, 0, lastPoint);
-          }
-          const packedContour = packContour(contour);
-          instance.path.deleteContour(contourIndex);
-          instance.path.insertContour(contourIndex, packedContour);
+      for (const contourIndex of selectedContours) {
+        const contour = path.getUnpackedContour(contourIndex);
+        contour.points.reverse();
+        if (contour.isClosed) {
+          const [lastPoint] = contour.points.splice(-1, 1);
+          contour.points.splice(0, 0, lastPoint);
         }
-      });
+        const packedContour = packContour(contour);
+        instance.path.deleteContour(contourIndex);
+        instance.path.insertContour(contourIndex, packedContour);
+      }
       this.selection = newSelection;
-      return {
-        changes: changes,
-        undoLabel: "Reverse Contour Direction",
-        broadcast: true,
-      };
+      return "Reverse Contour Direction";
     });
   }
 
