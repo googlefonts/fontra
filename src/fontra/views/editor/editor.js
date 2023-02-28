@@ -862,19 +862,15 @@ export class EditorController {
       return;
     }
     let copyResult;
-    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
-      const changes = recordChanges(instance, (instance) => {
-        copyResult = this._prepareCopyOrCut(instance, true);
-      });
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
+      copyResult = this._prepareCopyOrCut(instance, true);
       this.sceneController.selection = new Set();
-      return {
-        changes: changes,
-        undoLabel: "Cut Selection",
-        broadcast: true,
-      };
+      return "Cut Selection";
     });
-    const { instance, path } = copyResult;
-    await this._writeInstanceToClipboard(instance, path);
+    if (copyResult) {
+      const { instance, path } = copyResult;
+      await this._writeInstanceToClipboard(instance, path);
+    }
   }
 
   canCopy() {
