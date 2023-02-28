@@ -998,9 +998,9 @@ export class EditorController {
           ...pastedGlyph.components
         );
       });
+      this.sceneController.selection = selection;
       return {
         changes: changes,
-        selection: selection,
         undoLabel: "Paste",
         broadcast: true,
       };
@@ -1041,9 +1041,9 @@ export class EditorController {
           }
         }
       });
+      this.sceneController.selection = new Set();
       return {
         changes: changes,
-        selection: new Set(),
         undoLabel: "Delete Selection",
         broadcast: true,
       };
