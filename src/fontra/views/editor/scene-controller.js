@@ -438,15 +438,11 @@ export class SceneController {
 
     const {
       changes: changes,
-      selection: newSelection, // Optional
       undoLabel: undoLabel,
       broadcast: broadcast,
     } = result || {};
 
     if (changes && changes.hasChange) {
-      if (newSelection) {
-        this.selection = newSelection;
-      }
       const undoInfo = {
         label: undoLabel,
         undoSelection: initialSelection,
@@ -528,9 +524,9 @@ export class SceneController {
           instance.path.insertContour(contourIndex, packedContour);
         }
       });
+      this.selection = newSelection;
       return {
         changes: changes,
-        selection: newSelection,
         undoLabel: "Reverse Contour Direction",
         broadcast: true,
       };
@@ -572,9 +568,9 @@ export class SceneController {
         });
       });
 
+      this.selection = newSelection;
       return {
         changes: changes,
-        selection: newSelection,
         undoLabel: "Set Start Point",
         broadcast: true,
       };
@@ -588,9 +584,9 @@ export class SceneController {
       const changes = recordChanges(instance, (instance) => {
         numSplits = splitPathAtPointIndices(instance.path, pointIndices);
       });
+      this.selection = new Set();
       return {
         changes: changes,
-        selection: new Set(),
         undoLabel: "Break Contour" + (numSplits > 1 ? "s" : ""),
         broadcast: true,
       };
@@ -626,9 +622,9 @@ export class SceneController {
         }
       });
 
+      this.selection = new Set();
       return {
         changes: changes,
-        selection: new Set(),
         undoLabel:
           "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
         broadcast: true,
