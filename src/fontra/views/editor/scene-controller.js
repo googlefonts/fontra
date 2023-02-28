@@ -580,18 +580,12 @@ export class SceneController {
   }
 
   async breakContour() {
-    await this.editInstance(async (sendIncrementalChange, instance) => {
+    await this.editInstanceAndRecordChanges((instance) => {
       let numSplits;
       const { point: pointIndices } = parseSelection(this.selection);
-      const changes = recordChanges(instance, (instance) => {
-        numSplits = splitPathAtPointIndices(instance.path, pointIndices);
-      });
+      numSplits = splitPathAtPointIndices(instance.path, pointIndices);
       this.selection = new Set();
-      return {
-        changes: changes,
-        undoLabel: "Break Contour" + (numSplits > 1 ? "s" : ""),
-        broadcast: true,
-      };
+      return "Break Contour" + (numSplits > 1 ? "s" : "");
     });
   }
 
