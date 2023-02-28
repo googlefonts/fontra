@@ -8,7 +8,6 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
-from ..backends.designspace import serializeStaticGlyphAsGLIF
 from .changes import (
     applyChange,
     collectChangePaths,
@@ -20,7 +19,7 @@ from .changes import (
     patternUnion,
 )
 from .classes import Font, StaticGlyph, from_dict
-from .clipboard import parseClipboard
+from .clipboard import parseClipboard, serializeStaticGlyphAsGLIF
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
 
