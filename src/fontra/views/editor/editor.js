@@ -979,7 +979,7 @@ export class EditorController {
     if (!pastedGlyph) {
       return;
     }
-    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
       const selection = new Set();
       for (const pointIndex of range(
         instance.path.numPoints,
@@ -993,20 +993,14 @@ export class EditorController {
       )) {
         selection.add(`component/${componentIndex}`);
       }
-      const changes = recordChanges(instance, (instance) => {
-        instance.path.appendPath(pastedGlyph.path);
-        instance.components.splice(
-          instance.components.length,
-          0,
-          ...pastedGlyph.components
-        );
-      });
+      instance.path.appendPath(pastedGlyph.path);
+      instance.components.splice(
+        instance.components.length,
+        0,
+        ...pastedGlyph.components
+      );
       this.sceneController.selection = selection;
-      return {
-        changes: changes,
-        undoLabel: "Paste",
-        broadcast: true,
-      };
+      return "Paste";
     });
   }
 
