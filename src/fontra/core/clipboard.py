@@ -3,9 +3,9 @@ from fontTools.pens.pointPen import GuessSmoothPointPen, SegmentToPointPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPointPen
 from fontTools.svgLib import SVGPath
-from fontTools.ufoLib.glifLib import readGlyphFromString
+from fontTools.ufoLib.glifLib import readGlyphFromString, writeGlyphToString
 
-from ..backends.designspace import UFOGlyph
+from ..backends.designspace import UFOGlyph, buildUFOLayerGlyph
 from .classes import StaticGlyph
 from .packedpath import PackedPathPointPen
 
@@ -47,3 +47,10 @@ def parseGLIF(data):
     return StaticGlyph(
         path=pen.getPath(), components=pen.components, xAdvance=ufoGlyph.width
     )
+
+
+def serializeStaticGlyphAsGLIF(glyphName, staticGlyph, unicodes):
+    layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
+        glyphSet={}, glyphName=glyphName, staticGlyph=staticGlyph, unicodes=unicodes
+    )
+    return writeGlyphToString(glyphName, layerGlyph, drawPointsFunc)

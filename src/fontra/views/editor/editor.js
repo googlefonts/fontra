@@ -894,10 +894,17 @@ export class EditorController {
     if (!bounds) {
       return;
     }
+    const preferGLIF = true; // TODO should be user preference
     const svgString = pathToSVG(path, bounds);
+    const glyphName = this.sceneController.getSelectedGlyphName();
+    const unicodes = this.fontController.glyphMap[glyphName] || [];
+    const glifString = await this.fontController.serializeStaticGlyphAsGLIF(
+      glyphName,
+      instance
+    );
 
     const clipboardObject = {
-      "text/plain": svgString,
+      "text/plain": preferGLIF ? glifString : svgString,
       "text/html": svgString,
       "web image/svg+xml": svgString,
       "web fontra/static-glyph": JSON.stringify(instance),

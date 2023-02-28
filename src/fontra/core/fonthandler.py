@@ -18,8 +18,8 @@ from .changes import (
     patternIntersect,
     patternUnion,
 )
-from .classes import Font
-from .clipboard import parseClipboard
+from .classes import Font, StaticGlyph, from_dict
+from .clipboard import parseClipboard, serializeStaticGlyphAsGLIF
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
 
@@ -453,6 +453,13 @@ class FontHandler:
     @remoteMethod
     async def parseClipboard(self, data, *, connection):
         return parseClipboard(data)
+
+    @remoteMethod
+    async def serializeStaticGlyphAsGLIF(
+        self, glyphName, staticGlyph, unicodes, *, connection
+    ):
+        staticGlyph = from_dict(StaticGlyph, staticGlyph)
+        return serializeStaticGlyphAsGLIF(glyphName, staticGlyph, unicodes)
 
 
 def _iterAllComponentNames(glyph):

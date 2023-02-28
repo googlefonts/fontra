@@ -96,6 +96,15 @@ export class FontController {
     return result ? StaticGlyph.fromObject(result) : undefined;
   }
 
+  async serializeStaticGlyphAsGLIF(glyphName, staticGlyph) {
+    const result = await this.font.serializeStaticGlyphAsGLIF(
+      glyphName,
+      staticGlyph,
+      this.glyphMap[glyphName] || []
+    );
+    return result;
+  }
+
   hasGlyph(glyphName) {
     return glyphName in this.glyphMap;
   }
