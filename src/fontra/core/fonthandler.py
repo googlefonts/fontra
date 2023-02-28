@@ -8,6 +8,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
+from ..backends.designspace import serializeStaticGlyphAsGLIF
 from .changes import (
     applyChange,
     collectChangePaths,
@@ -18,7 +19,7 @@ from .changes import (
     patternIntersect,
     patternUnion,
 )
-from .classes import Font
+from .classes import Font, StaticGlyph, from_dict
 from .clipboard import parseClipboard
 from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
@@ -453,6 +454,13 @@ class FontHandler:
     @remoteMethod
     async def parseClipboard(self, data, *, connection):
         return parseClipboard(data)
+
+    @remoteMethod
+    async def serializeStaticGlyphAsGLIF(
+        self, glyphName, staticGlyph, unicodes, *, connection
+    ):
+        staticGlyph = from_dict(StaticGlyph, staticGlyph)
+        return serializeStaticGlyphAsGLIF(glyphName, staticGlyph, unicodes)
 
 
 def _iterAllComponentNames(glyph):
