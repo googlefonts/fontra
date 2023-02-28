@@ -13,7 +13,7 @@ from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.misc.transform import Transform
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReader
-from fontTools.ufoLib.glifLib import GlyphSet
+from fontTools.ufoLib.glifLib import GlyphSet, writeGlyphToString
 
 from ..core.changes import applyChange
 from ..core.classes import (
@@ -555,3 +555,10 @@ def cleanupWatchFilesChanges(changes):
 def tuplifyLocation(loc):
     # TODO: find good place to share this (duplicated from opentype.py)
     return tuple(sorted(loc.items()))
+
+
+def serializeStaticGlyphAsGLIF(glyphName, staticGlyph, unicodes):
+    layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
+        glyphSet={}, glyphName=glyphName, staticGlyph=staticGlyph, unicodes=unicodes
+    )
+    return writeGlyphToString(glyphName, layerGlyph, drawPointsFunc)
