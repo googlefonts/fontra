@@ -1020,30 +1020,24 @@ export class EditorController {
   }
 
   async doDelete() {
-    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
       const { point: pointSelection, component: componentSelection } = parseSelection(
         this.sceneController.selection
       );
 
-      const changes = recordChanges(instance, (instance) => {
-        const path = instance.path;
+      const path = instance.path;
 
-        if (pointSelection) {
-          deleteSelectedPoints(path, pointSelection);
-        }
+      if (pointSelection) {
+        deleteSelectedPoints(path, pointSelection);
+      }
 
-        if (componentSelection) {
-          for (const componentIndex of reversed(componentSelection)) {
-            instance.components.splice(componentIndex, 1);
-          }
+      if (componentSelection) {
+        for (const componentIndex of reversed(componentSelection)) {
+          instance.components.splice(componentIndex, 1);
         }
-      });
+      }
       this.sceneController.selection = new Set();
-      return {
-        changes: changes,
-        undoLabel: "Delete Selection",
-        broadcast: true,
-      };
+      return "Delete Selection";
     });
   }
 
