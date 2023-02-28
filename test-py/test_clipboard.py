@@ -1,7 +1,7 @@
 import pytest
 
 from fontra.core.classes import StaticGlyph
-from fontra.core.clipboard import parseClipboard
+from fontra.core.clipboard import parseClipboard, serializeStaticGlyphAsGLIF
 from fontra.core.packedpath import ContourInfo, PackedPath
 
 
@@ -60,6 +60,46 @@ from fontra.core.packedpath import ContourInfo, PackedPath
 )
 def test_parseClipboard(inputData, expectedResult):
     result = parseClipboard(inputData)
+    if result is not None:
+        result = result
+    assert expectedResult == result
+
+
+@pytest.mark.parametrize(
+    "glyphName, glyph, unicodes, expectedResult",
+    [
+        (
+            "period",
+            StaticGlyph(
+                path=PackedPath(
+                    coordinates=[60, 0, 110, 0, 110, 120, 60, 120],
+                    pointTypes=[0, 0, 0, 0],
+                    contourInfo=[ContourInfo(endPoint=3, isClosed=True)],
+                ),
+                components=[],
+                xAdvance=170,
+                yAdvance=None,
+                verticalOrigin=None,
+            ),
+            [0x002E],
+            "<?xml version='1.0' encoding='UTF-8'?>\n"
+            '<glyph name="period" format="2">\n'
+            '  <advance width="170"/>\n'
+            '  <unicode hex="002E"/>\n'
+            "  <outline>\n"
+            "    <contour>\n"
+            '      <point x="60" y="0" type="line"/>\n'
+            '      <point x="110" y="0" type="line"/>\n'
+            '      <point x="110" y="120" type="line"/>\n'
+            '      <point x="60" y="120" type="line"/>\n'
+            "    </contour>\n"
+            "  </outline>\n"
+            "</glyph>\n",
+        ),
+    ],
+)
+def test_serializeStaticGlyphAsGLIF(glyphName, glyph, unicodes, expectedResult):
+    result = serializeStaticGlyphAsGLIF(glyphName, glyph, unicodes)
     if result is not None:
         result = result
     assert expectedResult == result
