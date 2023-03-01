@@ -432,7 +432,7 @@ export class VarPackedPath {
       ) {
         const prevType = this.pointTypes[prevIndex] & VarPackedPath.POINT_TYPE_MASK;
         const nextType = this.pointTypes[nextIndex] & VarPackedPath.POINT_TYPE_MASK;
-        if (prevType != nextType) {
+        if (prevType != nextType || nextType === VarPackedPath.OFF_CURVE_QUAD) {
           yield [
             {
               x: this.coordinates[prevIndex * 2],
