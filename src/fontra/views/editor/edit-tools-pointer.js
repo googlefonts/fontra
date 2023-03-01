@@ -172,59 +172,53 @@ export class PointerTool extends BaseTool {
   }
 
   async handlePointsDoubleClick(pointIndices) {
-    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
-      const changes = recordChanges(instance, (instance) => {
-        const path = instance.path;
-        for (const pointIndex of pointIndices) {
-          const pointType = path.pointTypes[pointIndex];
-          const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(
-            path,
-            pointIndex
-          );
-          if (
-            (!prevPoint || !nextPoint || (!prevPoint.type && !nextPoint.type)) &&
-            pointType !== VarPackedPath.SMOOTH_FLAG
-          ) {
-            continue;
-          }
-          if (
-            pointType === VarPackedPath.ON_CURVE ||
-            pointType === VarPackedPath.SMOOTH_FLAG
-          ) {
-            const newPointType =
-              pointType === VarPackedPath.ON_CURVE
-                ? VarPackedPath.SMOOTH_FLAG
-                : VarPackedPath.ON_CURVE;
-            path.pointTypes[pointIndex] = newPointType;
-            if (newPointType === VarPackedPath.SMOOTH_FLAG) {
-              const anchorPoint = path.getPoint(pointIndex);
-              if (prevPoint?.type && nextPoint?.type) {
-                // Fix-up both incoming and outgoing handles
-                const [newPrevPoint, newNextPoint] = alignHandles(
-                  prevPoint,
-                  anchorPoint,
-                  nextPoint
-                );
-                path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
-                path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
-              } else if (prevPoint?.type) {
-                // Fix-up incoming handle
-                const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
-                path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
-              } else if (nextPoint?.type) {
-                // Fix-up outgoing handle
-                const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
-                path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
-              }
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
+      const path = instance.path;
+      for (const pointIndex of pointIndices) {
+        const pointType = path.pointTypes[pointIndex];
+        const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(
+          path,
+          pointIndex
+        );
+        if (
+          (!prevPoint || !nextPoint || (!prevPoint.type && !nextPoint.type)) &&
+          pointType !== VarPackedPath.SMOOTH_FLAG
+        ) {
+          continue;
+        }
+        if (
+          pointType === VarPackedPath.ON_CURVE ||
+          pointType === VarPackedPath.SMOOTH_FLAG
+        ) {
+          const newPointType =
+            pointType === VarPackedPath.ON_CURVE
+              ? VarPackedPath.SMOOTH_FLAG
+              : VarPackedPath.ON_CURVE;
+          path.pointTypes[pointIndex] = newPointType;
+          if (newPointType === VarPackedPath.SMOOTH_FLAG) {
+            const anchorPoint = path.getPoint(pointIndex);
+            if (prevPoint?.type && nextPoint?.type) {
+              // Fix-up both incoming and outgoing handles
+              const [newPrevPoint, newNextPoint] = alignHandles(
+                prevPoint,
+                anchorPoint,
+                nextPoint
+              );
+              path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
+              path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
+            } else if (prevPoint?.type) {
+              // Fix-up incoming handle
+              const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
+              path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
+            } else if (nextPoint?.type) {
+              // Fix-up outgoing handle
+              const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
+              path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
             }
           }
         }
-      });
-      return {
-        changes: changes,
-        undoLabel: "toggle smooth",
-        broadcast: true,
-      };
+      }
+      return "Toggle Smooth";
     });
   }
 

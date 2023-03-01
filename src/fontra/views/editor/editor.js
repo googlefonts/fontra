@@ -862,19 +862,15 @@ export class EditorController {
       return;
     }
     let copyResult;
-    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
-      const changes = recordChanges(instance, (instance) => {
-        copyResult = this._prepareCopyOrCut(instance, true);
-      });
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
+      copyResult = this._prepareCopyOrCut(instance, true);
       this.sceneController.selection = new Set();
-      return {
-        changes: changes,
-        undoLabel: "Cut Selection",
-        broadcast: true,
-      };
+      return "Cut Selection";
     });
-    const { instance, path } = copyResult;
-    await this._writeInstanceToClipboard(instance, path);
+    if (copyResult) {
+      const { instance, path } = copyResult;
+      await this._writeInstanceToClipboard(instance, path);
+    }
   }
 
   canCopy() {
@@ -983,7 +979,7 @@ export class EditorController {
     if (!pastedGlyph) {
       return;
     }
-    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
       const selection = new Set();
       for (const pointIndex of range(
         instance.path.numPoints,
@@ -997,20 +993,14 @@ export class EditorController {
       )) {
         selection.add(`component/${componentIndex}`);
       }
-      const changes = recordChanges(instance, (instance) => {
-        instance.path.appendPath(pastedGlyph.path);
-        instance.components.splice(
-          instance.components.length,
-          0,
-          ...pastedGlyph.components
-        );
-      });
+      instance.path.appendPath(pastedGlyph.path);
+      instance.components.splice(
+        instance.components.length,
+        0,
+        ...pastedGlyph.components
+      );
       this.sceneController.selection = selection;
-      return {
-        changes: changes,
-        undoLabel: "Paste",
-        broadcast: true,
-      };
+      return "Paste";
     });
   }
 
@@ -1030,30 +1020,24 @@ export class EditorController {
   }
 
   async doDelete() {
-    await this.sceneController.editInstance((sendIncrementalChange, instance) => {
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
       const { point: pointSelection, component: componentSelection } = parseSelection(
         this.sceneController.selection
       );
 
-      const changes = recordChanges(instance, (instance) => {
-        const path = instance.path;
+      const path = instance.path;
 
-        if (pointSelection) {
-          deleteSelectedPoints(path, pointSelection);
-        }
+      if (pointSelection) {
+        deleteSelectedPoints(path, pointSelection);
+      }
 
-        if (componentSelection) {
-          for (const componentIndex of reversed(componentSelection)) {
-            instance.components.splice(componentIndex, 1);
-          }
+      if (componentSelection) {
+        for (const componentIndex of reversed(componentSelection)) {
+          instance.components.splice(componentIndex, 1);
         }
-      });
+      }
       this.sceneController.selection = new Set();
-      return {
-        changes: changes,
-        undoLabel: "Delete Selection",
-        broadcast: true,
-      };
+      return "Delete Selection";
     });
   }
 

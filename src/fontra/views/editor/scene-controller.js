@@ -381,6 +381,20 @@ export class SceneController {
     return this._glyphEditingDonePromise;
   }
 
+  async editInstanceAndRecordChanges(editFunc, senderID) {
+    await this.editInstance((sendIncrementalChange, instance) => {
+      let undoLabel;
+      const changes = recordChanges(instance, (instance) => {
+        undoLabel = editFunc(instance);
+      });
+      return {
+        changes: changes,
+        undoLabel: undoLabel,
+        broadcast: true,
+      };
+    }, senderID);
+  }
+
   async editInstance(editFunc, senderID) {
     if (this._glyphEditingDonePromise) {
       throw new Error("can't call editInstance() while it's still running");
@@ -505,36 +519,30 @@ export class SceneController {
   }
 
   async reverseSelectedContoursDirection() {
-    await this.editInstance((sendIncrementalChange, instance) => {
+    await this.editInstanceAndRecordChanges((instance) => {
       const path = instance.path;
       const { point: pointSelection } = parseSelection(this.selection);
       const selectedContours = getSelectedContours(path, pointSelection);
       const newSelection = reversePointSelection(path, pointSelection);
 
-      const changes = recordChanges(instance, (instance) => {
-        for (const contourIndex of selectedContours) {
-          const contour = path.getUnpackedContour(contourIndex);
-          contour.points.reverse();
-          if (contour.isClosed) {
-            const [lastPoint] = contour.points.splice(-1, 1);
-            contour.points.splice(0, 0, lastPoint);
-          }
-          const packedContour = packContour(contour);
-          instance.path.deleteContour(contourIndex);
-          instance.path.insertContour(contourIndex, packedContour);
+      for (const contourIndex of selectedContours) {
+        const contour = path.getUnpackedContour(contourIndex);
+        contour.points.reverse();
+        if (contour.isClosed) {
+          const [lastPoint] = contour.points.splice(-1, 1);
+          contour.points.splice(0, 0, lastPoint);
         }
-      });
+        const packedContour = packContour(contour);
+        instance.path.deleteContour(contourIndex);
+        instance.path.insertContour(contourIndex, packedContour);
+      }
       this.selection = newSelection;
-      return {
-        changes: changes,
-        undoLabel: "Reverse Contour Direction",
-        broadcast: true,
-      };
+      return "Reverse Contour Direction";
     });
   }
 
   async setStartPoint() {
-    await this.editInstance((sendIncrementalChange, instance) => {
+    await this.editInstanceAndRecordChanges((instance) => {
       const path = instance.path;
       const { point: pointSelection } = parseSelection(this.selection);
       const contourToPointMap = new Map();
@@ -548,87 +556,69 @@ export class SceneController {
       }
       const newSelection = new Set();
 
-      const changes = recordChanges(instance, (instance) => {
-        contourToPointMap.forEach((contourPointIndex, contourIndex) => {
-          if (contourPointIndex === 0) {
-            // Already start point
-            newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
-            return;
-          }
-          if (!path.contourInfo[contourIndex].isClosed) {
-            // Open path, ignore
-            return;
-          }
-          const contour = path.getUnpackedContour(contourIndex);
-          const head = contour.points.splice(0, contourPointIndex);
-          contour.points.push(...head);
-          instance.path.deleteContour(contourIndex);
-          instance.path.insertContour(contourIndex, packContour(contour));
+      contourToPointMap.forEach((contourPointIndex, contourIndex) => {
+        if (contourPointIndex === 0) {
+          // Already start point
           newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
-        });
+          return;
+        }
+        if (!path.contourInfo[contourIndex].isClosed) {
+          // Open path, ignore
+          return;
+        }
+        const contour = path.getUnpackedContour(contourIndex);
+        const head = contour.points.splice(0, contourPointIndex);
+        contour.points.push(...head);
+        instance.path.deleteContour(contourIndex);
+        instance.path.insertContour(contourIndex, packContour(contour));
+        newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
       });
 
       this.selection = newSelection;
-      return {
-        changes: changes,
-        undoLabel: "Set Start Point",
-        broadcast: true,
-      };
+      return "Set Start Point";
     });
   }
 
   async breakContour() {
-    await this.editInstance(async (sendIncrementalChange, instance) => {
+    await this.editInstanceAndRecordChanges((instance) => {
       let numSplits;
       const { point: pointIndices } = parseSelection(this.selection);
-      const changes = recordChanges(instance, (instance) => {
-        numSplits = splitPathAtPointIndices(instance.path, pointIndices);
-      });
+      numSplits = splitPathAtPointIndices(instance.path, pointIndices);
       this.selection = new Set();
-      return {
-        changes: changes,
-        undoLabel: "Break Contour" + (numSplits > 1 ? "s" : ""),
-        broadcast: true,
-      };
+      return "Break Contour" + (numSplits > 1 ? "s" : "");
     });
   }
 
   async decomposeSelectedComponents() {
-    await this.editInstance(async (sendIncrementalChange, instance) => {
-      const { component: componentSelection } = parseSelection(this.selection);
-      componentSelection.sort((a, b) => (a > b) - (a < b));
+    const { component: componentSelection } = parseSelection(this.selection);
+    componentSelection.sort((a, b) => (a > b) - (a < b));
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
 
-      const { path: newPath, components: newComponents } = await decomposeComponents(
-        instance.components,
-        componentSelection,
-        this.getGlobalLocation(),
-        (glyphName) => this.sceneModel.fontController.getGlyph(glyphName)
-      );
+    const { path: newPath, components: newComponents } = await decomposeComponents(
+      instance.components,
+      componentSelection,
+      this.getGlobalLocation(),
+      (glyphName) => this.sceneModel.fontController.getGlyph(glyphName)
+    );
 
-      const changes = recordChanges(instance, (instance) => {
-        const path = instance.path;
-        const components = instance.components;
+    await this.editInstanceAndRecordChanges((instance) => {
+      const path = instance.path;
+      const components = instance.components;
 
-        for (const contour of newPath.iterContours()) {
-          // Hm, rounding should be optional
-          // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-          path.appendContour(contour);
-        }
-        components.push(...newComponents);
+      for (const contour of newPath.iterContours()) {
+        // Hm, rounding should be optional
+        // contour.coordinates = contour.coordinates.map(c => Math.round(c));
+        path.appendContour(contour);
+      }
+      components.push(...newComponents);
 
-        // Next, delete the components we decomposed
-        for (const componentIndex of reversed(componentSelection)) {
-          components.splice(componentIndex, 1);
-        }
-      });
+      // Next, delete the components we decomposed
+      for (const componentIndex of reversed(componentSelection)) {
+        components.splice(componentIndex, 1);
+      }
 
       this.selection = new Set();
-      return {
-        changes: changes,
-        undoLabel:
-          "Decompose Component" + (componentSelection?.length === 1 ? "" : "s"),
-        broadcast: true,
-      };
+      return "Decompose Component" + (componentSelection?.length === 1 ? "" : "s");
     });
   }
 
