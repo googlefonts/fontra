@@ -472,7 +472,7 @@ export const drawPathConnectTargetPointLayer = requireEditingGlyph(
       return;
     }
     context.fillStyle = drawingParameters.connectPointIndicatorColor;
-    const radius = drawingParameters.connectPointIndicatorCRadius;
+    const radius = drawingParameters.connectPointIndicatorRadius;
     if (targetPoint) {
       fillRoundNode(context, targetPoint, 2 * radius);
     }
