@@ -124,7 +124,7 @@ export class PenTool extends BaseTool {
           instance.path,
           handles.points,
           handles.hit.segment.pointIndices[1],
-          "cubic" // TODO: quad via propery
+          "cubic" // TODO: quad via property
         );
         delete this.sceneModel.pathInsertHandles;
         this.sceneController.selection = selection;
