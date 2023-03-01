@@ -1,6 +1,6 @@
 import { ChangeCollector } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
-import { insertPoint } from "../core/path-functions.js";
+import { insertHandles, insertPoint } from "../core/path-functions.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
@@ -120,27 +120,13 @@ export class PenTool extends BaseTool {
     } else if (this.sceneModel.pathInsertHandles) {
       await this.sceneController.editInstanceAndRecordChanges((instance) => {
         const handles = this.sceneModel.pathInsertHandles;
-        let [contourIndex, contourPointIndex] = instance.path.getContourAndPointIndex(
+        const selection = insertHandles(
+          instance.path,
+          handles.points,
           handles.hit.segment.pointIndices[1]
         );
-        if (!contourPointIndex) {
-          contourPointIndex = instance.path.getNumPointsOfContour(contourIndex);
-        }
-        const insertIndex = instance.path.getAbsolutePointIndex(
-          contourIndex,
-          contourPointIndex,
-          true
-        );
-        const handlePoints = handles.points.map((pt) => {
-          return { x: pt.x, y: pt.y, type: "cubic" }; // TODO quad
-        });
-        instance.path.insertPoint(contourIndex, contourPointIndex, handlePoints[1]);
-        instance.path.insertPoint(contourIndex, contourPointIndex, handlePoints[0]);
         delete this.sceneModel.pathInsertHandles;
-        this.sceneController.selection = new Set([
-          `point/${insertIndex}`,
-          `point/${insertIndex + 1}`,
-        ]);
+        this.sceneController.selection = selection;
         return "Insert Handles";
       });
       return;
