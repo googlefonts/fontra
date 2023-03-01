@@ -120,9 +120,17 @@ export class PenTool extends BaseTool {
     } else if (this.sceneModel.pathInsertHandles) {
       await this.sceneController.editInstanceAndRecordChanges((instance) => {
         const handles = this.sceneModel.pathInsertHandles;
-        const insertIndex = handles.hit.segment.pointIndices[1];
-        const [contourIndex, contourPointIndex] =
-          instance.path.getContourAndPointIndex(insertIndex);
+        let [contourIndex, contourPointIndex] = instance.path.getContourAndPointIndex(
+          handles.hit.segment.pointIndices[1]
+        );
+        if (!contourPointIndex) {
+          contourPointIndex = instance.path.getNumPointsOfContour(contourIndex);
+        }
+        const insertIndex = instance.path.getAbsolutePointIndex(
+          contourIndex,
+          contourPointIndex,
+          true
+        );
         const handlePoints = handles.points.map((pt) => {
           return { x: pt.x, y: pt.y, type: "cubic" }; // TODO quad
         });
