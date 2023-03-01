@@ -92,20 +92,20 @@ export class PenTool extends BaseTool {
       return;
     }
 
-    await this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
-      if (this.sceneModel.pathConnectTargetPoint?.segment) {
-        let selection;
-        const changes = recordChanges(instance, (instance) => {
-          selection = insertPoint(
-            instance.path,
-            this.sceneModel.pathConnectTargetPoint
-          );
-        });
+    if (this.sceneModel.pathConnectTargetPoint?.segment) {
+      await this.sceneController.editInstanceAndRecordChanges((instance) => {
+        const selection = insertPoint(
+          instance.path,
+          this.sceneModel.pathConnectTargetPoint
+        );
         delete this.sceneModel.pathConnectTargetPoint;
         this.sceneController.selection = selection;
-        return { changes: changes, undoLabel: "insert point", broadcast: true };
-      }
+        return "Insert Point";
+      });
+      return;
+    }
 
+    await this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
       const behavior = getPenToolBehavior(
         this.sceneController,
         initialEvent,
