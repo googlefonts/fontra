@@ -75,7 +75,7 @@ export class PenTool extends BaseTool {
       }
     }
 
-    if (hoveredPointIndex === undefined) {
+    if (hoveredPointIndex === undefined || appendInfo.createContour) {
       return {};
     }
 
