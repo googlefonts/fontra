@@ -123,7 +123,8 @@ export class PenTool extends BaseTool {
         const selection = insertHandles(
           instance.path,
           handles.points,
-          handles.hit.segment.pointIndices[1]
+          handles.hit.segment.pointIndices[1],
+          "cubic" // TODO: quad via propery
         );
         delete this.sceneModel.pathInsertHandles;
         this.sceneController.selection = selection;
