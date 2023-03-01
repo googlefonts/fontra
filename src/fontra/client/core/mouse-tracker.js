@@ -83,7 +83,9 @@ export class MouseTracker {
   handleModifierKeyChange(event) {
     this._checkEventStreamDone();
     this._eventStream?.put(event);
-    this._hoverFunc(event);
+    if (!this._eventStream) {
+      this._hoverFunc(event);
+    }
   }
 
   _checkEventStreamDone() {
