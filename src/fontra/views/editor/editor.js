@@ -1306,6 +1306,8 @@ export class EditorController {
     }
     if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
       this.updateSelectionInfo();
+    }
+    if (editMethodName === "editFinal") {
       this.sceneController.updateHoverState();
     }
   }
