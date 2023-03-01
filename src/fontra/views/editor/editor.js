@@ -89,6 +89,7 @@ const drawingParametersLight = {
   startPointIndicatorLineWidth: 2,
   startPointIndicatorRadius: 9,
   connectPointIndicatorRadius: 11,
+  insertHandlesIndicatorRadius: 5,
 };
 
 const drawingParametersDark = {
