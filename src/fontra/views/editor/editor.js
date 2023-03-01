@@ -70,7 +70,7 @@ const drawingParametersLight = {
   cjkFrameSecondLineColor: "#A6296344",
   sidebearingBarColor: "#0004",
   startPointIndicatorColor: "#989898A0",
-  connectPointIndicatorColor: "#C0C0C080",
+  connectPointIndicatorColor: "#3080FF80",
   hoveredEmptyGlyphColor: "#E8E8E8", // Must be six hex digits
   selectedEmptyGlyphColor: "#D8D8D8", // Must be six hex digits
   onePixelUnit: 1,
@@ -111,7 +111,7 @@ const drawingParametersDark = {
   cjkFrameSecondLineColor: "#A62963AA",
   sidebearingBarColor: "#FFF6",
   startPointIndicatorColor: "#989898A0",
-  connectPointIndicatorColor: "#B0B0B080",
+  connectPointIndicatorColor: "#50A0FF80",
   hoveredEmptyGlyphColor: "#484848",
   selectedEmptyGlyphColor: "#585858",
 };
