@@ -1025,13 +1025,9 @@ export class EditorController {
       const { point: pointSelection, component: componentSelection } = parseSelection(
         this.sceneController.selection
       );
-
-      const path = instance.path;
-
       if (pointSelection) {
-        deleteSelectedPoints(path, pointSelection);
+        deleteSelectedPoints(instance.path, pointSelection);
       }
-
       if (componentSelection) {
         for (const componentIndex of reversed(componentSelection)) {
           instance.components.splice(componentIndex, 1);
