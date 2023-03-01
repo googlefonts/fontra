@@ -5,6 +5,7 @@ import {
 } from "./representation-cache.js";
 import { Transform } from "./transform.js";
 import { enumerate } from "./utils.js";
+import { StaticGlyph } from "./var-glyph.js";
 import {
   VariationModel,
   locationToString,
@@ -397,22 +398,23 @@ async function getNestedComponentPaths(
 ) {
   const compoLocation = mergeLocations(parentLocation, compo.location) || {};
   const glyph = await getGlyphFunc(compo.name);
-  if (!glyph) {
-    console.log(`component glyph ${compo.name} was not found`);
-    return {};
-  }
   let inst;
-  try {
-    inst = glyph.instantiate(normalizeLocation(compoLocation, glyph.combinedAxes));
-  } catch (error) {
-    if (error.name !== "VariationError") {
-      throw error;
+  if (!glyph) {
+    // console.log(`component glyph ${compo.name} was not found`);
+    inst = makeMissingComponentPlaceholderGlyph();
+  } else {
+    try {
+      inst = glyph.instantiate(normalizeLocation(compoLocation, glyph.combinedAxes));
+    } catch (error) {
+      if (error.name !== "VariationError") {
+        throw error;
+      }
+      const errorMessage = `Interpolation error while instantiating component ${
+        compo.name
+      } (${error.toString()})`;
+      console.log(errorMessage);
+      return { error: errorMessage };
     }
-    const errorMessage = `Interpolation error while instantiating component ${
-      compo.name
-    } (${error.toString()})`;
-    console.log(errorMessage);
-    return { error: errorMessage };
   }
   let t = makeAffineTransform(compo.transformation);
   if (transformation) {
@@ -478,6 +480,10 @@ export async function decomposeComponents(
   for (const index of componentIndices) {
     const component = components[index];
     const baseGlyph = await getGlyphFunc(component.name);
+    if (!baseGlyph) {
+      // Missing base glyph
+      continue;
+    }
     let location = { ...parentLocation, ...component.location };
     const normLocation = baseGlyph.mapLocationGlobalToLocal(location);
     const compoInstance = baseGlyph.instantiate(
@@ -650,4 +656,27 @@ function findClosestSourceIndexFromLocation(glyph, location, axes) {
     return (a > b) - (a < b);
   });
   return { distance: Math.sqrt(distances[0][0]), index: distances[0][1] };
+}
+
+function makeMissingComponentPlaceholderGlyph() {
+  const path = new VarPackedPath();
+  path.moveTo(0, 0);
+  path.lineTo(0, 350);
+  path.lineTo(350, 350);
+  path.lineTo(350, 0);
+  path.closePath();
+  path.moveTo(20, 10);
+  path.lineTo(175, 165);
+  path.lineTo(330, 10);
+  path.lineTo(340, 20);
+  path.lineTo(185, 175);
+  path.lineTo(340, 330);
+  path.lineTo(330, 340);
+  path.lineTo(175, 185);
+  path.lineTo(20, 340);
+  path.lineTo(10, 330);
+  path.lineTo(165, 175);
+  path.lineTo(10, 20);
+  path.closePath();
+  return StaticGlyph.fromObject({ path: path });
 }
