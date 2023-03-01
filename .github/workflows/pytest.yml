@@ -9,6 +9,7 @@ on:
     paths:
       - "src/fontra/**"
       - "!src/fontra/client/**"
+      - "!src/fontra/views/**"
       - "test-py/**"
       - ".github/workflows/pytest.yml"
       - "pyproject.toml"
@@ -20,6 +21,7 @@ on:
     paths:
       - "src/fontra/**"
       - "!src/fontra/client/**"
+      - "!src/fontra/views/**"
       - "test-py/**"
       - ".github/workflows/pytest.yml"
       - "pyproject.toml"
