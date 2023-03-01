@@ -15,17 +15,22 @@ export class PenTool extends BaseTool {
       return;
     }
     this.setCursor();
-
-    const targetPoint = this._getPathConnectTargetPoint(event);
+    const { insertHandles, targetPoint } = this._getPathConnectTargetPoint(event);
+    const prevInsertHandles = this.sceneModel.pathInsertHandles;
     const prevTargetPoint = this.sceneModel.pathConnectTargetPoint;
 
-    if (!pointsEqual(targetPoint, prevTargetPoint)) {
+    if (
+      !handlesEqual(insertHandles, prevInsertHandles) ||
+      !pointsEqual(targetPoint, prevTargetPoint)
+    ) {
+      this.sceneModel.pathInsertHandles = insertHandles;
       this.sceneModel.pathConnectTargetPoint = targetPoint;
       this.canvasController.setNeedsUpdate();
     }
   }
 
   deactivate() {
+    delete this.sceneModel.pathInsertHandles;
     delete this.sceneModel.pathConnectTargetPoint;
     this.canvasController.setNeedsUpdate();
   }
@@ -49,7 +54,7 @@ export class PenTool extends BaseTool {
 
     const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!glyphController.canEdit) {
-      return undefined;
+      return {};
     }
     const path = glyphController.instance.path;
 
@@ -58,11 +63,20 @@ export class PenTool extends BaseTool {
       const point = this.sceneController.localPoint(event);
       const size = this.sceneController.mouseClickMargin;
       const hit = this.sceneModel.pathHitAtPoint(point, size);
-      return hit;
+      if (event.altKey && hit.segment?.points?.length === 2) {
+        const pt1 = hit.segment.points[0];
+        const pt2 = hit.segment.points[1];
+        const d = vector.subVectors(pt2, pt1);
+        const handle1 = vector.addVectors(pt1, vector.mulVector(d, 1 / 3));
+        const handle2 = vector.addVectors(pt1, vector.mulVector(d, 2 / 3));
+        return { insertHandles: { points: [handle1, handle2], hit: hit } };
+      } else {
+        return { targetPoint: hit };
+      }
     }
 
     if (hoveredPointIndex === undefined) {
-      return undefined;
+      return {};
     }
 
     const [contourIndex, contourPointIndex] =
@@ -74,16 +88,16 @@ export class PenTool extends BaseTool {
       appendInfo.contourPointIndex == contourPointIndex
     ) {
       // We're hovering over the source point
-      return undefined;
+      return {};
     }
 
     if (
       contourInfo.isClosed ||
       (contourPointIndex != 0 && hoveredPointIndex != contourInfo.endPoint)
     ) {
-      return undefined;
+      return {};
     }
-    return path.getPoint(hoveredPointIndex);
+    return { targetPoint: path.getPoint(hoveredPointIndex) };
   }
 
   async handleDrag(eventStream, initialEvent) {
@@ -101,6 +115,25 @@ export class PenTool extends BaseTool {
         delete this.sceneModel.pathConnectTargetPoint;
         this.sceneController.selection = selection;
         return "Insert Point";
+      });
+      return;
+    } else if (this.sceneModel.pathInsertHandles) {
+      await this.sceneController.editInstanceAndRecordChanges((instance) => {
+        const handles = this.sceneModel.pathInsertHandles;
+        const insertIndex = handles.hit.segment.pointIndices[1];
+        const [contourIndex, contourPointIndex] =
+          instance.path.getContourAndPointIndex(insertIndex);
+        const handlePoints = handles.points.map((pt) => {
+          return { x: pt.x, y: pt.y, type: "cubic" }; // TODO quad
+        });
+        instance.path.insertPoint(contourIndex, contourPointIndex, handlePoints[1]);
+        instance.path.insertPoint(contourIndex, contourPointIndex, handlePoints[0]);
+        delete this.sceneModel.pathInsertHandles;
+        this.sceneController.selection = new Set([
+          `point/${insertIndex}`,
+          `point/${insertIndex + 1}`,
+        ]);
+        return "Insert Handles";
       });
       return;
     }
@@ -513,6 +546,15 @@ function getHoveredPointIndex(sceneController, event) {
     return undefined;
   }
   return pointSelection[0];
+}
+
+function handlesEqual(handles1, handles2) {
+  const points1 = handles1?.points;
+  const points2 = handles2?.points;
+  return (
+    points1 === points2 ||
+    (pointsEqual(points1?.[0], points2?.[0]) && pointsEqual(points1?.[1], points2?.[1]))
+  );
 }
 
 function pointsEqual(point1, point2) {
