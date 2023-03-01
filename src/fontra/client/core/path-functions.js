@@ -96,6 +96,20 @@ function impliedPoint(pointA, pointB) {
   };
 }
 
+export function insertHandles(path, handlePoints, insertIndex, type = "cubic") {
+  let [contourIndex, contourPointIndex] = path.getContourAndPointIndex(insertIndex);
+  if (!contourPointIndex) {
+    contourPointIndex = path.getNumPointsOfContour(contourIndex);
+  }
+  insertIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex, true);
+  handlePoints = handlePoints.map((pt) => {
+    return { x: pt.x, y: pt.y, type: type };
+  });
+  path.insertPoint(contourIndex, contourPointIndex, handlePoints[1]);
+  path.insertPoint(contourIndex, contourPointIndex, handlePoints[0]);
+  return new Set([`point/${insertIndex}`, `point/${insertIndex + 1}`]);
+}
+
 export function filterPathByPointIndices(path, pointIndices, doCut = false) {
   const selectionByContour = getSelectionByContour(path, pointIndices);
   const filteredUnpackedContours = [];

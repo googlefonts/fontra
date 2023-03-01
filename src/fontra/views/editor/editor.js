@@ -88,7 +88,8 @@ const drawingParametersLight = {
   sidebearingBarExtent: 16,
   startPointIndicatorLineWidth: 2,
   startPointIndicatorRadius: 9,
-  connectPointIndicatorCRadius: 11,
+  connectPointIndicatorRadius: 11,
+  insertHandlesIndicatorRadius: 5,
 };
 
 const drawingParametersDark = {

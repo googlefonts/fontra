@@ -467,12 +467,19 @@ export const drawPathSelectionLayer = requireEditingGlyph(
 export const drawPathConnectTargetPointLayer = requireEditingGlyph(
   glyphTranslate((model, controller, context, glyph, drawingParameters) => {
     const targetPoint = model.pathConnectTargetPoint;
-    if (!targetPoint) {
+    const insertHandles = model.pathInsertHandles;
+    if (!targetPoint && !insertHandles) {
       return;
     }
     context.fillStyle = drawingParameters.connectPointIndicatorColor;
-    const radius = drawingParameters.connectPointIndicatorCRadius;
-    fillRoundNode(context, targetPoint, 2 * radius);
+    if (targetPoint) {
+      const radius = drawingParameters.connectPointIndicatorRadius;
+      fillRoundNode(context, targetPoint, 2 * radius);
+    }
+    for (const point of insertHandles?.points || []) {
+      const radius = drawingParameters.insertHandlesIndicatorRadius;
+      fillRoundNode(context, point, 2 * radius);
+    }
   })
 );
 
