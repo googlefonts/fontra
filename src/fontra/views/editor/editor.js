@@ -720,7 +720,7 @@ export class EditorController {
       {
         title: "Delete",
         enabled: () => this.canDelete(),
-        callback: () => this.doDelete(),
+        callback: (event) => this.doDelete(event),
         shortCut: {
           keysOrCodes: ["Delete", "Backspace"],
           metaKey: false,
@@ -1020,17 +1020,22 @@ export class EditorController {
     );
   }
 
-  async doDelete() {
+  async doDelete(event) {
     await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      const { point: pointSelection, component: componentSelection } = parseSelection(
-        this.sceneController.selection
-      );
-      if (pointSelection) {
-        deleteSelectedPoints(instance.path, pointSelection);
-      }
-      if (componentSelection) {
-        for (const componentIndex of reversed(componentSelection)) {
-          instance.components.splice(componentIndex, 1);
+      if (event.altKey) {
+        // Behave like "cut", but don't put anything on the clipboard
+        this._prepareCopyOrCut(instance, true);
+      } else {
+        const { point: pointSelection, component: componentSelection } = parseSelection(
+          this.sceneController.selection
+        );
+        if (pointSelection) {
+          deleteSelectedPoints(instance.path, pointSelection);
+        }
+        if (componentSelection) {
+          for (const componentIndex of reversed(componentSelection)) {
+            instance.components.splice(componentIndex, 1);
+          }
         }
       }
       this.sceneController.selection = new Set();
