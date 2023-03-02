@@ -273,7 +273,8 @@ function writeToLocalStorage(clipboardObject) {
 
   for (const [clipboardItemKey, clipboardType] of fallbackTypes) {
     const clipboardItem = clipboardObject[clipboardType];
-
-    localStorage.setItem(clipboardItemKey, clipboardItem);
+    if (clipboardItem) {
+      localStorage.setItem(clipboardItemKey, clipboardItem);
+    }
   }
 }
