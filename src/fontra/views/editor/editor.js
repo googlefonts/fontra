@@ -226,9 +226,10 @@ export class EditorController {
     this.sceneController.addEventListener("selectedGlyphChanged", () =>
       this.updateWindowLocationAndSelectionInfo()
     );
-    this.sceneController.addEventListener("selectionChanged", () =>
-      this.updateWindowLocationAndSelectionInfo()
-    );
+    this.sceneController.addEventListener("selectionChanged", async () => {
+      this.updateWindowLocationAndSelectionInfo();
+      await this.buildGLIFAndSVGString();
+    });
 
     window.addEventListener("popstate", (event) => {
       this.setupFromWindowLocation();
@@ -691,25 +692,34 @@ export class EditorController {
     }
     this.basicContextMenuItems.push(MenuItemDivider);
 
+    const safariHTTPAgent =
+      navigator.userAgent.indexOf("Safari") > -1 &&
+      window.location.protocol === "http:";
+    if (safariHTTPAgent) this.initFallbackClipboardEventListeners();
+    if (!safariHTTPAgent) {
+      this.basicContextMenuItems.push(
+        {
+          title: "Cut",
+          enabled: () => this.canCut(),
+          callback: () => this.doCut(),
+          shortCut: { keysOrCodes: "x", metaKey: true, shiftKey: false },
+        },
+        {
+          title: "Copy",
+          enabled: () => this.canCopy(),
+          callback: () => this.doCopy(),
+          shortCut: { keysOrCodes: "c", metaKey: true, shiftKey: false },
+        },
+        {
+          title: "Paste",
+          enabled: () => this.canPaste(),
+          callback: () => this.doPaste(),
+          shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: false },
+        }
+      );
+    }
+
     this.basicContextMenuItems.push(
-      {
-        title: "Cut",
-        enabled: () => this.canCut(),
-        callback: () => this.doCut(),
-        shortCut: { keysOrCodes: "x", metaKey: true, shiftKey: false },
-      },
-      {
-        title: "Copy",
-        enabled: () => this.canCopy(),
-        callback: () => this.doCopy(),
-        shortCut: { keysOrCodes: "c", metaKey: true, shiftKey: false },
-      },
-      {
-        title: "Paste",
-        enabled: () => this.canPaste(),
-        callback: () => this.doPaste(),
-        shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: false },
-      },
       {
         title: "Deep Paste",
         enabled: () => this.canDeepPaste(),
@@ -775,6 +785,34 @@ export class EditorController {
     }
   }
 
+  initFallbackClipboardEventListeners() {
+    window.addEventListener("paste", async (event) => {
+      if (document.activeElement === this.canvasController.canvas) {
+        console.log("paste!", event);
+        // console.log("types", await readClipboardTypes());
+        console.log("text/plain", await readFromClipboard("text/plain"));
+        this.doPaste();
+      }
+    });
+
+    window.addEventListener("copy", async (event) => {
+      event.preventDefault();
+
+      const preferGLIF = true; // TODO should be user preference
+      event.clipboardData.setData(
+        "text/plain",
+        preferGLIF ? this.selectionGLIFString : this.selectionSVGString
+      );
+    });
+
+    window.addEventListener("cut", (event) => {
+      if (document.activeElement === this.canvasController.canvas) {
+        console.log("cut!", event);
+        this.doCut();
+      }
+    });
+  }
+
   registerShortCut(keysOrCodes, modifiers, callback) {
     //
     // Register a shortcut handler
@@ -805,11 +843,7 @@ export class EditorController {
     if (callback !== undefined) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      try {
-        await callback(event);
-      } catch {
-        // TODO: Safari complains that this needs to be handled. It's probably right.
-      }
+      await callback(event);
     }
   }
 
@@ -886,23 +920,14 @@ export class EditorController {
     if (!instance) {
       return;
     }
+
     await this._writeInstanceToClipboard(instance, path);
   }
 
   async _writeInstanceToClipboard(instance, path) {
-    const bounds = path.getControlBounds();
-    if (!bounds) {
-      return;
-    }
-    const preferGLIF = true; // TODO should be user preference
-    const svgString = pathToSVG(path, bounds);
-    const glyphName = this.sceneController.getSelectedGlyphName();
-    const unicodes = this.fontController.glyphMap[glyphName] || [];
-    const glifString = await this.fontController.serializeStaticGlyphAsGLIF(
-      glyphName,
-      instance
-    );
+    const { glifString, svgString } = await this._getGLIFandSVGStrings(instance, path);
 
+    const preferGLIF = true; // TODO should be user preference
     const clipboardObject = {
       "text/plain": preferGLIF ? glifString : svgString,
       "text/html": svgString,
@@ -965,27 +990,38 @@ export class EditorController {
     return { instance: instance, path: joinPaths(paths) };
   }
 
+  async _getGLIFandSVGStrings(instance, path) {
+    const bounds = path.getControlBounds();
+    if (!bounds) {
+      return;
+    }
+
+    const svgString = pathToSVG(path, bounds);
+    const glyphName = this.sceneController.getSelectedGlyphName();
+    const unicodes = this.fontController.glyphMap[glyphName] || [];
+    const glifString = await this.fontController.serializeStaticGlyphAsGLIF(
+      glyphName,
+      instance
+    );
+
+    return { svgString, glifString };
+  }
+
   canPaste() {
     return true;
   }
 
   async doPaste() {
     let pastedGlyph;
+    const customJSON = await readFromClipboard("web fontra/static-glyph");
 
-    const plainText = await readFromClipboard("text/plain");
-    if (plainText) {
-      pastedGlyph = await this.fontController.parseClipboard(plainText);
-    }
-
-    const isTheSameGlyphPath =
-      JSON.stringify(pastedGlyph) === localStorage.getItem("clipboardSelection.glyph");
-
-    if (isTheSameGlyphPath) {
-      const customJSON =
-        (await readFromClipboard("web fontra/static-glyph")) ||
-        localStorage.getItem("clipboardSelection.glyph");
-
+    if (customJSON) {
       pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
+    } else {
+      const plainText = await readFromClipboard("text/plain");
+      if (plainText) {
+        pastedGlyph = await this.fontController.parseClipboard(plainText);
+      }
     }
 
     if (!pastedGlyph) {
@@ -1296,6 +1332,18 @@ export class EditorController {
   updateWindowLocationAndSelectionInfo() {
     this.updateSelectionInfo();
     this.updateWindowLocation();
+  }
+
+  async buildGLIFAndSVGString() {
+    const { instance, path } = this._prepareCopyOrCut();
+    if (!instance) {
+      return;
+    }
+
+    const { glifString, svgString } = await this._getGLIFandSVGStrings(instance, path);
+
+    this.selectionSVGString = svgString;
+    this.selectionGLIFString = glifString;
   }
 
   toggleSidebarSelectionInfo(onOff) {
