@@ -265,7 +265,7 @@ export async function readFromClipboard(type) {
   return undefined;
 }
 
-function writeToLocalStorage(clipboardObject) {
+export function writeToLocalStorage(clipboardObject) {
   const localStorageTypeMapping = [
     ["text/plain", "clipboardSelection.text-plain"],
     ["web fontra/static-glyph", "clipboardSelection.glyph"],
@@ -275,6 +275,8 @@ function writeToLocalStorage(clipboardObject) {
     const clipboardItem = clipboardObject[clipboardType];
     if (clipboardItem) {
       localStorage.setItem(clipboardItemKey, clipboardItem);
+    } else {
+      localStorage.removeItem(clipboardItemKey);
     }
   }
 }
