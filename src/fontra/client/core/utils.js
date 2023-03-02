@@ -236,7 +236,7 @@ export async function writeToClipboard(clipboardObject) {
     await navigator.clipboard.write([new ClipboardItem(clipboardItemObject)]);
   } catch {
     // Write to LocalStorage for internal Fontra use
-    writeToLocalStorage(clipboardObject);
+    writeClipboardToLocalStorage(clipboardObject);
 
     // Write at least the plain/text MIME type to the clipboard
     if (clipboardObject["text/plain"]) {
@@ -265,7 +265,7 @@ export async function readFromClipboard(type) {
   return undefined;
 }
 
-function writeToLocalStorage(clipboardObject) {
+export function writeClipboardToLocalStorage(clipboardObject) {
   const localStorageTypeMapping = [
     ["text/plain", "clipboardSelection.text-plain"],
     ["web fontra/static-glyph", "clipboardSelection.glyph"],
@@ -275,6 +275,8 @@ function writeToLocalStorage(clipboardObject) {
     const clipboardItem = clipboardObject[clipboardType];
     if (clipboardItem) {
       localStorage.setItem(clipboardItemKey, clipboardItem);
+    } else {
+      localStorage.removeItem(clipboardItemKey);
     }
   }
 }
