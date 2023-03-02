@@ -1021,10 +1021,10 @@ export class EditorController {
       return;
     }
 
-    const isClipboardValid =
+    const isOurLocalStorageClipboardValid =
       plainText === localStorage.getItem("clipboardSelection.text-plain");
 
-    if (isClipboardValid) {
+    if (isOurLocalStorageClipboardValid) {
       const customJSON =
         (await readFromClipboard("web fontra/static-glyph")) ||
         localStorage.getItem("clipboardSelection.glyph");
