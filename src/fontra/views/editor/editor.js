@@ -1017,25 +1017,25 @@ export class EditorController {
     let pastedGlyph;
 
     const plainText = await readFromClipboard("text/plain");
-    if (plainText) {
-      pastedGlyph = await this.fontController.parseClipboard(plainText);
+    if (!plainText) {
+      return;
     }
 
-    const isTheSameGlyphPath =
-      JSON.stringify(pastedGlyph) === localStorage.getItem("clipboardSelection.glyph");
+    const isClipboardValid =
+      plainText === localStorage.getItem("clipboardSelection.text-plain");
 
-    if (isTheSameGlyphPath) {
+    if (isClipboardValid) {
       const customJSON =
         (await readFromClipboard("web fontra/static-glyph")) ||
         localStorage.getItem("clipboardSelection.glyph");
-
       pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
+    } else {
+      pastedGlyph = await this.fontController.parseClipboard(plainText);
     }
 
     if (!pastedGlyph) {
       return;
     }
-
     await this.sceneController.editInstanceAndRecordChanges((instance) => {
       const selection = new Set();
       for (const pointIndex of range(

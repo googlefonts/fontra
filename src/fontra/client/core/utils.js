@@ -266,12 +266,12 @@ export async function readFromClipboard(type) {
 }
 
 function writeToLocalStorage(clipboardObject) {
-  const allowedTypes = {
-    "clipboardSelection.svg": "web image/svg+xml",
+  const fallbackTypes = {
+    "clipboardSelection.text-plain": "text/plain",
     "clipboardSelection.glyph": "web fontra/static-glyph",
   };
 
-  for (const [clipboardItemKey, clipboardType] of Object.entries(allowedTypes)) {
+  for (const [clipboardItemKey, clipboardType] of Object.entries(fallbackTypes)) {
     const clipboardItem = clipboardObject[clipboardType];
 
     localStorage.setItem(clipboardItemKey, clipboardItem);
