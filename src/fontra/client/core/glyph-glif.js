@@ -5,12 +5,16 @@ export function staticGlyphToGLIF(glyphName, glyph, unicodes) {
     "<?xml version='1.0' encoding='UTF-8'?>",
     `<glyph name="${glyphName}" format="2">`,
   ];
+
   for (const codePoint of unicodes || []) {
     const unicode_hex = codePoint.toString(16).toUpperCase().padStart(4, "0");
     lines.push(`  <unicode hex="${unicode_hex}"/>`);
   }
-  lines.push("  <outline>");
+
   const typeMap = { cubic: "curve", quad: "qcurve" };
+
+  lines.push("  <outline>");
+
   for (const contour of glyph.path.iterUnpackedContours()) {
     const points = contour.points;
     lines.push("    <contour>");
