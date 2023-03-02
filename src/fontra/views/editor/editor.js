@@ -692,11 +692,9 @@ export class EditorController {
     }
     this.basicContextMenuItems.push(MenuItemDivider);
 
-    const safariHTTPAgent =
-      navigator.userAgent.indexOf("Safari") > -1 &&
-      window.location.protocol === "http:";
-    if (safariHTTPAgent) this.initFallbackClipboardEventListeners();
-    if (!safariHTTPAgent) {
+    if (window.safari !== undefined && window.location.protocol === "http:") {
+      this.initFallbackClipboardEventListeners();
+    } else {
       this.basicContextMenuItems.push(
         {
           title: "Cut",
@@ -804,7 +802,7 @@ export class EditorController {
       if (document.activeElement === this.canvasController.canvas) {
         event.preventDefault();
         this._copyToEventClipboard(event);
-        this.doCut(event);
+        this.doCut(false);
       }
     });
   }
@@ -891,7 +889,7 @@ export class EditorController {
     return !!this.sceneController.selection.size;
   }
 
-  async doCut(event = null) {
+  async doCut(writeToClipboardAPI = true) {
     if (!this.sceneController.selection.size) {
       return;
     }
@@ -901,7 +899,7 @@ export class EditorController {
       this.sceneController.selection = new Set();
       return "Cut Selection";
     });
-    if (copyResult && !event) {
+    if (copyResult && writeToClipboardAPI) {
       const { instance, path } = copyResult;
       await this._writeInstanceToClipboard(instance, path);
     }
@@ -935,8 +933,6 @@ export class EditorController {
   }
 
   _copyToEventClipboard(event) {
-    if (!event) return;
-
     const preferGLIF = true; // TODO should be user preference
     event.clipboardData.setData(
       "text/plain",
