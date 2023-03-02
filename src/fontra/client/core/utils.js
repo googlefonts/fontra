@@ -232,7 +232,7 @@ export async function writeToClipboard(clipboardObject) {
     });
   }
 
-  navigator.clipboard.write([new ClipboardItem(clipboardItemObject)]);
+  await navigator.clipboard.write([new ClipboardItem(clipboardItemObject)]);
 }
 
 export async function readClipboardTypes() {
@@ -244,8 +244,7 @@ export async function readClipboardTypes() {
   return clipboardTypes;
 }
 
-export async function readClipboard(type) {
-  const clipboardObject = {};
+export async function readFromClipboard(type) {
   const clipboardContents = await navigator.clipboard.read();
   for (const item of clipboardContents) {
     if (item.types.includes(type)) {
