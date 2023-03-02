@@ -694,6 +694,9 @@ export class EditorController {
     this.basicContextMenuItems.push(MenuItemDivider);
 
     if (window.safari !== undefined && window.location.protocol === "http:") {
+      // In Safari, the async clipboard API only works in a secure context
+      // (HTTPS). We apply a workaround using the clipboard event API, but
+      // only in Safari, and when in an HTTP context
       this.initFallbackClipboardEventListeners();
     } else {
       this.basicContextMenuItems.push(
