@@ -232,7 +232,17 @@ export async function writeToClipboard(clipboardObject) {
     });
   }
 
-  await navigator.clipboard.write([new ClipboardItem(clipboardItemObject)]);
+  try {
+    await navigator.clipboard.write([new ClipboardItem(clipboardItemObject)]);
+  } catch {
+    // Write to LocalStorage for internal Fontra use
+    writeToLocalStorage(clipboardObject);
+
+    // Write at least the plain/text MIME type to the clipboard
+    if (clipboardObject["text/plain"]) {
+      await navigator.clipboard.writeText(clipboardObject["text/plain"]);
+    }
+  }
 }
 
 export async function readClipboardTypes() {
@@ -253,4 +263,17 @@ export async function readFromClipboard(type) {
     }
   }
   return undefined;
+}
+
+function writeToLocalStorage(clipboardObject) {
+  const allowedTypes = {
+    "clipboardSelection.svg": "web image/svg+xml",
+    "clipboardSelection.glyph": "web fontra/static-glyph",
+  };
+
+  for (const [clipboardItemKey, clipboardType] of Object.entries(allowedTypes)) {
+    const clipboardItem = clipboardObject[clipboardType];
+
+    localStorage.setItem(clipboardItemKey, clipboardItem);
+  }
 }
