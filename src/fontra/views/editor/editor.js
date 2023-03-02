@@ -1015,15 +1015,22 @@ export class EditorController {
 
   async doPaste() {
     let pastedGlyph;
-    const customJSON = await readFromClipboard("web fontra/static-glyph");
 
-    if (customJSON) {
+    const plainText = await readFromClipboard("text/plain");
+    if (!plainText) {
+      return;
+    }
+
+    const isOurLocalStorageClipboardValid =
+      plainText === localStorage.getItem("clipboardSelection.text-plain");
+
+    if (isOurLocalStorageClipboardValid) {
+      const customJSON =
+        (await readFromClipboard("web fontra/static-glyph")) ||
+        localStorage.getItem("clipboardSelection.glyph");
       pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
     } else {
-      const plainText = await readFromClipboard("text/plain");
-      if (plainText) {
-        pastedGlyph = await this.fontController.parseClipboard(plainText);
-      }
+      pastedGlyph = await this.fontController.parseClipboard(plainText);
     }
 
     if (!pastedGlyph) {
