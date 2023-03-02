@@ -37,6 +37,7 @@ import {
   readFromClipboard,
   reversed,
   writeToClipboard,
+  writeToLocalStorage,
 } from "../core/utils.js";
 import { SceneController } from "./scene-controller.js";
 import * as sceneDraw from "./scene-draw-funcs.js";
@@ -934,10 +935,12 @@ export class EditorController {
 
   _copyToEventClipboard(event) {
     const preferGLIF = true; // TODO should be user preference
-    event.clipboardData.setData(
-      "text/plain",
-      preferGLIF ? this.selectionGLIFString : this.selectionSVGString
-    );
+    const plainText = preferGLIF ? this.selectionGLIFString : this.selectionSVGString;
+    event.clipboardData.setData("text/plain", plainText);
+    writeToLocalStorage({
+      "text/plain": plainText,
+      "web fontra/static-glyph": this.selectionJSONString,
+    });
   }
 
   _prepareCopyOrCut(editInstance, doCut = false) {
@@ -995,7 +998,7 @@ export class EditorController {
   async _getGLIFandSVGStrings(instance, path) {
     const bounds = path.getControlBounds();
     if (!bounds) {
-      return;
+      return {};
     }
 
     const svgString = pathToSVG(path, bounds);
@@ -1025,9 +1028,15 @@ export class EditorController {
       plainText === localStorage.getItem("clipboardSelection.text-plain");
 
     if (isOurLocalStorageClipboardValid) {
-      const customJSON =
-        (await readFromClipboard("web fontra/static-glyph")) ||
-        localStorage.getItem("clipboardSelection.glyph");
+      let customJSON;
+      try {
+        customJSON = await readFromClipboard("web fontra/static-glyph");
+      } catch (error) {
+        // console.log("fallback clipboard");
+      }
+      if (!customJSON) {
+        customJSON = localStorage.getItem("clipboardSelection.glyph");
+      }
       pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
     } else {
       pastedGlyph = await this.fontController.parseClipboard(plainText);
@@ -1346,13 +1355,15 @@ export class EditorController {
   async buildGLIFAndSVGString() {
     const { instance, path } = this._prepareCopyOrCut();
     if (!instance) {
+      delete this.selectionSVGString;
+      delete this.selectionGLIFString;
+      delete this.selectionJSONString;
       return;
     }
-
     const { glifString, svgString } = await this._getGLIFandSVGStrings(instance, path);
-
     this.selectionSVGString = svgString;
     this.selectionGLIFString = glifString;
+    this.selectionJSONString = JSON.stringify(instance);
   }
 
   toggleSidebarSelectionInfo(onOff) {
