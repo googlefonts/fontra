@@ -722,12 +722,12 @@ export class EditorController {
     }
 
     this.basicContextMenuItems.push(
-      {
-        title: "Deep Paste",
-        enabled: () => this.canDeepPaste(),
-        callback: () => this.doDeepPaste(),
-        shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: true },
-      },
+      // {
+      //   title: "Deep Paste",
+      //   enabled: () => this.canDeepPaste(),
+      //   callback: () => this.doDeepPaste(),
+      //   shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: true },
+      // },
       {
         title: "Delete",
         enabled: () => this.canDelete(),
