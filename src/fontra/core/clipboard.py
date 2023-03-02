@@ -53,4 +53,4 @@ def serializeStaticGlyphAsGLIF(glyphName, staticGlyph, unicodes):
     layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
         glyphSet={}, glyphName=glyphName, staticGlyph=staticGlyph, unicodes=unicodes
     )
-    return writeGlyphToString(glyphName, layerGlyph, drawPointsFunc)
+    return writeGlyphToString(glyphName, layerGlyph, drawPointsFunc, validate=False)
