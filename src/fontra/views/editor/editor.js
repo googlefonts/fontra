@@ -1035,19 +1035,21 @@ export class EditorController {
       return;
     }
 
-    const isOurLocalStorageClipboardValid =
-      plainText === localStorage.getItem("clipboardSelection.text-plain");
+    let customJSON;
+    try {
+      customJSON = await readFromClipboard("web fontra/static-glyph");
+    } catch (error) {
+      // fall through, try localStorage clipboard
+    }
 
-    if (isOurLocalStorageClipboardValid) {
-      let customJSON;
-      try {
-        customJSON = await readFromClipboard("web fontra/static-glyph");
-      } catch (error) {
-        // console.log("fallback clipboard");
-      }
-      if (!customJSON) {
-        customJSON = localStorage.getItem("clipboardSelection.glyph");
-      }
+    if (
+      !customJSON &&
+      plainText === localStorage.getItem("clipboardSelection.text-plain")
+    ) {
+      customJSON = localStorage.getItem("clipboardSelection.glyph");
+    }
+
+    if (customJSON) {
       pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
     } else {
       pastedGlyph = await this.fontController.parseClipboard(plainText);
