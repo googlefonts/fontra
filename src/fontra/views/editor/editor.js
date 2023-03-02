@@ -37,7 +37,7 @@ import {
   readFromClipboard,
   reversed,
   writeToClipboard,
-  writeToLocalStorage,
+  writeClipboardToLocalStorage,
 } from "../core/utils.js";
 import { SceneController } from "./scene-controller.js";
 import * as sceneDraw from "./scene-draw-funcs.js";
@@ -937,7 +937,7 @@ export class EditorController {
     const preferGLIF = true; // TODO should be user preference
     const plainText = preferGLIF ? this.selectionGLIFString : this.selectionSVGString;
     event.clipboardData.setData("text/plain", plainText);
-    writeToLocalStorage({
+    writeClipboardToLocalStorage({
       "text/plain": plainText,
       "web fontra/static-glyph": this.selectionJSONString,
     });
