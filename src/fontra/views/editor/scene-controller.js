@@ -253,7 +253,10 @@ export class SceneController {
       this.sceneModel.selection = selection || new Set();
       this.sceneModel.hoverSelection = new Set();
       this.canvasController.setNeedsUpdate();
-      this._dispatchEvent("selectionChanged");
+      // Delay the notification by a tiny amount, to work around
+      // an ordering problem: sometimes the selection is set to
+      // something that will be valid soon but isn't right now.
+      setTimeout(() => this._dispatchEvent("selectionChanged"), 20);
     }
   }
 
