@@ -788,27 +788,23 @@ export class EditorController {
   initFallbackClipboardEventListeners() {
     window.addEventListener("paste", async (event) => {
       if (document.activeElement === this.canvasController.canvas) {
-        console.log("paste!", event);
-        // console.log("types", await readClipboardTypes());
-        console.log("text/plain", await readFromClipboard("text/plain"));
+        event.preventDefault();
         this.doPaste();
       }
     });
 
     window.addEventListener("copy", async (event) => {
-      event.preventDefault();
-
-      const preferGLIF = true; // TODO should be user preference
-      event.clipboardData.setData(
-        "text/plain",
-        preferGLIF ? this.selectionGLIFString : this.selectionSVGString
-      );
+      if (document.activeElement === this.canvasController.canvas) {
+        event.preventDefault();
+        this._copyToEventClipboard(event);
+      }
     });
 
     window.addEventListener("cut", (event) => {
       if (document.activeElement === this.canvasController.canvas) {
-        console.log("cut!", event);
-        this.doCut();
+        event.preventDefault();
+        this._copyToEventClipboard(event);
+        this.doCut(event);
       }
     });
   }
@@ -895,7 +891,7 @@ export class EditorController {
     return !!this.sceneController.selection.size;
   }
 
-  async doCut() {
+  async doCut(event = null) {
     if (!this.sceneController.selection.size) {
       return;
     }
@@ -905,7 +901,7 @@ export class EditorController {
       this.sceneController.selection = new Set();
       return "Cut Selection";
     });
-    if (copyResult) {
+    if (copyResult && !event) {
       const { instance, path } = copyResult;
       await this._writeInstanceToClipboard(instance, path);
     }
@@ -936,6 +932,16 @@ export class EditorController {
     };
 
     await writeToClipboard(clipboardObject);
+  }
+
+  _copyToEventClipboard(event) {
+    if (!event) return;
+
+    const preferGLIF = true; // TODO should be user preference
+    event.clipboardData.setData(
+      "text/plain",
+      preferGLIF ? this.selectionGLIFString : this.selectionSVGString
+    );
   }
 
   _prepareCopyOrCut(editInstance, doCut = false) {
