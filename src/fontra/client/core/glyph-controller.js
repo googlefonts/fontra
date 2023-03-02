@@ -4,7 +4,7 @@ import {
   registerRepresentationFactory,
 } from "./representation-cache.js";
 import { Transform } from "./transform.js";
-import { enumerate } from "./utils.js";
+import { enumerate, makeAffineTransform } from "./utils.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
   VariationModel,
@@ -562,22 +562,6 @@ function mergeLocations(loc1, loc2) {
     return loc2;
   }
   return { ...loc1, ...loc2 };
-}
-
-function makeAffineTransform(transformation) {
-  let t = new Transform();
-  t = t.translate(
-    transformation.translateX + transformation.tCenterX,
-    transformation.translateY + transformation.tCenterY
-  );
-  t = t.rotate(transformation.rotation * (Math.PI / 180));
-  t = t.scale(transformation.scaleX, transformation.scaleY);
-  t = t.skew(
-    -transformation.skewX * (Math.PI / 180),
-    transformation.skewY * (Math.PI / 180)
-  );
-  t = t.translate(-transformation.tCenterX, -transformation.tCenterY);
-  return t;
 }
 
 function decomposeAffineTransform(affine) {

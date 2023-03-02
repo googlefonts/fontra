@@ -49,6 +49,7 @@ import {
   deleteSelectedPoints,
   filterPathByPointIndices,
 } from "../core/path-functions.js";
+import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 
 const drawingParametersLight = {
@@ -229,7 +230,6 @@ export class EditorController {
     );
     this.sceneController.addEventListener("selectionChanged", async () => {
       this.updateWindowLocationAndSelectionInfo();
-      await this.buildGLIFAndSVGString();
     });
 
     window.addEventListener("popstate", (event) => {
@@ -798,15 +798,14 @@ export class EditorController {
     window.addEventListener("copy", async (event) => {
       if (document.activeElement === this.canvasController.canvas) {
         event.preventDefault();
-        this._copyToEventClipboard(event);
+        await this.doCopy(event);
       }
     });
 
-    window.addEventListener("cut", (event) => {
+    window.addEventListener("cut", async (event) => {
       if (document.activeElement === this.canvasController.canvas) {
         event.preventDefault();
-        this._copyToEventClipboard(event);
-        this.doCut(false);
+        await this.doCut(event);
       }
     });
   }
@@ -893,9 +892,16 @@ export class EditorController {
     return !!this.sceneController.selection.size;
   }
 
-  async doCut(writeToClipboardAPI = true) {
+  async doCut(event = null) {
     if (!this.sceneController.selection.size) {
       return;
+    }
+    if (event) {
+      // We *have* to do this first, as it won't work after any
+      // await (Safari insists on that). So we have to do a bit
+      // of redundant work by calling _prepareCopyOrCut twice.
+      const { instance, path } = this._prepareCopyOrCut();
+      this._writeInstanceToEventClipboard(event, instance, path);
     }
     let copyResult;
     await this.sceneController.editInstanceAndRecordChanges((instance) => {
@@ -903,7 +909,7 @@ export class EditorController {
       this.sceneController.selection = new Set();
       return "Cut Selection";
     });
-    if (copyResult && writeToClipboardAPI) {
+    if (copyResult && !event) {
       const { instance, path } = copyResult;
       await this._writeInstanceToClipboard(instance, path);
     }
@@ -913,17 +919,20 @@ export class EditorController {
     return this.sceneController.selectedGlyph;
   }
 
-  async doCopy() {
+  async doCopy(event) {
     const { instance, path } = this._prepareCopyOrCut();
     if (!instance) {
       return;
     }
-
-    await this._writeInstanceToClipboard(instance, path);
+    if (event) {
+      this._writeInstanceToEventClipboard(event, instance, path);
+    } else {
+      await this._writeInstanceToClipboard(instance, path);
+    }
   }
 
   async _writeInstanceToClipboard(instance, path) {
-    const { glifString, svgString } = await this._getGLIFandSVGStrings(instance, path);
+    const { glifString, svgString } = this._getGLIFandSVGStrings(instance, path);
 
     const preferGLIF = true; // TODO should be user preference
     const clipboardObject = {
@@ -936,13 +945,16 @@ export class EditorController {
     await writeToClipboard(clipboardObject);
   }
 
-  _copyToEventClipboard(event) {
+  _writeInstanceToEventClipboard(event, instance, path) {
+    const { glifString, svgString } = this._getGLIFandSVGStrings(instance, path);
+
     const preferGLIF = true; // TODO should be user preference
-    const plainText = preferGLIF ? this.selectionGLIFString : this.selectionSVGString;
+
+    const plainText = preferGLIF ? glifString : svgString;
     event.clipboardData.setData("text/plain", plainText);
     writeClipboardToLocalStorage({
       "text/plain": plainText,
-      "web fontra/static-glyph": this.selectionJSONString,
+      "web fontra/static-glyph": JSON.stringify(instance),
     });
   }
 
@@ -998,7 +1010,7 @@ export class EditorController {
     return { instance: instance, path: joinPaths(paths) };
   }
 
-  async _getGLIFandSVGStrings(instance, path) {
+  _getGLIFandSVGStrings(instance, path) {
     const bounds = path.getControlBounds();
     if (!bounds) {
       return {};
@@ -1007,11 +1019,7 @@ export class EditorController {
     const svgString = pathToSVG(path, bounds);
     const glyphName = this.sceneController.getSelectedGlyphName();
     const unicodes = this.fontController.glyphMap[glyphName] || [];
-    const glifString = await this.fontController.serializeStaticGlyphAsGLIF(
-      glyphName,
-      instance
-    );
-
+    const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
     return { svgString, glifString };
   }
 
@@ -1353,20 +1361,6 @@ export class EditorController {
   updateWindowLocationAndSelectionInfo() {
     this.updateSelectionInfo();
     this.updateWindowLocation();
-  }
-
-  async buildGLIFAndSVGString() {
-    const { instance, path } = this._prepareCopyOrCut();
-    if (!instance) {
-      delete this.selectionSVGString;
-      delete this.selectionGLIFString;
-      delete this.selectionJSONString;
-      return;
-    }
-    const { glifString, svgString } = await this._getGLIFandSVGStrings(instance, path);
-    this.selectionSVGString = svgString;
-    this.selectionGLIFString = glifString;
-    this.selectionJSONString = JSON.stringify(instance);
   }
 
   toggleSidebarSelectionInfo(onOff) {
