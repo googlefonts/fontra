@@ -900,7 +900,7 @@ export class EditorController {
       // await (Safari insists on that). So we have to do a bit
       // of redundant work by calling _prepareCopyOrCut twice.
       const { instance, path } = this._prepareCopyOrCut();
-      this._writeInstanceToEventClipboard(event, instance, path);
+      await this._writeInstanceToClipboard(instance, path, event);
     }
     let copyResult;
     await this.sceneController.editInstanceAndRecordChanges((instance) => {
@@ -923,46 +923,44 @@ export class EditorController {
     if (!instance) {
       return;
     }
-    if (event) {
-      this._writeInstanceToEventClipboard(event, instance, path);
-    } else {
-      await this._writeInstanceToClipboard(instance, path);
+    await this._writeInstanceToClipboard(instance, path, event);
+  }
+
+  async _writeInstanceToClipboard(instance, path, event) {
+    const bounds = path.getControlBounds();
+    if (!bounds) {
+      // nothing to do
+      return;
     }
-  }
-
-  async _writeInstanceToClipboard(instance, path) {
-    const { glifString, svgString } = this._getGLIFandSVGStrings(instance, path);
 
     const preferGLIF = true; // TODO should be user preference
 
-    const plainText = preferGLIF ? glifString : svgString;
-    const customJSON = JSON.stringify(instance);
+    const svgString = pathToSVG(path, bounds);
 
-    localStorage.setItem("clipboardSelection.text-plain", plainText);
-    localStorage.setItem("clipboardSelection.glyph", customJSON);
+    const glyphName = this.sceneController.getSelectedGlyphName();
+    const unicodes = this.fontController.glyphMap[glyphName] || [];
+    const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
 
-    const clipboardObject = {
-      "text/plain": plainText,
-      "text/html": svgString,
-      "web image/svg+xml": svgString,
-      "web fontra/static-glyph": customJSON,
-    };
+    const jsonString = JSON.stringify(instance);
 
-    await writeToClipboard(clipboardObject);
-  }
+    const plainTextString = preferGLIF ? glifString : svgString;
 
-  _writeInstanceToEventClipboard(event, instance, path) {
-    const { glifString, svgString } = this._getGLIFandSVGStrings(instance, path);
+    localStorage.setItem("clipboardSelection.text-plain", plainTextString);
+    localStorage.setItem("clipboardSelection.glyph", jsonString);
 
-    const preferGLIF = true; // TODO should be user preference
-
-    const plainText = preferGLIF ? glifString : svgString;
-    const customJSON = JSON.stringify(instance);
-
-    localStorage.setItem("clipboardSelection.text-plain", plainText);
-    localStorage.setItem("clipboardSelection.glyph", customJSON);
-
-    event.clipboardData.setData("text/plain", plainText);
+    if (event) {
+      // This *has* to be called before anything is awaited, or
+      // Safari won't recognize it as part of the same event handler
+      event.clipboardData.setData("text/plain", plainTextString);
+    } else {
+      const clipboardObject = {
+        "text/plain": plainTextString,
+        "text/html": svgString,
+        "web image/svg+xml": svgString,
+        "web fontra/static-glyph": jsonString,
+      };
+      await writeToClipboard(clipboardObject);
+    }
   }
 
   _prepareCopyOrCut(editInstance, doCut = false) {
@@ -1015,19 +1013,6 @@ export class EditorController {
       components: components,
     });
     return { instance: instance, path: joinPaths(paths) };
-  }
-
-  _getGLIFandSVGStrings(instance, path) {
-    const bounds = path.getControlBounds();
-    if (!bounds) {
-      return {};
-    }
-
-    const svgString = pathToSVG(path, bounds);
-    const glyphName = this.sceneController.getSelectedGlyphName();
-    const unicodes = this.fontController.glyphMap[glyphName] || [];
-    const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
-    return { svgString, glifString };
   }
 
   canPaste() {
