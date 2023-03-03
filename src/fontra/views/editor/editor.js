@@ -37,7 +37,6 @@ import {
   readFromClipboard,
   reversed,
   writeToClipboard,
-  writeClipboardToLocalStorage,
 } from "../core/utils.js";
 import { SceneController } from "./scene-controller.js";
 import * as sceneDraw from "./scene-draw-funcs.js";
@@ -935,11 +934,18 @@ export class EditorController {
     const { glifString, svgString } = this._getGLIFandSVGStrings(instance, path);
 
     const preferGLIF = true; // TODO should be user preference
+
+    const plainText = preferGLIF ? glifString : svgString;
+    const customJSON = JSON.stringify(instance);
+
+    localStorage.setItem("clipboardSelection.text-plain", plainText);
+    localStorage.setItem("clipboardSelection.glyph", customJSON);
+
     const clipboardObject = {
-      "text/plain": preferGLIF ? glifString : svgString,
+      "text/plain": plainText,
       "text/html": svgString,
       "web image/svg+xml": svgString,
-      "web fontra/static-glyph": JSON.stringify(instance),
+      "web fontra/static-glyph": customJSON,
     };
 
     await writeToClipboard(clipboardObject);
@@ -951,11 +957,12 @@ export class EditorController {
     const preferGLIF = true; // TODO should be user preference
 
     const plainText = preferGLIF ? glifString : svgString;
+    const customJSON = JSON.stringify(instance);
+
+    localStorage.setItem("clipboardSelection.text-plain", plainText);
+    localStorage.setItem("clipboardSelection.glyph", customJSON);
+
     event.clipboardData.setData("text/plain", plainText);
-    writeClipboardToLocalStorage({
-      "text/plain": plainText,
-      "web fontra/static-glyph": JSON.stringify(instance),
-    });
   }
 
   _prepareCopyOrCut(editInstance, doCut = false) {
