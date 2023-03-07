@@ -96,6 +96,7 @@ export function hyphenatedToCamelCase(s) {
 }
 
 export const THEME_KEY = "fontra-theme";
+export const CLIPBOARD_FORMAT_KEY = "fontra-clipboard-format";
 
 export function themeSwitch(value) {
   const rootElement = document.querySelector("html");
@@ -121,6 +122,10 @@ function _themeSwitchFromLocalStorage() {
   if (themeValue) {
     themeSwitch(themeValue);
   }
+}
+
+export function clipboardFormatSwitch(value) {
+  localStorage.setItem(CLIPBOARD_FORMAT_KEY, value);
 }
 
 export function hasShortcutModifierKey(event) {

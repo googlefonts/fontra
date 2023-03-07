@@ -1,5 +1,10 @@
 import { html, css, LitElement } from "https://cdn.jsdelivr.net/npm/lit@2.6.1/+esm";
-import { THEME_KEY, themeSwitch } from "../core/utils.js";
+import {
+  THEME_KEY,
+  themeSwitch,
+  CLIPBOARD_FORMAT_KEY,
+  clipboardFormatSwitch,
+} from "../core/utils.js";
 export class GeneralSettings extends LitElement {
   static styles = css`
     h2 {
@@ -14,19 +19,31 @@ export class GeneralSettings extends LitElement {
 
   constructor() {
     super();
-    this.settingOptions = [
-      ["theme-automatic", "automatic", "Automatic (use OS setting)"],
-      ["theme-light", "light", "Light theme"],
-      ["theme-dark", "dark", "Dark theme"],
-    ];
-    this.checked = "automatic"; // checked by default
+    this.themeOptions = {
+      options: [
+        ["theme-automatic", "automatic", "Automatic (use OS setting)"],
+        ["theme-light", "light", "Light theme"],
+        ["theme-dark", "dark", "Dark theme"],
+      ],
+      checked: "automatic", // checked by default
+    };
+
+    this.clipboardFormatOptions = {
+      options: [
+        ["clipboard-format-svg", "svg", "SVG"],
+        ["clipboard-format-glif", "glif", "GLIF (RoboFont)"],
+        ["clipboard-format-json", "json", "JSON (Fontra)"],
+      ],
+      checked: "glif", // checked by default
+    };
+
     this.setupSettings();
   }
 
   themeSettings() {
     return html`
       <h2>Theme</h2>
-      ${this.settingOptions.map((option) => {
+      ${this.themeOptions.options.map((option) => {
         const [optionId, optionValue, optionLabel] = option;
         return html`
           <div id="settings-theme">
@@ -36,7 +53,7 @@ export class GeneralSettings extends LitElement {
               @click=${(option) => this.themeSwitchCallback(option)}
               name="theme-settings"
               type="radio"
-              .checked=${this.checked === optionValue}
+              .checked=${this.themeOptions.checked === optionValue}
             />
             <label for="${optionId}">${optionLabel}</label>
           </div>
@@ -45,17 +62,41 @@ export class GeneralSettings extends LitElement {
     `;
   }
 
+  clipboardFormatSettings() {
+    return html` <h2>Clipboard Export Format</h2>
+      ${this.clipboardFormatOptions.options.map((option) => {
+        const [optionId, optionValue, optionLabel] = option;
+        return html`
+          <div id="settings-clipboard-format">
+            <input
+              id="${optionId}"
+              value="${optionValue}"
+              @click=${(option) => this.clipboardFormatSwitchCallback(option)}
+              name="clipboard-format-settings"
+              type="radio"
+              .checked=${this.clipboardFormatOptions.checked === optionValue}
+            />
+            <label for="${optionId}">${optionLabel}</label>
+          </div>
+        `;
+      })}`;
+  }
+
   render() {
-    return this.themeSettings();
+    return html` ${this.themeSettings()} ${this.clipboardFormatSettings()} `;
   }
 
   setupSettings() {
-    window.themeSwitchCallback = this.themeSwitchCallback;
-
-    const themeValue = localStorage.getItem("fontra-theme");
+    const themeValue = localStorage.getItem(THEME_KEY);
     if (themeValue) {
-      this.checked = themeValue;
+      this.themeOptions.checked = themeValue;
       themeSwitch(themeValue);
+    }
+
+    const clipboardFormatValue = localStorage.getItem(CLIPBOARD_FORMAT_KEY);
+    if (clipboardFormatValue) {
+      this.clipboardFormatOptions.checked = clipboardFormatValue;
+      clipboardFormatSwitch(clipboardFormatValue);
     }
   }
 
@@ -63,6 +104,12 @@ export class GeneralSettings extends LitElement {
     const themeValue = option.target.value;
     themeSwitch(themeValue);
     localStorage.setItem(THEME_KEY, themeValue);
+  }
+
+  clipboardFormatSwitchCallback(option) {
+    const clipboardFormatValue = option.target.value;
+    clipboardFormatSwitch(clipboardFormatValue);
+    localStorage.setItem(CLIPBOARD_FORMAT_KEY, clipboardFormatValue);
   }
 }
 
