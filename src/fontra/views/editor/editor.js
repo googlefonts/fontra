@@ -273,6 +273,7 @@ export class EditorController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphNames();
     await this.initSliders();
+    this.initSettings();
     this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
@@ -342,6 +343,11 @@ export class EditorController {
         this.autoViewBox = false;
       })
     );
+  }
+
+  initSettings() {
+    const settingsTab = document.querySelector("#settings");
+    settingsTab.innerText = "Hello from editor.js";
   }
 
   initTools() {
