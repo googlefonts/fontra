@@ -347,7 +347,8 @@ export class EditorController {
 
   initSettings() {
     const settingsTab = document.querySelector("#settings");
-    settingsTab.innerText = "Hello from editor.js";
+    // console.log(GeneralSettings);
+    // settingsTab.innerText = "Hello from editor.js";
   }
 
   initTools() {
