@@ -26,6 +26,7 @@ import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { joinPaths } from "../core/var-path.js";
 import {
   THEME_KEY,
+  CLIPBOARD_FORMAT_KEY,
   makeUPlusStringFromCodePoint,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
@@ -940,8 +941,9 @@ export class EditorController {
       return;
     }
 
-    const preferGLIF = true; // TODO should be user preference
-
+    const preferGLIF =
+      !localStorage.getItem(CLIPBOARD_FORMAT_KEY) ||
+      localStorage.getItem(CLIPBOARD_FORMAT_KEY) === "glif";
     const svgString = pathToSVG(path, bounds);
 
     const glyphName = this.sceneController.getSelectedGlyphName();
