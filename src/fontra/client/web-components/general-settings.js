@@ -1,10 +1,5 @@
 import { html, css, LitElement } from "https://cdn.jsdelivr.net/npm/lit@2.6.1/+esm";
-import {
-  THEME_KEY,
-  themeSwitch,
-  CLIPBOARD_FORMAT_KEY,
-  clipboardFormatSwitch,
-} from "../core/utils.js";
+import { THEME_KEY, themeSwitch } from "../core/utils.js";
 export class GeneralSettings extends LitElement {
   static styles = css`
     h2 {
@@ -93,10 +88,10 @@ export class GeneralSettings extends LitElement {
       themeSwitch(themeValue);
     }
 
-    const clipboardFormatValue = localStorage.getItem(CLIPBOARD_FORMAT_KEY);
+    const clipboardFormatValue = localStorage.getItem("fontra-clipboard-format");
     if (clipboardFormatValue) {
       this.clipboardFormatOptions.checked = clipboardFormatValue;
-      clipboardFormatSwitch(clipboardFormatValue);
+      localStorage.setItem("fontra-clipboard-format", clipboardFormatValue);
     }
   }
 
@@ -107,9 +102,7 @@ export class GeneralSettings extends LitElement {
   }
 
   clipboardFormatSwitchCallback(option) {
-    const clipboardFormatValue = option.target.value;
-    clipboardFormatSwitch(clipboardFormatValue);
-    localStorage.setItem(CLIPBOARD_FORMAT_KEY, clipboardFormatValue);
+    localStorage.setItem("fontra-clipboard-format", option.target.value);
   }
 }
 

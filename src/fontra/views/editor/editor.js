@@ -26,7 +26,6 @@ import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { joinPaths } from "../core/var-path.js";
 import {
   THEME_KEY,
-  CLIPBOARD_FORMAT_KEY,
   makeUPlusStringFromCodePoint,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
@@ -274,7 +273,6 @@ export class EditorController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphNames();
     await this.initSliders();
-    this.initSettings();
     this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
@@ -344,12 +342,6 @@ export class EditorController {
         this.autoViewBox = false;
       })
     );
-  }
-
-  initSettings() {
-    const settingsTab = document.querySelector("#settings");
-    // console.log(GeneralSettings);
-    // settingsTab.innerText = "Hello from editor.js";
   }
 
   initTools() {
@@ -941,20 +933,27 @@ export class EditorController {
       return;
     }
 
-    const preferGLIF =
-      !localStorage.getItem(CLIPBOARD_FORMAT_KEY) ||
-      localStorage.getItem(CLIPBOARD_FORMAT_KEY) === "glif";
     const svgString = pathToSVG(path, bounds);
-
     const glyphName = this.sceneController.getSelectedGlyphName();
     const unicodes = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
-
     const jsonString = JSON.stringify(instance);
 
-    const plainTextString = preferGLIF ? glifString : svgString;
+    const clipboardExportFormat =
+      localStorage.getItem("fontra-clipboard-format") || "glif";
 
-    localStorage.setItem("clipboardSelection.text-plain", plainTextString);
+    const plainTextString = () => {
+      switch (clipboardExportFormat) {
+        case "svg":
+          return svgString;
+        case "glif":
+          return glifString;
+        case "fontra-json":
+          return jsonString;
+      }
+    };
+
+    localStorage.setItem("clipboardSelection.text-plain", plainTextString());
     localStorage.setItem("clipboardSelection.glyph", jsonString);
 
     if (event) {
