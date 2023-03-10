@@ -71,6 +71,14 @@ otf = "fontra.backends.opentype:OTFBackend"
 packages = ["src/fontra"]
 
 
+[tool.hatch.build]
+# Items that are ignored in .gitignore, but are added in a vuild hook
+# and which must be included.
+artifacts = [
+  "src/fontra/client/third-party/"
+]
+
+
 [tool.hatch.version]
 source = "vcs"
 
