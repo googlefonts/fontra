@@ -75,6 +75,10 @@ packages = ["src/fontra"]
 source = "vcs"
 
 
+[tool.hatch.build.hooks.custom]
+path = "scripts/jsdeps_build_hook.py"
+
+
 [tool.hatch.build.hooks.vcs]
 version-file = "src/fontra/_version.py"
 
