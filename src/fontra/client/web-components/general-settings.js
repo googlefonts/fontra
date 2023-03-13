@@ -34,6 +34,11 @@ export class GeneralSettings extends LitElement {
     };
 
     this.setupSettings();
+
+    window.addEventListener("fontra-theme-switch", (event) => {
+      this.setupSettings();
+      this.requestUpdate();
+    });
   }
 
   themeSettings() {
