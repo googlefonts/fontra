@@ -1,5 +1,6 @@
 import { html, css, LitElement } from "https://cdn.jsdelivr.net/npm/lit@2.6.1/+esm";
 import { THEME_KEY, themeSwitch } from "../core/utils.js";
+
 export class GeneralSettings extends LitElement {
   static styles = css`
     h2 {
