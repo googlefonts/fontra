@@ -97,13 +97,11 @@ export class GeneralSettings extends LitElement {
     const themeValue = localStorage.getItem(THEME_KEY);
     if (themeValue) {
       this.themeOptions.checked = themeValue;
-      themeSwitch(themeValue);
     }
 
     const clipboardFormatValue = localStorage.getItem("fontra-clipboard-format");
     if (clipboardFormatValue) {
       this.clipboardFormatOptions.checked = clipboardFormatValue;
-      localStorage.setItem("fontra-clipboard-format", clipboardFormatValue);
     }
   }
 
