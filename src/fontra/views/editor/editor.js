@@ -192,10 +192,8 @@ export class EditorController {
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addListener((event) => this.themeChanged(event));
-    window.addEventListener("storage", (event) => {
-      if (event.key === THEME_KEY) {
-        this.themeChanged(event);
-      }
+    window.addEventListener("fontra-theme-switch", (event) => {
+      this.themeChanged(event);
     });
 
     this.canvasController.canvas.addEventListener("contextmenu", (event) =>
@@ -933,17 +931,17 @@ export class EditorController {
       return;
     }
 
-    const preferGLIF = true; // TODO should be user preference
-
     const svgString = pathToSVG(path, bounds);
-
     const glyphName = this.sceneController.getSelectedGlyphName();
     const unicodes = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
-
     const jsonString = JSON.stringify(instance);
 
-    const plainTextString = preferGLIF ? glifString : svgString;
+    const clipboardExportFormat =
+      localStorage.getItem("fontra-clipboard-format") || "glif";
+
+    const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
+    const plainTextString = mapping[clipboardExportFormat] || glifString;
 
     localStorage.setItem("clipboardSelection.text-plain", plainTextString);
     localStorage.setItem("clipboardSelection.glyph", jsonString);

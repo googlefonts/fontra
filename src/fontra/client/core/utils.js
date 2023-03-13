@@ -109,9 +109,13 @@ export function themeSwitch(value) {
 export function themeSwitchFromLocalStorage() {
   _themeSwitchFromLocalStorage();
 
-  addEventListener("storage", (event) => {
+  window.addEventListener("storage", (event) => {
     if (event.key === THEME_KEY) {
       _themeSwitchFromLocalStorage();
+      const event = new CustomEvent("fontra-theme-switch", {
+        bubbles: false,
+      });
+      window.dispatchEvent(event);
     }
   });
 }
