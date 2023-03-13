@@ -942,18 +942,10 @@ export class EditorController {
     const clipboardExportFormat =
       localStorage.getItem("fontra-clipboard-format") || "glif";
 
-    const plainTextString = () => {
-      switch (clipboardExportFormat) {
-        case "svg":
-          return svgString;
-        case "glif":
-          return glifString;
-        case "fontra-json":
-          return jsonString;
-      }
-    };
+    const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
+    const plainTextString = mapping[clipboardExportFormat] || glifString;
 
-    localStorage.setItem("clipboardSelection.text-plain", plainTextString());
+    localStorage.setItem("clipboardSelection.text-plain", plainTextString);
     localStorage.setItem("clipboardSelection.glyph", jsonString);
 
     if (event) {
