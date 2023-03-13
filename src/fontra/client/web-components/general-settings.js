@@ -39,6 +39,12 @@ export class GeneralSettings extends LitElement {
       this.setupSettings();
       this.requestUpdate();
     });
+    window.addEventListener("storage", (event) => {
+      if (event.key === "fontra-clipboard-format") {
+        this.setupSettings();
+        this.requestUpdate();
+      }
+    });
   }
 
   themeSettings() {
