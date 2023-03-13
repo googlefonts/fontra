@@ -27,7 +27,7 @@ export class GeneralSettings extends LitElement {
       options: [
         ["clipboard-format-svg", "svg", "SVG"],
         ["clipboard-format-glif", "glif", "GLIF (RoboFont)"],
-        ["clipboard-format-json", "json", "JSON (Fontra)"],
+        ["clipboard-format-json", "fontra-json", "JSON (Fontra)"],
       ],
       checked: "glif", // checked by default
     };
