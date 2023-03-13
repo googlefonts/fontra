@@ -26,8 +26,8 @@ export class GeneralSettings extends LitElement {
 
     this.clipboardFormatOptions = {
       options: [
-        ["clipboard-format-svg", "svg", "SVG"],
         ["clipboard-format-glif", "glif", "GLIF (RoboFont)"],
+        ["clipboard-format-svg", "svg", "SVG"],
         ["clipboard-format-json", "fontra-json", "JSON (Fontra)"],
       ],
       checked: "glif", // checked by default
