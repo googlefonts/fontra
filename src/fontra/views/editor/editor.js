@@ -192,10 +192,8 @@ export class EditorController {
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addListener((event) => this.themeChanged(event));
-    window.addEventListener("storage", (event) => {
-      if (event.key === THEME_KEY) {
-        this.themeChanged(event);
-      }
+    window.addEventListener("fontra-theme-switch", (event) => {
+      this.themeChanged(event);
     });
 
     this.canvasController.canvas.addEventListener("contextmenu", (event) =>

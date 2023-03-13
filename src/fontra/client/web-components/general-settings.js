@@ -100,6 +100,10 @@ export class GeneralSettings extends LitElement {
     const themeValue = option.target.value;
     themeSwitch(themeValue);
     localStorage.setItem(THEME_KEY, themeValue);
+    const event = new CustomEvent("fontra-theme-switch", {
+      bubbles: false,
+    });
+    window.dispatchEvent(event);
   }
 
   clipboardFormatSwitchCallback(option) {
