@@ -11,7 +11,7 @@ from .packedpath import PackedPathPointPen
 
 
 def parseClipboard(data):
-    if "<svg " in data:
+    if "<svg" in data:
         return parseSVG(data)
     if "<?xml" in data and "<glyph " in data:
         return parseGLIF(data)
