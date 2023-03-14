@@ -206,12 +206,12 @@
   flex-direction: column;
   gap: 0.5em;
   overflow: scroll;
-  flex-shrink: 1;
 }
 
 .sources-list {
-  flex-shrink: 100;
   min-height: 100px;
+  margin-top: 1em;
+  flex-shrink: 100;
 }
 
 .slider-label {

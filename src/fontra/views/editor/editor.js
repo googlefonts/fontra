@@ -50,6 +50,7 @@ import {
 } from "../core/path-functions.js";
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
+import { AddRemoveButtons } from "../web-components/add-remove-buttons.js";
 
 const drawingParametersLight = {
   glyphFillColor: "#000",
@@ -384,6 +385,20 @@ export class EditorController {
       // {"key": "sourceIndex", "width": "2em"},
     ];
     this.sourcesList = new List("sources-list", columnDescriptions);
+    // TODO: relocate those to somewhere more appropriate after implementation
+    const addSourceCallback = () => {
+      console.log("add a source");
+    };
+    const removeSourceCallback = () => {
+      console.log("remove a source");
+    };
+
+    const designspaceSliders = document.querySelector(".designspace-sliders");
+    const addRemoveButtonsElement = new AddRemoveButtons();
+    addRemoveButtonsElement.addButtonCallback = addSourceCallback;
+    addRemoveButtonsElement.removeButtonCallback = removeSourceCallback;
+    designspaceSliders.appendChild(addRemoveButtonsElement);
+
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       await this.sceneController.setSelectedSource(
         event.detail.getSelectedItem().sourceIndex
