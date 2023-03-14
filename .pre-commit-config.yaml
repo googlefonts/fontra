@@ -20,7 +20,7 @@ repos:
     hooks:
       - id: prettier
         exclude: "src/fontra/client/third-party"
-        types_or: [css, javascript, json, xml, yaml, markdown]
+        types_or: [css, javascript, json, xml, yaml, markdown, html]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
