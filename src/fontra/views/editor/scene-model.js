@@ -208,10 +208,10 @@ export class SceneModel {
   }
 
   async getSourcesInfo() {
-    const sourcesInfo = [];
     if (!this.selectedGlyph) {
-      return sourcesInfo;
+      return null;
     }
+    const sourcesInfo = [];
     const glyph = await this.getSelectedVariableGlyphController();
     for (let i = 0; i < glyph?.sources.length; i++) {
       let name = glyph.sources[i].name;
