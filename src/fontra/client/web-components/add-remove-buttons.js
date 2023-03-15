@@ -21,6 +21,7 @@ export class AddRemoveButtons extends LitElement {
     removeButtonCallback: { type: Function },
     disableAddButton: { type: Boolean },
     disableRemoveButton: { type: Boolean },
+    hidden: { type: Boolean },
   };
 
   constructor() {
@@ -29,27 +30,30 @@ export class AddRemoveButtons extends LitElement {
     this.removeButtonCallback = () => {};
     this.disableAddButton = false;
     this.disableRemoveButton = false;
+    this.hidden = false;
   }
 
   render() {
-    return html`
-      <div class="buttons-container">
-        <button
-          name="add-button"
-          .disabled=${this.disableAddButton}
-          @click=${() => this.addButtonCallback()}
-        >
-          +
-        </button>
-        <button
-          name="remove-button"
-          .disabled=${this.disableRemoveButton}
-          @click=${() => this.removeButtonCallback()}
-        >
-          &minus;
-        </button>
-      </div>
-    `;
+    return this.hidden
+      ? ""
+      : html`
+          <div class="buttons-container">
+            <button
+              name="add-button"
+              .disabled=${this.disableAddButton}
+              @click=${() => this.addButtonCallback()}
+            >
+              +
+            </button>
+            <button
+              name="remove-button"
+              .disabled=${this.disableRemoveButton}
+              @click=${() => this.removeButtonCallback()}
+            >
+              &minus;
+            </button>
+          </div>
+        `;
   }
 }
 
