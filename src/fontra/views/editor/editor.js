@@ -394,12 +394,12 @@ export class EditorController {
     };
 
     const designspaceSliders = document.querySelector(".designspace-sliders");
-    this.addRemoveButtonsElement = new AddRemoveButtons();
-    this.addRemoveButtonsElement.className = "";
-    this.addRemoveButtonsElement.addButtonCallback = addSourceCallback;
-    this.addRemoveButtonsElement.removeButtonCallback = removeSourceCallback;
-    this.addRemoveButtonsElement.hidden = true;
-    designspaceSliders.appendChild(this.addRemoveButtonsElement);
+    this.addRemoveSourceButtons = new AddRemoveButtons();
+    this.addRemoveSourceButtons.className = "";
+    this.addRemoveSourceButtons.addButtonCallback = addSourceCallback;
+    this.addRemoveSourceButtons.removeButtonCallback = removeSourceCallback;
+    this.addRemoveSourceButtons.hidden = true;
+    designspaceSliders.appendChild(this.addRemoveSourceButtons);
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       await this.sceneController.setSelectedSource(
@@ -656,7 +656,7 @@ export class EditorController {
     this.sliders.values = this.sceneController.getLocation();
     const sourceItems = await this.sceneController.getSourcesInfo();
     this.sourcesList.setItems(sourceItems || []);
-    this.addRemoveButtonsElement.hidden = !sourceItems;
+    this.addRemoveSourceButtons.hidden = !sourceItems;
     this.updateWindowLocationAndSelectionInfo();
   }
 
