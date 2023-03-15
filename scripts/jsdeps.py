@@ -8,14 +8,10 @@ destDir = repoRoot / "src/fontra/client/third-party/"
 
 
 def loadPackageDependencies():
-    with open("package-lock.json") as packageFile:
+    with open("package.json") as packageFile:
         packageInfo = json.load(packageFile)
-    packages = packageInfo.get("packages", {})
-    return [
-        key.removeprefix("node_modules/")
-        for key, value in packages.items()
-        if key and not value.get("dev", False)
-    ]
+    dependencies = packageInfo.get("dependencies", {})
+    return list(dependencies.keys())
 
 
 def processDependencies(dependencies):
