@@ -1,7 +1,7 @@
 import { enumerate } from "./utils.js";
 
 export function dialog(headline, message, buttonDefs, autoDismissTimeout) {
-  /* return a Promise the the result of the user action, or null for cancel */
+  /* return a Promise with the result of the user action, or null for cancel */
 
   let dismissTimeoutID;
   const dialogDone = (result) => {
