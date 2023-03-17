@@ -1,5 +1,5 @@
 aiohttp==3.8.4
 dacite==1.8.0
 fonttools[ufo,unicode]==4.39.2
-glyphsLib==6.1.0
+glyphsLib==6.2.0
 watchfiles==0.18.1
