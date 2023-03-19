@@ -75,19 +75,20 @@ class FontraServer:
         self.httpApp.on_shutdown.append(self.closeProjectManager)
         self._activeWebsockets = set()
 
-    def run(self):
+    def run(self, showLaunchBanner=True):
         host = self.host
         httpPort = self.httpPort
-        navigating = "Navigating to:" if self.launchWebBrowser else "Navigate to:  "
-        pad = " " * (22 - len(str(httpPort)) - len(host))
-        print("+---------------------------------------------------+")
-        print("|                                                   |")
-        print("|      Fontra!                                      |")
-        print("|                                                   |")
-        print(f"|      {navigating}                               |")
-        print(f"|      http://{host}:{httpPort}/{pad}              |")
-        print("|                                                   |")
-        print("+---------------------------------------------------+")
+        if showLaunchBanner:
+            navigating = "Navigating to:" if self.launchWebBrowser else "Navigate to:  "
+            pad = " " * (22 - len(str(httpPort)) - len(host))
+            print("+---------------------------------------------------+")
+            print("|                                                   |")
+            print("|      Fontra!                                      |")
+            print("|                                                   |")
+            print(f"|      {navigating}                               |")
+            print(f"|      http://{host}:{httpPort}/{pad}              |")
+            print("|                                                   |")
+            print("+---------------------------------------------------+")
         web.run_app(self.httpApp, host=host, port=httpPort)
 
     async def launchWebBrowserCallback(self, httpApp):
