@@ -1059,7 +1059,15 @@ export class EditorController {
     if (customJSON) {
       pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
     } else {
-      pastedGlyph = await this.fontController.parseClipboard(plainText);
+      if (plainText[0] == "{") {
+        try {
+          pastedGlyph = StaticGlyph.fromObject(JSON.parse(plainText));
+        } catch (error) {
+          console.log("couldn't paste from JSON:", error.toString());
+        }
+      } else {
+        pastedGlyph = await this.fontController.parseClipboard(plainText);
+      }
     }
 
     if (!pastedGlyph) {
