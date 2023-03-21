@@ -231,6 +231,17 @@ export class EditorController {
     window.addEventListener("popstate", (event) => {
       this.setupFromWindowLocation();
     });
+    this.updateWithDelay();
+  }
+
+  async updateWithDelay() {
+    // The first time ever on the page (or after a deep reload), we draw before
+    // all webfonts are fully loaded, and any undefined glyphs show the wrong UI
+    // font. Let's just reload after a tiny delay.
+    //
+    // Doing the following should help, but it doesn't, unless we add the delay.
+    // await document.fonts.ready;
+    setTimeout(() => this.canvasController.setNeedsUpdate(), 50);
   }
 
   getDrawingFunctions() {
