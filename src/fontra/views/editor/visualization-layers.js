@@ -2,11 +2,10 @@ import { withSavedState } from "/core/utils.js";
 import { mulScalar } from "/core/var-funcs.js";
 
 export class VisualizationLayers {
-  constructor(darkTheme, definitions) {
+  constructor(definitions, darkTheme) {
     this.darkTheme = darkTheme;
     this.definitions = definitions;
     this.scaleFactor = 1;
-    this.layers = [];
     this.visibleLayerIds = new Set(
       this.definitions
         .filter((layer) => !layer.userSwitchable)
@@ -38,6 +37,9 @@ export class VisualizationLayers {
   }
 
   drawVisualizationLayers(model, controller) {
+    if (!this.layers) {
+      this.buildLayers();
+    }
     const glyphsBySelectionMode = getGlyphsBySelectionMode(model);
     const context = controller.context;
     for (const layer of this.layers) {
