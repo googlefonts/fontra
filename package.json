@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "mocha test-js --reporter spec",
-    "bundle-rollup": "rollup node_modules/bezier-js --file src/fontra/client/third-party/bezier-js.js -c; rollup node_modules/lit --file src/fontra/client/third-party/lit.js -c; "
+    "bundle-rollup": "rollup --bundleConfigAsCjs -c"
   },
   "type": "module",
   "devDependencies": {
