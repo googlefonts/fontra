@@ -32,6 +32,7 @@ export class VisualizationLayers {
       };
       const layer = {
         selectionMode: layerDef.selectionMode,
+        selectionFilter: layerDef.selectionFilter,
         parameters: parameters,
         draw: layerDef.draw,
       };
@@ -44,7 +45,10 @@ export class VisualizationLayers {
     const glyphsBySelectionMode = getGlyphsBySelectionMode(model);
     const context = controller.context;
     for (const layer of this.layers) {
-      for (const positionedGlyph of glyphsBySelectionMode[layer.selectionMode]) {
+      const glyphs = layer.selectionFilter
+        ? glyphsBySelectionMode[layer.selectionMode].filter(layer.selectionFilter)
+        : glyphsBySelectionMode[layer.selectionMode];
+      for (const positionedGlyph of glyphs) {
         withSavedState(context, () => {
           context.translate(positionedGlyph.x, positionedGlyph.y);
           layer.draw(context, positionedGlyph, layer.parameters, model, controller);
@@ -107,6 +111,7 @@ registerVisualizationLayerDefinition({
   identifier: "fontra.empty.selected.glyph",
   name: "Empty selected glyph",
   selectionMode: "selected",
+  selectionFilter: (positionedGlyph) => positionedGlyph.isEmpty,
   zIndex: 500,
   colors: { fillColor: "#D8D8D8" /* Must be six hex digits */ },
   colorsDarkMode: { fillColor: "#585858" /* Must be six hex digits */ },
@@ -119,6 +124,7 @@ registerVisualizationLayerDefinition({
   identifier: "fontra.empty.hovered.glyph",
   name: "Empty hovered glyph",
   selectionMode: "hovered",
+  selectionFilter: (positionedGlyph) => positionedGlyph.isEmpty,
   zIndex: 500,
   colors: { fillColor: "#E8E8E8" /* Must be six hex digits */ },
   colorsDarkMode: { fillColor: "#484848" /* Must be six hex digits */ },
@@ -128,9 +134,6 @@ registerVisualizationLayerDefinition({
 });
 
 function _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller) {
-  if (!positionedGlyph.isEmpty) {
-    return;
-  }
   const box = positionedGlyph.unpositionedBounds;
   const fillColor = parameters.fillColor;
   if (fillColor[0] === "#" && fillColor.length === 7) {
@@ -256,6 +259,7 @@ registerVisualizationLayerDefinition({
   identifier: "fontra.undefined.glyph",
   name: "Undefined glyph",
   selectionMode: "all",
+  selectionFilter: (positionedGlyph) => positionedGlyph.isUndefined,
   zIndex: 500,
   colors: {
     fillColor: "#0006",
@@ -264,9 +268,6 @@ registerVisualizationLayerDefinition({
     fillColor: "#FFF6",
   },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    if (!positionedGlyph.isUndefined) {
-      return;
-    }
     context.fillStyle = parameters.fillColor;
     context.textAlign = "center";
     const lineDistance = 1.2;
