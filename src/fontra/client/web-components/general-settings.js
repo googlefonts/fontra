@@ -1,4 +1,4 @@
-import {  html, css, LitElement } from "../third-party/lit.js";
+import { html, css, LitElement } from "../third-party/lit.js";
 import { THEME_KEY, themeSwitch } from "../core/utils.js";
 
 export class GeneralSettings extends LitElement {
