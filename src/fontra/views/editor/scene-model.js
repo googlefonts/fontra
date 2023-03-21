@@ -583,6 +583,7 @@ async function buildScene(
         item.isEmpty = true;
       }
       item.bounds = offsetRect(bounds, item.x, item.y);
+      item.unpositionedBounds = bounds;
     });
 
     y -= lineDistance;
