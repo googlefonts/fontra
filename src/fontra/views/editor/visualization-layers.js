@@ -1,4 +1,8 @@
-import { enumerate, withSavedState } from "/core/utils.js";
+import {
+  enumerate,
+  makeUPlusStringFromCodePoint,
+  withSavedState,
+} from "/core/utils.js";
 import { mulScalar } from "/core/var-funcs.js";
 
 export class VisualizationLayers {
@@ -245,6 +249,49 @@ registerVisualizationLayerDefinition({
       overshootInsideH
     );
     context.fill("evenodd");
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.undefined.glyph",
+  name: "Undefined glyph",
+  selectionMode: "all",
+  zIndex: 500,
+  colors: {
+    fillColor: "#0006",
+  },
+  colorsDarkMode: {
+    fillColor: "#FFF6",
+  },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    if (!positionedGlyph.isUndefined) {
+      return;
+    }
+    context.fillStyle = parameters.fillColor;
+    context.textAlign = "center";
+    const lineDistance = 1.2;
+
+    const glyphNameFontSize = 0.1 * positionedGlyph.glyph.xAdvance;
+    const placeholderFontSize = 0.75 * positionedGlyph.glyph.xAdvance;
+    context.font = `${glyphNameFontSize}px fontra-ui-regular, sans-serif`;
+    context.scale(1, -1);
+    context.fillText(positionedGlyph.glyphName, positionedGlyph.glyph.xAdvance / 2, 0);
+    if (positionedGlyph.character) {
+      const uniStr = makeUPlusStringFromCodePoint(
+        positionedGlyph.character.codePointAt(0)
+      );
+      context.fillText(
+        uniStr,
+        positionedGlyph.glyph.xAdvance / 2,
+        -lineDistance * glyphNameFontSize
+      );
+      context.font = `${placeholderFontSize}px fontra-ui-regular, sans-serif`;
+      context.fillText(
+        positionedGlyph.character,
+        positionedGlyph.glyph.xAdvance / 2,
+        -lineDistance * glyphNameFontSize - 0.4 * placeholderFontSize
+      );
+    }
   },
 });
 
