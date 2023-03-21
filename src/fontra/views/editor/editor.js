@@ -44,6 +44,7 @@ import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
+import { VisualizationLayers } from "./visualization-layers.js";
 import {
   deleteSelectedPoints,
   filterPathByPointIndices,
@@ -143,15 +144,28 @@ export class EditorController {
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
-    const canvasController = new CanvasController(canvas, this.drawingParameters);
+    const canvasController = new CanvasController(
+      canvas,
+      this.drawingParameters,
+      (magnification) => this.canvasMagnificationChanged(magnification)
+    );
     this.canvasController = canvasController;
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(
       canvasController.context
     );
 
+    this.visualizationLayers = new VisualizationLayers();
+    this.visualizationLayers.visibleLayerIds = new Set(["fontra.baseline"]);
+    this.visualizationLayers.buildLayers();
+
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
     const drawFuncs = this.getDrawingFunctions();
+
+    drawFuncs.unshift((model, controller) =>
+      this.visualizationLayers.drawVisualizationLayers(model, controller)
+    );
+
     const sceneView = new SceneView();
     sceneView.subviews = drawFuncs.map(
       (drawFunc) => new SceneView(sceneModel, drawFunc)
@@ -567,6 +581,8 @@ export class EditorController {
 
   themeChanged(event) {
     this.canvasController.setDrawingParameters(this.drawingParameters);
+    this.visualizationLayers.darkTheme = this.isThemeDark();
+    this.visualizationLayers.buildLayers();
   }
 
   get isThemeDark() {
@@ -588,6 +604,11 @@ export class EditorController {
 
   get drawingParameters() {
     return this.isThemeDark ? this.drawingParametersDark : this.drawingParametersLight;
+  }
+
+  canvasMagnificationChanged(magnification) {
+    this.visualizationLayers.scaleFactor = 1 / magnification;
+    this.visualizationLayers.buildLayers();
   }
 
   async glyphSearchFieldChanged(value) {
