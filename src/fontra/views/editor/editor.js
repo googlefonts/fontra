@@ -44,11 +44,11 @@ import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
+import { VisualizationLayers } from "./visualization-layers.js";
 import {
-  VisualizationLayers,
   allGlyphsCleanVisualizationLayerDefinition,
   visualizationLayerDefinitions,
-} from "./visualization-layers.js";
+} from "./visualization-layer-definitions.js";
 import {
   deleteSelectedPoints,
   filterPathByPointIndices,
