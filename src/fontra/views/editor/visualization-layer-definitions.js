@@ -361,8 +361,8 @@ registerVisualizationLayerDefinition({
 const START_POINT_ARC_GAP_ANGLE = 0.25 * Math.PI;
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.component.selection",
-  name: "Component selection",
+  identifier: "fontra.startpoint.indicator",
+  name: "Startpoint indicator",
   selectionMode: "editing",
   zIndex: 500,
   screenParameters: { radius: 9, strokeWidth: 2 },
