@@ -32,10 +32,18 @@ export class SceneModel {
   }
 
   getSelectedPositionedGlyph() {
-    if (!this.selectedGlyph) {
+    return this._getPositionedGlyph(this.selectedGlyph);
+  }
+
+  getHoveredPositionedGlyph() {
+    return this._getPositionedGlyph(this.hoveredGlyph);
+  }
+
+  _getPositionedGlyph(lineGlyphIndex) {
+    if (!lineGlyphIndex) {
       return undefined;
     }
-    const [lineIndex, glyphIndex] = this.selectedGlyph.split("/");
+    const [lineIndex, glyphIndex] = lineGlyphIndex.split("/");
     return this.positionedLines[lineIndex]?.glyphs[glyphIndex];
   }
 
