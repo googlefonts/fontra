@@ -14,22 +14,6 @@ export function registerVisualizationLayerDefinition(newLayerDef) {
 }
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.baseline",
-  name: "Baseline",
-  selectionMode: "editing",
-  userSwitchable: true,
-  zIndex: 500,
-  screenParameters: { strokeWidth: 1 },
-  colors: { strokeColor: "#0004" },
-  colorsDarkMode: { strokeColor: "#FFF6" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    context.strokeStyle = parameters.strokeColor;
-    context.lineWidth = parameters.strokeWidth;
-    strokeLine(context, 0, 0, positionedGlyph.glyph.xAdvance, 0);
-  },
-});
-
-registerVisualizationLayerDefinition({
   identifier: "fontra.empty.selected.glyph",
   name: "Empty selected glyph",
   selectionMode: "selected",
@@ -218,6 +202,22 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.baseline",
+  name: "Baseline",
+  selectionMode: "editing",
+  userSwitchable: true,
+  zIndex: 500,
+  screenParameters: { strokeWidth: 1 },
+  colors: { strokeColor: "#0004" },
+  colorsDarkMode: { strokeColor: "#FFF6" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    strokeLine(context, 0, 0, positionedGlyph.glyph.xAdvance, 0);
+  },
+});
+
 export const allGlyphsCleanVisualizationLayerDefinition = {
   identifier: "fontra.all.glyphs",
   name: "All glyphs",
@@ -243,6 +243,7 @@ function strokeLine(context, x1, y1, x2, y2) {
 //   identifier: "fontra.baseline",
 //   name: "Baseline",
 //   selectionMode: "unselected",  // choice from all, unselected, hovered, selected, editing
+//   selectionFilter: (positionedGlyph) => ...some condition...,  // OPTIONAL
 //   zIndex: 50
 //   screenParameters: {},  // in screen/pixel units
 //   glyphParameters: {},  // in glyph units
