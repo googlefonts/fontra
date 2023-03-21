@@ -414,6 +414,80 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.nodes",
+  name: "Nodes",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: { cornerSize: 8, smoothSize: 8, handleSize: 6.5 },
+  colors: { color: "#BBB" },
+  colorsDarkMode: { color: "#BBB" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const cornerSize = parameters.cornerSize;
+    const smoothSize = parameters.smoothSize;
+    const handleSize = parameters.handleSize;
+
+    context.fillStyle = parameters.color;
+    for (const pt of glyph.path.iterPoints()) {
+      fillNode(context, pt, cornerSize, smoothSize, handleSize);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.selected.nodes",
+  name: "Selected nodes",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    cornerSize: 8,
+    smoothSize: 8,
+    handleSize: 6.5,
+    strokeWidth: 1,
+    hoverStrokeOffset: 4,
+  },
+  colors: { hoveredColor: "#BBB", selectedColor: "#000" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const cornerSize = parameters.cornerSize;
+    const smoothSize = parameters.smoothSize;
+    const handleSize = parameters.handleSize;
+
+    const { point: hoveredPointIndices } = parseSelection(model.hoverSelection);
+    const { point: selectedPointIndices } = parseSelection(model.selection);
+
+    context.strokeStyle = parameters.hoveredColor;
+    context.lineWidth = parameters.strokeWidth;
+    const hoverStrokeOffset = parameters.hoverStrokeOffset;
+    context.fillStyle = parameters.selectedColor;
+
+    for (const pointIndex of hoveredPointIndices || []) {
+      const pt = glyph.path.getPoint(pointIndex);
+      if (pt === undefined) {
+        // Selection is not valid
+        continue;
+      }
+      strokeNode(
+        context,
+        pt,
+        cornerSize + hoverStrokeOffset,
+        smoothSize + hoverStrokeOffset,
+        handleSize + hoverStrokeOffset
+      );
+    }
+    for (const pointIndex of selectedPointIndices || []) {
+      const pt = glyph.path.getPoint(pointIndex);
+      if (pt === undefined) {
+        // Selection is not valid
+        continue;
+      }
+      fillNode(context, pt, cornerSize, smoothSize, handleSize);
+    }
+  },
+});
+
 //
 // allGlyphsCleanVisualizationLayerDefinition is not registered, but used
 // separately for the "clean" display.
@@ -431,7 +505,48 @@ export const allGlyphsCleanVisualizationLayerDefinition = {
   },
 };
 
-// Duplicated from scene-draw-funcs.js -- move to new module drawing-tools.js ?
+// Drawing helpers
+
+function fillNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize) {
+  if (!pt.type && !pt.smooth) {
+    fillSquareNode(context, pt, cornerNodeSize);
+  } else if (!pt.type) {
+    fillRoundNode(context, pt, smoothNodeSize);
+  } else {
+    fillRoundNode(context, pt, handleNodeSize);
+  }
+}
+
+function strokeNode(context, pt, cornerNodeSize, smoothNodeSize, handleNodeSize) {
+  if (!pt.type && !pt.smooth) {
+    strokeSquareNode(context, pt, cornerNodeSize);
+  } else if (!pt.type) {
+    strokeRoundNode(context, pt, smoothNodeSize);
+  } else {
+    strokeRoundNode(context, pt, handleNodeSize);
+  }
+}
+
+function fillSquareNode(context, pt, nodeSize) {
+  context.fillRect(pt.x - nodeSize / 2, pt.y - nodeSize / 2, nodeSize, nodeSize);
+}
+
+function fillRoundNode(context, pt, nodeSize) {
+  context.beginPath();
+  context.arc(pt.x, pt.y, nodeSize / 2, 0, 2 * Math.PI, false);
+  context.fill();
+}
+
+function strokeSquareNode(context, pt, nodeSize) {
+  context.strokeRect(pt.x - nodeSize / 2, pt.y - nodeSize / 2, nodeSize, nodeSize);
+}
+
+function strokeRoundNode(context, pt, nodeSize) {
+  context.beginPath();
+  context.arc(pt.x, pt.y, nodeSize / 2, 0, 2 * Math.PI, false);
+  context.stroke();
+}
+
 function strokeLine(context, x1, y1, x2, y2) {
   context.beginPath();
   context.moveTo(x1, y1);
