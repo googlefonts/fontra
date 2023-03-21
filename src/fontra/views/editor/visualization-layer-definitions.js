@@ -218,6 +218,34 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.sidebearings",
+  name: "Sidebearings",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: { strokeWidth: 1, extent: 16 },
+  colors: { strokeColor: "#0004" },
+  colorsDarkMode: { strokeColor: "#FFF6" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    const extent = parameters.extent;
+    strokeLine(context, 0, -extent, 0, extent);
+    strokeLine(context, glyph.xAdvance, -extent, glyph.xAdvance, extent);
+    if (extent < glyph.xAdvance / 2) {
+      strokeLine(context, 0, 0, extent, 0);
+      strokeLine(context, glyph.xAdvance, 0, glyph.xAdvance - extent, 0);
+    } else {
+      strokeLine(context, 0, 0, glyph.xAdvance, 0);
+    }
+  },
+});
+
+//
+// allGlyphsCleanVisualizationLayerDefinition is not registered, but used
+// separately for the "clean" display.
+//
 export const allGlyphsCleanVisualizationLayerDefinition = {
   identifier: "fontra.all.glyphs",
   name: "All glyphs",
