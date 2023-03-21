@@ -5,8 +5,12 @@ export class VisualizationLayers {
   constructor() {
     this.scaleFactor = 1;
     this.darkTheme = false;
-    this.visibleLayerIds = new Set();
     this.layers = [];
+    this.visibleLayerIds = new Set(
+      this.definitions
+        .filter((layer) => !layer.userSwitchable)
+        .map((layer) => layer.identifier)
+    );
   }
 
   get definitions() {
