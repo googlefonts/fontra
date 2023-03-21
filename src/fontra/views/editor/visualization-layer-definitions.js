@@ -518,8 +518,8 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.connect-insert.point",
-  name: "Connect/insert point",
+  identifier: "fontra.edit.path.stroke",
+  name: "Edit path stroke",
   selectionMode: "editing",
   zIndex: 500,
   screenParameters: {
@@ -532,6 +532,33 @@ registerVisualizationLayerDefinition({
     context.lineWidth = parameters.strokeWidth;
     context.strokeStyle = parameters.pathStrokeColor;
     context.stroke(positionedGlyph.glyph.flattenedPath2d);
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.rect.select",
+  name: "Rect select",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    strokeWidth: 1,
+    lineDash: [10, 10],
+  },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    if (model.selectionRect === undefined) {
+      return;
+    }
+    const selRect = model.selectionRect;
+    const x = selRect.xMin;
+    const y = selRect.yMin;
+    const w = selRect.xMax - x;
+    const h = selRect.yMax - y;
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = "#000";
+    context.strokeRect(x, y, w, h);
+    context.strokeStyle = "#FFF";
+    context.setLineDash(parameters.lineDash);
+    context.strokeRect(x, y, w, h);
   },
 });
 
