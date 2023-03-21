@@ -4,6 +4,7 @@ import {
   makeUPlusStringFromCodePoint,
   parseSelection,
 } from "/core/utils.js";
+import { subVectors } from "../core/vector.js";
 
 export const visualizationLayerDefinitions = [];
 
@@ -353,6 +354,44 @@ registerVisualizationLayerDefinition({
         : parameters.hoveredStrokeColor;
       context.stroke(componentPath);
       context.restore();
+    }
+  },
+});
+
+const START_POINT_ARC_GAP_ANGLE = 0.25 * Math.PI;
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.component.selection",
+  name: "Component selection",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: { radius: 9, strokeWidth: 2 },
+  colors: { color: "#989898A0" },
+  colorsDarkMode: { color: "#989898A0" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    context.strokeStyle = parameters.color;
+    context.lineWidth = parameters.strokeWidth;
+    const radius = parameters.radius;
+    let startPointIndex = 0;
+    for (const contourInfo of glyph.path.contourInfo) {
+      const startPoint = glyph.path.getPoint(startPointIndex);
+      let angle;
+      if (startPointIndex < contourInfo.endPoint) {
+        const nextPoint = glyph.path.getPoint(startPointIndex + 1);
+        const direction = subVectors(nextPoint, startPoint);
+        angle = Math.atan2(direction.y, direction.x);
+      }
+      let startAngle = 0;
+      let endAngle = 2 * Math.PI;
+      if (angle !== undefined) {
+        startAngle += angle + START_POINT_ARC_GAP_ANGLE;
+        endAngle += angle - START_POINT_ARC_GAP_ANGLE;
+      }
+      context.beginPath();
+      context.arc(startPoint.x, startPoint.y, radius, startAngle, endAngle, false);
+      context.stroke();
+      startPointIndex = contourInfo.endPoint + 1;
     }
   },
 });
