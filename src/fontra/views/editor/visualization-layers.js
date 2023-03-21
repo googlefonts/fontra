@@ -8,7 +8,7 @@ import { mulScalar } from "/core/var-funcs.js";
 export class VisualizationLayers {
   constructor(darkTheme, definitions) {
     this.darkTheme = darkTheme;
-    this.definitions = definitions ? definitions : visualizationLayerDefinitions;
+    this.definitions = definitions;
     this.scaleFactor = 1;
     this.layers = [];
     this.visibleLayerIds = new Set(
@@ -78,7 +78,7 @@ function getGlyphsBySelectionMode(model) {
   };
 }
 
-const visualizationLayerDefinitions = [];
+export const visualizationLayerDefinitions = [];
 
 export function registerVisualizationLayerDefinition(newLayerDef) {
   let index = -1;

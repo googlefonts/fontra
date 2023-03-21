@@ -47,6 +47,7 @@ import { PointerTool } from "./edit-tools-pointer.js";
 import {
   VisualizationLayers,
   allGlyphsCleanVisualizationLayerDefinition,
+  visualizationLayerDefinitions,
 } from "./visualization-layers.js";
 import {
   deleteSelectedPoints,
@@ -158,7 +159,10 @@ export class EditorController {
       canvasController.context
     );
 
-    this.visualizationLayers = new VisualizationLayers(this.isThemeDark);
+    this.visualizationLayers = new VisualizationLayers(
+      this.isThemeDark,
+      visualizationLayerDefinitions
+    );
     this.visualizationLayers.buildLayers();
 
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
