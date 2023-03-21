@@ -6,7 +6,7 @@ const MIN_MAGNIFICATION = 0.005;
 const MAX_MAGNIFICATION = 200;
 
 export class CanvasController {
-  constructor(canvas, drawingParameters) {
+  constructor(canvas, drawingParameters, magnificationChangedCallback) {
     this.canvas = canvas; // The HTML5 Canvas object
     this.context = canvas.getContext("2d");
     this.sceneView = undefined; // will be set later
@@ -16,6 +16,7 @@ export class CanvasController {
     this.needsUpdate = false;
 
     this.setDrawingParameters(drawingParameters);
+    this.magnificationChangedCallback = magnificationChangedCallback;
 
     const resizeObserver = new ResizeObserver((entries) => {
       this.setupSize();
@@ -177,6 +178,7 @@ export class CanvasController {
     this.origin.x += (1 - zoomFactor) * center.x * prevMagnification;
     this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
     this._updateDrawingParameters();
+    this.magnificationChangedCallback?.call(null, this.magnification);
     this.setNeedsUpdate();
     this._dispatchEvent("viewBoxChanged", "magnification");
   }
@@ -238,6 +240,7 @@ export class CanvasController {
     this.origin.x = this.canvasWidth / 2 + this.origin.x - canvasCenter.x;
     this.origin.y = this.canvasHeight / 2 + this.origin.y - canvasCenter.y;
     this._updateDrawingParameters();
+    this.magnificationChangedCallback?.call(null, this.magnification);
     this.setNeedsUpdate();
   }
 
