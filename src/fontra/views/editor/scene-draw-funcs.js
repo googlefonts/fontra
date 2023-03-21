@@ -225,53 +225,6 @@ export const drawSidebearingsLayer = requireEditingGlyph(
   })
 );
 
-export const drawHoveredEmptyGlyphLayer = requireHoveredGlyph((model, controller) => {
-  _drawSelectedEmptyGlyphLayer(
-    model,
-    controller,
-    model.hoveredGlyph,
-    "hoveredEmptyGlyphColor"
-  );
-});
-
-export const drawSelectedEmptyGlyphLayer = requireSelectedGlyph((model, controller) => {
-  _drawSelectedEmptyGlyphLayer(
-    model,
-    controller,
-    model.selectedGlyph,
-    "selectedEmptyGlyphColor"
-  );
-});
-
-function _drawSelectedEmptyGlyphLayer(
-  model,
-  controller,
-  selectedGlyph,
-  emptyGlyphColorName
-) {
-  const context = controller.context;
-  const [lineIndex, glyphIndex] = selectedGlyph.split("/");
-  const positionedGlyph = model.positionedLines[lineIndex].glyphs[glyphIndex];
-
-  if (!positionedGlyph.isEmpty) {
-    return;
-  }
-  const box = positionedGlyph.bounds;
-  const fillColor = controller.drawingParameters[emptyGlyphColorName];
-  if (fillColor[0] === "#" && fillColor.length === 7) {
-    const gradient = context.createLinearGradient(0, box.yMin, 0, box.yMax);
-    gradient.addColorStop(0.0, fillColor + "00");
-    gradient.addColorStop(0.2, fillColor + "DD");
-    gradient.addColorStop(0.5, fillColor + "FF");
-    gradient.addColorStop(0.8, fillColor + "DD");
-    gradient.addColorStop(1.0, fillColor + "00");
-    context.fillStyle = gradient;
-  } else {
-    context.fillStyle = fillColor;
-  }
-  context.fillRect(box.xMin, box.yMin, box.xMax - box.xMin, box.yMax - box.yMin);
-}
-
 export const drawHoveredGlyphLayer = requireHoveredGlyph((model, controller) => {
   _drawSelectedGlyphLayer(
     model,
