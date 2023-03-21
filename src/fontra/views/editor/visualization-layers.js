@@ -9,6 +9,10 @@ export class VisualizationLayers {
     this.layers = [];
   }
 
+  get definitions() {
+    return visualizationLayerDefinitions;
+  }
+
   buildLayers() {
     const layers = [];
     for (const layerDef of visualizationLayerDefinitions) {
@@ -38,13 +42,7 @@ export class VisualizationLayers {
       for (const positionedGlyph of glyphsBySelectionMode[layer.selectionMode]) {
         withSavedState(context, () => {
           context.translate(positionedGlyph.x, positionedGlyph.y);
-          layer.draw(
-            context,
-            positionedGlyph.glyph,
-            layer.parameters,
-            model,
-            controller
-          );
+          layer.draw(context, positionedGlyph, layer.parameters, model, controller);
         });
       }
     }
@@ -92,12 +90,56 @@ registerVisualizationLayerDefinition({
   screenParameters: { strokeWidth: 1 },
   colors: { strokeColor: "#0004" },
   colorsDarkMode: { strokeColor: "#FFF6" },
-  draw: (context, glyph, parameters, model, controller) => {
+  draw: (context, positionedGlyph, parameters, model, controller) => {
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
-    strokeLine(context, 0, 0, glyph.xAdvance, 0);
+    strokeLine(context, 0, 0, positionedGlyph.glyph.xAdvance, 0);
   },
 });
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.empty.selected.glyph",
+  name: "Empty selected glyph",
+  selectionMode: "selected",
+  zIndex: 500,
+  colors: { fillColor: "#D8D8D8" /* Must be six hex digits */ },
+  colorsDarkMode: { fillColor: "#585858" /* Must be six hex digits */ },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller);
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.empty.hovered.glyph",
+  name: "Empty hovered glyph",
+  selectionMode: "hovered",
+  zIndex: 500,
+  colors: { fillColor: "#E8E8E8" /* Must be six hex digits */ },
+  colorsDarkMode: { fillColor: "#484848" /* Must be six hex digits */ },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller);
+  },
+});
+
+function _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, controller) {
+  if (!positionedGlyph.isEmpty) {
+    return;
+  }
+  const box = positionedGlyph.unpositionedBounds;
+  const fillColor = parameters.fillColor;
+  if (fillColor[0] === "#" && fillColor.length === 7) {
+    const gradient = context.createLinearGradient(0, box.yMin, 0, box.yMax);
+    gradient.addColorStop(0.0, fillColor + "00");
+    gradient.addColorStop(0.2, fillColor + "DD");
+    gradient.addColorStop(0.5, fillColor + "FF");
+    gradient.addColorStop(0.8, fillColor + "DD");
+    gradient.addColorStop(1.0, fillColor + "00");
+    context.fillStyle = gradient;
+  } else {
+    context.fillStyle = fillColor;
+  }
+  context.fillRect(box.xMin, box.yMin, box.xMax - box.xMin, box.yMax - box.yMin);
+}
 
 // Duplicated from scene-draw-funcs.js -- move to new module drawing-tools.js ?
 function strokeLine(context, x1, y1, x2, y2) {
@@ -116,5 +158,5 @@ function strokeLine(context, x1, y1, x2, y2) {
 //   glyphParameters: {},  // in glyph units
 //   colors: {},
 //   colorsDarkMode: {},
-//   draw: (context, glyph, parameters, model, controller) => { /* ... */ },
+//   draw: (context, positionedGlyph, parameters, model, controller) => { /* ... */ },
 // }
