@@ -3,17 +3,56 @@ import { mulScalar } from "/core/var-funcs.js";
 
 export class VisualizationLayers {
   constructor(definitions, darkTheme) {
-    this.darkTheme = darkTheme;
     this.definitions = definitions;
-    this.scaleFactor = 1;
-    this.visibleLayerIds = new Set(
+    this._darkTheme = darkTheme;
+    this._scaleFactor = 1;
+    this._visibleLayerIds = new Set(
       this.definitions
         .filter((layer) => !layer.userSwitchable)
         .map((layer) => layer.identifier)
     );
+    this.needsUpdate = true;
+  }
+
+  setNeedsUpdate() {
+    if (!this.needsUpdate) {
+      this.needsUpdate = true;
+      setTimeout(() => this.buildLayers(), 0);
+    }
+  }
+
+  get darkTheme() {
+    return this._darkTheme;
+  }
+
+  set darkTheme(darkTheme) {
+    this._darkTheme = darkTheme;
+    this.setNeedsUpdate();
+  }
+
+  get scaleFactor() {
+    return this._scaleFactor;
+  }
+
+  set scaleFactor(scaleFactor) {
+    this._scaleFactor = scaleFactor;
+    this.setNeedsUpdate();
+  }
+
+  get visibleLayerIds() {
+    return this._visibleLayerIds;
+  }
+
+  set visibleLayerIds(visibleLayerIds) {
+    this._visibleLayerIds = visibleLayerIds;
+    this.setNeedsUpdate();
   }
 
   buildLayers() {
+    if (!this.needsUpdate) {
+      return;
+    }
+    this.needsUpdate = false;
     const layers = [];
     for (const layerDef of this.definitions) {
       if (!this.visibleLayerIds.has(layerDef.identifier)) {
@@ -37,7 +76,7 @@ export class VisualizationLayers {
   }
 
   drawVisualizationLayers(model, controller) {
-    if (!this.layers) {
+    if (this.needsUpdate) {
       this.buildLayers();
     }
     const glyphsBySelectionMode = getGlyphsBySelectionMode(model);

@@ -95,7 +95,6 @@ export class EditorController {
       visualizationLayerDefinitions,
       this.isThemeDark
     );
-    this.visualizationLayers.buildLayers();
 
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
 
@@ -110,7 +109,6 @@ export class EditorController {
       allGlyphsCleanVisualizationLayerDefinition,
       this.isThemeDark,
     ]);
-    this.cleanGlyphsLayers.buildLayers();
     this.cleanSceneView = new SceneView(sceneModel, (model, controller) => {
       this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
     });
@@ -494,9 +492,7 @@ export class EditorController {
 
   themeChanged(event) {
     this.visualizationLayers.darkTheme = this.isThemeDark;
-    this.visualizationLayers.buildLayers();
     this.cleanGlyphsLayers.darkTheme = this.isThemeDark;
-    this.cleanGlyphsLayers.buildLayers();
   }
 
   get isThemeDark() {
@@ -510,7 +506,7 @@ export class EditorController {
 
   canvasMagnificationChanged(magnification) {
     this.visualizationLayers.scaleFactor = 1 / magnification;
-    this.visualizationLayers.buildLayers();
+    this.cleanGlyphsLayers.scaleFactor = 1 / magnification;
   }
 
   async glyphSearchFieldChanged(value) {
