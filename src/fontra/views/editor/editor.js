@@ -157,7 +157,9 @@ export class EditorController {
 
     this.visualizationLayers = new VisualizationLayers();
     this.visualizationLayers.visibleLayerIds = new Set(
-      this.visualizationLayers.definitions.map((layer) => layer.identifier)
+      this.visualizationLayers.definitions
+        .filter((layer) => !layer.userSwitchable)
+        .map((layer) => layer.identifier)
     );
     this.visualizationLayers.buildLayers();
 
