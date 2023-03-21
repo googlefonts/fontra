@@ -1,14 +1,18 @@
 {
   "scripts": {
-    "jsdeps": "python -I scripts/jsdeps.py",
-    "test": "mocha test-js --reporter spec"
+    "test": "mocha test-js --reporter spec",
+    "bundle-rollup": "rollup --bundleConfigAsCjs -c"
   },
   "type": "module",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
     "chai": "^4.3.7",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "rollup": "^3.19.1"
   },
   "dependencies": {
-    "bezier-js": "^6.1.3"
+    "bezier-js": "^6.1.3",
+    "lit": "^2.6.1"
   }
 }
