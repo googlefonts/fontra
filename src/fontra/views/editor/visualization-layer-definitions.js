@@ -242,6 +242,25 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.ghostpath",
+  name: "Ghost path while dragging",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: { strokeWidth: 1 },
+  colors: { strokeColor: "#0002" },
+  colorsDarkMode: { strokeColor: "#FFF4" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    if (!model.ghostPath) {
+      return;
+    }
+    context.lineJoin = "round";
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    context.stroke(model.ghostPath);
+  },
+});
+
 //
 // allGlyphsCleanVisualizationLayerDefinition is not registered, but used
 // separately for the "clean" display.
