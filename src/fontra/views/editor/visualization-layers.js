@@ -2,7 +2,8 @@ import { enumerate, withSavedState } from "/core/utils.js";
 import { mulScalar } from "/core/var-funcs.js";
 
 export class VisualizationLayers {
-  constructor() {
+  constructor(definitions) {
+    this.definitions = definitions ? definitions : visualizationLayerDefinitions;
     this.scaleFactor = 1;
     this.darkTheme = false;
     this.layers = [];
@@ -11,10 +12,6 @@ export class VisualizationLayers {
         .filter((layer) => !layer.userSwitchable)
         .map((layer) => layer.identifier)
     );
-  }
-
-  get definitions() {
-    return visualizationLayerDefinitions;
   }
 
   buildLayers() {
