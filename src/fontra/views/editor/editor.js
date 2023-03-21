@@ -156,7 +156,9 @@ export class EditorController {
     );
 
     this.visualizationLayers = new VisualizationLayers();
-    this.visualizationLayers.visibleLayerIds = new Set(["fontra.baseline"]);
+    this.visualizationLayers.visibleLayerIds = new Set(
+      this.visualizationLayers.definitions.map((layer) => layer.identifier)
+    );
     this.visualizationLayers.buildLayers();
 
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
