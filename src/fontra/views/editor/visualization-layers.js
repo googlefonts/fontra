@@ -2,10 +2,10 @@ import { enumerate, withSavedState } from "/core/utils.js";
 import { mulScalar } from "/core/var-funcs.js";
 
 export class VisualizationLayers {
-  constructor(definitions) {
+  constructor(darkTheme, definitions) {
+    this.darkTheme = darkTheme;
     this.definitions = definitions ? definitions : visualizationLayerDefinitions;
     this.scaleFactor = 1;
-    this.darkTheme = false;
     this.layers = [];
     this.visibleLayerIds = new Set(
       this.definitions
@@ -24,7 +24,7 @@ export class VisualizationLayers {
         ...mulScalar(layerDef.screenParameters || {}, this.scaleFactor),
         ...(layerDef.glyphParameters || {}),
         ...(layerDef.colors || {}),
-        ...(this.darkTheme && layerDef.colorsDarkMode ? layerDef.colorsDark : {}),
+        ...(this.darkTheme && layerDef.colorsDarkMode ? layerDef.colorsDarkMode : {}),
       };
       const layer = {
         selectionMode: layerDef.selectionMode,
@@ -151,9 +151,23 @@ registerVisualizationLayerDefinition({
   colors: { fillColor: "#000" },
   colorsDarkMode: { fillColor: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.fillStyle = parameters.fillColor;
     context.fill(positionedGlyph.glyph.flattenedPath2d);
   },
 });
+
+export const allGlyphsCleanVisualizationLayerDefinition = {
+  identifier: "fontra.all.glyphs",
+  name: "All glyphs",
+  selectionMode: "all",
+  zIndex: 500,
+  colors: { fillColor: "#000" },
+  colorsDarkMode: { fillColor: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.fillStyle = parameters.fillColor;
+    context.fill(positionedGlyph.glyph.flattenedPath2d);
+  },
+};
 
 // Duplicated from scene-draw-funcs.js -- move to new module drawing-tools.js ?
 function strokeLine(context, x1, y1, x2, y2) {
@@ -166,7 +180,7 @@ function strokeLine(context, x1, y1, x2, y2) {
 // {
 //   identifier: "fontra.baseline",
 //   name: "Baseline",
-//   selectionMode: "unselected",  // choice from any, unselected, hovered, selected, editing
+//   selectionMode: "unselected",  // choice from all, unselected, hovered, selected, editing
 //   zIndex: 50
 //   screenParameters: {},  // in screen/pixel units
 //   glyphParameters: {},  // in glyph units

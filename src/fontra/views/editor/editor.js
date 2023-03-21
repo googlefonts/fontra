@@ -44,7 +44,10 @@ import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
-import { VisualizationLayers } from "./visualization-layers.js";
+import {
+  VisualizationLayers,
+  allGlyphsCleanVisualizationLayerDefinition,
+} from "./visualization-layers.js";
 import {
   deleteSelectedPoints,
   filterPathByPointIndices,
@@ -155,7 +158,7 @@ export class EditorController {
       canvasController.context
     );
 
-    this.visualizationLayers = new VisualizationLayers();
+    this.visualizationLayers = new VisualizationLayers(this.isThemeDark);
     this.visualizationLayers.buildLayers();
 
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
@@ -172,10 +175,14 @@ export class EditorController {
     canvasController.sceneView = sceneView;
 
     this.defaultSceneView = sceneView;
-    this.cleanSceneView = new SceneView(
-      sceneModel,
-      sceneDraw.drawMultiGlyphsLayerClean
-    );
+
+    this.cleanGlyphsLayers = new VisualizationLayers(this.isThemeDark, [
+      allGlyphsCleanVisualizationLayerDefinition,
+    ]);
+    this.cleanGlyphsLayers.buildLayers();
+    this.cleanSceneView = new SceneView(sceneModel, (model, controller) => {
+      this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
+    });
 
     this.sceneController = new SceneController(sceneModel, canvasController);
     // TODO move event stuff out of here
@@ -577,8 +584,10 @@ export class EditorController {
 
   themeChanged(event) {
     this.canvasController.setDrawingParameters(this.drawingParameters);
-    this.visualizationLayers.darkTheme = this.isThemeDark();
+    this.visualizationLayers.darkTheme = this.isThemeDark;
     this.visualizationLayers.buildLayers();
+    this.cleanGlyphsLayers.darkTheme = this.isThemeDark;
+    this.cleanGlyphsLayers.buildLayers();
   }
 
   get isThemeDark() {
