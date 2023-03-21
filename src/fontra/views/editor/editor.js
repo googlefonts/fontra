@@ -270,7 +270,6 @@ export class EditorController {
 
   getDrawingFunctions() {
     return [
-      sceneDraw.drawHandlesLayer,
       sceneDraw.drawNodesLayer,
       sceneDraw.drawPathSelectionLayer,
       sceneDraw.drawPathConnectTargetPointLayer,

@@ -396,6 +396,24 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.handles",
+  name: "Bezier handles",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: { strokeWidth: 1 },
+  colors: { color: "#BBB" },
+  colorsDarkMode: { color: "#777" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    context.strokeStyle = parameters.color;
+    context.lineWidth = parameters.strokeWidth;
+    for (const [pt1, pt2] of glyph.path.iterHandles()) {
+      strokeLine(context, pt1.x, pt1.y, pt2.x, pt2.y);
+    }
+  },
+});
+
 //
 // allGlyphsCleanVisualizationLayerDefinition is not registered, but used
 // separately for the "clean" display.
