@@ -19,7 +19,7 @@ export class VisualizationLayers {
 
   buildLayers() {
     const layers = [];
-    for (const layerDef of visualizationLayerDefinitions) {
+    for (const layerDef of this.definitions) {
       if (!this.visibleLayerIds.has(layerDef.identifier)) {
         continue;
       }
