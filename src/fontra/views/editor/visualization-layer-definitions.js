@@ -517,6 +517,24 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.connect-insert.point",
+  name: "Connect/insert point",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    strokeWidth: 1,
+  },
+  colors: { color: "#000" },
+  colorsDarkMode: { color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.lineJoin = "round";
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = parameters.pathStrokeColor;
+    context.stroke(positionedGlyph.glyph.flattenedPath2d);
+  },
+});
+
 //
 // allGlyphsCleanVisualizationLayerDefinition is not registered, but used
 // separately for the "clean" display.

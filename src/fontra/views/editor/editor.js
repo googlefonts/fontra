@@ -269,7 +269,7 @@ export class EditorController {
   }
 
   getDrawingFunctions() {
-    return [sceneDraw.drawPathStrokeLayer, sceneDraw.drawRectangleSelectionLayer];
+    return [sceneDraw.drawRectangleSelectionLayer];
   }
 
   async start() {
