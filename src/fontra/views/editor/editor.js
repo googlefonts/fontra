@@ -264,7 +264,6 @@ export class EditorController {
 
   getDrawingFunctions() {
     return [
-      sceneDraw.drawMultiGlyphsLayer,
       sceneDraw.drawCJKDesignFrameLayer,
       sceneDraw.drawUndefinedGlyphsLayer,
       // sceneDraw.drawSelectedBaselineLayer,

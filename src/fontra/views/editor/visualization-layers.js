@@ -142,6 +142,18 @@ function _drawEmptyGlyphLayer(context, positionedGlyph, parameters, model, contr
   context.fillRect(box.xMin, box.yMin, box.xMax - box.xMin, box.yMax - box.yMin);
 }
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.context.glyphs",
+  name: "Context glyphs",
+  selectionMode: "unselected",
+  zIndex: 500,
+  colors: { fillColor: "#000" },
+  colorsDarkMode: { fillColor: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.fill(positionedGlyph.glyph.flattenedPath2d);
+  },
+});
+
 // Duplicated from scene-draw-funcs.js -- move to new module drawing-tools.js ?
 function strokeLine(context, x1, y1, x2, y2) {
   context.beginPath();
