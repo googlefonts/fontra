@@ -488,6 +488,35 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.connect-insert.point",
+  name: "Connect/insert point",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    connectRadius: 11,
+    insertHandlesRadius: 5,
+  },
+  colors: { color: "#3080FF80" },
+  colorsDarkMode: { color: "#50A0FF80" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const targetPoint = model.pathConnectTargetPoint;
+    const insertHandles = model.pathInsertHandles;
+    if (!targetPoint && !insertHandles) {
+      return;
+    }
+    context.fillStyle = parameters.color;
+    if (targetPoint) {
+      const radius = parameters.connectRadius;
+      fillRoundNode(context, targetPoint, 2 * radius);
+    }
+    for (const point of insertHandles?.points || []) {
+      const radius = parameters.insertHandlesRadius;
+      fillRoundNode(context, point, 2 * radius);
+    }
+  },
+});
+
 //
 // allGlyphsCleanVisualizationLayerDefinition is not registered, but used
 // separately for the "clean" display.
