@@ -261,6 +261,20 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.edit.path.fill",
+  name: "Edit path fill",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: { strokeWidth: 1 },
+  colors: { fillColor: "#0001" },
+  colorsDarkMode: { fillColor: "#FFF3" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.fillStyle = parameters.fillColor;
+    context.fill(positionedGlyph.glyph.closedContoursPath2d);
+  },
+});
+
 //
 // allGlyphsCleanVisualizationLayerDefinition is not registered, but used
 // separately for the "clean" display.
