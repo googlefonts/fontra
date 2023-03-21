@@ -1,4 +1,9 @@
-import { enumerate, makeUPlusStringFromCodePoint } from "/core/utils.js";
+import { isSuperset, union } from "../core/set-ops.js";
+import {
+  enumerate,
+  makeUPlusStringFromCodePoint,
+  parseSelection,
+} from "/core/utils.js";
 
 export const visualizationLayerDefinitions = [];
 
@@ -314,6 +319,44 @@ function _drawSelectedGlyphLayer(context, positionedGlyph, parameters) {
   );
 }
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.component.selection",
+  name: "Component selection",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: { hoveredStrokeWidth: 3, selectedStrokeWidth: 3 },
+  colors: { hoveredStrokeColor: "#CCC", selectedStrokeColor: "#888" },
+  colorsDarkMode: { hoveredStrokeColor: "#777", selectedStrokeColor: "#BBB" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const isHoverSelected =
+      model.selection?.size && isSuperset(model.selection, model.hoverSelection);
+    const { component: hoveredComponentIndices } = parseSelection(model.hoverSelection);
+    const hoveredComponentIndex = hoveredComponentIndices?.[0];
+    const combinedSelection = lenientUnion(model.selection, model.hoverSelection);
+    const { component: combinedComponentIndices } = parseSelection(combinedSelection);
+
+    for (const componentIndex of combinedComponentIndices || []) {
+      if (componentIndex >= glyph.components.length) {
+        continue;
+      }
+      const drawSelectionFill =
+        isHoverSelected || componentIndex !== hoveredComponentIndex;
+      const componentPath = glyph.components[componentIndex].path2d;
+      context.save();
+      context.lineJoin = "round";
+      context.lineWidth = drawSelectionFill
+        ? parameters.selectedStrokeWidth
+        : parameters.hoveredStrokeWidth;
+      context.strokeStyle = drawSelectionFill
+        ? parameters.selectedStrokeColor
+        : parameters.hoveredStrokeColor;
+      context.stroke(componentPath);
+      context.restore();
+    }
+  },
+});
+
 //
 // allGlyphsCleanVisualizationLayerDefinition is not registered, but used
 // separately for the "clean" display.
@@ -358,6 +401,16 @@ function drawWithDoubleStroke(
   context.globalCompositeOperation = "source-over";
   context.fillStyle = fillStyle;
   context.fill(path);
+}
+
+function lenientUnion(setA, setB) {
+  if (!setA) {
+    return setB || new Set();
+  }
+  if (!setB) {
+    return setA || new Set();
+  }
+  return union(setA, setB);
 }
 
 // {
