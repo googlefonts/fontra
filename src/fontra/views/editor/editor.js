@@ -270,8 +270,6 @@ export class EditorController {
 
   getDrawingFunctions() {
     return [
-      sceneDraw.drawSelectedGlyphLayer,
-      sceneDraw.drawHoveredGlyphLayer,
       sceneDraw.drawComponentSelectionLayer,
       sceneDraw.drawStartPointsLayer,
       sceneDraw.drawHandlesLayer,

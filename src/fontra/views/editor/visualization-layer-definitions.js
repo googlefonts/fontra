@@ -275,6 +275,45 @@ registerVisualizationLayerDefinition({
   },
 });
 
+registerVisualizationLayerDefinition({
+  identifier: "fontra.selected.glyph",
+  name: "Selected glyph",
+  selectionMode: "selected",
+  selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
+  zIndex: 500,
+  screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
+  colors: { fillColor: "#000", strokeColor: "#7778" },
+  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.hovered.glyph",
+  name: "Hovered glyph",
+  selectionMode: "hovered",
+  selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
+  zIndex: 500,
+  screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
+  colors: { fillColor: "#000", strokeColor: "#BBB8" },
+  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
+  },
+});
+
+function _drawSelectedGlyphLayer(context, positionedGlyph, parameters) {
+  drawWithDoubleStroke(
+    context,
+    positionedGlyph.glyph.flattenedPath2d,
+    parameters.outerStrokeWidth,
+    parameters.innerStrokeWidth,
+    parameters.strokeColor,
+    parameters.fillColor
+  );
+}
+
 //
 // allGlyphsCleanVisualizationLayerDefinition is not registered, but used
 // separately for the "clean" display.
@@ -298,6 +337,27 @@ function strokeLine(context, x1, y1, x2, y2) {
   context.moveTo(x1, y1);
   context.lineTo(x2, y2);
   context.stroke();
+}
+
+function drawWithDoubleStroke(
+  context,
+  path,
+  outerLineWidth,
+  innerLineWidth,
+  strokeStyle,
+  fillStyle
+) {
+  context.lineJoin = "round";
+  context.lineWidth = outerLineWidth;
+  context.strokeStyle = strokeStyle;
+  context.stroke(path);
+  context.lineWidth = innerLineWidth;
+  context.strokeStyle = "black";
+  context.globalCompositeOperation = "destination-out";
+  context.stroke(path);
+  context.globalCompositeOperation = "source-over";
+  context.fillStyle = fillStyle;
+  context.fill(path);
 }
 
 // {
