@@ -221,7 +221,10 @@ export class SceneModel {
     }
     const sourcesInfo = [];
     const glyph = await this.getSelectedVariableGlyphController();
-    for (let i = 0; i < glyph?.sources.length; i++) {
+    if (!glyph) {
+      return null;
+    }
+    for (let i = 0; i < glyph.sources.length; i++) {
       let name = glyph.sources[i].name;
       if (!name) {
         name = `source${i}`;
