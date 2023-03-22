@@ -21,7 +21,6 @@ import { dialog } from "../core/ui-dialog.js";
 import { Form } from "../core/ui-form.js";
 import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
-import { ValueController } from "../core/value-controller.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { joinPaths } from "../core/var-path.js";
@@ -380,9 +379,13 @@ export class EditorController {
     );
 
     const textAlignMenuElement = document.querySelector("#text-align-menu");
-    this.textAlignValueController = new ValueController();
+    this.textSettings = newObservableObject();
 
-    this.textAlignValueController.addObserver("editor", (align) => {
+    this.textSettings.addEventListener("changed", (event) => {
+      if (event.key !== "align") {
+        return;
+      }
+      const align = this.textSettings.align;
       this.setTextAlignment(align);
       for (const el of textAlignMenuElement.children) {
         el.classList.toggle("selected", align === el.innerText.slice(5));
@@ -394,7 +397,7 @@ export class EditorController {
         if (event.target.classList.contains("selected")) {
           return;
         }
-        this.textAlignValueController.set(el.innerText.slice(5));
+        this.textSettings.align = el.innerText.slice(5);
       };
     }
   }
@@ -1236,7 +1239,7 @@ export class EditorController {
     for (const key of url.searchParams.keys()) {
       viewInfo[key] = JSON.parse(url.searchParams.get(key));
     }
-    this.textAlignValueController.set(viewInfo["align"] || "center");
+    this.textSettings.align = viewInfo["align"] || "center";
     if (viewInfo["viewBox"]) {
       this.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
