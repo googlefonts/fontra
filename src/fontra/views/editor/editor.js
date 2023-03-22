@@ -39,11 +39,15 @@ import {
   writeToClipboard,
 } from "../core/utils.js";
 import { SceneController } from "./scene-controller.js";
-import * as sceneDraw from "./scene-draw-funcs.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
+import { VisualizationLayers } from "./visualization-layers.js";
+import {
+  allGlyphsCleanVisualizationLayerDefinition,
+  visualizationLayerDefinitions,
+} from "./visualization-layer-definitions.js";
 import {
   deleteSelectedPoints,
   filterPathByPointIndices,
@@ -51,71 +55,6 @@ import {
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { AddRemoveButtons } from "../web-components/add-remove-buttons.js";
-
-const drawingParametersLight = {
-  glyphFillColor: "#000",
-  undefinedFlyphFillColor: "#0006",
-  hoveredGlyphStrokeColor: "#BBB8",
-  selectedGlyphStrokeColor: "#7778",
-  nodeFillColor: "#BBB",
-  selectedNodeFillColor: "#000",
-  hoveredNodeStrokeColor: "#BBB",
-  handleColor: "#BBB",
-  pathStrokeColor: "#000",
-  ghostPathStrokeColor: "#0002",
-  pathFillColor: "#0001",
-  selectedComponentStrokeColor: "#888",
-  hoveredComponentStrokeColor: "#CCC",
-  cjkFrameStrokeColor: "#0004",
-  cjkFrameOvershootColor: "#00BFFF26",
-  cjkFrameSecondLineColor: "#A6296344",
-  sidebearingBarColor: "#0004",
-  startPointIndicatorColor: "#989898A0",
-  connectPointIndicatorColor: "#3080FF80",
-  hoveredEmptyGlyphColor: "#E8E8E8", // Must be six hex digits
-  selectedEmptyGlyphColor: "#D8D8D8", // Must be six hex digits
-  onePixelUnit: 1,
-  cornerNodeSize: 8,
-  smoothNodeSize: 8,
-  handleNodeSize: 6.5,
-  hoveredNodeLineWidth: 1,
-  handleLineWidth: 1,
-  pathLineWidth: 1,
-  rectSelectLineWidth: 1,
-  rectSelectLineDash: [10, 10],
-  cjkFrameLineWidth: 1,
-  selectedComponentLineWidth: 3,
-  hoveredComponentLineWidth: 3,
-  sidebearingBarExtent: 16,
-  startPointIndicatorLineWidth: 2,
-  startPointIndicatorRadius: 9,
-  connectPointIndicatorRadius: 11,
-  insertHandlesIndicatorRadius: 5,
-};
-
-const drawingParametersDark = {
-  ...drawingParametersLight,
-  glyphFillColor: "#FFF",
-  undefinedFlyphFillColor: "#FFF6",
-  hoveredGlyphStrokeColor: "#CCC8",
-  selectedGlyphStrokeColor: "#FFF8",
-  nodeFillColor: "#BBB",
-  selectedNodeFillColor: "#FFF",
-  hoveredNodeStrokeColor: "#BBB",
-  handleColor: "#777",
-  pathStrokeColor: "#FFF",
-  ghostPathStrokeColor: "#FFF4",
-  pathFillColor: "#FFF3",
-  selectedComponentStrokeColor: "#BBB",
-  hoveredComponentStrokeColor: "#777",
-  cjkFrameStrokeColor: "#FFF6",
-  cjkFrameSecondLineColor: "#A62963AA",
-  sidebearingBarColor: "#FFF6",
-  startPointIndicatorColor: "#989898A0",
-  connectPointIndicatorColor: "#50A0FF80",
-  hoveredEmptyGlyphColor: "#484848",
-  selectedEmptyGlyphColor: "#585858",
-};
 
 export class EditorController {
   static async fromWebSocket() {
@@ -143,26 +82,36 @@ export class EditorController {
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
-    const canvasController = new CanvasController(canvas, this.drawingParameters);
+    const canvasController = new CanvasController(canvas, (magnification) =>
+      this.canvasMagnificationChanged(magnification)
+    );
     this.canvasController = canvasController;
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(
       canvasController.context
     );
 
+    this.visualizationLayers = new VisualizationLayers(
+      visualizationLayerDefinitions,
+      this.isThemeDark
+    );
+
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
-    const drawFuncs = this.getDrawingFunctions();
-    const sceneView = new SceneView();
-    sceneView.subviews = drawFuncs.map(
-      (drawFunc) => new SceneView(sceneModel, drawFunc)
+
+    const sceneView = new SceneView(sceneModel, (model, controller) =>
+      this.visualizationLayers.drawVisualizationLayers(model, controller)
     );
     canvasController.sceneView = sceneView;
 
     this.defaultSceneView = sceneView;
-    this.cleanSceneView = new SceneView(
-      sceneModel,
-      sceneDraw.drawMultiGlyphsLayerClean
-    );
+
+    this.cleanGlyphsLayers = new VisualizationLayers([
+      allGlyphsCleanVisualizationLayerDefinition,
+      this.isThemeDark,
+    ]);
+    this.cleanSceneView = new SceneView(sceneModel, (model, controller) => {
+      this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
+    });
 
     this.sceneController = new SceneController(sceneModel, canvasController);
     // TODO move event stuff out of here
@@ -242,30 +191,6 @@ export class EditorController {
     // Doing the following should help, but it doesn't, unless we add the delay.
     // await document.fonts.ready;
     setTimeout(() => this.canvasController.setNeedsUpdate(), 50);
-  }
-
-  getDrawingFunctions() {
-    return [
-      sceneDraw.drawSelectedEmptyGlyphLayer,
-      sceneDraw.drawHoveredEmptyGlyphLayer,
-      sceneDraw.drawMultiGlyphsLayer,
-      sceneDraw.drawCJKDesignFrameLayer,
-      sceneDraw.drawUndefinedGlyphsLayer,
-      // sceneDraw.drawSelectedBaselineLayer,
-      sceneDraw.drawSidebearingsLayer,
-      sceneDraw.drawGhostPathLayer,
-      sceneDraw.drawPathFillLayer,
-      sceneDraw.drawSelectedGlyphLayer,
-      sceneDraw.drawHoveredGlyphLayer,
-      sceneDraw.drawComponentSelectionLayer,
-      sceneDraw.drawStartPointsLayer,
-      sceneDraw.drawHandlesLayer,
-      sceneDraw.drawNodesLayer,
-      sceneDraw.drawPathSelectionLayer,
-      sceneDraw.drawPathConnectTargetPointLayer,
-      sceneDraw.drawPathStrokeLayer,
-      sceneDraw.drawRectangleSelectionLayer,
-    ];
   }
 
   async start() {
@@ -566,7 +491,8 @@ export class EditorController {
   }
 
   themeChanged(event) {
-    this.canvasController.setDrawingParameters(this.drawingParameters);
+    this.visualizationLayers.darkTheme = this.isThemeDark;
+    this.cleanGlyphsLayers.darkTheme = this.isThemeDark;
   }
 
   get isThemeDark() {
@@ -578,16 +504,9 @@ export class EditorController {
     }
   }
 
-  get drawingParametersLight() {
-    return drawingParametersLight;
-  }
-
-  get drawingParametersDark() {
-    return drawingParametersDark;
-  }
-
-  get drawingParameters() {
-    return this.isThemeDark ? this.drawingParametersDark : this.drawingParametersLight;
+  canvasMagnificationChanged(magnification) {
+    this.visualizationLayers.scaleFactor = 1 / magnification;
+    this.cleanGlyphsLayers.scaleFactor = 1 / magnification;
   }
 
   async glyphSearchFieldChanged(value) {

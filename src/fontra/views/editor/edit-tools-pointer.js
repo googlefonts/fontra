@@ -1,7 +1,7 @@
 import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { connectContours } from "../core/path-functions.js";
-import { centeredRect, normalizeRect } from "../core/rectangle.js";
+import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { isSuperset, difference, symmetricDifference, union } from "../core/set-ops.js";
 import { dialog } from "../core/ui-dialog.js";
 import {
@@ -234,7 +234,12 @@ export class PointerTool extends BaseTool {
         yMax: currentPoint.y,
       });
       const selection = this.sceneModel.selectionAtRect(selRect);
-      sceneController.selectionRect = selRect;
+      const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+      sceneController.selectionRect = offsetRect(
+        selRect,
+        -positionedGlyph.x,
+        -positionedGlyph.y
+      );
 
       const modeFunc = getSelectModeFunction(event);
       sceneController.selection = modeFunc(initialSelection, selection);
