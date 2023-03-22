@@ -1,6 +1,11 @@
 import { enumerate } from "./utils.js";
 
-export function dialog(headline, message, buttonDefs, autoDismissTimeout) {
+export function dialog(
+  headline,
+  messageOrContentFunction,
+  buttonDefs,
+  autoDismissTimeout
+) {
   /* return a Promise with the result of the user action, or null for cancel */
 
   let dismissTimeoutID;
@@ -31,12 +36,19 @@ export function dialog(headline, message, buttonDefs, autoDismissTimeout) {
   const headlineElement = document.createElement("div");
   headlineElement.classList.add("ui-dialog-headline");
   headlineElement.innerText = headline;
-  const messageElement = document.createElement("div");
-  messageElement.classList.add("ui-dialog-message");
-  messageElement.innerText = message;
 
   content.appendChild(headlineElement);
-  content.appendChild(messageElement);
+
+  if (typeof messageOrContentFunction === "function") {
+    const mainContentElement = messageOrContentFunction(content);
+    mainContentElement.classList.add("ui-dialog-message");
+    content.appendChild(mainContentElement);
+  } else {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("ui-dialog-message");
+    messageElement.innerText = messageOrContentFunction;
+    content.appendChild(messageElement);
+  }
 
   let defaultButtonElement, cancelButtonElement;
   buttonDefs = buttonDefs.map((bd) => {
@@ -57,7 +69,7 @@ export function dialog(headline, message, buttonDefs, autoDismissTimeout) {
     }
     buttonElement.value = buttonDef.title;
     buttonElement.onclick = (event) => {
-      dialogDone(buttonDef.resultValue || buttonDef.title);
+      dialogDone(buttonDef.getResult?.() || buttonDef.resultValue || buttonDef.title);
     };
     content.appendChild(buttonElement);
   }
