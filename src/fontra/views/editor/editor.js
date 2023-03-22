@@ -4,6 +4,7 @@ import { recordChanges } from "../core/change-recorder.js";
 import { ContextMenu, MenuItemDivider } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
+import { newObservableObject } from "../core/observable-object.js";
 import {
   centeredRect,
   insetRect,
@@ -95,6 +96,14 @@ export class EditorController {
       visualizationLayerDefinitions,
       this.isThemeDark
     );
+
+    this.visualizationLayersSettings = newVisualizationLayersSettings(
+      this.visualizationLayers
+    );
+    this.visualizationLayersSettings.addEventListener("changed", (event) => {
+      this.visualizationLayers.toggle(event.key, event.value);
+      this.canvasController.setNeedsUpdate();
+    });
 
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
 
@@ -1821,4 +1830,14 @@ function makeDisplayPath(pathItems) {
     displayPath = [displayPathItems[0], "...", ...displayPathItems.slice(1)].join("/");
   }
   return displayPath;
+}
+
+function newVisualizationLayersSettings(visualizationLayers) {
+  const settings = {};
+  for (const definition of visualizationLayers.definitions) {
+    if (definition.userSwitchable) {
+      settings[definition.identifier] = definition.defaultOn;
+    }
+  }
+  return newObservableObject(settings);
 }
