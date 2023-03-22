@@ -48,6 +48,15 @@ export class VisualizationLayers {
     this.setNeedsUpdate();
   }
 
+  toggle(layerID, onOff) {
+    if (onOff) {
+      this._visibleLayerIds.add(layerID);
+    } else {
+      this._visibleLayerIds.remove(layerID);
+    }
+    this.setNeedsUpdate();
+  }
+
   buildLayers() {
     if (!this.needsUpdate) {
       return;
