@@ -26,9 +26,10 @@ import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { joinPaths } from "../core/var-path.js";
 import {
   THEME_KEY,
-  makeUPlusStringFromCodePoint,
+  getCharFromUnicode,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
+  makeUPlusStringFromCodePoint,
   parseSelection,
   scheduleCalls,
   themeSwitchFromLocalStorage,
@@ -38,6 +39,7 @@ import {
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
+import { GlyphsSearch } from "./glyphs-search.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -212,7 +214,7 @@ export class EditorController {
       rootSubscriptionPattern[rootKey] = null;
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
-    await this.initGlyphNames();
+    await this.initGlyphsSearch();
     await this.initSliders();
     this.initLayers();
     this.initTools();
@@ -220,52 +222,14 @@ export class EditorController {
     await this.setupFromWindowLocation();
   }
 
-  async initGlyphNames() {
-    const columnDescriptions = [
-      {
-        key: "char",
-        width: "2em",
-        get: (item) => getCharFromUnicode(item.unicodes[0]),
-      },
-      { key: "glyphName", width: "10em" },
-      {
-        key: "unicode",
-        width: "5em",
-        get: (item) => makeUPlusStringFromCodePoint(item.unicodes[0]),
-      },
-    ];
-    this.glyphNamesList = new List("glyphs-list", columnDescriptions);
-    this.glyphNamesList.itemEqualFunc = (itemA, itemB) =>
-      itemA.glyphName === itemB.glyphName;
-    this.glyphNamesList.addEventListener("listSelectionChanged", async (event) => {
-      const list = event.detail;
-      const item = list.items[list.selectedItemIndex];
-      await this.glyphNameChangedCallback(item.glyphName);
-    });
-    this.glyphNamesListFilterFunc = (item) => true; // pass all through
-    this.buildGlyphNamesListContent();
-  }
-
-  buildGlyphNamesListContent() {
-    const glyphMap = this.fontController.glyphMap;
-    this.glyphsListItems = [];
-    for (const glyphName in glyphMap) {
-      this.glyphsListItems.push({
-        glyphName: glyphName,
-        unicodes: glyphMap[glyphName],
-      });
-    }
-    this.glyphsListItems.sort(glyphItemSortFunc);
-    this.setFilteredGlyphNamesListContent();
-  }
-
-  setFilteredGlyphNamesListContent() {
-    const filteredGlyphItems = this.glyphsListItems.filter(
-      this.glyphNamesListFilterFunc
+  async initGlyphsSearch() {
+    this.glyphsSearch = new GlyphsSearch(
+      document.querySelector("#glyphs-search"),
+      this.fontController.glyphMap
     );
-    const selectedItem = this.glyphNamesList.getSelectedItem();
-    this.glyphNamesList.setItems(filteredGlyphItems);
-    this.glyphNamesList.setSelectedItem(selectedItem);
+    this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
+      this.glyphNameChangedCallback(event.detail)
+    );
   }
 
   async initSliders() {
@@ -546,12 +510,6 @@ export class EditorController {
   canvasMagnificationChanged(magnification) {
     this.visualizationLayers.scaleFactor = 1 / magnification;
     this.cleanGlyphsLayers.scaleFactor = 1 / magnification;
-  }
-
-  async glyphSearchFieldChanged(value) {
-    const searchItems = value.split(/\s+/).filter((item) => item.length);
-    this.glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
-    this.setFilteredGlyphNamesListContent();
   }
 
   async glyphNameChangedCallback(glyphName) {
@@ -1191,7 +1149,7 @@ export class EditorController {
     this.sceneController.sceneModel.updateGlyphLinesCharacterMapping();
     await this.sceneController.sceneModel.updateScene();
     this.canvasController.setNeedsUpdate();
-    this.buildGlyphNamesListContent();
+    this.glyphsSearch.updateGlyphNamesListContent();
     this.updateWindowLocationAndSelectionInfo();
   }
 
@@ -1210,7 +1168,7 @@ export class EditorController {
           isEditing: false,
         });
       }
-      this.buildGlyphNamesListContent();
+      this.glyphsSearch.updateGlyphNamesListContent();
     }
     await this.sceneController.sceneModel.updateScene();
     if (
@@ -1642,50 +1600,7 @@ function rectScaleAroundCenter(rect, scaleFactor, center) {
   return rect;
 }
 
-function getCharFromUnicode(codePoint) {
-  return codePoint !== undefined ? String.fromCodePoint(codePoint) : "";
-}
-
-function glyphItemSortFunc(item1, item2) {
-  const uniCmp = compare(item1.unicodes[0], item2.unicodes[0]);
-  const glyphNameCmp = compare(item1.glyphName, item2.glyphName);
-  return uniCmp ? uniCmp : glyphNameCmp;
-}
-
-function glyphFilterFunc(item, searchItems) {
-  if (!searchItems.length) {
-    return true;
-  }
-  for (const searchString of searchItems) {
-    if (item.glyphName.indexOf(searchString) >= 0) {
-      return true;
-    }
-    if (item.unicodes[0] !== undefined) {
-      const char = String.fromCodePoint(item.unicodes[0]);
-      if (searchString === char) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 // utils, should perhaps move to utils.js
-
-function compare(a, b) {
-  // sort undefined at the end
-  if (a === b) {
-    return 0;
-  } else if (a === undefined) {
-    return 1;
-  } else if (b === undefined) {
-    return -1;
-  } else if (a < b) {
-    return -1;
-  } else {
-    return 1;
-  }
-}
 
 async function glyphLinesFromText(
   text,
