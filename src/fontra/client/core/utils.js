@@ -300,3 +300,7 @@ export function htmlToElements(html) {
   template.innerHTML = html;
   return template.content.childNodes;
 }
+
+export function getCharFromUnicode(codePoint) {
+  return codePoint !== undefined ? String.fromCodePoint(codePoint) : "";
+}
