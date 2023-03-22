@@ -163,7 +163,7 @@ export class CanvasController {
     // adjust origin
     this.origin.x += (1 - zoomFactor) * center.x * prevMagnification;
     this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
-    this._magnificationChangedCallback?.call(null, this.magnification);
+    this._magnificationChangedCallback?.(this.magnification);
     this.setNeedsUpdate();
     this._dispatchEvent("viewBoxChanged", "magnification");
   }
@@ -224,7 +224,7 @@ export class CanvasController {
     const canvasCenter = this.canvasPoint(rectCenter(viewBox));
     this.origin.x = this.canvasWidth / 2 + this.origin.x - canvasCenter.x;
     this.origin.y = this.canvasHeight / 2 + this.origin.y - canvasCenter.y;
-    this._magnificationChangedCallback?.call(null, this.magnification);
+    this._magnificationChangedCallback?.(this.magnification);
     this.setNeedsUpdate();
   }
 
