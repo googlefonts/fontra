@@ -255,7 +255,6 @@
       display: grid;
       gap: 1em;
       padding: 1em;
-      grid-template-rows: auto 1fr;
     }
 
     #glyphs-search-input {
@@ -320,17 +319,7 @@
 
         <div class="sidebar-content" data-sidebar-name="glyph-search">
           <div class="sidebar-glyph-search">
-            <div class="glyphs-search">
-              <input
-                type="text"
-                class="glyphs-search-input"
-                id="glyphs-search-input"
-                placeholder="Search glyphs"
-                autocomplete="off"
-                oninput="window.editorController.glyphSearchFieldChanged(value)"
-              />
-            </div>
-            <div id="glyphs-list" tabindex="1">
+            <div id="glyphs-search">
               <!-- contents will be filled dynamically -->
             </div>
           </div>
