@@ -49,10 +49,16 @@ export class PointerTool extends BaseTool {
     const point = sceneController.localPoint(initialEvent);
     const size = sceneController.mouseClickMargin;
     const selection = this.sceneModel.selectionAtPoint(point, size);
+    let initialClickedPointIndex;
     if (!selection.size) {
       const hit = this.sceneModel.pathHitAtPoint(point, size);
       if (hit.contourIndex !== undefined) {
         hit.segment.parentPointIndices.forEach((i) => selection.add(`point/${i}`));
+      }
+    } else {
+      const { point: pointIndices } = parseSelection(selection);
+      if (pointIndices && pointIndices.length) {
+        initialClickedPointIndex = pointIndices[0];
       }
     }
     if (initialEvent.detail == 2 || initialEvent.myTapCount == 2) {
@@ -110,7 +116,11 @@ export class PointerTool extends BaseTool {
     if (initiateRectSelect) {
       return await this.handleRectSelect(eventStream, initialEvent, initialSelection);
     } else if (initiateDrag) {
-      return await this.handleDragSelection(eventStream, initialEvent);
+      this.sceneController.sceneModel.initialClickedPointIndex =
+        initialClickedPointIndex;
+      const result = await this.handleDragSelection(eventStream, initialEvent);
+      delete this.sceneController.sceneModel.initialClickedPointIndex;
+      return result;
     }
   }
 

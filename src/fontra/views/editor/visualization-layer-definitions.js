@@ -250,6 +250,30 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.crosshair",
+  name: "Drag crosshair",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 500,
+  screenParameters: { strokeWidth: 1, lineDash: [4, 4] },
+  colors: { strokeColor: "#0004" },
+  colorsDarkMode: { strokeColor: "#FFF6" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const pointIndex = model.initialClickedPointIndex;
+    if (pointIndex === undefined) {
+      return;
+    }
+    const { x, y } = positionedGlyph.glyph.path.getPoint(pointIndex);
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    context.setLineDash(parameters.lineDash);
+    strokeLine(context, x, -1000000, x, 1000000);
+    strokeLine(context, -1000000, y, 1000000, y);
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.ghostpath",
   name: "Ghost path while dragging",
   selectionMode: "editing",
