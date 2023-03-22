@@ -213,6 +213,7 @@ registerVisualizationLayerDefinition({
   name: "Baseline",
   selectionMode: "editing",
   userSwitchable: true,
+  defaultOn: false,
   zIndex: 500,
   screenParameters: { strokeWidth: 1 },
   colors: { strokeColor: "#0004" },

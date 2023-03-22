@@ -8,7 +8,7 @@ export class VisualizationLayers {
     this._scaleFactor = 1;
     this._visibleLayerIds = new Set(
       this.definitions
-        .filter((layer) => !layer.userSwitchable)
+        .filter((layer) => !layer.userSwitchable || layer.defaultOn)
         .map((layer) => layer.identifier)
     );
     this.needsUpdate = true;
