@@ -7,6 +7,7 @@ export function newObservableObject(obj) {
   function dispatchEvent(type, key, value) {
     const event = {
       type: type,
+      target: obj,
       key: key,
       value: value,
     };
@@ -18,9 +19,23 @@ export function newObservableObject(obj) {
 
   const methods = {
     addEventListener(type, listener) {
+      if (!eventListeners[type]) {
+        throw new Error(
+          `event type must be one of ${Object.keys(eventListeners).join(
+            ","
+          )}, got ${type} instead`
+        );
+      }
       eventListeners[type].push(listener);
     },
     removeEventListener(type, listener) {
+      if (!eventListeners[type]) {
+        throw new Error(
+          `event type must be one of ${Object.keys(eventListeners).join(
+            ","
+          )}, got ${type} instead`
+        );
+      }
       eventListeners[type] = eventListeners[type].filter((item) => item !== listener);
     },
   };
@@ -41,7 +56,7 @@ export function newObservableObject(obj) {
     },
 
     deleteProperty(obj, prop) {
-      delete object[prop];
+      delete obj[prop];
       dispatchEvent("deleted", prop);
       return true;
     },
