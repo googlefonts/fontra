@@ -214,7 +214,7 @@ export class EditorController {
       rootSubscriptionPattern[rootKey] = null;
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
-    await this.initGlyphNames();
+    await this.initGlyphsSearch();
     await this.initSliders();
     this.initLayers();
     this.initTools();
@@ -222,7 +222,7 @@ export class EditorController {
     await this.setupFromWindowLocation();
   }
 
-  async initGlyphNames() {
+  async initGlyphsSearch() {
     this.glyphsSearch = new GlyphsSearch(
       document.querySelector("#glyphs-search"),
       this.fontController.glyphMap
