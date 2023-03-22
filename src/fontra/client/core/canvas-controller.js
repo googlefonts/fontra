@@ -15,7 +15,7 @@ export class CanvasController {
     this.origin = { x: this.canvasWidth / 2, y: 0.85 * this.canvasHeight }; // TODO choose y based on initial canvas height
     this.needsUpdate = false;
 
-    this.magnificationChangedCallback = magnificationChangedCallback;
+    this._magnificationChangedCallback = magnificationChangedCallback;
 
     const resizeObserver = new ResizeObserver((entries) => {
       this.setupSize();
@@ -163,7 +163,7 @@ export class CanvasController {
     // adjust origin
     this.origin.x += (1 - zoomFactor) * center.x * prevMagnification;
     this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
-    this.magnificationChangedCallback?.call(null, this.magnification);
+    this._magnificationChangedCallback?.call(null, this.magnification);
     this.setNeedsUpdate();
     this._dispatchEvent("viewBoxChanged", "magnification");
   }
@@ -224,7 +224,7 @@ export class CanvasController {
     const canvasCenter = this.canvasPoint(rectCenter(viewBox));
     this.origin.x = this.canvasWidth / 2 + this.origin.x - canvasCenter.x;
     this.origin.y = this.canvasHeight / 2 + this.origin.y - canvasCenter.y;
-    this.magnificationChangedCallback?.call(null, this.magnification);
+    this._magnificationChangedCallback?.call(null, this.magnification);
     this.setNeedsUpdate();
   }
 
