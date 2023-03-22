@@ -214,6 +214,7 @@ export class EditorController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphNames();
     await this.initSliders();
+    this.initLayers();
     this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
@@ -283,6 +284,32 @@ export class EditorController {
         this.autoViewBox = false;
       })
     );
+  }
+
+  initLayers() {
+    const optionsList = document.querySelector(".options-list");
+    const userSwitchableLayers = this.visualizationLayers.definitions.filter(
+      (layer) => layer.userSwitchable
+    );
+
+    const glyphDisplayLayersItems = userSwitchableLayers.map((layer) => {
+      let isLayerVisible = this.visualizationLayersSettings[layer.identifier];
+      return { id: layer.identifier, name: layer.name, isChecked: isLayerVisible };
+    });
+
+    optionsList.options = [
+      {
+        name: "Glyph display layers",
+        defaultOpen: true,
+        items: glyphDisplayLayersItems,
+      },
+    ];
+
+    optionsList.addEventListener("change", (event) => {
+      const layerIdentifier = event.detail.id;
+      const layerChecked = event.detail.checked;
+      this.visualizationLayersSettings[layerIdentifier] = layerChecked;
+    });
   }
 
   initTools() {

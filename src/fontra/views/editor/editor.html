@@ -9,6 +9,7 @@
     <link href="/css/core.css" rel="stylesheet" />
     <link href="/editor/editor.css" rel="stylesheet" />
     <script type="module" src="/web-components/general-settings.js"></script>
+    <script type="module" src="/web-components/options-list.js"></script>
   </head>
 
   <style type="text/css">
@@ -277,7 +278,8 @@
       box-sizing: border-box;
     }
 
-    .sidebar-settings {
+    .sidebar-settings,
+    .sidebar-layer-preferences {
       box-sizing: border-box;
       height: 100%;
       display: grid;
@@ -353,6 +355,15 @@
             </div>
           </div>
         </div>
+
+        <div class="sidebar-content" data-sidebar-name="layers">
+          <div class="sidebar-layer-preferences">
+            <div class="layer-preferences" id="layer-preferences">
+              <!-- attributes will be set dynamically -->
+              <options-list class="options-list"></options-list>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="main-container">
@@ -371,7 +382,7 @@
             <div class="sidebar-tab" data-sidebar-name="designspace-sliders">
               sliders
             </div>
-            <!-- <div class="sidebar-tab" data-sidebar-name="layers">layers</div> -->
+            <div class="sidebar-tab" data-sidebar-name="layers">layers</div>
             <div class="sidebar-tab" data-sidebar-name="settings">gear</div>
           </div>
 
