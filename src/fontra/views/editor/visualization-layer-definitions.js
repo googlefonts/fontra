@@ -268,8 +268,11 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
     context.setLineDash(parameters.lineDash);
-    strokeLine(context, x, -1000000, x, 1000000);
-    strokeLine(context, -1000000, y, 1000000, y);
+    const { xMin, yMin, xMax, yMax } = controller.getViewBox();
+    const dx = -positionedGlyph.x;
+    const dy = -positionedGlyph.y;
+    strokeLine(context, x, yMin + dy, x, yMax + dy);
+    strokeLine(context, xMin + dx, y, xMax + dx, y);
   },
 });
 
