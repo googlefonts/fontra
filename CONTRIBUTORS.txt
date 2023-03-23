@@ -4,3 +4,7 @@
 Just van Rossum
 Gaëtan Baehr
 Jérémie Hornus
+Fabio Caccamo
+Nedislav Kamburov
+Roel Nieskens
+Nikolaus Waxweiler
