@@ -9,66 +9,57 @@ export class RangeSlider extends LitElement {
     .wrapper {
       position: relative;
       display: flex;
+      gap: 0.5em;
       font-family: fontra-ui-regular, sans-serif;
     }
 
     .slider-name {
-      margin-right: 0.5em;
       min-width: 7ch;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .tooltip {
-      position: absolute;
+    .slider-name:hover {
+      cursor: pointer;
+    }
+
+    .foldable-marker.active {
+      display: inline-block;
+      transform: rotate(90deg);
+    }
+
+    .foldable {
       display: none;
-      top: 1.8em;
-      width: 90%;
+      margin: 0.55em 0 0.2em 0;
       font-size: 1em;
       color: var(--ui-list-row-foreground-color);
       background: var(--ui-list-row-selected-background-color);
       border: solid 1px var(--ui-list-border-color);
-      border-radius: 5px;
-      padding: 0 1em;
-      opacity: 0.95;
+      border-radius: 0 0 10px 0;
+      padding: 0 0.5em;
       z-index: 100;
     }
 
-    .slider-name:hover > .tooltip {
+    .foldable > p {
+      color: rgba(var(--foreground-color), 0.5);
+      margin: 0;
+    }
+
+    .foldable.active {
       display: block;
     }
 
-    input {
-      width: inherit;
-    }
-
-    .numeric-input {
-      margin-right: 0.5em;
-    }
-
-    .numeric-input > div {
-      opacity: 0.3;
-      font-size: 10px;
-      padding: 5px;
-      color: white;
-      background-color: black;
-      border: 1px solid black;
-      border-radius: 5px;
-      pointer-events: none;
-    }
-
-    .numeric-input > .slider-input {
-      position: relative;
-    }
-
-    .numeric-input > .slider-input > .slider-default-value {
-      width: 40px;
-      border-radius: 5px;
-      border: 1px solid dimgray;
-      text-align: center;
-      font-size: 0.85em;
-    }
-
     .reset {
+      position: absolute;
+      top: -1.1em;
+      right: 0;
+      color: dimgray;
       cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .reset.active {
       opacity: 1;
     }
 
@@ -164,6 +155,33 @@ export class RangeSlider extends LitElement {
       opacity: 0.65;
       background: dimgray;
     }
+
+    input {
+      width: inherit;
+    }
+
+    .numeric-input > div {
+      opacity: 0.3;
+      font-size: 10px;
+      padding: 5px;
+      color: white;
+      background-color: black;
+      border: 1px solid black;
+      border-radius: 5px;
+      pointer-events: none;
+    }
+
+    .numeric-input > .slider-input {
+      position: relative;
+    }
+
+    .numeric-input > .slider-input > .slider-default-value {
+      width: 40px;
+      border-radius: 5px;
+      border: 1px solid dimgray;
+      text-align: center;
+      font-size: 0.85em;
+    }
   `;
 
   static properties = {
@@ -192,37 +210,16 @@ export class RangeSlider extends LitElement {
 
   render() {
     return html`
-      <div class="wrapper">
-        <div class="slider-name">
-          ${this.name}
-          <div class="tooltip">
-            <p>Name: ${this.name}</p>
-            <p>
-              Values:<br />
-              <span>Min: ${this.minValue}</span>&nbsp;
-              <span>Default: ${this.defaultValue}</span>&nbsp;
-              <span>Max: ${this.maxValue}</span>
-            </p>
-            <p>
-              <span class="reset" @click=${this.reset}>Reset to default ↺</span>
-            </p>
-          </div>
-        </div>
-        <div class="numeric-input">
-          <section class="slider-input">
-            <input
-              type="number"
-              @input=${this.changeValue}
-              class="slider-default-value"
-              min=${this.minValue}
-              max=${this.maxValue}
-              step=${this.step}
-              pattern="[0-9]+"
-              .value=${Number(Math.round(parseFloat(this.value + "e" + 2)) + "e-" + 2)}
-            />
-          </section>
+      <section class="wrapper">
+        <div class="slider-name" @click=${() => this.toggleFoldable()}>
+          <span class="foldable-marker">⏵</span> ${this.name}
         </div>
         <div class="range-container">
+          <span
+            class="reset ${this.value !== this.defaultValue ? "active" : ""}"
+            @click=${this.reset}
+            >↺</span
+          >
           <input
             type="range"
             @input=${this.changeValue}
@@ -246,6 +243,31 @@ export class RangeSlider extends LitElement {
             )}
           </datalist>
         </div>
+        <div class="numeric-input">
+          <section class="slider-input">
+            <input
+              type="number"
+              @input=${this.changeValue}
+              class="slider-default-value"
+              min=${this.minValue}
+              max=${this.maxValue}
+              step=${this.step}
+              pattern="[0-9]+"
+              .value=${this.roundToDecimal(this.value)}
+            />
+          </section>
+        </div>
+      </section>
+      <div class="foldable">
+        <p><strong>${this.name}</strong></p>
+        <p>
+          <span>Min: <strong>${this.minValue}</strong></span
+          >&nbsp; |
+          <span
+            >Default: <strong>${this.roundToDecimal(this.defaultValue)}</strong></span
+          >&nbsp; |
+          <span>Max: <strong>${this.maxValue}</strong></span>
+        </p>
       </div>
     `;
   }
@@ -262,6 +284,13 @@ export class RangeSlider extends LitElement {
     this.onChangeCallback();
   }
 
+  toggleFoldable() {
+    const marker = this.shadowRoot.querySelector(".foldable-marker");
+    const foldable = this.shadowRoot.querySelector(".foldable");
+    marker.classList.toggle("active");
+    foldable.classList.toggle("active");
+  }
+
   reset() {
     this.value = this.defaultValue;
     this.onChangeCallback(this.value);
@@ -271,6 +300,10 @@ export class RangeSlider extends LitElement {
     if (this.defaultValue > this.minValue && this.defaultValue <= this.maxValue) {
       this.tickmarksPositions.push(this.defaultValue);
     }
+  }
+
+  roundToDecimal(value) {
+    return Number(Math.round(parseFloat(value + "e" + 2)) + "e-" + 2);
   }
 
   connectedCallback() {
