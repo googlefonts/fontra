@@ -20,6 +20,37 @@ export function registerVisualizationLayerDefinition(newLayerDef) {
 }
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.upm.grid",
+  name: "Units-per-em grid",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
+  zIndex: 500,
+  dontTranslate: true,
+  screenParameters: { strokeWidth: 2 },
+  colors: { strokeColor: "#FFF" },
+  colorsDarkMode: { strokeColor: "#3C3C3C" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    if (controller.magnification < 4) {
+      return;
+    }
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    let { xMin, yMin, xMax, yMax } = controller.getViewBox();
+    xMin -= positionedGlyph.x;
+    xMax -= positionedGlyph.x;
+    yMin -= positionedGlyph.y;
+    yMax -= positionedGlyph.y;
+    for (let x = Math.floor(xMin); x < Math.ceil(xMax); x++) {
+      strokeLine(context, x, yMin, x, yMax);
+    }
+    for (let y = Math.floor(yMin); y < Math.ceil(yMax); y++) {
+      strokeLine(context, xMin, y, xMax, y);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.empty.selected.glyph",
   name: "Empty selected glyph",
   selectionMode: "selected",
