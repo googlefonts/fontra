@@ -496,6 +496,7 @@ export class EditorController {
   themeChanged(event) {
     this.visualizationLayers.darkTheme = this.isThemeDark;
     this.cleanGlyphsLayers.darkTheme = this.isThemeDark;
+    this.canvasController.setNeedsUpdate();
   }
 
   get isThemeDark() {
