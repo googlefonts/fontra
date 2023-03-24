@@ -9,14 +9,16 @@ import { subVectors } from "../core/vector.js";
 export const visualizationLayerDefinitions = [];
 
 export function registerVisualizationLayerDefinition(newLayerDef) {
-  let index = -1;
+  let index = 0;
   let layerDef;
-  for ([index, layerDef] of enumerate(visualizationLayerDefinitions)) {
-    if (newLayerDef.zIndex > layerDef.zIndex) {
+  for (index = 0; index < visualizationLayerDefinitions.length; index++) {
+    layerDef = visualizationLayerDefinitions[index];
+    if (newLayerDef.zIndex < layerDef.zIndex) {
       break;
     }
   }
-  visualizationLayerDefinitions.splice(index + 1, 0, newLayerDef);
+  console.log(index);
+  visualizationLayerDefinitions.splice(index, 0, newLayerDef);
 }
 
 registerVisualizationLayerDefinition({
@@ -25,7 +27,7 @@ registerVisualizationLayerDefinition({
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
-  zIndex: 500,
+  zIndex: 0,
   dontTranslate: true,
   screenParameters: { strokeWidth: 2 },
   colors: { strokeColor: "#FFF" },
