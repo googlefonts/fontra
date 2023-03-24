@@ -17,7 +17,6 @@ export function registerVisualizationLayerDefinition(newLayerDef) {
       break;
     }
   }
-  console.log(index);
   visualizationLayerDefinitions.splice(index, 0, newLayerDef);
 }
 
