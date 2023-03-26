@@ -102,6 +102,10 @@ export class EditorController {
       this.visualizationLayers
     );
     this.visualizationLayersSettings.addEventListener("changed", (event) => {
+      localStorage.setItem(
+        "visualization-layers-settings",
+        JSON.stringify(this.visualizationLayersSettings)
+      );
       this.visualizationLayers.toggle(event.key, event.value);
       this.canvasController.setNeedsUpdate();
     });
@@ -257,8 +261,8 @@ export class EditorController {
     );
 
     const glyphDisplayLayersItems = userSwitchableLayers.map((layer) => {
-      let isLayerVisible = this.visualizationLayersSettings[layer.identifier];
-      return { id: layer.identifier, name: layer.name, isChecked: isLayerVisible };
+      const layerChecked = this.visualizationLayersSettings[layer.identifier];
+      return { id: layer.identifier, name: layer.name, isChecked: layerChecked };
     });
 
     optionsList.options = [
@@ -1779,11 +1783,16 @@ function makeDisplayPath(pathItems) {
 }
 
 function newVisualizationLayersSettings(visualizationLayers) {
-  const settings = {};
+  const settings =
+    JSON.parse(localStorage.getItem("visualization-layers-settings")) || {};
   for (const definition of visualizationLayers.definitions) {
-    if (definition.userSwitchable) {
-      settings[definition.identifier] = definition.defaultOn;
+    if (!definition.userSwitchable) {
+      continue;
     }
+    if (!(definition.identifier in settings)) {
+      settings[definition.identifier] = !!definition.defaultOn;
+    }
+    visualizationLayers.toggle(definition.identifier, settings[definition.identifier]);
   }
   return newObservableObject(settings);
 }
