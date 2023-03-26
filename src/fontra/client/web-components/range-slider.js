@@ -212,7 +212,7 @@ export class RangeSlider extends LitElement {
     return html`
       <section class="wrapper">
         <div class="slider-name" @click=${() => this.toggleFoldable()}>
-          <span class="foldable-marker">⏵</span> ${this.name}
+          <span class="foldable-marker">▶</span> ${this.name}
         </div>
         <div class="range-container">
           <span
