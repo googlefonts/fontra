@@ -247,7 +247,7 @@ export class RangeSlider extends LitElement {
           <section class="slider-input">
             <input
               type="number"
-              @input=${this.changeValue}
+              @change=${this.changeValue}
               class="slider-default-value"
               min=${this.minValue}
               max=${this.maxValue}
