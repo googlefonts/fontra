@@ -3,7 +3,9 @@ import { html, css, LitElement } from "../third-party/lit.js";
 export class RangeSlider extends LitElement {
   static styles = css`
     :host {
-      --thumb-width: 20px;
+      --thumb-height: 12px;
+      --thumb-width: 14px;
+      --track-height: 5px;
     }
 
     .wrapper {
@@ -34,7 +36,6 @@ export class RangeSlider extends LitElement {
       font-size: 1em;
       color: var(--ui-list-row-foreground-color);
       background: var(--ui-list-row-selected-background-color);
-      border: solid 1px var(--ui-list-border-color);
       border-radius: 0 0 10px 0;
       padding: 0 0.5em;
       z-index: 100;
@@ -90,7 +91,7 @@ export class RangeSlider extends LitElement {
     /* Special styling for WebKit/Blink */
     .slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      height: 12px;
+      height: var(--thumb-height);
       width: var(--thumb-width);
       background: #282828;
       border: none;
@@ -100,7 +101,7 @@ export class RangeSlider extends LitElement {
     }
 
     .slider::-webkit-slider-runnable-track {
-      height: 5px;
+      height: var(--track-height);
       background: dimgray;
     }
 
@@ -110,7 +111,7 @@ export class RangeSlider extends LitElement {
 
     /* Firefox */
     .slider::-moz-range-thumb {
-      height: 12px;
+      height: var(--thumb-height);
       width: var(--thumb-width);
       background: #282828;
       border: none;
@@ -118,13 +119,13 @@ export class RangeSlider extends LitElement {
     }
 
     .slider::-moz-range-track {
-      height: 5px;
+      height: var(--track-height);
       background: dimgray;
     }
 
     /* All the same stuff for IE */
     .slider::-ms-thumb {
-      height: 12px;
+      height: var(--thumb-height);
       width: var(--thumb-width);
       background: #282828;
       border: none;
@@ -132,7 +133,7 @@ export class RangeSlider extends LitElement {
     }
 
     .slider::-ms-track {
-      height: 5px;
+      height: var(--track-height);
       background: dimgray;
     }
 
