@@ -274,12 +274,20 @@ export class RangeSlider extends LitElement {
 
   changeValue(e) {
     const value = e.target.value;
-    const isValid = e.target.reportValidity();
+    const isValid = e.target.reportValidity() && isNumeric(value);
     if (isValid) {
       this.value = value;
     } else {
       e.target.setAttribute("aria-invalid", !isValid);
-      this.value = this.defaultValue;
+      if (!isNumeric(value)) {
+        this.value = this.defaultValue;
+      } else if (value < this.minValue) {
+        this.value = this.minValue;
+      } else if (value > this.maxValue) {
+        this.value = this.maxValue;
+      } else {
+        this.value = this.defaultValue;
+      }
     }
     this.onChangeCallback();
   }
@@ -314,3 +322,11 @@ export class RangeSlider extends LitElement {
 }
 
 customElements.define("range-slider", RangeSlider);
+
+function isNumeric(str) {
+  if (typeof str != "string") return false; // we only process strings!
+  return (
+    !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+    !isNaN(parseFloat(str))
+  ); // ...and ensure strings of whitespace fail
+}
