@@ -1,16 +1,9 @@
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 
 export class List {
-  constructor(listID, columnDescriptions) {
-    if (listID) {
-      this.container = document.querySelector(`#${listID}`);
-    } else {
-      this.container = document.createElement("div");
-      this.container.tabIndex = "1";
-    }
-    if (!this.container) {
-      throw new Error(`Expecting an element with id="#${listID}"`);
-    }
+  constructor(columnDescriptions) {
+    this.container = document.createElement("div");
+    this.container.tabIndex = "1";
     if (this.container.children.length != 0) {
       throw new Error("list container must be empty");
     }
