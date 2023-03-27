@@ -119,10 +119,10 @@ export class EditorController {
 
     this.defaultSceneView = sceneView;
 
-    this.cleanGlyphsLayers = new VisualizationLayers([
-      allGlyphsCleanVisualizationLayerDefinition,
-      this.isThemeDark,
-    ]);
+    this.cleanGlyphsLayers = new VisualizationLayers(
+      [allGlyphsCleanVisualizationLayerDefinition],
+      this.isThemeDark
+    );
     this.cleanSceneView = new SceneView(sceneModel, (model, controller) => {
       this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
     });
