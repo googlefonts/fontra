@@ -44,7 +44,8 @@ export class GlyphsSearch {
         get: (item) => makeUPlusStringFromCodePoint(item.unicodes[0]),
       },
     ];
-    this.glyphNamesList = new List(columnDescriptions);
+    this.glyphNamesList = new List();
+    this.glyphNamesList.columnDescriptions = columnDescriptions;
     this.glyphNamesList.itemEqualFunc = (itemA, itemB) =>
       itemA.glyphName === itemB.glyphName;
 

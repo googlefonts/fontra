@@ -1,7 +1,7 @@
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 
 export class List {
-  constructor(columnDescriptions) {
+  constructor() {
     this.container = document.createElement("div");
     this.container.tabIndex = "1";
     if (this.container.children.length != 0) {
@@ -9,16 +9,13 @@ export class List {
     }
     this.container.classList.add("ui-list");
 
-    if (!columnDescriptions) {
-      columnDescriptions = [
-        {
-          key: "default",
-          get: (item) => item,
-        },
-      ];
-    }
-    this.columnDescriptions = columnDescriptions;
-
+    this._columnDescriptions = [
+      {
+        key: "default",
+        get: (item) => item,
+      },
+    ];
+    this.items = [];
     this.itemEqualFunc = null;
 
     this.contents = document.createElement("div");
@@ -51,6 +48,15 @@ export class List {
     );
     this.selectedItemIndex = undefined;
     this.container.classList.add("empty");
+  }
+
+  get columnDescriptions() {
+    return this._columnDescriptions;
+  }
+
+  set columnDescriptions(columnDescriptions) {
+    this._columnDescriptions = columnDescriptions;
+    this.setItems(this.items);
   }
 
   setItems(items) {

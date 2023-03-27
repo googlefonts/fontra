@@ -322,7 +322,8 @@ export class EditorController {
       { key: "sourceName", width: "14em" },
       // {"key": "sourceIndex", "width": "2em"},
     ];
-    this.sourcesList = new List(columnDescriptions);
+    this.sourcesList = new List();
+    this.sourcesList.columnDescriptions = columnDescriptions;
     this.sourcesList.container.classList.add("sources-list");
     designspaceNavigation.appendChild(this.sourcesList.container);
 
