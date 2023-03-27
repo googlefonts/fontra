@@ -62,7 +62,7 @@ export class GlyphsSearch {
 
     this.container.style = glyphsSearchCSS;
     this.container.appendChild(searchField);
-    this.container.appendChild(this.glyphNamesList.container);
+    this.container.appendChild(this.glyphNamesList);
   }
 
   addEventListener(...args) {

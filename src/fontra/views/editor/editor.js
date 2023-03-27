@@ -324,8 +324,8 @@ export class EditorController {
     ];
     this.sourcesList = new List();
     this.sourcesList.columnDescriptions = columnDescriptions;
-    this.sourcesList.container.classList.add("sources-list");
-    designspaceNavigation.appendChild(this.sourcesList.container);
+    this.sourcesList.classList.add("sources-list");
+    designspaceNavigation.appendChild(this.sourcesList);
 
     // TODO: relocate those to somewhere more appropriate after implementation
     const addSourceCallback = () => {

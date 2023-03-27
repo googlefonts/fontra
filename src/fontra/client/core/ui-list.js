@@ -1,13 +1,11 @@
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 
-export class List {
+export class List extends HTMLElement {
   constructor() {
-    this.container = document.createElement("div");
-    this.container.tabIndex = "1";
-    if (this.container.children.length != 0) {
-      throw new Error("list container must be empty");
-    }
-    this.container.classList.add("ui-list");
+    super();
+    this.tabIndex = "1";
+    this.innerHTML = "";
+    this.classList.add("ui-list");
 
     this._columnDescriptions = [
       {
@@ -20,7 +18,7 @@ export class List {
 
     this.contents = document.createElement("div");
     this.contents.className = "contents";
-    this.container.appendChild(this.contents);
+    this.appendChild(this.contents);
     this.contents.addEventListener(
       "click",
       (event) => this._clickHandler(event),
@@ -31,23 +29,11 @@ export class List {
       (event) => this._dblClickHandler(event),
       false
     );
-    this.container.addEventListener(
-      "scroll",
-      (event) => this._scrollHandler(event),
-      false
-    );
-    this.container.addEventListener(
-      "keydown",
-      (event) => this._keyDownHandler(event),
-      false
-    );
-    this.container.addEventListener(
-      "keyup",
-      (event) => this._keyUpHandler(event),
-      false
-    );
+    this.addEventListener("scroll", (event) => this._scrollHandler(event), false);
+    this.addEventListener("keydown", (event) => this._keyDownHandler(event), false);
+    this.addEventListener("keyup", (event) => this._keyUpHandler(event), false);
     this.selectedItemIndex = undefined;
-    this.container.classList.add("empty");
+    this.classList.add("empty");
   }
 
   get columnDescriptions() {
@@ -60,7 +46,7 @@ export class List {
   }
 
   setItems(items) {
-    this.container.classList.toggle("empty", !items.length);
+    this.classList.toggle("empty", !items.length);
     this.contents.innerHTML = "";
     this.items = items;
     this._itemsBackLog = Array.from(items);
@@ -96,18 +82,13 @@ export class List {
     }
   }
 
-  addEventListener(eventName, handler, options) {
-    this.container.addEventListener(eventName, handler, options);
-  }
-
   _addMoreItemsIfNeeded() {
     while (
       this._itemsBackLog.length > 0 &&
-      this.container.scrollTop + this.container.offsetHeight + 200 >
-        this.contents.offsetHeight
+      this.scrollTop + this.offsetHeight + 200 > this.contents.offsetHeight
     ) {
       this._addMoreItems();
-      if (this.container.offsetHeight === 0) {
+      if (this.offsetHeight === 0) {
         break;
       }
     }
@@ -190,7 +171,7 @@ export class List {
       bubbles: false,
       detail: this,
     });
-    this.container.dispatchEvent(event);
+    this.dispatchEvent(event);
   }
 
   _keyDownHandler(event) {
@@ -231,3 +212,5 @@ export class List {
     this._addMoreItemsIfNeeded();
   }
 }
+
+customElements.define("fontra-ui-list", List);
