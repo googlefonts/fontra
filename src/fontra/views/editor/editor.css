@@ -204,7 +204,7 @@
 .axis-sliders {
   display: flex;
   flex-direction: column;
-  gap: 0.2em;
+  gap: 0.4em;
   overflow: scroll;
   padding: 0.2em 0.05em;
 }
@@ -213,12 +213,6 @@
   min-height: 100px;
   margin-top: 1em;
   flex-shrink: 100;
-}
-
-.slider {
-  /*margin-right: 0.75em;*/
-  margin: 2px 0;
-  padding: 0;
 }
 
 .slider-divider {
