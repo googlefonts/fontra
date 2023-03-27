@@ -219,6 +219,20 @@ export class RangeSlider extends LitElement {
           <!--<span class="foldable-marker">▶</span>-->
           ${this.name}
         </div>
+        <div class="numeric-input">
+          <section class="slider-input">
+            <input
+              type="number"
+              @change=${this.changeValue}
+              class="slider-numeric-input"
+              min=${this.minValue}
+              max=${this.maxValue}
+              step=${this.step}
+              pattern="[0-9]+"
+              .value=${roundToDecimal(this.value)}
+            />
+          </section>
+        </div>
         <div class="range-container">
           <input
             type="range"
@@ -243,20 +257,6 @@ export class RangeSlider extends LitElement {
               (pos) => html`<option value="${pos}"></option>`
             )}
           </datalist>
-        </div>
-        <div class="numeric-input">
-          <section class="slider-input">
-            <input
-              type="number"
-              @change=${this.changeValue}
-              class="slider-numeric-input"
-              min=${this.minValue}
-              max=${this.maxValue}
-              step=${this.step}
-              pattern="[0-9]+"
-              .value=${roundToDecimal(this.value)}
-            />
-          </section>
         </div>
       </section>
       <div class="foldable">
