@@ -1745,8 +1745,7 @@ function setNestedValue(subject, path, value) {
 }
 
 function isTypeableInput(element) {
-  // Check if the selected element is part of the regular DOM or part of a Web Component's Shadow DOM
-  element = element.shadowRoot ? element.shadowRoot.activeElement : element;
+  element = findNestedActiveElement(element);
 
   if (element.contentEditable === "true") {
     return true;
@@ -1758,6 +1757,14 @@ function isTypeableInput(element) {
     return true;
   }
   return false;
+}
+
+function findNestedActiveElement(element) {
+  // If the element element is part of a Web Component's Shadow DOM, take
+  // *its* active element, recursively.
+  return element.shadowRoot
+    ? findNestedActiveElement(element.shadowRoot.activeElement)
+    : element;
 }
 
 function easeOutQuad(t) {
