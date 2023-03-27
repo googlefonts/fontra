@@ -1,4 +1,4 @@
-import { List } from "/core/ui-list.js";
+import { UIList } from "/web-components/ui-list.js";
 import {
   getCharFromUnicode,
   htmlToElement,
@@ -44,7 +44,7 @@ export class GlyphsSearch {
         get: (item) => makeUPlusStringFromCodePoint(item.unicodes[0]),
       },
     ];
-    this.glyphNamesList = new List();
+    this.glyphNamesList = new UIList();
     this.glyphNamesList.columnDescriptions = columnDescriptions;
     this.glyphNamesList.itemEqualFunc = (itemA, itemB) =>
       itemA.glyphName === itemB.glyphName;

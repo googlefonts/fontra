@@ -37,7 +37,7 @@ const listCSS = `
 }
 `;
 
-export class List extends HTMLElement {
+export class UIList extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -258,4 +258,4 @@ export class List extends HTMLElement {
   }
 }
 
-customElements.define("fontra-ui-list", List);
+customElements.define("ui-list", UIList);
