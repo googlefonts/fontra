@@ -42,7 +42,6 @@ export class UIList extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this.tabIndex = "1";
-    this.innerHTML = "";
 
     this._columnDescriptions = [
       {
