@@ -301,8 +301,8 @@ export class RangeSlider extends LitElement {
 
   toggleFoldable(event) {
     const marker = this.shadowRoot.querySelector(".foldable-marker");
-    const foldable = this.shadowRoot.querySelector(".foldable");
     marker?.classList.toggle("active");
+    const foldable = this.shadowRoot.querySelector(".foldable");
     foldable.classList.toggle("active");
   }
 
