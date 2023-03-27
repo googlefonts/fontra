@@ -206,7 +206,7 @@
   flex-direction: column;
   gap: 0.4em;
   overflow: scroll;
-  padding-right: 0.05em;
+  padding-right: 1px; /* avoid clipping of the focus ring */
   padding-bottom: 0.4em;
 }
 
