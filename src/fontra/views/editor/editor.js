@@ -322,6 +322,7 @@ export class EditorController {
       // {"key": "sourceIndex", "width": "2em"},
     ];
     this.sourcesList = new List("sources-list", columnDescriptions);
+
     // TODO: relocate those to somewhere more appropriate after implementation
     const addSourceCallback = () => {
       console.log("add a source");
@@ -329,14 +330,13 @@ export class EditorController {
     const removeSourceCallback = () => {
       console.log("remove a source");
     };
-
-    const designspaceSliders = document.querySelector(".designspace-sliders");
+    const designspaceNavigation = document.querySelector("#designspace-navigation");
     this.addRemoveSourceButtons = new AddRemoveButtons();
     this.addRemoveSourceButtons.className = "";
     this.addRemoveSourceButtons.addButtonCallback = addSourceCallback;
     this.addRemoveSourceButtons.removeButtonCallback = removeSourceCallback;
     this.addRemoveSourceButtons.hidden = true;
-    designspaceSliders.appendChild(this.addRemoveSourceButtons);
+    designspaceNavigation.appendChild(this.addRemoveSourceButtons);
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       await this.sceneController.setSelectedSource(
