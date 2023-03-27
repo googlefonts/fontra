@@ -49,6 +49,7 @@ export class RangeSlider extends LitElement {
       min-width: 7ch;
       overflow: hidden;
       text-overflow: ellipsis;
+      text-align: right;
     }
 
     .slider-name:hover {
@@ -68,10 +69,9 @@ export class RangeSlider extends LitElement {
 
     .foldable {
       display: none;
-      margin: 0.2em 0 0.2em 0;
+      margin: 0.2em 0 0.4em 0;
       font-size: 1em;
-      padding: 0 0.5em;
-      z-index: 100;
+      color: #999; /* lazy comprimise for light and dark modes */
     }
 
     .foldable > p {
@@ -216,7 +216,8 @@ export class RangeSlider extends LitElement {
     return html`
       <section class="wrapper">
         <div class="slider-name" @click=${() => this.toggleFoldable()}>
-          <span class="foldable-marker">▶</span> ${this.name}
+          <!--<span class="foldable-marker">▶</span>-->
+          ${this.name}
         </div>
         <div class="range-container">
           <input
@@ -259,7 +260,7 @@ export class RangeSlider extends LitElement {
         </div>
       </section>
       <div class="foldable">
-        <p><strong>${this.name}</strong></p>
+        <!-- <p><strong>${this.name}</strong></p> -->
         <p>
           <span>Min: <strong>${this.minValue}</strong></span
           >&nbsp; |
@@ -301,7 +302,7 @@ export class RangeSlider extends LitElement {
   toggleFoldable() {
     const marker = this.shadowRoot.querySelector(".foldable-marker");
     const foldable = this.shadowRoot.querySelector(".foldable");
-    marker.classList.toggle("active");
+    marker?.classList.toggle("active");
     foldable.classList.toggle("active");
   }
 
