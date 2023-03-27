@@ -268,13 +268,13 @@ export class RangeSlider extends LitElement {
     }
   }
 
-  changeValue(e) {
-    const value = e.target.value;
-    const isValid = e.target.reportValidity() && isNumeric(value);
+  changeValue(event) {
+    const value = event.target.value;
+    const isValid = event.target.reportValidity() && isNumeric(value);
     if (isValid) {
       this.value = value;
     } else {
-      e.target.setAttribute("aria-invalid", !isValid);
+      event.target.setAttribute("aria-invalid", !isValid);
       if (!isNumeric(value)) {
         this.value = this.defaultValue;
       } else if (value < this.minValue) {
