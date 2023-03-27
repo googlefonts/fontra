@@ -90,7 +90,7 @@ export class RangeSlider extends LitElement {
       -webkit-appearance: none;
       height: var(--thumb-height);
       width: var(--thumb-width);
-      background: var(----thumb-color);
+      background: var(--thumb-color);
       border: none;
       border-radius: 7px;
       cursor: pointer;
@@ -110,26 +110,12 @@ export class RangeSlider extends LitElement {
     .slider::-moz-range-thumb {
       height: var(--thumb-height);
       width: var(--thumb-width);
-      background: var(----thumb-color);
+      background: var(--thumb-color);
       border: none;
       cursor: pointer;
     }
 
     .slider::-moz-range-track {
-      height: var(--track-height);
-      background: dimgray;
-    }
-
-    /* All the same stuff for IE */
-    .slider::-ms-thumb {
-      height: var(--thumb-height);
-      width: var(--thumb-width);
-      background: var(----thumb-color);
-      border: none;
-      cursor: pointer;
-    }
-
-    .slider::-ms-track {
       height: var(--track-height);
       background: dimgray;
     }
