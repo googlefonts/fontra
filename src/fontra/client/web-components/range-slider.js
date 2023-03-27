@@ -243,7 +243,7 @@ export class RangeSlider extends LitElement {
               max=${this.maxValue}
               step=${this.step}
               pattern="[0-9]+"
-              .value=${this.roundToDecimal(this.value)}
+              .value=${roundToDecimal(this.value)}
             />
           </section>
         </div>
@@ -253,8 +253,7 @@ export class RangeSlider extends LitElement {
         <p>
           <span>Min: <strong>${this.minValue}</strong></span
           >&nbsp; |
-          <span
-            >Default: <strong>${this.roundToDecimal(this.defaultValue)}</strong></span
+          <span>Default: <strong>${roundToDecimal(this.defaultValue)}</strong></span
           >&nbsp; |
           <span>Max: <strong>${this.maxValue}</strong></span>
         </p>
@@ -307,10 +306,6 @@ export class RangeSlider extends LitElement {
     }
   }
 
-  roundToDecimal(value) {
-    return Number(Math.round(parseFloat(value + "e" + 2)) + "e-" + 2);
-  }
-
   connectedCallback() {
     super.connectedCallback();
     this.buildTickmarks();
@@ -319,6 +314,12 @@ export class RangeSlider extends LitElement {
 }
 
 customElements.define("range-slider", RangeSlider);
+
+function roundToDecimal(value, decimalPlaces = 2) {
+  return Number(
+    Math.round(parseFloat(value + "e" + decimalPlaces)) + "e-" + decimalPlaces
+  );
+}
 
 function isNumeric(str) {
   if (typeof str != "string") return false; // we only process strings!
