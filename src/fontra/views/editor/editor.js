@@ -1765,7 +1765,7 @@ function isTypeableInput(element) {
 function findNestedActiveElement(element) {
   // If the element element is part of a Web Component's Shadow DOM, take
   // *its* active element, recursively.
-  return element.shadowRoot
+  return element.shadowRoot && element.shadowRoot.activeElement
     ? findNestedActiveElement(element.shadowRoot.activeElement)
     : element;
 }
