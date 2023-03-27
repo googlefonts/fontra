@@ -318,7 +318,7 @@ export class RangeSlider extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.buildTickmarks();
+    // this.buildTickmarks();
     this.reset();
   }
 }
