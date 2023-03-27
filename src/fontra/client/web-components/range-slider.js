@@ -7,8 +7,8 @@ export class RangeSlider extends LitElement {
       --thumb-width: 14px;
       --thumb-color-light: #333;
       --thumb-color-dark: #bbb;
-      --track-color-light: #333;
-      --track-color-dark: #bbb;
+      --track-color-light: #bbb;
+      --track-color-dark: #222;
       --track-height: 5px;
 
       --thumb-color: var(--thumb-color-light);
@@ -122,11 +122,7 @@ export class RangeSlider extends LitElement {
 
     .slider::-webkit-slider-runnable-track {
       height: var(--track-height);
-      background: dimgray;
-    }
-
-    .slider:focus::-webkit-slider-runnable-track {
-      background: dimgray;
+      background: var(--track-color);
     }
 
     /* Firefox */
@@ -140,7 +136,7 @@ export class RangeSlider extends LitElement {
 
     .slider::-moz-range-track {
       height: var(--track-height);
-      background: dimgray;
+      background: var(--track-color);
     }
 
     .range-container > input + div {
