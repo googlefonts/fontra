@@ -317,11 +317,14 @@ export class EditorController {
   }
 
   initSourcesList() {
+    const designspaceNavigation = document.querySelector("#designspace-navigation");
     const columnDescriptions = [
       { key: "sourceName", width: "14em" },
       // {"key": "sourceIndex", "width": "2em"},
     ];
-    this.sourcesList = new List("sources-list", columnDescriptions);
+    this.sourcesList = new List(null, columnDescriptions);
+    this.sourcesList.container.classList.add("sources-list");
+    designspaceNavigation.appendChild(this.sourcesList.container);
 
     // TODO: relocate those to somewhere more appropriate after implementation
     const addSourceCallback = () => {
@@ -330,7 +333,6 @@ export class EditorController {
     const removeSourceCallback = () => {
       console.log("remove a source");
     };
-    const designspaceNavigation = document.querySelector("#designspace-navigation");
     this.addRemoveSourceButtons = new AddRemoveButtons();
     this.addRemoveSourceButtons.className = "";
     this.addRemoveSourceButtons.addButtonCallback = addSourceCallback;
