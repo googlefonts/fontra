@@ -1,11 +1,48 @@
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 
+const listCSS = `
+:host {
+  overflow: scroll;
+  border: solid 1px var(--ui-list-border-color);
+}
+
+:host-context(.empty) {
+  display: none;
+}
+
+.contents {
+  display: flex;
+  flex-direction: column;
+}
+
+.contents > .row {
+  display: flex;
+  width: content;
+  border-top: solid 1px var(--ui-list-row-border-color);
+  color: var(--ui-list-row-foreground-color);
+  background-color: var(--ui-list-row-background-color);
+  padding: 0.15em;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  cursor: pointer;
+}
+
+.contents > .selected {
+  background-color: var(--ui-list-row-selected-background-color);
+}
+
+.contents > .row > .text-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+`;
+
 export class List extends HTMLElement {
   constructor() {
     super();
+    this.attachShadow({ mode: "open" });
     this.tabIndex = "1";
     this.innerHTML = "";
-    this.classList.add("ui-list");
 
     this._columnDescriptions = [
       {
@@ -16,9 +53,13 @@ export class List extends HTMLElement {
     this.items = [];
     this.itemEqualFunc = null;
 
+    const style = document.createElement("style");
+    style.textContent = listCSS;
+    this.shadowRoot.appendChild(style);
+
     this.contents = document.createElement("div");
     this.contents.className = "contents";
-    this.appendChild(this.contents);
+    this.shadowRoot.appendChild(this.contents);
     this.contents.addEventListener(
       "click",
       (event) => this._clickHandler(event),
@@ -34,6 +75,10 @@ export class List extends HTMLElement {
     this.addEventListener("keyup", (event) => this._keyUpHandler(event), false);
     this.selectedItemIndex = undefined;
     this.classList.add("empty");
+  }
+
+  connectedCallback() {
+    //
   }
 
   get columnDescriptions() {
