@@ -87,14 +87,14 @@ export class RangeSlider extends LitElement {
     }
 
     /* Chrome, Safari, Edge, Opera */
-    .slider-default-value::-webkit-outer-spin-button,
-    .slider-default-value::-webkit-inner-spin-button {
+    .slider-numeric-input::-webkit-outer-spin-button,
+    .slider-numeric-input::-webkit-inner-spin-button {
       -webkit-appearance: none;
       margin: 0;
     }
 
     /* Firefox */
-    .slider-default-value[type="number"] {
+    .slider-numeric-input[type="number"] {
       -moz-appearance: textfield;
     }
 
@@ -172,7 +172,7 @@ export class RangeSlider extends LitElement {
       position: relative;
     }
 
-    .numeric-input > .slider-input > .slider-default-value {
+    .numeric-input > .slider-input > .slider-numeric-input {
       width: 40px;
       border-radius: 6px;
 
@@ -249,7 +249,7 @@ export class RangeSlider extends LitElement {
             <input
               type="number"
               @change=${this.changeValue}
-              class="slider-default-value"
+              class="slider-numeric-input"
               min=${this.minValue}
               max=${this.maxValue}
               step=${this.step}
