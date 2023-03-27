@@ -19,7 +19,6 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { dialog } from "../core/ui-dialog.js";
 import { Form } from "../core/ui-form.js";
-import { UIList } from "/web-components/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
@@ -322,10 +321,9 @@ export class EditorController {
       { key: "sourceName", width: "14em" },
       // {"key": "sourceIndex", "width": "2em"},
     ];
-    this.sourcesList = new UIList();
+    this.sourcesList = document.querySelector("#sources-list");
     this.sourcesList.columnDescriptions = columnDescriptions;
     this.sourcesList.classList.add("sources-list");
-    designspaceNavigation.appendChild(this.sourcesList);
 
     // TODO: relocate those to somewhere more appropriate after implementation
     const addSourceCallback = () => {
