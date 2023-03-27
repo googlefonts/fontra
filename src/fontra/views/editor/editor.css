@@ -206,7 +206,7 @@
   flex-direction: column;
   gap: 0.4em;
   overflow: scroll;
-  padding: 0.2em 0.05em;
+  padding: 0 0.05em 0.4em 0;
 }
 
 .sources-list {
