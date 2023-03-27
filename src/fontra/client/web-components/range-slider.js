@@ -213,6 +213,12 @@ export class RangeSlider extends LitElement {
   }
 
   render() {
+    const minMaxRange = this.maxValue - this.minValue;
+    const precisionDigits = minMaxRange < 100 ? 3 : 2;
+    const value = roundToDecimal(this.value, precisionDigits);
+    const minValue = roundToDecimal(this.minValue, precisionDigits);
+    const defaultValue = roundToDecimal(this.defaultValue, precisionDigits);
+    const maxValue = roundToDecimal(this.maxValue, precisionDigits);
     return html`
       <section class="wrapper">
         <div class="slider-name" @click=${this.toggleFoldable}>
@@ -229,7 +235,7 @@ export class RangeSlider extends LitElement {
               max=${this.maxValue}
               step=${this.step}
               pattern="[0-9]+"
-              .value=${roundToDecimal(this.value)}
+              .value=${value}
             />
           </section>
         </div>
@@ -262,11 +268,10 @@ export class RangeSlider extends LitElement {
       <div class="foldable">
         <!-- <p><strong>${this.name}</strong></p> -->
         <p>
-          <span>Min: <strong>${this.minValue}</strong></span
+          <span>Min: <strong>${minValue}</strong></span
+          >&nbsp; | <span>Default: <strong>${defaultValue}</strong></span
           >&nbsp; |
-          <span>Default: <strong>${roundToDecimal(this.defaultValue)}</strong></span
-          >&nbsp; |
-          <span>Max: <strong>${this.maxValue}</strong></span>
+          <span>Max: <strong>${maxValue}</strong></span>
         </p>
       </div>
     `;
