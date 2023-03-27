@@ -322,7 +322,10 @@ function roundToDecimal(value, decimalPlaces = 2) {
 }
 
 function isNumeric(str) {
-  if (typeof str != "string") return false; // we only process strings!
+  if (typeof str != "string") {
+    // we only process strings
+    return false;
+  }
   return (
     !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
     !isNaN(parseFloat(str))
