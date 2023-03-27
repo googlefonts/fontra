@@ -211,6 +211,7 @@
 
 .sources-list {
   min-height: 100px;
+  margin-top: 1em;
   flex-shrink: 100;
 }
 
