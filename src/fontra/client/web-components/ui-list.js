@@ -1,43 +1,43 @@
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 
-const listCSS = `
-:host {
-  overflow: scroll;
-  border: solid 1px var(--ui-list-border-color);
-}
-
-:host-context(.empty) {
-  display: none;
-}
-
-.contents {
-  display: flex;
-  flex-direction: column;
-}
-
-.contents > .row {
-  display: flex;
-  width: content;
-  border-top: solid 1px var(--ui-list-row-border-color);
-  color: var(--ui-list-row-foreground-color);
-  background-color: var(--ui-list-row-background-color);
-  padding: 0.15em;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-  cursor: pointer;
-}
-
-.contents > .selected {
-  background-color: var(--ui-list-row-selected-background-color);
-}
-
-.contents > .row > .text-cell {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-`;
-
 export class UIList extends HTMLElement {
+  static styles = `
+    :host {
+      overflow: scroll;
+      border: solid 1px var(--ui-list-border-color);
+    }
+
+    :host-context(.empty) {
+      display: none;
+    }
+
+    .contents {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .contents > .row {
+      display: flex;
+      width: content;
+      border-top: solid 1px var(--ui-list-row-border-color);
+      color: var(--ui-list-row-foreground-color);
+      background-color: var(--ui-list-row-background-color);
+      padding: 0.15em;
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+      cursor: pointer;
+    }
+
+    .contents > .selected {
+      background-color: var(--ui-list-row-selected-background-color);
+    }
+
+    .contents > .row > .text-cell {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    `;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -53,7 +53,7 @@ export class UIList extends HTMLElement {
     this.itemEqualFunc = null;
 
     const style = document.createElement("style");
-    style.textContent = listCSS;
+    style.textContent = UIList.styles;
     this.shadowRoot.appendChild(style);
 
     this.contents = document.createElement("div");
