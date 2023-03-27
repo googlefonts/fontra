@@ -590,7 +590,7 @@ registerVisualizationLayerDefinition({
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
-    context.strokeStyle = parameters.pathStrokeColor;
+    context.strokeStyle = parameters.color;
     context.stroke(positionedGlyph.glyph.flattenedPath2d);
   },
 });
