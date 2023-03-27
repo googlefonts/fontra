@@ -55,7 +55,6 @@ import {
 } from "../core/path-functions.js";
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
-import { AddRemoveButtons } from "../web-components/add-remove-buttons.js";
 
 export class EditorController {
   static async fromWebSocket() {
@@ -316,7 +315,6 @@ export class EditorController {
   }
 
   initSourcesList() {
-    const designspaceNavigation = document.querySelector("#designspace-navigation");
     const columnDescriptions = [
       { key: "sourceName", width: "14em" },
       // {"key": "sourceIndex", "width": "2em"},
@@ -332,12 +330,13 @@ export class EditorController {
     const removeSourceCallback = () => {
       console.log("remove a source");
     };
-    this.addRemoveSourceButtons = new AddRemoveButtons();
+    this.addRemoveSourceButtons = document.querySelector(
+      "#sources-list-add-remove-buttons"
+    );
     this.addRemoveSourceButtons.className = "";
     this.addRemoveSourceButtons.addButtonCallback = addSourceCallback;
     this.addRemoveSourceButtons.removeButtonCallback = removeSourceCallback;
     this.addRemoveSourceButtons.hidden = true;
-    designspaceNavigation.appendChild(this.addRemoveSourceButtons);
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       await this.sceneController.setSelectedSource(
