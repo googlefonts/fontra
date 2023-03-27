@@ -215,7 +215,7 @@ export class RangeSlider extends LitElement {
   render() {
     return html`
       <section class="wrapper">
-        <div class="slider-name" @click=${() => this.toggleFoldable()}>
+        <div class="slider-name" @click=${this.toggleFoldable}>
           <!--<span class="foldable-marker">▶</span>-->
           ${this.name}
         </div>
@@ -299,7 +299,7 @@ export class RangeSlider extends LitElement {
     this.onChangeCallback();
   }
 
-  toggleFoldable() {
+  toggleFoldable(event) {
     const marker = this.shadowRoot.querySelector(".foldable-marker");
     const foldable = this.shadowRoot.querySelector(".foldable");
     marker?.classList.toggle("active");
