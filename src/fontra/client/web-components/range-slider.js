@@ -223,14 +223,10 @@ export class RangeSlider extends LitElement {
           <span class="foldable-marker">▶</span> ${this.name}
         </div>
         <div class="range-container">
-          <span
-            class="reset ${this.value !== this.defaultValue ? "active" : ""}"
-            @click=${this.reset}
-            >↺</span
-          >
           <input
             type="range"
             @input=${this.changeValue}
+            @mousedown=${this.handleMouseDown}
             class="slider"
             min=${this.minValue}
             max=${this.maxValue}
@@ -278,6 +274,13 @@ export class RangeSlider extends LitElement {
         </p>
       </div>
     `;
+  }
+
+  handleMouseDown(event) {
+    if (event.altKey) {
+      event.preventDefault();
+      this.reset();
+    }
   }
 
   changeValue(e) {
