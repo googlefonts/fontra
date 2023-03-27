@@ -32,17 +32,13 @@ export class RangeSlider extends LitElement {
 
     .foldable {
       display: none;
-      margin: 0.55em 0 0.2em 0;
+      margin: 0.2em 0 0.2em 0;
       font-size: 1em;
-      color: var(--ui-list-row-foreground-color);
-      background: var(--ui-list-row-selected-background-color);
-      border-radius: 0 0 10px 0;
       padding: 0 0.5em;
       z-index: 100;
     }
 
     .foldable > p {
-      color: rgba(var(--foreground-color), 0.5);
       margin: 0;
     }
 
