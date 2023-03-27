@@ -43,6 +43,7 @@ export class RangeSlider extends LitElement {
       display: flex;
       gap: 0.5em;
       font-family: fontra-ui-regular, sans-serif;
+      font-feature-settings: "tnum" 1;
     }
 
     .slider-name {
@@ -184,6 +185,7 @@ export class RangeSlider extends LitElement {
 
       text-align: center;
       font-family: fontra-ui-regular;
+      font-feature-settings: "tnum" 1;
       font-size: 0.9em;
     }
   `;
