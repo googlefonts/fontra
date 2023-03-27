@@ -1,3 +1,5 @@
+import { RangeSlider } from "/web-components/range-slider.js";
+
 export class Sliders {
   constructor(slidersID, sliderDescriptions) {
     this.container = document.querySelector(`#${slidersID}`);
@@ -8,7 +10,7 @@ export class Sliders {
     this.container.addEventListener(eventName, handler, options);
   }
 
-  _dispatchListSelectionChanged() {
+  _dispatchSlidersChangedEvent() {
     const event = new CustomEvent("slidersChanged", {
       bubbles: false,
       detail: this,
@@ -24,44 +26,36 @@ export class Sliders {
         divider.className = "slider-divider";
         this.container.appendChild(divider);
       } else {
-        const label = document.createElement("label");
-        const slider = document.createElement("input");
-        label.className = "slider-label";
-        slider.type = "range";
-        slider.step = "any";
-        slider.class = "slider";
-        slider.min = sliderInfo.minValue;
-        slider.max = sliderInfo.maxValue;
+        const slider = new RangeSlider();
+        slider.name = sliderInfo.name;
+        slider.minValue = sliderInfo.minValue;
+        slider.maxValue = sliderInfo.maxValue;
+        slider.defaultValue = sliderInfo.defaultValue;
         slider.value = sliderInfo.defaultValue;
-        slider.dataset.name = sliderInfo.name;
-        slider.oninput = (event) => this._dispatchListSelectionChanged();
-        label.appendChild(slider);
-        label.append(sliderInfo.name);
-        this.container.appendChild(label);
+        slider.onChangeCallback = () => this._dispatchSlidersChangedEvent();
+        this.container.appendChild(slider);
       }
     }
   }
 
   get values() {
     const values = {};
-    for (const label of this.container.children) {
-      const slider = label.firstElementChild;
+    for (const slider of this.container.children) {
       if (slider) {
-        values[slider.dataset.name] = Number(slider.value);
+        values[slider.name] = Number(slider.value);
       }
     }
     return values;
   }
 
   set values(values) {
-    for (const label of this.container.children) {
-      const slider = label.firstElementChild;
+    for (const slider of this.container.children) {
       if (!slider) {
         continue;
       }
-      const value = values[slider.dataset.name];
+      const value = values[slider.name];
       if (value !== undefined) {
-        slider.value = values[slider.dataset.name];
+        slider.value = values[slider.name];
       }
     }
   }

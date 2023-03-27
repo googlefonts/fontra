@@ -204,23 +204,15 @@
 .axis-sliders {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: 0.4em;
   overflow: scroll;
+  padding-bottom: 0.4em;
 }
 
 .sources-list {
   min-height: 100px;
   margin-top: 1em;
   flex-shrink: 100;
-}
-
-.slider-label {
-  /*TODO:  better alignment*/
-}
-
-.slider {
-  /*margin-right: 0.75em;*/
-  padding: 0;
 }
 
 .slider-divider {
