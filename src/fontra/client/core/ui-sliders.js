@@ -27,7 +27,6 @@ export class Sliders {
         this.container.appendChild(divider);
       } else {
         const slider = new RangeSlider();
-        slider.classList.add("slider");
         slider.name = sliderInfo.name;
         slider.minValue = sliderInfo.minValue;
         slider.maxValue = sliderInfo.maxValue;
