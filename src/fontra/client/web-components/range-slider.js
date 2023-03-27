@@ -70,20 +70,6 @@ export class RangeSlider extends LitElement {
       display: block;
     }
 
-    .reset {
-      position: absolute;
-      top: -1.1em;
-      right: 0;
-      color: dimgray;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.2s ease-in-out;
-    }
-
-    .reset.active {
-      opacity: 1;
-    }
-
     .range-container {
       position: relative;
     }
