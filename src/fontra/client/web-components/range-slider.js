@@ -3,8 +3,9 @@ import { html, css, LitElement } from "../third-party/lit.js";
 export class RangeSlider extends LitElement {
   static styles = css`
     :host {
-      --thumb-height: 12px;
+      --thumb-height: 14px;
       --thumb-width: 14px;
+      --thumb-color: #282828;
       --track-height: 5px;
     }
 
@@ -89,11 +90,11 @@ export class RangeSlider extends LitElement {
       -webkit-appearance: none;
       height: var(--thumb-height);
       width: var(--thumb-width);
-      background: #282828;
+      background: var(----thumb-color);
       border: none;
       border-radius: 7px;
       cursor: pointer;
-      margin-top: -3.5px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+      margin-top: -4.5px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
     }
 
     .slider::-webkit-slider-runnable-track {
@@ -109,7 +110,7 @@ export class RangeSlider extends LitElement {
     .slider::-moz-range-thumb {
       height: var(--thumb-height);
       width: var(--thumb-width);
-      background: #282828;
+      background: var(----thumb-color);
       border: none;
       cursor: pointer;
     }
@@ -123,7 +124,7 @@ export class RangeSlider extends LitElement {
     .slider::-ms-thumb {
       height: var(--thumb-height);
       width: var(--thumb-width);
-      background: #282828;
+      background: var(----thumb-color);
       border: none;
       cursor: pointer;
     }
