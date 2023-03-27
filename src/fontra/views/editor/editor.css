@@ -204,9 +204,9 @@
 .axis-sliders {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: 0.2em;
   overflow: scroll;
-  padding: 0.25em 0;
+  padding: 0.2em 0.05em;
 }
 
 .sources-list {
