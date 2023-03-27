@@ -5,8 +5,31 @@ export class RangeSlider extends LitElement {
     :host {
       --thumb-height: 14px;
       --thumb-width: 14px;
-      --thumb-color: #282828;
+      --thumb-color-light: #333;
+      --thumb-color-dark: #bbb;
+      --track-color-light: #333;
+      --track-color-dark: #bbb;
       --track-height: 5px;
+
+      --thumb-color: var(--thumb-color-light);
+      --track-color: var(--track-color-light);
+    }
+
+    :host-context(html.dark-theme) {
+      --thumb-color: var(--thumb-color-dark);
+      --track-color: var(--track-color-dark);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :host {
+        --thumb-color: var(--thumb-color-dark);
+        --track-color: var(--track-color-dark);
+      }
+
+      :host-context(html.light-theme) {
+        --thumb-color: var(--thumb-color-light);
+        --track-color: var(--track-color-light);
+      }
     }
 
     .wrapper {
