@@ -165,10 +165,6 @@ export class RangeSlider extends LitElement {
       opacity: 0.3;
       font-size: 1em;
       padding: 5px;
-      color: white;
-      background-color: black;
-      border: 1px solid black;
-      border-radius: 5px;
       pointer-events: none;
     }
 
@@ -178,11 +174,13 @@ export class RangeSlider extends LitElement {
 
     .numeric-input > .slider-input > .slider-default-value {
       width: 40px;
-      border-radius: 5px;
+      border-radius: 6px;
 
-      border: solid 1px var(--ui-form-input-border-color);
-      background-color: var(--ui-form-input-background-color);
+      border: none;
+      background-color: var(--editor-text-entry-input-background-color);
       color: var(--ui-form-input-foreground-color);
+
+      padding: 3px;
 
       text-align: center;
       font-family: fontra-ui-regular;
