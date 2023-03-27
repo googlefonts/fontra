@@ -10,25 +10,31 @@ export class RangeSlider extends LitElement {
       --track-color-light: #bbb;
       --track-color-dark: #222;
       --track-height: 5px;
+      --foldable-marker-color-light: #bbb;
+      --foldable-marker-color-dark: #888;
 
       --thumb-color: var(--thumb-color-light);
       --track-color: var(--track-color-light);
+      --foldable-marker-color: var(--foldable-marker-color-light);
     }
 
     :host-context(html.dark-theme) {
       --thumb-color: var(--thumb-color-dark);
       --track-color: var(--track-color-dark);
+      --foldable-marker-color: var(--foldable-marker-color-dark);
     }
 
     @media (prefers-color-scheme: dark) {
       :host {
         --thumb-color: var(--thumb-color-dark);
         --track-color: var(--track-color-dark);
+        --foldable-marker-color: var(--foldable-marker-color-dark);
       }
 
       :host-context(html.light-theme) {
         --thumb-color: var(--thumb-color-light);
         --track-color: var(--track-color-light);
+        --foldable-marker-color: var(--foldable-marker-color-light);
       }
     }
 
@@ -49,8 +55,14 @@ export class RangeSlider extends LitElement {
       cursor: pointer;
     }
 
-    .foldable-marker.active {
+    .foldable-marker {
+      position: relative;
+      color: var(--foldable-marker-color);
+      top: 2px;
       display: inline-block;
+    }
+
+    .foldable-marker.active {
       transform: rotate(90deg);
     }
 
