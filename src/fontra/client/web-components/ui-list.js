@@ -1,10 +1,22 @@
+import { themeColorCSS } from "./theme-support.js";
+
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
+
+const colors = {
+  "border-color": ["lightgray", "darkgray"],
+  "row-border-color": ["#ddd", "#333"],
+  "row-foreground-color": ["black", "white"],
+  "row-background-color": ["white", "#333"],
+  "row-selected-background-color": ["#ddd", "#555"],
+};
 
 export class UIList extends HTMLElement {
   static styles = `
+    ${themeColorCSS(colors)}
+
     :host {
       overflow: scroll;
-      border: solid 1px var(--ui-list-border-color);
+      border: solid 1px var(--border-color);
     }
 
     :host-context(.empty) {
@@ -19,9 +31,9 @@ export class UIList extends HTMLElement {
     .contents > .row {
       display: flex;
       width: content;
-      border-top: solid 1px var(--ui-list-row-border-color);
-      color: var(--ui-list-row-foreground-color);
-      background-color: var(--ui-list-row-background-color);
+      border-top: solid 1px var(--row-border-color);
+      color: var(--row-foreground-color);
+      background-color: var(--row-background-color);
       padding: 0.15em;
       padding-left: 0.5em;
       padding-right: 0.5em;
@@ -29,7 +41,7 @@ export class UIList extends HTMLElement {
     }
 
     .contents > .selected {
-      background-color: var(--ui-list-row-selected-background-color);
+      background-color: var(--row-selected-background-color);
     }
 
     .contents > .row > .text-cell {
