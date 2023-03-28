@@ -86,7 +86,9 @@ export function dialog(
 
   content.onkeydown = (event) => {
     if (event.key == "Enter") {
-      defaultButtonElement?.click();
+      if (!defaultButtonElement?.classList.contains("disabled")) {
+        defaultButtonElement?.click();
+      }
     } else if (event.key == "Escape") {
       cancelButtonElement?.click();
       if (!cancelButtonElement) {
