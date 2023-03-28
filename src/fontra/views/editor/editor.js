@@ -1081,13 +1081,17 @@ export class EditorController {
     const glyphsSearch = document.createElement("glyphs-search");
     glyphsSearch.glyphMap = this.fontController.glyphMap;
 
+    const getResult = () => {
+      return glyphsSearch.getSelectedGlyphName();
+    };
+
     const contentFunc = (...args) => {
       return glyphsSearch;
     };
 
     const result = await dialog("Add Component", contentFunc, [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Add", isDefaultButton: true },
+      { title: "Cancel", isCancelButton: true, result: null },
+      { title: "Add", isDefaultButton: true, getResult: getResult },
     ]);
     console.log("result:", result);
   }
