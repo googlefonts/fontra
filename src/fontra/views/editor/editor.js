@@ -1454,10 +1454,14 @@ export class EditorController {
     );
 
     for (const index of componentIndices || []) {
+      const component = instance.components[index];
+      if (!component) {
+        // Invalid selection
+        continue;
+      }
       const componentKey = (...path) => JSON.stringify(["components", index, ...path]);
 
       formContents.push({ type: "divider" });
-      const component = instance.components[index];
       formContents.push({ type: "header", label: `Component #${index}` });
       formContents.push({
         type: "edit-text",

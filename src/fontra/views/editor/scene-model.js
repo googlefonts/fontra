@@ -467,6 +467,10 @@ export class SceneModel {
       });
 
       selectedComponentIndices?.forEach((componentIndex) => {
+        if (!instance.components[componentIndex]) {
+          // Invalid selection
+          return;
+        }
         boundses.push(
           offsetRect(instance.components[componentIndex].controlBounds, x, y)
         );
