@@ -1075,6 +1075,7 @@ export class EditorController {
   canAddComponent() {
     return this.sceneController.selectedGlyphIsEditing;
   }
+
   doAddComponent() {
     console.log("add component");
   }
