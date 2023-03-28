@@ -1074,7 +1074,7 @@ export class EditorController {
   }
 
   canAddComponent() {
-    return this.sceneController.selectedGlyphIsEditing;
+    return this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
   }
 
   async doAddComponent() {
@@ -1106,11 +1106,32 @@ export class EditorController {
       return glyphsSearch;
     };
 
-    const result = await dialog("Add Component", contentFunc, [
+    const glyphName = await dialog("Add Component", contentFunc, [
       { title: "Cancel", isCancelButton: true, resultValue: null },
       { title: "Add", isDefaultButton: true, getResult: getResult, disabled: true },
     ]);
-    console.log("result:", result);
+    if (!glyphName) {
+      return;
+    }
+
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
+      const t = {
+        translateX: 0,
+        translateY: 0,
+        rotation: 0,
+        scaleX: 1,
+        scaleY: 1,
+        skewX: 0,
+        skewY: 0,
+        tCenterX: 0,
+        tCenterY: 0,
+      };
+      const newComponent = { name: glyphName, transformation: t, location: {} };
+      const newComponentIndex = instance.components.length;
+      instance.components.push(newComponent);
+      this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
+      return "Add Component";
+    });
   }
 
   canSelectAllNone(selectNone) {
