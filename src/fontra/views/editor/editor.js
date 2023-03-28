@@ -1080,11 +1080,20 @@ export class EditorController {
   async doAddComponent() {
     let contentContainer;
 
+    const getButton = () => {
+      return contentContainer.getElementsByClassName("button-3")[0];
+    };
+
     const glyphsSearch = document.createElement("glyphs-search");
     glyphsSearch.glyphMap = this.fontController.glyphMap;
 
+    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
+      const okButton = getButton();
+      okButton.classList.toggle("disabled", !glyphsSearch.getSelectedGlyphName());
+    });
+
     glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
-      const okButton = contentContainer.getElementsByClassName("button-3")[0];
+      const okButton = getButton();
       okButton.click();
     });
 
@@ -1099,7 +1108,7 @@ export class EditorController {
 
     const result = await dialog("Add Component", contentFunc, [
       { title: "Cancel", isCancelButton: true, resultValue: null },
-      { title: "Add", isDefaultButton: true, getResult: getResult },
+      { title: "Add", isDefaultButton: true, getResult: getResult, disabled: true },
     ]);
     console.log("result:", result);
   }
