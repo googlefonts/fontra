@@ -8,8 +8,10 @@
     <link href="/css/context-menu.css" rel="stylesheet" />
     <link href="/css/core.css" rel="stylesheet" />
     <link href="/editor/editor.css" rel="stylesheet" />
+    <script type="module" src="/web-components/add-remove-buttons.js"></script>
     <script type="module" src="/web-components/general-settings.js"></script>
     <script type="module" src="/web-components/options-list.js"></script>
+    <script type="module" src="/web-components/ui-list.js"></script>
   </head>
 
   <style type="text/css">
@@ -330,9 +332,10 @@
             <div class="axis-sliders" id="axis-sliders">
               <!-- contents will be filled dynamically -->
             </div>
-            <div class="sources-list" id="sources-list" tabindex="1">
-              <!-- contents will be filled dynamically -->
-            </div>
+            <ui-list id="sources-list"></ui-list>
+            <add-remove-buttons
+              id="sources-list-add-remove-buttons"
+            ></add-remove-buttons>
           </div>
         </div>
 

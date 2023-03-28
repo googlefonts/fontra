@@ -1,36 +1,76 @@
+import { themeColorCSS } from "./theme-support.js";
+
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 
-export class List {
-  constructor(listID, columnDescriptions) {
-    if (listID) {
-      this.container = document.querySelector(`#${listID}`);
-    } else {
-      this.container = document.createElement("div");
-      this.container.tabIndex = "1";
-    }
-    if (!this.container) {
-      throw new Error(`Expecting an element with id="#${listID}"`);
-    }
-    if (this.container.children.length != 0) {
-      throw new Error("list container must be empty");
-    }
-    this.container.classList.add("ui-list");
+const colors = {
+  "border-color": ["lightgray", "darkgray"],
+  "row-border-color": ["#ddd", "#333"],
+  "row-foreground-color": ["black", "white"],
+  "row-background-color": ["white", "#333"],
+  "row-selected-background-color": ["#ddd", "#555"],
+};
 
-    if (!columnDescriptions) {
-      columnDescriptions = [
-        {
-          key: "default",
-          get: (item) => item,
-        },
-      ];
-    }
-    this.columnDescriptions = columnDescriptions;
+export class UIList extends HTMLElement {
+  static styles = `
+    ${themeColorCSS(colors)}
 
+    :host {
+      overflow: scroll;
+      border: solid 1px var(--border-color);
+    }
+
+    :host-context(.empty) {
+      display: none;
+    }
+
+    .contents {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .contents > .row {
+      display: flex;
+      width: content;
+      border-top: solid 1px var(--row-border-color);
+      color: var(--row-foreground-color);
+      background-color: var(--row-background-color);
+      padding: 0.15em;
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+      cursor: pointer;
+    }
+
+    .contents > .selected {
+      background-color: var(--row-selected-background-color);
+    }
+
+    .contents > .row > .text-cell {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    `;
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+    this.tabIndex = "1";
+
+    this._columnDescriptions = [
+      {
+        key: "default",
+        get: (item) => item,
+      },
+    ];
+    this.items = [];
     this.itemEqualFunc = null;
+
+    const style = document.createElement("style");
+    style.textContent = UIList.styles;
+    this.shadowRoot.appendChild(style);
 
     this.contents = document.createElement("div");
     this.contents.className = "contents";
-    this.container.appendChild(this.contents);
+    this.shadowRoot.appendChild(this.contents);
     this.contents.addEventListener(
       "click",
       (event) => this._clickHandler(event),
@@ -41,27 +81,28 @@ export class List {
       (event) => this._dblClickHandler(event),
       false
     );
-    this.container.addEventListener(
-      "scroll",
-      (event) => this._scrollHandler(event),
-      false
-    );
-    this.container.addEventListener(
-      "keydown",
-      (event) => this._keyDownHandler(event),
-      false
-    );
-    this.container.addEventListener(
-      "keyup",
-      (event) => this._keyUpHandler(event),
-      false
-    );
+    this.addEventListener("scroll", (event) => this._scrollHandler(event), false);
+    this.addEventListener("keydown", (event) => this._keyDownHandler(event), false);
+    this.addEventListener("keyup", (event) => this._keyUpHandler(event), false);
     this.selectedItemIndex = undefined;
-    this.container.classList.add("empty");
+    this.classList.add("empty");
+  }
+
+  connectedCallback() {
+    //
+  }
+
+  get columnDescriptions() {
+    return this._columnDescriptions;
+  }
+
+  set columnDescriptions(columnDescriptions) {
+    this._columnDescriptions = columnDescriptions;
+    this.setItems(this.items);
   }
 
   setItems(items) {
-    this.container.classList.toggle("empty", !items.length);
+    this.classList.toggle("empty", !items.length);
     this.contents.innerHTML = "";
     this.items = items;
     this._itemsBackLog = Array.from(items);
@@ -97,18 +138,13 @@ export class List {
     }
   }
 
-  addEventListener(eventName, handler, options) {
-    this.container.addEventListener(eventName, handler, options);
-  }
-
   _addMoreItemsIfNeeded() {
     while (
       this._itemsBackLog.length > 0 &&
-      this.container.scrollTop + this.container.offsetHeight + 200 >
-        this.contents.offsetHeight
+      this.scrollTop + this.offsetHeight + 200 > this.contents.offsetHeight
     ) {
       this._addMoreItems();
-      if (this.container.offsetHeight === 0) {
+      if (this.offsetHeight === 0) {
         break;
       }
     }
@@ -191,7 +227,7 @@ export class List {
       bubbles: false,
       detail: this,
     });
-    this.container.dispatchEvent(event);
+    this.dispatchEvent(event);
   }
 
   _keyDownHandler(event) {
@@ -232,3 +268,5 @@ export class List {
     this._addMoreItemsIfNeeded();
   }
 }
+
+customElements.define("ui-list", UIList);

@@ -19,7 +19,6 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { dialog } from "../core/ui-dialog.js";
 import { Form } from "../core/ui-form.js";
-import { List } from "../core/ui-list.js";
 import { Sliders } from "../core/ui-sliders.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
@@ -56,7 +55,6 @@ import {
 } from "../core/path-functions.js";
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
-import { AddRemoveButtons } from "../web-components/add-remove-buttons.js";
 
 export class EditorController {
   static async fromWebSocket() {
@@ -321,7 +319,8 @@ export class EditorController {
       { key: "sourceName", width: "14em" },
       // {"key": "sourceIndex", "width": "2em"},
     ];
-    this.sourcesList = new List("sources-list", columnDescriptions);
+    this.sourcesList = document.querySelector("#sources-list");
+    this.sourcesList.columnDescriptions = columnDescriptions;
 
     // TODO: relocate those to somewhere more appropriate after implementation
     const addSourceCallback = () => {
@@ -330,13 +329,12 @@ export class EditorController {
     const removeSourceCallback = () => {
       console.log("remove a source");
     };
-    const designspaceNavigation = document.querySelector("#designspace-navigation");
-    this.addRemoveSourceButtons = new AddRemoveButtons();
-    this.addRemoveSourceButtons.className = "";
+    this.addRemoveSourceButtons = document.querySelector(
+      "#sources-list-add-remove-buttons"
+    );
     this.addRemoveSourceButtons.addButtonCallback = addSourceCallback;
     this.addRemoveSourceButtons.removeButtonCallback = removeSourceCallback;
     this.addRemoveSourceButtons.hidden = true;
-    designspaceNavigation.appendChild(this.addRemoveSourceButtons);
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
       await this.sceneController.setSelectedSource(
@@ -1762,7 +1760,7 @@ function isTypeableInput(element) {
 function findNestedActiveElement(element) {
   // If the element element is part of a Web Component's Shadow DOM, take
   // *its* active element, recursively.
-  return element.shadowRoot
+  return element.shadowRoot && element.shadowRoot.activeElement
     ? findNestedActiveElement(element.shadowRoot.activeElement)
     : element;
 }
