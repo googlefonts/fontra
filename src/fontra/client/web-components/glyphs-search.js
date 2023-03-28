@@ -84,6 +84,14 @@ export class GlyphsSearch extends HTMLElement {
       this.dispatchEvent(event);
     });
 
+    this.glyphNamesList.addEventListener("rowDoubleClicked", () => {
+      const event = new CustomEvent("selectedGlyphNameDoubleClicked", {
+        bubbles: false,
+        detail: this.getSelectedGlyphName(),
+      });
+      this.dispatchEvent(event);
+    });
+
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
     this.glyphMap = {};
