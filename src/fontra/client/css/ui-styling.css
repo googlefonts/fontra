@@ -1,7 +1,7 @@
 :root {
   --ui-form-input-foreground-color-light: black;
   --ui-form-input-foreground-color-dark: white;
-  --ui-form-input-background-color-light: black;
+  --ui-form-input-background-color-light: white;
   --ui-form-input-background-color-dark: #333;
   --ui-form-input-border-color-light: #888;
   --ui-form-input-border-color-dark: #222;
