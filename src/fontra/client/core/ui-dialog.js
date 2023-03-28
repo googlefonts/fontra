@@ -62,7 +62,6 @@ export function dialog(
     buttonElement.type = "button";
     buttonElement.className = `ui-dialog-button button-${buttonIndex}`;
     if (buttonDef.disabled) {
-      console.log("yes?");
       buttonElement.classList.add("disabled");
     }
     if (buttonDef.isDefaultButton) {
