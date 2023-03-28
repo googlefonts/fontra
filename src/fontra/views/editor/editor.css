@@ -209,7 +209,7 @@
   padding-bottom: 0.4em;
 }
 
-.sources-list {
+#sources-list {
   min-height: 100px;
   margin-top: 1em;
   flex-shrink: 100;

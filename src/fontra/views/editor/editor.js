@@ -321,7 +321,6 @@ export class EditorController {
     ];
     this.sourcesList = document.querySelector("#sources-list");
     this.sourcesList.columnDescriptions = columnDescriptions;
-    this.sourcesList.classList.add("sources-list");
 
     // TODO: relocate those to somewhere more appropriate after implementation
     const addSourceCallback = () => {
