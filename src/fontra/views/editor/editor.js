@@ -1077,8 +1077,19 @@ export class EditorController {
     return this.sceneController.selectedGlyphIsEditing;
   }
 
-  doAddComponent() {
-    console.log("add component");
+  async doAddComponent() {
+    const glyphsSearch = document.createElement("glyphs-search");
+    glyphsSearch.glyphMap = this.fontController.glyphMap;
+
+    const contentFunc = (...args) => {
+      return glyphsSearch;
+    };
+
+    const result = await dialog("Add Component", contentFunc, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Add", isDefaultButton: true },
+    ]);
+    console.log("result:", result);
   }
 
   canSelectAllNone(selectNone) {
