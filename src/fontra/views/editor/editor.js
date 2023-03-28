@@ -1078,19 +1078,27 @@ export class EditorController {
   }
 
   async doAddComponent() {
+    let contentContainer;
+
     const glyphsSearch = document.createElement("glyphs-search");
     glyphsSearch.glyphMap = this.fontController.glyphMap;
+
+    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+      const okButton = contentContainer.getElementsByClassName("button-3")[0];
+      okButton.click();
+    });
 
     const getResult = () => {
       return glyphsSearch.getSelectedGlyphName();
     };
 
-    const contentFunc = (...args) => {
+    const contentFunc = (container) => {
+      contentContainer = container;
       return glyphsSearch;
     };
 
     const result = await dialog("Add Component", contentFunc, [
-      { title: "Cancel", isCancelButton: true, result: null },
+      { title: "Cancel", isCancelButton: true, resultValue: null },
       { title: "Add", isDefaultButton: true, getResult: getResult },
     ]);
     console.log("result:", result);
