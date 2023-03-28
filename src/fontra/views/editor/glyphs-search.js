@@ -24,9 +24,8 @@ align-content: start;
 `;
 
 export class GlyphsSearch {
-  constructor(container, glyphMap) {
+  constructor(container) {
     this.container = container;
-    this.glyphMap = glyphMap;
 
     const searchField = htmlToElement(searchElementHTML);
     searchField.oninput = (event) => this._searchFieldChanged(event);
@@ -58,11 +57,21 @@ export class GlyphsSearch {
     });
 
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
-    this.updateGlyphNamesListContent();
+
+    this.glyphMap = {};
 
     this.container.style = glyphsSearchCSS;
     this.container.appendChild(searchField);
     this.container.appendChild(this.glyphNamesList);
+  }
+
+  get glyphMap() {
+    return this._glyphMap;
+  }
+
+  set glyphMap(glyphMap) {
+    this._glyphMap = glyphMap;
+    this.updateGlyphNamesListContent();
   }
 
   addEventListener(...args) {

@@ -225,10 +225,8 @@ export class EditorController {
   }
 
   async initGlyphsSearch() {
-    this.glyphsSearch = new GlyphsSearch(
-      document.querySelector("#glyphs-search"),
-      this.fontController.glyphMap
-    );
+    this.glyphsSearch = new GlyphsSearch(document.querySelector("#glyphs-search"));
+    this.glyphsSearch.glyphMap = this.fontController.glyphMap;
     this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
     );
