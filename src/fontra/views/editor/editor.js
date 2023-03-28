@@ -683,15 +683,6 @@ export class EditorController {
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
-    this.basicContextMenuItems.push({
-      title: "Add Component",
-      enabled: () => this.canAddComponent(),
-      callback: () => this.doAddComponent(),
-      shortCut: undefined,
-    });
-
-    this.basicContextMenuItems.push(MenuItemDivider);
-
     for (const selectNone of [false, true]) {
       this.basicContextMenuItems.push({
         title: selectNone ? "Select None" : "Select All",
@@ -700,7 +691,17 @@ export class EditorController {
         shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: selectNone },
       });
     }
-    this.glyphEditContextMenuItems = this.sceneController.getContextMenuItems();
+
+    this.glyphEditContextMenuItems = [];
+
+    this.glyphEditContextMenuItems.push({
+      title: "Add Component",
+      enabled: () => this.canAddComponent(),
+      callback: () => this.doAddComponent(),
+      shortCut: undefined,
+    });
+
+    this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
   }
 
   initShortCuts() {
