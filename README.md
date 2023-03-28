@@ -134,7 +134,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Measure tool
 - Copy / paste ✅
 - Create new glyphs ✅
-- Add / remove (variable) components
+- Add / remove (variable) components ✅
 - Anchors
 - Guidelines
 - View background layers
