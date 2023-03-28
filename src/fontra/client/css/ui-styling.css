@@ -160,6 +160,11 @@
   background-color: var(--fontra-red-color);
 }
 
+.ui-dialog-button.disabled {
+  background-color: #8885;
+  pointer-events: none;
+}
+
 .ui-dialog-button:hover {
   filter: brightness(1.15);
 }
