@@ -683,6 +683,15 @@ export class EditorController {
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
+    this.basicContextMenuItems.push({
+      title: "Add Component",
+      enabled: () => this.canAddComponent(),
+      callback: () => this.doAddComponent(),
+      shortCut: undefined,
+    });
+
+    this.basicContextMenuItems.push(MenuItemDivider);
+
     for (const selectNone of [false, true]) {
       this.basicContextMenuItems.push({
         title: selectNone ? "Select None" : "Select All",
@@ -1061,6 +1070,13 @@ export class EditorController {
       this.sceneController.selection = new Set();
       return "Delete Selection";
     });
+  }
+
+  canAddComponent() {
+    return this.sceneController.selectedGlyphIsEditing;
+  }
+  doAddComponent() {
+    console.log("add component");
   }
 
   canSelectAllNone(selectNone) {
