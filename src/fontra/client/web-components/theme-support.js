@@ -10,28 +10,28 @@ export function themeColorCSS(colors) {
   }
   return `
 :host {
-${indent(definitions, 2)}
+${indentLines(definitions, 2)}
 
-${indent(lightMode, 2)}
+${indentLines(lightMode, 2)}
 }
 
 :host-context(html.dark-theme) {
-${indent(darkMode, 2)}
+${indentLines(darkMode, 2)}
 }
 
 @media (prefers-color-scheme: dark) {
   :host {
-${indent(darkMode, 4)}
+${indentLines(darkMode, 4)}
   }
 
   :host-context(html.light-theme) {
-${indent(lightMode, 4)}
+${indentLines(lightMode, 4)}
   }
 }
 `;
 }
 
-function indent(lines, numSpaces) {
+function indentLines(lines, numSpaces) {
   lines = lines.map((line) => " ".repeat(numSpaces) + line);
   return lines.join("\n");
 }
