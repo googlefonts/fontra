@@ -4,29 +4,56 @@ import {
   htmlToElement,
   makeUPlusStringFromCodePoint,
 } from "/core/utils.js";
+import { themeColorCSS } from "./theme-support.js";
+
+const colors = {
+  "search-input-foreground-color": ["black", "white"],
+  "search-input-background-color": ["#eee", "#333"],
+};
 
 const searchElementHTML = `
 <input
   type="text"
-  class="glyphs-search-input"
-  id="glyphs-search-input"
   placeholder="Search glyphs"
   autocomplete="off"
 />`;
 
-const glyphsSearchCSS = `
-display: grid;
-gap: 1em;
-grid-template-rows: auto 1fr;
-box-sizing: border-box;
-overflow: hidden;
-align-content: start;
-`;
+export class GlyphsSearch extends HTMLElement {
+  static styles = `
+    ${themeColorCSS(colors)}
 
-export class GlyphsSearch {
-  constructor(container, glyphMap) {
-    this.container = container;
-    this.glyphMap = glyphMap;
+    :host {
+      display: grid;
+      gap: 1em;
+      grid-template-rows: auto 1fr;
+      box-sizing: border-box;
+      overflow: hidden;
+      align-content: start;
+    }
+
+    input {
+      color: var(--search-input-foreground-color);
+      background-color: var(--search-input-background-color);
+      font-family: fontra-ui-regular, sans-serif;
+      font-size: 1.1rem;
+      border-radius: 2em;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      height: 1.8em;
+      box-sizing: border-box;
+      padding: 0.2em 0.8em;
+    }
+  `;
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: "open" });
+
+    const style = document.createElement("style");
+    style.textContent = GlyphsSearch.styles;
+    this.shadowRoot.appendChild(style);
 
     const searchField = htmlToElement(searchElementHTML);
     searchField.oninput = (event) => this._searchFieldChanged(event);
@@ -54,19 +81,24 @@ export class GlyphsSearch {
         bubbles: false,
         detail: this.getSelectedGlyphName(),
       });
-      this.container.dispatchEvent(event);
+      this.dispatchEvent(event);
     });
 
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
-    this.updateGlyphNamesListContent();
 
-    this.container.style = glyphsSearchCSS;
-    this.container.appendChild(searchField);
-    this.container.appendChild(this.glyphNamesList);
+    this.glyphMap = {};
+
+    this.shadowRoot.appendChild(searchField);
+    this.shadowRoot.appendChild(this.glyphNamesList);
   }
 
-  addEventListener(...args) {
-    this.container.addEventListener(...args);
+  get glyphMap() {
+    return this._glyphMap;
+  }
+
+  set glyphMap(glyphMap) {
+    this._glyphMap = glyphMap;
+    this.updateGlyphNamesListContent();
   }
 
   getSelectedGlyphName() {
@@ -102,6 +134,8 @@ export class GlyphsSearch {
     this.glyphNamesList.setSelectedItem(selectedItem);
   }
 }
+
+customElements.define("glyphs-search", GlyphsSearch);
 
 function glyphItemSortFunc(item1, item2) {
   const uniCmp = compare(item1.unicodes[0], item2.unicodes[0]);
