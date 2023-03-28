@@ -69,7 +69,13 @@ export function dialog(
     }
     buttonElement.value = buttonDef.title;
     buttonElement.onclick = (event) => {
-      dialogDone(buttonDef.getResult?.() || buttonDef.resultValue || buttonDef.title);
+      dialogDone(
+        buttonDef.getResult
+          ? buttonDef.getResult()
+          : buttonDef.resultValue !== undefined
+          ? buttonDef.resultValue
+          : buttonDef.title
+      );
     };
     content.appendChild(buttonElement);
   }
