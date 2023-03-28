@@ -1127,11 +1127,10 @@ export class EditorController {
       tCenterX: 0,
       tCenterY: 0,
     };
-    const location = {};
     const baseGlyph = await this.fontController.getGlyph(glyphName);
-    for (const axis of baseGlyph.glyph.axes) {
-      location[axis.name] = axis.defaultValue;
-    }
+    const location = Object.fromEntries(
+      baseGlyph.glyph.axes.map((axis) => [axis.name, axis.defaultValue])
+    );
     const newComponent = {
       name: glyphName,
       transformation: transformation,
