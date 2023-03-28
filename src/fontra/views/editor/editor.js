@@ -691,7 +691,17 @@ export class EditorController {
         shortCut: { keysOrCodes: "a", metaKey: true, shiftKey: selectNone },
       });
     }
-    this.glyphEditContextMenuItems = this.sceneController.getContextMenuItems();
+
+    this.glyphEditContextMenuItems = [];
+
+    this.glyphEditContextMenuItems.push({
+      title: "Add Component",
+      enabled: () => this.canAddComponent(),
+      callback: () => this.doAddComponent(),
+      shortCut: undefined,
+    });
+
+    this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
   }
 
   initShortCuts() {
@@ -1063,6 +1073,78 @@ export class EditorController {
     });
   }
 
+  canAddComponent() {
+    return this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
+  }
+
+  async doAddComponent() {
+    let contentContainer;
+
+    const getButton = () => {
+      return contentContainer.getElementsByClassName("button-3")[0];
+    };
+
+    const glyphsSearch = document.createElement("glyphs-search");
+    glyphsSearch.glyphMap = this.fontController.glyphMap;
+
+    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
+      const okButton = getButton();
+      okButton.classList.toggle("disabled", !glyphsSearch.getSelectedGlyphName());
+    });
+
+    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+      const okButton = getButton();
+      okButton.click();
+    });
+
+    const getResult = () => {
+      return glyphsSearch.getSelectedGlyphName();
+    };
+
+    const contentFunc = (container) => {
+      contentContainer = container;
+      return glyphsSearch;
+    };
+
+    const glyphName = await dialog("Add Component", contentFunc, [
+      { title: "Cancel", isCancelButton: true, resultValue: null },
+      { title: "Add", isDefaultButton: true, getResult: getResult, disabled: true },
+    ]);
+
+    if (!glyphName) {
+      // User cancelled
+      return;
+    }
+
+    const transformation = {
+      translateX: 0,
+      translateY: 0,
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      skewX: 0,
+      skewY: 0,
+      tCenterX: 0,
+      tCenterY: 0,
+    };
+    const baseGlyph = await this.fontController.getGlyph(glyphName);
+    const location = Object.fromEntries(
+      baseGlyph.glyph.axes.map((axis) => [axis.name, axis.defaultValue])
+    );
+    const newComponent = {
+      name: glyphName,
+      transformation: transformation,
+      location: location,
+    };
+
+    await this.sceneController.editInstanceAndRecordChanges((instance) => {
+      const newComponentIndex = instance.components.length;
+      instance.components.push(newComponent);
+      this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
+      return "Add Component";
+    });
+  }
+
   canSelectAllNone(selectNone) {
     return this.sceneController.selectedGlyphIsEditing;
   }
@@ -1383,10 +1465,14 @@ export class EditorController {
     );
 
     for (const index of componentIndices || []) {
+      const component = instance.components[index];
+      if (!component) {
+        // Invalid selection
+        continue;
+      }
       const componentKey = (...path) => JSON.stringify(["components", index, ...path]);
 
       formContents.push({ type: "divider" });
-      const component = instance.components[index];
       formContents.push({ type: "header", label: `Component #${index}` });
       formContents.push({
         type: "edit-text",

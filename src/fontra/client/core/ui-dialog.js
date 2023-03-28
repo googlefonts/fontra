@@ -61,6 +61,9 @@ export function dialog(
     const buttonElement = document.createElement("input");
     buttonElement.type = "button";
     buttonElement.className = `ui-dialog-button button-${buttonIndex}`;
+    if (buttonDef.disabled) {
+      buttonElement.classList.add("disabled");
+    }
     if (buttonDef.isDefaultButton) {
       buttonElement.classList.add("default");
       defaultButtonElement = buttonElement;
@@ -69,14 +72,22 @@ export function dialog(
     }
     buttonElement.value = buttonDef.title;
     buttonElement.onclick = (event) => {
-      dialogDone(buttonDef.getResult?.() || buttonDef.resultValue || buttonDef.title);
+      dialogDone(
+        buttonDef.getResult
+          ? buttonDef.getResult()
+          : buttonDef.resultValue !== undefined
+          ? buttonDef.resultValue
+          : buttonDef.title
+      );
     };
     content.appendChild(buttonElement);
   }
 
   content.onkeydown = (event) => {
     if (event.key == "Enter") {
-      defaultButtonElement?.click();
+      if (!defaultButtonElement?.classList.contains("disabled")) {
+        defaultButtonElement?.click();
+      }
     } else if (event.key == "Escape") {
       cancelButtonElement?.click();
       if (!cancelButtonElement) {
