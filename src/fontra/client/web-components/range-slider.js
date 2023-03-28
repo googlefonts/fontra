@@ -1,41 +1,20 @@
-import { html, css, LitElement } from "../third-party/lit.js";
+import { themeColorCSS } from "./theme-support.js";
+import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
+
+const colors = {
+  "thumb-color": ["#333", "#bbb"],
+  "track-color": ["#bbb", "#222"],
+  "foldable-marker-color": ["#bbb", "#888"],
+};
 
 export class RangeSlider extends LitElement {
   static styles = css`
+    ${unsafeCSS(themeColorCSS(colors))}
+
     :host {
       --thumb-height: 14px;
       --thumb-width: 14px;
-      --thumb-color-light: #333;
-      --thumb-color-dark: #bbb;
-      --track-color-light: #bbb;
-      --track-color-dark: #222;
       --track-height: 5px;
-      --foldable-marker-color-light: #bbb;
-      --foldable-marker-color-dark: #888;
-
-      --thumb-color: var(--thumb-color-light);
-      --track-color: var(--track-color-light);
-      --foldable-marker-color: var(--foldable-marker-color-light);
-    }
-
-    :host-context(html.dark-theme) {
-      --thumb-color: var(--thumb-color-dark);
-      --track-color: var(--track-color-dark);
-      --foldable-marker-color: var(--foldable-marker-color-dark);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :host {
-        --thumb-color: var(--thumb-color-dark);
-        --track-color: var(--track-color-dark);
-        --foldable-marker-color: var(--foldable-marker-color-dark);
-      }
-
-      :host-context(html.light-theme) {
-        --thumb-color: var(--thumb-color-light);
-        --track-color: var(--track-color-light);
-        --foldable-marker-color: var(--foldable-marker-color-light);
-      }
     }
 
     .wrapper {
