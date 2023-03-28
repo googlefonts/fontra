@@ -1,10 +1,4 @@
 :root {
-  --editor-glyphs-search-input-background-color-light: #eee;
-  --editor-glyphs-search-input-background-color-dark: #333;
-
-  --editor-glyphs-search-input-foreground-color-light: black;
-  --editor-glyphs-search-input-foreground-color-dark: white;
-
   --editor-text-entry-input-background-color-light: #eee;
   --editor-text-entry-input-background-color-dark: #333;
 
@@ -31,12 +25,6 @@
 }
 
 :root {
-  --editor-glyphs-search-input-background-color: var(
-    --editor-glyphs-search-input-background-color-light
-  );
-  --editor-glyphs-search-input-foreground-color: var(
-    --editor-glyphs-search-input-foreground-color-light
-  );
   --editor-text-entry-input-background-color: var(
     --editor-text-entry-input-background-color-light
   );
@@ -64,12 +52,6 @@
 }
 
 :root.dark-theme {
-  --editor-glyphs-search-input-background-color: var(
-    --editor-glyphs-search-input-background-color-dark
-  );
-  --editor-glyphs-search-input-foreground-color: var(
-    --editor-glyphs-search-input-foreground-color-dark
-  );
   --editor-text-entry-input-background-color: var(
     --editor-text-entry-input-background-color-dark
   );
@@ -98,12 +80,6 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --editor-glyphs-search-input-background-color: var(
-      --editor-glyphs-search-input-background-color-dark
-    );
-    --editor-glyphs-search-input-foreground-color: var(
-      --editor-glyphs-search-input-foreground-color-dark
-    );
     --editor-text-entry-input-background-color: var(
       --editor-text-entry-input-background-color-dark
     );
@@ -131,12 +107,6 @@
   }
 
   :root.light-theme {
-    --editor-glyphs-search-input-background-color: var(
-      --editor-glyphs-search-input-background-color-light
-    );
-    --editor-glyphs-search-input-foreground-color: var(
-      --editor-glyphs-search-input-foreground-color-light
-    );
     --editor-text-entry-input-background-color: var(
       --editor-text-entry-input-background-color-light
     );
@@ -177,11 +147,6 @@
   padding: 0.5em;
 }
 
-.glyphs-search {
-  /*padding-bottom: 1em;*/
-}
-
-.glyphs-search-input,
 #text-entry-textarea {
   background-color: var(--editor-text-entry-input-background-color);
   color: var(--editor-text-entry-input-foreground-color);

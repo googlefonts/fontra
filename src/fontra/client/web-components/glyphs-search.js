@@ -4,28 +4,57 @@ import {
   htmlToElement,
   makeUPlusStringFromCodePoint,
 } from "/core/utils.js";
+import { themeColorCSS } from "./theme-support.js";
+
+const colors = {
+  "search-input-foreground-color": ["black", "white"],
+  "search-input-background-color": ["#eee", "#333"],
+};
 
 const searchElementHTML = `
 <input
   type="text"
-  class="glyphs-search-input"
-  id="glyphs-search-input"
   placeholder="Search glyphs"
   autocomplete="off"
 />`;
 
-const glyphsSearchCSS = `
-display: grid;
-gap: 1em;
-grid-template-rows: auto 1fr;
-box-sizing: border-box;
-overflow: hidden;
-align-content: start;
-`;
-
 export class GlyphsSearch extends HTMLElement {
+  static styles = `
+    ${themeColorCSS(colors)}
+
+    :host {
+      display: grid;
+      gap: 1em;
+      grid-template-rows: auto 1fr;
+      box-sizing: border-box;
+      overflow: hidden;
+      align-content: start;
+    }
+
+    input {
+      color: var(--search-input-foreground-color);
+      background-color: var(--search-input-background-color);
+      font-family: fontra-ui-regular, sans-serif;
+      font-size: 1.1rem;
+      border-radius: 2em;
+      border: none;
+      outline: none;
+      resize: none;
+      width: 100%;
+      height: 1.8em;
+      box-sizing: border-box;
+      padding: 0.2em 0.8em;
+    }
+  `;
+
   constructor() {
     super();
+    this.attachShadow({ mode: "open" });
+
+    const style = document.createElement("style");
+    style.textContent = GlyphsSearch.styles;
+    this.shadowRoot.appendChild(style);
+
     const searchField = htmlToElement(searchElementHTML);
     searchField.oninput = (event) => this._searchFieldChanged(event);
 
@@ -59,9 +88,8 @@ export class GlyphsSearch extends HTMLElement {
 
     this.glyphMap = {};
 
-    this.style = glyphsSearchCSS;
-    this.appendChild(searchField);
-    this.appendChild(this.glyphNamesList);
+    this.shadowRoot.appendChild(searchField);
+    this.shadowRoot.appendChild(this.glyphNamesList);
   }
 
   get glyphMap() {
