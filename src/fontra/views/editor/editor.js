@@ -38,7 +38,6 @@ import {
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
-import { GlyphsSearch } from "./glyphs-search.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -225,7 +224,7 @@ export class EditorController {
   }
 
   async initGlyphsSearch() {
-    this.glyphsSearch = new GlyphsSearch(document.querySelector("#glyphs-search"));
+    this.glyphsSearch = document.querySelector("#glyphs-search");
     this.glyphsSearch.glyphMap = this.fontController.glyphMap;
     this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)

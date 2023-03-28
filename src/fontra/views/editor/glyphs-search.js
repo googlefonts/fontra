@@ -23,10 +23,9 @@ overflow: hidden;
 align-content: start;
 `;
 
-export class GlyphsSearch {
-  constructor(container) {
-    this.container = container;
-
+export class GlyphsSearch extends HTMLElement {
+  constructor() {
+    super();
     const searchField = htmlToElement(searchElementHTML);
     searchField.oninput = (event) => this._searchFieldChanged(event);
 
@@ -53,16 +52,16 @@ export class GlyphsSearch {
         bubbles: false,
         detail: this.getSelectedGlyphName(),
       });
-      this.container.dispatchEvent(event);
+      this.dispatchEvent(event);
     });
 
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
     this.glyphMap = {};
 
-    this.container.style = glyphsSearchCSS;
-    this.container.appendChild(searchField);
-    this.container.appendChild(this.glyphNamesList);
+    this.style = glyphsSearchCSS;
+    this.appendChild(searchField);
+    this.appendChild(this.glyphNamesList);
   }
 
   get glyphMap() {
@@ -72,10 +71,6 @@ export class GlyphsSearch {
   set glyphMap(glyphMap) {
     this._glyphMap = glyphMap;
     this.updateGlyphNamesListContent();
-  }
-
-  addEventListener(...args) {
-    this.container.addEventListener(...args);
   }
 
   getSelectedGlyphName() {
@@ -111,6 +106,8 @@ export class GlyphsSearch {
     this.glyphNamesList.setSelectedItem(selectedItem);
   }
 }
+
+customElements.define("glyphs-search", GlyphsSearch);
 
 function glyphItemSortFunc(item1, item2) {
   const uniCmp = compare(item1.unicodes[0], item2.unicodes[0]);

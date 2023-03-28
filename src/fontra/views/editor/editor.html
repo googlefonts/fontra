@@ -10,6 +10,7 @@
     <link href="/editor/editor.css" rel="stylesheet" />
     <script type="module" src="/web-components/add-remove-buttons.js"></script>
     <script type="module" src="/web-components/general-settings.js"></script>
+    <script type="module" src="/editor/glyphs-search.js"></script>
     <script type="module" src="/web-components/options-list.js"></script>
     <script type="module" src="/web-components/ui-list.js"></script>
   </head>
@@ -321,9 +322,7 @@
 
         <div class="sidebar-content" data-sidebar-name="glyph-search">
           <div class="sidebar-glyph-search">
-            <div id="glyphs-search">
-              <!-- contents will be filled dynamically -->
-            </div>
+            <glyphs-search id="glyphs-search"></glyphs-search>
           </div>
         </div>
 
