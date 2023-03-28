@@ -332,7 +332,6 @@ export class EditorController {
     this.addRemoveSourceButtons = document.querySelector(
       "#sources-list-add-remove-buttons"
     );
-    this.addRemoveSourceButtons.className = "";
     this.addRemoveSourceButtons.addButtonCallback = addSourceCallback;
     this.addRemoveSourceButtons.removeButtonCallback = removeSourceCallback;
     this.addRemoveSourceButtons.hidden = true;
