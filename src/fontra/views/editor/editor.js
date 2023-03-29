@@ -1233,6 +1233,7 @@ export class EditorController {
     this.canvasController.setNeedsUpdate();
     this.glyphsSearch.updateGlyphNamesListContent();
     this.updateWindowLocationAndSelectionInfo();
+    await this.updateSlidersAndSources();
   }
 
   async externalChange(change) {
@@ -1251,6 +1252,7 @@ export class EditorController {
         });
       }
       this.glyphsSearch.updateGlyphNamesListContent();
+      await this.updateSlidersAndSources();
     }
     await this.sceneController.sceneModel.updateScene();
     if (
