@@ -1,3 +1,4 @@
+import { UnlitElement } from "/core/unlit.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
@@ -10,7 +11,7 @@ const colors = {
   "row-selected-background-color": ["#ddd", "#555"],
 };
 
-export class UIList extends HTMLElement {
+export class UIList extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
 
@@ -52,7 +53,7 @@ export class UIList extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
+
     this.tabIndex = "1";
 
     this._columnDescriptions = [
@@ -64,13 +65,8 @@ export class UIList extends HTMLElement {
     this.items = [];
     this.itemEqualFunc = null;
 
-    const style = document.createElement("style");
-    style.textContent = UIList.styles;
-    this.shadowRoot.appendChild(style);
-
     this.contents = document.createElement("div");
     this.contents.className = "contents";
-    this.shadowRoot.appendChild(this.contents);
     this.contents.addEventListener(
       "click",
       (event) => this._clickHandler(event),
@@ -88,8 +84,8 @@ export class UIList extends HTMLElement {
     this.classList.add("empty");
   }
 
-  connectedCallback() {
-    //
+  render() {
+    return this.contents;
   }
 
   get columnDescriptions() {
