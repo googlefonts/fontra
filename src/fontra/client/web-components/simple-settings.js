@@ -95,7 +95,9 @@ const uiTypes = {
     });
 
     return [
-      element("div", { class: "header" }, [description.displayName]),
+      description.displayName
+        ? element("div", { class: "header" }, [description.displayName])
+        : "",
       ...description.options.map((option) => {
         const itemID = `${id}.${option.key}`;
         return element("div", {}, [
