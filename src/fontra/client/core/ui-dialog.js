@@ -1,3 +1,4 @@
+import * as html from "./unlit.js";
 import { enumerate } from "./utils.js";
 
 export function dialog(
@@ -28,25 +29,19 @@ export function dialog(
   const currentActiveElement = document.activeElement;
 
   const container = document.querySelector("#ui-dialog-container");
-  const content = document.createElement("div");
-  content.className = "ui-dialog-content";
-  content.tabIndex = 1; /* so we can receive key events */
+  const content = html.div({ class: "ui-dialog-content", tabindex: 1 }, [
+    html.div({ class: "ui-dialog-headline" }, [headline]),
+  ]);
   container.appendChild(content);
-
-  const headlineElement = document.createElement("div");
-  headlineElement.classList.add("ui-dialog-headline");
-  headlineElement.innerText = headline;
-
-  content.appendChild(headlineElement);
 
   if (typeof messageOrContentFunction === "function") {
     const mainContentElement = messageOrContentFunction(content);
     mainContentElement.classList.add("ui-dialog-message");
     content.appendChild(mainContentElement);
   } else {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("ui-dialog-message");
-    messageElement.innerText = messageOrContentFunction;
+    const messageElement = html.div({ class: "ui-dialog-message" }, [
+      messageOrContentFunction,
+    ]);
     content.appendChild(messageElement);
   }
 
@@ -58,9 +53,20 @@ export function dialog(
     buttonDefs[0].isDefaultButton = true;
   }
   for (const [buttonIndex, buttonDef] of enumerate(buttonDefs, 4 - buttonDefs.length)) {
-    const buttonElement = document.createElement("input");
-    buttonElement.type = "button";
-    buttonElement.className = `ui-dialog-button button-${buttonIndex}`;
+    const buttonElement = html.input({
+      type: "button",
+      class: `ui-dialog-button button-${buttonIndex}`,
+      value: buttonDef.title,
+      onclick: (event) => {
+        dialogDone(
+          buttonDef.getResult
+            ? buttonDef.getResult()
+            : buttonDef.resultValue !== undefined
+            ? buttonDef.resultValue
+            : buttonDef.title
+        );
+      },
+    });
     if (buttonDef.disabled) {
       buttonElement.classList.add("disabled");
     }
@@ -70,16 +76,6 @@ export function dialog(
     } else if (buttonDef.isCancelButton) {
       cancelButtonElement = buttonElement;
     }
-    buttonElement.value = buttonDef.title;
-    buttonElement.onclick = (event) => {
-      dialogDone(
-        buttonDef.getResult
-          ? buttonDef.getResult()
-          : buttonDef.resultValue !== undefined
-          ? buttonDef.resultValue
-          : buttonDef.title
-      );
-    };
     content.appendChild(buttonElement);
   }
 
