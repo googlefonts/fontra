@@ -20,10 +20,6 @@ export function themeSwitchFromLocalStorage() {
   themeModelObject.addEventListener("changed", (event) => {
     if (event.key === "theme") {
       themeSwitch(themeModelObject.theme);
-      const event = new CustomEvent("fontra-theme-switch", {
-        bubbles: false,
-      });
-      window.dispatchEvent(event);
     }
   });
 }

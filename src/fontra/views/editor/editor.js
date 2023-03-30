@@ -146,7 +146,7 @@ export class EditorController {
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addListener((event) => this.themeChanged(event));
-    window.addEventListener("fontra-theme-switch", (event) => {
+    themeModelObject.addEventListener("changed", (event) => {
       this.themeChanged(event);
     });
 
