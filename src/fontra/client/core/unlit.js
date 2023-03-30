@@ -69,4 +69,6 @@ export function createDomElement(tagName, attributes, children) {
 export const div = createDomElement.bind(null, "div");
 export const input = createDomElement.bind(null, "input");
 export const label = createDomElement.bind(null, "label");
+export const span = createDomElement.bind(null, "span");
+export const hr = createDomElement.bind(null, "hr");
 // Let's add more once needed

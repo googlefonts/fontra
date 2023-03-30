@@ -1,3 +1,4 @@
+import * as html from "./unlit.js";
 import { reversed, capitalizeFirstLetter } from "./utils.js";
 
 export const MenuItemDivider = { title: "-" };
@@ -20,29 +21,34 @@ export class ContextMenu {
     this.element.oncontextmenu = (event) => event.preventDefault(); // No context menu on our context menu please
 
     for (const item of menuItems) {
-      const el = document.createElement("div");
+      let itemElement;
       if (item === MenuItemDivider || item.title === "-") {
-        const dividerElement = document.createElement("hr");
-        dividerElement.className = "context-menu-item-divider";
-        this.element.appendChild(dividerElement);
+        itemElement = html.hr({ class: "context-menu-item-divider" });
       } else {
-        const itemElement = document.createElement("div");
-        itemElement.classList.add("context-menu-item");
-        itemElement.classList.toggle("enabled", !!item.enabled());
-        itemElement.append(this.buildTitle(item));
-        itemElement.onmouseenter = (event) => this.selectItem(itemElement);
-        itemElement.onmousemove = (event) => {
-          if (!itemElement.classList.contains("selected")) {
-            this.selectItem(itemElement);
-          }
-        };
-        itemElement.onmouseleave = (event) => itemElement.classList.remove("selected");
-        itemElement.onclick = (event) => {
-          item.callback?.(event);
-          this.dismiss();
-        };
-        this.element.appendChild(itemElement);
+        itemElement = html.div(
+          {
+            class: `context-menu-item ${item.enabled() ? "enabled" : ""}`,
+            onmouseenter: (event) => this.selectItem(itemElement),
+            onmousemove: (event) => {
+              if (!itemElement.classList.contains("selected")) {
+                this.selectItem(itemElement);
+              }
+            },
+            onmouseleave: (event) => itemElement.classList.remove("selected"),
+            onclick: (event) => {
+              item.callback?.(event);
+              this.dismiss();
+            },
+          },
+          [
+            html.div({}, [
+              typeof item.title === "function" ? item.title() : item.title,
+              html.span({}, [this.buildShortCutString(item.shortCut)]),
+            ]),
+          ]
+        );
       }
+      this.element.appendChild(itemElement);
     }
 
     const container = this.element.parentElement;
@@ -135,17 +141,6 @@ export class ContextMenu {
     }
   }
 
-  buildTitle(item) {
-    const titleWrapper = document.createElement("div");
-    const title = document.createElement("span");
-    title.innerText = typeof item.title === "function" ? item.title() : item.title;
-
-    const shortCut = document.createElement("span");
-    shortCut.innerHTML = this.buildShortCutString(item.shortCut);
-    titleWrapper.append(title, shortCut);
-    return titleWrapper;
-  }
-
   buildShortCutString(shortCutDefinition) {
     let shorcutCommand = "";
 
@@ -153,10 +148,10 @@ export class ContextMenu {
       const isMac = navigator.platform.toLowerCase().indexOf("mac") >= 0;
 
       if (shortCutDefinition.shiftKey) {
-        shorcutCommand += isMac ? "&#8679;" : "Shift+"; // ⇧ or Shift
+        shorcutCommand += isMac ? "\u21e7" : "Shift+"; // ⇧ or Shift
       }
       if (shortCutDefinition.metaKey) {
-        shorcutCommand += isMac ? "&#8984;" : "Ctrl+"; // ⌘ or Ctrl
+        shorcutCommand += isMac ? "\u2318" : "Ctrl+"; // ⌘ or Ctrl
       }
       if (shortCutDefinition.keysOrCodes) {
         const key = shortCutDefinition.keysOrCodes[0];
