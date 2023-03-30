@@ -98,7 +98,10 @@ function synchronizeWithLocalStorage(obj, prefix = "") {
     if (!stringKeys[key]) {
       value = JSON.stringify(value);
     }
-    localStorage.setItem(toStorage[key], value);
+    const storageKey = toStorage[key];
+    if (localStorage.getItem(storageKey) !== value) {
+      localStorage.setItem(storageKey, value);
+    }
   }
 
   obj.addEventListener("changed", (event) => {
