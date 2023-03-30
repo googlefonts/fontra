@@ -1,3 +1,4 @@
+import * as html from "./unlit.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 
 export class Sliders {
@@ -22,9 +23,7 @@ export class Sliders {
     this.container.innerHTML = ""; // Delete previous sliders
     for (const sliderInfo of sliderDescriptions) {
       if (sliderInfo.isDivider) {
-        const divider = document.createElement("hr");
-        divider.className = "slider-divider";
-        this.container.appendChild(divider);
+        this.container.appendChild(html.hr({ class: "slider-divider" }));
       } else {
         const slider = new RangeSlider();
         slider.name = sliderInfo.name;
