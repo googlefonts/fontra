@@ -1,4 +1,5 @@
 import * as html from "/core/unlit.js";
+import { UnlitElement } from "/core/unlit.js";
 import { getCharFromUnicode, makeUPlusStringFromCodePoint } from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
@@ -8,7 +9,7 @@ const colors = {
   "search-input-background-color": ["#eee", "#333"],
 };
 
-export class GlyphsSearch extends HTMLElement {
+export class GlyphsSearch extends UnlitElement {
   static styles = `
     ${themeColorCSS(colors)}
 
@@ -39,13 +40,8 @@ export class GlyphsSearch extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
 
-    const style = document.createElement("style");
-    style.textContent = GlyphsSearch.styles;
-    this.shadowRoot.appendChild(style);
-
-    const searchField = html.input({
+    this.searchField = html.input({
       type: "text",
       placeholder: "Search glyphs",
       autocomplete: "off",
@@ -89,8 +85,10 @@ export class GlyphsSearch extends HTMLElement {
     this._glyphNamesListFilterFunc = (item) => true; // pass all through
 
     this.glyphMap = {};
+  }
 
-    this.shadowRoot.appendChild(searchField);
+  render() {
+    this.shadowRoot.appendChild(this.searchField);
     this.shadowRoot.appendChild(this.glyphNamesList);
   }
 
