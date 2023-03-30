@@ -11,15 +11,15 @@ export function themeSwitch(value) {
   }
 }
 
-const themeModel = newObservableObject({ theme: "automatic" });
-themeModel.synchronizeWithLocalStorage("fontra-");
+export const themeModelObject = newObservableObject({ theme: "automatic" });
+themeModelObject.synchronizeWithLocalStorage("fontra-");
 
 export function themeSwitchFromLocalStorage() {
-  themeSwitch(themeModel.theme);
+  themeSwitch(themeModelObject.theme);
 
-  themeModel.addEventListener("changed", (event) => {
+  themeModelObject.addEventListener("changed", (event) => {
     if (event.key === "theme") {
-      themeSwitch(themeModel.theme);
+      themeSwitch(themeModelObject.theme);
       const event = new CustomEvent("fontra-theme-switch", {
         bubbles: false,
       });

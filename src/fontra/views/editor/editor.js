@@ -36,7 +36,7 @@ import {
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
-import { THEME_KEY, themeSwitchFromLocalStorage } from "/core/theme-settings.js";
+import { themeModelObject, themeSwitchFromLocalStorage } from "/core/theme-settings.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -486,7 +486,7 @@ export class EditorController {
   }
 
   get isThemeDark() {
-    const themeValue = localStorage.getItem(THEME_KEY) || "automatic";
+    const themeValue = themeModelObject.theme;
     if (themeValue === "automatic") {
       return window.matchMedia("(prefers-color-scheme: dark)").matches;
     } else {
