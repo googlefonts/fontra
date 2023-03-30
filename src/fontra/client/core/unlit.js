@@ -64,3 +64,9 @@ export function createDomElement(tagName, attributes, children) {
   }
   return element;
 }
+
+// Convenience shortcuts
+export const div = createDomElement.bind(null, "div");
+export const input = createDomElement.bind(null, "input");
+export const label = createDomElement.bind(null, "label");
+// Let's add more once needed
