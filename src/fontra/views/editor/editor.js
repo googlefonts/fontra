@@ -99,10 +99,6 @@ export class EditorController {
       this.visualizationLayers
     );
     this.visualizationLayersSettings.addEventListener("changed", (event) => {
-      localStorage.setItem(
-        "visualization-layers-settings",
-        JSON.stringify(this.visualizationLayersSettings)
-      );
       this.visualizationLayers.toggle(event.key, event.value);
       this.canvasController.setNeedsUpdate();
     });
@@ -217,7 +213,7 @@ export class EditorController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphsSearch();
     await this.initSliders();
-    this.initLayers();
+    this.initUserSettings();
     this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
@@ -249,30 +245,22 @@ export class EditorController {
     );
   }
 
-  initLayers() {
-    const optionsList = document.querySelector(".options-list");
-    const userSwitchableLayers = this.visualizationLayers.definitions.filter(
+  initUserSettings() {
+    const userSettings = document.querySelector("#user-settings");
+    const items = [];
+    const model = newObservableObject({ a: true });
+    const layers = this.visualizationLayers.definitions.filter(
       (layer) => layer.userSwitchable
     );
-
-    const glyphDisplayLayersItems = userSwitchableLayers.map((layer) => {
-      const layerChecked = this.visualizationLayersSettings[layer.identifier];
-      return { id: layer.identifier, name: layer.name, isChecked: layerChecked };
+    const layerItems = layers.map((layer) => {
+      return { key: layer.identifier, displayName: layer.name, ui: "checkbox" };
     });
-
-    optionsList.options = [
-      {
-        name: "Glyph display layers",
-        defaultOpen: true,
-        items: glyphDisplayLayersItems,
-      },
-    ];
-
-    optionsList.addEventListener("change", (event) => {
-      const layerIdentifier = event.detail.id;
-      const layerChecked = event.detail.checked;
-      this.visualizationLayersSettings[layerIdentifier] = layerChecked;
+    items.push({
+      displayName: "Glyph editor appearance",
+      model: this.visualizationLayersSettings,
+      descriptions: layerItems,
     });
+    userSettings.items = items;
   }
 
   initTools() {
@@ -1876,8 +1864,7 @@ function makeDisplayPath(pathItems) {
 }
 
 function newVisualizationLayersSettings(visualizationLayers) {
-  const settings =
-    JSON.parse(localStorage.getItem("visualization-layers-settings")) || {};
+  const settings = [];
   for (const definition of visualizationLayers.definitions) {
     if (!definition.userSwitchable) {
       continue;
@@ -1885,7 +1872,11 @@ function newVisualizationLayersSettings(visualizationLayers) {
     if (!(definition.identifier in settings)) {
       settings[definition.identifier] = !!definition.defaultOn;
     }
-    visualizationLayers.toggle(definition.identifier, settings[definition.identifier]);
   }
-  return newObservableObject(settings);
+  const observable = newObservableObject(settings);
+  observable.synchronizeWithLocalStorage("fontra-editor-visualization-layers.");
+  for (const [key, onOff] of Object.entries(observable)) {
+    visualizationLayers.toggle(key, onOff);
+  }
+  return observable;
 }
