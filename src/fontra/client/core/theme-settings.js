@@ -1,3 +1,5 @@
+import { newObservableObject } from "./observable-object.js";
+
 export const THEME_KEY = "fontra-theme";
 
 export function themeSwitch(value) {
@@ -9,23 +11,19 @@ export function themeSwitch(value) {
   }
 }
 
-export function themeSwitchFromLocalStorage() {
-  _themeSwitchFromLocalStorage();
+const themeModel = newObservableObject({ theme: "automatic" });
+themeModel.synchronizeWithLocalStorage("fontra-");
 
-  window.addEventListener("storage", (event) => {
-    if (event.key === THEME_KEY) {
-      _themeSwitchFromLocalStorage();
+export function themeSwitchFromLocalStorage() {
+  themeSwitch(themeModel.theme);
+
+  themeModel.addEventListener("changed", (event) => {
+    if (event.key === "theme") {
+      themeSwitch(themeModel.theme);
       const event = new CustomEvent("fontra-theme-switch", {
         bubbles: false,
       });
       window.dispatchEvent(event);
     }
   });
-}
-
-function _themeSwitchFromLocalStorage() {
-  const themeValue = localStorage.getItem(THEME_KEY);
-  if (themeValue) {
-    themeSwitch(themeValue);
-  }
 }
