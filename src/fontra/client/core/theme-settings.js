@@ -1,7 +1,5 @@
 import { newObservableObject } from "./observable-object.js";
 
-export const THEME_KEY = "fontra-theme";
-
 export function themeSwitch(value) {
   const rootElement = document.querySelector("html");
   rootElement.classList.remove("light-theme");
