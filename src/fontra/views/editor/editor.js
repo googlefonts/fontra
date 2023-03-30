@@ -24,20 +24,19 @@ import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { joinPaths } from "../core/var-path.js";
 import {
-  THEME_KEY,
   getCharFromUnicode,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
   makeUPlusStringFromCodePoint,
   parseSelection,
   scheduleCalls,
-  themeSwitchFromLocalStorage,
   throttleCalls,
   range,
   readFromClipboard,
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
+import { THEME_KEY, themeSwitchFromLocalStorage } from "/core/theme-settings.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";

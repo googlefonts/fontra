@@ -1,5 +1,5 @@
 import { html, css, LitElement } from "../third-party/lit.js";
-import { THEME_KEY, themeSwitch } from "../core/utils.js";
+import { THEME_KEY, themeSwitch } from "../core/theme-settings.js";
 
 export class GeneralSettings extends LitElement {
   static styles = css`
