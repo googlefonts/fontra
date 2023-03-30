@@ -88,8 +88,7 @@ export class GlyphsSearch extends UnlitElement {
   }
 
   render() {
-    this.shadowRoot.appendChild(this.searchField);
-    this.shadowRoot.appendChild(this.glyphNamesList);
+    return [this.searchField, this.glyphNamesList];
   }
 
   get glyphMap() {
