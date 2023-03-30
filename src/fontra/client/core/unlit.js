@@ -47,7 +47,7 @@ export class UnlitElement extends HTMLElement {
     }
     elements = elements.flat();
     for (const element of elements) {
-      this.shadowRoot.appendChild(element);
+      this.shadowRoot.append(element);
     }
   }
 }
