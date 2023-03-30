@@ -57,7 +57,7 @@ export function newObservableObject(obj) {
     get(obj, prop, receiver) {
       const method = methods[prop];
       if (method) {
-        return (...args) => method(receiver, ...args);
+        return method.bind(null, receiver);
       }
       return obj[prop];
     },
