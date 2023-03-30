@@ -89,6 +89,9 @@ export class EditorController {
       canvasController.context
     );
 
+    this.clipboardModelObject = newObservableObject({ format: "glif" });
+    this.clipboardModelObject.synchronizeWithLocalStorage("fontra-clipboard-");
+
     this.visualizationLayers = new VisualizationLayers(
       visualizationLayerDefinitions,
       this.isThemeDark
@@ -259,6 +262,23 @@ export class EditorController {
       displayName: "Glyph editor appearance",
       model: this.visualizationLayersSettings,
       descriptions: layerItems,
+    });
+
+    // Clipboard settings
+    items.push({
+      displayName: "Clipboard export format",
+      model: this.clipboardModelObject,
+      descriptions: [
+        {
+          key: "format",
+          ui: "radio",
+          options: [
+            { key: "glif", displayName: "GLIF (RoboFont)" },
+            { key: "svg", displayName: "SVG" },
+            { key: "fontra-json", displayName: "JSON (Fontra)" },
+          ],
+        },
+      ],
     });
 
     // Theme settings
@@ -897,11 +917,8 @@ export class EditorController {
     const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
     const jsonString = JSON.stringify(instance);
 
-    const clipboardExportFormat =
-      localStorage.getItem("fontra-clipboard-format") || "glif";
-
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
-    const plainTextString = mapping[clipboardExportFormat] || glifString;
+    const plainTextString = mapping[this.clipboardModelObject.format] || glifString;
 
     localStorage.setItem("clipboardSelection.text-plain", plainTextString);
     localStorage.setItem("clipboardSelection.glyph", jsonString);
