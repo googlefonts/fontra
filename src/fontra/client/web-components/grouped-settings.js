@@ -1,4 +1,4 @@
-import { UnlitElement, createDomElement as element } from "/core/unlit.js";
+import { UnlitElement, div } from "/core/unlit.js";
 import { SimpleSettings } from "./simple-settings.js";
 
 export class GroupedSettings extends UnlitElement {
@@ -26,11 +26,7 @@ export class GroupedSettings extends UnlitElement {
       const simpleSettings = new SimpleSettings();
       simpleSettings.model = item.model;
       simpleSettings.descriptions = item.descriptions;
-      const elements = [
-        element("div", { class: "header" }, [item.displayName]),
-        simpleSettings,
-      ];
-      return elements;
+      return [div({ class: "header" }, [item.displayName]), simpleSettings];
     });
   }
 }

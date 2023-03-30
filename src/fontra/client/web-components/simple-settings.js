@@ -1,4 +1,4 @@
-import { UnlitElement, createDomElement as element } from "/core/unlit.js";
+import { UnlitElement, div, input, label } from "/core/unlit.js";
 
 export class SimpleSettings extends UnlitElement {
   static styles = `
@@ -68,7 +68,7 @@ export class SimpleSettings extends UnlitElement {
 
 const uiTypes = {
   header(wrapListener, description, model) {
-    return element("div", { class: "header" }, [description.displayName]);
+    return div({ class: "header" }, [description.displayName]);
   },
 
   checkbox(wrapListener, description, model) {
@@ -77,14 +77,14 @@ const uiTypes = {
       model[description.key] = event.target.checked;
     });
 
-    return element("div", {}, [
-      element("input", {
+    return div({}, [
+      input({
         type: "checkbox",
         id: id,
         onchange: listener,
         checked: model[description.key],
       }),
-      element("label", { for: id }, [description.displayName]),
+      label({ for: id }, [description.displayName]),
     ]);
   },
 
@@ -96,12 +96,12 @@ const uiTypes = {
 
     return [
       description.displayName
-        ? element("div", { class: "header" }, [description.displayName])
+        ? div({ class: "header" }, [description.displayName])
         : "",
       ...description.options.map((option) => {
         const itemID = `${id}.${option.key}`;
-        return element("div", {}, [
-          element("input", {
+        return div({}, [
+          input({
             type: "radio",
             id: itemID,
             name: id,
@@ -109,7 +109,7 @@ const uiTypes = {
             onchange: listener,
             checked: model[description.key] == option.key,
           }),
-          element("label", { for: itemID }, [option.displayName]),
+          label({ for: itemID }, [option.displayName]),
         ]);
       }),
     ];
