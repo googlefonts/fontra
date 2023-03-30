@@ -24,20 +24,19 @@ import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { joinPaths } from "../core/var-path.js";
 import {
-  THEME_KEY,
   getCharFromUnicode,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
   makeUPlusStringFromCodePoint,
   parseSelection,
   scheduleCalls,
-  themeSwitchFromLocalStorage,
   throttleCalls,
   range,
   readFromClipboard,
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
+import { themeModelObject } from "/core/theme-settings.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -72,7 +71,6 @@ export class EditorController {
   }
 
   constructor(font) {
-    themeSwitchFromLocalStorage();
     this.fontController = new FontController(font, {});
     this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
@@ -90,6 +88,9 @@ export class EditorController {
       canvasController.context
     );
 
+    this.clipboardFormatModelObject = newObservableObject({ format: "glif" });
+    this.clipboardFormatModelObject.synchronizeWithLocalStorage("fontra-clipboard-");
+
     this.visualizationLayers = new VisualizationLayers(
       visualizationLayerDefinitions,
       this.isThemeDark
@@ -99,10 +100,6 @@ export class EditorController {
       this.visualizationLayers
     );
     this.visualizationLayersSettings.addEventListener("changed", (event) => {
-      localStorage.setItem(
-        "visualization-layers-settings",
-        JSON.stringify(this.visualizationLayersSettings)
-      );
       this.visualizationLayers.toggle(event.key, event.value);
       this.canvasController.setNeedsUpdate();
     });
@@ -151,7 +148,7 @@ export class EditorController {
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addListener((event) => this.themeChanged(event));
-    window.addEventListener("fontra-theme-switch", (event) => {
+    themeModelObject.addEventListener("changed", (event) => {
       this.themeChanged(event);
     });
 
@@ -217,7 +214,7 @@ export class EditorController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphsSearch();
     await this.initSliders();
-    this.initLayers();
+    this.initUserSettings();
     this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
@@ -249,30 +246,58 @@ export class EditorController {
     );
   }
 
-  initLayers() {
-    const optionsList = document.querySelector(".options-list");
-    const userSwitchableLayers = this.visualizationLayers.definitions.filter(
+  initUserSettings() {
+    const userSettings = document.querySelector("#user-settings");
+    const items = [];
+
+    // Visualization layer settings
+    const layers = this.visualizationLayers.definitions.filter(
       (layer) => layer.userSwitchable
     );
-
-    const glyphDisplayLayersItems = userSwitchableLayers.map((layer) => {
-      const layerChecked = this.visualizationLayersSettings[layer.identifier];
-      return { id: layer.identifier, name: layer.name, isChecked: layerChecked };
+    const layerItems = layers.map((layer) => {
+      return { key: layer.identifier, displayName: layer.name, ui: "checkbox" };
+    });
+    items.push({
+      displayName: "Glyph editor appearance",
+      model: this.visualizationLayersSettings,
+      descriptions: layerItems,
     });
 
-    optionsList.options = [
-      {
-        name: "Glyph display layers",
-        defaultOpen: true,
-        items: glyphDisplayLayersItems,
-      },
-    ];
-
-    optionsList.addEventListener("change", (event) => {
-      const layerIdentifier = event.detail.id;
-      const layerChecked = event.detail.checked;
-      this.visualizationLayersSettings[layerIdentifier] = layerChecked;
+    // Clipboard settings
+    items.push({
+      displayName: "Clipboard export format",
+      model: this.clipboardFormatModelObject,
+      descriptions: [
+        {
+          key: "format",
+          ui: "radio",
+          options: [
+            { key: "glif", displayName: "GLIF (RoboFont)" },
+            { key: "svg", displayName: "SVG" },
+            { key: "fontra-json", displayName: "JSON (Fontra)" },
+          ],
+        },
+      ],
     });
+
+    // Theme settings
+    items.push({
+      displayName: "Theme settings",
+      model: themeModelObject,
+      descriptions: [
+        {
+          key: "theme",
+          ui: "radio",
+          options: [
+            { key: "automatic", displayName: "Automatic (use OS setting)" },
+            { key: "light", displayName: "Light" },
+            { key: "dark", displayName: "Dark" },
+          ],
+        },
+      ],
+    });
+
+    userSettings.items = items;
   }
 
   initTools() {
@@ -499,7 +524,7 @@ export class EditorController {
   }
 
   get isThemeDark() {
-    const themeValue = localStorage.getItem(THEME_KEY) || "automatic";
+    const themeValue = themeModelObject.theme;
     if (themeValue === "automatic") {
       return window.matchMedia("(prefers-color-scheme: dark)").matches;
     } else {
@@ -891,11 +916,9 @@ export class EditorController {
     const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
     const jsonString = JSON.stringify(instance);
 
-    const clipboardExportFormat =
-      localStorage.getItem("fontra-clipboard-format") || "glif";
-
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
-    const plainTextString = mapping[clipboardExportFormat] || glifString;
+    const plainTextString =
+      mapping[this.clipboardFormatModelObject.format] || glifString;
 
     localStorage.setItem("clipboardSelection.text-plain", plainTextString);
     localStorage.setItem("clipboardSelection.glyph", jsonString);
@@ -1876,8 +1899,7 @@ function makeDisplayPath(pathItems) {
 }
 
 function newVisualizationLayersSettings(visualizationLayers) {
-  const settings =
-    JSON.parse(localStorage.getItem("visualization-layers-settings")) || {};
+  const settings = [];
   for (const definition of visualizationLayers.definitions) {
     if (!definition.userSwitchable) {
       continue;
@@ -1885,7 +1907,11 @@ function newVisualizationLayersSettings(visualizationLayers) {
     if (!(definition.identifier in settings)) {
       settings[definition.identifier] = !!definition.defaultOn;
     }
-    visualizationLayers.toggle(definition.identifier, settings[definition.identifier]);
   }
-  return newObservableObject(settings);
+  const observable = newObservableObject(settings);
+  observable.synchronizeWithLocalStorage("fontra-editor-visualization-layers.");
+  for (const [key, onOff] of Object.entries(observable)) {
+    visualizationLayers.toggle(key, onOff);
+  }
+  return observable;
 }

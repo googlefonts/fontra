@@ -8,10 +8,10 @@
     <link href="/css/context-menu.css" rel="stylesheet" />
     <link href="/css/core.css" rel="stylesheet" />
     <link href="/editor/editor.css" rel="stylesheet" />
+    <script type="module" src="/core/theme-settings.js"></script>
     <script type="module" src="/web-components/add-remove-buttons.js"></script>
-    <script type="module" src="/web-components/general-settings.js"></script>
     <script type="module" src="/web-components/glyphs-search.js"></script>
-    <script type="module" src="/web-components/options-list.js"></script>
+    <script type="module" src="/web-components/grouped-settings.js"></script>
     <script type="module" src="/web-components/ui-list.js"></script>
   </head>
 
@@ -326,21 +326,9 @@
           </div>
         </div>
 
-        <div class="sidebar-content" data-sidebar-name="settings">
+        <div class="sidebar-content" data-sidebar-name="user-settings">
           <div class="sidebar-settings">
-            <div class="settings" id="settings">
-              <!-- contents will be filled dynamically -->
-              <general-settings />
-            </div>
-          </div>
-        </div>
-
-        <div class="sidebar-content" data-sidebar-name="layers">
-          <div class="sidebar-layer-preferences">
-            <div class="layer-preferences" id="layer-preferences">
-              <!-- attributes will be set dynamically -->
-              <options-list class="options-list"></options-list>
-            </div>
+            <grouped-settings id="user-settings"></grouped-settings>
           </div>
         </div>
       </div>
@@ -361,8 +349,7 @@
             <div class="sidebar-tab" data-sidebar-name="designspace-navigation">
               sliders
             </div>
-            <div class="sidebar-tab" data-sidebar-name="layers">layers</div>
-            <div class="sidebar-tab" data-sidebar-name="settings">gear</div>
+            <div class="sidebar-tab" data-sidebar-name="user-settings">gear</div>
           </div>
 
           <div class="tool-overlay-container">
