@@ -52,7 +52,7 @@ export class UnlitElement extends HTMLElement {
   }
 }
 
-const attrExceptions = { for: "htmlFor", class: "className" };
+const attrExceptions = { for: "htmlFor", class: "className", tabindex: "tabIndex" };
 
 export function createDomElement(tagName, attributes, children) {
   const element = document.createElement(tagName);
