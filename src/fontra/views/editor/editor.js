@@ -247,6 +247,8 @@ export class EditorController {
   initUserSettings() {
     const userSettings = document.querySelector("#user-settings");
     const items = [];
+
+    // Visualization layer settings
     const layers = this.visualizationLayers.definitions.filter(
       (layer) => layer.userSwitchable
     );
@@ -258,6 +260,24 @@ export class EditorController {
       model: this.visualizationLayersSettings,
       descriptions: layerItems,
     });
+
+    // Theme settings
+    items.push({
+      displayName: "Theme settings",
+      model: themeModelObject,
+      descriptions: [
+        {
+          key: "theme",
+          ui: "radio",
+          options: [
+            { key: "automatic", displayName: "Automatic (use OS setting)" },
+            { key: "light", displayName: "Light" },
+            { key: "dark", displayName: "Dark" },
+          ],
+        },
+      ],
+    });
+
     userSettings.items = items;
   }
 
