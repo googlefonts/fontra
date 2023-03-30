@@ -4,13 +4,13 @@ export const themeModelObject = newObservableObject({ theme: "automatic" });
 
 themeModelObject.synchronizeWithLocalStorage("fontra-");
 
-setupThemeOverride(themeModelObject.theme);
-
 themeModelObject.addEventListener("changed", (event) => {
   if (event.key === "theme") {
     setupThemeOverride(themeModelObject.theme);
   }
 });
+
+setupThemeOverride(themeModelObject.theme);
 
 function setupThemeOverride(value) {
   const rootElement = document.querySelector("html");
