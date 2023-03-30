@@ -5,6 +5,7 @@ export class UnlitElement extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this.requestUpdate();
   }
 
   requestUpdate() {
