@@ -36,7 +36,7 @@ import {
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
-import { themeModelObject, themeSwitchFromLocalStorage } from "/core/theme-settings.js";
+import { themeModelObject } from "/core/theme-settings.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -71,7 +71,6 @@ export class EditorController {
   }
 
   constructor(font) {
-    themeSwitchFromLocalStorage();
     this.fontController = new FontController(font, {});
     this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)

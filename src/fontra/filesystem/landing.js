@@ -1,10 +1,7 @@
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { getRemoteProxy } from "/core/remote.js";
-import { themeSwitchFromLocalStorage } from "/core/theme-settings.js";
 
 export async function startupLandingPage(authenticateFunc) {
-  themeSwitchFromLocalStorage();
-
   if (authenticateFunc) {
     if (!authenticateFunc()) {
       return;
