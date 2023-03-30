@@ -25,14 +25,16 @@ export class Sliders {
       if (sliderInfo.isDivider) {
         this.container.appendChild(html.hr({ class: "slider-divider" }));
       } else {
-        const slider = new RangeSlider();
-        slider.name = sliderInfo.name;
-        slider.minValue = sliderInfo.minValue;
-        slider.maxValue = sliderInfo.maxValue;
-        slider.defaultValue = sliderInfo.defaultValue;
-        slider.value = sliderInfo.defaultValue;
-        slider.onChangeCallback = () => this._dispatchSlidersChangedEvent();
-        this.container.appendChild(slider);
+        this.container.appendChild(
+          html.createDomElement("range-slider", {
+            name: sliderInfo.name,
+            minValue: sliderInfo.minValue,
+            maxValue: sliderInfo.maxValue,
+            defaultValue: sliderInfo.defaultValue,
+            value: sliderInfo.defaultValue,
+            onChangeCallback: () => this._dispatchSlidersChangedEvent(),
+          })
+        );
       }
     }
   }
