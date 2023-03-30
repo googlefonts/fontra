@@ -13,6 +13,7 @@ export class GroupedSettings extends UnlitElement {
   get items() {
     return this._items;
   }
+
   set items(items) {
     this._items = items;
     this.requestUpdate();
