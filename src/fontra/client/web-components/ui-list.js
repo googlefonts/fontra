@@ -1,4 +1,5 @@
 import { UnlitElement } from "/core/unlit.js";
+import * as html from "/core/unlit.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
@@ -65,23 +66,15 @@ export class UIList extends UnlitElement {
     this.items = [];
     this.itemEqualFunc = null;
 
-    this.contents = document.createElement("div");
-    this.contents.className = "contents";
-    this.contents.addEventListener(
-      "click",
-      (event) => this._clickHandler(event),
-      false
-    );
-    this.contents.addEventListener(
-      "dblclick",
-      (event) => this._dblClickHandler(event),
-      false
-    );
+    this.contents = html.div({
+      class: "contents empty",
+      onclick: (event) => this._clickHandler(event),
+      ondblclick: (event) => this._dblClickHandler(event),
+    });
     this.addEventListener("scroll", (event) => this._scrollHandler(event), false);
     this.addEventListener("keydown", (event) => this._keyDownHandler(event), false);
     this.addEventListener("keyup", (event) => this._keyUpHandler(event), false);
     this.selectedItemIndex = undefined;
-    this.classList.add("empty");
   }
 
   render() {
