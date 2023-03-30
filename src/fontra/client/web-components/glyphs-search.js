@@ -1,22 +1,12 @@
-import { UIList } from "/web-components/ui-list.js";
-import {
-  getCharFromUnicode,
-  htmlToElement,
-  makeUPlusStringFromCodePoint,
-} from "/core/utils.js";
+import * as html from "/core/unlit.js";
+import { getCharFromUnicode, makeUPlusStringFromCodePoint } from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
+import { UIList } from "./ui-list.js";
 
 const colors = {
   "search-input-foreground-color": ["black", "white"],
   "search-input-background-color": ["#eee", "#333"],
 };
-
-const searchElementHTML = `
-<input
-  type="text"
-  placeholder="Search glyphs"
-  autocomplete="off"
-/>`;
 
 export class GlyphsSearch extends HTMLElement {
   static styles = `
@@ -55,8 +45,12 @@ export class GlyphsSearch extends HTMLElement {
     style.textContent = GlyphsSearch.styles;
     this.shadowRoot.appendChild(style);
 
-    const searchField = htmlToElement(searchElementHTML);
-    searchField.oninput = (event) => this._searchFieldChanged(event);
+    const searchField = html.input({
+      type: "text",
+      placeholder: "Search glyphs",
+      autocomplete: "off",
+      oninput: (event) => this._searchFieldChanged(event),
+    });
 
     const columnDescriptions = [
       {
