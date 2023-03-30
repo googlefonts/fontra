@@ -25,14 +25,14 @@ export class PenTool extends BaseTool {
     ) {
       this.sceneModel.pathInsertHandles = insertHandles;
       this.sceneModel.pathConnectTargetPoint = targetPoint;
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
     }
   }
 
   deactivate() {
     delete this.sceneModel.pathInsertHandles;
     delete this.sceneModel.pathConnectTargetPoint;
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   setCursor() {

@@ -14,7 +14,7 @@ export class VisualizationLayers {
     this.needsUpdate = true;
   }
 
-  setNeedsUpdate() {
+  requestUpdate() {
     if (!this.needsUpdate) {
       this.needsUpdate = true;
       setTimeout(() => this.buildLayers(), 0);
@@ -27,7 +27,7 @@ export class VisualizationLayers {
 
   set darkTheme(darkTheme) {
     this._darkTheme = darkTheme;
-    this.setNeedsUpdate();
+    this.requestUpdate();
   }
 
   get scaleFactor() {
@@ -36,7 +36,7 @@ export class VisualizationLayers {
 
   set scaleFactor(scaleFactor) {
     this._scaleFactor = scaleFactor;
-    this.setNeedsUpdate();
+    this.requestUpdate();
   }
 
   get visibleLayerIds() {
@@ -45,7 +45,7 @@ export class VisualizationLayers {
 
   set visibleLayerIds(visibleLayerIds) {
     this._visibleLayerIds = visibleLayerIds;
-    this.setNeedsUpdate();
+    this.requestUpdate();
   }
 
   toggle(layerID, onOff) {
@@ -54,7 +54,7 @@ export class VisualizationLayers {
     } else {
       this._visibleLayerIds.delete(layerID);
     }
-    this.setNeedsUpdate();
+    this.requestUpdate();
   }
 
   buildLayers() {

@@ -49,7 +49,7 @@ export class CanvasController {
     // canvas.addEventListener("pointercancel", this.onEvent.bind(this), false);
 
     this.setupSize();
-    this.setNeedsUpdate();
+    this.requestUpdate();
   }
 
   get canvasWidth() {
@@ -87,7 +87,7 @@ export class CanvasController {
     this.previousOffsets = { parentOffsetX, parentOffsetY };
   }
 
-  setNeedsUpdate() {
+  requestUpdate() {
     if (!this.needsUpdate) {
       this.needsUpdate = true;
       setTimeout(() => this.draw(), 0);
@@ -113,7 +113,7 @@ export class CanvasController {
 
   handleResize(event) {
     this.setupSize();
-    this.setNeedsUpdate();
+    this.requestUpdate();
     this._dispatchEvent("viewBoxChanged", "canvas-size");
   }
 
@@ -127,7 +127,7 @@ export class CanvasController {
       } else {
         this.origin.y -= event.deltaY;
       }
-      this.setNeedsUpdate();
+      this.requestUpdate();
       this._dispatchEvent("viewBoxChanged", "origin");
     }
   }
@@ -164,7 +164,7 @@ export class CanvasController {
     this.origin.x += (1 - zoomFactor) * center.x * prevMagnification;
     this.origin.y -= (1 - zoomFactor) * center.y * prevMagnification;
     this._magnificationChangedCallback?.(this.magnification);
-    this.setNeedsUpdate();
+    this.requestUpdate();
     this._dispatchEvent("viewBoxChanged", "magnification");
   }
 
@@ -225,7 +225,7 @@ export class CanvasController {
     this.origin.x = this.canvasWidth / 2 + this.origin.x - canvasCenter.x;
     this.origin.y = this.canvasHeight / 2 + this.origin.y - canvasCenter.y;
     this._magnificationChangedCallback?.(this.magnification);
-    this.setNeedsUpdate();
+    this.requestUpdate();
   }
 
   getProposedViewBoxClampAdjustment(viewBox) {

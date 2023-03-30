@@ -18,7 +18,7 @@ export class HandTool extends BaseTool {
     for await (const event of eventStream) {
       this.canvasController.origin.x = originalOriginX + event.x - initialX;
       this.canvasController.origin.y = originalOriginY + event.y - initialY;
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
     }
     this.canvasController.canvas.style.cursor = "grab";
   }

@@ -53,7 +53,7 @@ export class SceneController {
       case "editIncremental":
       case "editFinal":
         await this.sceneModel.updateScene();
-        this.canvasController.setNeedsUpdate();
+        this.canvasController.requestUpdate();
         break;
     }
   }
@@ -201,7 +201,7 @@ export class SceneController {
 
   setSelectedGlyphState(state) {
     this.sceneModel.setSelectedGlyphState(state);
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   async handleDrag(eventStream, initialEvent) {
@@ -252,7 +252,7 @@ export class SceneController {
     if (!lenientIsEqualSet(selection, this.selection)) {
       this.sceneModel.selection = selection || new Set();
       this.sceneModel.hoverSelection = new Set();
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
       // Delay the notification by a tiny amount, to work around
       // an ordering problem: sometimes the selection is set to
       // something that will be valid soon but isn't right now.
@@ -267,7 +267,7 @@ export class SceneController {
   set hoverSelection(selection) {
     if (!lenientIsEqualSet(selection, this.hoverSelection)) {
       this.sceneModel.hoverSelection = selection;
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
     }
   }
 
@@ -278,7 +278,7 @@ export class SceneController {
   set hoveredGlyph(hoveredGlyph) {
     if (this.sceneModel.hoveredGlyph != hoveredGlyph) {
       this.sceneModel.hoveredGlyph = hoveredGlyph;
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
     }
   }
 
@@ -290,7 +290,7 @@ export class SceneController {
     if (this.sceneModel.selectedGlyph != selectedGlyph) {
       this.sceneModel.selectedGlyph = selectedGlyph;
       this.sceneModel.selection = new Set();
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
       this._dispatchEvent("selectedGlyphChanged");
     }
   }
@@ -302,7 +302,7 @@ export class SceneController {
   set selectedGlyphIsEditing(flag) {
     if (this.sceneModel.selectedGlyphIsEditing != flag) {
       this.sceneModel.selectedGlyphIsEditing = flag;
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
       this._dispatchEvent("selectedGlyphIsEditingChanged");
     }
   }
@@ -313,7 +313,7 @@ export class SceneController {
 
   set selectionRect(selRect) {
     this.sceneModel.selectionRect = selRect;
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   getGlyphLines() {
@@ -322,12 +322,12 @@ export class SceneController {
 
   async setGlyphLines(glyphLines) {
     await this.sceneModel.setGlyphLines(glyphLines);
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   async setTextAlignment(align) {
     await this.sceneModel.setTextAlignment(align);
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   getLocation() {
@@ -344,12 +344,12 @@ export class SceneController {
 
   async setLocation(values) {
     await this.sceneModel.setLocation(values);
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   async setGlobalAndLocalLocations(globalLocation, localLocations) {
     await this.sceneModel.setGlobalAndLocalLocations(globalLocation, localLocations);
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   updateLocalLocations(localLocations) {
@@ -362,7 +362,7 @@ export class SceneController {
 
   async setSelectedSource(sourceIndex) {
     await this.sceneModel.setSelectedSource(sourceIndex);
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   getAxisInfo() {
@@ -516,7 +516,7 @@ export class SceneController {
         await this.setLocation(undoInfo.location);
       }
       await this.sceneModel.updateScene();
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
     }
     return undoInfo !== undefined;
   }

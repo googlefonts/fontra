@@ -101,7 +101,7 @@ export class EditorController {
     );
     this.visualizationLayersSettings.addEventListener("changed", (event) => {
       this.visualizationLayers.toggle(event.key, event.value);
-      this.canvasController.setNeedsUpdate();
+      this.canvasController.requestUpdate();
     });
 
     const sceneModel = new SceneModel(this.fontController, isPointInPath);
@@ -198,7 +198,7 @@ export class EditorController {
     //
     // Doing the following should help, but it doesn't, unless we add the delay.
     // await document.fonts.ready;
-    setTimeout(() => this.canvasController.setNeedsUpdate(), 50);
+    setTimeout(() => this.canvasController.requestUpdate(), 50);
   }
 
   async start() {
@@ -520,7 +520,7 @@ export class EditorController {
   themeChanged(event) {
     this.visualizationLayers.darkTheme = this.isThemeDark;
     this.cleanGlyphsLayers.darkTheme = this.isThemeDark;
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   get isThemeDark() {
@@ -1210,7 +1210,7 @@ export class EditorController {
       return;
     }
     this.canvasController.sceneView = this.cleanSceneView;
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
       overlay.classList.add("overlay-layer-hidden");
     }
@@ -1218,7 +1218,7 @@ export class EditorController {
 
   spaceKeyUpHandler(event) {
     this.canvasController.sceneView = this.defaultSceneView;
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
       overlay.classList.remove("overlay-layer-hidden");
     }
@@ -1253,7 +1253,7 @@ export class EditorController {
     await this.fontController.newGlyph(glyphName, codePoint, templateInstance);
     this.sceneController.sceneModel.updateGlyphLinesCharacterMapping();
     await this.sceneController.sceneModel.updateScene();
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
     this.glyphsSearch.updateGlyphNamesListContent();
     this.updateWindowLocationAndSelectionInfo();
     await this.updateSlidersAndSources();
@@ -1284,7 +1284,7 @@ export class EditorController {
     ) {
       this.updateSelectionInfo();
     }
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   async reloadData(reloadPattern) {
@@ -1317,7 +1317,7 @@ export class EditorController {
     if (selectedGlyphName !== undefined && glyphNames.includes(selectedGlyphName)) {
       this.updateSelectionInfo();
     }
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   async messageFromServer(headline, message) {
@@ -1362,7 +1362,7 @@ export class EditorController {
     if (viewInfo["selection"]) {
       this.sceneController.selection = new Set(viewInfo["selection"]);
     }
-    this.canvasController.setNeedsUpdate();
+    this.canvasController.requestUpdate();
   }
 
   _updateWindowLocation() {
