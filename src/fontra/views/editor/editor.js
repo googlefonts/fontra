@@ -247,7 +247,6 @@ export class EditorController {
   initUserSettings() {
     const userSettings = document.querySelector("#user-settings");
     const items = [];
-    const model = newObservableObject({ a: true });
     const layers = this.visualizationLayers.definitions.filter(
       (layer) => layer.userSwitchable
     );
