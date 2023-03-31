@@ -153,7 +153,7 @@ class FontraServer:
     async def projectListHandler(self, request):
         authToken = await self.projectManager.authorize(request)
         if not authToken:
-            return web.HTTPUnauthorized()
+            raise web.HTTPUnauthorized()
         projectList = await self.projectManager.getProjectList(authToken)
         return web.Response(
             text=json.dumps(projectList), content_type="application/json"
@@ -162,7 +162,7 @@ class FontraServer:
     async def staticContentHandler(self, packageName, request):
         ifModSince = request.if_modified_since
         if ifModSince is not None and ifModSince >= self.startupTime:
-            return web.HTTPNotModified()
+            raise web.HTTPNotModified()
 
         pathItems = [""] + request.match_info["path"].split("/")
         modulePath = packageName + ".".join(pathItems[:-1])
@@ -171,14 +171,14 @@ class FontraServer:
             resourceName, versionToken = splitVersionToken(resourceName)
             if versionToken is not None:
                 if versionToken != self.versionToken:
-                    return web.HTTPNotFound()
+                    raise web.HTTPNotFound()
         try:
             data = getResourcePath(modulePath, resourceName).read_bytes()
         except (FileNotFoundError, IsADirectoryError, ModuleNotFoundError):
-            return web.HTTPNotFound()
+            raise web.HTTPNotFound()
         ext = resourceName.rsplit(".", 1)[-1].lower()
         if ext not in self.allowedFileExtensions:
-            return web.HTTPNotFound()
+            raise web.HTTPNotFound()
         contentType, _ = mimetypes.guess_type(resourceName)
         data = self._addVersionTokenToReferences(data, contentType)
         response = web.Response(body=data, content_type=contentType)
@@ -186,7 +186,7 @@ class FontraServer:
         return response
 
     async def notFoundHandler(self, request):
-        return web.HTTPNotFound()
+        raise web.HTTPNotFound()
 
     async def rootDocumentHandler(self, request):
         response = await self.projectManager.projectPageHandler(
@@ -198,19 +198,18 @@ class FontraServer:
         authToken = await self.projectManager.authorize(request)
         if not authToken:
             qs = quote(request.path_qs, safe="")
-            response = web.HTTPFound(f"/?ref={qs}")
-            return response
+            raise web.HTTPFound(f"/?ref={qs}")
 
         path = request.match_info["path"]
         if not await self.projectManager.projectAvailable(path, authToken):
-            return web.HTTPNotFound()
+            raise web.HTTPNotFound()
 
         try:
             html = getResourcePath(
                 self.viewEntryPoints[viewName], f"{viewName}.html"
             ).read_text()
         except (FileNotFoundError, ModuleNotFoundError):
-            return web.HTTPNotFound()
+            raise web.HTTPNotFound()
 
         html = self._addVersionTokenToReferences(html, "text/html")
 
