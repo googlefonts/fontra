@@ -476,10 +476,6 @@ def taskDoneHelper(task):
 def taskDoneHelperWatchFiles(task):
     if not task.cancelled() and task.exception() is not None:
         exception = task.exception()
-        if isinstance(exception, RuntimeError) and str(exception) == "Already borrowed":
-            # Suppress RuntimeError("Already borrowed"), to work around this watchfiles
-            # issue: https://github.com/samuelcolvin/watchfiles/issues/200
-            return
         logger.exception(f"fatal exception in asyncio task {task}", exc_info=exception)
 
 
