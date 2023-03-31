@@ -112,6 +112,7 @@ registerVisualizationLayerDefinition({
   name: "CJK Design Frame glyphs",
   selectionMode: "editing",
   zIndex: 500,
+  screenParameters: { strokeWidth: 1 },
   colors: {
     strokeColor: "#0004",
     overshootColor: "#00BFFF26",
@@ -145,6 +146,7 @@ registerVisualizationLayerDefinition({
     ];
 
     context.translate(shiftX, shiftY);
+    context.lineWidth = parameters.strokeWidth;
 
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.cjkFrameLineWidth;
