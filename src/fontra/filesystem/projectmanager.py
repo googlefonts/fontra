@@ -22,10 +22,10 @@ class FileSystemProjectManagerFactory:
         parser.add_argument(
             "root",
             type=existingFolderOrFontFile,
-            help="A path to an existing folder containing font files, or a path "
-            "to a single existing font file. Or pass "
-            "the special value '-', to bypass the landing page, and use full "
-            "(url-quoted) OS FS paths as part of the view URL.",
+            help="A path to an folder containing font files, or a path to a "
+            "single font file. Alternatively you can pass the special value "
+            "'-' to bypass the landing page, and use a full OS FS path as part "
+            "of the view URL.",
         )
         parser.add_argument("--max-folder-depth", type=int, default=3)
         parser.add_argument("--read-only", action="store_true")
