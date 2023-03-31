@@ -299,7 +299,7 @@ export class EditorController {
     });
 
     // Server info
-    const serverInfo = await loaderSpinner(fetchJSON("/serverinfo"));
+    const serverInfo = await fetchJSON("/serverinfo");
     items.push({
       displayName: "Server info",
       model: null,
