@@ -215,7 +215,6 @@ export class EditorController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphsSearch();
     await this.initSliders();
-    await this.initUserSettings();
     this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
@@ -1444,6 +1443,13 @@ export class EditorController {
     if (onOff) {
       this.fixTextEntryHeight();
       this.textEntryElement.focus();
+    }
+  }
+
+  async toggleUserSettings(onOff) {
+    if (onOff && !this._didInitUserSettings) {
+      this._didInitUserSettings = true;
+      await loaderSpinner(this.initUserSettings());
     }
   }
 
