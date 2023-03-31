@@ -99,6 +99,7 @@ export class RangeSlider extends LitElement {
     }
 
     .slider::-webkit-slider-runnable-track {
+      border-radius: 5px;
       height: var(--track-height);
       background: var(--track-color);
     }
@@ -113,6 +114,7 @@ export class RangeSlider extends LitElement {
     }
 
     .slider::-moz-range-track {
+      border-radius: 5px;
       height: var(--track-height);
       background: var(--track-color);
     }
