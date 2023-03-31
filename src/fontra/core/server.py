@@ -172,10 +172,17 @@ class FontraServer:
         if info.releaselevel != "final":
             pythonVersion += info.releaselevel
         serverInfo = {
-            "fontra-version": fontraVersion,
-            "python-version": pythonVersion,
-            "startup-time": self.startupTime.isoformat(),
+            "Fontra version": fontraVersion,
+            "Python version": pythonVersion,
+            "Startup time": self.startupTime.isoformat(),
+            "View plugins": ", ".join(
+                ep.name for ep in entry_points(group="fontra.views")
+            ),
+            "Project manager": self.projectManager.__class__.__name__,
         }
+        extensions = sorted(getattr(self.projectManager, "extensions", ()))
+        if extensions:
+            serverInfo["Supported file extensions"] = ", ".join(extensions)
         return web.Response(
             text=json.dumps(serverInfo), content_type="application/json"
         )
