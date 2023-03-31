@@ -6,9 +6,10 @@ GLYPHDATA = None
 def _getGlyphData():
     global GLYPHDATA
     if GLYPHDATA is None:
-        from importlib.resources import open_binary
+        from importlib.resources import files
 
-        with open_binary("glyphsLib.data", "GlyphData.xml") as f1:
+        path = files("glyphsLib.data") / "GlyphData.xml"
+        with path.open("rb") as f1:
             GLYPHDATA = GlyphData.from_files(f1)
     return GLYPHDATA
 
