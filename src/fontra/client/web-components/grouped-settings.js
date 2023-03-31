@@ -3,6 +3,10 @@ import { SimpleSettings } from "./simple-settings.js";
 
 export class GroupedSettings extends UnlitElement {
   static styles = `
+    :host {
+      overflow-y: scroll;
+    }
+
     .header {
       margin-top: 0.6em;
       margin-bottom: 0.2em;
