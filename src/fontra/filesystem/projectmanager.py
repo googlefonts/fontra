@@ -11,13 +11,19 @@ from ..core.fonthandler import FontHandler
 logger = logging.getLogger(__name__)
 
 
+fileExtensions = {
+    f".{ep.name}" for ep in entry_points(group="fontra.filesystem.backends")
+}
+
+
 class FileSystemProjectManagerFactory:
     @staticmethod
     def addArguments(parser):
         parser.add_argument(
             "root",
-            type=existingFolder,
-            help="A path to an existing folder containing font files. Or pass "
+            type=existingFolderOrFontFile,
+            help="A path to an existing folder containing font files, or a path "
+            "to a single existing font file. Or pass "
             "the special value '-', to bypass the landing page, and use full "
             "(url-quoted) OS FS paths as part of the view URL.",
         )
@@ -33,12 +39,13 @@ class FileSystemProjectManagerFactory:
         )
 
 
-def existingFolder(path):
+def existingFolderOrFontFile(path):
     if path == "-":
         return None
     path = pathlib.Path(path).resolve()
-    if not path.is_dir():
-        raise argparse.ArgumentError("not a directory")
+    ext = path.suffix.lower()
+    if ext not in fileExtensions and not path.is_dir():
+        raise argparse.ArgumentError("invalid path")
     return path
 
 
@@ -60,10 +67,12 @@ def getFileSystemBackend(path):
 class FileSystemProjectManager:
     def __init__(self, rootPath, maxFolderDepth=3, readOnly=False):
         self.rootPath = rootPath
+        self.singleFilePath = None
         self.maxFolderDepth = maxFolderDepth
         self.readOnly = readOnly
-        backendEntryPoints = entry_points(group="fontra.filesystem.backends")
-        self.extensions = {f".{ep.name}" for ep in backendEntryPoints}
+        if self.rootPath.suffix.lower() in fileExtensions:
+            self.singleFilePath = self.rootPath
+            self.rootPath = self.rootPath.parent
         self.fontHandlers = {}
 
     async def close(self):
@@ -104,7 +113,7 @@ class FileSystemProjectManager:
         else:
             projectPath = self.rootPath.joinpath(*path.split("/"))
 
-        if projectPath.suffix.lower() in self.extensions and projectPath.exists():
+        if projectPath.suffix.lower() in fileExtensions and projectPath.exists():
             return projectPath
         return None
 
@@ -113,7 +122,12 @@ class FileSystemProjectManager:
             return []
         projectPaths = []
         rootItems = self.rootPath.parts
-        paths = sorted(_iterFolder(self.rootPath, self.extensions, self.maxFolderDepth))
+        if self.singleFilePath is not None:
+            paths = [self.singleFilePath]
+        else:
+            paths = sorted(
+                _iterFolder(self.rootPath, fileExtensions, self.maxFolderDepth)
+            )
         for projectPath in paths:
             projectItems = projectPath.parts
             assert projectItems[: len(rootItems)] == rootItems
