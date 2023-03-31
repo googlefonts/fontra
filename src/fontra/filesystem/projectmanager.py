@@ -20,7 +20,7 @@ class FileSystemProjectManagerFactory:
     @staticmethod
     def addArguments(parser):
         parser.add_argument(
-            "root",
+            "path",
             type=existingFolderOrFontFile,
             help="A path to an folder containing font files, or a path to a "
             "single font file. Alternatively you can pass the special value "
@@ -33,7 +33,7 @@ class FileSystemProjectManagerFactory:
     @staticmethod
     def getProjectManager(arguments):
         return FileSystemProjectManager(
-            rootPath=arguments.root,
+            rootPath=arguments.path,
             maxFolderDepth=arguments.max_folder_depth,
             readOnly=arguments.read_only,
         )
