@@ -2,6 +2,10 @@ import { UnlitElement, div, input, label } from "/core/unlit.js";
 
 export class SimpleSettings extends UnlitElement {
   static styles = `
+    :host {
+      white-space: normal;
+    }
+
     .header {
       margin-top: 0.6em;
       margin-bottom: 0.2em;
@@ -23,7 +27,7 @@ export class SimpleSettings extends UnlitElement {
         this.requestUpdate();
       }
     };
-    this._model.addEventListener("changed", this._modelListener);
+    this._model?.addEventListener("changed", this._modelListener);
     this.requestUpdate();
   }
 
@@ -38,7 +42,7 @@ export class SimpleSettings extends UnlitElement {
   }
 
   render() {
-    if (!this._descriptions || !this._model) {
+    if (!this._descriptions) {
       return;
     }
 
@@ -69,6 +73,10 @@ export class SimpleSettings extends UnlitElement {
 const uiTypes = {
   header(wrapListener, description, model) {
     return div({ class: "header" }, [description.displayName]);
+  },
+
+  plain(wrapListener, description, model) {
+    return div({ class: "plain" }, [description.displayName]);
   },
 
   checkbox(wrapListener, description, model) {
