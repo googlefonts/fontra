@@ -24,6 +24,7 @@ import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { joinPaths } from "../core/var-path.js";
 import {
+  fetchJSON,
   getCharFromUnicode,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
@@ -214,7 +215,7 @@ export class EditorController {
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphsSearch();
     await this.initSliders();
-    this.initUserSettings();
+    await this.initUserSettings();
     this.initTools();
     this.initSourcesList();
     await this.setupFromWindowLocation();
@@ -246,7 +247,7 @@ export class EditorController {
     );
   }
 
-  initUserSettings() {
+  async initUserSettings() {
     const userSettings = document.querySelector("#user-settings");
     const items = [];
 
@@ -295,6 +296,25 @@ export class EditorController {
           ],
         },
       ],
+    });
+
+    // Server info
+    const serverInfo = await fetchJSON("/serverinfo");
+    items.push({
+      displayName: "Server info",
+      model: null,
+      descriptions: Object.entries(serverInfo).flatMap((entry) => {
+        return [
+          {
+            displayName: entry[0] + ":",
+            ui: "header",
+          },
+          {
+            displayName: entry[1],
+            ui: "plain",
+          },
+        ];
+      }),
     });
 
     userSettings.items = items;

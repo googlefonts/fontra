@@ -1,5 +1,6 @@
 import { loaderSpinner } from "/core/loader-spinner.js";
 import { getRemoteProxy } from "/core/remote.js";
+import { fetchJSON } from "/core/utils.js";
 
 export async function startupLandingPage(authenticateFunc) {
   if (authenticateFunc) {
@@ -18,9 +19,4 @@ export async function startupLandingPage(authenticateFunc) {
     projectElement.append(project);
     projectListContainer.appendChild(projectElement);
   }
-}
-
-async function fetchJSON(url) {
-  const response = await fetch(url);
-  return await response.json();
 }

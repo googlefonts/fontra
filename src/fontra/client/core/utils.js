@@ -272,3 +272,8 @@ export function htmlToElements(html) {
 export function getCharFromUnicode(codePoint) {
   return codePoint !== undefined ? String.fromCodePoint(codePoint) : "";
 }
+
+export async function fetchJSON(url) {
+  const response = await fetch(url);
+  return await response.json();
+}
