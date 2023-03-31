@@ -1582,7 +1582,11 @@ export class EditorController {
             // Continuous changes (eg. slider drag)
             const orgValue = getNestedValue(instance, changePath);
             for await (const value of valueStream) {
-              setNestedValue(instance, changePath, orgValue); // Ensure getting the correct undo change
+              if (orgValue !== undefined) {
+                setNestedValue(instance, changePath, orgValue); // Ensure getting the correct undo change
+              } else {
+                deleteNestedValue(instance, changePath);
+              }
               changes = recordChanges(instance, (instance) => {
                 setNestedValue(instance, changePath, value);
               });
@@ -1835,10 +1839,10 @@ function clearSearchParams(searchParams) {
 
 function getNestedValue(subject, path) {
   for (const pathElement of path) {
-    subject = subject[pathElement];
     if (subject === undefined) {
       throw new Error(`assert -- invalid change path: ${path}`);
     }
+    subject = subject[pathElement];
   }
   return subject;
 }
@@ -1848,6 +1852,13 @@ function setNestedValue(subject, path, value) {
   path = path.slice(0, -1);
   subject = getNestedValue(subject, path);
   subject[key] = value;
+}
+
+function deleteNestedValue(subject, path) {
+  const key = path.slice(-1)[0];
+  path = path.slice(0, -1);
+  subject = getNestedValue(subject, path);
+  delete subject[key];
 }
 
 function isTypeableInput(element) {
