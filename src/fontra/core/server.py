@@ -4,6 +4,7 @@ import json
 import logging
 import mimetypes
 import re
+import sys
 import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -45,6 +46,7 @@ class FontraServer:
         routes.append(web.get("/", self.rootDocumentHandler))
         routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))
         routes.append(web.get("/projectlist", self.projectListHandler))
+        routes.append(web.get("/serverinfo", self.serverInfoHandler))
         for ep in entry_points(group="fontra.webcontent"):
             routes.append(
                 web.get(
@@ -157,6 +159,25 @@ class FontraServer:
         projectList = await self.projectManager.getProjectList(authToken)
         return web.Response(
             text=json.dumps(projectList), content_type="application/json"
+        )
+
+    async def serverInfoHandler(self, request):
+        from .. import __version__ as fontraVersion
+
+        authToken = await self.projectManager.authorize(request)
+        if not authToken:
+            raise web.HTTPUnauthorized()
+        info = sys.version_info
+        pythonVersion = f"{info.major}.{info.minor}.{info.micro}"
+        if info.releaselevel != "final":
+            pythonVersion += info.releaselevel
+        serverInfo = {
+            "fontra-version": fontraVersion,
+            "python-version": pythonVersion,
+            "startup-time": self.startupTime.isoformat(),
+        }
+        return web.Response(
+            text=json.dumps(serverInfo), content_type="application/json"
         )
 
     async def staticContentHandler(self, packageName, request):
