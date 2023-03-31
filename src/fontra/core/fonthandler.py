@@ -67,7 +67,7 @@ class FontHandler:
     async def startTasks(self):
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = asyncio.create_task(self.processExternalChanges())
-            self._watcherTask.add_done_callback(taskDoneHelperWatchFiles)
+            self._watcherTask.add_done_callback(taskDoneHelper)
         self._processWritesError = None
         self._processWritesEvent = asyncio.Event()
         self._processWritesTask = asyncio.create_task(self.processWrites())
@@ -471,12 +471,6 @@ def taskDoneHelper(task):
         logger.exception(
             f"fatal exception in asyncio task {task}", exc_info=task.exception()
         )
-
-
-def taskDoneHelperWatchFiles(task):
-    if not task.cancelled() and task.exception() is not None:
-        exception = task.exception()
-        logger.exception(f"fatal exception in asyncio task {task}", exc_info=exception)
 
 
 def _writeKeyToPattern(writeKey):
