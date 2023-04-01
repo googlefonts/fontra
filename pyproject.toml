@@ -72,7 +72,7 @@ packages = ["src/fontra"]
 
 
 [tool.hatch.build]
-# Items that are ignored in .gitignore, but are added in a vuild hook
+# Items that are ignored in .gitignore, but are added in a build hook
 # and which must be included.
 artifacts = [
   "src/fontra/client/third-party/"
