@@ -70,7 +70,7 @@ class FileSystemProjectManager:
         self.singleFilePath = None
         self.maxFolderDepth = maxFolderDepth
         self.readOnly = readOnly
-        if self.rootPath.suffix.lower() in fileExtensions:
+        if self.rootPath is not None and self.rootPath.suffix.lower() in fileExtensions:
             self.singleFilePath = self.rootPath
             self.rootPath = self.rootPath.parent
         self.fontHandlers = {}
