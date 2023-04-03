@@ -5,7 +5,30 @@ export class UnlitElement extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this._setupProperties();
     this.requestUpdate();
+  }
+
+  _setupProperties() {
+    this._propertyValues = {};
+    for (const [prop, description] of Object.entries(
+      this.constructor.properties || {}
+    )) {
+      Object.defineProperty(this, prop, {
+        get: () => {
+          return this._propertyValues[prop];
+        },
+        set: (value) => {
+          if (description.type && !(value instanceof description.type)) {
+            throw new TypeError(
+              `expected instance of ${description.type.name}, got ${value.constructor.name}`
+            );
+          }
+          this._propertyValues[prop] = value;
+          this.requestUpdate();
+        },
+      });
+    }
   }
 
   requestUpdate() {

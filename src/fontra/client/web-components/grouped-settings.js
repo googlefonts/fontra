@@ -14,17 +14,12 @@ export class GroupedSettings extends UnlitElement {
     }
   `;
 
-  get items() {
-    return this._items;
-  }
-
-  set items(items) {
-    this._items = items;
-    this.requestUpdate();
-  }
+  static properties = {
+    items: { type: Array },
+  };
 
   render() {
-    if (!this._items) {
+    if (!this.items) {
       return;
     }
     return this.items.map((item) => {
