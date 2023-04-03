@@ -4,7 +4,7 @@ export function newObservableObject(obj) {
   }
   const eventListeners = { changed: [], deleted: [] };
 
-  function dispatchEvent(type, key, value) {
+  function dispatchEvent(type, key, value, skipListener) {
     const event = {
       type: type,
       target: obj,
@@ -12,6 +12,9 @@ export function newObservableObject(obj) {
       value: value,
     };
     for (const listener of eventListeners[type]) {
+      if (skipListener && skipListener === listener) {
+        continue;
+      }
       // Schedule in the event loop rather than call immediately
       setTimeout(() => listener(event), 0);
     }
@@ -38,6 +41,13 @@ export function newObservableObject(obj) {
         );
       }
       eventListeners[type] = eventListeners[type].filter((item) => item !== listener);
+    },
+
+    setItem(receiver, prop, value, skipListener) {
+      if (obj[prop] !== value) {
+        obj[prop] = value;
+        dispatchEvent("changed", prop, value, skipListener);
+      }
     },
 
     synchronizeWithLocalStorage(receiver, prefix = "") {

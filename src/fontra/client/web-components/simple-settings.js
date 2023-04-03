@@ -46,61 +46,38 @@ export class SimpleSettings extends UnlitElement {
       return;
     }
 
-    const wrapListener = this._wrapListener.bind(this);
     return this._descriptions.map((description) =>
-      uiTypes[description.ui](wrapListener, description, this._model)
+      uiTypes[description.ui](this._modelListener, description, this._model)
     );
-  }
-
-  _wrapListener(func) {
-    const listenerWrapper = (event) => {
-      let error;
-      this._model.removeEventListener("changed", this._modelListener);
-      try {
-        func(event);
-      } catch (e) {
-        error = e;
-      }
-      this._model.addEventListener("changed", this._modelListener);
-      if (error) {
-        throw error;
-      }
-    };
-    return listenerWrapper;
   }
 }
 
 const uiTypes = {
-  header(wrapListener, description, model) {
+  header(modelListener, description, model) {
     return div({ class: "header" }, [description.displayName]);
   },
 
-  plain(wrapListener, description, model) {
+  plain(modelListener, description, model) {
     return div({ class: "plain" }, [description.displayName]);
   },
 
-  checkbox(wrapListener, description, model) {
+  checkbox(modelListener, description, model) {
     const id = `simple-settings.${description.key}`;
-    const listener = wrapListener((event) => {
-      model[description.key] = event.target.checked;
-    });
 
     return div({}, [
       input({
         type: "checkbox",
         id: id,
-        onchange: listener,
+        onchange: (event) =>
+          model.setItem(description.key, event.target.checked, modelListener),
         checked: model[description.key],
       }),
       label({ for: id }, [description.displayName]),
     ]);
   },
 
-  radio(wrapListener, description, model) {
+  radio(modelListener, description, model) {
     const id = `simple-settings.${description.key}`;
-    const listener = wrapListener((event) => {
-      model[description.key] = event.target.value;
-    });
 
     return [
       description.displayName
@@ -114,7 +91,8 @@ const uiTypes = {
             id: itemID,
             name: id,
             value: option.key,
-            onchange: listener,
+            onchange: (event) =>
+              model.setItem(description.key, event.target.value, modelListener),
             checked: model[description.key] == option.key,
           }),
           label({ for: itemID }, [option.displayName]),
