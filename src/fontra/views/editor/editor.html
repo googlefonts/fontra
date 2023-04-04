@@ -10,6 +10,7 @@
     <link href="/editor/editor.css" rel="stylesheet" />
     <script type="module" src="/core/theme-settings.js"></script>
     <script type="module" src="/web-components/add-remove-buttons.js"></script>
+    <script type="module" src="/web-components/designspace-location.js"></script>
     <script type="module" src="/web-components/glyphs-search.js"></script>
     <script type="module" src="/web-components/grouped-settings.js"></script>
     <script type="module" src="/web-components/ui-list.js"></script>
@@ -316,9 +317,7 @@
 
         <div class="sidebar-content" data-sidebar-name="designspace-navigation">
           <div id="designspace-navigation">
-            <div class="axis-sliders" id="axis-sliders">
-              <!-- contents will be filled dynamically -->
-            </div>
+            <designspace-location id="designspace-location"></designspace-location>
             <ui-list id="sources-list"></ui-list>
             <add-remove-buttons
               id="sources-list-add-remove-buttons"

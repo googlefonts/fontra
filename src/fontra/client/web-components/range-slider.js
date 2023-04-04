@@ -4,7 +4,6 @@ import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
 const colors = {
   "thumb-color": ["#333", "#bbb"],
   "track-color": ["#bbb", "#222"],
-  "foldable-marker-color": ["#bbb", "#888"],
 };
 
 export class RangeSlider extends LitElement {
@@ -34,32 +33,6 @@ export class RangeSlider extends LitElement {
 
     .slider-name:hover {
       cursor: pointer;
-    }
-
-    .foldable-marker {
-      position: relative;
-      color: var(--foldable-marker-color);
-      top: 2px;
-      display: inline-block;
-    }
-
-    .foldable-marker.active {
-      transform: rotate(90deg);
-    }
-
-    .foldable {
-      display: none;
-      margin: 0.2em 0 0.4em 0;
-      font-size: 1em;
-      color: #999; /* lazy comprimise for light and dark modes */
-    }
-
-    .foldable > p {
-      margin: 0;
-    }
-
-    .foldable.active {
-      display: block;
     }
 
     .range-container {
@@ -172,7 +145,7 @@ export class RangeSlider extends LitElement {
   `;
 
   static properties = {
-    name: { type: String },
+    name: { type: String, reflect: true },
     minValue: { type: Number },
     maxValue: { type: Number },
     defaultValue: { type: Number },
@@ -204,10 +177,6 @@ export class RangeSlider extends LitElement {
     const maxValue = roundToDecimal(this.maxValue, decimalPlaces);
     return html`
       <section class="wrapper">
-        <div class="slider-name" @click=${this.toggleFoldable}>
-          <!--<span class="foldable-marker">▶</span>-->
-          ${this.name}
-        </div>
         <div class="numeric-input">
           <section class="slider-input">
             <input
@@ -234,36 +203,15 @@ export class RangeSlider extends LitElement {
             .value=${this.value}
             list="markers"
           />
-          <div class="range-slider-options">
-            ${this.tickmarksPositions.map((pos) => {
-              const posOffset =
-                ((pos - this.minValue) / (this.maxValue - this.minValue)) * 100;
-              return html`<span style="--offset: ${posOffset}%;"></span>`;
-            })}
-          </div>
-          <datalist id="markers">
-            ${this.tickmarksPositions.map(
-              (pos) => html`<option value="${pos}"></option>`
-            )}
-          </datalist>
         </div>
       </section>
-      <div class="foldable">
-        <!-- <p><strong>${this.name}</strong></p> -->
-        <p>
-          <span>Min: <strong>${minValue}</strong></span
-          >&nbsp; | <span>Default: <strong>${defaultValue}</strong></span
-          >&nbsp; |
-          <span>Max: <strong>${maxValue}</strong></span>
-        </p>
-      </div>
     `;
   }
 
   handleMouseDown(event) {
     if (event.altKey) {
       event.preventDefault();
-      this.reset();
+      this.reset(event);
     }
   }
 
@@ -271,7 +219,7 @@ export class RangeSlider extends LitElement {
     const value = event.target.value;
     const isValid = event.target.reportValidity() && isNumeric(value);
     if (isValid) {
-      this.value = value;
+      this.value = Number(value);
     } else {
       event.target.setAttribute("aria-invalid", !isValid);
       if (!isNumeric(value)) {
@@ -284,7 +232,7 @@ export class RangeSlider extends LitElement {
         this.value = this.defaultValue;
       }
     }
-    this.onChangeCallback();
+    this.onChangeCallback(this);
   }
 
   toggleFoldable(event) {
@@ -294,21 +242,15 @@ export class RangeSlider extends LitElement {
     foldable.classList.toggle("active");
   }
 
-  reset() {
+  reset(event) {
     this.value = this.defaultValue;
-    this.onChangeCallback(this.value);
+    this.onChangeCallback(this);
   }
 
   buildTickmarks() {
     if (this.defaultValue > this.minValue && this.defaultValue <= this.maxValue) {
       this.tickmarksPositions.push(this.defaultValue);
     }
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    // this.buildTickmarks();  // The tickmarks aren't displayed correctly, so skip for now.
-    this.reset();
   }
 }
 
