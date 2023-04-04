@@ -19,7 +19,6 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { dialog } from "../core/ui-dialog.js";
 import { Form } from "../core/ui-form.js";
-import { Sliders } from "../core/ui-sliders.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { joinPaths } from "../core/var-path.js";
@@ -229,12 +228,10 @@ export class EditorController {
   }
 
   async initSliders() {
-    this.sliders = new Sliders(
-      "axis-sliders",
-      await this.sceneController.getAxisInfo()
-    );
+    this.sliders = document.querySelector("#designspace-location");
+    this.sliders.axes = await this.sceneController.getAxisInfo();
     this.sliders.addEventListener(
-      "slidersChanged",
+      "locationChanged",
       scheduleCalls(async (event) => {
         await this.sceneController.setLocation(event.detail.values);
         this.sourcesList.setSelectedItemIndex(
@@ -621,7 +618,7 @@ export class EditorController {
     if (numGlobalAxes && axisInfo.length != numGlobalAxes) {
       axisInfo.splice(numGlobalAxes, 0, { isDivider: true });
     }
-    this.sliders.setSliderDescriptions(axisInfo);
+    this.sliders.axes = axisInfo;
     this.sliders.values = this.sceneController.getLocation();
     const sourceItems = await this.sceneController.getSourcesInfo();
     this.sourcesList.setItems(sourceItems || []);

@@ -159,13 +159,6 @@
   resize: none;
 }
 
-.sliders-and-sources {
-  display: flex;
-  flex-direction: column;
-  padding: 0.5em 1em 0.75em 0.25em; /* top right bottom left */
-  gap: 1em;
-}
-
 .axis-sliders {
   display: flex;
   flex-direction: column;
@@ -178,13 +171,6 @@
   min-height: 100px;
   margin-top: 1em;
   flex-shrink: 100;
-}
-
-.slider-divider {
-  border: none;
-  border-top: 1px solid gray;
-  width: 90%;
-  height: 1px;
 }
 
 .canvas-container {
