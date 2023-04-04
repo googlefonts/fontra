@@ -108,7 +108,10 @@ export class DesignspaceLocation extends UnlitElement {
       );
       elements.push(
         html.div(
-          { class: "slider-label", onclick: () => infoBox.classList.toggle("visible") },
+          {
+            class: "slider-label",
+            onclick: (event) => this._toggleInfoBox(infoBox, event),
+          },
           [axis.name]
         )
       );
@@ -125,6 +128,17 @@ export class DesignspaceLocation extends UnlitElement {
       elements.push(infoBox);
     }
     return elements;
+  }
+
+  _toggleInfoBox(infoBox, event) {
+    if (event.altKey) {
+      const onOff = !infoBox.classList.contains("visible");
+      for (const box of this.shadowRoot.querySelectorAll(".info-box")) {
+        box.classList.toggle("visible", onOff);
+      }
+    } else {
+      infoBox.classList.toggle("visible");
+    }
   }
 
   _dispatchLocationChangedEvent(slider) {
