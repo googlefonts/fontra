@@ -64,12 +64,12 @@ export class RemoteObject {
       this.websocket.onopen = (event) => {
         resolve(event);
         delete this._connectPromise;
+        this.websocket.onerror = (event) => console.log("websocket error", event);
+        this.websocket.onclose = (event) => console.log("websocket closed", event);
         const message = {
           "client-uuid": this.clientUUID,
         };
         this.websocket.send(JSON.stringify(message));
-        this.websocket.onerror = (event) => console.log("websocket error", event);
-        this.websocket.onclose = (event) => console.log("websocket closed", event);
       };
       this.websocket.onerror = reject;
     });
