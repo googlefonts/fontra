@@ -1332,6 +1332,7 @@ export class EditorController {
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     if (selectedGlyphName !== undefined && glyphNames.includes(selectedGlyphName)) {
       this.updateSelectionInfo();
+      await this.updateSlidersAndSources();
     }
     this.canvasController.requestUpdate();
   }
