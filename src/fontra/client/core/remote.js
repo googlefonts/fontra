@@ -68,6 +68,8 @@ export class RemoteObject {
           "client-uuid": this.clientUUID,
         };
         this.websocket.send(JSON.stringify(message));
+        this.websocket.onerror = (event) => console.log("websocket error", event);
+        this.websocket.onclose = (event) => console.log("websocket closed", event);
       };
       this.websocket.onerror = reject;
     });
