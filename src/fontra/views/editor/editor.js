@@ -66,8 +66,30 @@ export class EditorController {
     const remoteFontEngine = await getRemoteProxy(wsURL);
     const editorController = new EditorController(remoteFontEngine);
     remoteFontEngine.receiver = editorController;
+    remoteFontEngine.onclose = (event) => editorController.handleRemoteClose(event);
+    remoteFontEngine.onerror = (event) => editorController.handleRemoteError(event);
     await editorController.start();
     return editorController;
+  }
+
+  async handleRemoteClose(event) {
+    await dialog(
+      "Connection closed",
+      "The connection to the server closed unexpectedly.",
+      [{ title: "Try again", resultValue: "ok" }]
+    );
+    location.reload();
+  }
+
+  async handleRemoteError(event) {
+    console.log("remote error", event);
+    await dialog(
+      "Connection problem",
+      `There was a problem with the connection to the server.
+      See the JavaScript Console for details.`,
+      [{ title: "Try again", resultValue: "ok" }]
+    );
+    location.reload();
   }
 
   constructor(font) {

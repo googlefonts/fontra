@@ -64,8 +64,8 @@ export class RemoteObject {
       this.websocket.onopen = (event) => {
         resolve(event);
         delete this._connectPromise;
-        this.websocket.onerror = (event) => console.log("websocket error", event);
-        this.websocket.onclose = (event) => console.log("websocket closed", event);
+        this.websocket.onclose = (event) => this._onclose(event);
+        this.websocket.onerror = (event) => this._onerror(event);
         const message = {
           "client-uuid": this.clientUUID,
         };
@@ -74,6 +74,22 @@ export class RemoteObject {
       this.websocket.onerror = reject;
     });
     return this._connectPromise;
+  }
+
+  _onclose(event) {
+    if (this.onclose) {
+      this.onclose(event);
+    } else {
+      console.log(`websocket closed`, event);
+    }
+  }
+
+  _onerror(event) {
+    if (this.onerror) {
+      this.onerror(event);
+    } else {
+      console.log(`websocket error`, event);
+    }
   }
 
   async _handleIncomingMessage(event) {
