@@ -798,7 +798,7 @@ const decomposeSegmentFuncs = {
   *quad(segment) {
     if (segment.coordinates.length < 6) {
       throw new Error(
-        `assert -- not enough coordinates for quad: ${coordinates.length}`
+        `assert -- not enough coordinates for quad: ${segment.coordinates.length}`
       );
     }
     const coordinates = segment.coordinates;
