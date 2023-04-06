@@ -138,7 +138,7 @@
   padding: 0.35em 2em 0.35em 2em;
 
   border: none;
-  font-family: fontra-ui-regular;
+  font-family: fontra-ui-regular, sans-serif;
   font-size: 1em;
   text-align: center;
   transition: 100ms;
