@@ -106,5 +106,8 @@ export function dialog(
     dialogDone(null);
   };
 
-  return resultPromise;
+  return {
+    cancel: () => dialogDone(null),
+    then: resultPromise.then.bind(resultPromise),
+  };
 }
