@@ -73,11 +73,13 @@ export class EditorController {
   }
 
   async handleRemoteClose(event) {
-    await dialog(
+    this._reconnectDialogResult = dialog(
       "Connection closed",
       "The connection to the server closed unexpectedly.",
       [{ title: "Reconnect", resultValue: "ok" }]
     );
+    await this._reconnectDialogResult;
+    delete this._reconnectDialogResult;
     location.reload();
   }
 
@@ -210,6 +212,13 @@ export class EditorController {
     window.addEventListener("popstate", (event) => {
       this.setupFromWindowLocation();
     });
+
+    document.addEventListener("visibilitychange", (event) => {
+      if (document.visibilityState === "visible" && this._reconnectDialogResult) {
+        this._reconnectDialogResult.cancel();
+      }
+    });
+
     this.updateWithDelay();
   }
 
@@ -240,7 +249,7 @@ export class EditorController {
     this.initSourcesList();
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox
-    setTimeout(() => this.setupFromWindowLocation(), 8);
+    setTimeout(() => this.setupFromWindowLocation(), 20);
   }
 
   async initGlyphsSearch() {
