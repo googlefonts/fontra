@@ -108,6 +108,8 @@ export function dialog(
 
   return {
     cancel: () => dialogDone(null),
+    hide: () => container.classList.remove("visible"),
+    show: () => container.classList.add("visible"),
     then: resultPromise.then.bind(resultPromise),
   };
 }
