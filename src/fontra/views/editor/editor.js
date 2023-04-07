@@ -1407,6 +1407,7 @@ export class EditorController {
       }
     }
     this.textEntryElement.value = viewInfo["text"] || "";
+    this.fixTextEntryHeight();
     if (viewInfo["text"]) {
       await this.setGlyphLinesFromText(viewInfo["text"]);
     } else {
