@@ -10,6 +10,9 @@ export async function getRemoteProxy(wsURL) {
         // and will treat us as a promise...
         return undefined;
       }
+      if (propertyName in remote) {
+        return remote[propertyName];
+      }
       return (...args) => {
         return remote.doCall(propertyName, args);
       };
