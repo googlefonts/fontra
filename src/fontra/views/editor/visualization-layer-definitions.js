@@ -527,12 +527,7 @@ registerVisualizationLayerDefinition({
     // Under layer
     const underlayOffset = parameters.underlayOffset;
     context.fillStyle = parameters.underColor;
-    for (const pointIndex of selectedPointIndices || []) {
-      const pt = glyph.path.getPoint(pointIndex);
-      if (pt === undefined) {
-        // Selection is not valid
-        continue;
-      }
+    for (const pt of iterPointsByIndex(glyph.path, selectedPointIndices)) {
       fillNode(
         context,
         pt,
@@ -543,22 +538,12 @@ registerVisualizationLayerDefinition({
     }
     // Selected nodes
     context.fillStyle = parameters.selectedColor;
-    for (const pointIndex of selectedPointIndices || []) {
-      const pt = glyph.path.getPoint(pointIndex);
-      if (pt === undefined) {
-        // Selection is not valid
-        continue;
-      }
+    for (const pt of iterPointsByIndex(glyph.path, selectedPointIndices)) {
       fillNode(context, pt, cornerSize, smoothSize, handleSize);
     }
     // Hovered nodes
     const hoverStrokeOffset = parameters.hoverStrokeOffset;
-    for (const pointIndex of hoveredPointIndices || []) {
-      const pt = glyph.path.getPoint(pointIndex);
-      if (pt === undefined) {
-        // Selection is not valid
-        continue;
-      }
+    for (const pt of iterPointsByIndex(glyph.path, hoveredPointIndices)) {
       strokeNode(
         context,
         pt,
@@ -757,6 +742,18 @@ function lenientUnion(setA, setB) {
     return setA || new Set();
   }
   return union(setA, setB);
+}
+
+function* iterPointsByIndex(path, pointIndices) {
+  if (!pointIndices) {
+    return;
+  }
+  for (const index of pointIndices) {
+    const pt = path.getPoint(index);
+    if (pt !== undefined) {
+      yield pt;
+    }
+  }
 }
 
 // {
