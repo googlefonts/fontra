@@ -72,28 +72,6 @@ export class EditorController {
     return editorController;
   }
 
-  async handleRemoteClose(event) {
-    this._reconnectDialogResult = dialog(
-      "Connection closed",
-      "The connection to the server closed unexpectedly.",
-      [{ title: "Reconnect", resultValue: "ok" }]
-    );
-    await this._reconnectDialogResult;
-    delete this._reconnectDialogResult;
-    location.reload();
-  }
-
-  async handleRemoteError(event) {
-    console.log("remote error", event);
-    await dialog(
-      "Connection problem",
-      `There was a problem with the connection to the server.
-      See the JavaScript Console for details.`,
-      [{ title: "Reconnect", resultValue: "ok" }]
-    );
-    location.reload();
-  }
-
   constructor(font) {
     this.fontController = new FontController(font, {});
     this.fontController.addEditListener(
@@ -1788,6 +1766,28 @@ export class EditorController {
       }
     };
     requestAnimationFrame(animate);
+  }
+
+  async handleRemoteClose(event) {
+    this._reconnectDialogResult = dialog(
+      "Connection closed",
+      "The connection to the server closed unexpectedly.",
+      [{ title: "Reconnect", resultValue: "ok" }]
+    );
+    await this._reconnectDialogResult;
+    delete this._reconnectDialogResult;
+    location.reload();
+  }
+
+  async handleRemoteError(event) {
+    console.log("remote error", event);
+    await dialog(
+      "Connection problem",
+      `There was a problem with the connection to the server.
+      See the JavaScript Console for details.`,
+      [{ title: "Reconnect", resultValue: "ok" }]
+    );
+    location.reload();
   }
 }
 
