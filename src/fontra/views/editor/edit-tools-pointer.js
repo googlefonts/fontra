@@ -101,12 +101,14 @@ export class PointerTool extends BaseTool {
       if (!(await shouldInitiateDrag(eventStream, initialEvent))) {
         initiateRectSelect = false;
         initiateDrag = false;
-        const selectedGlyph = this.sceneModel.glyphAtPoint(point);
-        if (selectedGlyph && selectedGlyph != sceneController.selectedGlyph) {
-          sceneController.selectedGlyph = selectedGlyph;
-          sceneController.selectedGlyphIsEditing = false;
-          eventStream.done();
-          return;
+        if (!selection.size) {
+          const selectedGlyph = this.sceneModel.glyphAtPoint(point);
+          if (selectedGlyph && selectedGlyph != sceneController.selectedGlyph) {
+            sceneController.selectedGlyph = selectedGlyph;
+            sceneController.selectedGlyphIsEditing = false;
+            eventStream.done();
+            return;
+          }
         }
       }
     }
