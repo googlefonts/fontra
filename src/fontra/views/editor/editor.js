@@ -76,7 +76,7 @@ export class EditorController {
     await dialog(
       "Connection closed",
       "The connection to the server closed unexpectedly.",
-      [{ title: "Try again", resultValue: "ok" }]
+      [{ title: "Reconnect", resultValue: "ok" }]
     );
     location.reload();
   }
@@ -87,7 +87,7 @@ export class EditorController {
       "Connection problem",
       `There was a problem with the connection to the server.
       See the JavaScript Console for details.`,
-      [{ title: "Try again", resultValue: "ok" }]
+      [{ title: "Reconnect", resultValue: "ok" }]
     );
     location.reload();
   }
