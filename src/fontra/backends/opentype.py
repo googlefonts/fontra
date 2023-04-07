@@ -32,7 +32,7 @@ class OTFBackend:
         return self
 
     def close(self):
-        pass
+        self.font.close()
 
     async def getGlyphMap(self):
         return self.glyphMap
