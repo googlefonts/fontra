@@ -32,7 +32,6 @@ export class PointerTool extends BaseTool {
     }
 
     if (!sceneController.hoverSelection.size && !sceneController.hoverPathHit) {
-      console.log("set hovered glyph");
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
     }
 
