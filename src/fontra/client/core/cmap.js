@@ -39,18 +39,19 @@ export function makeCharacterMapFromGlyphMap(glyphMap, strict = true) {
   // If the `strict` flag is `true` (default), an Error is thrown when a code
   // point is defined multiple times.
   const characterMap = {};
+  const ambiguousCodePoints = [];
   for (const [glyphName, unicodes] of Object.entries(glyphMap)) {
     for (const codePoint of unicodes) {
       if (codePoint in characterMap) {
-        const message =
-          "invalid glyph map: duplicate code point " +
-          `("${glyphName}", "${
-            characterMap[codePoint]
-          }", ${makeUPlusStringFromCodePoint(codePoint)})`;
         if (strict) {
-          throw new Error(message);
+          throw new Error(
+            "invalid glyph map: duplicate code point " +
+              `("${glyphName}", "${
+                characterMap[codePoint]
+              }", ${makeUPlusStringFromCodePoint(codePoint)})`
+          );
         }
-        console.log(message);
+        ambiguousCodePoints.push(codePoint);
         if (characterMap[codePoint] < glyphName) {
           // Keep the glyph name that would be sorted lowest.
           // This is completely arbitrary, but ensures determinism.
@@ -59,6 +60,12 @@ export function makeCharacterMapFromGlyphMap(glyphMap, strict = true) {
       }
       characterMap[codePoint] = glyphName;
     }
+  }
+  if (ambiguousCodePoints.length) {
+    console.log(
+      `cmap: ${ambiguousCodePoints.length} code points were referenced ` +
+        `by multiple glyphs`
+    );
   }
   return characterMap;
 }
