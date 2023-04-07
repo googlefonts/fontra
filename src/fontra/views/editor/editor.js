@@ -1782,8 +1782,7 @@ export class EditorController {
     delete this._reconnectDialogResult;
 
     if (this.fontController.font.websocket.readyState > 1) {
-      // The websocket isn't currently working, let's try to do
-      // a page reload
+      // The websocket isn't currently working, let's try to do a page reload
       location.reload();
       return;
     }
