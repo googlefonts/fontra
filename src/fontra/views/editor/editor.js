@@ -161,9 +161,9 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event);
     });
 
+    this.initSidebars();
     this.initContextMenuItems();
     this.initShortCuts();
-    this.initSidebars();
     this.initMiniConsole();
     this.infoForm = new Form("selection-info");
 
@@ -238,7 +238,9 @@ export class EditorController {
     await this.initSliders();
     this.initTools();
     this.initSourcesList();
-    await this.setupFromWindowLocation();
+    // Delay a tiny amount to account for a delay in the sidebars being set up,
+    // which affects the available viewBox
+    setTimeout(() => this.setupFromWindowLocation(), 8);
   }
 
   async initGlyphsSearch() {
@@ -407,20 +409,38 @@ export class EditorController {
   }
 
   initSidebars() {
+    // Upon reload, the "animating" class may still be set (why?), so remove it
+    for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
+      sidebarContainer.classList.remove("animating");
+    }
+
+    // Restore the sidebar selection/visible state from localStorage.
+    // (Due to the previous step only being visible after an event loop iteration,
+    // ensure we postpone just enough.)
+    setTimeout(() => {
+      for (const side of ["left", "right"]) {
+        const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
+        if (selectedSidebar) {
+          this.toggleSidebar(selectedSidebar, false);
+        }
+      }
+    }, 0);
+
+    // After the initial set up we want clicking the sidebar tabs to animate in and out
+    // (Here we can afford a longer delay.)
+    setTimeout(() => {
+      for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
+        sidebarContainer.classList.add("animating");
+      }
+    }, 100);
+
     for (const sidebarTab of document.querySelectorAll(".sidebar-tab")) {
-      const methodName = hyphenatedToCamelCase(
-        "toggle-" + sidebarTab.dataset.sidebarName
-      );
-      const side = sidebarTab.parentElement.classList.contains("left")
-        ? "left"
-        : "right";
       sidebarTab.addEventListener("click", (event) => {
-        this.tabClick(event, side);
-        const onOff = event.target.classList.contains("selected");
-        this[methodName]?.call(this, onOff);
+        this.toggleSidebar(sidebarTab.dataset.sidebarName);
       });
     }
 
+    // TODO: the remaining code deserves its own method
     this.textEntryElement = document.querySelector("#text-entry-textarea");
     this.textEntryElement.addEventListener(
       "input",
@@ -455,9 +475,12 @@ export class EditorController {
     }
   }
 
-  tabClick(event, side) {
+  toggleSidebar(sidebarName, doUpdateWindowLocation = true) {
+    const toggledTab = document.querySelector(
+      `.sidebar-tab[data-sidebar-name="${sidebarName}"]`
+    );
+    const side = toggledTab.parentElement.classList.contains("left") ? "left" : "right";
     const sidebarContainer = document.querySelector(`.sidebar-container.${side}`);
-    const clickedTab = event.target;
     const sidebars = {};
     for (const sideBarContent of document.querySelectorAll(
       `.sidebar-container.${side} > .sidebar-content`
@@ -469,12 +492,12 @@ export class EditorController {
       `.tab-overlay-container.${side} > .sidebar-tab`
     )) {
       const sidebarContent = sidebars[item.dataset.sidebarName];
-      if (item === clickedTab) {
+      if (item === toggledTab) {
         const isSidebarVisible = sidebarContainer.classList.contains("visible");
         const isSelected = item.classList.contains("selected");
-        if (isSelected == isSidebarVisible) {
+        if (isSelected == isSidebarVisible && doUpdateWindowLocation) {
           // Sidebar visibility will change
-          this.updateWindowLocation();
+          this.updateWindowLocation?.();
           // dispatch event?
         }
         item.classList.toggle("selected", !isSelected);
@@ -496,6 +519,11 @@ export class EditorController {
         sidebarContent?.classList.remove("selected");
       }
     }
+
+    const onOff = toggledTab.classList.contains("selected");
+    localStorage.setItem(`fontra-selected-sidebar-${side}`, onOff ? sidebarName : "");
+    const methodName = hyphenatedToCamelCase("toggle-" + sidebarName);
+    setTimeout(() => this[methodName]?.call(this, onOff), 10);
   }
 
   fixTextEntryHeight() {
@@ -1455,7 +1483,7 @@ export class EditorController {
 
   toggleSidebarSelectionInfo(onOff) {
     if (onOff) {
-      this.updateSelectionInfo();
+      this.updateSelectionInfo?.();
     }
   }
 
