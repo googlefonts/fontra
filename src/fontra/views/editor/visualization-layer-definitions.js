@@ -98,7 +98,7 @@ registerVisualizationLayerDefinition({
   identifier: "fontra.context.glyphs",
   name: "Context glyphs",
   selectionMode: "unselected",
-  zIndex: 500,
+  zIndex: 200,
   colors: { fillColor: "#000" },
   colorsDarkMode: { fillColor: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
@@ -348,7 +348,7 @@ registerVisualizationLayerDefinition({
   name: "Selected glyph",
   selectionMode: "selected",
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
-  zIndex: 500,
+  zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
   colors: { fillColor: "#000", strokeColor: "#7778" },
   colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8" },
@@ -362,7 +362,7 @@ registerVisualizationLayerDefinition({
   name: "Hovered glyph",
   selectionMode: "hovered",
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
-  zIndex: 500,
+  zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
   colors: { fillColor: "#000", strokeColor: "#BBB8" },
   colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8" },
@@ -576,6 +576,24 @@ registerVisualizationLayerDefinition({
       const radius = parameters.insertHandlesRadius;
       fillRoundNode(context, point, 2 * radius);
     }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.edit.path.under.stroke",
+  name: "Underlying edit path stroke",
+  selectionMode: "editing",
+  zIndex: 490,
+  screenParameters: {
+    strokeWidth: 3,
+  },
+  colors: { color: "#FFF6" },
+  colorsDarkMode: { color: "#0004" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.lineJoin = "round";
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = parameters.color;
+    context.stroke(positionedGlyph.glyph.flattenedPath2d);
   },
 });
 
