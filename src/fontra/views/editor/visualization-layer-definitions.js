@@ -312,8 +312,10 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.ghostpath",
-  name: "Ghost path while dragging",
+  name: "Drag “ghost” path",
   selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
   zIndex: 500,
   screenParameters: { strokeWidth: 1 },
   colors: { strokeColor: "#0002" },
