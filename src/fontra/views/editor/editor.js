@@ -1358,7 +1358,7 @@ export class EditorController {
         }
       } else {
         // TODO
-        console.log("reloading of non-glyph data is not yet implemented");
+        console.log(`reloading of non-glyph data is not yet implemented: ${rootKey}`);
       }
     }
   }
@@ -1776,7 +1776,18 @@ export class EditorController {
     );
     await this._reconnectDialogResult;
     delete this._reconnectDialogResult;
-    location.reload();
+    console.log("reload all the things");
+    const reloadPattern = { glyphs: {} };
+    const glyphReloadPattern = reloadPattern.glyphs;
+    for (const glyphName of this.fontController.getCachedGlyphNames()) {
+      glyphReloadPattern[glyphName] = null;
+    }
+    // TODO: fix reloadData so we can do this:
+    //   reloadPattern["glyphMap"] = null; // etc.
+    // so we won't have to re-initialize the font controller to reload
+    // all non-glyph data:
+    await this.fontController.initialize();
+    await this.reloadData(reloadPattern);
   }
 
   async handleRemoteError(event) {
