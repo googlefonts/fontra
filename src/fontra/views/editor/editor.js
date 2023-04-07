@@ -192,8 +192,12 @@ export class EditorController {
     });
 
     document.addEventListener("visibilitychange", (event) => {
-      if (document.visibilityState === "visible" && this._reconnectDialogResult) {
-        this._reconnectDialogResult.cancel();
+      if (this._reconnectDialogResult) {
+        if (document.visibilityState === "visible") {
+          this._reconnectDialogResult.cancel();
+        } else {
+          this._reconnectDialogResult.hide();
+        }
       }
     });
 
@@ -1776,7 +1780,15 @@ export class EditorController {
     );
     await this._reconnectDialogResult;
     delete this._reconnectDialogResult;
-    console.log("reload all the things");
+
+    if (this.fontController.font.websocket.readyState > 1) {
+      // The websocket isn't currently working, let's try to do
+      // a page reload
+      location.reload();
+      return;
+    }
+
+    // Reload only the data, not the UI (the page)
     const reloadPattern = { glyphs: {} };
     const glyphReloadPattern = reloadPattern.glyphs;
     for (const glyphName of this.fontController.getCachedGlyphNames()) {
