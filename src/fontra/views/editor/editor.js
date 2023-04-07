@@ -1773,6 +1773,13 @@ export class EditorController {
   }
 
   async handleRemoteClose(event) {
+    if (location.hostname === "localhost") {
+      // Dubious assumption:
+      // Running from localhost most likely means were looking at local data,
+      // which unlikely changed while we were away. So let's not bother reloading
+      // anything.
+      return;
+    }
     this._reconnectDialogResult = dialog(
       "Connection closed",
       "The connection to the server closed unexpectedly.",
