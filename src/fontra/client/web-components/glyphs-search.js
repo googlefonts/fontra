@@ -87,6 +87,10 @@ export class GlyphsSearch extends UnlitElement {
     this.glyphMap = {};
   }
 
+  focusSearchField() {
+    this.searchField.focus();
+  }
+
   render() {
     return [this.searchField, this.glyphNamesList];
   }

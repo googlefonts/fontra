@@ -524,6 +524,7 @@ export class EditorController {
     localStorage.setItem(`fontra-selected-sidebar-${side}`, onOff ? sidebarName : "");
     const methodName = hyphenatedToCamelCase("toggle-" + sidebarName);
     setTimeout(() => this[methodName]?.call(this, onOff), 10);
+    return onOff;
   }
 
   fixTextEntryHeight() {
@@ -816,6 +817,14 @@ export class EditorController {
       if (toolIndex < Object.keys(this.tools).length) {
         this.setSelectedTool(Object.keys(this.tools)[toolIndex]);
       }
+    });
+    this.registerShortCut("f", { metaKey: true, globalOverride: true }, () => {
+      if (this.toggleSidebar("glyph-search")) {
+        this.glyphsSearch.focusSearchField();
+      }
+    });
+    this.registerShortCut("i", { metaKey: true, globalOverride: true }, () => {
+      this.toggleSidebar("sidebar-selection-info");
     });
 
     for (const menuItem of this.basicContextMenuItems) {
