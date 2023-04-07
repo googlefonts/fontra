@@ -3,11 +3,9 @@ export async function loaderSpinner(promise) {
   let returnValue;
   try {
     returnValue = await promise;
-  } catch (error) {
+  } finally {
     decrementSpinnerStatus();
-    throw error;
   }
-  decrementSpinnerStatus();
   return returnValue;
 }
 
