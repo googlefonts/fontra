@@ -22,14 +22,19 @@ export class PointerTool extends BaseTool {
     const size = sceneController.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
     sceneController.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
-    sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
+    sceneController.hoveredGlyph = undefined;
     sceneController.hoverPathHit = undefined;
-    if (!sceneController.hoverSelection?.size && !sceneController.hoveredGlyph) {
+    if (!sceneController.hoverSelection?.size) {
       const hit = this.sceneModel.pathHitAtPoint(point, size);
       if (hit.contourIndex !== undefined) {
         sceneController.hoverPathHit = hit;
       }
     }
+
+    if (!sceneController.hoverSelection.size && !sceneController.hoverPathHit) {
+      sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
+    }
+
     this.setCursor();
   }
 
@@ -101,12 +106,14 @@ export class PointerTool extends BaseTool {
       if (!(await shouldInitiateDrag(eventStream, initialEvent))) {
         initiateRectSelect = false;
         initiateDrag = false;
-        const selectedGlyph = this.sceneModel.glyphAtPoint(point);
-        if (selectedGlyph && selectedGlyph != sceneController.selectedGlyph) {
-          sceneController.selectedGlyph = selectedGlyph;
-          sceneController.selectedGlyphIsEditing = false;
-          eventStream.done();
-          return;
+        if (!selection.size) {
+          const selectedGlyph = this.sceneModel.glyphAtPoint(point);
+          if (selectedGlyph && selectedGlyph != sceneController.selectedGlyph) {
+            sceneController.selectedGlyph = selectedGlyph;
+            sceneController.selectedGlyphIsEditing = false;
+            eventStream.done();
+            return;
+          }
         }
       }
     }

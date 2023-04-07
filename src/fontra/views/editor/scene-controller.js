@@ -241,7 +241,7 @@ export class SceneController {
   }
 
   get mouseClickMargin() {
-    return this.onePixelUnit * 10;
+    return this.onePixelUnit * 12;
   }
 
   get selection() {

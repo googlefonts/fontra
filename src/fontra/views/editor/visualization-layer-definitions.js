@@ -98,7 +98,7 @@ registerVisualizationLayerDefinition({
   identifier: "fontra.context.glyphs",
   name: "Context glyphs",
   selectionMode: "unselected",
-  zIndex: 500,
+  zIndex: 200,
   colors: { fillColor: "#000" },
   colorsDarkMode: { fillColor: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
@@ -348,7 +348,7 @@ registerVisualizationLayerDefinition({
   name: "Selected glyph",
   selectionMode: "selected",
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
-  zIndex: 500,
+  zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
   colors: { fillColor: "#000", strokeColor: "#7778" },
   colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8" },
@@ -362,7 +362,7 @@ registerVisualizationLayerDefinition({
   name: "Hovered glyph",
   selectionMode: "hovered",
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
-  zIndex: 500,
+  zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
   colors: { fillColor: "#000", strokeColor: "#BBB8" },
   colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8" },
@@ -508,9 +508,10 @@ registerVisualizationLayerDefinition({
     handleSize: 6.5,
     strokeWidth: 1,
     hoverStrokeOffset: 4,
+    underlayOffset: 2,
   },
-  colors: { hoveredColor: "#BBB", selectedColor: "#000" },
-  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF" },
+  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const cornerSize = parameters.cornerSize;
@@ -520,17 +521,28 @@ registerVisualizationLayerDefinition({
     const { point: hoveredPointIndices } = parseSelection(model.hoverSelection);
     const { point: selectedPointIndices } = parseSelection(model.selection);
 
+    // Under layer
+    const underlayOffset = parameters.underlayOffset;
+    context.fillStyle = parameters.underColor;
+    for (const pt of iterPointsByIndex(glyph.path, selectedPointIndices)) {
+      fillNode(
+        context,
+        pt,
+        cornerSize + underlayOffset,
+        smoothSize + underlayOffset,
+        handleSize + underlayOffset
+      );
+    }
+    // Selected nodes
+    context.fillStyle = parameters.selectedColor;
+    for (const pt of iterPointsByIndex(glyph.path, selectedPointIndices)) {
+      fillNode(context, pt, cornerSize, smoothSize, handleSize);
+    }
+    // Hovered nodes
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
     const hoverStrokeOffset = parameters.hoverStrokeOffset;
-    context.fillStyle = parameters.selectedColor;
-
-    for (const pointIndex of hoveredPointIndices || []) {
-      const pt = glyph.path.getPoint(pointIndex);
-      if (pt === undefined) {
-        // Selection is not valid
-        continue;
-      }
+    for (const pt of iterPointsByIndex(glyph.path, hoveredPointIndices)) {
       strokeNode(
         context,
         pt,
@@ -538,14 +550,6 @@ registerVisualizationLayerDefinition({
         smoothSize + hoverStrokeOffset,
         handleSize + hoverStrokeOffset
       );
-    }
-    for (const pointIndex of selectedPointIndices || []) {
-      const pt = glyph.path.getPoint(pointIndex);
-      if (pt === undefined) {
-        // Selection is not valid
-        continue;
-      }
-      fillNode(context, pt, cornerSize, smoothSize, handleSize);
     }
   },
 });
@@ -576,6 +580,24 @@ registerVisualizationLayerDefinition({
       const radius = parameters.insertHandlesRadius;
       fillRoundNode(context, point, 2 * radius);
     }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.edit.path.under.stroke",
+  name: "Underlying edit path stroke",
+  selectionMode: "editing",
+  zIndex: 490,
+  screenParameters: {
+    strokeWidth: 3,
+  },
+  colors: { color: "#FFF6" },
+  colorsDarkMode: { color: "#0004" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.lineJoin = "round";
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = parameters.color;
+    context.stroke(positionedGlyph.glyph.flattenedPath2d);
   },
 });
 
@@ -719,6 +741,18 @@ function lenientUnion(setA, setB) {
     return setA || new Set();
   }
   return union(setA, setB);
+}
+
+function* iterPointsByIndex(path, pointIndices) {
+  if (!pointIndices) {
+    return;
+  }
+  for (const index of pointIndices) {
+    const pt = path.getPoint(index);
+    if (pt !== undefined) {
+      yield pt;
+    }
+  }
 }
 
 // {
