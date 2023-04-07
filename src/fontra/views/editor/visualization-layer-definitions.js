@@ -521,9 +521,6 @@ registerVisualizationLayerDefinition({
     const { point: hoveredPointIndices } = parseSelection(model.hoverSelection);
     const { point: selectedPointIndices } = parseSelection(model.selection);
 
-    context.strokeStyle = parameters.hoveredColor;
-    context.lineWidth = parameters.strokeWidth;
-
     // Under layer
     const underlayOffset = parameters.underlayOffset;
     context.fillStyle = parameters.underColor;
@@ -542,6 +539,8 @@ registerVisualizationLayerDefinition({
       fillNode(context, pt, cornerSize, smoothSize, handleSize);
     }
     // Hovered nodes
+    context.strokeStyle = parameters.hoveredColor;
+    context.lineWidth = parameters.strokeWidth;
     const hoverStrokeOffset = parameters.hoverStrokeOffset;
     for (const pt of iterPointsByIndex(glyph.path, hoveredPointIndices)) {
       strokeNode(
