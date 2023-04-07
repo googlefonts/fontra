@@ -21,11 +21,9 @@ export function withSavedState(context, func) {
   context.save();
   try {
     func();
-  } catch (error) {
+  } finally {
     context.restore();
-    throw error;
   }
-  context.restore();
 }
 
 export function scheduleCalls(func, timeout = 0) {
