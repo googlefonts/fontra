@@ -508,7 +508,7 @@ registerVisualizationLayerDefinition({
     handleSize: 6.5,
     strokeWidth: 1,
     hoverStrokeOffset: 4,
-    underlayerOffset: 2,
+    underlayOffset: 2,
   },
   colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
   colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
@@ -525,7 +525,7 @@ registerVisualizationLayerDefinition({
     context.lineWidth = parameters.strokeWidth;
 
     // Under layer
-    const underlayerOffset = parameters.underlayerOffset;
+    const underlayOffset = parameters.underlayOffset;
     context.fillStyle = parameters.underColor;
     for (const pointIndex of selectedPointIndices || []) {
       const pt = glyph.path.getPoint(pointIndex);
@@ -536,9 +536,9 @@ registerVisualizationLayerDefinition({
       fillNode(
         context,
         pt,
-        cornerSize + underlayerOffset,
-        smoothSize + underlayerOffset,
-        handleSize + underlayerOffset
+        cornerSize + underlayOffset,
+        smoothSize + underlayOffset,
+        handleSize + underlayOffset
       );
     }
     // Selected nodes
