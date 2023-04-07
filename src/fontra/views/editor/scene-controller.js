@@ -12,7 +12,6 @@ import {
   hasShortcutModifierKey,
   parseSelection,
   reversed,
-  tryFinally,
 } from "../core/utils.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
@@ -406,16 +405,13 @@ export class SceneController {
     this._glyphEditingDonePromise = new Promise((resolve) => {
       editingDone = resolve;
     });
-    await tryFinally(
-      async () => {
-        return await this._editInstance(editFunc, senderID);
-      },
-      () => {
-        editingDone();
-        delete this._glyphEditingDonePromise;
-        delete this._cancelGlyphEditing;
-      }
-    );
+    try {
+      return await this._editInstance(editFunc, senderID);
+    } finally {
+      editingDone();
+      delete this._glyphEditingDonePromise;
+      delete this._cancelGlyphEditing;
+    }
   }
 
   async _editInstance(editFunc, senderID) {
