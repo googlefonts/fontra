@@ -1407,6 +1407,7 @@ export class EditorController {
       }
     }
     this.textEntryElement.value = viewInfo["text"] || "";
+    this.textEntryElement.setSelectionRange(0, 0); // else it'll be at the end
     this.fixTextEntryHeight();
     if (viewInfo["text"]) {
       await this.setGlyphLinesFromText(viewInfo["text"]);
