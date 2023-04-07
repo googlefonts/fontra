@@ -508,9 +508,10 @@ registerVisualizationLayerDefinition({
     handleSize: 6.5,
     strokeWidth: 1,
     hoverStrokeOffset: 4,
+    underlayerOffset: 2,
   },
-  colors: { hoveredColor: "#BBB", selectedColor: "#000" },
-  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF" },
+  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const cornerSize = parameters.cornerSize;
@@ -522,9 +523,36 @@ registerVisualizationLayerDefinition({
 
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
-    const hoverStrokeOffset = parameters.hoverStrokeOffset;
-    context.fillStyle = parameters.selectedColor;
 
+    // Under layer
+    const underlayerOffset = parameters.underlayerOffset;
+    context.fillStyle = parameters.underColor;
+    for (const pointIndex of selectedPointIndices || []) {
+      const pt = glyph.path.getPoint(pointIndex);
+      if (pt === undefined) {
+        // Selection is not valid
+        continue;
+      }
+      fillNode(
+        context,
+        pt,
+        cornerSize + underlayerOffset,
+        smoothSize + underlayerOffset,
+        handleSize + underlayerOffset
+      );
+    }
+    // Selected nodes
+    context.fillStyle = parameters.selectedColor;
+    for (const pointIndex of selectedPointIndices || []) {
+      const pt = glyph.path.getPoint(pointIndex);
+      if (pt === undefined) {
+        // Selection is not valid
+        continue;
+      }
+      fillNode(context, pt, cornerSize, smoothSize, handleSize);
+    }
+    // Hovered nodes
+    const hoverStrokeOffset = parameters.hoverStrokeOffset;
     for (const pointIndex of hoveredPointIndices || []) {
       const pt = glyph.path.getPoint(pointIndex);
       if (pt === undefined) {
@@ -538,14 +566,6 @@ registerVisualizationLayerDefinition({
         smoothSize + hoverStrokeOffset,
         handleSize + hoverStrokeOffset
       );
-    }
-    for (const pointIndex of selectedPointIndices || []) {
-      const pt = glyph.path.getPoint(pointIndex);
-      if (pt === undefined) {
-        // Selection is not valid
-        continue;
-      }
-      fillNode(context, pt, cornerSize, smoothSize, handleSize);
     }
   },
 });
