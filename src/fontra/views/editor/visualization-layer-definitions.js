@@ -291,8 +291,8 @@ registerVisualizationLayerDefinition({
   defaultOn: false,
   zIndex: 500,
   screenParameters: { strokeWidth: 1, lineDash: [4, 4] },
-  colors: { strokeColor: "#0004" },
-  colorsDarkMode: { strokeColor: "#FFF6" },
+  colors: { strokeColor: "#8888" },
+  colorsDarkMode: { strokeColor: "#AAA8" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const pointIndex = model.initialClickedPointIndex;
     if (pointIndex === undefined) {
