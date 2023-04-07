@@ -318,8 +318,8 @@ registerVisualizationLayerDefinition({
   defaultOn: true,
   zIndex: 500,
   screenParameters: { strokeWidth: 1 },
-  colors: { strokeColor: "#0002" },
-  colorsDarkMode: { strokeColor: "#FFF4" },
+  colors: { strokeColor: "#AAA6" },
+  colorsDarkMode: { strokeColor: "#8886" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     if (!model.ghostPath) {
       return;
