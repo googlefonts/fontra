@@ -1,6 +1,6 @@
 import { Bezier } from "../third-party/bezier-js.js";
 import { centeredRect, sectRect } from "./rectangle.js";
-import { enumerate, range } from "./utils.js";
+import { range, reversedEnumerate } from "./utils.js";
 
 export class PathHitTester {
   constructor(path) {
@@ -16,12 +16,12 @@ export class PathHitTester {
 
   hitTest(point, margin) {
     const targetRect = centeredRect(point.x, point.y, margin * 2);
-    for (const [contourIndex, contour] of enumerate(this.contours)) {
+    for (const [contourIndex, contour] of reversedEnumerate(this.contours)) {
       if (!sectRect(targetRect, contour.bounds)) {
         continue;
       }
       this._ensureContourIsLoaded(contourIndex, contour);
-      for (const [segmentIndex, segment] of enumerate(contour.segments)) {
+      for (const [segmentIndex, segment] of reversedEnumerate(contour.segments)) {
         if (!sectRect(targetRect, segment.bounds)) {
           continue;
         }
