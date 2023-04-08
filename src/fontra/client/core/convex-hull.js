@@ -163,11 +163,11 @@ export function simplePolygonArea(points) {
   // (A convex polygon is also a simple polygon.)
   // This uses the Shoelace formula: https://en.wikipedia.org/wiki/Shoelace_formula
   let areaX2 = 0;
-  for (let i = 0; i < points.length; i++) {
-    const pt0 = points.at(i - 1);
-    const pt1 = points[i];
+  let pt0 = points.at(-1);
+  for (const pt1 of points) {
     areaX2 += pt0.x * pt1.y;
     areaX2 -= pt0.y * pt1.x;
+    pt0 = pt1;
   }
   return areaX2 / 2;
 }
