@@ -392,6 +392,7 @@ export class SceneModel {
   }
 
   glyphAtPoint(point, skipEditingGlyph = true) {
+    const matches = [];
     for (let i = this.positionedLines.length - 1; i >= 0; i--) {
       const positionedLine = this.positionedLines[i];
       if (
@@ -416,18 +417,46 @@ export class SceneModel {
             positionedGlyph.glyph.convexHull
           )
         ) {
-          const foundGlyph = `${i}/${j}`;
           if (
             !skipEditingGlyph ||
             !this.selectedGlyphIsEditing ||
-            foundGlyph != this.selectedGlyph
+            `${i}/${j}` != this.selectedGlyph
           ) {
-            return foundGlyph;
+            matches.push([i, j]);
           }
         }
       }
     }
-    return undefined;
+    let foundGlyph = undefined;
+    if (matches.length == 1) {
+      const [i, j] = matches[0];
+      foundGlyph = `${i}/${j}`;
+    } else if (matches.length > 1) {
+      // The target point is inside the convex hull of multiple glyphs.
+      // We prefer the glyph that has the point properly inside, and if
+      // that doesn't resolve it we take the glyph with the smallest
+      // convex hull area, as that's the one most likely to be hard to
+      // hit otherwise.
+      // These heuristics should help selecting the glyph intended by the
+      // user, independently of their order in the string.
+      const decoratedMatches = matches.map(([i, j]) => {
+        const positionedGlyph = this.positionedLines[i].glyphs[j];
+        return {
+          i: i,
+          j: j,
+          inside: this.isPointInPath(
+            positionedGlyph.glyph.flattenedPath2d,
+            point.x - positionedGlyph.x,
+            point.y - positionedGlyph.y
+          ),
+          area: positionedGlyph.glyph.convexHullArea,
+        };
+      });
+      decoratedMatches.sort((a, b) => b.inside - a.inside || a.area - b.area);
+      const { i, j } = decoratedMatches[0];
+      foundGlyph = `${i}/${j}`;
+    }
+    return foundGlyph;
   }
 
   getSceneBounds() {
