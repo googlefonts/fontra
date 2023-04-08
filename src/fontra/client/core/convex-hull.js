@@ -157,3 +157,17 @@ function ccw(p1, p2, p3) {
   // A.k.a. compute the cross product
   return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
 }
+
+export function simplePolygonArea(points) {
+  // Compute the area of a simple (non-self-intersecting) polygon.
+  // (A convex polygon is also a simple polygon.)
+  // This uses the Shoelace formula: https://en.wikipedia.org/wiki/Shoelace_formula
+  let areaX2 = 0;
+  let pt0 = points.at(-1);
+  for (const pt1 of points) {
+    areaX2 += pt0.x * pt1.y;
+    areaX2 -= pt0.y * pt1.x;
+    pt0 = pt1;
+  }
+  return areaX2 / 2;
+}

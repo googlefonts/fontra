@@ -1,3 +1,4 @@
+import { simplePolygonArea } from "./convex-hull.js";
 import { PathHitTester } from "./path-hit-tester.js";
 import {
   getRepresentation,
@@ -302,6 +303,10 @@ export class StaticGlyphController {
     return getRepresentation(this, "convexHull");
   }
 
+  get convexHullArea() {
+    return getRepresentation(this, "convexHullArea");
+  }
+
   get pathHitTester() {
     return getRepresentation(this, "pathHitTester");
   }
@@ -346,6 +351,10 @@ registerRepresentationFactory(StaticGlyphController, "controlBounds", (glyph) =>
 
 registerRepresentationFactory(StaticGlyphController, "convexHull", (glyph) => {
   return glyph.flattenedPath.getConvexHull();
+});
+
+registerRepresentationFactory(StaticGlyphController, "convexHullArea", (glyph) => {
+  return Math.abs(simplePolygonArea(glyph.convexHull));
 });
 
 registerRepresentationFactory(StaticGlyphController, "pathHitTester", (glyph) => {
