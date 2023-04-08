@@ -372,18 +372,18 @@ export class VarPackedPath {
     return 0;
   }
 
-  firstPointIndexNearPoint(point, margin, skipPointIndex = undefined) {
+  pointIndexNearPoint(point, margin, skipPointIndex = undefined) {
     //
     // Given `point` and a `margin`, return the index of the first point
-    // that is within `margin` of `point`. Return undefined if no such
-    // point was found.
+    // that is within `margin` of `point`, searching from the *end* of the
+    // points list. Return undefined if no such point was found.
     //
     // If `skipPointIndex` is given, skip that particular point index.
     // This is useful if you want to find a point that is not a specific
     // point nearby.
     //
     const rect = centeredRect(point.x, point.y, margin);
-    for (const hit of this.iterPointsInRect(rect)) {
+    for (const hit of this.reverseIterPointsInRect(rect)) {
       // TODO: we may have to filter or sort for the case when a handle coincides with
       // its anchor, to get a consistent result despite which of the two comes first.
       if (hit.pointIndex !== skipPointIndex) {
@@ -454,6 +454,15 @@ export class VarPackedPath {
     for (const [pointIndex, point] of enumerate(this.iterPoints())) {
       if (pointInRect(point.x, point.y, rect)) {
         yield { ...point, pointIndex: pointIndex };
+      }
+    }
+  }
+
+  *reverseIterPointsInRect(rect) {
+    for (let index = this.pointTypes.length - 1; index >= 0; index--) {
+      const point = this.getPoint(index);
+      if (pointInRect(point.x, point.y, rect)) {
+        yield { ...point, pointIndex: index };
       }
     }
   }

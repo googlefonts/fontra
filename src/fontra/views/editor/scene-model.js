@@ -323,10 +323,7 @@ export class SceneModel {
       x: point.x - positionedGlyph.x,
       y: point.y - positionedGlyph.y,
     };
-    const pointIndex = positionedGlyph.glyph.path.firstPointIndexNearPoint(
-      glyphPoint,
-      size
-    );
+    const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
     if (pointIndex !== undefined) {
       return new Set([`point/${pointIndex}`]);
     }
