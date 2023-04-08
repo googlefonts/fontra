@@ -438,7 +438,7 @@ export class SceneModel {
       // convex hull area, as that's the one most likely to be hard to
       // hit otherwise.
       // These heuristics should help selecting the glyph intended by the
-      // user, independently of their order in the string.
+      // user, regardless of its order in the string.
       const decoratedMatches = matches.map(([i, j]) => {
         const positionedGlyph = this.positionedLines[i].glyphs[j];
         return {
