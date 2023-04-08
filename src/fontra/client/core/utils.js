@@ -144,6 +144,12 @@ export function* enumerate(iterable, start = 0) {
   }
 }
 
+export function* reversedEnumerate(seq) {
+  for (let i = seq.length - 1; i >= 0; i--) {
+    yield [i, seq[i]];
+  }
+}
+
 export function* range(start, stop, step = 1) {
   if (stop === undefined) {
     stop = start;

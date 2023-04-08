@@ -10,7 +10,7 @@ describe("PathHitTester Tests", () => {
     [
       { x: 10, y: 10 },
       20,
-      { contourIndex: 0, segmentIndex: 0, d: 10, t: 0.1, x: 0, y: 10 },
+      { contourIndex: 0, segmentIndex: 3, d: 10, t: 0.95, x: 10.000000000000009, y: 0 },
     ],
     [
       { x: 100, y: 10 },
@@ -20,7 +20,14 @@ describe("PathHitTester Tests", () => {
     [
       { x: 190, y: 10 },
       20,
-      { contourIndex: 0, segmentIndex: 2, d: 14.142135623730951, t: 1, x: 200, y: 0 },
+      {
+        contourIndex: 0,
+        segmentIndex: 3,
+        d: 10,
+        t: 0.05000000000000001,
+        x: 190,
+        y: 0,
+      },
     ],
     [{ x: 190, y: 49 }, 20, {}],
     [
@@ -38,7 +45,14 @@ describe("PathHitTester Tests", () => {
     [
       { x: 10, y: 210 },
       20,
-      { contourIndex: 1, segmentIndex: 0, d: 10, t: 0.1, x: 0, y: 210 },
+      {
+        contourIndex: 1,
+        segmentIndex: 3,
+        d: 10,
+        t: 0.95,
+        x: 10.000000000000009,
+        y: 200,
+      },
     ],
     [
       { x: 100, y: 210 },

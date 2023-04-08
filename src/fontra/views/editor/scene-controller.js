@@ -652,7 +652,7 @@ class PathConnectDetector {
 
     const sceneController = this.sceneController;
     const connectSourcePoint = this.path.getPoint(this.connectSourcePointIndex);
-    const connectTargetPointIndex = this.path.firstPointIndexNearPoint(
+    const connectTargetPointIndex = this.path.pointIndexNearPoint(
       connectSourcePoint,
       sceneController.mouseClickMargin,
       this.connectSourcePointIndex
