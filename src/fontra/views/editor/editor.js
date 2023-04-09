@@ -17,7 +17,6 @@ import {
 } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
-import { dialog } from "../core/ui-dialog.js";
 import { Form } from "../core/ui-form.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
@@ -37,6 +36,7 @@ import {
   writeToClipboard,
 } from "../core/utils.js";
 import { themeModelObject } from "/core/theme-settings.js";
+import { dialog } from "/web-components/dialog-overlay.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -1194,6 +1194,8 @@ export class EditorController {
       contentContainer = container;
       return glyphsSearch;
     };
+
+    setTimeout(() => glyphsSearch.focusSearchField(), 50);
 
     const glyphName = await dialog("Add Component", contentFunc, [
       { title: "Cancel", isCancelButton: true, resultValue: null },

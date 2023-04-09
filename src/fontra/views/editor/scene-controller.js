@@ -3,7 +3,6 @@ import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
-import { dialog } from "../core/ui-dialog.js";
 import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
@@ -13,6 +12,7 @@ import {
   parseSelection,
   reversed,
 } from "../core/utils.js";
+import { dialog } from "/web-components/dialog-overlay.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 export class SceneController {
