@@ -354,7 +354,7 @@ registerRepresentationFactory(StaticGlyphController, "convexHull", (glyph) => {
 });
 
 registerRepresentationFactory(StaticGlyphController, "convexHullArea", (glyph) => {
-  return Math.abs(simplePolygonArea(glyph.convexHull));
+  return glyph.convexHull ? Math.abs(simplePolygonArea(glyph.convexHull)) : 0;
 });
 
 registerRepresentationFactory(StaticGlyphController, "pathHitTester", (glyph) => {
