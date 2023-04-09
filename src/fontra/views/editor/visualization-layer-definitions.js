@@ -56,7 +56,7 @@ registerVisualizationLayerDefinition({
   name: "Empty selected glyph",
   selectionMode: "selected",
   selectionFilter: (positionedGlyph) => positionedGlyph.isEmpty,
-  zIndex: 500,
+  zIndex: 200,
   colors: { fillColor: "#D8D8D8" /* Must be six hex digits */ },
   colorsDarkMode: { fillColor: "#585858" /* Must be six hex digits */ },
   draw: (context, positionedGlyph, parameters, model, controller) => {
@@ -69,7 +69,7 @@ registerVisualizationLayerDefinition({
   name: "Empty hovered glyph",
   selectionMode: "hovered",
   selectionFilter: (positionedGlyph) => positionedGlyph.isEmpty,
-  zIndex: 500,
+  zIndex: 200,
   colors: { fillColor: "#E8E8E8" /* Must be six hex digits */ },
   colorsDarkMode: { fillColor: "#484848" /* Must be six hex digits */ },
   draw: (context, positionedGlyph, parameters, model, controller) => {
