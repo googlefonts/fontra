@@ -469,7 +469,7 @@ function getPointSelectionAbs(pointIndex) {
 function getAppendInfo(path, selection) {
   if (selection.size === 1) {
     const { point: pointSelection } = parseSelection(selection);
-    const pointIndex = pointSelection[0];
+    const pointIndex = pointSelection?.[0];
     if (pointIndex !== undefined && pointIndex < path.numPoints) {
       const [contourIndex, contourPointIndex] =
         path.getContourAndPointIndex(pointIndex);
@@ -537,7 +537,7 @@ function getHoveredPointIndex(sceneController, event) {
   }
 
   const { point: pointSelection } = parseSelection(hoveredSelection);
-  if (!pointSelection.length) {
+  if (!pointSelection?.length) {
     return undefined;
   }
   return pointSelection[0];
