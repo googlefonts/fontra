@@ -1,13 +1,4 @@
 :root {
-  --editor-text-entry-input-background-color-light: #eee;
-  --editor-text-entry-input-background-color-dark: #333;
-
-  --editor-text-entry-input-foreground-color-light: black;
-  --editor-text-entry-input-foreground-color-dark: white;
-
-  --editor-overlay-item-background-color-light: white;
-  --editor-overlay-item-background-color-dark: #484848;
-
   --editor-tool-button-hover-background-color-light: #eee;
   --editor-tool-button-hover-background-color-dark: #333;
 
@@ -25,15 +16,6 @@
 }
 
 :root {
-  --editor-text-entry-input-background-color: var(
-    --editor-text-entry-input-background-color-light
-  );
-  --editor-text-entry-input-foreground-color: var(
-    --editor-text-entry-input-foreground-color-light
-  );
-  --editor-overlay-item-background-color: var(
-    --editor-overlay-item-background-color-light
-  );
   --editor-tool-button-hover-background-color: var(
     --editor-tool-button-hover-background-color-light
   );
@@ -52,15 +34,6 @@
 }
 
 :root.dark-theme {
-  --editor-text-entry-input-background-color: var(
-    --editor-text-entry-input-background-color-dark
-  );
-  --editor-text-entry-input-foreground-color: var(
-    --editor-text-entry-input-foreground-color-dark
-  );
-  --editor-overlay-item-background-color: var(
-    --editor-overlay-item-background-color-dark
-  );
   --editor-tool-button-hover-background-color: var(
     --editor-tool-button-hover-background-color-dark
   );
@@ -80,15 +53,6 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --editor-text-entry-input-background-color: var(
-      --editor-text-entry-input-background-color-dark
-    );
-    --editor-text-entry-input-foreground-color: var(
-      --editor-text-entry-input-foreground-color-dark
-    );
-    --editor-overlay-item-background-color: var(
-      --editor-overlay-item-background-color-dark
-    );
     --editor-tool-button-hover-background-color: var(
       --editor-tool-button-hover-background-color-dark
     );
@@ -107,15 +71,6 @@
   }
 
   :root.light-theme {
-    --editor-text-entry-input-background-color: var(
-      --editor-text-entry-input-background-color-light
-    );
-    --editor-text-entry-input-foreground-color: var(
-      --editor-text-entry-input-foreground-color-light
-    );
-    --editor-overlay-item-background-color: var(
-      --editor-overlay-item-background-color-light
-    );
     --editor-tool-button-hover-background-color: var(
       --editor-tool-button-hover-background-color-light
     );
@@ -148,8 +103,8 @@
 }
 
 #text-entry-textarea {
-  background-color: var(--editor-text-entry-input-background-color);
-  color: var(--editor-text-entry-input-foreground-color);
+  background-color: var(--text-input-background-color);
+  color: var(--text-input-foreground-color);
   border-radius: 0.25em;
   border: 0.5px solid lightgray;
   outline: none;
@@ -204,7 +159,7 @@
 
 .tools-item {
   display: flex;
-  background-color: var(--editor-overlay-item-background-color);
+  background-color: var(--ui-element-background-color);
   border-radius: 0.65em;
   box-shadow: 1px 1px 5px #0006;
   cursor: pointer;
@@ -217,7 +172,7 @@
   font-family: fontra-icons;
   font-size: 1.7rem;
   user-select: none;
-  background-color: var(--editor-overlay-item-background-color);
+  background-color: var(--ui-element-background-color);
   width: 2.7rem;
   height: 1.9rem;
   padding: 0.1rem;

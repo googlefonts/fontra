@@ -50,7 +50,7 @@ export class DialogOverlay extends UnlitElement {
       max-height: 70vh;
       overflow-wrap: normal;
       font-size: 1.15em;
-      background-color: var(--editor-overlay-item-background-color);
+      background-color: var(--ui-element-background-color);
       padding: 1em;
       border-radius: 0.5em;
       box-shadow: 1px 3px 8px #0006;
