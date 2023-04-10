@@ -40,6 +40,7 @@ export class UIList extends UnlitElement {
       padding-left: 0.5em;
       padding-right: 0.5em;
       cursor: pointer;
+      user-select: none;
     }
 
     .contents > .selected {
@@ -75,6 +76,7 @@ export class UIList extends UnlitElement {
     this.addEventListener("keydown", (event) => this._keyDownHandler(event), false);
     this.addEventListener("keyup", (event) => this._keyUpHandler(event), false);
     this.selectedItemIndex = undefined;
+    this.allowEmptySelection = true;
   }
 
   render() {
@@ -186,6 +188,9 @@ export class UIList extends UnlitElement {
   }
 
   setSelectedItemIndex(rowIndex, shouldDispatchEvent = false) {
+    if (rowIndex === undefined && !this.allowEmptySelection) {
+      return;
+    }
     if (!isNaN(rowIndex)) {
       rowIndex = Number(rowIndex);
     }
