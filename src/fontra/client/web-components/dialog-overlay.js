@@ -181,9 +181,8 @@ export class DialogOverlay extends UnlitElement {
       mainContentElement.classList.add("message");
       return mainContentElement;
     } else {
-      const messageElement = html.div({ class: "message" }, [
-        this._messageOrContentFunction,
-      ]);
+      const messageElement = html.div({ class: "message" });
+      messageElement.innerHTML = this._messageOrContentFunction;
       return messageElement;
     }
   }
