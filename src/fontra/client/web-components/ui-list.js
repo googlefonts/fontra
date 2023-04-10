@@ -169,7 +169,10 @@ export class UIList extends UnlitElement {
   }
 
   _clickHandler(event) {
-    this.setSelectedItemIndex(this._getRowIndexFromTarget(event.target), true);
+    const rowIndex = this._getRowIndexFromTarget(event.target);
+    if (rowIndex !== undefined) {
+      this.setSelectedItemIndex(this._getRowIndexFromTarget(event.target), true);
+    }
   }
 
   _dblClickHandler(event) {
