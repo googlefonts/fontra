@@ -21,7 +21,7 @@ export function dialog(
 export class DialogOverlay extends UnlitElement {
   static styles = `
     :host {
-      display: none;
+      display: none;  /* switched to "grid" on show, back to "none" on hide */
       position: absolute;
       grid-template-rows: 5fr 1fr;
       align-items: center;
@@ -32,10 +32,6 @@ export class DialogOverlay extends UnlitElement {
       align-content: center;
       justify-content: center;
       white-space: normal;
-    }
-
-    :host-context(.visible) {
-      display: grid;
     }
 
     .dialog-box {
@@ -136,8 +132,8 @@ export class DialogOverlay extends UnlitElement {
 
     return {
       cancel: () => this._dialogDone(null),
-      hide: () => this.classList.remove("visible"),
-      show: () => this.classList.add("visible"),
+      hide: () => this.hide(),
+      show: () => this.show(),
       then: this._resultPromise.then.bind(this._resultPromise),
     };
   }
@@ -170,7 +166,7 @@ export class DialogOverlay extends UnlitElement {
       );
     }
 
-    this.classList.add("visible");
+    this.show();
     this.shadowRoot.appendChild(dialogBox);
     dialogBox.focus();
   }
@@ -221,6 +217,14 @@ export class DialogOverlay extends UnlitElement {
     }
   }
 
+  show() {
+    this.style.display = "grid";
+  }
+
+  hide() {
+    this.style.display = "none";
+  }
+
   _handleKeyDown(event) {
     if (event.key == "Enter") {
       if (!this._defaultButtonElement?.classList.contains("disabled")) {
@@ -241,7 +245,7 @@ export class DialogOverlay extends UnlitElement {
       this._dismissTimeoutID = undefined;
     }
     this.innerHTML = "";
-    this.classList.remove("visible");
+    this.hide();
     this._currentActiveElement?.focus();
     this._resolveDialogResult(result);
   }
