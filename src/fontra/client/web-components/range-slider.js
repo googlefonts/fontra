@@ -72,7 +72,7 @@ export class RangeSlider extends LitElement {
       margin-top: -4.5px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
     }
 
-    :host-context(.is-at-default) .slider::-webkit-slider-thumb {
+    .slider.is-at-default::-webkit-slider-thumb {
       background: var(--thumb-color-at-default);
     }
 
@@ -91,7 +91,7 @@ export class RangeSlider extends LitElement {
       cursor: pointer;
     }
 
-    :host-context(.is-at-default) .slider::-moz-range-thumb {
+    .slider.is-at-default::-moz-range-thumb {
       background: var(--thumb-color-at-default);
     }
 
@@ -178,12 +178,14 @@ export class RangeSlider extends LitElement {
   }
 
   render() {
+    delete this._rangeInputElement;
     const minMaxRange = this.maxValue - this.minValue;
     const decimalPlaces = minMaxRange < 100 ? 3 : 2;
     const value = roundToDecimal(this.value, decimalPlaces);
     const minValue = roundToDecimal(this.minValue, decimalPlaces);
     const defaultValue = roundToDecimal(this.defaultValue, decimalPlaces);
     const maxValue = roundToDecimal(this.maxValue, decimalPlaces);
+    const isAtDefault = this.value == this.defaultValue;
     this.updateIsAtDefault();
     return html`
       <section class="wrapper">
@@ -206,7 +208,7 @@ export class RangeSlider extends LitElement {
             type="range"
             @input=${this.changeValue}
             @mousedown=${this.handleMouseDown}
-            class="slider"
+            class="slider ${isAtDefault ? "is-at-default" : ""}"
             min=${this.minValue}
             max=${this.maxValue}
             step=${this.step}
@@ -247,7 +249,13 @@ export class RangeSlider extends LitElement {
   }
 
   updateIsAtDefault() {
-    this.classList.toggle("is-at-default", this.value == this.defaultValue);
+    if (!this._rangeInputElement) {
+      this._rangeInputElement = this.shadowRoot.querySelector(`input[type="range"]`);
+    }
+    this._rangeInputElement?.classList.toggle(
+      "is-at-default",
+      this.value == this.defaultValue
+    );
   }
 
   toggleFoldable(event) {
