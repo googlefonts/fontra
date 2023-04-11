@@ -431,8 +431,12 @@ export class EditorController {
       location.values = { ...source.location };
       const element = html.div(
         {
-          style:
-            "overflow: scroll; display: grid; gap: 0.5em; grid-template-columns: max-content auto",
+          style: `overflow: scroll;
+            display: grid;
+            gap: 0.5em;
+            grid-template-columns: max-content auto;
+            align-items: center;
+          `,
         },
         [
           html.label({ for: "source-name", style: "text-align: right;" }, [
