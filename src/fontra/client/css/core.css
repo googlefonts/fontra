@@ -21,55 +21,57 @@
 }
 
 :root {
-  --fontra-red-color: #f11759;
-
-  --foreground-color-light: black;
-  --background-color-light: #f6f6f6;
-  --foreground-color-dark: white;
-  --background-color-dark: #333;
-
-  --ui-element-background-color-light: white;
-  --ui-element-background-color-dark: #484848;
-  --text-input-foreground-color-light: black;
-  --text-input-background-color-light: #eee;
-  --text-input-foreground-color-dark: white;
-  --text-input-background-color-dark: #333;
-
-  --foreground-color: var(--foreground-color-light);
-  --background-color: var(--background-color-light);
-
-  --ui-element-background-color: var(--ui-element-background-color-light);
-  --text-input-foreground-color: var(--text-input-foreground-color-light);
-  --text-input-background-color: var(--text-input-background-color-light);
+  /* https://css-tricks.com/the-css-custom-property-toggle-trick/ */
+  --fontra-theme-marker: ; /* a space, which is valid */
 }
 
 :root.dark-theme {
-  --foreground-color: var(--foreground-color-dark);
-  --background-color: var(--background-color-dark);
-
-  --ui-element-background-color: var(--ui-element-background-color-dark);
-  --text-input-foreground-color: var(--text-input-foreground-color-dark);
-  --text-input-background-color: var(--text-input-background-color-dark);
+  --fontra-theme-marker: initial; /* invalidates the "light" variables */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --foreground-color: var(--foreground-color-dark);
-    --background-color: var(--background-color-dark);
-
-    --ui-element-background-color: var(--ui-element-background-color-dark);
-    --text-input-foreground-color: var(--text-input-foreground-color-dark);
-    --text-input-background-color: var(--text-input-background-color-dark);
+    --fontra-theme-marker: initial; /* invalidates the "light" variables */
   }
 
   :root.light-theme {
-    --foreground-color: var(--foreground-color-light);
-    --background-color: var(--background-color-light);
-
-    --ui-element-background-color: var(--ui-element-background-color-light);
-    --text-input-foreground-color: var(--text-input-foreground-color-light);
-    --text-input-background-color: var(--text-input-background-color-light);
+    --fontra-theme-marker: ; /* a space, which is valid */
   }
+}
+
+:root {
+  --fontra-red-color: #f11759;
+
+  --foreground-color-light: var(--fontra-theme-marker) black;
+  --foreground-color-dark: white;
+
+  --background-color-light: var(--fontra-theme-marker) #f6f6f6;
+  --background-color-dark: #333;
+
+  --ui-element-background-color-light: var(--fontra-theme-marker) white;
+  --ui-element-background-color-dark: #484848;
+
+  --text-input-foreground-color-light: var(--fontra-theme-marker) black;
+  --text-input-foreground-color-dark: white;
+
+  --text-input-background-color-light: var(--fontra-theme-marker) #eee;
+  --text-input-background-color-dark: #333;
+
+  --foreground-color: var(--foreground-color-light, var(--foreground-color-dark));
+  --background-color: var(--background-color-light, var(--background-color-dark));
+
+  --ui-element-background-color: var(
+    --ui-element-background-color-light,
+    var(--ui-element-background-color-dark)
+  );
+  --text-input-foreground-color: var(
+    --text-input-foreground-color-light,
+    var(--text-input-foreground-color-dark)
+  );
+  --text-input-background-color: var(
+    --text-input-background-color-light,
+    var(--text-input-background-color-dark)
+  );
 }
 
 html,
