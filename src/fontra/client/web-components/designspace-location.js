@@ -9,6 +9,7 @@ export class DesignspaceLocation extends UnlitElement {
       display: grid;
       grid-template-columns: 25% auto;
       gap: 0.4em;
+      overflow: scroll;
     }
 
     .slider-label {
