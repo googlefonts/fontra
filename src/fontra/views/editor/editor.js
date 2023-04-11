@@ -20,7 +20,9 @@ import { SceneView } from "../core/scene-view.js";
 import { Form } from "../core/ui-form.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
+import { piecewiseLinearMap } from "/core/var-model.js";
 import { joinPaths } from "../core/var-path.js";
+import * as html from "/core/unlit.js";
 import {
   fetchJSON,
   getCharFromUnicode,
@@ -397,6 +399,44 @@ export class EditorController {
       this.updateWindowLocationAndSelectionInfo();
       this.autoViewBox = false;
     });
+    this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
+      this.editSourceProperties(event.detail.doubleClickedRowIndex);
+    });
+  }
+
+  async editSourceProperties(sourceIndex) {
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+
+    const glyph = glyphController.glyph;
+    console.log("global", this.fontController.globalAxes);
+    console.log("locl", glyph.axes);
+    const source = glyph.sources[sourceIndex];
+    const sourceName = source.name;
+    const contentFunc = async (dialogBox) => {
+      console.log("dialogBox", dialogBox);
+      const location = document.createElement("designspace-location");
+      location.axes = (await this.sceneController.getAxisInfo()).map((axis) => {
+        const newAxis = { ...axis };
+        if (axis.mapping) {
+          for (const prop of ["minValue", "defaultValue", "maxValue"]) {
+            newAxis[prop] = piecewiseLinearMap(
+              axis[prop],
+              Object.fromEntries(axis.mapping)
+            );
+          }
+        }
+        return newAxis;
+      });
+      location.values = { ...source.location };
+      const element = html.div({ style: "overflow: scroll;" }, [location]);
+      return element;
+    };
+    const result = await dialog("Edit source properties", contentFunc, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Done", isDefaultButton: true },
+    ]);
+    console.log("result", result);
   }
 
   initSidebars() {
@@ -1198,7 +1238,7 @@ export class EditorController {
     setTimeout(() => glyphsSearch.focusSearchField(), 50);
 
     const glyphName = await dialog("Add Component", contentFunc, [
-      { title: "Cancel", isCancelButton: true, resultValue: null },
+      { title: "Cancel", isCancelButton: true },
       { title: "Add", isDefaultButton: true, getResult: getResult, disabled: true },
     ]);
 
