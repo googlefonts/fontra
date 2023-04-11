@@ -89,6 +89,7 @@ export function createDomElement(tagName, attributes, children) {
 }
 
 // Convenience shortcuts
+export const br = createDomElement.bind(null, "br");
 export const div = createDomElement.bind(null, "div");
 export const input = createDomElement.bind(null, "input");
 export const label = createDomElement.bind(null, "label");

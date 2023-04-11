@@ -424,10 +424,29 @@ export class EditorController {
     const source = glyph.sources[sourceIndex];
     const sourceName = source.name;
     const contentFunc = async (dialogBox) => {
-      const location = document.createElement("designspace-location");
+      const location = html.createDomElement("designspace-location", {
+        style: "grid-column: 1 / -1;",
+      });
       location.axes = locationAxes;
       location.values = { ...source.location };
-      const element = html.div({ style: "overflow: scroll;" }, [location]);
+      const element = html.div(
+        {
+          style:
+            "overflow: scroll; display: grid; gap: 0.5em; grid-template-columns: max-content auto",
+        },
+        [
+          html.label({ for: "source-name", style: "text-align: right;" }, [
+            "Source name:",
+          ]),
+          html.input({ type: "text", id: "source-name", value: source.name }),
+          html.label({ for: "layer-name", style: "text-align: right;" }, [
+            "Layer name:",
+          ]),
+          html.input({ type: "text", id: "layer-name", value: source.layerName }),
+          html.br(),
+          location,
+        ]
+      );
       return element;
     };
     const result = await dialog("Edit source properties", contentFunc, [
