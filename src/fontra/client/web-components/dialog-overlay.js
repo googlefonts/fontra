@@ -103,6 +103,18 @@ export class DialogOverlay extends UnlitElement {
     .button:active {
       filter: brightness(0.9);
     }
+
+    input[type="text"] {
+      background-color: var(--text-input-background-color);
+      color: var(--text-input-foreground-color);
+      border-radius: 0.25em;
+      border: none;
+      outline: none;
+      padding: 0.2em 0.5em;
+      font-family: fontra-ui-regular, sans-serif;
+      font-size: 1.1rem;
+      resize: none;
+    }
   `;
 
   runDialog(headline, messageOrContentFunction, buttonDefs, autoDismissTimeout) {
