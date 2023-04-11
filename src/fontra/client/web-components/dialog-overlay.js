@@ -115,6 +115,11 @@ export class DialogOverlay extends UnlitElement {
     if (buttonDefs.length === 1) {
       buttonDefs[0].isDefaultButton = true;
     }
+    for (const buttonDef of buttonDefs) {
+      if (buttonDef.isCancelButton && buttonDef.resultValue === undefined) {
+        buttonDef.resultValue = null;
+      }
+    }
     this._buttonDefs = buttonDefs;
 
     this._autoDismissTimeout = autoDismissTimeout;
@@ -138,7 +143,7 @@ export class DialogOverlay extends UnlitElement {
     };
   }
 
-  render() {
+  async render() {
     if (!this._headline) {
       return;
     }
@@ -154,7 +159,7 @@ export class DialogOverlay extends UnlitElement {
       [html.div({ class: "headline" }, [this._headline])]
     );
 
-    dialogBox.appendChild(this._renderMessageContent(dialogBox));
+    dialogBox.appendChild(await this._renderMessageContent(dialogBox));
     for (const button of this._renderButtons()) {
       dialogBox.appendChild(button);
     }
@@ -171,9 +176,9 @@ export class DialogOverlay extends UnlitElement {
     dialogBox.focus();
   }
 
-  _renderMessageContent(dialogBox) {
+  async _renderMessageContent(dialogBox) {
     if (typeof this._messageOrContentFunction === "function") {
-      const mainContentElement = this._messageOrContentFunction(dialogBox);
+      const mainContentElement = await this._messageOrContentFunction(dialogBox);
       mainContentElement.classList.add("message");
       return mainContentElement;
     } else {
