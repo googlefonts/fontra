@@ -416,18 +416,9 @@ export class EditorController {
     const contentFunc = async (dialogBox) => {
       console.log("dialogBox", dialogBox);
       const location = document.createElement("designspace-location");
-      location.axes = (await this.sceneController.getAxisInfo()).map((axis) => {
-        const newAxis = { ...axis };
-        if (axis.mapping) {
-          for (const prop of ["minValue", "defaultValue", "maxValue"]) {
-            newAxis[prop] = piecewiseLinearMap(
-              axis[prop],
-              Object.fromEntries(axis.mapping)
-            );
-          }
-        }
-        return newAxis;
-      });
+      location.axes = mapAxesFromUserSpaceToDesignspace(
+        await this.sceneController.getAxisInfo()
+      );
       location.values = { ...source.location };
       const element = html.div({ style: "overflow: scroll;" }, [location]);
       return element;
@@ -2090,4 +2081,19 @@ function newVisualizationLayersSettings(visualizationLayers) {
     visualizationLayers.toggle(key, onOff);
   }
   return observable;
+}
+
+function mapAxesFromUserSpaceToDesignspace(axes) {
+  return axes.map((axis) => {
+    const newAxis = { ...axis };
+    if (axis.mapping) {
+      for (const prop of ["minValue", "defaultValue", "maxValue"]) {
+        newAxis[prop] = piecewiseLinearMap(
+          axis[prop],
+          Object.fromEntries(axis.mapping)
+        );
+      }
+    }
+    return newAxis;
+  });
 }
