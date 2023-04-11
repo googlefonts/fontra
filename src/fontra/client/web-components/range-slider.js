@@ -2,8 +2,9 @@ import { themeColorCSS } from "./theme-support.js";
 import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
 
 const colors = {
-  "thumb-color": ["#333", "#bbb"],
-  "track-color": ["#bbb", "#222"],
+  "thumb-color": ["#333", "#ddd"],
+  "thumb-color-at-default": ["#ccc", "#777"],
+  "track-color": ["#ccc", "#222"],
 };
 
 export class RangeSlider extends LitElement {
@@ -71,6 +72,10 @@ export class RangeSlider extends LitElement {
       margin-top: -4.5px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
     }
 
+    :host-context(.is-at-default) .slider::-webkit-slider-thumb {
+      background: var(--thumb-color-at-default);
+    }
+
     .slider::-webkit-slider-runnable-track {
       border-radius: 5px;
       height: var(--track-height);
@@ -84,6 +89,10 @@ export class RangeSlider extends LitElement {
       background: var(--thumb-color);
       border: none;
       cursor: pointer;
+    }
+
+    :host-context(.is-at-default) .slider::-moz-range-thumb {
+      background: var(--thumb-color-at-default);
     }
 
     .slider::-moz-range-track {
@@ -175,6 +184,7 @@ export class RangeSlider extends LitElement {
     const minValue = roundToDecimal(this.minValue, decimalPlaces);
     const defaultValue = roundToDecimal(this.defaultValue, decimalPlaces);
     const maxValue = roundToDecimal(this.maxValue, decimalPlaces);
+    this.updateIsAtDefault();
     return html`
       <section class="wrapper">
         <div class="numeric-input">
@@ -232,7 +242,12 @@ export class RangeSlider extends LitElement {
         this.value = this.defaultValue;
       }
     }
+    this.updateIsAtDefault();
     this.onChangeCallback(this);
+  }
+
+  updateIsAtDefault() {
+    this.classList.toggle("is-at-default", this.value == this.defaultValue);
   }
 
   toggleFoldable(event) {
