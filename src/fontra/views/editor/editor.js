@@ -411,14 +411,24 @@ export class EditorController {
     const glyph = glyphController.glyph;
     console.log("global", this.fontController.globalAxes);
     console.log("locl", glyph.axes);
+    const localAxisNames = glyph.axes.map((axis) => axis.name);
+    const globalAxes = mapAxesFromUserSpaceToDesignspace(
+      // Don't include global axes that also exist as local axes
+      this.fontController.globalAxes.filter(
+        (axis) => !localAxisNames.includes(axis.name)
+      )
+    );
+    const locationAxes = [
+      ...globalAxes,
+      ...(globalAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
+      ...glyph.axes,
+    ];
     const source = glyph.sources[sourceIndex];
     const sourceName = source.name;
     const contentFunc = async (dialogBox) => {
       console.log("dialogBox", dialogBox);
       const location = document.createElement("designspace-location");
-      location.axes = mapAxesFromUserSpaceToDesignspace(
-        await this.sceneController.getAxisInfo()
-      );
+      location.axes = locationAxes;
       location.values = { ...source.location };
       const element = html.div({ style: "overflow: scroll;" }, [location]);
       return element;
