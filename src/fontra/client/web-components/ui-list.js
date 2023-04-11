@@ -21,10 +21,6 @@ export class UIList extends UnlitElement {
       border: solid 1px var(--border-color);
     }
 
-    :host-context(.empty) {
-      display: none;
-    }
-
     .contents {
       display: flex;
       flex-direction: column;
@@ -68,7 +64,7 @@ export class UIList extends UnlitElement {
     this.itemEqualFunc = null;
 
     this.contents = html.div({
-      class: "contents empty",
+      class: "contents",
       onclick: (event) => this._clickHandler(event),
       ondblclick: (event) => this._dblClickHandler(event),
     });
@@ -93,7 +89,7 @@ export class UIList extends UnlitElement {
   }
 
   setItems(items) {
-    this.classList.toggle("empty", !items.length);
+    this.style.display = items?.length ? "initial" : "none";
     this.contents.innerHTML = "";
     this.items = items;
     this._itemsBackLog = Array.from(items);
