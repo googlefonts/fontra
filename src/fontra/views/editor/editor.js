@@ -468,9 +468,7 @@ export class EditorController {
             value: source.name,
             onchange: sourceNameChange,
           }),
-          html.label({ for: "layer-name", style: "text-align: right;" }, [
-            "Layer name:",
-          ]),
+          html.label({ for: "layer-name", style: "text-align: right;" }, ["Layer:"]),
           html.input({
             type: "text",
             id: "layer-name",
