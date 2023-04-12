@@ -198,7 +198,7 @@ export class FontController {
     }
     for (const glyphName of glyphNames) {
       const varGlyph = await this.getGlyph(glyphName);
-      varGlyph.clearDeltasCache();
+      varGlyph.clearCaches();
     }
     this.updateGlyphDependencies(await this.getGlyph(glyphName));
   }
