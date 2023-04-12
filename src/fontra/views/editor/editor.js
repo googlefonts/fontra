@@ -427,7 +427,7 @@ export class EditorController {
       ...glyph.axes,
     ];
     const source = glyph.sources[sourceIndex];
-    let sourceName;
+    let sourceName = source.name;
     const sourceNameChange = (event) => {
       sourceName = event.target.value;
     };
@@ -495,7 +495,7 @@ export class EditorController {
       if (!objectsEqual(source.location, newLocation)) {
         source.location = newLocation;
       }
-      if (sourceName && sourceName !== source.name) {
+      if (sourceName !== source.name) {
         source.name = sourceName;
       }
       return "edit source properties";
