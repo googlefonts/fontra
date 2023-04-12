@@ -143,6 +143,11 @@ export class VariableGlyphController {
     return componentNames;
   }
 
+  clearCaches() {
+    this.clearDeltasCache();
+    this.clearModelCache();
+  }
+
   clearDeltasCache() {
     // Call this when a source layer changed
     delete this._deltas;

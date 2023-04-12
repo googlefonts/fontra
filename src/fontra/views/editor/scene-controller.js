@@ -383,30 +383,50 @@ export class SceneController {
     return this._glyphEditingDonePromise;
   }
 
+  async editGlyphAndRecordChanges(editFunc, senderID) {
+    return await this._editGlyphOrInstanceAndRecordChanges(editFunc, senderID, false);
+  }
+
   async editInstanceAndRecordChanges(editFunc, senderID) {
-    await this.editInstance((sendIncrementalChange, instance) => {
-      let undoLabel;
-      const changes = recordChanges(instance, (instance) => {
-        undoLabel = editFunc(instance);
-      });
-      return {
-        changes: changes,
-        undoLabel: undoLabel,
-        broadcast: true,
-      };
-    }, senderID);
+    return await this._editGlyphOrInstanceAndRecordChanges(editFunc, senderID, true);
+  }
+
+  async _editGlyphOrInstanceAndRecordChanges(editFunc, senderID, doInstance) {
+    await this._editGlyphOrInstance(
+      (sendIncrementalChange, subject) => {
+        let undoLabel;
+        const changes = recordChanges(subject, (subject) => {
+          undoLabel = editFunc(subject);
+        });
+        return {
+          changes: changes,
+          undoLabel: undoLabel,
+          broadcast: true,
+        };
+      },
+      senderID,
+      doInstance
+    );
+  }
+
+  async editGlyph(editFunc, senderID) {
+    return await this._editGlyphOrInstance(editFunc, senderID, false);
   }
 
   async editInstance(editFunc, senderID) {
+    return await this._editGlyphOrInstance(editFunc, senderID, true);
+  }
+
+  async _editGlyphOrInstance(editFunc, senderID, doInstance) {
     if (this._glyphEditingDonePromise) {
-      throw new Error("can't call editInstance() while it's still running");
+      throw new Error("can't call _editGlyphOrInstance() while it's still running");
     }
     let editingDone;
     this._glyphEditingDonePromise = new Promise((resolve) => {
       editingDone = resolve;
     });
     try {
-      return await this._editInstance(editFunc, senderID);
+      return await this._editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance);
     } finally {
       editingDone();
       delete this._glyphEditingDonePromise;
@@ -414,23 +434,40 @@ export class SceneController {
     }
   }
 
-  async _editInstance(editFunc, senderID) {
-    const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
-    if (!glyphController.canEdit) {
-      // TODO: add options to dialog:
-      // - go to closest source
-      // - insert new source here
-      // - cancel
-      const result = await dialog(
-        `Can’t edit glyph “${this.getSelectedGlyphName()}”`,
-        "Location is not at a source.",
-        [{ title: "Okay", resultValue: "ok" }],
-        2500 /* auto dismiss after a timeout */
+  async _editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance) {
+    const glyphName = this.sceneModel.getSelectedGlyphName();
+    const varGlyph = await this.sceneModel.fontController.getGlyph(glyphName);
+    const baseChangePath = ["glyphs", glyphName];
+
+    let editSubject;
+    if (doInstance) {
+      const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+      if (!glyphController.canEdit) {
+        // TODO: add options to dialog:
+        // - go to closest source
+        // - insert new source here
+        // - cancel
+        const result = await dialog(
+          `Can’t edit glyph “${glyphName}”`,
+          "Location is not at a source.",
+          [{ title: "Okay", resultValue: "ok" }],
+          2500 /* auto dismiss after a timeout */
+        );
+        return;
+      }
+
+      editSubject = glyphController.instance;
+      const layerIndex = varGlyph.getLayerIndex(
+        varGlyph.sources[glyphController.sourceIndex].layerName
       );
-      return;
+      baseChangePath.push("layers", layerIndex, "glyph");
+    } else {
+      editSubject = varGlyph.glyph;
     }
+
     const editContext = await this.sceneModel.fontController.getGlyphEditContext(
-      glyphController,
+      glyphName,
+      baseChangePath,
       senderID || this
     );
     const sendIncrementalChange = async (change, mayDrop = false) => {
@@ -442,7 +479,7 @@ export class SceneController {
     // editContext.editBegin();
     let result;
     try {
-      result = await editFunc(sendIncrementalChange, editContext.instance);
+      result = await editFunc(sendIncrementalChange, editSubject);
     } catch (error) {
       this.selection = initialSelection;
       editContext.editCancel();
@@ -470,7 +507,7 @@ export class SceneController {
           broadcast
         );
       } else {
-        applyChange(editContext.instance, changes.rollbackChange);
+        applyChange(editSubject, changes.rollbackChange);
         await editContext.editIncremental(changes.rollbackChange, false);
         editContext.editCancel();
         dialog(

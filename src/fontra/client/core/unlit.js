@@ -50,7 +50,7 @@ export class UnlitElement extends HTMLElement {
     //
   }
 
-  _render() {
+  async _render() {
     this._requestedUpdate = false;
 
     this.shadowRoot.innerHTML = "";
@@ -60,7 +60,7 @@ export class UnlitElement extends HTMLElement {
       this.shadowRoot.appendChild(style);
     }
 
-    let elements = this.render();
+    let elements = await this.render();
     if (!elements) {
       return;
     }
@@ -79,7 +79,7 @@ const attrExceptions = { for: "htmlFor", class: "className", tabindex: "tabIndex
 
 export function createDomElement(tagName, attributes, children) {
   const element = document.createElement(tagName);
-  for (const [key, value] of Object.entries(attributes)) {
+  for (const [key, value] of Object.entries(attributes || {})) {
     element[attrExceptions[key] || key] = value;
   }
   for (const child of children || []) {
@@ -89,6 +89,7 @@ export function createDomElement(tagName, attributes, children) {
 }
 
 // Convenience shortcuts
+export const br = createDomElement.bind(null, "br");
 export const div = createDomElement.bind(null, "div");
 export const input = createDomElement.bind(null, "input");
 export const label = createDomElement.bind(null, "label");

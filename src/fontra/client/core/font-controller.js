@@ -198,7 +198,7 @@ export class FontController {
     }
     for (const glyphName of glyphNames) {
       const varGlyph = await this.getGlyph(glyphName);
-      varGlyph.clearDeltasCache();
+      varGlyph.clearCaches();
     }
     this.updateGlyphDependencies(await this.getGlyph(glyphName));
   }
@@ -264,12 +264,8 @@ export class FontController {
     }
   }
 
-  async getGlyphEditContext(glyphController, senderID) {
-    if (!glyphController.canEdit) {
-      // log warning here, or should the caller do that?
-      return null;
-    }
-    const editContext = new GlyphEditContext(this, glyphController, senderID);
+  async getGlyphEditContext(glyphName, baseChangePath, senderID) {
+    const editContext = new GlyphEditContext(this, glyphName, baseChangePath, senderID);
     await editContext.setup();
     return editContext;
   }
@@ -418,10 +414,10 @@ function reverseUndoInfo(undoInfo) {
 }
 
 class GlyphEditContext {
-  constructor(fontController, glyphController, senderID) {
+  constructor(fontController, glyphName, baseChangePath, senderID) {
     this.fontController = fontController;
-    this.glyphController = glyphController;
-    this.instance = glyphController.instance;
+    this.glyphName = glyphName;
+    this.baseChangePath = baseChangePath;
     this.senderID = senderID;
     this.throttledEditIncremental = throttleCalls(async (change) => {
       fontController.font.editIncremental(change);
@@ -430,24 +426,13 @@ class GlyphEditContext {
   }
 
   async setup() {
-    const varGlyph = await this.fontController.getGlyph(this.glyphController.name);
-    const layerIndex = varGlyph.getLayerIndex(
-      varGlyph.sources[this.glyphController.sourceIndex].layerName
-    );
-    this.baseChangePath = [
-      "glyphs",
-      this.glyphController.name,
-      "layers",
-      layerIndex,
-      "glyph",
-    ];
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
   }
 
   async editIncremental(change, mayDrop = false) {
     // If mayDrop is true, the call is not guaranteed to be broadcast, and is throttled
     // at a maximum number of changes per second, to prevent flooding the network
-    await this.fontController.glyphChanged(this.glyphController.name);
+    await this.fontController.glyphChanged(this.glyphName);
     change = consolidateChanges(change, this.baseChangePath);
     if (mayDrop) {
       this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
@@ -460,7 +445,7 @@ class GlyphEditContext {
 
   async editFinal(change, rollback, undoInfo, broadcast = false) {
     if (broadcast) {
-      await this.fontController.glyphChanged(this.glyphController.name);
+      await this.fontController.glyphChanged(this.glyphName);
     }
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
@@ -477,7 +462,7 @@ class GlyphEditContext {
   }
 
   async editCancel() {
-    await this.fontController.glyphChanged(this.glyphController.name);
+    await this.fontController.glyphChanged(this.glyphName);
     await this.fontController.notifyEditListeners("editEnd", this.senderID);
   }
 }

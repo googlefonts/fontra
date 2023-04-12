@@ -20,13 +20,16 @@ import { SceneView } from "../core/scene-view.js";
 import { Form } from "../core/ui-form.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
+import { piecewiseLinearMap } from "/core/var-model.js";
 import { joinPaths } from "../core/var-path.js";
+import * as html from "/core/unlit.js";
 import {
   fetchJSON,
   getCharFromUnicode,
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
   makeUPlusStringFromCodePoint,
+  objectsEqual,
   parseSelection,
   scheduleCalls,
   throttleCalls,
@@ -171,6 +174,10 @@ export class EditorController {
     this.updateSelectionInfo = throttleCalls(
       async (event) => await this._updateSelectionInfo(),
       100
+    );
+    this.updateSlidersAndSourcesThrottled = throttleCalls(
+      async () => await this.updateSlidersAndSources(),
+      200
     );
     canvas.addEventListener("viewBoxChanged", (event) => {
       if (event.detail === "canvas-size") {
@@ -397,6 +404,114 @@ export class EditorController {
       this.updateWindowLocationAndSelectionInfo();
       this.autoViewBox = false;
     });
+    this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
+      this.editSourceProperties(event.detail.doubleClickedRowIndex);
+    });
+  }
+
+  async editSourceProperties(sourceIndex) {
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+
+    const glyph = glyphController.glyph;
+    const localAxisNames = glyph.axes.map((axis) => axis.name);
+    const globalAxes = mapAxesFromUserSpaceToDesignspace(
+      // Don't include global axes that also exist as local axes
+      this.fontController.globalAxes.filter(
+        (axis) => !localAxisNames.includes(axis.name)
+      )
+    );
+    const locationAxes = [
+      ...globalAxes,
+      ...(globalAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
+      ...glyph.axes,
+    ];
+    const source = glyph.sources[sourceIndex];
+    let sourceName = source.name;
+    const sourceNameChange = (event) => {
+      sourceName = event.target.value;
+    };
+    let layerName = source.layerName;
+    const layerNameChange = (event) => {
+      layerName = event.target.value;
+    };
+    const locationModel = newObservableObject({ ...source.location });
+    const contentFunc = async (dialogBox) => {
+      const locationElement = html.createDomElement("designspace-location", {
+        style: `grid-column: 1 / -1;
+          min-height: 0;
+          overflow: scroll;
+          height: 100%;
+        `,
+      });
+      locationElement.axes = locationAxes;
+      locationElement.model = locationModel;
+      const contentElement = html.div(
+        {
+          style: `overflow: hidden;
+            white-space: nowrap;
+            display: grid;
+            gap: 0.5em;
+            grid-template-columns: max-content auto;
+            align-items: center;
+            height: 100%;
+            min-height: 0;
+          `,
+        },
+        [
+          html.label({ for: "source-name", style: "text-align: right;" }, [
+            "Source name:",
+          ]),
+          html.input({
+            type: "text",
+            id: "source-name",
+            value: source.name,
+            onchange: sourceNameChange,
+          }),
+          html.label({ for: "layer-name", style: "text-align: right;" }, ["Layer:"]),
+          html.input({
+            type: "text",
+            id: "layer-name",
+            value: source.layerName,
+            onchange: layerNameChange,
+          }),
+          html.br(),
+          locationElement,
+        ]
+      );
+      return contentElement;
+    };
+    const result = await dialog("Source properties", contentFunc, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Done", isDefaultButton: true },
+    ]);
+    if (!result) {
+      return;
+    }
+    const newLocation = Object.fromEntries(
+      locationAxes
+        .filter(
+          (axis) =>
+            locationModel[axis.name] !== undefined &&
+            locationModel[axis.name] !== axis.defaultValue
+        )
+        .map((axis) => [axis.name, locationModel[axis.name]])
+    );
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const source = glyph.sources[sourceIndex];
+      if (!objectsEqual(source.location, newLocation)) {
+        source.location = newLocation;
+      }
+      if (sourceName !== source.name) {
+        source.name = sourceName;
+      }
+      if (layerName !== source.layerName) {
+        source.layerName = layerName;
+      }
+      return "edit source properties";
+    });
+    // Update UI
+    await this.updateSlidersAndSources();
   }
 
   initSidebars() {
@@ -1198,7 +1313,7 @@ export class EditorController {
     setTimeout(() => glyphsSearch.focusSearchField(), 50);
 
     const glyphName = await dialog("Add Component", contentFunc, [
-      { title: "Cancel", isCancelButton: true, resultValue: null },
+      { title: "Cancel", isCancelButton: true },
       { title: "Add", isDefaultButton: true, getResult: getResult, disabled: true },
     ]);
 
@@ -1351,6 +1466,7 @@ export class EditorController {
       matchChangePath(change, ["glyphs", selectedGlyphName])
     ) {
       this.updateSelectionInfo();
+      this.updateSlidersAndSourcesThrottled();
     }
     this.canvasController.requestUpdate();
   }
@@ -2050,4 +2166,19 @@ function newVisualizationLayersSettings(visualizationLayers) {
     visualizationLayers.toggle(key, onOff);
   }
   return observable;
+}
+
+function mapAxesFromUserSpaceToDesignspace(axes) {
+  return axes.map((axis) => {
+    const newAxis = { ...axis };
+    if (axis.mapping) {
+      for (const prop of ["minValue", "defaultValue", "maxValue"]) {
+        newAxis[prop] = piecewiseLinearMap(
+          axis[prop],
+          Object.fromEntries(axis.mapping)
+        );
+      }
+    }
+    return newAxis;
+  });
 }

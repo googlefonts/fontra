@@ -103,6 +103,18 @@ export class DialogOverlay extends UnlitElement {
     .button:active {
       filter: brightness(0.9);
     }
+
+    input[type="text"] {
+      background-color: var(--text-input-background-color);
+      color: var(--text-input-foreground-color);
+      border-radius: 0.25em;
+      border: none;
+      outline: none;
+      padding: 0.2em 0.5em;
+      font-family: fontra-ui-regular, sans-serif;
+      font-size: 1.1rem;
+      resize: none;
+    }
   `;
 
   runDialog(headline, messageOrContentFunction, buttonDefs, autoDismissTimeout) {
@@ -114,6 +126,11 @@ export class DialogOverlay extends UnlitElement {
     });
     if (buttonDefs.length === 1) {
       buttonDefs[0].isDefaultButton = true;
+    }
+    for (const buttonDef of buttonDefs) {
+      if (buttonDef.isCancelButton && buttonDef.resultValue === undefined) {
+        buttonDef.resultValue = null;
+      }
     }
     this._buttonDefs = buttonDefs;
 
@@ -138,7 +155,7 @@ export class DialogOverlay extends UnlitElement {
     };
   }
 
-  render() {
+  async render() {
     if (!this._headline) {
       return;
     }
@@ -154,7 +171,7 @@ export class DialogOverlay extends UnlitElement {
       [html.div({ class: "headline" }, [this._headline])]
     );
 
-    dialogBox.appendChild(this._renderMessageContent(dialogBox));
+    dialogBox.appendChild(await this._renderMessageContent(dialogBox));
     for (const button of this._renderButtons()) {
       dialogBox.appendChild(button);
     }
@@ -171,9 +188,9 @@ export class DialogOverlay extends UnlitElement {
     dialogBox.focus();
   }
 
-  _renderMessageContent(dialogBox) {
+  async _renderMessageContent(dialogBox) {
     if (typeof this._messageOrContentFunction === "function") {
-      const mainContentElement = this._messageOrContentFunction(dialogBox);
+      const mainContentElement = await this._messageOrContentFunction(dialogBox);
       mainContentElement.classList.add("message");
       return mainContentElement;
     } else {
