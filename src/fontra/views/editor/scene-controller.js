@@ -432,6 +432,7 @@ export class SceneController {
 
     const glyphName = glyphController.name;
     const varGlyph = await this.sceneModel.fontController.getGlyph(glyphName);
+    const editSubject = glyphController.instance;
     const layerIndex = varGlyph.getLayerIndex(
       varGlyph.sources[glyphController.sourceIndex].layerName
     );
@@ -451,7 +452,7 @@ export class SceneController {
     // editContext.editBegin();
     let result;
     try {
-      result = await editFunc(sendIncrementalChange, glyphController.instance);
+      result = await editFunc(sendIncrementalChange, editSubject);
     } catch (error) {
       this.selection = initialSelection;
       editContext.editCancel();
@@ -479,7 +480,7 @@ export class SceneController {
           broadcast
         );
       } else {
-        applyChange(glyphController.instance, changes.rollbackChange);
+        applyChange(editSubject, changes.rollbackChange);
         await editContext.editIncremental(changes.rollbackChange, false);
         editContext.editCancel();
         dialog(
