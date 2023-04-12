@@ -161,7 +161,7 @@ export class DialogOverlay extends UnlitElement {
 
     if (this._autoDismissTimeout) {
       this._dismissTimeoutID = setTimeout(
-        () => dialogDone(null),
+        () => this._dialogDone(null),
         this._autoDismissTimeout
       );
     }
