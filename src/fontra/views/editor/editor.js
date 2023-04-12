@@ -427,7 +427,10 @@ export class EditorController {
       ...glyph.axes,
     ];
     const source = glyph.sources[sourceIndex];
-    const sourceName = source.name;
+    let sourceName;
+    const sourceNameChange = (event) => {
+      sourceName = event.target.value;
+    };
     const locationModel = newObservableObject({ ...source.location });
     const contentFunc = async (dialogBox) => {
       const locationElement = html.createDomElement("designspace-location", {
@@ -455,7 +458,12 @@ export class EditorController {
           html.label({ for: "source-name", style: "text-align: right;" }, [
             "Source name:",
           ]),
-          html.input({ type: "text", id: "source-name", value: source.name }),
+          html.input({
+            type: "text",
+            id: "source-name",
+            value: source.name,
+            onchange: sourceNameChange,
+          }),
           html.label({ for: "layer-name", style: "text-align: right;" }, [
             "Layer name:",
           ]),
@@ -483,8 +491,12 @@ export class EditorController {
         .map((axis) => [axis.name, locationModel[axis.name]])
     );
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      if (!objectsEqual(glyph.sources[sourceIndex].location, newLocation)) {
-        glyph.sources[sourceIndex].location = newLocation;
+      const source = glyph.sources[sourceIndex];
+      if (!objectsEqual(source.location, newLocation)) {
+        source.location = newLocation;
+      }
+      if (sourceName && sourceName !== source.name) {
+        source.name = sourceName;
       }
       return "edit source properties";
     });
