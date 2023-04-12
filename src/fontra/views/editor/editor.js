@@ -477,10 +477,10 @@ export class EditorController {
         )
         .map((axis) => [axis.name, locationModel[axis.name]])
     );
-    // const changes = recordChanges(glyph.sources[sourceIndex], (source) => {
-    //   source.location = newLocation;
-    // });
-    // console.log("result", changes);
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      glyph.sources[sourceIndex].location = newLocation;
+      return "edit source properties";
+    });
   }
 
   initSidebars() {
