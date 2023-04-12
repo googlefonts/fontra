@@ -423,17 +423,18 @@ export class EditorController {
     ];
     const source = glyph.sources[sourceIndex];
     const sourceName = source.name;
+    const locationModel = newObservableObject({ ...source.location });
     const contentFunc = async (dialogBox) => {
-      const location = html.createDomElement("designspace-location", {
+      const locationElement = html.createDomElement("designspace-location", {
         style: `grid-column: 1 / -1;
           min-height: 0;
           overflow: scroll;
           height: 100%;
         `,
       });
-      location.axes = locationAxes;
-      location.values = { ...source.location };
-      const element = html.div(
+      locationElement.axes = locationAxes;
+      locationElement.model = locationModel;
+      const contentElement = html.div(
         {
           style: `overflow: hidden;
             white-space: nowrap;
@@ -455,16 +456,31 @@ export class EditorController {
           ]),
           html.input({ type: "text", id: "layer-name", value: source.layerName }),
           html.br(),
-          location,
+          locationElement,
         ]
       );
-      return element;
+      return contentElement;
     };
     const result = await dialog("Edit source properties", contentFunc, [
       { title: "Cancel", isCancelButton: true },
       { title: "Done", isDefaultButton: true },
     ]);
-    console.log("result", result);
+    if (!result) {
+      return;
+    }
+    const newLocation = Object.fromEntries(
+      locationAxes
+        .filter(
+          (axis) =>
+            locationModel[axis.name] !== undefined &&
+            locationModel[axis.name] !== axis.defaultValue
+        )
+        .map((axis) => [axis.name, locationModel[axis.name]])
+    );
+    // const changes = recordChanges(glyph.sources[sourceIndex], (source) => {
+    //   source.location = newLocation;
+    // });
+    // console.log("result", changes);
   }
 
   initSidebars() {
