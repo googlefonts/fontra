@@ -174,6 +174,10 @@ export class EditorController {
       async (event) => await this._updateSelectionInfo(),
       100
     );
+    this.updateSlidersAndSourcesThrottled = throttleCalls(
+      async () => await this.updateSlidersAndSources(),
+      200
+    );
     canvas.addEventListener("viewBoxChanged", (event) => {
       if (event.detail === "canvas-size") {
         this.setAutoViewBox();
@@ -1435,6 +1439,7 @@ export class EditorController {
       matchChangePath(change, ["glyphs", selectedGlyphName])
     ) {
       this.updateSelectionInfo();
+      this.updateSlidersAndSourcesThrottled();
     }
     this.canvasController.requestUpdate();
   }
