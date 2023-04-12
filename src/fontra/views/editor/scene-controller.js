@@ -429,8 +429,17 @@ export class SceneController {
       );
       return;
     }
+
+    const glyphName = glyphController.name;
+    const varGlyph = await this.sceneModel.fontController.getGlyph(glyphName);
+    const layerIndex = varGlyph.getLayerIndex(
+      varGlyph.sources[glyphController.sourceIndex].layerName
+    );
+    const baseChangePath = ["glyphs", glyphName, "layers", layerIndex, "glyph"];
+
     const editContext = await this.sceneModel.fontController.getGlyphEditContext(
-      glyphController,
+      glyphName,
+      baseChangePath,
       senderID || this
     );
     const sendIncrementalChange = async (change, mayDrop = false) => {

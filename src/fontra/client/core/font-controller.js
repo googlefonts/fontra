@@ -264,12 +264,8 @@ export class FontController {
     }
   }
 
-  async getGlyphEditContext(glyphController, senderID) {
-    if (!glyphController.canEdit) {
-      // log warning here, or should the caller do that?
-      return null;
-    }
-    const editContext = new GlyphEditContext(this, glyphController, senderID);
+  async getGlyphEditContext(glyphName, baseChangePath, senderID) {
+    const editContext = new GlyphEditContext(this, glyphName, baseChangePath, senderID);
     await editContext.setup();
     return editContext;
   }
@@ -418,10 +414,10 @@ function reverseUndoInfo(undoInfo) {
 }
 
 class GlyphEditContext {
-  constructor(fontController, glyphController, senderID) {
+  constructor(fontController, glyphName, baseChangePath, senderID) {
     this.fontController = fontController;
-    this.glyphController = glyphController;
-    this.glyphName = glyphController.name;
+    this.glyphName = glyphName;
+    this.baseChangePath = baseChangePath;
     this.senderID = senderID;
     this.throttledEditIncremental = throttleCalls(async (change) => {
       fontController.font.editIncremental(change);
@@ -430,11 +426,6 @@ class GlyphEditContext {
   }
 
   async setup() {
-    const varGlyph = await this.fontController.getGlyph(this.glyphName);
-    const layerIndex = varGlyph.getLayerIndex(
-      varGlyph.sources[this.glyphController.sourceIndex].layerName
-    );
-    this.baseChangePath = ["glyphs", this.glyphName, "layers", layerIndex, "glyph"];
     await this.fontController.notifyEditListeners("editBegin", this.senderID);
   }
 
