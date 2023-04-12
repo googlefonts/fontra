@@ -422,7 +422,6 @@ class GlyphEditContext {
     this.fontController = fontController;
     this.glyphController = glyphController;
     this.glyphName = glyphController.name;
-    this.instance = glyphController.instance;
     this.senderID = senderID;
     this.throttledEditIncremental = throttleCalls(async (change) => {
       fontController.font.editIncremental(change);

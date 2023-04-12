@@ -442,7 +442,7 @@ export class SceneController {
     // editContext.editBegin();
     let result;
     try {
-      result = await editFunc(sendIncrementalChange, editContext.instance);
+      result = await editFunc(sendIncrementalChange, glyphController.instance);
     } catch (error) {
       this.selection = initialSelection;
       editContext.editCancel();
@@ -470,7 +470,7 @@ export class SceneController {
           broadcast
         );
       } else {
-        applyChange(editContext.instance, changes.rollbackChange);
+        applyChange(glyphController.instance, changes.rollbackChange);
         await editContext.editIncremental(changes.rollbackChange, false);
         editContext.editCancel();
         dialog(
