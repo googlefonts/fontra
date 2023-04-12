@@ -485,6 +485,8 @@ export class EditorController {
       glyph.sources[sourceIndex].location = newLocation;
       return "edit source properties";
     });
+    // Update UI
+    await this.updateSlidersAndSources();
   }
 
   initSidebars() {
