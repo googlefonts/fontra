@@ -431,6 +431,10 @@ export class EditorController {
     const sourceNameChange = (event) => {
       sourceName = event.target.value;
     };
+    let layerName = source.layerName;
+    const layerNameChange = (event) => {
+      layerName = event.target.value;
+    };
     const locationModel = newObservableObject({ ...source.location });
     const contentFunc = async (dialogBox) => {
       const locationElement = html.createDomElement("designspace-location", {
@@ -467,7 +471,12 @@ export class EditorController {
           html.label({ for: "layer-name", style: "text-align: right;" }, [
             "Layer name:",
           ]),
-          html.input({ type: "text", id: "layer-name", value: source.layerName }),
+          html.input({
+            type: "text",
+            id: "layer-name",
+            value: source.layerName,
+            onchange: layerNameChange,
+          }),
           html.br(),
           locationElement,
         ]
@@ -497,6 +506,9 @@ export class EditorController {
       }
       if (sourceName !== source.name) {
         source.name = sourceName;
+      }
+      if (layerName !== source.layerName) {
+        source.layerName = layerName;
       }
       return "edit source properties";
     });
