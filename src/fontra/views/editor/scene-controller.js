@@ -426,7 +426,7 @@ export class SceneController {
       editingDone = resolve;
     });
     try {
-      return await this._editGlyphOrInstanceRaw(editFunc, senderID, doInstance);
+      return await this._editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance);
     } finally {
       editingDone();
       delete this._glyphEditingDonePromise;
@@ -434,7 +434,7 @@ export class SceneController {
     }
   }
 
-  async _editGlyphOrInstanceRaw(editFunc, senderID, doInstance) {
+  async _editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance) {
     const glyphName = this.sceneModel.getSelectedGlyphName();
     const varGlyph = await this.sceneModel.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
