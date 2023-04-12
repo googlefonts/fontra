@@ -23,7 +23,7 @@ export class DialogOverlay extends UnlitElement {
     :host {
       display: none;  /* switched to "grid" on show, back to "none" on hide */
       position: absolute;
-      grid-template-rows: 5fr 1fr;
+      grid-template-rows: 15fr 1fr;
       align-items: center;
       z-index: 10000;
       background-color: #8888;
@@ -43,7 +43,7 @@ export class DialogOverlay extends UnlitElement {
 
       outline: none; /* to catch key events we need to focus, but we don't want a focus border */
       max-width: 32em;
-      max-height: 70vh;
+      max-height: 80vh;
       overflow-wrap: normal;
       font-size: 1.15em;
       background-color: var(--ui-element-background-color);
