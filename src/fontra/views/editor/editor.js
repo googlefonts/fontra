@@ -425,17 +425,24 @@ export class EditorController {
     const sourceName = source.name;
     const contentFunc = async (dialogBox) => {
       const location = html.createDomElement("designspace-location", {
-        style: "grid-column: 1 / -1;",
+        style: `grid-column: 1 / -1;
+          min-height: 0;
+          overflow: scroll;
+          height: 100%;
+        `,
       });
       location.axes = locationAxes;
       location.values = { ...source.location };
       const element = html.div(
         {
-          style: `overflow: scroll;
+          style: `overflow: hidden;
+            white-space: nowrap;
             display: grid;
             gap: 0.5em;
             grid-template-columns: max-content auto;
             align-items: center;
+            height: 100%;
+            min-height: 0;
           `,
         },
         [
