@@ -29,6 +29,7 @@ import {
   hasShortcutModifierKey,
   hyphenatedToCamelCase,
   makeUPlusStringFromCodePoint,
+  objectsEqual,
   parseSelection,
   scheduleCalls,
   throttleCalls,
@@ -482,7 +483,9 @@ export class EditorController {
         .map((axis) => [axis.name, locationModel[axis.name]])
     );
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      glyph.sources[sourceIndex].location = newLocation;
+      if (!objectsEqual(glyph.sources[sourceIndex].location, newLocation)) {
+        glyph.sources[sourceIndex].location = newLocation;
+      }
       return "edit source properties";
     });
     // Update UI
