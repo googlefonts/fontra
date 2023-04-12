@@ -481,7 +481,7 @@ export class EditorController {
       );
       return contentElement;
     };
-    const result = await dialog("Edit source properties", contentFunc, [
+    const result = await dialog("Source properties", contentFunc, [
       { title: "Cancel", isCancelButton: true },
       { title: "Done", isDefaultButton: true },
     ]);
