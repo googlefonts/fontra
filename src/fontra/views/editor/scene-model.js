@@ -614,7 +614,7 @@ async function buildScene(
         // TODO: use font's ascender/descender values
         // If the advance is very small, add a bit of extra space on both sides so it'll be
         // clickable even with a zero advance width
-        const extraSpace = item.glyph.xAdvance < 20 ? 20 : 0;
+        const extraSpace = item.glyph.xAdvance < 30 ? 20 : 0;
         bounds = {
           xMin: -extraSpace,
           yMin: -200,
