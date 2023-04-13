@@ -1,7 +1,9 @@
 import { getAxisBaseName } from "../core/glyph-controller.js";
 import {
   centeredRect,
+  insetRect,
   isEmptyRect,
+  normalizeRect,
   offsetRect,
   pointInRect,
   sectRect,
@@ -612,7 +614,19 @@ async function buildScene(
       if (!bounds || isEmptyRect(bounds)) {
         // Empty glyph, make up box based on advance so it can still be clickable/hoverable
         // TODO: use font's ascender/descender values
-        bounds = { xMin: 0, yMin: -200, xMax: item.glyph.xAdvance, yMax: 800 };
+        // If the advance is very small, add a bit of extra space on both sides so it'll be
+        // clickable even with a zero advance width
+        const extraSpace = item.glyph.xAdvance < 30 ? 20 : 0;
+        bounds = insetRect(
+          normalizeRect({
+            xMin: 0,
+            yMin: -0.2 * fontController.unitsPerEm,
+            xMax: item.glyph.xAdvance,
+            yMax: 0.8 * fontController.unitsPerEm,
+          }),
+          -extraSpace,
+          0
+        );
         item.isEmpty = true;
       }
       item.bounds = offsetRect(bounds, item.x, item.y);
