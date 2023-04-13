@@ -612,7 +612,15 @@ async function buildScene(
       if (!bounds || isEmptyRect(bounds)) {
         // Empty glyph, make up box based on advance so it can still be clickable/hoverable
         // TODO: use font's ascender/descender values
-        bounds = { xMin: 0, yMin: -200, xMax: item.glyph.xAdvance, yMax: 800 };
+        // If the advance is very small, add a bit of extra space on both sides so it'll be
+        // clickable even with a zero advance width
+        const extraSpace = item.glyph.xAdvance < 20 ? 20 : 0;
+        bounds = {
+          xMin: -extraSpace,
+          yMin: -200,
+          xMax: item.glyph.xAdvance + extraSpace,
+          yMax: 800,
+        };
         item.isEmpty = true;
       }
       item.bounds = offsetRect(bounds, item.x, item.y);
