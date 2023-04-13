@@ -1893,20 +1893,22 @@ export class EditorController {
   }
 
   async handleRemoteClose(event) {
-    if (location.hostname === "localhost") {
+    this._reconnectDialogResult = dialog(
+      "Connection closed",
+      "The connection to the server closed unexpectedly.",
+      [{ title: "Reconnect", resultValue: "ok" }]
+    );
+    const result = await this._reconnectDialogResult;
+    delete this._reconnectDialogResult;
+
+    if (!result && location.hostname === "localhost") {
+      // The dialog was cancelled by the "wake" event handler
       // Dubious assumption:
       // Running from localhost most likely means were looking at local data,
       // which unlikely changed while we were away. So let's not bother reloading
       // anything.
       return;
     }
-    this._reconnectDialogResult = dialog(
-      "Connection closed",
-      "The connection to the server closed unexpectedly.",
-      [{ title: "Reconnect", resultValue: "ok" }]
-    );
-    await this._reconnectDialogResult;
-    delete this._reconnectDialogResult;
 
     if (this.fontController.font.websocket.readyState > 1) {
       // The websocket isn't currently working, let's try to do a page reload
