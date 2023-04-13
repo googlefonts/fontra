@@ -617,9 +617,9 @@ async function buildScene(
         const extraSpace = item.glyph.xAdvance < 30 ? 20 : 0;
         bounds = {
           xMin: -extraSpace,
-          yMin: -200,
+          yMin: -0.2 * fontController.unitsPerEm,
           xMax: item.glyph.xAdvance + extraSpace,
-          yMax: 800,
+          yMax: 0.8 * fontController.unitsPerEm,
         };
         item.isEmpty = true;
       }
