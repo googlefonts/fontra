@@ -16,7 +16,7 @@ export class VariableGlyph {
   }
 
   getLayerGlyph(layerName) {
-    return this.getLayer(layerName).glyph;
+    return this.getLayer(layerName)?.glyph;
   }
 
   getLayer(layerName) {
