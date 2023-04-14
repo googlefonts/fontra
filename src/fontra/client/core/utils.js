@@ -160,6 +160,15 @@ export function* range(start, stop, step = 1) {
   }
 }
 
+export function* chain(...iterables) {
+  // After Python's itertools.chain()
+  for (const iterable of iterables) {
+    for (const item of iterable) {
+      yield item;
+    }
+  }
+}
+
 export function parseSelection(selection) {
   const result = {};
   for (const item of selection) {
