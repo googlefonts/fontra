@@ -1,95 +1,104 @@
-export function newObservableObject(obj) {
-  if (!obj) {
-    obj = {};
-  }
-  const eventListeners = { changed: [], deleted: [] };
+import { chain } from "./utils.js";
 
-  function dispatchEvent(type, key, value, skipListener) {
-    const event = {
-      type: type,
-      target: obj,
-      key: key,
-      value: value,
-    };
-    for (const listener of eventListeners[type]) {
-      if (skipListener && skipListener === listener) {
-        continue;
-      }
-      // Schedule in the event loop rather than call immediately
-      setTimeout(() => listener(event), 0);
+export class ObservableController {
+  constructor(model) {
+    if (!model) {
+      model = {};
+    }
+    this.model = newModelProxy(this, model);
+    this._rawModel = model;
+    this._generalListeners = [];
+    this._keyListeners = {};
+  }
+
+  addListener(listener) {
+    this._generalListeners.push(listener);
+  }
+
+  removeListener(listener) {
+    // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
+    this._generalListeners = this._generalListeners.filter((item) => item !== listener);
+  }
+
+  addKeyListener(key, listener) {
+    if (!(key in this._keyListeners)) {
+      this._keyListeners[key] = [];
+    }
+    this._keyListeners[key].push(listener);
+  }
+
+  removeKeyListener(key, listener) {
+    if (!this._keyListeners[key]) {
+      return;
+    }
+    // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
+    this._keyListeners[key] = this._keyListeners[key].filter(
+      (item) => item !== listener
+    );
+  }
+
+  setItem(key, newValue, skipListener) {
+    const oldValue = this._rawModel[key];
+    if (newValue !== oldValue) {
+      this._rawModel[key] = newValue;
+      this._dispatchChange(key, newValue, oldValue, skipListener);
     }
   }
 
-  const methods = {
-    addEventListener(receiver, type, listener) {
-      if (!eventListeners[type]) {
-        throw new Error(
-          `event type must be one of ${Object.keys(eventListeners).join(
-            ","
-          )}, got ${type} instead`
-        );
+  synchronizeWithLocalStorage(prefix = "") {
+    synchronizeWithLocalStorage(this, prefix);
+  }
+
+  _dispatchChange(key, newValue, oldValue, skipListener) {
+    // Schedule the calls in the event loop rather than call immediately
+    for (const listener of chain(
+      this._generalListeners,
+      this._keyListeners[key] || []
+    )) {
+      if (skipListener && skipListener === listener) {
+        continue;
       }
-      eventListeners[type].push(listener);
-    },
-
-    removeEventListener(receiver, type, listener) {
-      if (!eventListeners[type]) {
-        throw new Error(
-          `event type must be one of ${Object.keys(eventListeners).join(
-            ","
-          )}, got ${type} instead`
-        );
-      }
-      eventListeners[type] = eventListeners[type].filter((item) => item !== listener);
-    },
-
-    setItem(receiver, prop, value, skipListener) {
-      if (obj[prop] !== value) {
-        obj[prop] = value;
-        dispatchEvent("changed", prop, value, skipListener);
-      }
-    },
-
-    synchronizeWithLocalStorage(receiver, prefix = "") {
-      synchronizeWithLocalStorage(receiver, prefix);
-    },
-  };
-
-  const handler = {
-    set(obj, prop, value) {
-      if (obj[prop] !== value) {
-        obj[prop] = value;
-        dispatchEvent("changed", prop, value);
-      }
-      return true;
-    },
-
-    get(obj, prop, receiver) {
-      const method = methods[prop];
-      if (method) {
-        return method.bind(null, receiver);
-      }
-      return obj[prop];
-    },
-
-    deleteProperty(obj, prop) {
-      delete obj[prop];
-      dispatchEvent("deleted", prop);
-      return true;
-    },
-  };
-
-  return new Proxy(obj, handler);
+      setTimeout(() => listener(key, newValue, oldValue), 0);
+    }
+  }
 }
 
-function synchronizeWithLocalStorage(obj, prefix = "") {
-  const toObject = {};
-  const toStorage = {};
+function newModelProxy(controller, model) {
+  const handler = {
+    set(model, key, newValue) {
+      const oldValue = model[key];
+      if (newValue !== oldValue) {
+        model[key] = newValue;
+        controller._dispatchChange(key, newValue, oldValue);
+      }
+      return true;
+    },
+
+    get(model, key, receiver) {
+      return model[key];
+    },
+
+    deleteProperty(model, key) {
+      const oldValue = model[key];
+      if (oldValue !== undefined) {
+        delete model[key];
+        controller._dispatchChange(key, undefined, oldValue);
+      }
+      return true;
+    },
+  };
+
+  return new Proxy(model, handler);
+}
+
+function synchronizeWithLocalStorage(controller, prefix = "") {
+  const mapKeyToObject = {};
+  const mapKeyToStorage = {};
   const stringKeys = {};
-  for (const [key, value] of Object.entries(obj)) {
+  for (const [key, value] of Object.entries(controller.model)) {
     const storageKey = prefix + key;
-    toObject[storageKey] = key;
-    toStorage[key] = storageKey;
+    mapKeyToObject[storageKey] = key;
+    mapKeyToStorage[key] = storageKey;
     stringKeys[key] = typeof value === "string";
     const storedValue = localStorage.getItem(storageKey);
     if (storedValue !== null) {
@@ -101,28 +110,28 @@ function synchronizeWithLocalStorage(obj, prefix = "") {
     if (!stringKeys[key]) {
       value = JSON.parse(value);
     }
-    obj[key] = value;
+    controller.model[key] = value;
   }
 
   function setItemOnStorage(key, value) {
     if (!stringKeys[key]) {
       value = JSON.stringify(value);
     }
-    const storageKey = toStorage[key];
+    const storageKey = mapKeyToStorage[key];
     if (localStorage.getItem(storageKey) !== value) {
       localStorage.setItem(storageKey, value);
     }
   }
 
-  obj.addEventListener("changed", (event) => {
-    if (event.key in toStorage) {
-      setItemOnStorage(event.key, event.value);
+  controller.addListener((key, newValue) => {
+    if (key in mapKeyToStorage) {
+      setItemOnStorage(key, newValue);
     }
   });
 
   window.addEventListener("storage", (event) => {
-    if (event.key in toObject) {
-      setItemOnObject(toObject[event.key], event.newValue);
+    if (event.key in mapKeyToObject) {
+      setItemOnObject(mapKeyToObject[event.key], event.newValue);
     }
   });
 }
