@@ -14,20 +14,24 @@ export class SimpleSettings extends UnlitElement {
   `;
 
   get model() {
-    return this._model;
+    return this.controller?.model;
   }
 
-  set model(model) {
-    if (this._model) {
-      this._model.removeEventListener("changed", this._modelListener);
+  get controller() {
+    return this._controller;
+  }
+
+  set controller(controller) {
+    if (this._controller) {
+      this._controller.removeListener(this._modelListener);
     }
-    this._model = model;
-    this._modelListener = (event) => {
-      if (this._keys.has(event.key)) {
+    this._controller = controller;
+    this._modelListener = (key, newValue) => {
+      if (this._keys.has(key)) {
         this.requestUpdate();
       }
     };
-    this._model?.addEventListener("changed", this._modelListener);
+    this._controller?.addListener(this._modelListener);
     this.requestUpdate();
   }
 
@@ -47,21 +51,21 @@ export class SimpleSettings extends UnlitElement {
     }
 
     return this._descriptions.map((description) =>
-      uiTypes[description.ui](this._modelListener, description, this._model)
+      uiTypes[description.ui](this._modelListener, description, this.controller)
     );
   }
 }
 
 const uiTypes = {
-  header(modelListener, description, model) {
+  header(modelListener, description, controller) {
     return div({ class: "header" }, [description.displayName]);
   },
 
-  plain(modelListener, description, model) {
+  plain(modelListener, description, controller) {
     return div({ class: "plain" }, [description.displayName]);
   },
 
-  checkbox(modelListener, description, model) {
+  checkbox(modelListener, description, controller) {
     const id = `simple-settings.${description.key}`;
 
     return div({}, [
@@ -69,14 +73,14 @@ const uiTypes = {
         type: "checkbox",
         id: id,
         onchange: (event) =>
-          model.setItem(description.key, event.target.checked, modelListener),
-        checked: model[description.key],
+          controller.setItem(description.key, event.target.checked, modelListener),
+        checked: controller.model[description.key],
       }),
       label({ for: id }, [description.displayName]),
     ]);
   },
 
-  radio(modelListener, description, model) {
+  radio(modelListener, description, controller) {
     const id = `simple-settings.${description.key}`;
 
     return [
@@ -92,8 +96,8 @@ const uiTypes = {
             name: id,
             value: option.key,
             onchange: (event) =>
-              model.setItem(description.key, event.target.value, modelListener),
-            checked: model[description.key] == option.key,
+              controller.setItem(description.key, event.target.value, modelListener),
+            checked: controller.model[description.key] == option.key,
           }),
           label({ for: itemID }, [option.displayName]),
         ]);

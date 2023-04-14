@@ -4,7 +4,7 @@ import { recordChanges } from "../core/change-recorder.js";
 import { ContextMenu, MenuItemDivider } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
-import { newObservableObject } from "../core/observable-object.js";
+import { ObservableController } from "../core/observable-object.js";
 import {
   centeredRect,
   insetRect,
@@ -38,7 +38,7 @@ import {
   reversed,
   writeToClipboard,
 } from "../core/utils.js";
-import { themeModelObject } from "/core/theme-settings.js";
+import { themeController } from "/core/theme-settings.js";
 import { dialog } from "/web-components/dialog-overlay.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
@@ -93,8 +93,8 @@ export class EditorController {
       canvasController.context
     );
 
-    this.clipboardFormatModelObject = newObservableObject({ format: "glif" });
-    this.clipboardFormatModelObject.synchronizeWithLocalStorage("fontra-clipboard-");
+    this.clipboardFormatController = new ObservableController({ format: "glif" });
+    this.clipboardFormatController.synchronizeWithLocalStorage("fontra-clipboard-");
 
     this.visualizationLayers = new VisualizationLayers(
       visualizationLayerDefinitions,
@@ -104,8 +104,8 @@ export class EditorController {
     this.visualizationLayersSettings = newVisualizationLayersSettings(
       this.visualizationLayers
     );
-    this.visualizationLayersSettings.addEventListener("changed", (event) => {
-      this.visualizationLayers.toggle(event.key, event.value);
+    this.visualizationLayersSettings.addListener((key, newValue) => {
+      this.visualizationLayers.toggle(key, newValue);
       this.canvasController.requestUpdate();
     });
 
@@ -152,9 +152,9 @@ export class EditorController {
 
     window
       .matchMedia("(prefers-color-scheme: dark)")
-      .addListener((event) => this.themeChanged(event));
-    themeModelObject.addEventListener("changed", (event) => {
-      this.themeChanged(event);
+      .addListener((event) => this.themeChanged());
+    themeController.addListener((key, newValue) => {
+      this.themeChanged();
     });
 
     this.canvasController.canvas.addEventListener("contextmenu", (event) =>
@@ -278,14 +278,14 @@ export class EditorController {
     });
     items.push({
       displayName: "Glyph editor appearance",
-      model: this.visualizationLayersSettings,
+      controller: this.visualizationLayersSettings,
       descriptions: layerItems,
     });
 
     // Clipboard settings
     items.push({
       displayName: "Clipboard export format",
-      model: this.clipboardFormatModelObject,
+      controller: this.clipboardFormatController,
       descriptions: [
         {
           key: "format",
@@ -302,7 +302,7 @@ export class EditorController {
     // Theme settings
     items.push({
       displayName: "Theme settings",
-      model: themeModelObject,
+      controller: themeController,
       descriptions: [
         {
           key: "theme",
@@ -320,7 +320,7 @@ export class EditorController {
     const serverInfo = await fetchJSON("/serverinfo");
     items.push({
       displayName: "Server info",
-      model: null,
+      controller: null,
       descriptions: Object.entries(serverInfo).flatMap((entry) => {
         return [
           {
@@ -435,7 +435,7 @@ export class EditorController {
     const layerNameChange = (event) => {
       layerName = event.target.value;
     };
-    const locationModel = newObservableObject({ ...source.location });
+    const locationController = new ObservableController({ ...source.location });
     const contentFunc = async (dialogBox) => {
       const locationElement = html.createDomElement("designspace-location", {
         style: `grid-column: 1 / -1;
@@ -445,7 +445,7 @@ export class EditorController {
         `,
       });
       locationElement.axes = locationAxes;
-      locationElement.model = locationModel;
+      locationElement.controller = locationController;
       const contentElement = html.div(
         {
           style: `overflow: hidden;
@@ -488,6 +488,7 @@ export class EditorController {
     if (!result) {
       return;
     }
+    const locationModel = locationController.model;
     const newLocation = Object.fromEntries(
       locationAxes
         .filter(
@@ -558,10 +559,11 @@ export class EditorController {
     );
 
     const textAlignMenuElement = document.querySelector("#text-align-menu");
-    this.textSettings = newObservableObject();
+    const textSettingsController = new ObservableController();
+    this.textSettings = textSettingsController.model;
 
-    this.textSettings.addEventListener("changed", (event) => {
-      if (event.key !== "align") {
+    textSettingsController.addListener((key, newValue) => {
+      if (key !== "align") {
         return;
       }
       const align = this.textSettings.align;
@@ -690,14 +692,14 @@ export class EditorController {
     this.sceneController.setSelectedTool(this.tools[toolIdentifier]);
   }
 
-  themeChanged(event) {
+  themeChanged() {
     this.visualizationLayers.darkTheme = this.isThemeDark;
     this.cleanGlyphsLayers.darkTheme = this.isThemeDark;
     this.canvasController.requestUpdate();
   }
 
   get isThemeDark() {
-    const themeValue = themeModelObject.theme;
+    const themeValue = themeController.model.theme;
     if (themeValue === "automatic") {
       return window.matchMedia("(prefers-color-scheme: dark)").matches;
     } else {
@@ -1099,7 +1101,7 @@ export class EditorController {
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
-      mapping[this.clipboardFormatModelObject.format] || glifString;
+      mapping[this.clipboardFormatController.model.format] || glifString;
 
     localStorage.setItem("clipboardSelection.text-plain", plainTextString);
     localStorage.setItem("clipboardSelection.glyph", jsonString);
@@ -2162,12 +2164,12 @@ function newVisualizationLayersSettings(visualizationLayers) {
       settings[definition.identifier] = !!definition.defaultOn;
     }
   }
-  const observable = newObservableObject(settings);
-  observable.synchronizeWithLocalStorage("fontra-editor-visualization-layers.");
-  for (const [key, onOff] of Object.entries(observable)) {
+  const controller = new ObservableController(settings);
+  controller.synchronizeWithLocalStorage("fontra-editor-visualization-layers.");
+  for (const [key, onOff] of Object.entries(controller.model)) {
     visualizationLayers.toggle(key, onOff);
   }
-  return observable;
+  return controller;
 }
 
 function mapAxesFromUserSpaceToDesignspace(axes) {

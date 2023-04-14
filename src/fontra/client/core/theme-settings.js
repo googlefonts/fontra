@@ -1,4 +1,4 @@
-import { newObservableObject } from "./observable-object.js";
+import { ObservableController } from "./observable-object.js";
 
 function setupThemeOverride(value) {
   const rootElement = document.querySelector("html");
@@ -9,14 +9,12 @@ function setupThemeOverride(value) {
   }
 }
 
-export const themeModelObject = newObservableObject({ theme: "automatic" });
+export const themeController = new ObservableController({ theme: "automatic" });
 
-themeModelObject.synchronizeWithLocalStorage("fontra-");
+themeController.synchronizeWithLocalStorage("fontra-");
 
-themeModelObject.addEventListener("changed", (event) => {
-  if (event.key === "theme") {
-    setupThemeOverride(themeModelObject.theme);
-  }
+themeController.addKeyListener("theme", (key, newValue) => {
+  setupThemeOverride(themeController.model.theme);
 });
 
-setupThemeOverride(themeModelObject.theme);
+setupThemeOverride(themeController.model.theme);

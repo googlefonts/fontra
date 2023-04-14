@@ -24,7 +24,7 @@ export class GroupedSettings extends UnlitElement {
     }
     return this.items.map((item) => {
       const simpleSettings = new SimpleSettings();
-      simpleSettings.model = item.model;
+      simpleSettings.controller = item.controller;
       simpleSettings.descriptions = item.descriptions;
       return [div({ class: "header" }, [item.displayName]), simpleSettings];
     });
