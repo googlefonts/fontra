@@ -195,12 +195,17 @@ export class SceneModel {
       return;
     }
     const glyph = await this.getSelectedVariableGlyphController();
-    let location = {};
-    for (const axis of glyph.globalAxes.concat(glyph.axes)) {
-      location[axis.name] = axis.defaultValue;
-    }
+    const globalDefaultLocation = mapForward(
+      makeDefaultLocation(glyph.globalAxes),
+      glyph.globalAxes
+    );
+    const localDefaultLocation = makeDefaultLocation(glyph.axes);
+    const defaultLocation = { ...globalDefaultLocation, ...localDefaultLocation };
     const source = glyph.sources[sourceIndex];
-    location = glyph.mapLocationLocalToGlobal({ ...location, ...source.location });
+    const location = glyph.mapLocationLocalToGlobal({
+      ...defaultLocation,
+      ...source.location,
+    });
     await this.setLocation(location);
   }
 
@@ -661,4 +666,8 @@ function makeGlyphNamesPattern(glyphNames) {
     glyphsObj[glyphName] = null;
   }
   return { glyphs: glyphsObj };
+}
+
+function makeDefaultLocation(axes) {
+  return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }
