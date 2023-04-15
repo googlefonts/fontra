@@ -490,8 +490,10 @@ export class EditorController {
       if (nameController.model.sourceName !== source.name) {
         source.name = nameController.model.sourceName;
       }
-      if (nameController.model.layerName !== source.layerName) {
-        source.layerName = nameController.model.layerName;
+      const layerName =
+        nameController.model.layerName || nameController.model.sourceName;
+      if (layerName !== source.layerName) {
+        source.layerName = layerName;
       }
       return "edit source properties";
     });
