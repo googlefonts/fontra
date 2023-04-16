@@ -3,9 +3,8 @@ import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
-import { normalizeLocation } from "../core/var-model.js";
 import { packContour } from "../core/var-path.js";
-import { lenientIsEqualSet, isEqualSet, isSuperset } from "../core/set-ops.js";
+import { lenientIsEqualSet, isSuperset } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
   hasShortcutModifierKey,
