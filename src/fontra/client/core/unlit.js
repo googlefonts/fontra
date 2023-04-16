@@ -1,10 +1,28 @@
 // This is a tiny subset of a few things that Lit does, except it uses
 // object notation to construct dom elements instead of HTML.
 
-export class UnlitElement extends HTMLElement {
+export class SimpleElement extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this._postInit();
+  }
+
+  _postInit() {
+    this._attachStyles();
+  }
+
+  _attachStyles() {
+    if (this.constructor.styles) {
+      const style = document.createElement("style");
+      style.textContent = this.constructor.styles || "";
+      this.shadowRoot.appendChild(style);
+    }
+  }
+}
+
+export class UnlitElement extends SimpleElement {
+  _postInit() {
     this._setupProperties();
     this.requestUpdate();
   }
@@ -54,11 +72,7 @@ export class UnlitElement extends HTMLElement {
     this._requestedUpdate = false;
 
     this.shadowRoot.innerHTML = "";
-    if (this.constructor.styles) {
-      const style = document.createElement("style");
-      style.textContent = this.constructor.styles || "";
-      this.shadowRoot.appendChild(style);
-    }
+    this._attachStyles();
 
     let elements = await this.render();
     if (!elements) {

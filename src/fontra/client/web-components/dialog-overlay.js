@@ -1,24 +1,29 @@
-import { UnlitElement } from "/core/unlit.js";
+import { SimpleElement } from "/core/unlit.js";
 import * as html from "/core/unlit.js";
 import { enumerate } from "/core/utils.js";
 
-export function dialog(
-  headline,
-  messageOrContentFunction,
-  buttonDefs,
-  autoDismissTimeout
-) {
-  /* return a Promise with the result of the user action, or null for cancel */
-  const dialogOverlayElement = document.querySelector("dialog-overlay");
-  return dialogOverlayElement.runDialog(
+export async function dialog(headline, message, buttonDefs, autoDismissTimeout) {
+  const dialogOverlayElement = await dialogSetup(
     headline,
-    messageOrContentFunction,
+    message,
     buttonDefs,
     autoDismissTimeout
   );
+  return await dialogOverlayElement.run();
 }
 
-export class DialogOverlay extends UnlitElement {
+export async function dialogSetup(headline, message, buttonDefs, autoDismissTimeout) {
+  const dialogOverlayElement = document.querySelector("dialog-overlay");
+  await dialogOverlayElement.setupDialog(
+    headline,
+    message,
+    buttonDefs,
+    autoDismissTimeout
+  );
+  return dialogOverlayElement;
+}
+
+export class DialogOverlay extends SimpleElement {
   static styles = `
     :host {
       display: none;  /* switched to "grid" on show, back to "none" on hide */
@@ -117,10 +122,19 @@ export class DialogOverlay extends UnlitElement {
     }
   `;
 
-  runDialog(headline, messageOrContentFunction, buttonDefs, autoDismissTimeout) {
-    this._headline = headline;
-    this._messageOrContentFunction = messageOrContentFunction;
+  constructor() {
+    super();
+    this.dialogBox = html.div({
+      class: "dialog-box",
+      tabindex: 1,
+      onkeydown: (event) => this._handleKeyDown(event),
+      /* prevent clicks on the dialog itself to propagate to the overlay */
+      onclick: (event) => event.stopImmediatePropagation(),
+    });
+    this.shadowRoot.appendChild(this.dialogBox);
+  }
 
+  setupDialog(headline, message, buttonDefs, autoDismissTimeout) {
     buttonDefs = buttonDefs.map((bd) => {
       return { ...bd };
     });
@@ -145,35 +159,26 @@ export class DialogOverlay extends UnlitElement {
       this._dialogDone(null);
     };
 
-    this.requestUpdate();
-
-    return {
-      cancel: () => this._dialogDone(null),
-      hide: () => this.hide(),
-      show: () => this.show(),
-      then: this._resultPromise.then.bind(this._resultPromise),
-    };
+    this._populateDialogBox(headline, message);
   }
 
-  async render() {
-    if (!this._headline) {
-      return;
+  run() {
+    this.show();
+    return this._resultPromise;
+  }
+
+  async _populateDialogBox(headline, message) {
+    this.dialogBox.innerHTML = "";
+    this.dialogBox.appendChild(html.div({ class: "headline" }, [headline]));
+
+    this.dialogContent = html.div({ class: "message" });
+    if (message) {
+      this.dialogContent.innerHTML = message.replaceAll("\n", "\n<br>\n");
     }
+    this.dialogBox.appendChild(this.dialogContent);
 
-    const dialogBox = html.div(
-      {
-        class: "dialog-box",
-        tabindex: 1,
-        onkeydown: (event) => this._handleKeyDown(event),
-        /* prevent clicks on the dialog itself to propagate to the overlay */
-        onclick: (event) => event.stopImmediatePropagation(),
-      },
-      [html.div({ class: "headline" }, [this._headline])]
-    );
-
-    dialogBox.appendChild(await this._renderMessageContent(dialogBox));
     for (const button of this._renderButtons()) {
-      dialogBox.appendChild(button);
+      this.dialogBox.appendChild(button);
     }
 
     if (this._autoDismissTimeout) {
@@ -182,27 +187,17 @@ export class DialogOverlay extends UnlitElement {
         this._autoDismissTimeout
       );
     }
-
-    this.show();
-    this.shadowRoot.appendChild(dialogBox);
-    dialogBox.focus();
   }
 
-  async _renderMessageContent(dialogBox) {
-    if (typeof this._messageOrContentFunction === "function") {
-      const mainContentElement = await this._messageOrContentFunction(dialogBox);
-      mainContentElement.classList.add("message");
-      return mainContentElement;
-    } else {
-      const messageElement = html.div({ class: "message" });
-      messageElement.innerHTML = this._messageOrContentFunction;
-      return messageElement;
-    }
+  setContent(contentElement) {
+    contentElement.classList.add("message");
+    this.dialogContent.replaceWith(contentElement);
+    this.dialogContent = contentElement;
   }
 
   *_renderButtons() {
-    this._defaultButtonElement = undefined;
-    this._cancelButtonElement = undefined;
+    this.defaultButton = undefined;
+    this.cancelButton = undefined;
     for (const [buttonIndex, buttonDef] of enumerate(
       this._buttonDefs,
       4 - this._buttonDefs.length
@@ -226,16 +221,21 @@ export class DialogOverlay extends UnlitElement {
       }
       if (buttonDef.isDefaultButton) {
         buttonElement.classList.add("default");
-        this._defaultButtonElement = buttonElement;
+        this.defaultButton = buttonElement;
       } else if (buttonDef.isCancelButton) {
-        this._cancelButtonElement = buttonElement;
+        this.cancelButton = buttonElement;
       }
       yield buttonElement;
     }
   }
 
+  cancel() {
+    this._dialogDone(null);
+  }
+
   show() {
     this.style.display = "grid";
+    this.dialogBox.focus();
   }
 
   hide() {
@@ -244,12 +244,12 @@ export class DialogOverlay extends UnlitElement {
 
   _handleKeyDown(event) {
     if (event.key == "Enter") {
-      if (!this._defaultButtonElement?.classList.contains("disabled")) {
-        this._defaultButtonElement?.click();
+      if (!this.defaultButton?.classList.contains("disabled")) {
+        this.defaultButton?.click();
       }
     } else if (event.key == "Escape") {
-      this._cancelButtonElement?.click();
-      if (!this._cancelButtonElement) {
+      this.cancelButton?.click();
+      if (!this.cancelButton) {
         this._dialogDone(null);
       }
     }
@@ -261,7 +261,9 @@ export class DialogOverlay extends UnlitElement {
       clearTimeout(this._dismissTimeoutID);
       this._dismissTimeoutID = undefined;
     }
-    this.innerHTML = "";
+    this.dialogBox.innerHTML = "";
+    delete this.dialogContent;
+
     this.hide();
     this._currentActiveElement?.focus();
     this._resolveDialogResult(result);

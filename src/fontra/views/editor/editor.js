@@ -39,7 +39,7 @@ import {
   writeToClipboard,
 } from "../core/utils.js";
 import { themeController } from "/core/theme-settings.js";
-import { dialog } from "/web-components/dialog-overlay.js";
+import { dialog, dialogSetup } from "/web-components/dialog-overlay.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -199,11 +199,11 @@ export class EditorController {
     });
 
     document.addEventListener("visibilitychange", (event) => {
-      if (this._reconnectDialogResult) {
+      if (this._reconnectDialog) {
         if (document.visibilityState === "visible") {
-          this._reconnectDialogResult.cancel();
+          this._reconnectDialog.cancel();
         } else {
-          this._reconnectDialogResult.hide();
+          this._reconnectDialog.hide();
         }
       }
     });
@@ -432,46 +432,49 @@ export class EditorController {
       sourceName: source.name,
       layerName: source.layerName,
     });
-    const contentFunc = async (dialogBox) => {
-      const locationElement = html.createDomElement("designspace-location", {
-        style: `grid-column: 1 / -1;
-          min-height: 0;
-          overflow: scroll;
+
+    const locationElement = html.createDomElement("designspace-location", {
+      style: `grid-column: 1 / -1;
+        min-height: 0;
+        overflow: scroll;
+        height: 100%;
+      `,
+    });
+    locationElement.axes = locationAxes;
+    locationElement.controller = locationController;
+    const contentElement = html.div(
+      {
+        style: `overflow: hidden;
+          white-space: nowrap;
+          display: grid;
+          gap: 0.5em;
+          grid-template-columns: max-content auto;
+          align-items: center;
           height: 100%;
+          min-height: 0;
         `,
-      });
-      locationElement.axes = locationAxes;
-      locationElement.controller = locationController;
-      const contentElement = html.div(
-        {
-          style: `overflow: hidden;
-            white-space: nowrap;
-            display: grid;
-            gap: 0.5em;
-            grid-template-columns: max-content auto;
-            align-items: center;
-            height: 100%;
-            min-height: 0;
-          `,
-        },
-        [
-          ...labeledTextInput("Source name:", nameController, "sourceName"),
-          ...labeledTextInput("Layer:", nameController, "layerName", {
-            placeholderKey: "sourceName",
-          }),
-          html.br(),
-          locationElement,
-        ]
-      );
-      return contentElement;
-    };
-    const result = await dialog("Source properties", contentFunc, [
+      },
+      [
+        ...labeledTextInput("Source name:", nameController, "sourceName"),
+        ...labeledTextInput("Layer:", nameController, "layerName", {
+          placeholderKey: "sourceName",
+        }),
+        html.br(),
+        locationElement,
+      ]
+    );
+
+    const dialog = await dialogSetup("Source properties", null, [
       { title: "Cancel", isCancelButton: true },
       { title: "Done", isDefaultButton: true },
     ]);
-    if (!result) {
+    dialog.setContent(contentElement);
+
+    if (!(await dialog.run())) {
+      // User cancelled
       return;
     }
+
     const locationModel = locationController.model;
     const newLocation = Object.fromEntries(
       locationAxes
@@ -482,6 +485,7 @@ export class EditorController {
         )
         .map((axis) => [axis.name, locationModel[axis.name]])
     );
+
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const source = glyph.sources[sourceIndex];
       if (!objectsEqual(source.location, newLocation)) {
@@ -1270,43 +1274,35 @@ export class EditorController {
   }
 
   async doAddComponent() {
-    let contentContainer;
-
-    const getButton = () => {
-      return contentContainer.getElementsByClassName("button-3")[0];
-    };
-
     const glyphsSearch = document.createElement("glyphs-search");
     glyphsSearch.glyphMap = this.fontController.glyphMap;
 
     glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
-      const okButton = getButton();
-      okButton.classList.toggle("disabled", !glyphsSearch.getSelectedGlyphName());
+      dialog.defaultButton.classList.toggle(
+        "disabled",
+        !glyphsSearch.getSelectedGlyphName()
+      );
     });
 
     glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
-      const okButton = getButton();
-      okButton.click();
+      dialog.defaultButton.click();
     });
 
-    const getResult = () => {
-      return glyphsSearch.getSelectedGlyphName();
-    };
-
-    const contentFunc = (container) => {
-      contentContainer = container;
-      return glyphsSearch;
-    };
-
-    setTimeout(() => glyphsSearch.focusSearchField(), 50);
-
-    const glyphName = await dialog("Add Component", contentFunc, [
+    const dialog = await dialogSetup("Add Component", null, [
       { title: "Cancel", isCancelButton: true },
-      { title: "Add", isDefaultButton: true, getResult: getResult, disabled: true },
+      { title: "Add", isDefaultButton: true, result: "ok", disabled: true },
     ]);
+    dialog.setContent(glyphsSearch);
+    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
 
-    if (!glyphName) {
+    if (!(await dialog.run())) {
       // User cancelled
+      return;
+    }
+
+    const glyphName = glyphsSearch.getSelectedGlyphName();
+    if (!glyphName) {
+      // Invalid selection
       return;
     }
 
@@ -1881,13 +1877,13 @@ export class EditorController {
   }
 
   async handleRemoteClose(event) {
-    this._reconnectDialogResult = dialog(
+    this._reconnectDialog = await dialogSetup(
       "Connection closed",
       "The connection to the server closed unexpectedly.",
       [{ title: "Reconnect", resultValue: "ok" }]
     );
-    const result = await this._reconnectDialogResult;
-    delete this._reconnectDialogResult;
+    const result = await this._reconnectDialog.run();
+    delete this._reconnectDialog;
 
     if (!result && location.hostname === "localhost") {
       // The dialog was cancelled by the "wake" event handler
