@@ -172,7 +172,9 @@ export class DialogOverlay extends SimpleElement {
     this.dialogBox.appendChild(html.div({ class: "headline" }, [headline]));
 
     this.dialogContent = html.div({ class: "message" });
-    this.dialogContent.innerHTML = message.replaceAll("\n", "\n<br>\n");
+    if (message) {
+      this.dialogContent.innerHTML = message.replaceAll("\n", "\n<br>\n");
+    }
     this.dialogBox.appendChild(this.dialogContent);
 
     for (const button of this._renderButtons()) {
