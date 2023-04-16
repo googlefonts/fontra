@@ -406,10 +406,23 @@ export class EditorController {
   async addSource() {
     const glyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+
+    const glyph = glyphController.glyph;
+
     const location = glyphController.mapLocationGlobalToLocal(
       this.sceneController.getLocation()
     );
-    console.log(location);
+
+    const {
+      location: newLocation,
+      sourceName,
+      layerName,
+    } = await this._sourcePropertiesRunDialog(glyph, "", "", location);
+    if (!newLocation) {
+      return;
+    }
+    console.log(sourceName, layerName);
+    console.log(newLocation);
   }
 
   async editSourceProperties(sourceIndex) {
@@ -419,12 +432,85 @@ export class EditorController {
     const glyph = glyphController.glyph;
 
     const source = glyph.sources[sourceIndex];
-    const locationController = new ObservableController({ ...source.location });
-    const nameController = new ObservableController({
-      sourceName: source.name,
-      layerName: source.layerName,
-    });
 
+    const {
+      location: newLocation,
+      sourceName,
+      layerName,
+    } = await this._sourcePropertiesRunDialog(
+      glyph,
+      source.name,
+      source.layerName,
+      source.location
+    );
+    if (!newLocation) {
+      return;
+    }
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const source = glyph.sources[sourceIndex];
+      if (!objectsEqual(source.location, newLocation)) {
+        source.location = newLocation;
+      }
+      if (sourceName !== source.name) {
+        source.name = sourceName;
+      }
+      if (layerName !== source.layerName) {
+        source.layerName = layerName;
+      }
+      return "edit source properties";
+    });
+    // Update UI
+    await this.updateSlidersAndSources();
+  }
+
+  async _sourcePropertiesRunDialog(glyph, sourceName, layerName, location) {
+    const nameController = new ObservableController({
+      sourceName: sourceName,
+      layerName: layerName,
+    });
+    nameController.addKeyListener("sourceName", (key, newValue) =>
+      dialog.defaultButton.classList.toggle("disabled", !newValue.length)
+    );
+
+    const locationAxes = this._sourcePropertiesLocationAxes(glyph);
+    const locationController = new ObservableController({ ...location });
+    const contentElement = this._sourcePropertiesContentElement(
+      locationAxes,
+      nameController,
+      locationController
+    );
+
+    const dialog = await dialogSetup("Source properties", null, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Done", isDefaultButton: true, disabled: !sourceName.length },
+    ]);
+    dialog.setContent(contentElement);
+    setTimeout(() => contentElement.querySelector(`#sourceName`)?.focus(), 0);
+
+    if (!(await dialog.run())) {
+      // User cancelled
+      return {};
+    }
+
+    const locationModel = locationController.model;
+    const newLocation = Object.fromEntries(
+      locationAxes
+        .filter(
+          (axis) =>
+            locationModel[axis.name] !== undefined &&
+            locationModel[axis.name] !== axis.defaultValue
+        )
+        .map((axis) => [axis.name, locationModel[axis.name]])
+    );
+
+    sourceName = nameController.model.sourceName;
+    layerName = nameController.model.layerName || nameController.model.sourceName;
+
+    return { location: newLocation, sourceName, layerName };
+  }
+
+  _sourcePropertiesLocationAxes(glyph) {
     const localAxisNames = glyph.axes.map((axis) => axis.name);
     const globalAxes = mapAxesFromUserSpaceToDesignspace(
       // Don't include global axes that also exist as local axes
@@ -432,12 +518,14 @@ export class EditorController {
         (axis) => !localAxisNames.includes(axis.name)
       )
     );
-    const locationAxes = [
+    return [
       ...globalAxes,
       ...(globalAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
       ...glyph.axes,
     ];
+  }
 
+  _sourcePropertiesContentElement(locationAxes, nameController, locationController) {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
         min-height: 0;
@@ -447,7 +535,7 @@ export class EditorController {
     });
     locationElement.axes = locationAxes;
     locationElement.controller = locationController;
-    const contentElement = html.div(
+    return html.div(
       {
         style: `overflow: hidden;
           white-space: nowrap;
@@ -468,46 +556,6 @@ export class EditorController {
         locationElement,
       ]
     );
-
-    const dialog = await dialogSetup("Source properties", null, [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Done", isDefaultButton: true },
-    ]);
-    dialog.setContent(contentElement);
-
-    if (!(await dialog.run())) {
-      // User cancelled
-      return;
-    }
-
-    const locationModel = locationController.model;
-    const newLocation = Object.fromEntries(
-      locationAxes
-        .filter(
-          (axis) =>
-            locationModel[axis.name] !== undefined &&
-            locationModel[axis.name] !== axis.defaultValue
-        )
-        .map((axis) => [axis.name, locationModel[axis.name]])
-    );
-
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      const source = glyph.sources[sourceIndex];
-      if (!objectsEqual(source.location, newLocation)) {
-        source.location = newLocation;
-      }
-      if (nameController.model.sourceName !== source.name) {
-        source.name = nameController.model.sourceName;
-      }
-      const layerName =
-        nameController.model.layerName || nameController.model.sourceName;
-      if (layerName !== source.layerName) {
-        source.layerName = layerName;
-      }
-      return "edit source properties";
-    });
-    // Update UI
-    await this.updateSlidersAndSources();
   }
 
   initSidebars() {
