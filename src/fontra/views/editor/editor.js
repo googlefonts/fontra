@@ -427,15 +427,11 @@ export class EditorController {
       ...glyph.axes,
     ];
     const source = glyph.sources[sourceIndex];
-    let sourceName = source.name;
-    const sourceNameChange = (event) => {
-      sourceName = event.target.value;
-    };
-    let layerName = source.layerName;
-    const layerNameChange = (event) => {
-      layerName = event.target.value;
-    };
     const locationController = new ObservableController({ ...source.location });
+    const nameController = new ObservableController({
+      sourceName: source.name,
+      layerName: source.layerName,
+    });
     const contentFunc = async (dialogBox) => {
       const locationElement = html.createDomElement("designspace-location", {
         style: `grid-column: 1 / -1;
@@ -459,21 +455,9 @@ export class EditorController {
           `,
         },
         [
-          html.label({ for: "source-name", style: "text-align: right;" }, [
-            "Source name:",
-          ]),
-          html.input({
-            type: "text",
-            id: "source-name",
-            value: source.name,
-            onchange: sourceNameChange,
-          }),
-          html.label({ for: "layer-name", style: "text-align: right;" }, ["Layer:"]),
-          html.input({
-            type: "text",
-            id: "layer-name",
-            value: source.layerName,
-            onchange: layerNameChange,
+          ...labeledTextInput("Source name:", nameController, "sourceName"),
+          ...labeledTextInput("Layer:", nameController, "layerName", {
+            placeholderKey: "sourceName",
           }),
           html.br(),
           locationElement,
@@ -503,9 +487,11 @@ export class EditorController {
       if (!objectsEqual(source.location, newLocation)) {
         source.location = newLocation;
       }
-      if (sourceName !== source.name) {
-        source.name = sourceName;
+      if (nameController.model.sourceName !== source.name) {
+        source.name = nameController.model.sourceName;
       }
+      const layerName =
+        nameController.model.layerName || nameController.model.sourceName;
       if (layerName !== source.layerName) {
         source.layerName = layerName;
       }
@@ -2185,4 +2171,27 @@ function mapAxesFromUserSpaceToDesignspace(axes) {
     }
     return newAxis;
   });
+}
+
+function* labeledTextInput(label, controller, key, options) {
+  yield html.label({ for: key, style: "text-align: right;" }, [label]);
+
+  const inputElement = html.input({
+    type: "text",
+    id: key,
+    value: controller.model[key],
+    oninput: () => (controller.model[key] = inputElement.value),
+  });
+
+  controller.addKeyListener(key, (key, newValue) => (inputElement.value = newValue));
+
+  if (options && options.placeholderKey) {
+    inputElement.placeholder = controller.model[options.placeholderKey];
+    controller.addKeyListener(
+      options.placeholderKey,
+      (key, newValue) => (inputElement.placeholder = newValue)
+    );
+  }
+
+  yield inputElement;
 }
