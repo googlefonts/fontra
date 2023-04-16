@@ -382,18 +382,12 @@ export class EditorController {
     this.sourcesList = document.querySelector("#sources-list");
     this.sourcesList.columnDescriptions = columnDescriptions;
 
-    // TODO: relocate those to somewhere more appropriate after implementation
-    const addSourceCallback = () => {
-      console.log("add a source");
-    };
-    const removeSourceCallback = () => {
-      console.log("remove a source");
-    };
     this.addRemoveSourceButtons = document.querySelector(
       "#sources-list-add-remove-buttons"
     );
-    this.addRemoveSourceButtons.addButtonCallback = addSourceCallback;
-    this.addRemoveSourceButtons.removeButtonCallback = removeSourceCallback;
+    this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
+    this.addRemoveSourceButtons.removeButtonCallback = () =>
+      console.log("remove a source");
     this.addRemoveSourceButtons.hidden = true;
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
@@ -407,6 +401,15 @@ export class EditorController {
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
       this.editSourceProperties(event.detail.doubleClickedRowIndex);
     });
+  }
+
+  async addSource() {
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    const location = glyphController.mapLocationGlobalToLocal(
+      this.sceneController.getLocation()
+    );
+    console.log(location);
   }
 
   async editSourceProperties(sourceIndex) {
