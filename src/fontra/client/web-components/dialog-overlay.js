@@ -231,8 +231,8 @@ export class DialogOverlay extends SimpleElement {
   }
 
   show() {
-    this.dialogBox.focus();
     this.style.display = "grid";
+    this.dialogBox.focus();
   }
 
   hide() {
