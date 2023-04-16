@@ -417,6 +417,14 @@ export class EditorController {
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
 
     const glyph = glyphController.glyph;
+
+    const source = glyph.sources[sourceIndex];
+    const locationController = new ObservableController({ ...source.location });
+    const nameController = new ObservableController({
+      sourceName: source.name,
+      layerName: source.layerName,
+    });
+
     const localAxisNames = glyph.axes.map((axis) => axis.name);
     const globalAxes = mapAxesFromUserSpaceToDesignspace(
       // Don't include global axes that also exist as local axes
@@ -429,12 +437,6 @@ export class EditorController {
       ...(globalAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
       ...glyph.axes,
     ];
-    const source = glyph.sources[sourceIndex];
-    const locationController = new ObservableController({ ...source.location });
-    const nameController = new ObservableController({
-      sourceName: source.name,
-      layerName: source.layerName,
-    });
 
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
