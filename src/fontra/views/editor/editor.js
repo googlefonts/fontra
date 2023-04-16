@@ -417,7 +417,7 @@ export class EditorController {
       location: newLocation,
       sourceName,
       layerName,
-    } = await this._sourcePropertiesRunDialog(glyph, "", "", location);
+    } = await this._sourcePropertiesRunDialog("Add source", glyph, "", "", location);
     if (!newLocation) {
       return;
     }
@@ -438,6 +438,7 @@ export class EditorController {
       sourceName,
       layerName,
     } = await this._sourcePropertiesRunDialog(
+      "Source properties",
       glyph,
       source.name,
       source.layerName,
@@ -464,7 +465,7 @@ export class EditorController {
     await this.updateSlidersAndSources();
   }
 
-  async _sourcePropertiesRunDialog(glyph, sourceName, layerName, location) {
+  async _sourcePropertiesRunDialog(title, glyph, sourceName, layerName, location) {
     const nameController = new ObservableController({
       sourceName: sourceName,
       layerName: layerName,
@@ -481,7 +482,7 @@ export class EditorController {
       locationController
     );
 
-    const dialog = await dialogSetup("Source properties", null, [
+    const dialog = await dialogSetup(title, null, [
       { title: "Cancel", isCancelButton: true },
       { title: "Done", isDefaultButton: true, disabled: !sourceName.length },
     ]);
