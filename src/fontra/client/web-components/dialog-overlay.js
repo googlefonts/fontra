@@ -162,6 +162,12 @@ export class DialogOverlay extends SimpleElement {
     this._populateDialogBox(headline, message);
   }
 
+  setContent(contentElement) {
+    contentElement.classList.add("message");
+    this.dialogContent.replaceWith(contentElement);
+    this.dialogContent = contentElement;
+  }
+
   run() {
     this.show();
     return this._resultPromise;
@@ -187,12 +193,6 @@ export class DialogOverlay extends SimpleElement {
         this._autoDismissTimeout
       );
     }
-  }
-
-  setContent(contentElement) {
-    contentElement.classList.add("message");
-    this.dialogContent.replaceWith(contentElement);
-    this.dialogContent = contentElement;
   }
 
   *_renderButtons() {
