@@ -387,7 +387,7 @@ export class EditorController {
     );
     this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
     this.addRemoveSourceButtons.removeButtonCallback = () =>
-      console.log("remove a source");
+      this.removeSource(this.sourcesList.getSelectedItemIndex());
     this.addRemoveSourceButtons.hidden = true;
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
@@ -401,6 +401,53 @@ export class EditorController {
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
       this.editSourceProperties(event.detail.doubleClickedRowIndex);
     });
+  }
+
+  async removeSource(sourceIndex) {
+    if (sourceIndex === undefined) {
+      return;
+    }
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    const glyph = glyphController.glyph;
+    const source = glyph.sources[sourceIndex];
+    const dialog = await dialogSetup("Delete source", null, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Delete", isDefaultButton: true, result: "ok" },
+    ]);
+
+    const deleteLayerCheckBox = html.input({
+      type: "checkbox",
+      id: "delete-layer",
+      checked: true,
+    });
+
+    const dialogContent = html.div({}, [
+      html.div({ class: "message" }, [
+        `Are you sure you want to delete source #${sourceIndex}, “${source.name}”?`,
+      ]),
+      html.br(),
+      deleteLayerCheckBox,
+      html.label({ for: "delete-layer" }, ["Delete associated layer"]),
+    ]);
+    dialog.setContent(dialogContent);
+
+    if (!(await dialog.run())) {
+      return;
+    }
+
+    const layerIndex = glyph.getLayerIndex(source.layerName);
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      glyph.sources.splice(sourceIndex, 1);
+      let layerMessage = "";
+      if (layerIndex !== undefined && deleteLayerCheckBox.checked) {
+        glyph.layers.splice(layerIndex, 1);
+        layerMessage = " and layer";
+      }
+      return "delete source" + layerMessage;
+    });
+    // Update UI
+    await this.updateSlidersAndSources();
   }
 
   async addSource() {
