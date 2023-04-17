@@ -478,6 +478,7 @@ export class EditorController {
     const instance = glyphController.instantiate(
       normalizeLocation(location, glyphController.combinedAxes)
     );
+    instance.path = instance.path.roundCoordinates();
     // TODO: round coordinates and component positions
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       glyph.sources.push({
