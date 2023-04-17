@@ -260,6 +260,7 @@ export class EditorController {
           await this.sceneController.getSelectedSource()
         );
         this.updateWindowLocationAndSelectionInfo();
+        this.updateRemoveSourceButtonState();
         this.autoViewBox = false;
       })
     );
@@ -397,10 +398,16 @@ export class EditorController {
       this.sliders.values = this.sceneController.getLocation();
       this.updateWindowLocationAndSelectionInfo();
       this.autoViewBox = false;
+      this.updateRemoveSourceButtonState();
     });
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
       this.editSourceProperties(event.detail.doubleClickedRowIndex);
     });
+  }
+
+  updateRemoveSourceButtonState() {
+    this.addRemoveSourceButtons.disableRemoveButton =
+      this.sourcesList.getSelectedItemIndex() === undefined;
   }
 
   async removeSource(sourceIndex) {
@@ -886,6 +893,7 @@ export class EditorController {
     const sourceItems = await this.sceneController.getSourcesInfo();
     this.sourcesList.setItems(sourceItems || []);
     this.addRemoveSourceButtons.hidden = !sourceItems;
+    this.updateRemoveSourceButtonState();
     this.updateWindowLocationAndSelectionInfo();
   }
 
