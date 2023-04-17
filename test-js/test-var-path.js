@@ -550,6 +550,28 @@ describe("VarPackedPath Tests", () => {
     });
   }
 
+  it("roundCoordinates", () => {
+    const t = new Transform().translate(0.2, 0.6);
+    const p1 = simpleTestPath(false);
+    const p2 = p1.transformed(t);
+    let mp = new MockPath2D();
+    p2.drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      { args: [0.2, 0.6], op: "moveTo" },
+      { args: [0.2, 100.6], op: "lineTo" },
+      { args: [100.2, 100.6], op: "lineTo" },
+      { args: [100.2, 0.6], op: "lineTo" },
+    ]);
+    mp = new MockPath2D();
+    p2.roundCoordinates().drawToPath2d(mp);
+    expect(mp.items).to.deep.equal([
+      { args: [0, 1], op: "moveTo" },
+      { args: [0, 101], op: "lineTo" },
+      { args: [100, 101], op: "lineTo" },
+      { args: [100, 1], op: "lineTo" },
+    ]);
+  });
+
   it("transformed", () => {
     const t = new Transform().scale(2);
     const p = simpleTestPath(false);

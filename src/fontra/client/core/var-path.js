@@ -657,6 +657,19 @@ export class VarPackedPath {
     );
   }
 
+  roundCoordinates(roundFunc) {
+    // Return a copy with all coordinates rounded.
+    // Optionally you can supply a custom round function.
+    if (!roundFunc) {
+      roundFunc = Math.round;
+    }
+    const coordinates = new VarArray(this.coordinates.length);
+    for (let i = 0; i < this.coordinates.length; i++) {
+      coordinates[i] = roundFunc(this.coordinates[i]);
+    }
+    return new this.constructor(coordinates, this.pointTypes, this.contourInfo);
+  }
+
   transformed(transformation) {
     const coordinates = new VarArray(this.coordinates.length);
     for (let i = 0; i < this.coordinates.length; i += 2) {
