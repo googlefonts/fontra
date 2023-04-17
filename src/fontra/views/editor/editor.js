@@ -478,8 +478,10 @@ export class EditorController {
     const instance = glyphController.instantiate(
       normalizeLocation(location, glyphController.combinedAxes)
     );
+    // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
-    // TODO: round coordinates and component positions
+    roundComponentOrigins(instance.components);
+
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       glyph.sources.push({
         name: sourceName,
@@ -2313,4 +2315,15 @@ function* labeledTextInput(label, controller, key, options) {
   }
 
   yield inputElement;
+}
+
+function roundComponentOrigins(components) {
+  components.forEach((component) => {
+    component.transformation.translateX = Math.round(
+      component.transformation.translateX
+    );
+    component.transformation.translateY = Math.round(
+      component.transformation.translateY
+    );
+  });
 }
