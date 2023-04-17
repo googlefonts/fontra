@@ -168,8 +168,7 @@ export class VariableGlyphController {
       this._model = new VariationModel(
         locations.map((location) =>
           sparsifyLocation(normalizeLocation(location, this.combinedAxes))
-        ),
-        this.axes.map((axis) => axis.name)
+        )
       );
     }
     return this._model;
