@@ -428,7 +428,7 @@ export class EditorController {
       ]),
       html.br(),
       deleteLayerCheckBox,
-      html.label({ for: "delete-layer" }, ["Delete associated layer"]),
+      html.label({ for: "delete-layer" }, ["Also delete associated layer"]),
     ]);
     dialog.setContent(dialogContent);
 
