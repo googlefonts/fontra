@@ -20,7 +20,7 @@ import { SceneView } from "../core/scene-view.js";
 import { Form } from "../core/ui-form.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
-import { piecewiseLinearMap } from "/core/var-model.js";
+import { normalizeLocation, piecewiseLinearMap } from "/core/var-model.js";
 import { joinPaths } from "../core/var-path.js";
 import * as html from "/core/unlit.js";
 import {
@@ -421,8 +421,21 @@ export class EditorController {
     if (!newLocation) {
       return;
     }
-    console.log(sourceName, layerName);
-    console.log(newLocation);
+    const instance = glyphController.instantiate(
+      normalizeLocation(location, glyphController.combinedAxes)
+    );
+    // TODO: round coordinates and component positions
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      glyph.sources.push({
+        name: sourceName,
+        layerName: layerName,
+        location: newLocation,
+      });
+      glyph.layers.push({ name: layerName, glyph: instance });
+      return "add source";
+    });
+    // Update UI
+    await this.updateSlidersAndSources();
   }
 
   async editSourceProperties(sourceIndex) {
