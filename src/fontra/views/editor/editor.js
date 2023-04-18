@@ -27,6 +27,7 @@ import {
   fetchJSON,
   getCharFromUnicode,
   hasShortcutModifierKey,
+  htmlToElement,
   hyphenatedToCamelCase,
   makeUPlusStringFromCodePoint,
   objectsEqual,
@@ -546,10 +547,13 @@ export class EditorController {
 
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
+    const layerNames = glyph.layers.map((layer) => layer.name);
+
     const contentElement = this._sourcePropertiesContentElement(
       locationAxes,
       nameController,
-      locationController
+      locationController,
+      layerNames
     );
 
     const dialog = await dialogSetup(title, null, [
@@ -596,7 +600,12 @@ export class EditorController {
     ];
   }
 
-  _sourcePropertiesContentElement(locationAxes, nameController, locationController) {
+  _sourcePropertiesContentElement(
+    locationAxes,
+    nameController,
+    locationController,
+    layerNames
+  ) {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
         min-height: 0;
@@ -622,6 +631,7 @@ export class EditorController {
         ...labeledTextInput("Source name:", nameController, "sourceName"),
         ...labeledTextInput("Layer:", nameController, "layerName", {
           placeholderKey: "sourceName",
+          choices: layerNames,
         }),
         html.br(),
         locationElement,
@@ -2297,12 +2307,15 @@ function mapAxesFromUserSpaceToDesignspace(axes) {
 function* labeledTextInput(label, controller, key, options) {
   yield html.label({ for: key, style: "text-align: right;" }, [label]);
 
-  const inputElement = html.input({
-    type: "text",
-    id: key,
-    value: controller.model[key],
-    oninput: () => (controller.model[key] = inputElement.value),
-  });
+  const choices = options?.choices;
+  const choicesID = `${key}-choices`;
+  console.log("choices", choices);
+
+  const inputElement = htmlToElement(`<input ${choices ? `list="${choicesID}"` : ""}>`);
+  inputElement.type = "text";
+  inputElement.id = key;
+  inputElement.value = controller.model[key];
+  inputElement.oninput = () => (controller.model[key] = inputElement.value);
 
   controller.addKeyListener(key, (key, newValue) => (inputElement.value = newValue));
 
@@ -2315,6 +2328,14 @@ function* labeledTextInput(label, controller, key, options) {
   }
 
   yield inputElement;
+
+  if (choices) {
+    yield html.createDomElement(
+      "datalist",
+      { id: choicesID },
+      choices.map((item) => html.createDomElement("option", { value: item }))
+    );
+  }
 }
 
 function roundComponentOrigins(components) {
