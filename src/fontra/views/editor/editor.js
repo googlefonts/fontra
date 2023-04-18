@@ -579,16 +579,7 @@ export class EditorController {
       return {};
     }
 
-    const locationModel = locationController.model;
-    const newLocation = Object.fromEntries(
-      locationAxes
-        .filter(
-          (axis) =>
-            locationModel[axis.name] !== undefined &&
-            locationModel[axis.name] !== axis.defaultValue
-        )
-        .map((axis) => [axis.name, locationModel[axis.name]])
-    );
+    const newLocation = makeSparseLocation(locationController.model, locationAxes);
 
     sourceName = nameController.model.sourceName;
     layerName = nameController.model.layerName || nameController.model.sourceName;
@@ -2357,4 +2348,15 @@ function roundComponentOrigins(components) {
       component.transformation.translateY
     );
   });
+}
+
+function makeSparseLocation(location, axes) {
+  return Object.fromEntries(
+    axes
+      .filter(
+        (axis) =>
+          location[axis.name] !== undefined && location[axis.name] !== axis.defaultValue
+      )
+      .map((axis) => [axis.name, location[axis.name]])
+  );
 }
