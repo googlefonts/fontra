@@ -492,9 +492,9 @@ export class EditorController {
     if (!newLocation) {
       return;
     }
-    const instance = glyphController.instantiate(
-      normalizeLocation(newLocation, glyphController.combinedAxes)
-    );
+    const instance = glyphController
+      .instantiate(normalizeLocation(newLocation, glyphController.combinedAxes))
+      .copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
     roundComponentOrigins(instance.components);
