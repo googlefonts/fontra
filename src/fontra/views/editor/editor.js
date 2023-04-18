@@ -424,10 +424,17 @@ export class EditorController {
       { title: "Delete", isDefaultButton: true, result: "ok" },
     ]);
 
+    const canDeleteLayer =
+      1 ===
+      glyph.sources.reduce(
+        (count, src) => count + (src.layerName === source.layerName ? 1 : 0),
+        0
+      );
     const deleteLayerCheckBox = html.input({
       type: "checkbox",
       id: "delete-layer",
-      checked: true,
+      checked: canDeleteLayer,
+      disabled: !canDeleteLayer,
     });
 
     const dialogContent = html.div({}, [
@@ -436,7 +443,7 @@ export class EditorController {
       ]),
       html.br(),
       deleteLayerCheckBox,
-      html.label({ for: "delete-layer" }, [
+      html.label({ for: "delete-layer", style: canDeleteLayer ? "" : "color: gray;" }, [
         `Also delete associated layer “${source.layerName}”`,
       ]),
     ]);
