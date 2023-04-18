@@ -559,6 +559,11 @@ export class EditorController {
       const warnings = [];
       if (!nameController.model.sourceName.length) {
         warnings.push("⚠️ The source name must not be empty");
+      } else if (
+        nameController.model.sourceName !== sourceName &&
+        glyph.sources.some((source) => source.name === nameController.model.sourceName)
+      ) {
+        warnings.push("⚠️ The source name should be unique");
       }
       const locStr = locationToString(
         makeSparseLocation(locationController.model, locationAxes)
