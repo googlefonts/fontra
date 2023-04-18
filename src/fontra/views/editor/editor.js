@@ -20,7 +20,11 @@ import { SceneView } from "../core/scene-view.js";
 import { Form } from "../core/ui-form.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
-import { normalizeLocation, piecewiseLinearMap } from "/core/var-model.js";
+import {
+  locationToString,
+  normalizeLocation,
+  piecewiseLinearMap,
+} from "/core/var-model.js";
 import { joinPaths } from "../core/var-path.js";
 import * as html from "/core/unlit.js";
 import {
@@ -548,23 +552,49 @@ export class EditorController {
   }
 
   async _sourcePropertiesRunDialog(title, glyph, sourceName, layerName, location) {
+    const validateInput = () => {
+      const warnings = [];
+      if (!nameController.model.sourceName.length) {
+        warnings.push("⚠️ The source name must not be empty");
+      }
+      const locStr = locationToString(
+        makeSparseLocation(locationController.model, locationAxes)
+      );
+      if (sourceLocations.has(locStr)) {
+        warnings.push("⚠️ The source location must be unique");
+      }
+      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
+      dialog.defaultButton.classList.toggle("disabled", warnings.length);
+    };
     const nameController = new ObservableController({
       sourceName: sourceName,
       layerName: layerName,
     });
-    nameController.addKeyListener("sourceName", (key, newValue) =>
-      dialog.defaultButton.classList.toggle("disabled", !newValue.length)
-    );
+    nameController.addKeyListener("sourceName", validateInput);
 
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
     const layerNames = glyph.layers.map((layer) => layer.name);
 
-    const contentElement = this._sourcePropertiesContentElement(
+    locationController.addListener(validateInput);
+
+    const sourceLocations = new Set(
+      glyph.sources.map((source) =>
+        locationToString(makeSparseLocation(source.location, locationAxes))
+      )
+    );
+    if (sourceName.length) {
+      sourceLocations.delete(
+        locationToString(makeSparseLocation(location, locationAxes))
+      );
+    }
+
+    const { contentElement, warningElement } = this._sourcePropertiesContentElement(
       locationAxes,
       nameController,
       locationController,
-      layerNames
+      layerNames,
+      sourceLocations
     );
 
     const dialog = await dialogSetup(title, null, [
@@ -572,7 +602,10 @@ export class EditorController {
       { title: "Done", isDefaultButton: true, disabled: !sourceName.length },
     ]);
     dialog.setContent(contentElement);
+
     setTimeout(() => contentElement.querySelector(`#sourceName`)?.focus(), 0);
+
+    validateInput();
 
     if (!(await dialog.run())) {
       // User cancelled
@@ -606,7 +639,8 @@ export class EditorController {
     locationAxes,
     nameController,
     locationController,
-    layerNames
+    layerNames,
+    sourceLocations
   ) {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
@@ -615,9 +649,13 @@ export class EditorController {
         height: 100%;
       `,
     });
+    const warningElement = html.div({
+      id: "warning-text",
+      style: `grid-column: 1 / -1; min-height: 1.5em;`,
+    });
     locationElement.axes = locationAxes;
     locationElement.controller = locationController;
-    return html.div(
+    const contentElement = html.div(
       {
         style: `overflow: hidden;
           white-space: nowrap;
@@ -637,8 +675,10 @@ export class EditorController {
         }),
         html.br(),
         locationElement,
+        warningElement,
       ]
     );
+    return { contentElement, warningElement };
   }
 
   initSidebars() {
