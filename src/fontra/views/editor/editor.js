@@ -2318,7 +2318,6 @@ function* labeledTextInput(label, controller, key, options) {
 
   const choices = options?.choices;
   const choicesID = `${key}-choices`;
-  console.log("choices", choices);
 
   const inputElement = htmlToElement(`<input ${choices ? `list="${choicesID}"` : ""}>`);
   inputElement.type = "text";
