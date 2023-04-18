@@ -550,8 +550,22 @@ export class EditorController {
       if (sourceName !== source.name) {
         source.name = sourceName;
       }
+      const oldLayerName = source.layerName;
       if (layerName !== source.layerName) {
         source.layerName = layerName;
+      }
+      if (layerNames.indexOf(layerName) < 0) {
+        // Rename the layer
+        for (const layer of glyph.layers) {
+          if (layer.name === oldLayerName) {
+            layer.name = layerName;
+          }
+        }
+        for (const source of glyph.sources) {
+          if (source.layerName === oldLayerName) {
+            source.layerName = layerName;
+          }
+        }
       }
       return "edit source properties";
     });
