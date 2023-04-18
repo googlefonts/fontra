@@ -15,6 +15,10 @@ export class VariableGlyph {
     return glyph;
   }
 
+  copy() {
+    return VariableGlyph.fromObject(this);
+  }
+
   getLayerGlyph(layerName) {
     return this.getLayer(layerName)?.glyph;
   }
@@ -57,5 +61,9 @@ export class StaticGlyph {
     }
     source.components = obj.components || [];
     return source;
+  }
+
+  copy() {
+    return StaticGlyph.fromObject(this);
   }
 }
