@@ -20,13 +20,18 @@ import { SceneView } from "../core/scene-view.js";
 import { Form } from "../core/ui-form.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
-import { piecewiseLinearMap } from "/core/var-model.js";
+import {
+  locationToString,
+  normalizeLocation,
+  piecewiseLinearMap,
+} from "/core/var-model.js";
 import { joinPaths } from "../core/var-path.js";
 import * as html from "/core/unlit.js";
 import {
   fetchJSON,
   getCharFromUnicode,
   hasShortcutModifierKey,
+  htmlToElement,
   hyphenatedToCamelCase,
   makeUPlusStringFromCodePoint,
   objectsEqual,
@@ -260,6 +265,7 @@ export class EditorController {
           await this.sceneController.getSelectedSource()
         );
         this.updateWindowLocationAndSelectionInfo();
+        this.updateRemoveSourceButtonState();
         this.autoViewBox = false;
       })
     );
@@ -382,18 +388,12 @@ export class EditorController {
     this.sourcesList = document.querySelector("#sources-list");
     this.sourcesList.columnDescriptions = columnDescriptions;
 
-    // TODO: relocate those to somewhere more appropriate after implementation
-    const addSourceCallback = () => {
-      console.log("add a source");
-    };
-    const removeSourceCallback = () => {
-      console.log("remove a source");
-    };
     this.addRemoveSourceButtons = document.querySelector(
       "#sources-list-add-remove-buttons"
     );
-    this.addRemoveSourceButtons.addButtonCallback = addSourceCallback;
-    this.addRemoveSourceButtons.removeButtonCallback = removeSourceCallback;
+    this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
+    this.addRemoveSourceButtons.removeButtonCallback = () =>
+      this.removeSource(this.sourcesList.getSelectedItemIndex());
     this.addRemoveSourceButtons.hidden = true;
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
@@ -403,10 +403,119 @@ export class EditorController {
       this.sliders.values = this.sceneController.getLocation();
       this.updateWindowLocationAndSelectionInfo();
       this.autoViewBox = false;
+      this.updateRemoveSourceButtonState();
     });
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
       this.editSourceProperties(event.detail.doubleClickedRowIndex);
     });
+  }
+
+  updateRemoveSourceButtonState() {
+    setTimeout(() => {
+      this.addRemoveSourceButtons.disableRemoveButton =
+        this.sourcesList.getSelectedItemIndex() === undefined;
+    }, 0);
+  }
+
+  async removeSource(sourceIndex) {
+    if (sourceIndex === undefined) {
+      return;
+    }
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    const glyph = glyphController.glyph;
+    const source = glyph.sources[sourceIndex];
+    const dialog = await dialogSetup("Delete source", null, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Delete", isDefaultButton: true, result: "ok" },
+    ]);
+
+    const canDeleteLayer =
+      1 ===
+      glyph.sources.reduce(
+        (count, src) => count + (src.layerName === source.layerName ? 1 : 0),
+        0
+      );
+    const deleteLayerCheckBox = html.input({
+      type: "checkbox",
+      id: "delete-layer",
+      checked: canDeleteLayer,
+      disabled: !canDeleteLayer,
+    });
+
+    const dialogContent = html.div({}, [
+      html.div({ class: "message" }, [
+        `Are you sure you want to delete source #${sourceIndex}, “${source.name}”?`,
+      ]),
+      html.br(),
+      deleteLayerCheckBox,
+      html.label({ for: "delete-layer", style: canDeleteLayer ? "" : "color: gray;" }, [
+        `Also delete associated layer “${source.layerName}”`,
+      ]),
+    ]);
+    dialog.setContent(dialogContent);
+
+    if (!(await dialog.run())) {
+      return;
+    }
+
+    const layerIndex = glyph.getLayerIndex(source.layerName);
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      glyph.sources.splice(sourceIndex, 1);
+      let layerMessage = "";
+      if (layerIndex !== undefined && deleteLayerCheckBox.checked) {
+        glyph.layers.splice(layerIndex, 1);
+        layerMessage = " and layer";
+      }
+      return "delete source" + layerMessage;
+    });
+    // Update UI
+    await this.updateSlidersAndSources();
+  }
+
+  async addSource() {
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+
+    const glyph = glyphController.glyph;
+
+    const location = glyphController.mapLocationGlobalToLocal(
+      this.sceneController.getLocation()
+    );
+
+    const {
+      location: newLocation,
+      sourceName,
+      layerName,
+      layerNames,
+    } = await this._sourcePropertiesRunDialog("Add source", glyph, "", "", location);
+    if (!newLocation) {
+      return;
+    }
+    const instance = glyphController.instantiate(
+      normalizeLocation(newLocation, glyphController.combinedAxes)
+    );
+    // Round coordinates and component positions
+    instance.path = instance.path.roundCoordinates();
+    roundComponentOrigins(instance.components);
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      glyph.sources.push({
+        name: sourceName,
+        layerName: layerName,
+        location: newLocation,
+      });
+      if (layerNames.indexOf(layerName) < 0) {
+        // Only add layer if the name is new
+        glyph.layers.push({ name: layerName, glyph: instance });
+      }
+      return "add source";
+    });
+    // Update UI
+    const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
+    await this.sceneController.setSelectedSource(selectedSourceIndex);
+    await this.updateSlidersAndSources();
+    this.sourcesList.setSelectedItemIndex(selectedSourceIndex, false); /* hmm */
   }
 
   async editSourceProperties(sourceIndex) {
@@ -414,6 +523,131 @@ export class EditorController {
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
 
     const glyph = glyphController.glyph;
+
+    const source = glyph.sources[sourceIndex];
+
+    const {
+      location: newLocation,
+      sourceName,
+      layerName,
+      layerNames,
+    } = await this._sourcePropertiesRunDialog(
+      "Source properties",
+      glyph,
+      source.name,
+      source.layerName,
+      source.location
+    );
+    if (!newLocation) {
+      return;
+    }
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const source = glyph.sources[sourceIndex];
+      if (!objectsEqual(source.location, newLocation)) {
+        source.location = newLocation;
+      }
+      if (sourceName !== source.name) {
+        source.name = sourceName;
+      }
+      const oldLayerName = source.layerName;
+      if (layerName !== source.layerName) {
+        source.layerName = layerName;
+      }
+      if (layerNames.indexOf(layerName) < 0) {
+        // Rename the layer
+        for (const layer of glyph.layers) {
+          if (layer.name === oldLayerName) {
+            layer.name = layerName;
+          }
+        }
+        for (const source of glyph.sources) {
+          if (source.layerName === oldLayerName) {
+            source.layerName = layerName;
+          }
+        }
+      }
+      return "edit source properties";
+    });
+    // Update UI
+    await this.updateSlidersAndSources();
+  }
+
+  async _sourcePropertiesRunDialog(title, glyph, sourceName, layerName, location) {
+    const validateInput = () => {
+      const warnings = [];
+      if (!nameController.model.sourceName.length) {
+        warnings.push("⚠️ The source name must not be empty");
+      } else if (
+        nameController.model.sourceName !== sourceName &&
+        glyph.sources.some((source) => source.name === nameController.model.sourceName)
+      ) {
+        warnings.push("⚠️ The source name should be unique");
+      }
+      const locStr = locationToString(
+        makeSparseLocation(locationController.model, locationAxes)
+      );
+      if (sourceLocations.has(locStr)) {
+        warnings.push("⚠️ The source location must be unique");
+      }
+      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
+      dialog.defaultButton.classList.toggle("disabled", warnings.length);
+    };
+    const nameController = new ObservableController({
+      sourceName: sourceName,
+      layerName: layerName,
+    });
+    nameController.addKeyListener("sourceName", validateInput);
+
+    const locationAxes = this._sourcePropertiesLocationAxes(glyph);
+    const locationController = new ObservableController({ ...location });
+    const layerNames = glyph.layers.map((layer) => layer.name);
+
+    locationController.addListener(validateInput);
+
+    const sourceLocations = new Set(
+      glyph.sources.map((source) =>
+        locationToString(makeSparseLocation(source.location, locationAxes))
+      )
+    );
+    if (sourceName.length) {
+      sourceLocations.delete(
+        locationToString(makeSparseLocation(location, locationAxes))
+      );
+    }
+
+    const { contentElement, warningElement } = this._sourcePropertiesContentElement(
+      locationAxes,
+      nameController,
+      locationController,
+      layerNames,
+      sourceLocations
+    );
+
+    const dialog = await dialogSetup(title, null, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Done", isDefaultButton: true, disabled: !sourceName.length },
+    ]);
+    dialog.setContent(contentElement);
+
+    setTimeout(() => contentElement.querySelector(`#sourceName`)?.focus(), 0);
+
+    validateInput();
+
+    if (!(await dialog.run())) {
+      // User cancelled
+      return {};
+    }
+
+    const newLocation = makeSparseLocation(locationController.model, locationAxes);
+
+    sourceName = nameController.model.sourceName;
+    layerName = nameController.model.layerName || nameController.model.sourceName;
+
+    return { location: newLocation, sourceName, layerName, layerNames };
+  }
+
+  _sourcePropertiesLocationAxes(glyph) {
     const localAxisNames = glyph.axes.map((axis) => axis.name);
     const globalAxes = mapAxesFromUserSpaceToDesignspace(
       // Don't include global axes that also exist as local axes
@@ -421,24 +655,30 @@ export class EditorController {
         (axis) => !localAxisNames.includes(axis.name)
       )
     );
-    const locationAxes = [
+    return [
       ...globalAxes,
       ...(globalAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
       ...glyph.axes,
     ];
-    const source = glyph.sources[sourceIndex];
-    const locationController = new ObservableController({ ...source.location });
-    const nameController = new ObservableController({
-      sourceName: source.name,
-      layerName: source.layerName,
-    });
+  }
 
+  _sourcePropertiesContentElement(
+    locationAxes,
+    nameController,
+    locationController,
+    layerNames,
+    sourceLocations
+  ) {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
         min-height: 0;
         overflow: scroll;
         height: 100%;
       `,
+    });
+    const warningElement = html.div({
+      id: "warning-text",
+      style: `grid-column: 1 / -1; min-height: 1.5em;`,
     });
     locationElement.axes = locationAxes;
     locationElement.controller = locationController;
@@ -458,51 +698,14 @@ export class EditorController {
         ...labeledTextInput("Source name:", nameController, "sourceName"),
         ...labeledTextInput("Layer:", nameController, "layerName", {
           placeholderKey: "sourceName",
+          choices: layerNames,
         }),
         html.br(),
         locationElement,
+        warningElement,
       ]
     );
-
-    const dialog = await dialogSetup("Source properties", null, [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Done", isDefaultButton: true },
-    ]);
-    dialog.setContent(contentElement);
-
-    if (!(await dialog.run())) {
-      // User cancelled
-      return;
-    }
-
-    const locationModel = locationController.model;
-    const newLocation = Object.fromEntries(
-      locationAxes
-        .filter(
-          (axis) =>
-            locationModel[axis.name] !== undefined &&
-            locationModel[axis.name] !== axis.defaultValue
-        )
-        .map((axis) => [axis.name, locationModel[axis.name]])
-    );
-
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      const source = glyph.sources[sourceIndex];
-      if (!objectsEqual(source.location, newLocation)) {
-        source.location = newLocation;
-      }
-      if (nameController.model.sourceName !== source.name) {
-        source.name = nameController.model.sourceName;
-      }
-      const layerName =
-        nameController.model.layerName || nameController.model.sourceName;
-      if (layerName !== source.layerName) {
-        source.layerName = layerName;
-      }
-      return "edit source properties";
-    });
-    // Update UI
-    await this.updateSlidersAndSources();
+    return { contentElement, warningElement };
   }
 
   initSidebars() {
@@ -773,6 +976,7 @@ export class EditorController {
     this.sourcesList.setItems(sourceItems || []);
     this.addRemoveSourceButtons.hidden = !sourceItems;
     this.updateWindowLocationAndSelectionInfo();
+    this.updateRemoveSourceButtonState();
   }
 
   async doubleClickedComponentsCallback(event) {
@@ -2172,12 +2376,14 @@ function mapAxesFromUserSpaceToDesignspace(axes) {
 function* labeledTextInput(label, controller, key, options) {
   yield html.label({ for: key, style: "text-align: right;" }, [label]);
 
-  const inputElement = html.input({
-    type: "text",
-    id: key,
-    value: controller.model[key],
-    oninput: () => (controller.model[key] = inputElement.value),
-  });
+  const choices = options?.choices;
+  const choicesID = `${key}-choices`;
+
+  const inputElement = htmlToElement(`<input ${choices ? `list="${choicesID}"` : ""}>`);
+  inputElement.type = "text";
+  inputElement.id = key;
+  inputElement.value = controller.model[key];
+  inputElement.oninput = () => (controller.model[key] = inputElement.value);
 
   controller.addKeyListener(key, (key, newValue) => (inputElement.value = newValue));
 
@@ -2190,4 +2396,34 @@ function* labeledTextInput(label, controller, key, options) {
   }
 
   yield inputElement;
+
+  if (choices) {
+    yield html.createDomElement(
+      "datalist",
+      { id: choicesID },
+      choices.map((item) => html.createDomElement("option", { value: item }))
+    );
+  }
+}
+
+function roundComponentOrigins(components) {
+  components.forEach((component) => {
+    component.transformation.translateX = Math.round(
+      component.transformation.translateX
+    );
+    component.transformation.translateY = Math.round(
+      component.transformation.translateY
+    );
+  });
+}
+
+function makeSparseLocation(location, axes) {
+  return Object.fromEntries(
+    axes
+      .filter(
+        (axis) =>
+          location[axis.name] !== undefined && location[axis.name] !== axis.defaultValue
+      )
+      .map((axis) => [axis.name, location[axis.name]])
+  );
 }

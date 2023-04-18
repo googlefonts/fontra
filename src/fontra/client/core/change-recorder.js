@@ -106,7 +106,7 @@ function getProxy(subject, changes) {
       if (method) {
         return method;
       }
-      if (isArray && !isNaN(prop)) {
+      if (isArray && typeof prop !== "symbol" && !isNaN(prop)) {
         prop = parseInt(prop);
       }
       subject = subject[prop];
