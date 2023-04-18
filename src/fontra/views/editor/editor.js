@@ -508,7 +508,10 @@ export class EditorController {
       return "add source";
     });
     // Update UI
+    const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
+    await this.sceneController.setSelectedSource(selectedSourceIndex);
     await this.updateSlidersAndSources();
+    this.sourcesList.setSelectedItemIndex(selectedSourceIndex, false); /* hmm */
   }
 
   async editSourceProperties(sourceIndex) {
