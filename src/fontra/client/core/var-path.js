@@ -30,8 +30,10 @@ export class VarPackedPath {
   static fromObject(obj) {
     const path = new VarPackedPath();
     path.coordinates = VarArray.from(obj.coordinates);
-    path.pointTypes = obj.pointTypes;
-    path.contourInfo = obj.contourInfo;
+    path.pointTypes = [...obj.pointTypes];
+    path.contourInfo = obj.contourInfo.map((item) => {
+      return { ...item };
+    });
     return path;
   }
 
