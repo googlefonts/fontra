@@ -407,8 +407,10 @@ export class EditorController {
   }
 
   updateRemoveSourceButtonState() {
-    this.addRemoveSourceButtons.disableRemoveButton =
-      this.sourcesList.getSelectedItemIndex() === undefined;
+    setTimeout(() => {
+      this.addRemoveSourceButtons.disableRemoveButton =
+        this.sourcesList.getSelectedItemIndex() === undefined;
+    }, 0);
   }
 
   async removeSource(sourceIndex) {
@@ -915,8 +917,8 @@ export class EditorController {
     const sourceItems = await this.sceneController.getSourcesInfo();
     this.sourcesList.setItems(sourceItems || []);
     this.addRemoveSourceButtons.hidden = !sourceItems;
-    this.updateRemoveSourceButtonState();
     this.updateWindowLocationAndSelectionInfo();
+    this.updateRemoveSourceButtonState();
   }
 
   async doubleClickedComponentsCallback(event) {
