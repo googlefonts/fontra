@@ -487,6 +487,7 @@ export class EditorController {
       location: newLocation,
       sourceName,
       layerName,
+      layerNames,
     } = await this._sourcePropertiesRunDialog("Add source", glyph, "", "", location);
     if (!newLocation) {
       return;
@@ -504,7 +505,10 @@ export class EditorController {
         layerName: layerName,
         location: newLocation,
       });
-      glyph.layers.push({ name: layerName, glyph: instance });
+      if (layerNames.indexOf(layerName) < 0) {
+        // Only add layer if the name is new
+        glyph.layers.push({ name: layerName, glyph: instance });
+      }
       return "add source";
     });
     // Update UI
@@ -526,6 +530,7 @@ export class EditorController {
       location: newLocation,
       sourceName,
       layerName,
+      layerNames,
     } = await this._sourcePropertiesRunDialog(
       "Source properties",
       glyph,
@@ -625,7 +630,7 @@ export class EditorController {
     sourceName = nameController.model.sourceName;
     layerName = nameController.model.layerName || nameController.model.sourceName;
 
-    return { location: newLocation, sourceName, layerName };
+    return { location: newLocation, sourceName, layerName, layerNames };
   }
 
   _sourcePropertiesLocationAxes(glyph) {
