@@ -4,7 +4,10 @@ export class VariableGlyph {
   static fromObject(obj) {
     const glyph = new VariableGlyph();
     glyph.name = obj.name;
-    glyph.axes = obj.axes || [];
+    glyph.axes =
+      obj.axes?.map((axis) => {
+        return { ...axis };
+      }) || [];
     glyph.sources = obj.sources.map((source) => Source.fromObject(source));
     glyph.layers = obj.layers.map((layer) => {
       return {
@@ -42,7 +45,7 @@ class Source {
   static fromObject(obj) {
     const source = new Source();
     source.name = obj.name;
-    source.location = obj.location;
+    source.location = { ...obj.location } || {};
     source.layerName = obj.layerName;
     return source;
   }
@@ -59,11 +62,19 @@ export class StaticGlyph {
     } else {
       source.path = new VarPackedPath();
     }
-    source.components = obj.components || [];
+    source.components = obj.components?.map(copyComponent) || [];
     return source;
   }
 
   copy() {
     return StaticGlyph.fromObject(this);
   }
+}
+
+function copyComponent(component) {
+  return {
+    name: component.name,
+    transformation: { ...component.transformation },
+    location: { ...component.location },
+  };
 }
