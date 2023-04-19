@@ -1387,7 +1387,6 @@ export class EditorController {
       viewInfo["editing"] && !!viewInfo["selectedGlyph"];
 
     if (viewInfo["location"]) {
-      // this.sidebarDesignspaceDataController.model.location = viewInfo["location"];
       this.sidebarDesignspaceDataController.model.location =
         this.sceneController.getLocation();
     }
