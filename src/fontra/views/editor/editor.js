@@ -33,6 +33,7 @@ import {
   hasShortcutModifierKey,
   htmlToElement,
   hyphenatedToCamelCase,
+  isTypeableInput,
   makeUPlusStringFromCodePoint,
   objectsEqual,
   parseSelection,
@@ -1206,7 +1207,7 @@ export class EditorController {
       return undefined;
     }
     for (const handlerDef of handlerDefs) {
-      if (isTypeableInput(document.activeElement) && !handlerDef.globalOverride) {
+      if (isTypeableInput() && !handlerDef.globalOverride) {
         continue;
       }
       if (
@@ -1577,7 +1578,7 @@ export class EditorController {
   }
 
   spaceKeyDownHandler(event) {
-    if (isTypeableInput(document.activeElement)) {
+    if (isTypeableInput()) {
       return;
     }
     this.canvasController.sceneView = this.cleanSceneView;
@@ -2290,29 +2291,6 @@ function deleteNestedValue(subject, path) {
   path = path.slice(0, -1);
   subject = getNestedValue(subject, path);
   delete subject[key];
-}
-
-function isTypeableInput(element) {
-  element = findNestedActiveElement(element);
-
-  if (element.contentEditable === "true") {
-    return true;
-  }
-  if (element.tagName.toLowerCase() === "textarea") {
-    return true;
-  }
-  if (element.tagName.toLowerCase() === "input" && element.type !== "range") {
-    return true;
-  }
-  return false;
-}
-
-function findNestedActiveElement(element) {
-  // If the element element is part of a Web Component's Shadow DOM, take
-  // *its* active element, recursively.
-  return element.shadowRoot && element.shadowRoot.activeElement
-    ? findNestedActiveElement(element.shadowRoot.activeElement)
-    : element;
 }
 
 function easeOutQuad(t) {

@@ -277,3 +277,26 @@ export async function fetchJSON(url) {
   const response = await fetch(url);
   return await response.json();
 }
+
+export function isTypeableInput() {
+  const element = findNestedActiveElement(document.activeElement);
+
+  if (element.contentEditable === "true") {
+    return true;
+  }
+  if (element.tagName.toLowerCase() === "textarea") {
+    return true;
+  }
+  if (element.tagName.toLowerCase() === "input" && element.type !== "range") {
+    return true;
+  }
+  return false;
+}
+
+function findNestedActiveElement(element) {
+  // If the element element is part of a Web Component's Shadow DOM, take
+  // *its* active element, recursively.
+  return element.shadowRoot && element.shadowRoot.activeElement
+    ? findNestedActiveElement(element.shadowRoot.activeElement)
+    : element;
+}
