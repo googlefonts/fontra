@@ -1,3 +1,4 @@
+import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
 import * as html from "/core/unlit.js";
 import { enumerate, htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
@@ -74,7 +75,7 @@ export class SidebarDesignspace {
   _updateAxes() {
     const axes = [...this.dataModel.globalAxes];
     const globalAxisNames = new Set(axes.map((axis) => axis.name));
-    const localAxes = (this.dataModel.varGlyphController?.axes || []).filter(
+    const localAxes = getAxisInfoFromGlyph(this.dataModel.varGlyphController).filter(
       (axis) => !globalAxisNames.has(axis.name)
     );
     if (localAxes.length) {
@@ -484,7 +485,18 @@ function makeSparseLocation(location, axes) {
   );
 }
 
-// DUPLICATED FROM scene-model.js: CHECK WHETHER BOTH ARE NEEDED
 function makeDefaultLocation(axes) {
   return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
+}
+
+function getAxisInfoFromGlyph(glyph) {
+  const axisInfo = {};
+  for (const axis of glyph?.axes || []) {
+    const baseName = getAxisBaseName(axis.name);
+    if (axisInfo[baseName]) {
+      continue;
+    }
+    axisInfo[baseName] = { ...axis, name: baseName };
+  }
+  return Object.values(axisInfo);
 }
