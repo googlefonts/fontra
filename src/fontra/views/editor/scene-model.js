@@ -10,7 +10,6 @@ import {
 } from "../core/rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
 import { parseSelection } from "../core/utils.js";
-import { mapForward, mapBackward } from "../core/var-model.js";
 import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 
 export class SceneModel {
