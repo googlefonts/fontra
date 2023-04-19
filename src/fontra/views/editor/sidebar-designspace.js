@@ -124,10 +124,8 @@ export class SidebarDesignspace {
   }
 
   _updateRemoveSourceButtonState() {
-    setTimeout(() => {
-      this.addRemoveSourceButtons.disableRemoveButton =
-        this.sourcesList.getSelectedItemIndex() === undefined;
-    }, 0);
+    this.addRemoveSourceButtons.disableRemoveButton =
+      this.sourcesList.getSelectedItemIndex() === undefined;
   }
 
   async removeSource(sourceIndex) {
