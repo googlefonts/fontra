@@ -71,14 +71,17 @@ export class DesignspaceLocation extends UnlitElement {
   }
 
   get values() {
-    return this._values || {};
+    if (!this._values) {
+      this._values = {};
+    }
+    return this._values;
   }
 
   set values(values) {
     if (!this._values) {
       this._values = {};
     }
-    for (const axis of this.axes) {
+    for (const axis of this.axes || []) {
       const value = values[axis.name];
       if (value !== undefined) {
         const slider = this.shadowRoot.querySelector(
