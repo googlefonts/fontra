@@ -1,4 +1,3 @@
-import { getAxisBaseName } from "../core/glyph-controller.js";
 import {
   centeredRect,
   insetRect,
@@ -34,14 +33,14 @@ export class SceneModel {
   }
 
   getSelectedPositionedGlyph() {
-    return this._getPositionedGlyph(this.selectedGlyph);
+    return this.getPositionedGlyphFromSelection(this.selectedGlyph);
   }
 
   getHoveredPositionedGlyph() {
-    return this._getPositionedGlyph(this.hoveredGlyph);
+    return this.getPositionedGlyphFromSelection(this.hoveredGlyph);
   }
 
-  _getPositionedGlyph(lineGlyphIndex) {
+  getPositionedGlyphFromSelection(lineGlyphIndex) {
     if (!lineGlyphIndex) {
       return undefined;
     }
@@ -179,66 +178,6 @@ export class SceneModel {
 
   updateLocalLocations(localLocations) {
     this._localLocations = { ...this._localLocations, ...localLocations };
-  }
-
-  async getSelectedSource() {
-    const glyphName = this.getSelectedGlyphName();
-    if (glyphName) {
-      return await this.fontController.getSourceIndex(glyphName, this.getLocation());
-    } else {
-      return undefined;
-    }
-  }
-
-  async setSelectedSource(sourceIndex) {
-    if (!this.selectedGlyph) {
-      return;
-    }
-    const glyph = await this.getSelectedVariableGlyphController();
-    const globalDefaultLocation = mapForward(
-      makeDefaultLocation(glyph.globalAxes),
-      glyph.globalAxes
-    );
-    const localDefaultLocation = makeDefaultLocation(glyph.axes);
-    const defaultLocation = { ...globalDefaultLocation, ...localDefaultLocation };
-    const source = glyph.sources[sourceIndex];
-    const location = glyph.mapLocationLocalToGlobal({
-      ...defaultLocation,
-      ...source.location,
-    });
-    await this.setLocation(location);
-  }
-
-  async getAxisInfo() {
-    const allAxes = Array.from(this.fontController.globalAxes);
-    const globalAxisNames = new Set(allAxes.map((axis) => axis.name));
-    if (this.selectedGlyph) {
-      const glyph = await this.getSelectedVariableGlyphController();
-      const glyphAxes = getAxisInfoFromGlyph(glyph).filter(
-        (axis) => !globalAxisNames.has(axis.name)
-      );
-      allAxes.push(...glyphAxes);
-    }
-    return allAxes;
-  }
-
-  async getSourcesInfo() {
-    if (!this.selectedGlyph) {
-      return null;
-    }
-    const sourcesInfo = [];
-    const glyph = await this.getSelectedVariableGlyphController();
-    if (!glyph) {
-      return null;
-    }
-    for (let i = 0; i < glyph.sources.length; i++) {
-      let name = glyph.sources[i].name;
-      if (!name) {
-        name = `source${i}`;
-      }
-      sourcesInfo.push({ sourceName: name, sourceIndex: i });
-    }
-    return sourcesInfo;
   }
 
   getTextHorizontalExtents() {
@@ -524,18 +463,6 @@ export class SceneModel {
   }
 }
 
-function getAxisInfoFromGlyph(glyph) {
-  const axisInfo = {};
-  for (const axis of glyph?.axes || []) {
-    const baseName = getAxisBaseName(axis.name);
-    if (axisInfo[baseName]) {
-      continue;
-    }
-    axisInfo[baseName] = { ...axis, name: baseName };
-  }
-  return Object.values(axisInfo);
-}
-
 function mergeAxisInfo(axisInfos) {
   // This returns a list of axes that is a superset of all the axis
   // sets of the input.
@@ -666,8 +593,4 @@ function makeGlyphNamesPattern(glyphNames) {
     glyphsObj[glyphName] = null;
   }
   return { glyphs: glyphsObj };
-}
-
-function makeDefaultLocation(axes) {
-  return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }
