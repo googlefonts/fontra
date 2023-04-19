@@ -278,7 +278,7 @@ export async function fetchJSON(url) {
   return await response.json();
 }
 
-export function isTypeableInput() {
+export function isActiveElementTypeable() {
   const element = findNestedActiveElement(document.activeElement);
 
   if (element.contentEditable === "true") {

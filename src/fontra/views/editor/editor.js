@@ -33,7 +33,7 @@ import {
   hasShortcutModifierKey,
   htmlToElement,
   hyphenatedToCamelCase,
-  isTypeableInput,
+  isActiveElementTypeable,
   makeUPlusStringFromCodePoint,
   objectsEqual,
   parseSelection,
@@ -1207,7 +1207,7 @@ export class EditorController {
       return undefined;
     }
     for (const handlerDef of handlerDefs) {
-      if (isTypeableInput() && !handlerDef.globalOverride) {
+      if (isActiveElementTypeable() && !handlerDef.globalOverride) {
         continue;
       }
       if (
@@ -1578,7 +1578,7 @@ export class EditorController {
   }
 
   spaceKeyDownHandler(event) {
-    if (isTypeableInput()) {
+    if (isActiveElementTypeable()) {
       return;
     }
     this.canvasController.sceneView = this.cleanSceneView;
