@@ -1,7 +1,7 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
 import * as html from "/core/unlit.js";
-import { enumerate, htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
+import { htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
 import {
   locationToString,
   normalizeLocation,
