@@ -200,6 +200,10 @@ export class SceneController {
   setSelectedGlyphState(state) {
     this.sceneModel.setSelectedGlyphState(state);
     this.canvasController.requestUpdate();
+    this.notifySelectedGlyphChanged();
+  }
+
+  notifySelectedGlyphChanged() {
     this._dispatchEvent("selectedGlyphChanged");
   }
 
@@ -290,7 +294,7 @@ export class SceneController {
       this.sceneModel.selectedGlyph = selectedGlyph;
       this.sceneModel.selection = new Set();
       this.canvasController.requestUpdate();
-      this._dispatchEvent("selectedGlyphChanged");
+      this.notifySelectedGlyphChanged();
     }
   }
 
@@ -321,7 +325,7 @@ export class SceneController {
 
   async setGlyphLines(glyphLines) {
     await this.sceneModel.setGlyphLines(glyphLines);
-    this._dispatchEvent("selectedGlyphChanged");
+    this.notifySelectedGlyphChanged();
     this.canvasController.requestUpdate();
   }
 
