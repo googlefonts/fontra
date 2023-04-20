@@ -200,6 +200,11 @@ export class SceneController {
   setSelectedGlyphState(state) {
     this.sceneModel.setSelectedGlyphState(state);
     this.canvasController.requestUpdate();
+    this.notifySelectedGlyphChanged();
+  }
+
+  notifySelectedGlyphChanged() {
+    this._dispatchEvent("selectedGlyphChanged");
   }
 
   async handleDrag(eventStream, initialEvent) {
@@ -285,11 +290,11 @@ export class SceneController {
   }
 
   set selectedGlyph(selectedGlyph) {
-    if (this.sceneModel.selectedGlyph != selectedGlyph) {
+    if (this.sceneModel.selectedGlyph !== selectedGlyph) {
       this.sceneModel.selectedGlyph = selectedGlyph;
       this.sceneModel.selection = new Set();
       this.canvasController.requestUpdate();
-      this._dispatchEvent("selectedGlyphChanged");
+      this.notifySelectedGlyphChanged();
     }
   }
 
@@ -320,6 +325,7 @@ export class SceneController {
 
   async setGlyphLines(glyphLines) {
     await this.sceneModel.setGlyphLines(glyphLines);
+    this.notifySelectedGlyphChanged();
     this.canvasController.requestUpdate();
   }
 
@@ -352,23 +358,6 @@ export class SceneController {
 
   updateLocalLocations(localLocations) {
     this.sceneModel.updateLocalLocations(localLocations);
-  }
-
-  getSelectedSource() {
-    return this.sceneModel.getSelectedSource();
-  }
-
-  async setSelectedSource(sourceIndex) {
-    await this.sceneModel.setSelectedSource(sourceIndex);
-    this.canvasController.requestUpdate();
-  }
-
-  getAxisInfo() {
-    return this.sceneModel.getAxisInfo();
-  }
-
-  getSourcesInfo() {
-    return this.sceneModel.getSourcesInfo();
   }
 
   getSceneBounds() {

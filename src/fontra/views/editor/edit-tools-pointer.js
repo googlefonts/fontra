@@ -162,6 +162,7 @@ export class PointerTool extends BaseTool {
             positionedGlyph.glyph.instance
           );
           sceneController.selectedGlyphIsEditing = true;
+          sceneController.notifySelectedGlyphChanged(); // Oh well
         }
       }
     } else {

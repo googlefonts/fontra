@@ -20,22 +20,14 @@ import { SceneView } from "../core/scene-view.js";
 import { Form } from "../core/ui-form.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
-import {
-  locationToString,
-  normalizeLocation,
-  piecewiseLinearMap,
-} from "/core/var-model.js";
 import { joinPaths } from "../core/var-path.js";
-import * as html from "/core/unlit.js";
 import {
   fetchJSON,
   getCharFromUnicode,
   hasShortcutModifierKey,
-  htmlToElement,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
   makeUPlusStringFromCodePoint,
-  objectsEqual,
   parseSelection,
   scheduleCalls,
   throttleCalls,
@@ -51,6 +43,7 @@ import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
+import { SidebarDesignspace } from "./sidebar-designspace.js";
 import { VisualizationLayers } from "./visualization-layers.js";
 import {
   allGlyphsCleanVisualizationLayerDefinition,
@@ -134,12 +127,6 @@ export class EditorController {
 
     this.sceneController = new SceneController(sceneModel, canvasController);
     // TODO move event stuff out of here
-    this.sceneController.addEventListener("selectedGlyphChanged", async (event) => {
-      await this.updateSlidersAndSources();
-      this.sourcesList.setSelectedItemIndex(
-        await this.sceneController.getSelectedSource()
-      );
-    });
     this.sceneController.addEventListener(
       "selectedGlyphIsEditingChanged",
       async (event) => {
@@ -181,8 +168,8 @@ export class EditorController {
       async (event) => await this._updateSelectionInfo(),
       100
     );
-    this.updateSlidersAndSourcesThrottled = throttleCalls(
-      async () => await this.updateSlidersAndSources(),
+    this.updateSidebarDesignspace = throttleCalls(
+      async () => await this._updateSidebarDesignspace(),
       200
     );
     canvas.addEventListener("viewBoxChanged", (event) => {
@@ -239,9 +226,8 @@ export class EditorController {
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     await this.initGlyphsSearch();
-    await this.initSliders();
     this.initTools();
-    this.initSourcesList();
+    await this.initSidebarDesignspace();
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox
     setTimeout(() => this.setupFromWindowLocation(), 20);
@@ -252,23 +238,6 @@ export class EditorController {
     this.glyphsSearch.glyphMap = this.fontController.glyphMap;
     this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
-    );
-  }
-
-  async initSliders() {
-    this.sliders = document.querySelector("#designspace-location");
-    this.sliders.axes = await this.sceneController.getAxisInfo();
-    this.sliders.addEventListener(
-      "locationChanged",
-      scheduleCalls(async (event) => {
-        await this.sceneController.setLocation(event.detail.values);
-        this.sourcesList.setSelectedItemIndex(
-          await this.sceneController.getSelectedSource()
-        );
-        this.updateWindowLocationAndSelectionInfo();
-        this.updateRemoveSourceButtonState();
-        this.autoViewBox = false;
-      })
     );
   }
 
@@ -381,332 +350,29 @@ export class EditorController {
     }
   }
 
-  initSourcesList() {
-    const columnDescriptions = [
-      { key: "sourceName", width: "14em" },
-      // {"key": "sourceIndex", "width": "2em"},
-    ];
-    this.sourcesList = document.querySelector("#sources-list");
-    this.sourcesList.columnDescriptions = columnDescriptions;
-
-    this.addRemoveSourceButtons = document.querySelector(
-      "#sources-list-add-remove-buttons"
+  async initSidebarDesignspace() {
+    this.sidebarDesignspaceDataController = new ObservableController();
+    this.sidebarDesignspaceDataController.model.globalAxes =
+      this.fontController.globalAxes;
+    this.sidebarDesignspace = new SidebarDesignspace(
+      this.sceneController,
+      this.sidebarDesignspaceDataController
     );
-    this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
-    this.addRemoveSourceButtons.removeButtonCallback = () =>
-      this.removeSource(this.sourcesList.getSelectedItemIndex());
-    this.addRemoveSourceButtons.hidden = true;
+    await this.sidebarDesignspace.setup();
 
-    this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
-      await this.sceneController.setSelectedSource(
-        event.detail.getSelectedItem().sourceIndex
-      );
-      this.sliders.values = this.sceneController.getLocation();
+    this.sceneController.addEventListener("selectedGlyphChanged", async (event) => {
+      this.sidebarDesignspaceDataController.model.varGlyphController =
+        await this.sceneController.sceneModel.getSelectedVariableGlyphController();
       this.updateWindowLocationAndSelectionInfo();
-      this.autoViewBox = false;
-      this.updateRemoveSourceButtonState();
     });
-    this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
-      this.editSourceProperties(event.detail.doubleClickedRowIndex);
-    });
-  }
-
-  updateRemoveSourceButtonState() {
-    setTimeout(() => {
-      this.addRemoveSourceButtons.disableRemoveButton =
-        this.sourcesList.getSelectedItemIndex() === undefined;
-    }, 0);
-  }
-
-  async removeSource(sourceIndex) {
-    if (sourceIndex === undefined) {
-      return;
-    }
-    const glyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-    const glyph = glyphController.glyph;
-    const source = glyph.sources[sourceIndex];
-    const dialog = await dialogSetup("Delete source", null, [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Delete", isDefaultButton: true, result: "ok" },
-    ]);
-
-    const canDeleteLayer =
-      1 ===
-      glyph.sources.reduce(
-        (count, src) => count + (src.layerName === source.layerName ? 1 : 0),
-        0
-      );
-    const deleteLayerCheckBox = html.input({
-      type: "checkbox",
-      id: "delete-layer",
-      checked: canDeleteLayer,
-      disabled: !canDeleteLayer,
-    });
-
-    const dialogContent = html.div({}, [
-      html.div({ class: "message" }, [
-        `Are you sure you want to delete source #${sourceIndex}, “${source.name}”?`,
-      ]),
-      html.br(),
-      deleteLayerCheckBox,
-      html.label({ for: "delete-layer", style: canDeleteLayer ? "" : "color: gray;" }, [
-        `Also delete associated layer “${source.layerName}”`,
-      ]),
-    ]);
-    dialog.setContent(dialogContent);
-
-    if (!(await dialog.run())) {
-      return;
-    }
-
-    const layerIndex = glyph.getLayerIndex(source.layerName);
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      glyph.sources.splice(sourceIndex, 1);
-      let layerMessage = "";
-      if (layerIndex !== undefined && deleteLayerCheckBox.checked) {
-        glyph.layers.splice(layerIndex, 1);
-        layerMessage = " and layer";
+    this.sidebarDesignspaceDataController.addKeyListener(
+      "location",
+      async (key, location) => {
+        await this.sceneController.setLocation(location);
+        this.updateWindowLocationAndSelectionInfo();
+        this.autoViewBox = false;
       }
-      return "delete source" + layerMessage;
-    });
-    // Update UI
-    await this.updateSlidersAndSources();
-  }
-
-  async addSource() {
-    const glyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-
-    const glyph = glyphController.glyph;
-
-    const location = glyphController.mapLocationGlobalToLocal(
-      this.sceneController.getLocation()
     );
-
-    const {
-      location: newLocation,
-      sourceName,
-      layerName,
-      layerNames,
-    } = await this._sourcePropertiesRunDialog("Add source", glyph, "", "", location);
-    if (!newLocation) {
-      return;
-    }
-    const instance = glyphController
-      .instantiate(normalizeLocation(newLocation, glyphController.combinedAxes))
-      .copy();
-    // Round coordinates and component positions
-    instance.path = instance.path.roundCoordinates();
-    roundComponentOrigins(instance.components);
-
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      glyph.sources.push({
-        name: sourceName,
-        layerName: layerName,
-        location: newLocation,
-      });
-      if (layerNames.indexOf(layerName) < 0) {
-        // Only add layer if the name is new
-        glyph.layers.push({ name: layerName, glyph: instance });
-      }
-      return "add source";
-    });
-    // Update UI
-    const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
-    await this.sceneController.setSelectedSource(selectedSourceIndex);
-    await this.updateSlidersAndSources();
-    this.sourcesList.setSelectedItemIndex(selectedSourceIndex, false); /* hmm */
-  }
-
-  async editSourceProperties(sourceIndex) {
-    const glyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-
-    const glyph = glyphController.glyph;
-
-    const source = glyph.sources[sourceIndex];
-
-    const {
-      location: newLocation,
-      sourceName,
-      layerName,
-      layerNames,
-    } = await this._sourcePropertiesRunDialog(
-      "Source properties",
-      glyph,
-      source.name,
-      source.layerName,
-      source.location
-    );
-    if (!newLocation) {
-      return;
-    }
-
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      const source = glyph.sources[sourceIndex];
-      if (!objectsEqual(source.location, newLocation)) {
-        source.location = newLocation;
-      }
-      if (sourceName !== source.name) {
-        source.name = sourceName;
-      }
-      const oldLayerName = source.layerName;
-      if (layerName !== source.layerName) {
-        source.layerName = layerName;
-      }
-      if (layerNames.indexOf(layerName) < 0) {
-        // Rename the layer
-        for (const layer of glyph.layers) {
-          if (layer.name === oldLayerName) {
-            layer.name = layerName;
-          }
-        }
-        for (const source of glyph.sources) {
-          if (source.layerName === oldLayerName) {
-            source.layerName = layerName;
-          }
-        }
-      }
-      return "edit source properties";
-    });
-    // Update UI
-    await this.updateSlidersAndSources();
-  }
-
-  async _sourcePropertiesRunDialog(title, glyph, sourceName, layerName, location) {
-    const validateInput = () => {
-      const warnings = [];
-      if (!nameController.model.sourceName.length) {
-        warnings.push("⚠️ The source name must not be empty");
-      } else if (
-        nameController.model.sourceName !== sourceName &&
-        glyph.sources.some((source) => source.name === nameController.model.sourceName)
-      ) {
-        warnings.push("⚠️ The source name should be unique");
-      }
-      const locStr = locationToString(
-        makeSparseLocation(locationController.model, locationAxes)
-      );
-      if (sourceLocations.has(locStr)) {
-        warnings.push("⚠️ The source location must be unique");
-      }
-      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
-      dialog.defaultButton.classList.toggle("disabled", warnings.length);
-    };
-    const nameController = new ObservableController({
-      sourceName: sourceName,
-      layerName: layerName,
-    });
-    nameController.addKeyListener("sourceName", validateInput);
-
-    const locationAxes = this._sourcePropertiesLocationAxes(glyph);
-    const locationController = new ObservableController({ ...location });
-    const layerNames = glyph.layers.map((layer) => layer.name);
-
-    locationController.addListener(validateInput);
-
-    const sourceLocations = new Set(
-      glyph.sources.map((source) =>
-        locationToString(makeSparseLocation(source.location, locationAxes))
-      )
-    );
-    if (sourceName.length) {
-      sourceLocations.delete(
-        locationToString(makeSparseLocation(location, locationAxes))
-      );
-    }
-
-    const { contentElement, warningElement } = this._sourcePropertiesContentElement(
-      locationAxes,
-      nameController,
-      locationController,
-      layerNames,
-      sourceLocations
-    );
-
-    const dialog = await dialogSetup(title, null, [
-      { title: "Cancel", isCancelButton: true },
-      { title: "Done", isDefaultButton: true, disabled: !sourceName.length },
-    ]);
-    dialog.setContent(contentElement);
-
-    setTimeout(() => contentElement.querySelector(`#sourceName`)?.focus(), 0);
-
-    validateInput();
-
-    if (!(await dialog.run())) {
-      // User cancelled
-      return {};
-    }
-
-    const newLocation = makeSparseLocation(locationController.model, locationAxes);
-
-    sourceName = nameController.model.sourceName;
-    layerName = nameController.model.layerName || nameController.model.sourceName;
-
-    return { location: newLocation, sourceName, layerName, layerNames };
-  }
-
-  _sourcePropertiesLocationAxes(glyph) {
-    const localAxisNames = glyph.axes.map((axis) => axis.name);
-    const globalAxes = mapAxesFromUserSpaceToDesignspace(
-      // Don't include global axes that also exist as local axes
-      this.fontController.globalAxes.filter(
-        (axis) => !localAxisNames.includes(axis.name)
-      )
-    );
-    return [
-      ...globalAxes,
-      ...(globalAxes.length && glyph.axes.length ? [{ isDivider: true }] : []),
-      ...glyph.axes,
-    ];
-  }
-
-  _sourcePropertiesContentElement(
-    locationAxes,
-    nameController,
-    locationController,
-    layerNames,
-    sourceLocations
-  ) {
-    const locationElement = html.createDomElement("designspace-location", {
-      style: `grid-column: 1 / -1;
-        min-height: 0;
-        overflow: scroll;
-        height: 100%;
-      `,
-    });
-    const warningElement = html.div({
-      id: "warning-text",
-      style: `grid-column: 1 / -1; min-height: 1.5em;`,
-    });
-    locationElement.axes = locationAxes;
-    locationElement.controller = locationController;
-    const contentElement = html.div(
-      {
-        style: `overflow: hidden;
-          white-space: nowrap;
-          display: grid;
-          gap: 0.5em;
-          grid-template-columns: max-content auto;
-          align-items: center;
-          height: 100%;
-          min-height: 0;
-        `,
-      },
-      [
-        ...labeledTextInput("Source name:", nameController, "sourceName"),
-        ...labeledTextInput("Layer:", nameController, "layerName", {
-          placeholderKey: "sourceName",
-          choices: layerNames,
-        }),
-        html.br(),
-        locationElement,
-        warningElement,
-      ]
-    );
-    return { contentElement, warningElement };
   }
 
   initSidebars() {
@@ -919,6 +585,7 @@ export class EditorController {
         glyphInfo;
       await this.setGlyphLines(glyphLines);
       this.sceneController.setSelectedGlyphState(selectedGlyphState);
+      this.sceneController.selectedGlyph = this.sceneController.selectedGlyph;
     } else {
       if (!glyphLines.length) {
         glyphLines.push([]);
@@ -933,7 +600,8 @@ export class EditorController {
       });
     }
     this.updateTextEntryFromGlyphLines();
-    await this.updateSlidersAndSources();
+    this.updateSidebarDesignspace();
+    this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
   }
 
@@ -961,23 +629,13 @@ export class EditorController {
       (glyphName) => this.fontController.getUnicodeFromGlyphName(glyphName)
     );
     await this.setGlyphLines(glyphLines);
-    await this.updateSlidersAndSources();
+    this.updateSidebarDesignspace();
+    this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
   }
 
-  async updateSlidersAndSources() {
-    const axisInfo = await this.sceneController.getAxisInfo();
-    const numGlobalAxes = this.fontController.globalAxes.length;
-    if (numGlobalAxes && axisInfo.length != numGlobalAxes) {
-      axisInfo.splice(numGlobalAxes, 0, { isDivider: true });
-    }
-    this.sliders.axes = axisInfo;
-    this.sliders.values = this.sceneController.getLocation();
-    const sourceItems = await this.sceneController.getSourcesInfo();
-    this.sourcesList.setItems(sourceItems || []);
-    this.addRemoveSourceButtons.hidden = !sourceItems;
-    this.updateWindowLocationAndSelectionInfo();
-    this.updateRemoveSourceButtonState();
+  async _updateSidebarDesignspace() {
+    this.sidebarDesignspace.forceUpdateSources();
   }
 
   async doubleClickedComponentsCallback(event) {
@@ -1013,7 +671,7 @@ export class EditorController {
       selectedGlyphInfo.glyphIndex + 1
     }`;
     this.updateTextEntryFromGlyphLines();
-    await this.updateSlidersAndSources();
+    this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
   }
 
@@ -1235,11 +893,11 @@ export class EditorController {
 
   async doUndoRedo(isRedo) {
     await this.sceneController.doUndoRedo(isRedo);
-    // Hmmm would be nice if the following was done automatically
-    await this.updateSlidersAndSources();
-    this.sourcesList.setSelectedItemIndex(
-      await this.sceneController.getSelectedSource()
-    );
+    // Hmmm would be nice if this was done automatically
+    this.sidebarDesignspaceDataController.model.location =
+      this.sceneController.getLocation();
+    this.updateSidebarDesignspace();
+    this.updateWindowLocationAndSelectionInfo();
   }
 
   canCut() {
@@ -1628,7 +1286,6 @@ export class EditorController {
     this.canvasController.requestUpdate();
     this.glyphsSearch.updateGlyphNamesListContent();
     this.updateWindowLocationAndSelectionInfo();
-    await this.updateSlidersAndSources();
   }
 
   async externalChange(change) {
@@ -1647,7 +1304,7 @@ export class EditorController {
         });
       }
       this.glyphsSearch.updateGlyphNamesListContent();
-      await this.updateSlidersAndSources();
+      this.updateSidebarDesignspace();
     }
     await this.sceneController.sceneModel.updateScene();
     if (
@@ -1655,7 +1312,7 @@ export class EditorController {
       matchChangePath(change, ["glyphs", selectedGlyphName])
     ) {
       this.updateSelectionInfo();
-      this.updateSlidersAndSourcesThrottled();
+      this.updateSidebarDesignspace();
     }
     this.canvasController.requestUpdate();
   }
@@ -1689,7 +1346,8 @@ export class EditorController {
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     if (selectedGlyphName !== undefined && glyphNames.includes(selectedGlyphName)) {
       this.updateSelectionInfo();
-      await this.updateSlidersAndSources();
+      this.updateSidebarDesignspace();
+      this.updateWindowLocationAndSelectionInfo();
     }
     this.canvasController.requestUpdate();
   }
@@ -1727,14 +1385,14 @@ export class EditorController {
       viewInfo["location"],
       viewInfo["localLocations"]
     );
-    if (viewInfo["location"]) {
-      this.sliders.values = viewInfo["location"];
-    }
     this.sceneController.selectedGlyphIsEditing =
       viewInfo["editing"] && !!viewInfo["selectedGlyph"];
-    this.sourcesList.setSelectedItemIndex(
-      await this.sceneController.getSelectedSource()
-    );
+
+    if (viewInfo["location"]) {
+      this.sidebarDesignspaceDataController.model.location =
+        this.sceneController.getLocation();
+    }
+
     if (viewInfo["selection"]) {
       this.sceneController.selection = new Set(viewInfo["selection"]);
     }
@@ -2334,74 +1992,4 @@ function newVisualizationLayersSettings(visualizationLayers) {
     visualizationLayers.toggle(key, onOff);
   }
   return controller;
-}
-
-function mapAxesFromUserSpaceToDesignspace(axes) {
-  return axes.map((axis) => {
-    const newAxis = { ...axis };
-    if (axis.mapping) {
-      for (const prop of ["minValue", "defaultValue", "maxValue"]) {
-        newAxis[prop] = piecewiseLinearMap(
-          axis[prop],
-          Object.fromEntries(axis.mapping)
-        );
-      }
-    }
-    return newAxis;
-  });
-}
-
-function* labeledTextInput(label, controller, key, options) {
-  yield html.label({ for: key, style: "text-align: right;" }, [label]);
-
-  const choices = options?.choices;
-  const choicesID = `${key}-choices`;
-
-  const inputElement = htmlToElement(`<input ${choices ? `list="${choicesID}"` : ""}>`);
-  inputElement.type = "text";
-  inputElement.id = key;
-  inputElement.value = controller.model[key];
-  inputElement.oninput = () => (controller.model[key] = inputElement.value);
-
-  controller.addKeyListener(key, (key, newValue) => (inputElement.value = newValue));
-
-  if (options && options.placeholderKey) {
-    inputElement.placeholder = controller.model[options.placeholderKey];
-    controller.addKeyListener(
-      options.placeholderKey,
-      (key, newValue) => (inputElement.placeholder = newValue)
-    );
-  }
-
-  yield inputElement;
-
-  if (choices) {
-    yield html.createDomElement(
-      "datalist",
-      { id: choicesID },
-      choices.map((item) => html.createDomElement("option", { value: item }))
-    );
-  }
-}
-
-function roundComponentOrigins(components) {
-  components.forEach((component) => {
-    component.transformation.translateX = Math.round(
-      component.transformation.translateX
-    );
-    component.transformation.translateY = Math.round(
-      component.transformation.translateY
-    );
-  });
-}
-
-function makeSparseLocation(location, axes) {
-  return Object.fromEntries(
-    axes
-      .filter(
-        (axis) =>
-          location[axis.name] !== undefined && location[axis.name] !== axis.defaultValue
-      )
-      .map((axis) => [axis.name, location[axis.name]])
-  );
 }
