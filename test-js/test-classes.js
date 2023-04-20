@@ -76,8 +76,10 @@ describe("schema tests", () => {
     {
       rootClass: "Font",
       path: ["glyphs"],
-      inValue: { A: { name: "A", sources: [], layers: [] } },
-      outValue: { A: VariableGlyph.fromObject({ name: "A", sources: [], layers: [] }) },
+      inValue: { A: { name: "A", axes: [], sources: [], layers: [] } },
+      outValue: {
+        A: VariableGlyph.fromObject({ name: "A", axes: [], sources: [], layers: [] }),
+      },
     },
     {
       rootClass: "StaticGlyph",
@@ -125,6 +127,12 @@ describe("schema tests", () => {
         for (const i of range(castValue.length)) {
           const castItem = castValue[i];
           const outItem = testCase.outValue[i];
+          expect(castItem.constructor).to.equal(outItem.constructor);
+          expect(castItem).to.deep.equal(outItem);
+        }
+      } else if (testCase.outValue.constructor === Object) {
+        for (const [k, outItem] of Object.entries(testCase.outValue)) {
+          const castItem = castValue[k];
           expect(castItem.constructor).to.equal(outItem.constructor);
           expect(castItem).to.deep.equal(outItem);
         }
