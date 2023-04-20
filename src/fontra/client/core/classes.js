@@ -30,40 +30,40 @@ function populateSchema(rawSchema) {
 }
 
 const castDefinitions = {
-  VariableGlyph(value, classDef) {
+  VariableGlyph(classDef, value) {
     if (value.constructor !== VariableGlyph) {
       value = VariableGlyph.fromObject(value);
     }
     return value;
   },
 
-  Layer(value, classDef) {
+  Layer(classDef, value) {
     if (value.constructor !== Layer) {
       value = Layer.fromObject(value);
     }
     return value;
   },
 
-  StaticGlyph(value, classDef) {
+  StaticGlyph(classDef, value) {
     if (value.constructor !== StaticGlyph) {
       value = StaticGlyph.fromObject(value);
     }
     return value;
   },
 
-  PackedPath(value, classDef) {
+  PackedPath(classDef, value) {
     if (value.constructor !== VarPackedPath) {
       value = VarPackedPath.fromObject(value);
     }
     return value;
   },
 
-  list(value, classDef) {
+  list(classDef, value) {
     value = [...value.map(classDef.itemCast)];
     return value;
   },
 
-  dict(value, classDef) {
+  dict(classDef, value) {
     value = Object.fromEntries(
       Object.entries(value).map(([k, v]) => [k, classDef.itemCast(v)])
     );
@@ -115,7 +115,7 @@ class ClassDef {
   cast(value) {
     const caster = castDefinitions[this.className];
     if (caster) {
-      value = caster(value, this);
+      value = caster(this, value);
     }
     return value;
   }
