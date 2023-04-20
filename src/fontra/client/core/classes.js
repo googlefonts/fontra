@@ -1,4 +1,6 @@
 import { fetchJSON } from "./utils.js";
+import { Layer, StaticGlyph, VariableGlyph } from "./var-glyph.js";
+import { VarPackedPath } from "./var-path.js";
 
 const classSchema = {};
 
@@ -27,6 +29,46 @@ function populateSchema(rawSchema) {
   }
 }
 
+const castDefinitions = {
+  VariableGlyph(value, classDef) {
+    if (value.constructor !== VariableGlyph) {
+      value = VariableGlyph.fromObject(value);
+    }
+    return value;
+  },
+
+  Layer(value, classDef) {
+    if (value.constructor !== Layer) {
+      value = Layer.fromObject(value);
+    }
+    return value;
+  },
+
+  StaticGlyph(value, classDef) {
+    if (value.constructor !== StaticGlyph) {
+      value = StaticGlyph.fromObject(value);
+    }
+    return value;
+  },
+
+  PackedPath(value, classDef) {
+    if (value.constructor !== VarPackedPath) {
+      value = VarPackedPath.fromObject(value);
+    }
+    return value;
+  },
+
+  list(value, classDef) {
+    value = [...value.map(classDef.itemCast)];
+    return value;
+  },
+
+  dict(value, classDef) {
+    value = Object.fromEntries(Object.entries(value).map(classDef.itemCast));
+    return value;
+  },
+};
+
 class ClassDef {
   constructor(rawClassDef, className, subType) {
     this.rawClassDef = rawClassDef;
@@ -36,6 +78,9 @@ class ClassDef {
       ? `${className}<${this.subType.className}>`
       : className;
     this.subTypeMapping = {};
+    this.itemCast = this.subType
+      ? this.subType.cast.bind(this.subType)
+      : (value) => value;
   }
 
   getSubType(property) {
@@ -63,5 +108,13 @@ class ClassDef {
       this.subTypeMapping[property] = subType;
     }
     return subType;
+  }
+
+  cast(value) {
+    const caster = castDefinitions[this.className];
+    if (caster) {
+      value = caster(value, this);
+    }
+    return value;
   }
 }
