@@ -194,7 +194,14 @@ export class SidebarDesignspace {
       sourceName,
       layerName,
       layerNames,
-    } = await this._sourcePropertiesRunDialog("Add source", glyph, "", "", location);
+    } = await this._sourcePropertiesRunDialog(
+      "Add source",
+      "Add",
+      glyph,
+      "",
+      "",
+      location
+    );
     if (!newLocation) {
       return;
     }
@@ -237,6 +244,7 @@ export class SidebarDesignspace {
       layerNames,
     } = await this._sourcePropertiesRunDialog(
       "Source properties",
+      "Done",
       glyph,
       source.name,
       source.layerName,
@@ -279,7 +287,14 @@ export class SidebarDesignspace {
     this._updateLocationFromSelectedSource();
   }
 
-  async _sourcePropertiesRunDialog(title, glyph, sourceName, layerName, location) {
+  async _sourcePropertiesRunDialog(
+    title,
+    okButtonTitle,
+    glyph,
+    sourceName,
+    layerName,
+    location
+  ) {
     const validateInput = () => {
       const warnings = [];
       if (!nameController.model.sourceName.length) {
@@ -332,7 +347,7 @@ export class SidebarDesignspace {
 
     const dialog = await dialogSetup(title, null, [
       { title: "Cancel", isCancelButton: true },
-      { title: "Done", isDefaultButton: true, disabled: !sourceName.length },
+      { title: okButtonTitle, isDefaultButton: true, disabled: !sourceName.length },
     ]);
     dialog.setContent(contentElement);
 
