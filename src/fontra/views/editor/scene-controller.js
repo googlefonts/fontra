@@ -321,6 +321,7 @@ export class SceneController {
 
   async setGlyphLines(glyphLines) {
     await this.sceneModel.setGlyphLines(glyphLines);
+    this._dispatchEvent("selectedGlyphChanged");
     this.canvasController.requestUpdate();
   }
 
