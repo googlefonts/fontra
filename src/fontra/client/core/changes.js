@@ -227,24 +227,26 @@ function findCommonPrefix(changes) {
 }
 
 const baseChangeFunctions = {
-  "=": (subject, key, item) => (subject[key] = item),
-  "d": (subject, key) => delete subject[key],
-  "-": (subject, index, deleteCount = 1) => subject.splice(index, deleteCount),
-  "+": (subject, index, ...items) => subject.splice(index, 0, ...items),
-  ":": (subject, index, deleteCount, ...items) =>
-    subject.splice(index, deleteCount, ...items),
+  "=": (subject, itemCast, key, item) => (subject[key] = itemCast(item)),
+  "d": (subject, itemCast, key) => delete subject[key],
+  "-": (subject, itemCast, index, deleteCount = 1) =>
+    subject.splice(index, deleteCount),
+  "+": (subject, itemCast, index, ...items) =>
+    subject.splice(index, 0, ...items.map(itemCast)),
+  ":": (subject, itemCast, index, deleteCount, ...items) =>
+    subject.splice(index, deleteCount, ...items.map(itemCast)),
 };
 
 // TODO: Refactor. These don't really belong here, and should ideally be registered from outside
 const changeFunctions = {
   ...baseChangeFunctions,
-  "=xy": (path, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
-  "insertContour": (path, contourIndex, contour) =>
+  "=xy": (path, itemCast, pointIndex, x, y) => path.setPointPosition(pointIndex, x, y),
+  "insertContour": (path, itemCast, contourIndex, contour) =>
     path.insertContour(contourIndex, contour),
-  "deleteContour": (path, contourIndex) => path.deleteContour(contourIndex),
-  "deletePoint": (path, contourIndex, contourPointIndex) =>
+  "deleteContour": (path, itemCast, contourIndex) => path.deleteContour(contourIndex),
+  "deletePoint": (path, itemCast, contourIndex, contourPointIndex) =>
     path.deletePoint(contourIndex, contourPointIndex),
-  "insertPoint": (path, contourIndex, contourPointIndex, point) =>
+  "insertPoint": (path, itemCast, contourIndex, contourPointIndex, point) =>
     path.insertPoint(contourIndex, contourPointIndex, point),
 };
 
@@ -264,12 +266,13 @@ const changeFunctions = {
 // "c": Array of child changes. Optional.
 //
 
-export function applyChange(subject, change) {
+export function applyChange(subject, change, subjectClassDef) {
   const path = change["p"] || [];
   const functionName = change["f"];
   const children = change["c"] || [];
 
   for (const pathElement of path) {
+    subjectClassDef = subjectClassDef?.getSubType(pathElement);
     subject = subject[pathElement];
     if (subject === undefined) {
       throw new Error(`assert -- invalid change path: ${path}`);
@@ -279,11 +282,11 @@ export function applyChange(subject, change) {
   if (functionName) {
     const changeFunc = changeFunctions[functionName];
     const args = change["a"] || [];
-    changeFunc(subject, ...args);
+    changeFunc(subject, subjectClassDef?.itemCast || noopItemCast, ...args);
   }
 
   for (const subChange of children) {
-    applyChange(subject, subChange);
+    applyChange(subject, subChange, subjectClassDef);
   }
 }
 
@@ -471,4 +474,8 @@ export function hasChange(obj) {
     return true;
   }
   return false;
+}
+
+function noopItemCast(value) {
+  return value;
 }

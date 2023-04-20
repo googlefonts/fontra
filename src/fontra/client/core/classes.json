@@ -1,0 +1,175 @@
+{
+  "Font": {
+    "unitsPerEm": {
+      "type": "int"
+    },
+    "glyphs": {
+      "type": "dict",
+      "subtype": "VariableGlyph"
+    },
+    "glyphMap": {
+      "type": "dict",
+      "subtype": "list"
+    },
+    "axes": {
+      "type": "list",
+      "subtype": "GlobalAxis"
+    }
+  },
+  "VariableGlyph": {
+    "name": {
+      "type": "str"
+    },
+    "axes": {
+      "type": "list",
+      "subtype": "LocalAxis"
+    },
+    "sources": {
+      "type": "list",
+      "subtype": "Source"
+    },
+    "layers": {
+      "type": "list",
+      "subtype": "Layer"
+    }
+  },
+  "LocalAxis": {
+    "name": {
+      "type": "str"
+    },
+    "minValue": {
+      "type": "float"
+    },
+    "defaultValue": {
+      "type": "float"
+    },
+    "maxValue": {
+      "type": "float"
+    }
+  },
+  "Source": {
+    "name": {
+      "type": "str"
+    },
+    "layerName": {
+      "type": "str"
+    },
+    "location": {
+      "type": "dict",
+      "subtype": "float"
+    }
+  },
+  "Layer": {
+    "name": {
+      "type": "str"
+    },
+    "glyph": {
+      "type": "StaticGlyph"
+    }
+  },
+  "StaticGlyph": {
+    "path": {
+      "type": "PackedPath"
+    },
+    "components": {
+      "type": "list",
+      "subtype": "Component"
+    },
+    "xAdvance": {
+      "type": "float",
+      "optional": true
+    },
+    "yAdvance": {
+      "type": "float",
+      "optional": true
+    },
+    "verticalOrigin": {
+      "type": "float",
+      "optional": true
+    }
+  },
+  "PackedPath": {
+    "coordinates": {
+      "type": "list",
+      "subtype": "float"
+    },
+    "pointTypes": {
+      "type": "list",
+      "subtype": "PointType"
+    },
+    "contourInfo": {
+      "type": "list",
+      "subtype": "ContourInfo"
+    }
+  },
+  "ContourInfo": {
+    "endPoint": {
+      "type": "int"
+    },
+    "isClosed": {
+      "type": "bool"
+    }
+  },
+  "Component": {
+    "name": {
+      "type": "str"
+    },
+    "transformation": {
+      "type": "Transformation"
+    },
+    "location": {
+      "type": "dict",
+      "subtype": "float"
+    }
+  },
+  "Transformation": {
+    "translateX": {
+      "type": "float"
+    },
+    "translateY": {
+      "type": "float"
+    },
+    "rotation": {
+      "type": "float"
+    },
+    "scaleX": {
+      "type": "float"
+    },
+    "scaleY": {
+      "type": "float"
+    },
+    "skewX": {
+      "type": "float"
+    },
+    "skewY": {
+      "type": "float"
+    },
+    "tCenterX": {
+      "type": "float"
+    },
+    "tCenterY": {
+      "type": "float"
+    }
+  },
+  "GlobalAxis": {
+    "name": {
+      "type": "str"
+    },
+    "tag": {
+      "type": "str"
+    },
+    "minValue": {
+      "type": "float"
+    },
+    "defaultValue": {
+      "type": "float"
+    },
+    "maxValue": {
+      "type": "float"
+    },
+    "mapping": {
+      "type": "list",
+      "subtype": "tuple"
+    }
+  }
+}
