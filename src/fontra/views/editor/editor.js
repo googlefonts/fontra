@@ -168,8 +168,8 @@ export class EditorController {
       async (event) => await this._updateSelectionInfo(),
       100
     );
-    this.updateSidebarDesignspaceThrottled = throttleCalls(
-      async () => await this.updateSidebarDesignspace(),
+    this.updateSidebarDesignspace = throttleCalls(
+      async () => await this._updateSidebarDesignspace(),
       200
     );
     canvas.addEventListener("viewBoxChanged", (event) => {
@@ -600,7 +600,8 @@ export class EditorController {
       });
     }
     this.updateTextEntryFromGlyphLines();
-    await this.updateSidebarDesignspace();
+    this.updateSidebarDesignspace();
+    this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
   }
 
@@ -628,13 +629,13 @@ export class EditorController {
       (glyphName) => this.fontController.getUnicodeFromGlyphName(glyphName)
     );
     await this.setGlyphLines(glyphLines);
-    await this.updateSidebarDesignspace();
+    this.updateSidebarDesignspace();
+    this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
   }
 
-  async updateSidebarDesignspace() {
+  async _updateSidebarDesignspace() {
     this.sidebarDesignspace.forceUpdateSources();
-    this.updateWindowLocationAndSelectionInfo();
   }
 
   async doubleClickedComponentsCallback(event) {
@@ -670,7 +671,7 @@ export class EditorController {
       selectedGlyphInfo.glyphIndex + 1
     }`;
     this.updateTextEntryFromGlyphLines();
-    await this.updateSidebarDesignspace();
+    this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
   }
 
@@ -895,7 +896,8 @@ export class EditorController {
     // Hmmm would be nice if this was done automatically
     this.sidebarDesignspaceDataController.model.location =
       this.sceneController.getLocation();
-    await this.updateSidebarDesignspace();
+    this.updateSidebarDesignspace();
+    this.updateWindowLocationAndSelectionInfo();
   }
 
   canCut() {
@@ -1284,7 +1286,6 @@ export class EditorController {
     this.canvasController.requestUpdate();
     this.glyphsSearch.updateGlyphNamesListContent();
     this.updateWindowLocationAndSelectionInfo();
-    await this.updateSidebarDesignspace();
   }
 
   async externalChange(change) {
@@ -1303,7 +1304,7 @@ export class EditorController {
         });
       }
       this.glyphsSearch.updateGlyphNamesListContent();
-      await this.updateSidebarDesignspace();
+      this.updateSidebarDesignspace();
     }
     await this.sceneController.sceneModel.updateScene();
     if (
@@ -1311,7 +1312,7 @@ export class EditorController {
       matchChangePath(change, ["glyphs", selectedGlyphName])
     ) {
       this.updateSelectionInfo();
-      this.updateSidebarDesignspaceThrottled();
+      this.updateSidebarDesignspace();
     }
     this.canvasController.requestUpdate();
   }
@@ -1345,7 +1346,8 @@ export class EditorController {
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     if (selectedGlyphName !== undefined && glyphNames.includes(selectedGlyphName)) {
       this.updateSelectionInfo();
-      await this.updateSidebarDesignspace();
+      this.updateSidebarDesignspace();
+      this.updateWindowLocationAndSelectionInfo();
     }
     this.canvasController.requestUpdate();
   }
