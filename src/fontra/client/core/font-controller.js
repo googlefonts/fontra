@@ -5,6 +5,7 @@ import {
   filterChangePattern,
   matchChangePath,
 } from "./changes.js";
+import { getClassSchema } from "../core/classes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
@@ -38,6 +39,7 @@ export class FontController {
     this._rootObject["axes"] = await this.font.getGlobalAxes();
     this._rootObject["unitsPerEm"] = await this.font.getUnitsPerEm();
     this._rootObject["lib"] = await this.font.getFontLib();
+    this._rootClassDef = (await getClassSchema())["Font"];
     this._resolveInitialized();
   }
 
@@ -280,7 +282,7 @@ export class FontController {
       glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
     }
     this._rootObject["glyphs"] = glyphSet;
-    applyChange(this._rootObject, change);
+    applyChange(this._rootObject, change, this._rootClassDef);
     delete this._rootObject["glyphs"];
     for (const glyphName of glyphNames) {
       this.glyphChanged(glyphName);
