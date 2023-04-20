@@ -166,10 +166,12 @@ classSchema = makeSchema(Font)
 classCastFuncs = makeCastFuncs(classSchema, config=_castConfig)
 
 
-if __name__ == "__main__":
+def printSchemaAsJSON():
     import json
 
     schema = classesToStrings(classSchema)
-    print("// This file is generated, don't edit!")
-    schemaJSON = json.dumps(schema, indent=2)
-    print(f"export const classSchema = {schemaJSON};")
+    print(json.dumps(schema, indent=2))
+
+
+if __name__ == "__main__":
+    printSchemaAsJSON()
