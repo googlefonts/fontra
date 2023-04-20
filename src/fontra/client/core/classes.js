@@ -64,7 +64,9 @@ const castDefinitions = {
   },
 
   dict(value, classDef) {
-    value = Object.fromEntries(Object.entries(value).map(classDef.itemCast));
+    value = Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, classDef.itemCast(v)])
+    );
     return value;
   },
 };

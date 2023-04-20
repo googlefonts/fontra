@@ -74,6 +74,12 @@ describe("schema tests", () => {
       outValue: VariableGlyph.fromObject({ name: "A", sources: [], layers: [] }),
     },
     {
+      rootClass: "Font",
+      path: ["glyphs"],
+      inValue: { A: { name: "A", sources: [], layers: [] } },
+      outValue: { A: VariableGlyph.fromObject({ name: "A", sources: [], layers: [] }) },
+    },
+    {
       rootClass: "StaticGlyph",
       path: [],
       inValue: { xAdvance: 500 },
