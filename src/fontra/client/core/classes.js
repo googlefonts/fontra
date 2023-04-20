@@ -32,6 +32,9 @@ class ClassDef {
     this.rawClassDef = rawClassDef;
     this.className = className;
     this.subType = subType;
+    this.compositeName = this.subType
+      ? `${className}<${this.subType.className}>`
+      : className;
     this.subTypeMapping = {};
   }
 
@@ -50,11 +53,7 @@ class ClassDef {
         if (!classSchema[rawSubDef.subtype]) {
           classSchema[rawSubDef.subtype] = new ClassDef(null, rawSubDef.subtype);
         }
-        subType = new ClassDef(
-          null,
-          `${rawSubDef.type}<${rawSubDef.subtype}>`,
-          classSchema[rawSubDef.subtype]
-        );
+        subType = new ClassDef(null, rawSubDef.type, classSchema[rawSubDef.subtype]);
       } else {
         if (!classSchema[rawSubDef.type]) {
           classSchema[rawSubDef.type] = new ClassDef(null, rawSubDef.type);

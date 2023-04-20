@@ -45,10 +45,11 @@ describe("schema tests", () => {
       const schema = await getClassSchema(classesSchema);
       let subjectType = schema["Font"]; // Root
       expect(subjectType.className).to.equal("Font");
+      expect(subjectType.compositeName).to.equal("Font");
       for (const [pathElement, expectedName] of testPath) {
         if (expectedName) {
           subjectType = subjectType.getSubType(pathElement);
-          expect(subjectType.className).to.equal(expectedName);
+          expect(subjectType.compositeName).to.equal(expectedName);
         } else {
           expect(() => {
             subjectType.getSubType(pathElement);
