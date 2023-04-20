@@ -56,6 +56,9 @@ class ClassDef {
           classSchema[rawSubDef.subtype]
         );
       } else {
+        if (!classSchema[rawSubDef.type]) {
+          classSchema[rawSubDef.type] = new ClassDef(null, rawSubDef.type);
+        }
         subType = classSchema[rawSubDef.type];
       }
       this.subTypeMapping[property] = subType;

@@ -7,6 +7,7 @@ import { getClassSchema } from "../src/fontra/client/core/classes.js";
 
 describe("schema tests", () => {
   const testPaths = [
+    [["unitsPerEm", "int"]],
     [
       ["glyphs", "dict<VariableGlyph>"],
       ["<anything>", "VariableGlyph"],
