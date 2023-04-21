@@ -44,6 +44,7 @@ import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
 import { SidebarDesignspace } from "./sidebar-designspace.js";
+import { SidebarTextEntry } from "./sidebar-text-entry.js";
 import { VisualizationLayers } from "./visualization-layers.js";
 import {
   allGlyphsCleanVisualizationLayerDefinition,
@@ -407,40 +408,7 @@ export class EditorController {
       });
     }
 
-    // TODO: the remaining code deserves its own method
-    this.textEntryElement = document.querySelector("#text-entry-textarea");
-    this.textEntryElement.addEventListener(
-      "input",
-      () => {
-        this.textFieldChangedCallback(this.textEntryElement);
-        this.fixTextEntryHeight();
-      },
-      false
-    );
-
-    const textAlignMenuElement = document.querySelector("#text-align-menu");
-    const textSettingsController = new ObservableController();
-    this.textSettings = textSettingsController.model;
-
-    textSettingsController.addListener((key, newValue) => {
-      if (key !== "align") {
-        return;
-      }
-      const align = this.textSettings.align;
-      this.setTextAlignment(align);
-      for (const el of textAlignMenuElement.children) {
-        el.classList.toggle("selected", align === el.innerText.slice(5));
-      }
-    });
-
-    for (const el of textAlignMenuElement.children) {
-      el.onclick = (event) => {
-        if (event.target.classList.contains("selected")) {
-          return;
-        }
-        this.textSettings.align = el.innerText.slice(5);
-      };
-    }
+    this.initSidebarTextEntry();
   }
 
   toggleSidebar(sidebarName, doUpdateWindowLocation = true) {
@@ -495,10 +463,26 @@ export class EditorController {
     return onOff;
   }
 
-  fixTextEntryHeight() {
-    // This adapts the text entry height to its content
-    this.textEntryElement.style.height = "auto";
-    this.textEntryElement.style.height = this.textEntryElement.scrollHeight + 14 + "px";
+  initSidebarTextEntry() {
+    const textSettingsController = new ObservableController();
+    this.textSettings = textSettingsController.model;
+
+    textSettingsController.addKeyListener(
+      "text",
+      (key, newValue) => this.setGlyphLinesFromText(newValue),
+      false
+    );
+
+    textSettingsController.addListener((key, newValue) => this.updateWindowLocation());
+
+    textSettingsController.addKeyListener("align", (key, newValue) => {
+      this.setTextAlignment(this.textSettings.align);
+    });
+
+    this.sidebarTextSettings = new SidebarTextEntry(
+      this.sceneController,
+      textSettingsController
+    );
   }
 
   async setTextAlignment(align) {
@@ -514,7 +498,6 @@ export class EditorController {
     const [minXPost, maxXPost] =
       this.sceneController.sceneModel.getTextHorizontalExtents();
     this.canvasController.setViewBox(offsetRect(viewBox, minXPost - minXPre, 0));
-    this.updateWindowLocation();
   }
 
   initMiniConsole() {
@@ -606,12 +589,7 @@ export class EditorController {
   }
 
   updateTextEntryFromGlyphLines() {
-    this.enteredText = textFromGlyphLines(this.sceneController.getGlyphLines());
-    this.textEntryElement.value = this.enteredText;
-  }
-
-  async textFieldChangedCallback(element) {
-    this.setGlyphLinesFromText(element.value);
+    this.textSettings.text = textFromGlyphLines(this.sceneController.getGlyphLines());
   }
 
   async setGlyphLines(glyphLines) {
@@ -619,10 +597,9 @@ export class EditorController {
   }
 
   async setGlyphLinesFromText(text) {
-    this.enteredText = text;
     await this.fontController.ensureInitialized;
     const glyphLines = await glyphLinesFromText(
-      this.enteredText,
+      this.textSettings.text,
       this.fontController.characterMap,
       this.fontController.glyphMap,
       (codePoint) => this.fontController.getSuggestedGlyphName(codePoint),
@@ -1371,11 +1348,8 @@ export class EditorController {
         this.canvasController.setViewBox(rectFromArray(viewBox));
       }
     }
-    this.textEntryElement.value = viewInfo["text"] || "";
-    this.textEntryElement.setSelectionRange(0, 0); // else it'll be at the end
-    this.fixTextEntryHeight();
     if (viewInfo["text"]) {
-      await this.setGlyphLinesFromText(viewInfo["text"]);
+      this.textSettings.text = viewInfo["text"];
     } else {
       // Doing this directly avoids triggering rebuilding the window location
       this.sceneController.setGlyphLines([]);
@@ -1412,8 +1386,8 @@ export class EditorController {
     if (Object.values(viewBox).every((value) => !isNaN(value))) {
       viewInfo["viewBox"] = rectToArray(viewBox).map(Math.round);
     }
-    if (this.enteredText) {
-      viewInfo["text"] = this.enteredText;
+    if (this.textSettings.text?.length) {
+      viewInfo["text"] = this.textSettings.text;
     }
     if (this.sceneController.selectedGlyph) {
       viewInfo["selectedGlyph"] = this.sceneController.selectedGlyph;
@@ -1451,13 +1425,6 @@ export class EditorController {
   toggleSidebarSelectionInfo(onOff) {
     if (onOff) {
       this.updateSelectionInfo?.();
-    }
-  }
-
-  toggleTextEntry(onOff) {
-    if (onOff) {
-      this.fixTextEntryHeight();
-      this.textEntryElement.focus();
     }
   }
 
