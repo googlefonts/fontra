@@ -602,7 +602,7 @@ export class EditorController {
   async setGlyphLinesFromText(text) {
     await this.fontController.ensureInitialized;
     const glyphLines = await glyphLinesFromText(
-      this.textSettings.text,
+      text,
       this.fontController.characterMap,
       this.fontController.glyphMap,
       (codePoint) => this.fontController.getSuggestedGlyphName(codePoint),
@@ -1353,15 +1353,20 @@ export class EditorController {
     }
     if (viewInfo["text"]) {
       this.textSettings.text = viewInfo["text"];
+      // The following is also done by a this.textSettings.text listener,
+      // but only in the next event loop iteration, and this messes with
+      // the selectedGlyph/isEditing state.
+      await this.setGlyphLinesFromText(viewInfo["text"]);
     } else {
       // Doing this directly avoids triggering rebuilding the window location
       this.sceneController.setGlyphLines([]);
     }
-    this.sceneController.selectedGlyph = viewInfo["selectedGlyph"];
     await this.sceneController.setGlobalAndLocalLocations(
       viewInfo["location"],
       viewInfo["localLocations"]
     );
+
+    this.sceneController.selectedGlyph = viewInfo["selectedGlyph"];
     this.sceneController.selectedGlyphIsEditing =
       viewInfo["editing"] && !!viewInfo["selectedGlyph"];
 
