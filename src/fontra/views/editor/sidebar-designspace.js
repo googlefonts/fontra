@@ -220,7 +220,7 @@ export class SidebarDesignspace {
       });
       if (layerNames.indexOf(layerName) < 0) {
         // Only add layer if the name is new
-        glyph.layers.push({ name: layerName, glyph: instance });
+        glyph.layers[layerName] = { glyph: instance };
       }
       return "add source";
     });
@@ -263,19 +263,18 @@ export class SidebarDesignspace {
         source.name = sourceName;
       }
       const oldLayerName = source.layerName;
-      if (layerName !== source.layerName) {
+      if (layerName !== oldLayerName) {
         source.layerName = layerName;
-      }
-      if (layerNames.indexOf(layerName) < 0) {
-        // Rename the layer
-        for (const layer of glyph.layers) {
-          if (layer.name === oldLayerName) {
-            layer.name = layerName;
+        if (layerNames.indexOf(layerName) < 0) {
+          // Rename the layer
+          if (glyph.layers[oldLayerName]) {
+            glyph.layers[layerName] = glyph.layers[oldLayerName];
+            delete glyph.layers[oldLayerName];
           }
-        }
-        for (const source of glyph.sources) {
-          if (source.layerName === oldLayerName) {
-            source.layerName = layerName;
+          for (const source of glyph.sources) {
+            if (source.layerName === oldLayerName) {
+              source.layerName = layerName;
+            }
           }
         }
       }
@@ -322,7 +321,7 @@ export class SidebarDesignspace {
 
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
-    const layerNames = glyph.layers.map((layer) => layer.name);
+    const layerNames = Object.keys(glyph.layers);
 
     locationController.addListener(validateInput);
 
