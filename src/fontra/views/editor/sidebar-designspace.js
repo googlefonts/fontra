@@ -169,12 +169,12 @@ export class SidebarDesignspace {
       return;
     }
 
-    const layerIndex = glyph.getLayerIndex(source.layerName);
+    const layer = glyph.layers[source.layerName];
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       glyph.sources.splice(sourceIndex, 1);
       let layerMessage = "";
-      if (layerIndex !== undefined && deleteLayerCheckBox.checked) {
-        glyph.layers.splice(layerIndex, 1);
+      if (layer !== undefined && deleteLayerCheckBox.checked) {
+        delete glyph.layers[source.layerName];
         layerMessage = " and layer";
       }
       return "delete source" + layerMessage;
