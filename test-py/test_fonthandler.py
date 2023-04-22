@@ -57,9 +57,10 @@ async def test_fontHandler_basic(testFontHandler):
         # await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A", connection=None)
 
-    assert "LightCondensed/foreground" == glyph.layers[0].name
-    assert 32 == len(glyph.layers[0].glyph.path.coordinates)
-    assert 20 == glyph.layers[0].glyph.path.coordinates[0]
+    layerName, layer = firstLayerItem(glyph)
+    assert "LightCondensed/foreground" == layerName
+    assert 32 == len(layer.glyph.path.coordinates)
+    assert 20 == layer.glyph.path.coordinates[0]
 
 
 @pytest.mark.asyncio
@@ -67,7 +68,8 @@ async def test_fontHandler_externalChange(testFontHandler):
     async with asyncClosing(testFontHandler):
         await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A")
-        assert 20 == glyph.layers[0].glyph.path.coordinates[0]
+        layerName, layer = firstLayerItem(glyph)
+        assert 20 == layer.glyph.path.coordinates[0]
 
         dsDoc = testFontHandler.backend.dsDoc
         ufoPath = pathlib.Path(dsDoc.sources[0].path)
@@ -78,14 +80,16 @@ async def test_fontHandler_externalChange(testFontHandler):
 
         # We should see the "before", as it's cached
         glyph = await testFontHandler.getGlyph("A")
-        assert 20 == glyph.layers[0].glyph.path.coordinates[0]
+        layerName, layer = firstLayerItem(glyph)
+        assert 20 == layer.glyph.path.coordinates[0]
 
         await asyncio.sleep(0.3)
 
         # We should see the "after", because the external change
         # watcher cleared the cache
         glyph = await testFontHandler.getGlyph("A")
-        assert -100 == glyph.layers[0].glyph.path.coordinates[0]
+        layerName, layer = firstLayerItem(glyph)
+        assert -100 == layer.glyph.path.coordinates[0]
 
 
 @pytest.mark.asyncio
@@ -93,15 +97,16 @@ async def test_fontHandler_editGlyph(testFontHandler):
     async with asyncClosing(testFontHandler):
         await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A", connection=None)
-        assert 0 == glyph.layers[0].glyph.path.coordinates[1]
+        layerName, layer = firstLayerItem(glyph)
+        assert 0 == layer.glyph.path.coordinates[1]
 
         change = {
-            "p": ["glyphs", "A", "layers", 0, "glyph", "path"],
+            "p": ["glyphs", "A", "layers", layerName, "glyph", "path"],
             "f": "=xy",
             "a": [0, 20, 55],
         }
         rollbackChange = {
-            "p": ["glyphs", "A", "layers", 0, "glyph", "path"],
+            "p": ["glyphs", "A", "layers", layerName, "glyph", "path"],
             "f": "=xy",
             "a": [0, 20, 0],
         }
@@ -111,7 +116,8 @@ async def test_fontHandler_editGlyph(testFontHandler):
         )
 
         glyph = await testFontHandler.getGlyph("A", connection=None)
-        assert [20, 55] == glyph.layers[0].glyph.path.coordinates[:2]
+        layerName, layer = firstLayerItem(glyph)
+        assert [20, 55] == layer.glyph.path.coordinates[:2]
 
         # give the write queue the opportunity to complete
         await testFontHandler.finishWriting()
@@ -205,9 +211,8 @@ async def test_fontHandler_new_glyph(testFontHandler):
                     "layerName": "LightCondensed/foreground",
                 }
             ],
-            "layers": [
-                {
-                    "name": "LightCondensed/foreground",
+            "layers": {
+                "LightCondensed/foreground": {
                     "glyph": {
                         "xAdvance": 170,
                         "yAdvance": None,
@@ -220,7 +225,7 @@ async def test_fontHandler_new_glyph(testFontHandler):
                         "components": [],
                     },
                 },
-            ],
+            },
         }
 
         glyph = await testFontHandler.getGlyph(newGlyphName)
@@ -242,3 +247,7 @@ async def test_fontHandler_new_glyph(testFontHandler):
 
         await testFontHandler.finishWriting()
         assert glifPath.exists()
+
+
+def firstLayerItem(glyph):
+    return next(iter(glyph.layers.items()))

@@ -36,6 +36,10 @@ export class VariableGlyphController {
     return this.glyph.sources;
   }
 
+  get layers() {
+    return this.glyph.layers;
+  }
+
   get combinedAxes() {
     if (this._combinedAxes === undefined) {
       this._setupAxisMapping();
@@ -78,14 +82,6 @@ export class VariableGlyphController {
         this._combinedAxes.push(globalAxis);
       }
     }
-  }
-
-  getLayerGlyph(layerName) {
-    return this.glyph.getLayerGlyph(layerName);
-  }
-
-  getLayerIndex(layerName) {
-    return this.glyph.getLayerIndex(layerName);
   }
 
   getSourceIndex(location) {
@@ -135,7 +131,7 @@ export class VariableGlyphController {
   getAllComponentNames() {
     // Return a set of all component names used by all layers of all sources
     const componentNames = new Set();
-    for (const layer of this.glyph.layers) {
+    for (const layer of Object.values(this.glyph.layers)) {
       for (const component of layer.glyph.components) {
         componentNames.add(component.name);
       }
@@ -176,8 +172,8 @@ export class VariableGlyphController {
 
   get deltas() {
     if (this._deltas === undefined) {
-      const masterValues = this.sources.map((source) =>
-        this.getLayerGlyph(source.layerName)
+      const masterValues = this.sources.map(
+        (source) => this.layers[source.layerName].glyph
       );
       this._deltas = this.model.getDeltas(masterValues);
     }
@@ -200,7 +196,7 @@ export class VariableGlyphController {
         normalizedLocation,
         this.combinedAxes
       );
-      return this.getLayerGlyph(this.sources[indexInfo.index].layerName);
+      return this.layers[this.sources[indexInfo.index].layerName].glyph;
     }
   }
 
@@ -210,7 +206,7 @@ export class VariableGlyphController {
 
     let instance;
     if (sourceIndex !== undefined) {
-      instance = this.getLayerGlyph(this.sources[sourceIndex].layerName);
+      instance = this.layers[this.sources[sourceIndex].layerName].glyph;
     } else {
       instance = this.instantiate(normalizeLocation(location, this.combinedAxes));
     }

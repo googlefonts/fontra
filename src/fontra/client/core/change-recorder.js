@@ -77,6 +77,8 @@ export const proxyMethodsMap = {
   VarPackedPath: getVarPackedPathProxyMethods, // Poss. need to change the key to VarPackedPath.name when minifying
 };
 
+const getUnwrappedSubject = Symbol("get-unwrapped-subject");
+
 function getProxy(subject, changes) {
   if (!needsProxy(subject)) {
     throw new Error(`subject must be an object`);
@@ -88,6 +90,13 @@ function getProxy(subject, changes) {
 
   const handler = {
     set(subject, prop, value) {
+      if (value && typeof value === "object") {
+        const unwrapped = value[getUnwrappedSubject];
+        if (unwrapped !== undefined) {
+          // The value is a proxy we made: use the real object for assignment
+          value = unwrapped;
+        }
+      }
       if (isArray && !isNaN(prop)) {
         prop = parseInt(prop);
       }
@@ -102,6 +111,9 @@ function getProxy(subject, changes) {
     },
 
     get(subject, prop) {
+      if (prop === getUnwrappedSubject) {
+        return subject;
+      }
       const method = methods[prop];
       if (method) {
         return method;

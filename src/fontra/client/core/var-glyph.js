@@ -9,37 +9,20 @@ export class VariableGlyph {
         return { ...axis };
       }) || [];
     glyph.sources = obj.sources.map((source) => Source.fromObject(source));
-    glyph.layers = obj.layers.map((layer) => Layer.fromObject(layer));
+    glyph.layers = Object.fromEntries(
+      Object.entries(obj.layers).map(([name, layer]) => [name, Layer.fromObject(layer)])
+    );
     return glyph;
   }
 
   copy() {
     return VariableGlyph.fromObject(this);
   }
-
-  getLayerGlyph(layerName) {
-    return this.getLayer(layerName)?.glyph;
-  }
-
-  getLayer(layerName) {
-    return this.layers[this.getLayerIndex(layerName)];
-  }
-
-  getLayerIndex(layerName) {
-    // Optimize with a dict?
-    for (let layerIndex = 0; layerIndex < this.layers.length; layerIndex++) {
-      const layer = this.layers[layerIndex];
-      if (layer.name === layerName) {
-        return layerIndex;
-      }
-    }
-  }
 }
 
 export class Layer {
   static fromObject(obj) {
     const layer = new Layer();
-    layer.name = obj.name;
     layer.glyph = StaticGlyph.fromObject(obj.glyph);
     return layer;
   }

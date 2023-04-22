@@ -456,7 +456,7 @@ class FontHandler:
 
 
 def _iterAllComponentNames(glyph):
-    for layer in glyph.layers:
+    for layer in glyph.layers.values():
         for compo in layer.glyph.components:
             yield compo.name
 

@@ -43,7 +43,7 @@ class OTFBackend:
         defaultLayerName = "<default>"
         glyph = VariableGlyph(glyphName)
         staticGlyph = serializeGlyph(self.glyphSet, glyphName)
-        layers = [Layer(name=defaultLayerName, glyph=staticGlyph)]
+        layers = {defaultLayerName: Layer(glyph=staticGlyph)}
         defaultLocation = {axis["name"]: 0 for axis in self.globalAxes}
         sources = [
             Source(
@@ -60,7 +60,7 @@ class OTFBackend:
                 varGlyphSet = self.font.getGlyphSet(location=fullLoc, normalized=True)
                 self.variationGlyphSets[locStr] = varGlyphSet
             varGlyph = serializeGlyph(varGlyphSet, glyphName)
-            layers.append(Layer(name=locStr, glyph=varGlyph))
+            layers[locStr] = Layer(glyph=varGlyph)
             sources.append(Source(location=fullLoc, name=locStr, layerName=locStr))
         if self.charStrings is not None:
             checkAndFixCFF2Compatibility(glyphName, layers)
@@ -215,6 +215,7 @@ def checkAndFixCFF2Compatibility(glyphName, layers):
     #
     # This is a somewhat ugly trade-off to keep interpolation compatibility.
     #
+    layers = list(layers.values())
     firstPath = layers[0].glyph.path
     firstPointTypes = firstPath.pointTypes
     unpackedContourses = [None] * len(layers)
