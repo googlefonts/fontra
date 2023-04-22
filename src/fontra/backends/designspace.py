@@ -206,8 +206,8 @@ class DesignspaceBackend:
                 )
             layerNameMapping[source.layerName] = globalSource["layerName"]
 
-        for layer in glyph.layers:
-            layerName = layerNameMapping.get(layer.name, layer.name)
+        for layerName, layer in glyph.layers.items():
+            layerName = layerNameMapping.get(layerName, layerName)
             glyphSet = self.ufoGlyphSets[layerName]
             writeGlyphSetContents = glyphName not in glyphSet
             layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
