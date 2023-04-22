@@ -25,7 +25,7 @@ describe("schema tests", () => {
     [
       ["glyphs", "dict<VariableGlyph>"],
       ["<anything>", "VariableGlyph"],
-      ["layers", "list<Layer>"],
+      ["layers", "dict<Layer>"],
       [999, "Layer"],
       ["glyph", "StaticGlyph"],
       ["path", "PackedPath"],
@@ -35,7 +35,7 @@ describe("schema tests", () => {
     [
       ["glyphs", "dict<VariableGlyph>"],
       ["<anything>", "VariableGlyph"],
-      ["layers", "list<Layer>"],
+      ["layers", "dict<Layer>"],
       [999, "Layer"],
       ["glyph", "StaticGlyph"],
       ["components", "list<Component>"],
@@ -70,15 +70,15 @@ describe("schema tests", () => {
     {
       rootClass: "Font",
       path: ["glyphs", "A"],
-      inValue: { name: "A", sources: [], layers: [] },
-      outValue: VariableGlyph.fromObject({ name: "A", sources: [], layers: [] }),
+      inValue: { name: "A", sources: [], layers: {} },
+      outValue: VariableGlyph.fromObject({ name: "A", sources: [], layers: {} }),
     },
     {
       rootClass: "Font",
       path: ["glyphs"],
-      inValue: { A: { name: "A", axes: [], sources: [], layers: [] } },
+      inValue: { A: { name: "A", axes: [], sources: [], layers: {} } },
       outValue: {
-        A: VariableGlyph.fromObject({ name: "A", axes: [], sources: [], layers: [] }),
+        A: VariableGlyph.fromObject({ name: "A", axes: [], sources: [], layers: {} }),
       },
     },
     {
@@ -107,8 +107,8 @@ describe("schema tests", () => {
     {
       rootClass: "VariableGlyph",
       path: ["layers"],
-      inValue: [{ name: "default", glyph: {} }],
-      outValue: [Layer.fromObject({ name: "default", glyph: {} })],
+      inValue: { default: { glyph: {} } },
+      outValue: { default: Layer.fromObject({ glyph: {} }) },
     },
   ];
 

@@ -9,9 +9,8 @@ function makeTestGlyphObject() {
     name: "a",
     axes: [],
     sources: [{ name: "default", layerName: "default", location: {} }],
-    layers: [
-      {
-        name: "default",
+    layers: {
+      default: {
         glyph: {
           xAdvance: 500,
           yAdvance: 1000,
@@ -22,7 +21,7 @@ function makeTestGlyphObject() {
           ],
         },
       },
-    ],
+    },
   };
 }
 
@@ -37,16 +36,16 @@ describe("var-glyph Tests", () => {
     (vg) => vg.axes.push({ name: "wght" }),
     (vg) => (vg.axes = [{ name: "wght" }]),
     (vg) => (vg.sources[0].location.x = 123),
-    (vg) => (vg.layers[0].glyph.xAdvance = 501),
-    (vg) => vg.layers[0].glyph.path.pointTypes.push(0),
-    (vg) => (vg.layers[0].glyph.path.pointTypes = [0]),
-    (vg) => vg.layers[0].glyph.path.coordinates.push(0, 0),
-    (vg) => (vg.layers[0].glyph.path.coordinates = [0, 0]),
-    (vg) => vg.layers[0].glyph.path.contourInfo.push({}),
-    (vg) => (vg.layers[0].glyph.path.contourInfo = [{}]),
-    (vg) => (vg.layers[0].glyph.components[0].name = "test2"),
-    (vg) => (vg.layers[0].glyph.components[0].location.x = 2),
-    (vg) => (vg.layers[0].glyph.components[0].transformation.translateX = 2),
+    (vg) => (vg.layers["default"].glyph.xAdvance = 501),
+    (vg) => vg.layers["default"].glyph.path.pointTypes.push(0),
+    (vg) => (vg.layers["default"].glyph.path.pointTypes = [0]),
+    (vg) => vg.layers["default"].glyph.path.coordinates.push(0, 0),
+    (vg) => (vg.layers["default"].glyph.path.coordinates = [0, 0]),
+    (vg) => vg.layers["default"].glyph.path.contourInfo.push({}),
+    (vg) => (vg.layers["default"].glyph.path.contourInfo = [{}]),
+    (vg) => (vg.layers["default"].glyph.components[0].name = "test2"),
+    (vg) => (vg.layers["default"].glyph.components[0].location.x = 2),
+    (vg) => (vg.layers["default"].glyph.components[0].transformation.translateX = 2),
   ];
 
   for (const [i, m] of enumerate(modifierFuncs)) {
