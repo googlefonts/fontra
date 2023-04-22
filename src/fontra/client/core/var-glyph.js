@@ -18,10 +18,6 @@ export class VariableGlyph {
   copy() {
     return VariableGlyph.fromObject(this);
   }
-
-  getLayer(layerName) {
-    return this.layers[layerName];
-  }
 }
 
 export class Layer {
