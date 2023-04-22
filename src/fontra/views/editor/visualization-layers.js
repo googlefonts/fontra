@@ -114,12 +114,20 @@ function getGlyphsBySelectionMode(model) {
     ),
     hovered:
       model.hoveredGlyph && model.hoveredGlyph !== model.selectedGlyph
-        ? [model.getHoveredPositionedGlyph()]
+        ? hoveredGlyphs(model)
         : [],
     selected:
-      model.selectedGlyph && !model.selectedGlyphIsEditing
-        ? [model.getSelectedPositionedGlyph()]
-        : [],
-    editing: model.selectedGlyphIsEditing ? [model.getSelectedPositionedGlyph()] : [],
+      model.selectedGlyph && !model.selectedGlyphIsEditing ? selectedGlyphs(model) : [],
+    editing: model.selectedGlyphIsEditing ? selectedGlyphs(model) : [],
   };
+}
+
+function hoveredGlyphs(model) {
+  const glyph = model.getHoveredPositionedGlyph();
+  return glyph ? [glyph] : [];
+}
+
+function selectedGlyphs(model) {
+  const glyph = model.getSelectedPositionedGlyph();
+  return glyph ? [glyph] : [];
 }
