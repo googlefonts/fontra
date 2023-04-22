@@ -145,7 +145,7 @@ class DesignspaceBackend:
             sources.append(Source(**globalSource))
         glyph.sources = sources
 
-        layers = []
+        layers = {}
         for fontraLayerName, glyphSet in self.ufoGlyphSets.items():
             if glyphName not in glyphSet:
                 continue
@@ -156,7 +156,7 @@ class DesignspaceBackend:
                     glyph.axes, glyph.sources = self._unpackLocalDesignSpace(
                         localDS, *self.ufoLayers[fontraLayerName]
                     )
-            layers.append(Layer(fontraLayerName, staticGlyph))
+            layers[fontraLayerName] = Layer(staticGlyph)
         glyph.layers = layers
 
         return glyph
@@ -413,12 +413,12 @@ class UFOFontInfo:
 
 
 def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
-    layers = []
+    layers = {}
     sourceLayerGlyph = None
     for layerName, glyphSet in glyphSets.items():
         if glyphName in glyphSet:
             staticGlyph, glyph = serializeStaticGlyph(glyphSet, glyphName)
-            layers.append(Layer(name=layerName, glyph=staticGlyph))
+            layers[layerName] = Layer(glyph=staticGlyph)
             if layerName == sourceLayerName:
                 sourceLayerGlyph = glyph
     return layers, sourceLayerGlyph
