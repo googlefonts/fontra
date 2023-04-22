@@ -564,14 +564,12 @@ export class EditorController {
     if (codePoint !== undefined) {
       glyphInfo["character"] = getCharFromUnicode(codePoint);
     }
-    const selectedGlyphState = this.sceneController.getSelectedGlyphState();
+    let selectedGlyphState = this.sceneController.getSelectedGlyphState();
     const glyphLines = this.sceneController.getGlyphLines();
     if (selectedGlyphState) {
       glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
         glyphInfo;
       await this.setGlyphLines(glyphLines);
-      this.sceneController.setSelectedGlyphState(selectedGlyphState);
-      this.sceneController.selectedGlyph = this.sceneController.selectedGlyph;
     } else {
       if (!glyphLines.length) {
         glyphLines.push([]);
@@ -579,13 +577,19 @@ export class EditorController {
       const lineIndex = glyphLines.length - 1;
       glyphLines[lineIndex].push(glyphInfo);
       await this.setGlyphLines(glyphLines);
-      this.sceneController.setSelectedGlyphState({
+      selectedGlyphState = {
         lineIndex: lineIndex,
         glyphIndex: glyphLines[lineIndex].length - 1,
         isEditing: false,
-      });
+      };
     }
     this.updateTextEntryFromGlyphLines();
+    // Delay to next event loop iteration to ensure the this.textSettings.text
+    // listeners get run first
+    setTimeout(() => {
+      this.sceneController.setSelectedGlyphState(selectedGlyphState);
+    }, 0);
+
     this.updateSidebarDesignspace();
     this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
