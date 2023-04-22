@@ -29,7 +29,7 @@
       "subtype": "Source"
     },
     "layers": {
-      "type": "list",
+      "type": "dict",
       "subtype": "Layer"
     }
   },
@@ -60,9 +60,6 @@
     }
   },
   "Layer": {
-    "name": {
-      "type": "str"
-    },
     "glyph": {
       "type": "StaticGlyph"
     }

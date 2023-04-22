@@ -51,7 +51,6 @@ class Source:
 
 @dataclass
 class Layer:
-    name: str
     glyph: StaticGlyph
 
 
@@ -68,7 +67,7 @@ class VariableGlyph:
     name: str
     axes: list[LocalAxis] = field(default_factory=list)
     sources: list[Source] = field(default_factory=list)
-    layers: list[Layer] = field(default_factory=list)
+    layers: dict[str, Layer] = field(default_factory=dict)
 
 
 @dataclass
