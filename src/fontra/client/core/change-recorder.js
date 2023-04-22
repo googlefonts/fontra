@@ -91,9 +91,9 @@ function getProxy(subject, changes) {
   const handler = {
     set(subject, prop, value) {
       if (value && typeof value === "object") {
-        // The value is a proxy we made: use the real object for assignment
         const unwrapped = value[getUnwrappedSubject];
         if (unwrapped !== undefined) {
+          // The value is a proxy we made: use the real object for assignment
           value = unwrapped;
         }
       }
