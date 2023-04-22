@@ -464,7 +464,10 @@ export class EditorController {
   }
 
   initSidebarTextEntry() {
-    const textSettingsController = new ObservableController();
+    const textSettingsController = new ObservableController({
+      text: "",
+      align: "center",
+    });
     this.textSettings = textSettingsController.model;
 
     textSettingsController.addKeyListener(
