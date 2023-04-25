@@ -355,6 +355,7 @@ export class EditorController {
 
   async initSidebarDesignspace() {
     this.sidebarDesignspaceDataController = new ObservableController();
+    this.sidebarDesignspaceDataController.model.location = {};
     this.sidebarDesignspaceDataController.model.globalAxes =
       this.fontController.globalAxes;
     this.sidebarDesignspace = new SidebarDesignspace(
@@ -653,12 +654,20 @@ export class EditorController {
       ...glyphInfos
     );
     await this.setGlyphLines(glyphLines);
-    this.sceneController.selectedGlyph = `${selectedGlyphInfo.lineIndex}/${
-      selectedGlyphInfo.glyphIndex + 1
-    }`;
     this.updateTextEntryFromGlyphLines();
     this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
+
+    // Fudge the timing so thing execute in the right order :(
+    setTimeout(() => {
+      this.sceneController.selectedGlyph = `${selectedGlyphInfo.lineIndex}/${
+        selectedGlyphInfo.glyphIndex + 1
+      }`;
+    }, 0);
+    setTimeout(() => {
+      this.sidebarDesignspaceDataController.model.location =
+        this.sceneController.getLocation();
+    }, 5);
   }
 
   initContextMenuItems() {
@@ -1377,8 +1386,10 @@ export class EditorController {
       viewInfo["editing"] && !!viewInfo["selectedGlyph"];
 
     if (viewInfo["location"]) {
-      this.sidebarDesignspaceDataController.model.location =
-        this.sceneController.getLocation();
+      setTimeout(() => {
+        this.sidebarDesignspaceDataController.model.location =
+          this.sceneController.getLocation();
+      }, 10);
     }
 
     if (viewInfo["selection"]) {
