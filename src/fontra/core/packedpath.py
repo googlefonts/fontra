@@ -62,6 +62,19 @@ class PackedPath:
             coordinates = self.coordinates[startPoint * 2 : endIndex * 2]
             points = list(pairwise(coordinates))
             pointTypes = self.pointTypes[startPoint:endIndex]
+            if not contourInfo.isClosed:
+                # strip leading and trailing off-curve points, they cause
+                # validation problems
+                for index in [-1, 0]:
+                    while pointTypes and pointTypes[index] in (
+                        PointType.OFF_CURVE_QUAD,
+                        PointType.OFF_CURVE_CUBIC,
+                    ):
+                        del points[index]
+                        del pointTypes[index]
+            if not pointTypes:
+                # Don't write empty contours
+                continue
             assert len(points) == len(pointTypes)
             pen.beginPath()
             segmentType = (
