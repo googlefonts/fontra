@@ -1,5 +1,6 @@
 import { isSuperset, union } from "../core/set-ops.js";
 import {
+  cleanSelection,
   enumerate,
   makeAffineTransform,
   makeUPlusStringFromCodePoint,
@@ -412,7 +413,8 @@ registerVisualizationLayerDefinition({
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const isHoverSelected =
-      model.selection?.size && isSuperset(model.selection, model.hoverSelection);
+      model.selection?.size &&
+      isSuperset(model.selection, cleanSelection(model.hoverSelection));
     const { component: hoveredComponentIndices } = parseSelection(model.hoverSelection);
     const hoveredComponentIndex = hoveredComponentIndices?.[0];
     const combinedSelection = lenientUnion(model.selection, model.hoverSelection);
