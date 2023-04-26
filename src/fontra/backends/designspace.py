@@ -220,9 +220,7 @@ class DesignspaceBackend:
                 else:
                     layerGlyph.lib.pop(GLYPH_DESIGNSPACE_LIB_KEY, None)
 
-            glyphSet.writeGlyph(
-                glyphName, layerGlyph, drawPointsFunc=drawPointsFunc, validate=False
-            )
+            glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
             if writeGlyphSetContents:
                 # FIXME: this is inefficient if we write many glyphs
                 self.updateGlyphSetContents(glyphSet)
