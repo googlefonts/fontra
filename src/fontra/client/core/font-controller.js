@@ -161,7 +161,7 @@ export class FontController {
     const glyph = VariableGlyph.fromObject({
       name: glyphName,
       sources: [{ name: sourceName, location: {}, layerName: sourceName }],
-      layers: [{ name: sourceName, glyph: structuredClone(templateInstance) }],
+      layers: { [sourceName]: { glyph: structuredClone(templateInstance) } },
     });
     const glyphController = new VariableGlyphController(glyph, this.globalAxes);
     this._glyphsPromiseCache.put(glyphName, Promise.resolve(glyphController));
