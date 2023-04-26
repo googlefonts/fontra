@@ -37,7 +37,7 @@
 
 .ui-form {
   display: grid;
-  grid-template-columns: min-content min-content;
+  grid-template-columns: 32% 68%;
   gap: 0.35rem 0.35rem;
   overflow-x: hidden;
   overflow-y: scroll;
@@ -51,6 +51,8 @@
 .ui-form-label {
   text-align: right;
   align-self: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ui-form-divider {
