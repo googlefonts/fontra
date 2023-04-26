@@ -1,6 +1,7 @@
 import { isSuperset, union } from "../core/set-ops.js";
 import {
   enumerate,
+  makeAffineTransform,
   makeUPlusStringFromCodePoint,
   parseSelection,
   withSavedState,
@@ -395,9 +396,19 @@ registerVisualizationLayerDefinition({
     selectedStrokeWidth: 3,
     originMarkerStrokeWidth: 1,
     originMarkerSize: 10,
+    originMarkerRadius: 4,
   },
-  colors: { hoveredStrokeColor: "#CCC", selectedStrokeColor: "#888" },
-  colorsDarkMode: { hoveredStrokeColor: "#777", selectedStrokeColor: "#BBB" },
+  colors: {
+    hoveredStrokeColor: "#CCC",
+    selectedStrokeColor: "#888",
+    originMarkerColor: "#BBB",
+    tCenterMarkerColor: "#777",
+  },
+  colorsDarkMode: {
+    hoveredStrokeColor: "#777",
+    selectedStrokeColor: "#888",
+    tCenterMarkerColor: "#DDD",
+  },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const isHoverSelected =
@@ -428,6 +439,7 @@ registerVisualizationLayerDefinition({
         const transformation = glyph.components[componentIndex].compo.transformation;
         const [x, y] = [transformation.translateX, transformation.translateY];
         context.lineWidth = parameters.originMarkerStrokeWidth;
+        context.strokeStyle = parameters.originMarkerColor;
         strokeLine(
           context,
           x - parameters.originMarkerSize,
@@ -442,6 +454,32 @@ registerVisualizationLayerDefinition({
           x,
           y + parameters.originMarkerSize
         );
+        // Component transformation center
+        const affine = makeAffineTransform(transformation);
+        const [cx, cy] = affine.transformPoint(
+          transformation.tCenterX,
+          transformation.tCenterY
+        );
+        const pt1 = affine.transformPoint(
+          transformation.tCenterX - parameters.originMarkerSize,
+          transformation.tCenterY
+        );
+        const pt2 = affine.transformPoint(
+          transformation.tCenterX + parameters.originMarkerSize,
+          transformation.tCenterY
+        );
+        const pt3 = affine.transformPoint(
+          transformation.tCenterX,
+          transformation.tCenterY - parameters.originMarkerSize
+        );
+        const pt4 = affine.transformPoint(
+          transformation.tCenterX,
+          transformation.tCenterY + parameters.originMarkerSize
+        );
+        context.strokeStyle = parameters.tCenterMarkerColor;
+        strokeLine(context, ...pt1, ...pt2);
+        strokeLine(context, ...pt3, ...pt4);
+        strokeCircle(context, cx, cy, parameters.originMarkerRadius);
       });
     }
   },
@@ -736,6 +774,12 @@ function strokeLine(context, x1, y1, x2, y2) {
   context.beginPath();
   context.moveTo(x1, y1);
   context.lineTo(x2, y2);
+  context.stroke();
+}
+
+function strokeCircle(context, cx, cy, radius) {
+  context.beginPath();
+  context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
   context.stroke();
 }
 
