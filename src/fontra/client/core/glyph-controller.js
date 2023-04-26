@@ -630,6 +630,9 @@ function subsetLocation(location, axes) {
 
 function findClosestSourceIndexFromLocation(glyph, location, axes) {
   const distances = [];
+  if (!glyph.sources.length) {
+    throw Error("assert -- glyph has no sources");
+  }
   for (let i = 0; i < glyph.sources.length; i++) {
     const sourceLocation = normalizeLocation(glyph.sources[i].location, axes);
     let distanceSquared = 0;
