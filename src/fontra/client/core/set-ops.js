@@ -76,3 +76,7 @@ export function updateSet(set, iterable) {
     set.add(item);
   }
 }
+
+export function filterSet(set, func) {
+  return new Set([...set].filter(func));
+}
