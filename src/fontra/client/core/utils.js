@@ -1,3 +1,4 @@
+import { filterSet } from "./set-ops.js";
 import { Transform } from "./transform.js";
 
 export function objectsEqual(obj1, obj2) {
@@ -299,4 +300,11 @@ function findNestedActiveElement(element) {
   return element.shadowRoot && element.shadowRoot.activeElement
     ? findNestedActiveElement(element.shadowRoot.activeElement)
     : element;
+}
+
+export function cleanSelection(selection) {
+  return filterSet(selection, (item) => {
+    const key = item.split("/")[0];
+    return key == "point" || key == "component";
+  });
 }
