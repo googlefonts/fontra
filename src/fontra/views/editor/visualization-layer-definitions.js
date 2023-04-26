@@ -3,6 +3,7 @@ import {
   enumerate,
   makeUPlusStringFromCodePoint,
   parseSelection,
+  withSavedState,
 } from "/core/utils.js";
 import { subVectors } from "../core/vector.js";
 
@@ -389,7 +390,12 @@ registerVisualizationLayerDefinition({
   name: "Component selection",
   selectionMode: "editing",
   zIndex: 500,
-  screenParameters: { hoveredStrokeWidth: 3, selectedStrokeWidth: 3 },
+  screenParameters: {
+    hoveredStrokeWidth: 3,
+    selectedStrokeWidth: 3,
+    originMarkerStrokeWidth: 1,
+    originMarkerSize: 10,
+  },
   colors: { hoveredStrokeColor: "#CCC", selectedStrokeColor: "#888" },
   colorsDarkMode: { hoveredStrokeColor: "#777", selectedStrokeColor: "#BBB" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
@@ -408,16 +414,35 @@ registerVisualizationLayerDefinition({
       const drawSelectionFill =
         isHoverSelected || componentIndex !== hoveredComponentIndex;
       const componentPath = glyph.components[componentIndex].path2d;
-      context.save();
-      context.lineJoin = "round";
-      context.lineWidth = drawSelectionFill
-        ? parameters.selectedStrokeWidth
-        : parameters.hoveredStrokeWidth;
-      context.strokeStyle = drawSelectionFill
-        ? parameters.selectedStrokeColor
-        : parameters.hoveredStrokeColor;
-      context.stroke(componentPath);
-      context.restore();
+      withSavedState(context, () => {
+        context.lineJoin = "round";
+        context.lineWidth = drawSelectionFill
+          ? parameters.selectedStrokeWidth
+          : parameters.hoveredStrokeWidth;
+        context.strokeStyle = drawSelectionFill
+          ? parameters.selectedStrokeColor
+          : parameters.hoveredStrokeColor;
+        context.stroke(componentPath);
+
+        // Component origin
+        const transformation = glyph.components[componentIndex].compo.transformation;
+        const [x, y] = [transformation.translateX, transformation.translateY];
+        context.lineWidth = parameters.originMarkerStrokeWidth;
+        strokeLine(
+          context,
+          x - parameters.originMarkerSize,
+          y,
+          x + parameters.originMarkerSize,
+          y
+        );
+        strokeLine(
+          context,
+          x,
+          y - parameters.originMarkerSize,
+          x,
+          y + parameters.originMarkerSize
+        );
+      });
     }
   },
 });
