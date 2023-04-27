@@ -205,9 +205,15 @@ function makeComponentTCenterEditFunc(component, componentIndex, roundFunc) {
     y: transformation.tCenterY,
   };
   const affine = makeAffineTransform(transformation);
+  const affineInv = affine.inverse();
+  const localTCenter = affine.transformPointObject(tCenter);
   return [
     (transform) => {
-      const editedTCenter = transform.constrained(tCenter);
+      const editedTCenter = affineInv.transformPointObject(
+        transform.constrained(localTCenter)
+      );
+      editedTCenter.x = roundFunc(editedTCenter.x);
+      editedTCenter.y = roundFunc(editedTCenter.y);
       const editedAffine = makeAffineTransform({
         ...transformation,
         tCenterX: editedTCenter.x,
@@ -221,8 +227,8 @@ function makeComponentTCenterEditFunc(component, componentIndex, roundFunc) {
         componentIndex,
         editedOrigin.x,
         editedOrigin.y,
-        roundFunc(editedTCenter.x),
-        roundFunc(editedTCenter.y)
+        editedTCenter.x,
+        editedTCenter.y
       );
     },
     makeComponentTCenterChange(
