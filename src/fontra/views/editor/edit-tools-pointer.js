@@ -5,7 +5,6 @@ import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
 import {
   boolInt,
-  cleanSelection,
   makeUPlusStringFromCodePoint,
   modulo,
   parseSelection,
@@ -25,7 +24,7 @@ export class PointerTool extends BaseTool {
     sceneController.hoverSelection = this.sceneModel.selectionAtPoint(
       point,
       size,
-      sceneController.selection
+      union(sceneController.selection, sceneController.hoverSelection)
     );
     sceneController.hoveredGlyph = undefined;
     sceneController.hoverPathHit = undefined;
@@ -61,7 +60,7 @@ export class PointerTool extends BaseTool {
     const selection = this.sceneModel.selectionAtPoint(
       point,
       size,
-      sceneController.selection
+      union(sceneController.selection, sceneController.hoverSelection)
     );
     let initialClickedPointIndex;
     if (!selection.size) {
@@ -95,7 +94,7 @@ export class PointerTool extends BaseTool {
 
     const modeFunc = getSelectModeFunction(event);
     const newSelection = modeFunc(sceneController.selection, selection);
-    const cleanSel = cleanSelection(selection);
+    const cleanSel = selection;
     if (
       !selection.size ||
       event.shiftKey ||
