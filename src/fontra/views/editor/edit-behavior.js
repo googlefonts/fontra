@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { parseSelection, reversed, sign } from "../core/utils.js";
+import { makeAffineTransform, parseSelection, reversed, sign } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import {
   NIL,
@@ -195,23 +195,34 @@ function makeComponentOriginEditFunc(component, componentIndex, roundFunc) {
 }
 
 function makeComponentTCenterEditFunc(component, componentIndex, roundFunc) {
+  const transformation = { ...component.transformation };
   const origin = {
-    x: component.transformation.translateX,
-    y: component.transformation.translateY,
+    x: transformation.translateX,
+    y: transformation.translateY,
   };
   const tCenter = {
-    x: component.transformation.tCenterX,
-    y: component.transformation.tCenterY,
+    x: transformation.tCenterX,
+    y: transformation.tCenterY,
   };
+  const affine = makeAffineTransform(transformation);
   return [
     (transform) => {
       const editedTCenter = transform.constrained(tCenter);
+      const editedAffine = makeAffineTransform({
+        ...transformation,
+        tCenterX: editedTCenter.x,
+        tCenterY: editedTCenter.y,
+      });
+      const editedOrigin = {
+        x: origin.x + affine.dx - editedAffine.dx,
+        y: origin.y + affine.dy - editedAffine.dy,
+      };
       return makeComponentTCenterChange(
         componentIndex,
-        origin.x,
-        origin.y,
-        editedTCenter.x,
-        editedTCenter.y
+        editedOrigin.x,
+        editedOrigin.y,
+        roundFunc(editedTCenter.x),
+        roundFunc(editedTCenter.y)
       );
     },
     makeComponentTCenterChange(
