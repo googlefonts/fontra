@@ -21,12 +21,18 @@ export class EditBehaviorFactory {
       componentOrigin: componentOriginSelection,
       componentTCenter: componentTCenterSelection,
     } = parseSelection(selection);
-    const componentIndices = [
-      ...(componentSelection || []),
-      ...(componentOriginSelection || []),
-    ];
+    const componentOriginIndices = unionIndexSets(
+      componentSelection,
+      componentOriginSelection
+    );
+    const relevantComponentIndices = unionIndexSets(
+      componentSelection,
+      componentOriginSelection,
+      componentTCenterSelection
+    );
     this.contours = unpackContours(instance.path, pointSelection || []);
-    this.components = unpackComponents(instance.components, componentIndices);
+    this.components = unpackComponents(instance.components, relevantComponentIndices);
+    this.componentOriginIndices = componentOriginIndices;
     this.componentTCenterIndices = componentTCenterSelection;
     this.behaviors = {};
   }
@@ -42,6 +48,7 @@ export class EditBehaviorFactory {
       behavior = new EditBehavior(
         this.contours,
         this.components,
+        this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType
       );
@@ -52,7 +59,13 @@ export class EditBehaviorFactory {
 }
 
 class EditBehavior {
-  constructor(contours, components, componentTCenterIndices, behavior) {
+  constructor(
+    contours,
+    components,
+    componentOriginIndices,
+    componentTCenterIndices,
+    behavior
+  ) {
     this.roundFunc = Math.round;
     this.constrainDelta = behavior.constrainDelta || ((v) => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
@@ -63,17 +76,14 @@ class EditBehavior {
 
     const componentRollbackChanges = [];
     this.componentEditFuncs = [];
-    for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
-      if (components[componentIndex]) {
-        const [editFunc, compoRollback] = makeComponentOriginEditFunc(
-          components[componentIndex],
-          componentIndex,
-          this.roundFunc
-        );
-
-        this.componentEditFuncs.push(editFunc);
-        componentRollbackChanges.push(compoRollback);
-      }
+    for (const componentIndex of componentOriginIndices) {
+      const [editFunc, compoRollback] = makeComponentOriginEditFunc(
+        components[componentIndex],
+        componentIndex,
+        this.roundFunc
+      );
+      this.componentEditFuncs.push(editFunc);
+      componentRollbackChanges.push(compoRollback);
     }
     if (componentTCenterIndices) {
       console.log("componentTCenterIndices", componentTCenterIndices);
@@ -123,6 +133,11 @@ class EditBehavior {
     }
     return consolidateChanges(changes);
   }
+}
+
+function unionIndexSets(...indexSets) {
+  indexSets = indexSets.filter((item) => !!item);
+  return [...new Set(indexSets.flat())].sort((a, b) => a - b);
 }
 
 function makeRollbackChange(contours, participatingPointIndices, componentRollback) {
