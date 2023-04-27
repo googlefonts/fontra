@@ -301,10 +301,3 @@ function findNestedActiveElement(element) {
     ? findNestedActiveElement(element.shadowRoot.activeElement)
     : element;
 }
-
-export function cleanSelection(selection) {
-  return filterSet(selection, (item) => {
-    const key = item.split("/")[0];
-    return key == "point" || key == "component";
-  });
-}
