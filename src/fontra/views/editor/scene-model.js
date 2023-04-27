@@ -259,7 +259,7 @@ export class SceneModel {
     }
   }
 
-  selectionAtPoint(point, size, currentSelection) {
+  selectionAtPoint(point, size, currentSelection, preferTCenter) {
     if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
       return new Set();
     }
@@ -303,10 +303,10 @@ export class SceneModel {
         );
         if (originMatch || tCenterMatch) {
           const selection = new Set([]);
-          if (originMatch) {
+          if (originMatch && (!tCenterMatch || !preferTCenter)) {
             selection.add(`componentOrigin/${i}`);
           }
-          if (tCenterMatch) {
+          if (tCenterMatch && (!originMatch || preferTCenter)) {
             selection.add(`componentTCenter/${i}`);
           }
           return selection;

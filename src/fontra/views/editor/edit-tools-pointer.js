@@ -24,7 +24,8 @@ export class PointerTool extends BaseTool {
     sceneController.hoverSelection = this.sceneModel.selectionAtPoint(
       point,
       size,
-      union(sceneController.selection, sceneController.hoverSelection)
+      union(sceneController.selection, sceneController.hoverSelection),
+      event.altKey
     );
     sceneController.hoveredGlyph = undefined;
     sceneController.hoverPathHit = undefined;
@@ -60,7 +61,8 @@ export class PointerTool extends BaseTool {
     const selection = this.sceneModel.selectionAtPoint(
       point,
       size,
-      union(sceneController.selection, sceneController.hoverSelection)
+      union(sceneController.selection, sceneController.hoverSelection),
+      initialEvent.altKey
     );
     let initialClickedPointIndex;
     if (!selection.size) {
