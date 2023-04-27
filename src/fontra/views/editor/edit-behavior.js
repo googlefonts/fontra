@@ -32,8 +32,8 @@ export class EditBehaviorFactory {
     );
     this.contours = unpackContours(instance.path, pointSelection || []);
     this.components = unpackComponents(instance.components, relevantComponentIndices);
-    this.componentOriginIndices = componentOriginIndices;
-    this.componentTCenterIndices = componentTCenterSelection;
+    this.componentOriginIndices = componentOriginIndices || [];
+    this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
   }
 
@@ -76,6 +76,7 @@ class EditBehavior {
 
     const componentRollbackChanges = [];
     this.componentEditFuncs = [];
+
     for (const componentIndex of componentOriginIndices) {
       const [editFunc, compoRollback] = makeComponentOriginEditFunc(
         components[componentIndex],
@@ -85,9 +86,17 @@ class EditBehavior {
       this.componentEditFuncs.push(editFunc);
       componentRollbackChanges.push(compoRollback);
     }
-    if (componentTCenterIndices) {
-      console.log("componentTCenterIndices", componentTCenterIndices);
+
+    for (const componentIndex of componentTCenterIndices) {
+      const [editFunc, compoRollback] = makeComponentTCenterEditFunc(
+        components[componentIndex],
+        componentIndex,
+        this.roundFunc
+      );
+      this.componentEditFuncs.push(editFunc);
+      componentRollbackChanges.push(compoRollback);
     }
+
     this.rollbackChange = makeRollbackChange(
       contours,
       participatingPointIndices,
@@ -181,7 +190,37 @@ function makeComponentOriginEditFunc(component, componentIndex, roundFunc) {
         roundFunc(editedOrigin.y)
       );
     },
-    makeComponentOriginChange(componentIndex, roundFunc(origin.x), roundFunc(origin.y)),
+    makeComponentOriginChange(componentIndex, origin.x, origin.y),
+  ];
+}
+
+function makeComponentTCenterEditFunc(component, componentIndex, roundFunc) {
+  const origin = {
+    x: component.transformation.translateX,
+    y: component.transformation.translateY,
+  };
+  const tCenter = {
+    x: component.transformation.tCenterX,
+    y: component.transformation.tCenterY,
+  };
+  return [
+    (transform) => {
+      const editedTCenter = transform.constrained(tCenter);
+      return makeComponentTCenterChange(
+        componentIndex,
+        origin.x,
+        origin.y,
+        editedTCenter.x,
+        editedTCenter.y
+      );
+    },
+    makeComponentTCenterChange(
+      componentIndex,
+      origin.x,
+      origin.y,
+      tCenter.x,
+      tCenter.y
+    ),
   ];
 }
 
@@ -201,6 +240,18 @@ function makeComponentOriginChange(componentIndex, x, y) {
     c: [
       { f: "=", a: ["translateX", x] },
       { f: "=", a: ["translateY", y] },
+    ],
+  };
+}
+
+function makeComponentTCenterChange(componentIndex, x, y, cx, cy) {
+  return {
+    p: [componentIndex, "transformation"],
+    c: [
+      { f: "=", a: ["translateX", x] },
+      { f: "=", a: ["translateY", y] },
+      { f: "=", a: ["tCenterX", cx] },
+      { f: "=", a: ["tCenterY", cy] },
     ],
   };
 }
