@@ -263,9 +263,16 @@ export class SceneModel {
     if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
       return new Set();
     }
-    const currentSelectedComponentIndices = new Set(
-      (currentSelection ? parseSelection(currentSelection).component : undefined) || []
-    );
+    let currentSelectedComponentIndices;
+    if (currentSelection) {
+      const { component, componentOrigin, componentTCenter } =
+        parseSelection(currentSelection);
+      currentSelectedComponentIndices = new Set([
+        ...(component || []),
+        ...(componentOrigin || []),
+        ...(componentTCenter || []),
+      ]);
+    }
     const positionedGlyph = this.getSelectedPositionedGlyph();
     const glyphPoint = {
       x: point.x - positionedGlyph.x,
@@ -282,7 +289,7 @@ export class SceneModel {
     const componentHullMatches = [];
     for (let i = components.length - 1; i >= 0; i--) {
       const component = components[i];
-      if (currentSelectedComponentIndices.has(i)) {
+      if (currentSelectedComponentIndices?.has(i)) {
         const compo = component.compo;
         const originMatch = pointInRect(
           compo.transformation.translateX,
@@ -295,7 +302,7 @@ export class SceneModel {
           selRect
         );
         if (originMatch || tCenterMatch) {
-          const selection = new Set([`component/${i}`]);
+          const selection = new Set([]);
           if (originMatch) {
             selection.add(`componentOrigin/${i}`);
           }
