@@ -1,4 +1,3 @@
-import { filterSet } from "./set-ops.js";
 import { Transform } from "./transform.js";
 
 export function objectsEqual(obj1, obj2) {
