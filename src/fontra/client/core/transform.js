@@ -21,6 +21,11 @@ export class Transform {
     return [this.xx * x + this.yx * y + this.dx, this.xy * x + this.yy * y + this.dy];
   }
 
+  transformPointObject(point) {
+    const [x, y] = this.transformPoint(point.x, point.y);
+    return { x, y };
+  }
+
   translate(x, y) {
     // Return a new transformation, translated (offset) by x, y.
 
