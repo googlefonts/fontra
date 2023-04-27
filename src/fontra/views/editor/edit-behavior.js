@@ -65,7 +65,7 @@ class EditBehavior {
     this.componentEditFuncs = [];
     for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
       if (components[componentIndex]) {
-        const [editFunc, compoRollback] = makeComponentEditFunc(
+        const [editFunc, compoRollback] = makeComponentOriginEditFunc(
           components[componentIndex],
           componentIndex,
           this.roundFunc
@@ -152,10 +152,10 @@ function makeRollbackChange(contours, participatingPointIndices, componentRollba
   return consolidateChanges(changes);
 }
 
-function makeComponentEditFunc(component, componentIndex, roundFunc) {
+function makeComponentOriginEditFunc(component, componentIndex, roundFunc) {
   const origin = {
-    x: component.x,
-    y: component.y,
+    x: component.transformation.translateX,
+    y: component.transformation.translateY,
   };
   return [
     (transform) => {
@@ -226,8 +226,7 @@ function unpackComponents(components, selectedComponentIndices) {
   const unpackedComponents = new Array(components.length);
   for (const componentIndex of selectedComponentIndices) {
     unpackedComponents[componentIndex] = {
-      x: components[componentIndex].transformation.translateX,
-      y: components[componentIndex].transformation.translateY,
+      transformation: components[componentIndex].transformation,
     };
   }
   return unpackedComponents;
