@@ -15,10 +15,19 @@ import {
 
 export class EditBehaviorFactory {
   constructor(instance, selection) {
-    const { point: pointSelection, component: componentSelection } =
-      parseSelection(selection);
+    const {
+      point: pointSelection,
+      component: componentSelection,
+      componentOrigin: componentOriginSelection,
+      componentTCenter: componentTCenterSelection,
+    } = parseSelection(selection);
+    const componentIndices = [
+      ...(componentSelection || []),
+      ...(componentOriginSelection || []),
+    ];
     this.contours = unpackContours(instance.path, pointSelection || []);
-    this.components = unpackComponents(instance.components, componentSelection || []);
+    this.components = unpackComponents(instance.components, componentIndices);
+    this.componentTCenterIndices = componentTCenterSelection;
     this.behaviors = {};
   }
 
@@ -30,7 +39,12 @@ export class EditBehaviorFactory {
         console.log(`invalid behavior name: "${behaviorName}"`);
         behaviorType = behaviorTypes["default"];
       }
-      behavior = new EditBehavior(this.contours, this.components, behaviorType);
+      behavior = new EditBehavior(
+        this.contours,
+        this.components,
+        this.componentTCenterIndices,
+        behaviorType
+      );
       this.behaviors[behaviorName] = behavior;
     }
     return behavior;
@@ -38,7 +52,7 @@ export class EditBehaviorFactory {
 }
 
 class EditBehavior {
-  constructor(contours, components, behavior) {
+  constructor(contours, components, componentTCenterIndices, behavior) {
     this.constrainDelta = behavior.constrainDelta || ((v) => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
       contours,
@@ -53,6 +67,9 @@ class EditBehavior {
           makeComponentTransformFunc(components[componentIndex], componentIndex)
         );
       }
+    }
+    if (componentTCenterIndices) {
+      console.log("componentTCenterIndices", componentTCenterIndices);
     }
     this.rollbackChange = makeRollbackChange(
       contours,
