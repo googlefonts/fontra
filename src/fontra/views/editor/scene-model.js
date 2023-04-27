@@ -259,9 +259,19 @@ export class SceneModel {
     }
   }
 
-  selectionAtPoint(point, size) {
+  selectionAtPoint(point, size, currentSelection, preferTCenter) {
     if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
       return new Set();
+    }
+    let currentSelectedComponentIndices;
+    if (currentSelection) {
+      const { component, componentOrigin, componentTCenter } =
+        parseSelection(currentSelection);
+      currentSelectedComponentIndices = new Set([
+        ...(component || []),
+        ...(componentOrigin || []),
+        ...(componentTCenter || []),
+      ]);
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
     const glyphPoint = {
@@ -275,9 +285,33 @@ export class SceneModel {
     const components = positionedGlyph.glyph.components;
     const x = point.x - positionedGlyph.x;
     const y = point.y - positionedGlyph.y;
+    const selRect = centeredRect(x, y, size);
     const componentHullMatches = [];
     for (let i = components.length - 1; i >= 0; i--) {
       const component = components[i];
+      if (currentSelectedComponentIndices?.has(i)) {
+        const compo = component.compo;
+        const originMatch = pointInRect(
+          compo.transformation.translateX,
+          compo.transformation.translateY,
+          selRect
+        );
+        const tCenterMatch = pointInRect(
+          compo.transformation.translateX + compo.transformation.tCenterX,
+          compo.transformation.translateY + compo.transformation.tCenterY,
+          selRect
+        );
+        if (originMatch || tCenterMatch) {
+          const selection = new Set([]);
+          if (originMatch && (!tCenterMatch || !preferTCenter)) {
+            selection.add(`componentOrigin/${i}`);
+          }
+          if (tCenterMatch && (!originMatch || preferTCenter)) {
+            selection.add(`componentTCenter/${i}`);
+          }
+          return selection;
+        }
+      }
       if (
         pointInRect(x, y, component.controlBounds) &&
         pointInConvexPolygon(x, y, component.convexHull)

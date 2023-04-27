@@ -14,20 +14,25 @@ export class Transform {
     // Transform a point.
 
     // Example:
-    // 	>>> t = new Transform()
-    // 	>>> t = t.scale(2.5, 5.5)
-    // 	>>> t.transformPoint(100, 100)
-    // 	(250.0, 550.0)
+    //  >>> t = new Transform()
+    //  >>> t = t.scale(2.5, 5.5)
+    //  >>> t.transformPoint(100, 100)
+    //  (250.0, 550.0)
     return [this.xx * x + this.yx * y + this.dx, this.xy * x + this.yy * y + this.dy];
+  }
+
+  transformPointObject(point) {
+    const [x, y] = this.transformPoint(point.x, point.y);
+    return { x, y };
   }
 
   translate(x, y) {
     // Return a new transformation, translated (offset) by x, y.
 
     // Example:
-    // 	>>> t = new Transform()
-    // 	>>> t.translate(20, 30)
-    // 	<Transform [1 0 0 1 20 30]>
+    //  >>> t = new Transform()
+    //  >>> t.translate(20, 30)
+    //  <Transform [1 0 0 1 20 30]>
     return this._transform(1, 0, 0, 1, x, y);
   }
 
@@ -36,11 +41,11 @@ export class Transform {
     // may be None, which implies to use the x value for y as well.
 
     // Example:
-    // 	>>> t = new Transform()
-    // 	>>> t.scale(5)
-    // 	<Transform [5 0 0 5 0 0]>
-    // 	>>> t.scale(5, 6)
-    // 	<Transform [5 0 0 6 0 0]>
+    //  >>> t = new Transform()
+    //  >>> t.scale(5)
+    //  <Transform [5 0 0 5 0 0]>
+    //  >>> t.scale(5, 6)
+    //  <Transform [5 0 0 6 0 0]>
     if (y === undefined) {
       y = x;
     }
@@ -51,10 +56,10 @@ export class Transform {
     // Return a new transformation, rotated by 'angle' (radians).
 
     // Example:
-    // 	>>> import math
-    // 	>>> t = new Transform()
-    // 	>>> t.rotate(math.pi / 2)
-    // 	<Transform [0 1 -1 0 0 0]>
+    //  >>> import math
+    //  >>> t = new Transform()
+    //  >>> t.rotate(math.pi / 2)
+    //  <Transform [0 1 -1 0 0 0]>
     const c = _normSinCos(Math.cos(angle));
     const s = _normSinCos(Math.sin(angle));
     return this._transform(c, s, -s, c, 0, 0);
@@ -64,10 +69,10 @@ export class Transform {
     // Return a new transformation, skewed by x and y.
 
     // Example:
-    // 	>>> import math
-    // 	>>> t = new Transform()
-    // 	>>> t.skew(math.pi / 4)
-    // 	<Transform [1 0 1 1 0 0]>
+    //  >>> import math
+    //  >>> t = new Transform()
+    //  >>> t.skew(math.pi / 4)
+    //  <Transform [1 0 1 1 0 0]>
     return this._transform(1, Math.tan(y), Math.tan(x), 1, 0, 0);
   }
 
@@ -76,9 +81,9 @@ export class Transform {
     // transformation.
 
     // Example:
-    // 	>>> t = new Transform(2, 0, 0, 3, 1, 6)
-    // 	>>> t.transform((4, 3, 2, 1, 5, 6))
-    // 	<Transform [8 9 4 3 11 24]>
+    //  >>> t = new Transform(2, 0, 0, 3, 1, 6)
+    //  >>> t.transform((4, 3, 2, 1, 5, 6))
+    //  <Transform [8 9 4 3 11 24]>
     if (other.length === undefined) {
       other = _unpackTransformObject(other);
     }
@@ -102,11 +107,11 @@ export class Transform {
     // other.transform(self).
 
     // Example:
-    // 	>>> t = new Transform(2, 0, 0, 3, 1, 6)
-    // 	>>> t.reverseTransform((4, 3, 2, 1, 5, 6))
-    // 	<Transform [8 6 6 3 21 15]>
-    // 	>>> Transform(4, 3, 2, 1, 5, 6).transform((2, 0, 0, 3, 1, 6))
-    // 	<Transform [8 6 6 3 21 15]>
+    //  >>> t = new Transform(2, 0, 0, 3, 1, 6)
+    //  >>> t.reverseTransform((4, 3, 2, 1, 5, 6))
+    //  <Transform [8 6 6 3 21 15]>
+    //  >>> Transform(4, 3, 2, 1, 5, 6).transform((2, 0, 0, 3, 1, 6))
+    //  <Transform [8 6 6 3 21 15]>
     if (other.length === undefined) {
       other = _unpackTransformObject(other);
     }
@@ -125,12 +130,12 @@ export class Transform {
     // Return the inverse transformation.
 
     // Example:
-    // 	>>> t = Identity.translate(2, 3).scale(4, 5)
-    // 	>>> t.transformPoint(10, 20)
-    // 	(42, 103)
-    // 	>>> it = t.inverse()
-    // 	>>> it.transformPoint(42, 103)
-    // 	(10.0, 20.0)
+    //  >>> t = Identity.translate(2, 3).scale(4, 5)
+    //  >>> t.transformPoint(10, 20)
+    //  (42, 103)
+    //  >>> it = t.inverse()
+    //  >>> it.transformPoint(42, 103)
+    //  (10.0, 20.0)
     if (
       this.xx === 1 &&
       this.xy === 0 &&

@@ -1,5 +1,5 @@
 import { consolidateChanges } from "../core/changes.js";
-import { parseSelection, reversed, sign } from "../core/utils.js";
+import { makeAffineTransform, parseSelection, reversed, sign } from "../core/utils.js";
 import * as vector from "../core/vector.js";
 import {
   NIL,
@@ -15,10 +15,25 @@ import {
 
 export class EditBehaviorFactory {
   constructor(instance, selection) {
-    const { point: pointSelection, component: componentSelection } =
-      parseSelection(selection);
+    const {
+      point: pointSelection,
+      component: componentSelection,
+      componentOrigin: componentOriginSelection,
+      componentTCenter: componentTCenterSelection,
+    } = parseSelection(selection);
+    const componentOriginIndices = unionIndexSets(
+      componentSelection,
+      componentOriginSelection
+    );
+    const relevantComponentIndices = unionIndexSets(
+      componentSelection,
+      componentOriginSelection,
+      componentTCenterSelection
+    );
     this.contours = unpackContours(instance.path, pointSelection || []);
-    this.components = unpackComponents(instance.components, componentSelection || []);
+    this.components = unpackComponents(instance.components, relevantComponentIndices);
+    this.componentOriginIndices = componentOriginIndices || [];
+    this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
   }
 
@@ -30,7 +45,13 @@ export class EditBehaviorFactory {
         console.log(`invalid behavior name: "${behaviorName}"`);
         behaviorType = behaviorTypes["default"];
       }
-      behavior = new EditBehavior(this.contours, this.components, behaviorType);
+      behavior = new EditBehavior(
+        this.contours,
+        this.components,
+        this.componentOriginIndices,
+        this.componentTCenterIndices,
+        behaviorType
+      );
       this.behaviors[behaviorName] = behavior;
     }
     return behavior;
@@ -38,7 +59,14 @@ export class EditBehaviorFactory {
 }
 
 class EditBehavior {
-  constructor(contours, components, behavior) {
+  constructor(
+    contours,
+    components,
+    componentOriginIndices,
+    componentTCenterIndices,
+    behavior
+  ) {
+    this.roundFunc = Math.round;
     this.constrainDelta = behavior.constrainDelta || ((v) => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
       contours,
@@ -46,20 +74,34 @@ class EditBehavior {
     );
     this.pointEditFuncs = pointEditFuncs;
 
+    const componentRollbackChanges = [];
     this.componentEditFuncs = [];
-    for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
-      if (components[componentIndex]) {
-        this.componentEditFuncs.push(
-          makeComponentTransformFunc(components[componentIndex], componentIndex)
-        );
-      }
+
+    for (const componentIndex of componentOriginIndices) {
+      const [editFunc, compoRollback] = makeComponentOriginEditFunc(
+        components[componentIndex],
+        componentIndex,
+        this.roundFunc
+      );
+      this.componentEditFuncs.push(editFunc);
+      componentRollbackChanges.push(compoRollback);
     }
+
+    for (const componentIndex of componentTCenterIndices) {
+      const [editFunc, compoRollback] = makeComponentTCenterEditFunc(
+        components[componentIndex],
+        componentIndex,
+        this.roundFunc
+      );
+      this.componentEditFuncs.push(editFunc);
+      componentRollbackChanges.push(compoRollback);
+    }
+
     this.rollbackChange = makeRollbackChange(
       contours,
       participatingPointIndices,
-      components
+      componentRollbackChanges
     );
-    this.roundFunc = Math.round;
   }
 
   makeChangeForDelta(delta) {
@@ -89,12 +131,7 @@ class EditBehavior {
       return makePointChange(pointIndex, this.roundFunc(x), this.roundFunc(y));
     });
     const componentChanges = this.componentEditFuncs?.map((editFunc) => {
-      const [componentIndex, x, y] = editFunc(transform);
-      return makeComponentOriginChange(
-        componentIndex,
-        this.roundFunc(x),
-        this.roundFunc(y)
-      );
+      return editFunc(transform);
     });
     const changes = [];
     if (pathChanges && pathChanges.length) {
@@ -107,7 +144,12 @@ class EditBehavior {
   }
 }
 
-function makeRollbackChange(contours, participatingPointIndices, components) {
+function unionIndexSets(...indexSets) {
+  indexSets = indexSets.filter((item) => !!item);
+  return [...new Set(indexSets.flat())].sort((a, b) => a - b);
+}
+
+function makeRollbackChange(contours, participatingPointIndices, componentRollback) {
   const pointRollback = [];
   for (let i = 0; i < contours.length; i++) {
     const contour = contours[i];
@@ -124,16 +166,6 @@ function makeRollbackChange(contours, participatingPointIndices, components) {
     );
   }
 
-  const componentRollback = [];
-  for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
-    const component = components[componentIndex];
-    if (!component) {
-      continue;
-    }
-    componentRollback.push(
-      makeComponentOriginChange(componentIndex, component.x, component.y)
-    );
-  }
   const changes = [];
   if (pointRollback.length) {
     changes.push(consolidateChanges(pointRollback, ["path"]));
@@ -144,15 +176,69 @@ function makeRollbackChange(contours, participatingPointIndices, components) {
   return consolidateChanges(changes);
 }
 
-function makeComponentTransformFunc(component, componentIndex) {
+function makeComponentOriginEditFunc(component, componentIndex, roundFunc) {
   const origin = {
-    x: component.x,
-    y: component.y,
+    x: component.transformation.translateX,
+    y: component.transformation.translateY,
   };
-  return (transform) => {
-    const editedOrigin = transform.constrained(origin);
-    return [componentIndex, editedOrigin.x, editedOrigin.y];
+  return [
+    (transform) => {
+      const editedOrigin = transform.constrained(origin);
+      return makeComponentOriginChange(
+        componentIndex,
+        roundFunc(editedOrigin.x),
+        roundFunc(editedOrigin.y)
+      );
+    },
+    makeComponentOriginChange(componentIndex, origin.x, origin.y),
+  ];
+}
+
+function makeComponentTCenterEditFunc(component, componentIndex, roundFunc) {
+  const transformation = { ...component.transformation };
+  const origin = {
+    x: transformation.translateX,
+    y: transformation.translateY,
   };
+  const tCenter = {
+    x: transformation.tCenterX,
+    y: transformation.tCenterY,
+  };
+  const affine = makeAffineTransform(transformation);
+  const affineInv = affine.inverse();
+  const localTCenter = affine.transformPointObject(tCenter);
+  return [
+    (transform) => {
+      const editedTCenter = affineInv.transformPointObject(
+        transform.constrained(localTCenter)
+      );
+      editedTCenter.x = roundFunc(editedTCenter.x);
+      editedTCenter.y = roundFunc(editedTCenter.y);
+      const editedAffine = makeAffineTransform({
+        ...transformation,
+        tCenterX: editedTCenter.x,
+        tCenterY: editedTCenter.y,
+      });
+      const editedOrigin = {
+        x: origin.x + affine.dx - editedAffine.dx,
+        y: origin.y + affine.dy - editedAffine.dy,
+      };
+      return makeComponentTCenterChange(
+        componentIndex,
+        editedOrigin.x,
+        editedOrigin.y,
+        editedTCenter.x,
+        editedTCenter.y
+      );
+    },
+    makeComponentTCenterChange(
+      componentIndex,
+      origin.x,
+      origin.y,
+      tCenter.x,
+      tCenter.y
+    ),
+  ];
 }
 
 function makePointTranslateFunction(delta) {
@@ -171,6 +257,18 @@ function makeComponentOriginChange(componentIndex, x, y) {
     c: [
       { f: "=", a: ["translateX", x] },
       { f: "=", a: ["translateY", y] },
+    ],
+  };
+}
+
+function makeComponentTCenterChange(componentIndex, x, y, cx, cy) {
+  return {
+    p: [componentIndex, "transformation"],
+    c: [
+      { f: "=", a: ["translateX", x] },
+      { f: "=", a: ["translateY", y] },
+      { f: "=", a: ["tCenterX", cx] },
+      { f: "=", a: ["tCenterY", cy] },
     ],
   };
 }
@@ -211,8 +309,7 @@ function unpackComponents(components, selectedComponentIndices) {
   const unpackedComponents = new Array(components.length);
   for (const componentIndex of selectedComponentIndices) {
     unpackedComponents[componentIndex] = {
-      x: components[componentIndex].transformation.translateX,
-      y: components[componentIndex].transformation.translateY,
+      transformation: components[componentIndex].transformation,
     };
   }
   return unpackedComponents;

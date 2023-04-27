@@ -54,9 +54,16 @@ export class SidebarSelectionInfo {
         disabled: !canEdit,
       });
     }
-    const { component: componentIndices } = parseSelection(
+    const { component, componentOrigin, componentTCenter } = parseSelection(
       this.sceneController.selection
     );
+    const componentIndices = [
+      ...new Set([
+        ...(component || []),
+        ...(componentOrigin || []),
+        ...(componentTCenter || []),
+      ]),
+    ].sort((a, b) => a - b);
 
     for (const index of componentIndices || []) {
       const component = instance.components[index];

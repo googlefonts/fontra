@@ -2,7 +2,7 @@ import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { connectContours } from "../core/path-functions.js";
 import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
-import { isSuperset, difference, symmetricDifference, union } from "../core/set-ops.js";
+import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
 import {
   boolInt,
   makeUPlusStringFromCodePoint,
@@ -21,7 +21,12 @@ export class PointerTool extends BaseTool {
     const point = sceneController.localPoint(event);
     const size = sceneController.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
-    sceneController.hoverSelection = this.sceneModel.selectionAtPoint(point, size);
+    sceneController.hoverSelection = this.sceneModel.selectionAtPoint(
+      point,
+      size,
+      union(sceneController.selection, sceneController.hoverSelection),
+      event.altKey
+    );
     sceneController.hoveredGlyph = undefined;
     sceneController.hoverPathHit = undefined;
     if (!sceneController.hoverSelection?.size) {
@@ -53,7 +58,12 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(initialEvent);
     const size = sceneController.mouseClickMargin;
-    const selection = this.sceneModel.selectionAtPoint(point, size);
+    const selection = this.sceneModel.selectionAtPoint(
+      point,
+      size,
+      union(sceneController.selection, sceneController.hoverSelection),
+      initialEvent.altKey
+    );
     let initialClickedPointIndex;
     if (!selection.size) {
       const hit = this.sceneModel.pathHitAtPoint(point, size);
@@ -86,16 +96,17 @@ export class PointerTool extends BaseTool {
 
     const modeFunc = getSelectModeFunction(event);
     const newSelection = modeFunc(sceneController.selection, selection);
+    const cleanSel = selection;
     if (
       !selection.size ||
       event.shiftKey ||
       event.altKey ||
-      !isSuperset(sceneController.selection, selection)
+      !isSuperset(sceneController.selection, cleanSel)
     ) {
       sceneController.selection = newSelection;
     }
 
-    if (isSuperset(sceneController.selection, selection)) {
+    if (isSuperset(sceneController.selection, cleanSel)) {
       initiateDrag = true;
     }
     if (!selection.size) {
