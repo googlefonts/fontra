@@ -53,6 +53,7 @@ export class EditBehaviorFactory {
 
 class EditBehavior {
   constructor(contours, components, componentTCenterIndices, behavior) {
+    this.roundFunc = Math.round;
     this.constrainDelta = behavior.constrainDelta || ((v) => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
       contours,
@@ -60,12 +61,18 @@ class EditBehavior {
     );
     this.pointEditFuncs = pointEditFuncs;
 
+    const componentRollbackChanges = [];
     this.componentEditFuncs = [];
     for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
       if (components[componentIndex]) {
-        this.componentEditFuncs.push(
-          makeComponentTransformFunc(components[componentIndex], componentIndex)
+        const [editFunc, compoRollback] = makeComponentEditFunc(
+          components[componentIndex],
+          componentIndex,
+          this.roundFunc
         );
+
+        this.componentEditFuncs.push(editFunc);
+        componentRollbackChanges.push(compoRollback);
       }
     }
     if (componentTCenterIndices) {
@@ -74,9 +81,8 @@ class EditBehavior {
     this.rollbackChange = makeRollbackChange(
       contours,
       participatingPointIndices,
-      components
+      componentRollbackChanges
     );
-    this.roundFunc = Math.round;
   }
 
   makeChangeForDelta(delta) {
@@ -106,12 +112,7 @@ class EditBehavior {
       return makePointChange(pointIndex, this.roundFunc(x), this.roundFunc(y));
     });
     const componentChanges = this.componentEditFuncs?.map((editFunc) => {
-      const [componentIndex, x, y] = editFunc(transform);
-      return makeComponentOriginChange(
-        componentIndex,
-        this.roundFunc(x),
-        this.roundFunc(y)
-      );
+      return editFunc(transform);
     });
     const changes = [];
     if (pathChanges && pathChanges.length) {
@@ -124,7 +125,7 @@ class EditBehavior {
   }
 }
 
-function makeRollbackChange(contours, participatingPointIndices, components) {
+function makeRollbackChange(contours, participatingPointIndices, componentRollback) {
   const pointRollback = [];
   for (let i = 0; i < contours.length; i++) {
     const contour = contours[i];
@@ -141,16 +142,6 @@ function makeRollbackChange(contours, participatingPointIndices, components) {
     );
   }
 
-  const componentRollback = [];
-  for (let componentIndex = 0; componentIndex < components.length; componentIndex++) {
-    const component = components[componentIndex];
-    if (!component) {
-      continue;
-    }
-    componentRollback.push(
-      makeComponentOriginChange(componentIndex, component.x, component.y)
-    );
-  }
   const changes = [];
   if (pointRollback.length) {
     changes.push(consolidateChanges(pointRollback, ["path"]));
@@ -161,15 +152,22 @@ function makeRollbackChange(contours, participatingPointIndices, components) {
   return consolidateChanges(changes);
 }
 
-function makeComponentTransformFunc(component, componentIndex) {
+function makeComponentEditFunc(component, componentIndex, roundFunc) {
   const origin = {
     x: component.x,
     y: component.y,
   };
-  return (transform) => {
-    const editedOrigin = transform.constrained(origin);
-    return [componentIndex, editedOrigin.x, editedOrigin.y];
-  };
+  return [
+    (transform) => {
+      const editedOrigin = transform.constrained(origin);
+      return makeComponentOriginChange(
+        componentIndex,
+        roundFunc(editedOrigin.x),
+        roundFunc(editedOrigin.y)
+      );
+    },
+    makeComponentOriginChange(componentIndex, roundFunc(origin.x), roundFunc(origin.y)),
+  ];
 }
 
 function makePointTranslateFunction(delta) {
