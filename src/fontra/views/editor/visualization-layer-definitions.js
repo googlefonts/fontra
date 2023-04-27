@@ -1,6 +1,5 @@
-import { isSuperset, union } from "../core/set-ops.js";
+import { difference, isSuperset, union } from "../core/set-ops.js";
 import {
-  cleanSelection,
   enumerate,
   makeAffineTransform,
   makeUPlusStringFromCodePoint,
@@ -396,6 +395,7 @@ registerVisualizationLayerDefinition({
     hoveredStrokeWidth: 3,
     selectedStrokeWidth: 3,
     originMarkerStrokeWidth: 1,
+    selectedOriginMarkerStrokeWidth: 2,
     originMarkerSize: 10,
     originMarkerRadius: 4,
   },
@@ -406,42 +406,111 @@ registerVisualizationLayerDefinition({
     tCenterMarkerColor: "#777",
   },
   colorsDarkMode: {
-    hoveredStrokeColor: "#777",
-    selectedStrokeColor: "#888",
+    hoveredStrokeColor: "#666",
+    selectedStrokeColor: "#AAA",
+    originMarkerColor: "#BBB",
     tCenterMarkerColor: "#DDD",
   },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
-    const isHoverSelected =
-      model.selection?.size &&
-      isSuperset(model.selection, cleanSelection(model.hoverSelection));
-    const { component: hoveredComponentIndices } = parseSelection(model.hoverSelection);
-    const hoveredComponentIndex = hoveredComponentIndices?.[0];
-    const combinedSelection = lenientUnion(model.selection, model.hoverSelection);
-    const { component: combinedComponentIndices } = parseSelection(combinedSelection);
 
-    for (const componentIndex of combinedComponentIndices || []) {
-      if (componentIndex >= glyph.components.length) {
-        continue;
+    const selectedItems = parseComponentSelection(
+      model.selection || new Set(),
+      glyph.components.length
+    );
+    const hoveredItems = parseComponentSelection(
+      model.hoverSelection || new Set(),
+      glyph.components.length
+    );
+
+    selectedItems.component = union(
+      union(selectedItems.component, selectedItems.componentOrigin),
+      selectedItems.componentTCenter
+    );
+
+    hoveredItems.component = union(
+      union(hoveredItems.component, hoveredItems.componentOrigin),
+      hoveredItems.componentTCenter
+    );
+
+    hoveredItems.component = difference(
+      hoveredItems.component,
+      selectedItems.component
+    );
+    hoveredItems.componentOrigin = difference(
+      hoveredItems.componentOrigin,
+      selectedItems.componentOrigin
+    );
+    hoveredItems.componentTCenter = difference(
+      hoveredItems.componentTCenter,
+      selectedItems.componentTCenter
+    );
+
+    const relevantComponents = union(selectedItems.component, hoveredItems.component);
+
+    const visibleMarkers = {
+      componentOrigin: difference(
+        difference(relevantComponents, selectedItems.componentOrigin),
+        hoveredItems.componentOrigin
+      ),
+      componentTCenter: difference(
+        difference(relevantComponents, selectedItems.componentTCenter),
+        hoveredItems.componentTCenter
+      ),
+    };
+
+    const hoveredParms = {
+      color: parameters.hoveredStrokeColor,
+      width: parameters.hoveredStrokeWidth,
+    };
+    const selectedParms = {
+      color: parameters.selectedStrokeColor,
+      width: parameters.selectedStrokeWidth,
+    };
+
+    context.lineJoin = "round";
+    context.lineCap = "round";
+
+    for (const [componentIndices, parms] of [
+      [hoveredItems.component, hoveredParms],
+      [selectedItems.component, selectedParms],
+    ]) {
+      for (const componentIndex of componentIndices) {
+        const componentController = glyph.components[componentIndex];
+
+        context.lineWidth = parms.width;
+        context.strokeStyle = parms.color;
+        context.stroke(componentController.path2d);
       }
-      const drawSelectionFill =
-        isHoverSelected || componentIndex !== hoveredComponentIndex;
-      const componentPath = glyph.components[componentIndex].path2d;
-      withSavedState(context, () => {
-        context.lineJoin = "round";
-        context.lineWidth = drawSelectionFill
-          ? parameters.selectedStrokeWidth
-          : parameters.hoveredStrokeWidth;
-        context.strokeStyle = drawSelectionFill
-          ? parameters.selectedStrokeColor
-          : parameters.hoveredStrokeColor;
-        context.stroke(componentPath);
+    }
 
-        // Component origin
-        const transformation = glyph.components[componentIndex].compo.transformation;
+    const markerVisibleParms = {
+      color: parameters.hoveredStrokeColor,
+      width: parameters.originMarkerStrokeWidth,
+    };
+    const markerHoveredParms = {
+      color: parameters.hoveredStrokeColor,
+      width: parameters.selectedOriginMarkerStrokeWidth,
+    };
+    const markerSelectedParms = {
+      color: parameters.selectedStrokeColor,
+      width: parameters.selectedOriginMarkerStrokeWidth,
+    };
+
+    for (const [markers, parms] of [
+      [visibleMarkers, markerVisibleParms],
+      [hoveredItems, markerHoveredParms],
+      [selectedItems, markerSelectedParms],
+    ]) {
+      // Component origin
+      context.lineWidth = parms.width;
+      context.strokeStyle = parameters.originMarkerColor;
+      for (const componentIndex of markers.componentOrigin) {
+        const componentController = glyph.components[componentIndex];
+        const component = componentController.compo;
+
+        const transformation = component.transformation;
         const [x, y] = [transformation.translateX, transformation.translateY];
-        context.lineWidth = parameters.originMarkerStrokeWidth;
-        context.strokeStyle = parameters.originMarkerColor;
         strokeLine(
           context,
           x - parameters.originMarkerSize,
@@ -456,7 +525,16 @@ registerVisualizationLayerDefinition({
           x,
           y + parameters.originMarkerSize
         );
-        // Component transformation center
+      }
+
+      // Component transformation center
+      context.lineWidth = parms.width;
+      context.strokeStyle = parameters.tCenterMarkerColor;
+      for (const componentIndex of markers.componentTCenter) {
+        const componentController = glyph.components[componentIndex];
+        const component = componentController.compo;
+        const transformation = component.transformation;
+
         const affine = makeAffineTransform(transformation);
         const [cx, cy] = affine.transformPoint(
           transformation.tCenterX,
@@ -478,14 +556,22 @@ registerVisualizationLayerDefinition({
           transformation.tCenterX,
           transformation.tCenterY + parameters.originMarkerSize
         );
-        context.strokeStyle = parameters.tCenterMarkerColor;
         strokeLine(context, ...pt1, ...pt2);
         strokeLine(context, ...pt3, ...pt4);
         strokeCircle(context, cx, cy, parameters.originMarkerRadius);
-      });
+      }
     }
   },
 });
+
+function parseComponentSelection(selection, numComponents) {
+  const parsed = parseSelection(selection);
+  const result = {};
+  for (const prop of ["component", "componentOrigin", "componentTCenter"]) {
+    result[prop] = new Set((parsed[prop] || []).filter((i) => i < numComponents));
+  }
+  return result;
+}
 
 const START_POINT_ARC_GAP_ANGLE = 0.25 * Math.PI;
 
