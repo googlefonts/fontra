@@ -31,6 +31,10 @@
     "layers": {
       "type": "dict",
       "subtype": "Layer"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "LocalAxis": {
@@ -57,11 +61,22 @@
     "location": {
       "type": "dict",
       "subtype": "float"
+    },
+    "inactive": {
+      "type": "bool"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "Layer": {
     "glyph": {
       "type": "StaticGlyph"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "StaticGlyph": {

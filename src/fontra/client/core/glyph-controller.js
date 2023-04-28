@@ -97,6 +97,9 @@ export class VariableGlyphController {
     location = this.mapLocationGlobalToLocal(location);
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
+      if (source.inactive) {
+        continue;
+      }
       const seen = new Set();
       let found = true;
       for (const axis of this.axes.concat(this.globalAxes)) {
@@ -160,7 +163,9 @@ export class VariableGlyphController {
 
   get model() {
     if (this._model === undefined) {
-      const locations = this.sources.map((source) => source.location);
+      const locations = this.sources
+        .filter((source) => !source.inactive)
+        .map((source) => source.location);
       this._model = new VariationModel(
         locations.map((location) =>
           sparsifyLocation(normalizeLocation(location, this.combinedAxes))
@@ -172,9 +177,9 @@ export class VariableGlyphController {
 
   get deltas() {
     if (this._deltas === undefined) {
-      const masterValues = this.sources.map(
-        (source) => this.layers[source.layerName].glyph
-      );
+      const masterValues = this.sources
+        .filter((source) => !source.inactive)
+        .map((source) => this.layers[source.layerName].glyph);
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;

@@ -12,6 +12,7 @@ export class VariableGlyph {
     glyph.layers = Object.fromEntries(
       Object.entries(obj.layers).map(([name, layer]) => [name, Layer.fromObject(layer)])
     );
+    glyph.customData = copyCustomData(obj.customData || {});
     return glyph;
   }
 
@@ -24,6 +25,7 @@ export class Layer {
   static fromObject(obj) {
     const layer = new Layer();
     layer.glyph = StaticGlyph.fromObject(obj.glyph);
+    layer.customData = copyCustomData(obj.customData || {});
     return layer;
   }
 }
@@ -34,6 +36,8 @@ class Source {
     source.name = obj.name;
     source.location = { ...obj.location } || {};
     source.layerName = obj.layerName;
+    source.inactive = !!obj.inactive;
+    source.customData = copyCustomData(obj.customData || {});
     return source;
   }
 }
@@ -64,4 +68,8 @@ function copyComponent(component) {
     transformation: { ...component.transformation },
     location: { ...component.location },
   };
+}
+
+function copyCustomData(data) {
+  return JSON.parse(JSON.stringify(data));
 }

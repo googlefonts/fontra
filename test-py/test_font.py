@@ -5,6 +5,8 @@ from importlib.metadata import entry_points
 
 import pytest
 
+from fontra.core.classes import VariableGlyph, from_dict
+
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 
@@ -13,10 +15,8 @@ getGlyphTestData = [
         "ufo",
         {
             "name": "period",
-            "axes": [],
             "sources": [
                 {
-                    "location": {},
                     "layerName": "default/foreground",
                     "name": "default",
                 }
@@ -25,27 +25,21 @@ getGlyphTestData = [
                 "default/foreground": {
                     "glyph": {
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
                 },
                 "default/background": {
                     "glyph": {
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [62, 0, 112, 0, 112, 120, 62, 120],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
                 },
             },
@@ -55,7 +49,6 @@ getGlyphTestData = [
         "ufo",
         {
             "name": "Aacute",
-            "axes": [],
             "sources": [
                 {
                     "location": {},
@@ -66,11 +59,6 @@ getGlyphTestData = [
             "layers": {
                 "default/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -104,8 +92,6 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 396,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
             },
@@ -115,7 +101,6 @@ getGlyphTestData = [
         "designspace",
         {
             "name": "period",
-            "axes": [],
             "sources": [
                 {
                     "name": "LightCondensed",
@@ -142,66 +127,51 @@ getGlyphTestData = [
                 "LightCondensed/foreground": {
                     "glyph": {
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
                 },
                 "LightCondensed/background": {
                     "glyph": {
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [62, 0, 112, 0, 112, 120, 62, 120],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
                 },
                 "BoldCondensed/foreground": {
                     "glyph": {
                         "xAdvance": 250,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [30, 0, 220, 0, 220, 300, 30, 300],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
                 },
                 "LightWide/foreground": {
                     "glyph": {
                         "xAdvance": 290,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [120, 0, 170, 0, 170, 220, 120, 220],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
                 },
                 "BoldWide/foreground": {
                     "glyph": {
                         "xAdvance": 310,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 250, 0, 250, 300, 60, 300],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
                 },
             },
@@ -211,7 +181,6 @@ getGlyphTestData = [
         "designspace",
         {
             "name": "Aacute",
-            "axes": [],
             "sources": [
                 {
                     "name": "LightCondensed",
@@ -237,11 +206,6 @@ getGlyphTestData = [
             "layers": {
                 "LightCondensed/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -275,17 +239,10 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 396,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "BoldCondensed/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -319,17 +276,10 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 740,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "LightWide/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -363,17 +313,10 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 1190,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "BoldWide/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -407,8 +350,6 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 1290,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
             },
@@ -418,7 +359,6 @@ getGlyphTestData = [
         "designspace",
         {
             "name": "varcotest1",
-            "axes": [],
             "sources": [
                 {
                     "name": "LightCondensed",
@@ -429,11 +369,6 @@ getGlyphTestData = [
             "layers": {
                 "LightCondensed/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -482,8 +417,6 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 900,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
             },
@@ -517,7 +450,6 @@ getGlyphTestData = [
             "layers": {
                 "LightCondensed/foreground": {
                     "glyph": {
-                        "components": [],
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],
                             "coordinates": [
@@ -540,14 +472,11 @@ getGlyphTestData = [
                             ],
                             "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
                         },
-                        "verticalOrigin": None,
                         "xAdvance": 500,
-                        "yAdvance": None,
                     },
                 },
                 "LightCondensed/varco_flip": {
                     "glyph": {
-                        "components": [],
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],
                             "coordinates": [
@@ -570,14 +499,11 @@ getGlyphTestData = [
                             ],
                             "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
                         },
-                        "verticalOrigin": None,
                         "xAdvance": 500,
-                        "yAdvance": None,
                     },
                 },
                 "LightCondensed/varco_flop": {
                     "glyph": {
-                        "components": [],
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],
                             "coordinates": [
@@ -600,9 +526,7 @@ getGlyphTestData = [
                             ],
                             "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
                         },
-                        "verticalOrigin": None,
                         "xAdvance": 500,
-                        "yAdvance": None,
                     },
                 },
             },
@@ -612,7 +536,6 @@ getGlyphTestData = [
         "ttf",
         {
             "name": "period",
-            "axes": [],
             "layers": {
                 "<default>": {
                     "glyph": {
@@ -621,10 +544,7 @@ getGlyphTestData = [
                             "coordinates": [60, 0, 60, 120, 110, 120, 110, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "wdth=1": {
@@ -634,10 +554,7 @@ getGlyphTestData = [
                             "coordinates": [120, 0, 120, 220, 170, 220, 170, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                         "xAdvance": 290,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "wdth=1,wght=1": {
@@ -647,10 +564,7 @@ getGlyphTestData = [
                             "coordinates": [60, 0, 60, 300, 250, 300, 250, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                         "xAdvance": 310,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "wght=1": {
@@ -660,10 +574,7 @@ getGlyphTestData = [
                             "coordinates": [30, 0, 30, 300, 220, 300, 220, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                         "xAdvance": 250,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
             },
@@ -695,7 +606,6 @@ getGlyphTestData = [
         "otf",
         {
             "name": "period",
-            "axes": [],
             "layers": {
                 "<default>": {
                     "glyph": {
@@ -704,10 +614,7 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
-                        "components": [],
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "wdth=1": {
@@ -726,10 +633,7 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
-                        "components": [],
                         "xAdvance": 290.0,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "wdth=1,wght=1": {
@@ -748,10 +652,7 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
-                        "components": [],
                         "xAdvance": 310.0,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
                 "wght=1": {
@@ -770,10 +671,7 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
-                        "components": [],
                         "xAdvance": 250.0,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
                 },
             },
@@ -860,11 +758,12 @@ async def test_getGlyphMap(backendName, numGlyphs, testMapping):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("backendName, expectedGlyph", getGlyphTestData)
 async def test_getGlyph(backendName, expectedGlyph):
+    expectedGlyph = from_dict(VariableGlyph, expectedGlyph)
     font = getTestFont(backendName)
     with contextlib.closing(font):
-        glyph = await font.getGlyph(expectedGlyph["name"])
-        glyph = asdict(glyph)
+        glyph = await font.getGlyph(expectedGlyph.name)
         assert glyph == expectedGlyph
+        assert asdict(glyph) == asdict(expectedGlyph)
 
 
 getGlobalAxesTestData = [

@@ -8,7 +8,15 @@ function makeTestGlyphObject() {
   return {
     name: "a",
     axes: [],
-    sources: [{ name: "default", layerName: "default", location: {} }],
+    sources: [
+      {
+        name: "default",
+        layerName: "default",
+        location: {},
+        customData: {},
+        inactive: false,
+      },
+    ],
     layers: {
       default: {
         glyph: {
@@ -20,8 +28,10 @@ function makeTestGlyphObject() {
             { name: "test", location: { a: 0.5 }, transformation: { translateX: 0 } },
           ],
         },
+        customData: {},
       },
     },
+    customData: {},
   };
 }
 
