@@ -36,7 +36,7 @@ class Source {
     source.name = obj.name;
     source.location = { ...obj.location } || {};
     source.layerName = obj.layerName;
-    source.active = obj.active === undefined ? true : !!obj.active;
+    source.inactive = !!obj.inactive;
     source.customData = copyCustomData(obj.customData || {});
     return source;
   }

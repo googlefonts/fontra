@@ -48,7 +48,7 @@ class Source:
     name: str
     layerName: str
     location: Location = field(default_factory=Location)
-    active: bool = True
+    inactive: bool = False
     customData: CustomData = field(default_factory=CustomData)
 
 

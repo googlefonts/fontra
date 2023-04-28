@@ -62,7 +62,7 @@
       "type": "dict",
       "subtype": "float"
     },
-    "active": {
+    "inactive": {
       "type": "bool"
     },
     "customData": {

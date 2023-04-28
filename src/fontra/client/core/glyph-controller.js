@@ -97,7 +97,7 @@ export class VariableGlyphController {
     location = this.mapLocationGlobalToLocal(location);
     for (let i = 0; i < this.sources.length; i++) {
       const source = this.sources[i];
-      if (!source.active) {
+      if (source.inactive) {
         continue;
       }
       const seen = new Set();
@@ -164,7 +164,7 @@ export class VariableGlyphController {
   get model() {
     if (this._model === undefined) {
       const locations = this.sources
-        .filter((source) => source.active)
+        .filter((source) => !source.inactive)
         .map((source) => source.location);
       this._model = new VariationModel(
         locations.map((location) =>
@@ -178,7 +178,7 @@ export class VariableGlyphController {
   get deltas() {
     if (this._deltas === undefined) {
       const masterValues = this.sources
-        .filter((source) => source.active)
+        .filter((source) => !source.inactive)
         .map((source) => this.layers[source.layerName].glyph);
       this._deltas = this.model.getDeltas(masterValues);
     }
