@@ -19,6 +19,8 @@ getGlyphTestData = [
                     "location": {},
                     "layerName": "default/foreground",
                     "name": "default",
+                    "active": True,
+                    "customData": {},
                 }
             ],
             "layers": {
@@ -34,6 +36,7 @@ getGlyphTestData = [
                         },
                         "components": [],
                     },
+                    "customData": {},
                 },
                 "default/background": {
                     "glyph": {
@@ -47,8 +50,10 @@ getGlyphTestData = [
                         },
                         "components": [],
                     },
+                    "customData": {},
                 },
             },
+            "customData": {},
         },
     ),
     (
@@ -61,6 +66,8 @@ getGlyphTestData = [
                     "location": {},
                     "layerName": "default/foreground",
                     "name": "default",
+                    "active": True,
+                    "customData": {},
                 }
             ],
             "layers": {
@@ -107,8 +114,10 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
             },
+            "customData": {},
         },
     ),
     (
@@ -121,21 +130,29 @@ getGlyphTestData = [
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
                     "layerName": "LightCondensed/foreground",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "name": "BoldCondensed",
                     "location": {"weight": 850.0, "width": 0.0},
                     "layerName": "BoldCondensed/foreground",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "name": "LightWide",
                     "location": {"weight": 150.0, "width": 1000.0},
                     "layerName": "LightWide/foreground",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "name": "BoldWide",
                     "location": {"weight": 850.0, "width": 1000.0},
                     "layerName": "BoldWide/foreground",
+                    "active": True,
+                    "customData": {},
                 },
             ],
             "layers": {
@@ -151,6 +168,7 @@ getGlyphTestData = [
                         },
                         "components": [],
                     },
+                    "customData": {},
                 },
                 "LightCondensed/background": {
                     "glyph": {
@@ -164,6 +182,7 @@ getGlyphTestData = [
                         },
                         "components": [],
                     },
+                    "customData": {},
                 },
                 "BoldCondensed/foreground": {
                     "glyph": {
@@ -177,6 +196,7 @@ getGlyphTestData = [
                         },
                         "components": [],
                     },
+                    "customData": {},
                 },
                 "LightWide/foreground": {
                     "glyph": {
@@ -190,6 +210,7 @@ getGlyphTestData = [
                         },
                         "components": [],
                     },
+                    "customData": {},
                 },
                 "BoldWide/foreground": {
                     "glyph": {
@@ -203,8 +224,10 @@ getGlyphTestData = [
                         },
                         "components": [],
                     },
+                    "customData": {},
                 },
             },
+            "customData": {},
         },
     ),
     (
@@ -217,21 +240,29 @@ getGlyphTestData = [
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
                     "layerName": "LightCondensed/foreground",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "name": "BoldCondensed",
                     "location": {"weight": 850.0, "width": 0.0},
                     "layerName": "BoldCondensed/foreground",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "name": "LightWide",
                     "location": {"weight": 150.0, "width": 1000.0},
                     "layerName": "LightWide/foreground",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "name": "BoldWide",
                     "location": {"weight": 850.0, "width": 1000.0},
                     "layerName": "BoldWide/foreground",
+                    "active": True,
+                    "customData": {},
                 },
             ],
             "layers": {
@@ -278,6 +309,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "BoldCondensed/foreground": {
                     "glyph": {
@@ -322,6 +354,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "LightWide/foreground": {
                     "glyph": {
@@ -366,6 +399,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "BoldWide/foreground": {
                     "glyph": {
@@ -410,8 +444,10 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
             },
+            "customData": {},
         },
     ),
     (
@@ -424,6 +460,8 @@ getGlyphTestData = [
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
                     "layerName": "LightCondensed/foreground",
+                    "active": True,
+                    "customData": {},
                 },
             ],
             "layers": {
@@ -485,8 +523,10 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
             },
+            "customData": {},
         },
     ),
     (
@@ -502,16 +542,22 @@ getGlyphTestData = [
                     "layerName": "LightCondensed/foreground",
                     "location": {"flip": 0, "flop": 0},
                     "name": "LightCondensed/foreground",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "layerName": "LightCondensed/varco_flip",
                     "location": {"flip": 100, "flop": 0},
                     "name": "LightCondensed/varco_flip",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "layerName": "LightCondensed/varco_flop",
                     "location": {"flip": 0, "flop": 100},
                     "name": "LightCondensed/varco_flop",
+                    "active": True,
+                    "customData": {},
                 },
             ],
             "layers": {
@@ -544,6 +590,7 @@ getGlyphTestData = [
                         "xAdvance": 500,
                         "yAdvance": None,
                     },
+                    "customData": {},
                 },
                 "LightCondensed/varco_flip": {
                     "glyph": {
@@ -574,6 +621,7 @@ getGlyphTestData = [
                         "xAdvance": 500,
                         "yAdvance": None,
                     },
+                    "customData": {},
                 },
                 "LightCondensed/varco_flop": {
                     "glyph": {
@@ -604,8 +652,10 @@ getGlyphTestData = [
                         "xAdvance": 500,
                         "yAdvance": None,
                     },
+                    "customData": {},
                 },
             },
+            "customData": {},
         },
     ),
     (
@@ -626,6 +676,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "wdth=1": {
                     "glyph": {
@@ -639,6 +690,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "wdth=1,wght=1": {
                     "glyph": {
@@ -652,6 +704,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "wght=1": {
                     "glyph": {
@@ -665,6 +718,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
             },
             "sources": [
@@ -672,23 +726,32 @@ getGlyphTestData = [
                     "layerName": "<default>",
                     "location": {"wdth": 0, "wght": 0},
                     "name": "<default>",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "layerName": "wdth=1",
                     "location": {"wdth": 1.0, "wght": 0},
                     "name": "wdth=1",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "layerName": "wdth=1,wght=1",
                     "location": {"wdth": 1.0, "wght": 1.0},
                     "name": "wdth=1,wght=1",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "layerName": "wght=1",
                     "location": {"wdth": 0, "wght": 1.0},
                     "name": "wght=1",
+                    "active": True,
+                    "customData": {},
                 },
             ],
+            "customData": {},
         },
     ),
     (
@@ -709,6 +772,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "wdth=1": {
                     "glyph": {
@@ -731,6 +795,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "wdth=1,wght=1": {
                     "glyph": {
@@ -753,6 +818,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
                 "wght=1": {
                     "glyph": {
@@ -775,6 +841,7 @@ getGlyphTestData = [
                         "yAdvance": None,
                         "verticalOrigin": None,
                     },
+                    "customData": {},
                 },
             },
             "sources": [
@@ -782,23 +849,32 @@ getGlyphTestData = [
                     "location": {"wdth": 0, "wght": 0},
                     "name": "<default>",
                     "layerName": "<default>",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "location": {"wdth": 1.0, "wght": 0},
                     "name": "wdth=1",
                     "layerName": "wdth=1",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "location": {"wdth": 1.0, "wght": 1.0},
                     "name": "wdth=1,wght=1",
                     "layerName": "wdth=1,wght=1",
+                    "active": True,
+                    "customData": {},
                 },
                 {
                     "location": {"wdth": 0, "wght": 1.0},
                     "name": "wght=1",
                     "layerName": "wght=1",
+                    "active": True,
+                    "customData": {},
                 },
             ],
+            "customData": {},
         },
     ),
 ]

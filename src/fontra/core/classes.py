@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field, is_dataclass
 from functools import partial
-from typing import Optional, get_args, get_type_hints
+from typing import Any, Optional, get_args, get_type_hints
 
 import dacite
 
@@ -24,6 +24,7 @@ class Transformation:
 
 
 Location = dict[str, float]
+CustomData = dict[str, Any]
 
 
 @dataclass
@@ -47,11 +48,14 @@ class Source:
     name: str
     layerName: str
     location: Location = field(default_factory=Location)
+    active: bool = True
+    customData: CustomData = field(default_factory=CustomData)
 
 
 @dataclass
 class Layer:
     glyph: StaticGlyph
+    customData: CustomData = field(default_factory=CustomData)
 
 
 @dataclass
@@ -68,6 +72,7 @@ class VariableGlyph:
     axes: list[LocalAxis] = field(default_factory=list)
     sources: list[Source] = field(default_factory=list)
     layers: dict[str, Layer] = field(default_factory=dict)
+    customData: CustomData = field(default_factory=CustomData)
 
 
 @dataclass
