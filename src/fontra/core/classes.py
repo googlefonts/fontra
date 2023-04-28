@@ -170,10 +170,14 @@ classSchema = makeSchema(Font)
 classCastFuncs = makeCastFuncs(classSchema, config=_castConfig)
 
 
+def serializableClassSchema():
+    return classesToStrings(classSchema)
+
+
 def printSchemaAsJSON():
     import json
 
-    schema = classesToStrings(classSchema)
+    schema = serializableClassSchema()
     print(json.dumps(schema, indent=2))
 
 
