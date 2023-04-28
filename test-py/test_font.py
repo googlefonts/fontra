@@ -49,24 +49,16 @@ getGlyphTestData = [
         "ufo",
         {
             "name": "Aacute",
-            "axes": [],
             "sources": [
                 {
                     "location": {},
                     "layerName": "default/foreground",
                     "name": "default",
-                    "active": True,
-                    "customData": {},
                 }
             ],
             "layers": {
                 "default/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -100,168 +92,120 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 396,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
             },
-            "customData": {},
         },
     ),
     (
         "designspace",
         {
             "name": "period",
-            "axes": [],
             "sources": [
                 {
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
                     "layerName": "LightCondensed/foreground",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "name": "BoldCondensed",
                     "location": {"weight": 850.0, "width": 0.0},
                     "layerName": "BoldCondensed/foreground",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "name": "LightWide",
                     "location": {"weight": 150.0, "width": 1000.0},
                     "layerName": "LightWide/foreground",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "name": "BoldWide",
                     "location": {"weight": 850.0, "width": 1000.0},
                     "layerName": "BoldWide/foreground",
-                    "active": True,
-                    "customData": {},
                 },
             ],
             "layers": {
                 "LightCondensed/foreground": {
                     "glyph": {
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
-                    "customData": {},
                 },
                 "LightCondensed/background": {
                     "glyph": {
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [62, 0, 112, 0, 112, 120, 62, 120],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
-                    "customData": {},
                 },
                 "BoldCondensed/foreground": {
                     "glyph": {
                         "xAdvance": 250,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [30, 0, 220, 0, 220, 300, 30, 300],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
-                    "customData": {},
                 },
                 "LightWide/foreground": {
                     "glyph": {
                         "xAdvance": 290,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [120, 0, 170, 0, 170, 220, 120, 220],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
-                    "customData": {},
                 },
                 "BoldWide/foreground": {
                     "glyph": {
                         "xAdvance": 310,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 250, 0, 250, 300, 60, 300],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
-                    "customData": {},
                 },
             },
-            "customData": {},
         },
     ),
     (
         "designspace",
         {
             "name": "Aacute",
-            "axes": [],
             "sources": [
                 {
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
                     "layerName": "LightCondensed/foreground",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "name": "BoldCondensed",
                     "location": {"weight": 850.0, "width": 0.0},
                     "layerName": "BoldCondensed/foreground",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "name": "LightWide",
                     "location": {"weight": 150.0, "width": 1000.0},
                     "layerName": "LightWide/foreground",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "name": "BoldWide",
                     "location": {"weight": 850.0, "width": 1000.0},
                     "layerName": "BoldWide/foreground",
-                    "active": True,
-                    "customData": {},
                 },
             ],
             "layers": {
                 "LightCondensed/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -295,18 +239,10 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 396,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "BoldCondensed/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -340,18 +276,10 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 740,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "LightWide/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -385,18 +313,10 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 1190,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "BoldWide/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -430,37 +350,25 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 1290,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
             },
-            "customData": {},
         },
     ),
     (
         "designspace",
         {
             "name": "varcotest1",
-            "axes": [],
             "sources": [
                 {
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
                     "layerName": "LightCondensed/foreground",
-                    "active": True,
-                    "customData": {},
                 },
             ],
             "layers": {
                 "LightCondensed/foreground": {
                     "glyph": {
-                        "path": {
-                            "contourInfo": [],
-                            "coordinates": [],
-                            "pointTypes": [],
-                        },
                         "components": [
                             {
                                 "name": "A",
@@ -509,13 +417,9 @@ getGlyphTestData = [
                             },
                         ],
                         "xAdvance": 900,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
             },
-            "customData": {},
         },
     ),
     (
@@ -531,28 +435,21 @@ getGlyphTestData = [
                     "layerName": "LightCondensed/foreground",
                     "location": {"flip": 0, "flop": 0},
                     "name": "LightCondensed/foreground",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "layerName": "LightCondensed/varco_flip",
                     "location": {"flip": 100, "flop": 0},
                     "name": "LightCondensed/varco_flip",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "layerName": "LightCondensed/varco_flop",
                     "location": {"flip": 0, "flop": 100},
                     "name": "LightCondensed/varco_flop",
-                    "active": True,
-                    "customData": {},
                 },
             ],
             "layers": {
                 "LightCondensed/foreground": {
                     "glyph": {
-                        "components": [],
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],
                             "coordinates": [
@@ -575,15 +472,11 @@ getGlyphTestData = [
                             ],
                             "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
                         },
-                        "verticalOrigin": None,
                         "xAdvance": 500,
-                        "yAdvance": None,
                     },
-                    "customData": {},
                 },
                 "LightCondensed/varco_flip": {
                     "glyph": {
-                        "components": [],
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],
                             "coordinates": [
@@ -606,15 +499,11 @@ getGlyphTestData = [
                             ],
                             "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
                         },
-                        "verticalOrigin": None,
                         "xAdvance": 500,
-                        "yAdvance": None,
                     },
-                    "customData": {},
                 },
                 "LightCondensed/varco_flop": {
                     "glyph": {
-                        "components": [],
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],
                             "coordinates": [
@@ -637,21 +526,16 @@ getGlyphTestData = [
                             ],
                             "pointTypes": [0, 0, 0, 0, 0, 0, 0, 0],
                         },
-                        "verticalOrigin": None,
                         "xAdvance": 500,
-                        "yAdvance": None,
                     },
-                    "customData": {},
                 },
             },
-            "customData": {},
         },
     ),
     (
         "ttf",
         {
             "name": "period",
-            "axes": [],
             "layers": {
                 "<default>": {
                     "glyph": {
@@ -660,12 +544,8 @@ getGlyphTestData = [
                             "coordinates": [60, 0, 60, 120, 110, 120, 110, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "wdth=1": {
                     "glyph": {
@@ -674,12 +554,8 @@ getGlyphTestData = [
                             "coordinates": [120, 0, 120, 220, 170, 220, 170, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                         "xAdvance": 290,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "wdth=1,wght=1": {
                     "glyph": {
@@ -688,12 +564,8 @@ getGlyphTestData = [
                             "coordinates": [60, 0, 60, 300, 250, 300, 250, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                         "xAdvance": 310,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "wght=1": {
                     "glyph": {
@@ -702,12 +574,8 @@ getGlyphTestData = [
                             "coordinates": [30, 0, 30, 300, 220, 300, 220, 0],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                         "xAdvance": 250,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
             },
             "sources": [
@@ -715,39 +583,29 @@ getGlyphTestData = [
                     "layerName": "<default>",
                     "location": {"wdth": 0, "wght": 0},
                     "name": "<default>",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "layerName": "wdth=1",
                     "location": {"wdth": 1.0, "wght": 0},
                     "name": "wdth=1",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "layerName": "wdth=1,wght=1",
                     "location": {"wdth": 1.0, "wght": 1.0},
                     "name": "wdth=1,wght=1",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "layerName": "wght=1",
                     "location": {"wdth": 0, "wght": 1.0},
                     "name": "wght=1",
-                    "active": True,
-                    "customData": {},
                 },
             ],
-            "customData": {},
         },
     ),
     (
         "otf",
         {
             "name": "period",
-            "axes": [],
             "layers": {
                 "<default>": {
                     "glyph": {
@@ -756,12 +614,8 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
-                        "components": [],
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "wdth=1": {
                     "glyph": {
@@ -779,12 +633,8 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
-                        "components": [],
                         "xAdvance": 290.0,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "wdth=1,wght=1": {
                     "glyph": {
@@ -802,12 +652,8 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
-                        "components": [],
                         "xAdvance": 310.0,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
                 "wght=1": {
                     "glyph": {
@@ -825,12 +671,8 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                         },
-                        "components": [],
                         "xAdvance": 250.0,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                     },
-                    "customData": {},
                 },
             },
             "sources": [
@@ -838,32 +680,23 @@ getGlyphTestData = [
                     "location": {"wdth": 0, "wght": 0},
                     "name": "<default>",
                     "layerName": "<default>",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "location": {"wdth": 1.0, "wght": 0},
                     "name": "wdth=1",
                     "layerName": "wdth=1",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "location": {"wdth": 1.0, "wght": 1.0},
                     "name": "wdth=1,wght=1",
                     "layerName": "wdth=1,wght=1",
-                    "active": True,
-                    "customData": {},
                 },
                 {
                     "location": {"wdth": 0, "wght": 1.0},
                     "name": "wght=1",
                     "layerName": "wght=1",
-                    "active": True,
-                    "customData": {},
                 },
             ],
-            "customData": {},
         },
     ),
 ]
