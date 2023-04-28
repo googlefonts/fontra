@@ -5,6 +5,8 @@ from importlib.metadata import entry_points
 
 import pytest
 
+from fontra.core.classes import VariableGlyph, from_dict
+
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 
@@ -13,47 +15,34 @@ getGlyphTestData = [
         "ufo",
         {
             "name": "period",
-            "axes": [],
             "sources": [
                 {
-                    "location": {},
                     "layerName": "default/foreground",
                     "name": "default",
-                    "active": True,
-                    "customData": {},
                 }
             ],
             "layers": {
                 "default/foreground": {
                     "glyph": {
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [60, 0, 110, 0, 110, 120, 60, 120],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
-                    "customData": {},
                 },
                 "default/background": {
                     "glyph": {
                         "xAdvance": 170,
-                        "yAdvance": None,
-                        "verticalOrigin": None,
                         "path": {
                             "contourInfo": [{"endPoint": 3, "isClosed": True}],
                             "coordinates": [62, 0, 112, 0, 112, 120, 62, 120],
                             "pointTypes": [0, 0, 0, 0],
                         },
-                        "components": [],
                     },
-                    "customData": {},
                 },
             },
-            "customData": {},
         },
     ),
     (
@@ -936,6 +925,8 @@ async def test_getGlyphMap(backendName, numGlyphs, testMapping):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("backendName, expectedGlyph", getGlyphTestData)
 async def test_getGlyph(backendName, expectedGlyph):
+    # Fill in default values by round tripping through the dataclass
+    expectedGlyph = asdict(from_dict(VariableGlyph, expectedGlyph))
     font = getTestFont(backendName)
     with contextlib.closing(font):
         glyph = await font.getGlyph(expectedGlyph["name"])
