@@ -758,13 +758,12 @@ async def test_getGlyphMap(backendName, numGlyphs, testMapping):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("backendName, expectedGlyph", getGlyphTestData)
 async def test_getGlyph(backendName, expectedGlyph):
-    # Fill in default values by round tripping through the dataclass
-    expectedGlyph = asdict(from_dict(VariableGlyph, expectedGlyph))
+    expectedGlyph = from_dict(VariableGlyph, expectedGlyph)
     font = getTestFont(backendName)
     with contextlib.closing(font):
-        glyph = await font.getGlyph(expectedGlyph["name"])
-        glyph = asdict(glyph)
+        glyph = await font.getGlyph(expectedGlyph.name)
         assert glyph == expectedGlyph
+        assert asdict(glyph) == asdict(expectedGlyph)
 
 
 getGlobalAxesTestData = [
