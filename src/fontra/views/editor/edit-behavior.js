@@ -462,7 +462,7 @@ const actionFactories = {
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
-      const [intersection, t1, t2] = vector.intersect(
+      const intersection = vector.intersect(
         pt1,
         pt2,
         point,
@@ -481,7 +481,7 @@ const actionFactories = {
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
-      const [intersection, t1, t2] = vector.intersect(
+      const intersection = vector.intersect(
         pt1,
         pt2,
         point,
@@ -500,7 +500,7 @@ const actionFactories = {
     const perpVector = vector.rotateVector90CW(vector.subVectors(pt2, pt1));
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
-      const [intersection, t1, t2] = vector.intersect(
+      const intersection = vector.intersect(
         pt1,
         pt2,
         point,
@@ -517,7 +517,7 @@ const actionFactories = {
     const nextHandle = vector.subVectors(thePoint, next);
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
-      const [intersection, t1, t2] = vector.intersect(
+      const intersection = vector.intersect(
         prevPrev,
         prev,
         next,
@@ -533,7 +533,7 @@ const actionFactories = {
   TangentIntersectLive: (prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       let point = transform.free(thePoint);
-      const [intersection, t1, t2] = vector.intersect(prevPrev, prev, next, nextNext);
+      const intersection = vector.intersect(prevPrev, prev, next, nextNext);
       if (!intersection) {
         return thePoint;
       }
@@ -545,7 +545,7 @@ const actionFactories = {
     const handlePrev = vector.subVectors(thePoint, prev);
     const handleNext = vector.subVectors(thePoint, next);
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
-      const [intersection, t1, t2] = vector.intersect(
+      const intersection = vector.intersect(
         prev,
         vector.addVectors(prev, handlePrev),
         next,
@@ -579,7 +579,7 @@ const actionFactories = {
       const handlePrev = transform.constrainDelta(vector.subVectors(newPoint, prev));
       const handleNext = transform.constrainDelta(vector.subVectors(newPoint, next));
 
-      const [intersection, t1, t2] = vector.intersect(
+      const intersection = vector.intersect(
         prev,
         vector.addVectors(prev, handlePrev),
         next,
@@ -605,7 +605,7 @@ const actionFactories = {
       const newPoint = transform.free(thePoint);
       const handleNext = transform.constrainDelta(vector.subVectors(newPoint, next));
 
-      const [intersection, t1, t2] = vector.intersect(
+      const intersection = vector.intersect(
         prev,
         vector.addVectors(prev, tangentPrev),
         next,

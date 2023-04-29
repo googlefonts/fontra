@@ -44,16 +44,18 @@ export function intersect(pt1, pt2, pt3, pt4) {
   //                 the intersection lies between beyond pt2
   // Similarly for t2 and pt3-pt4.
   // Return [undefined, undefined, undefined] if there is no intersection.
-  let intersection, t1, t2;
+  let intersection;
   const delta1 = subVectors(pt2, pt1);
   const delta2 = subVectors(pt4, pt3);
   const determinant = delta2.y * delta1.x - delta2.x * delta1.y;
   if (Math.abs(determinant) > _EPSILON) {
-    t1 = ((pt3.x - pt1.x) * delta2.y + (pt1.y - pt3.y) * delta2.x) / determinant;
-    t2 = ((pt1.x - pt3.x) * delta1.y + (pt3.y - pt1.y) * delta1.x) / -determinant;
+    const t1 = ((pt3.x - pt1.x) * delta2.y + (pt1.y - pt3.y) * delta2.x) / determinant;
+    const t2 = ((pt1.x - pt3.x) * delta1.y + (pt3.y - pt1.y) * delta1.x) / -determinant;
     intersection = addVectors(mulVector(delta1, t1), pt1);
+    intersection.t1 = t1;
+    intersection.t2 = t2;
   }
-  return [intersection, t1, t2];
+  return intersection;
 }
 
 export function distance(pt1, pt2) {
