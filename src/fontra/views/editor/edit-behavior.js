@@ -503,6 +503,7 @@ function makeSegmentTransform(points, pointIndices, allowConcave) {
 }
 
 function* iterSegmentPointIndices(originalPoints, isClosed) {
+  const lastPointIndex = originalPoints.length - 1;
   const firstOnCurve = findFirstOnCurvePoint(originalPoints, isClosed);
   if (firstOnCurve === undefined) {
     return;
@@ -512,9 +513,15 @@ function* iterSegmentPointIndices(originalPoints, isClosed) {
     const indices = [
       ...iterUntilNextOnCurvePoint(originalPoints, currentOnCurve, isClosed),
     ];
+    if (!indices.length) {
+      break;
+    }
     yield indices;
     currentOnCurve = indices.at(-1);
-    if (currentOnCurve == firstOnCurve) {
+    if (
+      (isClosed && currentOnCurve == firstOnCurve) ||
+      (!isClosed && currentOnCurve == lastPointIndex)
+    ) {
       break;
     }
   }
