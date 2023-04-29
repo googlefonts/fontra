@@ -171,3 +171,23 @@ export function simplePolygonArea(points) {
   }
   return areaX2 / 2;
 }
+
+export function polygonIsConvex(points) {
+  let gotNegative = false;
+  let gotPositive = false;
+  for (let i = 0; i < points.length; i++) {
+    const A = points.at(i - 2);
+    const B = points.at(i - 1);
+    const C = points[i];
+    const prod = ccw(A, B, C);
+    if (prod < 0) {
+      gotNegative = true;
+    } else if (prod > 0) {
+      gotPositive = true;
+    }
+    if (gotNegative && gotPositive) {
+      return false;
+    }
+  }
+  return true;
+}
