@@ -415,13 +415,13 @@ function makeContourPointEditFuncs(contour, behavior) {
 }
 
 function makeInterpolateEditFuncs(contour, editPoints) {
-  const originalPoints = contour.points;
+  const points = contour.points;
   const editFuncs = [];
   const participatingPointIndices = [];
-  for (const segment of iterSegmentPointIndices(originalPoints, contour.isClosed)) {
+  for (const segment of iterSegmentPointIndices(points, contour.isClosed)) {
     if (
       segment.length < 4 ||
-      (!originalPoints[segment[0]].selected && !originalPoints[segment.at(-1)].selected)
+      (!points[segment[0]].selected && !points[segment.at(-1)].selected)
     ) {
       continue;
     }
