@@ -16,7 +16,7 @@ import {
 } from "./edit-behavior-support.js";
 
 export class EditBehaviorFactory {
-  constructor(instance, selection, enableScaleEdit = false) {
+  constructor(instance, selection, enableScalingEdit = false) {
     const {
       point: pointSelection,
       component: componentSelection,
@@ -37,7 +37,7 @@ export class EditBehaviorFactory {
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
-    this.enableScaleEdit = enableScaleEdit;
+    this.enableScalingEdit = enableScalingEdit;
   }
 
   getBehavior(behaviorName) {
@@ -48,8 +48,8 @@ export class EditBehaviorFactory {
         console.log(`invalid behavior name: "${behaviorName}"`);
         behaviorType = behaviorTypes["default"];
       }
-      if (this.enableScaleEdit && behaviorType.canDoScaleEdit) {
-        behaviorType = { ...behaviorType, enableScaleEdit: true };
+      if (this.enableScalingEdit && behaviorType.canDoScalingEdit) {
+        behaviorType = { ...behaviorType, enableScalingEdit: true };
       }
       behavior = new EditBehavior(
         this.contours,
@@ -345,7 +345,7 @@ function makeContourPointEditFuncs(contour, behavior) {
   const startIndex = contour.startIndex;
   const originalPoints = contour.points;
   const editPoints = Array.from(originalPoints); // will be modified
-  const scaleEditPoints = Array.from(originalPoints); // will be modified
+  const scalingEditPoints = Array.from(originalPoints); // will be modified
   const numPoints = originalPoints.length;
   let participatingPointIndices = [];
   const editFuncsTransform = [];
@@ -393,7 +393,7 @@ function makeContourPointEditFuncs(contour, behavior) {
           originalPoints[nextNext]
         );
         editPoints[thePoint] = point;
-        scaleEditPoints[thePoint] = point;
+        scalingEditPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     } else {
@@ -408,31 +408,31 @@ function makeContourPointEditFuncs(contour, behavior) {
           editPoints[next],
           editPoints[nextNext]
         );
-        scaleEditPoints[thePoint] = point;
+        scalingEditPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     }
   }
-  let editFuncsScaleEdit = [];
-  if (behavior.enableScaleEdit) {
-    let scaleEditPointIndices;
-    [editFuncsScaleEdit, scaleEditPointIndices] = makeScaleEditFuncs(
+  let editFuncsScalingEdit = [];
+  if (behavior.enableScalingEdit) {
+    let scalingEditPointIndices;
+    [editFuncsScalingEdit, scalingEditPointIndices] = makeScalingEditFuncs(
       contour,
-      scaleEditPoints
+      scalingEditPoints
     );
-    if (scaleEditPointIndices.length) {
+    if (scalingEditPointIndices.length) {
       participatingPointIndices = [
-        ...new Set([...participatingPointIndices, ...scaleEditPointIndices]),
+        ...new Set([...participatingPointIndices, ...scalingEditPointIndices]),
       ].sort((a, b) => a - b);
     }
   }
   return [
-    [...editFuncsTransform, ...editFuncsConstrain, ...editFuncsScaleEdit],
+    [...editFuncsTransform, ...editFuncsConstrain, ...editFuncsScalingEdit],
     participatingPointIndices,
   ];
 }
 
-function makeScaleEditFuncs(contour, editPoints) {
+function makeScalingEditFuncs(contour, editPoints) {
   const points = contour.points;
   const editFuncs = [];
   const participatingPointIndices = [];
@@ -444,7 +444,7 @@ function makeScaleEditFuncs(contour, editPoints) {
     ) {
       continue;
     }
-    const [segmentEditFunc, pointIndices] = makeSegmentScaleEditFuncs(
+    const [segmentEditFunc, pointIndices] = makeSegmentScalingEditFuncs(
       segment,
       contour,
       editPoints
@@ -455,7 +455,7 @@ function makeScaleEditFuncs(contour, editPoints) {
   return [editFuncs, participatingPointIndices];
 }
 
-function makeSegmentScaleEditFuncs(segment, contour, editPoints) {
+function makeSegmentScalingEditFuncs(segment, contour, editPoints) {
   const originalPoints = contour.points;
   const startIndex = contour.startIndex;
   const editFuncs = [];
@@ -935,14 +935,14 @@ const behaviorTypes = {
   "default": {
     matchTree: buildPointMatchTree(defaultRules),
     actions: actionFactories,
-    canDoScaleEdit: true,
+    canDoScalingEdit: true,
   },
 
   "constrain": {
     matchTree: buildPointMatchTree(constrainRules),
     actions: actionFactories,
     constrainDelta: constrainHorVerDiag,
-    canDoScaleEdit: true,
+    canDoScalingEdit: true,
   },
 
   "alternate": {

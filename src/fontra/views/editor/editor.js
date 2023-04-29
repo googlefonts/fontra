@@ -96,7 +96,7 @@ export class EditorController {
     this.clipboardFormatController.synchronizeWithLocalStorage("fontra-clipboard-");
 
     this.experimentalFeaturesController = new ObservableController({
-      scaleEditBehavior: false,
+      scalingEditBehavior: false,
     });
     this.experimentalFeaturesController.synchronizeWithLocalStorage(
       "fontra-editor-experimental-features."
@@ -295,8 +295,8 @@ export class EditorController {
       controller: this.experimentalFeaturesController,
       descriptions: [
         {
-          key: "scaleEditBehavior",
-          displayName: "Scale edit tool behavior",
+          key: "scalingEditBehavior",
+          displayName: "Scaling edit tool behavior",
           ui: "checkbox",
         },
       ],

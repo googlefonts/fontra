@@ -286,7 +286,7 @@ export class PointerTool extends BaseTool {
       const behaviorFactory = new EditBehaviorFactory(
         instance,
         sceneController.selection,
-        sceneController.experimentalFeaturesController.model.scaleEditBehavior
+        sceneController.experimentalFeaturesController.model.scalingEditBehavior
       );
 
       let behaviorName = getBehaviorName(initialEvent);

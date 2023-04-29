@@ -91,7 +91,7 @@ export class SceneController {
       const behaviorFactory = new EditBehaviorFactory(
         instance,
         this.selection,
-        this.experimentalFeaturesController.model.scaleEditBehavior
+        this.experimentalFeaturesController.model.scalingEditBehavior
       );
       const editBehavior = behaviorFactory.getBehavior(
         event.altKey ? "alternate" : "default"
