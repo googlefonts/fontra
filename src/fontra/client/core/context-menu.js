@@ -13,6 +13,7 @@ export class ContextMenu {
   constructor(elementID, menuItems) {
     this.element = document.querySelector(`#${elementID}`);
 
+    this._savedActiveElement = document.activeElement;
     this.element.classList.add("visible");
     this.element.focus();
     this.element.onkeydown = (event) => this.handleKeyDown(event);
@@ -69,6 +70,7 @@ export class ContextMenu {
 
   dismiss() {
     this.element.classList.remove("visible");
+    this._savedActiveElement?.focus();
   }
 
   selectItem(itemElement) {

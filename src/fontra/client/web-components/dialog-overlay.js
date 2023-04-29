@@ -234,12 +234,14 @@ export class DialogOverlay extends SimpleElement {
   }
 
   show() {
+    this._savedActiveElement = document.activeElement;
     this.style.display = "grid";
     this.dialogBox.focus();
   }
 
   hide() {
     this.style.display = "none";
+    this._savedActiveElement?.focus();
   }
 
   _handleKeyDown(event) {
