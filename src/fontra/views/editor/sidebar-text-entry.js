@@ -45,13 +45,16 @@ export class SidebarTextEntry {
     );
   }
 
+  focusTextEntry() {
+    this.textEntryElement.focus();
+  }
+
   setupIntersectionObserver() {
     const observer = new IntersectionObserver(
       (entries, observer) => {
         entries.forEach((entry) => {
           if (entry.intersectionRatio > 0) {
             this.fixTextEntryHeight();
-            this.textEntryElement.focus();
           }
         });
       },

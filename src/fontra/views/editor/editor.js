@@ -407,14 +407,14 @@ export class EditorController {
 
     for (const sidebarTab of document.querySelectorAll(".sidebar-tab")) {
       sidebarTab.addEventListener("click", (event) => {
-        this.toggleSidebar(sidebarTab.dataset.sidebarName);
+        this.toggleSidebar(sidebarTab.dataset.sidebarName, true, true);
       });
     }
 
     this.initSidebarTextEntry();
   }
 
-  toggleSidebar(sidebarName, doUpdateWindowLocation = true) {
+  toggleSidebar(sidebarName, doUpdateWindowLocation = true, doFocus = false) {
     const toggledTab = document.querySelector(
       `.sidebar-tab[data-sidebar-name="${sidebarName}"]`
     );
@@ -462,7 +462,7 @@ export class EditorController {
     const onOff = toggledTab.classList.contains("selected");
     localStorage.setItem(`fontra-selected-sidebar-${side}`, onOff ? sidebarName : "");
     const methodName = hyphenatedToCamelCase("toggle-" + sidebarName);
-    setTimeout(() => this[methodName]?.call(this, onOff), 10);
+    setTimeout(() => this[methodName]?.call(this, onOff, doFocus), 10);
     return onOff;
   }
 
@@ -775,12 +775,10 @@ export class EditorController {
       }
     });
     this.registerShortCut("f", { metaKey: true, globalOverride: true }, () => {
-      if (this.toggleSidebar("glyph-search")) {
-        this.glyphsSearch.focusSearchField();
-      }
+      this.toggleSidebar("glyph-search", true, true);
     });
     this.registerShortCut("i", { metaKey: true, globalOverride: true }, () => {
-      this.toggleSidebar("sidebar-selection-info");
+      this.toggleSidebar("sidebar-selection-info", true, true);
     });
 
     for (const menuItem of this.basicContextMenuItems) {
@@ -1445,6 +1443,18 @@ export class EditorController {
   updateWindowLocationAndSelectionInfo() {
     this.updateSelectionInfo();
     this.updateWindowLocation();
+  }
+
+  toggleGlyphSearch(onOff, doFocus) {
+    if (onOff && doFocus) {
+      this.glyphsSearch.focusSearchField();
+    }
+  }
+
+  toggleTextEntry(onOff, doFocus) {
+    if (onOff && doFocus) {
+      this.sidebarTextSettings.focusTextEntry();
+    }
   }
 
   toggleSidebarSelectionInfo(onOff) {
