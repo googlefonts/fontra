@@ -1,3 +1,4 @@
+import { polygonIsConvex } from "../core/convex-hull.js";
 import { consolidateChanges } from "../core/changes.js";
 import { makeAffineTransform, parseSelection, reversed, sign } from "../core/utils.js";
 import { Transform } from "../core/transform.js";
@@ -458,13 +459,13 @@ function makeSegmentScaleEditFuncs(segment, contour, editPoints) {
   const startIndex = contour.startIndex;
   const editFuncs = [];
   const pointIndices = [];
-  const A = makeSegmentTransform(originalPoints, segment);
+  const A = makeSegmentTransform(originalPoints, segment, false);
   const Ainv = A?.inverse();
 
   if (A && Ainv) {
     let T;
     editFuncs.push((transform) => {
-      const B = makeSegmentTransform(editPoints, segment);
+      const B = makeSegmentTransform(editPoints, segment, true);
       T = B?.transform(Ainv);
     });
     for (const i of segment.slice(1, -1)) {
@@ -474,8 +475,7 @@ function makeSegmentScaleEditFuncs(segment, contour, editPoints) {
         if (T) {
           point = T.transformPointObject(originalPoints[i]);
         } else {
-          // point = transform.constrained(originalPoints[i]);
-          point = originalPoints[i];
+          point = editPoints[i];
         }
         return [i + startIndex, point.x, point.y];
       });
@@ -484,11 +484,14 @@ function makeSegmentScaleEditFuncs(segment, contour, editPoints) {
   return [editFuncs, pointIndices];
 }
 
-function makeSegmentTransform(points, pointIndices) {
+function makeSegmentTransform(points, pointIndices, allowConcave) {
   const pt0 = points[pointIndices[0]];
   const pt1 = points[pointIndices[1]];
   const pt2 = points[pointIndices.at(-2)];
   const pt3 = points[pointIndices.at(-1)];
+  if (!allowConcave && !polygonIsConvex([pt0, pt1, pt2, pt3])) {
+    return;
+  }
   const [intersection, t1, t2] = vector.intersect(pt0, pt1, pt2, pt3);
   if (!intersection) {
     return undefined;
