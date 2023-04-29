@@ -1,5 +1,6 @@
 import { consolidateChanges } from "../core/changes.js";
 import { makeAffineTransform, parseSelection, reversed, sign } from "../core/utils.js";
+import { Transform } from "../core/transform.js";
 import * as vector from "../core/vector.js";
 import {
   NIL,
@@ -37,13 +38,16 @@ export class EditBehaviorFactory {
     this.behaviors = {};
   }
 
-  getBehavior(behaviorName) {
+  getBehavior(behaviorName, enableScaleEdit = true) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
       if (!behaviorType) {
         console.log(`invalid behavior name: "${behaviorName}"`);
         behaviorType = behaviorTypes["default"];
+      }
+      if (enableScaleEdit && behaviorType.canDoScaleEdit) {
+        behaviorType = { ...behaviorType, enableScaleEdit: true };
       }
       behavior = new EditBehavior(
         this.contours,
@@ -126,10 +130,15 @@ class EditBehavior {
       free: freeTransformFunc || transformFunc,
       constrainDelta: this.constrainDelta,
     };
-    const pathChanges = this.pointEditFuncs?.map((editFunc) => {
-      const [pointIndex, x, y] = editFunc(transform);
-      return makePointChange(pointIndex, this.roundFunc(x), this.roundFunc(y));
-    });
+    const pathChanges = this.pointEditFuncs
+      ?.map((editFunc) => {
+        const result = editFunc(transform);
+        if (result) {
+          const [pointIndex, x, y] = result;
+          return makePointChange(pointIndex, this.roundFunc(x), this.roundFunc(y));
+        }
+      })
+      .filter((change) => change);
     const componentChanges = this.componentEditFuncs?.map((editFunc) => {
       return editFunc(transform);
     });
@@ -334,6 +343,7 @@ function makeContourPointEditFuncs(contour, behavior) {
   const startIndex = contour.startIndex;
   const originalPoints = contour.points;
   const editPoints = Array.from(originalPoints); // will be modified
+  const scaleEditPoints = Array.from(originalPoints); // will be modified
   const numPoints = originalPoints.length;
   let participatingPointIndices = [];
   const editFuncsTransform = [];
@@ -381,6 +391,7 @@ function makeContourPointEditFuncs(contour, behavior) {
           originalPoints[nextNext]
         );
         editPoints[thePoint] = point;
+        scaleEditPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     } else {
@@ -395,18 +406,23 @@ function makeContourPointEditFuncs(contour, behavior) {
           editPoints[next],
           editPoints[nextNext]
         );
+        scaleEditPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     }
   }
-  const [editFuncsScaleEdit, scaleEditPointIndices] = makeScaleEditFuncs(
-    contour,
-    editPoints
-  );
-  if (scaleEditPointIndices.length) {
-    participatingPointIndices = [
-      ...new Set([...participatingPointIndices, ...scaleEditPointIndices]),
-    ].sort((a, b) => a - b);
+  let editFuncsScaleEdit = [];
+  if (behavior.enableScaleEdit) {
+    let scaleEditPointIndices;
+    [editFuncsScaleEdit, scaleEditPointIndices] = makeScaleEditFuncs(
+      contour,
+      scaleEditPoints
+    );
+    if (scaleEditPointIndices.length) {
+      participatingPointIndices = [
+        ...new Set([...participatingPointIndices, ...scaleEditPointIndices]),
+      ].sort((a, b) => a - b);
+    }
   }
   return [
     [...editFuncsTransform, ...editFuncsConstrain, ...editFuncsScaleEdit],
@@ -421,7 +437,8 @@ function makeScaleEditFuncs(contour, editPoints) {
   for (const segment of iterSegmentPointIndices(points, contour.isClosed)) {
     if (
       segment.length < 4 ||
-      (!points[segment[0]].selected && !points[segment.at(-1)].selected)
+      (!points[segment[0]].selected && !points[segment.at(-1)].selected) ||
+      segment.slice(1, -1).some((i) => points[i].selected)
     ) {
       continue;
     }
@@ -441,15 +458,44 @@ function makeSegmentScaleEditFuncs(segment, contour, editPoints) {
   const startIndex = contour.startIndex;
   const editFuncs = [];
   const pointIndices = [];
+  const A = makeSegmentTransform(originalPoints, segment);
+  const Ainv = A?.inverse();
 
-  for (const i of segment.slice(2, -2)) {
-    pointIndices.push(i);
+  if (A && Ainv) {
+    let T;
     editFuncs.push((transform) => {
-      const point = transform.constrained(originalPoints[i]);
-      return [i + startIndex, point.x, point.y];
+      const B = makeSegmentTransform(editPoints, segment);
+      T = B?.transform(Ainv);
     });
+    for (const i of segment.slice(1, -1)) {
+      pointIndices.push(i);
+      editFuncs.push((transform) => {
+        let point;
+        if (T) {
+          point = T.transformPointObject(originalPoints[i]);
+        } else {
+          // point = transform.constrained(originalPoints[i]);
+          point = originalPoints[i];
+        }
+        return [i + startIndex, point.x, point.y];
+      });
+    }
   }
   return [editFuncs, pointIndices];
+}
+
+function makeSegmentTransform(points, pointIndices) {
+  const pt0 = points[pointIndices[0]];
+  const pt1 = points[pointIndices[1]];
+  const pt2 = points[pointIndices.at(-2)];
+  const pt3 = points[pointIndices.at(-1)];
+  const [intersection, t1, t2] = vector.intersect(pt0, pt1, pt2, pt3);
+  if (!intersection) {
+    return undefined;
+  }
+  const v1 = vector.subVectors(intersection, pt0);
+  const v2 = vector.subVectors(pt3, intersection);
+  return new Transform(v1.x, v1.y, v2.x, v2.y, pt0.x, pt0.y);
 }
 
 function* iterSegmentPointIndices(originalPoints, isClosed) {
@@ -885,12 +931,14 @@ const behaviorTypes = {
   "default": {
     matchTree: buildPointMatchTree(defaultRules),
     actions: actionFactories,
+    canDoScaleEdit: true,
   },
 
   "constrain": {
     matchTree: buildPointMatchTree(constrainRules),
     actions: actionFactories,
     constrainDelta: constrainHorVerDiag,
+    canDoScaleEdit: true,
   },
 
   "alternate": {
