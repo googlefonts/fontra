@@ -492,7 +492,7 @@ function makeSegmentTransform(points, pointIndices, allowConcave) {
   if (!allowConcave && !polygonIsConvex([pt0, pt1, pt2, pt3])) {
     return;
   }
-  const [intersection, t1, t2] = vector.intersect(pt0, pt1, pt2, pt3);
+  const intersection = vector.intersect(pt0, pt1, pt2, pt3);
   if (!intersection) {
     return undefined;
   }
