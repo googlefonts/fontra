@@ -399,22 +399,22 @@ function makeContourPointEditFuncs(contour, behavior) {
       });
     }
   }
-  const [editFuncsInterpolate, additionalPointIndices] = makeInterpolateEditFuncs(
+  const [editFuncsScaleEdit, scaleEditPointIndices] = makeScaleEditFuncs(
     contour,
     editPoints
   );
-  if (additionalPointIndices.length) {
+  if (scaleEditPointIndices.length) {
     participatingPointIndices = [
-      ...new Set([...participatingPointIndices, ...additionalPointIndices]),
+      ...new Set([...participatingPointIndices, ...scaleEditPointIndices]),
     ].sort((a, b) => a - b);
   }
   return [
-    [...editFuncsTransform, ...editFuncsConstrain, ...editFuncsInterpolate],
+    [...editFuncsTransform, ...editFuncsConstrain, ...editFuncsScaleEdit],
     participatingPointIndices,
   ];
 }
 
-function makeInterpolateEditFuncs(contour, editPoints) {
+function makeScaleEditFuncs(contour, editPoints) {
   const points = contour.points;
   const editFuncs = [];
   const participatingPointIndices = [];
