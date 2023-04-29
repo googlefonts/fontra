@@ -335,7 +335,7 @@ function makeContourPointEditFuncs(contour, behavior) {
   const originalPoints = contour.points;
   const editPoints = Array.from(originalPoints); // will be modified
   const numPoints = originalPoints.length;
-  const participatingPointIndices = [];
+  let participatingPointIndices = [];
   const editFuncsTransform = [];
   const editFuncsConstrain = [];
 
@@ -399,7 +399,105 @@ function makeContourPointEditFuncs(contour, behavior) {
       });
     }
   }
-  return [editFuncsTransform.concat(editFuncsConstrain), participatingPointIndices];
+  const [editFuncsInterpolate, additionalPointIndices] = makeInterpolateEditFuncs(
+    contour,
+    editPoints
+  );
+  if (additionalPointIndices.length) {
+    participatingPointIndices = [
+      ...new Set([...participatingPointIndices, ...additionalPointIndices]),
+    ].sort((a, b) => a - b);
+  }
+  return [
+    [...editFuncsTransform, ...editFuncsConstrain, ...editFuncsInterpolate],
+    participatingPointIndices,
+  ];
+}
+
+function makeInterpolateEditFuncs(contour, editPoints) {
+  const originalPoints = contour.points;
+  const editFuncs = [];
+  const participatingPointIndices = [];
+  for (const segment of iterSegmentPointIndices(originalPoints, contour.isClosed)) {
+    if (
+      segment.length < 4 ||
+      (!originalPoints[segment[0]].selected && !originalPoints[segment.at(-1)].selected)
+    ) {
+      continue;
+    }
+    const [segmentEditFunc, pointIndices] = makeSegmentScaleEditFuncs(
+      segment,
+      contour,
+      editPoints
+    );
+    editFuncs.push(...segmentEditFunc);
+    participatingPointIndices.push(...pointIndices);
+  }
+  return [editFuncs, participatingPointIndices];
+}
+
+function makeSegmentScaleEditFuncs(segment, contour, editPoints) {
+  const originalPoints = contour.points;
+  const startIndex = contour.startIndex;
+  const editFuncs = [];
+  const pointIndices = [];
+
+  for (const i of segment.slice(2, -2)) {
+    pointIndices.push(i);
+    editFuncs.push((transform) => {
+      const point = transform.constrained(originalPoints[i]);
+      return [i + startIndex, point.x, point.y];
+    });
+  }
+  return [editFuncs, pointIndices];
+}
+
+function* iterSegmentPointIndices(originalPoints, isClosed) {
+  const firstOnCurve = findFirstOnCurvePoint(originalPoints, isClosed);
+  if (firstOnCurve === undefined) {
+    return;
+  }
+  let currentOnCurve = firstOnCurve;
+  while (true) {
+    const indices = [
+      ...iterUntilNextOnCurvePoint(originalPoints, currentOnCurve, isClosed),
+    ];
+    yield indices;
+    currentOnCurve = indices.at(-1);
+    if (currentOnCurve == firstOnCurve) {
+      break;
+    }
+  }
+}
+
+function findFirstOnCurvePoint(points, isClosed) {
+  const numPoints = points.length;
+  for (let i = 0; i < numPoints; i++) {
+    if (!points[i].type) {
+      return i;
+    }
+  }
+  return undefined;
+}
+
+function* iterUntilNextOnCurvePoint(points, startIndex, isClosed) {
+  yield startIndex;
+  const numPoints = points.length;
+  for (let i = startIndex + 1; i < numPoints; i++) {
+    yield i;
+    if (!points[i].type) {
+      return;
+    }
+  }
+  if (!isClosed || !startIndex) {
+    return;
+  }
+  for (let i = 0; i < startIndex; i++) {
+    yield i;
+    if (!points[i].type) {
+      return;
+    }
+  }
 }
 
 export function constrainHorVerDiag(vector) {
