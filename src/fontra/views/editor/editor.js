@@ -95,6 +95,13 @@ export class EditorController {
     this.clipboardFormatController = new ObservableController({ format: "glif" });
     this.clipboardFormatController.synchronizeWithLocalStorage("fontra-clipboard-");
 
+    this.experimentalFeaturesController = new ObservableController({
+      scalingEditBehavior: false,
+    });
+    this.experimentalFeaturesController.synchronizeWithLocalStorage(
+      "fontra-editor-experimental-features."
+    );
+
     this.visualizationLayers = new VisualizationLayers(
       visualizationLayerDefinitions,
       this.isThemeDark
@@ -125,7 +132,11 @@ export class EditorController {
       this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
     });
 
-    this.sceneController = new SceneController(sceneModel, canvasController);
+    this.sceneController = new SceneController(
+      sceneModel,
+      canvasController,
+      this.experimentalFeaturesController
+    );
     // TODO move event stuff out of here
     this.sceneController.addEventListener(
       "selectedGlyphIsEditingChanged",
@@ -274,6 +285,19 @@ export class EditorController {
             { key: "svg", displayName: "SVG" },
             { key: "fontra-json", displayName: "JSON (Fontra)" },
           ],
+        },
+      ],
+    });
+
+    // Experimental feature settings
+    items.push({
+      displayName: "Experimental features",
+      controller: this.experimentalFeaturesController,
+      descriptions: [
+        {
+          key: "scalingEditBehavior",
+          displayName: "Scaling edit tool behavior",
+          ui: "checkbox",
         },
       ],
     });

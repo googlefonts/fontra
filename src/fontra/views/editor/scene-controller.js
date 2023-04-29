@@ -15,9 +15,10 @@ import { dialog } from "/web-components/dialog-overlay.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 export class SceneController {
-  constructor(sceneModel, canvasController) {
+  constructor(sceneModel, canvasController, experimentalFeaturesController) {
     this.sceneModel = sceneModel;
     this.canvasController = canvasController;
+    this.experimentalFeatures = experimentalFeaturesController.model;
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
@@ -87,7 +88,11 @@ export class SceneController {
     }
     const delta = { x: dx, y: dy };
     await this.editInstance((sendIncrementalChange, instance) => {
-      const behaviorFactory = new EditBehaviorFactory(instance, this.selection);
+      const behaviorFactory = new EditBehaviorFactory(
+        instance,
+        this.selection,
+        this.experimentalFeatures.scalingEditBehavior
+      );
       const editBehavior = behaviorFactory.getBehavior(
         event.altKey ? "alternate" : "default"
       );
