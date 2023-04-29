@@ -16,7 +16,7 @@ import {
 } from "./edit-behavior-support.js";
 
 export class EditBehaviorFactory {
-  constructor(instance, selection) {
+  constructor(instance, selection, enableScaleEdit = false) {
     const {
       point: pointSelection,
       component: componentSelection,
@@ -37,9 +37,10 @@ export class EditBehaviorFactory {
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
+    this.enableScaleEdit = enableScaleEdit;
   }
 
-  getBehavior(behaviorName, enableScaleEdit = true) {
+  getBehavior(behaviorName) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
@@ -47,7 +48,7 @@ export class EditBehaviorFactory {
         console.log(`invalid behavior name: "${behaviorName}"`);
         behaviorType = behaviorTypes["default"];
       }
-      if (enableScaleEdit && behaviorType.canDoScaleEdit) {
+      if (this.enableScaleEdit && behaviorType.canDoScaleEdit) {
         behaviorType = { ...behaviorType, enableScaleEdit: true };
       }
       behavior = new EditBehavior(
