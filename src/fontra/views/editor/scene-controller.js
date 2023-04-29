@@ -18,7 +18,7 @@ export class SceneController {
   constructor(sceneModel, canvasController, experimentalFeaturesController) {
     this.sceneModel = sceneModel;
     this.canvasController = canvasController;
-    this.experimentalFeaturesController = experimentalFeaturesController;
+    this.experimentalFeatures = experimentalFeaturesController.model;
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
@@ -91,7 +91,7 @@ export class SceneController {
       const behaviorFactory = new EditBehaviorFactory(
         instance,
         this.selection,
-        this.experimentalFeaturesController.model.scalingEditBehavior
+        this.experimentalFeatures.scalingEditBehavior
       );
       const editBehavior = behaviorFactory.getBehavior(
         event.altKey ? "alternate" : "default"
