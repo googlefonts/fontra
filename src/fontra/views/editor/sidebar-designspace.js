@@ -319,16 +319,16 @@ export class SidebarDesignspace {
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
     const layerNames = Object.keys(glyph.layers);
+    const suggestedSourceName = suggestedSourceNameFromLocation(
+      makeSparseLocation(location, locationAxes)
+    );
 
     const nameController = new ObservableController({
       sourceName: sourceName,
       layerName: layerName,
-      suggestedSourceName: suggestedSourceNameFromLocation(
-        makeSparseLocation(location, locationAxes)
-      ),
+      suggestedSourceName: suggestedSourceName,
+      suggestedLayerName: sourceName || suggestedSourceName,
     });
-    nameController.model.suggestedLayerName =
-      layerName || nameController.model.suggestedSourceName;
 
     nameController.addKeyListener("sourceName", (key, newValue) => {
       nameController.model.suggestedLayerName =
