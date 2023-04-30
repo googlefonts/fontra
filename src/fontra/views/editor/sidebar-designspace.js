@@ -337,11 +337,12 @@ export class SidebarDesignspace {
     });
 
     locationController.addListener((key, newValue) => {
-      nameController.model.suggestedSourceName = suggestedSourceNameFromLocation(
+      const suggestedSourceName = suggestedSourceNameFromLocation(
         makeSparseLocation(locationController.model, locationAxes)
       );
+      nameController.model.suggestedSourceName = suggestedSourceName;
       nameController.model.suggestedLayerName =
-        nameController.model.sourceName || nameController.model.suggestedSourceName;
+        nameController.model.sourceName || suggestedSourceName;
       validateInput();
     });
 
