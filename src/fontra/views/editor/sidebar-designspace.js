@@ -536,10 +536,12 @@ function getAxisInfoFromGlyph(glyph) {
 }
 
 function suggestedSourceNameFromLocation(location) {
-  return Object.entries(location)
-    .map(([name, value]) => {
-      value = Math.round(value * 10) / 10;
-      return `${name}${value}`;
-    })
-    .join("_");
+  return (
+    Object.entries(location)
+      .map(([name, value]) => {
+        value = Math.round(value * 10) / 10;
+        return `${name}${value}`;
+      })
+      .join("_") || "default"
+  );
 }
