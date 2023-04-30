@@ -325,7 +325,7 @@ export class SidebarDesignspace {
 
     const nameController = new ObservableController({
       sourceName: sourceName || suggestedSourceName,
-      layerName: layerName || sourceName || suggestedSourceName,
+      layerName: layerName === sourceName ? "" : layerName,
       suggestedSourceName: suggestedSourceName,
       suggestedLayerName: sourceName || suggestedSourceName,
     });
