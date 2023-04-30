@@ -85,15 +85,21 @@ export class UIList extends UnlitElement {
 
   set columnDescriptions(columnDescriptions) {
     this._columnDescriptions = columnDescriptions;
+    const identifierDescs = columnDescriptions.filter((desc) => desc.isIdentifierKey);
+    const getters = (identifierDescs.length ? identifierDescs : columnDescriptions).map(
+      (desc) => desc.get || ((item) => item[desc.key])
+    );
+    this.itemEqualFunc = (a, b) => getters.every((getter) => getter(a) === getter(b));
     this.setItems(this.items);
   }
 
   setItems(items) {
+    const selectedItem = this.getSelectedItem();
     this.style.display = items?.length ? "initial" : "none";
     this.contents.innerHTML = "";
     this.items = items;
     this._itemsBackLog = Array.from(items);
-    this.selectedItemIndex = undefined;
+    this.setSelectedItem(selectedItem);
     this._addMoreItemsIfNeeded();
   }
 

@@ -54,7 +54,7 @@ export class GlyphsSearch extends UnlitElement {
         width: "2em",
         get: (item) => getCharFromUnicode(item.unicodes[0]),
       },
-      { key: "glyphName", width: "10em" },
+      { key: "glyphName", width: "10em", isIdentifierKey: true },
       {
         key: "unicode",
         width: "5em",
@@ -63,8 +63,6 @@ export class GlyphsSearch extends UnlitElement {
     ];
     this.glyphNamesList = new UIList();
     this.glyphNamesList.columnDescriptions = columnDescriptions;
-    this.glyphNamesList.itemEqualFunc = (itemA, itemB) =>
-      itemA.glyphName === itemB.glyphName;
 
     this.glyphNamesList.addEventListener("listSelectionChanged", () => {
       const event = new CustomEvent("selectedGlyphNameChanged", {
@@ -132,9 +130,7 @@ export class GlyphsSearch extends UnlitElement {
     const filteredGlyphItems = this.glyphsListItems.filter(
       this._glyphNamesListFilterFunc
     );
-    const selectedItem = this.glyphNamesList.getSelectedItem();
     this.glyphNamesList.setItems(filteredGlyphItems);
-    this.glyphNamesList.setSelectedItem(selectedItem);
   }
 }
 
