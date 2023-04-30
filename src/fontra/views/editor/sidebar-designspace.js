@@ -327,7 +327,8 @@ export class SidebarDesignspace {
         makeSparseLocation(location, locationAxes)
       ),
     });
-    nameController.model.suggestedLayerName = nameController.model.suggestedSourceName;
+    nameController.model.suggestedLayerName =
+      layerName || nameController.model.suggestedSourceName;
 
     nameController.addKeyListener("sourceName", (key, newValue) => {
       nameController.model.suggestedLayerName =
@@ -382,7 +383,8 @@ export class SidebarDesignspace {
 
     sourceName =
       nameController.model.sourceName || nameController.model.suggestedSourceName;
-    layerName = nameController.model.layerName || nameController.model.sourceName;
+    layerName =
+      nameController.model.layerName || nameController.model.suggestedLayerName;
 
     return { location: newLocation, sourceName, layerName, layerNames };
   }
