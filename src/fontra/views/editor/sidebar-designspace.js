@@ -324,8 +324,8 @@ export class SidebarDesignspace {
     );
 
     const nameController = new ObservableController({
-      sourceName: sourceName,
-      layerName: layerName,
+      sourceName: sourceName || suggestedSourceName,
+      layerName: layerName || sourceName || suggestedSourceName,
       suggestedSourceName: suggestedSourceName,
       suggestedLayerName: sourceName || suggestedSourceName,
     });
@@ -340,6 +340,12 @@ export class SidebarDesignspace {
       const suggestedSourceName = suggestedSourceNameFromLocation(
         makeSparseLocation(locationController.model, locationAxes)
       );
+      if (nameController.model.sourceName == nameController.model.suggestedSourceName) {
+        nameController.model.sourceName = suggestedSourceName;
+      }
+      if (nameController.model.layerName == nameController.model.suggestedSourceName) {
+        nameController.model.layerName = suggestedSourceName;
+      }
       nameController.model.suggestedSourceName = suggestedSourceName;
       nameController.model.suggestedLayerName =
         nameController.model.sourceName || suggestedSourceName;
