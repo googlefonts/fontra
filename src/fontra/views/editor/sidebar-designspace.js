@@ -296,11 +296,13 @@ export class SidebarDesignspace {
   ) {
     const validateInput = () => {
       const warnings = [];
-      if (!nameController.model.sourceName.length) {
+      const editedSourceName =
+        nameController.model.sourceName || nameController.model.suggestedSourceName;
+      if (!editedSourceName.length) {
         warnings.push("⚠️ The source name must not be empty");
       } else if (
-        nameController.model.sourceName !== sourceName &&
-        glyph.sources.some((source) => source.name === nameController.model.sourceName)
+        editedSourceName !== sourceName &&
+        glyph.sources.some((source) => source.name === editedSourceName)
       ) {
         warnings.push("⚠️ The source name should be unique");
       }
@@ -313,17 +315,42 @@ export class SidebarDesignspace {
       warningElement.innerText = warnings.length ? warnings.join("\n") : "";
       dialog.defaultButton.classList.toggle("disabled", warnings.length);
     };
-    const nameController = new ObservableController({
-      sourceName: sourceName,
-      layerName: layerName,
-    });
-    nameController.addKeyListener("sourceName", validateInput);
 
     const locationAxes = this._sourcePropertiesLocationAxes(glyph);
     const locationController = new ObservableController({ ...location });
     const layerNames = Object.keys(glyph.layers);
+    const suggestedSourceName = suggestedSourceNameFromLocation(
+      makeSparseLocation(location, locationAxes)
+    );
 
-    locationController.addListener(validateInput);
+    const nameController = new ObservableController({
+      sourceName: sourceName || suggestedSourceName,
+      layerName: layerName === sourceName ? "" : layerName,
+      suggestedSourceName: suggestedSourceName,
+      suggestedLayerName: sourceName || suggestedSourceName,
+    });
+
+    nameController.addKeyListener("sourceName", (key, newValue) => {
+      nameController.model.suggestedLayerName =
+        newValue || nameController.model.suggestedSourceName;
+      validateInput();
+    });
+
+    locationController.addListener((key, newValue) => {
+      const suggestedSourceName = suggestedSourceNameFromLocation(
+        makeSparseLocation(locationController.model, locationAxes)
+      );
+      if (nameController.model.sourceName == nameController.model.suggestedSourceName) {
+        nameController.model.sourceName = suggestedSourceName;
+      }
+      if (nameController.model.layerName == nameController.model.suggestedSourceName) {
+        nameController.model.layerName = suggestedSourceName;
+      }
+      nameController.model.suggestedSourceName = suggestedSourceName;
+      nameController.model.suggestedLayerName =
+        nameController.model.sourceName || suggestedSourceName;
+      validateInput();
+    });
 
     const sourceLocations = new Set(
       glyph.sources.map((source) =>
@@ -361,8 +388,10 @@ export class SidebarDesignspace {
 
     const newLocation = makeSparseLocation(locationController.model, locationAxes);
 
-    sourceName = nameController.model.sourceName;
-    layerName = nameController.model.layerName || nameController.model.sourceName;
+    sourceName =
+      nameController.model.sourceName || nameController.model.suggestedSourceName;
+    layerName =
+      nameController.model.layerName || nameController.model.suggestedLayerName;
 
     return { location: newLocation, sourceName, layerName, layerNames };
   }
@@ -413,9 +442,11 @@ export class SidebarDesignspace {
         `,
       },
       [
-        ...labeledTextInput("Source name:", nameController, "sourceName"),
+        ...labeledTextInput("Source name:", nameController, "sourceName", {
+          placeholderKey: "suggestedSourceName",
+        }),
         ...labeledTextInput("Layer:", nameController, "layerName", {
-          placeholderKey: "sourceName",
+          placeholderKey: "suggestedLayerName",
           choices: layerNames,
         }),
         html.br(),
@@ -511,4 +542,15 @@ function getAxisInfoFromGlyph(glyph) {
     axisInfo[baseName] = { ...axis, name: baseName };
   }
   return Object.values(axisInfo);
+}
+
+function suggestedSourceNameFromLocation(location) {
+  return (
+    Object.entries(location)
+      .map(([name, value]) => {
+        value = Math.round(value * 10) / 10;
+        return `${name}=${value}`;
+      })
+      .join(",") || "default"
+  );
 }
