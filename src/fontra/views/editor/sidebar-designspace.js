@@ -549,8 +549,8 @@ function suggestedSourceNameFromLocation(location) {
     Object.entries(location)
       .map(([name, value]) => {
         value = Math.round(value * 10) / 10;
-        return `${name}${value}`;
+        return `${name}=${value}`;
       })
-      .join("_") || "default"
+      .join(",") || "default"
   );
 }
