@@ -263,6 +263,28 @@ export class SceneModel {
     if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
       return { selection: new Set() };
     }
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+
+    // Point selection
+    const glyphPoint = {
+      x: point.x - positionedGlyph.x,
+      y: point.y - positionedGlyph.y,
+    };
+    const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
+    if (pointIndex !== undefined) {
+      return { selection: new Set([`point/${pointIndex}`]) };
+    }
+
+    // Segment hit testing
+    const pathHit = this.pathHitAtPoint(point, size);
+    if (pathHit.contourIndex !== undefined) {
+      const selection = new Set(
+        pathHit.segment.parentPointIndices.map((i) => `point/${i}`)
+      );
+      return { selection, pathHit };
+    }
+
+    // Component selection
     let currentSelectedComponentIndices;
     if (currentSelection) {
       const { component, componentOrigin, componentTCenter } =
@@ -272,15 +294,6 @@ export class SceneModel {
         ...(componentOrigin || []),
         ...(componentTCenter || []),
       ]);
-    }
-    const positionedGlyph = this.getSelectedPositionedGlyph();
-    const glyphPoint = {
-      x: point.x - positionedGlyph.x,
-      y: point.y - positionedGlyph.y,
-    };
-    const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
-    if (pointIndex !== undefined) {
-      return { selection: new Set([`point/${pointIndex}`]) };
     }
     const components = positionedGlyph.glyph.components;
     const x = point.x - positionedGlyph.x;
