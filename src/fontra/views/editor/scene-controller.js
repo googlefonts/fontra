@@ -143,7 +143,7 @@ export class SceneController {
     if (!this.selectedGlyphIsEditing) {
       return;
     }
-    const clickedSelection = this.sceneModel.selectionAtPoint(
+    const { selection: clickedSelection } = this.sceneModel.selectionAtPoint(
       this.localPoint(event),
       this.mouseClickMargin
     );

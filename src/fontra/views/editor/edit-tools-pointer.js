@@ -21,20 +21,15 @@ export class PointerTool extends BaseTool {
     const point = sceneController.localPoint(event);
     const size = sceneController.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
-    sceneController.hoverSelection = this.sceneModel.selectionAtPoint(
+    const { selection, pathHit } = this.sceneModel.selectionAtPoint(
       point,
       size,
       union(sceneController.selection, sceneController.hoverSelection),
       event.altKey
     );
+    sceneController.hoverSelection = selection;
     sceneController.hoveredGlyph = undefined;
-    sceneController.hoverPathHit = undefined;
-    if (!sceneController.hoverSelection?.size) {
-      const hit = this.sceneModel.pathHitAtPoint(point, size);
-      if (hit.contourIndex !== undefined) {
-        sceneController.hoverPathHit = hit;
-      }
-    }
+    sceneController.hoverPathHit = pathHit;
 
     if (!sceneController.hoverSelection.size && !sceneController.hoverPathHit) {
       sceneController.hoveredGlyph = this.sceneModel.glyphAtPoint(point);
@@ -58,21 +53,16 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(initialEvent);
     const size = sceneController.mouseClickMargin;
-    const selection = this.sceneModel.selectionAtPoint(
+    const { selection, pathHit } = this.sceneModel.selectionAtPoint(
       point,
       size,
       union(sceneController.selection, sceneController.hoverSelection),
       initialEvent.altKey
     );
     let initialClickedPointIndex;
-    if (!selection.size) {
-      const hit = this.sceneModel.pathHitAtPoint(point, size);
-      if (hit.contourIndex !== undefined) {
-        hit.segment.parentPointIndices.forEach((i) => selection.add(`point/${i}`));
-      }
-    } else {
+    if (!pathHit) {
       const { point: pointIndices } = parseSelection(selection);
-      if (pointIndices && pointIndices.length) {
+      if (pointIndices?.length) {
         initialClickedPointIndex = pointIndices[0];
       }
     }
