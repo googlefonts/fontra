@@ -21,12 +21,13 @@ export class PointerTool extends BaseTool {
     const point = sceneController.localPoint(event);
     const size = sceneController.mouseClickMargin;
     const selRect = centeredRect(point.x, point.y, size);
-    sceneController.hoverSelection = this.sceneModel.selectionAtPoint(
+    const { selection } = this.sceneModel.selectionAtPoint(
       point,
       size,
       union(sceneController.selection, sceneController.hoverSelection),
       event.altKey
     );
+    sceneController.hoverSelection = selection;
     sceneController.hoveredGlyph = undefined;
     sceneController.hoverPathHit = undefined;
     if (!sceneController.hoverSelection?.size) {
@@ -58,7 +59,7 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(initialEvent);
     const size = sceneController.mouseClickMargin;
-    const selection = this.sceneModel.selectionAtPoint(
+    const { selection } = this.sceneModel.selectionAtPoint(
       point,
       size,
       union(sceneController.selection, sceneController.hoverSelection),

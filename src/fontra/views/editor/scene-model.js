@@ -261,7 +261,7 @@ export class SceneModel {
 
   selectionAtPoint(point, size, currentSelection, preferTCenter) {
     if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
-      return new Set();
+      return { selection: new Set() };
     }
     let currentSelectedComponentIndices;
     if (currentSelection) {
@@ -280,7 +280,7 @@ export class SceneModel {
     };
     const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
     if (pointIndex !== undefined) {
-      return new Set([`point/${pointIndex}`]);
+      return { selection: new Set([`point/${pointIndex}`]) };
     }
     const components = positionedGlyph.glyph.components;
     const x = point.x - positionedGlyph.x;
@@ -309,7 +309,7 @@ export class SceneModel {
           if (tCenterMatch && (!originMatch || preferTCenter)) {
             selection.add(`componentTCenter/${i}`);
           }
-          return selection;
+          return { selection };
         }
       }
       if (
@@ -321,19 +321,19 @@ export class SceneModel {
     }
     switch (componentHullMatches.length) {
       case 0:
-        return new Set();
+        return { selection: new Set() };
       case 1:
-        return new Set([`component/${componentHullMatches[0].index}`]);
+        return { selection: new Set([`component/${componentHullMatches[0].index}`]) };
     }
     // If we have multiple matches, take the first that has an actual
     // point inside the path, and not just inside the hull
     for (const match of componentHullMatches) {
       if (this.isPointInPath(match.component.path2d, x, y)) {
-        return new Set([`component/${match.index}`]);
+        return { selection: new Set([`component/${match.index}`]) };
       }
     }
     // Else, fall back to the first match
-    return new Set([`component/${componentHullMatches[0].index}`]);
+    return { selection: new Set([`component/${componentHullMatches[0].index}`]) };
   }
 
   selectionAtRect(selRect) {
