@@ -70,7 +70,10 @@ export class SceneController {
   }
 
   handleKeyDown(event) {
-    if (!hasShortcutModifierKey(event) && event.key in arrowKeyDeltas) {
+    if (
+      (!hasShortcutModifierKey(event) || event.shiftKey) &&
+      event.key in arrowKeyDeltas
+    ) {
       this.handleArrowKeys(event);
       event.preventDefault();
       return;
@@ -82,7 +85,10 @@ export class SceneController {
       return;
     }
     let [dx, dy] = arrowKeyDeltas[event.key];
-    if (event.shiftKey) {
+    if (event.shiftKey && (event.metaKey || event.ctrlKey)) {
+      dx *= 100;
+      dy *= 100;
+    } else if (event.shiftKey) {
       dx *= 10;
       dy *= 10;
     }
