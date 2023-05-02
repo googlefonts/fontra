@@ -62,7 +62,7 @@ export class PointerTool extends BaseTool {
     let initialClickedPointIndex;
     if (!pathHit) {
       const { point: pointIndices } = parseSelection(selection);
-      if (pointIndices && pointIndices.length) {
+      if (pointIndices?.length) {
         initialClickedPointIndex = pointIndices[0];
       }
     }
