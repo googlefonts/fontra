@@ -17,7 +17,7 @@ export class UIList extends UnlitElement {
     ${themeColorCSS(colors)}
 
     :host {
-      /* display: grid; */  /* set by code below */
+      display: grid;  /* also set by code below */
       gap: 0.2em;
       min-height: 0;
       box-sizing: border-box;
