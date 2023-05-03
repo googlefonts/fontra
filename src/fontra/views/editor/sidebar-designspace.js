@@ -1,7 +1,7 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
 import * as html from "/core/unlit.js";
-import { htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
+import { enumerate, htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
 import {
   locationToString,
   normalizeLocation,
@@ -44,13 +44,13 @@ export class SidebarDesignspace {
       { key: "name", title: "Source name", width: "14em" },
       {
         title: "on",
-        get: (item) => !item.inactive,
+        key: "active",
         cellFactory: checkboxListCell,
         width: "2em",
       },
       {
         title: "vis",
-        get: (item) => item.visible,
+        key: "visible",
         cellFactory: checkboxListCell,
         width: "2em",
       },
@@ -101,9 +101,21 @@ export class SidebarDesignspace {
 
   _updateSources() {
     const sources = this.dataModel.varGlyphController?.sources || [];
-    const sourceItems = sources.map((source) => {
-      return { ...source };
-    });
+    const sourceItems = [];
+    for (const [index, source] of enumerate(sources)) {
+      const sourceController = new ObservableController({
+        name: source.name,
+        active: !source.inactive,
+        visible: false,
+      });
+      sourceController.addKeyListener("active", async (key, newValue) => {
+        await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+          glyph.sources[index].inactive = !newValue;
+          return `${newValue ? "" : "de"}activate ${source.name}`;
+        });
+      });
+      sourceItems.push(sourceController.model);
+    }
     this.sourcesList.setItems(sourceItems);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
     this.addRemoveSourceButtons.disableAddButton = !this.axisSliders.axes.length;
@@ -569,12 +581,13 @@ function suggestedSourceNameFromLocation(location) {
 }
 
 function checkboxListCell(item, colDesc) {
-  const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
+  const value = item[colDesc.key];
   return html.input({
     type: "checkbox",
     style: `width: auto; margin: 0; padding: 0; outline: none;`,
     checked: value,
     onclick: (event) => {
+      item[colDesc.key] = event.target.checked;
       event.stopImmediatePropagation();
     },
     ondblclick: (event) => {
