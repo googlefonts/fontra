@@ -17,13 +17,34 @@ export class UIList extends UnlitElement {
     ${themeColorCSS(colors)}
 
     :host {
+      /* display: grid; */  /* set by code below */
+      gap: 0.2em;
+      min-height: 0;
+      box-sizing: border-box;
+    }
+
+    .container {
       overflow: scroll;
+      height: 100%;
+      box-sizing: border-box;
       border: solid 1px var(--border-color);
     }
 
     .contents {
       display: flex;
       flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      width: min-content;
+      min-width: 100%;
+      box-sizing: border-box;
+      padding: 0.15em;
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+      cursor: pointer;
+      user-select: none;
     }
 
     .contents > .row {
@@ -62,6 +83,7 @@ export class UIList extends UnlitElement {
         get: (item) => item,
       },
     ];
+    this._showHeader = false;
     this.items = [];
     this.itemEqualFunc = null;
 
@@ -78,7 +100,22 @@ export class UIList extends UnlitElement {
   }
 
   render() {
-    return this.contents;
+    const contents = [];
+    if (this._showHeader) {
+      contents.push(this._makeHeader());
+    }
+    contents.push(html.div({ class: "container" }, [this.contents]));
+    return contents;
+  }
+
+  get showHeader() {
+    return this._showHeader;
+  }
+
+  set showHeader(onOff) {
+    this._showHeader = onOff;
+    this.setItems(this.items);
+    this.requestUpdate();
   }
 
   get columnDescriptions() {
@@ -93,11 +130,12 @@ export class UIList extends UnlitElement {
     );
     this.itemEqualFunc = (a, b) => getters.every((getter) => getter(a) === getter(b));
     this.setItems(this.items);
+    this.requestUpdate();
   }
 
   setItems(items) {
     const selectedItem = this.getSelectedItem();
-    this.style.display = items?.length ? "initial" : "none";
+    this.style.display = items?.length ? "grid" : "none";
     this.contents.innerHTML = "";
     this.items = items;
     this._itemsBackLog = Array.from(items);
@@ -170,6 +208,23 @@ export class UIList extends UnlitElement {
       this.contents.appendChild(row);
       rowIndex++;
     }
+  }
+
+  _makeHeader() {
+    const header = document.createElement("div");
+    header.className = "header";
+
+    for (const colDesc of this.columnDescriptions) {
+      const cell = document.createElement("div");
+      cell.className = "text-cell-header " + colDesc.key;
+      if (colDesc.width) {
+        cell.style.width = colDesc.width;
+      }
+      const value = colDesc.title || colDesc.key;
+      cell.append(value);
+      header.appendChild(cell);
+    }
+    return header;
   }
 
   _clickHandler(event) {
