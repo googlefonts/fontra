@@ -33,6 +33,7 @@ export class UIList extends UnlitElement {
     .contents {
       display: flex;
       flex-direction: column;
+      outline: none;
     }
 
     .header {
@@ -75,8 +76,6 @@ export class UIList extends UnlitElement {
   constructor() {
     super();
 
-    this.tabIndex = "1";
-
     this._columnDescriptions = [
       {
         key: "default",
@@ -91,10 +90,23 @@ export class UIList extends UnlitElement {
       class: "contents",
       onclick: (event) => this._clickHandler(event),
       ondblclick: (event) => this._dblClickHandler(event),
+      tabIndex: 1,
     });
-    this.addEventListener("scroll", (event) => this._scrollHandler(event), false);
-    this.addEventListener("keydown", (event) => this._keyDownHandler(event), false);
-    this.addEventListener("keyup", (event) => this._keyUpHandler(event), false);
+    this.contents.addEventListener(
+      "scroll",
+      (event) => this._scrollHandler(event),
+      false
+    );
+    this.contents.addEventListener(
+      "keydown",
+      (event) => this._keyDownHandler(event),
+      false
+    );
+    this.contents.addEventListener(
+      "keyup",
+      (event) => this._keyUpHandler(event),
+      false
+    );
     this.selectedItemIndex = undefined;
     this.allowEmptySelection = true;
   }
