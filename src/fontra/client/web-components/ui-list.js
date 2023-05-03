@@ -226,7 +226,9 @@ export class UIList extends UnlitElement {
       for (const colDesc of this.columnDescriptions) {
         let cell;
         if (colDesc.cellFactory) {
-          cell = colDesc.cellFactory(item, colDesc);
+          cell = html.div({ style: colDesc.width ? `width: ${colDesc.width};` : "" }, [
+            colDesc.cellFactory(item, colDesc),
+          ]);
         } else {
           cell = document.createElement("div");
           cell.className = "text-cell " + colDesc.key;
