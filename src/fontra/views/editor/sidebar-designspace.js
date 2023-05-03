@@ -41,8 +41,8 @@ export class SidebarDesignspace {
     });
 
     const columnDescriptions = [
-      { key: "sourceName", width: "14em" },
-      // {"key": "sourceIndex", "width": "2em"},
+      { key: "name", width: "14em" },
+      // { get: (item) => (!item.inactive ? "off" : "on"), width: "2em" },
     ];
     this.sourcesList = document.querySelector("#sources-list");
     this.sourcesList.columnDescriptions = columnDescriptions;
@@ -90,7 +90,7 @@ export class SidebarDesignspace {
   _updateSources() {
     const sources = this.dataModel.varGlyphController?.sources || [];
     const sourceItems = sources.map((source) => {
-      return { sourceName: source.name };
+      return { ...source };
     });
     this.sourcesList.setItems(sourceItems);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
