@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 import math
 import os
@@ -276,14 +277,18 @@ class DesignspaceBackend:
         ufoPaths = sorted(self.ufoReaders)
         async for changes in watchfiles.awatch(*ufoPaths):
             changes = cleanupWatchFilesChanges(changes)
-            changedItems = self._analyzeExternalChanges(changes)
+            changedItems = await self._analyzeExternalChanges(changes)
 
             glyphMapUpdates = {}
 
             # TODO: update glyphMap for changed non-new glyphs
 
             for glyphName in changedItems.newGlyphs:
-                glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
+                try:
+                    glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
+                except KeyError:
+                    logger.info(f"new glyph '{glyphName}' not found in default source")
+                    continue
                 gn, unicodes = extractGlyphNameAndUnicodes(glifData)
                 glyphMapUpdates[glyphName] = unicodes
 
@@ -305,7 +310,7 @@ class DesignspaceBackend:
             if externalChange or reloadPattern:
                 yield externalChange, reloadPattern
 
-    def _analyzeExternalChanges(self, changes):
+    async def _analyzeExternalChanges(self, changes):
         changedItems = SimpleNamespace(
             changedGlyphs=set(),
             newGlyphs=set(),
@@ -321,6 +326,15 @@ class DesignspaceBackend:
         if changedItems.rebuildGlyphSetContents:
             for glyphSet in self.ufoGlyphSets.values():
                 glyphSet.rebuildContents()
+            if any(
+                glyphName not in self.defaultSourceGlyphSet
+                for glyphName in changedItems.newGlyphs
+            ):
+                # Perhaps we're responding to a changed glyph while the contents.plist
+                # hasn't finished writing yet. Let's pause a little bit and try again.
+                await asyncio.sleep(0.1)
+                for glyphSet in self.ufoGlyphSets.values():
+                    glyphSet.rebuildContents()
 
         return changedItems
 
