@@ -18,6 +18,7 @@ export class UIList extends UnlitElement {
 
     :host {
       display: grid;  /* also set by code below */
+      grid-template-rows: auto 1fr;
       gap: 0.2em;
       min-height: 0;
       min-width: 0;
