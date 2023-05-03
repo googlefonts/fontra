@@ -28,7 +28,9 @@ export class UIList extends UnlitElement {
 
     .contents > .row {
       display: flex;
-      width: content;
+      width: min-content;
+      min-width: 100%;
+      box-sizing: border-box;
       border-top: solid 1px var(--row-border-color);
       color: var(--row-foreground-color);
       background-color: var(--row-background-color);
