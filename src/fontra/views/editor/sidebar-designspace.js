@@ -106,6 +106,7 @@ export class SidebarDesignspace {
     });
     this.sourcesList.setItems(sourceItems);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
+    this.addRemoveSourceButtons.disableAddButton = !this.axisSliders.axes.length;
   }
 
   _updateSelectedSourceFromLocation() {
