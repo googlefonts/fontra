@@ -42,7 +42,18 @@ export class SidebarDesignspace {
 
     const columnDescriptions = [
       { key: "name", title: "Source name", width: "14em" },
-      { title: "on/off", get: (item) => (!item.inactive ? "off" : "on"), width: "2em" },
+      {
+        title: "on",
+        get: (item) => !item.inactive,
+        cellFactory: sourceOnOffCheckBox,
+        width: "2em",
+      },
+      {
+        title: "vis",
+        get: (item) => item.visible,
+        cellFactory: sourceOnOffCheckBox,
+        width: "2em",
+      },
     ];
     this.sourcesList = document.querySelector("#sources-list");
     this.sourcesList.showHeader = true;
@@ -554,4 +565,19 @@ function suggestedSourceNameFromLocation(location) {
       })
       .join(",") || "default"
   );
+}
+
+function sourceOnOffCheckBox(item, colDesc) {
+  const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
+  return html.input({
+    type: "checkbox",
+    style: `width: auto; margin: 0; padding 0; outline: none;`,
+    checked: value,
+    onclick: (event) => {
+      event.stopImmediatePropagation();
+    },
+    ondblclick: (event) => {
+      event.stopImmediatePropagation();
+    },
+  });
 }
