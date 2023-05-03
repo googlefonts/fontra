@@ -20,12 +20,15 @@ export class UIList extends UnlitElement {
       display: grid;  /* also set by code below */
       gap: 0.2em;
       min-height: 0;
+      min-width: 0;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     .container {
       overflow: scroll;
       height: 100%;
+      width: 100%;
       box-sizing: border-box;
       border: solid 1px var(--border-color);
     }
@@ -34,6 +37,18 @@ export class UIList extends UnlitElement {
       display: flex;
       flex-direction: column;
       outline: none;
+    }
+
+    .header-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .header-container {
+      overflow: scroll;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      scrollbar-width: none;  /* hide scrollbar in FireFox */
     }
 
     .header {
@@ -47,7 +62,7 @@ export class UIList extends UnlitElement {
       user-select: none;
     }
 
-    .contents > .row {
+    .row {
       display: flex;
       width: min-content;
       min-width: 100%;
@@ -66,7 +81,7 @@ export class UIList extends UnlitElement {
       background-color: var(--row-selected-background-color);
     }
 
-    .contents > .row > .text-cell {
+    .text-cell, .text-cell-header {
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -206,13 +221,18 @@ export class UIList extends UnlitElement {
       }
 
       for (const colDesc of this.columnDescriptions) {
-        const cell = document.createElement("div");
-        cell.className = "text-cell " + colDesc.key;
-        if (colDesc.width) {
-          cell.style.width = colDesc.width;
+        let cell;
+        if (colDesc.cellFactory) {
+          cell = colDesc.cellFactory(item, colDesc);
+        } else {
+          cell = document.createElement("div");
+          cell.className = "text-cell " + colDesc.key;
+          if (colDesc.width) {
+            cell.style.width = colDesc.width;
+          }
+          const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
+          cell.append(value);
         }
-        const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
-        cell.append(value);
         row.appendChild(cell);
       }
 
@@ -222,8 +242,7 @@ export class UIList extends UnlitElement {
   }
 
   _makeHeader() {
-    const header = document.createElement("div");
-    header.className = "header";
+    const header = html.div({ class: "header" });
 
     for (const colDesc of this.columnDescriptions) {
       const cell = document.createElement("div");
@@ -235,7 +254,7 @@ export class UIList extends UnlitElement {
       cell.append(value);
       header.appendChild(cell);
     }
-    return header;
+    return html.div({ class: "header-container" }, [header]);
   }
 
   _clickHandler(event) {
