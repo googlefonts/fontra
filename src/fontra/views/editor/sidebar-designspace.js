@@ -41,10 +41,11 @@ export class SidebarDesignspace {
     });
 
     const columnDescriptions = [
-      { key: "name", width: "14em" },
-      // { get: (item) => (!item.inactive ? "off" : "on"), width: "2em" },
+      { key: "name", title: "Source name", width: "14em" },
+      { title: "on/off", get: (item) => (!item.inactive ? "off" : "on"), width: "2em" },
     ];
     this.sourcesList = document.querySelector("#sources-list");
+    this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
     this.addRemoveSourceButtons = document.querySelector(
