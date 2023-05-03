@@ -44,7 +44,6 @@ export class UIList extends UnlitElement {
       padding: 0.15em;
       padding-left: 0.5em;
       padding-right: 0.5em;
-      cursor: pointer;
       user-select: none;
     }
 
