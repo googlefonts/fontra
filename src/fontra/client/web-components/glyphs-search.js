@@ -51,7 +51,7 @@ export class GlyphsSearch extends UnlitElement {
     const columnDescriptions = [
       {
         key: "char",
-        width: "2em",
+        width: "1.8em",
         get: (item) => getCharFromUnicode(item.unicodes[0]),
       },
       { key: "glyphName", width: "10em", isIdentifierKey: true },
