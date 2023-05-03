@@ -361,10 +361,7 @@ export class UIList extends UnlitElement {
   }
 
   _headerScrollHandler(event) {
-    if (
-      this.headerContainer &&
-      this.container.scrollLeft != this.headerContainer.scrollLeft
-    ) {
+    if (this.container.scrollLeft != this.headerContainer.scrollLeft) {
       this.container.scrollLeft = this.headerContainer.scrollLeft;
     }
     this._addMoreItemsIfNeeded();
