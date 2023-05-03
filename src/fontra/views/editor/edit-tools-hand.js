@@ -16,6 +16,10 @@ export class HandTool extends BaseTool {
     const originalOriginY = this.canvasController.origin.y;
     this.canvasController.canvas.style.cursor = "grabbing";
     for await (const event of eventStream) {
+      if (event.x === undefined) {
+        // We can receive non-pointer events like keyboard events: ignore
+        continue;
+      }
       this.canvasController.origin.x = originalOriginX + event.x - initialX;
       this.canvasController.origin.y = originalOriginY + event.y - initialY;
       this.canvasController.requestUpdate();
