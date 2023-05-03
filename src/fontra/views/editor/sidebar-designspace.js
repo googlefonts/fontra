@@ -45,13 +45,13 @@ export class SidebarDesignspace {
       {
         title: "on",
         get: (item) => !item.inactive,
-        cellFactory: sourceOnOffCheckBox,
+        cellFactory: checkboxListCell,
         width: "2em",
       },
       {
         title: "vis",
         get: (item) => item.visible,
-        cellFactory: sourceOnOffCheckBox,
+        cellFactory: checkboxListCell,
         width: "2em",
       },
     ];
@@ -568,7 +568,7 @@ function suggestedSourceNameFromLocation(location) {
   );
 }
 
-function sourceOnOffCheckBox(item, colDesc) {
+function checkboxListCell(item, colDesc) {
   const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
   return html.input({
     type: "checkbox",
