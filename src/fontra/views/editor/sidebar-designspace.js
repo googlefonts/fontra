@@ -572,7 +572,7 @@ function sourceOnOffCheckBox(item, colDesc) {
   const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
   return html.input({
     type: "checkbox",
-    style: `width: auto; margin: 0; padding 0; outline: none;`,
+    style: `width: auto; margin: 0; padding: 0; outline: none;`,
     checked: value,
     onclick: (event) => {
       event.stopImmediatePropagation();
