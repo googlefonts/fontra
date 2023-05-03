@@ -106,7 +106,10 @@ export class UIList extends UnlitElement {
       ondblclick: (event) => this._dblClickHandler(event),
       tabIndex: 1,
     });
-    this.contents.addEventListener(
+
+    this.container = html.div({ class: "container" }, [this.contents]);
+
+    this.container.addEventListener(
       "scroll",
       (event) => this._scrollHandler(event),
       false
@@ -130,7 +133,7 @@ export class UIList extends UnlitElement {
     if (this._showHeader) {
       contents.push(this._makeHeader());
     }
-    contents.push(html.div({ class: "container" }, [this.contents]));
+    contents.push(this.container);
     return contents;
   }
 
@@ -254,7 +257,13 @@ export class UIList extends UnlitElement {
       cell.append(value);
       header.appendChild(cell);
     }
-    return html.div({ class: "header-container" }, [header]);
+    this.headerContainer = html.div({ class: "header-container" }, [header]);
+    this.headerContainer.addEventListener(
+      "scroll",
+      (event) => this._headerScrollHandler(event),
+      false
+    );
+    return this.headerContainer;
   }
 
   _clickHandler(event) {
@@ -351,7 +360,23 @@ export class UIList extends UnlitElement {
     }
   }
 
+  _headerScrollHandler(event) {
+    if (
+      this.headerContainer &&
+      this.container.scrollLeft != this.headerContainer.scrollLeft
+    ) {
+      this.container.scrollLeft = this.headerContainer.scrollLeft;
+    }
+    this._addMoreItemsIfNeeded();
+  }
+
   _scrollHandler(event) {
+    if (
+      this.headerContainer &&
+      this.headerContainer.scrollLeft != this.container.scrollLeft
+    ) {
+      this.headerContainer.scrollLeft = this.container.scrollLeft;
+    }
     this._addMoreItemsIfNeeded();
   }
 }
