@@ -100,19 +100,30 @@ export class SidebarDesignspace {
   }
 
   _updateSources() {
-    const sources = this.dataModel.varGlyphController?.sources || [];
+    const varGlyphController = this.dataModel.varGlyphController;
+    const sources = varGlyphController?.sources || [];
+    let backgroundLayers = { ...this.sceneController.backgroundLayers };
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
+      const layerName = source.layerName;
       const sourceController = new ObservableController({
         name: source.name,
         active: !source.inactive,
-        visible: false,
+        visible: backgroundLayers[layerName] === source.name,
       });
       sourceController.addKeyListener("active", async (key, newValue) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
           glyph.sources[index].inactive = !newValue;
           return `${newValue ? "" : "de"}activate ${source.name}`;
         });
+      });
+      sourceController.addKeyListener("visible", async (key, newValue) => {
+        if (newValue) {
+          backgroundLayers[layerName] = source.name;
+        } else {
+          delete backgroundLayers[layerName];
+        }
+        this.sceneController.backgroundLayers = backgroundLayers;
       });
       sourceItems.push(sourceController.model);
     }
