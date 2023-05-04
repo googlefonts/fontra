@@ -22,6 +22,7 @@ export class VariableGlyphController {
     this.glyph = glyph;
     this.globalAxes = globalAxes;
     this._locationToSourceIndex = {};
+    this._layerGlyphControllers = {};
   }
 
   get name() {
@@ -159,6 +160,7 @@ export class VariableGlyphController {
     delete this._combinedAxes;
     delete this._localToGlobalMapping;
     this._locationToSourceIndex = {};
+    this._layerGlyphControllers = {};
   }
 
   get model() {
@@ -183,6 +185,29 @@ export class VariableGlyphController {
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
+  }
+
+  async getLayerGlyphController(layerName, sourceIndex, getGlyphFunc) {
+    const cacheKey = `${layerName}/${sourceIndex}`;
+    let instanceController = this._layerGlyphControllers[cacheKey];
+    if (instanceController === undefined) {
+      const layer = this.layers[layerName];
+      if (layer) {
+        instanceController = new StaticGlyphController(
+          this.name,
+          layer.glyph,
+          undefined
+        );
+        await instanceController.setupComponents(
+          getGlyphFunc,
+          this.sources[sourceIndex].location
+        );
+      } else {
+        instanceController = null;
+      }
+      this._layerGlyphControllers[cacheKey] = instanceController;
+    }
+    return instanceController;
   }
 
   instantiate(normalizedLocation) {
