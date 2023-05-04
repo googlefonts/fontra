@@ -324,17 +324,22 @@ class DesignspaceBackend:
                 self._analyzeExternalGlyphChanges(change, path, changedItems)
 
         if changedItems.rebuildGlyphSetContents:
+            #
+            # In some cases we're responding to a changed glyph while the
+            # contents.plist hasn't finished writing yet. Let's pause a little
+            # bit and hope for the best.
+            #
+            # This is obviously not a solid solution, and I'm not sure there is
+            # one, given we don't know whether new .glif files written before or
+            # after the corresponding contents.plist file. And even if we do know,
+            # the amount of time between the two events can be arbitrarily long,
+            # at least in theory, when many new glyphs are written at once.
+            #
+            # TODO: come up with a better solution.
+            #
+            await asyncio.sleep(0.15)
             for glyphSet in self.ufoGlyphSets.values():
                 glyphSet.rebuildContents()
-            if any(
-                glyphName not in self.defaultSourceGlyphSet
-                for glyphName in changedItems.newGlyphs
-            ):
-                # Perhaps we're responding to a changed glyph while the contents.plist
-                # hasn't finished writing yet. Let's pause a little bit and try again.
-                await asyncio.sleep(0.1)
-                for glyphSet in self.ufoGlyphSets.values():
-                    glyphSet.rebuildContents()
 
         return changedItems
 
