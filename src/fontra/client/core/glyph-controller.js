@@ -204,7 +204,7 @@ export class VariableGlyphController {
         instanceController = new StaticGlyphController(
           this.name,
           layer.glyph,
-          undefined
+          sourceIndex
         );
         await instanceController.setupComponents(
           getGlyphFunc,
