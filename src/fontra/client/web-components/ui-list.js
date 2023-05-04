@@ -144,7 +144,6 @@ export class UIList extends UnlitElement {
 
   set showHeader(onOff) {
     this._showHeader = onOff;
-    this.setItems(this.items);
     this.requestUpdate();
   }
 
