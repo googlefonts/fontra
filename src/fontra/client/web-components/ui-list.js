@@ -17,18 +17,57 @@ export class UIList extends UnlitElement {
     ${themeColorCSS(colors)}
 
     :host {
+      display: grid;  /* also set by code below */
+      grid-template-rows: auto 1fr;
+      gap: 0.2em;
+      min-height: 0;
+      min-width: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .container {
       overflow: scroll;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
       border: solid 1px var(--border-color);
     }
 
     .contents {
       display: flex;
       flex-direction: column;
+      outline: none;
     }
 
-    .contents > .row {
+    .header-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .header-container {
+      overflow: scroll;
+      height: 100%;
+      width: 100%;
+      box-sizing: border-box;
+      scrollbar-width: none;  /* hide scrollbar in FireFox */
+    }
+
+    .header {
       display: flex;
-      width: content;
+      width: min-content;
+      min-width: 100%;
+      box-sizing: border-box;
+      padding: 0.15em;
+      padding-left: 0.5em;
+      padding-right: 0.5em;
+      user-select: none;
+    }
+
+    .row {
+      display: flex;
+      width: min-content;
+      min-width: 100%;
+      box-sizing: border-box;
       border-top: solid 1px var(--row-border-color);
       color: var(--row-foreground-color);
       background-color: var(--row-background-color);
@@ -43,7 +82,7 @@ export class UIList extends UnlitElement {
       background-color: var(--row-selected-background-color);
     }
 
-    .contents > .row > .text-cell {
+    .text-cell, .text-cell-header {
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -52,14 +91,13 @@ export class UIList extends UnlitElement {
   constructor() {
     super();
 
-    this.tabIndex = "1";
-
     this._columnDescriptions = [
       {
         key: "default",
         get: (item) => item,
       },
     ];
+    this._showHeader = false;
     this.items = [];
     this.itemEqualFunc = null;
 
@@ -67,16 +105,46 @@ export class UIList extends UnlitElement {
       class: "contents",
       onclick: (event) => this._clickHandler(event),
       ondblclick: (event) => this._dblClickHandler(event),
+      tabIndex: 1,
     });
-    this.addEventListener("scroll", (event) => this._scrollHandler(event), false);
-    this.addEventListener("keydown", (event) => this._keyDownHandler(event), false);
-    this.addEventListener("keyup", (event) => this._keyUpHandler(event), false);
+
+    this.container = html.div({ class: "container" }, [this.contents]);
+
+    this.container.addEventListener(
+      "scroll",
+      (event) => this._scrollHandler(event),
+      false
+    );
+    this.contents.addEventListener(
+      "keydown",
+      (event) => this._keyDownHandler(event),
+      false
+    );
+    this.contents.addEventListener(
+      "keyup",
+      (event) => this._keyUpHandler(event),
+      false
+    );
     this.selectedItemIndex = undefined;
     this.allowEmptySelection = true;
   }
 
   render() {
-    return this.contents;
+    const contents = [];
+    if (this._showHeader) {
+      contents.push(this._makeHeader());
+    }
+    contents.push(this.container);
+    return contents;
+  }
+
+  get showHeader() {
+    return this._showHeader;
+  }
+
+  set showHeader(onOff) {
+    this._showHeader = onOff;
+    this.requestUpdate();
   }
 
   get columnDescriptions() {
@@ -91,11 +159,12 @@ export class UIList extends UnlitElement {
     );
     this.itemEqualFunc = (a, b) => getters.every((getter) => getter(a) === getter(b));
     this.setItems(this.items);
+    this.requestUpdate();
   }
 
   setItems(items) {
     const selectedItem = this.getSelectedItem();
-    this.style.display = items?.length ? "initial" : "none";
+    this.style.display = items?.length ? "grid" : "none";
     this.contents.innerHTML = "";
     this.items = items;
     this._itemsBackLog = Array.from(items);
@@ -155,19 +224,51 @@ export class UIList extends UnlitElement {
       }
 
       for (const colDesc of this.columnDescriptions) {
-        const cell = document.createElement("div");
-        cell.className = "text-cell " + colDesc.key;
-        if (colDesc.width) {
-          cell.style.width = colDesc.width;
+        let cell;
+        if (colDesc.cellFactory) {
+          cell = html.div(
+            {
+              style: colDesc.width ? `display: flex; width: ${colDesc.width};` : "",
+            },
+            [colDesc.cellFactory(item, colDesc)]
+          );
+        } else {
+          cell = document.createElement("div");
+          cell.className = "text-cell " + colDesc.key;
+          if (colDesc.width) {
+            cell.style.width = colDesc.width;
+          }
+          const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
+          cell.append(value);
         }
-        const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
-        cell.append(value);
         row.appendChild(cell);
       }
 
       this.contents.appendChild(row);
       rowIndex++;
     }
+  }
+
+  _makeHeader() {
+    const header = html.div({ class: "header" });
+
+    for (const colDesc of this.columnDescriptions) {
+      const cell = document.createElement("div");
+      cell.className = "text-cell-header " + colDesc.key;
+      if (colDesc.width) {
+        cell.style.width = colDesc.width;
+      }
+      const value = colDesc.title || colDesc.key;
+      cell.append(value);
+      header.appendChild(cell);
+    }
+    this.headerContainer = html.div({ class: "header-container" }, [header]);
+    this.headerContainer.addEventListener(
+      "scroll",
+      (event) => this._headerScrollHandler(event),
+      false
+    );
+    return this.headerContainer;
   }
 
   _clickHandler(event) {
@@ -264,7 +365,19 @@ export class UIList extends UnlitElement {
     }
   }
 
+  _headerScrollHandler(event) {
+    if (this.container.scrollLeft != this.headerContainer.scrollLeft) {
+      this.container.scrollLeft = this.headerContainer.scrollLeft;
+    }
+  }
+
   _scrollHandler(event) {
+    if (
+      this.headerContainer &&
+      this.headerContainer.scrollLeft != this.container.scrollLeft
+    ) {
+      this.headerContainer.scrollLeft = this.container.scrollLeft;
+    }
     this._addMoreItemsIfNeeded();
   }
 }

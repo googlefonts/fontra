@@ -9,7 +9,7 @@ import {
   unionRect,
 } from "../core/rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
-import { parseSelection } from "../core/utils.js";
+import { enumerate, parseSelection } from "../core/utils.js";
 import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 
 export class SceneModel {
@@ -29,6 +29,7 @@ export class SceneModel {
     this.longestLineLength = 0;
     this.usedGlyphNames = new Set();
     this.cachedGlyphNames = new Set();
+    this.backgroundLayers = {};
   }
 
   getSelectedPositionedGlyph() {
@@ -217,7 +218,28 @@ export class SceneModel {
     );
   }
 
+  async updateBackgroundGlyphs() {
+    this.backgroundLayerGlyphs = [];
+    const glyphName = await this.getSelectedGlyphName();
+    if (!glyphName) {
+      return;
+    }
+    for (const [layerName, sourceName] of Object.entries(this.backgroundLayers)) {
+      const varGlyph = await this.fontController.getGlyph(glyphName);
+      let sourceIndex = varGlyph.getSourceIndexFromName(sourceName) || 0;
+      const layerGlyph = await this.fontController.getLayerGlyphController(
+        glyphName,
+        layerName,
+        sourceIndex
+      );
+      if (layerGlyph) {
+        this.backgroundLayerGlyphs.push(layerGlyph);
+      }
+    }
+  }
+
   async updateScene() {
+    this.updateBackgroundGlyphs();
     [this.positionedLines, this.longestLineLength] = await buildScene(
       this.fontController,
       this.glyphLines,

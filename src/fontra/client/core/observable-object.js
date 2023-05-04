@@ -1,5 +1,7 @@
 import { chain } from "./utils.js";
 
+export const controllerKey = Symbol("controller-key");
+
 export class ObservableController {
   constructor(model) {
     if (!model) {
@@ -75,6 +77,9 @@ function newModelProxy(controller, model) {
     },
 
     get(model, key, receiver) {
+      if (key === controllerKey) {
+        return controller;
+      }
       return model[key];
     },
 

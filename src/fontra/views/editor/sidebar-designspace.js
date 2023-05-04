@@ -1,7 +1,7 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
 import * as html from "/core/unlit.js";
-import { htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
+import { enumerate, htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
 import {
   locationToString,
   normalizeLocation,
@@ -41,10 +41,22 @@ export class SidebarDesignspace {
     });
 
     const columnDescriptions = [
-      { key: "sourceName", width: "14em" },
-      // {"key": "sourceIndex", "width": "2em"},
+      { key: "name", title: "Source name", width: "14em" },
+      {
+        title: "on",
+        key: "active",
+        cellFactory: checkboxListCell,
+        width: "2em",
+      },
+      {
+        title: "bg",
+        key: "visible",
+        cellFactory: checkboxListCell,
+        width: "2em",
+      },
     ];
     this.sourcesList = document.querySelector("#sources-list");
+    this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
     this.addRemoveSourceButtons = document.querySelector(
@@ -88,12 +100,36 @@ export class SidebarDesignspace {
   }
 
   _updateSources() {
-    const sources = this.dataModel.varGlyphController?.sources || [];
-    const sourceItems = sources.map((source) => {
-      return { sourceName: source.name };
-    });
+    const varGlyphController = this.dataModel.varGlyphController;
+    const sources = varGlyphController?.sources || [];
+    let backgroundLayers = { ...this.sceneController.backgroundLayers };
+    const sourceItems = [];
+    for (const [index, source] of enumerate(sources)) {
+      const layerName = source.layerName;
+      const sourceController = new ObservableController({
+        name: source.name,
+        active: !source.inactive,
+        visible: backgroundLayers[layerName] === source.name,
+      });
+      sourceController.addKeyListener("active", async (key, newValue) => {
+        await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+          glyph.sources[index].inactive = !newValue;
+          return `${newValue ? "" : "de"}activate ${source.name}`;
+        });
+      });
+      sourceController.addKeyListener("visible", async (key, newValue) => {
+        if (newValue) {
+          backgroundLayers[layerName] = source.name;
+        } else {
+          delete backgroundLayers[layerName];
+        }
+        this.sceneController.backgroundLayers = backgroundLayers;
+      });
+      sourceItems.push(sourceController.model);
+    }
     this.sourcesList.setItems(sourceItems);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
+    this.addRemoveSourceButtons.disableAddButton = !this.axisSliders.axes.length;
   }
 
   _updateSelectedSourceFromLocation() {
@@ -553,4 +589,20 @@ function suggestedSourceNameFromLocation(location) {
       })
       .join(",") || "default"
   );
+}
+
+function checkboxListCell(item, colDesc) {
+  const value = item[colDesc.key];
+  return html.input({
+    type: "checkbox",
+    style: `width: auto; margin: 0; padding: 0; outline: none;`,
+    checked: value,
+    onclick: (event) => {
+      item[colDesc.key] = event.target.checked;
+      event.stopImmediatePropagation();
+    },
+    ondblclick: (event) => {
+      event.stopImmediatePropagation();
+    },
+  });
 }
