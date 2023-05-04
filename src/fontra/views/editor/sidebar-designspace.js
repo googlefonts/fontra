@@ -41,13 +41,13 @@ export class SidebarDesignspace {
     });
 
     const columnDescriptions = [
-      { key: "name", title: "Source name", width: "14em" },
       {
         title: "on",
         key: "active",
         cellFactory: checkboxListCell,
         width: "2em",
       },
+      { key: "name", title: "Source name", width: "12em" },
       {
         title: "bg",
         key: "visible",
