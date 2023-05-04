@@ -205,6 +205,15 @@ export class FontController {
     this.updateGlyphDependencies(await this.getGlyph(glyphName));
   }
 
+  async getLayerGlyphController(glyphName, layerName, sourceIndex) {
+    const varGlyph = await this.getGlyph(glyphName);
+    if (!varGlyph) {
+      return;
+    }
+    const getGlyphFunc = this.getGlyph.bind(this);
+    return varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
+  }
+
   async getGlyphInstance(glyphName, location, instanceCacheKey) {
     if (!this.hasGlyph(glyphName)) {
       return Promise.resolve(null);
