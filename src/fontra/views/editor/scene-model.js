@@ -226,13 +226,7 @@ export class SceneModel {
     }
     for (const [layerName, sourceName] of Object.entries(this.backgroundLayers)) {
       const varGlyph = await this.fontController.getGlyph(glyphName);
-      let sourceIndex = 0;
-      let source;
-      for ([sourceIndex, source] of enumerate(varGlyph.sources)) {
-        if (source.name === sourceName) {
-          break;
-        }
-      }
+      let sourceIndex = varGlyph.getSourceIndexFromName(sourceName) || 0;
       const layerGlyph = await this.fontController.getLayerGlyphController(
         glyphName,
         layerName,
