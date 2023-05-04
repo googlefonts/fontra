@@ -285,19 +285,42 @@ export class SceneModel {
     if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
       return { selection: new Set() };
     }
+
+    const pointSelection = this.pointSelectionAtPoint(point, size);
+    if (pointSelection.size) {
+      return { selection: pointSelection };
+    }
+
+    const { selection: segmentSelection, pathHit: pathHit } =
+      this.segmentSelectionAtPoint(point, size);
+    if (pathHit) {
+      return { selection: segmentSelection, pathHit: pathHit };
+    }
+
+    const componentSelection = this.componentSelectionAtPoint(
+      point,
+      size,
+      currentSelection,
+      preferTCenter
+    );
+    return { selection: componentSelection };
+  }
+
+  pointSelectionAtPoint(point, size) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
 
-    // Point selection
     const glyphPoint = {
       x: point.x - positionedGlyph.x,
       y: point.y - positionedGlyph.y,
     };
     const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
     if (pointIndex !== undefined) {
-      return { selection: new Set([`point/${pointIndex}`]) };
+      return new Set([`point/${pointIndex}`]);
     }
+    return new Set();
+  }
 
-    // Segment hit testing
+  segmentSelectionAtPoint(point, size) {
     const pathHit = this.pathHitAtPoint(point, size);
     if (pathHit.contourIndex !== undefined) {
       const selection = new Set(
@@ -305,8 +328,12 @@ export class SceneModel {
       );
       return { selection, pathHit };
     }
+    return { selection: new Set() };
+  }
 
-    // Component selection
+  componentSelectionAtPoint(point, size, currentSelection, preferTCenter) {
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+
     let currentSelectedComponentIndices;
     if (currentSelection) {
       const { component, componentOrigin, componentTCenter } =
@@ -344,7 +371,7 @@ export class SceneModel {
           if (tCenterMatch && (!originMatch || preferTCenter)) {
             selection.add(`componentTCenter/${i}`);
           }
-          return { selection };
+          return selection;
         }
       }
       if (
@@ -356,19 +383,19 @@ export class SceneModel {
     }
     switch (componentHullMatches.length) {
       case 0:
-        return { selection: new Set() };
+        return new Set();
       case 1:
-        return { selection: new Set([`component/${componentHullMatches[0].index}`]) };
+        return new Set([`component/${componentHullMatches[0].index}`]);
     }
     // If we have multiple matches, take the first that has an actual
     // point inside the path, and not just inside the hull
     for (const match of componentHullMatches) {
       if (this.isPointInPath(match.component.path2d, x, y)) {
-        return { selection: new Set([`component/${match.index}`]) };
+        return new Set([`component/${match.index}`]);
       }
     }
     // Else, fall back to the first match
-    return { selection: new Set([`component/${componentHullMatches[0].index}`]) };
+    return new Set([`component/${componentHullMatches[0].index}`]);
   }
 
   selectionAtRect(selRect) {
