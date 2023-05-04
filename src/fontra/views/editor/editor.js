@@ -389,8 +389,7 @@ export class EditorController {
     await this.sidebarDesignspace.setup();
 
     this.sceneController.addEventListener("selectedGlyphChanged", async (event) => {
-      this.sidebarDesignspaceDataController.model.varGlyphController =
-        await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+      await this._sidebarDesignspaceResetVarGlyph();
       this.updateWindowLocationAndSelectionInfo();
     });
     this.sidebarDesignspaceDataController.addKeyListener(
@@ -401,6 +400,11 @@ export class EditorController {
         this.autoViewBox = false;
       }
     );
+  }
+
+  async _sidebarDesignspaceResetVarGlyph() {
+    this.sidebarDesignspaceDataController.model.varGlyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
   }
 
   initSidebars() {
@@ -646,6 +650,7 @@ export class EditorController {
   }
 
   async _updateSidebarDesignspace() {
+    await this._sidebarDesignspaceResetVarGlyph();
     this.sidebarDesignspace.forceUpdateSources();
   }
 
