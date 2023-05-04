@@ -205,7 +205,7 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
       appendInfo.contourIndex,
       appendInfo.contourPointIndex
     );
-    const { selection: clickedSelection } = sceneController.sceneModel.selectionAtPoint(
+    const clickedSelection = sceneController.sceneModel.pointSelectionAtPoint(
       sceneController.localPoint(initialEvent),
       sceneController.mouseClickMargin
     );
@@ -528,7 +528,7 @@ function shiftConstrain(anchorPoint, handlePoint) {
 }
 
 function getHoveredPointIndex(sceneController, event) {
-  const { selection: hoveredSelection } = sceneController.sceneModel.selectionAtPoint(
+  const hoveredSelection = sceneController.sceneModel.pointSelectionAtPoint(
     sceneController.localPoint(event),
     sceneController.mouseClickMargin
   );
