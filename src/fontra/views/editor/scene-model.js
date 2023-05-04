@@ -286,17 +286,24 @@ export class SceneModel {
       return { selection: new Set() };
     }
 
-    const pointResult = this.pointSelectionAtPoint(point, size);
-    if (pointResult) {
-      return pointResult;
+    const pointSelection = this.pointSelectionAtPoint(point, size);
+    if (pointSelection.size) {
+      return { selection: pointSelection };
     }
 
-    const segmentResult = this.segmentSelectionAtPoint(point, size);
-    if (segmentResult) {
-      return segmentResult;
+    const { selection: segmentSelection, pathHit: pathHit } =
+      this.segmentSelectionAtPoint(point, size);
+    if (pathHit) {
+      return { selection: segmentSelection, pathHit: pathHit };
     }
 
-    return this.componentSelectionAtPoint(point, size, currentSelection, preferTCenter);
+    const componentSelection = this.componentSelectionAtPoint(
+      point,
+      size,
+      currentSelection,
+      preferTCenter
+    );
+    return { selection: componentSelection };
   }
 
   pointSelectionAtPoint(point, size) {
@@ -308,8 +315,9 @@ export class SceneModel {
     };
     const pointIndex = positionedGlyph.glyph.path.pointIndexNearPoint(glyphPoint, size);
     if (pointIndex !== undefined) {
-      return { selection: new Set([`point/${pointIndex}`]) };
+      return new Set([`point/${pointIndex}`]);
     }
+    return new Set();
   }
 
   segmentSelectionAtPoint(point, size) {
@@ -320,6 +328,7 @@ export class SceneModel {
       );
       return { selection, pathHit };
     }
+    return { selection: new Set() };
   }
 
   componentSelectionAtPoint(point, size, currentSelection, preferTCenter) {
@@ -362,7 +371,7 @@ export class SceneModel {
           if (tCenterMatch && (!originMatch || preferTCenter)) {
             selection.add(`componentTCenter/${i}`);
           }
-          return { selection };
+          return selection;
         }
       }
       if (
@@ -374,19 +383,19 @@ export class SceneModel {
     }
     switch (componentHullMatches.length) {
       case 0:
-        return { selection: new Set() };
+        return new Set();
       case 1:
-        return { selection: new Set([`component/${componentHullMatches[0].index}`]) };
+        return new Set([`component/${componentHullMatches[0].index}`]);
     }
     // If we have multiple matches, take the first that has an actual
     // point inside the path, and not just inside the hull
     for (const match of componentHullMatches) {
       if (this.isPointInPath(match.component.path2d, x, y)) {
-        return { selection: new Set([`component/${match.index}`]) };
+        return new Set([`component/${match.index}`]);
       }
     }
     // Else, fall back to the first match
-    return { selection: new Set([`component/${componentHullMatches[0].index}`]) };
+    return new Set([`component/${componentHullMatches[0].index}`]);
   }
 
   selectionAtRect(selRect) {
