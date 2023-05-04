@@ -49,7 +49,7 @@ export class SidebarDesignspace {
         width: "2em",
       },
       {
-        title: "vis",
+        title: "bg",
         key: "visible",
         cellFactory: checkboxListCell,
         width: "2em",
