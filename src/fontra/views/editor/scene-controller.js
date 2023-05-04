@@ -330,6 +330,16 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
+  get backgroundLayers() {
+    return this.sceneModel.backgroundLayers || [];
+  }
+
+  set backgroundLayers(layerNames) {
+    this.sceneModel.backgroundLayers = layerNames;
+    this.sceneModel.updateScene();
+    this.canvasController.requestUpdate();
+  }
+
   getGlyphLines() {
     return this.sceneModel.getGlyphLines();
   }
