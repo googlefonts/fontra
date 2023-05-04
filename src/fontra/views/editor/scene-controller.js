@@ -210,6 +210,7 @@ export class SceneController {
 
   setSelectedGlyphState(state) {
     this.sceneModel.setSelectedGlyphState(state);
+    this.sceneModel.updateBackgroundGlyphs();
     this.canvasController.requestUpdate();
     this.notifySelectedGlyphChanged();
   }
@@ -307,6 +308,7 @@ export class SceneController {
       this.canvasController.requestUpdate();
       this.notifySelectedGlyphChanged();
     }
+    this.sceneModel.updateBackgroundGlyphs();
   }
 
   get selectedGlyphIsEditing() {
@@ -319,6 +321,7 @@ export class SceneController {
       this.canvasController.requestUpdate();
       this._dispatchEvent("selectedGlyphIsEditingChanged");
     }
+    this.sceneModel.updateBackgroundGlyphs();
   }
 
   get selectionRect() {
@@ -336,7 +339,7 @@ export class SceneController {
 
   set backgroundLayers(layerNames) {
     this.sceneModel.backgroundLayers = layerNames;
-    this.sceneModel.updateScene();
+    this.sceneModel.updateBackgroundGlyphs();
     this.canvasController.requestUpdate();
   }
 
@@ -347,6 +350,7 @@ export class SceneController {
   async setGlyphLines(glyphLines) {
     await this.sceneModel.setGlyphLines(glyphLines);
     this.notifySelectedGlyphChanged();
+    this.sceneModel.updateBackgroundGlyphs();
     this.canvasController.requestUpdate();
   }
 
