@@ -11,4 +11,6 @@ def test_classes_json():
     with open(jsonPath) as f:
         classesFromJSON = json.load(f)
 
-    assert serializableClassSchema() == classesFromJSON, "classes.json is stale"
+    assert (
+        serializableClassSchema() == classesFromJSON
+    ), "classes.json is stale, please run ./scripts/rebuild_classes_json.sh"
