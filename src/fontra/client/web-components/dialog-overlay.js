@@ -155,9 +155,11 @@ export class DialogOverlay extends SimpleElement {
     });
     this._currentActiveElement = document.activeElement;
 
-    this.onclick = (event) => {
-      this._dialogDone(null);
-    };
+    // Disable this for now, as we also receive this event if you start dragging
+    // in a text field and release outside of the dialog.
+    // this.onclick = (event) => {
+    //   this._dialogDone(null);
+    // };
 
     this._populateDialogBox(headline, message);
   }
