@@ -14,10 +14,14 @@ export class SimpleElement extends HTMLElement {
 
   _attachStyles() {
     if (this.constructor.styles) {
-      const style = document.createElement("style");
-      style.textContent = this.constructor.styles || "";
-      this.shadowRoot.appendChild(style);
+      this.appendStyle(this.constructor.styles);
     }
+  }
+
+  appendStyle(cssText) {
+    const styleElement = document.createElement("style");
+    styleElement.textContent = cssText;
+    this.shadowRoot.appendChild(styleElement);
   }
 }
 
