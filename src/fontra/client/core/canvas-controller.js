@@ -120,7 +120,10 @@ export class CanvasController {
   handleWheel(event) {
     event.preventDefault();
     if (event.ctrlKey) {
+      // Note: this is *also* how zoom gestures on an Apple trackpad are received
       this._doPinchMagnify(event, 1 - event.deltaY / 100);
+    } else if (event.altKey) {
+      this._doPinchMagnify(event, 1 - event.deltaY / 200);
     } else {
       if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
         this.origin.x -= event.deltaX;
