@@ -372,7 +372,18 @@ export class SceneController {
   }
 
   async setLocation(values) {
+    const glyphXBefore = positionedGlyphCenterX(
+      this.sceneModel.getSelectedPositionedGlyph()
+    );
     await this.sceneModel.setLocation(values);
+    if (glyphXBefore !== undefined) {
+      const glyphXAfter = positionedGlyphCenterX(
+        this.sceneModel.getSelectedPositionedGlyph()
+      );
+      const originXDelta =
+        (glyphXAfter - glyphXBefore) * this.canvasController.magnification;
+      this.canvasController.origin.x -= originXDelta;
+    }
     this.canvasController.requestUpdate();
   }
 
@@ -753,4 +764,11 @@ function getSelectedContours(path, pointSelection) {
     selectedContours.add(path.getContourIndex(pointIndex));
   }
   return [...selectedContours];
+}
+
+function positionedGlyphCenterX(positionedGlyph) {
+  if (!positionedGlyph) {
+    return undefined;
+  }
+  return positionedGlyph.x + positionedGlyph.glyph.xAdvance / 2;
 }
