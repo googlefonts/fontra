@@ -42,6 +42,7 @@ export class ReferenceFont extends UnlitElement {
       color: var(--drop-area-text-color);
 
       border-radius: 1em;
+      padding: 2em;
       height: 5em;
       text-align: center;
     }
@@ -74,7 +75,7 @@ export class ReferenceFont extends UnlitElement {
           ondragover: (event) => this.handleDragOver(event),
           ondragleave: (event) => this.handleDragLeave(event),
         },
-        ["Drop a font file here"]
+        ["Drop a font file to use as a reference font here"]
       ),
       div({ id: "drop-text" }, [""]),
     ];
