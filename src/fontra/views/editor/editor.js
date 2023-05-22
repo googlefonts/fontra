@@ -558,17 +558,23 @@ export class EditorController {
       defaultOn: true,
       zIndex: 100,
       screenParameters: { strokeWidth: 1 },
-      colors: { strokeColor: "red" },
-      colorsDarkMode: { strokeColor: "red" },
+      colors: { fillColor: "#AAA6" },
+      // colorsDarkMode: { strokeColor: "red" },
       draw: (context, positionedGlyph, parameters, model, controller) => {
         if (!referenceFontModel.referenceFontURL || !positionedGlyph.character) {
           return;
         }
-        context.strokeStyle = parameters.strokeColor;
         context.lineWidth = parameters.strokeWidth;
         context.font = `${model.fontController.unitsPerEm}px ReferenceFont`;
         context.scale(1, -1);
-        context.strokeText(positionedGlyph.character, 0, 0);
+        if (parameters.fillColor) {
+          context.fillStyle = parameters.fillColor;
+          context.fillText(positionedGlyph.character, 0, 0);
+        }
+        if (parameters.strokeColor) {
+          context.strokeStyle = parameters.strokeColor;
+          context.strokeText(positionedGlyph.character, 0, 0);
+        }
       },
     });
   }
