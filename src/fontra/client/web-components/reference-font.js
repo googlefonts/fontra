@@ -29,9 +29,8 @@ export class ReferenceFont extends UnlitElement {
       white-space: normal;
     }
 
-    #container {
-      display: grid;
-      gap: 1em;
+    .title {
+      font-weight: bold;
     }
 
     #drop-area {
@@ -66,6 +65,7 @@ export class ReferenceFont extends UnlitElement {
 
   render() {
     const content = [
+      div({ class: "title" }, ["Reference font"]),
       div(
         {
           id: "drop-area",
