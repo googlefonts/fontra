@@ -14,6 +14,7 @@
     <script type="module" src="/web-components/dialog-overlay.js"></script>
     <script type="module" src="/web-components/glyphs-search.js"></script>
     <script type="module" src="/web-components/grouped-settings.js"></script>
+    <script type="module" src="/web-components/reference-font.js"></script>
     <script type="module" src="/web-components/ui-list.js"></script>
   </head>
 
@@ -332,6 +333,12 @@
             <grouped-settings id="user-settings"></grouped-settings>
           </div>
         </div>
+
+        <div class="sidebar-content" data-sidebar-name="reference-font">
+          <div id="sidebar-reference-font">
+            <reference-font id="reference-font"></reference-font>
+          </div>
+        </div>
       </div>
 
       <div class="main-container">
@@ -351,6 +358,7 @@
               sliders
             </div>
             <div class="sidebar-tab" data-sidebar-name="user-settings">gear</div>
+            <div class="sidebar-tab" data-sidebar-name="reference-font">R</div>
           </div>
 
           <div class="tool-overlay-container">
