@@ -47,6 +47,7 @@ import { SidebarTextEntry } from "./sidebar-text-entry.js";
 import { VisualizationLayers } from "./visualization-layers.js";
 import {
   allGlyphsCleanVisualizationLayerDefinition,
+  registerVisualizationLayerDefinition,
   visualizationLayerDefinitions,
 } from "./visualization-layer-definitions.js";
 import {
@@ -101,6 +102,8 @@ export class EditorController {
     this.experimentalFeaturesController.synchronizeWithLocalStorage(
       "fontra-editor-experimental-features."
     );
+
+    this.initSidebarReferenceFont();
 
     this.visualizationLayers = new VisualizationLayers(
       visualizationLayerDefinitions,
@@ -532,6 +535,51 @@ export class EditorController {
     const [minXPost, maxXPost] =
       this.sceneController.sceneModel.getTextHorizontalExtents();
     this.canvasController.setViewBox(offsetRect(viewBox, minXPost - minXPre, 0));
+  }
+
+  initSidebarReferenceFont() {
+    const referenceFontElement = document.querySelector("#reference-font");
+    referenceFontElement.controller.addKeyListener(
+      "referenceFontURL",
+      async (key, newValue) => {
+        if (newValue) {
+          this.visualizationLayersSettings.model["fontra.reference.font"] = true;
+          const font = new FontFace("ReferenceFont", newValue, {});
+          document.fonts.add(font);
+          await font.load();
+        }
+        this.canvasController.requestUpdate();
+      }
+    );
+    const referenceFontModel = referenceFontElement.model;
+
+    registerVisualizationLayerDefinition({
+      identifier: "fontra.reference.font",
+      name: "Reference font",
+      selectionMode: "editing",
+      userSwitchable: true,
+      defaultOn: true,
+      zIndex: 100,
+      screenParameters: { strokeWidth: 1 },
+      colors: { fillColor: "#AAA6" },
+      // colorsDarkMode: { strokeColor: "red" },
+      draw: (context, positionedGlyph, parameters, model, controller) => {
+        if (!referenceFontModel.referenceFontURL || !positionedGlyph.character) {
+          return;
+        }
+        context.lineWidth = parameters.strokeWidth;
+        context.font = `${model.fontController.unitsPerEm}px ReferenceFont`;
+        context.scale(1, -1);
+        if (parameters.fillColor) {
+          context.fillStyle = parameters.fillColor;
+          context.fillText(positionedGlyph.character, 0, 0);
+        }
+        if (parameters.strokeColor) {
+          context.strokeStyle = parameters.strokeColor;
+          context.strokeText(positionedGlyph.character, 0, 0);
+        }
+      },
+    });
   }
 
   initMiniConsole() {
