@@ -98,7 +98,7 @@ export class ReferenceFont extends UnlitElement {
 
         this.hasFont = true;
       } else {
-        dropText.innerHTML = `Can't use “${file.name}” as a font`;
+        dropText.innerText = `Can't use “${file.name}” as a font`;
         this.model.referenceFontURL = null;
         this.hasFont = false;
       }
