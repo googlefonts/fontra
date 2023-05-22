@@ -8,8 +8,6 @@ const colors = {
   "drop-area-text-color": ["black", "white"],
 };
 
-const dropText = "Drop a font file here";
-
 const fontTypeMapping = {
   ttf: "truetype",
   otf: "opentype",
@@ -75,7 +73,7 @@ export class ReferenceFont extends UnlitElement {
           ondragover: (event) => this.handleDragOver(event),
           ondragleave: (event) => this.handleDragLeave(event),
         },
-        ["Drop a font file to use as a reference font here"]
+        ["Drop a font file to use as a reference font"]
       ),
       div({ id: "drop-text" }, [""]),
     ];
