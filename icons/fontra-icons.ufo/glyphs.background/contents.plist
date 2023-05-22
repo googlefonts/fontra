@@ -4,5 +4,7 @@
   <dict>
     <key>hand</key>
     <string>hand.glif</string>
+    <key>reference</key>
+    <string>reference.glif</string>
   </dict>
 </plist>

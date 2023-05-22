@@ -82,6 +82,7 @@
       <string>alignleft</string>
       <string>aligncenter</string>
       <string>alignright</string>
+      <string>reference</string>
     </array>
   </dict>
 </plist>
