@@ -542,6 +542,7 @@ export class EditorController {
     referenceFontElement.controller.addKeyListener(
       "referenceFontURL",
       async (key, newValue) => {
+        this.visualizationLayersSettings.model["fontra.reference.font"] = true;
         const font = new FontFace("ReferenceFont", newValue, {});
         document.fonts.add(font);
         await font.load();
