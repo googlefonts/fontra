@@ -203,7 +203,7 @@ export class UIList extends UnlitElement {
   _addMoreItemsIfNeeded() {
     while (
       this._itemsBackLog.length > 0 &&
-      this.scrollTop + this.offsetHeight + 200 > this.contents.offsetHeight
+      this.container.scrollTop + this.offsetHeight + 200 > this.contents.offsetHeight
     ) {
       this._addMoreItems();
       if (this.offsetHeight === 0) {
