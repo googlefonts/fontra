@@ -86,6 +86,7 @@ export class ReferenceFont extends UnlitElement {
     event.preventDefault();
     const dropArea = this.shadowRoot.querySelector("#drop-area");
     const dropText = this.shadowRoot.querySelector("#drop-text");
+    dropArea.classList.remove("drag-over");
     for (const file of event.dataTransfer.files) {
       const fileExtension = file.name.split(".").pop()?.toLowerCase();
       if (fileExtension in fontTypeMapping) {
