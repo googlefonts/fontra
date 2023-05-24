@@ -110,8 +110,8 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.cjk.design.frame",
-  name: "CJK Design Frame glyphs",
+  identifier: "fontra.cjk.design.frame.legacy",
+  name: "CJK Design Frame (legacy)",
   selectionMode: "editing",
   zIndex: 500,
   screenParameters: { strokeWidth: 1 },
@@ -878,7 +878,7 @@ function strokeRoundNode(context, pt, nodeSize) {
   context.stroke();
 }
 
-function strokeLine(context, x1, y1, x2, y2) {
+export function strokeLine(context, x1, y1, x2, y2) {
   context.beginPath();
   context.moveTo(x1, y1);
   context.lineTo(x2, y2);
