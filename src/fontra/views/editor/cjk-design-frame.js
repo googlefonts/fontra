@@ -68,7 +68,7 @@ export class CJKDesignFrame {
     );
     if (frameGlyph && frameGlyph.path.numPoints >= 6) {
       const frameBottomLeft = frameGlyph.path.getPoint(0);
-      const frameTop = frameGlyph.path.getPoint(1)?.y;
+      const frameTop = frameGlyph.path.getPoint(1).y;
       const frameHeight = frameTop - frameBottomLeft.y;
       const faceBottomLeft = frameGlyph.path.getPoint(2);
       const faceHeight = frameTop + frameBottomLeft.y - 2 * faceBottomLeft.y;
@@ -146,9 +146,6 @@ export class CJKDesignFrame {
       gridDivisionsY,
     } = this.cjkDesignFrameParameters;
 
-    if (!frameBottomLeft || isNaN(frameHeight)) {
-      return;
-    }
     const advanceWidth = positionedGlyph.glyph.xAdvance;
 
     context.lineWidth = parameters.strokeWidth;
@@ -158,17 +155,9 @@ export class CJKDesignFrame {
     const frameWidth = advanceWidth - 2 * frameBottomLeft.x;
     context.strokeRect(frameBottomLeft.x, frameBottomLeft.y, frameWidth, frameHeight);
 
-    if (!faceBottomLeft || isNaN(faceHeight)) {
-      return;
-    }
-
     // face
     const faceWidth = advanceWidth - 2 * faceBottomLeft.x;
     context.strokeRect(faceBottomLeft.x, faceBottomLeft.y, faceWidth, faceHeight);
-
-    if (!overshootOutsideBottomLeft || isNaN(overshootInsideHeight)) {
-      return;
-    }
 
     // overshoot rect
     const overshootOutsideWidth = advanceWidth - 2 * overshootOutsideBottomLeft.x;
