@@ -30,7 +30,7 @@ export class PenTool extends BaseTool {
   }
 
   get curveType() {
-    return this.sceneController.experimentalFeatures["quadPenTool"] ? "quad" : "cubic";
+    return this.sceneController.experimentalFeatures.quadPenTool ? "quad" : "cubic";
   }
 
   deactivate() {
