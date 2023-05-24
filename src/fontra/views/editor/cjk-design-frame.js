@@ -1,0 +1,178 @@
+import {
+  registerVisualizationLayerDefinition,
+  strokeLine,
+} from "./visualization-layer-definitions.js";
+
+const cjkDesignFrameGlyphName = "_cjkDesignFrame";
+
+export class CJKDesignFrame {
+  constructor(editor) {
+    this.editor = editor;
+    this.fontController = editor.fontController;
+    this.fontController.addGlyphChangeListener(cjkDesignFrameGlyphName, () =>
+      this.updateCJKDesignFrame(cjkDesignFrameGlyphName)
+    );
+
+    editor.designspaceLocationController.addKeyListener("location", (key, newValue) => {
+      // Grrr, timeout needed when the location changes based on a source list click
+      setTimeout(() => {
+        this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
+      }, 0);
+    });
+
+    registerVisualizationLayerDefinition({
+      identifier: "fontra.cjk.design.frame",
+      name: "CJK Design Frame",
+      selectionMode: "editing",
+      userSwitchable: true,
+      defaultOn: true,
+      zIndex: 200,
+      screenParameters: { strokeWidth: 1 },
+      colors: {
+        strokeColor: "#0004",
+        overshootColor: "#00BFFF26",
+        secondLineColor: "#A6296344",
+      },
+      colorsDarkMode: {
+        strokeColor: "#FFF6",
+        secondLineColor: "#A62963AA",
+      },
+      draw: (context, positionedGlyph, parameters, model, controller) =>
+        this.draw(context, positionedGlyph, parameters, model, controller),
+    });
+    this.fontController.ensureInitialized.then(() => {
+      this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
+    });
+  }
+
+  get sceneController() {
+    return this.editor.sceneController;
+  }
+
+  async updateCJKDesignFrame(glyphName) {
+    const frameGlyph = await this.fontController.getGlyphInstance(
+      glyphName,
+      this.sceneController.getGlobalLocation()
+    );
+    if (frameGlyph) {
+      const frameBottomLeft = frameGlyph.path.getPoint(0);
+      const frameTop = frameGlyph.path.getPoint(1)?.y;
+      const frameHeight = frameTop - frameBottomLeft.y;
+      const faceBottomLeft = frameGlyph.path.getPoint(2);
+      const faceHeight = frameTop + frameBottomLeft.y - 2 * faceBottomLeft.y;
+      const faceWidth = frameGlyph.xAdvance + frameBottomLeft.x - 2 * faceBottomLeft.x;
+      const overshootOutsideBottomLeft = frameGlyph.path.getPoint(3);
+      const overshootOutsideHeight =
+        frameTop + frameBottomLeft.y - 2 * overshootOutsideBottomLeft.y;
+      const overshootInsideBottomLeft = frameGlyph.path.getPoint(4);
+      const overshootInsideHeight =
+        frameTop + frameBottomLeft.y - 2 * overshootInsideBottomLeft.y;
+      const gridPoint = frameGlyph.path.getPoint(5);
+      const gridDivisionsX = minmax(
+        Math.round(faceWidth / (gridPoint.x - faceBottomLeft.x)),
+        1,
+        32
+      );
+      const gridDivisionsY = minmax(
+        Math.round(faceHeight / (gridPoint.y - faceBottomLeft.y)),
+        1,
+        32
+      );
+      const gridH = gridPoint.y - faceBottomLeft.y;
+
+      this.cjkDesignFrameParameters = {
+        frameBottomLeft,
+        frameHeight,
+        faceBottomLeft,
+        faceHeight,
+        overshootOutsideBottomLeft,
+        overshootOutsideHeight,
+        overshootInsideBottomLeft,
+        overshootInsideHeight,
+        gridDivisionsX,
+        gridDivisionsY,
+      };
+    } else {
+      this.cjkDesignFrameParameters = null;
+    }
+    this.editor.canvasController.requestUpdate();
+  }
+
+  draw(context, positionedGlyph, parameters, model, controller) {
+    if (!this.cjkDesignFrameParameters) {
+      return;
+    }
+    const {
+      frameBottomLeft,
+      frameHeight,
+      faceBottomLeft,
+      faceHeight,
+      overshootOutsideBottomLeft,
+      overshootOutsideHeight,
+      overshootInsideBottomLeft,
+      overshootInsideHeight,
+      gridDivisionsX,
+      gridDivisionsY,
+    } = this.cjkDesignFrameParameters;
+
+    if (!frameBottomLeft || isNaN(frameHeight)) {
+      return;
+    }
+    const advanceWidth = positionedGlyph.glyph.xAdvance;
+
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = parameters.strokeColor;
+
+    // frame
+    const frameWidth = advanceWidth - 2 * frameBottomLeft.x;
+    context.strokeRect(frameBottomLeft.x, frameBottomLeft.y, frameWidth, frameHeight);
+
+    if (!faceBottomLeft || isNaN(faceHeight)) {
+      return;
+    }
+
+    // face
+    const faceWidth = advanceWidth - 2 * faceBottomLeft.x;
+    context.strokeRect(faceBottomLeft.x, faceBottomLeft.y, faceWidth, faceHeight);
+
+    if (!overshootOutsideBottomLeft || isNaN(overshootInsideHeight)) {
+      return;
+    }
+
+    // overshoot rect
+    const overshootOutsideWidth = advanceWidth - 2 * overshootOutsideBottomLeft.x;
+    const overshootInsideWidth = advanceWidth - 2 * overshootInsideBottomLeft.x;
+    context.fillStyle = parameters.overshootColor;
+    context.beginPath();
+    context.rect(
+      overshootOutsideBottomLeft.x,
+      overshootOutsideBottomLeft.y,
+      overshootOutsideWidth,
+      overshootOutsideHeight
+    );
+    context.rect(
+      overshootInsideBottomLeft.x,
+      overshootInsideBottomLeft.y,
+      overshootInsideWidth,
+      overshootInsideHeight
+    );
+    context.fill("evenodd");
+
+    // face grid
+    context.strokeStyle = parameters.secondLineColor;
+    const stepX = faceWidth / gridDivisionsX;
+    const stepY = faceHeight / gridDivisionsY;
+    for (let i = 1; i < gridDivisionsY; i++) {
+      const y = faceBottomLeft.y + i * stepY;
+      strokeLine(context, faceBottomLeft.x, y, faceBottomLeft.x + faceWidth, y);
+    }
+    for (let i = 1; i < gridDivisionsX; i++) {
+      const x = faceBottomLeft.x + i * stepX;
+      strokeLine(context, x, faceBottomLeft.y, x, faceBottomLeft.y + faceHeight);
+    }
+  }
+}
+
+function minmax(value, minValue, maxValue) {
+  return Math.min(Math.max(value, minValue), maxValue);
+}
