@@ -36,6 +36,7 @@ import {
 } from "../core/utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { dialog, dialogSetup } from "/web-components/dialog-overlay.js";
+import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -104,7 +105,10 @@ export class EditorController {
       "fontra-editor-experimental-features."
     );
 
+    this.designspaceLocationController = new ObservableController();
+
     this.initSidebarReferenceFont();
+    this.cjkDesignFrame = new CJKDesignFrame(this);
 
     this.visualizationLayers = new VisualizationLayers(
       visualizationLayerDefinitions,
@@ -387,13 +391,12 @@ export class EditorController {
   }
 
   async initSidebarDesignspace() {
-    this.sidebarDesignspaceDataController = new ObservableController();
-    this.sidebarDesignspaceDataController.model.location = {};
-    this.sidebarDesignspaceDataController.model.globalAxes =
+    this.designspaceLocationController.model.location = {};
+    this.designspaceLocationController.model.globalAxes =
       this.fontController.globalAxes;
     this.sidebarDesignspace = new SidebarDesignspace(
       this.sceneController,
-      this.sidebarDesignspaceDataController
+      this.designspaceLocationController
     );
     await this.sidebarDesignspace.setup();
 
@@ -401,7 +404,7 @@ export class EditorController {
       await this._sidebarDesignspaceResetVarGlyph();
       this.updateWindowLocationAndSelectionInfo();
     });
-    this.sidebarDesignspaceDataController.addKeyListener(
+    this.designspaceLocationController.addKeyListener(
       "location",
       async (key, location) => {
         await this.sceneController.setLocation(location);
@@ -412,7 +415,7 @@ export class EditorController {
   }
 
   async _sidebarDesignspaceResetVarGlyph() {
-    this.sidebarDesignspaceDataController.model.varGlyphController =
+    this.designspaceLocationController.model.varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
   }
 
@@ -748,7 +751,7 @@ export class EditorController {
       }`;
     }, 0);
     setTimeout(() => {
-      this.sidebarDesignspaceDataController.model.location =
+      this.designspaceLocationController.model.location =
         this.sceneController.getLocation();
     }, 5);
   }
@@ -970,7 +973,7 @@ export class EditorController {
   async doUndoRedo(isRedo) {
     await this.sceneController.doUndoRedo(isRedo);
     // Hmmm would be nice if this was done automatically
-    this.sidebarDesignspaceDataController.model.location =
+    this.designspaceLocationController.model.location =
       this.sceneController.getLocation();
     this.updateSidebarDesignspace();
     this.updateWindowLocationAndSelectionInfo();
@@ -1468,7 +1471,7 @@ export class EditorController {
 
     if (viewInfo["location"]) {
       setTimeout(() => {
-        this.sidebarDesignspaceDataController.model.location =
+        this.designspaceLocationController.model.location =
           this.sceneController.getLocation();
       }, 10);
     }
