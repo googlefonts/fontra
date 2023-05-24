@@ -66,7 +66,7 @@ export class CJKDesignFrame {
       glyphName,
       this.sceneController.getGlobalLocation()
     );
-    if (frameGlyph) {
+    if (frameGlyph && frameGlyph.path.numPoints >= 6) {
       const frameBottomLeft = frameGlyph.path.getPoint(0);
       const frameTop = frameGlyph.path.getPoint(1)?.y;
       const frameHeight = frameTop - frameBottomLeft.y;
