@@ -29,6 +29,10 @@ export class PenTool extends BaseTool {
     }
   }
 
+  get curveType() {
+    return this.sceneController.experimentalFeatures.quadPenTool ? "quad" : "cubic";
+  }
+
   deactivate() {
     delete this.sceneModel.pathInsertHandles;
     delete this.sceneModel.pathConnectTargetPoint;
@@ -124,7 +128,7 @@ export class PenTool extends BaseTool {
           instance.path,
           handles.points,
           handles.hit.segment.pointIndices[1],
-          "cubic" // TODO: quad via property
+          this.curveType
         );
         delete this.sceneModel.pathInsertHandles;
         this.sceneController.selection = selection;
@@ -137,7 +141,8 @@ export class PenTool extends BaseTool {
       const behavior = getPenToolBehavior(
         this.sceneController,
         initialEvent,
-        instance.path
+        instance.path,
+        this.curveType
       );
       if (!behavior) {
         // Nothing to do
@@ -182,7 +187,7 @@ const AppendModes = {
   PREPEND: "prepend",
 };
 
-function getPenToolBehavior(sceneController, initialEvent, path) {
+function getPenToolBehavior(sceneController, initialEvent, path, curveType) {
   const appendInfo = getAppendInfo(path, sceneController.selection);
 
   let behaviorFuncs;
@@ -261,16 +266,16 @@ function getPenToolBehavior(sceneController, initialEvent, path) {
 
   const getPointFromEvent = (event) => sceneController.selectedGlyphPoint(event);
 
-  return new PenToolBehavior(getPointFromEvent, appendInfo, behaviorFuncs);
+  return new PenToolBehavior(getPointFromEvent, appendInfo, behaviorFuncs, curveType);
 }
 
 class PenToolBehavior {
   undoLabel = "add point(s)";
 
-  constructor(getPointFromEvent, appendInfo, behaviorFuncs) {
+  constructor(getPointFromEvent, appendInfo, behaviorFuncs, curveType) {
     this.getPointFromEvent = getPointFromEvent;
     this.context = { ...appendInfo };
-    this.context.curveType = "cubic";
+    this.context.curveType = curveType;
     this.context.appendBias = this.context.appendMode === AppendModes.APPEND ? 1 : 0;
     this.context.prependBias = this.context.appendMode === AppendModes.PREPEND ? 1 : 0;
     this.context.appendDirection =

@@ -98,6 +98,7 @@ export class EditorController {
 
     this.experimentalFeaturesController = new ObservableController({
       scalingEditBehavior: false,
+      quadPenTool: false,
     });
     this.experimentalFeaturesController.synchronizeWithLocalStorage(
       "fontra-editor-experimental-features."
@@ -300,6 +301,11 @@ export class EditorController {
         {
           key: "scalingEditBehavior",
           displayName: "Scaling edit tool behavior",
+          ui: "checkbox",
+        },
+        {
+          key: "quadPenTool",
+          displayName: "Pen tool draws quadratics",
           ui: "checkbox",
         },
       ],
