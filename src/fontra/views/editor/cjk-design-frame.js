@@ -50,6 +50,18 @@ export class CJKDesignFrame {
   }
 
   async updateCJKDesignFrame(glyphName) {
+    // set up fallback default paramaters
+    const unitsPerEm = this.fontController.unitsPerEm;
+    this.cjkDesignFrameParameters = makeParametersFromSettings({
+      frameBottomLeft: { x: 0, y: -0.12 * unitsPerEm },
+      frameHeight: unitsPerEm,
+      faceScale: 0.9,
+      overshootOutside: 20,
+      overshootInside: 20,
+      gridDivisionsX: 2,
+      gridDivisionsY: 2,
+    });
+
     const frameGlyph = await this.fontController.getGlyphInstance(
       glyphName,
       this.sceneController.getGlobalLocation()
@@ -93,7 +105,26 @@ export class CJKDesignFrame {
         gridDivisionsY,
       };
     } else {
-      this.cjkDesignFrameParameters = null;
+      const legacyParameters =
+        this.sceneController.sceneModel.fontController.fontLib[
+          "CJKDesignFrameSettings"
+        ];
+      if (legacyParameters) {
+        this.cjkDesignFrameParameters = makeParametersFromSettings({
+          frameBottomLeft: {
+            x: legacyParameters.shift[0],
+            y: legacyParameters.shift[1],
+          },
+          frameHeight: legacyParameters.em_Dimension[1],
+          faceScale: legacyParameters.characterFace / 100,
+          overshootInside: legacyParameters.overshoot[0],
+          overshootOutside: legacyParameters.overshoot[1],
+          gridDivisionsX:
+            legacyParameters.type === "han" ? 2 : legacyParameters.verticalLine,
+          gridDivisionsY:
+            legacyParameters.type === "han" ? 2 : legacyParameters.horizontalLine,
+        });
+      }
     }
     this.editor.canvasController.requestUpdate();
   }
@@ -175,4 +206,32 @@ export class CJKDesignFrame {
 
 function minmax(value, minValue, maxValue) {
   return Math.min(Math.max(value, minValue), maxValue);
+}
+
+function makeParametersFromSettings(settings) {
+  const frameLeft = settings.frameBottomLeft.x;
+  const frameBottom = settings.frameBottomLeft.y;
+  const faceHeight = settings.faceScale * settings.frameHeight;
+  const faceOffset = (settings.frameHeight - faceHeight) / 2;
+  return {
+    frameBottomLeft: settings.frameBottomLeft,
+    frameHeight: settings.frameHeight,
+    faceBottomLeft: {
+      x: settings.frameBottomLeft.x + faceOffset,
+      y: settings.frameBottomLeft.y + faceOffset,
+    },
+    faceHeight: faceHeight,
+    overshootOutsideBottomLeft: {
+      x: frameLeft + faceOffset - settings.overshootOutside,
+      y: frameBottom + faceOffset - settings.overshootOutside,
+    },
+    overshootOutsideHeight: faceHeight + 2 * settings.overshootOutside,
+    overshootInsideBottomLeft: {
+      x: frameLeft + faceOffset + settings.overshootInside,
+      y: frameBottom + faceOffset + settings.overshootInside,
+    },
+    overshootInsideHeight: faceHeight - 2 * settings.overshootInside,
+    gridDivisionsX: settings.gridDivisionsX,
+    gridDivisionsY: settings.gridDivisionsY,
+  };
 }
