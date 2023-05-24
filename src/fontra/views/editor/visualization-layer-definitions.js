@@ -113,6 +113,7 @@ registerVisualizationLayerDefinition({
   identifier: "fontra.cjk.design.frame.legacy",
   name: "CJK Design Frame (legacy)",
   selectionMode: "editing",
+  userSwitchable: true,
   zIndex: 500,
   screenParameters: { strokeWidth: 1 },
   colors: {
