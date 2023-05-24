@@ -337,6 +337,10 @@ export class StaticGlyphController {
     return getRepresentation(this, "controlBounds");
   }
 
+  get isEmptyIsh() {
+    return getRepresentation(this, "isEmptyIsh");
+  }
+
   get convexHull() {
     return getRepresentation(this, "convexHull");
   }
@@ -385,6 +389,19 @@ registerRepresentationFactory(StaticGlyphController, "componentsPath", (glyph) =
 
 registerRepresentationFactory(StaticGlyphController, "controlBounds", (glyph) => {
   return glyph.flattenedPath.getControlBounds();
+});
+
+registerRepresentationFactory(StaticGlyphController, "isEmptyIsh", (glyph) => {
+  let startPoint = 0;
+  for (const contour of glyph.flattenedPath.contourInfo) {
+    const endPoint = contour.endPoint;
+    if (endPoint - startPoint > 1) {
+      // If the contour has more than two points, we consider it not empty-ish
+      return false;
+    }
+    startPoint = endPoint + 1;
+  }
+  return true;
 });
 
 registerRepresentationFactory(StaticGlyphController, "convexHull", (glyph) => {

@@ -638,7 +638,7 @@ async function buildScene(
     // Add bounding boxes
     positionedLine.glyphs.forEach((item) => {
       let bounds = item.glyph.controlBounds;
-      if (!bounds || isEmptyRect(bounds)) {
+      if (!bounds || isEmptyRect(bounds) || item.glyph.isEmptyIsh) {
         // Empty glyph, make up box based on advance so it can still be clickable/hoverable
         // TODO: use font's ascender/descender values
         // If the advance is very small, add a bit of extra space on both sides so it'll be
