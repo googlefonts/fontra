@@ -385,10 +385,7 @@ class DesignspaceBackend:
             mtime = None
         savedMTimes = self.savedGlyphModificationTimes.get(glyphName, ())
         if mtime not in savedMTimes:
-            logger.info(
-                f"external change '{glyphName}' {mtime} "
-                f"{savedMTimes} {mtime in savedMTimes}"
-            )
+            logger.info(f"external change '{glyphName}'")
             changedItems.changedGlyphs.add(glyphName)
 
 
