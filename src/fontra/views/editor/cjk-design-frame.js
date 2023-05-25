@@ -26,7 +26,7 @@ export class CJKDesignFrame {
       name: "CJK Design Frame",
       selectionMode: "editing",
       userSwitchable: true,
-      defaultOn: true,
+      defaultOn: false,
       zIndex: 200,
       screenParameters: { strokeWidth: 1 },
       colors: {
