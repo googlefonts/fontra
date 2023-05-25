@@ -838,20 +838,18 @@ export class EditorController {
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
 
     this.glyphSelectedContextMenuItems = [];
-    this.glyphSelectedContextMenuItems.push(
-      {
-        title: "Select previous source",
+    for (const selectPrevious of [true, false]) {
+      const prevNext = selectPrevious ? "previous" : "next";
+      this.glyphSelectedContextMenuItems.push({
+        title: `Select ${prevNext} source`,
         enabled: () => true,
-        callback: () => console.log("previous"),
-        shortCut: { keysOrCodes: ["ArrowUp"], metaKey: true },
-      },
-      {
-        title: "Select next source",
-        enabled: () => true,
-        callback: () => console.log("next"),
-        shortCut: { keysOrCodes: ["ArrowDown"], metaKey: true },
-      }
-    );
+        callback: () => console.log(prevNext),
+        shortCut: {
+          keysOrCodes: [selectPrevious ? "ArrowUp" : "ArrowDown"],
+          metaKey: true,
+        },
+      });
+    }
   }
 
   initShortCuts() {
