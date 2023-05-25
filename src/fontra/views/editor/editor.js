@@ -836,6 +836,22 @@ export class EditorController {
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
+
+    this.glyphSelectedContextMenuItems = [];
+    this.glyphSelectedContextMenuItems.push(
+      {
+        title: "Select previous source",
+        enabled: () => true,
+        callback: () => console.log("previous"),
+        shortCut: { keysOrCodes: ["ArrowUp"], metaKey: true },
+      },
+      {
+        title: "Select next source",
+        enabled: () => true,
+        callback: () => console.log("next"),
+        shortCut: { keysOrCodes: ["ArrowDown"], metaKey: true },
+      }
+    );
   }
 
   initShortCuts() {
@@ -867,7 +883,10 @@ export class EditorController {
       this.toggleSidebar("sidebar-selection-info", true, true);
     });
 
-    for (const menuItem of this.basicContextMenuItems) {
+    for (const menuItem of [
+      ...this.basicContextMenuItems,
+      ...this.glyphSelectedContextMenuItems,
+    ]) {
       if (menuItem.shortCut) {
         this.registerShortCut(
           menuItem.shortCut.keysOrCodes,
@@ -1340,6 +1359,10 @@ export class EditorController {
       this.sceneController.updateContextMenuState(event);
       menuItems.push(MenuItemDivider);
       menuItems.push(...this.glyphEditContextMenuItems);
+    }
+    if (this.sceneController.selectedGlyph) {
+      menuItems.push(MenuItemDivider);
+      menuItems.push(...this.glyphSelectedContextMenuItems);
     }
     this.contextMenu = new ContextMenu("context-menu", menuItems);
   }
