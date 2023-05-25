@@ -1,3 +1,4 @@
+import { range } from "/core/utils.js";
 import {
   registerVisualizationLayerDefinition,
   strokeLine,
@@ -66,44 +67,8 @@ export class CJKDesignFrame {
       glyphName,
       this.sceneController.getGlobalLocation()
     );
-    if (frameGlyph && frameGlyph.path.numPoints >= 6) {
-      const frameBottomLeft = frameGlyph.path.getPoint(0);
-      const frameTop = frameGlyph.path.getPoint(1).y;
-      const frameHeight = frameTop - frameBottomLeft.y;
-      const faceBottomLeft = frameGlyph.path.getPoint(2);
-      const faceHeight = frameTop + frameBottomLeft.y - 2 * faceBottomLeft.y;
-      const faceWidth = frameGlyph.xAdvance + frameBottomLeft.x - 2 * faceBottomLeft.x;
-      const overshootOutsideBottomLeft = frameGlyph.path.getPoint(3);
-      const overshootOutsideHeight =
-        frameTop + frameBottomLeft.y - 2 * overshootOutsideBottomLeft.y;
-      const overshootInsideBottomLeft = frameGlyph.path.getPoint(4);
-      const overshootInsideHeight =
-        frameTop + frameBottomLeft.y - 2 * overshootInsideBottomLeft.y;
-      const gridPoint = frameGlyph.path.getPoint(5);
-      const gridDivisionsX = minmax(
-        Math.round(faceWidth / (gridPoint.x - faceBottomLeft.x)),
-        1,
-        32
-      );
-      const gridDivisionsY = minmax(
-        Math.round(faceHeight / (gridPoint.y - faceBottomLeft.y)),
-        1,
-        32
-      );
-      const gridH = gridPoint.y - faceBottomLeft.y;
-
-      this.cjkDesignFrameParameters = {
-        frameBottomLeft,
-        frameHeight,
-        faceBottomLeft,
-        faceHeight,
-        overshootOutsideBottomLeft,
-        overshootOutsideHeight,
-        overshootInsideBottomLeft,
-        overshootInsideHeight,
-        gridDivisionsX,
-        gridDivisionsY,
-      };
+    if (frameGlyph && frameGlyph.path.numPoints >= 1) {
+      this.cjkDesignFrameParameters = makeParametersFromGlyph(frameGlyph, unitsPerEm);
     } else {
       const legacyParameters =
         this.sceneController.sceneModel.fontController.fontLib[
@@ -195,6 +160,55 @@ export class CJKDesignFrame {
 
 function minmax(value, minValue, maxValue) {
   return Math.min(Math.max(value, minValue), maxValue);
+}
+
+function makeParametersFromGlyph(frameGlyph, unitsPerEm) {
+  const points = [];
+  for (const i of range(6)) {
+    points.push(frameGlyph.path.getPoint(i));
+  }
+  const frameBottomLeft = points[0];
+  const frameTop = points[1] ? points[1].y : frameBottomLeft.y + unitsPerEm;
+  const frameHeight = frameTop - frameBottomLeft.y;
+  const faceBottomLeft = points[2]
+    ? points[2]
+    : {
+        x: frameBottomLeft.x + 0.05 * frameHeight,
+        y: frameBottomLeft.y + 0.05 * frameHeight,
+      };
+  const faceHeight = frameTop + frameBottomLeft.y - 2 * faceBottomLeft.y;
+  const overshootOutsideBottomLeft = points[3]
+    ? points[3]
+    : { x: faceBottomLeft.x - 20, y: faceBottomLeft.y - 20 };
+  const overshootOutsideHeight =
+    frameTop + frameBottomLeft.y - 2 * overshootOutsideBottomLeft.y;
+  const overshootInsideBottomLeft = points[4]
+    ? points[4]
+    : { x: faceBottomLeft.x + 20, y: faceBottomLeft.y + 20 };
+  const overshootInsideHeight =
+    frameTop + frameBottomLeft.y - 2 * overshootInsideBottomLeft.y;
+
+  const gridPoint = points[5];
+  const faceWidth = frameGlyph.xAdvance + frameBottomLeft.x - 2 * faceBottomLeft.x;
+  const gridDivisionsX = gridPoint
+    ? minmax(Math.round(faceWidth / (gridPoint.x - faceBottomLeft.x)), 1, 32)
+    : 2;
+  const gridDivisionsY = gridPoint
+    ? minmax(Math.round(faceHeight / (gridPoint.y - faceBottomLeft.y)), 1, 32)
+    : 2;
+
+  return {
+    frameBottomLeft,
+    frameHeight,
+    faceBottomLeft,
+    faceHeight,
+    overshootOutsideBottomLeft,
+    overshootOutsideHeight,
+    overshootInsideBottomLeft,
+    overshootInsideHeight,
+    gridDivisionsX,
+    gridDivisionsY,
+  };
 }
 
 function makeParametersFromSettings(settings) {
