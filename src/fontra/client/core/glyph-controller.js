@@ -276,6 +276,19 @@ export class VariableGlyphController {
     });
   }
 
+  findNearestSourceFromGlobalLocation(location) {
+    const normalizedLocation = normalizeLocation(
+      this.mapLocationGlobalToLocal(location),
+      this.combinedAxes
+    );
+    const indexInfo = findClosestSourceIndexFromLocation(
+      this.glyph,
+      normalizedLocation,
+      this.combinedAxes
+    );
+    return indexInfo.index;
+  }
+
   mapLocationGlobalToLocal(location) {
     // Apply global axis mapping (user-facing avar)
     location = mapForward(location, this.globalAxes);
