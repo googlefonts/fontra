@@ -847,6 +847,8 @@ export class EditorController {
         shortCut: {
           keysOrCodes: [selectPrevious ? "ArrowUp" : "ArrowDown"],
           metaKey: true,
+          altKey: false,
+          shiftKey: false,
         },
       });
     }
