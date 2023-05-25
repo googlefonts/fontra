@@ -144,19 +144,8 @@ export class SidebarDesignspace {
     if (sourceIndex === undefined) {
       return;
     }
-    const glyph = this.dataModel.varGlyphController;
-    const source = glyph.sources[sourceIndex];
-    const globalDefaultLocation = mapForward(
-      makeDefaultLocation(glyph.globalAxes),
-      glyph.globalAxes
-    );
-    const localDefaultLocation = makeDefaultLocation(glyph.axes);
-    const defaultLocation = { ...globalDefaultLocation, ...localDefaultLocation };
-    const sourceLocation = glyph.mapLocationLocalToGlobal({
-      ...defaultLocation,
-      ...source.location,
-    });
-    this.dataModel.location = sourceLocation;
+    this.dataModel.location =
+      this.dataModel.varGlyphController.mapSourceLocationToGlobal(sourceIndex);
   }
 
   _updateRemoveSourceButtonState() {
@@ -562,10 +551,6 @@ function makeSparseLocation(location, axes) {
       )
       .map((axis) => [axis.name, location[axis.name]])
   );
-}
-
-function makeDefaultLocation(axes) {
-  return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }
 
 function getAxisInfoFromGlyph(glyph) {

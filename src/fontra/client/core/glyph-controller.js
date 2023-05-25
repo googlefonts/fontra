@@ -229,7 +229,7 @@ export class VariableGlyphController {
         this.name
       } (${error.toString()})`;
       console.log(errorMessage);
-      const indexInfo = findClosestSourceIndexFromLocation(
+      const indexInfo = findNearestSourceIndexFromLocation(
         this.glyph,
         normalizedLocation,
         this.combinedAxes
@@ -260,6 +260,33 @@ export class VariableGlyphController {
 
     await instanceController.setupComponents(getGlyphFunc, location);
     return instanceController;
+  }
+
+  mapSourceLocationToGlobal(sourceIndex) {
+    const globalDefaultLocation = mapForward(
+      makeDefaultLocation(this.globalAxes),
+      this.globalAxes
+    );
+    const localDefaultLocation = makeDefaultLocation(this.axes);
+    const defaultLocation = { ...globalDefaultLocation, ...localDefaultLocation };
+    const sourceLocation = this.sources[sourceIndex].location;
+    return this.mapLocationLocalToGlobal({
+      ...defaultLocation,
+      ...sourceLocation,
+    });
+  }
+
+  findNearestSourceFromGlobalLocation(location) {
+    const normalizedLocation = normalizeLocation(
+      this.mapLocationGlobalToLocal(location),
+      this.combinedAxes
+    );
+    const indexInfo = findNearestSourceIndexFromLocation(
+      this.glyph,
+      normalizedLocation,
+      this.combinedAxes
+    );
+    return indexInfo.index;
   }
 
   mapLocationGlobalToLocal(location) {
@@ -683,7 +710,7 @@ function subsetLocation(location, axes) {
   return subsettedLocation;
 }
 
-function findClosestSourceIndexFromLocation(glyph, location, axes) {
+function findNearestSourceIndexFromLocation(glyph, location, axes) {
   const distances = [];
   if (!glyph.sources.length) {
     throw Error("assert -- glyph has no sources");
@@ -730,4 +757,8 @@ function makeMissingComponentPlaceholderGlyph() {
   path.lineTo(10, 20);
   path.closePath();
   return StaticGlyph.fromObject({ path: path });
+}
+
+function makeDefaultLocation(axes) {
+  return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }

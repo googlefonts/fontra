@@ -340,6 +340,7 @@ export class UIList extends UnlitElement {
       return;
     }
     event.preventDefault();
+    event.stopImmediatePropagation();
     if (!this.items.length) {
       return;
     }

@@ -836,6 +836,22 @@ export class EditorController {
     });
 
     this.glyphEditContextMenuItems.push(...this.sceneController.getContextMenuItems());
+
+    this.glyphSelectedContextMenuItems = [];
+    for (const selectPrevious of [true, false]) {
+      const prevNext = selectPrevious ? "previous" : "next";
+      this.glyphSelectedContextMenuItems.push({
+        title: `Select ${prevNext} source`,
+        enabled: () => true,
+        callback: () => this.doSelectPreviousNextSource(selectPrevious),
+        shortCut: {
+          keysOrCodes: [selectPrevious ? "ArrowUp" : "ArrowDown"],
+          metaKey: true,
+          altKey: false,
+          shiftKey: false,
+        },
+      });
+    }
   }
 
   initShortCuts() {
@@ -867,7 +883,10 @@ export class EditorController {
       this.toggleSidebar("sidebar-selection-info", true, true);
     });
 
-    for (const menuItem of this.basicContextMenuItems) {
+    for (const menuItem of [
+      ...this.basicContextMenuItems,
+      ...this.glyphSelectedContextMenuItems,
+    ]) {
       if (menuItem.shortCut) {
         this.registerShortCut(
           menuItem.shortCut.keysOrCodes,
@@ -1307,6 +1326,28 @@ export class EditorController {
     this.sceneController.selection = newSelection;
   }
 
+  async doSelectPreviousNextSource(selectPrevious) {
+    const instance = this.sceneController.sceneModel.getSelectedPositionedGlyph().glyph;
+    if (!instance) {
+      return;
+    }
+    const varGlyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    const sourceIndex = instance.sourceIndex;
+    let newSourceIndex;
+    if (sourceIndex === undefined) {
+      newSourceIndex = varGlyphController.findNearestSourceFromGlobalLocation(
+        this.designspaceLocationController.model.location
+      );
+    } else {
+      const numSources = varGlyphController.sources.length;
+      newSourceIndex =
+        (selectPrevious ? sourceIndex + numSources - 1 : sourceIndex + 1) % numSources;
+    }
+    this.designspaceLocationController.model.location =
+      varGlyphController.mapSourceLocationToGlobal(newSourceIndex);
+  }
+
   keyUpHandler(event) {
     if (event.code === "Space") {
       this.spaceKeyUpHandler();
@@ -1340,6 +1381,10 @@ export class EditorController {
       this.sceneController.updateContextMenuState(event);
       menuItems.push(MenuItemDivider);
       menuItems.push(...this.glyphEditContextMenuItems);
+    }
+    if (this.sceneController.selectedGlyph) {
+      menuItems.push(MenuItemDivider);
+      menuItems.push(...this.glyphSelectedContextMenuItems);
     }
     this.contextMenu = new ContextMenu("context-menu", menuItems);
   }
