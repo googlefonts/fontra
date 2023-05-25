@@ -1324,8 +1324,24 @@ export class EditorController {
     this.sceneController.selection = newSelection;
   }
 
-  doSelectPreviousNextSource(selectPrevious) {
-    // console.log("---", selectPrevious);
+  async doSelectPreviousNextSource(selectPrevious) {
+    const instance = this.sceneController.sceneModel.getSelectedPositionedGlyph().glyph;
+    if (!instance) {
+      return;
+    }
+    const varGlyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    const sourceIndex = instance.sourceIndex;
+    let newLocation;
+    if (sourceIndex === undefined) {
+      console.log("find nearest");
+    } else {
+      const numSources = varGlyphController.sources.length;
+      const newSourceIndex =
+        (selectPrevious ? sourceIndex + numSources - 1 : sourceIndex + 1) % numSources;
+      this.designspaceLocationController.model.location =
+        varGlyphController.mapSourceLocationToGlobal(newSourceIndex);
+    }
   }
 
   keyUpHandler(event) {
