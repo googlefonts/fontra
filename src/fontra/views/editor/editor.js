@@ -1332,16 +1332,18 @@ export class EditorController {
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
     const sourceIndex = instance.sourceIndex;
-    let newLocation;
+    let newSourceIndex;
     if (sourceIndex === undefined) {
-      console.log("find nearest");
+      newSourceIndex = varGlyphController.findNearestSourceFromGlobalLocation(
+        this.designspaceLocationController.model.location
+      );
     } else {
       const numSources = varGlyphController.sources.length;
-      const newSourceIndex =
+      newSourceIndex =
         (selectPrevious ? sourceIndex + numSources - 1 : sourceIndex + 1) % numSources;
-      this.designspaceLocationController.model.location =
-        varGlyphController.mapSourceLocationToGlobal(newSourceIndex);
     }
+    this.designspaceLocationController.model.location =
+      varGlyphController.mapSourceLocationToGlobal(newSourceIndex);
   }
 
   keyUpHandler(event) {
