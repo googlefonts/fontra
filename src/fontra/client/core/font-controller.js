@@ -23,6 +23,7 @@ export class FontController {
     this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // instance cache key -> instance promise
     this._glyphInstancePromiseCacheKeys = {}; // glyphName -> Set(instance cache keys)
     this._editListeners = new Set();
+    this._glyphChangeListeners = {};
     this.glyphUsedBy = {}; // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
     this.ensureInitialized = new Promise((resolve, reject) => {
@@ -203,6 +204,13 @@ export class FontController {
       varGlyph.clearCaches();
     }
     this.updateGlyphDependencies(await this.getGlyph(glyphName));
+
+    const listeners = this._glyphChangeListeners[glyphName];
+    if (listeners) {
+      for (const listener of listeners) {
+        listener.listener(glyphName, listener.listenerData);
+      }
+    }
   }
 
   async getLayerGlyphController(glyphName, layerName, sourceIndex) {
@@ -259,6 +267,25 @@ export class FontController {
   async getSourceIndex(glyphName, location) {
     const glyph = await this.getGlyph(glyphName);
     return glyph?.getSourceIndex(location);
+  }
+
+  addGlyphChangeListener(glyphName, listener, listenerData) {
+    if (!this._glyphChangeListeners[glyphName]) {
+      this._glyphChangeListeners[glyphName] = [];
+    }
+    this._glyphChangeListeners[glyphName].push({ listener, listenerData });
+  }
+
+  removeGlyphChangeListener(glyphName, listener) {
+    if (!this._glyphChangeListeners[glyphName]) {
+      return;
+    }
+    this._glyphChangeListeners[glyphName] = this._glyphChangeListeners[
+      glyphName
+    ].filter((item) => item.listener !== listener);
+    if (!this._glyphChangeListeners[glyphName].length) {
+      delete this._glyphChangeListeners[glyphName];
+    }
   }
 
   addEditListener(listener) {
