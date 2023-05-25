@@ -229,7 +229,7 @@ export class VariableGlyphController {
         this.name
       } (${error.toString()})`;
       console.log(errorMessage);
-      const indexInfo = findClosestSourceIndexFromLocation(
+      const indexInfo = findNearestSourceIndexFromLocation(
         this.glyph,
         normalizedLocation,
         this.combinedAxes
@@ -281,7 +281,7 @@ export class VariableGlyphController {
       this.mapLocationGlobalToLocal(location),
       this.combinedAxes
     );
-    const indexInfo = findClosestSourceIndexFromLocation(
+    const indexInfo = findNearestSourceIndexFromLocation(
       this.glyph,
       normalizedLocation,
       this.combinedAxes
@@ -710,7 +710,7 @@ function subsetLocation(location, axes) {
   return subsettedLocation;
 }
 
-function findClosestSourceIndexFromLocation(glyph, location, axes) {
+function findNearestSourceIndexFromLocation(glyph, location, axes) {
   const distances = [];
   if (!glyph.sources.length) {
     throw Error("assert -- glyph has no sources");
