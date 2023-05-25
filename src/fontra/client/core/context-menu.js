@@ -6,6 +6,7 @@ export const shortCutKeyMap = {
   // If the definition specifies multiple keys, e.g ["Delete", "Backspace"],
   // we are taking the first key for comparison with the map
   ArrowUp: "↑",
+  ArrowDown: "↓",
   Delete: "⌫",
 };
 
