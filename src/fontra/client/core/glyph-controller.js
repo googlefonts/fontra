@@ -262,6 +262,20 @@ export class VariableGlyphController {
     return instanceController;
   }
 
+  mapSourceLocationToGlobal(sourceIndex) {
+    const globalDefaultLocation = mapForward(
+      makeDefaultLocation(this.globalAxes),
+      this.globalAxes
+    );
+    const localDefaultLocation = makeDefaultLocation(this.axes);
+    const defaultLocation = { ...globalDefaultLocation, ...localDefaultLocation };
+    const sourceLocation = this.sources[sourceIndex].location;
+    return this.mapLocationLocalToGlobal({
+      ...defaultLocation,
+      ...sourceLocation,
+    });
+  }
+
   mapLocationGlobalToLocal(location) {
     // Apply global axis mapping (user-facing avar)
     location = mapForward(location, this.globalAxes);
@@ -730,4 +744,8 @@ function makeMissingComponentPlaceholderGlyph() {
   path.lineTo(10, 20);
   path.closePath();
   return StaticGlyph.fromObject({ path: path });
+}
+
+function makeDefaultLocation(axes) {
+  return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
 }
