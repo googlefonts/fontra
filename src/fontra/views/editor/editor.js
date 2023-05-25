@@ -843,7 +843,7 @@ export class EditorController {
       this.glyphSelectedContextMenuItems.push({
         title: `Select ${prevNext} source`,
         enabled: () => true,
-        callback: () => console.log(prevNext),
+        callback: () => this.doSelectPreviousNextSource(selectPrevious),
         shortCut: {
           keysOrCodes: [selectPrevious ? "ArrowUp" : "ArrowDown"],
           metaKey: true,
@@ -1322,6 +1322,10 @@ export class EditorController {
     }
 
     this.sceneController.selection = newSelection;
+  }
+
+  doSelectPreviousNextSource(selectPrevious) {
+    // console.log("---", selectPrevious);
   }
 
   keyUpHandler(event) {
