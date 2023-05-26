@@ -125,8 +125,8 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Interactive sidebearing editing
 - Numeric sidebearing editing
 - Numeric advance width editing ✅
-- Pen tool for quadratic curves
-- Decent outline editing (adding/removing points, removing contours)
+- Pen tool for quadratic curves ✅ (experimental)
+- Decent outline editing (adding/removing points, removing contours) ✅ (with caveats)
 - Advanced outline editing (select/edit segments)
 - Connecting open paths ✅
 - Knife tool
