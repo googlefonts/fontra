@@ -546,7 +546,10 @@ export class EditorController {
     this.canvasController.setViewBox(offsetRect(viewBox, minXPost - minXPre, 0));
   }
 
-  initSidebarReferenceFont() {
+  async initSidebarReferenceFont() {
+    const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
+    document.fonts.add(blankFont);
+    await blankFont.load();
     const referenceFontElement = document.querySelector("#reference-font");
     referenceFontElement.controller.addKeyListener(
       "referenceFontURL",
@@ -577,7 +580,7 @@ export class EditorController {
           return;
         }
         context.lineWidth = parameters.strokeWidth;
-        context.font = `${model.fontController.unitsPerEm}px ReferenceFont`;
+        context.font = `${model.fontController.unitsPerEm}px ReferenceFont, AdobeBlank`;
         context.scale(1, -1);
         if (parameters.fillColor) {
           context.fillStyle = parameters.fillColor;
