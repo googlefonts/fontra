@@ -647,6 +647,9 @@ export class EditorController {
   }
 
   async glyphNameChangedCallback(glyphName) {
+    if (!glyphName) {
+      return;
+    }
     const codePoint = this.fontController.codePointForGlyph(glyphName);
     const glyphInfo = { glyphName: glyphName };
     if (codePoint !== undefined) {
