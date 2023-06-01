@@ -59,7 +59,7 @@ export class ReferenceFont extends UnlitElement {
             fontName: `ReferenceFont${++this.fontCounter}`,
           };
         });
-      filesUIList.setItems(fileItems);
+      filesUIList.setItems([...filesUIList.items, ...fileItems]);
       filesUIList.setSelectedItemIndex(0, true);
     };
     filesUIList.addEventListener("listSelectionChanged", async () => {
@@ -88,6 +88,7 @@ export class ReferenceFont extends UnlitElement {
       document.fonts.delete(fileItem.fontFace);
       items.splice(index, 1);
       filesUIList.setItems(items);
+      filesUIList.setSelectedItemIndex(undefined, true);
     });
 
     const content = [
