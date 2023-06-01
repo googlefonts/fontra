@@ -178,7 +178,7 @@ export class UIList extends UnlitElement {
     this.items = items;
     this._updateVisibility();
     this._itemsBackLog = Array.from(items);
-    this.setSelectedItem(selectedItem);
+    this.setSelectedItem(selectedItem, true);
     this._addMoreItemsIfNeeded();
   }
 
