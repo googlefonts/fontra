@@ -64,6 +64,10 @@ export class ReferenceFont extends UnlitElement {
     };
     filesUIList.addEventListener("listSelectionChanged", async () => {
       const fileItem = filesUIList.getSelectedItem();
+      if (!fileItem) {
+        this.model.referenceFontName = undefined;
+        return;
+      }
       const file = fileItem.file;
       const fileExtension = fileNameExtension(file.name);
       if (!fileItem.fontFace) {
@@ -76,6 +80,12 @@ export class ReferenceFont extends UnlitElement {
         await fileItem.fontFace.load();
       }
       this.model.referenceFontName = fileItem.fontName;
+    });
+    filesUIList.addEventListener("deleteKey", () => {
+      const index = filesUIList.getSelectedItemIndex();
+      const items = [...filesUIList.items];
+      items.splice(index, 1);
+      filesUIList.setItems(items);
     });
 
     const content = [
