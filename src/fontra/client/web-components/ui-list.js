@@ -375,6 +375,13 @@ export class UIList extends UnlitElement {
       this._dispatchEvent("rowDoubleClicked");
       return;
     }
+    if (
+      (event.key === "Delete" || event.key === "Backspace") &&
+      this.selectedItemIndex !== undefined
+    ) {
+      this._dispatchEvent("deleteKey");
+      return;
+    }
     if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
       return;
     }
