@@ -84,6 +84,8 @@ export class ReferenceFont extends UnlitElement {
     filesUIList.addEventListener("deleteKey", () => {
       const index = filesUIList.getSelectedItemIndex();
       const items = [...filesUIList.items];
+      const fileItem = items[index];
+      document.fonts.delete(fileItem.fontFace);
       items.splice(index, 1);
       filesUIList.setItems(items);
     });
