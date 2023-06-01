@@ -1,12 +1,8 @@
-import { themeColorCSS } from "./theme-support.js";
-import { UnlitElement, div, span } from "/core/unlit.js";
 import { ObservableController } from "/core/observable-object.js";
-
-const colors = {
-  "drop-area-color": ["#eee", "#333"],
-  "drop-area-drag-over-color": ["#ccc", "#111"],
-  "drop-area-text-color": ["black", "white"],
-};
+import { UnlitElement, div, span } from "/core/unlit.js";
+import { fileNameExtension } from "/core/utils.js";
+import { themeColorCSS } from "./theme-support.js";
+import { UIList } from "./ui-list.js";
 
 const fontTypeMapping = {
   ttf: "truetype",
@@ -17,8 +13,6 @@ const fontTypeMapping = {
 
 export class ReferenceFont extends UnlitElement {
   static styles = `
-    ${themeColorCSS(colors)}
-
     :host {
       display: grid;
       padding: 1em;
@@ -30,31 +24,11 @@ export class ReferenceFont extends UnlitElement {
     .title {
       font-weight: bold;
     }
-
-    #drop-area {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      background-color: var(--drop-area-color);
-      color: var(--drop-area-text-color);
-
-      border-radius: 1em;
-      padding: 2em;
-      height: 5em;
-      text-align: center;
-    }
-
-    #drop-area.drag-over {
-      background-color: var(--drop-area-drag-over-color);
-    }
-
-    #drop-text {
-    }
   `;
 
   constructor() {
     super();
+    this.fontCounter = 0;
     this.controller = new ObservableController();
   }
 
@@ -63,57 +37,55 @@ export class ReferenceFont extends UnlitElement {
   }
 
   render() {
-    const content = [
-      div({ class: "title" }, ["Reference font"]),
-      div(
-        {
-          id: "drop-area",
-
-          ondrop: (event) => this.handleDrop(event),
-          ondragover: (event) => this.handleDragOver(event),
-          ondragleave: (event) => this.handleDragLeave(event),
-        },
-        ["Drop a font file to use as a reference font"]
-      ),
-      div({ id: "drop-text" }, [""]),
+    const columnDescriptions = [
+      {
+        key: "fileName",
+        title: "file name",
+      },
     ];
-    return content;
-  }
-
-  async handleDrop(event) {
-    event.preventDefault();
-    const dropArea = this.shadowRoot.querySelector("#drop-area");
-    const dropText = this.shadowRoot.querySelector("#drop-text");
-    dropArea.classList.remove("drag-over");
-    for (const file of event.dataTransfer.files) {
-      const fileExtension = file.name.split(".").pop()?.toLowerCase();
-      if (fileExtension in fontTypeMapping) {
-        dropText.innerText = file.name;
-        this.model.referenceFontURL = makeFontFaceURL(
+    const filesUIList = new UIList();
+    filesUIList.columnDescriptions = columnDescriptions;
+    filesUIList.minHeight = "6em";
+    filesUIList.onFilesDrop = (files) => {
+      const fileItems = [...files]
+        .filter((file) => {
+          const fileExtension = fileNameExtension(file.name).toLowerCase();
+          return fileExtension in fontTypeMapping;
+        })
+        .map((file) => {
+          return {
+            fileName: file.name,
+            file: file,
+            fontName: `ReferenceFont${++this.fontCounter}`,
+          };
+        });
+      filesUIList.setItems(fileItems);
+      filesUIList.setSelectedItemIndex(0, true);
+    };
+    filesUIList.addEventListener("listSelectionChanged", async () => {
+      const fileItem = filesUIList.getSelectedItem();
+      const file = fileItem.file;
+      const fileExtension = fileNameExtension(file.name);
+      if (!fileItem.fontFace) {
+        const fontURL = makeFontFaceURL(
           await asBase64Data(file),
           fontTypeMapping[fileExtension]
         );
-
-        this.hasFont = true;
-      } else {
-        dropText.innerText = `Can't use “${file.name}” as a font`;
-        this.model.referenceFontURL = null;
-        this.hasFont = false;
+        fileItem.fontFace = new FontFace(fileItem.fontName, fontURL, {});
+        document.fonts.add(fileItem.fontFace);
+        await fileItem.fontFace.load();
       }
-      break;
-    }
-  }
+      this.model.referenceFontName = fileItem.fontName;
+    });
 
-  handleDragOver(event) {
-    const dropArea = this.shadowRoot.querySelector("#drop-area");
-    dropArea.classList.add("drag-over");
-    event.preventDefault();
-  }
-
-  handleDragLeave(event) {
-    const dropArea = this.shadowRoot.querySelector("#drop-area");
-    dropArea.classList.remove("drag-over");
-    event.preventDefault();
+    const content = [
+      div({ class: "title" }, ["Reference font"]),
+      div({}, [
+        "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below:",
+      ]),
+      filesUIList,
+    ];
+    return content;
   }
 }
 

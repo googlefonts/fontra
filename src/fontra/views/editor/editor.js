@@ -552,13 +552,10 @@ export class EditorController {
     await blankFont.load();
     const referenceFontElement = document.querySelector("#reference-font");
     referenceFontElement.controller.addKeyListener(
-      "referenceFontURL",
-      async (key, newValue) => {
+      "referenceFontName",
+      (key, newValue) => {
         if (newValue) {
           this.visualizationLayersSettings.model["fontra.reference.font"] = true;
-          const font = new FontFace("ReferenceFont", newValue, {});
-          document.fonts.add(font);
-          await font.load();
         }
         this.canvasController.requestUpdate();
       }
@@ -576,11 +573,11 @@ export class EditorController {
       colors: { fillColor: "#AAA6" },
       // colorsDarkMode: { strokeColor: "red" },
       draw: (context, positionedGlyph, parameters, model, controller) => {
-        if (!referenceFontModel.referenceFontURL || !positionedGlyph.character) {
+        if (!referenceFontModel.referenceFontName || !positionedGlyph.character) {
           return;
         }
         context.lineWidth = parameters.strokeWidth;
-        context.font = `${model.fontController.unitsPerEm}px ReferenceFont, AdobeBlank`;
+        context.font = `${model.fontController.unitsPerEm}px ${referenceFontModel.referenceFontName}, AdobeBlank`;
         context.scale(1, -1);
         if (parameters.fillColor) {
           context.fillStyle = parameters.fillColor;
