@@ -300,3 +300,7 @@ function findNestedActiveElement(element) {
     ? findNestedActiveElement(element.shadowRoot.activeElement)
     : element;
 }
+
+export function fileNameExtension(name) {
+  return name.split(".").pop();
+}
