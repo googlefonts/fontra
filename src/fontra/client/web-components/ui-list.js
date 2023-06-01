@@ -23,7 +23,6 @@ export class UIList extends UnlitElement {
       min-height: 0;
       min-width: 0;
       box-sizing: border-box;
-      overflow: hidden;
     }
 
     .container {
@@ -32,6 +31,12 @@ export class UIList extends UnlitElement {
       width: 100%;
       box-sizing: border-box;
       border: solid 1px var(--border-color);
+      background-color: var(--row-background-color);
+    }
+
+    .container.drop-target {
+      border-radius: 0.1px;
+      outline: 6px solid #BBB8;
     }
 
     .contents {
@@ -97,7 +102,6 @@ export class UIList extends UnlitElement {
         get: (item) => item,
       },
     ];
-    this._showHeader = false;
     this.items = [];
     this.itemEqualFunc = null;
 
@@ -108,7 +112,15 @@ export class UIList extends UnlitElement {
       tabIndex: 1,
     });
 
-    this.container = html.div({ class: "container" }, [this.contents]);
+    this.container = html.div(
+      {
+        class: "container",
+        ondrop: (event) => this._dropHandler(event),
+        ondragover: (event) => this._dragOverHandler(event),
+        ondragleave: (event) => this._dragLeaveHandler(event),
+      },
+      [this.contents]
+    );
 
     this.container.addEventListener(
       "scroll",
@@ -130,22 +142,20 @@ export class UIList extends UnlitElement {
   }
 
   render() {
+    this._updateVisibility();
+    this.container.style = this.minHeight ? `min-height: ${this.minHeight};` : "";
     const contents = [];
-    if (this._showHeader) {
+    if (this.showHeader) {
       contents.push(this._makeHeader());
     }
     contents.push(this.container);
     return contents;
   }
 
-  get showHeader() {
-    return this._showHeader;
-  }
-
-  set showHeader(onOff) {
-    this._showHeader = onOff;
-    this.requestUpdate();
-  }
+  static properties = {
+    showHeader: { type: Boolean },
+    minHeight: { type: String },
+  };
 
   get columnDescriptions() {
     return this._columnDescriptions;
@@ -164,12 +174,16 @@ export class UIList extends UnlitElement {
 
   setItems(items) {
     const selectedItem = this.getSelectedItem();
-    this.style.display = items?.length ? "grid" : "none";
     this.contents.innerHTML = "";
     this.items = items;
+    this._updateVisibility();
     this._itemsBackLog = Array.from(items);
     this.setSelectedItem(selectedItem);
     this._addMoreItemsIfNeeded();
+  }
+
+  _updateVisibility() {
+    this.style.display = this.items?.length || this.minHeight ? "grid" : "none";
   }
 
   getSelectedItem() {
@@ -281,6 +295,31 @@ export class UIList extends UnlitElement {
   _dblClickHandler(event) {
     this.doubleClickedRowIndex = this._getRowIndexFromTarget(event.target);
     this._dispatchEvent("rowDoubleClicked");
+  }
+
+  _dropHandler(event) {
+    event.preventDefault();
+    if (this.onFilesDrop) {
+      this.container.classList.remove("drop-target");
+      if (event.dataTransfer?.files?.length) {
+        this.onFilesDrop(event.dataTransfer.files);
+        this.contents.focus();
+      }
+    }
+  }
+
+  _dragOverHandler(event) {
+    event.preventDefault();
+    if (this.onFilesDrop) {
+      this.container.classList.add("drop-target");
+    }
+  }
+
+  _dragLeaveHandler(event) {
+    event.preventDefault();
+    if (this.onFilesDrop) {
+      this.container.classList.remove("drop-target");
+    }
   }
 
   _getRowIndexFromTarget(target) {
