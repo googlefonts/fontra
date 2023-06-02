@@ -274,9 +274,9 @@ export function getCharFromUnicode(codePoint) {
 }
 
 export function guessCharFromGlyphName(glyphName) {
-  // find a 4-6 char hex string in the glyph name. If 6, the first digit must be one.
-  // Interpret the hex string as a unicode code point and convert to a character.
-  // Else, return an empty string.
+  // Search for a 4-6 char hex string in the glyph name. If 6, the first digit must
+  // be one. Interpret the hex string as a unicode code point and convert to a
+  // character. Else, return an empty string.
   const match = glyphName.match(/(^|[^0-9A-F])(1?[0-9A-F]{4,5})($|[^0-9A-F])/);
   return match ? String.fromCodePoint(parseInt(match[2], 16)) : "";
 }
