@@ -273,6 +273,14 @@ export function getCharFromUnicode(codePoint) {
   return codePoint !== undefined ? String.fromCodePoint(codePoint) : "";
 }
 
+export function guessCharFromGlyphName(glyphName) {
+  // Search for a 4-6 char hex string in the glyph name. If 6, the first digit must
+  // be one. Interpret the hex string as a unicode code point and convert to a
+  // character. Else, return an empty string.
+  const match = glyphName.match(/(^|[^0-9A-F])(1?[0-9A-F]{4,5})($|[^0-9A-F])/);
+  return match ? String.fromCodePoint(parseInt(match[2], 16)) : "";
+}
+
 export async function fetchJSON(url) {
   const response = await fetch(url);
   return await response.json();

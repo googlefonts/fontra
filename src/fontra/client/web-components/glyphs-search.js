@@ -1,6 +1,10 @@
 import * as html from "/core/unlit.js";
 import { UnlitElement } from "/core/unlit.js";
-import { getCharFromUnicode, makeUPlusStringFromCodePoint } from "/core/utils.js";
+import {
+  getCharFromUnicode,
+  guessCharFromGlyphName,
+  makeUPlusStringFromCodePoint,
+} from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
 
@@ -53,7 +57,13 @@ export class GlyphsSearch extends UnlitElement {
         key: "char",
         title: " ",
         width: "1.8em",
-        get: (item) => getCharFromUnicode(item.unicodes[0]),
+        cellFactory: (item, description) => {
+          if (item.unicodes[0]) {
+            return getCharFromUnicode(item.unicodes[0]);
+          }
+          const guessedChar = guessCharFromGlyphName(item.glyphName);
+          return guessedChar ? html.span({ class: "guessed-char" }, [guessedChar]) : "";
+        },
       },
       { key: "glyphName", title: "glyph name", width: "10em", isIdentifierKey: true },
       {
@@ -63,6 +73,11 @@ export class GlyphsSearch extends UnlitElement {
       },
     ];
     this.glyphNamesList = new UIList();
+    this.glyphNamesList.appendStyle(`
+      .guessed-char {
+        color: #999;
+      }
+    `);
     this.glyphNamesList.columnDescriptions = columnDescriptions;
 
     this.glyphNamesList.addEventListener("listSelectionChanged", () => {
@@ -123,6 +138,10 @@ export class GlyphsSearch extends UnlitElement {
   _searchFieldChanged(event) {
     const value = event.target.value;
     const searchItems = value.split(/\s+/).filter((item) => item.length);
+    const hexSearchItems = searchItems
+      .filter((item) => [...item].length === 1) // num chars, not utf16 units!
+      .map((item) => item.codePointAt(0).toString(16).toUpperCase().padStart(4, "0"));
+    searchItems.push(...hexSearchItems);
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
     this._setFilteredGlyphNamesListContent();
   }

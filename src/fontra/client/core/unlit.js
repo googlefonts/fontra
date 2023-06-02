@@ -4,6 +4,7 @@
 export class SimpleElement extends HTMLElement {
   constructor() {
     super();
+    this._additionalStyles = [];
     this.attachShadow({ mode: "open" });
     this._postInit();
   }
@@ -14,14 +15,21 @@ export class SimpleElement extends HTMLElement {
 
   _attachStyles() {
     if (this.constructor.styles) {
-      this.appendStyle(this.constructor.styles);
+      this._appendStyle(this.constructor.styles);
+    }
+    for (const style of this._additionalStyles) {
+      this._appendStyle(style);
     }
   }
 
-  appendStyle(cssText) {
+  _appendStyle(cssText) {
     const styleElement = document.createElement("style");
     styleElement.textContent = cssText;
     this.shadowRoot.appendChild(styleElement);
+  }
+
+  appendStyle(cssText) {
+    this._additionalStyles.push(cssText);
   }
 }
 
