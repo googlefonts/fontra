@@ -577,7 +577,7 @@ export class EditorController {
           return;
         }
         let text = positionedGlyph.character;
-        if (!text && positionedGlyph.glyphName.indexOf(".") >= 0) {
+        if (!text && positionedGlyph.glyphName.includes(".")) {
           const baseGlyphName = positionedGlyph.glyphName.split(".")[0];
           const codePoint = (this.fontController.glyphMap[baseGlyphName] || [])[0];
           if (codePoint) {
