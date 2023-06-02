@@ -72,7 +72,9 @@ export class ReferenceFont extends UnlitElement {
           };
         });
       filesUIList.setItems([...filesUIList.items, ...fileItems]);
-      filesUIList.setSelectedItemIndex(0, true);
+      if (filesUIList.getSelectedItemIndex() === undefined) {
+        filesUIList.setSelectedItemIndex(0, true);
+      }
     };
     filesUIList.addEventListener("listSelectionChanged", async () => {
       const fileItem = filesUIList.getSelectedItem();
