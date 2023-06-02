@@ -573,7 +573,18 @@ export class EditorController {
       colors: { fillColor: "#AAA6" },
       // colorsDarkMode: { strokeColor: "red" },
       draw: (context, positionedGlyph, parameters, model, controller) => {
-        if (!referenceFontModel.referenceFontName || !positionedGlyph.character) {
+        if (!referenceFontModel.referenceFontName) {
+          return;
+        }
+        let text = positionedGlyph.character;
+        if (!text && positionedGlyph.glyphName.includes(".")) {
+          const baseGlyphName = positionedGlyph.glyphName.split(".")[0];
+          const codePoint = (this.fontController.glyphMap[baseGlyphName] || [])[0];
+          if (codePoint) {
+            text = String.fromCodePoint(codePoint);
+          }
+        }
+        if (!text) {
           return;
         }
         context.lineWidth = parameters.strokeWidth;
@@ -581,11 +592,11 @@ export class EditorController {
         context.scale(1, -1);
         if (parameters.fillColor) {
           context.fillStyle = parameters.fillColor;
-          context.fillText(positionedGlyph.character, 0, 0);
+          context.fillText(text, 0, 0);
         }
         if (parameters.strokeColor) {
           context.strokeStyle = parameters.strokeColor;
-          context.strokeText(positionedGlyph.character, 0, 0);
+          context.strokeText(text, 0, 0);
         }
       },
     });
