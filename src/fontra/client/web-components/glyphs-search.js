@@ -139,10 +139,7 @@ export class GlyphsSearch extends UnlitElement {
     const value = event.target.value;
     const searchItems = value.split(/\s+/).filter((item) => item.length);
     const hexSearchItems = searchItems
-      .filter(
-        (item) =>
-          item.length === 1 || (item.length === 2 && item.codePointAt(0) > 0xffff)
-      )
+      .filter((item) => [...item].length === 1) // num chars, not utf16 units!
       .map((item) => item.codePointAt(0).toString(16).toUpperCase().padStart(4, "0"));
     searchItems.push(...hexSearchItems);
     this._glyphNamesListFilterFunc = (item) => glyphFilterFunc(item, searchItems);
