@@ -121,7 +121,7 @@ export class ReferenceFont extends UnlitElement {
             `,
         },
         [
-          label({ for: "char-override" }, "Character override:"),
+          label({ for: "char-override" }, "Custom character:"),
           input({
             type: "text",
             id: "char-override",
