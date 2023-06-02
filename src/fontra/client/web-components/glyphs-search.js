@@ -62,7 +62,7 @@ export class GlyphsSearch extends UnlitElement {
             return getCharFromUnicode(item.unicodes[0]);
           }
           const guessedChar = guessCharFromGlyphName(item.glyphName);
-          return guessedChar ? html.span({ style: "color: #999;" }, [guessedChar]) : "";
+          return guessedChar ? html.span({ class: "guessed-char" }, [guessedChar]) : "";
         },
       },
       { key: "glyphName", title: "glyph name", width: "10em", isIdentifierKey: true },
@@ -73,6 +73,11 @@ export class GlyphsSearch extends UnlitElement {
       },
     ];
     this.glyphNamesList = new UIList();
+    this.glyphNamesList.appendStyle(`
+      .guessed-char {
+        color: #999;
+      }
+    `);
     this.glyphNamesList.columnDescriptions = columnDescriptions;
 
     this.glyphNamesList.addEventListener("listSelectionChanged", () => {
