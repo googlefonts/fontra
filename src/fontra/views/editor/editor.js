@@ -560,6 +560,11 @@ export class EditorController {
         this.canvasController.requestUpdate();
       }
     );
+    let charOverride;
+    referenceFontElement.controller.addKeyListener("charOverride", (key, newValue) => {
+      charOverride = newValue;
+      this.canvasController.requestUpdate();
+    });
     const referenceFontModel = referenceFontElement.model;
 
     registerVisualizationLayerDefinition({
@@ -576,7 +581,7 @@ export class EditorController {
         if (!referenceFontModel.referenceFontName) {
           return;
         }
-        let text = positionedGlyph.character;
+        let text = charOverride || positionedGlyph.character;
         if (!text && positionedGlyph.glyphName.includes(".")) {
           const baseGlyphName = positionedGlyph.glyphName.split(".")[0];
           const codePoint = (this.fontController.glyphMap[baseGlyphName] || [])[0];

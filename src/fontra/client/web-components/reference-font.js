@@ -1,5 +1,5 @@
 import { ObservableController } from "/core/observable-object.js";
-import { UnlitElement, div, span } from "/core/unlit.js";
+import { UnlitElement, div, input, label, span } from "/core/unlit.js";
 import { fileNameExtension } from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
@@ -23,6 +23,18 @@ export class ReferenceFont extends UnlitElement {
 
     .title {
       font-weight: bold;
+    }
+
+    input[type=text] {
+      border-radius: 5px;
+      min-width: 4em;
+      outline: none;
+      border: none;
+      background-color: var(--text-input-background-color);
+      color: var(--ui-form-input-foreground-color);
+      padding: 0.4em;
+      font-family: fontra-ui-regular;
+      font-feature-settings: "tnum" 1;
     }
   `;
 
@@ -97,6 +109,24 @@ export class ReferenceFont extends UnlitElement {
         "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below:",
       ]),
       filesUIList,
+      div(
+        {
+          style: `
+            display: grid;
+            grid-template-columns: max-content auto;
+            align-items: center;
+            gap: 0.666em;
+            `,
+        },
+        [
+          label({ for: "char-override" }, "Character override:"),
+          input({
+            type: "text",
+            id: "char-override",
+            oninput: (event) => (this.model["charOverride"] = event.target.value),
+          }),
+        ]
+      ),
     ];
     return content;
   }
