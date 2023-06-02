@@ -1,6 +1,10 @@
 import * as html from "/core/unlit.js";
 import { UnlitElement } from "/core/unlit.js";
-import { getCharFromUnicode, makeUPlusStringFromCodePoint } from "/core/utils.js";
+import {
+  getCharFromUnicode,
+  guessCharFromGlyphName,
+  makeUPlusStringFromCodePoint,
+} from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
 
@@ -53,7 +57,13 @@ export class GlyphsSearch extends UnlitElement {
         key: "char",
         title: " ",
         width: "1.8em",
-        get: (item) => getCharFromUnicode(item.unicodes[0]),
+        cellFactory: (item, description) => {
+          if (item.unicodes[0]) {
+            return getCharFromUnicode(item.unicodes[0]);
+          }
+          const guessedChar = guessCharFromGlyphName(item.glyphName);
+          return guessedChar ? html.span({ style: "color: #999;" }, [guessedChar]) : "";
+        },
       },
       { key: "glyphName", title: "glyph name", width: "10em", isIdentifierKey: true },
       {
