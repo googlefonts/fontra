@@ -1,4 +1,11 @@
-// Partial port of fontTools.misc.transform.Transform
+// transform.js is a partial port of fonttools' transform.py
+// (AKA fontTools.misc.transform.Transform) which is used on
+// Fontra's Python side.
+//
+// For our purposes it is very useful to have a 1-on-1 translation.
+// Using an arbitrary other 2d matrix lib (or even npm's latest or
+// most-popular or whatever) would likely cause more friction
+// for us than this tiny rewrite.
 
 export class Transform {
   constructor(xx = 1, xy = 0, yx = 0, yy = 1, dx = 0, dy = 0) {
