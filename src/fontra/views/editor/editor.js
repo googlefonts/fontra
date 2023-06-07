@@ -1402,7 +1402,8 @@ export class EditorController {
       menuItems.push(MenuItemDivider);
       menuItems.push(...this.glyphSelectedContextMenuItems);
     }
-    showMenu(menuItems);
+    const { x, y } = event;
+    showMenu(menuItems, { x: x + 1, y: y - 1 });
   }
 
   async newGlyph(glyphName, codePoint, templateInstance) {
