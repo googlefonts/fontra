@@ -1,7 +1,6 @@
 import { CanvasController } from "../core/canvas-controller.js";
 import { applyChange, matchChangePath } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
-import { ContextMenu, MenuItemDivider } from "../core/context-menu.js";
 import { FontController } from "../core/font-controller.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
 import { ObservableController } from "../core/observable-object.js";
@@ -36,6 +35,7 @@ import {
 } from "../core/utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { dialog, dialogSetup } from "/web-components/dialog-overlay.js";
+import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { SceneController } from "./scene-controller.js";
 import { SceneModel } from "./scene-model.js";
@@ -175,9 +175,6 @@ export class EditorController {
     this.canvasController.canvas.addEventListener("contextmenu", (event) =>
       this.contextMenuHandler(event)
     );
-    window.addEventListener("mousedown", (event) => this.dismissContextMenu(event));
-    window.addEventListener("blur", (event) => this.dismissContextMenu(event));
-
     window.addEventListener("keydown", (event) => this.keyDownHandler(event));
     window.addEventListener("keyup", (event) => this.keyUpHandler(event));
 
@@ -1405,21 +1402,7 @@ export class EditorController {
       menuItems.push(MenuItemDivider);
       menuItems.push(...this.glyphSelectedContextMenuItems);
     }
-    this.contextMenu = new ContextMenu("context-menu", menuItems);
-  }
-
-  dismissContextMenu(event) {
-    if (!this.contextMenu || event.ctrlKey) {
-      return;
-    }
-    if (event) {
-      const el = this.contextMenu.element;
-      if (event.target === el || event.target.offsetParent === el) {
-        return;
-      }
-    }
-    this.contextMenu.dismiss();
-    delete this.contextMenu;
+    showMenu(menuItems);
   }
 
   async newGlyph(glyphName, codePoint, templateInstance) {
