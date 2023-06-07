@@ -49,6 +49,7 @@ class RemoteObjectConnection:
                 # This may be a bug in aiohttp: message.data contains
                 # an exception. Let's raise it, as it's more informative
                 # than the TypeError
+                # https://github.com/aio-libs/aiohttp/issues/7313
                 if isinstance(message.data, Exception):
                     raise message.data
                 else:
