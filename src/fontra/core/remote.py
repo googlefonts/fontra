@@ -43,7 +43,17 @@ class RemoteObjectConnection:
     async def _handleConnection(self):
         tasks = []
         async for message in self.websocket:
-            message = message.json()
+            try:
+                message = message.json()
+            except TypeError:
+                # This may be a bug in aiohttp: message.data contains
+                # an exception. Let's raise it, as it's more informative
+                # than the TypeError
+                if isinstance(message.data, Exception):
+                    raise message.data
+                else:
+                    raise
+
             if message.get("connection") == "close":
                 logger.info("client requested connection close")
                 break
