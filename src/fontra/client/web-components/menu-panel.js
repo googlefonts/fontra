@@ -86,6 +86,9 @@ class MenuPanel extends SimpleElement {
 
   constructor(menuItems, position, positionContainer) {
     super();
+    this.style = "display: none;";
+    this.position = position;
+    this.positionContainer = positionContainer;
     this.menuElement = html.div({ tabindex: 0 });
 
     for (const item of menuItems) {
@@ -123,17 +126,28 @@ class MenuPanel extends SimpleElement {
       this.menuElement.appendChild(itemElement);
     }
 
-    this.style = `left: ${position.x}px; top: ${position.y}px;`;
     this._attachStyles();
     this.shadowRoot.appendChild(this.menuElement);
     this.tabIndex = 0;
     this.addEventListener("keydown", (event) => this.handleKeyDown(event));
-    // this.addEventListener("click", (event) => console.log("clikkk", event));
     MenuPanel.openMenuPanels.push(this);
   }
 
   connectedCallback() {
     this._savedActiveElement = document.activeElement;
+    const position = { ...this.position };
+    this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
+    if (this.positionContainer) {
+      const containerRect = this.positionContainer.getBoundingClientRect();
+      const thisRect = this.getBoundingClientRect();
+      if (thisRect.right > containerRect.right) {
+        position.x -= thisRect.right - containerRect.right + 2;
+      }
+      if (thisRect.bottom > containerRect.bottom) {
+        position.y -= thisRect.bottom - containerRect.bottom + 2;
+      }
+      this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
+    }
     this.focus();
   }
 
