@@ -312,3 +312,11 @@ function findNestedActiveElement(element) {
 export function fileNameExtension(name) {
   return name.split(".").pop();
 }
+
+const ARRAY_EXTEND_CHUNK_SIZE = 1024;
+
+export function arrayExtend(thisArray, itemsArray) {
+  for (const i of range(0, itemsArray.length, ARRAY_EXTEND_CHUNK_SIZE)) {
+    thisArray.push(...itemsArray.slice(i, i + ARRAY_EXTEND_CHUNK_SIZE));
+  }
+}

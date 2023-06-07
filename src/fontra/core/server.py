@@ -125,7 +125,7 @@ class FontraServer:
         cookies = {k: v.value for k, v in cookies.items()}
         token = cookies.get("fontra-authorization-token")
 
-        websocket = web.WebSocketResponse(heartbeat=55)
+        websocket = web.WebSocketResponse(heartbeat=55, max_msg_size=0x2000000)
         await websocket.prepare(request)
         self._activeWebsockets.add(websocket)
         try:
