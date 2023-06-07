@@ -91,6 +91,9 @@ class MenuPanel extends SimpleElement {
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ tabindex: 0 });
 
+    // No context menu on our context menu please:
+    this.menuElement.oncontextmenu = (event) => event.preventDefault();
+
     for (const item of menuItems) {
       let itemElement;
       if (item === MenuItemDivider || item.title === "-") {
