@@ -155,7 +155,6 @@ class MenuPanel extends SimpleElement {
   }
 
   handleKeyDown(event) {
-    event.preventDefault();
     event.stopImmediatePropagation();
     switch (event.key) {
       case "Escape":
