@@ -2,7 +2,7 @@ import VarArray from "./var-array.js";
 import { VariationError } from "./errors.js";
 import { centeredRect, pointInRect } from "./rectangle.js";
 import { convexHull } from "./convex-hull.js";
-import { enumerate, range } from "./utils.js";
+import { arrayExtend, enumerate, range } from "./utils.js";
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
 export const POINT_TYPE_OFF_CURVE_CUBIC = "cubic";
@@ -211,13 +211,14 @@ export class VarPackedPath {
   }
 
   appendPath(path) {
-    this.coordinates.push(...path.coordinates);
-    this.pointTypes.push(...path.pointTypes);
+    arrayExtend(this.coordinates, path.coordinates);
+    arrayExtend(this.pointTypes, path.pointTypes);
     const endPointOffset = this.contourInfo.length
       ? this.contourInfo.at(-1).endPoint + 1
       : 0;
-    this.contourInfo.push(
-      ...path.contourInfo.map((contour) => {
+    arrayExtend(
+      this.contourInfo,
+      path.contourInfo.map((contour) => {
         return {
           endPoint: contour.endPoint + endPointOffset,
           isClosed: contour.isClosed,
