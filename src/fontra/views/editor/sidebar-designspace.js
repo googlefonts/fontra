@@ -644,7 +644,6 @@ function statusListCell(item, colDesc) {
         checked: menuItem.statusDef.value === item[colDesc.key],
         callback: () => {
           item[colDesc.key] = menuItem.statusDef.value;
-          console.log(cellColorStyle(menuItem.statusDef.color));
           cell.style = cellColorStyle(menuItem.statusDef.color);
         },
       };
