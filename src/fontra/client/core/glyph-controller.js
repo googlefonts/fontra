@@ -491,7 +491,7 @@ async function getNestedComponentPaths(
   if (!seenGlyphNames) {
     seenGlyphNames = new Set();
   } else if (seenGlyphNames.has(compo.name)) {
-    // infinite recursion, let's not
+    // Avoid infinite recursion
     return {};
   }
   seenGlyphNames.add(compo.name);

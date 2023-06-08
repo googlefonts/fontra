@@ -346,6 +346,7 @@ export class FontController {
     if (!seenGlyphNames) {
       seenGlyphNames = new Set();
     } else if (seenGlyphNames.has(glyphName)) {
+      // Avoid infinite recursion
       return;
     }
     seenGlyphNames.add(glyphName);
@@ -364,6 +365,7 @@ export class FontController {
     if (!seenGlyphNames) {
       seenGlyphNames = new Set();
     } else if (seenGlyphNames.has(glyphName)) {
+      // Avoid infinite recursion
       return;
     }
     seenGlyphNames.add(glyphName);
