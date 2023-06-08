@@ -641,7 +641,7 @@ function statusListCell(item, colDesc) {
     const menuItems = colDesc.menuItems.map((menuItem) => {
       return {
         ...menuItem,
-        checked: menuItem.statusDef.value === value,
+        checked: menuItem.statusDef.value === item[colDesc.key],
         callback: () => {
           item[colDesc.key] = menuItem.statusDef.value;
           console.log(cellColorStyle(menuItem.statusDef.color));
