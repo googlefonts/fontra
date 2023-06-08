@@ -9,6 +9,9 @@ import {
   mapForward,
 } from "/core/var-model.js";
 import { dialogSetup } from "/web-components/dialog-overlay.js";
+import { showMenu } from "/web-components/menu-panel.js";
+
+const FONTRA_STATUS_KEY = "fontra.development.status";
 
 export class SidebarDesignspace {
   constructor(sceneController, dataController) {
@@ -55,6 +58,26 @@ export class SidebarDesignspace {
         width: "2em",
       },
     ];
+    const statusFieldDefinitions =
+      this.sceneController.sceneModel.fontController.fontLib[
+        "fontra.sourceStatusFieldDefinitions"
+      ];
+    if (statusFieldDefinitions) {
+      columnDescriptions.push({
+        title: "status",
+        key: "status",
+        cellFactory: statusListCell,
+        width: "3em",
+        statusFieldDefinitions: statusFieldDefinitions,
+        menuItems: statusFieldDefinitions.map((statusDef) => {
+          return {
+            title: statusDef.label,
+            enabled: () => true,
+            statusValue: statusDef.value,
+          };
+        }),
+      });
+    }
     this.sourcesList = document.querySelector("#sources-list");
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
@@ -110,6 +133,7 @@ export class SidebarDesignspace {
         name: source.name,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === source.name,
+        status: source.customData[FONTRA_STATUS_KEY],
       });
       sourceController.addKeyListener("active", async (key, newValue) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
@@ -590,4 +614,39 @@ function checkboxListCell(item, colDesc) {
       event.stopImmediatePropagation();
     },
   });
+}
+
+function statusListCell(item, colDesc) {
+  const value = item[colDesc.key];
+  let color;
+  for (const statusDef of colDesc.statusFieldDefinitions) {
+    if (value === statusDef.value) {
+      color = rgbaToCSS(statusDef.color);
+    }
+  }
+  const onclick = (event) => {
+    const cellRect = event.target.getBoundingClientRect();
+    const menuItems = colDesc.menuItems.map((item) => {
+      return { ...item, checked: item.statusValue === value };
+    });
+    showMenu(menuItems, { x: cellRect.left, y: cellRect.bottom });
+  };
+  const props = {
+    class: "status-cell",
+    onclick: onclick,
+  };
+  if (color) {
+    props["style"] = `background-color: ${color}; width: 100%;`;
+    return html.div(props);
+  } else {
+    return html.div(props, [value]);
+  }
+}
+
+function rgbaToCSS(rgba) {
+  const channels = rgba.map((channel) => Math.round(channel * 255));
+  if (channels[3] == 255) {
+    channels.pop();
+  }
+  return `rgb(${channels.join(",")})`;
 }
