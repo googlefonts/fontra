@@ -41,7 +41,6 @@
   gap: 0.35rem 0.35rem;
   overflow-x: hidden;
   overflow-y: scroll;
-  user-select: none;
 }
 
 .ui-form:nth-child(even) {

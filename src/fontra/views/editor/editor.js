@@ -979,7 +979,10 @@ export class EditorController {
       return undefined;
     }
     for (const handlerDef of handlerDefs) {
-      if (isActiveElementTypeable() && !handlerDef.globalOverride) {
+      if (
+        (isActiveElementTypeable() || window.getSelection().toString()) &&
+        !handlerDef.globalOverride
+      ) {
         continue;
       }
       if (
