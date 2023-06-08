@@ -12,6 +12,7 @@ import { dialogSetup } from "/web-components/dialog-overlay.js";
 import { showMenu } from "/web-components/menu-panel.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
+const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";
 
 export class SidebarDesignspace {
   constructor(sceneController, dataController) {
@@ -60,9 +61,12 @@ export class SidebarDesignspace {
     ];
     const statusFieldDefinitions =
       this.sceneController.sceneModel.fontController.fontLib[
-        "fontra.sourceStatusFieldDefinitions"
+        FONTRA_STATUS_DEFINITIONS_KEY
       ];
     if (statusFieldDefinitions) {
+      this.defaultStatusValue = statusFieldDefinitions.find(
+        (statusDef) => statusDef.isDefault
+      )?.value;
       columnDescriptions.push({
         title: "status",
         key: "status",
@@ -129,11 +133,12 @@ export class SidebarDesignspace {
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
       const layerName = source.layerName;
+      const status = source.customData[FONTRA_STATUS_KEY];
       const sourceController = new ObservableController({
         name: source.name,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === source.name,
-        status: source.customData[FONTRA_STATUS_KEY],
+        status: status !== undefined ? status : this.defaultStatusValue,
       });
       sourceController.addKeyListener("active", async (key, newValue) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
