@@ -73,7 +73,7 @@ export class SidebarDesignspace {
           return {
             title: statusDef.label,
             enabled: () => true,
-            statusValue: statusDef.value,
+            statusDef: statusDef,
           };
         }),
       });
@@ -627,16 +627,21 @@ function statusListCell(item, colDesc) {
   let color;
   for (const statusDef of colDesc.statusFieldDefinitions) {
     if (value === statusDef.value) {
-      color = rgbaToCSS(statusDef.color);
+      color = statusDef.color;
     }
   }
   const onclick = (event) => {
-    const cellRect = event.target.getBoundingClientRect();
+    const cell = event.target;
+    const cellRect = cell.getBoundingClientRect();
     const menuItems = colDesc.menuItems.map((menuItem) => {
       return {
         ...menuItem,
-        checked: menuItem.statusValue === value,
-        callback: () => (item[colDesc.key] = menuItem.statusValue),
+        checked: menuItem.statusDef.value === value,
+        callback: () => {
+          item[colDesc.key] = menuItem.statusDef.value;
+          console.log(cellColorStyle(menuItem.statusDef.color));
+          cell.style = cellColorStyle(menuItem.statusDef.color);
+        },
       };
     });
     showMenu(menuItems, { x: cellRect.left, y: cellRect.bottom });
@@ -646,11 +651,15 @@ function statusListCell(item, colDesc) {
     onclick: onclick,
   };
   if (color) {
-    props["style"] = `background-color: ${color}; width: 100%;`;
+    props["style"] = cellColorStyle(color);
     return html.div(props);
   } else {
     return html.div(props, [value]);
   }
+}
+
+function cellColorStyle(color) {
+  return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
 }
 
 function rgbaToCSS(rgba) {
