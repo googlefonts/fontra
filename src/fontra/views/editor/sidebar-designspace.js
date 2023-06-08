@@ -149,6 +149,12 @@ export class SidebarDesignspace {
         }
         this.sceneController.backgroundLayers = backgroundLayers;
       });
+      sourceController.addKeyListener("status", async (key, newValue) => {
+        await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+          glyph.sources[index].customData[FONTRA_STATUS_KEY] = newValue;
+          return `set status ${source.name}`;
+        });
+      });
       sourceItems.push(sourceController.model);
     }
     this.sourcesList.setItems(sourceItems);
@@ -626,8 +632,12 @@ function statusListCell(item, colDesc) {
   }
   const onclick = (event) => {
     const cellRect = event.target.getBoundingClientRect();
-    const menuItems = colDesc.menuItems.map((item) => {
-      return { ...item, checked: item.statusValue === value };
+    const menuItems = colDesc.menuItems.map((menuItem) => {
+      return {
+        ...menuItem,
+        checked: menuItem.statusValue === value,
+        callback: () => (item[colDesc.key] = menuItem.statusValue),
+      };
     });
     showMenu(menuItems, { x: cellRect.left, y: cellRect.bottom });
   };
