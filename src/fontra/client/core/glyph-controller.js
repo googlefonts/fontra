@@ -485,8 +485,17 @@ async function getNestedComponentPaths(
   compo,
   getGlyphFunc,
   parentLocation,
-  transformation = null
+  transformation = null,
+  seenGlyphNames = null
 ) {
+  if (!seenGlyphNames) {
+    seenGlyphNames = new Set();
+  } else if (seenGlyphNames.has(compo.name)) {
+    // Avoid infinite recursion
+    return {};
+  }
+  seenGlyphNames.add(compo.name);
+
   const compoLocation = mergeLocations(parentLocation, compo.location) || {};
   const glyph = await getGlyphFunc(compo.name);
   let inst;
@@ -519,7 +528,8 @@ async function getNestedComponentPaths(
     inst.components,
     getGlyphFunc,
     compoLocation,
-    t
+    t,
+    seenGlyphNames
   );
   return componentPaths;
 }
@@ -528,13 +538,20 @@ async function getComponentPaths(
   components,
   getGlyphFunc,
   parentLocation,
-  transformation = null
+  transformation,
+  seenGlyphNames
 ) {
   const paths = [];
 
   for (const compo of components || []) {
     paths.push(
-      await getNestedComponentPaths(compo, getGlyphFunc, parentLocation, transformation)
+      await getNestedComponentPaths(
+        compo,
+        getGlyphFunc,
+        parentLocation,
+        transformation,
+        seenGlyphNames
+      )
     );
   }
   return paths;

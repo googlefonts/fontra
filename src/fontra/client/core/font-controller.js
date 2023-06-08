@@ -342,19 +342,39 @@ export class FontController {
     return cachedPattern;
   }
 
-  *iterGlyphMadeOf(glyphName) {
+  *iterGlyphMadeOf(glyphName, seenGlyphNames = null) {
+    if (!seenGlyphNames) {
+      seenGlyphNames = new Set();
+    } else if (seenGlyphNames.has(glyphName)) {
+      // Avoid infinite recursion
+      return;
+    }
+    seenGlyphNames.add(glyphName);
     for (const dependantGlyphName of this.glyphMadeOf[glyphName] || []) {
       yield dependantGlyphName;
-      for (const deeperGlyphName of this.iterGlyphMadeOf(dependantGlyphName)) {
+      for (const deeperGlyphName of this.iterGlyphMadeOf(
+        dependantGlyphName,
+        seenGlyphNames
+      )) {
         yield deeperGlyphName;
       }
     }
   }
 
-  *iterGlyphUsedBy(glyphName) {
+  *iterGlyphUsedBy(glyphName, seenGlyphNames = null) {
+    if (!seenGlyphNames) {
+      seenGlyphNames = new Set();
+    } else if (seenGlyphNames.has(glyphName)) {
+      // Avoid infinite recursion
+      return;
+    }
+    seenGlyphNames.add(glyphName);
     for (const dependantGlyphName of this.glyphUsedBy[glyphName] || []) {
       yield dependantGlyphName;
-      for (const deeperGlyphName of this.iterGlyphUsedBy(dependantGlyphName)) {
+      for (const deeperGlyphName of this.iterGlyphUsedBy(
+        dependantGlyphName,
+        seenGlyphNames
+      )) {
         yield deeperGlyphName;
       }
     }
