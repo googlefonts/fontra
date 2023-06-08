@@ -6,10 +6,6 @@ import { themeColorCSS } from "./theme-support.js";
 export const MenuItemDivider = { title: "-" };
 
 export function showMenu(menuItems, position, positionContainer, container) {
-  if (!position) {
-    const { x, y } = window.event;
-    position = { x: x + 2, y: y - 2 };
-  }
   if (!container) {
     container = document.querySelector("#menu-panel-container");
   }
@@ -63,7 +59,10 @@ class MenuPanel extends SimpleElement {
     }
 
     .context-menu-item {
-      padding: 0.1em 0.8em 0.1em 1em; /* top, right, bottom, left */
+      display: grid;
+      grid-template-columns: 1em auto;
+      gap: 0em;
+      padding: 0.1em 0.8em 0.1em 0.5em; /* top, right, bottom, left */
       color: #8080a0;
     }
 
@@ -77,7 +76,7 @@ class MenuPanel extends SimpleElement {
       cursor: pointer;
     }
 
-    .context-menu-item > div {
+    .item-content {
       display: flex;
       gap: 0.5em;
       justify-content: space-between;
@@ -119,7 +118,8 @@ class MenuPanel extends SimpleElement {
             },
           },
           [
-            html.div({}, [
+            html.div({ class: "check-mark" }, [item.checked ? "✓" : ""]),
+            html.div({ class: "item-content" }, [
               typeof item.title === "function" ? item.title() : item.title,
               html.span({}, [buildShortCutString(item.shortCut)]),
             ]),
