@@ -1,7 +1,13 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
 import * as html from "/core/unlit.js";
-import { enumerate, htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
+import {
+  enumerate,
+  htmlToElement,
+  objectsEqual,
+  rgbaToCSS,
+  scheduleCalls,
+} from "/core/utils.js";
 import {
   locationToString,
   normalizeLocation,
@@ -9,6 +15,10 @@ import {
   mapForward,
 } from "/core/var-model.js";
 import { dialogSetup } from "/web-components/dialog-overlay.js";
+import { showMenu } from "/web-components/menu-panel.js";
+
+const FONTRA_STATUS_KEY = "fontra.development.status";
+const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";
 
 export class SidebarDesignspace {
   constructor(sceneController, dataController) {
@@ -55,6 +65,29 @@ export class SidebarDesignspace {
         width: "2em",
       },
     ];
+    const statusFieldDefinitions =
+      this.sceneController.sceneModel.fontController.fontLib[
+        FONTRA_STATUS_DEFINITIONS_KEY
+      ];
+    if (statusFieldDefinitions) {
+      this.defaultStatusValue = statusFieldDefinitions.find(
+        (statusDef) => statusDef.isDefault
+      )?.value;
+      columnDescriptions.push({
+        title: "status",
+        key: "status",
+        cellFactory: statusListCell,
+        width: "3em",
+        statusFieldDefinitions: statusFieldDefinitions,
+        menuItems: statusFieldDefinitions.map((statusDef) => {
+          return {
+            title: statusDef.label,
+            enabled: () => true,
+            statusDef: statusDef,
+          };
+        }),
+      });
+    }
     this.sourcesList = document.querySelector("#sources-list");
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
@@ -106,10 +139,12 @@ export class SidebarDesignspace {
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
       const layerName = source.layerName;
+      const status = source.customData[FONTRA_STATUS_KEY];
       const sourceController = new ObservableController({
         name: source.name,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === source.name,
+        status: status !== undefined ? status : this.defaultStatusValue,
       });
       sourceController.addKeyListener("active", async (key, newValue) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
@@ -124,6 +159,12 @@ export class SidebarDesignspace {
           delete backgroundLayers[layerName];
         }
         this.sceneController.backgroundLayers = backgroundLayers;
+      });
+      sourceController.addKeyListener("status", async (key, newValue) => {
+        await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+          glyph.sources[index].customData[FONTRA_STATUS_KEY] = newValue;
+          return `set status ${source.name}`;
+        });
       });
       sourceItems.push(sourceController.model);
     }
@@ -590,4 +631,43 @@ function checkboxListCell(item, colDesc) {
       event.stopImmediatePropagation();
     },
   });
+}
+
+function statusListCell(item, colDesc) {
+  const value = item[colDesc.key];
+  let color;
+  for (const statusDef of colDesc.statusFieldDefinitions) {
+    if (value === statusDef.value) {
+      color = statusDef.color;
+    }
+  }
+  const onclick = (event) => {
+    const cell = event.target;
+    const cellRect = cell.getBoundingClientRect();
+    const menuItems = colDesc.menuItems.map((menuItem) => {
+      return {
+        ...menuItem,
+        checked: menuItem.statusDef.value === item[colDesc.key],
+        callback: () => {
+          item[colDesc.key] = menuItem.statusDef.value;
+          cell.style = cellColorStyle(menuItem.statusDef.color);
+        },
+      };
+    });
+    showMenu(menuItems, { x: cellRect.left, y: cellRect.bottom });
+  };
+  const props = {
+    class: "status-cell",
+    onclick: onclick,
+  };
+  if (color) {
+    props["style"] = cellColorStyle(color);
+    return html.div(props);
+  } else {
+    return html.div(props, [value]);
+  }
+}
+
+function cellColorStyle(color) {
+  return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
 }
