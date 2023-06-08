@@ -1,7 +1,13 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
 import * as html from "/core/unlit.js";
-import { enumerate, htmlToElement, objectsEqual, scheduleCalls } from "/core/utils.js";
+import {
+  enumerate,
+  htmlToElement,
+  objectsEqual,
+  rgbaToCSS,
+  scheduleCalls,
+} from "/core/utils.js";
 import {
   locationToString,
   normalizeLocation,
@@ -664,12 +670,4 @@ function statusListCell(item, colDesc) {
 
 function cellColorStyle(color) {
   return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
-}
-
-function rgbaToCSS(rgba) {
-  const channels = rgba.map((channel) => Math.round(channel * 255));
-  if (channels[3] == 255) {
-    channels.pop();
-  }
-  return `rgb(${channels.join(",")})`;
 }

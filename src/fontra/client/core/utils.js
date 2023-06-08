@@ -320,3 +320,11 @@ export function arrayExtend(thisArray, itemsArray) {
     thisArray.push(...itemsArray.slice(i, i + ARRAY_EXTEND_CHUNK_SIZE));
   }
 }
+
+export function rgbaToCSS(rgba) {
+  const channels = rgba.map((channel) => Math.round(channel * 255));
+  if (channels[3] == 255) {
+    channels.pop();
+  }
+  return `rgb(${channels.join(",")})`;
+}
