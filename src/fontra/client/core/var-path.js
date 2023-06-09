@@ -924,8 +924,9 @@ function coordinatesToPoints(coordinates) {
 }
 
 export function joinPaths(paths) {
-  if (paths.length) {
-    return paths.reduce((p1, p2) => p1.concat(p2));
+  const result = new VarPackedPath();
+  for (const path of paths) {
+    result.appendPath(path);
   }
-  return new VarPackedPath();
+  return result;
 }
