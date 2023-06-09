@@ -134,6 +134,43 @@ async def test_fontHandler_editGlyph(testFontHandler):
 
 
 @pytest.mark.asyncio
+async def test_fontHandler_editGlyph_delete_layer(testFontHandler):
+    async with asyncClosing(testFontHandler):
+        await testFontHandler.startTasks()
+        glyph = await testFontHandler.getGlyph("A", connection=None)
+
+        sourceIndex = 3
+        source = glyph.sources[sourceIndex]
+        layerName = source.layerName
+
+        dsDoc = testFontHandler.backend.dsDoc
+        ufoPath = pathlib.Path(dsDoc.sources[3].path)
+        glifPath = ufoPath / "glyphs" / "A_.glif"
+        assert glifPath.exists()
+
+        change = {
+            "p": ["glyphs", "A"],
+            "c": [
+                {"p": ["sources"], "f": "-", "a": [sourceIndex]},
+                {"p": ["layers"], "f": "d", "a": [layerName]},
+            ],
+        }
+        rollbackChange = {}  # dummy
+
+        await testFontHandler.editFinal(
+            change, rollbackChange, "Test edit", False, connection=None
+        )
+
+        # give the write queue the opportunity to complete
+        await testFontHandler.finishWriting()
+
+        assert not glifPath.exists()
+
+    # give the event loop a moment to clean up
+    await asyncio.sleep(0)
+
+
+@pytest.mark.asyncio
 async def test_fontHandler_getData(testFontHandler):
     async with asyncClosing(testFontHandler):
         unitsPerEm = await testFontHandler.getData("unitsPerEm")
