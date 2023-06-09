@@ -1219,4 +1219,9 @@ describe("VarPackedPath Tests", () => {
       },
     ]);
   });
+
+  it("test joinPaths empty path", () => {
+    const p3 = joinPaths([]);
+    expect(p3.unpackedContours()).to.deep.equal([]);
+  });
 });
