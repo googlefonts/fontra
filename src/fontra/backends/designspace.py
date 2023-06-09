@@ -364,7 +364,7 @@ class DesignspaceBackend:
         if change == watchfiles.Change.deleted:
             # Deleted glyph
             changedItems.rebuildGlyphSetContents = True
-            if path.startswith(self.dsDoc.default.path):
+            if path.startswith(os.path.join(self.dsDoc.default.path, "glyphs/")):
                 # The glyph was deleted from the default source,
                 # do a full delete
                 del self.glifFileNames[fileName]
