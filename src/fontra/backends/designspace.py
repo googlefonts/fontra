@@ -207,9 +207,11 @@ class DesignspaceBackend:
                 )
             layerNameMapping[source.layerName] = globalSource["layerName"]
 
+        usedLayers = set()
         for layerName, layer in glyph.layers.items():
             layerName = layerNameMapping.get(layerName, layerName)
             glyphSet = self.ufoGlyphSets[layerName]
+            usedLayers.add(layerName)
             writeGlyphSetContents = glyphName not in glyphSet
             layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
                 glyphSet, glyphName, layer.glyph, unicodes
@@ -227,6 +229,18 @@ class DesignspaceBackend:
                 self.updateGlyphSetContents(glyphSet)
 
             modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
+
+        relevantLayerNames = set(
+            ln for ln, gs in self.ufoGlyphSets.items() if glyphName in gs
+        )
+        layersToDelete = relevantLayerNames - usedLayers
+        for layerName in layersToDelete:
+            glyphSet = self.ufoGlyphSets[layerName]
+            glyphSet.deleteGlyph(glyphName)
+            # FIXME: this is inefficient if we write many glyphs
+            self.updateGlyphSetContents(glyphSet)
+            modTimes.add(None)
+
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
     def _findGlobalSource(self, location):
