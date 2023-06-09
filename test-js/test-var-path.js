@@ -6,6 +6,7 @@ import {
   POINT_TYPE_OFF_CURVE_QUAD,
   VarPackedPath,
   joinPaths,
+  joinPathsAsync,
 } from "../src/fontra/client/core/var-path.js";
 import VarArray from "../src/fontra/client/core/var-array.js";
 import { Transform } from "../src/fontra/client/core/transform.js";
@@ -1223,5 +1224,35 @@ describe("VarPackedPath Tests", () => {
   it("test joinPaths empty path", () => {
     const p3 = joinPaths([]);
     expect(p3.unpackedContours()).to.deep.equal([]);
+  });
+
+  it("test joinPathsAsync", async () => {
+    const p1 = simpleTestPath();
+    const p2 = simpleTestPath().transformed(new Transform(1, 0, 0, 1, 20, 50));
+    async function* genPaths() {
+      yield p1;
+      yield p2;
+    }
+    const p3 = await joinPathsAsync(genPaths());
+    expect(p3.unpackedContours()).to.deep.equal([
+      {
+        points: [
+          { x: 0, y: 0 },
+          { x: 0, y: 100 },
+          { x: 100, y: 100 },
+          { x: 100, y: 0 },
+        ],
+        isClosed: true,
+      },
+      {
+        points: [
+          { x: 20, y: 50 },
+          { x: 20, y: 150 },
+          { x: 120, y: 150 },
+          { x: 120, y: 50 },
+        ],
+        isClosed: true,
+      },
+    ]);
   });
 });
