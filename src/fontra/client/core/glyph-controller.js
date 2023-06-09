@@ -1,5 +1,6 @@
-import { simplePolygonArea } from "./convex-hull.js";
+import { rectIntersectsPolygon, simplePolygonArea } from "./convex-hull.js";
 import { PathHitTester } from "./path-hit-tester.js";
+import { sectRect } from "./rectangle.js";
 import {
   getRepresentation,
   registerRepresentationFactory,
@@ -472,6 +473,31 @@ class ComponentController {
       this._convexHull = this.path.getConvexHull();
     }
     return this._convexHull;
+  }
+
+  get unpackedContours() {
+    if (this._unpackedContours === undefined) {
+      const unpackedContours = [];
+      for (let i = 0; i < this.path.numContours; i++) {
+        const contour = this.path.getUnpackedContour(i);
+        contour.controlBounds = this.path.getControlBoundsForContour(i);
+        unpackedContours.push(contour);
+      }
+      this._unpackedContours = unpackedContours;
+    }
+    return this._unpackedContours;
+  }
+
+  intersectsRect(rect) {
+    return (
+      sectRect(rect, this.controlBounds) &&
+      rectIntersectsPolygon(rect, this.convexHull) &&
+      this.unpackedContours.some(
+        (contour) =>
+          sectRect(rect, contour.controlBounds) &&
+          rectIntersectsPolygon(rect, contour.points)
+      )
+    );
   }
 }
 
