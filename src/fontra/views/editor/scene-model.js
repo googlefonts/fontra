@@ -377,6 +377,10 @@ export class SceneModel {
       if (
         pointInRect(x, y, component.controlBounds) &&
         pointInConvexPolygon(x, y, component.convexHull)
+        // The following refines component hit detection further,
+        // but I'm not sure I like it, as then you can no longer
+        // click inside a counter
+        // && this.isPointInPath(component.path2d, x, y)
       ) {
         componentHullMatches.push({ index: i, component: component });
       }
@@ -410,10 +414,7 @@ export class SceneModel {
     }
     const components = positionedGlyph.glyph.components;
     for (let i = 0; i < components.length; i++) {
-      if (
-        sectRect(selRect, components[i].controlBounds) &&
-        rectIntersectsPolygon(selRect, components[i].convexHull)
-      ) {
+      if (components[i].intersectsRect(selRect)) {
         selection.add(`component/${i}`);
       }
     }
