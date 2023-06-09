@@ -531,6 +531,7 @@ async function getNestedComponentPaths(
     t,
     seenGlyphNames
   );
+  seenGlyphNames.delete(compo.name);
   return componentPaths;
 }
 
