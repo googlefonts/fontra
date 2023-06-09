@@ -1,5 +1,6 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
+import { Layer, Source } from "/core/var-glyph.js";
 import * as html from "/core/unlit.js";
 import {
   enumerate,
@@ -279,14 +280,16 @@ export class SidebarDesignspace {
     roundComponentOrigins(instance.components);
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      glyph.sources.push({
-        name: sourceName,
-        layerName: layerName,
-        location: newLocation,
-      });
+      glyph.sources.push(
+        Source.fromObject({
+          name: sourceName,
+          layerName: layerName,
+          location: newLocation,
+        })
+      );
       if (layerNames.indexOf(layerName) < 0) {
         // Only add layer if the name is new
-        glyph.layers[layerName] = { glyph: instance };
+        glyph.layers[layerName] = Layer.fromObject({ glyph: instance });
       }
       return "add source";
     });
