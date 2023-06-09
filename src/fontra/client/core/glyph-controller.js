@@ -15,7 +15,7 @@ import {
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
-import { VarPackedPath, joinPaths } from "./var-path.js";
+import { VarPackedPath, joinPathsAsync, joinPaths } from "./var-path.js";
 
 export class VariableGlyphController {
   constructor(glyph, globalAxes) {
@@ -476,12 +476,12 @@ class ComponentController {
 }
 
 async function getComponentPath(compo, getGlyphFunc, parentLocation) {
-  return flattenComponentPaths(
-    await getNestedComponentPaths(compo, getGlyphFunc, parentLocation)
+  return await joinPathsAsync(
+    iterFlattenedComponentPaths(compo, getGlyphFunc, parentLocation)
   );
 }
 
-async function getNestedComponentPaths(
+async function* iterFlattenedComponentPaths(
   compo,
   getGlyphFunc,
   parentLocation,
@@ -492,7 +492,7 @@ async function getNestedComponentPaths(
     seenGlyphNames = new Set();
   } else if (seenGlyphNames.has(compo.name)) {
     // Avoid infinite recursion
-    return {};
+    return;
   }
   seenGlyphNames.add(compo.name);
 
@@ -513,7 +513,7 @@ async function getNestedComponentPaths(
         compo.name
       } (${error.toString()})`;
       console.log(errorMessage);
-      return { error: errorMessage };
+      return;
     }
   }
   let t = makeAffineTransform(compo.transformation);
@@ -522,56 +522,18 @@ async function getNestedComponentPaths(
   }
   const componentPaths = {};
   if (inst.path.numPoints) {
-    componentPaths["path"] = inst.path.transformed(t);
+    yield inst.path.transformed(t);
   }
-  componentPaths["children"] = await getComponentPaths(
-    inst.components,
-    getGlyphFunc,
-    compoLocation,
-    t,
-    seenGlyphNames
-  );
-  seenGlyphNames.delete(compo.name);
-  return componentPaths;
-}
-
-async function getComponentPaths(
-  components,
-  getGlyphFunc,
-  parentLocation,
-  transformation,
-  seenGlyphNames
-) {
-  const paths = [];
-
-  for (const compo of components || []) {
-    paths.push(
-      await getNestedComponentPaths(
-        compo,
-        getGlyphFunc,
-        parentLocation,
-        transformation,
-        seenGlyphNames
-      )
+  for (const subCompo of inst.components) {
+    yield* iterFlattenedComponentPaths(
+      subCompo,
+      getGlyphFunc,
+      compoLocation,
+      t,
+      seenGlyphNames
     );
   }
-  return paths;
-}
-
-function flattenComponentPaths(item) {
-  const paths = [];
-  if (item.path !== undefined) {
-    paths.push(item.path);
-  }
-  if (item.children !== undefined) {
-    for (const child of item.children) {
-      const childPath = flattenComponentPaths(child);
-      if (!!childPath) {
-        paths.push(childPath);
-      }
-    }
-  }
-  return joinPaths(paths);
+  seenGlyphNames.delete(compo.name);
 }
 
 export async function decomposeComponents(
