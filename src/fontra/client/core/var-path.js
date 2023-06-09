@@ -930,3 +930,11 @@ export function joinPaths(paths) {
   }
   return result;
 }
+
+export async function joinPathsAsync(paths) {
+  const result = new VarPackedPath();
+  for await (const path of paths) {
+    result.appendPath(path);
+  }
+  return result;
+}
