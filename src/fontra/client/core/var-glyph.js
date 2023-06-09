@@ -30,7 +30,7 @@ export class Layer {
   }
 }
 
-class Source {
+export class Source {
   static fromObject(obj) {
     const source = new Source();
     source.name = obj.name;
