@@ -449,7 +449,7 @@ class ComponentController {
   }
 
   async setupPath(getGlyphFunc, parentLocation) {
-    this.path = await getComponentPath(this.compo, getGlyphFunc, parentLocation);
+    this.path = await flattenComponent(this.compo, getGlyphFunc, parentLocation);
   }
 
   get path2d() {
@@ -475,7 +475,7 @@ class ComponentController {
   }
 }
 
-async function getComponentPath(compo, getGlyphFunc, parentLocation) {
+async function flattenComponent(compo, getGlyphFunc, parentLocation) {
   return await joinPathsAsync(
     iterFlattenedComponentPaths(compo, getGlyphFunc, parentLocation)
   );
