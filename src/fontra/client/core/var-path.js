@@ -923,17 +923,18 @@ function coordinatesToPoints(coordinates) {
   return points;
 }
 
-export function joinPaths(paths) {
+export function joinPaths(pathsIterable) {
   const result = new VarPackedPath();
-  for (const path of paths) {
+  for (const path of pathsIterable) {
     result.appendPath(path);
   }
   return result;
 }
 
-export async function joinPathsAsync(paths) {
+export async function joinPathsAsync(pathsIterable) {
+  // This is the same as joinPaths, except it takes an async iterable
   const result = new VarPackedPath();
-  for await (const path of paths) {
+  for await (const path of pathsIterable) {
     result.appendPath(path);
   }
   return result;
