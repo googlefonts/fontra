@@ -1,4 +1,8 @@
-import { rectIntersectsPolygon, simplePolygonArea } from "./convex-hull.js";
+import {
+  pointInConvexPolygon,
+  rectIntersectsPolygon,
+  simplePolygonArea,
+} from "./convex-hull.js";
 import { PathHitTester } from "./path-hit-tester.js";
 import { sectRect } from "./rectangle.js";
 import {
@@ -491,7 +495,8 @@ class ComponentController {
   intersectsRect(rect) {
     return (
       sectRect(rect, this.controlBounds) &&
-      rectIntersectsPolygon(rect, this.convexHull) &&
+      (pointInConvexPolygon(rect.xMin, rect.yMin, this.convexHull) ||
+        rectIntersectsPolygon(rect, this.convexHull)) &&
       this.unpackedContours.some(
         (contour) =>
           sectRect(rect, contour.controlBounds) &&
