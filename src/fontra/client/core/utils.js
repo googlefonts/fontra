@@ -114,16 +114,6 @@ export function modulo(v, n) {
   return v >= 0 ? v % n : ((v % n) + n) % n;
 }
 
-export function sign(v) {
-  if (v > 0) {
-    return 1;
-  } else if (v < 0) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
-
 export function boolInt(v) {
   // Return 1 if `v` is true-y, 0 if `v` is false-y
   return v ? 1 : 0;
