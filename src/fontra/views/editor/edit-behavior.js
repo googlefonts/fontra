@@ -1,6 +1,6 @@
 import { polygonIsConvex } from "../core/convex-hull.js";
 import { consolidateChanges } from "../core/changes.js";
-import { makeAffineTransform, parseSelection, reversed, sign } from "../core/utils.js";
+import { makeAffineTransform, parseSelection, reversed } from "../core/utils.js";
 import { Transform } from "../core/transform.js";
 import * as vector from "../core/vector.js";
 import {
@@ -570,8 +570,8 @@ export function constrainHorVerDiag(vector) {
   if (0.414 < tan && tan < 2.414) {
     // between 22.5 and 67.5 degrees
     const d = 0.5 * (ax + ay);
-    constrainedVector.x = d * sign(constrainedVector.x);
-    constrainedVector.y = d * sign(constrainedVector.y);
+    constrainedVector.x = d * Math.sign(constrainedVector.x);
+    constrainedVector.y = d * Math.sign(constrainedVector.y);
   } else if (ax > ay) {
     constrainedVector.y = 0;
   } else {
