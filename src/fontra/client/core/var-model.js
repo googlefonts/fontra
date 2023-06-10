@@ -237,7 +237,7 @@ function getDecoratedMasterLocations(locations, axisOrder) {
         return index != -1 ? index : 0x10000;
       }), // Next, by known axes
       orderedAxes, // Next, by all axes
-      orderedAxes.map((axis) => sign(loc[axis])), // Next, by signs of axis values
+      orderedAxes.map((axis) => Math.sign(loc[axis])), // Next, by signs of axis values
       orderedAxes.map((axis) => Math.abs(loc[axis])), // Next, by absolute value of axis values
     ];
     result[i] = [deco, locations[i]];
@@ -260,10 +260,6 @@ function objectGet(o, k, dflt) {
     return dflt;
   }
   return result;
-}
-
-function sign(v) {
-  return v < 0 ? -1 : v > 0 ? 1 : 0;
 }
 
 function sorted(a) {
