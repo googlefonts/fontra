@@ -418,20 +418,16 @@ function makeContourPointEditFuncs(contour, behavior) {
   if (behavior.enableScalingEdit) {
     segmentFunc = makeSegmentScalingEditFuncs;
     conditionFunc = (segment, points) =>
-      !(
-        segment.length < 4 ||
-        (!points[segment[0]].selected && !points[segment.at(-1)].selected) ||
-        segment.slice(1, -1).some((i) => points[i].selected)
-      );
+      segment.length >= 4 &&
+      (points[segment[0]].selected || points[segment.at(-1)].selected) &&
+      segment.slice(1, -1).every((i) => !points[i].selected);
   } else {
     segmentFunc = makeSegmentFloatingOffCurveEditFuncs;
     conditionFunc = (segment, points) =>
-      !(
-        segment.length < 5 ||
-        !points[segment[0]].selected ||
-        !points[segment.at(-1)].selected ||
-        segment.slice(1, -1).some((i) => points[i].selected)
-      );
+      segment.length >= 5 &&
+      points[segment[0]].selected &&
+      points[segment.at(-1)].selected &&
+      segment.slice(1, -1).every((i) => !points[i].selected);
   }
 
   const [additionalEditFuncs, additionalPointIndices] = makeAdditionalEditFuncs(
