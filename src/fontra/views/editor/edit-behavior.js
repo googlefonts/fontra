@@ -413,13 +413,32 @@ function makeContourPointEditFuncs(contour, behavior) {
       });
     }
   }
-  const makeAdditionalEditFuncs = behavior.enableScalingEdit
-    ? makeScalingEditFuncs
-    : makeFloatingOffCurveEditFuncs;
+
+  let conditionFunc, segmentFunc;
+  if (behavior.enableScalingEdit) {
+    segmentFunc = makeSegmentScalingEditFuncs;
+    conditionFunc = (segment, points) =>
+      !(
+        segment.length < 4 ||
+        (!points[segment[0]].selected && !points[segment.at(-1)].selected) ||
+        segment.slice(1, -1).some((i) => points[i].selected)
+      );
+  } else {
+    segmentFunc = makeSegmentFloatingOffCurveEditFuncs;
+    conditionFunc = (segment, points) =>
+      !(
+        segment.length < 5 ||
+        !points[segment[0]].selected ||
+        !points[segment.at(-1)].selected ||
+        segment.slice(1, -1).some((i) => points[i].selected)
+      );
+  }
 
   const [additionalEditFuncs, additionalPointIndices] = makeAdditionalEditFuncs(
     contour,
-    additionalEditPoints
+    additionalEditPoints,
+    conditionFunc,
+    segmentFunc
   );
   if (additionalPointIndices.length) {
     participatingPointIndices = [
@@ -432,24 +451,15 @@ function makeContourPointEditFuncs(contour, behavior) {
   ];
 }
 
-function makeFloatingOffCurveEditFuncs(contour, editPoints) {
+function makeAdditionalEditFuncs(contour, editPoints, conditionFunc, segmentFunc) {
   const points = contour.points;
   const editFuncs = [];
   const participatingPointIndices = [];
   for (const segment of iterSegmentPointIndices(points, contour.isClosed)) {
-    if (
-      segment.length < 5 ||
-      !points[segment[0]].selected ||
-      !points[segment.at(-1)].selected ||
-      segment.slice(1, -1).some((i) => points[i].selected)
-    ) {
+    if (!conditionFunc(segment, points)) {
       continue;
     }
-    const [segmentEditFunc, pointIndices] = makeSegmentFloatingOffCurveEditFuncs(
-      segment,
-      contour,
-      editPoints
-    );
+    const [segmentEditFunc, pointIndices] = segmentFunc(segment, contour, editPoints);
     editFuncs.push(...segmentEditFunc);
     participatingPointIndices.push(...pointIndices);
   }
@@ -470,29 +480,6 @@ function makeSegmentFloatingOffCurveEditFuncs(segment, contour, editPoints) {
     });
   }
   return [editFuncs, pointIndices];
-}
-
-function makeScalingEditFuncs(contour, editPoints) {
-  const points = contour.points;
-  const editFuncs = [];
-  const participatingPointIndices = [];
-  for (const segment of iterSegmentPointIndices(points, contour.isClosed)) {
-    if (
-      segment.length < 4 ||
-      (!points[segment[0]].selected && !points[segment.at(-1)].selected) ||
-      segment.slice(1, -1).some((i) => points[i].selected)
-    ) {
-      continue;
-    }
-    const [segmentEditFunc, pointIndices] = makeSegmentScalingEditFuncs(
-      segment,
-      contour,
-      editPoints
-    );
-    editFuncs.push(...segmentEditFunc);
-    participatingPointIndices.push(...pointIndices);
-  }
-  return [editFuncs, participatingPointIndices];
 }
 
 function makeSegmentScalingEditFuncs(segment, contour, editPoints) {
