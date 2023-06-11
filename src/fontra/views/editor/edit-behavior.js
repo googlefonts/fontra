@@ -345,7 +345,7 @@ function makeContourPointEditFuncs(contour, behavior) {
   const startIndex = contour.startIndex;
   const originalPoints = contour.points;
   const editPoints = Array.from(originalPoints); // will be modified
-  const scalingEditPoints = Array.from(originalPoints); // will be modified
+  const additionalEditPoints = Array.from(originalPoints); // will be modified
   const numPoints = originalPoints.length;
   let participatingPointIndices = [];
   const editFuncsTransform = [];
@@ -393,7 +393,7 @@ function makeContourPointEditFuncs(contour, behavior) {
           originalPoints[nextNext]
         );
         editPoints[thePoint] = point;
-        scalingEditPoints[thePoint] = point;
+        additionalEditPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     } else {
@@ -408,26 +408,27 @@ function makeContourPointEditFuncs(contour, behavior) {
           editPoints[next],
           editPoints[nextNext]
         );
-        scalingEditPoints[thePoint] = point;
+        additionalEditPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     }
   }
-  let editFuncsScalingEdit = [];
+  let additionalEditFuncs = [];
+  let additionalPointIndices = [];
   if (behavior.enableScalingEdit) {
-    let scalingEditPointIndices;
-    [editFuncsScalingEdit, scalingEditPointIndices] = makeScalingEditFuncs(
+    [additionalEditFuncs, additionalPointIndices] = makeScalingEditFuncs(
       contour,
-      scalingEditPoints
+      additionalEditPoints
     );
-    if (scalingEditPointIndices.length) {
-      participatingPointIndices = [
-        ...new Set([...participatingPointIndices, ...scalingEditPointIndices]),
-      ].sort((a, b) => a - b);
-    }
+  } else {
+  }
+  if (additionalPointIndices.length) {
+    participatingPointIndices = [
+      ...new Set([...participatingPointIndices, ...additionalPointIndices]),
+    ].sort((a, b) => a - b);
   }
   return [
-    [...editFuncsTransform, ...editFuncsConstrain, ...editFuncsScalingEdit],
+    [...editFuncsTransform, ...editFuncsConstrain, ...additionalEditFuncs],
     participatingPointIndices,
   ];
 }
