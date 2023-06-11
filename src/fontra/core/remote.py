@@ -3,6 +3,8 @@ import logging
 import traceback
 from dataclasses import asdict, is_dataclass
 
+from aiohttp import WSMsgType
+
 logger = logging.getLogger(__name__)
 
 
@@ -43,17 +45,12 @@ class RemoteObjectConnection:
     async def _handleConnection(self):
         tasks = []
         async for message in self.websocket:
-            try:
-                message = message.json()
-            except TypeError:
-                # This may be a bug in aiohttp: message.data contains
-                # an exception. Let's raise it, as it's more informative
-                # than the TypeError
-                # https://github.com/aio-libs/aiohttp/issues/7313
-                if isinstance(message.data, Exception):
-                    raise message.data
-                else:
-                    raise
+            if message.type == WSMsgType.ERROR:
+                # We need o explicitly check for an error, or else
+                # message.json() will fail with a TypeError.
+                # https://github.com/aio-libs/aiohttp/issues/7313#issuecomment-1586150267
+                raise message.data
+            message = message.json()
 
             if message.get("connection") == "close":
                 logger.info("client requested connection close")
