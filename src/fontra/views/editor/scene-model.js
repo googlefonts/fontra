@@ -398,7 +398,7 @@ export class SceneModel {
     return new Set([`component/${componentHullMatches[0].index}`]);
   }
 
-  selectionAtRect(selRect) {
+  selectionAtRect(selRect, pointFilterFunc) {
     const selection = new Set();
     if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
       return selection;
@@ -406,7 +406,9 @@ export class SceneModel {
     const positionedGlyph = this.getSelectedPositionedGlyph();
     selRect = offsetRect(selRect, -positionedGlyph.x, -positionedGlyph.y);
     for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
-      selection.add(`point/${hit.pointIndex}`);
+      if (!pointFilterFunc || pointFilterFunc(hit)) {
+        selection.add(`point/${hit.pointIndex}`);
+      }
     }
     const components = positionedGlyph.glyph.components;
     for (let i = 0; i < components.length; i++) {
