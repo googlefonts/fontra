@@ -181,6 +181,9 @@ describe("guessCharFromGlyphName", () => {
     expect(guessCharFromGlyphName("text 110000 text")).equals("");
     expect(guessCharFromGlyphName("text 10FFFF text")).equals("");
     expect(guessCharFromGlyphName("text 100000 text")).equals("");
+    const emoji = guessCharFromGlyphName("text 1F440 text");
+    expect(emoji.charCodeAt(0)).equals(55357);
+    expect(emoji.charCodeAt(1)).equals(56384);
   });
 });
 
