@@ -205,7 +205,7 @@ describe("arrayExtend", () => {
   });
   it("test chunk-by-chunk addition by 1024", () => {
     const destinationArray = [1, 2, 3];
-    arrayExtend(destinationArray, [...range(1024)]);
-    expect(destinationArray).deep.equals([1, 2, 3, ...range(1024)]);
+    arrayExtend(destinationArray, [...range(1025)]);
+    expect(destinationArray).deep.equals([1, 2, 3, ...range(1025)]);
   });
 });
