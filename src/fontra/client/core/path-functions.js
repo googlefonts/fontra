@@ -169,7 +169,13 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
   return VarPackedPath.fromUnpackedContours(filteredUnpackedContours);
 }
 
-function makeExpandedIndexSet(path, contourPointIndices, contourIndex, startPoint) {
+function makeExpandedIndexSet(
+  path,
+  contourPointIndices,
+  contourIndex,
+  startPoint,
+  greedy = true
+) {
   // Given a "sparse" selection, fill in the gaps by adding all off-curve points
   // that are included in selected segments
   const indexSet = new Set(contourPointIndices);
@@ -178,7 +184,9 @@ function makeExpandedIndexSet(path, contourPointIndices, contourIndex, startPoin
     const firstPointIndex = indices[0];
     const lastPointIndex = indices.at(-1);
     if (
-      (indices.length > 2 && indices.slice(1, -1).some((i) => indexSet.has(i))) ||
+      (greedy &&
+        indices.length > 2 &&
+        indices.slice(1, -1).some((i) => indexSet.has(i))) ||
       (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
     ) {
       indices.forEach((i) => indexSet.add(i));
@@ -322,7 +330,8 @@ function expandPointSelection(path, pointIndices) {
       path,
       contourPointIndices,
       contourIndex,
-      startPoint
+      startPoint,
+      false
     );
     arrayExtend(
       expandedIndices,
