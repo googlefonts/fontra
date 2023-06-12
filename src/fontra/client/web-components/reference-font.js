@@ -71,6 +71,9 @@ export class ReferenceFont extends UnlitElement {
             fontName: `ReferenceFont${++this.fontCounter}`,
           };
         });
+      // if (!fileItems.length) {
+      //   // FIXME: add dialog() "Unsupported font file type"
+      // }
       filesUIList.setItems([...filesUIList.items, ...fileItems]);
       if (filesUIList.getSelectedItemIndex() === undefined) {
         filesUIList.setSelectedItemIndex(0, true);
