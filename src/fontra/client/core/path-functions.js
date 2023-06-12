@@ -1,4 +1,4 @@
-import { range, reversed } from "./utils.js";
+import { arrayExtend, range, reversed } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 import { roundVector } from "./vector.js";
 
@@ -118,18 +118,12 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
     const contour = path.getUnpackedContour(contourIndex);
     const numContourPoints = contour.points.length;
     const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
-    const indexSet = new Set(contourPointIndices);
-    for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
-      const indices = segment.pointIndices.map((i) => i - startPoint);
-      const firstPointIndex = indices[0];
-      const lastPointIndex = indices.at(-1);
-      if (
-        (indices.length > 2 && indices.slice(1, -1).some((i) => indexSet.has(i))) ||
-        (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
-      ) {
-        indices.forEach((i) => indexSet.add(i));
-      }
-    }
+    const indexSet = makeExpandedIndexSet(
+      path,
+      contourPointIndices,
+      contourIndex,
+      startPoint
+    );
     if (indexSet.size === numContourPoints) {
       // Easy: the whole contour is copied
       filteredUnpackedContours.push(contour);
@@ -173,6 +167,32 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
     }
   }
   return VarPackedPath.fromUnpackedContours(filteredUnpackedContours);
+}
+
+function makeExpandedIndexSet(
+  path,
+  contourPointIndices,
+  contourIndex,
+  startPoint,
+  greedy = true
+) {
+  // Given a "sparse" selection, fill in the gaps by adding all off-curve points
+  // that are included in selected segments
+  const indexSet = new Set(contourPointIndices);
+  for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
+    const indices = segment.pointIndices.map((i) => i - startPoint);
+    const firstPointIndex = indices[0];
+    const lastPointIndex = indices.at(-1);
+    if (
+      (greedy &&
+        indices.length > 2 &&
+        indices.slice(1, -1).some((i) => indexSet.has(i))) ||
+      (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
+    ) {
+      indices.forEach((i) => indexSet.add(i));
+    }
+  }
+  return indexSet;
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
@@ -284,6 +304,7 @@ export function connectContours(path, sourcePointIndex, targetPointIndex) {
 }
 
 export function deleteSelectedPoints(path, pointIndices) {
+  pointIndices = expandPointSelection(path, pointIndices);
   for (const pointIndex of reversed(pointIndices)) {
     const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
     const numContourPoints = path.getNumPointsOfContour(contourIndex);
@@ -294,6 +315,31 @@ export function deleteSelectedPoints(path, pointIndices) {
       path.deleteContour(contourIndex);
     }
   }
+}
+
+function expandPointSelection(path, pointIndices) {
+  // Given a "sparse" selection, fill in the gaps by adding all off-curve points
+  // that are included in selected segments
+  const selectionByContour = getSelectionByContour(path, pointIndices);
+  const filteredUnpackedContours = [];
+  const expandedIndices = [];
+  for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
+    const contour = path.getUnpackedContour(contourIndex);
+    const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
+    const indexSet = makeExpandedIndexSet(
+      path,
+      contourPointIndices,
+      contourIndex,
+      startPoint,
+      false
+    );
+    arrayExtend(
+      expandedIndices,
+      [...indexSet].map((i) => i + startPoint)
+    );
+  }
+  expandedIndices.sort((a, b) => a - b);
+  return expandedIndices;
 }
 
 export function getSelectionByContour(path, pointIndices) {
