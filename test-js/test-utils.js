@@ -203,4 +203,9 @@ describe("arrayExtend", () => {
     arrayExtend(array, [4, 5]);
     expect(array).deep.equals([1, 2, 3, 4, 5]);
   });
+  it("test chunk-by-chunk addition by 1024", () => {
+    const destinationArray = [1, 2, 3];
+    arrayExtend(destinationArray, [...range(1024)]);
+    expect(destinationArray).deep.equals([1, 2, 3, ...range(1024)]);
+  });
 });
