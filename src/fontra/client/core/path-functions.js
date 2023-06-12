@@ -118,18 +118,12 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
     const contour = path.getUnpackedContour(contourIndex);
     const numContourPoints = contour.points.length;
     const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
-    const indexSet = new Set(contourPointIndices);
-    for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
-      const indices = segment.pointIndices.map((i) => i - startPoint);
-      const firstPointIndex = indices[0];
-      const lastPointIndex = indices.at(-1);
-      if (
-        (indices.length > 2 && indices.slice(1, -1).some((i) => indexSet.has(i))) ||
-        (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
-      ) {
-        indices.forEach((i) => indexSet.add(i));
-      }
-    }
+    const indexSet = makeExpandedIndexSet(
+      path,
+      contourPointIndices,
+      contourIndex,
+      startPoint
+    );
     if (indexSet.size === numContourPoints) {
       // Easy: the whole contour is copied
       filteredUnpackedContours.push(contour);
@@ -173,6 +167,22 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
     }
   }
   return VarPackedPath.fromUnpackedContours(filteredUnpackedContours);
+}
+
+function makeExpandedIndexSet(path, contourPointIndices, contourIndex, startPoint) {
+  const indexSet = new Set(contourPointIndices);
+  for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
+    const indices = segment.pointIndices.map((i) => i - startPoint);
+    const firstPointIndex = indices[0];
+    const lastPointIndex = indices.at(-1);
+    if (
+      (indices.length > 2 && indices.slice(1, -1).some((i) => indexSet.has(i))) ||
+      (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
+    ) {
+      indices.forEach((i) => indexSet.add(i));
+    }
+  }
+  return indexSet;
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
