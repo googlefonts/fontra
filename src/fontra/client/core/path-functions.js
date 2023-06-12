@@ -170,6 +170,8 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
 }
 
 function makeExpandedIndexSet(path, contourPointIndices, contourIndex, startPoint) {
+  // Given a "sparse" selection, fill in the gaps by adding all off-curve points
+  // that are included in selected segments
   const indexSet = new Set(contourPointIndices);
   for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
     const indices = segment.pointIndices.map((i) => i - startPoint);
