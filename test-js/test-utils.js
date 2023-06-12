@@ -178,17 +178,9 @@ describe("guessCharFromGlyphName", () => {
     expect(guessCharFromGlyphName("text 0061 text")).equals("a");
     expect(guessCharFromGlyphName("text ff0061 text")).equals("a");
     expect(guessCharFromGlyphName("text ff0041 text")).equals("A");
-    {
-      const nonPrintable = guessCharFromGlyphName("100000");
-      expect(nonPrintable.charCodeAt(0)).equals(56256);
-      expect(nonPrintable.charCodeAt(1)).equals(56320);
-    }
-    {
-      const nonPrintable = guessCharFromGlyphName("10FFFF");
-      expect(nonPrintable.charCodeAt(0)).equals(56319);
-      expect(nonPrintable.charCodeAt(1)).equals(57343);
-    }
-    expect(() => guessCharFromGlyphName("110000")).to.throw("Invalid code point");
+    expect(guessCharFromGlyphName("text 110000 text")).equals("");
+    expect(guessCharFromGlyphName("text 10FFFF text")).equals("");
+    expect(guessCharFromGlyphName("text 100000 text")).equals("");
   });
 });
 
