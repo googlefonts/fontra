@@ -264,7 +264,7 @@ export function getCharFromUnicode(codePoint) {
 }
 
 export function guessCharFromGlyphName(glyphName) {
-  // Search for a 4-6 char hex string in the glyph name.
+  // Search for a 4-5 char hex string in the glyph name.
   // Interpret the hex string as a unicode code point and convert to a
   // character. Else, return an empty string.
   const match = glyphName.match(/(^|[^0-9A-F])([0-9A-F]{4,5})($|[^0-9A-F])/);
