@@ -379,6 +379,7 @@ export class UIList extends UnlitElement {
       (event.key === "Delete" || event.key === "Backspace") &&
       this.selectedItemIndex !== undefined
     ) {
+      event.stopImmediatePropagation();
       this._dispatchEvent("deleteKey");
       return;
     }
