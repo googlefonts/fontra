@@ -18,8 +18,9 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
-import { joinPaths } from "../core/var-path.js";
+import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import {
+  enumerate,
   fetchJSON,
   getCharFromUnicode,
   hasShortcutModifierKey,
@@ -1333,8 +1334,10 @@ export class EditorController {
       const glyphPath = positionedGlyph.glyph.path;
       const glyphComponents = positionedGlyph.glyph.components;
 
-      for (const [pointIndex] of glyphPath.pointTypes.entries()) {
-        newSelection.add(`point/${pointIndex}`);
+      for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
+        if (!(pointType & VarPackedPath.POINT_TYPE_MASK)) {
+          newSelection.add(`point/${pointIndex}`);
+        }
       }
 
       for (const [componentIndex] of glyphComponents.entries()) {
