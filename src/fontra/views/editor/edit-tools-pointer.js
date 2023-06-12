@@ -5,6 +5,7 @@ import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
 import {
   boolInt,
+  commandKeyProperty,
   makeUPlusStringFromCodePoint,
   modulo,
   parseSelection,
@@ -393,10 +394,10 @@ function replace(setA, setB) {
 
 function getSelectModeFunction(event) {
   return event.shiftKey
-    ? event.altKey
+    ? event[commandKeyProperty]
       ? difference
       : symmetricDifference
-    : event.altKey
+    : event[commandKeyProperty]
     ? union
     : replace;
 }
