@@ -5,6 +5,7 @@ import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
 import {
   boolInt,
+  commandKeyProperty,
   makeUPlusStringFromCodePoint,
   modulo,
   parseSelection,
@@ -252,7 +253,10 @@ export class PointerTool extends BaseTool {
         xMax: currentPoint.x,
         yMax: currentPoint.y,
       });
-      const selection = this.sceneModel.selectionAtRect(selRect);
+      const selection = this.sceneModel.selectionAtRect(
+        selRect,
+        event.altKey ? (point) => !!point.type : (point) => !point.type
+      );
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       sceneController.selectionRect = offsetRect(
         selRect,
@@ -390,10 +394,10 @@ function replace(setA, setB) {
 
 function getSelectModeFunction(event) {
   return event.shiftKey
-    ? event.altKey
+    ? event[commandKeyProperty]
       ? difference
       : symmetricDifference
-    : event.altKey
+    : event[commandKeyProperty]
     ? union
     : replace;
 }

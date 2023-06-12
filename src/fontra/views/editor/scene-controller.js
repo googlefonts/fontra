@@ -7,7 +7,7 @@ import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isSuperset } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
-  hasShortcutModifierKey,
+  commandKeyProperty,
   parseSelection,
   reversed,
 } from "../core/utils.js";
@@ -70,10 +70,7 @@ export class SceneController {
   }
 
   handleKeyDown(event) {
-    if (
-      (!hasShortcutModifierKey(event) || event.shiftKey) &&
-      event.key in arrowKeyDeltas
-    ) {
+    if ((!event[commandKeyProperty] || event.shiftKey) && event.key in arrowKeyDeltas) {
       this.handleArrowKeys(event);
       event.preventDefault();
       return;

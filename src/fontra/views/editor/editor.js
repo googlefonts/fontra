@@ -18,11 +18,12 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
-import { joinPaths } from "../core/var-path.js";
+import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import {
+  commandKeyProperty,
+  enumerate,
   fetchJSON,
   getCharFromUnicode,
-  hasShortcutModifierKey,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
   parseSelection,
@@ -987,7 +988,7 @@ export class EditorController {
       }
       if (
         handlerDef.metaKey !== undefined &&
-        handlerDef.metaKey !== hasShortcutModifierKey(event)
+        handlerDef.metaKey !== event[commandKeyProperty]
       ) {
         continue;
       }
@@ -1333,8 +1334,10 @@ export class EditorController {
       const glyphPath = positionedGlyph.glyph.path;
       const glyphComponents = positionedGlyph.glyph.components;
 
-      for (const [pointIndex] of glyphPath.pointTypes.entries()) {
-        newSelection.add(`point/${pointIndex}`);
+      for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
+        if ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE) {
+          newSelection.add(`point/${pointIndex}`);
+        }
       }
 
       for (const [componentIndex] of glyphComponents.entries()) {

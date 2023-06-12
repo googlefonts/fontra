@@ -93,13 +93,14 @@ export function hyphenatedToCamelCase(s) {
   return s.replace(/-([a-z])/g, (m) => m[1].toUpperCase());
 }
 
-export function hasShortcutModifierKey(event) {
-  if (navigator.platform.toLowerCase().indexOf("mac") >= 0) {
-    return event.metaKey;
-  } else {
-    return event.ctrlKey;
-  }
-}
+// For several functions, we use the command key ("metaKey") on macOS,
+// and the control key ("ctrlKey") on non-macOS. For example short cuts
+// and selection behavior.
+export const commandKeyProperty =
+  typeof navigator !== "undefined" &&
+  navigator.platform.toLowerCase().indexOf("mac") >= 0
+    ? "metaKey"
+    : "ctrlKey";
 
 export const arrowKeyDeltas = {
   ArrowUp: [0, 1],
