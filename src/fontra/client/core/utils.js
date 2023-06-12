@@ -307,6 +307,12 @@ export function fileNameExtension(name) {
 const ARRAY_EXTEND_CHUNK_SIZE = 1024;
 
 export function arrayExtend(thisArray, itemsArray) {
+  // arrayExtend() is meant as a JS version of Python's list.extend().
+  // array.push(...items) has an implementation-defined upper limit
+  // in terms of numbers of items (the call stack will overflow).
+  // Yet, array.push(...items) is presumably more efficient than pushing
+  // items one by one, therefore we try to compromise: push the items in
+  // chunks of a safe size.
   for (const i of range(0, itemsArray.length, ARRAY_EXTEND_CHUNK_SIZE)) {
     thisArray.push(...itemsArray.slice(i, i + ARRAY_EXTEND_CHUNK_SIZE));
   }
