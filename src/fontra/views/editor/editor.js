@@ -1335,7 +1335,7 @@ export class EditorController {
       const glyphComponents = positionedGlyph.glyph.components;
 
       for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
-        if (!(pointType & VarPackedPath.POINT_TYPE_MASK)) {
+        if ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE) {
           newSelection.add(`point/${pointIndex}`);
         }
       }
