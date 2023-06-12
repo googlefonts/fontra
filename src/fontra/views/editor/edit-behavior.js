@@ -345,7 +345,7 @@ function makeContourPointEditFuncs(contour, behavior) {
   const startIndex = contour.startIndex;
   const originalPoints = contour.points;
   const editPoints = Array.from(originalPoints); // will be modified
-  const scalingEditPoints = Array.from(originalPoints); // will be modified
+  const additionalEditPoints = Array.from(originalPoints); // will be modified
   const numPoints = originalPoints.length;
   let participatingPointIndices = [];
   const editFuncsTransform = [];
@@ -393,7 +393,7 @@ function makeContourPointEditFuncs(contour, behavior) {
           originalPoints[nextNext]
         );
         editPoints[thePoint] = point;
-        scalingEditPoints[thePoint] = point;
+        additionalEditPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     } else {
@@ -408,51 +408,74 @@ function makeContourPointEditFuncs(contour, behavior) {
           editPoints[next],
           editPoints[nextNext]
         );
-        scalingEditPoints[thePoint] = point;
+        additionalEditPoints[thePoint] = point;
         return [thePoint + startIndex, point.x, point.y];
       });
     }
   }
-  let editFuncsScalingEdit = [];
+
+  let conditionFunc, segmentFunc;
   if (behavior.enableScalingEdit) {
-    let scalingEditPointIndices;
-    [editFuncsScalingEdit, scalingEditPointIndices] = makeScalingEditFuncs(
-      contour,
-      scalingEditPoints
-    );
-    if (scalingEditPointIndices.length) {
-      participatingPointIndices = [
-        ...new Set([...participatingPointIndices, ...scalingEditPointIndices]),
-      ].sort((a, b) => a - b);
-    }
+    segmentFunc = makeSegmentScalingEditFuncs;
+    conditionFunc = (segment, points) =>
+      segment.length >= 4 &&
+      (points[segment[0]].selected || points[segment.at(-1)].selected) &&
+      segment.slice(1, -1).every((i) => !points[i].selected);
+  } else {
+    segmentFunc = makeSegmentFloatingOffCurveEditFuncs;
+    conditionFunc = (segment, points) =>
+      segment.length >= 5 &&
+      points[segment[0]].selected &&
+      points[segment.at(-1)].selected &&
+      segment.slice(1, -1).every((i) => !points[i].selected);
+  }
+
+  const [additionalEditFuncs, additionalPointIndices] = makeAdditionalEditFuncs(
+    contour,
+    additionalEditPoints,
+    conditionFunc,
+    segmentFunc
+  );
+  if (additionalPointIndices.length) {
+    participatingPointIndices = [
+      ...new Set([...participatingPointIndices, ...additionalPointIndices]),
+    ].sort((a, b) => a - b);
   }
   return [
-    [...editFuncsTransform, ...editFuncsConstrain, ...editFuncsScalingEdit],
+    [...editFuncsTransform, ...editFuncsConstrain, ...additionalEditFuncs],
     participatingPointIndices,
   ];
 }
 
-function makeScalingEditFuncs(contour, editPoints) {
+function makeAdditionalEditFuncs(contour, editPoints, conditionFunc, segmentFunc) {
   const points = contour.points;
   const editFuncs = [];
   const participatingPointIndices = [];
   for (const segment of iterSegmentPointIndices(points, contour.isClosed)) {
-    if (
-      segment.length < 4 ||
-      (!points[segment[0]].selected && !points[segment.at(-1)].selected) ||
-      segment.slice(1, -1).some((i) => points[i].selected)
-    ) {
+    if (!conditionFunc(segment, points)) {
       continue;
     }
-    const [segmentEditFunc, pointIndices] = makeSegmentScalingEditFuncs(
-      segment,
-      contour,
-      editPoints
-    );
+    const [segmentEditFunc, pointIndices] = segmentFunc(segment, contour, editPoints);
     editFuncs.push(...segmentEditFunc);
     participatingPointIndices.push(...pointIndices);
   }
   return [editFuncs, participatingPointIndices];
+}
+
+function makeSegmentFloatingOffCurveEditFuncs(segment, contour, editPoints) {
+  const originalPoints = contour.points;
+  const startIndex = contour.startIndex;
+  const editFuncs = [];
+  const pointIndices = [];
+
+  for (const i of segment.slice(2, -2)) {
+    pointIndices.push(i);
+    editFuncs.push((transform) => {
+      const point = transform.constrained(originalPoints[i]);
+      return [i + startIndex, point.x, point.y];
+    });
+  }
+  return [editFuncs, pointIndices];
 }
 
 function makeSegmentScalingEditFuncs(segment, contour, editPoints) {
