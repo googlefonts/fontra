@@ -20,10 +20,10 @@ import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import {
+  commandKeyProperty,
   enumerate,
   fetchJSON,
   getCharFromUnicode,
-  hasShortcutModifierKey,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
   parseSelection,
@@ -988,7 +988,7 @@ export class EditorController {
       }
       if (
         handlerDef.metaKey !== undefined &&
-        handlerDef.metaKey !== hasShortcutModifierKey(event)
+        handlerDef.metaKey !== event[commandKeyProperty]
       ) {
         continue;
       }
