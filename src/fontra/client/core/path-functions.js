@@ -1,4 +1,4 @@
-import { range, reversed } from "./utils.js";
+import { arrayExtend, range, reversed } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 import { roundVector } from "./vector.js";
 
@@ -296,6 +296,7 @@ export function connectContours(path, sourcePointIndex, targetPointIndex) {
 }
 
 export function deleteSelectedPoints(path, pointIndices) {
+  pointIndices = expandPointSelection(path, pointIndices);
   for (const pointIndex of reversed(pointIndices)) {
     const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
     const numContourPoints = path.getNumPointsOfContour(contourIndex);
@@ -306,6 +307,30 @@ export function deleteSelectedPoints(path, pointIndices) {
       path.deleteContour(contourIndex);
     }
   }
+}
+
+function expandPointSelection(path, pointIndices) {
+  // Given a "sparse" selection, fill in the gaps by adding all off-curve points
+  // that are included in selected segments
+  const selectionByContour = getSelectionByContour(path, pointIndices);
+  const filteredUnpackedContours = [];
+  const expandedIndices = [];
+  for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
+    const contour = path.getUnpackedContour(contourIndex);
+    const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
+    const indexSet = makeExpandedIndexSet(
+      path,
+      contourPointIndices,
+      contourIndex,
+      startPoint
+    );
+    arrayExtend(
+      expandedIndices,
+      [...indexSet].map((i) => i + startPoint)
+    );
+  }
+  expandedIndices.sort((a, b) => a - b);
+  return expandedIndices;
 }
 
 export function getSelectionByContour(path, pointIndices) {
