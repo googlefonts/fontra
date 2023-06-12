@@ -324,7 +324,10 @@ export class SceneModel {
     const pathHit = this.pathHitAtPoint(point, size);
     if (pathHit.contourIndex !== undefined) {
       const selection = new Set(
-        pathHit.segment.parentPointIndices.map((i) => `point/${i}`)
+        [
+          pathHit.segment.parentPointIndices[0],
+          pathHit.segment.parentPointIndices.at(-1),
+        ].map((i) => `point/${i}`)
       );
       return { selection, pathHit };
     }
