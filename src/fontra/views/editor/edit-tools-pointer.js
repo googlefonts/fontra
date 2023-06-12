@@ -252,7 +252,10 @@ export class PointerTool extends BaseTool {
         xMax: currentPoint.x,
         yMax: currentPoint.y,
       });
-      const selection = this.sceneModel.selectionAtRect(selRect);
+      const selection = this.sceneModel.selectionAtRect(
+        selRect,
+        event.altKey ? (point) => !!point.type : (point) => !point.type
+      );
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       sceneController.selectionRect = offsetRect(
         selRect,
