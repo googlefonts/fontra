@@ -97,7 +97,10 @@ export function hyphenatedToCamelCase(s) {
 // and the control key ("ctrlKey") on non-macOS. For example short cuts
 // and selection behavior.
 export const commandKeyProperty =
-  navigator.platform.toLowerCase().indexOf("mac") >= 0 ? "metaKey" : "ctrlKey";
+  typeof navigator !== "undefined" &&
+  navigator.platform.toLowerCase().indexOf("mac") >= 0
+    ? "metaKey"
+    : "ctrlKey";
 
 export const arrowKeyDeltas = {
   ArrowUp: [0, 1],
