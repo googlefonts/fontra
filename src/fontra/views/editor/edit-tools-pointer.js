@@ -184,7 +184,10 @@ export class PointerTool extends BaseTool {
         const endPoint = instance.path.contourInfo[contourIndex].endPoint;
         const newSelection = new Set();
         for (let i = startPoint; i <= endPoint; i++) {
-          newSelection.add(`point/${i}`);
+          const pointType = instance.path.pointTypes[i] & VarPackedPath.POINT_TYPE_MASK;
+          if (!pointType) {
+            newSelection.add(`point/${i}`);
+          }
         }
         sceneController.selection = newSelection;
       }
