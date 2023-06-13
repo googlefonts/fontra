@@ -1189,11 +1189,12 @@ export class EditorController {
     }
     await this.sceneController.editInstanceAndRecordChanges((instance) => {
       const selection = new Set();
-      for (const pointIndex of range(
-        instance.path.numPoints,
-        instance.path.numPoints + pastedGlyph.path.numPoints
-      )) {
-        selection.add(`point/${pointIndex}`);
+      for (const pointIndex of range(pastedGlyph.path.numPoints)) {
+        const pointType =
+          pastedGlyph.path.pointTypes[pointIndex] & VarPackedPath.POINT_TYPE_MASK;
+        if (pointType === VarPackedPath.ON_CURVE) {
+          selection.add(`point/${pointIndex + instance.path.numPoints}`);
+        }
       }
       for (const componentIndex of range(
         instance.components.length,
