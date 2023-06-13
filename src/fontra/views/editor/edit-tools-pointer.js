@@ -185,7 +185,7 @@ export class PointerTool extends BaseTool {
         const newSelection = new Set();
         for (let i = startPoint; i <= endPoint; i++) {
           const pointType = instance.path.pointTypes[i] & VarPackedPath.POINT_TYPE_MASK;
-          if (!pointType) {
+          if (pointType === VarPackedPath.ON_CURVE) {
             newSelection.add(`point/${i}`);
           }
         }
