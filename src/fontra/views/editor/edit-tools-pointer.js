@@ -9,6 +9,7 @@ import {
   makeUPlusStringFromCodePoint,
   modulo,
   parseSelection,
+  range,
 } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
@@ -183,8 +184,11 @@ export class PointerTool extends BaseTool {
         const startPoint = instance.path.getAbsolutePointIndex(contourIndex, 0);
         const endPoint = instance.path.contourInfo[contourIndex].endPoint;
         const newSelection = new Set();
-        for (let i = startPoint; i <= endPoint; i++) {
-          newSelection.add(`point/${i}`);
+        for (const i of range(startPoint, endPoint)) {
+          const pointType = instance.path.pointTypes[i] & VarPackedPath.POINT_TYPE_MASK;
+          if (pointType === VarPackedPath.ON_CURVE) {
+            newSelection.add(`point/${i}`);
+          }
         }
         sceneController.selection = newSelection;
       }
