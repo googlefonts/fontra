@@ -17,12 +17,12 @@ getGlyphTestData = [
             "name": "period",
             "sources": [
                 {
-                    "layerName": "default/foreground",
+                    "layerName": "MutatorSansLightCondensed/foreground",
                     "name": "default",
                 }
             ],
             "layers": {
-                "default/foreground": {
+                "MutatorSansLightCondensed/foreground": {
                     "glyph": {
                         "xAdvance": 170,
                         "path": {
@@ -32,7 +32,7 @@ getGlyphTestData = [
                         },
                     },
                 },
-                "default/background": {
+                "MutatorSansLightCondensed/background": {
                     "glyph": {
                         "xAdvance": 170,
                         "path": {
@@ -52,12 +52,12 @@ getGlyphTestData = [
             "sources": [
                 {
                     "location": {},
-                    "layerName": "default/foreground",
+                    "layerName": "MutatorSansLightCondensed/foreground",
                     "name": "default",
                 }
             ],
             "layers": {
-                "default/foreground": {
+                "MutatorSansLightCondensed/foreground": {
                     "glyph": {
                         "components": [
                             {
@@ -105,26 +105,26 @@ getGlyphTestData = [
                 {
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
-                    "layerName": "LightCondensed/foreground",
+                    "layerName": "MutatorSansLightCondensed/foreground",
                 },
                 {
                     "name": "BoldCondensed",
                     "location": {"weight": 850.0, "width": 0.0},
-                    "layerName": "BoldCondensed/foreground",
+                    "layerName": "MutatorSansBoldCondensed/foreground",
                 },
                 {
                     "name": "LightWide",
                     "location": {"weight": 150.0, "width": 1000.0},
-                    "layerName": "LightWide/foreground",
+                    "layerName": "MutatorSansLightWide/foreground",
                 },
                 {
                     "name": "BoldWide",
                     "location": {"weight": 850.0, "width": 1000.0},
-                    "layerName": "BoldWide/foreground",
+                    "layerName": "MutatorSansBoldWide/foreground",
                 },
             ],
             "layers": {
-                "LightCondensed/foreground": {
+                "MutatorSansLightCondensed/foreground": {
                     "glyph": {
                         "xAdvance": 170,
                         "path": {
@@ -134,7 +134,7 @@ getGlyphTestData = [
                         },
                     },
                 },
-                "LightCondensed/background": {
+                "MutatorSansLightCondensed/background": {
                     "glyph": {
                         "xAdvance": 170,
                         "path": {
@@ -144,7 +144,7 @@ getGlyphTestData = [
                         },
                     },
                 },
-                "BoldCondensed/foreground": {
+                "MutatorSansBoldCondensed/foreground": {
                     "glyph": {
                         "xAdvance": 250,
                         "path": {
@@ -154,7 +154,7 @@ getGlyphTestData = [
                         },
                     },
                 },
-                "LightWide/foreground": {
+                "MutatorSansLightWide/foreground": {
                     "glyph": {
                         "xAdvance": 290,
                         "path": {
@@ -164,7 +164,7 @@ getGlyphTestData = [
                         },
                     },
                 },
-                "BoldWide/foreground": {
+                "MutatorSansBoldWide/foreground": {
                     "glyph": {
                         "xAdvance": 310,
                         "path": {
@@ -185,26 +185,26 @@ getGlyphTestData = [
                 {
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
-                    "layerName": "LightCondensed/foreground",
+                    "layerName": "MutatorSansLightCondensed/foreground",
                 },
                 {
                     "name": "BoldCondensed",
                     "location": {"weight": 850.0, "width": 0.0},
-                    "layerName": "BoldCondensed/foreground",
+                    "layerName": "MutatorSansBoldCondensed/foreground",
                 },
                 {
                     "name": "LightWide",
                     "location": {"weight": 150.0, "width": 1000.0},
-                    "layerName": "LightWide/foreground",
+                    "layerName": "MutatorSansLightWide/foreground",
                 },
                 {
                     "name": "BoldWide",
                     "location": {"weight": 850.0, "width": 1000.0},
-                    "layerName": "BoldWide/foreground",
+                    "layerName": "MutatorSansBoldWide/foreground",
                 },
             ],
             "layers": {
-                "LightCondensed/foreground": {
+                "MutatorSansLightCondensed/foreground": {
                     "glyph": {
                         "components": [
                             {
@@ -241,7 +241,7 @@ getGlyphTestData = [
                         "xAdvance": 396,
                     },
                 },
-                "BoldCondensed/foreground": {
+                "MutatorSansBoldCondensed/foreground": {
                     "glyph": {
                         "components": [
                             {
@@ -278,7 +278,7 @@ getGlyphTestData = [
                         "xAdvance": 740,
                     },
                 },
-                "LightWide/foreground": {
+                "MutatorSansLightWide/foreground": {
                     "glyph": {
                         "components": [
                             {
@@ -315,7 +315,7 @@ getGlyphTestData = [
                         "xAdvance": 1190,
                     },
                 },
-                "BoldWide/foreground": {
+                "MutatorSansBoldWide/foreground": {
                     "glyph": {
                         "components": [
                             {
@@ -363,11 +363,11 @@ getGlyphTestData = [
                 {
                     "name": "LightCondensed",
                     "location": {"weight": 150.0, "width": 0.0},
-                    "layerName": "LightCondensed/foreground",
+                    "layerName": "MutatorSansLightCondensed/foreground",
                 },
             ],
             "layers": {
-                "LightCondensed/foreground": {
+                "MutatorSansLightCondensed/foreground": {
                     "glyph": {
                         "components": [
                             {
@@ -432,23 +432,23 @@ getGlyphTestData = [
             ],
             "sources": [
                 {
-                    "layerName": "LightCondensed/foreground",
+                    "layerName": "MutatorSansLightCondensed/foreground",
                     "location": {"flip": 0, "flop": 0},
-                    "name": "LightCondensed/foreground",
+                    "name": "MutatorSansLightCondensed/foreground",
                 },
                 {
-                    "layerName": "LightCondensed/varco_flip",
+                    "layerName": "MutatorSansLightCondensed/varco_flip",
                     "location": {"flip": 100, "flop": 0},
-                    "name": "LightCondensed/varco_flip",
+                    "name": "MutatorSansLightCondensed/varco_flip",
                 },
                 {
-                    "layerName": "LightCondensed/varco_flop",
+                    "layerName": "MutatorSansLightCondensed/varco_flop",
                     "location": {"flip": 0, "flop": 100},
-                    "name": "LightCondensed/varco_flop",
+                    "name": "MutatorSansLightCondensed/varco_flop",
                 },
             ],
             "layers": {
-                "LightCondensed/foreground": {
+                "MutatorSansLightCondensed/foreground": {
                     "glyph": {
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],
@@ -475,7 +475,7 @@ getGlyphTestData = [
                         "xAdvance": 500,
                     },
                 },
-                "LightCondensed/varco_flip": {
+                "MutatorSansLightCondensed/varco_flip": {
                     "glyph": {
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],
@@ -502,7 +502,7 @@ getGlyphTestData = [
                         "xAdvance": 500,
                     },
                 },
-                "LightCondensed/varco_flop": {
+                "MutatorSansLightCondensed/varco_flop": {
                     "glyph": {
                         "path": {
                             "contourInfo": [{"endPoint": 7, "isClosed": True}],

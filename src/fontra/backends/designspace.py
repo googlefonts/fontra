@@ -81,9 +81,11 @@ class DesignspaceBackend:
         self.ufoLayers = {}  # key: fontraLayerName, value: (path, ufoLayerName)
         self.globalSources = []
         self.defaultSourceGlyphSet = None
-        makeUniqueStyleName = uniqueNameMaker()
+        makeUniqueSourceName = uniqueNameMaker()
         for sourceIndex, source in enumerate(self.dsDoc.sources):
-            sourceStyleName = makeUniqueStyleName(source.styleName or "default")
+            sourceFileName = os.path.splitext(os.path.basename(source.path))[0]
+            sourceStyleName = source.styleName or sourceFileName
+            sourceName = makeUniqueSourceName(source.layerName or sourceStyleName)
             path = source.path
             reader = self.ufoReaders.get(path)
             if reader is None:
@@ -92,7 +94,7 @@ class DesignspaceBackend:
                 key = (path, ufoLayerName)
                 fontraLayerName = self.fontraLayerNames.get(key)
                 if fontraLayerName is None:
-                    fontraLayerName = f"{sourceStyleName}/{ufoLayerName}"
+                    fontraLayerName = f"{sourceFileName}/{ufoLayerName}"
                     self.fontraLayerNames[key] = fontraLayerName
                     self.ufoLayers[fontraLayerName] = key
                     self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
@@ -106,7 +108,7 @@ class DesignspaceBackend:
             fontraLayerName = self.fontraLayerNames[(path, sourceLayerName)]
             sourceDict = dict(
                 location={**self.defaultLocation, **source.location},
-                name=sourceStyleName,
+                name=sourceName,
                 layerName=fontraLayerName,
             )
             if source == self.dsDoc.default:
@@ -427,7 +429,7 @@ class UFOBackend:
     @classmethod
     def fromPath(cls, path):
         dsDoc = DesignSpaceDocument()
-        dsDoc.addSourceDescriptor(path=os.fspath(path))
+        dsDoc.addSourceDescriptor(path=os.fspath(path), styleName="default")
         return DesignspaceBackend(dsDoc)
 
 
