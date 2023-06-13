@@ -18,7 +18,7 @@ getGlyphTestData = [
             "sources": [
                 {
                     "layerName": "MutatorSansLightCondensed/foreground",
-                    "name": "MutatorSansLightCondensed",
+                    "name": "default",
                 }
             ],
             "layers": {
@@ -53,7 +53,7 @@ getGlyphTestData = [
                 {
                     "location": {},
                     "layerName": "MutatorSansLightCondensed/foreground",
-                    "name": "MutatorSansLightCondensed",
+                    "name": "default",
                 }
             ],
             "layers": {

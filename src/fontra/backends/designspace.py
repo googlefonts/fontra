@@ -429,7 +429,7 @@ class UFOBackend:
     @classmethod
     def fromPath(cls, path):
         dsDoc = DesignSpaceDocument()
-        dsDoc.addSourceDescriptor(path=os.fspath(path))
+        dsDoc.addSourceDescriptor(path=os.fspath(path), styleName="default")
         return DesignspaceBackend(dsDoc)
 
 
