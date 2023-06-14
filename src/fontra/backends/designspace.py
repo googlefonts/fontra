@@ -164,7 +164,7 @@ class DesignspaceBackend:
 
         return glyph
 
-    def _unpackLocalDesignSpace(self, dsDict, ufoPath, ufoLayerName):
+    def _unpackLocalDesignSpace(self, dsDict, ufoPath, defaultLayerName):
         axes = [
             LocalAxis(
                 name=axis["name"],
@@ -180,11 +180,15 @@ class DesignspaceBackend:
             if fileName is not None:
                 raise NotImplementedError
                 # ufoPath = ...
-            ufoLayerName = source.get("layername", ufoLayerName)
+            ufoLayerName = source.get("layername", defaultLayerName)
+            sourceName = source.get(
+                "name",
+                ufoLayerName if ufoLayerName != defaultLayerName else "<default>",
+            )
             fontraLayerName = self.fontraLayerNames[ufoPath, ufoLayerName]
             sources.append(
                 Source(
-                    name=fontraLayerName,
+                    name=sourceName,
                     location=source["location"],
                     layerName=fontraLayerName,
                 )
