@@ -60,7 +60,7 @@ export class ReferenceFont extends UnlitElement {
     filesUIList.columnDescriptions = columnDescriptions;
     filesUIList.minHeight = "6em";
     filesUIList.onFilesDrop = (files) => {
-      let fileItemsInvalid = [];
+      const fileItemsInvalid = [];
       const fileItems = [...files]
         .filter((file) => {
           const fileExtension = fileNameExtension(file.name).toLowerCase();
