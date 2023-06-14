@@ -3,6 +3,7 @@ import { UnlitElement, div, input, label, span } from "/core/unlit.js";
 import { fileNameExtension } from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
+import { dialog } from "/web-components/dialog-overlay.js";
 
 const fontTypeMapping = {
   ttf: "truetype",
@@ -59,10 +60,15 @@ export class ReferenceFont extends UnlitElement {
     filesUIList.columnDescriptions = columnDescriptions;
     filesUIList.minHeight = "6em";
     filesUIList.onFilesDrop = (files) => {
+      const fileItemsInvalid = [];
       const fileItems = [...files]
         .filter((file) => {
           const fileExtension = fileNameExtension(file.name).toLowerCase();
-          return fileExtension in fontTypeMapping;
+          const fileExtensionSupported = fileExtension in fontTypeMapping;
+          if (!fileExtensionSupported) {
+            fileItemsInvalid.push(file);
+          }
+          return fileExtensionSupported;
         })
         .map((file) => {
           return {
@@ -71,9 +77,26 @@ export class ReferenceFont extends UnlitElement {
             fontName: `ReferenceFont${++this.fontCounter}`,
           };
         });
-      // if (!fileItems.length) {
-      //   // FIXME: add dialog() "Unsupported font file type"
-      // }
+      if (fileItemsInvalid.length) {
+        const dialogTitle = `The following item${
+          fileItemsInvalid.length > 1 ? "s" : ""
+        } can't be used as a reference font:`;
+        const dialogMessage = fileItemsInvalid
+          .map((file) => {
+            return `- ${file.name}`;
+          })
+          .join("\n");
+        dialog(
+          dialogTitle,
+          dialogMessage,
+          [
+            {
+              title: "OK",
+            },
+          ],
+          5000
+        );
+      }
       filesUIList.setItems([...filesUIList.items, ...fileItems]);
       if (filesUIList.getSelectedItemIndex() === undefined) {
         filesUIList.setSelectedItemIndex(0, true);
