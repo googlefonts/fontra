@@ -279,6 +279,7 @@ class DesignspaceBackend:
                 continue
             # FIXME: KeyError -> create new layer
             ufoPath, ufoLayerName = self.ufoLayers[source.layerName]
+            assert ufoPath == self.dsDoc.default.path
             sourceDict = {}
             if ufoLayerName != defaultUFOLayerName:
                 sourceDict["layername"] = ufoLayerName
