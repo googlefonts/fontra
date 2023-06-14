@@ -533,8 +533,8 @@ def getGlyphMapFromGlyphSet(glyphSet):
     return glyphMap
 
 
-def uniqueNameMaker():
-    usedNames = set()
+def uniqueNameMaker(existingNames=()):
+    usedNames = set(existingNames)
 
     def makeUniqueName(name):
         count = 0
