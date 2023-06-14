@@ -78,7 +78,9 @@ export class ReferenceFont extends UnlitElement {
           };
         });
       if (fileItemsInvalid.length) {
-        const dialogTitle = "Unsupported font file type";
+        const dialogTitle = `The following item${
+          fileItemsInvalid.length > 1 ? "s" : ""
+        } can't be used as a reference font:`;
         const dialogMessage = fileItemsInvalid
           .map((file) => {
             return `- ${file.name}`;
