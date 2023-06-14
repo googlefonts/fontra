@@ -30,7 +30,7 @@ def readGLIFData(glyphName, glyphSets):
     }
 
 
-@pytest.mark.parametrize("glyphName", ["A", "B", "Q", "varcotest1"])
+@pytest.mark.parametrize("glyphName", ["A", "B", "Q", "varcotest1", "varcotest2"])
 async def test_roundTripGlyph(writableTestFont, glyphName):
     existingData = readGLIFData(glyphName, writableTestFont.ufoGlyphSets)
     glyphMap = await writableTestFont.getGlyphMap()

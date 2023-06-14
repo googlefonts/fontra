@@ -67,11 +67,14 @@ class DesignspaceBackend:
     def close(self):
         pass
 
+    @property
+    def defaultReader(self):
+        return self.ufoReaders[self.dsDoc.default.path]
+
     @cached_property
     def defaultFontInfo(self):
         fontInfo = UFOFontInfo()
-        reader = self.ufoReaders[self.dsDoc.default.path]
-        reader.readInfo(fontInfo)
+        self.defaultReader.readInfo(fontInfo)
         return fontInfo
 
     def loadSources(self):
@@ -255,6 +258,7 @@ class DesignspaceBackend:
         )
 
     def _packLocalDesignSpace(self, glyph):
+        defaultUFOLayerName = self.defaultReader.getDefaultLayerName()
         localDS = {}
         axes = [
             dict(
@@ -276,7 +280,8 @@ class DesignspaceBackend:
             # FIXME: KeyError -> create new layer
             ufoPath, ufoLayerName = self.ufoLayers[source.layerName]
             sourceDict = {}
-            sourceDict["layername"] = ufoLayerName  # could skip if default layer name
+            if ufoLayerName != defaultUFOLayerName:
+                sourceDict["layername"] = ufoLayerName
             sourceDict["location"] = source.location
             sources.append(sourceDict)
         if axes:
