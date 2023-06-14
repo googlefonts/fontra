@@ -434,17 +434,17 @@ getGlyphTestData = [
                 {
                     "layerName": "MutatorSansLightCondensed/foreground",
                     "location": {"flip": 0, "flop": 0},
-                    "name": "MutatorSansLightCondensed/foreground",
+                    "name": "<default>",
                 },
                 {
                     "layerName": "MutatorSansLightCondensed/varco_flip",
                     "location": {"flip": 100, "flop": 0},
-                    "name": "MutatorSansLightCondensed/varco_flip",
+                    "name": "varco_flip",
                 },
                 {
                     "layerName": "MutatorSansLightCondensed/varco_flop",
                     "location": {"flip": 0, "flop": 100},
-                    "name": "MutatorSansLightCondensed/varco_flop",
+                    "name": "varco_flop",
                 },
             ],
             "layers": {

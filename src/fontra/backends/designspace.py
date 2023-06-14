@@ -67,11 +67,14 @@ class DesignspaceBackend:
     def close(self):
         pass
 
+    @property
+    def defaultReader(self):
+        return self.ufoReaders[self.dsDoc.default.path]
+
     @cached_property
     def defaultFontInfo(self):
         fontInfo = UFOFontInfo()
-        reader = self.ufoReaders[self.dsDoc.default.path]
-        reader.readInfo(fontInfo)
+        self.defaultReader.readInfo(fontInfo)
         return fontInfo
 
     def loadSources(self):
@@ -164,7 +167,7 @@ class DesignspaceBackend:
 
         return glyph
 
-    def _unpackLocalDesignSpace(self, dsDict, ufoPath, ufoLayerName):
+    def _unpackLocalDesignSpace(self, dsDict, ufoPath, defaultLayerName):
         axes = [
             LocalAxis(
                 name=axis["name"],
@@ -180,11 +183,15 @@ class DesignspaceBackend:
             if fileName is not None:
                 raise NotImplementedError
                 # ufoPath = ...
-            ufoLayerName = source.get("layername", ufoLayerName)
+            ufoLayerName = source.get("layername", defaultLayerName)
+            sourceName = source.get(
+                "name",
+                ufoLayerName if ufoLayerName != defaultLayerName else "<default>",
+            )
             fontraLayerName = self.fontraLayerNames[ufoPath, ufoLayerName]
             sources.append(
                 Source(
-                    name=fontraLayerName,
+                    name=sourceName,
                     location=source["location"],
                     layerName=fontraLayerName,
                 )
@@ -197,17 +204,18 @@ class DesignspaceBackend:
         modTimes = set()
         self.glyphMap[glyphName] = unicodes
         layerNameMapping = {}
+        localDS = self._packLocalDesignSpace(glyph)
         for source in glyph.sources:
             globalSource = self._findGlobalSource(source.location)
-            if globalSource is None:
+            if globalSource is not None:
+                layerNameMapping[source.layerName] = globalSource["layerName"]
+            elif not localDS:
                 # TODO:
-                # If source.location uses glyph-local axes: local DS
-                # Else: create new source in the DS, and a new layer in
-                # the default source UFO
+                # Create new source in the DS, and a new layer in
+                # the default source UFO *or* create a new UFO.
                 raise NotImplementedError(
                     "unknown DS location found: insert source or make local source?"
                 )
-            layerNameMapping[source.layerName] = globalSource["layerName"]
 
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
@@ -219,7 +227,6 @@ class DesignspaceBackend:
                 glyphSet, glyphName, layer.glyph, unicodes
             )
             if glyphSet == self.defaultSourceGlyphSet:
-                localDS = self._packLocalDesignSpace(glyph)
                 if localDS:
                     layerGlyph.lib[GLYPH_DESIGNSPACE_LIB_KEY] = localDS
                 else:
@@ -251,6 +258,7 @@ class DesignspaceBackend:
         )
 
     def _packLocalDesignSpace(self, glyph):
+        defaultUFOLayerName = self.defaultReader.getDefaultLayerName()
         localDS = {}
         axes = [
             dict(
@@ -269,9 +277,11 @@ class DesignspaceBackend:
                 # in the .designspace file, so should not be written
                 # to a local designspace
                 continue
+            # FIXME: KeyError -> create new layer
             ufoPath, ufoLayerName = self.ufoLayers[source.layerName]
             sourceDict = {}
-            sourceDict["layername"] = ufoLayerName  # could skip if default layer name
+            if ufoLayerName != defaultUFOLayerName:
+                sourceDict["layername"] = ufoLayerName
             sourceDict["location"] = source.location
             sources.append(sourceDict)
         if axes:
@@ -529,8 +539,8 @@ def getGlyphMapFromGlyphSet(glyphSet):
     return glyphMap
 
 
-def uniqueNameMaker():
-    usedNames = set()
+def uniqueNameMaker(existingNames=()):
+    usedNames = set(existingNames)
 
     def makeUniqueName(name):
         count = 0
