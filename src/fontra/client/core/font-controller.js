@@ -103,6 +103,53 @@ export class FontController {
     return glyphName in this.glyphMap;
   }
 
+  async loadGlyphs(glyphNames) {
+    // Load all glyphs named in the glyphNames array, as well as
+    // all of their dependencies (made-of). Return a promise that
+    // will resolve once all requested glyphs have been loaded.
+    // The loading will be done in parallel: this is much faster if
+    // the server supports parallelism (for example fontra-rcjk).
+    const done = new Set();
+    const loading = new Set();
+
+    let allDoneFunc;
+    let allDonePromise = new Promise((resolve) => {
+      allDoneFunc = resolve;
+    });
+
+    function checkAllDone() {
+      if (!loading.length) {
+        allDoneFunc();
+      }
+    }
+
+    function reportError(error) {
+      console.error(error);
+      allDoneFunc();
+    }
+
+    const loadGlyph = async (glyphName) => {
+      if (done.has(glyphName)) {
+        return;
+      }
+      done.add(glyphName);
+      loading.add(glyphName);
+      await this.getGlyph(glyphName);
+      for (const subGlyphName of this.iterGlyphMadeOf(glyphName)) {
+        loadGlyph(subGlyphName).then(checkAllDone).catch(reportError);
+      }
+      loading.delete(glyphName);
+    };
+
+    glyphNames.forEach((glyphName) =>
+      loadGlyph(glyphName).then(checkAllDone).catch(reportError)
+    );
+
+    if (glyphNames.length) {
+      return allDonePromise;
+    }
+  }
+
   getGlyph(glyphName) {
     if (!this.hasGlyph(glyphName)) {
       return Promise.resolve(null);

@@ -240,6 +240,7 @@ export class SceneModel {
 
   async updateScene() {
     this.updateBackgroundGlyphs();
+    // const startTime = performance.now();
     [this.positionedLines, this.longestLineLength] = await buildScene(
       this.fontController,
       this.glyphLines,
@@ -247,6 +248,8 @@ export class SceneModel {
       this._localLocations,
       this.textAlignment
     );
+    // const elapsed = performance.now() - startTime;
+    // console.log("buildScene", elapsed);
 
     const usedGlyphNames = getUsedGlyphNames(this.fontController, this.positionedLines);
     const cachedGlyphNames = difference(
@@ -597,6 +600,14 @@ async function buildScene(
   const lineDistance = 1.1 * fontController.unitsPerEm; // TODO make factor user-configurable
   const positionedLines = [];
   let longestLineLength = 0;
+
+  const neededGlyphs = new Set(
+    glyphLines
+      .map((glyphLine) => glyphLine.map((glyphInfo) => glyphInfo.glyphName))
+      .flat()
+  );
+  await fontController.loadGlyphs([...neededGlyphs]);
+
   for (const glyphLine of glyphLines) {
     const positionedLine = { glyphs: [] };
     let x = 0;
