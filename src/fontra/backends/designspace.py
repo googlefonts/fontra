@@ -210,6 +210,7 @@ class DesignspaceBackend:
             if globalSource is not None:
                 layerNameMapping[source.layerName] = globalSource["layerName"]
             elif not localDS:
+                print(source.location)
                 # TODO:
                 # Create new source in the DS, and a new layer in
                 # the default source UFO *or* create a new UFO.
@@ -258,6 +259,8 @@ class DesignspaceBackend:
         )
 
     def _packLocalDesignSpace(self, glyph):
+        if not glyph.axes:
+            return None
         defaultUFOLayerName = self.defaultReader.getDefaultLayerName()
         localDS = {}
         axes = [
@@ -285,8 +288,7 @@ class DesignspaceBackend:
                 sourceDict["layername"] = ufoLayerName
             sourceDict["location"] = source.location
             sources.append(sourceDict)
-        if axes:
-            localDS["axes"] = axes
+        localDS["axes"] = axes
         if sources:
             localDS["sources"] = sources
         return localDS
