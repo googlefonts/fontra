@@ -206,7 +206,7 @@ class DesignspaceBackend:
         layerNameMapping = {}
         localDS = self._packLocalDesignSpace(glyph)
         for source in glyph.sources:
-            globalSource = self._findGlobalSource(source.location)
+            globalSource = self._getGlobalSource(source, not localDS)
             if globalSource is not None:
                 layerNameMapping[source.layerName] = globalSource["layerName"]
             elif not localDS:
@@ -252,10 +252,13 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
-    def _findGlobalSource(self, location):
-        return self.globalSourcesByLocation.get(
-            tuplifyLocation({**self.defaultLocation, **location})
+    def _getGlobalSource(self, source, create=False):
+        globalSource = self.globalSourcesByLocation.get(
+            tuplifyLocation({**self.defaultLocation, **source.location})
         )
+        # if globalSource is None and create:
+        #     print("create!", source)
+        return globalSource
 
     def _packLocalDesignSpace(self, glyph):
         if not glyph.axes:
@@ -273,7 +276,7 @@ class DesignspaceBackend:
         ]
         sources = []
         for source in glyph.sources:
-            globalSource = self._findGlobalSource(source.location)
+            globalSource = self._getGlobalSource(source)
             if globalSource is not None:
                 # this source is part of the global sources as defined
                 # in the .designspace file, so should not be written
