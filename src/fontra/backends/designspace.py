@@ -210,7 +210,6 @@ class DesignspaceBackend:
             if globalSource is not None:
                 layerNameMapping[source.layerName] = globalSource["layerName"]
             elif not localDS:
-                print(source.location)
                 # TODO:
                 # Create new source in the DS, and a new layer in
                 # the default source UFO *or* create a new UFO.
