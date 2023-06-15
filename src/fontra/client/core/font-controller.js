@@ -107,6 +107,8 @@ export class FontController {
     // Load all glyphs named in the glyphNames array, as well as
     // all of their dependencies (made-of). Return a promise that
     // will resolve once all requested glyphs have been loaded.
+    // The loading will be done in parallel: this is much faster if
+    // the server supports parallelism (for example fontra-rcjk).
     const done = new Set();
     const loading = new Set();
 
