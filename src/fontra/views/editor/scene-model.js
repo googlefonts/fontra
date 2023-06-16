@@ -678,8 +678,8 @@ async function buildScene(
       positionedLine.bounds = unionRect(
         ...positionedLine.glyphs.map((glyph) => glyph.bounds)
       );
-      positionedLines.push(positionedLine);
     }
+    positionedLines.push(positionedLine);
   }
   return [positionedLines, longestLineLength];
 }
