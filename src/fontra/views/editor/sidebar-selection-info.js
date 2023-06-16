@@ -1,6 +1,10 @@
 import { recordChanges } from "/core/change-recorder.js";
 import { Form } from "/core/ui-form.js";
-import { makeUPlusStringFromCodePoint, parseSelection } from "/core/utils.js";
+import {
+  getCharFromUnicode,
+  makeUPlusStringFromCodePoint,
+  parseSelection,
+} from "/core/utils.js";
 
 export class SidebarSelectionInfo {
   constructor(sceneController, fontController) {
@@ -28,7 +32,10 @@ export class SidebarSelectionInfo {
       unicodes = [positionedGlyph.character.codePointAt(0)];
     }
     const unicodesStr = unicodes
-      .map((code) => makeUPlusStringFromCodePoint(code))
+      .map(
+        (code) =>
+          `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromUnicode(code)})`
+      )
       .join(" ");
     const canEdit = glyphController?.canEdit;
 
