@@ -83,3 +83,7 @@
 .ui-form-value input[type="range"] {
   width: 7em;
 }
+
+.ui-form-value.text {
+  white-space: normal;
+}
