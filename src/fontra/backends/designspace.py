@@ -13,7 +13,7 @@ import watchfiles
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.misc.transform import Transform
 from fontTools.pens.recordingPen import RecordingPointPen
-from fontTools.ufoLib import UFOReader
+from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ..core.changes import applyChange
@@ -91,6 +91,7 @@ class DesignspaceBackend:
         self.fontraLayerNames = {}  # key: (path, ufoLayerName), value: fontraLayerName
         self.ufoLayers = {}  # key: fontraLayerName, value: (path, ufoLayerName)
         self.globalSources = []
+        self.defaultSourceReader = None
         self.defaultSourceGlyphSet = None
         makeUniqueSourceName = uniqueNameMaker()
         for sourceIndex, source in enumerate(self.dsDoc.sources):
@@ -100,7 +101,7 @@ class DesignspaceBackend:
             path = source.path
             reader = self.ufoReaders.get(path)
             if reader is None:
-                reader = self.ufoReaders[path] = UFOReader(path)
+                reader = self.ufoReaders[path] = UFOReaderWriter(path)
             for ufoLayerName in reader.getLayerNames():
                 key = (path, ufoLayerName)
                 fontraLayerName = self.fontraLayerNames.get(key)
@@ -109,7 +110,7 @@ class DesignspaceBackend:
                     self.fontraLayerNames[key] = fontraLayerName
                     self.ufoLayers[fontraLayerName] = key
                     self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
-                        ufoLayerName
+                        ufoLayerName, defaultLayer=False
                     )
             sourceLayerName = (
                 source.layerName
@@ -123,6 +124,7 @@ class DesignspaceBackend:
                 layerName=fontraLayerName,
             )
             if source == self.dsDoc.default:
+                self.defaultSourceReader = reader
                 self.defaultSourceGlyphSet = self.ufoGlyphSets[fontraLayerName]
             self.globalSources.append(sourceDict)
         self.globalSourcesByLocation = {
@@ -261,11 +263,45 @@ class DesignspaceBackend:
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
     def _getGlobalSource(self, source, create=False):
-        globalSource = self.globalSourcesByLocation.get(
-            tuplifyLocation({**self.defaultLocation, **source.location})
-        )
-        # if globalSource is None and create:
-        #     print("create!", source)
+        sourceLocation = {**self.defaultLocation, **source.location}
+        sourceLocationTuple = tuplifyLocation(sourceLocation)
+        globalSource = self.globalSourcesByLocation.get(sourceLocationTuple)
+        if globalSource is None and create:
+            if isLocationAtPole(source.location, self.axisPolePositions):
+                raise NotImplementedError("create new UFO")
+            else:
+                makeUniqueName = uniqueNameMaker(
+                    self.defaultSourceReader.getLayerNames()
+                )
+                # TODO: parse source.layerName, in case it's FileName/layerName?
+                ufoLayerName = makeUniqueName(source.name)
+                glyphSet = self.defaultReader.getGlyphSet(
+                    ufoLayerName, defaultLayer=False
+                )
+                self.defaultReader.writeLayerContents()
+
+                ufoPath = self.dsDoc.default.path
+                sourceFileName = os.path.splitext(os.path.basename(ufoPath))[0]
+                self.dsDoc.addSourceDescriptor(
+                    styleName=source.name,
+                    location=sourceLocation,
+                    path=ufoPath,
+                    layerName=ufoLayerName,
+                )
+                self.dsDoc.write(self.dsDoc.path)
+
+                fontraLayerName = f"{sourceFileName}/{ufoLayerName}"
+                globalSource = dict(
+                    location=sourceLocation,
+                    name=source.name,
+                    layerName=fontraLayerName,
+                )
+                self.globalSources.append(globalSource)
+                self.globalSourcesByLocation[sourceLocationTuple] = globalSource
+                self.ufoGlyphSets[fontraLayerName] = glyphSet
+                self.fontraLayerNames[ufoPath, ufoLayerName] = fontraLayerName
+                self.ufoLayers[fontraLayerName] = (ufoPath, ufoLayerName)
+
         return globalSource
 
     def _packLocalDesignSpace(self, glyph):
@@ -608,3 +644,10 @@ def cleanupWatchFilesChanges(changes):
 def tuplifyLocation(loc):
     # TODO: find good place to share this (duplicated from opentype.py)
     return tuple(sorted(loc.items()))
+
+
+def isLocationAtPole(location, poles):
+    for name, value in location.items():
+        if value not in poles.get(name, ()):
+            return False
+    return True
