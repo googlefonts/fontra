@@ -45,9 +45,8 @@ class DesignspaceBackend:
         self.dsDoc = dsDoc
         self.dsDoc.findDefault()
         axes = []
-        defaultLocation = {}
+        axisPolePositions = {}
         for axis in self.dsDoc.axes:
-            defaultLocation[axis.name] = axis.map_forward(axis.default)
             axisDict = {
                 "minValue": axis.minimum,
                 "defaultValue": axis.default,
@@ -57,8 +56,17 @@ class DesignspaceBackend:
             if axis.map:
                 axisDict["mapping"] = [[a, b] for a, b in axis.map]
             axes.append(axisDict)
+            axisPolePositions[axis.name] = (
+                axis.map_forward(axis.minimum),
+                axis.map_forward(axis.default),
+                axis.map_forward(axis.maximum),
+            )
         self.axes = axes
-        self.defaultLocation = defaultLocation
+        self.axisPolePositions = axisPolePositions
+        self.defaultLocation = {
+            axisName: polePosition[1]
+            for axisName, polePosition in axisPolePositions.items()
+        }
         self.loadSources()
         self.buildFileNameMapping()
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultSourceGlyphSet)
