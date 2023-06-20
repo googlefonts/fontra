@@ -124,7 +124,7 @@ class ItemList:
             self._mappings[attrTuple] = keyMapping
         return keyMapping.get(valueTuple)
 
-    def iterItems(self, attrName):
+    def iterAttrs(self, attrName):
         for item in self:
             yield getattr(item, attrName)
 
@@ -225,7 +225,7 @@ class DesignspaceBackend:
 
     def buildFileNameMapping(self):
         glifFileNames = {}
-        for glyphSet in self.ufoLayers.iterItems("glyphSet"):
+        for glyphSet in self.ufoLayers.iterAttrs("glyphSet"):
             for glyphName, fileName in glyphSet.contents.items():
                 glifFileNames[fileName] = glyphName
         self.glifFileNames = glifFileNames
@@ -450,7 +450,7 @@ class DesignspaceBackend:
         return self.dsDoc.lib
 
     async def watchExternalChanges(self):
-        ufoPaths = sorted(set(self.ufoLayers.iterItems("path")))
+        ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
         async for changes in watchfiles.awatch(*ufoPaths):
             changes = cleanupWatchFilesChanges(changes)
             changedItems = await self._analyzeExternalChanges(changes)
@@ -514,7 +514,7 @@ class DesignspaceBackend:
             # TODO: come up with a better solution.
             #
             await asyncio.sleep(0.15)
-            for glyphSet in self.ufoLayers.iterItems("glyphSet"):
+            for glyphSet in self.ufoLayers.iterAttrs("glyphSet"):
                 glyphSet.rebuildContents()
 
         return changedItems
