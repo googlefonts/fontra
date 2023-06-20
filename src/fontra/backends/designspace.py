@@ -39,96 +39,6 @@ VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
 GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
 
 
-class UFOManager:
-    @cache
-    def getReader(self, path):
-        return UFOReaderWriter(path)
-
-    @cache
-    def getGlyphSet(self, path, layerName):
-        return self.getReader(path).getGlyphSet(layerName, defaultLayer=False)
-
-
-@dataclass(kw_only=True, frozen=True)
-class DSSource:
-    name: str
-    layer: UFOLayer
-    location: dict[str, float]
-    isDefault: bool = False
-
-    @cached_property
-    def locationTuple(self):
-        return tuplifyLocation(self.location) if self.location else None
-
-    def newFontraSource(self):
-        return Source(
-            name=self.name,
-            location=copy(self.location),
-            layerName=self.layer.fontraLayerName,
-        )
-
-
-@dataclass(kw_only=True, frozen=True)
-class UFOLayer:
-    manager: UFOManager
-    path: str
-    name: str
-
-    @cached_property
-    def fileName(self):
-        return os.path.splitext(os.path.basename(self.path))[0]
-
-    @cached_property
-    def fontraLayerName(self):
-        return f"{self.fileName}/{self.name}"
-
-    @cached_property
-    def reader(self):
-        return self.manager.getReader(self.path)
-
-    @cached_property
-    def glyphSet(self):
-        return self.manager.getGlyphSet(self.path, self.name)
-
-
-class ItemList:
-    def __init__(self):
-        self.items = []
-        self.invalidateCache()
-
-    def __iter__(self):
-        return iter(self.items)
-
-    def append(self, item):
-        self.items.append(item)
-        self.invalidateCache()
-
-    def invalidateCache(self):
-        self._mappings = {}
-
-    def findItem(self, **kwargs):
-        items = self.findItems(**kwargs)
-        return items[0] if items else None
-
-    def findItems(self, **kwargs):
-        attrTuple = tuple(kwargs.keys())
-        valueTuple = tuple(kwargs.values())
-        keyMapping = self._mappings.get(attrTuple)
-        if keyMapping is None:
-            keyMapping = defaultdict(list)
-            for item in self.items:
-                itemValueTuple = tuple(
-                    getattr(item, attrName) for attrName in attrTuple
-                )
-                keyMapping[itemValueTuple].append(item)
-            self._mappings[attrTuple] = keyMapping
-        return keyMapping.get(valueTuple)
-
-    def iterAttrs(self, attrName):
-        for item in self:
-            yield getattr(item, attrName)
-
-
 class DesignspaceBackend:
     @classmethod
     def fromPath(cls, path):
@@ -600,6 +510,96 @@ class UFOGlyph:
 
 class UFOFontInfo:
     unitsPerEm = 1000
+
+
+class UFOManager:
+    @cache
+    def getReader(self, path):
+        return UFOReaderWriter(path)
+
+    @cache
+    def getGlyphSet(self, path, layerName):
+        return self.getReader(path).getGlyphSet(layerName, defaultLayer=False)
+
+
+@dataclass(kw_only=True, frozen=True)
+class DSSource:
+    name: str
+    layer: UFOLayer
+    location: dict[str, float]
+    isDefault: bool = False
+
+    @cached_property
+    def locationTuple(self):
+        return tuplifyLocation(self.location) if self.location else None
+
+    def newFontraSource(self):
+        return Source(
+            name=self.name,
+            location=copy(self.location),
+            layerName=self.layer.fontraLayerName,
+        )
+
+
+@dataclass(kw_only=True, frozen=True)
+class UFOLayer:
+    manager: UFOManager
+    path: str
+    name: str
+
+    @cached_property
+    def fileName(self):
+        return os.path.splitext(os.path.basename(self.path))[0]
+
+    @cached_property
+    def fontraLayerName(self):
+        return f"{self.fileName}/{self.name}"
+
+    @cached_property
+    def reader(self):
+        return self.manager.getReader(self.path)
+
+    @cached_property
+    def glyphSet(self):
+        return self.manager.getGlyphSet(self.path, self.name)
+
+
+class ItemList:
+    def __init__(self):
+        self.items = []
+        self.invalidateCache()
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def append(self, item):
+        self.items.append(item)
+        self.invalidateCache()
+
+    def invalidateCache(self):
+        self._mappings = {}
+
+    def findItem(self, **kwargs):
+        items = self.findItems(**kwargs)
+        return items[0] if items else None
+
+    def findItems(self, **kwargs):
+        attrTuple = tuple(kwargs.keys())
+        valueTuple = tuple(kwargs.values())
+        keyMapping = self._mappings.get(attrTuple)
+        if keyMapping is None:
+            keyMapping = defaultdict(list)
+            for item in self.items:
+                itemValueTuple = tuple(
+                    getattr(item, attrName) for attrName in attrTuple
+                )
+                keyMapping[itemValueTuple].append(item)
+            self._mappings[attrTuple] = keyMapping
+        return keyMapping.get(valueTuple)
+
+    def iterAttrs(self, attrName):
+        for item in self:
+            yield getattr(item, attrName)
 
 
 def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
