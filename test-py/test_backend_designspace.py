@@ -103,11 +103,6 @@ async def test_addNewDenseSource(writableTestFont):
 
 def unpackSources(sources):
     return [
-        dict(
-            location=s.location,
-            styleName=s.styleName,
-            filename=s.filename,
-            layerName=s.layerName,
-        )
+        {k: getattr(s, k) for k in ["location", "styleName", "filename", "layerName"]}
         for s in sources
     ]
