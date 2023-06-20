@@ -611,7 +611,7 @@ class ItemList:
                     getattr(item, attrName) for attrName in attrTuple
                 )
                 keyMapping[itemValueTuple].append(item)
-            self._mappings[attrTuple] = keyMapping
+            self._mappings[attrTuple] = dict(keyMapping)
         return keyMapping.get(valueTuple)
 
     def iterAttrs(self, attrName):
