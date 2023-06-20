@@ -184,7 +184,7 @@ export class PointerTool extends BaseTool {
         const startPoint = instance.path.getAbsolutePointIndex(contourIndex, 0);
         const endPoint = instance.path.contourInfo[contourIndex].endPoint;
         const newSelection = new Set();
-        for (const i of range(startPoint, endPoint)) {
+        for (const i of range(startPoint, endPoint + 1)) {
           const pointType = instance.path.pointTypes[i] & VarPackedPath.POINT_TYPE_MASK;
           if (pointType === VarPackedPath.ON_CURVE) {
             newSelection.add(`point/${i}`);
