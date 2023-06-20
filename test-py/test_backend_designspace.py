@@ -47,7 +47,7 @@ async def test_roundTripGlyph(writableTestFont, glyphName):
     assert existingData == newData  # just in case the keys differ
 
 
-async def test_addNewSource(writableTestFont):
+async def test_addNewSparseSource(writableTestFont):
     glyphName = "A"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
@@ -67,6 +67,37 @@ async def test_addNewSource(writableTestFont):
         styleName="mid",
         filename="MutatorSansLightCondensed.ufo",
         layerName="mid",
+    )
+
+
+async def test_addNewDenseSource(writableTestFont):
+    glyphName = "A"
+    assert writableTestFont.dsDoc.axes[0].name == "width"
+
+    # Move the width axis maximum
+    writableTestFont.dsDoc.axes[0].maximum = 1500
+    writableTestFont.__init__(writableTestFont.dsDoc)  # hacky reload from ds doc
+
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+    dsSources = unpackSources(writableTestFont.dsDoc.sources)
+
+    glyph.sources.append(
+        Source(name="widest", location={"width": 1500}, layerName="widest")
+    )
+    glyph.layers["widest"] = Layer(glyph=StaticGlyph())
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    newDSDoc = DesignSpaceDocument.fromfile(writableTestFont.dsDoc.path)
+    newDSSources = unpackSources(newDSDoc.sources)
+    assert dsSources == newDSSources[: len(dsSources)]
+    assert len(newDSSources) == len(dsSources) + 1
+    assert newDSSources[-1] == dict(
+        location=dict(weight=150, width=1500),
+        styleName="widest",
+        filename="MutatorSans_widest.ufo",
+        layerName="public.default",
     )
 
 

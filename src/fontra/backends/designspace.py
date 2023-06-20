@@ -4,6 +4,7 @@ import asyncio
 import logging
 import math
 import os
+import pathlib
 from copy import copy
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -346,7 +347,20 @@ class DesignspaceBackend:
         if dsSource is None and create:
             manager = self.defaultUFOLayer.manager
             if isLocationAtPole(source.location, self.axisPolePositions):
-                raise NotImplementedError(f"create new UFO {source.location}")
+                ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
+                makeUniqueFileName = uniqueNameMaker(
+                    p.stem for p in ufoDir.glob("*.ufo")
+                )
+                dsFileName = pathlib.Path(self.dsDoc.path).stem
+                ufoFileName = makeUniqueFileName(f"{dsFileName}_{source.name}")
+                ufoFileName = ufoFileName + ".ufo"
+                ufoPath = os.fspath(ufoDir / ufoFileName)
+                assert not os.path.exists(ufoPath)
+                reader = manager.getReader(ufoPath)
+                _ = reader.getGlyphSet()  # this creates the default layer
+                reader.writeLayerContents()
+                ufoLayerName = reader.getDefaultLayerName()
+                assert os.path.isdir(ufoPath)
             else:
                 makeUniqueName = uniqueNameMaker(self.defaultReader.getLayerNames())
                 # TODO: parse source.layerName, in case it's FileName/layerName?
@@ -356,27 +370,27 @@ class DesignspaceBackend:
                 _ = manager.getGlyphSet(ufoPath, ufoLayerName)
                 self.defaultReader.writeLayerContents()
 
-                self.dsDoc.addSourceDescriptor(
-                    styleName=source.name,
-                    location=sourceLocation,
-                    path=ufoPath,
-                    layerName=ufoLayerName,
-                )
-                self.dsDoc.write(self.dsDoc.path)
+            self.dsDoc.addSourceDescriptor(
+                styleName=source.name,
+                location=sourceLocation,
+                path=ufoPath,
+                layerName=ufoLayerName,
+            )
+            self.dsDoc.write(self.dsDoc.path)
 
-                ufoLayer = UFOLayer(
-                    manager=manager,
-                    path=ufoPath,
-                    name=ufoLayerName,
-                )
+            ufoLayer = UFOLayer(
+                manager=manager,
+                path=ufoPath,
+                name=ufoLayerName,
+            )
 
-                dsSource = DSSource(
-                    name=source.name,
-                    layer=ufoLayer,
-                    location=sourceLocation,
-                )
-                self.dsSources.append(dsSource)
-                self.ufoLayers.append(ufoLayer)
+            dsSource = DSSource(
+                name=source.name,
+                layer=ufoLayer,
+                location=sourceLocation,
+            )
+            self.dsSources.append(dsSource)
+            self.ufoLayers.append(ufoLayer)
 
         return dsSource.newFontraSource() if dsSource is not None else None
 
