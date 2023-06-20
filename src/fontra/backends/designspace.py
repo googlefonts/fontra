@@ -301,13 +301,6 @@ class DesignspaceBackend:
             globalSource = self._getGlobalSource(source, not localDS)
             if globalSource is not None:
                 layerNameMapping[source.layerName] = globalSource.layerName
-            elif not localDS:
-                # TODO:
-                # Create new source in the DS, and a new layer in
-                # the default source UFO *or* create a new UFO.
-                raise NotImplementedError(
-                    "unknown DS location found: insert source or make local source?"
-                )
 
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
