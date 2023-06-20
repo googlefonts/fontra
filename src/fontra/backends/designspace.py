@@ -5,6 +5,7 @@ import logging
 import math
 import os
 import pathlib
+from collections import defaultdict
 from copy import copy
 from dataclasses import asdict, dataclass
 from datetime import datetime
@@ -93,6 +94,7 @@ class UFOLayer:
 class ItemList:
     def __init__(self):
         self.items = []
+        self.invalidateCache()
 
     def __iter__(self):
         return iter(self.items)
@@ -102,16 +104,25 @@ class ItemList:
         self.invalidateCache()
 
     def invalidateCache(self):
-        self.findItem.cache_clear()
+        self._mappings = {}
 
-    @cache
     def findItem(self, **kwargs):
-        for item in self.items:
-            if all(
-                getattr(item, attrName) == value for attrName, value in kwargs.items()
-            ):
-                return item
-        return None
+        items = self.findItems(**kwargs)
+        return items[0] if items else None
+
+    def findItems(self, **kwargs):
+        attrTuple = tuple(kwargs.keys())
+        valueTuple = tuple(kwargs.values())
+        keyMapping = self._mappings.get(attrTuple)
+        if keyMapping is None:
+            keyMapping = defaultdict(list)
+            for item in self.items:
+                itemValueTuple = tuple(
+                    getattr(item, attrName) for attrName in attrTuple
+                )
+                keyMapping[itemValueTuple].append(item)
+            self._mappings[attrTuple] = keyMapping
+        return keyMapping.get(valueTuple)
 
     def iterItems(self, attrName):
         for item in self:
