@@ -39,6 +39,18 @@ VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
 GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
 
 
+infoAttrsToCopy = [
+    "unitsPerEm",
+    "ascender",
+    "descender",
+    "xHeight",
+    "capHeight",
+    "familyName",
+    "copyright",
+    "year",
+]
+
+
 class DesignspaceBackend:
     @classmethod
     def fromPath(cls, path):
@@ -277,7 +289,12 @@ class DesignspaceBackend:
                 ufoFileName = ufoFileName + ".ufo"
                 ufoPath = os.fspath(ufoDir / ufoFileName)
                 assert not os.path.exists(ufoPath)
-                reader = manager.getReader(ufoPath)
+                reader = manager.getReader(ufoPath)  # this creates the UFO
+                info = UFOFontInfo()
+                for infoAttr in infoAttrsToCopy:
+                    value = getattr(self.defaultFontInfo, infoAttr, None)
+                    if value is not None:
+                        setattr(info, infoAttr, value)
                 _ = reader.getGlyphSet()  # this creates the default layer
                 reader.writeLayerContents()
                 ufoLayerName = reader.getDefaultLayerName()
