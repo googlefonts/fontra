@@ -344,15 +344,18 @@ class DesignspaceBackend:
         sourceLocationTuple = tuplifyLocation(sourceLocation)
         dsSource = self.dsSources.findItem(locationTuple=sourceLocationTuple)
         if dsSource is None and create:
+            manager = self.defaultUFOLayer.manager
             if isLocationAtPole(source.location, self.axisPolePositions):
                 raise NotImplementedError(f"create new UFO {source.location}")
             else:
                 makeUniqueName = uniqueNameMaker(self.defaultReader.getLayerNames())
                 # TODO: parse source.layerName, in case it's FileName/layerName?
                 ufoLayerName = makeUniqueName(source.name)
+                # Create the new UFO layer now
+                ufoPath = self.dsDoc.default.path
+                _ = manager.getGlyphSet(ufoPath, ufoLayerName)
                 self.defaultReader.writeLayerContents()
 
-                ufoPath = self.dsDoc.default.path
                 self.dsDoc.addSourceDescriptor(
                     styleName=source.name,
                     location=sourceLocation,
@@ -362,7 +365,7 @@ class DesignspaceBackend:
                 self.dsDoc.write(self.dsDoc.path)
 
                 ufoLayer = UFOLayer(
-                    manager=self.defaultUFOLayer.manager,
+                    manager=manager,
                     path=ufoPath,
                     name=ufoLayerName,
                 )
