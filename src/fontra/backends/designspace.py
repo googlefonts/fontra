@@ -4,16 +4,19 @@ import asyncio
 import logging
 import math
 import os
-from dataclasses import asdict
+import pathlib
+from collections import defaultdict
+from copy import copy
+from dataclasses import asdict, dataclass
 from datetime import datetime
-from functools import cached_property
+from functools import cache, cached_property
 from types import SimpleNamespace
 
 import watchfiles
 from fontTools.designspaceLib import DesignSpaceDocument
 from fontTools.misc.transform import Transform
 from fontTools.pens.recordingPen import RecordingPointPen
-from fontTools.ufoLib import UFOReader
+from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ..core.changes import applyChange
@@ -36,6 +39,18 @@ VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
 GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
 
 
+infoAttrsToCopy = [
+    "unitsPerEm",
+    "ascender",
+    "descender",
+    "xHeight",
+    "capHeight",
+    "familyName",
+    "copyright",
+    "year",
+]
+
+
 class DesignspaceBackend:
     @classmethod
     def fromPath(cls, path):
@@ -45,9 +60,8 @@ class DesignspaceBackend:
         self.dsDoc = dsDoc
         self.dsDoc.findDefault()
         axes = []
-        defaultLocation = {}
+        axisPolePositions = {}
         for axis in self.dsDoc.axes:
-            defaultLocation[axis.name] = axis.map_forward(axis.default)
             axisDict = {
                 "minValue": axis.minimum,
                 "defaultValue": axis.default,
@@ -57,19 +71,38 @@ class DesignspaceBackend:
             if axis.map:
                 axisDict["mapping"] = [[a, b] for a, b in axis.map]
             axes.append(axisDict)
+            axisPolePositions[axis.name] = (
+                axis.map_forward(axis.minimum),
+                axis.map_forward(axis.default),
+                axis.map_forward(axis.maximum),
+            )
         self.axes = axes
-        self.defaultLocation = defaultLocation
-        self.loadSources()
+        self.axisPolePositions = axisPolePositions
+        self.defaultLocation = {
+            axisName: polePosition[1]
+            for axisName, polePosition in axisPolePositions.items()
+        }
+        self.loadUFOLayers()
         self.buildFileNameMapping()
-        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultSourceGlyphSet)
+        self.glyphMap = getGlyphMapFromGlyphSet(
+            self.dsSources.findItem(isDefault=True).layer.glyphSet
+        )
         self.savedGlyphModificationTimes = {}
 
     def close(self):
         pass
 
     @property
+    def defaultDSSource(self):
+        return self.dsSources.findItem(isDefault=True)
+
+    @property
+    def defaultUFOLayer(self):
+        return self.defaultDSSource.layer
+
+    @property
     def defaultReader(self):
-        return self.ufoReaders[self.dsDoc.default.path]
+        return self.defaultUFOLayer.reader
 
     @cached_property
     def defaultFontInfo(self):
@@ -77,53 +110,44 @@ class DesignspaceBackend:
         self.defaultReader.readInfo(fontInfo)
         return fontInfo
 
-    def loadSources(self):
-        self.ufoReaders = {}  # keyed by path
-        self.ufoGlyphSets = {}  # keyed by fontraLayerName
-        self.fontraLayerNames = {}  # key: (path, ufoLayerName), value: fontraLayerName
-        self.ufoLayers = {}  # key: fontraLayerName, value: (path, ufoLayerName)
-        self.globalSources = []
-        self.defaultSourceGlyphSet = None
+    def loadUFOLayers(self):
+        manager = UFOManager()
+        self.dsSources = ItemList()
+        self.ufoLayers = ItemList()
+
+        # Using a dict as an order-preserving set:
+        ufoPaths = {source.path: None for source in self.dsDoc.sources}
+        for ufoPath in ufoPaths:
+            reader = manager.getReader(ufoPath)
+            for layerName in reader.getLayerNames():
+                self.ufoLayers.append(
+                    UFOLayer(manager=manager, path=ufoPath, name=layerName)
+                )
+
         makeUniqueSourceName = uniqueNameMaker()
-        for sourceIndex, source in enumerate(self.dsDoc.sources):
-            sourceFileName = os.path.splitext(os.path.basename(source.path))[0]
-            sourceStyleName = source.styleName or sourceFileName
+        for source in self.dsDoc.sources:
+            reader = manager.getReader(source.path)
+            defaultLayerName = reader.getDefaultLayerName()
+            sourceLayerName = source.layerName or defaultLayerName
+
+            sourceLayer = self.ufoLayers.findItem(
+                path=source.path, name=sourceLayerName
+            )
+            sourceStyleName = source.styleName or sourceLayer.fileName
             sourceName = makeUniqueSourceName(source.layerName or sourceStyleName)
-            path = source.path
-            reader = self.ufoReaders.get(path)
-            if reader is None:
-                reader = self.ufoReaders[path] = UFOReader(path)
-            for ufoLayerName in reader.getLayerNames():
-                key = (path, ufoLayerName)
-                fontraLayerName = self.fontraLayerNames.get(key)
-                if fontraLayerName is None:
-                    fontraLayerName = f"{sourceFileName}/{ufoLayerName}"
-                    self.fontraLayerNames[key] = fontraLayerName
-                    self.ufoLayers[fontraLayerName] = key
-                    self.ufoGlyphSets[fontraLayerName] = reader.getGlyphSet(
-                        ufoLayerName
-                    )
-            sourceLayerName = (
-                source.layerName
-                if source.layerName is not None
-                else reader.getDefaultLayerName()
+
+            self.dsSources.append(
+                DSSource(
+                    name=sourceName,
+                    layer=sourceLayer,
+                    location={**self.defaultLocation, **source.location},
+                    isDefault=source == self.dsDoc.default,
+                )
             )
-            fontraLayerName = self.fontraLayerNames[(path, sourceLayerName)]
-            sourceDict = dict(
-                location={**self.defaultLocation, **source.location},
-                name=sourceName,
-                layerName=fontraLayerName,
-            )
-            if source == self.dsDoc.default:
-                self.defaultSourceGlyphSet = self.ufoGlyphSets[fontraLayerName]
-            self.globalSources.append(sourceDict)
-        self.globalSourcesByLocation = {
-            tuplifyLocation(source["location"]): source for source in self.globalSources
-        }
 
     def buildFileNameMapping(self):
         glifFileNames = {}
-        for glyphSet in self.ufoGlyphSets.values():
+        for glyphSet in self.ufoLayers.iterAttrs("glyphSet"):
             for glyphName, fileName in glyphSet.contents.items():
                 glifFileNames[fileName] = glyphName
         self.glifFileNames = glifFileNames
@@ -144,25 +168,27 @@ class DesignspaceBackend:
         glyph = VariableGlyph(glyphName)
 
         sources = []
-        for globalSource in self.globalSources:
-            glyphSet = self.ufoGlyphSets[globalSource["layerName"]]
+        for dsSource in self.dsSources:
+            glyphSet = dsSource.layer.glyphSet
             if glyphName not in glyphSet:
                 continue
-            sources.append(Source(**globalSource))
+            sources.append(dsSource.newFontraSource())
         glyph.sources = sources
 
         layers = {}
-        for fontraLayerName, glyphSet in self.ufoGlyphSets.items():
-            if glyphName not in glyphSet:
+        for ufoLayer in self.ufoLayers:
+            if glyphName not in ufoLayer.glyphSet:
                 continue
-            staticGlyph, ufoGlyph = serializeStaticGlyph(glyphSet, glyphName)
-            if glyphSet == self.defaultSourceGlyphSet:
+
+            staticGlyph, ufoGlyph = serializeStaticGlyph(ufoLayer.glyphSet, glyphName)
+            if ufoLayer == self.defaultUFOLayer:
                 localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
                 if localDS is not None:
                     glyph.axes, glyph.sources = self._unpackLocalDesignSpace(
-                        localDS, *self.ufoLayers[fontraLayerName]
+                        localDS, ufoLayer.path, ufoLayer.name
                     )
-            layers[fontraLayerName] = Layer(staticGlyph)
+            layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
+
         glyph.layers = layers
 
         return glyph
@@ -188,12 +214,12 @@ class DesignspaceBackend:
                 "name",
                 ufoLayerName if ufoLayerName != defaultLayerName else "<default>",
             )
-            fontraLayerName = self.fontraLayerNames[ufoPath, ufoLayerName]
+            ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
             sources.append(
                 Source(
                     name=sourceName,
                     location=source["location"],
-                    layerName=fontraLayerName,
+                    layerName=ufoLayer.fontraLayerName,
                 )
             )
         return axes, sources
@@ -206,27 +232,20 @@ class DesignspaceBackend:
         layerNameMapping = {}
         localDS = self._packLocalDesignSpace(glyph)
         for source in glyph.sources:
-            globalSource = self._findGlobalSource(source.location)
+            globalSource = self._getGlobalSource(source, not localDS)
             if globalSource is not None:
-                layerNameMapping[source.layerName] = globalSource["layerName"]
-            elif not localDS:
-                # TODO:
-                # Create new source in the DS, and a new layer in
-                # the default source UFO *or* create a new UFO.
-                raise NotImplementedError(
-                    "unknown DS location found: insert source or make local source?"
-                )
+                layerNameMapping[source.layerName] = globalSource.layerName
 
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
             layerName = layerNameMapping.get(layerName, layerName)
-            glyphSet = self.ufoGlyphSets[layerName]
+            glyphSet = self.ufoLayers.findItem(fontraLayerName=layerName).glyphSet
             usedLayers.add(layerName)
             writeGlyphSetContents = glyphName not in glyphSet
             layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
                 glyphSet, glyphName, layer.glyph, unicodes
             )
-            if glyphSet == self.defaultSourceGlyphSet:
+            if glyphSet == self.defaultUFOLayer.glyphSet:
                 if localDS:
                     layerGlyph.lib[GLYPH_DESIGNSPACE_LIB_KEY] = localDS
                 else:
@@ -240,11 +259,13 @@ class DesignspaceBackend:
             modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
 
         relevantLayerNames = set(
-            ln for ln, gs in self.ufoGlyphSets.items() if glyphName in gs
+            layer.fontraLayerName
+            for layer in self.ufoLayers
+            if glyphName in layer.glyphSet
         )
         layersToDelete = relevantLayerNames - usedLayers
         for layerName in layersToDelete:
-            glyphSet = self.ufoGlyphSets[layerName]
+            glyphSet = self.ufoLayers.findItem(fontraLayerName=layerName).glyphSet
             glyphSet.deleteGlyph(glyphName)
             # FIXME: this is inefficient if we write many glyphs
             self.updateGlyphSetContents(glyphSet)
@@ -252,12 +273,68 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
-    def _findGlobalSource(self, location):
-        return self.globalSourcesByLocation.get(
-            tuplifyLocation({**self.defaultLocation, **location})
-        )
+    def _getGlobalSource(self, source, create=False):
+        sourceLocation = {**self.defaultLocation, **source.location}
+        sourceLocationTuple = tuplifyLocation(sourceLocation)
+        dsSource = self.dsSources.findItem(locationTuple=sourceLocationTuple)
+        if dsSource is None and create:
+            manager = self.defaultUFOLayer.manager
+            if isLocationAtPole(source.location, self.axisPolePositions):
+                ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
+                makeUniqueFileName = uniqueNameMaker(
+                    p.stem for p in ufoDir.glob("*.ufo")
+                )
+                dsFileName = pathlib.Path(self.dsDoc.path).stem
+                ufoFileName = makeUniqueFileName(f"{dsFileName}_{source.name}")
+                ufoFileName = ufoFileName + ".ufo"
+                ufoPath = os.fspath(ufoDir / ufoFileName)
+                assert not os.path.exists(ufoPath)
+                reader = manager.getReader(ufoPath)  # this creates the UFO
+                info = UFOFontInfo()
+                for infoAttr in infoAttrsToCopy:
+                    value = getattr(self.defaultFontInfo, infoAttr, None)
+                    if value is not None:
+                        setattr(info, infoAttr, value)
+                _ = reader.getGlyphSet()  # this creates the default layer
+                reader.writeLayerContents()
+                ufoLayerName = reader.getDefaultLayerName()
+                assert os.path.isdir(ufoPath)
+            else:
+                makeUniqueName = uniqueNameMaker(self.defaultReader.getLayerNames())
+                # TODO: parse source.layerName, in case it's FileName/layerName?
+                ufoLayerName = makeUniqueName(source.name)
+                # Create the new UFO layer now
+                ufoPath = self.dsDoc.default.path
+                _ = manager.getGlyphSet(ufoPath, ufoLayerName)
+                self.defaultReader.writeLayerContents()
+
+            self.dsDoc.addSourceDescriptor(
+                styleName=source.name,
+                location=sourceLocation,
+                path=ufoPath,
+                layerName=ufoLayerName,
+            )
+            self.dsDoc.write(self.dsDoc.path)
+
+            ufoLayer = UFOLayer(
+                manager=manager,
+                path=ufoPath,
+                name=ufoLayerName,
+            )
+
+            dsSource = DSSource(
+                name=source.name,
+                layer=ufoLayer,
+                location=sourceLocation,
+            )
+            self.dsSources.append(dsSource)
+            self.ufoLayers.append(ufoLayer)
+
+        return dsSource.newFontraSource() if dsSource is not None else None
 
     def _packLocalDesignSpace(self, glyph):
+        if not glyph.axes:
+            return None
         defaultUFOLayerName = self.defaultReader.getDefaultLayerName()
         localDS = {}
         axes = [
@@ -271,21 +348,21 @@ class DesignspaceBackend:
         ]
         sources = []
         for source in glyph.sources:
-            globalSource = self._findGlobalSource(source.location)
+            globalSource = self._getGlobalSource(source)
             if globalSource is not None:
                 # this source is part of the global sources as defined
                 # in the .designspace file, so should not be written
                 # to a local designspace
                 continue
-            # FIXME: KeyError -> create new layer
-            ufoPath, ufoLayerName = self.ufoLayers[source.layerName]
+            # FIXME: ufoLayer not found -> create new layer
+            ufoLayer = self.ufoLayers.findItem(fontraLayerName=source.layerName)
+            assert ufoLayer.path == self.dsDoc.default.path
             sourceDict = {}
-            if ufoLayerName != defaultUFOLayerName:
-                sourceDict["layername"] = ufoLayerName
+            if ufoLayer.name != defaultUFOLayerName:
+                sourceDict["layername"] = ufoLayer.name
             sourceDict["location"] = source.location
             sources.append(sourceDict)
-        if axes:
-            localDS["axes"] = axes
+        localDS["axes"] = axes
         if sources:
             localDS["sources"] = sources
         return localDS
@@ -300,7 +377,7 @@ class DesignspaceBackend:
         return self.dsDoc.lib
 
     async def watchExternalChanges(self):
-        ufoPaths = sorted(self.ufoReaders)
+        ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
         async for changes in watchfiles.awatch(*ufoPaths):
             changes = cleanupWatchFilesChanges(changes)
             changedItems = await self._analyzeExternalChanges(changes)
@@ -364,7 +441,7 @@ class DesignspaceBackend:
             # TODO: come up with a better solution.
             #
             await asyncio.sleep(0.15)
-            for glyphSet in self.ufoGlyphSets.values():
+            for glyphSet in self.ufoLayers.iterAttrs("glyphSet"):
                 glyphSet.rebuildContents()
 
         return changedItems
@@ -450,6 +527,96 @@ class UFOGlyph:
 
 class UFOFontInfo:
     unitsPerEm = 1000
+
+
+class UFOManager:
+    @cache
+    def getReader(self, path):
+        return UFOReaderWriter(path)
+
+    @cache
+    def getGlyphSet(self, path, layerName):
+        return self.getReader(path).getGlyphSet(layerName, defaultLayer=False)
+
+
+@dataclass(kw_only=True, frozen=True)
+class DSSource:
+    name: str
+    layer: UFOLayer
+    location: dict[str, float]
+    isDefault: bool = False
+
+    @cached_property
+    def locationTuple(self):
+        return tuplifyLocation(self.location) if self.location else None
+
+    def newFontraSource(self):
+        return Source(
+            name=self.name,
+            location=copy(self.location),
+            layerName=self.layer.fontraLayerName,
+        )
+
+
+@dataclass(kw_only=True, frozen=True)
+class UFOLayer:
+    manager: UFOManager
+    path: str
+    name: str
+
+    @cached_property
+    def fileName(self):
+        return os.path.splitext(os.path.basename(self.path))[0]
+
+    @cached_property
+    def fontraLayerName(self):
+        return f"{self.fileName}/{self.name}"
+
+    @cached_property
+    def reader(self):
+        return self.manager.getReader(self.path)
+
+    @cached_property
+    def glyphSet(self):
+        return self.manager.getGlyphSet(self.path, self.name)
+
+
+class ItemList:
+    def __init__(self):
+        self.items = []
+        self.invalidateCache()
+
+    def __iter__(self):
+        return iter(self.items)
+
+    def append(self, item):
+        self.items.append(item)
+        self.invalidateCache()
+
+    def invalidateCache(self):
+        self._mappings = {}
+
+    def findItem(self, **kwargs):
+        items = self.findItems(**kwargs)
+        return items[0] if items else None
+
+    def findItems(self, **kwargs):
+        attrTuple = tuple(kwargs.keys())
+        valueTuple = tuple(kwargs.values())
+        keyMapping = self._mappings.get(attrTuple)
+        if keyMapping is None:
+            keyMapping = defaultdict(list)
+            for item in self.items:
+                itemValueTuple = tuple(
+                    getattr(item, attrName) for attrName in attrTuple
+                )
+                keyMapping[itemValueTuple].append(item)
+            self._mappings[attrTuple] = dict(keyMapping)
+        return keyMapping.get(valueTuple)
+
+    def iterAttrs(self, attrName):
+        for item in self:
+            yield getattr(item, attrName)
 
 
 def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
@@ -595,3 +762,10 @@ def cleanupWatchFilesChanges(changes):
 def tuplifyLocation(loc):
     # TODO: find good place to share this (duplicated from opentype.py)
     return tuple(sorted(loc.items()))
+
+
+def isLocationAtPole(location, poles):
+    for name, value in location.items():
+        if value not in poles.get(name, ()):
+            return False
+    return True
