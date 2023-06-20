@@ -178,21 +178,23 @@ class DesignspaceBackend:
 
     def loadUFOLayers(self):
         manager = UFOManager()
-        makeUniqueSourceName = uniqueNameMaker()
         self.dsSources = ItemList()
         self.ufoLayers = ItemList()
-        seenPaths = set()
+
+        # Using a dict as an order-preserving set:
+        ufoPaths = {source.path: None for source in self.dsDoc.sources}
+        for ufoPath in ufoPaths:
+            reader = manager.getReader(ufoPath)
+            for layerName in reader.getLayerNames():
+                self.ufoLayers.append(
+                    UFOLayer(manager=manager, path=ufoPath, name=layerName)
+                )
+
+        makeUniqueSourceName = uniqueNameMaker()
         for source in self.dsDoc.sources:
             reader = manager.getReader(source.path)
             defaultLayerName = reader.getDefaultLayerName()
             sourceLayerName = source.layerName or defaultLayerName
-
-            if source.path not in seenPaths:
-                for layerName in reader.getLayerNames():
-                    self.ufoLayers.append(
-                        UFOLayer(manager=manager, path=source.path, name=layerName)
-                    )
-                seenPaths.add(source.path)
 
             sourceLayer = self.ufoLayers.findItem(
                 path=source.path, name=sourceLayerName
