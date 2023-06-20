@@ -24,7 +24,8 @@ def writableTestFont(tmpdir):
     return DesignspaceBackend.fromPath(tmpdir / "MutatorSans.designspace")
 
 
-def readGLIFData(glyphName, glyphSets):
+def readGLIFData(glyphName, ufoLayers):
+    glyphSets = {layer.fontraLayerName: layer.glyphSet for layer in ufoLayers}
     return {
         layerName: glyphSet.getGLIF(glyphName).decode("utf-8")
         for layerName, glyphSet in glyphSets.items()
@@ -34,13 +35,13 @@ def readGLIFData(glyphName, glyphSets):
 
 @pytest.mark.parametrize("glyphName", ["A", "B", "Q", "varcotest1", "varcotest2"])
 async def test_roundTripGlyph(writableTestFont, glyphName):
-    existingData = readGLIFData(glyphName, writableTestFont.ufoGlyphSets)
+    existingData = readGLIFData(glyphName, writableTestFont.ufoLayers)
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
-    newData = readGLIFData(glyphName, writableTestFont.ufoGlyphSets)
+    newData = readGLIFData(glyphName, writableTestFont.ufoLayers)
     for layerName in existingData:
         assert existingData[layerName] == newData[layerName], layerName
     assert existingData == newData  # just in case the keys differ
