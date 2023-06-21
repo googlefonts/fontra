@@ -249,7 +249,9 @@ class FontraServer:
         extensionMapping = {
             "text/html": self.allowedFileExtensions,
             "text/css": ["woff2", "svg"],
-            "text/javascript": ["js"],
+            "text/javascript": [
+                "js"
+            ],  # https://github.com/googlefonts/fontra/issues/575
             "application/javascript": ["js"],
         }
         extensions = extensionMapping.get(contentType)
