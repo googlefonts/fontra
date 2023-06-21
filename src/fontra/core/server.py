@@ -249,6 +249,7 @@ class FontraServer:
         extensionMapping = {
             "text/html": self.allowedFileExtensions,
             "text/css": ["woff2", "svg"],
+            "text/javascript": ["js"],
             "application/javascript": ["js"],
         }
         extensions = extensionMapping.get(contentType)
