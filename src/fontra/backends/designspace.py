@@ -548,7 +548,7 @@ class DSSource:
 
     @cached_property
     def locationTuple(self):
-        return tuplifyLocation(self.location) if self.location else None
+        return tuplifyLocation(self.location)
 
     def newFontraSource(self):
         return Source(
