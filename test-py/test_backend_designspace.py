@@ -4,7 +4,7 @@ import shutil
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
-from fontra.backends.designspace import DesignspaceBackend
+from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import Layer, Source, StaticGlyph
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -22,6 +22,14 @@ def writableTestFont(tmpdir):
         else:
             shutil.copy(sourcePath, destPath)
     return DesignspaceBackend.fromPath(tmpdir / "MutatorSans.designspace")
+
+
+@pytest.fixture
+def writableTestFontSingleUFO(tmpdir):
+    sourcePath = dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo"
+    destPath = tmpdir / sourcePath.name
+    shutil.copytree(sourcePath, destPath)
+    return UFOBackend.fromPath(destPath)
 
 
 def readGLIFData(glyphName, ufoLayers):
@@ -42,6 +50,20 @@ async def test_roundTripGlyph(writableTestFont, glyphName):
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
     newData = readGLIFData(glyphName, writableTestFont.ufoLayers)
+    for layerName in existingData:
+        assert existingData[layerName] == newData[layerName], layerName
+    assert existingData == newData  # just in case the keys differ
+
+
+@pytest.mark.parametrize("glyphName", ["A"])
+async def test_roundTripGlyphSingleUFO(writableTestFontSingleUFO, glyphName):
+    existingData = readGLIFData(glyphName, writableTestFontSingleUFO.ufoLayers)
+    glyphMap = await writableTestFontSingleUFO.getGlyphMap()
+    glyph = await writableTestFontSingleUFO.getGlyph(glyphName)
+
+    await writableTestFontSingleUFO.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    newData = readGLIFData(glyphName, writableTestFontSingleUFO.ufoLayers)
     for layerName in existingData:
         assert existingData[layerName] == newData[layerName], layerName
     assert existingData == newData  # just in case the keys differ
