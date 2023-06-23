@@ -75,11 +75,14 @@ export class CJKDesignFrame {
           "CJKDesignFrameSettings"
         ];
       if (legacyParameters) {
+        console.log(legacyParameters);
         this.cjkDesignFrameParameters = makeParametersFromSettings({
-          frameBottomLeft: {
-            x: legacyParameters.shift[0],
-            y: legacyParameters.shift[1],
-          },
+          frameBottomLeft: legacyParameters.shift
+            ? {
+                x: legacyParameters.shift[0],
+                y: legacyParameters.shift[1],
+              }
+            : { x: 0, y: 0 },
           frameHeight: legacyParameters.em_Dimension[1],
           faceScale: legacyParameters.characterFace / 100,
           overshootInside: legacyParameters.overshoot[0],
