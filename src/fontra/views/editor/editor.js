@@ -735,14 +735,15 @@ export class EditorController {
     const localLocations = {};
     const glyphInfos = [];
 
-    const componentNames = this.sceneController.doubleClickedComponentIndices.map(
-      (componentIndex) => instance.components[componentIndex].name
+    const compoStrings = this.sceneController.doubleClickedComponentIndices.map(
+      (componentIndex) =>
+        `${instance.components[componentIndex].name} (#${componentIndex})`
     );
     const result = await dialog(
       `Would you like to add the selected component${
-        componentNames.length != 1 ? "s" : ""
+        compoStrings.length != 1 ? "s" : ""
       } to the text string?`,
-      componentNames.join("\n"),
+      compoStrings.join("\n"),
       [
         { title: "Cancel", isCancelButton: true },
         { title: "Add", isDefaultButton: true, result: "ok" },
