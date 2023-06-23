@@ -746,10 +746,9 @@ export class EditorController {
       compoStrings.join("\n"),
       [
         { title: "Cancel", isCancelButton: true },
-        { title: "Add", isDefaultButton: true, result: "ok" },
+        { title: "Add", isDefaultButton: true },
       ]
     );
-
     if (!result) {
       // User cancelled
       return;
