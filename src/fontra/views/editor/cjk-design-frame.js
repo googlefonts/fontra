@@ -75,7 +75,6 @@ export class CJKDesignFrame {
           "CJKDesignFrameSettings"
         ];
       if (legacyParameters) {
-        console.log(legacyParameters);
         this.cjkDesignFrameParameters = makeParametersFromSettings({
           frameBottomLeft: legacyParameters.shift
             ? {
