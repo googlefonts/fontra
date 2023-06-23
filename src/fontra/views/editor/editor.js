@@ -735,6 +735,25 @@ export class EditorController {
     const localLocations = {};
     const glyphInfos = [];
 
+    const compoStrings = this.sceneController.doubleClickedComponentIndices.map(
+      (componentIndex) =>
+        `${instance.components[componentIndex].name} (#${componentIndex})`
+    );
+    const result = await dialog(
+      `Would you like to add the selected component${
+        compoStrings.length != 1 ? "s" : ""
+      } to the text string?`,
+      compoStrings.join("\n"),
+      [
+        { title: "Cancel", isCancelButton: true },
+        { title: "Add", isDefaultButton: true },
+      ]
+    );
+    if (!result) {
+      // User cancelled
+      return;
+    }
+
     for (const componentIndex of this.sceneController.doubleClickedComponentIndices) {
       const glyphName = instance.components[componentIndex].name;
       const location = instance.components[componentIndex].location;
