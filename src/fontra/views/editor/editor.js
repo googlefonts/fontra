@@ -222,6 +222,7 @@ export class EditorController {
     });
 
     this.updateWithDelay();
+    this.initSidebarGutters();
   }
 
   async updateWithDelay() {
@@ -450,6 +451,46 @@ export class EditorController {
     }
 
     this.initSidebarTextEntry();
+  }
+
+  initSidebarGutters() {
+    let initialWidth;
+    let initialPointerCoordinateX;
+    let sidebarResizing;
+    let growDirection;
+    document.body.addEventListener("pointerdown", (event) => {
+      if (event.target.matches(".sidebar-resize-gutter")) {
+        sidebarResizing = event.target.parentElement;
+        initialWidth = sidebarResizing.getBoundingClientRect().width;
+        initialPointerCoordinateX = event.clientX;
+        sidebarResizing.classList.remove("animating");
+        sidebarResizing.style.userSelect = "none";
+        growDirection = event.target.dataset.growDirection;
+        document.body.style.cursor = "col-resize";
+      }
+    });
+    document.body.addEventListener("pointermove", (event) => {
+      if (sidebarResizing) {
+        let width;
+        if (growDirection === "left") {
+          width = initialWidth + (initialPointerCoordinateX - event.clientX);
+        } else if (growDirection === "right") {
+          width = initialWidth + (event.clientX - initialPointerCoordinateX);
+        }
+        sidebarResizing.style.width = `${width}px`;
+      }
+    });
+    document.body.addEventListener("pointerup", (event) => {
+      if (sidebarResizing) {
+        sidebarResizing.style.removeProperty("userSelect");
+        sidebarResizing.classList.add("animating");
+        sidebarResizing = undefined;
+        initialWidth = undefined;
+        growDirection = undefined;
+        initialPointerCoordinateX = undefined;
+        document.body.style.removeProperty("cursor");
+      }
+    });
   }
 
   toggleSidebar(sidebarName, doUpdateWindowLocation = true, doFocus = false) {
