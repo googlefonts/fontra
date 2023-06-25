@@ -5,7 +5,7 @@ from importlib.metadata import entry_points
 
 import pytest
 
-from fontra.core.classes import VariableGlyph, from_dict
+from fontra.core.classes import GlobalAxis, VariableGlyph, from_dict
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -770,14 +770,21 @@ getGlobalAxesTestData = [
     (
         "designspace",
         [
-            {"defaultValue": 0.0, "maxValue": 1000.0, "minValue": 0.0, "name": "width"},
-            {
-                "defaultValue": 100.0,
-                "maxValue": 900.0,
-                "mapping": [[100.0, 150.0], [900.0, 850.0]],
-                "minValue": 100.0,
-                "name": "weight",
-            },
+            GlobalAxis(
+                defaultValue=0.0,
+                maxValue=1000.0,
+                minValue=0.0,
+                name="width",
+                tag="wdth",
+            ),
+            GlobalAxis(
+                defaultValue=100.0,
+                maxValue=900.0,
+                mapping=[[100.0, 150.0], [900.0, 850.0]],
+                minValue=100.0,
+                name="weight",
+                tag="wght",
+            ),
         ],
     ),
     ("ufo", []),

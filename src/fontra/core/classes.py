@@ -82,7 +82,7 @@ class GlobalAxis:
     minValue: float
     defaultValue: float
     maxValue: float
-    mapping: list[tuple[float, float]] = field(default_factory=list)
+    mapping: list[list[float, float]] = field(default_factory=list)
 
 
 GlyphSet = dict[str, VariableGlyph]

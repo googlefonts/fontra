@@ -181,7 +181,7 @@
     },
     "mapping": {
       "type": "list",
-      "subtype": "tuple"
+      "subtype": "list"
     }
   }
 }

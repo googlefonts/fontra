@@ -2,7 +2,7 @@ from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
 
-from ..core.classes import Layer, Source, StaticGlyph, VariableGlyph
+from ..core.classes import GlobalAxis, Layer, Source, StaticGlyph, VariableGlyph
 from ..core.packedpath import PackedPath, PackedPathPointPen
 
 
@@ -44,7 +44,7 @@ class OTFBackend:
         glyph = VariableGlyph(glyphName)
         staticGlyph = serializeGlyph(self.glyphSet, glyphName)
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}
-        defaultLocation = {axis["name"]: 0 for axis in self.globalAxes}
+        defaultLocation = {axis.name: 0 for axis in self.globalAxes}
         sources = [
             Source(
                 location=defaultLocation,
@@ -154,13 +154,14 @@ def unpackAxes(font):
                 (axis.maxValue, normMax),
             ]
         axisList.append(
-            {
-                "minValue": axis.minValue,
-                "defaultValue": axis.defaultValue,
-                "maxValue": axis.maxValue,
-                "name": axis.axisTag,
-                "mapping": mapping,
-            }
+            GlobalAxis(
+                minValue=axis.minValue,
+                defaultValue=axis.defaultValue,
+                maxValue=axis.maxValue,
+                name=axis.axisTag,  # Fontra identifies axes by name
+                tag=axis.axisTag,
+                mapping=mapping,
+            )
         )
     return axisList
 

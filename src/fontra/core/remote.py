@@ -85,6 +85,11 @@ class RemoteObjectConnection:
                 returnValue = await methodHandler(*arguments, connection=self)
                 if is_dataclass(returnValue):
                     returnValue = asdict(returnValue)
+                elif isinstance(returnValue, list):
+                    returnValue = [
+                        asdict(item) if is_dataclass(item) else item
+                        for item in returnValue
+                    ]
                 response = {"client-call-id": clientCallID, "return-value": returnValue}
             else:
                 response = {
