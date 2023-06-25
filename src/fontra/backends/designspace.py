@@ -22,6 +22,7 @@ from fontTools.ufoLib.glifLib import GlyphSet
 from ..core.changes import applyChange
 from ..core.classes import (
     Component,
+    GlobalAxis,
     Layer,
     LocalAxis,
     Source,
@@ -61,20 +62,22 @@ class DesignspaceBackend:
         self.dsDoc.findDefault()
         axes = []
         axisPolePositions = {}
-        for axis in self.dsDoc.axes:
-            axisDict = {
-                "minValue": axis.minimum,
-                "defaultValue": axis.default,
-                "maxValue": axis.maximum,
-                "name": axis.name,
-            }
-            if axis.map:
-                axisDict["mapping"] = [[a, b] for a, b in axis.map]
-            axes.append(axisDict)
-            axisPolePositions[axis.name] = (
-                axis.map_forward(axis.minimum),
-                axis.map_forward(axis.default),
-                axis.map_forward(axis.maximum),
+        for dsAxis in self.dsDoc.axes:
+            axis = GlobalAxis(
+                minValue=dsAxis.minimum,
+                defaultValue=dsAxis.default,
+                maxValue=dsAxis.maximum,
+                label=dsAxis.name,
+                name=dsAxis.name,
+                tag=dsAxis.tag,
+            )
+            if dsAxis.map:
+                axis.mapping = [[a, b] for a, b in dsAxis.map]
+            axes.append(axis)
+            axisPolePositions[dsAxis.name] = (
+                dsAxis.map_forward(dsAxis.minimum),
+                dsAxis.map_forward(dsAxis.default),
+                dsAxis.map_forward(dsAxis.maximum),
             )
         self.axes = axes
         self.axisPolePositions = axisPolePositions

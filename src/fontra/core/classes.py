@@ -75,14 +75,15 @@ class VariableGlyph:
     customData: CustomData = field(default_factory=CustomData)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class GlobalAxis:
-    name: str
-    tag: str
+    name: str  # this identifies the axis
+    label: str  # a user friendly label
+    tag: str  # the opentype 4-char tag
     minValue: float
     defaultValue: float
     maxValue: float
-    mapping: list[tuple[float, float]] = field(default_factory=list)
+    mapping: list[list[float, float]] = field(default_factory=list)
 
 
 GlyphSet = dict[str, VariableGlyph]
