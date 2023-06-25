@@ -305,8 +305,14 @@
 
     .sidebar-resize-gutter {
       height: 100%;
-      width: 3px;
+      width: 5px;
       cursor: col-resize;
+    }
+    .sidebar-resize-gutter[data-grow-direction="right"] {
+      cursor: e-resize;
+    }
+    .sidebar-resize-gutter[data-grow-direction="left"] {
+      cursor: w-resize;
     }
   </style>
 
