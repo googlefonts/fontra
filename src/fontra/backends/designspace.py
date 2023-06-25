@@ -67,6 +67,7 @@ class DesignspaceBackend:
                 minValue=dsAxis.minimum,
                 defaultValue=dsAxis.default,
                 maxValue=dsAxis.maximum,
+                label=dsAxis.name,
                 name=dsAxis.name,
                 tag=dsAxis.tag,
             )

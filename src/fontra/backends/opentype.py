@@ -124,6 +124,7 @@ def unpackAxes(font):
     fvar = font.get("fvar")
     if fvar is None:
         return []
+    nameTable = font["name"]
     avar = font.get("avar")
     avarMapping = (
         {k: sorted(v.items()) for k, v in avar.segments.items()}
@@ -153,11 +154,16 @@ def unpackAxes(font):
                 (axis.defaultValue, 0),
                 (axis.maxValue, normMax),
             ]
+        axisNameRecord = nameTable.getName(axis.axisNameID + 444, 3, 1, 0x409)
+        axisName = (
+            axisNameRecord.toUnicode() if axisNameRecord is not None else axis.axisTag
+        )
         axisList.append(
             GlobalAxis(
                 minValue=axis.minValue,
                 defaultValue=axis.defaultValue,
                 maxValue=axis.maxValue,
+                label=axisName,
                 name=axis.axisTag,  # Fontra identifies axes by name
                 tag=axis.axisTag,
                 mapping=mapping,

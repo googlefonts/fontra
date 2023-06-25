@@ -167,6 +167,9 @@
     "name": {
       "type": "str"
     },
+    "label": {
+      "type": "str"
+    },
     "tag": {
       "type": "str"
     },

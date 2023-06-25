@@ -77,8 +77,9 @@ class VariableGlyph:
 
 @dataclass
 class GlobalAxis:
-    name: str
-    tag: str
+    name: str  # this identifies the axis
+    label: str  # a user friendly label
+    tag: str  # the opentype 4-char tag
     minValue: float
     defaultValue: float
     maxValue: float
