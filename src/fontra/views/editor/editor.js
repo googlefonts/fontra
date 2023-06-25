@@ -466,7 +466,7 @@ export class EditorController {
         sidebarResizing.classList.remove("animating");
         sidebarResizing.style.userSelect = "none";
         growDirection = event.target.dataset.growDirection;
-        document.body.style.cursor = "col-resize";
+        document.body.style.cursor = event.target.style.cursor;
       }
     });
     document.body.addEventListener("pointermove", (event) => {
