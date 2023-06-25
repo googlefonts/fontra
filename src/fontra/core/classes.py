@@ -75,7 +75,7 @@ class VariableGlyph:
     customData: CustomData = field(default_factory=CustomData)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class GlobalAxis:
     name: str  # this identifies the axis
     label: str  # a user friendly label
