@@ -70,6 +70,7 @@ class DesignspaceBackend:
                 label=dsAxis.name,
                 name=dsAxis.name,
                 tag=dsAxis.tag,
+                hidden=dsAxis.hidden,
             )
             if dsAxis.map:
                 axis.mapping = [[a, b] for a, b in dsAxis.map]

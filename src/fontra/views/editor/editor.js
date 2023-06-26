@@ -391,7 +391,7 @@ export class EditorController {
   async initSidebarDesignspace() {
     this.designspaceLocationController.model.location = {};
     this.designspaceLocationController.model.globalAxes =
-      this.fontController.globalAxes;
+      this.fontController.globalAxes.filter((axis) => !axis.hidden);
     this.sidebarDesignspace = new SidebarDesignspace(
       this.sceneController,
       this.designspaceLocationController
