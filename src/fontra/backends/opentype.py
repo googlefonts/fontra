@@ -167,6 +167,7 @@ def unpackAxes(font):
                 name=axis.axisTag,  # Fontra identifies axes by name
                 tag=axis.axisTag,
                 mapping=mapping,
+                hidden=bool(axis.flags & 0x0001),  # HIDDEN_AXIS
             )
         )
     return axisList
