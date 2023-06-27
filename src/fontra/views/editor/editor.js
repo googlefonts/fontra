@@ -58,6 +58,7 @@ import {
 } from "../core/path-functions.js";
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
+import { clampedNumber } from "../../core/utils.js";
 
 export class EditorController {
   static async fromWebSocket() {
@@ -477,6 +478,7 @@ export class EditorController {
         } else if (growDirection === "right") {
           width = initialWidth + (event.clientX - initialPointerCoordinateX);
         }
+        width = clampedNumber(width, 200, 500);
         sidebarResizing.style.width = `${width}px`;
       }
     });

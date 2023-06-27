@@ -264,6 +264,7 @@
     .sidebar-glyph-search {
       box-sizing: border-box;
       height: 100%;
+      width: 100%;
       display: grid;
       gap: 1em;
       padding: 1em;
@@ -271,6 +272,7 @@
 
     #designspace-navigation {
       height: 100%;
+      width: 100%;
       padding: 1em;
       display: flex;
       flex-direction: column;
@@ -281,6 +283,7 @@
     .sidebar-layer-preferences {
       box-sizing: border-box;
       height: 100%;
+      width: 100%;
       display: grid;
       gap: 1em;
       padding: 1em;
@@ -296,6 +299,10 @@
       padding: 1em;
     }
 
+    #sidebar-reference-font {
+      width: 100%;
+    }
+
     #menu-panel-container {
       position: absolute;
       overflow: hidden;
@@ -305,14 +312,8 @@
 
     .sidebar-resize-gutter {
       height: 100%;
-      width: 5px;
+      width: 8px;
       cursor: col-resize;
-    }
-    .sidebar-resize-gutter[data-grow-direction="right"] {
-      cursor: e-resize;
-    }
-    .sidebar-resize-gutter[data-grow-direction="left"] {
-      cursor: w-resize;
     }
   </style>
 
