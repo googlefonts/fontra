@@ -214,8 +214,8 @@ describe("arrayExtend", () => {
 describe("clampedNumber", () => {
   it("should give the minimum when the number is below the range", () => {
     expect(clampedNumber(10, 50, 80)).equals(50);
-  })
+  });
   it("should give the minimum when the number is exceeds the range", () => {
     expect(clampedNumber(81, 50, 80)).equals(80);
-  })
-})
+  });
+});
