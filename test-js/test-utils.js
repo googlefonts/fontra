@@ -15,7 +15,7 @@ import {
   guessCharFromGlyphName,
   fileNameExtension,
   arrayExtend,
-  clampedNumber,
+  clamp,
 } from "../src/fontra/client/core/utils.js";
 const expect = chai.expect;
 
@@ -211,11 +211,11 @@ describe("arrayExtend", () => {
   });
 });
 
-describe("clampedNumber", () => {
+describe("clamp", () => {
   it("should give the minimum when the number is below the range", () => {
-    expect(clampedNumber(10, 50, 80)).equals(50);
+    expect(clamp(10, 50, 80)).equals(50);
   });
-  it("should give the minimum when the number is exceeds the range", () => {
-    expect(clampedNumber(81, 50, 80)).equals(80);
+  it("should give the minimum when the number exceeds the range", () => {
+    expect(clamp(81, 50, 80)).equals(80);
   });
 });

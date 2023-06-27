@@ -326,6 +326,6 @@ export function rgbaToCSS(rgba) {
   return `rgb(${channels.join(",")})`;
 }
 
-export function clampedNumber(number, min, max) {
+export function clamp(number, min, max) {
   return Math.max(Math.min(number, max), min);
 }
