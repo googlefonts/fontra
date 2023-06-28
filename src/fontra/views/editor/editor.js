@@ -459,18 +459,7 @@ export class EditorController {
     let initialPointerCoordinateX;
     let sidebarResizing;
     let growDirection;
-    for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
-      gutter.addEventListener("pointerdown", (event) => {
-        sidebarResizing = gutter.parentElement;
-        initialWidth = sidebarResizing.getBoundingClientRect().width;
-        initialPointerCoordinateX = event.clientX;
-        sidebarResizing.classList.remove("animating");
-        sidebarResizing.style.userSelect = "none";
-        growDirection = gutter.dataset.growDirection;
-        document.body.style.cursor = gutter.style.cursor;
-      });
-    }
-    document.body.addEventListener("pointermove", (event) => {
+    const onPointerMove = (event) => {
       if (sidebarResizing) {
         let width;
         if (growDirection === "left") {
@@ -481,18 +470,30 @@ export class EditorController {
         width = clamp(width, 200, 500);
         sidebarResizing.style.width = `${width}px`;
       }
-    });
-    document.body.addEventListener("pointerup", (event) => {
-      if (sidebarResizing) {
-        sidebarResizing.style.removeProperty("userSelect");
-        sidebarResizing.classList.add("animating");
-        sidebarResizing = undefined;
-        initialWidth = undefined;
-        growDirection = undefined;
-        initialPointerCoordinateX = undefined;
-        document.body.style.removeProperty("cursor");
-      }
-    });
+    };
+    const onPointerUp = () => {
+      sidebarResizing.style.removeProperty("userSelect");
+      sidebarResizing.classList.add("animating");
+      sidebarResizing = undefined;
+      initialWidth = undefined;
+      growDirection = undefined;
+      initialPointerCoordinateX = undefined;
+      document.body.style.removeProperty("cursor");
+      document.removeEventListener("pointermove", onPointerMove);
+    };
+    for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
+      gutter.addEventListener("pointerdown", (event) => {
+        sidebarResizing = gutter.parentElement;
+        initialWidth = sidebarResizing.getBoundingClientRect().width;
+        initialPointerCoordinateX = event.clientX;
+        sidebarResizing.classList.remove("animating");
+        sidebarResizing.style.userSelect = "none";
+        growDirection = gutter.dataset.growDirection;
+        document.body.style.cursor = gutter.style.cursor;
+        document.addEventListener("pointermove", onPointerMove);
+        document.addEventListener("pointerup", onPointerUp, { once: true });
+      });
+    }
   }
 
   toggleSidebar(sidebarName, doUpdateWindowLocation = true, doFocus = false) {
