@@ -468,7 +468,7 @@ export class EditorController {
         sidebarResizing.style.userSelect = "none";
         growDirection = gutter.dataset.growDirection;
         document.body.style.cursor = gutter.style.cursor;
-      })
+      });
     }
     document.body.addEventListener("pointermove", (event) => {
       if (sidebarResizing) {
