@@ -459,17 +459,17 @@ export class EditorController {
     let initialPointerCoordinateX;
     let sidebarResizing;
     let growDirection;
-    document.body.addEventListener("pointerdown", (event) => {
-      if (event.target.matches(".sidebar-resize-gutter")) {
-        sidebarResizing = event.target.parentElement;
+    for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
+      gutter.addEventListener("pointerdown", (event) => {
+        sidebarResizing = gutter.parentElement;
         initialWidth = sidebarResizing.getBoundingClientRect().width;
         initialPointerCoordinateX = event.clientX;
         sidebarResizing.classList.remove("animating");
         sidebarResizing.style.userSelect = "none";
-        growDirection = event.target.dataset.growDirection;
-        document.body.style.cursor = event.target.style.cursor;
-      }
-    });
+        growDirection = gutter.dataset.growDirection;
+        document.body.style.cursor = gutter.style.cursor;
+      })
+    }
     document.body.addEventListener("pointermove", (event) => {
       if (sidebarResizing) {
         let width;
