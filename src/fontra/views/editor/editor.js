@@ -223,7 +223,6 @@ export class EditorController {
     });
 
     this.updateWithDelay();
-    this.initSidebarGutters();
   }
 
   async updateWithDelay() {
@@ -452,6 +451,7 @@ export class EditorController {
     }
 
     this.initSidebarTextEntry();
+    this.initSidebarGutters();
   }
 
   initSidebarGutters() {
