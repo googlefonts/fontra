@@ -489,7 +489,7 @@ export class EditorController {
         sidebarResizing.classList.remove("animating");
         sidebarResizing.style.userSelect = "none";
         growDirection = gutter.dataset.growDirection;
-        document.body.style.cursor = gutter.style.cursor;
+        document.body.style.cursor = getComputedStyle(gutter).cursor;
         document.addEventListener("pointermove", onPointerMove);
         document.addEventListener("pointerup", onPointerUp, { once: true });
       });
