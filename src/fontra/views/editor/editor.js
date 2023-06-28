@@ -58,6 +58,7 @@ import {
 } from "../core/path-functions.js";
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
+import { clamp } from "../../core/utils.js";
 
 export class EditorController {
   static async fromWebSocket() {
@@ -450,6 +451,49 @@ export class EditorController {
     }
 
     this.initSidebarTextEntry();
+    this.initSidebarGutters();
+  }
+
+  initSidebarGutters() {
+    let initialWidth;
+    let initialPointerCoordinateX;
+    let sidebarResizing;
+    let growDirection;
+    const onPointerMove = (event) => {
+      if (sidebarResizing) {
+        let width;
+        if (growDirection === "left") {
+          width = initialWidth + (initialPointerCoordinateX - event.clientX);
+        } else if (growDirection === "right") {
+          width = initialWidth + (event.clientX - initialPointerCoordinateX);
+        }
+        width = clamp(width, 200, 500);
+        sidebarResizing.style.width = `${width}px`;
+      }
+    };
+    const onPointerUp = () => {
+      sidebarResizing.style.removeProperty("userSelect");
+      sidebarResizing.classList.add("animating");
+      sidebarResizing = undefined;
+      initialWidth = undefined;
+      growDirection = undefined;
+      initialPointerCoordinateX = undefined;
+      document.body.style.removeProperty("cursor");
+      document.removeEventListener("pointermove", onPointerMove);
+    };
+    for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
+      gutter.addEventListener("pointerdown", (event) => {
+        sidebarResizing = gutter.parentElement;
+        initialWidth = sidebarResizing.getBoundingClientRect().width;
+        initialPointerCoordinateX = event.clientX;
+        sidebarResizing.classList.remove("animating");
+        sidebarResizing.style.userSelect = "none";
+        growDirection = gutter.dataset.growDirection;
+        document.body.style.cursor = getComputedStyle(gutter).cursor;
+        document.addEventListener("pointermove", onPointerMove);
+        document.addEventListener("pointerup", onPointerUp, { once: true });
+      });
+    }
   }
 
   toggleSidebar(sidebarName, doUpdateWindowLocation = true, doFocus = false) {

@@ -45,8 +45,8 @@
       z-index: 100;
 
       background-color: var(--ui-element-background-color);
-      width: 0;
       height: 100%;
+      display: none;
     }
 
     .sidebar-container.animating {
@@ -59,6 +59,11 @@
 
     .sidebar-container.right.visible {
       width: var(--sidebar-content-width-right);
+    }
+
+    .sidebar-container.visible {
+      display: flex;
+      justify-content: space-between;
     }
 
     .main-container {
@@ -189,16 +194,15 @@
 
       box-sizing: border-box;
       height: 100%;
+      width: 100%;
     }
 
     .sidebar-container.left > .sidebar-content {
       float: right;
-      width: var(--sidebar-content-width-left);
     }
 
     .sidebar-container.right > .sidebar-content {
       float: left;
-      width: var(--sidebar-content-width-right);
     }
 
     .sidebar-container > .sidebar-content.selected {
@@ -221,6 +225,7 @@
     .sidebar-text-entry {
       box-sizing: border-box;
       height: 100%;
+      width: 100%;
       display: grid;
       gap: 0.5em;
       padding: 1em;
@@ -260,6 +265,7 @@
     .sidebar-glyph-search {
       box-sizing: border-box;
       height: 100%;
+      width: 100%;
       display: grid;
       gap: 1em;
       padding: 1em;
@@ -267,6 +273,7 @@
 
     #designspace-navigation {
       height: 100%;
+      width: 100%;
       padding: 1em;
       display: flex;
       flex-direction: column;
@@ -277,6 +284,7 @@
     .sidebar-layer-preferences {
       box-sizing: border-box;
       height: 100%;
+      width: 100%;
       display: grid;
       gap: 1em;
       padding: 1em;
@@ -286,9 +294,14 @@
     .sidebar-selection-info {
       box-sizing: border-box;
       height: 100%;
+      width: 100%;
       overflow-x: hidden;
       overflow-y: scroll;
       padding: 1em;
+    }
+
+    #sidebar-reference-font {
+      width: 100%;
     }
 
     #menu-panel-container {
@@ -296,6 +309,12 @@
       overflow: hidden;
       width: 100%;
       height: 100%;
+    }
+
+    .sidebar-resize-gutter {
+      height: 100%;
+      width: 8px;
+      cursor: col-resize;
     }
   </style>
 
@@ -346,6 +365,7 @@
             <reference-font id="reference-font"></reference-font>
           </div>
         </div>
+        <div class="sidebar-resize-gutter" data-grow-direction="right"></div>
       </div>
 
       <div class="main-container">
@@ -407,6 +427,7 @@
       </div>
 
       <div class="sidebar-container right cleanable-overlay">
+        <div class="sidebar-resize-gutter" data-grow-direction="left"></div>
         <div class="sidebar-content" data-sidebar-name="sidebar-selection-info">
           <div class="sidebar-selection-info">
             <div id="selection-info">
