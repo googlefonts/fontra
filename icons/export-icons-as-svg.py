@@ -1,37 +1,8 @@
 import pathlib
 
 from fontTools.misc.roundTools import otRound
-from fontTools.pens.pointPen import PointToSegmentPen
-from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.ufoLib import UFOReader
-
-
-class Glyph:
-    def __init__(self):
-        self.pen = RecordingPointPen()
-
-    def getPointPen(self):
-        return self.pen
-
-    def draw(self, pen):
-        self.drawPoints(PointToSegmentPen(pen))
-
-    def drawPoints(self, pen):
-        self.pen.replay(pen)
-
-
-class GlyphSet:
-    def __init__(self, ufoGlyphSet):
-        self.ufoGlyphSet = ufoGlyphSet
-
-    def keys(self):
-        return self.ufoGlyphSet.keys()
-
-    def __getitem__(self, glyphName):
-        glyph = Glyph()
-        self.ufoGlyphSet.readGlyph(glyphName, glyph, glyph.getPointPen())
-        return glyph
 
 
 def numToString(number):
@@ -54,7 +25,7 @@ imagesDir = thisDir.parent / "src" / "fontra" / "client" / "images"
 
 reader = UFOReader(ufoPath)
 
-glyphSet = GlyphSet(reader.getGlyphSet())
+glyphSet = reader.getGlyphSet()
 
 iconNames = sorted(
     glyphName
