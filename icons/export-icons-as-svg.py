@@ -2,6 +2,7 @@ import pathlib
 
 from fontTools.misc.roundTools import otRound
 from fontTools.pens.svgPathPen import SVGPathPen
+from fontTools.pens.transformPen import TransformPen
 from fontTools.ufoLib import UFOReader
 
 
@@ -9,13 +10,12 @@ def numToString(number):
     return str(otRound(number))
 
 
-def makeSVG(pathString, width, height, yMax):
+def makeSVG(pathString, width, height):
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" '
         f'width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}">'
-        f'<path transform="matrix(1 0 0 -1 0 {yMax})" '
-        f'd="{pathString}"/></svg>\n'
+        f'<path d="{pathString}"/></svg>\n'
     )
 
 
@@ -36,7 +36,7 @@ iconNames = sorted(
 for iconName in iconNames:
     pen = SVGPathPen(glyphSet, numToString)
     glyph = glyphSet[iconName]
-    glyph.draw(pen)
+    glyph.draw(TransformPen(pen, (1, 0, 0, -1, 0, 800)))
     svgPath = pen.getCommands()
     iconPath = imagesDir / f"{iconName}.svg"
-    iconPath.write_text(makeSVG(svgPath, glyph.width, 1000, 800))
+    iconPath.write_text(makeSVG(svgPath, glyph.width, 1000))
