@@ -44,7 +44,7 @@ def makeSVG(pathString, width, height, yMax):
         f"""width="{width}" height="{height}" """
         f"""viewBox="0 0 {width} {height}">"""
         f"""<path transform="matrix(1 0 0 -1 0 {yMax})" """
-        f"""d="{pathString}"/></svg>"""
+        f"""d="{pathString}"/></svg>\n"""
     )
 
 
