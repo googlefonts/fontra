@@ -1,10 +1,21 @@
 export class InlineSVG extends HTMLElement {
-  constructor() {
+  constructor(src) {
     super();
+    if (src) {
+      this.setAttribute("src", src);
+    }
   }
 
   static get observedAttributes() {
     return ["src"];
+  }
+
+  get src() {
+    return this.getAttribute("src");
+  }
+
+  set src(value) {
+    return this.setAttribute("src", value);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
