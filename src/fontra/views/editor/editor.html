@@ -13,6 +13,7 @@
     <script type="module" src="/web-components/dialog-overlay.js"></script>
     <script type="module" src="/web-components/glyphs-search.js"></script>
     <script type="module" src="/web-components/grouped-settings.js"></script>
+    <script type="module" src="/web-components/inline-svg.js"></script>
     <script type="module" src="/web-components/reference-font.js"></script>
     <script type="module" src="/web-components/ui-list.js"></script>
   </head>
@@ -28,7 +29,7 @@
     }
 
     :root {
-      --sidebar-tab-width: 1.55em;
+      --sidebar-tab-width: 3em;
       --sidebar-content-width-left: 20em;
       --sidebar-content-width-right: 22em;
     }
@@ -132,18 +133,16 @@
     }
 
     .sidebar-tab {
+      display: flex;
+      align-items: center;
+
       z-index: 0; /* below the shadow box */
 
       box-sizing: border-box;
       width: var(--sidebar-tab-width);
-      height: 1.4em;
+      height: 2.8em;
       background-color: var(--ui-element-background-color);
       box-shadow: 0px 3px 8px #0006;
-
-      padding: 0.25em 0.25em 0.45em 0.25em;
-      font-family: fontra-icons, sans-serif;
-      font-size: 2em;
-      line-height: 0.7em;
 
       cursor: pointer;
       pointer-events: auto;
@@ -161,13 +160,13 @@
 
     @keyframes tab-slide-out-animation {
       100% {
-        width: calc(var(--sidebar-tab-width) + 0.1em);
+        width: calc(var(--sidebar-tab-width) + 0.2em);
       }
     }
 
     @keyframes tab-slide-in-animation {
       100% {
-        width: calc(var(--sidebar-tab-width) - 0.1em);
+        width: calc(var(--sidebar-tab-width) - 0.2em);
       }
     }
 
@@ -180,13 +179,15 @@
     }
 
     .tab-overlay-container.left > .sidebar-tab {
-      border-radius: 0 0.4em 0.4em 0;
-      text-align: right;
+      border-radius: 0 0.8em 0.8em 0;
+      padding-right: 0.25em;
+      justify-content: flex-end;
     }
 
     .tab-overlay-container.right > .sidebar-tab {
-      border-radius: 0.4em 0 0 0.4em;
-      text-align: left;
+      border-radius: 0.8em 0 0 0.8em;
+      padding-left: 0.25em;
+      justify-content: flex-start;
     }
 
     .sidebar-content {
@@ -316,6 +317,13 @@
       width: 8px;
       cursor: col-resize;
     }
+
+    .sidebar-tab > inline-svg {
+      display: block;
+      fill: var(--foreground-color);
+      width: 2.2em;
+      height: 2.2em;
+    }
   </style>
 
   <body>
@@ -376,15 +384,21 @@
         <div class="main-overlay-container cleanable-overlay">
           <div class="tab-overlay-container left">
             <div class="sidebar-shadow-box"></div>
-            <div class="sidebar-tab" data-sidebar-name="text-entry">texttool</div>
+            <div class="sidebar-tab" data-sidebar-name="text-entry">
+              <inline-svg src="/images/texttool.svg"></inline-svg>
+            </div>
             <div class="sidebar-tab" data-sidebar-name="glyph-search">
-              magnifyingglass
+              <inline-svg src="/images/magnifyingglass.svg"></inline-svg>
             </div>
             <div class="sidebar-tab" data-sidebar-name="designspace-navigation">
-              sliders
+              <inline-svg src="/images/sliders.svg"></inline-svg>
             </div>
-            <div class="sidebar-tab" data-sidebar-name="user-settings">gear</div>
-            <div class="sidebar-tab" data-sidebar-name="reference-font">reference</div>
+            <div class="sidebar-tab" data-sidebar-name="user-settings">
+              <inline-svg src="/images/gear.svg"></inline-svg>
+            </div>
+            <div class="sidebar-tab" data-sidebar-name="reference-font">
+              <inline-svg src="/images/reference.svg"></inline-svg>
+            </div>
           </div>
 
           <div class="tool-overlay-container">
@@ -420,7 +434,7 @@
           <div class="tab-overlay-container right">
             <div class="sidebar-shadow-box"></div>
             <div class="sidebar-tab" data-sidebar-name="sidebar-selection-info">
-              info
+              <inline-svg src="/images/info.svg"></inline-svg>
             </div>
           </div>
         </div>
