@@ -11,11 +11,11 @@ def numToString(number):
 
 def makeSVG(pathString, width, height, yMax):
     return (
-        f"""<svg xmlns="http://www.w3.org/2000/svg" """
-        f"""width="{width}" height="{height}" """
-        f"""viewBox="0 0 {width} {height}">"""
-        f"""<path transform="matrix(1 0 0 -1 0 {yMax})" """
-        f"""d="{pathString}"/></svg>\n"""
+        f'<svg xmlns="http://www.w3.org/2000/svg" '
+        f'width="{width}" height="{height}" '
+        f'viewBox="0 0 {width} {height}">'
+        f'<path transform="matrix(1 0 0 -1 0 {yMax})" '
+        f'd="{pathString}"/></svg>\n'
     )
 
 
