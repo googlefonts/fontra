@@ -1,3 +1,5 @@
+// This isn't really a web component, just a custom element.
+
 export class InlineSVG extends HTMLElement {
   constructor(src) {
     super();
