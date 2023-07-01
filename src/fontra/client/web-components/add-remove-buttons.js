@@ -1,5 +1,6 @@
 import { themeColorCSS } from "./theme-support.js";
 import { html, css, LitElement, unsafeCSS } from "../third-party/lit.js";
+import { InlineSVG } from "./inline-svg.js";
 
 const colors = {
   "button-color": ["#ddd", "#888"],
@@ -24,21 +25,27 @@ export class AddRemoveButtons extends LitElement {
     }
 
     button {
-      font-size: 1.7em;
-      text-align: center;
-      line-height: 1.05em;
-      width: 1em;
-      height: 1em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 1.6rem;
+      height: 1.6rem;
       padding: 0;
-      border-radius: 1em;
+      margin: 0;
+      border-radius: 1rem;
       background-color: var(--button-color);
-      color: var(--text-color);
+      fill: var(--text-color);
       border: none;
+    }
+
+    button > inline-svg {
+      width: 85%;
+      height: 85%;
     }
 
     button:disabled {
       background-color: var(--button-disabled-color);
-      color: var(--text-disabled-color);
+      fill: var(--text-disabled-color);
     }
 
     button:enabled:hover {
@@ -79,14 +86,14 @@ export class AddRemoveButtons extends LitElement {
               .disabled=${this.disableAddButton}
               @click=${() => this.addButtonCallback()}
             >
-              +
+              <inline-svg src="/images/plus.svg"></inline-svg>
             </button>
             <button
               name="remove-button"
               .disabled=${this.disableRemoveButton}
               @click=${() => this.removeButtonCallback()}
             >
-              &minus;
+              <inline-svg src="/images/minus.svg"></inline-svg>
             </button>
           </div>
         `;
