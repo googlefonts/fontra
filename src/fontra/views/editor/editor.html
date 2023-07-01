@@ -13,6 +13,7 @@
     <script type="module" src="/web-components/dialog-overlay.js"></script>
     <script type="module" src="/web-components/glyphs-search.js"></script>
     <script type="module" src="/web-components/grouped-settings.js"></script>
+    <script type="module" src="/web-components/inline-svg.js"></script>
     <script type="module" src="/web-components/reference-font.js"></script>
     <script type="module" src="/web-components/ui-list.js"></script>
   </head>
@@ -28,7 +29,7 @@
     }
 
     :root {
-      --sidebar-tab-width: 1.55em;
+      --sidebar-tab-width: 3em;
       --sidebar-content-width-left: 20em;
       --sidebar-content-width-right: 22em;
     }
@@ -132,18 +133,16 @@
     }
 
     .sidebar-tab {
+      display: flex;
+      align-items: center;
+
       z-index: 0; /* below the shadow box */
 
       box-sizing: border-box;
       width: var(--sidebar-tab-width);
-      height: 1.4em;
+      height: 2.8em;
       background-color: var(--ui-element-background-color);
       box-shadow: 0px 3px 8px #0006;
-
-      padding: 0.25em 0.25em 0.45em 0.25em;
-      font-family: fontra-icons, sans-serif;
-      font-size: 2em;
-      line-height: 0.7em;
 
       cursor: pointer;
       pointer-events: auto;
@@ -161,13 +160,13 @@
 
     @keyframes tab-slide-out-animation {
       100% {
-        width: calc(var(--sidebar-tab-width) + 0.1em);
+        width: calc(var(--sidebar-tab-width) + 0.2em);
       }
     }
 
     @keyframes tab-slide-in-animation {
       100% {
-        width: calc(var(--sidebar-tab-width) - 0.1em);
+        width: calc(var(--sidebar-tab-width) - 0.2em);
       }
     }
 
@@ -180,13 +179,15 @@
     }
 
     .tab-overlay-container.left > .sidebar-tab {
-      border-radius: 0 0.4em 0.4em 0;
-      text-align: right;
+      border-radius: 0 0.8em 0.8em 0;
+      padding-right: 0.25em;
+      justify-content: flex-end;
     }
 
     .tab-overlay-container.right > .sidebar-tab {
-      border-radius: 0.4em 0 0 0.4em;
-      text-align: left;
+      border-radius: 0.8em 0 0 0.8em;
+      padding-left: 0.25em;
+      justify-content: flex-start;
     }
 
     .sidebar-content {
@@ -239,26 +240,26 @@
       gap: 0.5em;
     }
 
-    #text-align-menu > div {
+    #text-align-menu > inline-svg {
+      width: 1.5rem;
+      height: 1.5rem;
       position: relative;
-      font-family: fontra-icons;
-      font-size: 1.5em;
-      padding: 0.02em 0.3em 0.2em 0.3em;
-      border-radius: 0.5em;
+      padding: 0.3em 0.45em 0.3em 0.45em;
+      border-radius: 0.75em;
       cursor: pointer;
       user-select: none;
       transition: 120ms;
     }
 
-    #text-align-menu > div:hover {
+    #text-align-menu > inline-svg:hover {
       background-color: #c0c0c050;
     }
 
-    #text-align-menu > div:active {
+    #text-align-menu > inline-svg:active {
       background-color: #c0c0c080;
     }
 
-    #text-align-menu > div.selected {
+    #text-align-menu > inline-svg.selected {
       background-color: #c0c0c060;
     }
 
@@ -316,6 +317,12 @@
       width: 8px;
       cursor: col-resize;
     }
+
+    .sidebar-tab > inline-svg {
+      display: block;
+      width: 2.2em;
+      height: 2.2em;
+    }
   </style>
 
   <body>
@@ -331,9 +338,13 @@
             <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
 
             <div id="text-align-menu">
-              <div>alignleft</div>
-              <div class="selected">aligncenter</div>
-              <div>alignright</div>
+              <inline-svg data-align="left" src="/images/alignleft.svg"></inline-svg>
+              <inline-svg
+                data-align="center"
+                class="selected"
+                src="/images/aligncenter.svg"
+              ></inline-svg>
+              <inline-svg data-align="right" src="/images/alignright.svg"></inline-svg>
             </div>
           </div>
         </div>
@@ -376,39 +387,48 @@
         <div class="main-overlay-container cleanable-overlay">
           <div class="tab-overlay-container left">
             <div class="sidebar-shadow-box"></div>
-            <div class="sidebar-tab" data-sidebar-name="text-entry">texttool</div>
+            <div class="sidebar-tab" data-sidebar-name="text-entry">
+              <inline-svg src="/images/texttool.svg"></inline-svg>
+            </div>
             <div class="sidebar-tab" data-sidebar-name="glyph-search">
-              magnifyingglass
+              <inline-svg src="/images/magnifyingglass.svg"></inline-svg>
             </div>
             <div class="sidebar-tab" data-sidebar-name="designspace-navigation">
-              sliders
+              <inline-svg src="/images/sliders.svg"></inline-svg>
             </div>
-            <div class="sidebar-tab" data-sidebar-name="user-settings">gear</div>
-            <div class="sidebar-tab" data-sidebar-name="reference-font">reference</div>
+            <div class="sidebar-tab" data-sidebar-name="user-settings">
+              <inline-svg src="/images/gear.svg"></inline-svg>
+            </div>
+            <div class="sidebar-tab" data-sidebar-name="reference-font">
+              <inline-svg src="/images/reference.svg"></inline-svg>
+            </div>
           </div>
 
           <div class="tool-overlay-container">
             <div class="tools-overlay">
               <div id="edit-tools" class="tools-item">
-                <div class="tool-button selected">
-                  <div id="pointer-tool" class="tool-icon">pointer</div>
+                <div class="tool-button selected" data-tool="pointer-tool">
+                  <inline-svg class="tool-icon" src="/images/pointer.svg"></inline-svg>
                 </div>
-                <div class="tool-button">
-                  <div id="pen-tool" class="tool-icon">pointeradd</div>
+                <div class="tool-button" data-tool="pen-tool">
+                  <inline-svg
+                    class="tool-icon"
+                    src="/images/pointeradd.svg"
+                  ></inline-svg>
                 </div>
-                <div class="tool-button">
-                  <div id="hand-tool" class="tool-icon">hand</div>
+                <div class="tool-button" data-tool="hand-tool">
+                  <inline-svg class="tool-icon" src="/images/hand.svg"></inline-svg>
                 </div>
               </div>
               <div id="zoom-tools" class="tools-item">
-                <div class="tool-button">
-                  <div id="zoom-out" class="tool-icon">minus</div>
+                <div class="tool-button" data-tool="zoom-out">
+                  <inline-svg class="tool-icon" src="/images/minus.svg"></inline-svg>
                 </div>
-                <div class="tool-button">
-                  <div id="zoom-in" class="tool-icon">plus</div>
+                <div class="tool-button" data-tool="zoom-in">
+                  <inline-svg class="tool-icon" src="/images/plus.svg"></inline-svg>
                 </div>
-                <div class="tool-button">
-                  <div id="zoom-fit-selection" class="tool-icon">bullseye</div>
+                <div class="tool-button" data-tool="zoom-fit-selection">
+                  <inline-svg class="tool-icon" src="/images/bullseye.svg"></inline-svg>
                 </div>
               </div>
             </div>
@@ -420,7 +440,7 @@
           <div class="tab-overlay-container right">
             <div class="sidebar-shadow-box"></div>
             <div class="sidebar-tab" data-sidebar-name="sidebar-selection-info">
-              info
+              <inline-svg src="/images/info.svg"></inline-svg>
             </div>
           </div>
         </div>

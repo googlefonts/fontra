@@ -13,7 +13,6 @@ def numToString(number):
 def makeSVG(pathString, width, height):
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" '
-        f'width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}">'
         f'<path d="{pathString}"/></svg>\n'
     )

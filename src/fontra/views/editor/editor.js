@@ -359,20 +359,16 @@ export class EditorController {
       "pen-tool": new PenTool(this),
       "hand-tool": new HandTool(this),
     };
-    for (const toolElement of document.querySelectorAll(
-      "#edit-tools > .tool-button > div"
-    )) {
-      const toolIdentifier = toolElement.id;
+    for (const toolElement of document.querySelectorAll("#edit-tools > .tool-button")) {
+      const toolIdentifier = toolElement.dataset.tool;
       toolElement.onclick = () => {
         this.setSelectedTool(toolIdentifier);
       };
     }
     this.setSelectedTool("pointer-tool");
 
-    for (const zoomElement of document.querySelectorAll(
-      "#zoom-tools > .tool-button > div"
-    )) {
-      const toolIdentifier = zoomElement.id;
+    for (const zoomElement of document.querySelectorAll("#zoom-tools > .tool-button")) {
+      const toolIdentifier = zoomElement.dataset.tool;
       zoomElement.onclick = () => {
         switch (toolIdentifier) {
           case "zoom-in":
@@ -678,7 +674,7 @@ export class EditorController {
     )) {
       editToolItem.classList.toggle(
         "selected",
-        editToolItem.firstElementChild.id === toolIdentifier
+        editToolItem.dataset.tool === toolIdentifier
       );
     }
     this.sceneController.setSelectedTool(this.tools[toolIdentifier]);
