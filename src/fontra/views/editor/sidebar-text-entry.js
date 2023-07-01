@@ -78,14 +78,14 @@ export class SidebarTextEntry {
         if (event.target.classList.contains("selected")) {
           return;
         }
-        this.textSettings.align = el.innerText.slice(5);
+        this.textSettings.align = el.dataset.align;
       };
     }
   }
 
   updateAlignElement(align) {
     for (const el of this.textAlignElement.children) {
-      el.classList.toggle("selected", align === el.innerText.slice(5));
+      el.classList.toggle("selected", align === el.dataset.align);
     }
   }
 

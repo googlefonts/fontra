@@ -241,11 +241,11 @@
     }
 
     #text-align-menu > div {
+      width: 1.5rem;
+      height: 1.5rem;
       position: relative;
-      font-family: fontra-icons;
-      font-size: 1.5em;
-      padding: 0.02em 0.3em 0.2em 0.3em;
-      border-radius: 0.5em;
+      padding: 0.3em 0.45em 0.3em 0.45em;
+      border-radius: 0.75em;
       cursor: pointer;
       user-select: none;
       transition: 120ms;
@@ -338,9 +338,15 @@
             <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
 
             <div id="text-align-menu">
-              <div>alignleft</div>
-              <div class="selected">aligncenter</div>
-              <div>alignright</div>
+              <div data-align="left">
+                <inline-svg src="/images/alignleft.svg"></inline-svg>
+              </div>
+              <div data-align="center" class="selected">
+                <inline-svg src="/images/aligncenter.svg"></inline-svg>
+              </div>
+              <div data-align="right">
+                <inline-svg src="/images/alignright.svg"></inline-svg>
+              </div>
             </div>
           </div>
         </div>
