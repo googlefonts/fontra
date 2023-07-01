@@ -240,7 +240,7 @@
       gap: 0.5em;
     }
 
-    #text-align-menu > div {
+    #text-align-menu > inline-svg {
       width: 1.5rem;
       height: 1.5rem;
       position: relative;
@@ -251,15 +251,15 @@
       transition: 120ms;
     }
 
-    #text-align-menu > div:hover {
+    #text-align-menu > inline-svg:hover {
       background-color: #c0c0c050;
     }
 
-    #text-align-menu > div:active {
+    #text-align-menu > inline-svg:active {
       background-color: #c0c0c080;
     }
 
-    #text-align-menu > div.selected {
+    #text-align-menu > inline-svg.selected {
       background-color: #c0c0c060;
     }
 
@@ -338,15 +338,13 @@
             <textarea rows="1" wrap="off" id="text-entry-textarea"></textarea>
 
             <div id="text-align-menu">
-              <div data-align="left">
-                <inline-svg src="/images/alignleft.svg"></inline-svg>
-              </div>
-              <div data-align="center" class="selected">
-                <inline-svg src="/images/aligncenter.svg"></inline-svg>
-              </div>
-              <div data-align="right">
-                <inline-svg src="/images/alignright.svg"></inline-svg>
-              </div>
+              <inline-svg data-align="left" src="/images/alignleft.svg"></inline-svg>
+              <inline-svg
+                data-align="center"
+                class="selected"
+                src="/images/aligncenter.svg"
+              ></inline-svg>
+              <inline-svg data-align="right" src="/images/alignright.svg"></inline-svg>
             </div>
           </div>
         </div>
