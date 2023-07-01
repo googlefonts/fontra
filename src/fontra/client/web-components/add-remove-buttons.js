@@ -39,8 +39,8 @@ export class AddRemoveButtons extends LitElement {
     }
 
     button > inline-svg {
-      width: 85%;
-      height: 85%;
+      width: 75%;
+      height: 75%;
     }
 
     button:disabled {
