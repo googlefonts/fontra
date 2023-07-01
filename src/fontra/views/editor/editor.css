@@ -169,20 +169,22 @@
 }
 
 .tool-button {
-  font-family: fontra-icons;
-  font-size: 1.7rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   user-select: none;
   background-color: var(--ui-element-background-color);
+  fill: var(--foreground-color);
   width: 2.7rem;
   height: 1.9rem;
   padding: 0.1rem;
-  text-align: center;
   transition: 0.15s;
 }
 
 .tool-icon {
+  width: 1.75rem;
+  height: 1.75rem;
   position: relative;
-  bottom: +0.25rem;
 }
 
 .tool-icon:hover {
@@ -200,7 +202,7 @@
 
 .tool-button.selected {
   background-color: var(--editor-tool-button-selected-background-color);
-  color: var(--background-color);
+  fill: var(--background-color);
 }
 
 #mini-console {
