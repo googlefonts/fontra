@@ -35,7 +35,7 @@
       --resize-cursor: col-resize;
     }
 
-    :root.--resize {
+    :root.resizing {
       user-select: none;
       -webkit-user-select: none;
       cursor: var(--resize-cursor);
@@ -316,13 +316,17 @@
 
     .sidebar-resize-gutter {
       height: 100%;
-      width: 8px;
+      width: 6px;
       cursor: var(--resize-cursor);
       position: absolute;
     }
 
     .sidebar-container.left .sidebar-resize-gutter {
-      right: 0;
+      right: -4px;
+    }
+
+    .sidebar-container.right .sidebar-resize-gutter {
+      left: -4px;
     }
 
     .sidebar-tab > inline-svg {
