@@ -47,8 +47,7 @@
       background-color: var(--ui-element-background-color);
       height: 100%;
       width: 0;
-      display: flex;
-      justify-content: space-between;
+      position: relative;
     }
 
     .sidebar-container.animating {
@@ -312,6 +311,11 @@
       height: 100%;
       width: 8px;
       cursor: col-resize;
+      position: absolute;
+    }
+
+    .sidebar-container.left .sidebar-resize-gutter {
+      right: 0;
     }
 
     .sidebar-tab > inline-svg {
