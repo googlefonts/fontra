@@ -458,13 +458,16 @@ export class EditorController {
     const onPointerMove = (event) => {
       if (sidebarResizing) {
         let width;
+        let cssProperty;
         if (growDirection === "left") {
           width = initialWidth + (initialPointerCoordinateX - event.clientX);
+          cssProperty = '--sidebar-content-width-right';
         } else if (growDirection === "right") {
           width = initialWidth + (event.clientX - initialPointerCoordinateX);
+          cssProperty = '--sidebar-content-width-left';
         }
         width = clamp(width, 200, 500);
-        sidebarResizing.style.width = `${width}px`;
+        document.querySelector(":root").style.setProperty(cssProperty, `${width}px`)
       }
     };
     const onPointerUp = () => {

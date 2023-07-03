@@ -44,10 +44,11 @@
 
     .sidebar-container {
       z-index: 100;
-
       background-color: var(--ui-element-background-color);
       height: 100%;
-      display: none;
+      width: 0;
+      display: flex;
+      justify-content: space-between;
     }
 
     .sidebar-container.animating {
@@ -60,11 +61,6 @@
 
     .sidebar-container.right.visible {
       width: var(--sidebar-content-width-right);
-    }
-
-    .sidebar-container.visible {
-      display: flex;
-      justify-content: space-between;
     }
 
     .main-container {
