@@ -461,13 +461,13 @@ export class EditorController {
         let cssProperty;
         if (growDirection === "left") {
           width = initialWidth + (initialPointerCoordinateX - event.clientX);
-          cssProperty = '--sidebar-content-width-right';
+          cssProperty = "--sidebar-content-width-right";
         } else if (growDirection === "right") {
           width = initialWidth + (event.clientX - initialPointerCoordinateX);
-          cssProperty = '--sidebar-content-width-left';
+          cssProperty = "--sidebar-content-width-left";
         }
         width = clamp(width, 200, 500);
-        document.querySelector(":root").style.setProperty(cssProperty, `${width}px`)
+        document.querySelector(":root").style.setProperty(cssProperty, `${width}px`);
       }
     };
     const onPointerUp = () => {
