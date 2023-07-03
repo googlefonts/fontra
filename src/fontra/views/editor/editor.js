@@ -471,13 +471,12 @@ export class EditorController {
       }
     };
     const onPointerUp = () => {
-      sidebarResizing.style.removeProperty("userSelect");
       sidebarResizing.classList.add("animating");
       sidebarResizing = undefined;
       initialWidth = undefined;
       growDirection = undefined;
       initialPointerCoordinateX = undefined;
-      document.body.style.removeProperty("cursor");
+      document.querySelector(":root").classList.remove("--resize");
       document.removeEventListener("pointermove", onPointerMove);
     };
     for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
@@ -486,9 +485,8 @@ export class EditorController {
         initialWidth = sidebarResizing.getBoundingClientRect().width;
         initialPointerCoordinateX = event.clientX;
         sidebarResizing.classList.remove("animating");
-        sidebarResizing.style.userSelect = "none";
         growDirection = gutter.dataset.growDirection;
-        document.body.style.cursor = getComputedStyle(gutter).cursor;
+        document.querySelector(":root").classList.add("--resize");
         document.addEventListener("pointermove", onPointerMove);
         document.addEventListener("pointerup", onPointerUp, { once: true });
       });

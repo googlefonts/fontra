@@ -32,6 +32,13 @@
       --sidebar-tab-width: 3em;
       --sidebar-content-width-left: 20em;
       --sidebar-content-width-right: 22em;
+      --resize-cursor: col-resize;
+    }
+
+    :root.--resize {
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: var(--resize-cursor);
     }
 
     .editor-container {
@@ -310,7 +317,7 @@
     .sidebar-resize-gutter {
       height: 100%;
       width: 8px;
-      cursor: col-resize;
+      cursor: var(--resize-cursor);
       position: absolute;
     }
 
