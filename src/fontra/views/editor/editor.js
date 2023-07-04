@@ -524,10 +524,14 @@ export class EditorController {
           `.tab-overlay-container.${side} > .sidebar-shadow-box`
         );
         if (isSelected) {
-          setTimeout(() => {
-            sidebarContent?.classList.remove("selected");
-            shadowBox?.classList.remove("visible");
-          }, 120); // timing should match sidebar-container transition
+          sidebarContainer.addEventListener(
+            "transitionend",
+            () => {
+              sidebarContent?.classList.remove("selected");
+              shadowBox?.classList.remove("visible");
+            },
+            { once: true }
+          );
         } else {
           sidebarContent?.classList.add("selected");
           shadowBox?.classList.add("visible");

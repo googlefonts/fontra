@@ -58,7 +58,7 @@
     }
 
     .sidebar-container.animating {
-      transition: 120ms; /* timing should match timer in tabClick() */
+      transition: 120ms;
     }
 
     .sidebar-container.left.visible {
@@ -202,10 +202,12 @@
 
     .sidebar-container.left > .sidebar-content {
       float: right;
+      width: var(--sidebar-content-width-left);
     }
 
     .sidebar-container.right > .sidebar-content {
       float: left;
+      width: var(--sidebar-content-width-right);
     }
 
     .sidebar-container > .sidebar-content.selected {
