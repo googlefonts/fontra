@@ -31,12 +31,22 @@
     <false/>
     <key>com.typemytype.robofont.generateFeaturesWithFontTools</key>
     <false/>
+    <key>com.typemytype.robofont.guideline.magnetic.PTgzBoDuvl</key>
+    <real>5.0</real>
+    <key>com.typemytype.robofont.guideline.magnetic.VBtqlX2ff8</key>
+    <real>5.0</real>
+    <key>com.typemytype.robofont.guideline.showMeasurements.PTgzBoDuvl</key>
+    <false/>
+    <key>com.typemytype.robofont.guideline.showMeasurements.VBtqlX2ff8</key>
+    <false/>
     <key>com.typemytype.robofont.italicSlantOffset</key>
     <integer>0</integer>
     <key>com.typemytype.robofont.segmentType</key>
     <string>curve</string>
     <key>com.typemytype.robofont.shouldAddPointsInSplineConversion</key>
     <integer>1</integer>
+    <key>com.typemytype.robofont.smartSets.uniqueKey</key>
+    <string>7210513296</string>
     <key>public.glyphOrder</key>
     <array>
       <string>space</string>
@@ -83,6 +93,7 @@
       <string>aligncenter</string>
       <string>alignright</string>
       <string>reference</string>
+      <string>ruler</string>
     </array>
   </dict>
 </plist>
