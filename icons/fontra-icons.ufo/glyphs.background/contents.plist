@@ -8,5 +8,7 @@
     <string>hand.glif</string>
     <key>reference</key>
     <string>reference.glif</string>
+    <key>ruler</key>
+    <string>ruler.glif</string>
   </dict>
 </plist>
