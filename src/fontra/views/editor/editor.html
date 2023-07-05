@@ -28,19 +28,6 @@
       height: 100vh;
     }
 
-    :root {
-      --sidebar-tab-width: 3em;
-      --sidebar-content-width-left: 20em;
-      --sidebar-content-width-right: 22em;
-      --resize-cursor: col-resize;
-    }
-
-    :root.resizing {
-      user-select: none;
-      -webkit-user-select: none;
-      cursor: var(--resize-cursor);
-    }
-
     .editor-container {
       display: grid;
       position: relative;
@@ -55,6 +42,19 @@
       height: 100%;
       width: 0;
       position: relative;
+    }
+
+    :root {
+      --sidebar-tab-width: 3em;
+      --sidebar-content-width-left: 20em;
+      --sidebar-content-width-right: 22em;
+      --resize-cursor: col-resize;
+    }
+
+    :root.sidebar-resizing {
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: var(--resize-cursor);
     }
 
     .sidebar-container.animating {

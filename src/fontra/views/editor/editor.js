@@ -467,7 +467,7 @@ export class EditorController {
           cssProperty = "--sidebar-content-width-left";
         }
         width = clamp(width, 200, 500);
-        document.querySelector(":root").style.setProperty(cssProperty, `${width}px`);
+        document.documentElement.style.setProperty(cssProperty, `${width}px`);
       }
     };
     const onPointerUp = () => {
@@ -476,7 +476,7 @@ export class EditorController {
       initialWidth = undefined;
       growDirection = undefined;
       initialPointerCoordinateX = undefined;
-      document.querySelector(":root").classList.remove("resizing");
+      document.documentElement.classList.remove("sidebar-resizing");
       document.removeEventListener("pointermove", onPointerMove);
     };
     for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
@@ -486,7 +486,7 @@ export class EditorController {
         initialPointerCoordinateX = event.clientX;
         sidebarResizing.classList.remove("animating");
         growDirection = gutter.dataset.growDirection;
-        document.querySelector(":root").classList.add("resizing");
+        document.documentElement.classList.add("sidebar-resizing");
         document.addEventListener("pointermove", onPointerMove);
         document.addEventListener("pointerup", onPointerUp, { once: true });
       });
