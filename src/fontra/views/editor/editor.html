@@ -28,12 +28,6 @@
       height: 100vh;
     }
 
-    :root {
-      --sidebar-tab-width: 3em;
-      --sidebar-content-width-left: 20em;
-      --sidebar-content-width-right: 22em;
-    }
-
     .editor-container {
       display: grid;
       position: relative;
@@ -44,14 +38,27 @@
 
     .sidebar-container {
       z-index: 100;
-
       background-color: var(--ui-element-background-color);
       height: 100%;
-      display: none;
+      width: 0;
+      position: relative;
+    }
+
+    :root {
+      --sidebar-tab-width: 3em;
+      --sidebar-content-width-left: 20em;
+      --sidebar-content-width-right: 22em;
+      --resize-cursor: col-resize;
+    }
+
+    :root.sidebar-resizing {
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: var(--resize-cursor);
     }
 
     .sidebar-container.animating {
-      transition: 120ms; /* timing should match timer in tabClick() */
+      transition: 120ms;
     }
 
     .sidebar-container.left.visible {
@@ -60,11 +67,6 @@
 
     .sidebar-container.right.visible {
       width: var(--sidebar-content-width-right);
-    }
-
-    .sidebar-container.visible {
-      display: flex;
-      justify-content: space-between;
     }
 
     .main-container {
@@ -200,10 +202,12 @@
 
     .sidebar-container.left > .sidebar-content {
       float: right;
+      width: var(--sidebar-content-width-left);
     }
 
     .sidebar-container.right > .sidebar-content {
       float: left;
+      width: var(--sidebar-content-width-right);
     }
 
     .sidebar-container > .sidebar-content.selected {
@@ -314,8 +318,17 @@
 
     .sidebar-resize-gutter {
       height: 100%;
-      width: 8px;
-      cursor: col-resize;
+      width: 4px;
+      cursor: var(--resize-cursor);
+      position: absolute;
+    }
+
+    .sidebar-container.left .sidebar-resize-gutter {
+      right: -2px;
+    }
+
+    .sidebar-container.right .sidebar-resize-gutter {
+      left: -2px;
     }
 
     .sidebar-tab > inline-svg {

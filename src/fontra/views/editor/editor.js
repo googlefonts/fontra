@@ -458,23 +458,25 @@ export class EditorController {
     const onPointerMove = (event) => {
       if (sidebarResizing) {
         let width;
+        let cssProperty;
         if (growDirection === "left") {
           width = initialWidth + (initialPointerCoordinateX - event.clientX);
-        } else if (growDirection === "right") {
+          cssProperty = "--sidebar-content-width-right";
+        } else {
           width = initialWidth + (event.clientX - initialPointerCoordinateX);
+          cssProperty = "--sidebar-content-width-left";
         }
         width = clamp(width, 200, 500);
-        sidebarResizing.style.width = `${width}px`;
+        document.documentElement.style.setProperty(cssProperty, `${width}px`);
       }
     };
     const onPointerUp = () => {
-      sidebarResizing.style.removeProperty("userSelect");
       sidebarResizing.classList.add("animating");
       sidebarResizing = undefined;
       initialWidth = undefined;
       growDirection = undefined;
       initialPointerCoordinateX = undefined;
-      document.body.style.removeProperty("cursor");
+      document.documentElement.classList.remove("sidebar-resizing");
       document.removeEventListener("pointermove", onPointerMove);
     };
     for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
@@ -483,9 +485,8 @@ export class EditorController {
         initialWidth = sidebarResizing.getBoundingClientRect().width;
         initialPointerCoordinateX = event.clientX;
         sidebarResizing.classList.remove("animating");
-        sidebarResizing.style.userSelect = "none";
         growDirection = gutter.dataset.growDirection;
-        document.body.style.cursor = getComputedStyle(gutter).cursor;
+        document.documentElement.classList.add("sidebar-resizing");
         document.addEventListener("pointermove", onPointerMove);
         document.addEventListener("pointerup", onPointerUp, { once: true });
       });
@@ -523,10 +524,14 @@ export class EditorController {
           `.tab-overlay-container.${side} > .sidebar-shadow-box`
         );
         if (isSelected) {
-          setTimeout(() => {
-            sidebarContent?.classList.remove("selected");
-            shadowBox?.classList.remove("visible");
-          }, 120); // timing should match sidebar-container transition
+          sidebarContainer.addEventListener(
+            "transitionend",
+            () => {
+              sidebarContent?.classList.remove("selected");
+              shadowBox?.classList.remove("visible");
+            },
+            { once: true }
+          );
         } else {
           sidebarContent?.classList.add("selected");
           shadowBox?.classList.add("visible");
