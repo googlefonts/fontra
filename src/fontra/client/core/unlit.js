@@ -112,7 +112,11 @@ const attrExceptions = { for: "htmlFor", class: "className", tabindex: "tabIndex
 export function createDomElement(tagName, attributes, children) {
   const element = document.createElement(tagName);
   for (const [key, value] of Object.entries(attributes || {})) {
-    element[attrExceptions[key] || key] = value;
+    if (key.slice(0, 5) === "data-") {
+      element.dataset[key.slice(5)] = value;
+    } else {
+      element[attrExceptions[key] || key] = value;
+    }
   }
   for (const child of children || []) {
     element.append(child);
