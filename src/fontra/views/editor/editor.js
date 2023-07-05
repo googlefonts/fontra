@@ -44,6 +44,7 @@ import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
+import { PowerRulerTool } from "./edit-tools-power-ruler.js";
 import { SidebarDesignspace } from "./sidebar-designspace.js";
 import { SidebarSelectionInfo } from "./sidebar-selection-info.js";
 import { SidebarTextEntry } from "./sidebar-text-entry.js";
@@ -359,7 +360,7 @@ export class EditorController {
 
   initTools() {
     this.tools = {};
-    const editToolClasses = [PointerTool, PenTool, HandTool];
+    const editToolClasses = [PointerTool, PenTool, PowerRulerTool, HandTool];
     for (const editToolClass of editToolClasses) {
       this.addEditTool(new editToolClass(this));
     }
