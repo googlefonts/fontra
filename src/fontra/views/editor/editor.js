@@ -15,6 +15,7 @@ import {
   scaleRect,
 } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
+import * as html from "/core/unlit.js";
 import { SceneView } from "../core/scene-view.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
@@ -357,16 +358,10 @@ export class EditorController {
   }
 
   initTools() {
-    this.tools = {
-      "pointer-tool": new PointerTool(this),
-      "pen-tool": new PenTool(this),
-      "hand-tool": new HandTool(this),
-    };
-    for (const toolElement of document.querySelectorAll("#edit-tools > .tool-button")) {
-      const toolIdentifier = toolElement.dataset.tool;
-      toolElement.onclick = () => {
-        this.setSelectedTool(toolIdentifier);
-      };
+    this.tools = {};
+    const editToolClasses = [PointerTool, PenTool, HandTool];
+    for (const editToolClass of editToolClasses) {
+      this.addEditTool(new editToolClass(this));
     }
     this.setSelectedTool("pointer-tool");
 
@@ -386,6 +381,22 @@ export class EditorController {
         }
       };
     }
+  }
+
+  addEditTool(tool) {
+    this.tools[tool.identifier] = tool;
+
+    const editToolsElement = document.querySelector("#edit-tools");
+    const toolButton = html.div(
+      { "class": "tool-button selected", "data-tool": tool.identifier },
+      [html.createDomElement("inline-svg", { class: "tool-icon", src: tool.iconPath })]
+    );
+
+    toolButton.onclick = () => {
+      this.setSelectedTool(tool.identifier);
+    };
+
+    editToolsElement.appendChild(toolButton);
   }
 
   async initSidebarDesignspace() {
