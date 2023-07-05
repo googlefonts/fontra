@@ -425,7 +425,14 @@ export class EditorController {
     // ensure we postpone just enough.)
     setTimeout(() => {
       for (const side of ["left", "right"]) {
+        const sidebarWidth = localStorage.getItem(`fontra-sidebar-width-${side}`);
         const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
+        if (sidebarWidth) {
+          document.documentElement.style.setProperty(
+            `--sidebar-content-width-${side}`,
+            `${sidebarWidth}px`
+          );
+        }
         if (selectedSidebar) {
           this.toggleSidebar(selectedSidebar, false);
         }
@@ -455,9 +462,9 @@ export class EditorController {
     let initialPointerCoordinateX;
     let sidebarResizing;
     let growDirection;
+    let width;
     const onPointerMove = (event) => {
       if (sidebarResizing) {
-        let width;
         let cssProperty;
         if (growDirection === "left") {
           width = initialWidth + (initialPointerCoordinateX - event.clientX);
@@ -471,6 +478,10 @@ export class EditorController {
       }
     };
     const onPointerUp = () => {
+      localStorage.setItem(
+        `fontra-sidebar-width-${growDirection === "left" ? "right" : "left"}`,
+        width
+      );
       sidebarResizing.classList.add("animating");
       sidebarResizing = undefined;
       initialWidth = undefined;
