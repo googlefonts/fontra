@@ -98,14 +98,6 @@ export class PowerRulerTool extends BaseTool {
     }
   }
 
-  handleHover(event) {
-    this.setCursor();
-  }
-
-  setCursor() {
-    this.canvasController.canvas.style.cursor = "default";
-  }
-
   recalc(glyphController, point) {
     const pointRect = { xMin: point.x, yMin: point.y, xMax: point.x, yMax: point.y };
     const { width, height } = rectSize(
@@ -134,7 +126,35 @@ export class PowerRulerTool extends BaseTool {
     this.canvasController.requestUpdate();
   }
 
+  haveHoveredGlyph(event) {
+    const point = this.sceneController.localPoint(event);
+    return !!this.sceneModel.glyphAtPoint(point);
+  }
+
+  handleHover(event) {
+    if (!this.sceneModel.selectedGlyphIsEditing || this.haveHoveredGlyph(event)) {
+      this.editor.tools["pointer-tool"].handleHover(event);
+      return;
+    }
+    this.setCursor();
+  }
+
+  setCursor() {
+    if (!this.sceneModel.selectedGlyphIsEditing) {
+      this.editor.tools["pointer-tool"].setCursor();
+    } else {
+      this.canvasController.canvas.style.cursor = "default";
+    }
+  }
+
   async handleDrag(eventStream, initialEvent) {
+    if (
+      !this.sceneModel.selectedGlyphIsEditing ||
+      this.haveHoveredGlyph(initialEvent)
+    ) {
+      await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
+      return;
+    }
     if (!this.currentGlyphName) {
       return;
     }
