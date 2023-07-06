@@ -7,12 +7,33 @@ import {
   strokeLine,
 } from "./visualization-layer-definitions.js";
 
+let thePowerRulerTool; // singleton
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.power.ruler",
+  name: "Power Ruler",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
+  zIndex: 200,
+  screenParameters: { strokeWidth: 1 },
+  colors: {
+    strokeColor: "#0004",
+  },
+  colorsDarkMode: {
+    strokeColor: "#FFF6",
+  },
+  draw: (context, positionedGlyph, parameters, model, controller) =>
+    thePowerRulerTool?.draw(context, positionedGlyph, parameters, model, controller),
+});
+
 export class PowerRulerTool extends BaseTool {
   iconPath = "/images/ruler.svg";
   identifier = "power-ruler-tool";
 
   constructor(editor) {
     super(editor);
+    thePowerRulerTool = this;
     this.fontController = editor.fontController;
     this.glyphRulers = {};
     this.currentGlyphName = undefined;
@@ -28,24 +49,6 @@ export class PowerRulerTool extends BaseTool {
     );
 
     this.glyphChangeListener = (glyphName) => this.glyphChanged(glyphName);
-
-    registerVisualizationLayerDefinition({
-      identifier: "fontra.power.ruler",
-      name: "Power Ruler",
-      selectionMode: "editing",
-      userSwitchable: true,
-      defaultOn: true,
-      zIndex: 200,
-      screenParameters: { strokeWidth: 1 },
-      colors: {
-        strokeColor: "#0004",
-      },
-      colorsDarkMode: {
-        strokeColor: "#FFF6",
-      },
-      draw: (context, positionedGlyph, parameters, model, controller) =>
-        this.draw(context, positionedGlyph, parameters, model, controller),
-    });
   }
 
   draw(context, positionedGlyph, parameters, model, controller) {
