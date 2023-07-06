@@ -4,7 +4,9 @@ import secrets
 from importlib.metadata import entry_points
 
 from . import __version__ as fontraVersion
-from .core.server import FontraServer
+from .core.server import FontraServer, findFreeTCPPort
+
+DEFAULT_PORT = 8000
 
 
 def main():
@@ -15,7 +17,9 @@ def main():
     )
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="localhost")
-    parser.add_argument("--http-port", default=8000, type=int)
+    parser.add_argument(
+        "--http-port", type=int, help=f"Default port is ${DEFAULT_PORT}"
+    )
     parser.add_argument(
         "--launch", action="store_true", help="Launch the default browser"
     )
@@ -45,7 +49,7 @@ def main():
     manager = args.getProjectManager(args)
     server = FontraServer(
         host=host,
-        httpPort=httpPort,
+        httpPort=httpPort or findFreeTCPPort(DEFAULT_PORT),
         projectManager=manager,
         launchWebBrowser=args.launch,
         versionToken=secrets.token_hex(4),

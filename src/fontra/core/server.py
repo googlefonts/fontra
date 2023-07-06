@@ -78,9 +78,6 @@ class FontraServer:
         self.httpApp.on_shutdown.append(self.closeProjectManager)
         self._activeWebsockets = set()
 
-        if self.httpPort == 8000:
-            self.httpPort = findFreeTCPPort()
-
     def run(self, showLaunchBanner=True):
         host = self.host
         httpPort = self.httpPort
