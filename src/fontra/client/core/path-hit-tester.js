@@ -77,15 +77,15 @@ export class PathHitTester {
         if (interTs.length) {
           intersections.push(
             ...interTs.map((t) => {
-              let direction = 0;
+              let winding = 0;
               if (contour.isClosed) {
                 const derivative = segment.bezier.derivative(t);
-                direction = Math.sign(
+                winding = Math.sign(
                   lineDirection.x * derivative.y - derivative.x * lineDirection.y
                 );
               }
               const point = segment.bezier.compute(t);
-              return { contourIndex, segmentIndex, segment, direction, ...point };
+              return { contourIndex, segmentIndex, segment, winding, ...point };
             })
           );
         }
