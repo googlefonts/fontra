@@ -10,8 +10,10 @@ import {
 
 let thePowerRulerTool; // singleton
 
+const POWER_RULER_IDENTIFIER = "fontra.power.ruler";
+
 registerVisualizationLayerDefinition({
-  identifier: "fontra.power.ruler",
+  identifier: POWER_RULER_IDENTIFIER,
   name: "Power Ruler",
   selectionMode: "editing",
   userSwitchable: true,
@@ -48,6 +50,7 @@ export class PowerRulerTool extends BaseTool {
     this.fontController = editor.fontController;
     this.glyphRulers = {};
     this.currentGlyphName = undefined;
+    this.active = editor.visualizationLayersSettings.model[POWER_RULER_IDENTIFIER];
 
     this.sceneController.addEventListener("selectedGlyphChanged", () =>
       this.editedGlyphMayHaveChanged()
@@ -57,6 +60,16 @@ export class PowerRulerTool extends BaseTool {
     );
     editor.designspaceLocationController.addListener(
       throttleCalls(() => this.locationChanged(), 20)
+    );
+
+    editor.visualizationLayersSettings.addKeyListener(
+      POWER_RULER_IDENTIFIER,
+      (key, newValue) => {
+        this.active = newValue;
+        if (newValue) {
+          this.recalc();
+        }
+      }
     );
 
     this.glyphChangeListener = (glyphName) => this.glyphChanged(glyphName);
@@ -156,6 +169,9 @@ export class PowerRulerTool extends BaseTool {
   }
 
   recalc() {
+    if (!this.active) {
+      return;
+    }
     const ruler = this.glyphRulers[this.currentGlyphName];
     if (!ruler) {
       return;
@@ -258,6 +274,7 @@ export class PowerRulerTool extends BaseTool {
     if (!this.currentGlyphName) {
       return;
     }
+    this.editor.visualizationLayersSettings.model[POWER_RULER_IDENTIFIER] = true;
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
     const point = this.sceneController.localPoint(initialEvent);
     point.x -= positionedGlyph.x;
