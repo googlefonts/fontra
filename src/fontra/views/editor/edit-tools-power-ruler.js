@@ -92,6 +92,9 @@ export class PowerRulerTool extends BaseTool {
 
     context.scale(1, -1);
     for (const measurePoint of measurePoints) {
+      if (measurePoint.distance < 0.1) {
+        continue;
+      }
       const distance = measurePoint.distance.toString();
       context.fillStyle = measurePoint.inside
         ? parameters.insideBlobColor
