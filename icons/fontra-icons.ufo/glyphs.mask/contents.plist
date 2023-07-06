@@ -2,11 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
-    <key>gear</key>
-    <string>gear.glif</string>
-    <key>hand</key>
-    <string>hand.glif</string>
-    <key>reference</key>
-    <string>reference.glif</string>
+    <key>ruler</key>
+    <string>ruler.glif</string>
   </dict>
 </plist>

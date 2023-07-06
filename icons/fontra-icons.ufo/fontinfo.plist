@@ -11,7 +11,28 @@
     <key>familyName</key>
     <string>FontraIcons</string>
     <key>guidelines</key>
-    <array/>
+    <array>
+      <dict>
+        <key>angle</key>
+        <integer>0</integer>
+        <key>identifier</key>
+        <string>VBtqlX2ff8</string>
+        <key>x</key>
+        <integer>495</integer>
+        <key>y</key>
+        <integer>-136</integer>
+      </dict>
+      <dict>
+        <key>angle</key>
+        <integer>0</integer>
+        <key>identifier</key>
+        <string>PTgzBoDuvl</string>
+        <key>x</key>
+        <integer>486</integer>
+        <key>y</key>
+        <integer>740</integer>
+      </dict>
+    </array>
     <key>postscriptBlueValues</key>
     <array/>
     <key>postscriptFamilyBlues</key>

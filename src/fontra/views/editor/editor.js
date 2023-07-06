@@ -60,6 +60,9 @@ import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { clamp } from "../../core/utils.js";
 
+const MIN_SIDEBAR_WIDTH = 200;
+const MAX_SIDEBAR_WIDTH = 500;
+
 export class EditorController {
   static async fromWebSocket() {
     const pathItems = window.location.pathname.split("/").slice(3);
@@ -359,20 +362,16 @@ export class EditorController {
       "pen-tool": new PenTool(this),
       "hand-tool": new HandTool(this),
     };
-    for (const toolElement of document.querySelectorAll(
-      "#edit-tools > .tool-button > div"
-    )) {
-      const toolIdentifier = toolElement.id;
+    for (const toolElement of document.querySelectorAll("#edit-tools > .tool-button")) {
+      const toolIdentifier = toolElement.dataset.tool;
       toolElement.onclick = () => {
         this.setSelectedTool(toolIdentifier);
       };
     }
     this.setSelectedTool("pointer-tool");
 
-    for (const zoomElement of document.querySelectorAll(
-      "#zoom-tools > .tool-button > div"
-    )) {
-      const toolIdentifier = zoomElement.id;
+    for (const zoomElement of document.querySelectorAll("#zoom-tools > .tool-button")) {
+      const toolIdentifier = zoomElement.dataset.tool;
       zoomElement.onclick = () => {
         switch (toolIdentifier) {
           case "zoom-in":
@@ -429,7 +428,22 @@ export class EditorController {
     // ensure we postpone just enough.)
     setTimeout(() => {
       for (const side of ["left", "right"]) {
+        const sidebarWidth = localStorage.getItem(`fontra-sidebar-width-${side}`);
         const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
+        if (sidebarWidth) {
+          let width = clamp(
+            parseInt(sidebarWidth),
+            MIN_SIDEBAR_WIDTH,
+            MAX_SIDEBAR_WIDTH
+          );
+          if (isNaN(width)) {
+            width = MIN_SIDEBAR_WIDTH;
+          }
+          document.documentElement.style.setProperty(
+            `--sidebar-content-width-${side}`,
+            `${width}px`
+          );
+        }
         if (selectedSidebar) {
           this.toggleSidebar(selectedSidebar, false);
         }
@@ -459,26 +473,32 @@ export class EditorController {
     let initialPointerCoordinateX;
     let sidebarResizing;
     let growDirection;
+    let width;
     const onPointerMove = (event) => {
       if (sidebarResizing) {
-        let width;
+        let cssProperty;
         if (growDirection === "left") {
           width = initialWidth + (initialPointerCoordinateX - event.clientX);
-        } else if (growDirection === "right") {
+          cssProperty = "--sidebar-content-width-right";
+        } else {
           width = initialWidth + (event.clientX - initialPointerCoordinateX);
+          cssProperty = "--sidebar-content-width-left";
         }
-        width = clamp(width, 200, 500);
-        sidebarResizing.style.width = `${width}px`;
+        width = clamp(width, MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
+        document.documentElement.style.setProperty(cssProperty, `${width}px`);
       }
     };
     const onPointerUp = () => {
-      sidebarResizing.style.removeProperty("userSelect");
+      localStorage.setItem(
+        `fontra-sidebar-width-${growDirection === "left" ? "right" : "left"}`,
+        width
+      );
       sidebarResizing.classList.add("animating");
       sidebarResizing = undefined;
       initialWidth = undefined;
       growDirection = undefined;
       initialPointerCoordinateX = undefined;
-      document.body.style.removeProperty("cursor");
+      document.documentElement.classList.remove("sidebar-resizing");
       document.removeEventListener("pointermove", onPointerMove);
     };
     for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
@@ -487,9 +507,8 @@ export class EditorController {
         initialWidth = sidebarResizing.getBoundingClientRect().width;
         initialPointerCoordinateX = event.clientX;
         sidebarResizing.classList.remove("animating");
-        sidebarResizing.style.userSelect = "none";
         growDirection = gutter.dataset.growDirection;
-        document.body.style.cursor = getComputedStyle(gutter).cursor;
+        document.documentElement.classList.add("sidebar-resizing");
         document.addEventListener("pointermove", onPointerMove);
         document.addEventListener("pointerup", onPointerUp, { once: true });
       });
@@ -527,10 +546,14 @@ export class EditorController {
           `.tab-overlay-container.${side} > .sidebar-shadow-box`
         );
         if (isSelected) {
-          setTimeout(() => {
-            sidebarContent?.classList.remove("selected");
-            shadowBox?.classList.remove("visible");
-          }, 120); // timing should match sidebar-container transition
+          sidebarContainer.addEventListener(
+            "transitionend",
+            () => {
+              sidebarContent?.classList.remove("selected");
+              shadowBox?.classList.remove("visible");
+            },
+            { once: true }
+          );
         } else {
           sidebarContent?.classList.add("selected");
           shadowBox?.classList.add("visible");
@@ -678,7 +701,7 @@ export class EditorController {
     )) {
       editToolItem.classList.toggle(
         "selected",
-        editToolItem.firstElementChild.id === toolIdentifier
+        editToolItem.dataset.tool === toolIdentifier
       );
     }
     this.sceneController.setSelectedTool(this.tools[toolIdentifier]);

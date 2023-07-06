@@ -38,6 +38,7 @@ export class RangeSlider extends LitElement {
 
     .range-container {
       position: relative;
+      flex-grow: 1;
     }
 
     /* Chrome, Safari, Edge, Opera */
