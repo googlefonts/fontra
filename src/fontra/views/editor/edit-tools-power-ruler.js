@@ -24,7 +24,7 @@ registerVisualizationLayerDefinition({
     insideTextColor: "#000B",
     outsideBlobColor: "#000B",
     outsideTextColor: "#FFFB",
-    intersectionColor: "#F005",
+    intersectionColor: "#F085",
   },
   colorsDarkMode: {
     strokeColor: "#FFF6",
@@ -32,7 +32,7 @@ registerVisualizationLayerDefinition({
     insideTextColor: "#FFFB",
     outsideBlobColor: "#FFFB",
     outsideTextColor: "#444B",
-    intersectionColor: "#F666",
+    intersectionColor: "#F696",
   },
   draw: (context, positionedGlyph, parameters, model, controller) =>
     thePowerRulerTool?.draw(context, positionedGlyph, parameters, model, controller),
