@@ -58,7 +58,8 @@ export class PowerRulerTool extends BaseTool {
     this.sceneController.addEventListener("selectedGlyphIsEditingChanged", () =>
       this.editedGlyphMayHaveChanged()
     );
-    editor.designspaceLocationController.addListener(
+    editor.designspaceLocationController.addKeyListener(
+      "location",
       throttleCalls(() => this.locationChanged(), 20)
     );
 
