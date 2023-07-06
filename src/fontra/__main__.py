@@ -17,7 +17,9 @@ def main():
     )
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", default="localhost")
-    parser.add_argument("--http-port", type=int, help=f"Default port is {DEFAULT_PORT}")
+    parser.add_argument(
+        "--http-port", type=int, help=f"The Default port is {DEFAULT_PORT}"
+    )
     parser.add_argument(
         "--launch", action="store_true", help="Launch the default browser"
     )
