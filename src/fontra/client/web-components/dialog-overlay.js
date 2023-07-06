@@ -13,7 +13,10 @@ export async function dialog(headline, message, buttonDefs, autoDismissTimeout) 
 }
 
 export async function dialogSetup(headline, message, buttonDefs, autoDismissTimeout) {
-  const dialogOverlayElement = document.querySelector("dialog-overlay");
+  const dialogOverlayElement = document.querySelector("dialog");
+  // WARNING: on Safari 'dialogOverlayElement.setupDialog' is undefined and raises the following error:
+  // Unhandled Promise Rejection: TypeError: dialogOverlayElement.setupDialog is not a function.
+  // >>> console.log(dialogOverlayElement['setupDialog']);
   await dialogOverlayElement.setupDialog(
     headline,
     message,
@@ -23,23 +26,19 @@ export async function dialogSetup(headline, message, buttonDefs, autoDismissTime
   return dialogOverlayElement;
 }
 
-export class DialogOverlay extends SimpleElement {
+export class DialogOverlay extends HTMLDialogElement {
   static styles = `
-    :host {
-      display: none;  /* switched to "grid" on show, back to "none" on hide */
-      position: absolute;
-      grid-template-rows: 15fr 1fr;
-      align-items: center;
-      z-index: 10000;
-      background-color: #8888;
-      width: 100%;
-      height: 100%;
-      align-content: center;
-      justify-content: center;
-      white-space: normal;
+
+    dialog {
+      background-color: transparent;
+      border: none;
     }
 
-    .dialog-box {
+    dialog::backdrop {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    dialog .dialog-box {
       position: relative;
       display: grid;
       grid-template-rows: auto 1fr auto;
@@ -52,21 +51,22 @@ export class DialogOverlay extends SimpleElement {
       overflow-wrap: normal;
       font-size: 1.15em;
       background-color: var(--ui-element-background-color);
+      color: var(--ui-form-input-foreground-color);
       padding: 1em;
       border-radius: 0.5em;
       box-shadow: 1px 3px 8px #0006;
     }
 
-    .headline {
+    dialog .headline {
       font-weight: bold;
       grid-column: 1 / -1;
     }
 
-    .message {
+    dialog .message {
       grid-column: 1 / -1;
     }
 
-    .button {
+    dialog .button {
       color: white;
       background-color: gray;
 
@@ -80,36 +80,36 @@ export class DialogOverlay extends SimpleElement {
       transition: 100ms;
     }
 
-    .button.button-1 {
+    dialog .button.button-1 {
       grid-column: 1;
     }
 
-    .button.button-2 {
+    dialog .button.button-2 {
       grid-column: 2;
     }
 
-    .button.button-3 {
+    dialog .button.button-3 {
       grid-column: 3;
     }
 
-    .button.default {
+    dialog .button.default {
       background-color: var(--fontra-red-color);
     }
 
-    .button.disabled {
+    dialog .button.disabled {
       background-color: #8885;
       pointer-events: none;
     }
 
-    .button:hover {
+    dialog .button:hover {
       filter: brightness(1.15);
     }
 
-    .button:active {
+    dialog .button:active {
       filter: brightness(0.9);
     }
 
-    input[type="text"] {
+    dialog input[type="text"] {
       background-color: var(--text-input-background-color);
       color: var(--text-input-foreground-color);
       border-radius: 0.25em;
@@ -124,14 +124,16 @@ export class DialogOverlay extends SimpleElement {
 
   constructor() {
     super();
+
+    const styleElement = document.createElement("style");
+    styleElement.textContent = DialogOverlay.styles;
+    document.head.appendChild(styleElement);
+
     this.dialogBox = html.div({
       class: "dialog-box",
-      tabindex: 1,
       onkeydown: (event) => this._handleKeyDown(event),
-      /* prevent clicks on the dialog itself to propagate to the overlay */
-      onclick: (event) => event.stopImmediatePropagation(),
     });
-    this.shadowRoot.appendChild(this.dialogBox);
+    this.appendChild(this.dialogBox);
   }
 
   setupDialog(headline, message, buttonDefs, autoDismissTimeout) {
@@ -237,17 +239,16 @@ export class DialogOverlay extends SimpleElement {
 
   show() {
     this._savedActiveElement = document.activeElement;
-    this.style.display = "grid";
-    this.dialogBox.focus();
+    this.showModal();
   }
 
   hide() {
-    this.style.display = "none";
+    this.close();
     this._savedActiveElement?.focus();
   }
 
   _handleKeyDown(event) {
-    if (event.key == "Enter") {
+    if (event.key === "Enter") {
       if (!this.defaultButton?.classList.contains("disabled")) {
         this.defaultButton?.click();
       }
@@ -274,4 +275,4 @@ export class DialogOverlay extends SimpleElement {
   }
 }
 
-customElements.define("dialog-overlay", DialogOverlay);
+customElements.define("dialog-overlay", DialogOverlay, { extends: "dialog" });
