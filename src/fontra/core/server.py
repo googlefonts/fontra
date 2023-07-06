@@ -4,6 +4,7 @@ import json
 import logging
 import mimetypes
 import re
+import socket
 import sys
 import traceback
 from dataclasses import dataclass
@@ -76,6 +77,9 @@ class FontraServer:
         self.httpApp.on_shutdown.append(self.closeActiveWebsockets)
         self.httpApp.on_shutdown.append(self.closeProjectManager)
         self._activeWebsockets = set()
+
+        if self.httpPort == 8000:
+            self.httpPort = findFreeTCPPort()
 
     def run(self, showLaunchBanner=True):
         host = self.host
@@ -282,3 +286,20 @@ def splitVersionToken(fileName):
         fileName, versionToken, ext = parts
         return f"{fileName}.{ext}", versionToken
     return fileName, None
+
+
+def findFreeTCPPort(startPort=8000):
+    port = startPort
+    while True:
+        tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            tcp.bind(("", port))
+        except OSError as e:
+            if e.errno != 48:
+                raise
+            port += 1
+        else:
+            break
+        finally:
+            tcp.close()
+    return port
