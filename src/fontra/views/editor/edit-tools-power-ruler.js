@@ -55,7 +55,7 @@ export class PowerRulerTool extends BaseTool {
       this.editedGlyphMayHaveChanged()
     );
     editor.designspaceLocationController.addListener(
-      throttleCalls(() => this.locationChanged(), 100)
+      throttleCalls(() => this.locationChanged(), 20)
     );
 
     this.glyphChangeListener = (glyphName) => this.glyphChanged(glyphName);
