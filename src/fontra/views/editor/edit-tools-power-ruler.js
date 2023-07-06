@@ -138,19 +138,34 @@ export class PowerRulerTool extends BaseTool {
       this.fontController.addGlyphChangeListener(glyphName, this.glyphChangeListener);
     }
     this.currentGlyphName = glyphName;
+    this.canvasController.requestUpdate();
   }
 
   glyphChanged(glyphName) {
-    console.log(glyphName, "changed");
+    this.recalc();
   }
 
   locationChanged() {
     if (this.currentGlyphName) {
-      console.log("locationChanged", this.currentGlyphName);
+      this.recalc();
     }
   }
 
-  recalcFromPoint(glyphController, point) {
+  recalc() {
+    const ruler = this.glyphRulers[this.currentGlyphName];
+    if (!ruler) {
+      return;
+    }
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    const pathHitTester = positionedGlyph.glyph.flattenedPathHitTester;
+    this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
+      pathHitTester,
+      ruler.line
+    );
+    this.canvasController.requestUpdate();
+  }
+
+  recalcRulerFromPoint(glyphController, point) {
     const pointRect = { xMin: point.x, yMin: point.y, xMax: point.x, yMax: point.y };
     const { width, height } = rectSize(
       unionRect(pointRect, glyphController.controlBounds)
@@ -240,7 +255,7 @@ export class PowerRulerTool extends BaseTool {
     const point = this.sceneController.localPoint(initialEvent);
     point.x -= positionedGlyph.x;
     point.y -= positionedGlyph.y;
-    this.recalcFromPoint(positionedGlyph.glyph, point);
+    this.recalcRulerFromPoint(positionedGlyph.glyph, point);
 
     for await (const event of eventStream) {
       if (event.x === undefined) {
@@ -250,7 +265,7 @@ export class PowerRulerTool extends BaseTool {
       const point = this.sceneController.localPoint(event);
       point.x -= positionedGlyph.x;
       point.y -= positionedGlyph.y;
-      this.recalcFromPoint(positionedGlyph.glyph, point);
+      this.recalcRulerFromPoint(positionedGlyph.glyph, point);
     }
   }
 }
