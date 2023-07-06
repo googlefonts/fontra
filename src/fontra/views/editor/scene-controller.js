@@ -74,6 +74,8 @@ export class SceneController {
       this.handleArrowKeys(event);
       event.preventDefault();
       return;
+    } else {
+      this.selectedTool.handleKeyDown(event);
     }
   }
 

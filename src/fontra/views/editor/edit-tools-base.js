@@ -17,6 +17,10 @@ export class BaseTool {
   deactivate() {
     //
   }
+
+  handleKeyDown(event) {
+    //
+  }
 }
 
 const MINIMUM_DRAG_DISTANCE = 2;

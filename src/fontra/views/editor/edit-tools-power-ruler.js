@@ -296,6 +296,14 @@ export class PowerRulerTool extends BaseTool {
       this.recalcRulerFromPoint(positionedGlyph.glyph, point, event.shiftKey);
     }
   }
+
+  handleKeyDown(event) {
+    if (event.key === "Backspace" && this.currentGlyphName) {
+      event.stopImmediatePropagation();
+      delete this.glyphRulers[this.currentGlyphName];
+      this.canvasController.requestUpdate();
+    }
+  }
 }
 
 // TODO: we need drawing-tools.js
