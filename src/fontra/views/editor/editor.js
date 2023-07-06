@@ -60,6 +60,9 @@ import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { clamp } from "../../core/utils.js";
 
+const MIN_SIDEBAR_WIDTH = 200;
+const MAX_SIDEBAR_WIDTH = 500;
+
 export class EditorController {
   static async fromWebSocket() {
     const pathItems = window.location.pathname.split("/").slice(3);
@@ -425,7 +428,22 @@ export class EditorController {
     // ensure we postpone just enough.)
     setTimeout(() => {
       for (const side of ["left", "right"]) {
+        const sidebarWidth = localStorage.getItem(`fontra-sidebar-width-${side}`);
         const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
+        if (sidebarWidth) {
+          let width = clamp(
+            parseInt(sidebarWidth),
+            MIN_SIDEBAR_WIDTH,
+            MAX_SIDEBAR_WIDTH
+          );
+          if (isNaN(width)) {
+            width = MIN_SIDEBAR_WIDTH;
+          }
+          document.documentElement.style.setProperty(
+            `--sidebar-content-width-${side}`,
+            `${width}px`
+          );
+        }
         if (selectedSidebar) {
           this.toggleSidebar(selectedSidebar, false);
         }
@@ -455,9 +473,9 @@ export class EditorController {
     let initialPointerCoordinateX;
     let sidebarResizing;
     let growDirection;
+    let width;
     const onPointerMove = (event) => {
       if (sidebarResizing) {
-        let width;
         let cssProperty;
         if (growDirection === "left") {
           width = initialWidth + (initialPointerCoordinateX - event.clientX);
@@ -466,11 +484,15 @@ export class EditorController {
           width = initialWidth + (event.clientX - initialPointerCoordinateX);
           cssProperty = "--sidebar-content-width-left";
         }
-        width = clamp(width, 200, 500);
+        width = clamp(width, MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
         document.documentElement.style.setProperty(cssProperty, `${width}px`);
       }
     };
     const onPointerUp = () => {
+      localStorage.setItem(
+        `fontra-sidebar-width-${growDirection === "left" ? "right" : "left"}`,
+        width
+      );
       sidebarResizing.classList.add("animating");
       sidebarResizing = undefined;
       initialWidth = undefined;
