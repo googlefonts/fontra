@@ -192,7 +192,7 @@ export class PowerRulerTool extends BaseTool {
       unionRect(pointRect, glyphController.controlBounds)
     );
     delete this.glyphRulers[this.currentGlyphName];
-    const maxLength = Math.hypot(width, height);
+    const maxLength = 10 * Math.hypot(width, height);
     const pathHitTester = glyphController.flattenedPathHitTester;
     const nearestHit = pathHitTester.findNearest(point);
     if (nearestHit) {
