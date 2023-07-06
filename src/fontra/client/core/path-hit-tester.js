@@ -1,6 +1,7 @@
 import { Bezier } from "../third-party/bezier-js.js";
 import { centeredRect, sectRect } from "./rectangle.js";
 import { enumerate, range, reversedEnumerate } from "./utils.js";
+import * as vector from "./vector.js";
 
 export class PathHitTester {
   constructor(path) {
@@ -50,6 +51,50 @@ export class PathHitTester {
     return results[0];
   }
 
+  lineIntersections(line) {
+    this._ensureAllContoursAreLoaded();
+    const lineDirection = vector.subVectors(line.p2, line.p1);
+    const intersections = [];
+    for (const [contourIndex, contour] of enumerate(this.contours)) {
+      for (const [segmentIndex, segment] of enumerate(contour.segments)) {
+        const interTs = [];
+        if (segment.bezier.points.length == 2) {
+          const t = lineIntersectsLine(
+            segment.bezier.points[0],
+            segment.bezier.points[1],
+            line.p1,
+            line.p2
+          );
+          if (t !== undefined) {
+            interTs.push(t);
+          }
+        } else {
+          const ts = segment.bezier.lineIntersects(line);
+          if (ts) {
+            interTs.push(...ts);
+          }
+        }
+        if (interTs.length) {
+          intersections.push(
+            ...interTs.map((t) => {
+              let direction = 0;
+              if (contour.isClosed) {
+                const derivative = segment.bezier.derivative(t);
+                direction = Math.sign(
+                  lineDirection.x * derivative.y - derivative.x * lineDirection.y
+                );
+              }
+              const point = segment.bezier.compute(t);
+              return { contourIndex, segmentIndex, segment, direction, ...point };
+            })
+          );
+        }
+      }
+    }
+    intersections.sort((a, b) => a.x - b.x || a.y - b.y);
+    return intersections;
+  }
+
   _ensureContourIsLoaded(contourIndex, contour) {
     if (contour.segments) {
       return;
@@ -90,4 +135,17 @@ function polyBounds(points) {
     yMax = Math.max(y, yMax);
   }
   return { xMin: xMin, yMin: yMin, xMax: xMax, yMax: yMax };
+}
+
+function lineIntersectsLine(p1, p2, p3, p4) {
+  const intersection = vector.intersect(p1, p2, p3, p4);
+  if (
+    intersection &&
+    intersection.t1 >= 0 &&
+    intersection.t1 < 1 &&
+    intersection.t2 >= 0 &&
+    intersection.t2 < 1
+  ) {
+    return intersection.t1;
+  }
 }
