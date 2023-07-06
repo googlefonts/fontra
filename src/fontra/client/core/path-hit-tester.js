@@ -37,8 +37,8 @@ export class PathHitTester {
   findNearest(point) {
     this._ensureAllContoursAreLoaded();
     let results = [];
-    for (const [contourIndex, contour] of reversedEnumerate(this.contours)) {
-      for (const [segmentIndex, segment] of reversedEnumerate(contour.segments)) {
+    for (const [contourIndex, contour] of enumerate(this.contours)) {
+      for (const [segmentIndex, segment] of enumerate(contour.segments)) {
         const projected = segment.bezier.project(point);
         if (projected) {
           results.push({ contourIndex, segmentIndex, ...projected, segment });
