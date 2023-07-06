@@ -1,4 +1,5 @@
 import { BaseTool } from "./edit-tools-base.js";
+import { throttleCalls } from "/core/utils.js";
 
 export class PowerRulerTool extends BaseTool {
   iconPath = "/images/ruler.svg";
@@ -15,6 +16,9 @@ export class PowerRulerTool extends BaseTool {
     );
     this.sceneController.addEventListener("selectedGlyphIsEditingChanged", () =>
       this.editedGlyphMayHaveChanged()
+    );
+    editor.designspaceLocationController.addListener(
+      throttleCalls(() => this.locationChanged(), 100)
     );
 
     this.glyphChangeListener = (glyphName) => this.glyphChanged(glyphName);
@@ -44,6 +48,12 @@ export class PowerRulerTool extends BaseTool {
 
   glyphChanged(glyphName) {
     console.log(glyphName, "changed");
+  }
+
+  locationChanged() {
+    if (this.currentGlyphName) {
+      console.log("locationChanged", this.currentGlyphName);
+    }
   }
 
   handleHover(event) {
