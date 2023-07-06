@@ -1,6 +1,6 @@
 import { Bezier } from "../third-party/bezier-js.js";
 import { centeredRect, sectRect } from "./rectangle.js";
-import { range, reversedEnumerate } from "./utils.js";
+import { enumerate, range, reversedEnumerate } from "./utils.js";
 
 export class PathHitTester {
   constructor(path) {
@@ -34,6 +34,22 @@ export class PathHitTester {
     return {};
   }
 
+  findNearest(point) {
+    this._ensureAllContoursAreLoaded();
+    let results = [];
+    for (const [contourIndex, contour] of reversedEnumerate(this.contours)) {
+      for (const [segmentIndex, segment] of reversedEnumerate(contour.segments)) {
+        const projected = segment.bezier.project(point);
+        if (projected) {
+          results.push({ contourIndex, segmentIndex, ...projected, segment });
+        }
+      }
+    }
+    results = results.filter((hit) => hit.t != 0 && hit.t != 1);
+    results.sort((a, b) => a.d - b.d);
+    return results[0];
+  }
+
   _ensureContourIsLoaded(contourIndex, contour) {
     if (contour.segments) {
       return;
@@ -44,6 +60,16 @@ export class PathHitTester {
       segment.bounds = polyBounds(segment.points);
     });
     contour.segments = segments;
+  }
+
+  _ensureAllContoursAreLoaded() {
+    if (this.allContoursAreLoaded) {
+      return;
+    }
+    for (const [contourIndex, contour] of enumerate(this.contours)) {
+      this._ensureContourIsLoaded(contourIndex, contour);
+    }
+    this.allContoursAreLoaded = true;
   }
 }
 
