@@ -1,5 +1,11 @@
-import { BaseTool } from "./edit-tools-base.js";
 import { throttleCalls } from "/core/utils.js";
+import * as vector from "/core/vector.js";
+import { rectSize, unionRect } from "/core/rectangle.js";
+import { BaseTool } from "./edit-tools-base.js";
+import {
+  registerVisualizationLayerDefinition,
+  strokeLine,
+} from "./visualization-layer-definitions.js";
 
 export class PowerRulerTool extends BaseTool {
   iconPath = "/images/ruler.svg";
@@ -22,6 +28,39 @@ export class PowerRulerTool extends BaseTool {
     );
 
     this.glyphChangeListener = (glyphName) => this.glyphChanged(glyphName);
+
+    registerVisualizationLayerDefinition({
+      identifier: "fontra.power.ruler",
+      name: "Power Ruler",
+      selectionMode: "editing",
+      userSwitchable: true,
+      defaultOn: true,
+      zIndex: 200,
+      screenParameters: { strokeWidth: 1 },
+      colors: {
+        strokeColor: "#0004",
+      },
+      colorsDarkMode: {
+        strokeColor: "#FFF6",
+      },
+      draw: (context, positionedGlyph, parameters, model, controller) =>
+        this.draw(context, positionedGlyph, parameters, model, controller),
+    });
+  }
+
+  draw(context, positionedGlyph, parameters, model, controller) {
+    if (!this.currentGlyphName) {
+      return; // Shouldn't happen
+    }
+    const rulerData = this.glyphRulers[this.currentGlyphName];
+    if (!rulerData) {
+      return;
+    }
+    const { p1, p2 } = rulerData;
+
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = parameters.strokeColor;
+    strokeLine(context, p1.x, p1.y, p2.x, p2.y);
   }
 
   editedGlyphMayHaveChanged() {
@@ -64,19 +103,54 @@ export class PowerRulerTool extends BaseTool {
     this.canvasController.canvas.style.cursor = "default";
   }
 
+  recalc(glyphController, point) {
+    const pointRect = { xMin: point.x, yMin: point.y, xMax: point.x, yMax: point.y };
+    const { width, height } = rectSize(
+      unionRect(pointRect, glyphController.controlBounds)
+    );
+    const maxLength = Math.hypot(width, height);
+    const pathHitTester = glyphController.flattenedPathHitTester;
+    const nearestHit = pathHitTester.findNearest(point);
+    if (nearestHit) {
+      const derivative = nearestHit.segment.bezier.derivative(nearestHit.t);
+      const directionVector = vector.normalizeVector({
+        x: -derivative.y,
+        y: derivative.x,
+      });
+      const p1 = vector.addVectors(point, vector.mulVector(directionVector, maxLength));
+      const p2 = vector.addVectors(
+        point,
+        vector.mulVector(directionVector, -maxLength)
+      );
+      this.glyphRulers[this.currentGlyphName] = { p1, p2 };
+      // console.log("dir", p1, p2);
+      // console.log(nearestHit.d, nearestHit.t, nearestHit.x, nearestHit.y);
+    } else {
+      delete this.glyphRulers[this.currentGlyphName];
+    }
+    this.canvasController.requestUpdate();
+  }
+
   async handleDrag(eventStream, initialEvent) {
-    console.log(initialEvent);
-    const initialX = initialEvent.x;
-    const initialY = initialEvent.y;
-    const originalOriginX = this.canvasController.origin.x;
-    const originalOriginY = this.canvasController.origin.y;
+    if (!this.currentGlyphName) {
+      return;
+    }
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    const point = this.sceneController.localPoint(initialEvent);
+    point.x -= positionedGlyph.x;
+    point.y -= positionedGlyph.y;
+    this.recalc(positionedGlyph.glyph, point);
+
     // this.canvasController.canvas.style.cursor = "grabbing";
     for await (const event of eventStream) {
-      // if (event.x === undefined) {
-      //   // We can receive non-pointer events like keyboard events: ignore
-      //   continue;
-      // }
-      console.log(event);
+      if (event.x === undefined) {
+        // We can receive non-pointer events like keyboard events: ignore
+        continue;
+      }
+      const point = this.sceneController.localPoint(event);
+      point.x -= positionedGlyph.x;
+      point.y -= positionedGlyph.y;
+      this.recalc(positionedGlyph.glyph, point);
       // this.canvasController.requestUpdate();
     }
   }
