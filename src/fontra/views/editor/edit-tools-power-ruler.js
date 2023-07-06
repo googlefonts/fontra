@@ -147,7 +147,7 @@ export class PowerRulerTool extends BaseTool {
     }
   }
 
-  recalc(glyphController, point) {
+  recalcFromPoint(glyphController, point) {
     const pointRect = { xMin: point.x, yMin: point.y, xMax: point.x, yMax: point.y };
     const { width, height } = rectSize(
       unionRect(pointRect, glyphController.controlBounds)
@@ -169,32 +169,37 @@ export class PowerRulerTool extends BaseTool {
       );
 
       const line = { p1, p2 };
-      const intersections = pathHitTester.lineIntersections(line);
-      const measurePoints = [];
-      let winding = 0;
-      for (const i of range(intersections.length - 1)) {
-        winding += intersections[i].winding;
-        const j = i + 1;
-        const v = vector.subVectors(intersections[j], intersections[i]);
-        const measurePoint = vector.addVectors(
-          intersections[i],
-          vector.mulVector(v, 0.5)
-        );
-        measurePoint.distance = Math.round(Math.hypot(v.x, v.y) * 10) / 10;
-        measurePoint.inside = !!winding;
-        measurePoints.push(measurePoint);
-      }
-      const ruler = {
-        line,
-        intersections,
-        measurePoints,
-      };
-      this.glyphRulers[this.currentGlyphName] = ruler;
+
+      this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
+        pathHitTester,
+        line
+      );
     }
     this.canvasController.requestUpdate();
   }
 
-  recalcFromLine() {}
+  recalcRulerFromLine(pathHitTester, line) {
+    const intersections = pathHitTester.lineIntersections(line);
+    const measurePoints = [];
+    let winding = 0;
+    for (const i of range(intersections.length - 1)) {
+      winding += intersections[i].winding;
+      const j = i + 1;
+      const v = vector.subVectors(intersections[j], intersections[i]);
+      const measurePoint = vector.addVectors(
+        intersections[i],
+        vector.mulVector(v, 0.5)
+      );
+      measurePoint.distance = Math.round(Math.hypot(v.x, v.y) * 10) / 10;
+      measurePoint.inside = !!winding;
+      measurePoints.push(measurePoint);
+    }
+    return {
+      line,
+      intersections,
+      measurePoints,
+    };
+  }
 
   haveHoveredGlyph(event) {
     const point = this.sceneController.localPoint(event);
@@ -232,9 +237,8 @@ export class PowerRulerTool extends BaseTool {
     const point = this.sceneController.localPoint(initialEvent);
     point.x -= positionedGlyph.x;
     point.y -= positionedGlyph.y;
-    this.recalc(positionedGlyph.glyph, point);
+    this.recalcFromPoint(positionedGlyph.glyph, point);
 
-    // this.canvasController.canvas.style.cursor = "grabbing";
     for await (const event of eventStream) {
       if (event.x === undefined) {
         // We can receive non-pointer events like keyboard events: ignore
@@ -243,8 +247,7 @@ export class PowerRulerTool extends BaseTool {
       const point = this.sceneController.localPoint(event);
       point.x -= positionedGlyph.x;
       point.y -= positionedGlyph.y;
-      this.recalc(positionedGlyph.glyph, point);
-      // this.canvasController.requestUpdate();
+      this.recalcFromPoint(positionedGlyph.glyph, point);
     }
   }
 }
