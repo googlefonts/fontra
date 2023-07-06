@@ -70,6 +70,9 @@ export class PowerRulerTool extends BaseTool {
       return;
     }
     const { intersections, measurePoints } = rulerData;
+    if (intersections?.length < 2) {
+      return;
+    }
     const p1 = intersections[0];
     const p2 = intersections.at(-1);
 
