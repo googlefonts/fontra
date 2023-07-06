@@ -47,7 +47,7 @@ def main():
     manager = args.getProjectManager(args)
     server = FontraServer(
         host=host,
-        httpPort=httpPort or findFreeTCPPort(DEFAULT_PORT),
+        httpPort=httpPort if httpPort is not None else findFreeTCPPort(DEFAULT_PORT),
         projectManager=manager,
         launchWebBrowser=args.launch,
         versionToken=secrets.token_hex(4),
