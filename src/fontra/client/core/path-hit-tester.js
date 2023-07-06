@@ -91,7 +91,13 @@ export class PathHitTester {
         }
       }
     }
-    intersections.sort((a, b) => a.x - b.x || a.y - b.y);
+    intersections.sort((a, b) => {
+      let d = a.x - b.x;
+      if (Math.abs(d) < 0.00000001) {
+        d = a.y - b.y;
+      }
+      return d;
+    });
     return intersections;
   }
 
