@@ -1,4 +1,4 @@
-import { throttleCalls } from "/core/utils.js";
+import { range, throttleCalls } from "/core/utils.js";
 import * as vector from "/core/vector.js";
 import { rectSize, unionRect } from "/core/rectangle.js";
 import { BaseTool } from "./edit-tools-base.js";
@@ -15,13 +15,23 @@ registerVisualizationLayerDefinition({
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: true,
-  zIndex: 200,
-  screenParameters: { strokeWidth: 1 },
+  zIndex: 600,
+  screenParameters: { strokeWidth: 1, fontSize: 12, intersectionRadius: 4 },
   colors: {
     strokeColor: "#0004",
+    insideBlobColor: "#FFFB",
+    insideTextColor: "#000B",
+    outsideBlobColor: "#000B",
+    outsideTextColor: "#FFFB",
+    intersectionColor: "#F005",
   },
   colorsDarkMode: {
     strokeColor: "#FFF6",
+    insideBlobColor: "#444B",
+    insideTextColor: "#FFFB",
+    outsideBlobColor: "#FFFB",
+    outsideTextColor: "#444B",
+    intersectionColor: "#F666",
   },
   draw: (context, positionedGlyph, parameters, model, controller) =>
     thePowerRulerTool?.draw(context, positionedGlyph, parameters, model, controller),
@@ -59,11 +69,50 @@ export class PowerRulerTool extends BaseTool {
     if (!rulerData) {
       return;
     }
-    const { p1, p2 } = rulerData;
+    const { intersections, measurePoints } = rulerData;
+    const p1 = intersections[0];
+    const p2 = intersections.at(-1);
 
     context.lineWidth = parameters.strokeWidth;
     context.strokeStyle = parameters.strokeColor;
     strokeLine(context, p1.x, p1.y, p2.x, p2.y);
+
+    context.fillStyle = parameters.intersectionColor;
+    for (const intersection of intersections) {
+      fillCircle(
+        context,
+        intersection.x,
+        intersection.y,
+        parameters.intersectionRadius
+      );
+    }
+
+    context.font = `bold ${parameters.fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+
+    context.scale(1, -1);
+    for (const measurePoint of measurePoints) {
+      const distance = measurePoint.distance.toString();
+      context.fillStyle = measurePoint.inside
+        ? parameters.insideBlobColor
+        : parameters.outsideBlobColor;
+      const width = context.measureText(distance).width;
+      fillPill(
+        context,
+        measurePoint.x,
+        -measurePoint.y,
+        width + parameters.fontSize,
+        parameters.fontSize * 1.6
+      );
+      context.fillStyle = measurePoint.inside
+        ? parameters.insideTextColor
+        : parameters.outsideTextColor;
+      context.fillText(
+        distance,
+        measurePoint.x,
+        -measurePoint.y + parameters.fontSize * 0.32
+      );
+    }
   }
 
   editedGlyphMayHaveChanged() {
@@ -103,6 +152,7 @@ export class PowerRulerTool extends BaseTool {
     const { width, height } = rectSize(
       unionRect(pointRect, glyphController.controlBounds)
     );
+    delete this.glyphRulers[this.currentGlyphName];
     const maxLength = Math.hypot(width, height);
     const pathHitTester = glyphController.flattenedPathHitTester;
     const nearestHit = pathHitTester.findNearest(point);
@@ -117,14 +167,34 @@ export class PowerRulerTool extends BaseTool {
         point,
         vector.mulVector(directionVector, -maxLength)
       );
-      this.glyphRulers[this.currentGlyphName] = { p1, p2 };
-      // console.log("dir", p1, p2);
-      // console.log(nearestHit.d, nearestHit.t, nearestHit.x, nearestHit.y);
-    } else {
-      delete this.glyphRulers[this.currentGlyphName];
+
+      const line = { p1, p2 };
+      const intersections = pathHitTester.lineIntersections(line);
+      const measurePoints = [];
+      let winding = 0;
+      for (const i of range(intersections.length - 1)) {
+        winding += intersections[i].winding;
+        const j = i + 1;
+        const v = vector.subVectors(intersections[j], intersections[i]);
+        const measurePoint = vector.addVectors(
+          intersections[i],
+          vector.mulVector(v, 0.5)
+        );
+        measurePoint.distance = Math.round(Math.hypot(v.x, v.y) * 10) / 10;
+        measurePoint.inside = !!winding;
+        measurePoints.push(measurePoint);
+      }
+      const ruler = {
+        line,
+        intersections,
+        measurePoints,
+      };
+      this.glyphRulers[this.currentGlyphName] = ruler;
     }
     this.canvasController.requestUpdate();
   }
+
+  recalcFromLine() {}
 
   haveHoveredGlyph(event) {
     const point = this.sceneController.localPoint(event);
@@ -177,4 +247,20 @@ export class PowerRulerTool extends BaseTool {
       // this.canvasController.requestUpdate();
     }
   }
+}
+
+// TODO: we need drawing-tools.js
+function fillPill(context, cx, cy, length, height) {
+  const radius = height / 2;
+  const offset = length / 2 - radius;
+  context.beginPath();
+  context.arc(cx - offset, cy, radius, 0.5 * Math.PI, -0.5 * Math.PI, false);
+  context.arc(cx + offset, cy, radius, -0.5 * Math.PI, 0.5 * Math.PI, false);
+  context.fill();
+}
+
+function fillCircle(context, cx, cy, radius) {
+  context.beginPath();
+  context.arc(cx, cy, radius, 0, 2 * Math.PI, false);
+  context.fill();
 }
