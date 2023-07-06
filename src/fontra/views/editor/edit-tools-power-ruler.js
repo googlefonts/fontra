@@ -1,6 +1,7 @@
 import { range, throttleCalls } from "/core/utils.js";
 import * as vector from "/core/vector.js";
 import { rectSize, unionRect } from "/core/rectangle.js";
+import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool } from "./edit-tools-base.js";
 import {
   registerVisualizationLayerDefinition,
@@ -168,7 +169,7 @@ export class PowerRulerTool extends BaseTool {
     this.canvasController.requestUpdate();
   }
 
-  recalcRulerFromPoint(glyphController, point) {
+  recalcRulerFromPoint(glyphController, point, shiftConstrain) {
     const pointRect = { xMin: point.x, yMin: point.y, xMax: point.x, yMax: point.y };
     const { width, height } = rectSize(
       unionRect(pointRect, glyphController.controlBounds)
@@ -179,10 +180,13 @@ export class PowerRulerTool extends BaseTool {
     const nearestHit = pathHitTester.findNearest(point);
     if (nearestHit) {
       const derivative = nearestHit.segment.bezier.derivative(nearestHit.t);
-      const directionVector = vector.normalizeVector({
+      let directionVector = vector.normalizeVector({
         x: -derivative.y,
         y: derivative.x,
       });
+      if (shiftConstrain) {
+        directionVector = constrainHorVerDiag(directionVector);
+      }
       const p1 = vector.addVectors(point, vector.mulVector(directionVector, maxLength));
       const p2 = vector.addVectors(
         point,
@@ -258,17 +262,21 @@ export class PowerRulerTool extends BaseTool {
     const point = this.sceneController.localPoint(initialEvent);
     point.x -= positionedGlyph.x;
     point.y -= positionedGlyph.y;
-    this.recalcRulerFromPoint(positionedGlyph.glyph, point);
+    this.recalcRulerFromPoint(positionedGlyph.glyph, point, initialEvent.shiftKey);
 
+    let lastPoint = point;
     for await (const event of eventStream) {
+      let point;
       if (event.x === undefined) {
-        // We can receive non-pointer events like keyboard events: ignore
-        continue;
+        // Possibly modifier key changed event
+        point = lastPoint;
+      } else {
+        point = this.sceneController.localPoint(event);
+        point.x -= positionedGlyph.x;
+        point.y -= positionedGlyph.y;
+        lastPoint = point;
       }
-      const point = this.sceneController.localPoint(event);
-      point.x -= positionedGlyph.x;
-      point.y -= positionedGlyph.y;
-      this.recalcRulerFromPoint(positionedGlyph.glyph, point);
+      this.recalcRulerFromPoint(positionedGlyph.glyph, point, event.shiftKey);
     }
   }
 }
