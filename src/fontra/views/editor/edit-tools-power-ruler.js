@@ -60,7 +60,7 @@ export class PowerRulerTool extends BaseTool {
     );
     editor.designspaceLocationController.addKeyListener(
       "location",
-      throttleCalls(() => this.locationChanged(), 20)
+      throttleCalls(() => setTimeout(() => this.locationChanged(), 0), 20)
     );
 
     editor.visualizationLayersSettings.addKeyListener(
