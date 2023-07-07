@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import errno
 import json
 import logging
 import mimetypes
@@ -292,7 +293,7 @@ def findFreeTCPPort(startPort=8000):
         try:
             tcp.bind(("", port))
         except OSError as e:
-            if e.errno != 48:
+            if e.errno != errno.EADDRINUSE:
                 raise
             port += 1
         else:
