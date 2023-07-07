@@ -211,7 +211,17 @@ export class PowerRulerTool extends BaseTool {
 
   recalcRulerFromLine(glyphController, basePoint, directionVector) {
     const pathHitTester = glyphController.flattenedPathHitTester;
-    const intersections = pathHitTester.lineIntersections(basePoint, directionVector);
+    const top = this.fontController.unitsPerEm;
+    const bottom = -this.fontController.unitsPerEm;
+    const extraLines = [];
+    for (const x of [0, glyphController.xAdvance]) {
+      extraLines.push({ p1: { x: x, y: bottom }, p2: { x: x, y: top } });
+    }
+    const intersections = pathHitTester.lineIntersections(
+      basePoint,
+      directionVector,
+      extraLines
+    );
     const measurePoints = [];
     let winding = 0;
     for (const i of range(intersections.length - 1)) {
