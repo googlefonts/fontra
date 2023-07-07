@@ -146,19 +146,6 @@ function polyBounds(points) {
   return { xMin: xMin, yMin: yMin, xMax: xMax, yMax: yMax };
 }
 
-function lineIntersectsLine(p1, p2, p3, p4) {
-  const intersection = vector.intersect(p1, p2, p3, p4);
-  if (
-    intersection &&
-    intersection.t1 >= 0 &&
-    intersection.t1 < 1 &&
-    intersection.t2 >= 0 &&
-    intersection.t2 < 1
-  ) {
-    return intersection.t1;
-  }
-}
-
 function findIntersections(bezier, line, direction, info) {
   const interTs = [];
   if (bezier.points.length == 2) {
@@ -183,4 +170,17 @@ function findIntersections(bezier, line, direction, info) {
     const point = bezier.compute(t);
     return { ...info, winding, ...point };
   });
+}
+
+function lineIntersectsLine(p1, p2, p3, p4) {
+  const intersection = vector.intersect(p1, p2, p3, p4);
+  if (
+    intersection &&
+    intersection.t1 >= 0 &&
+    intersection.t1 < 1 &&
+    intersection.t2 >= 0 &&
+    intersection.t2 < 1
+  ) {
+    return intersection.t1;
+  }
 }
