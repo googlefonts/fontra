@@ -122,7 +122,7 @@ export class PowerRulerTool extends BaseTool {
         measurePoint.x,
         -measurePoint.y,
         width + parameters.fontSize,
-        parameters.fontSize * 1.6
+        parameters.fontSize * 1.3
       );
       context.fillStyle = measurePoint.inside
         ? parameters.insideTextColor
@@ -130,7 +130,7 @@ export class PowerRulerTool extends BaseTool {
       context.fillText(
         distance,
         measurePoint.x,
-        -measurePoint.y + parameters.fontSize * 0.32
+        -measurePoint.y + parameters.fontSize * 0.33
       );
     }
   }
