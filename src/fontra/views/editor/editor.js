@@ -380,6 +380,7 @@ export class EditorController {
             this.zoomFit();
             break;
         }
+        this.canvasController.canvas.focus();
       };
     }
   }
@@ -395,6 +396,7 @@ export class EditorController {
 
     toolButton.onclick = () => {
       this.setSelectedTool(tool.identifier);
+      this.canvasController.canvas.focus();
     };
 
     editToolsElement.appendChild(toolButton);
