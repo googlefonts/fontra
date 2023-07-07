@@ -1,11 +1,12 @@
 import { Bezier } from "../third-party/bezier-js.js";
-import { centeredRect, sectRect } from "./rectangle.js";
+import { centeredRect, rectSize, sectRect, unionRect } from "./rectangle.js";
 import { enumerate, range, reversedEnumerate } from "./utils.js";
 import * as vector from "./vector.js";
 
 export class PathHitTester {
-  constructor(path) {
+  constructor(path, controlBounds) {
     this.path = path;
+    this.controlBounds = controlBounds;
     this.contours = [];
     for (const i of range(path.numContours)) {
       this.contours.push({
@@ -51,14 +52,26 @@ export class PathHitTester {
     return results[0];
   }
 
-  lineIntersections(line) {
+  lineIntersections(point, direction) {
+    // `point` is the pivot point, and `direction` is the normalized direction vector
     this._ensureAllContoursAreLoaded();
-    const lineDirection = vector.subVectors(line.p2, line.p1);
+
+    // From `point` and `direction`, compute two points `p1` and `p2` that are each
+    // outside of the path bounding box
+    const pointRect = { xMin: point.x, yMin: point.y, xMax: point.x, yMax: point.y };
+    const { width, height } = rectSize(unionRect(pointRect, this.controlBounds));
+    const maxLength = width + height;
+    const p1 = vector.addVectors(point, vector.mulVector(direction, maxLength));
+    const p2 = vector.addVectors(point, vector.mulVector(direction, -maxLength));
+    const line = { p1, p2 };
+
     const intersections = [];
     for (const [contourIndex, contour] of enumerate(this.contours)) {
       for (const [segmentIndex, segment] of enumerate(contour.segments)) {
         const interTs = [];
         if (segment.bezier.points.length == 2) {
+          // bezier-js's lineIntersects doesn't seem to work for line-line
+          // intersections, so we provide our own
           const t = lineIntersectsLine(
             segment.bezier.points[0],
             segment.bezier.points[1],
@@ -81,7 +94,7 @@ export class PathHitTester {
               if (contour.isClosed) {
                 const derivative = segment.bezier.derivative(t);
                 winding = Math.sign(
-                  lineDirection.x * derivative.y - derivative.x * lineDirection.y
+                  direction.x * derivative.y - derivative.x * direction.y
                 );
               }
               const point = segment.bezier.compute(t);

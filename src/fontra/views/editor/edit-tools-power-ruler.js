@@ -1,6 +1,5 @@
 import { range, throttleCalls } from "/core/utils.js";
 import * as vector from "/core/vector.js";
-import { rectSize, unionRect } from "/core/rectangle.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool } from "./edit-tools-base.js";
 import {
@@ -181,18 +180,14 @@ export class PowerRulerTool extends BaseTool {
     const pathHitTester = positionedGlyph.glyph.flattenedPathHitTester;
     this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
       pathHitTester,
-      ruler.line
+      ruler.basePoint,
+      ruler.directionVector
     );
     this.canvasController.requestUpdate();
   }
 
   recalcRulerFromPoint(glyphController, point, shiftConstrain) {
-    const pointRect = { xMin: point.x, yMin: point.y, xMax: point.x, yMax: point.y };
-    const { width, height } = rectSize(
-      unionRect(pointRect, glyphController.controlBounds)
-    );
     delete this.glyphRulers[this.currentGlyphName];
-    const maxLength = 10 * Math.hypot(width, height);
     const pathHitTester = glyphController.flattenedPathHitTester;
     const nearestHit = pathHitTester.findNearest(point);
     if (nearestHit) {
@@ -201,27 +196,22 @@ export class PowerRulerTool extends BaseTool {
         x: -derivative.y,
         y: derivative.x,
       });
+
       if (shiftConstrain) {
         directionVector = constrainHorVerDiag(directionVector);
       }
-      const p1 = vector.addVectors(point, vector.mulVector(directionVector, maxLength));
-      const p2 = vector.addVectors(
-        point,
-        vector.mulVector(directionVector, -maxLength)
-      );
-
-      const line = { p1, p2 };
 
       this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
         pathHitTester,
-        line
+        point,
+        directionVector
       );
     }
     this.canvasController.requestUpdate();
   }
 
-  recalcRulerFromLine(pathHitTester, line) {
-    const intersections = pathHitTester.lineIntersections(line);
+  recalcRulerFromLine(pathHitTester, basePoint, directionVector) {
+    const intersections = pathHitTester.lineIntersections(basePoint, directionVector);
     const measurePoints = [];
     let winding = 0;
     for (const i of range(intersections.length - 1)) {
@@ -237,7 +227,8 @@ export class PowerRulerTool extends BaseTool {
       measurePoints.push(measurePoint);
     }
     return {
-      line,
+      basePoint,
+      directionVector,
       intersections,
       measurePoints,
     };
