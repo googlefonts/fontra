@@ -177,18 +177,24 @@ export class PowerRulerTool extends BaseTool {
       return;
     }
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+    const extraLines = this.computeSideBearingLines(positionedGlyph.glyph);
+
     this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
       positionedGlyph.glyph,
       ruler.basePoint,
-      ruler.directionVector
+      ruler.directionVector,
+      extraLines
     );
     this.canvasController.requestUpdate();
   }
 
   recalcRulerFromPoint(glyphController, point, shiftConstrain) {
     delete this.glyphRulers[this.currentGlyphName];
+
+    const extraLines = this.computeSideBearingLines(glyphController);
+
     const pathHitTester = glyphController.flattenedPathHitTester;
-    const nearestHit = pathHitTester.findNearest(point);
+    const nearestHit = pathHitTester.findNearest(point, extraLines);
     if (nearestHit) {
       const derivative = nearestHit.segment.bezier.derivative(nearestHit.t);
       let directionVector = vector.normalizeVector({
@@ -203,20 +209,16 @@ export class PowerRulerTool extends BaseTool {
       this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
         glyphController,
         point,
-        directionVector
+        directionVector,
+        extraLines
       );
     }
     this.canvasController.requestUpdate();
   }
 
-  recalcRulerFromLine(glyphController, basePoint, directionVector) {
+  recalcRulerFromLine(glyphController, basePoint, directionVector, extraLines) {
     const pathHitTester = glyphController.flattenedPathHitTester;
-    const top = this.fontController.unitsPerEm;
-    const bottom = -this.fontController.unitsPerEm;
-    const extraLines = [];
-    for (const x of [0, glyphController.xAdvance]) {
-      extraLines.push({ p1: { x: x, y: bottom }, p2: { x: x, y: top } });
-    }
+
     const intersections = pathHitTester.lineIntersections(
       basePoint,
       directionVector,
@@ -242,6 +244,16 @@ export class PowerRulerTool extends BaseTool {
       intersections,
       measurePoints,
     };
+  }
+
+  computeSideBearingLines(glyphController) {
+    const top = this.fontController.unitsPerEm;
+    const bottom = -this.fontController.unitsPerEm;
+    const extraLines = [];
+    for (const x of [0, glyphController.xAdvance]) {
+      extraLines.push({ p1: { x: x, y: bottom }, p2: { x: x, y: top } });
+    }
+    return extraLines;
   }
 
   haveHoveredGlyph(event) {

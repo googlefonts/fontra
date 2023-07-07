@@ -36,7 +36,7 @@ export class PathHitTester {
     return {};
   }
 
-  findNearest(point) {
+  findNearest(point, extraLines) {
     this._ensureAllContoursAreLoaded();
     let results = [];
     for (const [contourIndex, contour] of enumerate(this.contours)) {
@@ -47,6 +47,15 @@ export class PathHitTester {
         }
       }
     }
+
+    for (const extraLine of extraLines || []) {
+      const lineBezier = new Bezier([extraLine.p1, extraLine.p2]);
+      const projected = lineBezier.project(point);
+      if (projected) {
+        results.push({ ...projected, segment: { bezier: lineBezier } });
+      }
+    }
+
     results = results.filter((hit) => hit.t != 0 && hit.t != 1);
     results.sort((a, b) => a.d - b.d);
     return results[0];
