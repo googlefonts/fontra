@@ -68,40 +68,15 @@ export class PathHitTester {
     const intersections = [];
     for (const [contourIndex, contour] of enumerate(this.contours)) {
       for (const [segmentIndex, segment] of enumerate(contour.segments)) {
-        const interTs = [];
-        if (segment.bezier.points.length == 2) {
-          // bezier-js's lineIntersects doesn't seem to work for line-line
-          // intersections, so we provide our own
-          const t = lineIntersectsLine(
-            segment.bezier.points[0],
-            segment.bezier.points[1],
-            line.p1,
-            line.p2
-          );
-          if (t !== undefined) {
-            interTs.push(t);
-          }
-        } else {
-          const ts = segment.bezier.lineIntersects(line);
-          if (ts) {
-            interTs.push(...ts);
-          }
-        }
-        if (interTs.length) {
-          intersections.push(
-            ...interTs.map((t) => {
-              let winding = 0;
-              if (contour.isClosed) {
-                const derivative = segment.bezier.derivative(t);
-                winding = Math.sign(
-                  direction.x * derivative.y - derivative.x * direction.y
-                );
-              }
-              const point = segment.bezier.compute(t);
-              return { contourIndex, segmentIndex, segment, winding, ...point };
-            })
-          );
-        }
+        const info = { contourIndex, segmentIndex, segment };
+        intersections.push(
+          ...findIntersections(
+            segment.bezier,
+            line,
+            contour.isClosed ? direction : null,
+            info
+          )
+        );
       }
     }
     intersections.sort((a, b) => {
@@ -167,4 +142,30 @@ function lineIntersectsLine(p1, p2, p3, p4) {
   ) {
     return intersection.t1;
   }
+}
+
+function findIntersections(bezier, line, direction, info) {
+  const interTs = [];
+  if (bezier.points.length == 2) {
+    // bezier-js's lineIntersects doesn't seem to work for line-line
+    // intersections, so we provide our own
+    const t = lineIntersectsLine(bezier.points[0], bezier.points[1], line.p1, line.p2);
+    if (t !== undefined) {
+      interTs.push(t);
+    }
+  } else {
+    const ts = bezier.lineIntersects(line);
+    if (ts) {
+      interTs.push(...ts);
+    }
+  }
+  return interTs.map((t) => {
+    let winding = 0;
+    if (direction) {
+      const derivative = bezier.derivative(t);
+      winding = Math.sign(direction.x * derivative.y - derivative.x * direction.y);
+    }
+    const point = bezier.compute(t);
+    return { ...info, winding, ...point };
+  });
 }
