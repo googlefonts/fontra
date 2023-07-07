@@ -384,6 +384,10 @@ export class StaticGlyphController {
   get pathHitTester() {
     return getRepresentation(this, "pathHitTester");
   }
+
+  get flattenedPathHitTester() {
+    return getRepresentation(this, "flattenedPathHitTester");
+  }
 }
 
 registerRepresentationFactory(StaticGlyphController, "flattenedPath", (glyph) => {
@@ -445,8 +449,16 @@ registerRepresentationFactory(StaticGlyphController, "convexHullArea", (glyph) =
 });
 
 registerRepresentationFactory(StaticGlyphController, "pathHitTester", (glyph) => {
-  return new PathHitTester(glyph.path);
+  return new PathHitTester(glyph.path, glyph.controlBounds);
 });
+
+registerRepresentationFactory(
+  StaticGlyphController,
+  "flattenedPathHitTester",
+  (glyph) => {
+    return new PathHitTester(glyph.flattenedPath, glyph.controlBounds);
+  }
+);
 
 class ComponentController {
   constructor(compo) {
