@@ -177,9 +177,8 @@ export class PowerRulerTool extends BaseTool {
       return;
     }
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
-    const pathHitTester = positionedGlyph.glyph.flattenedPathHitTester;
     this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
-      pathHitTester,
+      positionedGlyph.glyph,
       ruler.basePoint,
       ruler.directionVector
     );
@@ -202,7 +201,7 @@ export class PowerRulerTool extends BaseTool {
       }
 
       this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
-        pathHitTester,
+        glyphController,
         point,
         directionVector
       );
@@ -210,7 +209,8 @@ export class PowerRulerTool extends BaseTool {
     this.canvasController.requestUpdate();
   }
 
-  recalcRulerFromLine(pathHitTester, basePoint, directionVector) {
+  recalcRulerFromLine(glyphController, basePoint, directionVector) {
+    const pathHitTester = glyphController.flattenedPathHitTester;
     const intersections = pathHitTester.lineIntersections(basePoint, directionVector);
     const measurePoints = [];
     let winding = 0;

@@ -52,7 +52,7 @@ export class PathHitTester {
     return results[0];
   }
 
-  lineIntersections(point, direction) {
+  lineIntersections(point, direction, extraLines) {
     // `point` is the pivot point, and `direction` is the normalized direction vector
     this._ensureAllContoursAreLoaded();
 
@@ -79,6 +79,12 @@ export class PathHitTester {
         );
       }
     }
+
+    for (const extraLine of extraLines || []) {
+      const lineBezier = new Bezier([extraLine.p1, extraLine.p2]);
+      intersections.push(...findIntersections(lineBezier, line, null, {}));
+    }
+
     intersections.sort((a, b) => {
       let d = a.x - b.x;
       if (Math.abs(d) < 0.00000001) {
