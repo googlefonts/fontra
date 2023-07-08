@@ -1,6 +1,8 @@
 // This is a tiny subset of a few things that Lit does, except it uses
 // object notation to construct dom elements instead of HTML.
 
+import { consolidateCalls } from "./utils.js";
+
 export class SimpleElement extends HTMLElement {
   constructor() {
     super();
@@ -36,6 +38,7 @@ export class SimpleElement extends HTMLElement {
 export class UnlitElement extends SimpleElement {
   _postInit() {
     this._setupProperties();
+    this.requestUpdate = consolidateCalls(() => this._render());
     this.requestUpdate();
   }
 
@@ -67,14 +70,6 @@ export class UnlitElement extends SimpleElement {
     }
   }
 
-  requestUpdate() {
-    if (this._requestedUpdate) {
-      return;
-    }
-    this._requestedUpdate = true;
-    setTimeout(() => this._render(), 0);
-  }
-
   render() {
     //
     // Override, but don't call super().
@@ -87,8 +82,6 @@ export class UnlitElement extends SimpleElement {
   }
 
   async _render() {
-    this._requestedUpdate = false;
-
     this.shadowRoot.innerHTML = "";
     this._attachStyles();
 
