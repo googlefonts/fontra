@@ -1,5 +1,5 @@
 import { rectCenter, normalizeRect } from "./rectangle.js";
-import { withSavedState } from "./utils.js";
+import { consolidateCalls, withSavedState } from "./utils.js";
 import { mulScalar } from "./var-funcs.js";
 
 const MIN_MAGNIFICATION = 0.005;
@@ -13,7 +13,6 @@ export class CanvasController {
 
     this.magnification = 1;
     this.origin = { x: this.canvasWidth / 2, y: 0.85 * this.canvasHeight }; // TODO choose y based on initial canvas height
-    this.needsUpdate = false;
 
     this._magnificationChangedCallback = magnificationChangedCallback;
 
@@ -49,6 +48,7 @@ export class CanvasController {
     // canvas.addEventListener("pointercancel", this.onEvent.bind(this), false);
 
     this.setupSize();
+    this.requestUpdate = consolidateCalls(() => this.draw());
     this.requestUpdate();
   }
 
@@ -87,15 +87,7 @@ export class CanvasController {
     this.previousOffsets = { parentOffsetX, parentOffsetY };
   }
 
-  requestUpdate() {
-    if (!this.needsUpdate) {
-      this.needsUpdate = true;
-      setTimeout(() => this.draw(), 0);
-    }
-  }
-
   draw() {
-    this.needsUpdate = false;
     const scale = this.devicePixelRatio;
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     if (!this.sceneView) {
