@@ -1,4 +1,4 @@
-import { withSavedState } from "/core/utils.js";
+import { consolidateCalls, withSavedState } from "/core/utils.js";
 import { mulScalar } from "/core/var-funcs.js";
 
 export class VisualizationLayers {
@@ -11,14 +11,7 @@ export class VisualizationLayers {
         .filter((layer) => !layer.userSwitchable || layer.defaultOn)
         .map((layer) => layer.identifier)
     );
-    this.needsUpdate = true;
-  }
-
-  requestUpdate() {
-    if (!this.needsUpdate) {
-      this.needsUpdate = true;
-      setTimeout(() => this.buildLayers(), 0);
-    }
+    this.requestUpdate = consolidateCalls(() => this.buildLayers());
   }
 
   get darkTheme() {
@@ -58,10 +51,6 @@ export class VisualizationLayers {
   }
 
   buildLayers() {
-    if (!this.needsUpdate) {
-      return;
-    }
-    this.needsUpdate = false;
     const layers = [];
     for (const layerDef of this.definitions) {
       if (!this.visibleLayerIds.has(layerDef.identifier)) {
@@ -85,7 +74,7 @@ export class VisualizationLayers {
   }
 
   drawVisualizationLayers(model, controller) {
-    if (this.needsUpdate) {
+    if (!this.layers) {
       this.buildLayers();
     }
     const glyphsBySelectionMode = getGlyphsBySelectionMode(model);
