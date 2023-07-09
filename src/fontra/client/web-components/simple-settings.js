@@ -26,8 +26,8 @@ export class SimpleSettings extends UnlitElement {
       this._controller.removeListener(this._modelListener);
     }
     this._controller = controller;
-    this._modelListener = (key, newValue) => {
-      if (this._keys.has(key)) {
+    this._modelListener = (event) => {
+      if (this._keys.has(event.key)) {
         this.requestUpdate();
       }
     };

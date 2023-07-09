@@ -53,6 +53,7 @@ export class ObservableController {
 
   _dispatchChange(key, newValue, oldValue, skipListener) {
     // Schedule the calls in the event loop rather than call immediately
+    const event = { key, newValue, oldValue };
     for (const listener of chain(
       this._generalListeners,
       this._keyListeners[key] || []
@@ -60,7 +61,7 @@ export class ObservableController {
       if (skipListener && skipListener === listener) {
         continue;
       }
-      setTimeout(() => listener(key, newValue, oldValue), 0);
+      setTimeout(() => listener(event), 0);
     }
   }
 }
@@ -128,9 +129,9 @@ function synchronizeWithLocalStorage(controller, prefix = "") {
     }
   }
 
-  controller.addListener((key, newValue) => {
-    if (key in mapKeyToStorage) {
-      setItemOnStorage(key, newValue);
+  controller.addListener((event) => {
+    if (event.key in mapKeyToStorage) {
+      setItemOnStorage(event.key, event.newValue);
     }
   });
 
