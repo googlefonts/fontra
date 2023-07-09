@@ -27,7 +27,8 @@ export class SimpleSettings extends UnlitElement {
     }
     this._controller = controller;
     this._modelListener = (event) => {
-      if (event.senderInfo == this) {
+      if (event.senderInfo === this) {
+        // Event was triggered by us -- ignore
         return;
       }
       if (this._keys.has(event.key)) {
