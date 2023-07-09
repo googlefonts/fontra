@@ -29,11 +29,7 @@ export class SidebarTextEntry {
     this.textEntryElement.addEventListener(
       "input",
       () => {
-        this.textSettingsController.setItem(
-          "text",
-          this.textEntryElement.value,
-          updateTextEntryElementFromModel
-        );
+        this.textSettings.text = this.textEntryElement.value;
       },
       false
     );
