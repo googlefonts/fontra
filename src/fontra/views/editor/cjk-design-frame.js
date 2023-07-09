@@ -14,7 +14,7 @@ export class CJKDesignFrame {
       this.updateCJKDesignFrame(cjkDesignFrameGlyphName)
     );
 
-    editor.designspaceLocationController.addKeyListener("location", (key, newValue) => {
+    editor.designspaceLocationController.addKeyListener("location", (event) => {
       // Grrr, timeout needed when the location changes based on a source list click
       setTimeout(() => {
         this.updateCJKDesignFrame(cjkDesignFrameGlyphName);

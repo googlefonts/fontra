@@ -64,9 +64,9 @@ export class PowerRulerTool extends BaseTool {
 
     editor.visualizationLayersSettings.addKeyListener(
       POWER_RULER_IDENTIFIER,
-      (key, newValue) => {
-        this.active = newValue;
-        if (newValue) {
+      (event) => {
+        this.active = event.newValue;
+        if (event.newValue) {
           this.recalc();
         }
       }
@@ -289,6 +289,7 @@ export class PowerRulerTool extends BaseTool {
       return;
     }
     this.editor.visualizationLayersSettings.model[POWER_RULER_IDENTIFIER] = true;
+
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
     const point = this.sceneController.localPoint(initialEvent);
     point.x -= positionedGlyph.x;

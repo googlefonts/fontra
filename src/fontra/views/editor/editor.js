@@ -125,8 +125,8 @@ export class EditorController {
     this.visualizationLayersSettings = newVisualizationLayersSettings(
       this.visualizationLayers
     );
-    this.visualizationLayersSettings.addListener((key, newValue) => {
-      this.visualizationLayers.toggle(key, newValue);
+    this.visualizationLayersSettings.addListener((event) => {
+      this.visualizationLayers.toggle(event.key, event.newValue);
       this.canvasController.requestUpdate();
     });
 
@@ -175,7 +175,7 @@ export class EditorController {
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addListener((event) => this.themeChanged());
-    themeController.addListener((key, newValue) => {
+    themeController.addListener((event) => {
       this.themeChanged();
     });
 
@@ -416,14 +416,11 @@ export class EditorController {
       await this._sidebarDesignspaceResetVarGlyph();
       this.updateWindowLocationAndSelectionInfo();
     });
-    this.designspaceLocationController.addKeyListener(
-      "location",
-      async (key, location) => {
-        await this.sceneController.setLocation(location);
-        this.updateWindowLocationAndSelectionInfo();
-        this.autoViewBox = false;
-      }
-    );
+    this.designspaceLocationController.addKeyListener("location", async (event) => {
+      await this.sceneController.setLocation(event.newValue);
+      this.updateWindowLocationAndSelectionInfo();
+      this.autoViewBox = false;
+    });
   }
 
   async _sidebarDesignspaceResetVarGlyph() {
@@ -594,13 +591,13 @@ export class EditorController {
 
     textSettingsController.addKeyListener(
       "text",
-      (key, newValue) => this.setGlyphLinesFromText(newValue),
+      (event) => this.setGlyphLinesFromText(event.newValue),
       false
     );
 
-    textSettingsController.addListener((key, newValue) => this.updateWindowLocation());
+    textSettingsController.addListener((event) => this.updateWindowLocation());
 
-    textSettingsController.addKeyListener("align", (key, newValue) => {
+    textSettingsController.addKeyListener("align", (event) => {
       this.setTextAlignment(this.textSettings.align);
     });
 
@@ -630,18 +627,15 @@ export class EditorController {
     document.fonts.add(blankFont);
     await blankFont.load();
     const referenceFontElement = document.querySelector("#reference-font");
-    referenceFontElement.controller.addKeyListener(
-      "referenceFontName",
-      (key, newValue) => {
-        if (newValue) {
-          this.visualizationLayersSettings.model["fontra.reference.font"] = true;
-        }
-        this.canvasController.requestUpdate();
+    referenceFontElement.controller.addKeyListener("referenceFontName", (event) => {
+      if (event.newValue) {
+        this.visualizationLayersSettings.model["fontra.reference.font"] = true;
       }
-    );
+      this.canvasController.requestUpdate();
+    });
     let charOverride;
-    referenceFontElement.controller.addKeyListener("charOverride", (key, newValue) => {
-      charOverride = newValue;
+    referenceFontElement.controller.addKeyListener("charOverride", (event) => {
+      charOverride = event.newValue;
       this.canvasController.requestUpdate();
     });
     const referenceFontModel = referenceFontElement.model;

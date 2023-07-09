@@ -8,8 +8,8 @@ describe("ObservableObject Tests", () => {
     const controller = new ObservableController({ a: 1, b: 2 });
     expect(controller.model).to.deep.equal({ a: 1, b: 2 });
     const result = { ...controller.model };
-    const callback = (key, newValue, oldValue) => {
-      result[key] = newValue;
+    const callback = (event) => {
+      result[event.key] = event.newValue;
     };
     controller.addListener(callback);
     controller.model.b = 200;
@@ -21,9 +21,9 @@ describe("ObservableObject Tests", () => {
     const controller = new ObservableController({ a: 1, b: 2 });
     expect(controller.model).to.deep.equal({ a: 1, b: 2 });
     const result = { ...controller.model };
-    const callback = (key, newValue, oldValue) => {
-      expect(oldValue).to.equal(undefined);
-      result[key] = newValue;
+    const callback = (event) => {
+      expect(event.oldValue).to.equal(undefined);
+      result[event.key] = event.newValue;
     };
     controller.addListener(callback);
     controller.model.c = 200;
@@ -35,9 +35,9 @@ describe("ObservableObject Tests", () => {
     const controller = new ObservableController({ a: 1, b: 2 });
     expect(controller.model).to.deep.equal({ a: 1, b: 2 });
     const result = { ...controller.model };
-    const callback = (key, newValue, oldValue) => {
-      expect(key).to.equal("b");
-      result[key] = newValue;
+    const callback = (event) => {
+      expect(event.key).to.equal("b");
+      result[event.key] = event.newValue;
     };
     controller.addKeyListener("b", callback);
     controller.model.a = 9999;
@@ -50,8 +50,8 @@ describe("ObservableObject Tests", () => {
     const controller = new ObservableController({ a: 1, b: 2 });
     expect(controller.model).to.deep.equal({ a: 1, b: 2 });
     const result = { ...controller.model };
-    const callback = (key, newValue, oldValue) => {
-      result[key] = newValue;
+    const callback = (event) => {
+      result[event.key] = event.newValue;
     };
     controller.addListener(callback);
     controller.setItem("b", 200);
@@ -62,9 +62,9 @@ describe("ObservableObject Tests", () => {
   it("delete item test", async () => {
     const controller = new ObservableController({ a: 1, b: 2 });
     const result = { ...controller.model };
-    const callback = (key, newValue) => {
-      expect(newValue).to.equal(undefined);
-      delete result[key];
+    const callback = (event) => {
+      expect(event.newValue).to.equal(undefined);
+      delete result[event.key];
     };
     controller.addListener(callback);
     delete controller.model.b;
@@ -75,8 +75,8 @@ describe("ObservableObject Tests", () => {
   it("removeEventListener test", async () => {
     const controller = new ObservableController({ a: 1, b: 2 });
     const result = { ...controller.model };
-    const callback = (key, newValue, oldValue) => {
-      result[key] = newValue;
+    const callback = (event) => {
+      result[event.key] = event.newValue;
     };
     controller.addListener(callback);
     controller.model.a = 300;
@@ -91,8 +91,8 @@ describe("ObservableObject Tests", () => {
   it("setItem skipListener test", async () => {
     const controller = new ObservableController({ a: 1, b: 2 });
     const result = { ...controller.model };
-    const callback = (key, newValue, oldValue) => {
-      result[key] = newValue;
+    const callback = (event) => {
+      result[event.key] = event.newValue;
     };
     controller.addListener(callback);
     controller.setItem("a", 300);

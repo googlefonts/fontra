@@ -60,10 +60,10 @@ export class DesignspaceLocation extends UnlitElement {
       this._controller.removeListener(this._modelListener);
     }
     this._controller = controller;
-    this._modelListener = (key, newValue) => {
-      const slider = this.shadowRoot.querySelector(`range-slider[name="${key}"]`);
+    this._modelListener = (event) => {
+      const slider = this.shadowRoot.querySelector(`range-slider[name="${event.key}"]`);
       if (slider) {
-        slider.value = newValue;
+        slider.value = event.newValue;
       }
     };
     this._controller.addListener(this._modelListener);

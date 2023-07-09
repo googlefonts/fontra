@@ -13,9 +13,9 @@ export class SidebarTextEntry {
     this.textEntryElement = document.querySelector("#text-entry-textarea");
     this.textEntryElement.value = this.textSettings.text;
 
-    const updateTextEntryElementFromModel = (key, newValue) => {
-      if (this.textEntryElement.value !== newValue) {
-        this.textEntryElement.value = newValue;
+    const updateTextEntryElementFromModel = (event) => {
+      if (this.textEntryElement.value !== event.newValue) {
+        this.textEntryElement.value = event.newValue;
         this.textEntryElement.setSelectionRange(0, 0);
       }
     };
@@ -40,7 +40,7 @@ export class SidebarTextEntry {
 
     this.textSettingsController.addKeyListener(
       "text",
-      (key, newValue) => this.fixTextEntryHeight(),
+      (event) => this.fixTextEntryHeight(),
       false
     );
   }
@@ -69,7 +69,7 @@ export class SidebarTextEntry {
     this.textAlignElement = document.querySelector("#text-align-menu");
     this.updateAlignElement(this.textSettings.align);
 
-    this.textSettingsController.addKeyListener("align", (key, newValue) => {
+    this.textSettingsController.addKeyListener("align", (event) => {
       this.updateAlignElement(this.textSettings.align);
     });
 
