@@ -62,6 +62,7 @@ export class DesignspaceLocation extends UnlitElement {
     this._controller = controller;
     this._modelListener = (event) => {
       if (event.senderInfo === this) {
+        // Event was triggered by us -- ignore
         return;
       }
       const slider = this.shadowRoot.querySelector(`range-slider[name="${event.key}"]`);
