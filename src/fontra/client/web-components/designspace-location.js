@@ -61,6 +61,10 @@ export class DesignspaceLocation extends UnlitElement {
     }
     this._controller = controller;
     this._modelListener = (event) => {
+      if (event.senderInfo === this) {
+        // Event was triggered by us -- ignore
+        return;
+      }
       const slider = this.shadowRoot.querySelector(`range-slider[name="${event.key}"]`);
       if (slider) {
         slider.value = event.newValue;
@@ -151,7 +155,7 @@ export class DesignspaceLocation extends UnlitElement {
 
   _dispatchLocationChangedEvent(slider) {
     if (this.controller) {
-      this.controller.setItem(slider.name, slider.value, this._modelListener);
+      this.controller.setItem(slider.name, slider.value, this);
     } else {
       this.values[slider.name] = slider.value;
       const event = new CustomEvent("locationChanged", {

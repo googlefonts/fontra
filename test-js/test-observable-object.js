@@ -88,17 +88,20 @@ describe("ObservableObject Tests", () => {
     expect(result).to.deep.equal({ a: 300, b: 2 });
   });
 
-  it("setItem skipListener test", async () => {
+  it("setItem senderInfo test", async () => {
     const controller = new ObservableController({ a: 1, b: 2 });
     const result = { ...controller.model };
+    const senderInfo = {}; // arbitrary unique object
     const callback = (event) => {
-      result[event.key] = event.newValue;
+      if (event.senderInfo !== senderInfo) {
+        result[event.key] = event.newValue;
+      }
     };
     controller.addListener(callback);
     controller.setItem("a", 300);
     await asyncTimeout(0);
     expect(result).to.deep.equal({ a: 300, b: 2 });
-    controller.setItem("b", 300, callback); // skipListener
+    controller.setItem("b", 300, senderInfo);
     await asyncTimeout(0);
     expect(result).to.deep.equal({ a: 300, b: 2 });
   });
