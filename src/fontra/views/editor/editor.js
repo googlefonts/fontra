@@ -163,6 +163,10 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event);
     });
 
+    this.sceneController.addEventListener("glyphHasNoSource", async () => {
+      this.showGlypHasNoSourceDialog();
+    });
+
     this.initSidebars();
     this.initContextMenuItems();
     this.initShortCuts();
@@ -358,6 +362,37 @@ export class EditorController {
     userSettings.items = items;
   }
 
+  async showGlypHasNoSourceDialog() {
+    const glyphName = this.sceneController.sceneModel.getSelectedGlyphName();
+    const result = await dialog(
+      `Can’t edit glyph “${glyphName}”`,
+      "Location is not at a source.",
+      [
+        { title: "Cancel", resultValue: "cancel", isCancelButton: true },
+        { title: "New source", resultValue: "createNewSource" },
+        {
+          title: "Go to nearest source",
+          resultValue: "goToNearestSource",
+          isDefaultButton: true,
+        },
+      ]
+    );
+    switch (result) {
+      case "createNewSource":
+        this.sidebarDesignspace.addSource();
+        break;
+      case "goToNearestSource":
+        const glyphController =
+          await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+        const nearestSourceIndex = glyphController.findNearestSourceFromGlobalLocation(
+          this.sceneController.getLocation(),
+          true
+        );
+        this.sidebarDesignspace.selectSourceByIndex(nearestSourceIndex);
+        break;
+    }
+  }
+
   initTools() {
     this.tools = {};
     const editToolClasses = [PointerTool, PenTool, PowerRulerTool, HandTool];
@@ -420,37 +455,6 @@ export class EditorController {
       await this.sceneController.setLocation(event.newValue);
       this.updateWindowLocationAndSelectionInfo();
       this.autoViewBox = false;
-    });
-    this.sceneController.addEventListener("cantEditGlyphNotAtSource", async () => {
-      const glyphName = this.sceneController.sceneModel.getSelectedGlyphName();
-      const result = await dialog(
-        `Can’t edit glyph “${glyphName}”`,
-        "Location is not at a source.",
-        [
-          { title: "Cancel", resultValue: "cancel", isCancelButton: true },
-          { title: "New source", resultValue: "createNewSource" },
-          {
-            title: "Go to nearest source",
-            resultValue: "goToNearestSource",
-            isDefaultButton: true,
-          },
-        ]
-      );
-      switch (result) {
-        case "createNewSource":
-          this.sidebarDesignspace.addSource();
-          break;
-        case "goToNearestSource":
-          const glyphController =
-            await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-          const nearestSourceIndex =
-            glyphController.findNearestSourceFromGlobalLocation(
-              this.sceneController.getLocation(),
-              true
-            );
-          this.sidebarDesignspace.selectSourceByIndex(nearestSourceIndex);
-          break;
-      }
     });
   }
 

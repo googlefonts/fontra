@@ -466,7 +466,7 @@ export class SceneController {
     if (doInstance) {
       const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
       if (!glyphController.canEdit) {
-        this._dispatchEvent("cantEditGlyphNotAtSource");
+        this._dispatchEvent("glyphHasNoSource");
         return;
       }
 
