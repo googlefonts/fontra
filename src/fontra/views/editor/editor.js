@@ -164,7 +164,7 @@ export class EditorController {
     });
 
     this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
-      this.showGlyphEditLocationNotAtSource();
+      this.showDialogGlyphEditLocationNotAtSource();
     });
 
     this.initSidebars();
@@ -362,11 +362,11 @@ export class EditorController {
     userSettings.items = items;
   }
 
-  async showGlyphEditLocationNotAtSource() {
+  async showDialogGlyphEditLocationNotAtSource() {
     const glyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     const result = await dialog(
       `Can’t edit glyph “${glyphName}”`,
-      "Location is not at a source.",
+      "The location is not at a source.",
       [
         { title: "Cancel", resultValue: "cancel", isCancelButton: true },
         { title: "New source", resultValue: "createNewSource" },
