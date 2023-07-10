@@ -479,10 +479,9 @@ export class SceneController {
             },
           ]
         );
-        if (result === "cancel") {
-          return;
+        if (result !== "cancel") {
+          this._dispatchEvent(result);
         }
-        this._dispatchEvent(result);
         return;
       }
 
