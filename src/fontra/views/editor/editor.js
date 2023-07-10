@@ -428,7 +428,8 @@ export class EditorController {
       const glyphController =
         await this.sceneController.sceneModel.getSelectedVariableGlyphController();
       const nearestSourceIndex = glyphController.findNearestSourceFromGlobalLocation(
-        this.sceneController.getLocation()
+        this.sceneController.getLocation(),
+        true
       );
       this.sidebarDesignspace.selectSourceByIndex(nearestSourceIndex);
     });
