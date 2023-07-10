@@ -473,9 +473,20 @@ export class SceneController {
         const result = await dialog(
           `Can’t edit glyph “${glyphName}”`,
           "Location is not at a source.",
-          [{ title: "Okay", resultValue: "ok" }],
-          2500 /* auto dismiss after a timeout */
+          [
+            { title: "Cancel", resultValue: "cancel", isCancelButton: true },
+            { title: "Create new source", resultValue: "createNewSource" },
+            {
+              title: "Go to nearest source",
+              isDefaultButton: true,
+              resultValue: "goToNearestSource",
+            },
+          ]
         );
+        if (result === "cancel") {
+          return;
+        }
+        this._dispatchEvent(result);
         return;
       }
 

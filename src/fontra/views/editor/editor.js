@@ -421,6 +421,17 @@ export class EditorController {
       this.updateWindowLocationAndSelectionInfo();
       this.autoViewBox = false;
     });
+    this.sceneController.addEventListener("createNewSource", async (event) => {
+      await this.sidebarDesignspace.addSource();
+    });
+    this.sceneController.addEventListener("goToNearestSource", async (event) => {
+      const glyphController =
+        await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+      const nearestSource = glyphController.findNearestSourceFromGlobalLocation(
+        this.sceneController.getLocation()
+      );
+      this.designspaceLocationController.model.location = nearestSource;
+    });
   }
 
   async _sidebarDesignspaceResetVarGlyph() {
