@@ -181,6 +181,11 @@ export class SidebarDesignspace {
     this.sourcesList.setSelectedItemIndex(sourceIndex);
   }
 
+  selectSourceByIndex(sourceIndex) {
+    this.sourcesList.setSelectedItemIndex(sourceIndex);
+    this._updateLocationFromSelectedSource();
+  }
+
   _updateLocationFromSelectedSource() {
     const sourceIndex = this.sourcesList.getSelectedItemIndex();
     if (sourceIndex === undefined) {
@@ -296,8 +301,7 @@ export class SidebarDesignspace {
     // Update UI
     await this._updateSources();
     const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
-    this.sourcesList.setSelectedItemIndex(selectedSourceIndex);
-    this._updateLocationFromSelectedSource();
+    this.selectSourceByIndex(selectedSourceIndex);
   }
 
   async editSourceProperties(sourceIndex) {
@@ -351,8 +355,7 @@ export class SidebarDesignspace {
     });
     // Update UI
     await this._updateSources();
-    this.sourcesList.setSelectedItemIndex(sourceIndex);
-    this._updateLocationFromSelectedSource();
+    this.selectSourceByIndex(sourceIndex);
   }
 
   async _sourcePropertiesRunDialog(
