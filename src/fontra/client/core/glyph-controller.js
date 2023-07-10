@@ -281,7 +281,7 @@ export class VariableGlyphController {
     });
   }
 
-  findNearestSourceFromGlobalLocation(location, skipInactive) {
+  findNearestSourceFromGlobalLocation(location, skipInactive = false) {
     const normalizedLocation = normalizeLocation(
       this.mapLocationGlobalToLocal(location),
       this.combinedAxes
@@ -734,7 +734,12 @@ function subsetLocation(location, axes) {
   return subsettedLocation;
 }
 
-function findNearestSourceIndexFromLocation(glyph, location, axes, skipInactive) {
+function findNearestSourceIndexFromLocation(
+  glyph,
+  location,
+  axes,
+  skipInactive = false
+) {
   const distances = [];
   if (!glyph.sources.length) {
     throw Error("assert -- glyph has no sources");
