@@ -466,22 +466,7 @@ export class SceneController {
     if (doInstance) {
       const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
       if (!glyphController.canEdit) {
-        const result = await dialog(
-          `Can’t edit glyph “${glyphName}”`,
-          "Location is not at a source.",
-          [
-            { title: "Cancel", resultValue: "cancel", isCancelButton: true },
-            { title: "New source", resultValue: "createNewSource" },
-            {
-              title: "Go to nearest source",
-              resultValue: "goToNearestSource",
-              isDefaultButton: true,
-            },
-          ]
-        );
-        if (result !== "cancel") {
-          this._dispatchEvent(result);
-        }
+        this._dispatchEvent("cantEditGlyphNotAtSource");
         return;
       }
 
