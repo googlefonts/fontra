@@ -475,11 +475,11 @@ export class SceneController {
           "Location is not at a source.",
           [
             { title: "Cancel", resultValue: "cancel", isCancelButton: true },
-            { title: "Create new source", resultValue: "createNewSource" },
+            { title: "New source", resultValue: "createNewSource" },
             {
               title: "Go to nearest source",
-              isDefaultButton: true,
               resultValue: "goToNearestSource",
+              isDefaultButton: true,
             },
           ]
         );

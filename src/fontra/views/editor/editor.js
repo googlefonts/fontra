@@ -421,8 +421,8 @@ export class EditorController {
       this.updateWindowLocationAndSelectionInfo();
       this.autoViewBox = false;
     });
-    this.sceneController.addEventListener("createNewSource", async (event) => {
-      await this.sidebarDesignspace.addSource();
+    this.sceneController.addEventListener("createNewSource", (event) => {
+      this.sidebarDesignspace.addSource();
     });
     this.sceneController.addEventListener("goToNearestSource", async (event) => {
       const glyphController =
