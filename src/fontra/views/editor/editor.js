@@ -163,8 +163,8 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event);
     });
 
-    this.sceneController.addEventListener("glyphHasNoSource", async () => {
-      this.showGlypHasNoSourceDialog();
+    this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
+      this.showGlyphEditLocationNotAtSource();
     });
 
     this.initSidebars();
@@ -362,7 +362,7 @@ export class EditorController {
     userSettings.items = items;
   }
 
-  async showGlypHasNoSourceDialog() {
+  async showGlyphEditLocationNotAtSource() {
     const glyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     const result = await dialog(
       `Can’t edit glyph “${glyphName}”`,
