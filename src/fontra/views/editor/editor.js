@@ -427,10 +427,10 @@ export class EditorController {
     this.sceneController.addEventListener("goToNearestSource", async (event) => {
       const glyphController =
         await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-      const nearestSource = glyphController.findNearestSourceFromGlobalLocation(
+      const nearestSourceIndex = glyphController.findNearestSourceFromGlobalLocation(
         this.sceneController.getLocation()
       );
-      this.designspaceLocationController.model.location = nearestSource;
+      this.sidebarDesignspace.selectSourceByIndex(nearestSourceIndex);
     });
   }
 
