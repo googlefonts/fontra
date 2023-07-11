@@ -168,7 +168,7 @@ export class PowerRulerTool extends BaseTool {
     }
   }
 
-  recalc() {
+  async recalc() {
     if (!this.active) {
       return;
     }
@@ -176,11 +176,13 @@ export class PowerRulerTool extends BaseTool {
     if (!ruler) {
       return;
     }
-    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
-    const extraLines = this.computeSideBearingLines(positionedGlyph.glyph);
+    const glyphController = await this.sceneModel.getGlyphInstance(
+      this.currentGlyphName
+    );
+    const extraLines = this.computeSideBearingLines(glyphController);
 
     this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
-      positionedGlyph.glyph,
+      glyphController,
       ruler.basePoint,
       ruler.directionVector,
       extraLines

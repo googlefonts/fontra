@@ -241,13 +241,7 @@ export class SceneModel {
   async updateScene() {
     this.updateBackgroundGlyphs();
     // const startTime = performance.now();
-    [this.positionedLines, this.longestLineLength] = await buildScene(
-      this.fontController,
-      this.glyphLines,
-      this.getGlobalLocation(),
-      this._localLocations,
-      this.textAlignment
-    );
+    await this.buildScene();
     // const elapsed = performance.now() - startTime;
     // console.log("buildScene", elapsed);
 
@@ -282,6 +276,104 @@ export class SceneModel {
         wantLiveChanges
       );
     }
+  }
+
+  async buildScene() {
+    const fontController = this.fontController;
+    const glyphLines = this.glyphLines;
+    const align = this.textAlignment;
+
+    let y = 0;
+    const lineDistance = 1.1 * fontController.unitsPerEm; // TODO make factor user-configurable
+    const positionedLines = [];
+    let longestLineLength = 0;
+
+    const neededGlyphs = new Set(
+      glyphLines
+        .map((glyphLine) => glyphLine.map((glyphInfo) => glyphInfo.glyphName))
+        .flat()
+    );
+    await fontController.loadGlyphs([...neededGlyphs]);
+
+    for (const glyphLine of glyphLines) {
+      const positionedLine = { glyphs: [] };
+      let x = 0;
+      for (const glyphInfo of glyphLine) {
+        let glyphInstance = await this.getGlyphInstance(glyphInfo.glyphName);
+        const isUndefined = !glyphInstance;
+        if (isUndefined) {
+          glyphInstance = fontController.getDummyGlyphInstanceController(
+            glyphInfo.glyphName
+          );
+        }
+        positionedLine.glyphs.push({
+          x: x,
+          y: y,
+          glyph: glyphInstance,
+          glyphName: glyphInfo.glyphName,
+          character: glyphInfo.character,
+          isUndefined: isUndefined,
+        });
+        x += glyphInstance.xAdvance;
+      }
+
+      longestLineLength = Math.max(longestLineLength, x);
+
+      let offset = 0;
+      if (align === "center") {
+        offset = -x / 2;
+      } else if (align === "right") {
+        offset = -x;
+      }
+      if (offset) {
+        positionedLine.glyphs.forEach((item) => {
+          item.x += offset;
+        });
+      }
+
+      // Add bounding boxes
+      positionedLine.glyphs.forEach((item) => {
+        let bounds = item.glyph.controlBounds;
+        if (!bounds || isEmptyRect(bounds) || item.glyph.isEmptyIsh) {
+          // Empty glyph, make up box based on advance so it can still be clickable/hoverable
+          // TODO: use font's ascender/descender values
+          // If the advance is very small, add a bit of extra space on both sides so it'll be
+          // clickable even with a zero advance width
+          const extraSpace = item.glyph.xAdvance < 30 ? 20 : 0;
+          bounds = insetRect(
+            normalizeRect({
+              xMin: 0,
+              yMin: -0.2 * fontController.unitsPerEm,
+              xMax: item.glyph.xAdvance,
+              yMax: 0.8 * fontController.unitsPerEm,
+            }),
+            -extraSpace,
+            0
+          );
+          item.isEmpty = true;
+        }
+        item.bounds = offsetRect(bounds, item.x, item.y);
+        item.unpositionedBounds = bounds;
+      });
+
+      y -= lineDistance;
+      if (positionedLine.glyphs.length) {
+        positionedLine.bounds = unionRect(
+          ...positionedLine.glyphs.map((glyph) => glyph.bounds)
+        );
+      }
+      positionedLines.push(positionedLine);
+    }
+    this.positionedLines = positionedLines;
+    this.longestLineLength = longestLineLength;
+  }
+
+  async getGlyphInstance(glyphName) {
+    const location = {
+      ...this._localLocations[glyphName],
+      ...this.getGlobalLocation(),
+    };
+    return await this.fontController.getGlyphInstance(glyphName, location);
   }
 
   selectionAtPoint(point, size, currentSelection, preferTCenter) {
@@ -587,101 +679,6 @@ function mergeAxisInfo(axisInfos) {
     }
   }
   return Object.values(mergedAxisInfo);
-}
-
-async function buildScene(
-  fontController,
-  glyphLines,
-  globalLocation,
-  localLocations,
-  align = "center"
-) {
-  let y = 0;
-  const lineDistance = 1.1 * fontController.unitsPerEm; // TODO make factor user-configurable
-  const positionedLines = [];
-  let longestLineLength = 0;
-
-  const neededGlyphs = new Set(
-    glyphLines
-      .map((glyphLine) => glyphLine.map((glyphInfo) => glyphInfo.glyphName))
-      .flat()
-  );
-  await fontController.loadGlyphs([...neededGlyphs]);
-
-  for (const glyphLine of glyphLines) {
-    const positionedLine = { glyphs: [] };
-    let x = 0;
-    for (const glyphInfo of glyphLine) {
-      const location = { ...localLocations[glyphInfo.glyphName], ...globalLocation };
-      let glyphInstance = await fontController.getGlyphInstance(
-        glyphInfo.glyphName,
-        location
-      );
-      const isUndefined = !glyphInstance;
-      if (isUndefined) {
-        glyphInstance = fontController.getDummyGlyphInstanceController(
-          glyphInfo.glyphName
-        );
-      }
-      positionedLine.glyphs.push({
-        x: x,
-        y: y,
-        glyph: glyphInstance,
-        glyphName: glyphInfo.glyphName,
-        character: glyphInfo.character,
-        isUndefined: isUndefined,
-      });
-      x += glyphInstance.xAdvance;
-    }
-
-    longestLineLength = Math.max(longestLineLength, x);
-
-    let offset = 0;
-    if (align === "center") {
-      offset = -x / 2;
-    } else if (align === "right") {
-      offset = -x;
-    }
-    if (offset) {
-      positionedLine.glyphs.forEach((item) => {
-        item.x += offset;
-      });
-    }
-
-    // Add bounding boxes
-    positionedLine.glyphs.forEach((item) => {
-      let bounds = item.glyph.controlBounds;
-      if (!bounds || isEmptyRect(bounds) || item.glyph.isEmptyIsh) {
-        // Empty glyph, make up box based on advance so it can still be clickable/hoverable
-        // TODO: use font's ascender/descender values
-        // If the advance is very small, add a bit of extra space on both sides so it'll be
-        // clickable even with a zero advance width
-        const extraSpace = item.glyph.xAdvance < 30 ? 20 : 0;
-        bounds = insetRect(
-          normalizeRect({
-            xMin: 0,
-            yMin: -0.2 * fontController.unitsPerEm,
-            xMax: item.glyph.xAdvance,
-            yMax: 0.8 * fontController.unitsPerEm,
-          }),
-          -extraSpace,
-          0
-        );
-        item.isEmpty = true;
-      }
-      item.bounds = offsetRect(bounds, item.x, item.y);
-      item.unpositionedBounds = bounds;
-    });
-
-    y -= lineDistance;
-    if (positionedLine.glyphs.length) {
-      positionedLine.bounds = unionRect(
-        ...positionedLine.glyphs.map((glyph) => glyph.bounds)
-      );
-    }
-    positionedLines.push(positionedLine);
-  }
-  return [positionedLines, longestLineLength];
 }
 
 function getUsedGlyphNames(fontController, positionedLines) {
