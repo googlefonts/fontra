@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import math
 import os
 import pathlib
 from collections import defaultdict
@@ -14,7 +13,7 @@ from types import SimpleNamespace
 
 import watchfiles
 from fontTools.designspaceLib import DesignSpaceDocument
-from fontTools.misc.transform import Transform
+from fontTools.misc.transform import DecomposedTransform, Transform
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -726,18 +725,18 @@ def uniqueNameMaker(existingNames=()):
 
 
 def makeAffineTransform(transformation: Transformation) -> Transform:
-    t = Transform()
-    t = t.translate(
-        transformation.translateX + transformation.tCenterX,
-        transformation.translateY + transformation.tCenterY,
+    decomposed_transform = DecomposedTransform(
+        translateX=transformation.translateX,
+        translateY=transformation.translateY,
+        rotation=transformation.rotation,
+        scaleX=transformation.scaleX,
+        scaleY=transformation.scaleY,
+        skewX=transformation.skewX,
+        skewY=transformation.skewY,
+        tCenterX=transformation.tCenterX,
+        tCenterY=transformation.tCenterY,
     )
-    t = t.rotate(transformation.rotation * (math.pi / 180))
-    t = t.scale(transformation.scaleX, transformation.scaleY)
-    t = t.skew(
-        -transformation.skewX * (math.pi / 180), transformation.skewY * (math.pi / 180)
-    )
-    t = t.translate(-transformation.tCenterX, -transformation.tCenterY)
-    return t
+    return decomposed_transform.toTransform()
 
 
 def cleanAffine(t):
