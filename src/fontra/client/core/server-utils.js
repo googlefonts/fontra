@@ -11,6 +11,8 @@ export async function callServerAPI(functionName, kwargs) {
   return result.returnValue;
 }
 
+// TODO: memoize getSuggestedGlyphName and getUnicodeFromGlyphName
+
 export async function getSuggestedGlyphName(codePoint) {
   return await callServerAPI("getSuggestedGlyphName", { codePoint });
 }
