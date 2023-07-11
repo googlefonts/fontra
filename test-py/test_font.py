@@ -762,6 +762,7 @@ async def test_getGlyph(backendName, expectedGlyph):
     font = getTestFont(backendName)
     with contextlib.closing(font):
         glyph = await font.getGlyph(expectedGlyph.name)
+        assert glyph == expectedGlyph
         assert asdict(glyph) == asdict(expectedGlyph)
 
 
