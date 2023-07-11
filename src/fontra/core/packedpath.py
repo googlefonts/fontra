@@ -251,7 +251,6 @@ class PackedPathPointPen:
     ):
         from .classes import Component
 
-        # TODO: https://github.com/googlefonts/fontra/issues/245
         transformation = DecomposedTransform(**asdict(transformation))
         self.components.append(Component(glyphName, transformation, location))
 
