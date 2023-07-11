@@ -26,7 +26,6 @@ from ..core.classes import (
     LocalAxis,
     Source,
     StaticGlyph,
-    Transformation,
     VariableGlyph,
 )
 from ..core.packedpath import PackedPathPointPen
@@ -653,7 +652,7 @@ def unpackVariableComponents(lib):
     for componentDict in lib.get(VARIABLE_COMPONENTS_LIB_KEY, ()):
         glyphName = componentDict["base"]
         transformationDict = componentDict.get("transformation", {})
-        transformation = Transformation(**transformationDict)
+        transformation = DecomposedTransform(**transformationDict)
         location = componentDict.get("location", {})
         components.append(Component(glyphName, transformation, location))
     return components
@@ -681,7 +680,7 @@ def buildUFOLayerGlyph(
         if component.location:
             # It's a variable component
             varCoDict = {"base": component.name, "location": component.location}
-            if component.transformation != Transformation():
+            if isinstance(component.transformation, DecomposedTransform):
                 varCoDict["transformation"] = asdict(component.transformation)
             variableComponents.append(varCoDict)
         else:

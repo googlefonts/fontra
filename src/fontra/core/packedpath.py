@@ -249,10 +249,10 @@ class PackedPathPointPen:
     def addVarComponent(
         self, glyphName, transformation, location, identifier=None, **kwargs
     ):
-        from .classes import Component, Transformation
+        from .classes import Component
 
         # TODO: https://github.com/googlefonts/fontra/issues/245
-        transformation = Transformation(**asdict(transformation))
+        transformation = DecomposedTransform(**asdict(transformation))
         self.components.append(Component(glyphName, transformation, location))
 
 
