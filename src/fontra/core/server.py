@@ -20,6 +20,7 @@ from urllib.parse import quote
 from aiohttp import WSCloseCode, web
 
 from .remote import RemoteObjectConnection, RemoteObjectConnectionException
+from .serverutils import apiFunctions
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,7 @@ class FontraServer:
         routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))
         routes.append(web.get("/projectlist", self.projectListHandler))
         routes.append(web.get("/serverinfo", self.serverInfoHandler))
+        routes.append(web.post("/api/{function:.*}", self.webAPIHandler))
         for ep in entry_points(group="fontra.webcontent"):
             routes.append(
                 web.get(
@@ -188,6 +190,21 @@ class FontraServer:
         return web.Response(
             text=json.dumps(serverInfo), content_type="application/json"
         )
+
+    async def webAPIHandler(self, request):
+        functionName = request.match_info["function"]
+        function = apiFunctions.get(functionName)
+        if function is None:
+            return web.HTTPNotFound()
+        kwargs = await request.json()
+        try:
+            returnValue = function(**kwargs)
+        except Exception as e:
+            traceback.print_exc()
+            result = {"error": repr(e)}
+        else:
+            result = {"returnValue": returnValue}
+        return web.Response(text=json.dumps(result), content_type="application/json")
 
     async def staticContentHandler(self, packageName, request):
         ifModSince = request.if_modified_since

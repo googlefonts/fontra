@@ -19,8 +19,6 @@ from .changes import (
     patternUnion,
 )
 from .classes import Font
-from .clipboard import parseClipboard
-from .glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
 from .lrucache import LRUCache
 
 logger = logging.getLogger(__name__)
@@ -441,18 +439,6 @@ class FontHandler:
             for key in [LIVE_CHANGES_PATTERN_KEY, CHANGES_PATTERN_KEY]
         ]
         return patternUnion(patternA, patternB)
-
-    @remoteMethod
-    async def getSuggestedGlyphName(self, codePoint, *, connection):
-        return getSuggestedGlyphName(codePoint)
-
-    @remoteMethod
-    async def getUnicodeFromGlyphName(self, glyphName, *, connection):
-        return getUnicodeFromGlyphName(glyphName)
-
-    @remoteMethod
-    async def parseClipboard(self, data, *, connection):
-        return parseClipboard(data)
 
 
 def _iterAllComponentNames(glyph):

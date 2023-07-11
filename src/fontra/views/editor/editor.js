@@ -61,6 +61,11 @@ import {
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { clamp } from "../../core/utils.js";
+import {
+  getSuggestedGlyphName,
+  getUnicodeFromGlyphName,
+  parseClipboard,
+} from "../core/server-utils.js";
 
 const MIN_SIDEBAR_WIDTH = 200;
 const MAX_SIDEBAR_WIDTH = 500;
@@ -823,9 +828,7 @@ export class EditorController {
     const glyphLines = await glyphLinesFromText(
       text,
       this.fontController.characterMap,
-      this.fontController.glyphMap,
-      (codePoint) => this.fontController.getSuggestedGlyphName(codePoint),
-      (glyphName) => this.fontController.getUnicodeFromGlyphName(glyphName)
+      this.fontController.glyphMap
     );
     await this.setGlyphLines(glyphLines);
     this.updateSidebarDesignspace();
@@ -1309,7 +1312,7 @@ export class EditorController {
           console.log("couldn't paste from JSON:", error.toString());
         }
       } else {
-        pastedGlyph = await this.fontController.parseClipboard(plainText);
+        pastedGlyph = await this.parseClipboard(plainText);
       }
     }
 
@@ -1340,6 +1343,11 @@ export class EditorController {
       this.sceneController.selection = selection;
       return "Paste";
     });
+  }
+
+  async parseClipboard(data) {
+    const result = await parseClipboard(data);
+    return result ? StaticGlyph.fromObject(result) : undefined;
   }
 
   canDeepPaste() {
@@ -1908,37 +1916,17 @@ function rectScaleAroundCenter(rect, scaleFactor, center) {
 
 // utils, should perhaps move to utils.js
 
-async function glyphLinesFromText(
-  text,
-  characterMap,
-  glyphMap,
-  getSuggestedGlyphNameFunc,
-  getUnicodeFromGlyphNameFunc
-) {
+async function glyphLinesFromText(text, characterMap, glyphMap) {
   const glyphLines = [];
   for (const line of text.split(/\r?\n/)) {
-    glyphLines.push(
-      await glyphNamesFromText(
-        line,
-        characterMap,
-        glyphMap,
-        getSuggestedGlyphNameFunc,
-        getUnicodeFromGlyphNameFunc
-      )
-    );
+    glyphLines.push(await glyphNamesFromText(line, characterMap, glyphMap));
   }
   return glyphLines;
 }
 
 const glyphNameRE = /[//\s]/g;
 
-async function glyphNamesFromText(
-  text,
-  characterMap,
-  glyphMap,
-  getSuggestedGlyphNameFunc,
-  getUnicodeFromGlyphNameFunc
-) {
+async function glyphNamesFromText(text, characterMap, glyphMap) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -1972,7 +1960,7 @@ async function glyphNamesFromText(
         }
         if (!char && !glyphMap[glyphName]) {
           // Glyph doesn't exist in the font, try to find a unicode value
-          const codePoint = await getUnicodeFromGlyphNameFunc(glyphName);
+          const codePoint = await getUnicodeFromGlyphName(glyphName);
           if (codePoint) {
             char = String.fromCodePoint(codePoint);
           }
@@ -1989,7 +1977,7 @@ async function glyphNamesFromText(
     if (glyphName !== "") {
       let isUndefined = false;
       if (!glyphName && char) {
-        glyphName = await getSuggestedGlyphNameFunc(char.codePointAt(0));
+        glyphName = await getSuggestedGlyphName(char.codePointAt(0));
         isUndefined = true;
       }
       glyphNames.push({

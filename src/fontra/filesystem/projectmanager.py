@@ -83,7 +83,8 @@ class FileSystemProjectManager:
         return "yes"  # arbitrary non-false string token
 
     async def projectPageHandler(self, request, filterContent=None):
-        html = resources.read_text("fontra.filesystem", "landing.html")
+        htmlPath = resources.files("fontra") / "filesystem" / "landing.html"
+        html = htmlPath.read_text()
         if filterContent is not None:
             html = filterContent(html, "text/html")
         return web.Response(text=html, content_type="text/html")
