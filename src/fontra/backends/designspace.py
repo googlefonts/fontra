@@ -686,15 +686,7 @@ def buildUFOLayerGlyph(
         else:
             # It's a regular component
             decomposedTransform = DecomposedTransform(
-                translateX=component.transformation.translateX,
-                translateY=component.transformation.translateY,
-                rotation=component.transformation.rotation,
-                scaleX=component.transformation.scaleX,
-                scaleY=component.transformation.scaleY,
-                skewX=component.transformation.skewX,
-                skewY=component.transformation.skewY,
-                tCenterX=component.transformation.tCenterX,
-                tCenterY=component.transformation.tCenterY,
+                **asdict(component.transformation)
             )
             pen.addComponent(
                 component.name,
