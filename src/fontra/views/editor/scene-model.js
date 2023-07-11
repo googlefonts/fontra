@@ -281,8 +281,6 @@ export class SceneModel {
   async buildScene() {
     const fontController = this.fontController;
     const glyphLines = this.glyphLines;
-    const globalLocation = this.getGlobalLocation();
-    const localLocations = this._localLocations;
     const align = this.textAlignment;
 
     let y = 0;
@@ -301,11 +299,7 @@ export class SceneModel {
       const positionedLine = { glyphs: [] };
       let x = 0;
       for (const glyphInfo of glyphLine) {
-        const location = { ...localLocations[glyphInfo.glyphName], ...globalLocation };
-        let glyphInstance = await fontController.getGlyphInstance(
-          glyphInfo.glyphName,
-          location
-        );
+        let glyphInstance = await this.getGlyphInstance(glyphInfo.glyphName);
         const isUndefined = !glyphInstance;
         if (isUndefined) {
           glyphInstance = fontController.getDummyGlyphInstanceController(
@@ -372,6 +366,14 @@ export class SceneModel {
     }
     this.positionedLines = positionedLines;
     this.longestLineLength = longestLineLength;
+  }
+
+  async getGlyphInstance(glyphName) {
+    const location = {
+      ...this._localLocations[glyphName],
+      ...this.getGlobalLocation(),
+    };
+    return await this.fontController.getGlyphInstance(glyphName, location);
   }
 
   selectionAtPoint(point, size, currentSelection, preferTCenter) {
