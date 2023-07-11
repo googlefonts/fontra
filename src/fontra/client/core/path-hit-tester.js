@@ -1,5 +1,11 @@
 import { Bezier } from "../third-party/bezier-js.js";
-import { centeredRect, rectSize, sectRect, unionRect } from "./rectangle.js";
+import {
+  centeredRect,
+  rectFromPoints,
+  rectSize,
+  sectRect,
+  unionRect,
+} from "./rectangle.js";
 import { enumerate, range, reversedEnumerate } from "./utils.js";
 import * as vector from "./vector.js";
 
@@ -64,11 +70,15 @@ export class PathHitTester {
   lineIntersections(point, direction, extraLines) {
     // `point` is the pivot point, and `direction` is the normalized direction vector
     this._ensureAllContoursAreLoaded();
+    const rectangles = this.controlBounds ? [this.controlBounds] : [];
+    rectangles.push(rectFromPoints([point]));
 
-    // From `point` and `direction`, compute two points `p1` and `p2` that are each
-    // outside of the path bounding box
-    const pointRect = { xMin: point.x, yMin: point.y, xMax: point.x, yMax: point.y };
-    const { width, height } = rectSize(unionRect(pointRect, this.controlBounds));
+    if (extraLines) {
+      rectangles.push(
+        rectFromPoints(extraLines.map((line) => [line.p1, line.p2]).flat())
+      );
+    }
+    const { width, height } = rectSize(unionRect(...rectangles));
     const maxLength = width + height;
     const p1 = vector.addVectors(point, vector.mulVector(direction, maxLength));
     const p2 = vector.addVectors(point, vector.mulVector(direction, -maxLength));
