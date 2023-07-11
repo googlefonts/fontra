@@ -3,6 +3,8 @@ import math
 from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 
+from fontTools.misc.transform import DecomposedTransform
+
 logger = logging.getLogger(__name__)
 
 
@@ -240,29 +242,9 @@ class PackedPathPointPen:
         self._currentContour = None
 
     def addComponent(self, glyphName, transformation, **kwargs):
-        from .classes import Component, Transformation
+        from .classes import Component
 
-        xx, xy, yx, yy, dx, dy = transformation
-        rotation, scaleX, scaleY, skewX, skewY = decomposeTwoByTwo((xx, xy, yx, yy))
-        # TODO rotation is problematic with interpolation: should interpolation
-        # go clockwise or counter-clockwise? That ambiguous, and get more complicated
-        # with > 2 masters. Perhaps we can "normalize" the rotations angles in some
-        # way to have reasonable behavior in common cases.
-        if rotation == -0.0:
-            rotation = 0.0
-
-        transformation = Transformation(
-            translateX=dx,
-            translateY=dy,
-            rotation=math.degrees(rotation),
-            scaleX=scaleX,
-            scaleY=scaleY,
-            skewX=math.degrees(-skewX),
-            skewY=math.degrees(skewY),
-            tCenterX=0,
-            tCenterY=0,
-        )
-
+        transformation = DecomposedTransform.fromTransform(transformation)
         self.components.append(Component(glyphName, transformation))
 
     def addVarComponent(
