@@ -1,5 +1,4 @@
 import logging
-import math
 from dataclasses import asdict, dataclass, field
 from enum import IntEnum
 
@@ -255,39 +254,6 @@ class PackedPathPointPen:
         # TODO: https://github.com/googlefonts/fontra/issues/245
         transformation = Transformation(**asdict(transformation))
         self.components.append(Component(glyphName, transformation, location))
-
-
-def decomposeTwoByTwo(twoByTwo):
-    """Decompose a 2x2 transformation matrix into components:
-    - rotation
-    - scaleX
-    - scaleY
-    - skewX
-    - skewY
-    """
-    a, b, c, d = twoByTwo
-    delta = a * d - b * c
-
-    rotation = 0
-    scaleX = scaleY = 0
-    skewX = skewY = 0
-
-    # Apply the QR-like decomposition.
-    if a != 0 or b != 0:
-        r = math.sqrt(a * a + b * b)
-        rotation = math.acos(a / r) if b > 0 else -math.acos(a / r)
-        scaleX, scaleY = (r, delta / r)
-        skewX, skewY = (math.atan((a * c + b * d) / (r * r)), 0)
-    elif c != 0 or d != 0:
-        s = math.sqrt(c * c + d * d)
-        rotation = math.pi / 2 - (math.acos(-c / s) if d > 0 else -math.acos(c / s))
-        scaleX, scaleY = (delta / s, s)
-        skewX, skewY = (0, math.atan((a * c + b * d) / (s * s)))
-    else:
-        # a = b = c = d = 0
-        pass
-
-    return rotation, scaleX, scaleY, skewX, skewY
 
 
 _pointToSegmentType = {
