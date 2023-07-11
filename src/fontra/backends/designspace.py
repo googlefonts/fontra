@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import watchfiles
 from fontTools.designspaceLib import DesignSpaceDocument
-from fontTools.misc.transform import DecomposedTransform, Transform
+from fontTools.misc.transform import DecomposedTransform
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -686,9 +686,20 @@ def buildUFOLayerGlyph(
             variableComponents.append(varCoDict)
         else:
             # It's a regular component
+            decomposedTransform = DecomposedTransform(
+                translateX=component.transformation.translateX,
+                translateY=component.transformation.translateY,
+                rotation=component.transformation.rotation,
+                scaleX=component.transformation.scaleX,
+                scaleY=component.transformation.scaleY,
+                skewX=component.transformation.skewX,
+                skewY=component.transformation.skewY,
+                tCenterX=component.transformation.tCenterX,
+                tCenterY=component.transformation.tCenterY,
+            )
             pen.addComponent(
                 component.name,
-                cleanAffine(makeAffineTransform(component.transformation)),
+                cleanAffine(decomposedTransform.toTransform()),
             )
 
     if variableComponents:
@@ -722,21 +733,6 @@ def uniqueNameMaker(existingNames=()):
         return uniqueName
 
     return makeUniqueName
-
-
-def makeAffineTransform(transformation: Transformation) -> Transform:
-    decomposed_transform = DecomposedTransform(
-        translateX=transformation.translateX,
-        translateY=transformation.translateY,
-        rotation=transformation.rotation,
-        scaleX=transformation.scaleX,
-        scaleY=transformation.scaleY,
-        skewX=transformation.skewX,
-        skewY=transformation.skewY,
-        tCenterX=transformation.tCenterX,
-        tCenterY=transformation.tCenterY,
-    )
-    return decomposed_transform.toTransform()
 
 
 def cleanAffine(t):
