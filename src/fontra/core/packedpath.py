@@ -1,5 +1,6 @@
 import logging
-from dataclasses import asdict, dataclass, field
+from copy import copy
+from dataclasses import dataclass, field
 from enum import IntEnum
 
 from fontTools.misc.transform import DecomposedTransform
@@ -251,7 +252,7 @@ class PackedPathPointPen:
     ):
         from .classes import Component
 
-        transformation = DecomposedTransform(**asdict(transformation))
+        transformation = copy(transformation)
         self.components.append(Component(glyphName, transformation, location))
 
 
