@@ -699,6 +699,100 @@ getGlyphTestData = [
             ],
         },
     ),
+    (
+        "ttf-glyf1",
+        {
+            "name": "varcotest1",
+            "axes": [],
+            "sources": [
+                {
+                    "name": "<default>",
+                    "layerName": "<default>",
+                    "location": {"wdth": 0, "wght": 0, "V000": 0, "V001": 0},
+                    "inactive": False,
+                    "customData": {},
+                }
+            ],
+            "layers": {
+                "<default>": {
+                    "glyph": {
+                        "path": {
+                            "coordinates": [],
+                            "pointTypes": [],
+                            "contourInfo": [],
+                        },
+                        "components": [
+                            {
+                                "name": "A",
+                                "transformation": {
+                                    "translateX": 0,
+                                    "translateY": 0,
+                                    "rotation": -10.01953125,
+                                    "scaleX": 1,
+                                    "scaleY": 1,
+                                    "skewX": 0,
+                                    "skewY": 19.9951171875,
+                                    "tCenterX": 250.0,
+                                    "tCenterY": 300.0,
+                                },
+                                "location": {
+                                    "wdth": 0,
+                                    "wght": 0.5,
+                                    "V000": 0,
+                                    "V001": 0,
+                                },
+                            },
+                            {
+                                "name": "varcotest2",
+                                "transformation": {
+                                    "translateX": 527.0,
+                                    "translateY": 410.0,
+                                    "rotation": 0,
+                                    "scaleX": 0.5,
+                                    "scaleY": 0.5,
+                                    "skewX": -19.9951171875,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                },
+                                "location": {
+                                    "wdth": 0,
+                                    "wght": 0,
+                                    "V000": 0.70001220703125,
+                                    "V001": 0.29998779296875,
+                                },
+                            },
+                            {
+                                "name": "varcotest2",
+                                "transformation": {
+                                    "translateX": 627.0,
+                                    "translateY": -175.0,
+                                    "rotation": 10.01953125,
+                                    "scaleX": 0.75,
+                                    "scaleY": 0.75,
+                                    "skewX": 0,
+                                    "skewY": 19.9951171875,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                },
+                                "location": {
+                                    "wdth": 0,
+                                    "wght": 0,
+                                    "V000": 0.20001220703125,
+                                    "V001": 0.79998779296875,
+                                },
+                            },
+                        ],
+                        "xAdvance": 900,
+                        "yAdvance": None,
+                        "verticalOrigin": None,
+                    },
+                    "customData": {},
+                }
+            },
+            "customData": {},
+        },
+    ),
 ]
 
 
@@ -707,13 +801,16 @@ testFontPaths = {
     "ufo": dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo",
     "ttf": dataDir / "mutatorsans" / "MutatorSans.ttf",
     "otf": dataDir / "mutatorsans" / "MutatorSans.otf",
+    "ttf-glyf1": dataDir / "mutatorsans" / "MutatorSans-glyf1.ttf",
 }
 
 
-def getTestFont(backendName):
+def getTestFont(testFontName):
+    fontPath = testFontPaths[testFontName]
+    backendName = fontPath.suffix[1:]
     backendEntryPoints = entry_points(group="fontra.filesystem.backends")
     cls = backendEntryPoints[backendName].load()
-    return cls.fromPath(testFontPaths[backendName])
+    return cls.fromPath(fontPath)
 
 
 getGlyphNamesTestData = [
@@ -724,10 +821,10 @@ getGlyphNamesTestData = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "backendName, numGlyphs, firstFourGlyphNames", getGlyphNamesTestData
+    "testFontName, numGlyphs, firstFourGlyphNames", getGlyphNamesTestData
 )
-async def test_getGlyphNames(backendName, numGlyphs, firstFourGlyphNames):
-    font = getTestFont(backendName)
+async def test_getGlyphNames(testFontName, numGlyphs, firstFourGlyphNames):
+    font = getTestFont(testFontName)
     with contextlib.closing(font):
         glyphNames = sorted(await font.getGlyphMap())
         assert numGlyphs == len(glyphNames)
@@ -745,9 +842,9 @@ getGlyphMapTestData = [
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("backendName, numGlyphs, testMapping", getGlyphMapTestData)
-async def test_getGlyphMap(backendName, numGlyphs, testMapping):
-    font = getTestFont(backendName)
+@pytest.mark.parametrize("testFontName, numGlyphs, testMapping", getGlyphMapTestData)
+async def test_getGlyphMap(testFontName, numGlyphs, testMapping):
+    font = getTestFont(testFontName)
     with contextlib.closing(font):
         glyphMap = await font.getGlyphMap()
         assert numGlyphs == len(glyphMap)
@@ -756,10 +853,10 @@ async def test_getGlyphMap(backendName, numGlyphs, testMapping):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("backendName, expectedGlyph", getGlyphTestData)
-async def test_getGlyph(backendName, expectedGlyph):
+@pytest.mark.parametrize("testFontName, expectedGlyph", getGlyphTestData)
+async def test_getGlyph(testFontName, expectedGlyph):
     expectedGlyph = from_dict(VariableGlyph, expectedGlyph)
-    font = getTestFont(backendName)
+    font = getTestFont(testFontName)
     with contextlib.closing(font):
         glyph = await font.getGlyph(expectedGlyph.name)
         assert glyph == expectedGlyph
@@ -794,9 +891,9 @@ getGlobalAxesTestData = [
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("backendName, expectedGlobalAxes", getGlobalAxesTestData)
-async def test_getGlobalAxes(backendName, expectedGlobalAxes):
-    font = getTestFont(backendName)
+@pytest.mark.parametrize("testFontName, expectedGlobalAxes", getGlobalAxesTestData)
+async def test_getGlobalAxes(testFontName, expectedGlobalAxes):
+    font = getTestFont(testFontName)
     globalAxes = await font.getGlobalAxes()
     assert expectedGlobalAxes == globalAxes
 
@@ -808,24 +905,24 @@ getLibTestData = [
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("backendName, expectedLibLen", getLibTestData)
-async def test_getFontLib(backendName, expectedLibLen):
-    font = getTestFont(backendName)
+@pytest.mark.parametrize("testFontName, expectedLibLen", getLibTestData)
+async def test_getFontLib(testFontName, expectedLibLen):
+    font = getTestFont(testFontName)
     lib = await font.getFontLib()
     assert expectedLibLen == len(lib)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "backendName, expectedUnitsPerEm",
+    "testFontName, expectedUnitsPerEm",
     [
         ("designspace", 1000),
         ("ufo", 1000),
         ("ttf", 1000),
     ],
 )
-async def test_getUnitsPerEm(backendName, expectedUnitsPerEm):
-    font = getTestFont(backendName)
+async def test_getUnitsPerEm(testFontName, expectedUnitsPerEm):
+    font = getTestFont(testFontName)
     unitsPerEm = await font.getUnitsPerEm()
     assert expectedUnitsPerEm == unitsPerEm
 
