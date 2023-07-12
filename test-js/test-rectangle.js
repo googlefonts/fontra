@@ -129,8 +129,7 @@ describe("sectRect", () => {
     [
       { xMin: 50, yMin: 50, xMax: 60, yMax: 60 },
       { xMin: 60, yMin: 60, xMax: 70, yMax: 70 },
-      undefined,
-      "Should not create a rectangle with sizes of 0 if they intersect at the edge",
+      { xMin: 60, yMin: 60, xMax: 60, yMax: 60 },
     ],
     [
       { xMin: 50, yMin: 50, xMax: 60, yMax: 60 },
