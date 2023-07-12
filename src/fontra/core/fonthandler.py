@@ -418,14 +418,21 @@ class FontHandler:
             else:
                 self.localData.pop(rootKey, None)
 
-        logger.info(f"broadcasting external changes: {reloadPattern}")
-
         connections = []
         for connection in self.connections:
             subscribePattern = self._getCombinedSubscribePattern(connection)
             connReloadPattern = patternIntersect(subscribePattern, reloadPattern)
             if connReloadPattern:
                 connections.append((connection, connReloadPattern))
+
+        if not connections:
+            return
+
+        logger.info(
+            f"broadcasting external changes to {len(connections)} "
+            f"clients: {reloadPattern}"
+        )
+
         await asyncio.gather(
             *[
                 connection.proxy.reloadData(connReloadPattern)
