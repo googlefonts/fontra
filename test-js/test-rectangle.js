@@ -159,7 +159,7 @@ describe("unionRect", () => {
     ],
   ];
   parametrize(
-    "Creates a rectangle that is smallest superset of given rectangles",
+    "Creates a smallest rectangle that covers all given rectangles",
     testData,
     ([rects, acceptance, testDescription]) => {
       const result = unionRect(...rects);
