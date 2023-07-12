@@ -93,6 +93,14 @@ describe("normalizeRect", () => {
       { xMin: 100, yMin: 100, xMax: 0, yMax: 0 },
       { xMin: 0, yMin: 0, xMax: 100, yMax: 100 },
     ],
+    [
+      { xMin: 100, yMin: 0, xMax: 0, yMax: 100 },
+      { xMin: 0, yMin: 0, xMax: 100, yMax: 100 },
+    ],
+    [
+      { xMin: 0, yMin: 100, xMax: 100, yMax: 0 },
+      { xMin: 0, yMin: 0, xMax: 100, yMax: 100 },
+    ],
   ];
   parametrize(
     "Normalizes a rectangle",
