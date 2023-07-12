@@ -291,7 +291,6 @@ export class SceneController {
   }
 
   set selectedGlyph(selectedGlyph) {
-    console.log(selectedGlyph, this.sceneModel.selectedGlyph);
     if (!objectsEqual(this.sceneModel.selectedGlyph, selectedGlyph)) {
       this.sceneModel.selectedGlyph = selectedGlyph;
       this.sceneModel.selection = new Set();
