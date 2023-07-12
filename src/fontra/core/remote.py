@@ -46,7 +46,7 @@ class RemoteObjectConnection:
         tasks = []
         async for message in self.websocket:
             if message.type == WSMsgType.ERROR:
-                # We need o explicitly check for an error, or else
+                # We need to explicitly check for an error, or else
                 # message.json() will fail with a TypeError.
                 # https://github.com/aio-libs/aiohttp/issues/7313#issuecomment-1586150267
                 raise message.data
