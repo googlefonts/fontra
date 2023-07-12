@@ -6,22 +6,9 @@ from functools import partial
 from typing import Any, Optional, get_args, get_type_hints
 
 import dacite
+from fontTools.misc.transform import DecomposedTransform
 
 from .packedpath import PackedPath, PointType
-
-
-@dataclass(kw_only=True)
-class Transformation:
-    translateX: float = 0
-    translateY: float = 0
-    rotation: float = 0
-    scaleX: float = 1
-    scaleY: float = 1
-    skewX: float = 0
-    skewY: float = 0
-    tCenterX: float = 0
-    tCenterY: float = 0
-
 
 Location = dict[str, float]
 CustomData = dict[str, Any]
@@ -30,7 +17,7 @@ CustomData = dict[str, Any]
 @dataclass
 class Component:
     name: str
-    transformation: Transformation = field(default_factory=Transformation)
+    transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
     location: Location = field(default_factory=Location)
 
 

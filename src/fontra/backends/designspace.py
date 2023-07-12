@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import math
 import os
 import pathlib
 from collections import defaultdict
@@ -14,7 +13,7 @@ from types import SimpleNamespace
 
 import watchfiles
 from fontTools.designspaceLib import DesignSpaceDocument
-from fontTools.misc.transform import Transform
+from fontTools.misc.transform import DecomposedTransform
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -27,7 +26,6 @@ from ..core.classes import (
     LocalAxis,
     Source,
     StaticGlyph,
-    Transformation,
     VariableGlyph,
 )
 from ..core.packedpath import PackedPathPointPen
@@ -654,7 +652,7 @@ def unpackVariableComponents(lib):
     for componentDict in lib.get(VARIABLE_COMPONENTS_LIB_KEY, ()):
         glyphName = componentDict["base"]
         transformationDict = componentDict.get("transformation", {})
-        transformation = Transformation(**transformationDict)
+        transformation = DecomposedTransform(**transformationDict)
         location = componentDict.get("location", {})
         components.append(Component(glyphName, transformation, location))
     return components
@@ -682,14 +680,14 @@ def buildUFOLayerGlyph(
         if component.location:
             # It's a variable component
             varCoDict = {"base": component.name, "location": component.location}
-            if component.transformation != Transformation():
+            if component.transformation != DecomposedTransform():
                 varCoDict["transformation"] = asdict(component.transformation)
             variableComponents.append(varCoDict)
         else:
             # It's a regular component
             pen.addComponent(
                 component.name,
-                cleanAffine(makeAffineTransform(component.transformation)),
+                cleanupTransform(component.transformation.toTransform()),
             )
 
     if variableComponents:
@@ -725,22 +723,7 @@ def uniqueNameMaker(existingNames=()):
     return makeUniqueName
 
 
-def makeAffineTransform(transformation: Transformation) -> Transform:
-    t = Transform()
-    t = t.translate(
-        transformation.translateX + transformation.tCenterX,
-        transformation.translateY + transformation.tCenterY,
-    )
-    t = t.rotate(transformation.rotation * (math.pi / 180))
-    t = t.scale(transformation.scaleX, transformation.scaleY)
-    t = t.skew(
-        -transformation.skewX * (math.pi / 180), transformation.skewY * (math.pi / 180)
-    )
-    t = t.translate(-transformation.tCenterX, -transformation.tCenterY)
-    return t
-
-
-def cleanAffine(t):
+def cleanupTransform(t):
     """Convert any integer float values into ints. This is to prevent glifLib
     from writing float values that can be integers."""
     return tuple(int(v) if int(v) == v else v for v in t)
