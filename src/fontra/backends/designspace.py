@@ -685,12 +685,9 @@ def buildUFOLayerGlyph(
             variableComponents.append(varCoDict)
         else:
             # It's a regular component
-            decomposedTransform = DecomposedTransform(
-                **asdict(component.transformation)
-            )
             pen.addComponent(
                 component.name,
-                cleanAffine(decomposedTransform.toTransform()),
+                cleanAffine(component.transformation.toTransform()),
             )
 
     if variableComponents:
