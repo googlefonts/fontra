@@ -41,6 +41,9 @@ describe("pointInRect", () => {
       true,
       "Should work with floats",
     ],
+    [{ x: 220, y: 220 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, false],
+    [{ x: 220, y: -1 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, false],
+    [{ x: -1, y: 200 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, false],
   ];
   parametrize(
     "is point in rectangle",
@@ -56,12 +59,12 @@ describe("centeredRect", () => {
   const testData = [
     [
       { x: 100, y: 100 },
-      { width: 50, height: 50 },
+      { width: 50, height: 60 },
       {
         xMin: 75,
         xMax: 125,
-        yMin: 75,
-        yMax: 125,
+        yMin: 70,
+        yMax: 130,
       },
       "Should create a rectangle centered to a point",
     ],
@@ -101,6 +104,10 @@ describe("normalizeRect", () => {
       { xMin: 0, yMin: 100, xMax: 100, yMax: 0 },
       { xMin: 0, yMin: 0, xMax: 100, yMax: 100 },
     ],
+    [
+      { xMin: 0, yMin: 0, xMax: 100, yMax: 100 },
+      { xMin: 0, yMin: 0, xMax: 100, yMax: 100 },
+    ],
   ];
   parametrize(
     "Normalizes a rectangle",
@@ -115,9 +122,9 @@ describe("normalizeRect", () => {
 describe("sectRect", () => {
   const testData = [
     [
-      { xMin: 50, yMin: 50, xMax: 100, yMax: 100 },
-      { xMin: 75, yMin: 75, xMax: 80, yMax: 80 },
-      { xMin: 75, yMin: 75, xMax: 80, yMax: 80 },
+      { xMin: 20, yMin: 30, xMax: 50, yMax: 60 },
+      { xMin: 25, yMin: 35, xMax: 40, yMax: 50 },
+      { xMin: 25, yMin: 35, xMax: 40, yMax: 50 },
     ],
     [
       { xMin: 50, yMin: 50, xMax: 60, yMax: 60 },
@@ -171,23 +178,23 @@ describe("unionRect", () => {
 describe("offsetRect", () => {
   const testData = [
     [
-      { xMin: 50, yMin: 50, xMax: 60, yMax: 60 },
+      { xMin: 50, yMin: 55, xMax: 60, yMax: 65 },
       { x: -10, y: -10 },
       {
         xMin: 40,
-        yMin: 40,
+        yMin: 45,
         xMax: 50,
-        yMax: 50,
+        yMax: 55,
       },
     ],
     [
-      { xMin: 50, yMin: 50, xMax: 60, yMax: 60 },
+      { xMin: 20, yMin: 10, xMax: 40, yMax: 25 },
       { x: 10, y: 10 },
       {
-        xMin: 60,
-        yMin: 60,
-        xMax: 70,
-        yMax: 70,
+        xMin: 30,
+        yMin: 20,
+        xMax: 50,
+        yMax: 35,
       },
     ],
   ];
@@ -204,14 +211,14 @@ describe("offsetRect", () => {
 describe("scaleRect", () => {
   const testData = [
     [
-      { xMin: 50, yMin: 50, xMax: 60, yMax: 60 },
+      { xMin: 10, yMin: 12, xMax: 20, yMax: 25 },
       { x: 2, y: 4 },
-      { xMin: 100, yMin: 200, xMax: 120, yMax: 240 },
+      { xMin: 20, yMin: 48, xMax: 40, yMax: 100 },
     ],
     [
-      { xMin: 50, yMin: 50, xMax: 60, yMax: 60 },
+      { xMin: 16, yMin: 8, xMax: 32, yMax: 64 },
       { x: 2, y: undefined },
-      { xMin: 100, yMin: 100, xMax: 120, yMax: 120 },
+      { xMin: 32, yMin: 16, xMax: 64, yMax: 128 },
     ],
   ];
   parametrize(
@@ -278,12 +285,12 @@ describe("equalRect", () => {
 describe("rectCenter", () => {
   const testData = [
     [
-      { xMin: 0, yMin: 0, xMax: 10, yMax: 10 },
-      { x: 5, y: 5 },
+      { xMin: 0, yMin: 5, xMax: 10, yMax: 10 },
+      { x: 5, y: 7.5 },
     ],
     [
-      { xMin: -10, yMin: -10, xMax: 10, yMax: 10 },
-      { x: 0, y: 0 },
+      { xMin: -10, yMin: -10, xMax: 0, yMax: 10 },
+      { x: -5, y: 0 },
     ],
   ];
   parametrize(
@@ -299,12 +306,12 @@ describe("rectCenter", () => {
 describe("rectSize", () => {
   const testData = [
     [
-      { xMin: 0, yMin: 0, xMax: 10, yMax: 10 },
-      { width: 10, height: 10 },
+      { xMin: 0, yMin: 10, xMax: 10, yMax: 12 },
+      { width: 10, height: 2 },
     ],
     [
-      { xMin: -10, yMin: -10, xMax: 10, yMax: 10 },
-      { width: 20, height: 20 },
+      { xMin: -10, yMin: -2, xMax: 10, yMax: 10 },
+      { width: 20, height: 12 },
     ],
   ];
   parametrize(
