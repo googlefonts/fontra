@@ -63,7 +63,7 @@ describe("centeredRect", () => {
         yMin: 75,
         yMax: 125,
       },
-      "Should create a rectangle relatively to a point",
+      "Should create a rectangle centered to a point",
     ],
     [
       { x: 100, y: 100 },
