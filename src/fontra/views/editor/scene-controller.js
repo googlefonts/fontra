@@ -8,6 +8,7 @@ import { lenientIsEqualSet, isSuperset } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
   commandKeyProperty,
+  objectsEqual,
   parseSelection,
   reversed,
 } from "../core/utils.js";
@@ -80,7 +81,7 @@ export class SceneController {
   }
 
   async handleArrowKeys(event) {
-    if (!this.sceneModel.selectedGlyphIsEditing || !this.selection.size) {
+    if (!this.sceneModel.selectedGlyph?.isEditing || !this.selection.size) {
       return;
     }
     let [dx, dy] = arrowKeyDeltas[event.key];
@@ -145,7 +146,7 @@ export class SceneController {
 
   updateContextMenuState(event) {
     this.contextMenuState = {};
-    if (!this.selectedGlyphIsEditing) {
+    if (!this.selectedGlyph?.isEditing) {
       return;
     }
     const { selection: clickedSelection } = this.sceneModel.selectionAtPoint(
@@ -201,17 +202,6 @@ export class SceneController {
 
   getSelectedGlyphName() {
     return this.sceneModel.getSelectedGlyphName();
-  }
-
-  getSelectedGlyphState() {
-    return this.sceneModel.getSelectedGlyphState();
-  }
-
-  setSelectedGlyphState(state) {
-    this.sceneModel.setSelectedGlyphState(state);
-    this.sceneModel.updateBackgroundGlyphs();
-    this.canvasController.requestUpdate();
-    this.notifySelectedGlyphChanged();
   }
 
   notifySelectedGlyphChanged() {
@@ -290,7 +280,7 @@ export class SceneController {
   }
 
   set hoveredGlyph(hoveredGlyph) {
-    if (this.sceneModel.hoveredGlyph != hoveredGlyph) {
+    if (!equalGlyphSelection(this.sceneModel.hoveredGlyph, hoveredGlyph)) {
       this.sceneModel.hoveredGlyph = hoveredGlyph;
       this.canvasController.requestUpdate();
     }
@@ -301,24 +291,12 @@ export class SceneController {
   }
 
   set selectedGlyph(selectedGlyph) {
-    if (this.sceneModel.selectedGlyph !== selectedGlyph) {
+    console.log(selectedGlyph, this.sceneModel.selectedGlyph);
+    if (!objectsEqual(this.sceneModel.selectedGlyph, selectedGlyph)) {
       this.sceneModel.selectedGlyph = selectedGlyph;
       this.sceneModel.selection = new Set();
       this.canvasController.requestUpdate();
       this.notifySelectedGlyphChanged();
-    }
-    this.sceneModel.updateBackgroundGlyphs();
-  }
-
-  get selectedGlyphIsEditing() {
-    return this.sceneModel.selectedGlyphIsEditing;
-  }
-
-  set selectedGlyphIsEditing(flag) {
-    if (this.sceneModel.selectedGlyphIsEditing != flag) {
-      this.sceneModel.selectedGlyphIsEditing = flag;
-      this.canvasController.requestUpdate();
-      this._dispatchEvent("selectedGlyphIsEditingChanged");
     }
     this.sceneModel.updateBackgroundGlyphs();
   }
@@ -757,4 +735,11 @@ function positionedGlyphCenterX(positionedGlyph) {
     return undefined;
   }
   return positionedGlyph.x + positionedGlyph.glyph.xAdvance / 2;
+}
+
+export function equalGlyphSelection(glyphSelectionA, glyphSelectionB) {
+  return (
+    glyphSelectionA?.lineIndex === glyphSelectionB?.lineIndex &&
+    glyphSelectionA?.glyphIndex === glyphSelectionB?.glyphIndex
+  );
 }

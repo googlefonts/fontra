@@ -21,7 +21,6 @@ export class SceneModel {
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.selectedGlyph = undefined;
-    this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
     this._globalLocation = undefined; // see getGlobalLocation()
     this._localLocations = {}; // glyph name -> local location
@@ -40,12 +39,13 @@ export class SceneModel {
     return this.getPositionedGlyphFromSelection(this.hoveredGlyph);
   }
 
-  getPositionedGlyphFromSelection(lineGlyphIndex) {
-    if (!lineGlyphIndex) {
+  getPositionedGlyphFromSelection(glyphSelection) {
+    if (!glyphSelection) {
       return undefined;
     }
-    const [lineIndex, glyphIndex] = lineGlyphIndex.split("/");
-    return this.positionedLines[lineIndex]?.glyphs[glyphIndex];
+    return this.positionedLines[glyphSelection.lineIndex]?.glyphs[
+      glyphSelection.glyphIndex
+    ];
   }
 
   getSelectedGlyphName() {
@@ -63,34 +63,11 @@ export class SceneModel {
     return this.getSelectedPositionedGlyph()?.glyph;
   }
 
-  getSelectedGlyphState() {
-    if (!this.selectedGlyph) {
-      return undefined;
-    }
-    const [lineIndex, glyphIndex] = this.selectedGlyph.split("/");
-    return {
-      lineIndex: Number(lineIndex),
-      glyphIndex: Number(glyphIndex),
-      isEditing: this.selectedGlyphIsEditing,
-    };
-  }
-
-  setSelectedGlyphState(state) {
-    if (!state) {
-      this.selectedGlyph = undefined;
-      this.selectedGlyphIsEditing = false;
-    } else {
-      this.selectedGlyph = `${state.lineIndex}/${state.glyphIndex}`;
-      this.selectedGlyphIsEditing = state.isEditing;
-    }
-  }
-
   async setGlyphLines(glyphLines) {
     this.glyphLines = glyphLines;
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.selectedGlyph = undefined;
-    this.selectedGlyphIsEditing = false;
     this.hoveredGlyph = undefined;
     await this.updateScene();
   }
@@ -373,7 +350,7 @@ export class SceneModel {
   }
 
   selectionAtPoint(point, size, currentSelection, preferTCenter) {
-    if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
+    if (!this.selectedGlyph?.isEditing) {
       return { selection: new Set() };
     }
 
@@ -494,7 +471,7 @@ export class SceneModel {
 
   selectionAtRect(selRect, pointFilterFunc) {
     const selection = new Set();
-    if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
+    if (!this.selectedGlyph?.isEditing) {
       return selection;
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
@@ -514,7 +491,7 @@ export class SceneModel {
   }
 
   pathHitAtPoint(point, size) {
-    if (!this.selectedGlyph || !this.selectedGlyphIsEditing) {
+    if (!this.selectedGlyph?.isEditing) {
       return {};
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
@@ -553,7 +530,7 @@ export class SceneModel {
         ) {
           if (
             !skipEditingGlyph ||
-            !this.selectedGlyphIsEditing ||
+            !this.selectedGlyph?.isEditing ||
             `${i}/${j}` != this.selectedGlyph
           ) {
             matches.push([i, j]);
@@ -564,7 +541,7 @@ export class SceneModel {
     let foundGlyph = undefined;
     if (matches.length == 1) {
       const [i, j] = matches[0];
-      foundGlyph = `${i}/${j}`;
+      foundGlyph = { lineIndex: i, glyphIndex: j };
     } else if (matches.length > 1) {
       // The target point is inside the convex hull of multiple glyphs.
       // We prefer the glyph that has the point properly inside, and if
@@ -588,7 +565,7 @@ export class SceneModel {
       });
       decoratedMatches.sort((a, b) => b.inside - a.inside || a.area - b.area);
       const { i, j } = decoratedMatches[0];
-      foundGlyph = `${i}/${j}`;
+      foundGlyph = { lineIndex: i, glyphIndex: j };
     }
     return foundGlyph;
   }
@@ -612,7 +589,7 @@ export class SceneModel {
       return this.getSceneBounds();
     }
     let bounds;
-    if (this.selectedGlyphIsEditing && this.selection.size) {
+    if (this.selectedGlyph?.isEditing && this.selection.size) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       const [x, y] = [positionedGlyph.x, positionedGlyph.y];
       const instance = this.getSelectedStaticGlyphController();

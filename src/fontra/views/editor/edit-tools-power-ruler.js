@@ -54,9 +54,6 @@ export class PowerRulerTool extends BaseTool {
     this.sceneController.addEventListener("selectedGlyphChanged", () =>
       this.editedGlyphMayHaveChanged()
     );
-    this.sceneController.addEventListener("selectedGlyphIsEditingChanged", () =>
-      this.editedGlyphMayHaveChanged()
-    );
     editor.designspaceLocationController.addKeyListener(
       "location",
       throttleCalls(() => setTimeout(() => this.locationChanged(), 0), 20)
@@ -136,7 +133,7 @@ export class PowerRulerTool extends BaseTool {
   }
 
   editedGlyphMayHaveChanged() {
-    const glyphName = this.sceneController.selectedGlyphIsEditing
+    const glyphName = this.sceneController.selectedGlyph?.isEditing
       ? this.sceneModel.getSelectedGlyphName()
       : undefined;
     if (glyphName !== this.currentGlyphName) {
@@ -264,7 +261,7 @@ export class PowerRulerTool extends BaseTool {
   }
 
   handleHover(event) {
-    if (!this.sceneModel.selectedGlyphIsEditing || this.haveHoveredGlyph(event)) {
+    if (!this.sceneModel.selectedGlyph?.isEditing || this.haveHoveredGlyph(event)) {
       this.editor.tools["pointer-tool"].handleHover(event);
       return;
     }
@@ -272,7 +269,7 @@ export class PowerRulerTool extends BaseTool {
   }
 
   setCursor() {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyph?.isEditing) {
       this.editor.tools["pointer-tool"].setCursor();
     } else {
       this.canvasController.canvas.style.cursor = "default";
@@ -281,7 +278,7 @@ export class PowerRulerTool extends BaseTool {
 
   async handleDrag(eventStream, initialEvent) {
     if (
-      !this.sceneModel.selectedGlyphIsEditing ||
+      !this.sceneModel.selectedGlyph?.isEditing ||
       this.haveHoveredGlyph(initialEvent)
     ) {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);

@@ -160,12 +160,6 @@ export class EditorController {
       this.experimentalFeaturesController
     );
     // TODO move event stuff out of here
-    this.sceneController.addEventListener(
-      "selectedGlyphIsEditingChanged",
-      async (event) => {
-        this.updateWindowLocation();
-      }
-    );
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
       this.doubleClickedComponentsCallback(event);
     });
@@ -819,7 +813,7 @@ export class EditorController {
     if (codePoint !== undefined) {
       glyphInfo["character"] = getCharFromUnicode(codePoint);
     }
-    let selectedGlyphState = this.sceneController.getSelectedGlyphState();
+    let selectedGlyphState = this.sceneController.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     if (selectedGlyphState) {
       glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
@@ -842,7 +836,7 @@ export class EditorController {
     // Delay to next event loop iteration to ensure the this.textSettings.text
     // listeners get run first
     setTimeout(() => {
-      this.sceneController.setSelectedGlyphState(selectedGlyphState);
+      this.sceneController.selectedGlyph = selectedGlyphState;
     }, 0);
 
     this.updateSidebarDesignspace();
@@ -895,7 +889,7 @@ export class EditorController {
       glyphInfos.push(glyphInfo);
     }
     this.sceneController.updateLocalLocations(localLocations);
-    const selectedGlyphInfo = this.sceneController.getSelectedGlyphState();
+    const selectedGlyphInfo = this.sceneController.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     glyphLines[selectedGlyphInfo.lineIndex].splice(
       selectedGlyphInfo.glyphIndex + 1,
@@ -1373,7 +1367,7 @@ export class EditorController {
 
   canDelete() {
     return (
-      this.sceneController.selectedGlyphIsEditing &&
+      this.sceneController.selectedGlyph?.isEditing &&
       this.sceneController.selection.size > 0
     );
   }
@@ -1527,14 +1521,14 @@ export class EditorController {
   }
 
   canSelectAllNone(selectNone) {
-    return this.sceneController.selectedGlyphIsEditing;
+    return this.sceneController.selectedGlyph?.isEditing;
   }
 
   doSelectAllNone(selectNone) {
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
-    if (!positionedGlyph || !this.sceneController.selectedGlyphIsEditing) {
+    if (!positionedGlyph || !this.sceneController.selectedGlyph?.isEditing) {
       return;
     }
 
@@ -1609,7 +1603,7 @@ export class EditorController {
   contextMenuHandler(event) {
     event.preventDefault();
     const menuItems = [...this.basicContextMenuItems];
-    if (this.sceneController.selectedGlyphIsEditing) {
+    if (this.sceneController.selectedGlyph?.isEditing) {
       this.sceneController.updateContextMenuState(event);
       menuItems.push(MenuItemDivider);
       menuItems.push(...this.glyphEditContextMenuItems);
@@ -1633,7 +1627,7 @@ export class EditorController {
 
   async externalChange(change) {
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
-    const editState = this.sceneController.sceneModel.getSelectedGlyphState();
+    const editState = this.sceneController.sceneModel.selectedGlyph;
 
     await this.fontController.applyChange(change, true);
 
@@ -1641,10 +1635,10 @@ export class EditorController {
       this.sceneController.sceneModel.updateGlyphLinesCharacterMapping();
       if (editState?.isEditing && !this.fontController.hasGlyph(selectedGlyphName)) {
         // The glyph being edited got deleted, change state merely "selected"
-        this.sceneController.sceneModel.setSelectedGlyphState({
+        this.sceneController.sceneModel.selectedGlyph = {
           ...editState,
           isEditing: false,
-        });
+        };
       }
       this.glyphsSearch.updateGlyphNamesListContent();
       this.updateSidebarDesignspace();
@@ -1727,8 +1721,6 @@ export class EditorController {
     );
 
     this.sceneController.selectedGlyph = viewInfo["selectedGlyph"];
-    this.sceneController.selectedGlyphIsEditing =
-      viewInfo["editing"] && !!viewInfo["selectedGlyph"];
 
     if (viewInfo["location"]) {
       setTimeout(() => {
@@ -1761,9 +1753,6 @@ export class EditorController {
     }
     if (this.sceneController.selectedGlyph) {
       viewInfo["selectedGlyph"] = this.sceneController.selectedGlyph;
-    }
-    if (this.sceneController.selectedGlyphIsEditing) {
-      viewInfo["editing"] = true;
     }
     viewInfo["location"] = this.sceneController.getGlobalLocation();
     const localLocations = this.sceneController.getLocalLocations(true);
