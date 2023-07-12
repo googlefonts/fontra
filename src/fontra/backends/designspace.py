@@ -687,7 +687,7 @@ def buildUFOLayerGlyph(
             # It's a regular component
             pen.addComponent(
                 component.name,
-                cleanAffine(component.transformation.toTransform()),
+                cleanupTransform(component.transformation.toTransform()),
             )
 
     if variableComponents:
@@ -723,7 +723,7 @@ def uniqueNameMaker(existingNames=()):
     return makeUniqueName
 
 
-def cleanAffine(t):
+def cleanupTransform(t):
     """Convert any integer float values into ints. This is to prevent glifLib
     from writing float values that can be integers."""
     return tuple(int(v) if int(v) == v else v for v in t)
