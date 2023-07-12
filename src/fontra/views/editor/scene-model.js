@@ -85,10 +85,6 @@ export class SceneModel {
     }
   }
 
-  getGlyphLines() {
-    return this.glyphLines;
-  }
-
   async setGlyphLines(glyphLines) {
     this.glyphLines = glyphLines;
     this.selection = new Set();
