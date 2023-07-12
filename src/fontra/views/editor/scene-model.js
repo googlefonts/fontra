@@ -531,7 +531,8 @@ export class SceneModel {
           if (
             !skipEditingGlyph ||
             !this.selectedGlyph?.isEditing ||
-            `${i}/${j}` != this.selectedGlyph
+            this.selectedGlyph.lineIndex != i ||
+            this.selectedGlyph.glyphIndex != j
           ) {
             matches.push([i, j]);
           }
