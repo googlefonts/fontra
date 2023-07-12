@@ -215,7 +215,7 @@ describe("scaleRect", () => {
     ],
   ];
   parametrize(
-    "Scales the given rectangle by multipier",
+    "Scales the given rectangle by multiplier",
     testData,
     ([rectangle, scale, acceptance, testDescription]) => {
       const result = scaleRect(rectangle, scale.x, scale.y);
