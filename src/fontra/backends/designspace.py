@@ -680,7 +680,7 @@ def buildUFOLayerGlyph(
         if component.location:
             # It's a variable component
             varCoDict = {"base": component.name, "location": component.location}
-            if isinstance(component.transformation, DecomposedTransform):
+            if component.transformation != DecomposedTransform():
                 varCoDict["transformation"] = asdict(component.transformation)
             variableComponents.append(varCoDict)
         else:
