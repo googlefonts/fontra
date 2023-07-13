@@ -13,7 +13,7 @@ export async function dialog(headline, message, buttonDefs, autoDismissTimeout) 
 }
 
 export async function dialogSetup(headline, message, buttonDefs, autoDismissTimeout) {
-  const dialogOverlayElement = document.querySelector("dialog");
+  const dialogOverlayElement = document.querySelector("dialog-overlay");
   // WARNING: on Safari 'dialogOverlayElement.setupDialog' is undefined and raises the following error:
   // Unhandled Promise Rejection: TypeError: dialogOverlayElement.setupDialog is not a function.
   // >>> console.log(dialogOverlayElement['setupDialog']);
@@ -26,7 +26,7 @@ export async function dialogSetup(headline, message, buttonDefs, autoDismissTime
   return dialogOverlayElement;
 }
 
-export class DialogOverlay extends HTMLDialogElement {
+export class DialogOverlay extends SimpleElement {
   static styles = `
 
     dialog {
@@ -68,6 +68,7 @@ export class DialogOverlay extends HTMLDialogElement {
 
     dialog .button {
       color: white;
+      cursor: pointer;
       background-color: gray;
 
       border-radius: 1em;
@@ -124,16 +125,13 @@ export class DialogOverlay extends HTMLDialogElement {
 
   constructor() {
     super();
-
-    const styleElement = document.createElement("style");
-    styleElement.textContent = DialogOverlay.styles;
-    document.head.appendChild(styleElement);
-
     this.dialogBox = html.div({
       class: "dialog-box",
       onkeydown: (event) => this._handleKeyDown(event),
     });
-    this.appendChild(this.dialogBox);
+    this.dialogElement = document.createElement("dialog");
+    this.dialogElement.appendChild(this.dialogBox);
+    this.shadowRoot.append(this.dialogElement);
   }
 
   setupDialog(headline, message, buttonDefs, autoDismissTimeout) {
@@ -239,11 +237,11 @@ export class DialogOverlay extends HTMLDialogElement {
 
   show() {
     this._savedActiveElement = document.activeElement;
-    this.showModal();
+    this.dialogElement.showModal();
   }
 
   hide() {
-    this.close();
+    this.dialogElement.close();
     this._savedActiveElement?.focus();
   }
 
@@ -275,4 +273,4 @@ export class DialogOverlay extends HTMLDialogElement {
   }
 }
 
-customElements.define("dialog-overlay", DialogOverlay, { extends: "dialog" });
+customElements.define("dialog-overlay", DialogOverlay);
