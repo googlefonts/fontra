@@ -49,7 +49,11 @@ export class SceneModel {
   }
 
   getSelectedGlyphName() {
-    return this.getSelectedPositionedGlyph()?.glyph.name;
+    if (this.selectedGlyph) {
+      return this.glyphLines[this.selectedGlyph.lineIndex]?.[
+        this.selectedGlyph.glyphIndex
+      ]?.glyphName;
+    }
   }
 
   async getSelectedVariableGlyphController() {
