@@ -14,9 +14,6 @@ export async function dialog(headline, message, buttonDefs, autoDismissTimeout) 
 
 export async function dialogSetup(headline, message, buttonDefs, autoDismissTimeout) {
   const dialogOverlayElement = document.querySelector("modal-dialog");
-  // WARNING: on Safari 'dialogOverlayElement.setupDialog' is undefined and raises the following error:
-  // Unhandled Promise Rejection: TypeError: dialogOverlayElement.setupDialog is not a function.
-  // >>> console.log(dialogOverlayElement['setupDialog']);
   await dialogOverlayElement.setupDialog(
     headline,
     message,
