@@ -271,7 +271,7 @@ export class EditorController {
       glyphLines: [],
       globalLocation: {},
       localLocation: {},
-      selectedGlyph: null, // { lineIndex: 0, glyphIndex: 0, glyphName: "a", editing: false }
+      selectedGlyph: null,
       selectedSourceIndex: null,
       selectedLayerName: null,
       hoveredGlyph: null,
