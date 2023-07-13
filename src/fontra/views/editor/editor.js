@@ -274,7 +274,6 @@ export class EditorController {
       selectedGlyph: null,
       selectedSourceIndex: null,
       selectedLayerName: null,
-      hoveredGlyph: null,
       glyphSelection: null,
     });
     this.sceneSettings = this.sceneSettingsController.model;
