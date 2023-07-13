@@ -902,9 +902,10 @@ export class EditorController {
 
     // Fudge the timing so thing execute in the right order :(
     setTimeout(() => {
-      this.sceneController.selectedGlyph = `${selectedGlyphInfo.lineIndex}/${
-        selectedGlyphInfo.glyphIndex + 1
-      }`;
+      this.sceneController.selectedGlyph = {
+        lineIndex: selectedGlyphInfo.lineIndex,
+        glyphIndex: selectedGlyphInfo.glyphIndex + 1,
+      };
     }, 0);
     setTimeout(() => {
       this.designspaceLocationController.model.location =
