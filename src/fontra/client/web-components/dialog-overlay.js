@@ -13,7 +13,7 @@ export async function dialog(headline, message, buttonDefs, autoDismissTimeout) 
 }
 
 export async function dialogSetup(headline, message, buttonDefs, autoDismissTimeout) {
-  const dialogOverlayElement = document.querySelector("dialog-overlay");
+  const dialogOverlayElement = document.querySelector("modal-dialog");
   // WARNING: on Safari 'dialogOverlayElement.setupDialog' is undefined and raises the following error:
   // Unhandled Promise Rejection: TypeError: dialogOverlayElement.setupDialog is not a function.
   // >>> console.log(dialogOverlayElement['setupDialog']);
@@ -26,7 +26,7 @@ export async function dialogSetup(headline, message, buttonDefs, autoDismissTime
   return dialogOverlayElement;
 }
 
-export class DialogOverlay extends SimpleElement {
+export class ModalDialog extends SimpleElement {
   static styles = `
 
     dialog {
@@ -273,4 +273,4 @@ export class DialogOverlay extends SimpleElement {
   }
 }
 
-customElements.define("dialog-overlay", DialogOverlay);
+customElements.define("modal-dialog", ModalDialog);
