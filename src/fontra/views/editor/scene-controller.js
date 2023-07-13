@@ -11,7 +11,7 @@ import {
   parseSelection,
   reversed,
 } from "../core/utils.js";
-import { dialog } from "/web-components/dialog-overlay.js";
+import { dialog } from "/web-components/modal-dialog.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 export class SceneController {
