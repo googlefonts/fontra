@@ -1,6 +1,9 @@
 import { BaseTool } from "./edit-tools-base.js";
 
 export class HandTool extends BaseTool {
+  iconPath = "/images/hand.svg";
+  identifier = "hand-tool";
+
   handleHover(event) {
     this.setCursor();
   }

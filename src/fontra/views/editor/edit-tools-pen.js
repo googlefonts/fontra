@@ -9,6 +9,9 @@ import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 
 export class PenTool extends BaseTool {
+  iconPath = "/images/pointeradd.svg";
+  identifier = "pen-tool";
+
   handleHover(event) {
     if (!this.sceneModel.selectedGlyphIsEditing) {
       this.editor.tools["pointer-tool"].handleHover(event);

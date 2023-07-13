@@ -26,8 +26,12 @@ export class SimpleSettings extends UnlitElement {
       this._controller.removeListener(this._modelListener);
     }
     this._controller = controller;
-    this._modelListener = (key, newValue) => {
-      if (this._keys.has(key)) {
+    this._modelListener = (event) => {
+      if (event.senderInfo === this) {
+        // Event was triggered by us -- ignore
+        return;
+      }
+      if (this._keys.has(event.key)) {
         this.requestUpdate();
       }
     };
@@ -51,21 +55,21 @@ export class SimpleSettings extends UnlitElement {
     }
 
     return this._descriptions.map((description) =>
-      uiTypes[description.ui](this._modelListener, description, this.controller)
+      uiTypes[description.ui](this, description, this.controller)
     );
   }
 }
 
 const uiTypes = {
-  header(modelListener, description, controller) {
+  header(settingsElement, description, controller) {
     return div({ class: "header" }, [description.displayName]);
   },
 
-  plain(modelListener, description, controller) {
+  plain(settingsElement, description, controller) {
     return div({ class: "plain" }, [description.displayName]);
   },
 
-  checkbox(modelListener, description, controller) {
+  checkbox(settingsElement, description, controller) {
     const id = `simple-settings.${description.key}`;
 
     return div({}, [
@@ -73,14 +77,14 @@ const uiTypes = {
         type: "checkbox",
         id: id,
         onchange: (event) =>
-          controller.setItem(description.key, event.target.checked, modelListener),
+          controller.setItem(description.key, event.target.checked, settingsElement),
         checked: controller.model[description.key],
       }),
       label({ for: id }, [description.displayName]),
     ]);
   },
 
-  radio(modelListener, description, controller) {
+  radio(settingsElement, description, controller) {
     const id = `simple-settings.${description.key}`;
 
     return [
@@ -96,7 +100,7 @@ const uiTypes = {
             name: id,
             value: option.key,
             onchange: (event) =>
-              controller.setItem(description.key, event.target.value, modelListener),
+              controller.setItem(description.key, event.target.value, settingsElement),
             checked: controller.model[description.key] == option.key,
           }),
           label({ for: itemID }, [option.displayName]),

@@ -39,11 +39,11 @@ export class ObservableController {
     );
   }
 
-  setItem(key, newValue, skipListener) {
+  setItem(key, newValue, senderInfo) {
     const oldValue = this._rawModel[key];
     if (newValue !== oldValue) {
       this._rawModel[key] = newValue;
-      this._dispatchChange(key, newValue, oldValue, skipListener);
+      this._dispatchChange(key, newValue, oldValue, senderInfo);
     }
   }
 
@@ -51,16 +51,14 @@ export class ObservableController {
     synchronizeWithLocalStorage(this, prefix);
   }
 
-  _dispatchChange(key, newValue, oldValue, skipListener) {
+  _dispatchChange(key, newValue, oldValue, senderInfo) {
     // Schedule the calls in the event loop rather than call immediately
+    const event = { key, newValue, oldValue, senderInfo };
     for (const listener of chain(
       this._generalListeners,
       this._keyListeners[key] || []
     )) {
-      if (skipListener && skipListener === listener) {
-        continue;
-      }
-      setTimeout(() => listener(key, newValue, oldValue), 0);
+      setTimeout(() => listener(event), 0);
     }
   }
 }
@@ -128,9 +126,9 @@ function synchronizeWithLocalStorage(controller, prefix = "") {
     }
   }
 
-  controller.addListener((key, newValue) => {
-    if (key in mapKeyToStorage) {
-      setItemOnStorage(key, newValue);
+  controller.addListener((event) => {
+    if (event.key in mapKeyToStorage) {
+      setItemOnStorage(event.key, event.newValue);
     }
   });
 

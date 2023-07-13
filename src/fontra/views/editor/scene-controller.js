@@ -74,6 +74,8 @@ export class SceneController {
       this.handleArrowKeys(event);
       event.preventDefault();
       return;
+    } else {
+      this.selectedTool.handleKeyDown(event);
     }
   }
 
@@ -464,16 +466,7 @@ export class SceneController {
     if (doInstance) {
       const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
       if (!glyphController.canEdit) {
-        // TODO: add options to dialog:
-        // - go to closest source
-        // - insert new source here
-        // - cancel
-        const result = await dialog(
-          `Can’t edit glyph “${glyphName}”`,
-          "Location is not at a source.",
-          [{ title: "Okay", resultValue: "ok" }],
-          2500 /* auto dismiss after a timeout */
-        );
+        this._dispatchEvent("glyphEditLocationNotAtSource");
         return;
       }
 

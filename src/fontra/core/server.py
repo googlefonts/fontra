@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import errno
 import json
 import logging
 import mimetypes
 import re
+import socket
 import sys
 import traceback
 from dataclasses import dataclass
@@ -18,6 +20,7 @@ from urllib.parse import quote
 from aiohttp import WSCloseCode, web
 
 from .remote import RemoteObjectConnection, RemoteObjectConnectionException
+from .serverutils import apiFunctions
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +50,7 @@ class FontraServer:
         routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))
         routes.append(web.get("/projectlist", self.projectListHandler))
         routes.append(web.get("/serverinfo", self.serverInfoHandler))
+        routes.append(web.post("/api/{function:.*}", self.webAPIHandler))
         for ep in entry_points(group="fontra.webcontent"):
             routes.append(
                 web.get(
@@ -187,6 +191,21 @@ class FontraServer:
             text=json.dumps(serverInfo), content_type="application/json"
         )
 
+    async def webAPIHandler(self, request):
+        functionName = request.match_info["function"]
+        function = apiFunctions.get(functionName)
+        if function is None:
+            return web.HTTPNotFound()
+        kwargs = await request.json()
+        try:
+            returnValue = function(**kwargs)
+        except Exception as e:
+            traceback.print_exc()
+            result = {"error": repr(e)}
+        else:
+            result = {"returnValue": returnValue}
+        return web.Response(text=json.dumps(result), content_type="application/json")
+
     async def staticContentHandler(self, packageName, request):
         ifModSince = request.if_modified_since
         if ifModSince is not None and ifModSince >= self.startupTime:
@@ -282,3 +301,20 @@ def splitVersionToken(fileName):
         fileName, versionToken, ext = parts
         return f"{fileName}.{ext}", versionToken
     return fileName, None
+
+
+def findFreeTCPPort(startPort=8000):
+    port = startPort
+    while True:
+        tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            tcp.bind(("", port))
+        except OSError as e:
+            if e.errno != errno.EADDRINUSE:
+                raise
+            port += 1
+        else:
+            break
+        finally:
+            tcp.close()
+    return port

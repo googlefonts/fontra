@@ -127,14 +127,14 @@
       "type": "str"
     },
     "transformation": {
-      "type": "Transformation"
+      "type": "DecomposedTransform"
     },
     "location": {
       "type": "dict",
       "subtype": "float"
     }
   },
-  "Transformation": {
+  "DecomposedTransform": {
     "translateX": {
       "type": "float"
     },

@@ -15,6 +15,7 @@ import {
   scaleRect,
 } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
+import * as html from "/core/unlit.js";
 import { SceneView } from "../core/scene-view.js";
 import { StaticGlyph } from "../core/var-glyph.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
@@ -43,6 +44,7 @@ import { SceneModel } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
+import { PowerRulerTool } from "./edit-tools-power-ruler.js";
 import { SidebarDesignspace } from "./sidebar-designspace.js";
 import { SidebarSelectionInfo } from "./sidebar-selection-info.js";
 import { SidebarTextEntry } from "./sidebar-text-entry.js";
@@ -59,6 +61,11 @@ import {
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { clamp } from "../../core/utils.js";
+import {
+  getSuggestedGlyphName,
+  getUnicodeFromGlyphName,
+  parseClipboard,
+} from "../core/server-utils.js";
 
 const MIN_SIDEBAR_WIDTH = 200;
 const MAX_SIDEBAR_WIDTH = 500;
@@ -123,8 +130,8 @@ export class EditorController {
     this.visualizationLayersSettings = newVisualizationLayersSettings(
       this.visualizationLayers
     );
-    this.visualizationLayersSettings.addListener((key, newValue) => {
-      this.visualizationLayers.toggle(key, newValue);
+    this.visualizationLayersSettings.addListener((event) => {
+      this.visualizationLayers.toggle(event.key, event.newValue);
       this.canvasController.requestUpdate();
     });
 
@@ -161,6 +168,10 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event);
     });
 
+    this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
+      this.showDialogGlyphEditLocationNotAtSource();
+    });
+
     this.initSidebars();
     this.initContextMenuItems();
     this.initShortCuts();
@@ -173,7 +184,7 @@ export class EditorController {
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addListener((event) => this.themeChanged());
-    themeController.addListener((key, newValue) => {
+    themeController.addListener((event) => {
       this.themeChanged();
     });
 
@@ -356,17 +367,42 @@ export class EditorController {
     userSettings.items = items;
   }
 
+  async showDialogGlyphEditLocationNotAtSource() {
+    const glyphName = this.sceneController.sceneModel.getSelectedGlyphName();
+    const result = await dialog(
+      `Can’t edit glyph “${glyphName}”`,
+      "The location is not at a source.",
+      [
+        { title: "Cancel", resultValue: "cancel", isCancelButton: true },
+        { title: "New source", resultValue: "createNewSource" },
+        {
+          title: "Go to nearest source",
+          resultValue: "goToNearestSource",
+          isDefaultButton: true,
+        },
+      ]
+    );
+    switch (result) {
+      case "createNewSource":
+        this.sidebarDesignspace.addSource();
+        break;
+      case "goToNearestSource":
+        const glyphController =
+          await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+        const nearestSourceIndex = glyphController.findNearestSourceFromGlobalLocation(
+          this.sceneController.getLocation(),
+          true
+        );
+        this.sidebarDesignspace.selectSourceByIndex(nearestSourceIndex);
+        break;
+    }
+  }
+
   initTools() {
-    this.tools = {
-      "pointer-tool": new PointerTool(this),
-      "pen-tool": new PenTool(this),
-      "hand-tool": new HandTool(this),
-    };
-    for (const toolElement of document.querySelectorAll("#edit-tools > .tool-button")) {
-      const toolIdentifier = toolElement.dataset.tool;
-      toolElement.onclick = () => {
-        this.setSelectedTool(toolIdentifier);
-      };
+    this.tools = {};
+    const editToolClasses = [PointerTool, PenTool, PowerRulerTool, HandTool];
+    for (const editToolClass of editToolClasses) {
+      this.addEditTool(new editToolClass(this));
     }
     this.setSelectedTool("pointer-tool");
 
@@ -384,8 +420,26 @@ export class EditorController {
             this.zoomFit();
             break;
         }
+        this.canvasController.canvas.focus();
       };
     }
+  }
+
+  addEditTool(tool) {
+    this.tools[tool.identifier] = tool;
+
+    const editToolsElement = document.querySelector("#edit-tools");
+    const toolButton = html.div(
+      { "class": "tool-button selected", "data-tool": tool.identifier },
+      [html.createDomElement("inline-svg", { class: "tool-icon", src: tool.iconPath })]
+    );
+
+    toolButton.onclick = () => {
+      this.setSelectedTool(tool.identifier);
+      this.canvasController.canvas.focus();
+    };
+
+    editToolsElement.appendChild(toolButton);
   }
 
   async initSidebarDesignspace() {
@@ -402,14 +456,11 @@ export class EditorController {
       await this._sidebarDesignspaceResetVarGlyph();
       this.updateWindowLocationAndSelectionInfo();
     });
-    this.designspaceLocationController.addKeyListener(
-      "location",
-      async (key, location) => {
-        await this.sceneController.setLocation(location);
-        this.updateWindowLocationAndSelectionInfo();
-        this.autoViewBox = false;
-      }
-    );
+    this.designspaceLocationController.addKeyListener("location", async (event) => {
+      await this.sceneController.setLocation(event.newValue);
+      this.updateWindowLocationAndSelectionInfo();
+      this.autoViewBox = false;
+    });
   }
 
   async _sidebarDesignspaceResetVarGlyph() {
@@ -580,13 +631,13 @@ export class EditorController {
 
     textSettingsController.addKeyListener(
       "text",
-      (key, newValue) => this.setGlyphLinesFromText(newValue),
+      (event) => this.setGlyphLinesFromText(event.newValue),
       false
     );
 
-    textSettingsController.addListener((key, newValue) => this.updateWindowLocation());
+    textSettingsController.addListener((event) => this.updateWindowLocation());
 
-    textSettingsController.addKeyListener("align", (key, newValue) => {
+    textSettingsController.addKeyListener("align", (event) => {
       this.setTextAlignment(this.textSettings.align);
     });
 
@@ -616,18 +667,15 @@ export class EditorController {
     document.fonts.add(blankFont);
     await blankFont.load();
     const referenceFontElement = document.querySelector("#reference-font");
-    referenceFontElement.controller.addKeyListener(
-      "referenceFontName",
-      (key, newValue) => {
-        if (newValue) {
-          this.visualizationLayersSettings.model["fontra.reference.font"] = true;
-        }
-        this.canvasController.requestUpdate();
+    referenceFontElement.controller.addKeyListener("referenceFontName", (event) => {
+      if (event.newValue) {
+        this.visualizationLayersSettings.model["fontra.reference.font"] = true;
       }
-    );
+      this.canvasController.requestUpdate();
+    });
     let charOverride;
-    referenceFontElement.controller.addKeyListener("charOverride", (key, newValue) => {
-      charOverride = newValue;
+    referenceFontElement.controller.addKeyListener("charOverride", (event) => {
+      charOverride = event.newValue;
       this.canvasController.requestUpdate();
     });
     const referenceFontModel = referenceFontElement.model;
@@ -780,9 +828,7 @@ export class EditorController {
     const glyphLines = await glyphLinesFromText(
       text,
       this.fontController.characterMap,
-      this.fontController.glyphMap,
-      (codePoint) => this.fontController.getSuggestedGlyphName(codePoint),
-      (glyphName) => this.fontController.getUnicodeFromGlyphName(glyphName)
+      this.fontController.glyphMap
     );
     await this.setGlyphLines(glyphLines);
     this.updateSidebarDesignspace();
@@ -1266,7 +1312,7 @@ export class EditorController {
           console.log("couldn't paste from JSON:", error.toString());
         }
       } else {
-        pastedGlyph = await this.fontController.parseClipboard(plainText);
+        pastedGlyph = await this.parseClipboard(plainText);
       }
     }
 
@@ -1297,6 +1343,11 @@ export class EditorController {
       this.sceneController.selection = selection;
       return "Paste";
     });
+  }
+
+  async parseClipboard(data) {
+    const result = await parseClipboard(data);
+    return result ? StaticGlyph.fromObject(result) : undefined;
   }
 
   canDeepPaste() {
@@ -1865,37 +1916,17 @@ function rectScaleAroundCenter(rect, scaleFactor, center) {
 
 // utils, should perhaps move to utils.js
 
-async function glyphLinesFromText(
-  text,
-  characterMap,
-  glyphMap,
-  getSuggestedGlyphNameFunc,
-  getUnicodeFromGlyphNameFunc
-) {
+async function glyphLinesFromText(text, characterMap, glyphMap) {
   const glyphLines = [];
   for (const line of text.split(/\r?\n/)) {
-    glyphLines.push(
-      await glyphNamesFromText(
-        line,
-        characterMap,
-        glyphMap,
-        getSuggestedGlyphNameFunc,
-        getUnicodeFromGlyphNameFunc
-      )
-    );
+    glyphLines.push(await glyphNamesFromText(line, characterMap, glyphMap));
   }
   return glyphLines;
 }
 
 const glyphNameRE = /[//\s]/g;
 
-async function glyphNamesFromText(
-  text,
-  characterMap,
-  glyphMap,
-  getSuggestedGlyphNameFunc,
-  getUnicodeFromGlyphNameFunc
-) {
+async function glyphNamesFromText(text, characterMap, glyphMap) {
   const glyphNames = [];
   for (let i = 0; i < text.length; i++) {
     let glyphName;
@@ -1929,7 +1960,7 @@ async function glyphNamesFromText(
         }
         if (!char && !glyphMap[glyphName]) {
           // Glyph doesn't exist in the font, try to find a unicode value
-          const codePoint = await getUnicodeFromGlyphNameFunc(glyphName);
+          const codePoint = await getUnicodeFromGlyphName(glyphName);
           if (codePoint) {
             char = String.fromCodePoint(codePoint);
           }
@@ -1946,7 +1977,7 @@ async function glyphNamesFromText(
     if (glyphName !== "") {
       let isUndefined = false;
       if (!glyphName && char) {
-        glyphName = await getSuggestedGlyphNameFunc(char.codePointAt(0));
+        glyphName = await getSuggestedGlyphName(char.codePointAt(0));
         isUndefined = true;
       }
       glyphNames.push({

@@ -26,6 +26,27 @@ export function withSavedState(context, func) {
   }
 }
 
+export function consolidateCalls(func) {
+  // Return a function that will request `func` to be called in the next
+  // iteration of the event loop. If it gets called again before `func` was
+  // actually called, ignore the call.
+  // This ensures that multiple calls within the same event loop cycle get
+  // consolidated into a single call.
+  // Useful for things like "request update".
+  let didSchedule = false;
+
+  return (...args) => {
+    if (!didSchedule) {
+      didSchedule = true;
+      setTimeout(() => {
+        didSchedule = false;
+        func(...args);
+      }, 0);
+    } else {
+    }
+  };
+}
+
 export function scheduleCalls(func, timeout = 0) {
   // Schedule calls to func with a timer. If a previously scheduled call
   // has not yet run, cancel it and let the new one override it.

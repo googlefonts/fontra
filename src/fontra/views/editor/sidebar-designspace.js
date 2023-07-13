@@ -29,7 +29,7 @@ export class SidebarDesignspace {
   }
 
   async setup() {
-    this.dataController.addKeyListener("varGlyphController", (key, newValue) => {
+    this.dataController.addKeyListener("varGlyphController", (event) => {
       this._updateAxes();
       this._updateSources();
       this._updateSelectedSourceFromLocation();
@@ -45,8 +45,8 @@ export class SidebarDesignspace {
       })
     );
 
-    this.dataController.addKeyListener("location", (key, newLocation) => {
-      this.axisSliders.values = newLocation;
+    this.dataController.addKeyListener("location", (event) => {
+      this.axisSliders.values = event.newValue;
       this._updateSelectedSourceFromLocation();
       this._updateRemoveSourceButtonState();
     });
@@ -147,23 +147,23 @@ export class SidebarDesignspace {
         visible: backgroundLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
       });
-      sourceController.addKeyListener("active", async (key, newValue) => {
+      sourceController.addKeyListener("active", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-          glyph.sources[index].inactive = !newValue;
-          return `${newValue ? "" : "de"}activate ${source.name}`;
+          glyph.sources[index].inactive = !event.newValue;
+          return `${event.newValue ? "" : "de"}activate ${source.name}`;
         });
       });
-      sourceController.addKeyListener("visible", async (key, newValue) => {
-        if (newValue) {
+      sourceController.addKeyListener("visible", async (event) => {
+        if (event.newValue) {
           backgroundLayers[layerName] = source.name;
         } else {
           delete backgroundLayers[layerName];
         }
         this.sceneController.backgroundLayers = backgroundLayers;
       });
-      sourceController.addKeyListener("status", async (key, newValue) => {
+      sourceController.addKeyListener("status", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-          glyph.sources[index].customData[FONTRA_STATUS_KEY] = newValue;
+          glyph.sources[index].customData[FONTRA_STATUS_KEY] = event.newValue;
           return `set status ${source.name}`;
         });
       });
@@ -179,6 +179,11 @@ export class SidebarDesignspace {
       this.dataModel.location
     );
     this.sourcesList.setSelectedItemIndex(sourceIndex);
+  }
+
+  selectSourceByIndex(sourceIndex) {
+    this.sourcesList.setSelectedItemIndex(sourceIndex);
+    this._updateLocationFromSelectedSource();
   }
 
   _updateLocationFromSelectedSource() {
@@ -296,8 +301,7 @@ export class SidebarDesignspace {
     // Update UI
     await this._updateSources();
     const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
-    this.sourcesList.setSelectedItemIndex(selectedSourceIndex);
-    this._updateLocationFromSelectedSource();
+    this.selectSourceByIndex(selectedSourceIndex);
   }
 
   async editSourceProperties(sourceIndex) {
@@ -351,8 +355,7 @@ export class SidebarDesignspace {
     });
     // Update UI
     await this._updateSources();
-    this.sourcesList.setSelectedItemIndex(sourceIndex);
-    this._updateLocationFromSelectedSource();
+    this.selectSourceByIndex(sourceIndex);
   }
 
   async _sourcePropertiesRunDialog(
@@ -399,13 +402,13 @@ export class SidebarDesignspace {
       suggestedLayerName: sourceName || suggestedSourceName,
     });
 
-    nameController.addKeyListener("sourceName", (key, newValue) => {
+    nameController.addKeyListener("sourceName", (event) => {
       nameController.model.suggestedLayerName =
-        newValue || nameController.model.suggestedSourceName;
+        event.newValue || nameController.model.suggestedSourceName;
       validateInput();
     });
 
-    locationController.addListener((key, newValue) => {
+    locationController.addListener((event) => {
       const suggestedSourceName = suggestedSourceNameFromLocation(
         makeSparseLocation(locationController.model, locationAxes)
       );
@@ -554,13 +557,15 @@ function* labeledTextInput(label, controller, key, options) {
   inputElement.value = controller.model[key];
   inputElement.oninput = () => (controller.model[key] = inputElement.value);
 
-  controller.addKeyListener(key, (key, newValue) => (inputElement.value = newValue));
+  controller.addKeyListener(key, (event) => {
+    inputElement.value = event.newValue;
+  });
 
   if (options && options.placeholderKey) {
     inputElement.placeholder = controller.model[options.placeholderKey];
     controller.addKeyListener(
       options.placeholderKey,
-      (key, newValue) => (inputElement.placeholder = newValue)
+      (event) => (inputElement.placeholder = event.newValue)
     );
   }
 

@@ -134,3 +134,21 @@ export function isEmptyRect(rect) {
   const size = rectSize(rect);
   return size.width === 0 && size.height === 0;
 }
+
+export function rectFromPoints(points) {
+  if (!points.length) {
+    return undefined;
+  }
+  const firstPoint = points[0];
+  let xMin = firstPoint.x;
+  let yMin = firstPoint.y;
+  let xMax = firstPoint.x;
+  let yMax = firstPoint.y;
+  for (const point of points.slice(1)) {
+    xMin = Math.min(xMin, point.x);
+    yMin = Math.min(yMin, point.y);
+    xMax = Math.max(xMax, point.x);
+    yMax = Math.max(yMax, point.y);
+  }
+  return { xMin, yMin, xMax, yMax };
+}

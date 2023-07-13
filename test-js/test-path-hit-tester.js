@@ -1,6 +1,7 @@
 import chai from "chai";
 const expect = chai.expect;
 
+import { parametrize } from "./test-support.js";
 import { PathHitTester } from "../src/fontra/client/core/path-hit-tester.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
 
@@ -79,25 +80,23 @@ describe("PathHitTester Tests", () => {
       },
     ],
   ];
-  for (let i = 0; i < hitTest_testData.length; i++) {
-    const [testPoint, margin, expectedHit] = hitTest_testData[i];
-    it(`hitTest test ${i}`, () => {
-      const p = new VarPackedPath();
-      p.moveTo(0, 0);
-      p.lineTo(0, 100);
-      p.lineTo(200, 100);
-      p.quadraticCurveTo(250, 50, 200, 0);
-      p.closePath();
-      p.moveTo(0, 200);
-      p.lineTo(0, 300);
-      p.lineTo(200, 200);
-      p.cubicCurveTo(240, 275, 240, 225, 200, 200);
-      p.closePath();
-      const pcf = new PathHitTester(p);
-      const hit = pcf.hitTest(testPoint, margin);
-      expect(filterHit(hit)).to.deep.equal(expectedHit);
-    });
-  }
+  parametrize("hitTest test", hitTest_testData, (testData) => {
+    const [testPoint, margin, expectedHit] = testData;
+    const p = new VarPackedPath();
+    p.moveTo(0, 0);
+    p.lineTo(0, 100);
+    p.lineTo(200, 100);
+    p.quadraticCurveTo(250, 50, 200, 0);
+    p.closePath();
+    p.moveTo(0, 200);
+    p.lineTo(0, 300);
+    p.lineTo(200, 200);
+    p.cubicCurveTo(240, 275, 240, 225, 200, 200);
+    p.closePath();
+    const pcf = new PathHitTester(p);
+    const hit = pcf.hitTest(testPoint, margin);
+    expect(filterHit(hit)).to.deep.equal(expectedHit);
+  });
 });
 
 function filterHit(hit) {

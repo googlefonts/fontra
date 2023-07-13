@@ -1,7 +1,9 @@
 import logging
-import math
-from dataclasses import asdict, dataclass, field
+from copy import copy
+from dataclasses import dataclass, field
 from enum import IntEnum
+
+from fontTools.misc.transform import DecomposedTransform
 
 logger = logging.getLogger(__name__)
 
@@ -240,72 +242,18 @@ class PackedPathPointPen:
         self._currentContour = None
 
     def addComponent(self, glyphName, transformation, **kwargs):
-        from .classes import Component, Transformation
+        from .classes import Component
 
-        xx, xy, yx, yy, dx, dy = transformation
-        rotation, scaleX, scaleY, skewX, skewY = decomposeTwoByTwo((xx, xy, yx, yy))
-        # TODO rotation is problematic with interpolation: should interpolation
-        # go clockwise or counter-clockwise? That ambiguous, and get more complicated
-        # with > 2 masters. Perhaps we can "normalize" the rotations angles in some
-        # way to have reasonable behavior in common cases.
-        if rotation == -0.0:
-            rotation = 0.0
-
-        transformation = Transformation(
-            translateX=dx,
-            translateY=dy,
-            rotation=math.degrees(rotation),
-            scaleX=scaleX,
-            scaleY=scaleY,
-            skewX=math.degrees(-skewX),
-            skewY=math.degrees(skewY),
-            tCenterX=0,
-            tCenterY=0,
-        )
-
+        transformation = DecomposedTransform.fromTransform(transformation)
         self.components.append(Component(glyphName, transformation))
 
     def addVarComponent(
         self, glyphName, transformation, location, identifier=None, **kwargs
     ):
-        from .classes import Component, Transformation
+        from .classes import Component
 
-        # TODO: https://github.com/googlefonts/fontra/issues/245
-        transformation = Transformation(**asdict(transformation))
+        transformation = copy(transformation)
         self.components.append(Component(glyphName, transformation, location))
-
-
-def decomposeTwoByTwo(twoByTwo):
-    """Decompose a 2x2 transformation matrix into components:
-    - rotation
-    - scaleX
-    - scaleY
-    - skewX
-    - skewY
-    """
-    a, b, c, d = twoByTwo
-    delta = a * d - b * c
-
-    rotation = 0
-    scaleX = scaleY = 0
-    skewX = skewY = 0
-
-    # Apply the QR-like decomposition.
-    if a != 0 or b != 0:
-        r = math.sqrt(a * a + b * b)
-        rotation = math.acos(a / r) if b > 0 else -math.acos(a / r)
-        scaleX, scaleY = (r, delta / r)
-        skewX, skewY = (math.atan((a * c + b * d) / (r * r)), 0)
-    elif c != 0 or d != 0:
-        s = math.sqrt(c * c + d * d)
-        rotation = math.pi / 2 - (math.acos(-c / s) if d > 0 else -math.acos(c / s))
-        scaleX, scaleY = (delta / s, s)
-        skewX, skewY = (0, math.atan((a * c + b * d) / (s * s)))
-    else:
-        # a = b = c = d = 0
-        pass
-
-    return rotation, scaleX, scaleY, skewX, skewY
 
 
 _pointToSegmentType = {

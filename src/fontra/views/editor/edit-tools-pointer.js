@@ -18,6 +18,9 @@ import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 
 export class PointerTool extends BaseTool {
+  iconPath = "/images/pointer.svg";
+  identifier = "pointer-tool";
+
   handleHover(event) {
     const sceneController = this.sceneController;
     const point = sceneController.localPoint(event);
