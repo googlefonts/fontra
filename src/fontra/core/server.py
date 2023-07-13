@@ -3,7 +3,6 @@ from __future__ import annotations
 import errno
 import json
 import logging
-import mimetypes
 import re
 import socket
 import sys
@@ -23,6 +22,19 @@ from .remote import RemoteObjectConnection, RemoteObjectConnectionException
 from .serverutils import apiFunctions
 
 logger = logging.getLogger(__name__)
+
+
+# mimetypes.guess_type() is unreliable as it depends on system configuration
+mimeTypes = {
+    "css": "text/css",
+    "html": "text/html",
+    "ico": "image/x-icon",
+    "js": "application/javascript",
+    "json": "application/json",
+    "svg": "image/svg+xml",
+    "txt": "text/plain",
+    "woff2": "font/woff2",
+}
 
 
 @dataclass(kw_only=True)
@@ -226,7 +238,7 @@ class FontraServer:
         ext = resourceName.rsplit(".", 1)[-1].lower()
         if ext not in self.allowedFileExtensions:
             raise web.HTTPNotFound()
-        contentType, _ = mimetypes.guess_type(resourceName)
+        contentType = mimeTypes.get(resourceName.rsplit(".")[-1])
         data = self._addVersionTokenToReferences(data, contentType)
         response = web.Response(body=data, content_type=contentType)
         response.last_modified = self.startupTime
