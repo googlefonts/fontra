@@ -218,7 +218,7 @@ export class SidebarSelectionInfo {
       selectionRects.push(component.controlBounds);
     }
     if (!selectionRects.length && glyphController?.controlBounds) {
-      selectionRects.push(glyphController.controlBounds);
+      selectionRects.push(glyphController.bounds);
     }
     if (selectionRects.length) {
       const selectionBounds = unionRect(...selectionRects);

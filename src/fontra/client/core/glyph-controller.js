@@ -366,6 +366,10 @@ export class StaticGlyphController {
     return getRepresentation(this, "componentsPath");
   }
 
+  get bounds() {
+    return getRepresentation(this, "bounds");
+  }
+
   get controlBounds() {
     return getRepresentation(this, "controlBounds");
   }
@@ -422,6 +426,10 @@ registerRepresentationFactory(
 
 registerRepresentationFactory(StaticGlyphController, "componentsPath", (glyph) => {
   return joinPaths(glyph.components.map((compo) => compo.path));
+});
+
+registerRepresentationFactory(StaticGlyphController, "bounds", (glyph) => {
+  return glyph.flattenedPath.getBounds();
 });
 
 registerRepresentationFactory(StaticGlyphController, "controlBounds", (glyph) => {
