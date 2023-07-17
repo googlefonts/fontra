@@ -32,7 +32,7 @@ export class ModalDialog extends SimpleElement {
     }
 
     dialog::backdrop {
-      background-color: rgba(0, 0, 0, 0.4);
+      background-color: #8888;
     }
 
     dialog .dialog-box {
