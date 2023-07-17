@@ -14,7 +14,12 @@ export class SidebarSelectionInfo {
     this.infoForm = new Form("selection-info");
   }
 
-  async update() {
+  async update(senderID) {
+    if (senderID === this) {
+      // Don't rebuild, just update the Dimensions field
+      this.updateDimensions();
+      return;
+    }
     if (!this.infoForm.container.offsetParent) {
       // If the info form is not visible, do nothing
       return;
@@ -62,20 +67,7 @@ export class SidebarSelectionInfo {
         disabled: !canEdit,
       });
     }
-    const {
-      point: pointIndices,
-      component,
-      componentOrigin,
-      componentTCenter,
-    } = parseSelection(this.sceneController.selection);
-
-    const componentIndices = [
-      ...new Set([
-        ...(component || []),
-        ...(componentOrigin || []),
-        ...(componentTCenter || []),
-      ]),
-    ].sort((a, b) => a - b);
+    const { pointIndices, componentIndices } = this._getSelection();
 
     formContents.push(
       ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
@@ -164,8 +156,55 @@ export class SidebarSelectionInfo {
   }
 
   _setupDimensionsInfo(glyphController, pointIndices, componentIndices) {
+    const dimensionsString = this._getDimensionsString(
+      glyphController,
+      pointIndices,
+      componentIndices
+    );
+    const formContents = [];
+    if (dimensionsString) {
+      formContents.push({ type: "divider" });
+      formContents.push({
+        key: "dimensions",
+        type: "text",
+        label: "Dimensions",
+        value: dimensionsString,
+      });
+    }
+    return formContents;
+  }
+
+  updateDimensions() {
+    const positionedGlyph =
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+    const glyphController = positionedGlyph?.glyph;
+    const { pointIndices, componentIndices } = this._getSelection();
+    const dimensionsString = this._getDimensionsString(
+      glyphController,
+      pointIndices,
+      componentIndices
+    );
+    this.infoForm.setValue("dimensions", dimensionsString);
+  }
+
+  _getSelection() {
+    const { point, component, componentOrigin, componentTCenter } = parseSelection(
+      this.sceneController.selection
+    );
+
+    const componentIndices = [
+      ...new Set([
+        ...(component || []),
+        ...(componentOrigin || []),
+        ...(componentTCenter || []),
+      ]),
+    ].sort((a, b) => a - b);
+    return { pointIndices: point || [], componentIndices };
+  }
+
+  _getDimensionsString(glyphController, pointIndices, componentIndices) {
     const selectionRects = [];
-    if (pointIndices) {
+    if (pointIndices.length) {
       selectionRects.push(
         rectFromPoints(pointIndices.map((i) => instance.path.getPoint(i)))
       );
@@ -180,21 +219,13 @@ export class SidebarSelectionInfo {
     if (!selectionRects.length && glyphController?.controlBounds) {
       selectionRects.push(glyphController.controlBounds);
     }
-    const formContents = [];
     if (selectionRects.length) {
       const selectionBounds = unionRect(...selectionRects);
       let { width, height } = rectSize(selectionBounds);
       width = Math.round(width * 10) / 10;
       height = Math.round(height * 10) / 10;
-      formContents.push({ type: "divider" });
-      formContents.push({
-        key: "dimensions",
-        type: "text",
-        label: "Dimensions",
-        value: `↔ ${width} ↕ ${height}`,
-      });
+      return `↔ ${width} ↕ ${height}`;
     }
-    return formContents;
   }
 
   async _setupSelectionInfoHandlers(glyphName) {
