@@ -44,6 +44,13 @@ describe("pointInRect", () => {
     [{ x: 220, y: 220 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, false],
     [{ x: 220, y: -1 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, false],
     [{ x: -1, y: 200 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, false],
+    [{ x: 0, y: 0 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, true],
+    [{ x: 0, y: 100 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, true],
+    [{ x: 0, y: 200 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, true],
+    [{ x: 0, y: 201 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, false],
+    [{ x: 100, y: 200 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, true],
+    [{ x: 200, y: 200 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, true],
+    [{ x: 0, y: -1 }, { xMin: 0, yMin: 0, xMax: 200, yMax: 200 }, false],
   ];
   parametrize(
     "is point in rectangle",
