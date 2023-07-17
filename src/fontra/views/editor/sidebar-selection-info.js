@@ -205,6 +205,7 @@ export class SidebarSelectionInfo {
   _getDimensionsString(glyphController, pointIndices, componentIndices) {
     const selectionRects = [];
     if (pointIndices.length) {
+      const instance = glyphController.instance;
       selectionRects.push(
         rectFromPoints(pointIndices.map((i) => instance.path.getPoint(i)))
       );
