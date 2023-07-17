@@ -17,6 +17,7 @@ import {
   rectToArray,
   isEmptyRect,
   rectFromPoints,
+  updateRect,
 } from "../src/fontra/client/core/rectangle.js";
 import { parametrize } from "./test-support.js";
 
@@ -420,6 +421,94 @@ describe("rectFromPoints", () => {
     ([rectangle, acceptance, testDescription]) => {
       const result = rectFromPoints(rectangle);
       expect(result).deep.equals(acceptance, testDescription);
+    }
+  );
+});
+
+describe("updateRect", () => {
+  const testData = [
+    [
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+      { x: 0, y: 0 },
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+    ],
+    [
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+      { x: 20, y: 0 },
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 20,
+        yMax: 10,
+      },
+    ],
+    [
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+      { x: 0, y: 20 },
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 10,
+        yMax: 20,
+      },
+    ],
+    [
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+      { x: -10, y: 0 },
+      {
+        xMin: -10,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+    ],
+    [
+      {
+        xMin: 0,
+        yMin: 0,
+        xMax: 10,
+        yMax: 10,
+      },
+      { x: 0, y: -10 },
+      {
+        xMin: 0,
+        yMin: -10,
+        xMax: 10,
+        yMax: 10,
+      },
+    ],
+  ];
+  parametrize(
+    "Update a rect with a point",
+    testData,
+    ([rectangle, point, acceptance]) => {
+      const result = updateRect(rectangle, point);
+      expect(result).deep.equals(acceptance);
     }
   );
 });
