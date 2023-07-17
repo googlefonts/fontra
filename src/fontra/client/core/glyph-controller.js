@@ -486,6 +486,13 @@ class ComponentController {
     return this._path2d;
   }
 
+  get bounds() {
+    if (this._bounds === undefined) {
+      this._bounds = this.path.getBounds();
+    }
+    return this._bounds;
+  }
+
   get controlBounds() {
     if (this._controlBounds === undefined) {
       this._controlBounds = this.path.getControlBounds();
