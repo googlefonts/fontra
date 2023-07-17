@@ -77,35 +77,9 @@ export class SidebarSelectionInfo {
       ]),
     ].sort((a, b) => a - b);
 
-    const selectionRects = [];
-    if (pointIndices) {
-      selectionRects.push(
-        rectFromPoints(pointIndices.map((i) => instance.path.getPoint(i)))
-      );
-    }
-    for (const componentIndex of componentIndices) {
-      const component = glyphController.components[componentIndex];
-      if (!component || !component.controlBounds) {
-        continue;
-      }
-      selectionRects.push(component.controlBounds);
-    }
-    if (!selectionRects.length && glyphController?.controlBounds) {
-      selectionRects.push(glyphController.controlBounds);
-    }
-    if (selectionRects.length) {
-      const selectionBounds = unionRect(...selectionRects);
-      let { width, height } = rectSize(selectionBounds);
-      width = Math.round(width * 10) / 10;
-      height = Math.round(height * 10) / 10;
-      formContents.push({ type: "divider" });
-      formContents.push({
-        key: "dimensions",
-        type: "text",
-        label: "Dimensions",
-        value: `↔ ${width} ↕ ${height}`,
-      });
-    }
+    formContents.push(
+      ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
+    );
 
     for (const index of componentIndices) {
       const component = instance.components[index];
@@ -187,6 +161,40 @@ export class SidebarSelectionInfo {
       this.infoForm.setFieldDescriptions(formContents);
       await this._setupSelectionInfoHandlers(glyphName);
     }
+  }
+
+  _setupDimensionsInfo(glyphController, pointIndices, componentIndices) {
+    const selectionRects = [];
+    if (pointIndices) {
+      selectionRects.push(
+        rectFromPoints(pointIndices.map((i) => instance.path.getPoint(i)))
+      );
+    }
+    for (const componentIndex of componentIndices) {
+      const component = glyphController.components[componentIndex];
+      if (!component || !component.controlBounds) {
+        continue;
+      }
+      selectionRects.push(component.controlBounds);
+    }
+    if (!selectionRects.length && glyphController?.controlBounds) {
+      selectionRects.push(glyphController.controlBounds);
+    }
+    const formContents = [];
+    if (selectionRects.length) {
+      const selectionBounds = unionRect(...selectionRects);
+      let { width, height } = rectSize(selectionBounds);
+      width = Math.round(width * 10) / 10;
+      height = Math.round(height * 10) / 10;
+      formContents.push({ type: "divider" });
+      formContents.push({
+        key: "dimensions",
+        type: "text",
+        label: "Dimensions",
+        value: `↔ ${width} ↕ ${height}`,
+      });
+    }
+    return formContents;
   }
 
   async _setupSelectionInfoHandlers(glyphName) {
