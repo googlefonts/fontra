@@ -1,4 +1,5 @@
 import { recordChanges } from "/core/change-recorder.js";
+import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { Form } from "/core/ui-form.js";
 import {
   getCharFromUnicode,
@@ -61,9 +62,13 @@ export class SidebarSelectionInfo {
         disabled: !canEdit,
       });
     }
-    const { component, componentOrigin, componentTCenter } = parseSelection(
-      this.sceneController.selection
-    );
+    const {
+      point: pointIndices,
+      component,
+      componentOrigin,
+      componentTCenter,
+    } = parseSelection(this.sceneController.selection);
+
     const componentIndices = [
       ...new Set([
         ...(component || []),
@@ -72,7 +77,37 @@ export class SidebarSelectionInfo {
       ]),
     ].sort((a, b) => a - b);
 
-    for (const index of componentIndices || []) {
+    const selectionRects = [];
+    if (pointIndices) {
+      selectionRects.push(
+        rectFromPoints(pointIndices.map((i) => instance.path.getPoint(i)))
+      );
+    }
+    for (const componentIndex of componentIndices) {
+      const component = glyphController.components[componentIndex];
+      if (!component || !component.controlBounds) {
+        continue;
+      }
+      selectionRects.push(component.controlBounds);
+    }
+    if (!selectionRects.length && glyphController?.controlBounds) {
+      selectionRects.push(glyphController.controlBounds);
+    }
+    if (selectionRects.length) {
+      const selectionBounds = unionRect(...selectionRects);
+      let { width, height } = rectSize(selectionBounds);
+      width = Math.round(width * 10) / 10;
+      height = Math.round(height * 10) / 10;
+      formContents.push({ type: "divider" });
+      formContents.push({
+        key: "dimensions",
+        type: "text",
+        label: "Dimensions",
+        value: `↔ ${width} ↕ ${height}`,
+      });
+    }
+
+    for (const index of componentIndices) {
       const component = instance.components[index];
       if (!component) {
         // Invalid selection
