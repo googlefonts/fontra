@@ -1,8 +1,9 @@
 import VarArray from "./var-array.js";
 import { VariationError } from "./errors.js";
-import { centeredRect, pointInRect } from "./rectangle.js";
+import { centeredRect, pointInRect, rectFromPoints, updateRect } from "./rectangle.js";
 import { convexHull } from "./convex-hull.js";
 import { arrayExtend, enumerate, range } from "./utils.js";
+import { Bezier } from "../third-party/bezier-js.js";
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
 export const POINT_TYPE_OFF_CURVE_CUBIC = "cubic";
@@ -93,6 +94,41 @@ export class VarPackedPath {
       yMax = Math.max(y, yMax);
     }
     return { xMin: xMin, yMin: yMin, xMax: xMax, yMax: yMax };
+  }
+
+  getBounds() {
+    let bounds = undefined;
+    for (let i = 0; i < this.contourInfo.length; i++) {
+      if (this.getNumPointsOfContour(i) === 1) {
+        // Single point, not a segment, but does participate in the bounding box
+        const point = this.getContourPoint(i, 0);
+        if (!bounds) {
+          bounds = rectFromPoints([point]);
+        } else {
+          bounds = updateRect(bounds, point);
+        }
+        continue;
+      }
+      for (const segment of this.iterContourDecomposedSegments(i)) {
+        if (!bounds) {
+          bounds = rectFromPoints([segment.points[0]]);
+        }
+        bounds = updateRect(bounds, segment.points.at(-1));
+        if (
+          segment.points
+            .slice(1, -1)
+            .some((point) => !pointInRect(point.x, point.y, bounds))
+        ) {
+          // Compute the actual bounding box of the segment
+          const bez = new Bezier(segment.points);
+          const extrema = bez.extrema();
+          for (const t of extrema.values) {
+            bounds = updateRect(bounds, bez.compute(t));
+          }
+        }
+      }
+    }
+    return bounds;
   }
 
   getConvexHull() {

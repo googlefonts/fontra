@@ -121,7 +121,7 @@ export class PathHitTester {
     const segments = [...this.path.iterContourDecomposedSegments(contourIndex)];
     segments.forEach((segment) => {
       segment.bezier = new Bezier(segment.points);
-      segment.bounds = polyBounds(segment.points);
+      segment.bounds = rectFromPoints(segment.points);
     });
     contour.segments = segments;
   }
@@ -135,25 +135,6 @@ export class PathHitTester {
     }
     this.allContoursAreLoaded = true;
   }
-}
-
-function polyBounds(points) {
-  if (!points.length) {
-    return null;
-  }
-  let xMin = points[0].x;
-  let yMin = points[0].y;
-  let xMax = xMin;
-  let yMax = yMin;
-  for (let i = 1; i < points.length; i++) {
-    const x = points[i].x;
-    const y = points[i].y;
-    xMin = Math.min(x, xMin);
-    yMin = Math.min(y, yMin);
-    xMax = Math.max(x, xMax);
-    yMax = Math.max(y, yMax);
-  }
-  return { xMin: xMin, yMin: yMin, xMax: xMax, yMax: yMax };
 }
 
 function findIntersections(bezier, line, direction, info) {
