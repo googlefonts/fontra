@@ -1,6 +1,8 @@
 import chai from "chai";
 const expect = chai.expect;
 
+import { parametrize } from "./test-support.js";
+
 import {
   POINT_TYPE_OFF_CURVE_CUBIC,
   POINT_TYPE_OFF_CURVE_QUAD,
@@ -702,6 +704,70 @@ describe("VarPackedPath Tests", () => {
       xMax: 10,
       yMax: 11,
     });
+  });
+
+  const getBoundsTestData = [
+    [(p) => {}, undefined],
+    [
+      (p) => {
+        p.moveTo(10, 20);
+      },
+      { xMin: 10, yMin: 20, xMax: 10, yMax: 20 },
+    ],
+    [
+      (p) => {
+        p.moveTo(10, 20);
+        p.lineTo(20, 30);
+      },
+      { xMin: 10, yMin: 20, xMax: 20, yMax: 30 },
+    ],
+    [
+      (p) => {
+        p.moveTo(0, 0);
+        p.cubicCurveTo(10, 0, 20, 10, 20, 20);
+      },
+      { xMin: 0, yMin: 0, xMax: 20, yMax: 20 },
+    ],
+    [
+      (p) => {
+        p.moveTo(0, 0);
+        p.cubicCurveTo(10, 20, 20, 20, 30, 0);
+      },
+      { xMin: 0, yMin: 0, xMax: 30, yMax: 15 },
+    ],
+    [
+      (p) => {
+        p.moveTo(0, 0);
+        p.cubicCurveTo(20, 10, 20, 20, 0, 30);
+      },
+      { xMin: 0, yMin: 0, xMax: 15, yMax: 30 },
+    ],
+    [
+      (p) => {
+        p.moveTo(0, 0);
+        p.quadraticCurveTo(10, 20, 20, 20, 30, 0);
+      },
+      { xMin: 0, yMin: 0, xMax: 30, yMax: 20 },
+    ],
+    [
+      (p) => {
+        p.moveTo(0, 0);
+        p.quadraticCurveTo(10, 20, 20, 0);
+      },
+      { xMin: 0, yMin: 0, xMax: 20, yMax: 10 },
+    ],
+    [
+      (p) => {
+        p.moveTo(0, 0);
+        p.quadraticCurveTo(20, 10, 0, 20);
+      },
+      { xMin: 0, yMin: 0, xMax: 10, yMax: 20 },
+    ],
+  ];
+  parametrize("test getBounds", getBoundsTestData, ([drawFunc, expectedBounds]) => {
+    const p = new VarPackedPath();
+    drawFunc(p);
+    expect(p.getBounds()).to.deep.equal(expectedBounds);
   });
 
   it("test firstOnCurve bug", () => {

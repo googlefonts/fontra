@@ -200,7 +200,7 @@ export class EditorController {
       200
     );
     this.updateSelectionInfo = throttleCalls(
-      async (event) => await this._updateSelectionInfo(),
+      async (senderID) => await this._updateSelectionInfo(senderID),
       100
     );
     this.updateSidebarDesignspace = throttleCalls(
@@ -1749,20 +1749,16 @@ export class EditorController {
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
-    if (senderID === this.sidebarSelectionInfo) {
-      // The edit comes from the selection info box itself, so we shouldn't update it
-      return;
-    }
     if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
-      this.updateSelectionInfo();
+      this.updateSelectionInfo(senderID);
     }
     if (editMethodName === "editFinal") {
       this.sceneController.updateHoverState();
     }
   }
 
-  async _updateSelectionInfo() {
-    await this.sidebarSelectionInfo.update();
+  async _updateSelectionInfo(senderID) {
+    await this.sidebarSelectionInfo.update(senderID);
   }
 
   setAutoViewBox() {
