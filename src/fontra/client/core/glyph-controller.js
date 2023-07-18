@@ -190,11 +190,15 @@ export class VariableGlyphController {
     return this._model;
   }
 
-  async getDeltas() {
+  async getDeltas(getGlyphFunc) {
     if (this._deltas === undefined) {
-      const masterValues = this.sources
-        .filter((source) => !source.inactive)
-        .map((source) => this.layers[source.layerName].glyph);
+      const masterValues = await ensureComponentCompatibility(
+        this.sources
+          .filter((source) => !source.inactive)
+          .map((source) => this.layers[source.layerName].glyph),
+        getGlyphFunc
+      );
+
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
@@ -227,7 +231,7 @@ export class VariableGlyphController {
     try {
       return this.model.interpolateFromDeltas(
         normalizedLocation,
-        await this.getDeltas()
+        await this.getDeltas(getGlyphFunc)
       );
     } catch (error) {
       if (error.name !== "VariationError") {
@@ -819,4 +823,62 @@ function makeMissingComponentPlaceholderGlyph() {
 
 function makeDefaultLocation(axes) {
   return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
+}
+
+async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
+  const baseGlyphFallbackValues = {};
+
+  glyphs.forEach((glyph) =>
+    glyph.components.forEach((compo) => {
+      const axisNames = Object.keys(compo.location);
+      let fallbackValues = baseGlyphFallbackValues[compo.name];
+      if (!fallbackValues) {
+        fallbackValues = {};
+        baseGlyphFallbackValues[compo.name] = fallbackValues;
+      }
+      for (const axisName in compo.location) {
+        fallbackValues[axisName] = 0;
+      }
+    })
+  );
+
+  for (const [glyphName, fallbackValues] of Object.entries(baseGlyphFallbackValues)) {
+    const baseGlyph = await getGlyphFunc(glyphName);
+    for (const axis of baseGlyph.combinedAxes) {
+      if (axis.name in fallbackValues) {
+        fallbackValues[axis.name] = axis.defaultValue;
+      }
+    }
+  }
+
+  return glyphs.map((glyph) =>
+    StaticGlyph.fromObject(
+      {
+        ...glyph,
+        components: glyph.components.map((component) => {
+          return {
+            ...component,
+            location: ensureLocationCompatibility(
+              component.location,
+              baseGlyphFallbackValues[component.name]
+            ),
+          };
+        }),
+      },
+      true // noCopy
+    )
+  );
+}
+
+function ensureLocationCompatibility(location, fallbackValues) {
+  if (!fallbackValues) {
+    return location;
+  }
+  const newLocation = { ...fallbackValues };
+  for (const [axisName, value] of Object.entries(location)) {
+    if (axisName in newLocation) {
+      newLocation[axisName] = value;
+    }
+  }
+  return newLocation;
 }

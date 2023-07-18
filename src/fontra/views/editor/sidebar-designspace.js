@@ -281,12 +281,12 @@ export class SidebarDesignspace {
     const getGlyphFunc =
       this.sceneController.sceneModel.fontController.getGlyph.bind(this);
 
-    const instance = await glyphController
-      .instantiate(
+    const instance = (
+      await glyphController.instantiate(
         normalizeLocation(newLocation, glyphController.combinedAxes),
         getGlyphFunc
       )
-      .copy();
+    ).copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
     roundComponentOrigins(instance.components);
