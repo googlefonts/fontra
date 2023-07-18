@@ -43,17 +43,18 @@ export class Source {
 }
 
 export class StaticGlyph {
-  static fromObject(obj) {
+  static fromObject(obj, noCopy = false) {
     const source = new StaticGlyph();
     source.xAdvance = obj.xAdvance;
     source.yAdvance = obj.yAdvance;
     source.verticalOrigin = obj.verticalOrigin;
     if (obj.path) {
-      source.path = VarPackedPath.fromObject(obj.path);
+      source.path = noCopy ? obj.path : VarPackedPath.fromObject(obj.path);
     } else {
       source.path = new VarPackedPath();
     }
-    source.components = obj.components?.map(copyComponent) || [];
+    source.components =
+      (noCopy ? obj.components : obj.components?.map(copyComponent)) || [];
     return source;
   }
 
