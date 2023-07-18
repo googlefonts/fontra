@@ -277,7 +277,7 @@ export class SidebarDesignspace {
     if (!newLocation) {
       return;
     }
-    const instance = glyphController
+    const instance = await glyphController
       .instantiate(normalizeLocation(newLocation, glyphController.combinedAxes))
       .copy();
     // Round coordinates and component positions

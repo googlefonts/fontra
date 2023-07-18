@@ -190,7 +190,7 @@ export class VariableGlyphController {
     return this._model;
   }
 
-  get deltas() {
+  async getDeltas() {
     if (this._deltas === undefined) {
       const masterValues = this.sources
         .filter((source) => !source.inactive)
@@ -223,9 +223,12 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  instantiate(normalizedLocation) {
+  async instantiate(normalizedLocation) {
     try {
-      return this.model.interpolateFromDeltas(normalizedLocation, this.deltas);
+      return this.model.interpolateFromDeltas(
+        normalizedLocation,
+        await this.getDeltas()
+      );
     } catch (error) {
       if (error.name !== "VariationError") {
         throw error;
@@ -251,7 +254,7 @@ export class VariableGlyphController {
     if (sourceIndex !== undefined) {
       instance = this.layers[this.sources[sourceIndex].layerName].glyph;
     } else {
-      instance = this.instantiate(normalizeLocation(location, this.combinedAxes));
+      instance = await this.instantiate(normalizeLocation(location, this.combinedAxes));
     }
 
     if (!instance) {
@@ -563,7 +566,9 @@ async function* iterFlattenedComponentPaths(
     inst = makeMissingComponentPlaceholderGlyph();
   } else {
     try {
-      inst = glyph.instantiate(normalizeLocation(compoLocation, glyph.combinedAxes));
+      inst = await glyph.instantiate(
+        normalizeLocation(compoLocation, glyph.combinedAxes)
+      );
     } catch (error) {
       if (error.name !== "VariationError") {
         throw error;
@@ -616,7 +621,7 @@ export async function decomposeComponents(
     }
     let location = { ...parentLocation, ...component.location };
     const normLocation = baseGlyph.mapLocationGlobalToLocal(location);
-    const compoInstance = baseGlyph.instantiate(
+    const compoInstance = await baseGlyph.instantiate(
       normalizeLocation(normLocation, baseGlyph.combinedAxes)
     );
     const t = makeAffineTransform(component.transformation);
