@@ -211,10 +211,6 @@ export class SceneController {
     return this.sceneModel.getSelectedGlyphName();
   }
 
-  notifySelectedGlyphChanged() {
-    this._dispatchEvent("selectedGlyphChanged");
-  }
-
   async handleDrag(eventStream, initialEvent) {
     if (this.selectedTool) {
       await this.selectedTool.handleDrag(eventStream, initialEvent);

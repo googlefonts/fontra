@@ -216,9 +216,6 @@ export class EditorController {
       }
       this.updateWindowLocation();
     });
-    this.sceneController.addEventListener("selectedGlyphChanged", () =>
-      this.updateWindowLocationAndSelectionInfo()
-    );
     this.sceneController.addEventListener("selectionChanged", async () => {
       this.updateWindowLocationAndSelectionInfo();
     });
@@ -502,10 +499,6 @@ export class EditorController {
     );
     await this.sidebarDesignspace.setup();
 
-    this.sceneController.addEventListener("selectedGlyphChanged", async (event) => {
-      await this._sidebarDesignspaceResetVarGlyph();
-      this.updateWindowLocationAndSelectionInfo();
-    });
     this.designspaceLocationController.addKeyListener("location", async (event) => {
       await this.sceneController.setLocation(event.newValue);
       this.updateWindowLocationAndSelectionInfo();

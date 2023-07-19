@@ -178,8 +178,6 @@ export class PointerTool extends BaseTool {
             ...this.sceneSettings.selectedGlyph,
             isEditing: true,
           };
-
-          sceneController.notifySelectedGlyphChanged(); // Oh well
         }
       }
     } else {
