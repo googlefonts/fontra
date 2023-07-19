@@ -1629,16 +1629,19 @@ export class EditorController {
 
   async externalChange(change) {
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
-    const editState = this.sceneSettings.selectedGlyph;
 
     await this.fontController.applyChange(change, true);
 
     if (matchChangePath(change, ["glyphMap"])) {
+      const selectedGlyph = this.sceneSettings.selectedGlyph;
       this.sceneController.sceneModel.updateGlyphLinesCharacterMapping();
-      if (editState?.isEditing && !this.fontController.hasGlyph(selectedGlyphName)) {
+      if (
+        selectedGlyph?.isEditing &&
+        !this.fontController.hasGlyph(selectedGlyphName)
+      ) {
         // The glyph being edited got deleted, change state merely "selected"
         this.sceneSettings.selectedGlyph = {
-          ...editState,
+          ...selectedGlyph,
           isEditing: false,
         };
       }
