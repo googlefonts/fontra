@@ -243,11 +243,7 @@ export class ModalDialog extends SimpleElement {
   }
 
   _handleKeyDown(event) {
-    if (event.key === "Enter") {
-      if (!this.defaultButton?.classList.contains("disabled")) {
-        this.defaultButton?.click();
-      }
-    } else if (event.key == "Escape") {
+    if (event.key === "Escape") {
       this.cancelButton?.click();
       if (!this.cancelButton) {
         this._dialogDone(null);
