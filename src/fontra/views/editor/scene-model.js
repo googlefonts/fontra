@@ -18,7 +18,6 @@ export class SceneModel {
     this.sceneSettingsController = sceneSettingsController;
     this.sceneSettings = sceneSettingsController.model;
     this.isPointInPath = isPointInPath;
-    this.positionedLines = [];
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.hoveredGlyph = undefined;
@@ -41,6 +40,10 @@ export class SceneModel {
 
   get selectedGlyph() {
     return this.sceneSettings.selectedGlyph;
+  }
+
+  get positionedLines() {
+    return this.sceneSettings.positionedLines;
   }
 
   getSelectedPositionedGlyph() {
@@ -344,7 +347,7 @@ export class SceneModel {
       }
       positionedLines.push(positionedLine);
     }
-    this.positionedLines = positionedLines;
+    this.sceneSettings.positionedLines = positionedLines;
     this.longestLineLength = longestLineLength;
   }
 

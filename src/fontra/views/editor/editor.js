@@ -280,6 +280,7 @@ export class EditorController {
       selectedSourceIndex: null,
       selectedLayerName: null,
       glyphSelection: null,
+      positionedLines: [],
     });
     this.sceneSettings = this.sceneSettingsController.model;
 
@@ -305,6 +306,10 @@ export class EditorController {
     });
 
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
+      this.canvasController.requestUpdate();
+    });
+
+    this.sceneSettingsController.addKeyListener("positionedLines", (event) => {
       this.canvasController.requestUpdate();
     });
 
