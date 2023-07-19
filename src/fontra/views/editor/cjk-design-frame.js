@@ -63,9 +63,8 @@ export class CJKDesignFrame {
       gridDivisionsY: 2,
     });
 
-    const frameGlyph = await this.fontController.getGlyphInstance(
-      glyphName,
-      this.sceneController.getGlobalLocation()
+    const frameGlyph = await this.sceneController.sceneModel.getGlyphInstance(
+      glyphName
     );
     if (frameGlyph && frameGlyph.path.numPoints >= 1) {
       this.cjkDesignFrameParameters = makeParametersFromGlyph(frameGlyph, unitsPerEm);
