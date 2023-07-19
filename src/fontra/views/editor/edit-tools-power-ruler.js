@@ -133,7 +133,7 @@ export class PowerRulerTool extends BaseTool {
   }
 
   editedGlyphMayHaveChanged() {
-    const glyphName = this.sceneController.selectedGlyph?.isEditing
+    const glyphName = this.sceneSettings.selectedGlyph?.isEditing
       ? this.sceneModel.getSelectedGlyphName()
       : undefined;
     if (glyphName !== this.currentGlyphName) {

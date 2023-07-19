@@ -79,8 +79,8 @@ export class PointerTool extends BaseTool {
       return;
     }
 
-    if (!this.sceneModel.selectedGlyph?.isEditing) {
-      sceneController.selectedGlyph = this.sceneModel.glyphAtPoint(point);
+    if (!this.sceneSettings.selectedGlyph?.isEditing) {
+      this.sceneSettings.selectedGlyph = this.sceneModel.glyphAtPoint(point);
       eventStream.done();
       return;
     }
@@ -116,9 +116,9 @@ export class PointerTool extends BaseTool {
           const selectedGlyph = this.sceneModel.glyphAtPoint(point);
           if (
             selectedGlyph &&
-            !equalGlyphSelection(selectedGlyph, sceneController.selectedGlyph)
+            !equalGlyphSelection(selectedGlyph, this.sceneSettings.selectedGlyph)
           ) {
-            sceneController.selectedGlyph = selectedGlyph;
+            this.sceneSettings.selectedGlyph = selectedGlyph;
             eventStream.done();
             return;
           }
@@ -142,17 +142,14 @@ export class PointerTool extends BaseTool {
   async handleDoubleCick(selection, point) {
     const sceneController = this.sceneController;
     if (!sceneController.hoverPathHit && (!selection || !selection.size)) {
-      sceneController.selectedGlyph = this.sceneModel.glyphAtPoint(point);
-      if (sceneController.selectedGlyph) {
-        sceneController.selectedGlyph = {
-          ...sceneController.selectedGlyph,
-          isEditing: true,
-        };
-      }
+      const selectedGlyph = this.sceneModel.glyphAtPoint(point);
+      this.sceneSettings.selectedGlyph = selectedGlyph
+        ? { ...selectedGlyph, isEditing: true }
+        : undefined;
       const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph?.isUndefined) {
-        sceneController.selectedGlyph = {
-          ...sceneController.selectedGlyph,
+        this.sceneSettings.selectedGlyph = {
+          ...this.sceneSettings.selectedGlyph,
           isEditing: false,
         };
         // Create a new glyph
@@ -177,8 +174,8 @@ export class PointerTool extends BaseTool {
             positionedGlyph.character?.codePointAt(0),
             positionedGlyph.glyph.instance
           );
-          sceneController.selectedGlyph = {
-            ...sceneController.selectedGlyph,
+          this.sceneSettings.selectedGlyph = {
+            ...this.sceneSettings.selectedGlyph,
             isEditing: true,
           };
 

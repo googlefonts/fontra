@@ -16,7 +16,14 @@ import { dialog } from "/web-components/dialog-overlay.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 export class SceneController {
-  constructor(sceneModel, canvasController, experimentalFeaturesController) {
+  constructor(
+    sceneSettingsController,
+    sceneModel,
+    canvasController,
+    experimentalFeaturesController
+  ) {
+    this.sceneSettingsController = sceneSettingsController;
+    this.sceneSettings = sceneSettingsController.model;
     this.sceneModel = sceneModel;
     this.canvasController = canvasController;
     this.experimentalFeatures = experimentalFeaturesController.model;
@@ -81,7 +88,7 @@ export class SceneController {
   }
 
   async handleArrowKeys(event) {
-    if (!this.sceneModel.selectedGlyph?.isEditing || !this.selection.size) {
+    if (!this.sceneSettings.selectedGlyph?.isEditing || !this.selection.size) {
       return;
     }
     let [dx, dy] = arrowKeyDeltas[event.key];
@@ -146,7 +153,7 @@ export class SceneController {
 
   updateContextMenuState(event) {
     this.contextMenuState = {};
-    if (!this.selectedGlyph?.isEditing) {
+    if (!this.sceneSettings.selectedGlyph?.isEditing) {
       return;
     }
     const { selection: clickedSelection } = this.sceneModel.selectionAtPoint(
@@ -286,20 +293,6 @@ export class SceneController {
     }
   }
 
-  get selectedGlyph() {
-    return this.sceneModel.selectedGlyph;
-  }
-
-  set selectedGlyph(selectedGlyph) {
-    if (!objectsEqual(this.sceneModel.selectedGlyph, selectedGlyph)) {
-      this.sceneModel.selectedGlyph = selectedGlyph;
-      this.sceneModel.selection = new Set();
-      this.canvasController.requestUpdate();
-      this.notifySelectedGlyphChanged();
-    }
-    this.sceneModel.updateBackgroundGlyphs();
-  }
-
   get selectionRect() {
     return this.sceneModel.selectionRect;
   }
@@ -318,14 +311,6 @@ export class SceneController {
     this.sceneModel.updateBackgroundGlyphs();
     this.canvasController.requestUpdate();
   }
-
-  // XXX TODO: figure out replacement listeners
-  // async setGlyphLines(glyphLines) {
-  //   await this.sceneModel.setGlyphLines(glyphLines);
-  //   this.notifySelectedGlyphChanged();
-  //   this.sceneModel.updateBackgroundGlyphs();
-  //   this.canvasController.requestUpdate();
-  // }
 
   async setTextAlignment(align) {
     await this.sceneModel.setTextAlignment(align);

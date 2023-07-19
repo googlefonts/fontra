@@ -21,7 +21,6 @@ export class SceneModel {
     this.positionedLines = [];
     this.selection = new Set();
     this.hoverSelection = new Set();
-    this.selectedGlyph = undefined;
     this.hoveredGlyph = undefined;
     this._globalLocation = undefined; // see getGlobalLocation()
     this._localLocations = {}; // glyph name -> local location
@@ -38,6 +37,10 @@ export class SceneModel {
 
   get glyphLines() {
     return this.sceneSettings.glyphLines;
+  }
+
+  get selectedGlyph() {
+    return this.sceneSettings.selectedGlyph;
   }
 
   getSelectedPositionedGlyph() {
