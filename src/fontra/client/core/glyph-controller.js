@@ -858,27 +858,14 @@ async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
         components: glyph.components.map((component) => {
           return {
             ...component,
-            location: ensureLocationCompatibility(
-              component.location,
-              baseGlyphFallbackValues[component.name]
-            ),
+            location: {
+              ...baseGlyphFallbackValues[component.name],
+              ...component.location,
+            },
           };
         }),
       },
       true // noCopy
     )
   );
-}
-
-function ensureLocationCompatibility(location, fallbackValues) {
-  if (!fallbackValues) {
-    return location;
-  }
-  const newLocation = { ...fallbackValues };
-  for (const [axisName, value] of Object.entries(location)) {
-    if (axisName in newLocation) {
-      newLocation[axisName] = value;
-    }
-  }
-  return newLocation;
 }
