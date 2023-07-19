@@ -137,7 +137,11 @@ export class EditorController {
       this.canvasController.requestUpdate();
     });
 
-    const sceneModel = new SceneModel(this.fontController, isPointInPath);
+    const sceneModel = new SceneModel(
+      this.fontController,
+      this.sceneSettingsController,
+      isPointInPath
+    );
 
     const sceneView = new SceneView(sceneModel, (model, controller) =>
       this.visualizationLayers.drawVisualizationLayers(model, controller)
@@ -297,11 +301,6 @@ export class EditorController {
       }
       const text = textFromGlyphLines(event.newValue);
       this.sceneSettingsController.setItem("text", text, this);
-    });
-
-    this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
-      // TODO: can we bypass sceneController?
-      this.sceneController.setGlyphLines(event.newValue);
     });
 
     this.sceneSettingsController.addListener((event) => {
@@ -1710,10 +1709,6 @@ export class EditorController {
     }
     if (viewInfo["text"]) {
       this.sceneSettings.text = viewInfo["text"];
-    } else {
-      // Doing this directly avoids triggering rebuilding the window location
-      // TODO FIXME XXX reevaluate with new scene settings object!!!!
-      this.sceneController.setGlyphLines([]);
     }
     await this.sceneController.setGlobalAndLocalLocations(
       viewInfo["location"],

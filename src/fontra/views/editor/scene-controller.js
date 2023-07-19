@@ -319,12 +319,13 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
-  async setGlyphLines(glyphLines) {
-    await this.sceneModel.setGlyphLines(glyphLines);
-    this.notifySelectedGlyphChanged();
-    this.sceneModel.updateBackgroundGlyphs();
-    this.canvasController.requestUpdate();
-  }
+  // XXX TODO: figure out replacement listeners
+  // async setGlyphLines(glyphLines) {
+  //   await this.sceneModel.setGlyphLines(glyphLines);
+  //   this.notifySelectedGlyphChanged();
+  //   this.sceneModel.updateBackgroundGlyphs();
+  //   this.canvasController.requestUpdate();
+  // }
 
   async setTextAlignment(align) {
     await this.sceneModel.setTextAlignment(align);

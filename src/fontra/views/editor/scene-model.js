@@ -13,10 +13,11 @@ import { enumerate, parseSelection } from "../core/utils.js";
 import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 
 export class SceneModel {
-  constructor(fontController, isPointInPath) {
+  constructor(fontController, sceneSettingsController, isPointInPath) {
     this.fontController = fontController;
+    this.sceneSettingsController = sceneSettingsController;
+    this.sceneSettings = sceneSettingsController.model;
     this.isPointInPath = isPointInPath;
-    this.glyphLines = [];
     this.positionedLines = [];
     this.selection = new Set();
     this.hoverSelection = new Set();
@@ -29,6 +30,14 @@ export class SceneModel {
     this.usedGlyphNames = new Set();
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
+
+    this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
+      this.updateScene();
+    });
+  }
+
+  get glyphLines() {
+    return this.sceneSettings.glyphLines;
   }
 
   getSelectedPositionedGlyph() {
@@ -65,15 +74,6 @@ export class SceneModel {
 
   getSelectedStaticGlyphController() {
     return this.getSelectedPositionedGlyph()?.glyph;
-  }
-
-  async setGlyphLines(glyphLines) {
-    this.glyphLines = glyphLines;
-    this.selection = new Set();
-    this.hoverSelection = new Set();
-    this.selectedGlyph = undefined;
-    this.hoveredGlyph = undefined;
-    await this.updateScene();
   }
 
   async setTextAlignment(align) {
