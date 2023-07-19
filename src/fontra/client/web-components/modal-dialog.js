@@ -124,6 +124,7 @@ export class ModalDialog extends SimpleElement {
     super();
     this.dialogBox = html.div({
       class: "dialog-box",
+      tabindex: 0,
       onkeydown: (event) => this._handleKeyDown(event),
     });
     this.dialogElement = document.createElement("dialog");
