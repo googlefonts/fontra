@@ -35,18 +35,18 @@ export class SidebarDesignspace {
       this._updateSelectedSourceFromLocation();
     });
 
-    this.axisSliders = document.querySelector("#designspace-location");
-    this.axisSliders.values = this.dataModel.location;
+    this.designspaceLocation = document.querySelector("#designspace-location");
+    this.designspaceLocation.values = this.dataModel.location;
 
-    this.axisSliders.addEventListener(
+    this.designspaceLocation.addEventListener(
       "locationChanged",
       scheduleCalls(async (event) => {
-        this.dataModel.location = { ...this.axisSliders.values };
+        this.dataModel.location = { ...this.designspaceLocation.values };
       })
     );
 
     this.dataController.addKeyListener("location", (event) => {
-      this.axisSliders.values = event.newValue;
+      this.designspaceLocation.values = event.newValue;
       this._updateSelectedSourceFromLocation();
       this._updateRemoveSourceButtonState();
     });
@@ -130,7 +130,7 @@ export class SidebarDesignspace {
       }
       axes.push(...localAxes);
     }
-    this.axisSliders.axes = axes;
+    this.designspaceLocation.axes = axes;
   }
 
   _updateSources() {
@@ -171,7 +171,8 @@ export class SidebarDesignspace {
     }
     this.sourcesList.setItems(sourceItems);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
-    this.addRemoveSourceButtons.disableAddButton = !this.axisSliders.axes.length;
+    this.addRemoveSourceButtons.disableAddButton =
+      !this.designspaceLocation.axes.length;
   }
 
   _updateSelectedSourceFromLocation() {
