@@ -234,14 +234,12 @@ export class ModalDialog extends SimpleElement {
   }
 
   show() {
-    this._savedActiveElement = document.activeElement;
     this._tabbed = false;
     this.dialogElement.showModal();
   }
 
   hide() {
     this.dialogElement.close();
-    this._savedActiveElement?.focus();
     this._tabbed = false;
   }
 
