@@ -131,17 +131,10 @@ export class SidebarDesignspace {
     return this.fontController.globalAxes.filter((axis) => !axis.hidden);
   }
 
-  async _getSelectedVarGlyphController() {
-    const glyphName = this.sceneModel.getSelectedGlyphName();
-    if (!glyphName) {
-      return null;
-    }
-    return await this.fontController.getGlyph(glyphName);
-  }
-
   async _updateAxes() {
     const axes = [...this.globalAxes];
-    const varGlyphController = await this._getSelectedVarGlyphController();
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
     if (varGlyphController) {
       const globalAxisNames = new Set(axes.map((axis) => axis.name));
       const localAxes = getAxisInfoFromGlyph(varGlyphController).filter(
@@ -158,7 +151,8 @@ export class SidebarDesignspace {
   }
 
   async _updateSources() {
-    const varGlyphController = await this._getSelectedVarGlyphController();
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
     const sources = varGlyphController?.sources || [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
     const sourceItems = [];
