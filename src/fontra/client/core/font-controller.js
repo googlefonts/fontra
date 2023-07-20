@@ -92,6 +92,9 @@ export class FontController {
   }
 
   async loadGlyphs(glyphNames) {
+    // FIXME: redo this with a sized queue, so we can control the
+    // maximum amount of concurrent requests.
+    //
     // Load all glyphs named in the glyphNames array, as well as
     // all of their dependencies (made-of). Return a promise that
     // will resolve once all requested glyphs have been loaded.
