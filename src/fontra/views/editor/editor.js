@@ -119,8 +119,6 @@ export class EditorController {
       "fontra-editor-experimental-features."
     );
 
-    this.designspaceLocationController = new ObservableController();
-
     this.initSidebarReferenceFont();
     this.cjkDesignFrame = new CJKDesignFrame(this);
 
@@ -302,6 +300,41 @@ export class EditorController {
     this.sceneSettingsController.addListener((event) => {
       this.updateWindowLocation(); // scheduled with delay
     });
+
+    // FIXME:
+    this.sceneSettingsController.addKeyListener("location", async (event) => {
+      await this.sceneController.setLocation(event.newValue);
+      this.autoViewBox = false;
+    });
+
+    // Set up the mutual dependencies between location and selectedSourceIndex
+    this.sceneSettingsController.addKeyListener("location", async (event) => {
+      if (event.senderInfo === this) {
+        return;
+      }
+      const varGlyphController =
+        await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+      const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
+      this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, this);
+    });
+
+    this.sceneSettingsController.addKeyListener(
+      "selectedSourceIndex",
+      async (event) => {
+        if (event.senderInfo === this) {
+          return;
+        }
+        const sourceIndex = event.newValue;
+        if (sourceIndex == undefined) {
+          return;
+        }
+        const varGlyphController =
+          await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+        const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
+
+        this.sceneSettingsController.setItem("location", location, this);
+      }
+    );
   }
 
   async initGlyphsSearch() {
@@ -429,7 +462,7 @@ export class EditorController {
           this.sceneController.getLocation(),
           true
         );
-        this.sidebarDesignspace.selectSourceByIndex(nearestSourceIndex);
+        this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
         break;
     }
   }
@@ -479,24 +512,7 @@ export class EditorController {
   }
 
   async initSidebarDesignspace() {
-    this.designspaceLocationController.model.location = {};
-    this.designspaceLocationController.model.globalAxes =
-      this.fontController.globalAxes.filter((axis) => !axis.hidden);
-    this.sidebarDesignspace = new SidebarDesignspace(
-      this.sceneController,
-      this.designspaceLocationController
-    );
-    await this.sidebarDesignspace.setup();
-
-    this.designspaceLocationController.addKeyListener("location", async (event) => {
-      await this.sceneController.setLocation(event.newValue);
-      this.autoViewBox = false;
-    });
-  }
-
-  async _sidebarDesignspaceResetVarGlyph() {
-    this.designspaceLocationController.model.varGlyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    this.sidebarDesignspace = new SidebarDesignspace(this);
   }
 
   initSidebars() {
@@ -883,8 +899,7 @@ export class EditorController {
       glyphIndex: selectedGlyphInfo.glyphIndex + 1,
     };
     setTimeout(() => {
-      this.designspaceLocationController.model.location =
-        this.sceneController.getLocation();
+      this.sceneSettings.location = this.sceneController.getLocation();
     }, 5);
   }
 
@@ -1126,10 +1141,10 @@ export class EditorController {
 
   async doUndoRedo(isRedo) {
     await this.sceneController.doUndoRedo(isRedo);
-    // Hmmm would be nice if this was done automatically
-    this.designspaceLocationController.model.location =
-      this.sceneController.getLocation();
     // FIXME:
+    // Hmmm would be nice if this was done automatically
+    // this.designspaceLocationController.model.location =
+    //   this.sceneController.getLocation();
     // this.updateSidebarDesignspace();
     // this.updateWindowLocationAndSelectionInfo();
   }
@@ -1540,15 +1555,14 @@ export class EditorController {
     let newSourceIndex;
     if (sourceIndex === undefined) {
       newSourceIndex = varGlyphController.findNearestSourceFromGlobalLocation(
-        this.designspaceLocationController.model.location
+        this.sceneSettings.location
       );
     } else {
       const numSources = varGlyphController.sources.length;
       newSourceIndex =
         (selectPrevious ? sourceIndex + numSources - 1 : sourceIndex + 1) % numSources;
     }
-    this.designspaceLocationController.model.location =
-      varGlyphController.mapSourceLocationToGlobal(newSourceIndex);
+    this.sceneSettings.selectedSourceIndex = newSourceIndex;
   }
 
   keyUpHandler(event) {
@@ -1701,8 +1715,7 @@ export class EditorController {
 
     if (viewInfo["location"]) {
       setTimeout(() => {
-        this.designspaceLocationController.model.location =
-          this.sceneController.getLocation();
+        this.sceneSettings.location = this.sceneController.getLocation();
       }, 10);
     }
 

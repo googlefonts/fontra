@@ -22,33 +22,47 @@ const FONTRA_STATUS_KEY = "fontra.development.status";
 const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";
 
 export class SidebarDesignspace {
-  constructor(sceneController, dataController) {
-    this.sceneController = sceneController;
-    this.dataController = dataController;
-    this.dataModel = dataController.model;
+  constructor(editor) {
+    this.fontController = editor.fontController;
+    this.sceneSettingsController = editor.sceneSettingsController;
+    this.sceneSettings = editor.sceneSettingsController.model;
+    this.sceneModel = editor.sceneController.sceneModel;
+    this.sceneController = editor.sceneController;
+    this.setup();
   }
 
-  async setup() {
-    this.dataController.addKeyListener("varGlyphController", (event) => {
-      this._updateAxes();
-      this._updateSources();
-      this._updateSelectedSourceFromLocation();
-    });
-
+  setup() {
     this.designspaceLocation = document.querySelector("#designspace-location");
-    this.designspaceLocation.values = this.dataModel.location;
+    this.designspaceLocation.values = this.sceneSettings.location;
 
     this.designspaceLocation.addEventListener(
       "locationChanged",
       scheduleCalls(async (event) => {
-        this.dataModel.location = { ...this.designspaceLocation.values };
+        this.sceneSettingsController.setItem(
+          "location",
+          { ...this.designspaceLocation.values },
+          this
+        );
       })
     );
 
-    this.dataController.addKeyListener("location", (event) => {
+    this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
+      this._updateAxes();
+      this._updateSources();
+    });
+
+    this.sceneSettingsController.addKeyListener("location", (event) => {
+      if (event.senderInfo === this) {
+        // Sent by us, ignore
+        return;
+      }
+      console.log("location", event.newValue);
       this.designspaceLocation.values = event.newValue;
-      this._updateSelectedSourceFromLocation();
       this._updateRemoveSourceButtonState();
+    });
+
+    this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
+      this.sourcesList.setSelectedItemIndex(event.newValue);
     });
 
     const columnDescriptions = [
@@ -102,7 +116,8 @@ export class SidebarDesignspace {
     this.addRemoveSourceButtons.hidden = true;
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
-      this._updateLocationFromSelectedSource();
+      const sourceIndex = this.sourcesList.getSelectedItemIndex();
+      this.sceneSettings.selectedSourceIndex = sourceIndex;
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
@@ -111,30 +126,40 @@ export class SidebarDesignspace {
 
     this._updateAxes();
     this._updateSources();
-    this._updateSelectedSourceFromLocation();
   }
 
-  forceUpdateSources() {
-    this._updateSources();
+  get globalAxes() {
+    return this.fontController.globalAxes.filter((axis) => !axis.hidden);
   }
 
-  _updateAxes() {
-    const axes = [...this.dataModel.globalAxes];
-    const globalAxisNames = new Set(axes.map((axis) => axis.name));
-    const localAxes = getAxisInfoFromGlyph(this.dataModel.varGlyphController).filter(
-      (axis) => !globalAxisNames.has(axis.name)
-    );
-    if (localAxes.length) {
-      if (axes.length) {
-        axes.push({ isDivider: true });
+  async _getSelectedVarGlyphController() {
+    const glyphName = this.sceneModel.getSelectedGlyphName();
+    if (!glyphName) {
+      return null;
+    }
+    return await this.fontController.getGlyph(glyphName);
+  }
+
+  async _updateAxes() {
+    const axes = [...this.globalAxes];
+    const varGlyphController = await this._getSelectedVarGlyphController();
+    if (varGlyphController) {
+      const globalAxisNames = new Set(axes.map((axis) => axis.name));
+      const localAxes = getAxisInfoFromGlyph(varGlyphController).filter(
+        (axis) => !globalAxisNames.has(axis.name)
+      );
+      if (localAxes.length) {
+        if (axes.length) {
+          axes.push({ isDivider: true });
+        }
+        axes.push(...localAxes);
       }
-      axes.push(...localAxes);
     }
     this.designspaceLocation.axes = axes;
   }
 
-  _updateSources() {
-    const varGlyphController = this.dataModel.varGlyphController;
+  async _updateSources() {
+    const varGlyphController = await this._getSelectedVarGlyphController();
     const sources = varGlyphController?.sources || [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
     const sourceItems = [];
@@ -173,27 +198,6 @@ export class SidebarDesignspace {
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
     this.addRemoveSourceButtons.disableAddButton =
       !this.designspaceLocation.axes.length;
-  }
-
-  _updateSelectedSourceFromLocation() {
-    const sourceIndex = this.dataModel.varGlyphController?.getSourceIndex(
-      this.dataModel.location
-    );
-    this.sourcesList.setSelectedItemIndex(sourceIndex);
-  }
-
-  selectSourceByIndex(sourceIndex) {
-    this.sourcesList.setSelectedItemIndex(sourceIndex);
-    this._updateLocationFromSelectedSource();
-  }
-
-  _updateLocationFromSelectedSource() {
-    const sourceIndex = this.sourcesList.getSelectedItemIndex();
-    if (sourceIndex === undefined) {
-      return;
-    }
-    this.dataModel.location =
-      this.dataModel.varGlyphController.mapSourceLocationToGlobal(sourceIndex);
   }
 
   _updateRemoveSourceButtonState() {
@@ -253,7 +257,8 @@ export class SidebarDesignspace {
       return "delete source" + layerMessage;
     });
     // Update UI
-    await this._updateSources();
+    // FIXME
+    // await this._updateSources();
   }
 
   async addSource() {
@@ -308,9 +313,10 @@ export class SidebarDesignspace {
       return "add source";
     });
     // Update UI
-    await this._updateSources();
-    const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
-    this.selectSourceByIndex(selectedSourceIndex);
+    // FIXME:
+    // await this._updateSources();
+    // const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
+    // this.selectSourceByIndex(selectedSourceIndex);
   }
 
   async editSourceProperties(sourceIndex) {
@@ -363,8 +369,9 @@ export class SidebarDesignspace {
       return "edit source properties";
     });
     // Update UI
-    await this._updateSources();
-    this.selectSourceByIndex(sourceIndex);
+    // FIXME:
+    // await this._updateSources();
+    // this.selectSourceByIndex(sourceIndex);
   }
 
   async _sourcePropertiesRunDialog(
@@ -481,7 +488,7 @@ export class SidebarDesignspace {
     const localAxisNames = glyph.axes.map((axis) => axis.name);
     const globalAxes = mapAxesFromUserSpaceToDesignspace(
       // Don't include global axes that also exist as local axes
-      this.dataModel.globalAxes.filter((axis) => !localAxisNames.includes(axis.name))
+      this.globalAxes.filter((axis) => !localAxisNames.includes(axis.name))
     );
     return [
       ...globalAxes,

@@ -14,7 +14,8 @@ export class CJKDesignFrame {
       this.updateCJKDesignFrame(cjkDesignFrameGlyphName)
     );
 
-    editor.designspaceLocationController.addKeyListener("location", (event) => {
+    editor.sceneSettingsController.addKeyListener("location", (event) => {
+      // FIXME
       // Grrr, timeout needed when the location changes based on a source list click
       setTimeout(() => {
         this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
