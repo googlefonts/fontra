@@ -23,6 +23,14 @@ export class SceneController {
     this.canvasController = editor.canvasController;
     this.experimentalFeatures = editor.experimentalFeaturesController.model;
 
+    this.sceneSettingsController.addKeyListener(
+      "selectedGlyph",
+      (event) => delete this._previousGlyphPosition
+    );
+    this.sceneSettingsController.addKeyListener("positionedLines", (event) =>
+      this._adjustScrollToAlignment()
+    );
+
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
         await this.handleDrag(eventStream, initialEvent),
@@ -38,6 +46,26 @@ export class SceneController {
       this.handleKeyDown(event)
     );
     this.selectedTool = undefined;
+  }
+
+  _adjustScrollToAlignment() {
+    const varGlyphController = this.sceneModel.getSelectedVariableGlyphController();
+    if (!varGlyphController) {
+      return;
+    }
+    const glyphPosition = positionedGlyphPosition(
+      this.sceneModel.getSelectedPositionedGlyph()
+    );
+    if (this._previousGlyphPosition && glyphPosition) {
+      const previousGlyphCenter =
+        this._previousGlyphPosition.x + this._previousGlyphPosition.xAdvance / 2;
+      const glyphCenter = glyphPosition.x + glyphPosition.xAdvance / 2;
+      const originXDelta =
+        (glyphCenter - previousGlyphCenter) * this.canvasController.magnification;
+      this.canvasController.origin.x -= originXDelta;
+    }
+
+    this._previousGlyphPosition = glyphPosition;
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
@@ -319,22 +347,6 @@ export class SceneController {
   getLocalLocations(filterShownGlyphs = false) {
     return this.sceneModel.getLocalLocations(filterShownGlyphs);
   }
-
-  // async setLocation(values) {
-  //   const glyphXBefore = positionedGlyphCenterX(
-  //     this.sceneModel.getSelectedPositionedGlyph()
-  //   );
-  //   await this.sceneModel.setLocation(values);
-  //   if (glyphXBefore !== undefined) {
-  //     const glyphXAfter = positionedGlyphCenterX(
-  //       this.sceneModel.getSelectedPositionedGlyph()
-  //     );
-  //     const originXDelta =
-  //       (glyphXAfter - glyphXBefore) * this.canvasController.magnification;
-  //     this.canvasController.origin.x -= originXDelta;
-  //   }
-  //   this.canvasController.requestUpdate();
-  // }
 
   async setGlobalAndLocalLocations(globalLocation, localLocations) {
     await this.sceneModel.setGlobalAndLocalLocations(globalLocation, localLocations);
@@ -706,11 +718,11 @@ function getSelectedContours(path, pointSelection) {
   return [...selectedContours];
 }
 
-function positionedGlyphCenterX(positionedGlyph) {
+function positionedGlyphPosition(positionedGlyph) {
   if (!positionedGlyph) {
     return undefined;
   }
-  return positionedGlyph.x + positionedGlyph.glyph.xAdvance / 2;
+  return { x: positionedGlyph.x, xAdvance: positionedGlyph.glyph.xAdvance };
 }
 
 export function equalGlyphSelection(glyphSelectionA, glyphSelectionB) {
