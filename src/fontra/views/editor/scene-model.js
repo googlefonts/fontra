@@ -178,7 +178,7 @@ export class SceneModel {
     // Call this when the cmap changed: previously missing characters may now be
     // available, but may have a different glyph name, or a character may no longer
     // be available, in which case we set the isUndefined flag
-    this.glyphLines = this.glyphLines.map((line) =>
+    this.sceneSettings.glyphLines = this.glyphLines.map((line) =>
       line.map((glyphInfo) => {
         const glyphName = glyphInfo.character
           ? this.fontController.characterMap[glyphInfo.character.codePointAt(0)]
