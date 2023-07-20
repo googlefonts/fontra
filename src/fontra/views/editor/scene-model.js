@@ -32,6 +32,11 @@ export class SceneModel {
     this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
       this.updateScene();
     });
+
+    this.sceneSettingsController.addKeyListener("location", (event) => {
+      this._updateLocations(event.newValue);
+      this.updateScene();
+    });
   }
 
   get glyphLines() {
@@ -132,7 +137,7 @@ export class SceneModel {
     return localLocations;
   }
 
-  async setLocation(location) {
+  _updateLocations(location) {
     const glyphName = this.getSelectedGlyphName();
     const localLocation = { ...location };
     const globalLocation = {};
@@ -150,7 +155,6 @@ export class SceneModel {
         delete this._localLocations[glyphName];
       }
     }
-    await this.updateScene();
   }
 
   async setGlobalAndLocalLocations(globalLocation, localLocations) {

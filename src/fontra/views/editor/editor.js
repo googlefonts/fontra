@@ -298,12 +298,11 @@ export class EditorController {
     });
 
     this.sceneSettingsController.addListener((event) => {
+      // FIXME: ignore some keys
       this.updateWindowLocation(); // scheduled with delay
     });
 
-    // FIXME:
     this.sceneSettingsController.addKeyListener("location", async (event) => {
-      await this.sceneController.setLocation(event.newValue);
       this.autoViewBox = false;
     });
 

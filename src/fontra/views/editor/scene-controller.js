@@ -325,21 +325,21 @@ export class SceneController {
     return this.sceneModel.getLocalLocations(filterShownGlyphs);
   }
 
-  async setLocation(values) {
-    const glyphXBefore = positionedGlyphCenterX(
-      this.sceneModel.getSelectedPositionedGlyph()
-    );
-    await this.sceneModel.setLocation(values);
-    if (glyphXBefore !== undefined) {
-      const glyphXAfter = positionedGlyphCenterX(
-        this.sceneModel.getSelectedPositionedGlyph()
-      );
-      const originXDelta =
-        (glyphXAfter - glyphXBefore) * this.canvasController.magnification;
-      this.canvasController.origin.x -= originXDelta;
-    }
-    this.canvasController.requestUpdate();
-  }
+  // async setLocation(values) {
+  //   const glyphXBefore = positionedGlyphCenterX(
+  //     this.sceneModel.getSelectedPositionedGlyph()
+  //   );
+  //   await this.sceneModel.setLocation(values);
+  //   if (glyphXBefore !== undefined) {
+  //     const glyphXAfter = positionedGlyphCenterX(
+  //       this.sceneModel.getSelectedPositionedGlyph()
+  //     );
+  //     const originXDelta =
+  //       (glyphXAfter - glyphXBefore) * this.canvasController.magnification;
+  //     this.canvasController.origin.x -= originXDelta;
+  //   }
+  //   this.canvasController.requestUpdate();
+  // }
 
   async setGlobalAndLocalLocations(globalLocation, localLocations) {
     await this.sceneModel.setGlobalAndLocalLocations(globalLocation, localLocations);
