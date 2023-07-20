@@ -28,7 +28,7 @@ export class SceneController {
       (event) => delete this._previousGlyphPosition
     );
     this.sceneSettingsController.addKeyListener("positionedLines", (event) =>
-      this._adjustScrollToAlignment()
+      this._adjustScrollToPin()
     );
 
     this.mouseTracker = new MouseTracker({
@@ -48,7 +48,7 @@ export class SceneController {
     this.selectedTool = undefined;
   }
 
-  _adjustScrollToAlignment() {
+  _adjustScrollToPin() {
     const varGlyphController = this.sceneModel.getSelectedVariableGlyphController();
     if (!varGlyphController) {
       return;
