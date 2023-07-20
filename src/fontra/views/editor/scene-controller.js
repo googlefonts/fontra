@@ -16,23 +16,18 @@ import { dialog } from "/web-components/dialog-overlay.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 export class SceneController {
-  constructor(
-    sceneSettingsController,
-    sceneModel,
-    canvasController,
-    experimentalFeaturesController
-  ) {
-    this.sceneSettingsController = sceneSettingsController;
-    this.sceneSettings = sceneSettingsController.model;
+  constructor(editor, sceneModel) {
+    this.sceneSettingsController = editor.sceneSettingsController;
+    this.sceneSettings = editor.sceneSettings;
     this.sceneModel = sceneModel;
-    this.canvasController = canvasController;
-    this.experimentalFeatures = experimentalFeaturesController.model;
+    this.canvasController = editor.canvasController;
+    this.experimentalFeatures = editor.experimentalFeaturesController.model;
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
         await this.handleDrag(eventStream, initialEvent),
       hover: (event) => this.handleHover(event),
-      element: canvasController.canvas,
+      element: this.canvasController.canvas,
     });
     this._eventElement = document.createElement("div");
 

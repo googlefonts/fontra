@@ -156,12 +156,7 @@ export class EditorController {
       this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
     });
 
-    this.sceneController = new SceneController(
-      this.sceneSettingsController,
-      sceneModel,
-      canvasController,
-      this.experimentalFeaturesController
-    );
+    this.sceneController = new SceneController(this, sceneModel);
     // TODO move event stuff out of here
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
       this.doubleClickedComponentsCallback(event);
