@@ -530,7 +530,7 @@ export class SceneController {
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
-        await this.setLocation(undoInfo.location);
+        this.sceneSettings.location = undoInfo.location;
       }
       await this.sceneModel.updateScene();
       this.canvasController.requestUpdate();

@@ -1754,8 +1754,10 @@ export class EditorController {
       url.searchParams.set(key, JSON.stringify(value));
     }
     if (previousText !== viewInfo["text"]) {
+      console.log("push");
       window.history.pushState({}, "", url);
     } else {
+      console.log("replace");
       window.history.replaceState({}, "", url);
     }
   }
