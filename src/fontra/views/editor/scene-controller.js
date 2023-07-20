@@ -23,13 +23,12 @@ export class SceneController {
     this.canvasController = editor.canvasController;
     this.experimentalFeatures = editor.experimentalFeaturesController.model;
 
-    this.sceneSettingsController.addKeyListener(
-      "selectedGlyph",
-      (event) => delete this._previousGlyphPosition
-    );
-    this.sceneSettingsController.addKeyListener("positionedLines", (event) =>
-      this._adjustScrollToPin()
-    );
+    this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
+      this._resetScrollToPin();
+    });
+    this.sceneSettingsController.addKeyListener("positionedLines", (event) => {
+      this._adjustScrollToPin();
+    });
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
@@ -46,6 +45,17 @@ export class SceneController {
       this.handleKeyDown(event)
     );
     this.selectedTool = undefined;
+  }
+
+  _resetScrollToPin() {
+    delete this._previousGlyphPosition;
+    const varGlyphController = this.sceneModel.getSelectedVariableGlyphController();
+    if (!varGlyphController) {
+      return;
+    }
+    this._previousGlyphPosition = positionedGlyphPosition(
+      this.sceneModel.getSelectedPositionedGlyph()
+    );
   }
 
   _adjustScrollToPin() {
