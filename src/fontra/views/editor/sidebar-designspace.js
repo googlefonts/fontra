@@ -56,7 +56,6 @@ export class SidebarDesignspace {
         // Sent by us, ignore
         return;
       }
-      console.log("location", event.newValue);
       this.designspaceLocation.values = event.newValue;
       this._updateRemoveSourceButtonState();
     });
