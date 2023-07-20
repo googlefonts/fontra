@@ -200,14 +200,6 @@ export class EditorController {
       (event) => this._updateWindowLocation(),
       200
     );
-    this.updateSelectionInfo = throttleCalls(
-      async (senderID) => await this._updateSelectionInfo(senderID),
-      100
-    );
-    this.updateSidebarDesignspace = throttleCalls(
-      async () => await this._updateSidebarDesignspace(),
-      200
-    );
     canvas.addEventListener("viewBoxChanged", (event) => {
       if (event.detail === "canvas-size") {
         this.setAutoViewBox();
@@ -215,9 +207,6 @@ export class EditorController {
         this.autoViewBox = false;
       }
       this.updateWindowLocation();
-    });
-    this.sceneController.addEventListener("selectionChanged", async () => {
-      this.updateWindowLocationAndSelectionInfo();
     });
 
     window.addEventListener("popstate", (event) => {
@@ -501,7 +490,6 @@ export class EditorController {
 
     this.designspaceLocationController.addKeyListener("location", async (event) => {
       await this.sceneController.setLocation(event.newValue);
-      this.updateWindowLocationAndSelectionInfo();
       this.autoViewBox = false;
     });
   }
@@ -836,14 +824,7 @@ export class EditorController {
 
     this.sceneSettings.selectedGlyph = selectedGlyphState;
 
-    this.updateSidebarDesignspace();
-    this.updateWindowLocationAndSelectionInfo();
     this.setAutoViewBox();
-  }
-
-  async _updateSidebarDesignspace() {
-    await this._sidebarDesignspaceResetVarGlyph();
-    this.sidebarDesignspace.forceUpdateSources();
   }
 
   async doubleClickedComponentsCallback(event) {
@@ -1148,8 +1129,9 @@ export class EditorController {
     // Hmmm would be nice if this was done automatically
     this.designspaceLocationController.model.location =
       this.sceneController.getLocation();
-    this.updateSidebarDesignspace();
-    this.updateWindowLocationAndSelectionInfo();
+    // FIXME:
+    // this.updateSidebarDesignspace();
+    // this.updateWindowLocationAndSelectionInfo();
   }
 
   canCut() {
@@ -1617,7 +1599,8 @@ export class EditorController {
     await this.sceneController.sceneModel.updateScene();
     this.canvasController.requestUpdate();
     this.glyphsSearch.updateGlyphNamesListContent();
-    this.updateWindowLocationAndSelectionInfo();
+    // FIXME:
+    // this.updateWindowLocationAndSelectionInfo();
   }
 
   async externalChange(change) {
@@ -1639,15 +1622,15 @@ export class EditorController {
         };
       }
       this.glyphsSearch.updateGlyphNamesListContent();
-      this.updateSidebarDesignspace();
     }
     await this.sceneController.sceneModel.updateScene();
     if (
       selectedGlyphName !== undefined &&
       matchChangePath(change, ["glyphs", selectedGlyphName])
     ) {
-      this.updateSelectionInfo();
-      this.updateSidebarDesignspace();
+      // FIXME:
+      // this.updateSelectionInfo();
+      // this.updateSidebarDesignspace();
     }
     this.canvasController.requestUpdate();
   }
@@ -1680,9 +1663,9 @@ export class EditorController {
     await this.sceneController.sceneModel.updateScene();
     const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
     if (selectedGlyphName !== undefined && glyphNames.includes(selectedGlyphName)) {
-      this.updateSelectionInfo();
-      this.updateSidebarDesignspace();
-      this.updateWindowLocationAndSelectionInfo();
+      // FIXME:
+      // this.updateSidebarDesignspace();
+      // this.updateWindowLocationAndSelectionInfo();
     }
     this.canvasController.requestUpdate();
   }
@@ -1770,11 +1753,6 @@ export class EditorController {
     }
   }
 
-  updateWindowLocationAndSelectionInfo() {
-    this.updateSelectionInfo();
-    this.updateWindowLocation();
-  }
-
   toggleGlyphSearch(onOff, doFocus) {
     if (onOff && doFocus) {
       this.glyphsSearch.focusSearchField();
@@ -1789,7 +1767,8 @@ export class EditorController {
 
   toggleSidebarSelectionInfo(onOff) {
     if (onOff) {
-      this.updateSelectionInfo?.();
+      // FIXME:
+      // this.updateSelectionInfo?.();
     }
   }
 
@@ -1802,15 +1781,12 @@ export class EditorController {
 
   async editListenerCallback(editMethodName, senderID, ...args) {
     if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
-      this.updateSelectionInfo(senderID);
+      // FIXME:
+      // this.updateSelectionInfo(senderID);
     }
     if (editMethodName === "editFinal") {
       this.sceneController.updateHoverState();
     }
-  }
-
-  async _updateSelectionInfo(senderID) {
-    await this.sidebarSelectionInfo.update(senderID);
   }
 
   setAutoViewBox() {
