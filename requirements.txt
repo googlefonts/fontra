@@ -1,4 +1,4 @@
-aiohttp==3.8.4
+aiohttp==3.8.5
 dacite==1.8.1
 fonttools[ufo,unicode]==4.41.0
 glyphsLib==6.2.5
