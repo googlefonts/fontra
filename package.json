@@ -9,7 +9,7 @@
     "@rollup/plugin-node-resolve": "^15.1.0",
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
-    "rollup": "^3.26.2"
+    "rollup": "^3.26.3"
   },
   "dependencies": {
     "bezier-js": "^6.1.3",
