@@ -23,11 +23,14 @@ export class SceneController {
     this.canvasController = editor.canvasController;
     this.experimentalFeatures = editor.experimentalFeaturesController.model;
 
+    this._previousTextAlign = "center";
+
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
-      this._resetScrollToPin();
+      this._resetStoredGlyphPosition();
     });
     this.sceneSettingsController.addKeyListener("positionedLines", (event) => {
-      this._adjustScrollToPin();
+      this._adjustScrollPosition(this._previousTextAlign != this.sceneSettings.align);
+      this._previousTextAlign = this.sceneSettings.align;
     });
 
     this.mouseTracker = new MouseTracker({
@@ -47,34 +50,36 @@ export class SceneController {
     this.selectedTool = undefined;
   }
 
-  _resetScrollToPin() {
-    delete this._previousGlyphPosition;
-    const varGlyphController = this.sceneModel.getSelectedVariableGlyphController();
-    if (!varGlyphController) {
-      return;
-    }
+  _resetStoredGlyphPosition() {
     this._previousGlyphPosition = positionedGlyphPosition(
       this.sceneModel.getSelectedPositionedGlyph()
     );
   }
 
-  _adjustScrollToPin() {
-    const varGlyphController = this.sceneModel.getSelectedVariableGlyphController();
-    if (!varGlyphController) {
-      return;
-    }
+  _adjustScrollPosition(textAlignChanged) {
+    let originXDelta = 0;
     const glyphPosition = positionedGlyphPosition(
       this.sceneModel.getSelectedPositionedGlyph()
     );
-    if (this._previousGlyphPosition && glyphPosition) {
+
+    const [minX, maxX] = this.sceneModel.getTextHorizontalExtents();
+
+    if (textAlignChanged && this._previousTextExtents) {
+      const [minXPre, maxXPre] = this._previousTextExtents;
+      originXDelta = (minX - minXPre) * this.canvasController.magnification;
+    } else if (this._previousGlyphPosition && glyphPosition) {
       const previousGlyphCenter =
         this._previousGlyphPosition.x + this._previousGlyphPosition.xAdvance / 2;
       const glyphCenter = glyphPosition.x + glyphPosition.xAdvance / 2;
-      const originXDelta =
+      originXDelta =
         (glyphCenter - previousGlyphCenter) * this.canvasController.magnification;
+    }
+
+    if (originXDelta) {
       this.canvasController.origin.x -= originXDelta;
     }
 
+    this._previousTextExtents = [minX, maxX];
     this._previousGlyphPosition = glyphPosition;
   }
 
@@ -338,11 +343,6 @@ export class SceneController {
   set backgroundLayers(layerNames) {
     this.sceneModel.backgroundLayers = layerNames;
     this.sceneModel.updateBackgroundGlyphs();
-    this.canvasController.requestUpdate();
-  }
-
-  async setTextAlignment(align) {
-    await this.sceneModel.setTextAlignment(align);
     this.canvasController.requestUpdate();
   }
 

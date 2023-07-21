@@ -23,13 +23,16 @@ export class SceneModel {
     this.hoveredGlyph = undefined;
     this._globalLocation = undefined; // see getGlobalLocation()
     this._localLocations = {}; // glyph name -> local location
-    this.textAlignment = "center";
     this.longestLineLength = 0;
     this.usedGlyphNames = new Set();
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
 
     this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
+      this.updateScene();
+    });
+
+    this.sceneSettingsController.addKeyListener("align", (event) => {
       this.updateScene();
     });
 
@@ -81,13 +84,6 @@ export class SceneModel {
 
   getSelectedStaticGlyphController() {
     return this.getSelectedPositionedGlyph()?.glyph;
-  }
-
-  async setTextAlignment(align) {
-    this.textAlignment = align;
-    if (this.glyphLines?.length) {
-      await this.updateScene();
-    }
   }
 
   getLocation() {
@@ -164,7 +160,7 @@ export class SceneModel {
   }
 
   getTextHorizontalExtents() {
-    switch (this.textAlignment) {
+    switch (this.sceneSettings.align) {
       case "left":
         return [0, this.longestLineLength];
       case "center":
@@ -264,7 +260,7 @@ export class SceneModel {
   async buildScene() {
     const fontController = this.fontController;
     const glyphLines = this.glyphLines;
-    const align = this.textAlignment;
+    const align = this.sceneSettings.align;
 
     let y = 0;
     const lineDistance = 1.1 * fontController.unitsPerEm; // TODO make factor user-configurable

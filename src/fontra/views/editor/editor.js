@@ -684,29 +684,10 @@ export class EditorController {
   }
 
   initSidebarTextEntry() {
-    this.sceneSettingsController.addKeyListener("align", (event) => {
-      this.setTextAlignment(this.sceneSettings.align);
-    });
-
     this.sidebarTextSettings = new SidebarTextEntry(
       this.sceneController,
       this.sceneSettingsController
     );
-  }
-
-  async setTextAlignment(align) {
-    const [minXPre, maxXPre] =
-      this.sceneController.sceneModel.getTextHorizontalExtents();
-    if (minXPre === 0 && maxXPre === 0) {
-      // It's early, the scene is still empty, don't manipulate the view box
-      await this.sceneController.setTextAlignment(align);
-      return;
-    }
-    const viewBox = this.canvasController.getViewBox();
-    await this.sceneController.setTextAlignment(align);
-    const [minXPost, maxXPost] =
-      this.sceneController.sceneModel.getTextHorizontalExtents();
-    this.canvasController.setViewBox(offsetRect(viewBox, minXPost - minXPre, 0));
   }
 
   async initSidebarReferenceFont() {
@@ -1767,8 +1748,8 @@ export class EditorController {
     if (selArray.length) {
       viewInfo["selection"] = Array.from(selArray);
     }
-    if (this.sceneController.sceneModel.textAlignment !== "center") {
-      viewInfo["align"] = this.sceneController.sceneModel.textAlignment;
+    if (this.sceneSettings.align !== "center") {
+      viewInfo["align"] = this.sceneSettings.align;
     }
     for (const [key, value] of Object.entries(viewInfo)) {
       url.searchParams.set(key, JSON.stringify(value));
