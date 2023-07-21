@@ -40,7 +40,7 @@ import { dialog, dialogSetup } from "/web-components/dialog-overlay.js";
 import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { SceneController } from "./scene-controller.js";
-import { SceneModel } from "./scene-model.js";
+import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
@@ -256,6 +256,7 @@ export class EditorController {
       globalLocation: {},
       localLocation: {},
       selectedGlyph: null,
+      selectedGlyphName: null,
       selectedSourceIndex: null,
       selectedLayerName: null,
       glyphSelection: null,
@@ -328,6 +329,25 @@ export class EditorController {
 
         this.sceneSettingsController.setItem("location", location, this);
       }
+    );
+
+    // Set up convenience property "selectedGlyphName"
+    const updateSelectedGlyphName = (event) => {
+      this.sceneSettings.selectedGlyphName = getSelectedGlyphName(
+        this.sceneSettings.selectedGlyph,
+        this.sceneSettings.glyphLines
+      );
+    };
+    this.sceneSettingsController.addKeyListener(
+      "selectedGlyph",
+      updateSelectedGlyphName,
+      true
+    );
+
+    this.sceneSettingsController.addKeyListener(
+      "glyphLines",
+      updateSelectedGlyphName,
+      true
     );
   }
 
