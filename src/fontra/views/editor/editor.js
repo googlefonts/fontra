@@ -264,6 +264,7 @@ export class EditorController {
     });
     this.sceneSettings = this.sceneSettingsController.model;
 
+    // Set up the mutual relationship between text and glyphLines
     this.sceneSettingsController.addKeyListener("text", async (event) => {
       if (event.senderInfo === this) {
         return;
@@ -1136,12 +1137,6 @@ export class EditorController {
 
   async doUndoRedo(isRedo) {
     await this.sceneController.doUndoRedo(isRedo);
-    // FIXME:
-    // Hmmm would be nice if this was done automatically
-    // this.designspaceLocationController.model.location =
-    //   this.sceneController.getLocation();
-    // this.updateSidebarDesignspace();
-    // this.updateWindowLocationAndSelectionInfo();
   }
 
   canCut() {
