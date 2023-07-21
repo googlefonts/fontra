@@ -451,7 +451,7 @@ export class EditorController {
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
-    const glyphName = this.sceneController.sceneModel.getSelectedGlyphName();
+    const glyphName = this.sceneSettings.selectedGlyphName;
     const result = await dialog(
       `Can’t edit glyph “${glyphName}”`,
       "The location is not at a source.",
@@ -1210,7 +1210,7 @@ export class EditorController {
     }
 
     const svgString = pathToSVG(path, bounds);
-    const glyphName = this.sceneController.getSelectedGlyphName();
+    const glyphName = this.sceneSettings.selectedGlyphName;
     const unicodes = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
     const jsonString = JSON.stringify(instance);
@@ -1632,7 +1632,7 @@ export class EditorController {
   }
 
   async externalChange(change) {
-    const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
+    const selectedGlyphName = this.sceneSettings.selectedGlyphName;
 
     await this.fontController.applyChange(change, true);
 
@@ -1678,7 +1678,7 @@ export class EditorController {
   }
 
   async reloadGlyphs(glyphNames) {
-    if (glyphNames.includes(this.sceneController.getSelectedGlyphName())) {
+    if (glyphNames.includes(this.sceneSettings.selectedGlyphName)) {
       // If the glyph being edited is among the glyphs to be reloaded,
       // cancel the edit, but wait for the cancellation to be completed,
       // or else the reload and edit can get mixed up and the glyph data
@@ -1689,7 +1689,7 @@ export class EditorController {
     }
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneController.sceneModel.updateScene();
-    const selectedGlyphName = this.sceneController.sceneModel.getSelectedGlyphName();
+    const selectedGlyphName = this.sceneSettings.selectedGlyphName;
     if (selectedGlyphName !== undefined && glyphNames.includes(selectedGlyphName)) {
       // FIXME:
       // this.updateSidebarDesignspace();
