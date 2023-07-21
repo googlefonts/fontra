@@ -69,11 +69,7 @@ export class SceneModel {
   }
 
   getSelectedGlyphName() {
-    if (this.selectedGlyph) {
-      return this.glyphLines[this.selectedGlyph.lineIndex]?.[
-        this.selectedGlyph.glyphIndex
-      ]?.glyphName;
-    }
+    return getSelectedGlyphName(this.selectedGlyph, this.glyphLines);
   }
 
   async getSelectedVariableGlyphController() {
@@ -686,4 +682,10 @@ function makeGlyphNamesPattern(glyphNames) {
     glyphsObj[glyphName] = null;
   }
   return { glyphs: glyphsObj };
+}
+
+export function getSelectedGlyphName(selectedGlyph, glyphLines) {
+  if (selectedGlyph) {
+    return glyphLines[selectedGlyph.lineIndex]?.[selectedGlyph.glyphIndex]?.glyphName;
+  }
 }
