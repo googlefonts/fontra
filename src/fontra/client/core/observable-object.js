@@ -13,20 +13,22 @@ export class ObservableController {
     this._keyListeners = {};
   }
 
-  addListener(listener) {
-    this._generalListeners.push(listener);
+  addListener(listener, immediate = false) {
+    this._generalListeners.push({ listener, immediate });
   }
 
   removeListener(listener) {
     // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
-    this._generalListeners = this._generalListeners.filter((item) => item !== listener);
+    this._generalListeners = this._generalListeners.filter(
+      (item) => item.listener !== listener
+    );
   }
 
-  addKeyListener(key, listener) {
+  addKeyListener(key, listener, immediate = false) {
     if (!(key in this._keyListeners)) {
       this._keyListeners[key] = [];
     }
-    this._keyListeners[key].push(listener);
+    this._keyListeners[key].push({ listener, immediate });
   }
 
   removeKeyListener(key, listener) {
@@ -35,7 +37,7 @@ export class ObservableController {
     }
     // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
     this._keyListeners[key] = this._keyListeners[key].filter(
-      (item) => item !== listener
+      (item) => item.listener !== listener
     );
   }
 
@@ -54,11 +56,12 @@ export class ObservableController {
   _dispatchChange(key, newValue, oldValue, senderInfo) {
     // Schedule the calls in the event loop rather than call immediately
     const event = { key, newValue, oldValue, senderInfo };
-    for (const listener of chain(
-      this._generalListeners,
-      this._keyListeners[key] || []
-    )) {
-      setTimeout(() => listener(event), 0);
+    for (const item of chain(this._generalListeners, this._keyListeners[key] || [])) {
+      if (item.immediate) {
+        item.listener(event);
+      } else {
+        setTimeout(() => item.listener(event), 0);
+      }
     }
   }
 }
