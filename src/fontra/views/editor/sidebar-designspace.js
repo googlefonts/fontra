@@ -202,7 +202,7 @@ export class SidebarDesignspace {
     if (sourceIndex === undefined) {
       return;
     }
-    const glyphController = this.dataModel.varGlyphController;
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
     const source = glyph.sources[sourceIndex];
     const dialog = await dialogSetup("Delete source", null, [
@@ -255,10 +255,12 @@ export class SidebarDesignspace {
   }
 
   async addSource() {
-    const glyphController = this.dataModel.varGlyphController;
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
 
-    const location = glyphController.mapLocationGlobalToLocal(this.dataModel.location);
+    const location = glyphController.mapLocationGlobalToLocal(
+      this.sceneSettings.location
+    );
 
     const {
       location: newLocation,
@@ -313,7 +315,7 @@ export class SidebarDesignspace {
   }
 
   async editSourceProperties(sourceIndex) {
-    const glyphController = this.dataModel.varGlyphController;
+    const glyphController = await this.sceneModel.getSelectedVariableGlyphController();
     const glyph = glyphController.glyph;
 
     const source = glyph.sources[sourceIndex];
