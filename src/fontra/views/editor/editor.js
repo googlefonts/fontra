@@ -1411,6 +1411,7 @@ export class EditorController {
       { title: "Cancel", isCancelButton: true },
       { title: "Add", isDefaultButton: true, result: "ok", disabled: true },
     ]);
+    let addToAllSources = false;
     dialog.setContent(
       html.div(
         {
@@ -1418,33 +1419,30 @@ export class EditorController {
           grid-row: 2 / -1;
           display: flex;
           flex-direction: column;
+          gap: 0.5em;
         `,
         },
         [
           glyphsSearch,
-          html.div({ class: "dialog-add-to-all-sources-checkbox" }, [
+          html.div({}, [
             html.input({
               type: "checkbox",
               id: "add-to-all-sources",
+              onclick: (event) => {
+                addToAllSources = event.target.checked;
+              },
             }),
             html.label(
               {
                 for: "add-to-all-sources",
               },
-              ["Add to all sources"]
+              ["Add the component to all sources"]
             ),
           ]),
         ]
       )
     );
     setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
-
-    let addToAllSources = false;
-    dialog.dialogContent
-      .querySelector("#add-to-all-sources")
-      .addEventListener("click", (event) => {
-        addToAllSources = event.target.checked;
-      });
 
     if (!(await dialog.run())) {
       // User cancelled
@@ -1479,7 +1477,11 @@ export class EditorController {
     };
     if (addToAllSources) {
       await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-        for (const layerName in glyph.layers) {
+        const layerNames = new Set();
+        for (const source of glyph.sources) {
+          layerNames.add(source.layerName);
+        }
+        for (const layerName of layerNames) {
           const layer = glyph.layers[layerName];
           layer.glyph.components.push({
             name: newComponent.name,
