@@ -481,7 +481,7 @@ export class SceneController {
         label: undoLabel,
         undoSelection: initialSelection,
         redoSelection: this.selection,
-        location: this.getLocation(),
+        location: this.sceneSettings.location,
       };
       if (!this._cancelGlyphEditing) {
         editContext.editFinal(
