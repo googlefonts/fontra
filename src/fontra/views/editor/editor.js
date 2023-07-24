@@ -89,13 +89,6 @@ export class EditorController {
   }
 
   constructor(font) {
-    this.initSceneSettingsController();
-
-    this.fontController = new FontController(font, {});
-    this.fontController.addEditListener(
-      async (...args) => await this.editListenerCallback(...args)
-    );
-    this.autoViewBox = true;
     const canvas = document.querySelector("#edit-canvas");
     canvas.focus();
 
@@ -103,6 +96,15 @@ export class EditorController {
       this.canvasMagnificationChanged(magnification)
     );
     this.canvasController = canvasController;
+
+    this.initSceneSettingsController();
+
+    this.fontController = new FontController(font, {});
+    this.fontController.addEditListener(
+      async (...args) => await this.editListenerCallback(...args)
+    );
+    this.autoViewBox = true;
+
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(
       canvasController.context
@@ -193,14 +195,6 @@ export class EditorController {
       (event) => this._updateWindowLocation(),
       200
     );
-    canvas.addEventListener("viewBoxChanged", (event) => {
-      if (event.detail === "canvas-size") {
-        this.setAutoViewBox();
-      } else {
-        this.autoViewBox = false;
-      }
-      this.updateWindowLocation();
-    });
 
     window.addEventListener("popstate", (event) => {
       this.setupFromWindowLocation();
@@ -259,6 +253,7 @@ export class EditorController {
       selectedSourceIndex: null,
       selectedLayerName: null,
       glyphSelection: null,
+      viewBox: null,
       positionedLines: [],
     });
     this.sceneSettings = this.sceneSettingsController.model;
@@ -349,6 +344,32 @@ export class EditorController {
       updateSelectedGlyphName,
       true
     );
+
+    // Set up the viewBox relationships
+    this.sceneSettingsController.addKeyListener("viewBox", (event) => {
+      if (event.senderInfo?.senderID === this) {
+        return;
+      }
+      this.canvasController.setViewBox(event.newValue);
+      this.sceneSettingsController.setItem(
+        "viewBox",
+        this.canvasController.getViewBox(),
+        { senderID: this }
+      );
+    });
+
+    this.canvasController.canvas.addEventListener("viewBoxChanged", (event) => {
+      if (event.detail === "canvas-size") {
+        this.setAutoViewBox();
+      } else {
+        this.autoViewBox = false;
+        this.sceneSettingsController.setItem(
+          "viewBox",
+          this.canvasController.getViewBox(),
+          { senderID: this }
+        );
+      }
+    });
   }
 
   async initGlyphsSearch() {
@@ -1689,7 +1710,7 @@ export class EditorController {
       this.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
       if (viewBox.every((value) => !isNaN(value))) {
-        this.canvasController.setViewBox(rectFromArray(viewBox));
+        this.sceneSettings.viewBox = rectFromArray(viewBox);
       }
     }
     if (viewInfo["text"]) {
@@ -1716,7 +1737,7 @@ export class EditorController {
 
   _updateWindowLocation() {
     const viewInfo = {};
-    const viewBox = this.canvasController.getViewBox();
+    const viewBox = this.sceneSettings.viewBox;
     const url = new URL(window.location);
     let previousText = url.searchParams.get("text");
     if (previousText) {
@@ -1800,7 +1821,7 @@ export class EditorController {
       return;
     }
     bounds = rectAddMargin(bounds, 0.1);
-    this.canvasController.setViewBox(bounds);
+    this.sceneSettings.viewBox = bounds;
   }
 
   zoomIn() {
@@ -1812,7 +1833,7 @@ export class EditorController {
   }
 
   _zoom(factor) {
-    let viewBox = this.canvasController.getViewBox();
+    let viewBox = this.sceneSettings.viewBox;
     const selBox = this.sceneController.getSelectionBox();
     const center = rectCenter(selBox || viewBox);
     viewBox = rectScaleAroundCenter(viewBox, factor, center);
@@ -1846,7 +1867,7 @@ export class EditorController {
   }
 
   animateToViewBox(viewBox) {
-    const startViewBox = this.canvasController.getViewBox();
+    const startViewBox = this.sceneSettings.viewBox;
     const deltaViewBox = subItemwise(viewBox, startViewBox);
     let start;
     const duration = 200;
@@ -1867,8 +1888,7 @@ export class EditorController {
         this.canvasController.setViewBox(animatingViewBox);
         requestAnimationFrame(animate);
       } else {
-        this.canvasController.setViewBox(viewBox);
-        this.updateWindowLocation();
+        this.sceneSettings.viewBox = viewBox;
       }
     };
     requestAnimationFrame(animate);
