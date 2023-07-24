@@ -844,7 +844,7 @@ async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
 
   for (const [glyphName, fallbackValues] of Object.entries(baseGlyphFallbackValues)) {
     const baseGlyph = await getGlyphFunc(glyphName);
-    for (const axis of baseGlyph.combinedAxes) {
+    for (const axis of baseGlyph?.combinedAxes || []) {
       if (axis.name in fallbackValues) {
         fallbackValues[axis.name] = axis.defaultValue;
       }
