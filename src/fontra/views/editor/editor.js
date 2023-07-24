@@ -494,7 +494,7 @@ export class EditorController {
         const glyphController =
           await this.sceneController.sceneModel.getSelectedVariableGlyphController();
         const nearestSourceIndex = glyphController.findNearestSourceFromGlobalLocation(
-          this.sceneController.getLocation(),
+          this.sceneSettings.location,
           true
         );
         this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
