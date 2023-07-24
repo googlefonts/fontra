@@ -1745,7 +1745,7 @@ export class EditorController {
     }
     clearSearchParams(url.searchParams);
 
-    if (Object.values(viewBox).every((value) => !isNaN(value))) {
+    if (viewBox && Object.values(viewBox).every((value) => !isNaN(value))) {
       viewInfo["viewBox"] = rectToArray(viewBox).map(Math.round);
     }
     if (this.sceneSettings.text?.length) {
