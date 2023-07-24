@@ -82,19 +82,23 @@ export class DesignspaceLocation extends UnlitElement {
   }
 
   set values(values) {
-    if (!this._values) {
-      this._values = {};
+    this._values = { ...values };
+
+    for (const [axisName, value] of Object.entries(values)) {
+      const slider = this.shadowRoot.querySelector(`range-slider[name="${axisName}"]`);
+      if (slider) {
+        slider.value = value;
+      }
     }
+
     for (const axis of this.axes || []) {
-      const value = values[axis.name];
-      if (value !== undefined) {
+      if (!(axis.name in values)) {
         const slider = this.shadowRoot.querySelector(
           `range-slider[name="${axis.name}"]`
         );
         if (slider) {
-          slider.value = value;
+          slider.value = axis.defaultValue;
         }
-        this._values[axis.name] = value;
       }
     }
   }
