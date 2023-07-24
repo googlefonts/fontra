@@ -1493,6 +1493,7 @@ export class EditorController {
           this.sceneController.sceneModel.getSelectedPositionedGlyph().glyph.instance;
         const newComponentIndex = instance.components.length - 1;
         this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
+        return "Add Component";
       });
     } else {
       await this.sceneController.editInstanceAndRecordChanges((instance) => {
