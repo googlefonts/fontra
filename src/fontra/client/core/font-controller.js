@@ -9,6 +9,7 @@ import { getClassSchema } from "../core/classes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
+import { TaskPool } from "./task-pool.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 import { throttleCalls } from "./utils.js";
@@ -96,44 +97,50 @@ export class FontController {
     // will resolve once all requested glyphs have been loaded.
     // The loading will be done in parallel: this is much faster if
     // the server supports parallelism (for example fontra-rcjk).
-    const done = new Set();
-    const loading = new Set();
-
-    let allDoneFunc;
-    let allDonePromise = new Promise((resolve) => {
-      allDoneFunc = resolve;
-    });
-
-    function checkAllDone() {
-      if (!loading.length) {
-        allDoneFunc();
+    if (this._loadGlyphsTodo) {
+      for (const glyphName of glyphNames) {
+        if (!this._loadGlyphsDone.has(glyphName)) {
+          this._loadGlyphsTodo.add(glyphName);
+        }
       }
+      return;
     }
+    try {
+      const done = new Set();
+      const todo = new Set(glyphNames);
+      this._loadGlyphsDone = done;
+      this._loadGlyphsTodo = todo;
 
-    function reportError(error) {
-      console.error(error);
-      allDoneFunc();
-    }
+      const loadGlyph = async (glyphName) => {
+        if (done.has(glyphName)) {
+          return;
+        }
+        done.add(glyphName);
 
-    const loadGlyph = async (glyphName) => {
-      if (done.has(glyphName)) {
-        return;
+        await this.getGlyph(glyphName);
+
+        for (const subGlyphName of this.iterGlyphMadeOf(glyphName)) {
+          todo.add(subGlyphName);
+        }
+      };
+
+      const pool = new TaskPool(8);
+
+      const t = performance.now();
+      let count = 0;
+      while (todo.size) {
+        while (todo.size) {
+          const glyphName = setPopFirst(todo);
+          count++;
+          await pool.schedule(async () => await loadGlyph(glyphName));
+        }
+        await pool.wait();
       }
-      done.add(glyphName);
-      loading.add(glyphName);
-      await this.getGlyph(glyphName);
-      for (const subGlyphName of this.iterGlyphMadeOf(glyphName)) {
-        loadGlyph(subGlyphName).then(checkAllDone).catch(reportError);
-      }
-      loading.delete(glyphName);
-    };
-
-    glyphNames.forEach((glyphName) =>
-      loadGlyph(glyphName).then(checkAllDone).catch(reportError)
-    );
-
-    if (glyphNames.length) {
-      return allDonePromise;
+      const elapsed = performance.now() - t;
+      // console.log("loadGlyphs", count, elapsed);
+    } finally {
+      delete this._loadGlyphsDone;
+      delete this._loadGlyphsTodo;
     }
   }
 
@@ -599,4 +606,16 @@ function collectGlyphNames(change) {
   return collectChangePaths(change, 2)
     .filter((item) => item[0] === "glyphs" && item[1] !== undefined)
     .map((item) => item[1]);
+}
+
+function setPopFirst(set) {
+  if (!set.size) {
+    return;
+  }
+  let firstItem;
+  for (firstItem of set) {
+    break;
+  }
+  set.delete(firstItem);
+  return firstItem;
 }
