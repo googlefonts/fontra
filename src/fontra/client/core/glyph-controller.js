@@ -190,11 +190,15 @@ export class VariableGlyphController {
     return this._model;
   }
 
-  get deltas() {
+  async getDeltas(getGlyphFunc) {
     if (this._deltas === undefined) {
-      const masterValues = this.sources
-        .filter((source) => !source.inactive)
-        .map((source) => this.layers[source.layerName].glyph);
+      const masterValues = await ensureComponentCompatibility(
+        this.sources
+          .filter((source) => !source.inactive)
+          .map((source) => this.layers[source.layerName].glyph),
+        getGlyphFunc
+      );
+
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
@@ -223,9 +227,12 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  instantiate(normalizedLocation) {
+  async instantiate(normalizedLocation, getGlyphFunc) {
     try {
-      return this.model.interpolateFromDeltas(normalizedLocation, this.deltas);
+      return this.model.interpolateFromDeltas(
+        normalizedLocation,
+        await this.getDeltas(getGlyphFunc)
+      );
     } catch (error) {
       if (error.name !== "VariationError") {
         throw error;
@@ -251,7 +258,10 @@ export class VariableGlyphController {
     if (sourceIndex !== undefined) {
       instance = this.layers[this.sources[sourceIndex].layerName].glyph;
     } else {
-      instance = this.instantiate(normalizeLocation(location, this.combinedAxes));
+      instance = await this.instantiate(
+        normalizeLocation(location, this.combinedAxes),
+        getGlyphFunc
+      );
     }
 
     if (!instance) {
@@ -563,7 +573,10 @@ async function* iterFlattenedComponentPaths(
     inst = makeMissingComponentPlaceholderGlyph();
   } else {
     try {
-      inst = glyph.instantiate(normalizeLocation(compoLocation, glyph.combinedAxes));
+      inst = await glyph.instantiate(
+        normalizeLocation(compoLocation, glyph.combinedAxes),
+        getGlyphFunc
+      );
     } catch (error) {
       if (error.name !== "VariationError") {
         throw error;
@@ -616,8 +629,9 @@ export async function decomposeComponents(
     }
     let location = { ...parentLocation, ...component.location };
     const normLocation = baseGlyph.mapLocationGlobalToLocal(location);
-    const compoInstance = baseGlyph.instantiate(
-      normalizeLocation(normLocation, baseGlyph.combinedAxes)
+    const compoInstance = await baseGlyph.instantiate(
+      normalizeLocation(normLocation, baseGlyph.combinedAxes),
+      getGlyphFunc
     );
     const t = makeAffineTransform(component.transformation);
     newPaths.push(compoInstance.path.transformed(t));
@@ -809,4 +823,49 @@ function makeMissingComponentPlaceholderGlyph() {
 
 function makeDefaultLocation(axes) {
   return Object.fromEntries(axes.map((axis) => [axis.name, axis.defaultValue]));
+}
+
+async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
+  const baseGlyphFallbackValues = {};
+
+  glyphs.forEach((glyph) =>
+    glyph.components.forEach((compo) => {
+      const axisNames = Object.keys(compo.location);
+      let fallbackValues = baseGlyphFallbackValues[compo.name];
+      if (!fallbackValues) {
+        fallbackValues = {};
+        baseGlyphFallbackValues[compo.name] = fallbackValues;
+      }
+      for (const axisName in compo.location) {
+        fallbackValues[axisName] = 0;
+      }
+    })
+  );
+
+  for (const [glyphName, fallbackValues] of Object.entries(baseGlyphFallbackValues)) {
+    const baseGlyph = await getGlyphFunc(glyphName);
+    for (const axis of baseGlyph.combinedAxes) {
+      if (axis.name in fallbackValues) {
+        fallbackValues[axis.name] = axis.defaultValue;
+      }
+    }
+  }
+
+  return glyphs.map((glyph) =>
+    StaticGlyph.fromObject(
+      {
+        ...glyph,
+        components: glyph.components.map((component) => {
+          return {
+            ...component,
+            location: {
+              ...baseGlyphFallbackValues[component.name],
+              ...component.location,
+            },
+          };
+        }),
+      },
+      true // noCopy
+    )
+  );
 }
