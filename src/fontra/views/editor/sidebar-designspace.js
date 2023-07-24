@@ -46,7 +46,7 @@ export class SidebarDesignspace {
       })
     );
 
-    this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
+    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
       this._updateAxes();
       this._updateSources();
     });
