@@ -1411,7 +1411,37 @@ export class EditorController {
       { title: "Cancel", isCancelButton: true },
       { title: "Add", isDefaultButton: true, result: "ok", disabled: true },
     ]);
-    dialog.setContent(glyphsSearch);
+    let addToAllSources = false;
+    dialog.setContent(
+      html.div(
+        {
+          style: `
+          grid-row: 2 / -1;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5em;
+        `,
+        },
+        [
+          glyphsSearch,
+          html.div({}, [
+            html.input({
+              type: "checkbox",
+              id: "add-to-all-sources",
+              onclick: (event) => {
+                addToAllSources = event.target.checked;
+              },
+            }),
+            html.label(
+              {
+                for: "add-to-all-sources",
+              },
+              ["Add the component to all sources"]
+            ),
+          ]),
+        ]
+      )
+    );
     setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
 
     if (!(await dialog.run())) {
@@ -1445,13 +1475,33 @@ export class EditorController {
       transformation: transformation,
       location: location,
     };
-
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      const newComponentIndex = instance.components.length;
-      instance.components.push(newComponent);
-      this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
-      return "Add Component";
-    });
+    if (addToAllSources) {
+      await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+        const layerNames = new Set();
+        for (const source of glyph.sources) {
+          layerNames.add(source.layerName);
+        }
+        for (const layerName of layerNames) {
+          const layer = glyph.layers[layerName];
+          layer.glyph.components.push({
+            name: newComponent.name,
+            transformation: { ...newComponent.transformation },
+            location: { ...newComponent.location },
+          });
+        }
+        const instance =
+          this.sceneController.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+        const newComponentIndex = instance.components.length - 1;
+        this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
+      });
+    } else {
+      await this.sceneController.editInstanceAndRecordChanges((instance) => {
+        const newComponentIndex = instance.components.length;
+        instance.components.push(newComponent);
+        this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
+        return "Add Component";
+      });
+    }
   }
 
   canSelectAllNone(selectNone) {
