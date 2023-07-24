@@ -21,7 +21,6 @@ export class SceneModel {
     this.selection = new Set();
     this.hoverSelection = new Set();
     this.hoveredGlyph = undefined;
-    this._globalLocation = undefined; // see getGlobalLocation()
     this._localLocations = {}; // glyph name -> local location
     this.longestLineLength = 0;
     this.usedGlyphNames = new Set();
@@ -37,8 +36,12 @@ export class SceneModel {
     });
 
     this.sceneSettingsController.addKeyListener("location", (event) => {
-      this._updateLocations(event.newValue);
+      this._syncLocalLocations();
       this.updateScene();
+    });
+
+    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
+      this._syncLocationFromGlyphName();
     });
   }
 
@@ -86,23 +89,9 @@ export class SceneModel {
     return this.getSelectedPositionedGlyph()?.glyph;
   }
 
-  getLocation() {
-    const glyphName = this.getSelectedGlyphName();
-    const location = {
-      ...this.getGlobalLocation(),
-      ...this._localLocations[glyphName],
-    };
-    return location;
-  }
-
   getGlobalLocation() {
-    if (this._globalLocation === undefined) {
-      this._globalLocation = {};
-      for (const axis of this.fontController.globalAxes) {
-        this._globalLocation[axis.name] = axis.defaultValue;
-      }
-    }
-    return this._globalLocation;
+    const { globalLocation } = this._getSplitLocation();
+    return globalLocation;
   }
 
   getLocalLocations(filterShownGlyphs = false) {
@@ -129,17 +118,28 @@ export class SceneModel {
     return localLocations;
   }
 
-  _updateLocations(location) {
-    const glyphName = this.getSelectedGlyphName();
-    const localLocation = { ...location };
+  _getSplitLocation() {
+    const location = this.sceneSettings.location;
+
+    const globalAxisNames = Object.fromEntries(
+      this.fontController.globalAxes.map((axis) => [axis.name])
+    );
     const globalLocation = {};
-    for (const axis of this.fontController.globalAxes) {
-      if (location[axis.name] !== undefined) {
-        globalLocation[axis.name] = location[axis.name];
+    const localLocation = {};
+    for (const [name, value] of Object.entries(location)) {
+      if (name in globalAxisNames) {
+        globalLocation[name] = value;
+      } else {
+        localLocation[name] = value;
       }
-      delete localLocation[axis.name];
     }
-    this._globalLocation = globalLocation;
+    return { globalLocation, localLocation };
+  }
+
+  _syncLocalLocations() {
+    const { globalLocation, localLocation } = this._getSplitLocation();
+
+    const glyphName = this.sceneSettings.selectedGlyphName;
     if (glyphName !== undefined) {
       if (Object.keys(localLocation).length) {
         this._localLocations[glyphName] = localLocation;
@@ -149,10 +149,18 @@ export class SceneModel {
     }
   }
 
-  async setGlobalAndLocalLocations(globalLocation, localLocations) {
-    this._globalLocation = globalLocation || {};
+  _syncLocationFromGlyphName() {
+    const { globalLocation } = this._getSplitLocation();
+
+    const glyphName = this.sceneSettings.selectedGlyphName;
+    this.sceneSettings.location = {
+      ...globalLocation,
+      ...this._localLocations[glyphName],
+    };
+  }
+
+  setLocalLocations(localLocations) {
     this._localLocations = localLocations || {};
-    await this.updateScene();
   }
 
   updateLocalLocations(localLocations) {

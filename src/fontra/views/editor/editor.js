@@ -914,9 +914,6 @@ export class EditorController {
       lineIndex: selectedGlyphInfo.lineIndex,
       glyphIndex: selectedGlyphInfo.glyphIndex + 1,
     };
-    setTimeout(() => {
-      this.sceneSettings.location = this.sceneController.getLocation();
-    }, 5);
   }
 
   initContextMenuItems() {
@@ -1716,17 +1713,12 @@ export class EditorController {
     if (viewInfo["text"]) {
       this.sceneSettings.text = viewInfo["text"];
     }
-    await this.sceneController.setGlobalAndLocalLocations(
-      viewInfo["location"],
-      viewInfo["localLocations"]
-    );
+    this.sceneController.sceneModel.setLocalLocations(viewInfo["localLocations"]);
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
 
     if (viewInfo["location"]) {
-      setTimeout(() => {
-        this.sceneSettings.location = this.sceneController.getLocation();
-      }, 10);
+      this.sceneSettings.location = viewInfo["location"];
     }
 
     if (viewInfo["selection"]) {
