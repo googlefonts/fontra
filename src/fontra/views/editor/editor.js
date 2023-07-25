@@ -253,7 +253,7 @@ export class EditorController {
       selectedSourceIndex: null,
       selectedLayerName: null,
       glyphSelection: null,
-      viewBox: null,
+      viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
     });
     this.sceneSettings = this.sceneSettingsController.model;
@@ -284,17 +284,18 @@ export class EditorController {
       this.canvasController.requestUpdate();
     });
 
-    this.sceneSettingsController.addKeyListener("positionedLines", (event) => {
-      this.canvasController.requestUpdate();
-    });
+    this.sceneSettingsController.addKeyListener(
+      "positionedLines",
+      (event) => {
+        this.setAutoViewBox();
+        this.canvasController.requestUpdate();
+      },
+      true
+    );
 
     this.sceneSettingsController.addListener((event) => {
       // FIXME: ignore some keys
       this.updateWindowLocation(); // scheduled with delay
-    });
-
-    this.sceneSettingsController.addKeyListener("location", async (event) => {
-      this.autoViewBox = false;
     });
 
     // Set up the mutual dependencies between location and selectedSourceIndex
@@ -855,8 +856,6 @@ export class EditorController {
     }
 
     this.sceneSettings.selectedGlyph = selectedGlyphState;
-
-    this.setAutoViewBox();
   }
 
   async doubleClickedComponentsCallback(event) {
