@@ -50,7 +50,17 @@ export class ObservableController {
   }
 
   synchronizeWithLocalStorage(prefix = "") {
-    synchronizeWithLocalStorage(this, prefix);
+    this._addSynchronizedItem = synchronizeWithLocalStorage(this, prefix);
+  }
+
+  synchronizeItemWithLocalStorage(key, defaultValue) {
+    // For an observable that is already synchronized with localStorage, add
+    // a key/value pair to the model. This reads the value from localStorage
+    // if the `key` is present, else it uses the `defaultValue`.
+    if (!this._addSynchronizedItem) {
+      throw Error("observable is not synchronized wih localStorage");
+    }
+    this._addSynchronizedItem(key, defaultValue, true);
   }
 
   _dispatchChange(key, newValue, oldValue, senderInfo) {
@@ -102,6 +112,10 @@ function synchronizeWithLocalStorage(controller, prefix = "") {
   const mapKeyToStorage = {};
   const stringKeys = {};
   for (const [key, value] of Object.entries(controller.model)) {
+    addItem(key, value, false);
+  }
+
+  function addItem(key, value, setOnModel) {
     const storageKey = prefix + key;
     mapKeyToObject[storageKey] = key;
     mapKeyToStorage[key] = storageKey;
@@ -109,6 +123,8 @@ function synchronizeWithLocalStorage(controller, prefix = "") {
     const storedValue = localStorage.getItem(storageKey);
     if (storedValue !== null) {
       setItemOnObject(key, storedValue);
+    } else if (setOnModel) {
+      controller.model[key] = value;
     }
   }
 
@@ -140,4 +156,6 @@ function synchronizeWithLocalStorage(controller, prefix = "") {
       setItemOnObject(mapKeyToObject[event.key], event.newValue);
     }
   });
+
+  return addItem;
 }
