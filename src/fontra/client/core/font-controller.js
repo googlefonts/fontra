@@ -17,9 +17,8 @@ import { throttleCalls } from "./utils.js";
 const GLYPH_CACHE_SIZE = 1000;
 
 export class FontController {
-  constructor(font, location) {
+  constructor(font) {
     this.font = font;
-    this.location = location;
     this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // glyph name -> var-glyph promise
     this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // instance cache key -> instance promise
     this._glyphInstancePromiseCacheKeys = {}; // glyphName -> Set(instance cache keys)

@@ -99,7 +99,7 @@ export class EditorController {
 
     this.initSceneSettingsController();
 
-    this.fontController = new FontController(font, {});
+    this.fontController = new FontController(font);
     this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
     );
