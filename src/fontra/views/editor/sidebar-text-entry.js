@@ -30,6 +30,7 @@ export class SidebarTextEntry {
       "input",
       () => {
         this.textSettings.text = this.textEntryElement.value;
+        this.textSettings.selectedGlyph = null;
       },
       false
     );
