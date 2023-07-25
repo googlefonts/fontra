@@ -28,10 +28,14 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
       this._resetStoredGlyphPosition();
     });
-    this.sceneSettingsController.addKeyListener("positionedLines", (event) => {
-      this._adjustScrollPosition(this._previousTextAlign != this.sceneSettings.align);
-      this._previousTextAlign = this.sceneSettings.align;
-    });
+    this.sceneSettingsController.addKeyListener(
+      "positionedLines",
+      (event) => {
+        this._adjustScrollPosition(this._previousTextAlign != this.sceneSettings.align);
+        this._previousTextAlign = this.sceneSettings.align;
+      },
+      true
+    );
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
