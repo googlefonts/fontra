@@ -5,6 +5,7 @@ import {
   getCharFromUnicode,
   makeUPlusStringFromCodePoint,
   parseSelection,
+  throttleCalls,
 } from "/core/utils.js";
 
 export class SidebarSelectionInfo {
@@ -12,6 +13,23 @@ export class SidebarSelectionInfo {
     this.sceneController = sceneController;
     this.fontController = fontController;
     this.infoForm = new Form("selection-info");
+
+    this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
+
+    this.sceneController.sceneSettingsController.addKeyListener(
+      ["selectedGlyphName", "pathSelection"],
+      (event) => this.throttledUpdate()
+    );
+
+    this.fontController.addEditListener(
+      async (...args) => await this.editListenerCallback(...args)
+    );
+  }
+
+  async editListenerCallback(editMethodName, senderID, ...args) {
+    if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
+      this.throttledUpdate(senderID);
+    }
   }
 
   async update(senderID) {
@@ -69,9 +87,11 @@ export class SidebarSelectionInfo {
     }
     const { pointIndices, componentIndices } = this._getSelection();
 
-    formContents.push(
-      ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
-    );
+    if (glyphController) {
+      formContents.push(
+        ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
+      );
+    }
 
     for (const index of componentIndices) {
       const component = instance.components[index];
