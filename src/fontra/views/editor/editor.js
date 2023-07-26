@@ -1412,13 +1412,8 @@ export class EditorController {
       { title: "Add", isDefaultButton: true, result: "ok", disabled: true },
     ]);
     const addToAllSourcesLocalStorageKey = "fontra-add-the-component-to-all-sources";
-    let addToAllSources = localStorage.getItem(addToAllSourcesLocalStorageKey);
-
-    if (addToAllSources) {
-      addToAllSources = true;
-    } else {
-      addToAllSources = false;
-    }
+    let addToAllSources =
+      localStorage.getItem(addToAllSourcesLocalStorageKey) === "true";
 
     dialog.setContent(
       html.div(
@@ -1439,11 +1434,10 @@ export class EditorController {
               checked: addToAllSources,
               onclick: (event) => {
                 addToAllSources = event.target.checked;
-                if (addToAllSources) {
-                  localStorage.setItem(addToAllSourcesLocalStorageKey, "true");
-                } else {
-                  localStorage.removeItem(addToAllSourcesLocalStorageKey);
-                }
+                localStorage.setItem(
+                  addToAllSourcesLocalStorageKey,
+                  addToAllSources ? "true" : "false"
+                );
               },
             }),
             html.label(
