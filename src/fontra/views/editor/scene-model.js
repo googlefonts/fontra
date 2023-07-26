@@ -411,10 +411,10 @@ export class SceneModel {
 
   pointSelectionAtPoint(point, size) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
-
     if (!positionedGlyph) {
       return new Set();
     }
+
     const glyphPoint = {
       x: point.x - positionedGlyph.x,
       y: point.y - positionedGlyph.y,
@@ -442,6 +442,9 @@ export class SceneModel {
 
   componentSelectionAtPoint(point, size, currentSelection, preferTCenter) {
     const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return new Set();
+    }
 
     let currentSelectedComponentIndices;
     if (currentSelection) {
