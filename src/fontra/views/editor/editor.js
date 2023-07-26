@@ -252,7 +252,7 @@ export class EditorController {
       selectedGlyphName: null,
       selectedSourceIndex: null,
       selectedLayerName: null,
-      glyphSelection: null,
+      pathSelection: new Set(),
       viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
     });
