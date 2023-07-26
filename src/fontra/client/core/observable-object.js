@@ -24,21 +24,31 @@ export class ObservableController {
     );
   }
 
-  addKeyListener(key, listener, immediate = false) {
-    if (!(key in this._keyListeners)) {
-      this._keyListeners[key] = [];
+  addKeyListener(keyOrKeys, listener, immediate = false) {
+    if (typeof keyOrKeys === "string") {
+      keyOrKeys = [keyOrKeys];
     }
-    this._keyListeners[key].push({ listener, immediate });
+    for (const key of keyOrKeys) {
+      if (!(key in this._keyListeners)) {
+        this._keyListeners[key] = [];
+      }
+      this._keyListeners[key].push({ listener, immediate });
+    }
   }
 
-  removeKeyListener(key, listener) {
-    if (!this._keyListeners[key]) {
-      return;
+  removeKeyListener(keyOrKeys, listener) {
+    if (typeof keyOrKeys === "string") {
+      keyOrKeys = [keyOrKeys];
     }
-    // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
-    this._keyListeners[key] = this._keyListeners[key].filter(
-      (item) => item.listener !== listener
-    );
+    for (const key of keyOrKeys) {
+      if (!this._keyListeners[key]) {
+        continue;
+      }
+      // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
+      this._keyListeners[key] = this._keyListeners[key].filter(
+        (item) => item.listener !== listener
+      );
+    }
   }
 
   setItem(key, newValue, senderInfo) {
@@ -53,15 +63,15 @@ export class ObservableController {
     this._addSynchronizedItem = synchronizeWithLocalStorage(this, prefix);
   }
 
-  waitForKeyChange(key, immediate = false) {
+  waitForKeyChange(keyOrKeys, immediate = false) {
     let resolvePromise;
 
     const tempListener = (event) => {
-      this.removeKeyListener(key, tempListener);
+      this.removeKeyListener(keyOrKeys, tempListener);
       resolvePromise(event);
     };
 
-    this.addKeyListener(key, tempListener, immediate);
+    this.addKeyListener(keyOrKeys, tempListener, immediate);
 
     return new Promise((resolve) => {
       resolvePromise = resolve;
