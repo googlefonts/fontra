@@ -1887,7 +1887,7 @@ export class EditorController {
         mulScalar(deltaViewBox, easeOutQuad(t))
       );
       if (t < 1.0) {
-        this.canvasController.setViewBox(animatingViewBox);
+        this.sceneSettings.viewBox = animatingViewBox;
         requestAnimationFrame(animate);
       } else {
         this.sceneSettings.viewBox = viewBox;
