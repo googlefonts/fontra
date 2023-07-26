@@ -58,7 +58,7 @@ export class ObservableController {
     const promise = new Promise((resolve) => (resolvePromise = resolve));
     const tempListener = (event) => {
       this.removeKeyListener(key, tempListener);
-      resolvePromise();
+      resolvePromise(event);
     };
     this.addKeyListener(key, tempListener);
     return promise;
