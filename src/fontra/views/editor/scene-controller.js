@@ -130,7 +130,6 @@ export class SceneController {
   }
 
   addCurrentGlyphChangeListener(listener) {
-    console.log("iiii", this._currentSelectedGlyphName);
     this._currentGlyphChangeListeners.push(listener);
     if (this._currentSelectedGlyphName) {
       this.fontController.addGlyphChangeListener(
