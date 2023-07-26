@@ -671,7 +671,8 @@ export class EditorController {
       if (event.newValue) {
         this.visualizationLayersSettings.model["fontra.reference.font"] = true;
       }
-      this.canvasController.requestUpdate();
+      // Hmm, delay to next event loop cycle, or our request for update comes to early
+      setTimeout(() => this.canvasController.requestUpdate(), 0);
     });
     let charOverride;
     referenceFontElement.controller.addKeyListener("charOverride", (event) => {
