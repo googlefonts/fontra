@@ -24,6 +24,10 @@ export class SidebarSelectionInfo {
     this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
     );
+
+    this.sceneController.addCurrentGlyphChangeListener((event) =>
+      this.throttledUpdate()
+    );
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
