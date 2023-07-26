@@ -39,10 +39,14 @@ export class SceneModel {
       this.updateScene();
     });
 
-    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
-      this.sceneSettings.pathSelection = new Set();
-      this._syncLocationFromGlyphName();
-    });
+    this.sceneSettingsController.addKeyListener(
+      "selectedGlyphName",
+      (event) => {
+        this.sceneSettings.pathSelection = new Set();
+        this._syncLocationFromGlyphName();
+      },
+      true
+    );
   }
 
   get glyphLines() {
