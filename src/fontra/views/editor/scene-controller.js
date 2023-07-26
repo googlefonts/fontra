@@ -22,12 +22,19 @@ export class SceneController {
     this.sceneModel = sceneModel;
     this.canvasController = editor.canvasController;
     this.experimentalFeatures = editor.experimentalFeaturesController.model;
+    this.fontController = sceneModel.fontController;
 
     this._previousTextAlign = "center";
+    this._currentGlyphChangeListeners = [];
 
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
       this._resetStoredGlyphPosition();
     });
+
+    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
+      this._updateCurrentGlyphChangeListeners();
+    });
+
     this.sceneSettingsController.addKeyListener(
       "positionedLines",
       (event) => {
@@ -105,6 +112,44 @@ export class SceneController {
         this.canvasController.requestUpdate();
         break;
     }
+  }
+
+  _updateCurrentGlyphChangeListeners() {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+    if (glyphName === this._currentSelectedGlyphName) {
+      return;
+    }
+    for (const listener of this._currentGlyphChangeListeners) {
+      this.fontController.removeGlyphChangeListener(
+        this._currentSelectedGlyphName,
+        listener
+      );
+      this.fontController.addGlyphChangeListener(glyphName, listener);
+    }
+    this._currentSelectedGlyphName = glyphName;
+  }
+
+  addCurrentGlyphChangeListener(listener) {
+    console.log("iiii", this._currentSelectedGlyphName);
+    this._currentGlyphChangeListeners.push(listener);
+    if (this._currentSelectedGlyphName) {
+      this.fontController.addGlyphChangeListener(
+        this._currentSelectedGlyphName,
+        listener
+      );
+    }
+  }
+
+  removeCurrentGlyphChangeListener(listener) {
+    if (this._currentSelectedGlyphName) {
+      this.fontController.removeGlyphChangeListener(
+        this._currentSelectedGlyphName,
+        listener
+      );
+    }
+    this._currentGlyphChangeListeners = this._currentGlyphChangeListeners.filter(
+      (item) => item !== listener
+    );
   }
 
   setSelectedTool(tool) {
