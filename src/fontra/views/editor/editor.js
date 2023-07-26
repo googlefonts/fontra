@@ -353,17 +353,21 @@ export class EditorController {
     );
 
     // Set up the viewBox relationships
-    this.sceneSettingsController.addKeyListener("viewBox", (event) => {
-      if (event.senderInfo?.senderID === this) {
-        return;
-      }
-      this.canvasController.setViewBox(event.newValue);
-      this.sceneSettingsController.setItem(
-        "viewBox",
-        this.canvasController.getViewBox(),
-        { senderID: this }
-      );
-    });
+    this.sceneSettingsController.addKeyListener(
+      "viewBox",
+      (event) => {
+        if (event.senderInfo?.senderID === this) {
+          return;
+        }
+        this.canvasController.setViewBox(event.newValue);
+        this.sceneSettingsController.setItem(
+          "viewBox",
+          this.canvasController.getViewBox(),
+          { senderID: this }
+        );
+      },
+      true
+    );
 
     this.canvasController.canvas.addEventListener("viewBoxChanged", (event) => {
       if (event.detail === "canvas-size") {
