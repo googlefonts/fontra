@@ -272,13 +272,17 @@ export class EditorController {
       this.sceneSettingsController.setItem("glyphLines", glyphLines, this);
     });
 
-    this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
-      if (event.senderInfo === this) {
-        return;
-      }
-      const text = textFromGlyphLines(event.newValue);
-      this.sceneSettingsController.setItem("text", text, this);
-    });
+    this.sceneSettingsController.addKeyListener(
+      "glyphLines",
+      (event) => {
+        if (event.senderInfo === this) {
+          return;
+        }
+        const text = textFromGlyphLines(event.newValue);
+        this.sceneSettingsController.setItem("text", text, this);
+      },
+      true
+    );
 
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
       this.canvasController.requestUpdate();
@@ -1709,9 +1713,14 @@ export class EditorController {
         this.sceneSettings.viewBox = rectFromArray(viewBox);
       }
     }
+
     if (viewInfo["text"]) {
       this.sceneSettings.text = viewInfo["text"];
+      // glyphLines is computed from text asynchronously, but its result is needed
+      // to for selectedGlyphName, so we'll wait until it's done
+      await this.sceneSettingsController.waitForKeyChange("glyphLines");
     }
+
     this.sceneController.sceneModel.setLocalLocations(viewInfo["localLocations"]);
 
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
@@ -1721,7 +1730,7 @@ export class EditorController {
     }
 
     if (viewInfo["selection"]) {
-      this.sceneController.selection = new Set(viewInfo["selection"]);
+      this.sceneSettings.pathSelection = new Set(viewInfo["selection"]);
     }
     this.canvasController.requestUpdate();
   }
