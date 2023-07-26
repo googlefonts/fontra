@@ -513,6 +513,9 @@ export class SceneModel {
       return selection;
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return selection;
+    }
     selRect = offsetRect(selRect, -positionedGlyph.x, -positionedGlyph.y);
     for (const hit of positionedGlyph.glyph.path.iterPointsInRect(selRect)) {
       if (!pointFilterFunc || pointFilterFunc(hit)) {
@@ -533,6 +536,9 @@ export class SceneModel {
       return {};
     }
     const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return {};
+    }
     const glyphPoint = {
       x: point.x - positionedGlyph.x,
       y: point.y - positionedGlyph.y,
