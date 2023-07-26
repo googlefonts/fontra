@@ -29,7 +29,6 @@ import {
   isActiveElementTypeable,
   parseSelection,
   scheduleCalls,
-  throttleCalls,
   range,
   readFromClipboard,
   reversed,
