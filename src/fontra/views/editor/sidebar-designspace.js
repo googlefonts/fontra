@@ -38,6 +38,8 @@ export class SidebarDesignspace {
     this.designspaceLocation.addEventListener(
       "locationChanged",
       scheduleCalls(async (event) => {
+        this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+
         this.sceneSettingsController.setItem(
           "location",
           { ...this.designspaceLocation.values },

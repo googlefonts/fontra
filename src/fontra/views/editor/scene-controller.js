@@ -3,6 +3,7 @@ import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
+import { offsetRect } from "../core/rectangle.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isSuperset } from "../core/set-ops.js";
 import {
@@ -24,12 +25,19 @@ export class SceneController {
     this.experimentalFeatures = editor.experimentalFeaturesController.model;
     this.fontController = sceneModel.fontController;
 
-    this._previousTextAlign = "center";
     this._currentGlyphChangeListeners = [];
 
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
       this._resetStoredGlyphPosition();
     });
+
+    this.sceneSettingsController.addKeyListener(
+      "align",
+      (event) => {
+        this.scrollAdjustBehavior = "text-align";
+      },
+      true
+    );
 
     this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
       this._updateCurrentGlyphChangeListeners();
@@ -38,8 +46,7 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       "positionedLines",
       (event) => {
-        this._adjustScrollPosition(this._previousTextAlign != this.sceneSettings.align);
-        this._previousTextAlign = this.sceneSettings.align;
+        this._adjustScrollPosition();
       },
       true
     );
@@ -67,29 +74,38 @@ export class SceneController {
     );
   }
 
-  _adjustScrollPosition(textAlignChanged) {
+  _adjustScrollPosition() {
     let originXDelta = 0;
+
     const glyphPosition = positionedGlyphPosition(
       this.sceneModel.getSelectedPositionedGlyph()
     );
 
     const [minX, maxX] = this.sceneModel.getTextHorizontalExtents();
 
-    if (textAlignChanged && this._previousTextExtents) {
+    if (this.scrollAdjustBehavior === "text-align" && this._previousTextExtents) {
       const [minXPre, maxXPre] = this._previousTextExtents;
-      originXDelta = (minX - minXPre) * this.canvasController.magnification;
-    } else if (this._previousGlyphPosition && glyphPosition) {
+      originXDelta = minX - minXPre;
+    } else if (
+      this.scrollAdjustBehavior === "pin-glyph-center" &&
+      this._previousGlyphPosition &&
+      glyphPosition
+    ) {
       const previousGlyphCenter =
         this._previousGlyphPosition.x + this._previousGlyphPosition.xAdvance / 2;
       const glyphCenter = glyphPosition.x + glyphPosition.xAdvance / 2;
-      originXDelta =
-        (glyphCenter - previousGlyphCenter) * this.canvasController.magnification;
+      originXDelta = glyphCenter - previousGlyphCenter;
     }
 
     if (originXDelta) {
-      this.canvasController.origin.x -= originXDelta;
+      this.sceneSettings.viewBox = offsetRect(
+        this.sceneSettings.viewBox,
+        originXDelta,
+        0
+      );
     }
 
+    this.scrollAdjustBehavior = null;
     this._previousTextExtents = [minX, maxX];
     this._previousGlyphPosition = glyphPosition;
   }
