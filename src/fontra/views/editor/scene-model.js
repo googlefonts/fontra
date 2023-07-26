@@ -39,10 +39,23 @@ export class SceneModel {
       this.updateScene();
     });
 
-    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
-      this.sceneSettings.pathSelection = new Set();
-      this._syncLocationFromGlyphName();
-    });
+    // FIXME: due to brittle timing dependencies, the first listener to
+    // "selectedGlyphName" must be immediate (or the selection isn't restored
+    // correctly from the URL), while the second should not be (or the pin-scroll-
+    // mechanism misbehaves when selecting a different glyph on the page)
+    this.sceneSettingsController.addKeyListener(
+      "selectedGlyphName",
+      (event) => {
+        this.sceneSettings.pathSelection = new Set();
+      },
+      true
+    );
+
+    this.sceneSettingsController.addKeyListener(
+      "selectedGlyphName",
+      (event) => this._syncLocationFromGlyphName(),
+      false
+    );
   }
 
   get glyphLines() {
