@@ -284,6 +284,9 @@ export class EditorController {
     );
 
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
+      if (event.newValue?.isEditing) {
+        this.autoViewBox = false;
+      }
       this.canvasController.requestUpdate();
     });
 
