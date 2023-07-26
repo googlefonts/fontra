@@ -53,15 +53,19 @@ export class ObservableController {
     this._addSynchronizedItem = synchronizeWithLocalStorage(this, prefix);
   }
 
-  waitForKeyChange(key) {
+  waitForKeyChange(key, immediate = false) {
     let resolvePromise;
-    const promise = new Promise((resolve) => (resolvePromise = resolve));
+
     const tempListener = (event) => {
       this.removeKeyListener(key, tempListener);
       resolvePromise(event);
     };
-    this.addKeyListener(key, tempListener);
-    return promise;
+
+    this.addKeyListener(key, tempListener, immediate);
+
+    return new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
   }
 
   synchronizeItemWithLocalStorage(key, defaultValue) {
