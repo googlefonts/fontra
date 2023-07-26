@@ -48,12 +48,8 @@ export class PowerRulerTool extends BaseTool {
     thePowerRulerTool = this;
     this.fontController = editor.fontController;
     this.glyphRulers = {};
-    this.currentGlyphName = undefined;
     this.active = editor.visualizationLayersSettings.model[POWER_RULER_IDENTIFIER];
 
-    this.sceneController.addEventListener("selectedGlyphChanged", () =>
-      this.editedGlyphMayHaveChanged()
-    );
     editor.sceneSettingsController.addKeyListener(
       "location",
       throttleCalls(() => setTimeout(() => this.locationChanged(), 0), 20)
@@ -69,7 +65,13 @@ export class PowerRulerTool extends BaseTool {
       }
     );
 
-    this.glyphChangeListener = (glyphName) => this.glyphChanged(glyphName);
+    this.sceneController.addCurrentGlyphChangeListener((glyphName) => {
+      this.recalc();
+    });
+  }
+
+  get currentGlyphName() {
+    return this.sceneSettings.selectedGlyphName;
   }
 
   draw(context, positionedGlyph, parameters, model, controller) {
@@ -132,41 +134,16 @@ export class PowerRulerTool extends BaseTool {
     }
   }
 
-  editedGlyphMayHaveChanged() {
-    const glyphName = this.sceneSettings.selectedGlyph?.isEditing
-      ? this.sceneModel.getSelectedGlyphName()
-      : undefined;
-    if (glyphName !== this.currentGlyphName) {
-      this.editedGlyphChanged(glyphName);
-    }
-  }
-
-  editedGlyphChanged(glyphName) {
-    if (this.currentGlyphName) {
-      this.fontController.removeGlyphChangeListener(
-        this.currentGlyphName,
-        this.glyphChangeListener
-      );
-    }
-    if (glyphName) {
-      this.fontController.addGlyphChangeListener(glyphName, this.glyphChangeListener);
-    }
-    this.currentGlyphName = glyphName;
-    this.canvasController.requestUpdate();
-  }
-
   glyphChanged(glyphName) {
     this.recalc();
   }
 
   locationChanged() {
-    if (this.currentGlyphName) {
-      this.recalc();
-    }
+    this.recalc();
   }
 
   async recalc() {
-    if (!this.active) {
+    if (!this.active || !this.currentGlyphName) {
       return;
     }
     const ruler = this.glyphRulers[this.currentGlyphName];
