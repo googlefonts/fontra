@@ -53,6 +53,17 @@ export class ObservableController {
     this._addSynchronizedItem = synchronizeWithLocalStorage(this, prefix);
   }
 
+  waitForKeyChange(key) {
+    let resolvePromise;
+    const promise = new Promise((resolve) => (resolvePromise = resolve));
+    const tempListener = (event) => {
+      this.removeKeyListener(key, tempListener);
+      resolvePromise();
+    };
+    this.addKeyListener(key, tempListener);
+    return promise;
+  }
+
   synchronizeItemWithLocalStorage(key, defaultValue) {
     // For an observable that is already synchronized with localStorage, add
     // a key/value pair to the model. This reads the value from localStorage
