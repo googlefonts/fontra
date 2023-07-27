@@ -368,10 +368,6 @@ export class SidebarDesignspace {
       }
       return "edit source properties";
     });
-    // Update UI
-    // FIXME:
-    // await this._updateSources();
-    // this.selectSourceByIndex(sourceIndex);
   }
 
   async _sourcePropertiesRunDialog(
