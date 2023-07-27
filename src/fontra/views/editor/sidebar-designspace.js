@@ -278,8 +278,9 @@ export class SidebarDesignspace {
       return;
     }
 
-    const getGlyphFunc =
-      this.sceneController.sceneModel.fontController.getGlyph.bind(this);
+    const getGlyphFunc = this.sceneController.sceneModel.fontController.getGlyph.bind(
+      this.sceneController.sceneModel.fontController
+    );
 
     const instance = (
       await glyphController.instantiate(
