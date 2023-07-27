@@ -441,6 +441,7 @@ export class FontController {
       this._purgeGlyphCache(glyphName);
       // The undo stack is local, so any external change invalidates it
       delete this.undoStacks[glyphName];
+      this.glyphChanged(glyphName);
     }
   }
 
