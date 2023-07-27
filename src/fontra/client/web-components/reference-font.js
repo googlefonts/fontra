@@ -49,7 +49,7 @@ export class ReferenceFont extends UnlitElement {
     return this.controller.model;
   }
 
-  render() {
+  async render() {
     const columnDescriptions = [
       {
         key: "fileName",
@@ -97,6 +97,9 @@ export class ReferenceFont extends UnlitElement {
           5000
         );
       }
+      fileItems.forEach(async (fileItem) => {
+        await saveFontToOPFS(fileItem.file);
+      });
       filesUIList.setItems([...filesUIList.items, ...fileItems]);
       if (filesUIList.getSelectedItemIndex() === undefined) {
         filesUIList.setSelectedItemIndex(0, true);
@@ -121,16 +124,23 @@ export class ReferenceFont extends UnlitElement {
       }
       this.model.referenceFontName = fileItem.fontName;
     });
-    filesUIList.addEventListener("deleteKey", () => {
+    filesUIList.addEventListener("deleteKey", async () => {
       const index = filesUIList.getSelectedItemIndex();
       const items = [...filesUIList.items];
       const fileItem = items[index];
       document.fonts.delete(fileItem.fontFace);
+      // TODO: fix reference font not deleted from canvas (just canvas not updated?!)
       items.splice(index, 1);
       filesUIList.setItems(items);
       filesUIList.setSelectedItemIndex(undefined, true);
+      await deleteFontFromOPFS(fileItem);
     });
-
+    const persistentFileItems = await loadAllFontsFromOPFS();
+    // console.log(persistentFileItems, typeof persistentFileItems);
+    filesUIList.setItems([...filesUIList.items, ...persistentFileItems]);
+    if (filesUIList.getSelectedItemIndex() === undefined) {
+      filesUIList.setSelectedItemIndex(0, true);
+    }
     const content = [
       div({ class: "title" }, ["Reference font"]),
       div({}, [
@@ -181,6 +191,100 @@ function readFileAsync(file) {
 
     reader.readAsBinaryString(file);
   });
+}
+
+async function getOPFSRoot() {
+  let root = null;
+  try {
+    root = await navigator.storage.getDirectory();
+    // TODO: check space available
+  } catch (error) {
+    // TODO: replace with dialog
+    alert("Unable to open OPFS. \n" + error);
+  }
+  return root;
+}
+
+async function getOPFSFontsDir() {
+  let root = await getOPFSRoot();
+  if (!root) {
+    return null;
+  }
+  const fontsDir = await root.getDirectoryHandle("reference-fonts", { create: true });
+  return fontsDir;
+}
+
+async function listFontsInOPFS() {
+  const fontsDir = await getOPFSFontsDir();
+  const fonts = [];
+  for await (let [name, handle] of fontsDir.entries()) {
+    fonts.push({
+      name: name,
+      handle: handle,
+    });
+  }
+  return fonts;
+}
+
+async function loadAllFontsFromOPFS() {
+  const fonts = await listFontsInOPFS();
+  // console.log(fonts);
+  for await (let font of fonts) {
+    let fontName = font["name"];
+    font["file"] = await loadFontFromOPFS(fontName);
+    font["fileName"] = fontName;
+    font["fontName"] = fontName.split(".")[0]; // TODO
+  }
+  // console.log(fonts);
+  return fonts;
+}
+
+async function loadFontFromOPFS(fontName) {
+  try {
+    const fontsDir = await getOPFSFontsDir();
+    const fontFileHandle = await fontsDir.getFileHandle(fontName);
+    const fontFileData = await fontFileHandle.getFile();
+    const fontFileBuffer = await fontFileData.arrayBuffer();
+    const fontFileBlob = new Blob([fontFileBuffer], { type: "font/ttf" });
+    const fontFile = new File([fontFileBlob], fontName, { type: "font/ttf" });
+    return fontFile;
+  } catch (error) {
+    // TODO: replace with dialog
+    alert("Unable to load font from OPFS. \n" + error);
+    return null;
+  }
+}
+
+async function deleteFontFromOPFS(font) {
+  const fontsDir = await getOPFSFontsDir();
+  try {
+    await fontsDir.removeEntry(font.file.name);
+  } catch (error) {
+    // this happens when the same file is added multiple times.
+    // when one of them gets deleted, the file stored in OPFS gets deleted too,
+    // subsequent items deletion will throw this exception
+    // because the file has already been deleted previously.
+    // TODO: replace with dialog
+    alert("Unable to delete font file from OPFS. \n" + error);
+  }
+}
+
+async function saveFontToOPFS(file) {
+  const fontsDir = await getOPFSFontsDir();
+  const fontFile = await fontsDir.getFileHandle(file.name, { create: true });
+  const fontFileData = await readFileAsync(file);
+  const fontFileBinaryData = Uint8Array.from(fontFileData, (char) =>
+    char.charCodeAt(0)
+  );
+  const fontFileIO = await fontFile.createWritable();
+  try {
+    await fontFileIO.write(fontFileBinaryData);
+  } catch (error) {
+    // TODO: replace with dialog
+    alert("Unable to save font file to OPFS. \n" + error);
+  } finally {
+    await fontFileIO.close();
+  }
 }
 
 customElements.define("reference-font", ReferenceFont);
