@@ -197,6 +197,7 @@ export class SidebarDesignspace {
       sourceItems.push(sourceController.model);
     }
     this.sourcesList.setItems(sourceItems);
+    this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
     this.addRemoveSourceButtons.disableAddButton =
       !this.designspaceLocation.axes.length;
@@ -258,9 +259,6 @@ export class SidebarDesignspace {
       }
       return "delete source" + layerMessage;
     });
-    // Update UI
-    // FIXME
-    // await this._updateSources();
   }
 
   async addSource() {
@@ -316,11 +314,9 @@ export class SidebarDesignspace {
       }
       return "add source";
     });
-    // Update UI
-    // FIXME:
-    // await this._updateSources();
-    // const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
-    // this.selectSourceByIndex(selectedSourceIndex);
+    // Navigate to new source
+    const selectedSourceIndex = glyph.sources.length - 1; /* the newly added source */
+    this.sceneSettings.selectedSourceIndex = selectedSourceIndex;
   }
 
   async editSourceProperties(sourceIndex) {
