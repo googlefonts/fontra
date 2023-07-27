@@ -1629,8 +1629,6 @@ export class EditorController {
     await this.sceneController.sceneModel.updateScene();
     this.canvasController.requestUpdate();
     this.glyphsSearch.updateGlyphNamesListContent();
-    // FIXME:
-    // this.updateWindowLocationAndSelectionInfo();
   }
 
   async externalChange(change) {
