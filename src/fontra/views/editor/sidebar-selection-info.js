@@ -52,11 +52,13 @@ export class SidebarSelectionInfo {
     const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
       glyphName
     );
-    const instance = glyphController?.instance;
     let unicodes = this.fontController.glyphMap?.[glyphName] || [];
 
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
+
+    const instance = positionedGlyph?.glyph;
+
     if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
       // Glyph does not yet exist in the font, but we can grab the unicode from
       // positionedGlyph.character anyway
@@ -71,7 +73,7 @@ export class SidebarSelectionInfo {
     const canEdit = glyphController?.canEdit;
 
     const formContents = [];
-    if (glyphName) {
+    if (glyphName && instance) {
       formContents.push({
         key: "glyphName",
         type: "text",
