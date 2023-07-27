@@ -5,6 +5,7 @@ import {
   getCharFromUnicode,
   makeUPlusStringFromCodePoint,
   parseSelection,
+  throttleCalls,
 } from "/core/utils.js";
 
 export class SidebarSelectionInfo {
@@ -12,29 +13,52 @@ export class SidebarSelectionInfo {
     this.sceneController = sceneController;
     this.fontController = fontController;
     this.infoForm = new Form("selection-info");
+
+    this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
+
+    this.sceneController.sceneSettingsController.addKeyListener(
+      ["selectedGlyphName", "pathSelection", "location"],
+      (event) => this.throttledUpdate()
+    );
+
+    this.sceneController.addCurrentGlyphChangeListener((event) => {
+      this.throttledUpdate(event.senderID);
+    });
+  }
+
+  async editListenerCallback(editMethodName, senderID, ...args) {
+    if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
+      this.throttledUpdate(senderID);
+    }
   }
 
   async update(senderID) {
     if (senderID === this) {
       // Don't rebuild, just update the Dimensions field
-      this.updateDimensions();
+      await this.updateDimensions();
       return;
     }
     if (!this.infoForm.container.offsetParent) {
       // If the info form is not visible, do nothing
       return;
     }
-    const varGlyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+
+    await this.fontController.ensureInitialized;
+
+    const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
+    const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
+      glyphName
+    );
+    let unicodes = this.fontController.glyphMap?.[glyphName] || [];
+
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
-    const glyphController = positionedGlyph?.glyph;
-    const instance = glyphController?.instance;
-    const glyphName = glyphController?.name;
-    let unicodes = this.fontController.glyphMap?.[glyphName] || [];
+
+    const instance = positionedGlyph?.glyph.instance;
+
     if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
-      // Glyph does not yet exist in the font, so varGlyphController is undefined,
-      // But we can grab the unicode from positionedGlyph.character anyway.
+      // Glyph does not yet exist in the font, but we can grab the unicode from
+      // positionedGlyph.character anyway
       unicodes = [positionedGlyph.character.codePointAt(0)];
     }
     const unicodesStr = unicodes
@@ -46,7 +70,7 @@ export class SidebarSelectionInfo {
     const canEdit = glyphController?.canEdit;
 
     const formContents = [];
-    if (glyphName) {
+    if (glyphName && instance) {
       formContents.push({
         key: "glyphName",
         type: "text",
@@ -69,9 +93,11 @@ export class SidebarSelectionInfo {
     }
     const { pointIndices, componentIndices } = this._getSelection();
 
-    formContents.push(
-      ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
-    );
+    if (glyphController) {
+      formContents.push(
+        ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
+      );
+    }
 
     for (const index of componentIndices) {
       const component = instance.components[index];
@@ -174,10 +200,9 @@ export class SidebarSelectionInfo {
     return formContents;
   }
 
-  updateDimensions() {
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
-    const glyphController = positionedGlyph?.glyph;
+  async updateDimensions() {
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
     const { pointIndices, componentIndices } = this._getSelection();
     const dimensionsString = this._getDimensionsString(
       glyphController,
@@ -206,9 +231,12 @@ export class SidebarSelectionInfo {
     const selectionRects = [];
     if (pointIndices.length) {
       const instance = glyphController.instance;
-      selectionRects.push(
-        rectFromPoints(pointIndices.map((i) => instance.path.getPoint(i)))
+      const selRect = rectFromPoints(
+        pointIndices.map((i) => instance.path.getPoint(i)).filter((point) => !!point)
       );
+      if (selRect) {
+        selectionRects.push(selRect);
+      }
     }
     for (const componentIndex of componentIndices) {
       const component = glyphController.components[componentIndex];

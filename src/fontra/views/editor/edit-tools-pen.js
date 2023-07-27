@@ -13,7 +13,7 @@ export class PenTool extends BaseTool {
   identifier = "pen-tool";
 
   handleHover(event) {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyph?.isEditing) {
       this.editor.tools["pointer-tool"].handleHover(event);
       return;
     }
@@ -43,7 +43,7 @@ export class PenTool extends BaseTool {
   }
 
   setCursor() {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyph?.isEditing) {
       this.editor.tools["pointer-tool"].setCursor();
     } else {
       this.canvasController.canvas.style.cursor = "crosshair";
@@ -108,7 +108,7 @@ export class PenTool extends BaseTool {
   }
 
   async handleDrag(eventStream, initialEvent) {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyph?.isEditing) {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
       return;
     }

@@ -4,6 +4,8 @@ export class BaseTool {
     this.canvasController = editor.canvasController;
     this.sceneController = editor.sceneController;
     this.sceneModel = this.sceneController.sceneModel;
+    this.sceneSettingsController = editor.sceneSettingsController;
+    this.sceneSettings = editor.sceneSettings;
   }
 
   setCursor() {

@@ -14,11 +14,8 @@ export class CJKDesignFrame {
       this.updateCJKDesignFrame(cjkDesignFrameGlyphName)
     );
 
-    editor.designspaceLocationController.addKeyListener("location", (event) => {
-      // Grrr, timeout needed when the location changes based on a source list click
-      setTimeout(() => {
-        this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
-      }, 0);
+    editor.sceneSettingsController.addKeyListener("location", (event) => {
+      this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
     });
 
     registerVisualizationLayerDefinition({
@@ -63,9 +60,8 @@ export class CJKDesignFrame {
       gridDivisionsY: 2,
     });
 
-    const frameGlyph = await this.fontController.getGlyphInstance(
-      glyphName,
-      this.sceneController.getGlobalLocation()
+    const frameGlyph = await this.sceneController.sceneModel.getGlyphInstance(
+      glyphName
     );
     if (frameGlyph && frameGlyph.path.numPoints >= 1) {
       this.cjkDesignFrameParameters = makeParametersFromGlyph(frameGlyph, unitsPerEm);

@@ -333,7 +333,7 @@ export class UIList extends UnlitElement {
   }
 
   setSelectedItemIndex(rowIndex, shouldDispatchEvent = false) {
-    if (rowIndex === undefined && !this.allowEmptySelection) {
+    if (rowIndex == undefined && !this.allowEmptySelection) {
       return;
     }
     if (!isNaN(rowIndex)) {

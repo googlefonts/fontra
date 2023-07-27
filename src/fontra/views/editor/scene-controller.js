@@ -3,11 +3,13 @@ import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
+import { offsetRect } from "../core/rectangle.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isSuperset } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
   commandKeyProperty,
+  objectsEqual,
   parseSelection,
   reversed,
 } from "../core/utils.js";
@@ -15,16 +17,45 @@ import { dialog } from "/web-components/dialog-overlay.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 export class SceneController {
-  constructor(sceneModel, canvasController, experimentalFeaturesController) {
+  constructor(editor, sceneModel) {
+    this.sceneSettingsController = editor.sceneSettingsController;
+    this.sceneSettings = editor.sceneSettings;
     this.sceneModel = sceneModel;
-    this.canvasController = canvasController;
-    this.experimentalFeatures = experimentalFeaturesController.model;
+    this.canvasController = editor.canvasController;
+    this.experimentalFeatures = editor.experimentalFeaturesController.model;
+    this.fontController = sceneModel.fontController;
+
+    this._currentGlyphChangeListeners = [];
+
+    this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
+      this._resetStoredGlyphPosition();
+    });
+
+    this.sceneSettingsController.addKeyListener(
+      "align",
+      (event) => {
+        this.scrollAdjustBehavior = "text-align";
+      },
+      true
+    );
+
+    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
+      this._updateCurrentGlyphChangeListeners();
+    });
+
+    this.sceneSettingsController.addKeyListener(
+      "positionedLines",
+      (event) => {
+        this._adjustScrollPosition();
+      },
+      true
+    );
 
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
         await this.handleDrag(eventStream, initialEvent),
       hover: (event) => this.handleHover(event),
-      element: canvasController.canvas,
+      element: this.canvasController.canvas,
     });
     this._eventElement = document.createElement("div");
 
@@ -35,6 +66,48 @@ export class SceneController {
       this.handleKeyDown(event)
     );
     this.selectedTool = undefined;
+  }
+
+  _resetStoredGlyphPosition() {
+    this._previousGlyphPosition = positionedGlyphPosition(
+      this.sceneModel.getSelectedPositionedGlyph()
+    );
+  }
+
+  _adjustScrollPosition() {
+    let originXDelta = 0;
+
+    const glyphPosition = positionedGlyphPosition(
+      this.sceneModel.getSelectedPositionedGlyph()
+    );
+
+    const [minX, maxX] = this.sceneModel.getTextHorizontalExtents();
+
+    if (this.scrollAdjustBehavior === "text-align" && this._previousTextExtents) {
+      const [minXPre, maxXPre] = this._previousTextExtents;
+      originXDelta = minX - minXPre;
+    } else if (
+      this.scrollAdjustBehavior === "pin-glyph-center" &&
+      this._previousGlyphPosition &&
+      glyphPosition
+    ) {
+      const previousGlyphCenter =
+        this._previousGlyphPosition.x + this._previousGlyphPosition.xAdvance / 2;
+      const glyphCenter = glyphPosition.x + glyphPosition.xAdvance / 2;
+      originXDelta = glyphCenter - previousGlyphCenter;
+    }
+
+    if (originXDelta) {
+      this.sceneSettings.viewBox = offsetRect(
+        this.sceneSettings.viewBox,
+        originXDelta,
+        0
+      );
+    }
+
+    this.scrollAdjustBehavior = null;
+    this._previousTextExtents = [minX, maxX];
+    this._previousGlyphPosition = glyphPosition;
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
@@ -55,6 +128,43 @@ export class SceneController {
         this.canvasController.requestUpdate();
         break;
     }
+  }
+
+  _updateCurrentGlyphChangeListeners() {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+    if (glyphName === this._currentSelectedGlyphName) {
+      return;
+    }
+    for (const listener of this._currentGlyphChangeListeners) {
+      this.fontController.removeGlyphChangeListener(
+        this._currentSelectedGlyphName,
+        listener
+      );
+      this.fontController.addGlyphChangeListener(glyphName, listener);
+    }
+    this._currentSelectedGlyphName = glyphName;
+  }
+
+  addCurrentGlyphChangeListener(listener) {
+    this._currentGlyphChangeListeners.push(listener);
+    if (this._currentSelectedGlyphName) {
+      this.fontController.addGlyphChangeListener(
+        this._currentSelectedGlyphName,
+        listener
+      );
+    }
+  }
+
+  removeCurrentGlyphChangeListener(listener) {
+    if (this._currentSelectedGlyphName) {
+      this.fontController.removeGlyphChangeListener(
+        this._currentSelectedGlyphName,
+        listener
+      );
+    }
+    this._currentGlyphChangeListeners = this._currentGlyphChangeListeners.filter(
+      (item) => item !== listener
+    );
   }
 
   setSelectedTool(tool) {
@@ -80,7 +190,7 @@ export class SceneController {
   }
 
   async handleArrowKeys(event) {
-    if (!this.sceneModel.selectedGlyphIsEditing || !this.selection.size) {
+    if (!this.sceneSettings.selectedGlyph?.isEditing || !this.selection.size) {
       return;
     }
     let [dx, dy] = arrowKeyDeltas[event.key];
@@ -145,7 +255,7 @@ export class SceneController {
 
   updateContextMenuState(event) {
     this.contextMenuState = {};
-    if (!this.selectedGlyphIsEditing) {
+    if (!this.sceneSettings.selectedGlyph?.isEditing) {
       return;
     }
     const { selection: clickedSelection } = this.sceneModel.selectionAtPoint(
@@ -201,21 +311,6 @@ export class SceneController {
 
   getSelectedGlyphName() {
     return this.sceneModel.getSelectedGlyphName();
-  }
-
-  getSelectedGlyphState() {
-    return this.sceneModel.getSelectedGlyphState();
-  }
-
-  setSelectedGlyphState(state) {
-    this.sceneModel.setSelectedGlyphState(state);
-    this.sceneModel.updateBackgroundGlyphs();
-    this.canvasController.requestUpdate();
-    this.notifySelectedGlyphChanged();
-  }
-
-  notifySelectedGlyphChanged() {
-    this._dispatchEvent("selectedGlyphChanged");
   }
 
   async handleDrag(eventStream, initialEvent) {
@@ -290,37 +385,10 @@ export class SceneController {
   }
 
   set hoveredGlyph(hoveredGlyph) {
-    if (this.sceneModel.hoveredGlyph != hoveredGlyph) {
+    if (!equalGlyphSelection(this.sceneModel.hoveredGlyph, hoveredGlyph)) {
       this.sceneModel.hoveredGlyph = hoveredGlyph;
       this.canvasController.requestUpdate();
     }
-  }
-
-  get selectedGlyph() {
-    return this.sceneModel.selectedGlyph;
-  }
-
-  set selectedGlyph(selectedGlyph) {
-    if (this.sceneModel.selectedGlyph !== selectedGlyph) {
-      this.sceneModel.selectedGlyph = selectedGlyph;
-      this.sceneModel.selection = new Set();
-      this.canvasController.requestUpdate();
-      this.notifySelectedGlyphChanged();
-    }
-    this.sceneModel.updateBackgroundGlyphs();
-  }
-
-  get selectedGlyphIsEditing() {
-    return this.sceneModel.selectedGlyphIsEditing;
-  }
-
-  set selectedGlyphIsEditing(flag) {
-    if (this.sceneModel.selectedGlyphIsEditing != flag) {
-      this.sceneModel.selectedGlyphIsEditing = flag;
-      this.canvasController.requestUpdate();
-      this._dispatchEvent("selectedGlyphIsEditingChanged");
-    }
-    this.sceneModel.updateBackgroundGlyphs();
   }
 
   get selectionRect() {
@@ -342,53 +410,12 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
-  getGlyphLines() {
-    return this.sceneModel.getGlyphLines();
-  }
-
-  async setGlyphLines(glyphLines) {
-    await this.sceneModel.setGlyphLines(glyphLines);
-    this.notifySelectedGlyphChanged();
-    this.sceneModel.updateBackgroundGlyphs();
-    this.canvasController.requestUpdate();
-  }
-
-  async setTextAlignment(align) {
-    await this.sceneModel.setTextAlignment(align);
-    this.canvasController.requestUpdate();
-  }
-
-  getLocation() {
-    return this.sceneModel.getLocation();
-  }
-
   getGlobalLocation() {
     return this.sceneModel.getGlobalLocation();
   }
 
   getLocalLocations(filterShownGlyphs = false) {
     return this.sceneModel.getLocalLocations(filterShownGlyphs);
-  }
-
-  async setLocation(values) {
-    const glyphXBefore = positionedGlyphCenterX(
-      this.sceneModel.getSelectedPositionedGlyph()
-    );
-    await this.sceneModel.setLocation(values);
-    if (glyphXBefore !== undefined) {
-      const glyphXAfter = positionedGlyphCenterX(
-        this.sceneModel.getSelectedPositionedGlyph()
-      );
-      const originXDelta =
-        (glyphXAfter - glyphXBefore) * this.canvasController.magnification;
-      this.canvasController.origin.x -= originXDelta;
-    }
-    this.canvasController.requestUpdate();
-  }
-
-  async setGlobalAndLocalLocations(globalLocation, localLocations) {
-    await this.sceneModel.setGlobalAndLocalLocations(globalLocation, localLocations);
-    this.canvasController.requestUpdate();
   }
 
   updateLocalLocations(localLocations) {
@@ -509,7 +536,7 @@ export class SceneController {
         label: undoLabel,
         undoSelection: initialSelection,
         redoSelection: this.selection,
-        location: this.getLocation(),
+        location: this.sceneSettings.location,
       };
       if (!this._cancelGlyphEditing) {
         editContext.editFinal(
@@ -558,7 +585,7 @@ export class SceneController {
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
-        await this.setLocation(undoInfo.location);
+        this.sceneSettings.location = undoInfo.location;
       }
       await this.sceneModel.updateScene();
       this.canvasController.requestUpdate();
@@ -756,9 +783,16 @@ function getSelectedContours(path, pointSelection) {
   return [...selectedContours];
 }
 
-function positionedGlyphCenterX(positionedGlyph) {
+function positionedGlyphPosition(positionedGlyph) {
   if (!positionedGlyph) {
     return undefined;
   }
-  return positionedGlyph.x + positionedGlyph.glyph.xAdvance / 2;
+  return { x: positionedGlyph.x, xAdvance: positionedGlyph.glyph.xAdvance };
+}
+
+export function equalGlyphSelection(glyphSelectionA, glyphSelectionB) {
+  return (
+    glyphSelectionA?.lineIndex === glyphSelectionB?.lineIndex &&
+    glyphSelectionA?.glyphIndex === glyphSelectionB?.glyphIndex
+  );
 }

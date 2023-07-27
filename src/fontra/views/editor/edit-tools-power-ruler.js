@@ -48,16 +48,9 @@ export class PowerRulerTool extends BaseTool {
     thePowerRulerTool = this;
     this.fontController = editor.fontController;
     this.glyphRulers = {};
-    this.currentGlyphName = undefined;
     this.active = editor.visualizationLayersSettings.model[POWER_RULER_IDENTIFIER];
 
-    this.sceneController.addEventListener("selectedGlyphChanged", () =>
-      this.editedGlyphMayHaveChanged()
-    );
-    this.sceneController.addEventListener("selectedGlyphIsEditingChanged", () =>
-      this.editedGlyphMayHaveChanged()
-    );
-    editor.designspaceLocationController.addKeyListener(
+    editor.sceneSettingsController.addKeyListener(
       "location",
       throttleCalls(() => setTimeout(() => this.locationChanged(), 0), 20)
     );
@@ -72,7 +65,13 @@ export class PowerRulerTool extends BaseTool {
       }
     );
 
-    this.glyphChangeListener = (glyphName) => this.glyphChanged(glyphName);
+    this.sceneController.addCurrentGlyphChangeListener((event) => {
+      this.recalc();
+    });
+  }
+
+  get currentGlyphName() {
+    return this.sceneSettings.selectedGlyphName;
   }
 
   draw(context, positionedGlyph, parameters, model, controller) {
@@ -135,50 +134,23 @@ export class PowerRulerTool extends BaseTool {
     }
   }
 
-  editedGlyphMayHaveChanged() {
-    const glyphName = this.sceneController.selectedGlyphIsEditing
-      ? this.sceneModel.getSelectedGlyphName()
-      : undefined;
-    if (glyphName !== this.currentGlyphName) {
-      this.editedGlyphChanged(glyphName);
-    }
-  }
-
-  editedGlyphChanged(glyphName) {
-    if (this.currentGlyphName) {
-      this.fontController.removeGlyphChangeListener(
-        this.currentGlyphName,
-        this.glyphChangeListener
-      );
-    }
-    if (glyphName) {
-      this.fontController.addGlyphChangeListener(glyphName, this.glyphChangeListener);
-    }
-    this.currentGlyphName = glyphName;
-    this.canvasController.requestUpdate();
-  }
-
   glyphChanged(glyphName) {
     this.recalc();
   }
 
   locationChanged() {
-    if (this.currentGlyphName) {
-      this.recalc();
-    }
+    this.recalc();
   }
 
   async recalc() {
-    if (!this.active) {
+    if (!this.active || !this.currentGlyphName) {
       return;
     }
     const ruler = this.glyphRulers[this.currentGlyphName];
     if (!ruler) {
       return;
     }
-    const glyphController = await this.sceneModel.getGlyphInstance(
-      this.currentGlyphName
-    );
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const extraLines = this.computeSideBearingLines(glyphController);
 
     this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(
@@ -264,7 +236,7 @@ export class PowerRulerTool extends BaseTool {
   }
 
   handleHover(event) {
-    if (!this.sceneModel.selectedGlyphIsEditing || this.haveHoveredGlyph(event)) {
+    if (!this.sceneModel.selectedGlyph?.isEditing || this.haveHoveredGlyph(event)) {
       this.editor.tools["pointer-tool"].handleHover(event);
       return;
     }
@@ -272,7 +244,7 @@ export class PowerRulerTool extends BaseTool {
   }
 
   setCursor() {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyph?.isEditing) {
       this.editor.tools["pointer-tool"].setCursor();
     } else {
       this.canvasController.canvas.style.cursor = "default";
@@ -281,7 +253,7 @@ export class PowerRulerTool extends BaseTool {
 
   async handleDrag(eventStream, initialEvent) {
     if (
-      !this.sceneModel.selectedGlyphIsEditing ||
+      !this.sceneModel.selectedGlyph?.isEditing ||
       this.haveHoveredGlyph(initialEvent)
     ) {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
