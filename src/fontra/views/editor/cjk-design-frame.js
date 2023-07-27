@@ -15,11 +15,7 @@ export class CJKDesignFrame {
     );
 
     editor.sceneSettingsController.addKeyListener("location", (event) => {
-      // FIXME
-      // Grrr, timeout needed when the location changes based on a source list click
-      setTimeout(() => {
-        this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
-      }, 0);
+      this.updateCJKDesignFrame(cjkDesignFrameGlyphName);
     });
 
     registerVisualizationLayerDefinition({
