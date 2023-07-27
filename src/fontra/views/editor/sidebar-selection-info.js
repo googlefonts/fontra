@@ -57,7 +57,7 @@ export class SidebarSelectionInfo {
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
-    const instance = positionedGlyph?.glyph;
+    const instance = positionedGlyph?.glyph.instance;
 
     if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
       // Glyph does not yet exist in the font, but we can grab the unicode from
