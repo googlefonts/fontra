@@ -65,7 +65,7 @@ export class PowerRulerTool extends BaseTool {
       }
     );
 
-    this.sceneController.addCurrentGlyphChangeListener((glyphName) => {
+    this.sceneController.addCurrentGlyphChangeListener((event) => {
       this.recalc();
     });
   }

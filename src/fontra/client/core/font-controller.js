@@ -210,7 +210,7 @@ export class FontController {
     const codePoints = typeof codePoint == "number" ? [codePoint] : [];
     this.glyphMap[glyphName] = codePoints;
 
-    await this.glyphChanged(glyphName);
+    await this.glyphChanged(glyphName, { senderID: this });
 
     const change = {
       c: [
@@ -234,7 +234,7 @@ export class FontController {
     this.notifyEditListeners("editFinal", this);
   }
 
-  async glyphChanged(glyphName) {
+  async glyphChanged(glyphName, senderInfo) {
     const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)];
     for (const glyphName of glyphNames) {
       this._purgeInstanceCache(glyphName);
@@ -248,7 +248,7 @@ export class FontController {
     const listeners = this._glyphChangeListeners[glyphName];
     if (listeners) {
       for (const listener of listeners) {
-        listener.listener(glyphName, listener.listenerData);
+        listener({ glyphName, ...senderInfo });
       }
     }
   }
@@ -309,11 +309,11 @@ export class FontController {
     return glyph?.getSourceIndex(location);
   }
 
-  addGlyphChangeListener(glyphName, listener, listenerData) {
+  addGlyphChangeListener(glyphName, listener) {
     if (!this._glyphChangeListeners[glyphName]) {
       this._glyphChangeListeners[glyphName] = [];
     }
-    this._glyphChangeListeners[glyphName].push({ listener, listenerData });
+    this._glyphChangeListeners[glyphName].push(listener);
   }
 
   removeGlyphChangeListener(glyphName, listener) {
@@ -322,7 +322,7 @@ export class FontController {
     }
     this._glyphChangeListeners[glyphName] = this._glyphChangeListeners[
       glyphName
-    ].filter((item) => item.listener !== listener);
+    ].filter((item) => item !== listener);
     if (!this._glyphChangeListeners[glyphName].length) {
       delete this._glyphChangeListeners[glyphName];
     }
@@ -361,7 +361,7 @@ export class FontController {
     applyChange(this._rootObject, change, this._rootClassDef);
     delete this._rootObject["glyphs"];
     for (const glyphName of glyphNames) {
-      this.glyphChanged(glyphName);
+      this.glyphChanged(glyphName, { senderID: this });
       if (isExternalChange) {
         // The undo stack is local, so any external change invalidates it
         delete this.undoStacks[glyphName];
@@ -441,7 +441,7 @@ export class FontController {
       this._purgeGlyphCache(glyphName);
       // The undo stack is local, so any external change invalidates it
       delete this.undoStacks[glyphName];
-      this.glyphChanged(glyphName);
+      this.glyphChanged(glyphName, { senderID: this });
     }
   }
 
@@ -531,7 +531,7 @@ class GlyphEditContext {
   async editIncremental(change, mayDrop = false) {
     // If mayDrop is true, the call is not guaranteed to be broadcast, and is throttled
     // at a maximum number of changes per second, to prevent flooding the network
-    await this.fontController.glyphChanged(this.glyphName);
+    await this.fontController.glyphChanged(this.glyphName, { senderID: this.senderID });
     change = consolidateChanges(change, this.baseChangePath);
     if (mayDrop) {
       this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
@@ -544,7 +544,9 @@ class GlyphEditContext {
 
   async editFinal(change, rollback, undoInfo, broadcast = false) {
     if (broadcast) {
-      await this.fontController.glyphChanged(this.glyphName);
+      await this.fontController.glyphChanged(this.glyphName, {
+        senderID: this.senderID,
+      });
     }
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
@@ -561,7 +563,7 @@ class GlyphEditContext {
   }
 
   async editCancel() {
-    await this.fontController.glyphChanged(this.glyphName);
+    await this.fontController.glyphChanged(this.glyphName, { senderID: this.senderID });
     await this.fontController.notifyEditListeners("editEnd", this.senderID);
   }
 }
