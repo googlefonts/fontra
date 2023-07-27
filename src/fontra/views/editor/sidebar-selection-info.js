@@ -22,10 +22,7 @@ export class SidebarSelectionInfo {
     );
 
     this.sceneController.addCurrentGlyphChangeListener((event) => {
-      if (event.senderID === this) {
-        return;
-      }
-      this.throttledUpdate();
+      this.throttledUpdate(event.senderID);
     });
   }
 
