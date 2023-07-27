@@ -43,7 +43,7 @@ export class SceneModel {
       "selectedGlyphName",
       (event) => {
         this.sceneSettings.pathSelection = new Set();
-        this._syncLocationFromGlyphName;
+        this._syncLocationFromGlyphName();
       },
       true
     );
