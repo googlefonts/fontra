@@ -53,6 +53,13 @@ export class SidebarDesignspace {
       this._updateSources();
     });
 
+    this.sceneController.addCurrentGlyphChangeListener(
+      scheduleCalls((event) => {
+        this._updateAxes();
+        this._updateSources();
+      }, 100)
+    );
+
     this.sceneSettingsController.addKeyListener("location", (event) => {
       if (event.senderInfo === this) {
         // Sent by us, ignore
