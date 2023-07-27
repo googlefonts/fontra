@@ -1652,14 +1652,6 @@ export class EditorController {
       this.glyphsSearch.updateGlyphNamesListContent();
     }
     await this.sceneController.sceneModel.updateScene();
-    if (
-      selectedGlyphName !== undefined &&
-      matchChangePath(change, ["glyphs", selectedGlyphName])
-    ) {
-      // FIXME:
-      // this.updateSelectionInfo();
-      // this.updateSidebarDesignspace();
-    }
     this.canvasController.requestUpdate();
   }
 
@@ -1690,11 +1682,6 @@ export class EditorController {
     await this.fontController.reloadGlyphs(glyphNames);
     await this.sceneController.sceneModel.updateScene();
     const selectedGlyphName = this.sceneSettings.selectedGlyphName;
-    if (selectedGlyphName !== undefined && glyphNames.includes(selectedGlyphName)) {
-      // FIXME:
-      // this.updateSidebarDesignspace();
-      // this.updateWindowLocationAndSelectionInfo();
-    }
     this.canvasController.requestUpdate();
   }
 
@@ -1794,8 +1781,7 @@ export class EditorController {
 
   toggleSidebarSelectionInfo(onOff) {
     if (onOff) {
-      // FIXME:
-      // this.updateSelectionInfo?.();
+      this.sidebarSelectionInfo.update();
     }
   }
 
@@ -1807,10 +1793,6 @@ export class EditorController {
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
-    if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
-      // FIXME:
-      // this.updateSelectionInfo(senderID);
-    }
     if (editMethodName === "editFinal") {
       this.sceneController.updateHoverState();
     }
