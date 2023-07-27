@@ -39,24 +39,26 @@ export class SidebarSelectionInfo {
   async update(senderID) {
     if (senderID === this) {
       // Don't rebuild, just update the Dimensions field
-      this.updateDimensions();
+      await this.updateDimensions();
       return;
     }
     if (!this.infoForm.container.offsetParent) {
       // If the info form is not visible, do nothing
       return;
     }
-    const varGlyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+
+    const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
+    const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
+      glyphName
+    );
+    const instance = glyphController?.instance;
+    let unicodes = this.fontController.glyphMap?.[glyphName] || [];
+
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
-    const glyphController = positionedGlyph?.glyph;
-    const instance = glyphController?.instance;
-    const glyphName = glyphController?.name;
-    let unicodes = this.fontController.glyphMap?.[glyphName] || [];
     if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
-      // Glyph does not yet exist in the font, so varGlyphController is undefined,
-      // But we can grab the unicode from positionedGlyph.character anyway.
+      // Glyph does not yet exist in the font, but we can grab the unicode from
+      // positionedGlyph.character anyway
       unicodes = [positionedGlyph.character.codePointAt(0)];
     }
     const unicodesStr = unicodes
@@ -198,10 +200,10 @@ export class SidebarSelectionInfo {
     return formContents;
   }
 
-  updateDimensions() {
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
-    const glyphController = positionedGlyph?.glyph;
+  async updateDimensions() {
+    const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
+      this.sceneController.sceneSettings.selectedGlyphName
+    );
     const { pointIndices, componentIndices } = this._getSelection();
     const dimensionsString = this._getDimensionsString(
       glyphController,
