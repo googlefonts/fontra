@@ -1714,11 +1714,11 @@ export class EditorController {
 
     this.sceneController.sceneModel.setLocalLocations(viewInfo["localLocations"]);
 
-    this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
-
     if (viewInfo["location"]) {
       this.sceneSettings.location = viewInfo["location"];
     }
+
+    this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
 
     if (viewInfo["selection"]) {
       this.sceneSettings.pathSelection = new Set(viewInfo["selection"]);
