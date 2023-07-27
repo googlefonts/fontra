@@ -231,9 +231,12 @@ export class SidebarSelectionInfo {
     const selectionRects = [];
     if (pointIndices.length) {
       const instance = glyphController.instance;
-      selectionRects.push(
-        rectFromPoints(pointIndices.map((i) => instance.path.getPoint(i)))
+      const selRect = rectFromPoints(
+        pointIndices.map((i) => instance.path.getPoint(i)).filter((point) => !!point)
       );
+      if (selRect) {
+        selectionRects.push(selRect);
+      }
     }
     for (const componentIndex of componentIndices) {
       const component = glyphController.components[componentIndex];
