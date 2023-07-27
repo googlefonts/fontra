@@ -46,6 +46,8 @@ export class SidebarSelectionInfo {
       return;
     }
 
+    await this.fontController.ensureInitialized;
+
     const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
     const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
       glyphName
