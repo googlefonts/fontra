@@ -870,7 +870,7 @@ export class EditorController {
 
   async doubleClickedComponentsCallback(event) {
     const glyphController =
-      this.sceneController.sceneModel.getSelectedStaticGlyphController();
+      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
     const localLocations = {};
     const glyphInfos = [];

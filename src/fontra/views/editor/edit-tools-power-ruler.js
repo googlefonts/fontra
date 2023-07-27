@@ -150,9 +150,7 @@ export class PowerRulerTool extends BaseTool {
     if (!ruler) {
       return;
     }
-    const glyphController = await this.sceneModel.getGlyphInstance(
-      this.currentGlyphName
-    );
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const extraLines = this.computeSideBearingLines(glyphController);
 
     this.glyphRulers[this.currentGlyphName] = this.recalcRulerFromLine(

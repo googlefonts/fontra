@@ -97,8 +97,12 @@ export class SceneModel {
     return await this.fontController.getGlyph(this.getSelectedGlyphName());
   }
 
-  getSelectedStaticGlyphController() {
+  _getSelectedStaticGlyphController() {
     return this.getSelectedPositionedGlyph()?.glyph;
+  }
+
+  async getSelectedStaticGlyphController() {
+    return await this.getGlyphInstance(this.sceneSettings.selectedGlyphName);
   }
 
   getGlobalLocation() {
@@ -631,7 +635,7 @@ export class SceneModel {
     if (this.selectedGlyph?.isEditing && this.selection.size) {
       const positionedGlyph = this.getSelectedPositionedGlyph();
       const [x, y] = [positionedGlyph.x, positionedGlyph.y];
-      const instance = this.getSelectedStaticGlyphController();
+      const instance = this._getSelectedStaticGlyphController();
       const boundses = [];
 
       const { point: selectedPointIndices, component: selectedComponentIndices } =

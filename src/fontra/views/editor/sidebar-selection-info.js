@@ -201,9 +201,8 @@ export class SidebarSelectionInfo {
   }
 
   async updateDimensions() {
-    const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
-      this.sceneController.sceneSettings.selectedGlyphName
-    );
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
     const { pointIndices, componentIndices } = this._getSelection();
     const dimensionsString = this._getDimensionsString(
       glyphController,
