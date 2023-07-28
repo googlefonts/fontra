@@ -2,7 +2,6 @@ import { expect } from "chai";
 import {
   chordLengthParameterize,
   computeMaxError,
-  cubicCurve,
   generateBezier,
   fitCubic,
   newtonRhapsonRootFind,
@@ -30,28 +29,26 @@ describe("chordLengthParameterize", () => {
   });
 });
 
-describe("cubicCurve", () => {
+describe("Bezier curve evaluation", () => {
   const p1 = { x: -28, y: 138 };
   const p2 = { x: 98.70185667874232, y: 264.70185667874233 };
   const p3 = { x: 274.3331007115815, y: 149.00069786525552 };
   const p4 = { x: 318, y: 18 };
+  const bezier = new Bezier(p1, p2, p3, p4);
   it("Returns an intermediate point relevant to t value", () => {
-    expect(cubicCurve(p1, p2, p3, p4, 0.2)).deep.equal({
-      x: 52.44549063294889,
-      y: 186.74957995970166,
-    });
+    const { x, y } = bezier.get(0.2);
+    expect(x).equal(52.44549063294889);
+    expect(y).equal(186.74957995970166);
   });
   it("Returns the first point when t at zero", () => {
-    expect(cubicCurve(p1, p2, p3, p4, 0)).deep.equal({
-      x: -28,
-      y: 138,
-    });
+    const { x, y } = bezier.get(0);
+    expect(x).equal(-28);
+    expect(y).equal(138);
   });
   it("Returns the last point when t at the end", () => {
-    expect(cubicCurve(p1, p2, p3, p4, 1)).deep.equal({
-      x: 318,
-      y: 18,
-    });
+    const { x, y } = bezier.get(1);
+    expect(x).equal(318);
+    expect(y).equal(18);
   });
 });
 

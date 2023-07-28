@@ -119,12 +119,6 @@ export function fitCubic(points, leftTangent, rightTangent, error) {
   return bezier;
 }
 
-export function cubicCurve(p1, p2, p3, p4, t) {
-  const bezier = new Bezier(p1, p2, p3, p4);
-  const { x, y } = bezier.get(t);
-  return { x, y };
-}
-
 export function chordLengthParameterize(points) {
   const parameters = [0.0];
   for (const i of range(1, points.length)) {
