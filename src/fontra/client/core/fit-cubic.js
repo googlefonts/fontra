@@ -108,7 +108,7 @@ export function fitCubic(points, leftTangent, rightTangent, error) {
     for (let i = 0; i < 20; i++) {
       const parametersPrime = reparameterize(bezier, points, parameters);
       bezier = generateBezier(points, parametersPrime, leftTangent, rightTangent);
-      maxError, (splitPoint = computeMaxError(points, bezier, parametersPrime));
+      [maxError, splitPoint] = computeMaxError(points, bezier, parametersPrime);
       if (maxError < error) {
         break;
       }
