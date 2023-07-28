@@ -119,16 +119,6 @@ export function fitCubic(points, leftTangent, rightTangent, error) {
   return bezier;
 }
 
-export function bezierQprime(bezier, t) {
-  const { x, y } = bezier.derivative(t);
-  return { x, y };
-}
-
-export function bezierQPrimePrime(bezier, t) {
-  const { x, y } = bezier.dderivative(t);
-  return { x, y };
-}
-
 export function cubicCurve(p1, p2, p3, p4, t) {
   const bezier = new Bezier(p1, p2, p3, p4);
   const { x, y } = bezier.get(t);

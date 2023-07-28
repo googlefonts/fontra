@@ -1,7 +1,5 @@
 import { expect } from "chai";
 import {
-  bezierQPrimePrime,
-  bezierQprime,
   chordLengthParameterize,
   computeMaxError,
   cubicCurve,
@@ -88,16 +86,14 @@ describe("computeMaxError", () => {
 
 describe("bezierqprime", () => {
   it("cubic bezier first derivative at t", () => {
-    const bezierqprime = bezierQprime(
-      new Bezier([
-        { x: -28, y: 0 },
-        { x: 16.276295129835724, y: 44.276295129835724 },
-        { x: 182.32886105475268, y: 425.0134168357419 },
-        { x: 318, y: 18 },
-      ]),
-      0.8718749216671997
-    );
-    expect(bezierqprime).deep.equal({
+    const { x, y } = new Bezier([
+      { x: -28, y: 0 },
+      { x: 16.276295129835724, y: 44.276295129835724 },
+      { x: 182.32886105475268, y: 425.0134168357419 },
+      { x: 318, y: 18 },
+    ]).derivative(0.8718749216671997);
+
+    expect({ x, y }).deep.equal({
       x: 422.87567451044663,
       y: -670.8219354679883,
     });
@@ -106,16 +102,14 @@ describe("bezierqprime", () => {
 
 describe("bezierqprimeprime", () => {
   it("cubic bezier second derivative at t", () => {
-    const bezierqprime = bezierQPrimePrime(
-      new Bezier([
-        { x: -28, y: 0 },
-        { x: 16.276295129835724, y: 44.276295129835724 },
-        { x: 182.32886105475268, y: 425.0134168357419 },
-        { x: 318, y: 18 },
-      ]),
-      0.8718749216671997
-    );
-    expect(bezierqprime).deep.equal({
+    const { x, y } = new Bezier([
+      { x: -28, y: 0 },
+      { x: 16.276295129835724, y: 44.276295129835724 },
+      { x: 182.32886105475268, y: 425.0134168357419 },
+      { x: 318, y: 18 },
+    ]).dderivative(0.8718749216671997);
+
+    expect({ x, y }).deep.equal({
       x: -65.31726020004677,
       y: -3862.265215939896,
     });
