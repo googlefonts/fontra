@@ -168,10 +168,12 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.sidebearings",
-  name: "Sidebearings",
-  selectionMode: "editing",
-  zIndex: 500,
+  identifier: "fontra.sidebearings.unselected",
+  name: "Sidebearings for non-editing glyphs",
+  selectionMode: "notediting",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 190,
   screenParameters: { strokeWidth: 1, extent: 16 },
   colors: { strokeColor: "#0004" },
   colorsDarkMode: { strokeColor: "#FFF6" },
@@ -179,12 +181,10 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.sidebearings.unselected",
-  name: "Sidebearings for non-editing glyphs",
-  selectionMode: "notediting",
-  userSwitchable: true,
-  defaultOn: false,
-  zIndex: 190,
+  identifier: "fontra.sidebearings",
+  name: "Sidebearings",
+  selectionMode: "editing",
+  zIndex: 500,
   screenParameters: { strokeWidth: 1, extent: 16 },
   colors: { strokeColor: "#0004" },
   colorsDarkMode: { strokeColor: "#FFF6" },
