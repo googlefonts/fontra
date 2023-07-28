@@ -192,6 +192,32 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.sidebearings.unselected",
+  name: "Sidebearings for non-editing glyphs",
+  selectionMode: "notediting",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 190,
+  screenParameters: { strokeWidth: 1, extent: 16 },
+  colors: { strokeColor: "#0004" },
+  colorsDarkMode: { strokeColor: "#FFF6" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    const extent = parameters.extent;
+    strokeLine(context, 0, -extent, 0, extent);
+    strokeLine(context, glyph.xAdvance, -extent, glyph.xAdvance, extent);
+    if (extent < glyph.xAdvance / 2) {
+      strokeLine(context, 0, 0, extent, 0);
+      strokeLine(context, glyph.xAdvance, 0, glyph.xAdvance - extent, 0);
+    } else {
+      strokeLine(context, 0, 0, glyph.xAdvance, 0);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.crosshair",
   name: "Drag crosshair",
   selectionMode: "editing",
