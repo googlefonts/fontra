@@ -12,11 +12,7 @@ function zeros(length, ...rest) {
   if (rest.length === 0) {
     return new Array(length).fill(0);
   } else {
-    const result = [];
-    for (const _ of range(length)) {
-      result.push(zeros(...rest));
-    }
-    return result;
+    return Array.from(range(length)).map((_) => zeros(...rest));
   }
 }
 
