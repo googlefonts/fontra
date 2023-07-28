@@ -112,6 +112,9 @@ function getGlyphsBySelectionMode(model) {
         ? selectedGlyphs(model)
         : [],
     editing: model.selectedGlyph?.isEditing ? selectedGlyphs(model) : [],
+    notediting: allPositionedGlyphs.filter(
+      (glyph) => glyph !== selectedPositionedGlyph || !model.selectedGlyph?.isEditing
+    ),
   };
 }
 
