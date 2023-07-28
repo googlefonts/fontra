@@ -245,11 +245,17 @@ export class FontController {
     }
     this.updateGlyphDependencies(await this.getGlyph(glyphName));
 
-    const event = { glyphName, ...senderInfo };
-    const listeners = this._glyphChangeListeners[glyphName];
-    if (listeners) {
-      for (const listener of listeners) {
-        listener(event);
+    const baseGlyphName = glyphName;
+    for (const glyphName of glyphNames) {
+      const event = { glyphName, ...senderInfo };
+      if (glyphName !== baseGlyphName) {
+        event.baseGlyphChanged = baseGlyphName;
+      }
+      const listeners = this._glyphChangeListeners[glyphName];
+      if (listeners) {
+        for (const listener of listeners) {
+          listener(event);
+        }
       }
     }
   }
