@@ -7,7 +7,11 @@ export function subVectors(vectorA, vectorB) {
 }
 
 export function mulVector(vector, scalar) {
-  return { x: vector.x * scalar, y: vector.y * scalar };
+  if (typeof scalar === "number") {
+    return { x: vector.x * scalar, y: vector.y * scalar };
+  } else {
+    return { x: vector.x * scalar.x, y: vector.y * scalar.y };
+  }
 }
 
 export function rotateVector90CW(vector) {
@@ -60,4 +64,8 @@ export function intersect(pt1, pt2, pt3, pt4) {
 
 export function distance(pt1, pt2) {
   return vectorLength(subVectors(pt2, pt1));
+}
+
+export function dotVector(point, point2) {
+  return point.x * point2.x + point.y * point2.y;
 }
