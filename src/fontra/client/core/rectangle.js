@@ -171,3 +171,10 @@ export function rectAddMargin(rect, relativeMargin) {
       : size.height * relativeMargin;
   return insetRect(rect, -inset, -inset);
 }
+
+export function rectScaleAroundCenter(rect, scaleFactor, center) {
+  rect = offsetRect(rect, -center.x, -center.y);
+  rect = scaleRect(rect, scaleFactor);
+  rect = offsetRect(rect, center.x, center.y);
+  return rect;
+}

@@ -5,7 +5,7 @@ import { glyphLinesFromText, textFromGlyphLines } from "../core/glyph-lines.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { ObservableController } from "../core/observable-object.js";
 import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
-import { insetRect, offsetRect, rectAddMargin, rectSize } from "../core/rectangle.js";
+import { offsetRect, rectAddMargin } from "../core/rectangle.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isSuperset } from "../core/set-ops.js";
 import {

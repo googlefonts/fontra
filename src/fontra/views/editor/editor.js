@@ -6,13 +6,12 @@ import { loaderSpinner } from "../core/loader-spinner.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
   centeredRect,
-  offsetRect,
   rectAddMargin,
   rectCenter,
   rectFromArray,
   rectToArray,
+  rectScaleAroundCenter,
   rectSize,
-  scaleRect,
 } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
 import * as html from "/core/unlit.js";
@@ -1758,13 +1757,6 @@ export class EditorController {
     );
     location.reload();
   }
-}
-
-function rectScaleAroundCenter(rect, scaleFactor, center) {
-  rect = offsetRect(rect, -center.x, -center.y);
-  rect = scaleRect(rect, scaleFactor);
-  rect = offsetRect(rect, center.x, center.y);
-  return rect;
 }
 
 function clearSearchParams(searchParams) {
