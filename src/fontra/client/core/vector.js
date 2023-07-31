@@ -66,6 +66,6 @@ export function distance(pt1, pt2) {
   return vectorLength(subVectors(pt2, pt1));
 }
 
-export function dotVector(point, point2) {
-  return point.x * point2.x + point.y * point2.y;
+export function dotVector(vectorA, vectorB) {
+  return vectorA.x * vectorB.x + vectorA.y * vectorB.y;
 }
