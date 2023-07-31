@@ -150,8 +150,10 @@ export class EditorController {
       this.experimentalFeaturesController
     );
 
-    const sceneView = new SceneView(sceneModel, (model, controller) =>
-      this.visualizationLayers.drawVisualizationLayers(model, controller)
+    const sceneView = new SceneView(
+      this.sceneController.sceneModel,
+      (model, controller) =>
+        this.visualizationLayers.drawVisualizationLayers(model, controller)
     );
     canvasController.sceneView = sceneView;
 
@@ -161,9 +163,12 @@ export class EditorController {
       [allGlyphsCleanVisualizationLayerDefinition],
       this.isThemeDark
     );
-    this.cleanSceneView = new SceneView(sceneModel, (model, controller) => {
-      this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
-    });
+    this.cleanSceneView = new SceneView(
+      this.sceneController.sceneModel,
+      (model, controller) => {
+        this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
+      }
+    );
 
     // TODO move event stuff out of here
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
