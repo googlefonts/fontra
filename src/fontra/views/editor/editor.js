@@ -604,7 +604,7 @@ export class EditorController {
 
     for (const sidebarTab of document.querySelectorAll(".sidebar-tab")) {
       sidebarTab.addEventListener("click", (event) => {
-        this.toggleSidebar(sidebarTab.dataset.sidebarName, true, true);
+        this.toggleSidebar(sidebarTab.dataset.sidebarName, true);
       });
     }
 
@@ -659,7 +659,7 @@ export class EditorController {
     }
   }
 
-  toggleSidebar(sidebarName, doUpdateWindowLocation = true, doFocus = false) {
+  toggleSidebar(sidebarName, doFocus = false) {
     const toggledTab = document.querySelector(
       `.sidebar-tab[data-sidebar-name="${sidebarName}"]`
     );
@@ -677,13 +677,8 @@ export class EditorController {
     )) {
       const sidebarContent = sidebars[item.dataset.sidebarName];
       if (item === toggledTab) {
-        const isSidebarVisible = sidebarContainer.classList.contains("visible");
         const isSelected = item.classList.contains("selected");
-        if (isSelected == isSidebarVisible && doUpdateWindowLocation) {
-          // Sidebar visibility will change
-          this.updateWindowLocation?.();
-          // dispatch event?
-        }
+
         item.classList.toggle("selected", !isSelected);
         sidebarContainer.classList.toggle("visible", !isSelected);
         const shadowBox = document.querySelector(
@@ -1046,10 +1041,10 @@ export class EditorController {
       }
     });
     this.registerShortCut("f", { metaKey: true, globalOverride: true }, () => {
-      this.toggleSidebar("glyph-search", true, true);
+      this.toggleSidebar("glyph-search", true);
     });
     this.registerShortCut("i", { metaKey: true, globalOverride: true }, () => {
-      this.toggleSidebar("sidebar-selection-info", true, true);
+      this.toggleSidebar("sidebar-selection-info", true);
     });
 
     for (const menuItem of [
