@@ -671,32 +671,6 @@ export class SceneModel {
   }
 }
 
-function mergeAxisInfo(axisInfos) {
-  // This returns a list of axes that is a superset of all the axis
-  // sets of the input.
-  if (!axisInfos.length) {
-    return [];
-  }
-  const mergedAxisInfo = { ...axisInfos[0] };
-  for (let i = 1; i < axisInfos.length; i++) {
-    for (const axisInfo of Object.values(axisInfos[i])) {
-      if (mergedAxisInfo[axisInfo.name] !== undefined) {
-        mergedAxisInfo[axisInfo.name].minValue = Math.min(
-          mergedAxisInfo[axisInfo.name].minValue,
-          axisInfo.minValue
-        );
-        mergedAxisInfo[axisInfo.name].maxValue = Math.max(
-          mergedAxisInfo[axisInfo.name].maxValue,
-          axisInfo.maxValue
-        );
-      } else {
-        mergedAxisInfo[axisInfo.name] = { ...axisInfo };
-      }
-    }
-  }
-  return Object.values(mergedAxisInfo);
-}
-
 function getUsedGlyphNames(fontController, positionedLines) {
   const usedGlyphNames = new Set();
   for (const line of positionedLines) {
