@@ -150,10 +150,10 @@ export class EditorController {
       this.experimentalFeaturesController
     );
 
-    const sceneView = new SceneView(
-      this.sceneController.sceneModel,
-      (model, controller) =>
-        this.visualizationLayers.drawVisualizationLayers(model, controller)
+    this.sceneModel = this.sceneController.sceneModel;
+
+    const sceneView = new SceneView(this.sceneModel, (model, controller) =>
+      this.visualizationLayers.drawVisualizationLayers(model, controller)
     );
     canvasController.sceneView = sceneView;
 
@@ -163,12 +163,9 @@ export class EditorController {
       [allGlyphsCleanVisualizationLayerDefinition],
       this.isThemeDark
     );
-    this.cleanSceneView = new SceneView(
-      this.sceneController.sceneModel,
-      (model, controller) => {
-        this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
-      }
-    );
+    this.cleanSceneView = new SceneView(this.sceneModel, (model, controller) => {
+      this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
+    });
 
     // TODO move event stuff out of here
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
@@ -322,7 +319,7 @@ export class EditorController {
         return;
       }
       const varGlyphController =
-        await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+        await this.sceneModel.getSelectedVariableGlyphController();
       const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
       this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, this);
     });
@@ -338,7 +335,7 @@ export class EditorController {
           return;
         }
         const varGlyphController =
-          await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+          await this.sceneModel.getSelectedVariableGlyphController();
         const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
 
         this.sceneSettingsController.setItem("location", location, this);
@@ -515,7 +512,7 @@ export class EditorController {
         break;
       case "goToNearestSource":
         const glyphController =
-          await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+          await this.sceneModel.getSelectedVariableGlyphController();
         const nearestSourceIndex = glyphController.findNearestSourceFromGlobalLocation(
           this.sceneSettings.location,
           true
@@ -876,8 +873,7 @@ export class EditorController {
   }
 
   async doubleClickedComponentsCallback(event) {
-    const glyphController =
-      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
     const localLocations = {};
     const glyphInfos = [];
@@ -1250,8 +1246,7 @@ export class EditorController {
     if (doCut !== !!editInstance) {
       throw new Error("assert -- inconsistent editInstance vs doCut argument");
     }
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
     const glyphController = positionedGlyph?.glyph;
     if (!glyphController) {
       return {};
@@ -1411,7 +1406,7 @@ export class EditorController {
   }
 
   canAddComponent() {
-    return this.sceneController.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
+    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
   }
 
   async doAddComponent() {
@@ -1519,8 +1514,7 @@ export class EditorController {
             location: { ...newComponent.location },
           });
         }
-        const instance =
-          this.sceneController.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+        const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
         const newComponentIndex = instance.components.length - 1;
         this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
         return "Add Component";
@@ -1540,8 +1534,7 @@ export class EditorController {
   }
 
   doSelectAllNone(selectNone) {
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
+    const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
 
     if (!positionedGlyph || !this.sceneSettings.selectedGlyph?.isEditing) {
       return;
@@ -1568,12 +1561,12 @@ export class EditorController {
   }
 
   async doSelectPreviousNextSource(selectPrevious) {
-    const instance = this.sceneController.sceneModel.getSelectedPositionedGlyph().glyph;
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph;
     if (!instance) {
       return;
     }
     const varGlyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+      await this.sceneModel.getSelectedVariableGlyphController();
     const sourceIndex = instance.sourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
@@ -1632,8 +1625,8 @@ export class EditorController {
 
   async newGlyph(glyphName, codePoint, templateInstance) {
     await this.fontController.newGlyph(glyphName, codePoint, templateInstance);
-    this.sceneController.sceneModel.updateGlyphLinesCharacterMapping();
-    await this.sceneController.sceneModel.updateScene();
+    this.sceneModel.updateGlyphLinesCharacterMapping();
+    await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
     this.glyphsSearch.updateGlyphNamesListContent();
   }
@@ -1645,7 +1638,7 @@ export class EditorController {
 
     if (matchChangePath(change, ["glyphMap"])) {
       const selectedGlyph = this.sceneSettings.selectedGlyph;
-      this.sceneController.sceneModel.updateGlyphLinesCharacterMapping();
+      this.sceneModel.updateGlyphLinesCharacterMapping();
       if (
         selectedGlyph?.isEditing &&
         !this.fontController.hasGlyph(selectedGlyphName)
@@ -1658,7 +1651,7 @@ export class EditorController {
       }
       this.glyphsSearch.updateGlyphNamesListContent();
     }
-    await this.sceneController.sceneModel.updateScene();
+    await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
 
@@ -1687,7 +1680,7 @@ export class EditorController {
       );
     }
     await this.fontController.reloadGlyphs(glyphNames);
-    await this.sceneController.sceneModel.updateScene();
+    await this.sceneModel.updateScene();
     const selectedGlyphName = this.sceneSettings.selectedGlyphName;
     this.canvasController.requestUpdate();
   }
@@ -1719,7 +1712,7 @@ export class EditorController {
       await this.sceneSettingsController.waitForKeyChange("glyphLines");
     }
 
-    this.sceneController.sceneModel.setLocalLocations(viewInfo["localLocations"]);
+    this.sceneModel.setLocalLocations(viewInfo["localLocations"]);
 
     if (viewInfo["location"]) {
       this.sceneSettings.location = viewInfo["location"];
