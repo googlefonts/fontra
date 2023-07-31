@@ -59,7 +59,7 @@ export class SceneController {
     });
     this._eventElement = document.createElement("div");
 
-    this.sceneModel.fontController.addEditListener(
+    this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
     );
     this.canvasController.canvas.addEventListener("keydown", (event) =>
@@ -486,7 +486,7 @@ export class SceneController {
 
   async _editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance) {
     const glyphName = this.sceneModel.getSelectedGlyphName();
-    const varGlyph = await this.sceneModel.fontController.getGlyph(glyphName);
+    const varGlyph = await this.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
 
     let editSubject;
@@ -504,7 +504,7 @@ export class SceneController {
       editSubject = varGlyph.glyph;
     }
 
-    const editContext = await this.sceneModel.fontController.getGlyphEditContext(
+    const editContext = await this.fontController.getGlyphEditContext(
       glyphName,
       baseChangePath,
       senderID || this
@@ -570,7 +570,7 @@ export class SceneController {
     if (glyphName === undefined) {
       return;
     }
-    return this.sceneModel.fontController.getUndoRedoInfo(glyphName, isRedo);
+    return this.fontController.getUndoRedoInfo(glyphName, isRedo);
   }
 
   async doUndoRedo(isRedo) {
@@ -578,10 +578,7 @@ export class SceneController {
     if (glyphName === undefined) {
       return;
     }
-    const undoInfo = await this.sceneModel.fontController.undoRedoGlyph(
-      glyphName,
-      isRedo
-    );
+    const undoInfo = await this.fontController.undoRedoGlyph(glyphName, isRedo);
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
@@ -673,7 +670,7 @@ export class SceneController {
       instance.components,
       componentSelection,
       this.getGlobalLocation(),
-      (glyphName) => this.sceneModel.fontController.getGlyph(glyphName)
+      (glyphName) => this.fontController.getGlyph(glyphName)
     );
 
     await this.editInstanceAndRecordChanges((instance) => {
