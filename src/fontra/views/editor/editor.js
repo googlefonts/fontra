@@ -374,12 +374,12 @@ export class EditorController {
         this.setAutoViewBox();
       } else {
         this.autoViewBox = false;
-        this.sceneSettingsController.setItem(
-          "viewBox",
-          this.canvasController.getViewBox(),
-          { senderID: this }
-        );
       }
+      this.sceneSettingsController.setItem(
+        "viewBox",
+        this.canvasController.getViewBox(),
+        { senderID: this }
+      );
     });
   }
 
