@@ -26,9 +26,8 @@ export function generateBezier(points, parameters, leftTangent, rightTangent) {
   );
   const A = zeros(parameters.length, 2, 2);
   for (const [i, u] of enumerate(parameters)) {
-    const a = (1 - u) ** 2;
-    A[i][0] = mulVector(mulVector(mulVector(leftTangent, 3), a), u);
-    A[i][1] = mulVector(mulVector(mulVector(rightTangent, 3), 1 - u), u ** 2);
+    A[i][0] = mulVector(leftTangent, 3 * (1 - u) ** 2 * u);
+    A[i][1] = mulVector(rightTangent, 3 * (1 - u) * u ** 2);
   }
   const C = zeros(2, 2);
   const X = zeros(2);

@@ -129,8 +129,8 @@ describe("fitCubic", () => {
     const segment = fitCubic(points, leftTangent, rightTangent, 800);
     expect(segment.points.map(({ x, y }) => ({ x, y }))).deep.equal([
       { x: -28, y: 0 },
-      { x: 3.1182243877227442, y: 31.118224387722744 },
-      { x: 180.23714421445916, y: 431.2885673566225 },
+      { x: 3.118224387722776, y: 31.118224387722776 },
+      { x: 180.2371442144592, y: 431.28856735662237 },
       { x: 318, y: 18 },
     ]);
   });
@@ -158,8 +158,8 @@ describe("generateBezier", () => {
     ).points;
 
     expect(b1).deep.equal({ x: -28, y: 138 });
-    expect(b2).deep.equal({ x: 98.70185667874236, y: 264.7018566787424 });
-    expect(b3).deep.equal({ x: 274.3331007115815, y: 149.00069786525546 });
+    expect(b2).deep.equal({ x: 98.70185667874232, y: 264.70185667874233 });
+    expect(b3).deep.equal({ x: 274.3331007115815, y: 149.00069786525552 });
     expect(b4).deep.equal({ x: 318, y: 18 });
 
     [b1, b2, b3, b4] = generateBezier(
@@ -183,7 +183,7 @@ describe("generateBezier", () => {
 
     expect(b1).deep.equal({ x: -28, y: 0 });
     expect(b2).deep.equal({ x: 134.85620891904577, y: 162.85620891904577 });
-    expect(b3).deep.equal({ x: 235.0993450823367, y: 266.70196475298985 });
+    expect(b3).deep.equal({ x: 235.09934508233675, y: 266.7019647529898 });
     expect(b4).deep.equal({ x: 318, y: 18 });
   });
 });
