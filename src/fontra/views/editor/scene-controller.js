@@ -17,12 +17,12 @@ import { dialog } from "/web-components/dialog-overlay.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 
 export class SceneController {
-  constructor(editor, sceneModel) {
-    this.sceneSettingsController = editor.sceneSettingsController;
-    this.sceneSettings = editor.sceneSettings;
+  constructor(sceneModel, canvasController, experimentalFeaturesController) {
     this.sceneModel = sceneModel;
-    this.canvasController = editor.canvasController;
-    this.experimentalFeatures = editor.experimentalFeaturesController.model;
+    this.sceneSettingsController = sceneModel.sceneSettingsController;
+    this.sceneSettings = this.sceneSettingsController.model;
+    this.canvasController = canvasController;
+    this.experimentalFeatures = experimentalFeaturesController.model;
     this.fontController = sceneModel.fontController;
 
     this._currentGlyphChangeListeners = [];
