@@ -104,11 +104,6 @@ export class EditorController {
     );
     this.autoViewBox = true;
 
-    // We need to do isPointInPath without having a context, we'll pass a bound method
-    const isPointInPath = canvasController.context.isPointInPath.bind(
-      canvasController.context
-    );
-
     this.clipboardFormatController = new ObservableController({ format: "glif" });
     this.clipboardFormatController.synchronizeWithLocalStorage("fontra-clipboard-");
 
@@ -136,6 +131,11 @@ export class EditorController {
       this.canvasController.requestUpdate();
     });
 
+    // We need to do isPointInPath without having a context, we'll pass a bound method
+    const isPointInPath = canvasController.context.isPointInPath.bind(
+      canvasController.context
+    );
+
     const sceneModel = new SceneModel(
       this.fontController,
       this.sceneSettingsController,
@@ -143,6 +143,8 @@ export class EditorController {
     );
 
     this.sceneController = new SceneController(
+      this.fontController,
+      this.sceneSettingsController,
       sceneModel,
       canvasController,
       this.experimentalFeaturesController
