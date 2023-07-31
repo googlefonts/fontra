@@ -124,6 +124,7 @@ export class SidebarDesignspace {
     this.addRemoveSourceButtons.hidden = true;
 
     this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
+      this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
       const sourceIndex = this.sourcesList.getSelectedItemIndex();
       this.sceneSettings.selectedSourceIndex = sourceIndex;
     });
