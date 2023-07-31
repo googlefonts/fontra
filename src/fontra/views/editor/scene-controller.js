@@ -26,13 +26,13 @@ export class SceneController {
     this.fontController = fontController;
     this.autoViewBox = true;
 
+    this.setupSceneSettings();
+    this.sceneSettings = this.sceneSettingsController.model;
+
     // We need to do isPointInPath without having a context, we'll pass a bound method
     const isPointInPath = canvasController.context.isPointInPath.bind(
       canvasController.context
     );
-
-    this.setupSceneSettings();
-    this.sceneSettings = this.sceneSettingsController.model;
 
     this.sceneModel = new SceneModel(
       fontController,
