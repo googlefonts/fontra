@@ -206,7 +206,7 @@ export class PowerRulerTool extends BaseTool {
       const v = vector.subVectors(intersections[j], intersections[i]);
       const measurePoint = vector.addVectors(
         intersections[i],
-        vector.mulVector(v, 0.5)
+        vector.mulVectorScalar(v, 0.5)
       );
       measurePoint.distance = Math.round(Math.hypot(v.x, v.y) * 10) / 10;
       measurePoint.inside = !!winding;

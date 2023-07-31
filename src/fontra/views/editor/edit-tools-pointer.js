@@ -400,7 +400,10 @@ function alignHandles(handleIn, anchorPoint, handleOut) {
 
 function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
   const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
-  const handleVector = vector.mulVector(vector.normalizeVector(direction), length);
+  const handleVector = vector.mulVectorScalar(
+    vector.normalizeVector(direction),
+    length
+  );
   return vector.roundVector(vector.addVectors(anchorPoint, handleVector));
 }
 

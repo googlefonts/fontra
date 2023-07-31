@@ -6,8 +6,12 @@ export function subVectors(vectorA, vectorB) {
   return { x: vectorA.x - vectorB.x, y: vectorA.y - vectorB.y };
 }
 
-export function mulVector(vector, scalar) {
+export function mulVectorScalar(vector, scalar) {
   return { x: vector.x * scalar, y: vector.y * scalar };
+}
+
+export function mulVectorVector(vectorA, vectorB) {
+  return { x: vectorA.x * vectorB.x, y: vectorA.y * vectorB.y };
 }
 
 export function rotateVector90CW(vector) {
@@ -23,7 +27,7 @@ export function normalizeVector(vector) {
   if (length < _EPSILON) {
     return vector;
   }
-  return mulVector(vector, 1 / length);
+  return mulVectorScalar(vector, 1 / length);
 }
 
 export function roundVector(vector) {
@@ -51,7 +55,7 @@ export function intersect(pt1, pt2, pt3, pt4) {
   if (Math.abs(determinant) > _EPSILON) {
     const t1 = ((pt3.x - pt1.x) * delta2.y + (pt1.y - pt3.y) * delta2.x) / determinant;
     const t2 = ((pt1.x - pt3.x) * delta1.y + (pt3.y - pt1.y) * delta1.x) / -determinant;
-    intersection = addVectors(mulVector(delta1, t1), pt1);
+    intersection = addVectors(mulVectorScalar(delta1, t1), pt1);
     intersection.t1 = t1;
     intersection.t2 = t2;
   }
@@ -60,4 +64,8 @@ export function intersect(pt1, pt2, pt3, pt4) {
 
 export function distance(pt1, pt2) {
   return vectorLength(subVectors(pt2, pt1));
+}
+
+export function dotVector(vectorA, vectorB) {
+  return vectorA.x * vectorB.x + vectorA.y * vectorB.y;
 }
