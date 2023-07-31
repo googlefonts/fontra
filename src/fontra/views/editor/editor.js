@@ -96,8 +96,6 @@ export class EditorController {
     );
     this.canvasController = canvasController;
 
-    this.initSceneSettingsController();
-
     this.fontController = new FontController(font);
     this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
@@ -115,6 +113,17 @@ export class EditorController {
       "fontra-editor-experimental-features."
     );
 
+    this.initSceneSettingsController();
+
+    this.sceneController = new SceneController(
+      this.fontController,
+      this.sceneSettingsController,
+      canvasController,
+      this.experimentalFeaturesController
+    );
+
+    this.sceneModel = this.sceneController.sceneModel;
+
     this.initSidebarReferenceFont();
     this.cjkDesignFrame = new CJKDesignFrame(this);
 
@@ -130,15 +139,6 @@ export class EditorController {
       this.visualizationLayers.toggle(event.key, event.newValue);
       this.canvasController.requestUpdate();
     });
-
-    this.sceneController = new SceneController(
-      this.fontController,
-      this.sceneSettingsController,
-      canvasController,
-      this.experimentalFeaturesController
-    );
-
-    this.sceneModel = this.sceneController.sceneModel;
 
     const sceneView = new SceneView(this.sceneModel, (model, controller) =>
       this.visualizationLayers.drawVisualizationLayers(model, controller)
