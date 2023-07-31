@@ -6,7 +6,6 @@ import { loaderSpinner } from "../core/loader-spinner.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
   centeredRect,
-  insetRect,
   offsetRect,
   rectCenter,
   rectFromArray,
@@ -38,8 +37,7 @@ import { themeController } from "/core/theme-settings.js";
 import { dialog, dialogSetup } from "/web-components/dialog-overlay.js";
 import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
-import { SceneController } from "./scene-controller.js";
-import { getSelectedGlyphName } from "./scene-model.js";
+import { SceneController, rectAddMargin } from "./scene-controller.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
@@ -60,11 +58,7 @@ import {
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { clamp } from "../../core/utils.js";
-import {
-  getSuggestedGlyphName,
-  getUnicodeFromGlyphName,
-  parseClipboard,
-} from "../core/server-utils.js";
+import { parseClipboard } from "../core/server-utils.js";
 
 const MIN_SIDEBAR_WIDTH = 200;
 const MAX_SIDEBAR_WIDTH = 500;
@@ -100,7 +94,6 @@ export class EditorController {
     this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
     );
-    this.autoViewBox = true;
 
     this.clipboardFormatController = new ObservableController({ format: "glif" });
     this.clipboardFormatController.synchronizeWithLocalStorage("fontra-clipboard-");
@@ -113,16 +106,20 @@ export class EditorController {
       "fontra-editor-experimental-features."
     );
 
-    this.initSceneSettingsController();
-
     this.sceneController = new SceneController(
       this.fontController,
-      this.sceneSettingsController,
       canvasController,
       this.experimentalFeaturesController
     );
 
+    this.sceneSettingsController = this.sceneController.sceneSettingsController;
+    this.sceneSettings = this.sceneSettingsController.model;
     this.sceneModel = this.sceneController.sceneModel;
+
+    this.sceneSettingsController.addListener((event) => {
+      // FIXME: ignore some keys
+      this.updateWindowLocation(); // scheduled with delay
+    });
 
     this.initSidebarReferenceFont();
     this.cjkDesignFrame = new CJKDesignFrame(this);
@@ -236,148 +233,6 @@ export class EditorController {
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox
     setTimeout(() => this.setupFromWindowLocation(), 20);
-  }
-
-  initSceneSettingsController() {
-    this.sceneSettingsController = new ObservableController({
-      text: "",
-      align: "center",
-      glyphLines: [],
-      location: {},
-      selectedGlyph: null,
-      selectedGlyphName: null,
-      selectedSourceIndex: null,
-      selectedLayerName: null,
-      pathSelection: new Set(),
-      viewBox: this.canvasController.getViewBox(),
-      positionedLines: [],
-    });
-    this.sceneSettings = this.sceneSettingsController.model;
-
-    // Set up the mutual relationship between text and glyphLines
-    this.sceneSettingsController.addKeyListener("text", async (event) => {
-      if (event.senderInfo === this) {
-        return;
-      }
-      await this.fontController.ensureInitialized;
-      const glyphLines = await glyphLinesFromText(
-        event.newValue,
-        this.fontController.characterMap,
-        this.fontController.glyphMap
-      );
-      this.sceneSettingsController.setItem("glyphLines", glyphLines, this);
-    });
-
-    this.sceneSettingsController.addKeyListener(
-      "glyphLines",
-      (event) => {
-        if (event.senderInfo === this) {
-          return;
-        }
-        const text = textFromGlyphLines(event.newValue);
-        this.sceneSettingsController.setItem("text", text, this);
-      },
-      true
-    );
-
-    this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
-      if (event.newValue?.isEditing) {
-        this.autoViewBox = false;
-      }
-      this.canvasController.requestUpdate();
-    });
-
-    this.sceneSettingsController.addKeyListener(
-      "positionedLines",
-      (event) => {
-        this.setAutoViewBox();
-        this.canvasController.requestUpdate();
-      },
-      true
-    );
-
-    this.sceneSettingsController.addListener((event) => {
-      // FIXME: ignore some keys
-      this.updateWindowLocation(); // scheduled with delay
-    });
-
-    // Set up the mutual dependencies between location and selectedSourceIndex
-    this.sceneSettingsController.addKeyListener("location", async (event) => {
-      if (event.senderInfo === this) {
-        return;
-      }
-      const varGlyphController =
-        await this.sceneModel.getSelectedVariableGlyphController();
-      const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
-      this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, this);
-    });
-
-    this.sceneSettingsController.addKeyListener(
-      "selectedSourceIndex",
-      async (event) => {
-        if (event.senderInfo === this) {
-          return;
-        }
-        const sourceIndex = event.newValue;
-        if (sourceIndex == undefined) {
-          return;
-        }
-        const varGlyphController =
-          await this.sceneModel.getSelectedVariableGlyphController();
-        const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
-
-        this.sceneSettingsController.setItem("location", location, this);
-      }
-    );
-
-    // Set up convenience property "selectedGlyphName"
-    const updateSelectedGlyphName = (event) => {
-      this.sceneSettings.selectedGlyphName = getSelectedGlyphName(
-        this.sceneSettings.selectedGlyph,
-        this.sceneSettings.glyphLines
-      );
-    };
-    this.sceneSettingsController.addKeyListener(
-      "selectedGlyph",
-      updateSelectedGlyphName,
-      true
-    );
-
-    this.sceneSettingsController.addKeyListener(
-      "glyphLines",
-      updateSelectedGlyphName,
-      true
-    );
-
-    // Set up the viewBox relationships
-    this.sceneSettingsController.addKeyListener(
-      "viewBox",
-      (event) => {
-        if (event.senderInfo?.senderID === this) {
-          return;
-        }
-        this.canvasController.setViewBox(event.newValue);
-        this.sceneSettingsController.setItem(
-          "viewBox",
-          this.canvasController.getViewBox(),
-          { senderID: this }
-        );
-      },
-      true
-    );
-
-    this.canvasController.canvas.addEventListener("viewBoxChanged", (event) => {
-      if (event.detail === "canvas-size") {
-        this.setAutoViewBox();
-      } else {
-        this.autoViewBox = false;
-      }
-      this.sceneSettingsController.setItem(
-        "viewBox",
-        this.canvasController.getViewBox(),
-        { senderID: this }
-      );
-    });
   }
 
   async initGlyphsSearch() {
@@ -907,8 +762,6 @@ export class EditorController {
       ...glyphInfos
     );
     this.sceneSettings.glyphLines = glyphLines;
-
-    this.setAutoViewBox();
 
     this.sceneSettings.selectedGlyph = {
       lineIndex: selectedGlyphInfo.lineIndex,
@@ -1686,7 +1539,7 @@ export class EditorController {
     }
     this.sceneSettings.align = viewInfo["align"] || "center";
     if (viewInfo["viewBox"]) {
-      this.autoViewBox = false;
+      this.sceneController.autoViewBox = false;
       const viewBox = viewInfo["viewBox"];
       if (viewBox.every((value) => !isNaN(value))) {
         this.sceneSettings.viewBox = rectFromArray(viewBox);
@@ -1784,18 +1637,6 @@ export class EditorController {
     if (editMethodName === "editFinal") {
       this.sceneController.updateHoverState();
     }
-  }
-
-  setAutoViewBox() {
-    if (!this.autoViewBox) {
-      return;
-    }
-    let bounds = this.sceneController.getSceneBounds();
-    if (!bounds) {
-      return;
-    }
-    bounds = rectAddMargin(bounds, 0.1);
-    this.sceneSettings.viewBox = bounds;
   }
 
   zoomIn() {
@@ -1918,116 +1759,11 @@ export class EditorController {
   }
 }
 
-function rectAddMargin(rect, relativeMargin) {
-  const size = rectSize(rect);
-  const inset =
-    size.width > size.height
-      ? size.width * relativeMargin
-      : size.height * relativeMargin;
-  return insetRect(rect, -inset, -inset);
-}
-
 function rectScaleAroundCenter(rect, scaleFactor, center) {
   rect = offsetRect(rect, -center.x, -center.y);
   rect = scaleRect(rect, scaleFactor);
   rect = offsetRect(rect, center.x, center.y);
   return rect;
-}
-
-// utils, should perhaps move to utils.js
-
-async function glyphLinesFromText(text, characterMap, glyphMap) {
-  const glyphLines = [];
-  for (const line of text.split(/\r?\n/)) {
-    glyphLines.push(await glyphNamesFromText(line, characterMap, glyphMap));
-  }
-  return glyphLines;
-}
-
-const glyphNameRE = /[//\s]/g;
-
-async function glyphNamesFromText(text, characterMap, glyphMap) {
-  const glyphNames = [];
-  for (let i = 0; i < text.length; i++) {
-    let glyphName;
-    let char = text[i];
-    if (char == "/") {
-      i++;
-      if (text[i] == "/") {
-        glyphName = characterMap[char.charCodeAt(0)];
-      } else {
-        glyphNameRE.lastIndex = i;
-        glyphNameRE.test(text);
-        let j = glyphNameRE.lastIndex;
-        if (j == 0) {
-          glyphName = text.slice(i);
-          i = text.length - 1;
-        } else {
-          j--;
-          glyphName = text.slice(i, j);
-          if (text[j] == "/") {
-            i = j - 1;
-          } else {
-            i = j;
-          }
-        }
-        char = undefined;
-        for (const codePoint of glyphMap[glyphName] || []) {
-          if (characterMap[codePoint] === glyphName) {
-            char = String.fromCodePoint(codePoint);
-            break;
-          }
-        }
-        if (!char && !glyphMap[glyphName]) {
-          // Glyph doesn't exist in the font, try to find a unicode value
-          const codePoint = await getUnicodeFromGlyphName(glyphName);
-          if (codePoint) {
-            char = String.fromCodePoint(codePoint);
-          }
-        }
-      }
-    } else {
-      const charCode = text.codePointAt(i);
-      glyphName = characterMap[charCode];
-      if (charCode >= 0x10000) {
-        i++;
-      }
-      char = String.fromCodePoint(charCode);
-    }
-    if (glyphName !== "") {
-      let isUndefined = false;
-      if (!glyphName && char) {
-        glyphName = await getSuggestedGlyphName(char.codePointAt(0));
-        isUndefined = true;
-      }
-      glyphNames.push({
-        character: char,
-        glyphName: glyphName,
-        isUndefined: isUndefined,
-      });
-    }
-  }
-  return glyphNames;
-}
-
-function textFromGlyphLines(glyphLines) {
-  const textLines = [];
-  for (const glyphLine of glyphLines) {
-    let textLine = "";
-    for (let i = 0; i < glyphLine.length; i++) {
-      const glyphInfo = glyphLine[i];
-      if (glyphInfo.character) {
-        textLine += glyphInfo.character;
-      } else {
-        textLine += "/" + glyphInfo.glyphName;
-        if (glyphLine[i + 1]?.character) {
-          textLine += " ";
-        }
-      }
-    }
-    textLines.push(textLine);
-  }
-  return textLines.join("\n");
 }
 
 function clearSearchParams(searchParams) {
