@@ -142,6 +142,12 @@ export class EditorController {
       isPointInPath
     );
 
+    this.sceneController = new SceneController(
+      sceneModel,
+      canvasController,
+      this.experimentalFeaturesController
+    );
+
     const sceneView = new SceneView(sceneModel, (model, controller) =>
       this.visualizationLayers.drawVisualizationLayers(model, controller)
     );
@@ -157,11 +163,6 @@ export class EditorController {
       this.cleanGlyphsLayers.drawVisualizationLayers(model, controller);
     });
 
-    this.sceneController = new SceneController(
-      sceneModel,
-      canvasController,
-      this.experimentalFeaturesController
-    );
     // TODO move event stuff out of here
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
       this.doubleClickedComponentsCallback(event);
