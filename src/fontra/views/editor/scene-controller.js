@@ -135,21 +135,14 @@ export class SceneController {
     );
 
     // Set up convenience property "selectedGlyphName"
-    const updateSelectedGlyphName = (event) => {
-      this.sceneSettings.selectedGlyphName = getSelectedGlyphName(
-        this.sceneSettings.selectedGlyph,
-        this.sceneSettings.glyphLines
-      );
-    };
     this.sceneSettingsController.addKeyListener(
-      "selectedGlyph",
-      updateSelectedGlyphName,
-      true
-    );
-
-    this.sceneSettingsController.addKeyListener(
-      "glyphLines",
-      updateSelectedGlyphName,
+      ["selectedGlyph", "glyphLines"],
+      (event) => {
+        this.sceneSettings.selectedGlyphName = getSelectedGlyphName(
+          this.sceneSettings.selectedGlyph,
+          this.sceneSettings.glyphLines
+        );
+      },
       true
     );
 
