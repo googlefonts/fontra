@@ -26,11 +26,7 @@ export class SceneModel {
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
 
-    this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
-      this.updateScene();
-    });
-
-    this.sceneSettingsController.addKeyListener("align", (event) => {
+    this.sceneSettingsController.addKeyListener(["glyphLines", "align"], (event) => {
       this.updateScene();
     });
 
