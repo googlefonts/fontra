@@ -157,14 +157,14 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       "viewBox",
       (event) => {
-        if (event.senderInfo?.senderID === this) {
+        if (event.senderInfo === this) {
           return;
         }
         this.canvasController.setViewBox(event.newValue);
         this.sceneSettingsController.setItem(
           "viewBox",
           this.canvasController.getViewBox(),
-          { senderID: this }
+          this
         );
       },
       true
@@ -179,7 +179,7 @@ export class SceneController {
       this.sceneSettingsController.setItem(
         "viewBox",
         this.canvasController.getViewBox(),
-        { senderID: this }
+        this
       );
     });
   }
