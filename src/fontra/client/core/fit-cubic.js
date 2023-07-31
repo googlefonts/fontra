@@ -2,9 +2,10 @@ import { enumerate, range } from "./utils.js";
 import {
   subVectors,
   vectorLength,
-  mulVector,
+  mulVectorScalar,
   addVectors,
   dotVector,
+  mulVectorVector,
 } from "./vector.js";
 import { Bezier } from "bezier-js";
 
@@ -26,8 +27,8 @@ export function generateBezier(points, parameters, leftTangent, rightTangent) {
   );
   const A = zeros(parameters.length, 2, 2);
   for (const [i, u] of enumerate(parameters)) {
-    A[i][0] = mulVector(leftTangent, 3 * (1 - u) ** 2 * u);
-    A[i][1] = mulVector(rightTangent, 3 * (1 - u) * u ** 2);
+    A[i][0] = mulVectorScalar(leftTangent, 3 * (1 - u) ** 2 * u);
+    A[i][1] = mulVectorScalar(rightTangent, 3 * (1 - u) * u ** 2);
   }
   const C = zeros(2, 2);
   const X = zeros(2);
@@ -54,15 +55,18 @@ export function generateBezier(points, parameters, leftTangent, rightTangent) {
   if (alphaL < epsilonForAll || alphaR < epsilonForAll) {
     bezierPoints[1] = addVectors(
       bezierPoints[0],
-      mulVector(leftTangent, segLength / 3.0)
+      mulVectorScalar(leftTangent, segLength / 3.0)
     );
     bezierPoints[2] = addVectors(
       bezierPoints[3],
-      mulVector(rightTangent, segLength / 3.0)
+      mulVectorScalar(rightTangent, segLength / 3.0)
     );
   } else {
-    bezierPoints[1] = addVectors(bezierPoints[0], mulVector(leftTangent, alphaL));
-    bezierPoints[2] = addVectors(bezierPoints[3], mulVector(rightTangent, alphaR));
+    bezierPoints[1] = addVectors(bezierPoints[0], mulVectorScalar(leftTangent, alphaL));
+    bezierPoints[2] = addVectors(
+      bezierPoints[3],
+      mulVectorScalar(rightTangent, alphaR)
+    );
   }
   return new Bezier(...bezierPoints);
 }
@@ -75,9 +79,11 @@ export function newtonRhapsonRootFind(bezier, point, t) {
   const d = subVectors(bezier.get(t), point);
   const qPrime = bezier.derivative(t);
   const qPrimePrime = bezier.dderivative(t);
-  const numerator = sumVector(mulVector(d, qPrime));
-  const qPrimeDouble = mulVector(qPrime, qPrime);
-  const denominator = sumVector(addVectors(qPrimeDouble, mulVector(qPrimePrime, d)));
+  const numerator = sumVector(mulVectorVector(d, qPrime));
+  const qPrimeDouble = mulVectorVector(qPrime, qPrime);
+  const denominator = sumVector(
+    addVectors(qPrimeDouble, mulVectorVector(qPrimePrime, d))
+  );
   if (denominator === 0) {
     return t;
   } else {

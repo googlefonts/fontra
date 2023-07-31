@@ -802,7 +802,7 @@ const actionFactories = {
     let t = lenPrevNext > 0.0001 ? lenPrev / lenPrevNext : 0;
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const prevNext = vector.subVectors(next, prev);
-      return vector.addVectors(prev, vector.mulVector(prevNext, t));
+      return vector.addVectors(prev, vector.mulVectorScalar(prevNext, t));
     };
   },
 
@@ -812,7 +812,7 @@ const actionFactories = {
     let t = lenPrevPrevNext > 0.0001 ? lenPrevPrev / lenPrevPrevNext : 0;
     return (transform, prevPrevPrev, prevPrev, prev, thePoint, next, nextNext) => {
       const prevPrevNext = vector.subVectors(next, prevPrev);
-      return vector.addVectors(prevPrev, vector.mulVector(prevPrevNext, t));
+      return vector.addVectors(prevPrev, vector.mulVectorScalar(prevPrevNext, t));
     };
   },
 
