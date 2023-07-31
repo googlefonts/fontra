@@ -15,21 +15,31 @@ import {
 } from "../core/utils.js";
 import { dialog } from "/web-components/dialog-overlay.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
+import { SceneModel } from "./scene-model.js";
 
 export class SceneController {
   constructor(
     fontController,
     sceneSettingsController,
-    sceneModel,
     canvasController,
     experimentalFeaturesController
   ) {
-    this.sceneModel = sceneModel;
     this.sceneSettingsController = sceneSettingsController;
     this.sceneSettings = sceneSettingsController.model;
     this.canvasController = canvasController;
     this.experimentalFeatures = experimentalFeaturesController.model;
     this.fontController = fontController;
+
+    // We need to do isPointInPath without having a context, we'll pass a bound method
+    const isPointInPath = canvasController.context.isPointInPath.bind(
+      canvasController.context
+    );
+
+    this.sceneModel = new SceneModel(
+      fontController,
+      sceneSettingsController,
+      isPointInPath
+    );
 
     this.selectedTool = undefined;
     this._currentGlyphChangeListeners = [];

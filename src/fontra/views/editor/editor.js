@@ -39,7 +39,7 @@ import { dialog, dialogSetup } from "/web-components/dialog-overlay.js";
 import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { SceneController } from "./scene-controller.js";
-import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
+import { getSelectedGlyphName } from "./scene-model.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
@@ -131,21 +131,9 @@ export class EditorController {
       this.canvasController.requestUpdate();
     });
 
-    // We need to do isPointInPath without having a context, we'll pass a bound method
-    const isPointInPath = canvasController.context.isPointInPath.bind(
-      canvasController.context
-    );
-
-    const sceneModel = new SceneModel(
-      this.fontController,
-      this.sceneSettingsController,
-      isPointInPath
-    );
-
     this.sceneController = new SceneController(
       this.fontController,
       this.sceneSettingsController,
-      sceneModel,
       canvasController,
       this.experimentalFeaturesController
     );
