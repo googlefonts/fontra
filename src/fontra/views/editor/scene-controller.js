@@ -44,7 +44,11 @@ export class SceneController {
     this.selectedTool = undefined;
     this._currentGlyphChangeListeners = [];
 
-    // settings listeners
+    this.setupSettingsListeners();
+    this.setupEventHandling();
+  }
+
+  setupSettingsListeners() {
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
       this._resetStoredGlyphPosition();
     });
@@ -68,8 +72,9 @@ export class SceneController {
       },
       true
     );
+  }
 
-    // event handling
+  setupEventHandling() {
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
         await this.handleDrag(eventStream, initialEvent),
