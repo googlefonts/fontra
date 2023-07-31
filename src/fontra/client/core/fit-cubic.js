@@ -1,13 +1,13 @@
+import { Bezier } from "../third-party/bezier-js.js";
 import { enumerate, range } from "./utils.js";
 import {
-  subVectors,
-  vectorLength,
-  mulVectorScalar,
   addVectors,
   dotVector,
+  mulVectorScalar,
   mulVectorVector,
+  subVectors,
+  vectorLength,
 } from "./vector.js";
-import { Bezier } from "bezier-js";
 
 function zeros(length, ...rest) {
   if (rest.length === 0) {
