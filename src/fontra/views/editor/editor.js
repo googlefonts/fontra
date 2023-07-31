@@ -7,6 +7,7 @@ import { ObservableController } from "../core/observable-object.js";
 import {
   centeredRect,
   offsetRect,
+  rectAddMargin,
   rectCenter,
   rectFromArray,
   rectToArray,
@@ -37,7 +38,7 @@ import { themeController } from "/core/theme-settings.js";
 import { dialog, dialogSetup } from "/web-components/dialog-overlay.js";
 import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
-import { SceneController, rectAddMargin } from "./scene-controller.js";
+import { SceneController } from "./scene-controller.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
