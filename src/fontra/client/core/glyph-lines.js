@@ -1,8 +1,4 @@
-import {
-  getSuggestedGlyphName,
-  getUnicodeFromGlyphName,
-  parseClipboard,
-} from "./server-utils.js";
+import { getSuggestedGlyphName, getUnicodeFromGlyphName } from "./server-utils.js";
 
 export async function glyphLinesFromText(text, characterMap, glyphMap) {
   const glyphLines = [];
