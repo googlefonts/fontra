@@ -6,6 +6,7 @@ import {
   makeUPlusStringFromCodePoint,
   parseSelection,
   round,
+  unionIndexSets,
   withSavedState,
 } from "/core/utils.js";
 import { subVectors } from "../core/vector.js";
@@ -650,9 +651,12 @@ registerVisualizationLayerDefinition({
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
 
-    const { point: pointSelection, component: componentSelection } = parseSelection(
-      model.sceneSettings.combinedSelection
-    );
+    let {
+      point: pointSelection,
+      component: componentSelection,
+      componentOrigin: componentOriginSelection,
+    } = parseSelection(model.sceneSettings.combinedSelection);
+    componentSelection = unionIndexSets(componentSelection, componentOriginSelection);
 
     const margin = 0.2 * fontSize;
     const boxHeight = 1.68 * fontSize;
