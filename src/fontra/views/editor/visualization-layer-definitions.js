@@ -654,13 +654,15 @@ registerVisualizationLayerDefinition({
       model.sceneSettings.combinedSelection
     );
 
-    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
-    context.textAlign = "center";
-    context.scale(1, -1);
     const margin = 0.2 * fontSize;
     const boxHeight = 1.68 * fontSize;
     const lineHeight = fontSize;
     const bottomY = 0.75 * fontSize;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
     for (const pt of chain(
       iterPointsByIndex(glyph.path, pointSelection),
       iterComponentOriginsByIndex(glyph.instance.components, componentSelection)
