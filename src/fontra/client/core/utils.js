@@ -363,3 +363,8 @@ export function round(number, nDigits = 0) {
   }
   return Math.round(number * factor) / factor;
 }
+
+export function unionIndexSets(...indexSets) {
+  indexSets = indexSets.filter((item) => !!item);
+  return [...new Set(indexSets.flat())].sort((a, b) => a - b);
+}

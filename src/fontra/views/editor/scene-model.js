@@ -18,7 +18,6 @@ export class SceneModel {
     this.sceneSettingsController = sceneSettingsController;
     this.sceneSettings = sceneSettingsController.model;
     this.isPointInPath = isPointInPath;
-    this.hoverSelection = new Set();
     this.hoveredGlyph = undefined;
     this._localLocations = {}; // glyph name -> local location
     this.longestLineLength = 0;
@@ -38,7 +37,7 @@ export class SceneModel {
     this.sceneSettingsController.addKeyListener(
       "selectedGlyphName",
       (event) => {
-        this.sceneSettings.pathSelection = new Set();
+        this.sceneSettings.selection = new Set();
         this._syncLocationFromGlyphName();
       },
       true
@@ -58,11 +57,19 @@ export class SceneModel {
   }
 
   get selection() {
-    return this.sceneSettings.pathSelection;
+    return this.sceneSettings.selection;
   }
 
   set selection(selection) {
-    this.sceneSettings.pathSelection = selection;
+    this.sceneSettings.selection = selection;
+  }
+
+  get hoverSelection() {
+    return this.sceneSettings.hoverSelection;
+  }
+
+  set hoverSelection(hoverSelection) {
+    this.sceneSettings.hoverSelection = hoverSelection;
   }
 
   getSelectedPositionedGlyph() {

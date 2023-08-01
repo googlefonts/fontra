@@ -18,19 +18,13 @@ export class SidebarSelectionInfo {
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
 
     this.sceneController.sceneSettingsController.addKeyListener(
-      ["selectedGlyphName", "pathSelection", "location"],
+      ["selectedGlyphName", "selection", "location"],
       (event) => this.throttledUpdate()
     );
 
     this.sceneController.addCurrentGlyphChangeListener((event) => {
       this.throttledUpdate(event.senderID);
     });
-  }
-
-  async editListenerCallback(editMethodName, senderID, ...args) {
-    if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
-      this.throttledUpdate(senderID);
-    }
   }
 
   async update(senderID) {

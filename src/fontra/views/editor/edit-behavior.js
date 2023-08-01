@@ -1,6 +1,11 @@
 import { polygonIsConvex } from "../core/convex-hull.js";
 import { consolidateChanges } from "../core/changes.js";
-import { makeAffineTransform, parseSelection, reversed } from "../core/utils.js";
+import {
+  makeAffineTransform,
+  parseSelection,
+  reversed,
+  unionIndexSets,
+} from "../core/utils.js";
 import { Transform } from "../core/transform.js";
 import * as vector from "../core/vector.js";
 import {
@@ -153,11 +158,6 @@ class EditBehavior {
     }
     return consolidateChanges(changes);
   }
-}
-
-function unionIndexSets(...indexSets) {
-  indexSets = indexSets.filter((item) => !!item);
-  return [...new Set(indexSets.flat())].sort((a, b) => a - b);
 }
 
 function makeRollbackChange(contours, participatingPointIndices, componentRollback) {
