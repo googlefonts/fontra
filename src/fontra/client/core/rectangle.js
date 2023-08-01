@@ -162,3 +162,19 @@ export function updateRect(rect, point) {
     yMax: Math.max(rect.yMax, point.y),
   };
 }
+
+export function rectAddMargin(rect, relativeMargin) {
+  const size = rectSize(rect);
+  const inset =
+    size.width > size.height
+      ? size.width * relativeMargin
+      : size.height * relativeMargin;
+  return insetRect(rect, -inset, -inset);
+}
+
+export function rectScaleAroundCenter(rect, scaleFactor, center) {
+  rect = offsetRect(rect, -center.x, -center.y);
+  rect = scaleRect(rect, scaleFactor);
+  rect = offsetRect(rect, center.x, center.y);
+  return rect;
+}

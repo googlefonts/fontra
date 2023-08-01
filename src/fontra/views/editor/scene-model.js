@@ -26,11 +26,7 @@ export class SceneModel {
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
 
-    this.sceneSettingsController.addKeyListener("glyphLines", (event) => {
-      this.updateScene();
-    });
-
-    this.sceneSettingsController.addKeyListener("align", (event) => {
+    this.sceneSettingsController.addKeyListener(["glyphLines", "align"], (event) => {
       this.updateScene();
     });
 
@@ -669,32 +665,6 @@ export class SceneModel {
     }
     return bounds;
   }
-}
-
-function mergeAxisInfo(axisInfos) {
-  // This returns a list of axes that is a superset of all the axis
-  // sets of the input.
-  if (!axisInfos.length) {
-    return [];
-  }
-  const mergedAxisInfo = { ...axisInfos[0] };
-  for (let i = 1; i < axisInfos.length; i++) {
-    for (const axisInfo of Object.values(axisInfos[i])) {
-      if (mergedAxisInfo[axisInfo.name] !== undefined) {
-        mergedAxisInfo[axisInfo.name].minValue = Math.min(
-          mergedAxisInfo[axisInfo.name].minValue,
-          axisInfo.minValue
-        );
-        mergedAxisInfo[axisInfo.name].maxValue = Math.max(
-          mergedAxisInfo[axisInfo.name].maxValue,
-          axisInfo.maxValue
-        );
-      } else {
-        mergedAxisInfo[axisInfo.name] = { ...axisInfo };
-      }
-    }
-  }
-  return Object.values(mergedAxisInfo);
 }
 
 function getUsedGlyphNames(fontController, positionedLines) {

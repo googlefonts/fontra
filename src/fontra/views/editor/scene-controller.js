@@ -1,9 +1,11 @@
 import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
+import { glyphLinesFromText, textFromGlyphLines } from "../core/glyph-lines.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
+import { ObservableController } from "../core/observable-object.js";
 import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
-import { offsetRect } from "../core/rectangle.js";
+import { offsetRect, rectAddMargin } from "../core/rectangle.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isSuperset } from "../core/set-ops.js";
 import {
@@ -15,18 +17,167 @@ import {
 } from "../core/utils.js";
 import { dialog } from "/web-components/dialog-overlay.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
+import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
 
 export class SceneController {
-  constructor(editor, sceneModel) {
-    this.sceneSettingsController = editor.sceneSettingsController;
-    this.sceneSettings = editor.sceneSettings;
-    this.sceneModel = sceneModel;
-    this.canvasController = editor.canvasController;
-    this.experimentalFeatures = editor.experimentalFeaturesController.model;
-    this.fontController = sceneModel.fontController;
+  constructor(fontController, canvasController, experimentalFeaturesController) {
+    this.canvasController = canvasController;
+    this.experimentalFeatures = experimentalFeaturesController.model;
+    this.fontController = fontController;
+    this.autoViewBox = true;
 
+    this.setupSceneSettings();
+    this.sceneSettings = this.sceneSettingsController.model;
+
+    // We need to do isPointInPath without having a context, we'll pass a bound method
+    const isPointInPath = canvasController.context.isPointInPath.bind(
+      canvasController.context
+    );
+
+    this.sceneModel = new SceneModel(
+      fontController,
+      this.sceneSettingsController,
+      isPointInPath
+    );
+
+    this.selectedTool = undefined;
     this._currentGlyphChangeListeners = [];
 
+    this.setupSettingsListeners();
+    this.setupEventHandling();
+  }
+
+  setupSceneSettings() {
+    this.sceneSettingsController = new ObservableController({
+      text: "",
+      align: "center",
+      glyphLines: [],
+      location: {},
+      selectedGlyph: null,
+      selectedGlyphName: null,
+      selectedSourceIndex: null,
+      selectedLayerName: null,
+      pathSelection: new Set(),
+      viewBox: this.canvasController.getViewBox(),
+      positionedLines: [],
+    });
+    this.sceneSettings = this.sceneSettingsController.model;
+
+    // Set up the mutual relationship between text and glyphLines
+    this.sceneSettingsController.addKeyListener("text", async (event) => {
+      if (event.senderInfo === this) {
+        return;
+      }
+      await this.fontController.ensureInitialized;
+      const glyphLines = await glyphLinesFromText(
+        event.newValue,
+        this.fontController.characterMap,
+        this.fontController.glyphMap
+      );
+      this.sceneSettingsController.setItem("glyphLines", glyphLines, this);
+    });
+
+    this.sceneSettingsController.addKeyListener(
+      "glyphLines",
+      (event) => {
+        if (event.senderInfo === this) {
+          return;
+        }
+        const text = textFromGlyphLines(event.newValue);
+        this.sceneSettingsController.setItem("text", text, this);
+      },
+      true
+    );
+
+    this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
+      if (event.newValue?.isEditing) {
+        this.autoViewBox = false;
+      }
+      this.canvasController.requestUpdate();
+    });
+
+    this.sceneSettingsController.addKeyListener(
+      "positionedLines",
+      (event) => {
+        this.setAutoViewBox();
+        this.canvasController.requestUpdate();
+      },
+      true
+    );
+
+    // Set up the mutual dependencies between location and selectedSourceIndex
+    this.sceneSettingsController.addKeyListener("location", async (event) => {
+      if (event.senderInfo === this) {
+        return;
+      }
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
+      const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
+      this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, this);
+    });
+
+    this.sceneSettingsController.addKeyListener(
+      "selectedSourceIndex",
+      async (event) => {
+        if (event.senderInfo === this) {
+          return;
+        }
+        const sourceIndex = event.newValue;
+        if (sourceIndex == undefined) {
+          return;
+        }
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
+
+        this.sceneSettingsController.setItem("location", location, this);
+      }
+    );
+
+    // Set up convenience property "selectedGlyphName"
+    this.sceneSettingsController.addKeyListener(
+      ["selectedGlyph", "glyphLines"],
+      (event) => {
+        this.sceneSettings.selectedGlyphName = getSelectedGlyphName(
+          this.sceneSettings.selectedGlyph,
+          this.sceneSettings.glyphLines
+        );
+      },
+      true
+    );
+
+    // Set up the viewBox relationships
+    this.sceneSettingsController.addKeyListener(
+      "viewBox",
+      (event) => {
+        if (event.senderInfo === this) {
+          return;
+        }
+        this.canvasController.setViewBox(event.newValue);
+        this.sceneSettingsController.setItem(
+          "viewBox",
+          this.canvasController.getViewBox(),
+          this
+        );
+      },
+      true
+    );
+
+    this.canvasController.canvas.addEventListener("viewBoxChanged", (event) => {
+      if (event.detail === "canvas-size") {
+        this.setAutoViewBox();
+      } else {
+        this.autoViewBox = false;
+      }
+      this.sceneSettingsController.setItem(
+        "viewBox",
+        this.canvasController.getViewBox(),
+        this
+      );
+    });
+  }
+
+  setupSettingsListeners() {
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
       this._resetStoredGlyphPosition();
     });
@@ -50,7 +201,9 @@ export class SceneController {
       },
       true
     );
+  }
 
+  setupEventHandling() {
     this.mouseTracker = new MouseTracker({
       drag: async (eventStream, initialEvent) =>
         await this.handleDrag(eventStream, initialEvent),
@@ -59,13 +212,24 @@ export class SceneController {
     });
     this._eventElement = document.createElement("div");
 
-    this.sceneModel.fontController.addEditListener(
+    this.fontController.addEditListener(
       async (...args) => await this.editListenerCallback(...args)
     );
     this.canvasController.canvas.addEventListener("keydown", (event) =>
       this.handleKeyDown(event)
     );
-    this.selectedTool = undefined;
+  }
+
+  setAutoViewBox() {
+    if (!this.autoViewBox) {
+      return;
+    }
+    let bounds = this.getSceneBounds();
+    if (!bounds) {
+      return;
+    }
+    bounds = rectAddMargin(bounds, 0.1);
+    this.sceneSettings.viewBox = bounds;
   }
 
   _resetStoredGlyphPosition() {
@@ -486,7 +650,7 @@ export class SceneController {
 
   async _editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance) {
     const glyphName = this.sceneModel.getSelectedGlyphName();
-    const varGlyph = await this.sceneModel.fontController.getGlyph(glyphName);
+    const varGlyph = await this.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
 
     let editSubject;
@@ -504,7 +668,7 @@ export class SceneController {
       editSubject = varGlyph.glyph;
     }
 
-    const editContext = await this.sceneModel.fontController.getGlyphEditContext(
+    const editContext = await this.fontController.getGlyphEditContext(
       glyphName,
       baseChangePath,
       senderID || this
@@ -570,7 +734,7 @@ export class SceneController {
     if (glyphName === undefined) {
       return;
     }
-    return this.sceneModel.fontController.getUndoRedoInfo(glyphName, isRedo);
+    return this.fontController.getUndoRedoInfo(glyphName, isRedo);
   }
 
   async doUndoRedo(isRedo) {
@@ -578,10 +742,7 @@ export class SceneController {
     if (glyphName === undefined) {
       return;
     }
-    const undoInfo = await this.sceneModel.fontController.undoRedoGlyph(
-      glyphName,
-      isRedo
-    );
+    const undoInfo = await this.fontController.undoRedoGlyph(glyphName, isRedo);
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
@@ -673,7 +834,7 @@ export class SceneController {
       instance.components,
       componentSelection,
       this.getGlobalLocation(),
-      (glyphName) => this.sceneModel.fontController.getGlyph(glyphName)
+      (glyphName) => this.fontController.getGlyph(glyphName)
     );
 
     await this.editInstanceAndRecordChanges((instance) => {
