@@ -184,7 +184,6 @@ export class RangeSlider extends LitElement {
     delete this._rangeInputElement;
     const minMaxRange = this.maxValue - this.minValue;
     const decimalPlaces = minMaxRange < 100 ? 3 : 2;
-    console.log("hey");
     const value = round(this.value, decimalPlaces);
     const minValue = round(this.minValue, decimalPlaces);
     const defaultValue = round(this.defaultValue, decimalPlaces);
