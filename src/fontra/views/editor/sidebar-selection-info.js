@@ -27,12 +27,6 @@ export class SidebarSelectionInfo {
     });
   }
 
-  async editListenerCallback(editMethodName, senderID, ...args) {
-    if (editMethodName === "editIncremental" || editMethodName === "editFinal") {
-      this.throttledUpdate(senderID);
-    }
-  }
-
   async update(senderID) {
     if (senderID === this) {
       // Don't rebuild, just update the Dimensions field
