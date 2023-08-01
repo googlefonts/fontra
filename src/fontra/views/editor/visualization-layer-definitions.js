@@ -4,6 +4,7 @@ import {
   makeAffineTransform,
   makeUPlusStringFromCodePoint,
   parseSelection,
+  round,
   withSavedState,
 } from "/core/utils.js";
 import { subVectors } from "../core/vector.js";
@@ -630,6 +631,55 @@ registerVisualizationLayerDefinition({
         smoothSize + hoverStrokeOffset,
         handleSize + hoverStrokeOffset
       );
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.coordinates",
+  name: "Coordinates",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 600,
+  screenParameters: { fontSize: 11 },
+  colors: { boxColor: "#FFF8", color: "#000" },
+  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const fontSize = parameters.fontSize;
+
+    const { point: pointSelection, component: componentSelection } = parseSelection(
+      model.sceneSettings.combinedSelection
+    );
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+    const margin = 0.2 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const lineHeight = fontSize;
+    const bottomY = 0.75 * fontSize;
+    for (const pt of iterPointsByIndex(glyph.path, pointSelection)) {
+      const xString = `${round(pt.x, 1)}`;
+      const yString = `${round(pt.y, 1)}`;
+      const width =
+        Math.max(
+          context.measureText(xString).width,
+          context.measureText(yString).width
+        ) +
+        2 * margin;
+      context.fillStyle = parameters.boxColor;
+      context.fillRect(
+        pt.x - width / 2,
+        -pt.y - bottomY + margin,
+        width,
+        -boxHeight - 2 * margin
+      );
+
+      context.fillStyle = parameters.color;
+      context.fillText(yString, pt.x, -pt.y - bottomY - lineHeight);
+      context.fillText(xString, pt.x, -pt.y - bottomY);
     }
   },
 });
