@@ -1,5 +1,6 @@
 import { difference, isSuperset, union } from "../core/set-ops.js";
 import {
+  chain,
   enumerate,
   makeAffineTransform,
   makeUPlusStringFromCodePoint,
@@ -660,7 +661,10 @@ registerVisualizationLayerDefinition({
     const boxHeight = 1.68 * fontSize;
     const lineHeight = fontSize;
     const bottomY = 0.75 * fontSize;
-    for (const pt of iterPointsByIndex(glyph.path, pointSelection)) {
+    for (const pt of chain(
+      iterPointsByIndex(glyph.path, pointSelection),
+      iterComponentOriginsByIndex(glyph.instance.components, componentSelection)
+    )) {
       const xString = `${round(pt.x, 1)}`;
       const yString = `${round(pt.y, 1)}`;
       const width =
@@ -678,8 +682,8 @@ registerVisualizationLayerDefinition({
       );
 
       context.fillStyle = parameters.color;
-      context.fillText(yString, pt.x, -pt.y - bottomY - lineHeight);
-      context.fillText(xString, pt.x, -pt.y - bottomY);
+      context.fillText(xString, pt.x, -pt.y - bottomY - lineHeight);
+      context.fillText(yString, pt.x, -pt.y - bottomY);
     }
   },
 });
@@ -905,8 +909,20 @@ function* iterPointsByIndex(path, pointIndices) {
   }
   for (const index of pointIndices) {
     const pt = path.getPoint(index);
-    if (pt !== undefined) {
+    if (pt) {
       yield pt;
+    }
+  }
+}
+
+function* iterComponentOriginsByIndex(components, componentIndices) {
+  if (!componentIndices) {
+    return;
+  }
+  for (const index of componentIndices) {
+    const compo = components[index];
+    if (compo) {
+      yield { x: compo.transformation.translateX, y: compo.transformation.translateY };
     }
   }
 }
