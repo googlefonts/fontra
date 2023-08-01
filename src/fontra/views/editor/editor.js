@@ -1562,7 +1562,7 @@ export class EditorController {
     this.sceneSettings.selectedGlyph = viewInfo["selectedGlyph"];
 
     if (viewInfo["selection"]) {
-      this.sceneSettings.pathSelection = new Set(viewInfo["selection"]);
+      this.sceneSettings.selection = new Set(viewInfo["selection"]);
     }
     this.canvasController.requestUpdate();
   }

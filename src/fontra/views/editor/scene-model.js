@@ -38,7 +38,7 @@ export class SceneModel {
     this.sceneSettingsController.addKeyListener(
       "selectedGlyphName",
       (event) => {
-        this.sceneSettings.pathSelection = new Set();
+        this.sceneSettings.selection = new Set();
         this._syncLocationFromGlyphName();
       },
       true
@@ -58,11 +58,11 @@ export class SceneModel {
   }
 
   get selection() {
-    return this.sceneSettings.pathSelection;
+    return this.sceneSettings.selection;
   }
 
   set selection(selection) {
-    this.sceneSettings.pathSelection = selection;
+    this.sceneSettings.selection = selection;
   }
 
   getSelectedPositionedGlyph() {

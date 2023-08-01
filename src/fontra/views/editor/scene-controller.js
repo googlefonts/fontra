@@ -57,7 +57,7 @@ export class SceneController {
       selectedGlyphName: null,
       selectedSourceIndex: null,
       selectedLayerName: null,
-      pathSelection: new Set(),
+      selection: new Set(),
       viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
     });
