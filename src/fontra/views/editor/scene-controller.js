@@ -58,6 +58,7 @@ export class SceneController {
       selectedSourceIndex: null,
       selectedLayerName: null,
       selection: new Set(),
+      hoverSelection: new Set(),
       viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
     });
