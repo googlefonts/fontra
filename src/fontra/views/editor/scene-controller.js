@@ -7,7 +7,7 @@ import { ObservableController } from "../core/observable-object.js";
 import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
 import { offsetRect, rectAddMargin } from "../core/rectangle.js";
 import { packContour } from "../core/var-path.js";
-import { lenientIsEqualSet, isSuperset } from "../core/set-ops.js";
+import { lenientIsEqualSet, isSuperset, union } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
   commandKeyProperty,
@@ -59,6 +59,7 @@ export class SceneController {
       selectedLayerName: null,
       selection: new Set(),
       hoverSelection: new Set(),
+      combinedSelection: new Set(), // dynamic: selection | hoverSelection
       viewBox: this.canvasController.getViewBox(),
       positionedLines: [],
     });
@@ -90,6 +91,7 @@ export class SceneController {
       true
     );
 
+    // auto view box
     this.sceneSettingsController.addKeyListener("selectedGlyph", (event) => {
       if (event.newValue?.isEditing) {
         this.autoViewBox = false;
@@ -142,6 +144,19 @@ export class SceneController {
         this.sceneSettings.selectedGlyphName = getSelectedGlyphName(
           this.sceneSettings.selectedGlyph,
           this.sceneSettings.glyphLines
+        );
+      },
+      true
+    );
+
+    // Set up convenience property "combinedSelection", which is the union of
+    // selection and hoverSelection
+    this.sceneSettingsController.addKeyListener(
+      ["selection", "hoverSelection"],
+      (event) => {
+        this.sceneSettings.combinedSelection = union(
+          this.sceneSettings.selection,
+          this.sceneSettings.hoverSelection
         );
       },
       true
