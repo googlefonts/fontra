@@ -1,22 +1,26 @@
 import chai from "chai";
 import {
-  objectsEqual,
-  capitalizeFirstLetter,
-  hyphenatedToCamelCase,
-  modulo,
+  arrayExtend,
   boolInt,
-  reversed,
-  enumerate,
-  reversedEnumerate,
-  range,
+  capitalizeFirstLetter,
   chain,
-  makeUPlusStringFromCodePoint,
+  clamp,
+  enumerate,
+  fileNameExtension,
   getCharFromUnicode,
   guessCharFromGlyphName,
-  fileNameExtension,
-  arrayExtend,
-  clamp,
+  hyphenatedToCamelCase,
+  makeUPlusStringFromCodePoint,
+  modulo,
+  objectsEqual,
+  range,
+  reversed,
+  reversedEnumerate,
+  round,
 } from "../src/fontra/client/core/utils.js";
+
+import { parametrize } from "./test-support.js";
+
 const expect = chai.expect;
 
 describe("objectsEquals", () => {
@@ -218,4 +222,31 @@ describe("clamp", () => {
   it("should give the minimum when the number exceeds the range", () => {
     expect(clamp(81, 50, 80)).equals(80);
   });
+});
+
+describe("round", () => {
+  parametrize(
+    "round tests",
+    [
+      [1, 0, 1],
+      [1.1, 0, 1],
+      [1.1, 1, 1.1],
+      [1.12, 1, 1.1],
+      [1.07, 1, 1.1],
+      [1.123456, 2, 1.12],
+      [1.123456, 3, 1.123],
+      [1.123456, 4, 1.1235],
+      [1.123456, 5, "nDigits out of range"],
+      [1.123456, -1, "nDigits out of range"],
+      [1.123456, 0.5, "nDigits out of range"],
+    ],
+    (testData) => {
+      const [inputNumber, nDigits, expectedResult] = testData;
+      if (typeof expectedResult === "number") {
+        expect(round(inputNumber, nDigits)).to.equal(expectedResult);
+      } else {
+        expect(() => round(inputNumber, nDigits)).to.throw(expectedResult);
+      }
+    }
+  );
 });

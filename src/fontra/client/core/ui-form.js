@@ -1,5 +1,5 @@
 import { QueueIterator } from "./queue-iterator.js";
-import { hyphenatedToCamelCase } from "./utils.js";
+import { hyphenatedToCamelCase, round } from "./utils.js";
 
 export class Form {
   constructor(formID, fieldDescriptions) {
@@ -121,7 +121,7 @@ export class Form {
       let valueStream = undefined;
       sliderElement.oninput = (event) => {
         // Continuous changes
-        inputElement.value = myRound(sliderElement.value, 3);
+        inputElement.value = round(sliderElement.value, 3);
         const value = parseFloat(inputElement.value);
         if (!valueStream) {
           valueStream = new QueueIterator();
@@ -205,9 +205,4 @@ export class Form {
     }
     setter(value);
   }
-}
-
-function myRound(n, digits) {
-  const f = 10 ** digits;
-  return Math.round(n * f) / f;
 }

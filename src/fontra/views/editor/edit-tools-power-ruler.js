@@ -1,4 +1,4 @@
-import { range, throttleCalls } from "/core/utils.js";
+import { range, round, throttleCalls } from "/core/utils.js";
 import * as vector from "/core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool } from "./edit-tools-base.js";
@@ -208,7 +208,7 @@ export class PowerRulerTool extends BaseTool {
         intersections[i],
         vector.mulVectorScalar(v, 0.5)
       );
-      measurePoint.distance = Math.round(Math.hypot(v.x, v.y) * 10) / 10;
+      measurePoint.distance = round(Math.hypot(v.x, v.y), 1);
       measurePoint.inside = !!winding;
       measurePoints.push(measurePoint);
     }

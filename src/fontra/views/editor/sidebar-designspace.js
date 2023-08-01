@@ -7,6 +7,7 @@ import {
   htmlToElement,
   objectsEqual,
   rgbaToCSS,
+  round,
   scheduleCalls,
 } from "/core/utils.js";
 import {
@@ -631,7 +632,7 @@ function suggestedSourceNameFromLocation(location) {
   return (
     Object.entries(location)
       .map(([name, value]) => {
-        value = Math.round(value * 10) / 10;
+        value = round(value, 1);
         return `${name}=${value}`;
       })
       .join(",") || "default"

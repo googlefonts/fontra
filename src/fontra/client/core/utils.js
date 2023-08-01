@@ -350,3 +350,16 @@ export function rgbaToCSS(rgba) {
 export function clamp(number, min, max) {
   return Math.max(Math.min(number, max), min);
 }
+
+const _digitFactors = [1, 10, 100, 1000, 10000];
+
+export function round(number, nDigits = 0) {
+  if (nDigits === 0) {
+    return Math.round(number);
+  }
+  const factor = _digitFactors[nDigits];
+  if (!factor) {
+    throw new RangeError("nDigits out of range");
+  }
+  return Math.round(number * factor) / factor;
+}
