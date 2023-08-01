@@ -5,6 +5,7 @@ import {
   getCharFromUnicode,
   makeUPlusStringFromCodePoint,
   parseSelection,
+  round,
   throttleCalls,
 } from "/core/utils.js";
 
@@ -251,8 +252,8 @@ export class SidebarSelectionInfo {
     if (selectionRects.length) {
       const selectionBounds = unionRect(...selectionRects);
       let { width, height } = rectSize(selectionBounds);
-      width = Math.round(width * 10) / 10;
-      height = Math.round(height * 10) / 10;
+      width = round(width, 1);
+      height = round(height, 1);
       return `↔ ${width} ↕ ${height}`;
     }
   }
