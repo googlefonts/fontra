@@ -638,7 +638,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
-  name: "Coordinates",
+  name: "Show coordinates",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
