@@ -644,7 +644,7 @@ registerVisualizationLayerDefinition({
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
-  screenParameters: { fontSize: 11 },
+  screenParameters: { fontSize: 10 },
   colors: { boxColor: "#FFF8", color: "#000" },
   colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
