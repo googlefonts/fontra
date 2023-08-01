@@ -645,7 +645,7 @@ registerVisualizationLayerDefinition({
   defaultOn: false,
   zIndex: 600,
   screenParameters: { fontSize: 10 },
-  colors: { boxColor: "#FFF8", color: "#000" },
+  colors: { boxColor: "#FFFB", color: "#000" },
   colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
