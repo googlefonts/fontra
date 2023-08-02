@@ -235,33 +235,23 @@ export class ModalDialog extends SimpleElement {
   }
 
   show() {
-    this._tabbed = false;
     this.dialogElement.showModal();
   }
 
   hide() {
     this.dialogElement.close();
-    this._tabbed = false;
   }
 
   _handleKeyDown(event) {
     if (event.key === "Enter") {
-      // console.log(document.activeElement);
-      // unfortunately document.activeElement is always the whole dialog,
-      // so let's check if the user already tabbed on this dialog,
-      // if he did, the keypress ENTER will have effect on the focused element
-      if (!this._tabbed) {
-        if (!this.defaultButton?.classList.contains("disabled")) {
-          this.defaultButton?.click();
-        }
+      if (!this.defaultButton?.classList.contains("disabled")) {
+        this.defaultButton?.click();
       }
     } else if (event.key === "Escape") {
       this.cancelButton?.click();
       if (!this.cancelButton) {
         this._dialogDone(null);
       }
-    } else if (event.key === "Tab") {
-      this._tabbed = true;
     }
     event.stopImmediatePropagation();
   }
