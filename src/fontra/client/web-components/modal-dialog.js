@@ -243,17 +243,28 @@ export class ModalDialog extends SimpleElement {
   }
 
   _handleKeyDown(event) {
-    if (event.key === "Enter") {
+    const keyEnter = event.key === "Enter";
+    const keyEscape = event.key === "Escape";
+    if (!keyEnter && !keyEscape) {
+      // handle only enter and escape keys
+      return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (keyEnter) {
       if (!this.defaultButton?.classList.contains("disabled")) {
         this.defaultButton?.click();
       }
-    } else if (event.key === "Escape") {
+    } else if (keyEscape) {
       this.cancelButton?.click();
       if (!this.cancelButton) {
         this._dialogDone(null);
       }
     }
-    event.stopImmediatePropagation();
+
+    document.activeElement.blur();
   }
 
   _dialogDone(result) {
