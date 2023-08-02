@@ -200,8 +200,12 @@ async function getOPFSRoot() {
     root = await navigator.storage.getDirectory();
     // TODO: check space available
   } catch (error) {
-    // TODO: replace with dialog
-    alert("Unable to open OPFS. \n" + error);
+    dialog(
+      "Unable to open Origin Private File System.",
+      error.toString(),
+      [{ title: "OK" }],
+      5000
+    );
   }
   return root;
 }
@@ -250,8 +254,12 @@ async function loadFontFromOPFS(fontName) {
     const fontFile = new File([fontFileBlob], fontName, { type: "font/ttf" });
     return fontFile;
   } catch (error) {
-    // TODO: replace with dialog
-    alert("Unable to load font from OPFS. \n" + error);
+    dialog(
+      "Unable to load font from Origin Private File System.",
+      error.toString(),
+      [{ title: "OK" }],
+      5000
+    );
     return null;
   }
 }
@@ -265,8 +273,12 @@ async function deleteFontFromOPFS(font) {
     // when one of them gets deleted, the file stored in OPFS gets deleted too,
     // subsequent items deletion will throw this exception
     // because the file has already been deleted previously.
-    // TODO: replace with dialog
-    alert("Unable to delete font file from OPFS. \n" + error);
+    dialog(
+      "Unable to delete font file from Origin Private File System.",
+      error.toString(),
+      [{ title: "OK" }],
+      5000
+    );
   }
 }
 
@@ -281,8 +293,12 @@ async function saveFontToOPFS(file) {
   try {
     await fontFileIO.write(fontFileBinaryData);
   } catch (error) {
-    // TODO: replace with dialog
-    alert("Unable to save font file to OPFS. \n" + error);
+    dialog(
+      "Unable to save font file to Origin Private File System.",
+      error.toString(),
+      [{ title: "OK" }],
+      5000
+    );
   } finally {
     await fontFileIO.close();
   }
