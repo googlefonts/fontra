@@ -13,7 +13,7 @@ import {
 } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
-import { dialog } from "/web-components/dialog-overlay.js";
+import { dialog } from "/web-components/modal-dialog.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { equalGlyphSelection } from "./scene-controller.js";

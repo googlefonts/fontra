@@ -34,8 +34,8 @@ import {
   writeToClipboard,
 } from "../core/utils.js";
 import { themeController } from "/core/theme-settings.js";
-import { dialog, dialogSetup } from "/web-components/dialog-overlay.js";
 import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
+import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { SceneController } from "./scene-controller.js";
 import { HandTool } from "./edit-tools-hand.js";

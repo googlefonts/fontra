@@ -3,7 +3,7 @@ import { UnlitElement, div, input, label, span } from "/core/unlit.js";
 import { fileNameExtension } from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
-import { dialog } from "/web-components/dialog-overlay.js";
+import { dialog } from "/web-components/modal-dialog.js";
 
 const fontTypeMapping = {
   ttf: "truetype",

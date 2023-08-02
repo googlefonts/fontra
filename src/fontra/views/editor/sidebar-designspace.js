@@ -16,8 +16,8 @@ import {
   piecewiseLinearMap,
   mapForward,
 } from "/core/var-model.js";
-import { dialogSetup } from "/web-components/dialog-overlay.js";
 import { showMenu } from "/web-components/menu-panel.js";
+import { dialogSetup } from "/web-components/modal-dialog.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
 const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";

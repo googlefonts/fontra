@@ -3,43 +3,39 @@ import * as html from "/core/unlit.js";
 import { enumerate } from "/core/utils.js";
 
 export async function dialog(headline, message, buttonDefs, autoDismissTimeout) {
-  const dialogOverlayElement = await dialogSetup(
+  const dialogContentElement = await dialogSetup(
     headline,
     message,
     buttonDefs,
     autoDismissTimeout
   );
-  return await dialogOverlayElement.run();
+  return await dialogContentElement.run();
 }
 
 export async function dialogSetup(headline, message, buttonDefs, autoDismissTimeout) {
-  const dialogOverlayElement = document.querySelector("dialog-overlay");
-  await dialogOverlayElement.setupDialog(
+  const dialogContentElement = document.querySelector("modal-dialog");
+  await dialogContentElement.setupDialog(
     headline,
     message,
     buttonDefs,
     autoDismissTimeout
   );
-  return dialogOverlayElement;
+  return dialogContentElement;
 }
 
-export class DialogOverlay extends SimpleElement {
+export class ModalDialog extends SimpleElement {
   static styles = `
-    :host {
-      display: none;  /* switched to "grid" on show, back to "none" on hide */
-      position: absolute;
-      grid-template-rows: 15fr 1fr;
-      align-items: center;
-      z-index: 10000;
-      background-color: #8888;
-      width: 100%;
-      height: 100%;
-      align-content: center;
-      justify-content: center;
-      white-space: normal;
+
+    dialog {
+      background-color: transparent;
+      border: none;
     }
 
-    .dialog-box {
+    dialog::backdrop {
+      background-color: #8888;
+    }
+
+    dialog .dialog-box {
       position: relative;
       display: grid;
       grid-template-rows: auto 1fr auto;
@@ -52,22 +48,24 @@ export class DialogOverlay extends SimpleElement {
       overflow-wrap: normal;
       font-size: 1.15em;
       background-color: var(--ui-element-background-color);
+      color: var(--ui-form-input-foreground-color);
       padding: 1em;
       border-radius: 0.5em;
       box-shadow: 1px 3px 8px #0006;
     }
 
-    .headline {
+    dialog .headline {
       font-weight: bold;
       grid-column: 1 / -1;
     }
 
-    .message {
+    dialog .message {
       grid-column: 1 / -1;
     }
 
-    .button {
+    dialog .button {
       color: white;
+      cursor: pointer;
       background-color: gray;
 
       border-radius: 1em;
@@ -80,36 +78,36 @@ export class DialogOverlay extends SimpleElement {
       transition: 100ms;
     }
 
-    .button.button-1 {
+    dialog .button.button-1 {
       grid-column: 1;
     }
 
-    .button.button-2 {
+    dialog .button.button-2 {
       grid-column: 2;
     }
 
-    .button.button-3 {
+    dialog .button.button-3 {
       grid-column: 3;
     }
 
-    .button.default {
+    dialog .button.default {
       background-color: var(--fontra-red-color);
     }
 
-    .button.disabled {
+    dialog .button.disabled {
       background-color: #8885;
       pointer-events: none;
     }
 
-    .button:hover {
+    dialog .button:hover {
       filter: brightness(1.15);
     }
 
-    .button:active {
+    dialog .button:active {
       filter: brightness(0.9);
     }
 
-    input[type="text"] {
+    dialog input[type="text"] {
       background-color: var(--text-input-background-color);
       color: var(--text-input-foreground-color);
       border-radius: 0.25em;
@@ -126,12 +124,12 @@ export class DialogOverlay extends SimpleElement {
     super();
     this.dialogBox = html.div({
       class: "dialog-box",
-      tabindex: 1,
+      tabindex: 0,
       onkeydown: (event) => this._handleKeyDown(event),
-      /* prevent clicks on the dialog itself to propagate to the overlay */
-      onclick: (event) => event.stopImmediatePropagation(),
     });
-    this.shadowRoot.appendChild(this.dialogBox);
+    this.dialogElement = document.createElement("dialog");
+    this.dialogElement.appendChild(this.dialogBox);
+    this.shadowRoot.append(this.dialogElement);
   }
 
   setupDialog(headline, message, buttonDefs, autoDismissTimeout) {
@@ -153,13 +151,6 @@ export class DialogOverlay extends SimpleElement {
     this._resultPromise = new Promise((resolve) => {
       this._resolveDialogResult = resolve;
     });
-    this._currentActiveElement = document.activeElement;
-
-    // Disable this for now, as we also receive this event if you start dragging
-    // in a text field and release outside of the dialog.
-    // this.onclick = (event) => {
-    //   this._dialogDone(null);
-    // };
 
     this._populateDialogBox(headline, message);
   }
@@ -207,6 +198,7 @@ export class DialogOverlay extends SimpleElement {
       const buttonElement = html.input({
         type: "button",
         class: `button button-${buttonIndex}`,
+        tabindex: -1,
         value: buttonDef.title,
         onclick: (event) => {
           this._dialogDone(
@@ -236,28 +228,34 @@ export class DialogOverlay extends SimpleElement {
   }
 
   show() {
-    this._savedActiveElement = document.activeElement;
-    this.style.display = "grid";
-    this.dialogBox.focus();
+    this.dialogElement.showModal();
   }
 
   hide() {
-    this.style.display = "none";
-    this._savedActiveElement?.focus();
+    this.dialogElement.close();
   }
 
   _handleKeyDown(event) {
-    if (event.key == "Enter") {
+    const keyEnter = event.key === "Enter";
+    const keyEscape = event.key === "Escape";
+    if (!keyEnter && !keyEscape) {
+      // handle only enter and escape keys
+      return;
+    }
+
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    if (keyEnter) {
       if (!this.defaultButton?.classList.contains("disabled")) {
         this.defaultButton?.click();
       }
-    } else if (event.key == "Escape") {
+    } else if (keyEscape) {
       this.cancelButton?.click();
       if (!this.cancelButton) {
         this._dialogDone(null);
       }
     }
-    event.stopImmediatePropagation();
   }
 
   _dialogDone(result) {
@@ -269,9 +267,9 @@ export class DialogOverlay extends SimpleElement {
     delete this.dialogContent;
 
     this.hide();
-    this._currentActiveElement?.focus();
+
     this._resolveDialogResult(result);
   }
 }
 
-customElements.define("dialog-overlay", DialogOverlay);
+customElements.define("modal-dialog", ModalDialog);
