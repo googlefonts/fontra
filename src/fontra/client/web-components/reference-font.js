@@ -194,11 +194,30 @@ function readFileAsync(file) {
   });
 }
 
+async function getOPFSInfo() {
+  try {
+    return navigator.storage.estimate().then((info) => {
+      return {
+        free: info.quota - info.usage,
+        usage: info.usage,
+        percent: Math.round((info.usage / info.quota) * 100),
+        quota: info.quota,
+      };
+    });
+  } catch (error) {
+    dialog(
+      "Unable to retrieve Origin Private File System informations.",
+      error.toString(),
+      [{ title: "OK" }],
+      5000
+    );
+  }
+}
+
 async function getOPFSRoot() {
   let root = null;
   try {
     root = await navigator.storage.getDirectory();
-    // TODO: check space available
   } catch (error) {
     dialog(
       "Unable to open Origin Private File System.",
@@ -283,6 +302,15 @@ async function deleteFontFromOPFS(font) {
 }
 
 async function saveFontToOPFS(file) {
+  const info = await getOPFSInfo();
+  if (info.free < file.size) {
+    dialog(
+      "Unable to save font file to Origin Private File System.",
+      `There is not enough free space available (${info.percent}% in use).`,
+      [{ title: "OK" }],
+      5000
+    );
+  }
   const fontsDir = await getOPFSFontsDir();
   const fontFile = await fontsDir.getFileHandle(file.name, { create: true });
   const fontFileData = await readFileAsync(file);
