@@ -321,6 +321,10 @@ function findNestedActiveElement(element) {
     : element;
 }
 
+export function fileNameBasename(name) {
+  return name.split(".").shift();
+}
+
 export function fileNameExtension(name) {
   return name.split(".").pop();
 }

@@ -1,6 +1,6 @@
 import { ObservableController } from "/core/observable-object.js";
 import { UnlitElement, div, input, label, span } from "/core/unlit.js";
-import { fileNameExtension } from "/core/utils.js";
+import { fileNameBasename, fileNameExtension } from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
 import { dialog } from "/web-components/modal-dialog.js";
@@ -238,7 +238,7 @@ async function loadAllFontsFromOPFS() {
     let fontName = font["name"];
     font["file"] = await loadFontFromOPFS(fontName);
     font["fileName"] = fontName;
-    font["fontName"] = fontName.split(".")[0]; // TODO
+    font["fontName"] = fileNameBasename(fontName);
   }
   // console.log(fonts);
   return fonts;
