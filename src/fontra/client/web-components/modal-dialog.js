@@ -3,24 +3,24 @@ import * as html from "/core/unlit.js";
 import { enumerate } from "/core/utils.js";
 
 export async function dialog(headline, message, buttonDefs, autoDismissTimeout) {
-  const dialogOverlayElement = await dialogSetup(
+  const dialogContentElement = await dialogSetup(
     headline,
     message,
     buttonDefs,
     autoDismissTimeout
   );
-  return await dialogOverlayElement.run();
+  return await dialogContentElement.run();
 }
 
 export async function dialogSetup(headline, message, buttonDefs, autoDismissTimeout) {
-  const dialogOverlayElement = document.querySelector("modal-dialog");
-  await dialogOverlayElement.setupDialog(
+  const dialogContentElement = document.querySelector("modal-dialog");
+  await dialogContentElement.setupDialog(
     headline,
     message,
     buttonDefs,
     autoDismissTimeout
   );
-  return dialogOverlayElement;
+  return dialogContentElement;
 }
 
 export class ModalDialog extends SimpleElement {
