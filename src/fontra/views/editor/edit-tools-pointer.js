@@ -16,6 +16,7 @@ import * as vector from "../core/vector.js";
 import { dialog } from "/web-components/modal-dialog.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
+import { equalGlyphSelection } from "./scene-controller.js";
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
@@ -78,9 +79,8 @@ export class PointerTool extends BaseTool {
       return;
     }
 
-    if (!this.sceneModel.selectedGlyphIsEditing) {
-      sceneController.selectedGlyph = this.sceneModel.glyphAtPoint(point);
-      sceneController.selectedGlyphIsEditing = false;
+    if (!this.sceneSettings.selectedGlyph?.isEditing) {
+      this.sceneSettings.selectedGlyph = this.sceneModel.glyphAtPoint(point);
       eventStream.done();
       return;
     }
@@ -114,9 +114,11 @@ export class PointerTool extends BaseTool {
         initiateDrag = false;
         if (!selection.size) {
           const selectedGlyph = this.sceneModel.glyphAtPoint(point);
-          if (selectedGlyph && selectedGlyph != sceneController.selectedGlyph) {
-            sceneController.selectedGlyph = selectedGlyph;
-            sceneController.selectedGlyphIsEditing = false;
+          if (
+            selectedGlyph &&
+            !equalGlyphSelection(selectedGlyph, this.sceneSettings.selectedGlyph)
+          ) {
+            this.sceneSettings.selectedGlyph = selectedGlyph;
             eventStream.done();
             return;
           }
@@ -140,11 +142,16 @@ export class PointerTool extends BaseTool {
   async handleDoubleCick(selection, point) {
     const sceneController = this.sceneController;
     if (!sceneController.hoverPathHit && (!selection || !selection.size)) {
-      sceneController.selectedGlyph = this.sceneModel.glyphAtPoint(point);
-      sceneController.selectedGlyphIsEditing = !!sceneController.selectedGlyph;
+      const selectedGlyph = this.sceneModel.glyphAtPoint(point);
+      this.sceneSettings.selectedGlyph = selectedGlyph
+        ? { ...selectedGlyph, isEditing: true }
+        : undefined;
       const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph?.isUndefined) {
-        sceneController.selectedGlyphIsEditing = false;
+        this.sceneSettings.selectedGlyph = {
+          ...this.sceneSettings.selectedGlyph,
+          isEditing: false,
+        };
         // Create a new glyph
         // Or: ask user if they want to create a new glyph
         const uniString = makeUPlusStringFromCodePoint(
@@ -167,8 +174,10 @@ export class PointerTool extends BaseTool {
             positionedGlyph.character?.codePointAt(0),
             positionedGlyph.glyph.instance
           );
-          sceneController.selectedGlyphIsEditing = true;
-          sceneController.notifySelectedGlyphChanged(); // Oh well
+          this.sceneSettings.selectedGlyph = {
+            ...this.sceneSettings.selectedGlyph,
+            isEditing: true,
+          };
         }
       }
     } else {
@@ -391,7 +400,10 @@ function alignHandles(handleIn, anchorPoint, handleOut) {
 
 function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
   const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
-  const handleVector = vector.mulVector(vector.normalizeVector(direction), length);
+  const handleVector = vector.mulVectorScalar(
+    vector.normalizeVector(direction),
+    length
+  );
   return vector.roundVector(vector.addVectors(anchorPoint, handleVector));
 }
 

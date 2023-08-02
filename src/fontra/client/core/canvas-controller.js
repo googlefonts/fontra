@@ -23,7 +23,6 @@ export class CanvasController {
     });
     resizeObserver.observe(this.canvas.parentElement);
 
-    window.addEventListener("resize", (event) => this.handleResize(event));
     canvas.addEventListener("wheel", (event) => this.handleWheel(event));
 
     // Safari pinch zoom:
@@ -85,6 +84,7 @@ export class CanvasController {
       this.origin.y += dy;
     }
     this.previousOffsets = { parentOffsetX, parentOffsetY };
+    this._dispatchEvent("viewBoxChanged", "canvas-size");
   }
 
   draw() {
@@ -102,12 +102,6 @@ export class CanvasController {
   }
 
   // Event handlers
-
-  handleResize(event) {
-    this.setupSize();
-    this.requestUpdate();
-    this._dispatchEvent("viewBoxChanged", "canvas-size");
-  }
 
   handleWheel(event) {
     event.preventDefault();

@@ -80,8 +80,8 @@ export class PathHitTester {
     }
     const { width, height } = rectSize(unionRect(...rectangles));
     const maxLength = width + height;
-    const p1 = vector.addVectors(point, vector.mulVector(direction, maxLength));
-    const p2 = vector.addVectors(point, vector.mulVector(direction, -maxLength));
+    const p1 = vector.addVectors(point, vector.mulVectorScalar(direction, maxLength));
+    const p2 = vector.addVectors(point, vector.mulVectorScalar(direction, -maxLength));
     const line = { p1, p2 };
 
     const intersections = [];

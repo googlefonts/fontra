@@ -13,7 +13,7 @@ export class PenTool extends BaseTool {
   identifier = "pen-tool";
 
   handleHover(event) {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyph?.isEditing) {
       this.editor.tools["pointer-tool"].handleHover(event);
       return;
     }
@@ -43,7 +43,7 @@ export class PenTool extends BaseTool {
   }
 
   setCursor() {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyph?.isEditing) {
       this.editor.tools["pointer-tool"].setCursor();
     } else {
       this.canvasController.canvas.style.cursor = "crosshair";
@@ -74,8 +74,8 @@ export class PenTool extends BaseTool {
         const pt1 = hit.segment.points[0];
         const pt2 = hit.segment.points[1];
         const d = vector.subVectors(pt2, pt1);
-        const handle1 = vector.addVectors(pt1, vector.mulVector(d, 1 / 3));
-        const handle2 = vector.addVectors(pt1, vector.mulVector(d, 2 / 3));
+        const handle1 = vector.addVectors(pt1, vector.mulVectorScalar(d, 1 / 3));
+        const handle2 = vector.addVectors(pt1, vector.mulVectorScalar(d, 2 / 3));
         return { insertHandles: { points: [handle1, handle2], hit: hit } };
       } else {
         return { targetPoint: hit };
@@ -108,7 +108,7 @@ export class PenTool extends BaseTool {
   }
 
   async handleDrag(eventStream, initialEvent) {
-    if (!this.sceneModel.selectedGlyphIsEditing) {
+    if (!this.sceneModel.selectedGlyph?.isEditing) {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
       return;
     }
@@ -526,7 +526,7 @@ function getHandle(handleOut, anchorPoint, constrain) {
 function oppositeHandle(anchorPoint, handlePoint) {
   return vector.addVectors(
     anchorPoint,
-    vector.mulVector(vector.subVectors(handlePoint, anchorPoint), -1)
+    vector.mulVectorScalar(vector.subVectors(handlePoint, anchorPoint), -1)
   );
 }
 

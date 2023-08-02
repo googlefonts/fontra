@@ -1,9 +1,12 @@
 import { difference, isSuperset, union } from "../core/set-ops.js";
 import {
+  chain,
   enumerate,
   makeAffineTransform,
   makeUPlusStringFromCodePoint,
   parseSelection,
+  round,
+  unionIndexSets,
   withSavedState,
 } from "/core/utils.js";
 import { subVectors } from "../core/vector.js";
@@ -168,6 +171,19 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.sidebearings.unselected",
+  name: "Sidebearings for non-editing glyphs",
+  selectionMode: "notediting",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 190,
+  screenParameters: { strokeWidth: 1, extent: 16 },
+  colors: { strokeColor: "#0004" },
+  colorsDarkMode: { strokeColor: "#FFF6" },
+  draw: _drawMiniSideBearings,
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings",
   name: "Sidebearings",
   selectionMode: "editing",
@@ -175,21 +191,29 @@ registerVisualizationLayerDefinition({
   screenParameters: { strokeWidth: 1, extent: 16 },
   colors: { strokeColor: "#0004" },
   colorsDarkMode: { strokeColor: "#FFF6" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    const glyph = positionedGlyph.glyph;
-    context.strokeStyle = parameters.strokeColor;
-    context.lineWidth = parameters.strokeWidth;
-    const extent = parameters.extent;
-    strokeLine(context, 0, -extent, 0, extent);
-    strokeLine(context, glyph.xAdvance, -extent, glyph.xAdvance, extent);
-    if (extent < glyph.xAdvance / 2) {
-      strokeLine(context, 0, 0, extent, 0);
-      strokeLine(context, glyph.xAdvance, 0, glyph.xAdvance - extent, 0);
-    } else {
-      strokeLine(context, 0, 0, glyph.xAdvance, 0);
-    }
-  },
+  draw: _drawMiniSideBearings,
 });
+
+function _drawMiniSideBearings(
+  context,
+  positionedGlyph,
+  parameters,
+  model,
+  controller
+) {
+  const glyph = positionedGlyph.glyph;
+  context.strokeStyle = parameters.strokeColor;
+  context.lineWidth = parameters.strokeWidth;
+  const extent = parameters.extent;
+  strokeLine(context, 0, -extent, 0, extent);
+  strokeLine(context, glyph.xAdvance, -extent, glyph.xAdvance, extent);
+  if (extent < glyph.xAdvance / 2) {
+    strokeLine(context, 0, 0, extent, 0);
+    strokeLine(context, glyph.xAdvance, 0, glyph.xAdvance - extent, 0);
+  } else {
+    strokeLine(context, 0, 0, glyph.xAdvance, 0);
+  }
+}
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.crosshair",
@@ -614,6 +638,63 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.coordinates",
+  name: "Show coordinates",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 600,
+  screenParameters: { fontSize: 10 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const fontSize = parameters.fontSize;
+
+    let {
+      point: pointSelection,
+      component: componentSelection,
+      componentOrigin: componentOriginSelection,
+    } = parseSelection(model.sceneSettings.combinedSelection);
+    componentSelection = unionIndexSets(componentSelection, componentOriginSelection);
+
+    const margin = 0.2 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const lineHeight = fontSize;
+    const bottomY = 0.75 * fontSize;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
+    for (const pt of chain(
+      iterPointsByIndex(glyph.path, pointSelection),
+      iterComponentOriginsByIndex(glyph.instance.components, componentSelection)
+    )) {
+      const xString = `${round(pt.x, 1)}`;
+      const yString = `${round(pt.y, 1)}`;
+      const width =
+        Math.max(
+          context.measureText(xString).width,
+          context.measureText(yString).width
+        ) +
+        2 * margin;
+      context.fillStyle = parameters.boxColor;
+      context.fillRect(
+        pt.x - width / 2,
+        -pt.y - bottomY + margin,
+        width,
+        -boxHeight - 2 * margin
+      );
+
+      context.fillStyle = parameters.color;
+      context.fillText(xString, pt.x, -pt.y - bottomY - lineHeight);
+      context.fillText(yString, pt.x, -pt.y - bottomY);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.connect-insert.point",
   name: "Connect/insert point",
   selectionMode: "editing",
@@ -834,8 +915,20 @@ function* iterPointsByIndex(path, pointIndices) {
   }
   for (const index of pointIndices) {
     const pt = path.getPoint(index);
-    if (pt !== undefined) {
+    if (pt) {
       yield pt;
+    }
+  }
+}
+
+function* iterComponentOriginsByIndex(components, componentIndices) {
+  if (!componentIndices) {
+    return;
+  }
+  for (const index of componentIndices) {
+    const compo = components[index];
+    if (compo) {
+      yield { x: compo.transformation.translateX, y: compo.transformation.translateY };
     }
   }
 }

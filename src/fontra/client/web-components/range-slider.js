@@ -1,4 +1,5 @@
 import { themeColorCSS } from "./theme-support.js";
+import { round } from "../core/utils.js";
 import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
 
 const colors = {
@@ -183,10 +184,10 @@ export class RangeSlider extends LitElement {
     delete this._rangeInputElement;
     const minMaxRange = this.maxValue - this.minValue;
     const decimalPlaces = minMaxRange < 100 ? 3 : 2;
-    const value = roundToDecimal(this.value, decimalPlaces);
-    const minValue = roundToDecimal(this.minValue, decimalPlaces);
-    const defaultValue = roundToDecimal(this.defaultValue, decimalPlaces);
-    const maxValue = roundToDecimal(this.maxValue, decimalPlaces);
+    const value = round(this.value, decimalPlaces);
+    const minValue = round(this.minValue, decimalPlaces);
+    const defaultValue = round(this.defaultValue, decimalPlaces);
+    const maxValue = round(this.maxValue, decimalPlaces);
     const isAtDefault = this.value == this.defaultValue;
     this.updateIsAtDefault();
     return html`
@@ -280,12 +281,6 @@ export class RangeSlider extends LitElement {
 }
 
 customElements.define("range-slider", RangeSlider);
-
-function roundToDecimal(value, decimalPlaces = 2) {
-  return Number(
-    Math.round(parseFloat(value + "e" + decimalPlaces)) + "e-" + decimalPlaces
-  );
-}
 
 function isNumeric(str) {
   if (typeof str != "string") {

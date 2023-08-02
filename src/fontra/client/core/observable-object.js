@@ -13,30 +13,42 @@ export class ObservableController {
     this._keyListeners = {};
   }
 
-  addListener(listener) {
-    this._generalListeners.push(listener);
+  addListener(listener, immediate = false) {
+    this._generalListeners.push({ listener, immediate });
   }
 
   removeListener(listener) {
     // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
-    this._generalListeners = this._generalListeners.filter((item) => item !== listener);
-  }
-
-  addKeyListener(key, listener) {
-    if (!(key in this._keyListeners)) {
-      this._keyListeners[key] = [];
-    }
-    this._keyListeners[key].push(listener);
-  }
-
-  removeKeyListener(key, listener) {
-    if (!this._keyListeners[key]) {
-      return;
-    }
-    // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
-    this._keyListeners[key] = this._keyListeners[key].filter(
-      (item) => item !== listener
+    this._generalListeners = this._generalListeners.filter(
+      (item) => item.listener !== listener
     );
+  }
+
+  addKeyListener(keyOrKeys, listener, immediate = false) {
+    if (typeof keyOrKeys === "string") {
+      keyOrKeys = [keyOrKeys];
+    }
+    for (const key of keyOrKeys) {
+      if (!(key in this._keyListeners)) {
+        this._keyListeners[key] = [];
+      }
+      this._keyListeners[key].push({ listener, immediate });
+    }
+  }
+
+  removeKeyListener(keyOrKeys, listener) {
+    if (typeof keyOrKeys === "string") {
+      keyOrKeys = [keyOrKeys];
+    }
+    for (const key of keyOrKeys) {
+      if (!this._keyListeners[key]) {
+        continue;
+      }
+      // Instead of using indexOf, we use filter, to ensure we also delete any duplicates
+      this._keyListeners[key] = this._keyListeners[key].filter(
+        (item) => item.listener !== listener
+      );
+    }
   }
 
   setItem(key, newValue, senderInfo) {
@@ -48,17 +60,43 @@ export class ObservableController {
   }
 
   synchronizeWithLocalStorage(prefix = "") {
-    synchronizeWithLocalStorage(this, prefix);
+    this._addSynchronizedItem = synchronizeWithLocalStorage(this, prefix);
+  }
+
+  waitForKeyChange(keyOrKeys, immediate = false) {
+    let resolvePromise;
+
+    const tempListener = (event) => {
+      this.removeKeyListener(keyOrKeys, tempListener);
+      resolvePromise(event);
+    };
+
+    this.addKeyListener(keyOrKeys, tempListener, immediate);
+
+    return new Promise((resolve) => {
+      resolvePromise = resolve;
+    });
+  }
+
+  synchronizeItemWithLocalStorage(key, defaultValue) {
+    // For an observable that is already synchronized with localStorage, add
+    // a key/value pair to the model. This reads the value from localStorage
+    // if the `key` is present, else it uses the `defaultValue`.
+    if (!this._addSynchronizedItem) {
+      throw Error("observable is not synchronized wih localStorage");
+    }
+    this._addSynchronizedItem(key, defaultValue, true);
   }
 
   _dispatchChange(key, newValue, oldValue, senderInfo) {
     // Schedule the calls in the event loop rather than call immediately
     const event = { key, newValue, oldValue, senderInfo };
-    for (const listener of chain(
-      this._generalListeners,
-      this._keyListeners[key] || []
-    )) {
-      setTimeout(() => listener(event), 0);
+    for (const item of chain(this._generalListeners, this._keyListeners[key] || [])) {
+      if (item.immediate) {
+        item.listener(event);
+      } else {
+        setTimeout(() => item.listener(event), 0);
+      }
     }
   }
 }
@@ -99,6 +137,10 @@ function synchronizeWithLocalStorage(controller, prefix = "") {
   const mapKeyToStorage = {};
   const stringKeys = {};
   for (const [key, value] of Object.entries(controller.model)) {
+    addItem(key, value, false);
+  }
+
+  function addItem(key, value, setOnModel) {
     const storageKey = prefix + key;
     mapKeyToObject[storageKey] = key;
     mapKeyToStorage[key] = storageKey;
@@ -106,6 +148,8 @@ function synchronizeWithLocalStorage(controller, prefix = "") {
     const storedValue = localStorage.getItem(storageKey);
     if (storedValue !== null) {
       setItemOnObject(key, storedValue);
+    } else if (setOnModel) {
+      controller.model[key] = value;
     }
   }
 
@@ -137,4 +181,6 @@ function synchronizeWithLocalStorage(controller, prefix = "") {
       setItemOnObject(mapKeyToObject[event.key], event.newValue);
     }
   });
+
+  return addItem;
 }

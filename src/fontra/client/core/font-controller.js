@@ -9,6 +9,7 @@ import { getClassSchema } from "../core/classes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
+import { TaskPool } from "./task-pool.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 import { throttleCalls } from "./utils.js";
@@ -16,9 +17,8 @@ import { throttleCalls } from "./utils.js";
 const GLYPH_CACHE_SIZE = 1000;
 
 export class FontController {
-  constructor(font, location) {
+  constructor(font) {
     this.font = font;
-    this.location = location;
     this._glyphsPromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // glyph name -> var-glyph promise
     this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // instance cache key -> instance promise
     this._glyphInstancePromiseCacheKeys = {}; // glyphName -> Set(instance cache keys)
@@ -96,44 +96,50 @@ export class FontController {
     // will resolve once all requested glyphs have been loaded.
     // The loading will be done in parallel: this is much faster if
     // the server supports parallelism (for example fontra-rcjk).
-    const done = new Set();
-    const loading = new Set();
-
-    let allDoneFunc;
-    let allDonePromise = new Promise((resolve) => {
-      allDoneFunc = resolve;
-    });
-
-    function checkAllDone() {
-      if (!loading.length) {
-        allDoneFunc();
+    if (this._loadGlyphsTodo) {
+      for (const glyphName of glyphNames) {
+        if (!this._loadGlyphsDone.has(glyphName)) {
+          this._loadGlyphsTodo.add(glyphName);
+        }
       }
+      return;
     }
+    try {
+      const done = new Set();
+      const todo = new Set(glyphNames);
+      this._loadGlyphsDone = done;
+      this._loadGlyphsTodo = todo;
 
-    function reportError(error) {
-      console.error(error);
-      allDoneFunc();
-    }
+      const loadGlyph = async (glyphName) => {
+        if (done.has(glyphName)) {
+          return;
+        }
+        done.add(glyphName);
 
-    const loadGlyph = async (glyphName) => {
-      if (done.has(glyphName)) {
-        return;
+        await this.getGlyph(glyphName);
+
+        for (const subGlyphName of this.iterGlyphMadeOf(glyphName)) {
+          todo.add(subGlyphName);
+        }
+      };
+
+      const pool = new TaskPool(8);
+
+      const t = performance.now();
+      let count = 0;
+      while (todo.size) {
+        while (todo.size) {
+          const glyphName = setPopFirst(todo);
+          count++;
+          await pool.schedule(async () => await loadGlyph(glyphName));
+        }
+        await pool.wait();
       }
-      done.add(glyphName);
-      loading.add(glyphName);
-      await this.getGlyph(glyphName);
-      for (const subGlyphName of this.iterGlyphMadeOf(glyphName)) {
-        loadGlyph(subGlyphName).then(checkAllDone).catch(reportError);
-      }
-      loading.delete(glyphName);
-    };
-
-    glyphNames.forEach((glyphName) =>
-      loadGlyph(glyphName).then(checkAllDone).catch(reportError)
-    );
-
-    if (glyphNames.length) {
-      return allDonePromise;
+      const elapsed = performance.now() - t;
+      // console.log("loadGlyphs", count, elapsed);
+    } finally {
+      delete this._loadGlyphsDone;
+      delete this._loadGlyphsTodo;
     }
   }
 
@@ -204,7 +210,7 @@ export class FontController {
     const codePoints = typeof codePoint == "number" ? [codePoint] : [];
     this.glyphMap[glyphName] = codePoints;
 
-    await this.glyphChanged(glyphName);
+    await this.glyphChanged(glyphName, { senderID: this });
 
     const change = {
       c: [
@@ -228,7 +234,7 @@ export class FontController {
     this.notifyEditListeners("editFinal", this);
   }
 
-  async glyphChanged(glyphName) {
+  async glyphChanged(glyphName, senderInfo) {
     const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)];
     for (const glyphName of glyphNames) {
       this._purgeInstanceCache(glyphName);
@@ -239,10 +245,17 @@ export class FontController {
     }
     this.updateGlyphDependencies(await this.getGlyph(glyphName));
 
-    const listeners = this._glyphChangeListeners[glyphName];
-    if (listeners) {
-      for (const listener of listeners) {
-        listener.listener(glyphName, listener.listenerData);
+    const baseGlyphName = glyphName;
+    for (const glyphName of glyphNames) {
+      const event = { glyphName, ...senderInfo };
+      if (glyphName !== baseGlyphName) {
+        event.baseGlyphChanged = baseGlyphName;
+      }
+      const listeners = this._glyphChangeListeners[glyphName];
+      if (listeners) {
+        for (const listener of listeners) {
+          listener(event);
+        }
       }
     }
   }
@@ -303,11 +316,11 @@ export class FontController {
     return glyph?.getSourceIndex(location);
   }
 
-  addGlyphChangeListener(glyphName, listener, listenerData) {
+  addGlyphChangeListener(glyphName, listener) {
     if (!this._glyphChangeListeners[glyphName]) {
       this._glyphChangeListeners[glyphName] = [];
     }
-    this._glyphChangeListeners[glyphName].push({ listener, listenerData });
+    this._glyphChangeListeners[glyphName].push(listener);
   }
 
   removeGlyphChangeListener(glyphName, listener) {
@@ -316,7 +329,7 @@ export class FontController {
     }
     this._glyphChangeListeners[glyphName] = this._glyphChangeListeners[
       glyphName
-    ].filter((item) => item.listener !== listener);
+    ].filter((item) => item !== listener);
     if (!this._glyphChangeListeners[glyphName].length) {
       delete this._glyphChangeListeners[glyphName];
     }
@@ -355,7 +368,7 @@ export class FontController {
     applyChange(this._rootObject, change, this._rootClassDef);
     delete this._rootObject["glyphs"];
     for (const glyphName of glyphNames) {
-      this.glyphChanged(glyphName);
+      this.glyphChanged(glyphName, { senderID: this });
       if (isExternalChange) {
         // The undo stack is local, so any external change invalidates it
         delete this.undoStacks[glyphName];
@@ -435,6 +448,7 @@ export class FontController {
       this._purgeGlyphCache(glyphName);
       // The undo stack is local, so any external change invalidates it
       delete this.undoStacks[glyphName];
+      this.glyphChanged(glyphName, { senderID: this });
     }
   }
 
@@ -524,7 +538,7 @@ class GlyphEditContext {
   async editIncremental(change, mayDrop = false) {
     // If mayDrop is true, the call is not guaranteed to be broadcast, and is throttled
     // at a maximum number of changes per second, to prevent flooding the network
-    await this.fontController.glyphChanged(this.glyphName);
+    await this.fontController.glyphChanged(this.glyphName, { senderID: this.senderID });
     change = consolidateChanges(change, this.baseChangePath);
     if (mayDrop) {
       this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
@@ -537,7 +551,9 @@ class GlyphEditContext {
 
   async editFinal(change, rollback, undoInfo, broadcast = false) {
     if (broadcast) {
-      await this.fontController.glyphChanged(this.glyphName);
+      await this.fontController.glyphChanged(this.glyphName, {
+        senderID: this.senderID,
+      });
     }
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
@@ -554,7 +570,7 @@ class GlyphEditContext {
   }
 
   async editCancel() {
-    await this.fontController.glyphChanged(this.glyphName);
+    await this.fontController.glyphChanged(this.glyphName, { senderID: this.senderID });
     await this.fontController.notifyEditListeners("editEnd", this.senderID);
   }
 }
@@ -599,4 +615,16 @@ function collectGlyphNames(change) {
   return collectChangePaths(change, 2)
     .filter((item) => item[0] === "glyphs" && item[1] !== undefined)
     .map((item) => item[1]);
+}
+
+function setPopFirst(set) {
+  if (!set.size) {
+    return;
+  }
+  let firstItem;
+  for (firstItem of set) {
+    break;
+  }
+  set.delete(firstItem);
+  return firstItem;
 }

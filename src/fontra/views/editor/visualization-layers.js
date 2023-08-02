@@ -1,5 +1,6 @@
 import { consolidateCalls, withSavedState } from "/core/utils.js";
 import { mulScalar } from "/core/var-funcs.js";
+import { equalGlyphSelection } from "./scene-controller.js";
 
 export class VisualizationLayers {
   constructor(definitions, darkTheme) {
@@ -102,12 +103,18 @@ function getGlyphsBySelectionMode(model) {
       (glyph) => glyph !== selectedPositionedGlyph
     ),
     hovered:
-      model.hoveredGlyph && model.hoveredGlyph !== model.selectedGlyph
+      model.hoveredGlyph &&
+      !equalGlyphSelection(model.hoveredGlyph, model.selectedGlyph)
         ? hoveredGlyphs(model)
         : [],
     selected:
-      model.selectedGlyph && !model.selectedGlyphIsEditing ? selectedGlyphs(model) : [],
-    editing: model.selectedGlyphIsEditing ? selectedGlyphs(model) : [],
+      model.selectedGlyph && !model.selectedGlyph.isEditing
+        ? selectedGlyphs(model)
+        : [],
+    editing: model.selectedGlyph?.isEditing ? selectedGlyphs(model) : [],
+    notediting: allPositionedGlyphs.filter(
+      (glyph) => glyph !== selectedPositionedGlyph || !model.selectedGlyph?.isEditing
+    ),
   };
 }
 

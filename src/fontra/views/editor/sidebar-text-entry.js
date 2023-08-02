@@ -14,22 +14,24 @@ export class SidebarTextEntry {
     this.textEntryElement.value = this.textSettings.text;
 
     const updateTextEntryElementFromModel = (event) => {
-      if (this.textEntryElement.value !== event.newValue) {
-        this.textEntryElement.value = event.newValue;
-        this.textEntryElement.setSelectionRange(0, 0);
+      if (event.senderInfo === this) {
+        return;
       }
+      this.textEntryElement.value = event.newValue;
+      this.textEntryElement.setSelectionRange(0, 0);
     };
 
     this.textSettingsController.addKeyListener(
       "text",
       updateTextEntryElementFromModel,
-      false
+      true
     );
 
     this.textEntryElement.addEventListener(
       "input",
       () => {
-        this.textSettings.text = this.textEntryElement.value;
+        this.textSettingsController.setItem("text", this.textEntryElement.value, this);
+        this.textSettings.selectedGlyph = null;
       },
       false
     );
