@@ -129,7 +129,8 @@ export class ReferenceFont extends UnlitElement {
       const items = [...filesUIList.items];
       const fileItem = items[index];
       document.fonts.delete(fileItem.fontFace);
-      // TODO: fix reference font not deleted from canvas (just canvas not updated?!)
+      // update model to trigger canvas update (delete reference font from canvas)
+      this.model.referenceFontName = undefined;
       items.splice(index, 1);
       filesUIList.setItems(items);
       filesUIList.setSelectedItemIndex(undefined, true);
