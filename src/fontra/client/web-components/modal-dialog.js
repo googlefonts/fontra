@@ -205,6 +205,7 @@ export class ModalDialog extends SimpleElement {
       const buttonElement = html.input({
         type: "button",
         class: `button button-${buttonIndex}`,
+        tabindex: -1,
         value: buttonDef.title,
         onclick: (event) => {
           this._dialogDone(
