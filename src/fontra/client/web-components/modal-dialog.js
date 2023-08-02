@@ -151,13 +151,6 @@ export class ModalDialog extends SimpleElement {
     this._resultPromise = new Promise((resolve) => {
       this._resolveDialogResult = resolve;
     });
-    this._currentActiveElement = document.activeElement;
-
-    // Disable this for now, as we also receive this event if you start dragging
-    // in a text field and release outside of the dialog.
-    // this.onclick = (event) => {
-    //   this._dialogDone(null);
-    // };
 
     this._populateDialogBox(headline, message);
   }
@@ -263,8 +256,6 @@ export class ModalDialog extends SimpleElement {
         this._dialogDone(null);
       }
     }
-
-    document.activeElement.blur();
   }
 
   _dialogDone(result) {
@@ -276,7 +267,7 @@ export class ModalDialog extends SimpleElement {
     delete this.dialogContent;
 
     this.hide();
-    this._currentActiveElement?.focus();
+
     this._resolveDialogResult(result);
   }
 }
