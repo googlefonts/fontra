@@ -9,6 +9,7 @@ import {
   rectAddMargin,
   rectCenter,
   rectFromArray,
+  rectRound,
   rectToArray,
   rectScaleAroundCenter,
   rectSize,
@@ -119,7 +120,7 @@ export class EditorController {
     this.sceneSettingsController.addKeyListener(
       ["align", "location", "selectedGlyph", "selection", "text", "viewBox"],
       (event) => {
-        if (event.senderInfo !== this) {
+        if (event.senderInfo?.senderID !== this && !event.senderInfo?.adjustViewBox) {
           this.updateWindowLocation(); // scheduled with delay
         }
       }
@@ -234,8 +235,7 @@ export class EditorController {
     await this.initGlyphsSearch();
     this.initTools();
     await this.initSidebarDesignspace();
-    // Delay a tiny amount to account for a delay in the sidebars being set up,
-    // which affects the available viewBox
+
     setTimeout(() => this.setupFromWindowLocation(), 20);
   }
 
@@ -1536,7 +1536,7 @@ export class EditorController {
   }
 
   async setupFromWindowLocation() {
-    this.sceneSettingsController.withSenderInfo(this, () =>
+    this.sceneSettingsController.withSenderInfo({ senderID: this }, () =>
       this._setupFromWindowLocation()
     );
   }
@@ -1575,9 +1575,15 @@ export class EditorController {
       this.sceneSettings.selection = new Set(viewInfo["selection"]);
     }
     this.canvasController.requestUpdate();
+    this._didFirstSetup = true;
   }
 
   _updateWindowLocation() {
+    if (!this._didFirstSetup) {
+      // We shall not change the window location ever before we've done
+      // an initial setup _from_ the window location
+      return;
+    }
     const viewInfo = {};
     const viewBox = this.sceneSettings.viewBox;
     const url = new URL(window.location);
@@ -1588,7 +1594,7 @@ export class EditorController {
     clearSearchParams(url.searchParams);
 
     if (viewBox && Object.values(viewBox).every((value) => !isNaN(value))) {
-      viewInfo["viewBox"] = rectToArray(viewBox).map(Math.round);
+      viewInfo["viewBox"] = rectToArray(rectRound(viewBox));
     }
     if (this.sceneSettings.text?.length) {
       viewInfo["text"] = this.sceneSettings.text;

@@ -5,7 +5,7 @@ import { glyphLinesFromText, textFromGlyphLines } from "../core/glyph-lines.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
 import { ObservableController } from "../core/observable-object.js";
 import { connectContours, splitPathAtPointIndices } from "../core/path-functions.js";
-import { offsetRect, rectAddMargin } from "../core/rectangle.js";
+import { equalRect, offsetRect, rectAddMargin, rectRound } from "../core/rectangle.js";
 import { packContour } from "../core/var-path.js";
 import { lenientIsEqualSet, isSuperset, union } from "../core/set-ops.js";
 import {
@@ -67,7 +67,7 @@ export class SceneController {
 
     // Set up the mutual relationship between text and glyphLines
     this.sceneSettingsController.addKeyListener("text", async (event) => {
-      if (event.senderInfo === this) {
+      if (event.senderInfo?.senderID === this) {
         return;
       }
       await this.fontController.ensureInitialized;
@@ -76,17 +76,19 @@ export class SceneController {
         this.fontController.characterMap,
         this.fontController.glyphMap
       );
-      this.sceneSettingsController.setItem("glyphLines", glyphLines, this);
+      this.sceneSettingsController.setItem("glyphLines", glyphLines, {
+        senderID: this,
+      });
     });
 
     this.sceneSettingsController.addKeyListener(
       "glyphLines",
       (event) => {
-        if (event.senderInfo === this) {
+        if (event.senderInfo?.senderID === this) {
           return;
         }
         const text = textFromGlyphLines(event.newValue);
-        this.sceneSettingsController.setItem("text", text, this);
+        this.sceneSettingsController.setItem("text", text, { senderID: this });
       },
       true
     );
@@ -110,19 +112,21 @@ export class SceneController {
 
     // Set up the mutual dependencies between location and selectedSourceIndex
     this.sceneSettingsController.addKeyListener("location", async (event) => {
-      if (event.senderInfo === this) {
+      if (event.senderInfo?.senderID === this) {
         return;
       }
       const varGlyphController =
         await this.sceneModel.getSelectedVariableGlyphController();
       const sourceIndex = varGlyphController?.getSourceIndex(event.newValue);
-      this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, this);
+      this.sceneSettingsController.setItem("selectedSourceIndex", sourceIndex, {
+        senderID: this,
+      });
     });
 
     this.sceneSettingsController.addKeyListener(
       "selectedSourceIndex",
       async (event) => {
-        if (event.senderInfo === this) {
+        if (event.senderInfo?.senderID === this) {
           return;
         }
         const sourceIndex = event.newValue;
@@ -133,7 +137,7 @@ export class SceneController {
           await this.sceneModel.getSelectedVariableGlyphController();
         const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
 
-        this.sceneSettingsController.setItem("location", location, this);
+        this.sceneSettingsController.setItem("location", location, { senderID: this });
       }
     );
 
@@ -166,15 +170,17 @@ export class SceneController {
     this.sceneSettingsController.addKeyListener(
       "viewBox",
       (event) => {
-        if (event.senderInfo === this) {
+        if (event.senderInfo?.senderID === this) {
           return;
         }
         this.canvasController.setViewBox(event.newValue);
-        this.sceneSettingsController.setItem(
-          "viewBox",
-          this.canvasController.getViewBox(),
-          this
-        );
+        const actualViewBox = this.canvasController.getViewBox();
+        if (!equalRect(rectRound(event.newValue), rectRound(actualViewBox))) {
+          this.sceneSettingsController.setItem("viewBox", actualViewBox, {
+            senderID: this,
+            adjustViewBox: true,
+          });
+        }
       },
       true
     );
@@ -188,7 +194,7 @@ export class SceneController {
       this.sceneSettingsController.setItem(
         "viewBox",
         this.canvasController.getViewBox(),
-        this
+        { senderID: this }
       );
     });
   }

@@ -178,3 +178,12 @@ export function rectScaleAroundCenter(rect, scaleFactor, center) {
   rect = offsetRect(rect, center.x, center.y);
   return rect;
 }
+
+export function rectRound(rect) {
+  return {
+    xMin: Math.round(rect.xMin),
+    yMin: Math.round(rect.yMin),
+    xMax: Math.round(rect.xMax),
+    yMax: Math.round(rect.yMax),
+  };
+}
