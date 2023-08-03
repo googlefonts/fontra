@@ -235,9 +235,8 @@ export class EditorController {
     await this.initGlyphsSearch();
     this.initTools();
     await this.initSidebarDesignspace();
-    // Delay a tiny amount to account for a delay in the sidebars being set up,
-    // which affects the available viewBox
-    setTimeout(() => this.setupFromWindowLocation(), 20);
+
+    this.setupFromWindowLocation();
   }
 
   async initGlyphsSearch() {
