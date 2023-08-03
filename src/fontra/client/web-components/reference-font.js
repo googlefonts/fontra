@@ -49,7 +49,7 @@ export class ReferenceFont extends UnlitElement {
     return this.controller.model;
   }
 
-  async render() {
+  render() {
     const columnDescriptions = [
       {
         key: "fileName",
@@ -136,12 +136,14 @@ export class ReferenceFont extends UnlitElement {
       filesUIList.setSelectedItemIndex(undefined, true);
       await deleteFontFromOPFS(fileItem);
     });
-    const persistentFileItems = await loadAllFontsFromOPFS();
-    // console.log(persistentFileItems, typeof persistentFileItems);
-    filesUIList.setItems([...filesUIList.items, ...persistentFileItems]);
-    if (filesUIList.getSelectedItemIndex() === undefined) {
-      filesUIList.setSelectedItemIndex(0, true);
-    }
+    loadAllFontsFromOPFS().then((persistentFileItems) => {
+      // console.log(persistentFileItems);
+      filesUIList.setItems([...filesUIList.items, ...persistentFileItems]);
+      if (filesUIList.getSelectedItemIndex() === undefined) {
+        filesUIList.setSelectedItemIndex(0, true);
+      }
+    });
+
     const content = [
       div({ class: "title" }, ["Reference font"]),
       div({}, [
