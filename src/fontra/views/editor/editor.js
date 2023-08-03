@@ -116,10 +116,12 @@ export class EditorController {
     this.sceneSettings = this.sceneSettingsController.model;
     this.sceneModel = this.sceneController.sceneModel;
 
-    this.sceneSettingsController.addListener((event) => {
-      // FIXME: ignore some keys
-      this.updateWindowLocation(); // scheduled with delay
-    });
+    this.sceneSettingsController.addKeyListener(
+      ["align", "location", "selectedGlyph", "selection", "text", "viewBox"],
+      (event) => {
+        this.updateWindowLocation(); // scheduled with delay
+      }
+    );
 
     this.initSidebarReferenceFont();
     this.cjkDesignFrame = new CJKDesignFrame(this);
