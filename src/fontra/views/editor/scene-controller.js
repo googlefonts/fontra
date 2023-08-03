@@ -178,6 +178,7 @@ export class SceneController {
         if (!equalRect(rectRound(event.newValue), rectRound(actualViewBox))) {
           this.sceneSettingsController.setItem("viewBox", actualViewBox, {
             senderID: this,
+            adjustViewBox: true,
           });
         }
       },

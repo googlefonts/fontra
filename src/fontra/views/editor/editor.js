@@ -120,7 +120,7 @@ export class EditorController {
     this.sceneSettingsController.addKeyListener(
       ["align", "location", "selectedGlyph", "selection", "text", "viewBox"],
       (event) => {
-        if (event.senderInfo?.senderID !== this) {
+        if (event.senderInfo?.senderID !== this && !event.senderInfo?.adjustViewBox) {
           this.updateWindowLocation(); // scheduled with delay
         }
       }
