@@ -9,6 +9,7 @@ import {
   rectAddMargin,
   rectCenter,
   rectFromArray,
+  rectRound,
   rectToArray,
   rectScaleAroundCenter,
   rectSize,
@@ -119,7 +120,7 @@ export class EditorController {
     this.sceneSettingsController.addKeyListener(
       ["align", "location", "selectedGlyph", "selection", "text", "viewBox"],
       (event) => {
-        if (event.senderInfo !== this) {
+        if (event.senderInfo?.senderID !== this) {
           this.updateWindowLocation(); // scheduled with delay
         }
       }
@@ -1536,7 +1537,7 @@ export class EditorController {
   }
 
   async setupFromWindowLocation() {
-    this.sceneSettingsController.withSenderInfo(this, () =>
+    this.sceneSettingsController.withSenderInfo({ senderID: this }, () =>
       this._setupFromWindowLocation()
     );
   }
@@ -1588,7 +1589,7 @@ export class EditorController {
     clearSearchParams(url.searchParams);
 
     if (viewBox && Object.values(viewBox).every((value) => !isNaN(value))) {
-      viewInfo["viewBox"] = rectToArray(viewBox).map(Math.round);
+      viewInfo["viewBox"] = rectToArray(rectRound(viewBox));
     }
     if (this.sceneSettings.text?.length) {
       viewInfo["text"] = this.sceneSettings.text;

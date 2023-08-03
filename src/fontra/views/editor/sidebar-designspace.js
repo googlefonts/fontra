@@ -44,7 +44,7 @@ export class SidebarDesignspace {
         this.sceneSettingsController.setItem(
           "location",
           { ...this.designspaceLocation.values },
-          this
+          { senderID: this }
         );
       })
     );
@@ -62,7 +62,7 @@ export class SidebarDesignspace {
     );
 
     this.sceneSettingsController.addKeyListener("location", (event) => {
-      if (event.senderInfo === this) {
+      if (event.senderInfo?.senderID === this) {
         // Sent by us, ignore
         return;
       }
