@@ -111,11 +111,12 @@ export class ReferenceFont extends UnlitElement {
       const file = fileItem.file;
       const fileExtension = fileNameExtension(file.name);
       if (!fileItem.fontFace) {
+        const fontName = makeFontFaceName(fileItem.fontName);
         const fontURL = makeFontFaceURL(
           await asBase64Data(file),
           fontTypeMapping[fileExtension]
         );
-        fileItem.fontFace = new FontFace(fileItem.fontName, fontURL, {});
+        fileItem.fontFace = new FontFace(fontName, fontURL, {});
         document.fonts.add(fileItem.fontFace);
         await fileItem.fontFace.load();
       }
@@ -174,6 +175,15 @@ export class ReferenceFont extends UnlitElement {
     ];
     return content;
   }
+}
+
+function makeFontFaceName(fontName) {
+  let name = fontName;
+  // replace all non-alphanumeric characters with hyphen
+  name = name.replace(/[^a-zA-Z0-9]/g, "-");
+  // remove starting and trailing hyphens
+  name = name.replace(/^-+|-+$/g, "");
+  return name;
 }
 
 function makeFontFaceURL(fontData, fontType) {
