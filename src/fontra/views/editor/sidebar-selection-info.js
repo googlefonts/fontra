@@ -18,7 +18,7 @@ export class SidebarSelectionInfo {
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
 
     this.sceneController.sceneSettingsController.addKeyListener(
-      ["selectedGlyphName", "selection", "location"],
+      ["selectedGlyphName", "selection", "location", "positionedLines"],
       (event) => this.throttledUpdate()
     );
 
