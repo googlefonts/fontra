@@ -236,7 +236,7 @@ export class EditorController {
     this.initTools();
     await this.initSidebarDesignspace();
 
-    this.setupFromWindowLocation();
+    setTimeout(() => this.setupFromWindowLocation(), 20);
   }
 
   async initGlyphsSearch() {
@@ -1575,9 +1575,15 @@ export class EditorController {
       this.sceneSettings.selection = new Set(viewInfo["selection"]);
     }
     this.canvasController.requestUpdate();
+    this._didFirstSetup = true;
   }
 
   _updateWindowLocation() {
+    if (!this._didFirstSetup) {
+      // We shall not change the window location ever before we've done
+      // an initial setup _from_ the window location
+      return;
+    }
     const viewInfo = {};
     const viewBox = this.sceneSettings.viewBox;
     const url = new URL(window.location);
