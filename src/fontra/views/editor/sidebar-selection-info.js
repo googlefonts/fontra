@@ -95,6 +95,9 @@ export class SidebarSelectionInfo {
     }
 
     for (const index of componentIndices) {
+      if (!instance) {
+        break;
+      }
       const component = instance.components[index];
       if (!component) {
         // Invalid selection
