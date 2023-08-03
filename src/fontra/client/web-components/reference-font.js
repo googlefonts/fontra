@@ -99,11 +99,8 @@ export class ReferenceFont extends UnlitElement {
       }
       fileItems.forEach(async (fileItem) => {
         await saveFontToOPFS(fileItem.file);
+        updateFontsUIList();
       });
-      filesUIList.setItems([...filesUIList.items, ...fileItems]);
-      if (filesUIList.getSelectedItemIndex() === undefined) {
-        filesUIList.setSelectedItemIndex(0, true);
-      }
     };
     filesUIList.addEventListener("listSelectionChanged", async () => {
       const fileItem = filesUIList.getSelectedItem();
@@ -131,18 +128,24 @@ export class ReferenceFont extends UnlitElement {
       document.fonts.delete(fileItem.fontFace);
       // update model to trigger canvas update (delete reference font from canvas)
       this.model.referenceFontName = undefined;
-      items.splice(index, 1);
-      filesUIList.setItems(items);
-      filesUIList.setSelectedItemIndex(undefined, true);
       await deleteFontFromOPFS(fileItem);
+      updateFontsUIList(true);
     });
-    loadAllFontsFromOPFS().then((persistentFileItems) => {
-      // console.log(persistentFileItems);
-      filesUIList.setItems([...filesUIList.items, ...persistentFileItems]);
-      if (filesUIList.getSelectedItemIndex() === undefined) {
-        filesUIList.setSelectedItemIndex(0, true);
-      }
-    });
+
+    const updateFontsUIList = function (deselect) {
+      loadAllFontsFromOPFS().then((items) => {
+        filesUIList.setItems([...items]);
+        if (deselect === true) {
+          filesUIList.setSelectedItemIndex(undefined, true);
+        } else {
+          if (filesUIList.getSelectedItemIndex() === undefined) {
+            filesUIList.setSelectedItemIndex(0, true);
+          }
+        }
+      });
+    };
+
+    updateFontsUIList();
 
     const content = [
       div({ class: "title" }, ["Reference font"]),
