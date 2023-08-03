@@ -1536,6 +1536,12 @@ export class EditorController {
   }
 
   async setupFromWindowLocation() {
+    this.sceneSettingsController.withSenderInfo(this, () =>
+      this._setupFromWindowLocation()
+    );
+  }
+
+  async _setupFromWindowLocation() {
     const url = new URL(window.location);
     const viewInfo = {};
     for (const key of url.searchParams.keys()) {
