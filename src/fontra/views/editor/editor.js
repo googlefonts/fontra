@@ -236,6 +236,12 @@ export class EditorController {
     this.initTools();
     await this.initSidebarDesignspace();
 
+    const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
+    document.fonts.add(blankFont);
+    await blankFont.load();
+
+    // Delay a tiny amount to account for a delay in the sidebars being set up,
+    // which affects the available viewBox
     setTimeout(() => this.setupFromWindowLocation(), 20);
   }
 
@@ -573,10 +579,7 @@ export class EditorController {
     );
   }
 
-  async initSidebarReferenceFont() {
-    const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
-    document.fonts.add(blankFont);
-    await blankFont.load();
+  initSidebarReferenceFont() {
     const referenceFontElement = document.querySelector("#reference-font");
     referenceFontElement.controller.addKeyListener("referenceFontName", (event) => {
       if (event.newValue) {
