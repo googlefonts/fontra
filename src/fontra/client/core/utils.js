@@ -322,7 +322,12 @@ function findNestedActiveElement(element) {
 }
 
 export function fileNameBasename(name) {
-  return name.split(".").shift();
+  const separator = ".";
+  const parts = name.split(separator);
+  parts.pop();
+  const basename = parts.join(separator);
+  // console.log(basename);
+  return basename;
 }
 
 export function fileNameExtension(name) {
