@@ -11,6 +11,7 @@ export class ObservableController {
     this._rawModel = model;
     this._generalListeners = [];
     this._keyListeners = {};
+    this._senderInfoStack = [];
   }
 
   addListener(listener, immediate = false) {
@@ -88,8 +89,20 @@ export class ObservableController {
     this._addSynchronizedItem(key, defaultValue, true);
   }
 
+  async withSenderInfo(senderInfo, func) {
+    this._senderInfoStack.push(senderInfo);
+    try {
+      await func();
+    } finally {
+      this._senderInfoStack.pop();
+    }
+  }
+
   _dispatchChange(key, newValue, oldValue, senderInfo) {
     // Schedule the calls in the event loop rather than call immediately
+    if (!senderInfo && this._senderInfoStack.length) {
+      senderInfo = this._senderInfoStack.at(-1);
+    }
     const event = { key, newValue, oldValue, senderInfo };
     for (const item of chain(this._generalListeners, this._keyListeners[key] || [])) {
       if (item.immediate) {
