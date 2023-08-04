@@ -18,8 +18,17 @@ export class SidebarSelectionInfo {
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
 
     this.sceneController.sceneSettingsController.addKeyListener(
-      ["selectedGlyphName", "selection", "location", "positionedLines"],
+      ["selectedGlyphName", "selection", "location"],
       (event) => this.throttledUpdate()
+    );
+
+    this.sceneController.sceneSettingsController.addKeyListener(
+      "positionedLines",
+      (event) => {
+        if (!this.haveInstance) {
+          this.update(event.senderID?.senderID);
+        }
+      }
     );
 
     this.sceneController.addCurrentGlyphChangeListener((event) => {
@@ -50,6 +59,7 @@ export class SidebarSelectionInfo {
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
 
     const instance = positionedGlyph?.glyph.instance;
+    this.haveInstance = !!instance;
 
     if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
       // Glyph does not yet exist in the font, but we can grab the unicode from
