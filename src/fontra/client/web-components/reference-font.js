@@ -229,28 +229,9 @@ async function getOPFSInfo() {
   }
 }
 
-async function getOPFSRoot() {
-  let root = null;
-  try {
-    root = await navigator.storage.getDirectory();
-  } catch (error) {
-    dialog(
-      "Unable to open Origin Private File System.",
-      error.toString(),
-      [{ title: "OK" }],
-      5000
-    );
-  }
-  return root;
-}
-
 async function getOPFSFontsDir() {
-  let root = await getOPFSRoot();
-  if (!root) {
-    return null;
-  }
-  const fontsDir = await root.getDirectoryHandle("reference-fonts", { create: true });
-  return fontsDir;
+  let root = await navigator.storage.getDirectory();
+  return await root.getDirectoryHandle("reference-fonts", { create: true });
 }
 
 async function listFontsInOPFS() {
