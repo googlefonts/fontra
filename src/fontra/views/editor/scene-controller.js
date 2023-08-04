@@ -14,6 +14,7 @@ import {
   objectsEqual,
   parseSelection,
   reversed,
+  withTimeout,
 } from "../core/utils.js";
 import { dialog } from "/web-components/modal-dialog.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
@@ -655,7 +656,13 @@ export class SceneController {
 
   async _editGlyphOrInstance(editFunc, senderID, doInstance) {
     if (this._glyphEditingDonePromise) {
-      throw new Error("can't call _editGlyphOrInstance() while it's still running");
+      try {
+        // A previous call to _editGlyphOrInstance is still ongoing.
+        // Let's wait a bit, but not forever.
+        await withTimeout(this._glyphEditingDonePromise, 5000);
+      } catch (error) {
+        throw new Error("can't call _editGlyphOrInstance() while it's still running");
+      }
     }
     let editingDone;
     this._glyphEditingDonePromise = new Promise((resolve) => {
@@ -664,6 +671,10 @@ export class SceneController {
     try {
       return await this._editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance);
     } finally {
+      // // Simulate slow response
+      // console.log("...delay");
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      // console.log("...done");
       editingDone();
       delete this._glyphEditingDonePromise;
       delete this._cancelGlyphEditing;

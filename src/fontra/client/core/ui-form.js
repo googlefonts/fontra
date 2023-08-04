@@ -12,14 +12,6 @@ export class Form {
     }
     this.container.classList.add("ui-form");
     this.setFieldDescriptions(fieldDescriptions);
-    this.callQueue = new QueueIterator();
-    this._readCallQueue();
-  }
-
-  async _readCallQueue() {
-    for await (const func of this.callQueue) {
-      await func();
-    }
   }
 
   setFieldDescriptions(fieldDescriptions) {
@@ -124,7 +116,7 @@ export class Form {
         inputElement.value = round(sliderElement.value, 3);
         const value = parseFloat(inputElement.value);
         if (!valueStream) {
-          valueStream = new QueueIterator();
+          valueStream = new QueueIterator(5, true);
           this._fieldChanging(fieldItem.key, value, valueStream);
         }
         valueStream.put(value);
