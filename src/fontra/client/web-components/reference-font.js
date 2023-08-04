@@ -210,23 +210,14 @@ function readFileAsync(file) {
 }
 
 async function getOPFSInfo() {
-  try {
-    return navigator.storage.estimate().then((info) => {
-      return {
-        free: info.quota - info.usage,
-        usage: info.usage,
-        percent: Math.round((info.usage / info.quota) * 100),
-        quota: info.quota,
-      };
-    });
-  } catch (error) {
-    dialog(
-      "Unable to retrieve Origin Private File System informations.",
-      error.toString(),
-      [{ title: "OK" }],
-      5000
-    );
-  }
+  return navigator.storage.estimate().then((info) => {
+    return {
+      free: info.quota - info.usage,
+      usage: info.usage,
+      percent: Math.round((info.usage / info.quota) * 100),
+      quota: info.quota,
+    };
+  });
 }
 
 async function getOPFSFontsDir() {
@@ -260,23 +251,13 @@ async function loadAllFontsFromOPFS() {
 }
 
 async function loadFontFromOPFS(fontName) {
-  try {
-    const fontsDir = await getOPFSFontsDir();
-    const fontFileHandle = await fontsDir.getFileHandle(fontName);
-    const fontFileData = await fontFileHandle.getFile();
-    const fontFileBuffer = await fontFileData.arrayBuffer();
-    const fontFileBlob = new Blob([fontFileBuffer], { type: "font/ttf" });
-    const fontFile = new File([fontFileBlob], fontName, { type: "font/ttf" });
-    return fontFile;
-  } catch (error) {
-    dialog(
-      "Unable to load font from Origin Private File System.",
-      error.toString(),
-      [{ title: "OK" }],
-      5000
-    );
-    return null;
-  }
+  const fontsDir = await getOPFSFontsDir();
+  const fontFileHandle = await fontsDir.getFileHandle(fontName);
+  const fontFileData = await fontFileHandle.getFile();
+  const fontFileBuffer = await fontFileData.arrayBuffer();
+  const fontFileBlob = new Blob([fontFileBuffer], { type: "font/ttf" });
+  const fontFile = new File([fontFileBlob], fontName, { type: "font/ttf" });
+  return fontFile;
 }
 
 async function deleteFontFromOPFS(font) {
@@ -306,6 +287,7 @@ async function saveFontToOPFS(file) {
       [{ title: "OK" }],
       5000
     );
+    return;
   }
   const fontsDir = await getOPFSFontsDir();
   const fontFile = await fontsDir.getFileHandle(file.name, { create: true });
