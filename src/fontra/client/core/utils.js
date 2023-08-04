@@ -368,3 +368,21 @@ export function unionIndexSets(...indexSets) {
   indexSets = indexSets.filter((item) => !!item);
   return [...new Set(indexSets.flat())].sort((a, b) => a - b);
 }
+
+export function withTimeout(thenable, timeout) {
+  // Return a promise that resolves when `thenable` resolves before
+  // `timeout` ms have passed, or else gets rejected with an error.
+  // Example:
+  // try {
+  //   await withTimeout(somePromise, 1000);
+  // catch (error) {
+  //   // the promise timed out
+  // }
+  return new Promise((resolve, reject) => {
+    const timerID = setTimeout(() => reject(new Error("timeout")), timeout);
+    thenable.then(() => {
+      clearTimeout(timerID);
+      resolve();
+    });
+  });
+}
