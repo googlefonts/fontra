@@ -13,6 +13,10 @@ updates:
       interval: "weekly"
       day: "friday"
     open-pull-requests-limit: 10
+    groups:
+      npm-packages:
+        patterns:
+          - "*"
 
   - package-ecosystem: "pip"
     directory: "/"
@@ -20,3 +24,7 @@ updates:
       interval: "weekly"
       day: "friday"
     open-pull-requests-limit: 10
+    groups:
+      python-packages:
+        patterns:
+          - "*"
