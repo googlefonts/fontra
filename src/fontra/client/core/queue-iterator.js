@@ -1,14 +1,19 @@
 export class QueueIterator {
-  constructor(maxQueueSize = 10) {
+  constructor(maxQueueSize = 10, dropItems = false) {
     this._done = false;
     this._queue = [];
     this._maxQueueSize = maxQueueSize;
+    this._dropItems = dropItems;
     this._signal = null;
   }
 
   put(item) {
     if (this._queue.length >= this._maxQueueSize) {
-      throw new Error("can't put item: queue is full");
+      if (this._dropItems) {
+        this._queue.shift();
+      } else {
+        throw new Error("can't put item: queue is full");
+      }
     }
     if (this._done) {
       throw new Error("can't put item: queue is done");
