@@ -56,7 +56,7 @@ export class MouseTracker {
     this._lastMouseDownEvent = event;
 
     window._fontraMouseTracker = this;
-    this._eventStream = new QueueIterator(1);
+    this._eventStream = new QueueIterator(1, true);
     this._dragFunc(this._eventStream, event);
   }
 
@@ -90,11 +90,6 @@ export class MouseTracker {
 
   _checkEventStreamDone() {
     if (this._eventStream?.isDone()) {
-      this._eventStream = undefined;
-    }
-    if (this._eventStream?.isFull()) {
-      // No one is reading the queue, we should stop putting items in it
-      this._eventStream.done();
       this._eventStream = undefined;
     }
   }
