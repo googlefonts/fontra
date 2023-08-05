@@ -23,10 +23,10 @@ describe("memoize", () => {
       });
       return n * n;
     });
-    const awaiting = func(2);
+    const pending = func(2);
     expect(nTimesWorked).equal(1);
     await func(2);
-    await awaiting;
+    await pending;
     expect(nTimesWorked).equal(1);
     const result = await func(4);
     expect(nTimesWorked).equal(2);
