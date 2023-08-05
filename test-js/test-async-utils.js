@@ -10,11 +10,11 @@ describe("memoize", () => {
       nTimesWorked += 1;
       return n * n;
     });
-    await func();
-    await func();
+    expect(await func(2)).equal(4);
+    expect(await func(2)).equal(4);
     expect(nTimesWorked).equal(1);
   });
-  it("should give the awaiting promise when a the function called before the previous execution is done", async () => {
+  it("should give the awaiting promise when a function called before the previous execution is done", async () => {
     let nTimesWorked = 0;
     const func = memoize(async (n) => {
       nTimesWorked += 1;
@@ -28,7 +28,8 @@ describe("memoize", () => {
     await func(2);
     await awaiting;
     expect(nTimesWorked).equal(1);
-    await func(4);
+    const result = await func(4);
     expect(nTimesWorked).equal(2);
+    expect(result).equal(16);
   });
 });
