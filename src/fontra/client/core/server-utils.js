@@ -1,3 +1,5 @@
+import { memoize } from "./async-utils";
+
 export async function callServerAPI(functionName, kwargs) {
   const response = await fetch(`/api/${functionName}`, {
     method: "POST",
@@ -11,15 +13,13 @@ export async function callServerAPI(functionName, kwargs) {
   return result.returnValue;
 }
 
-// TODO: memoize getSuggestedGlyphName and getUnicodeFromGlyphName
-
-export async function getSuggestedGlyphName(codePoint) {
+export const getSuggestedGlyphName = memoize(async (codePoint) => {
   return await callServerAPI("getSuggestedGlyphName", { codePoint });
-}
+});
 
-export async function getUnicodeFromGlyphName(glyphName) {
+export const getUnicodeFromGlyphName = memoize(async (glyphName) => {
   return await callServerAPI("getUnicodeFromGlyphName", { glyphName });
-}
+});
 
 export async function parseClipboard(data) {
   return await callServerAPI("parseClipboard", { data });
