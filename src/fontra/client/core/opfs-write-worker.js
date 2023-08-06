@@ -38,9 +38,10 @@ async function writeFileToOPFS(path, file) {
 }
 
 async function bufferFromFile(file) {
-  const reader = new FileReader();
-  const arrayBuffer = await new Promise((resolve) => {
+  const arrayBuffer = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
     reader.onload = (event) => resolve(reader.result);
+    reader.onerror = reject;
     reader.readAsArrayBuffer(file);
   });
   return new DataView(arrayBuffer, 0);
