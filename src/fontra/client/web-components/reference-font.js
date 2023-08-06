@@ -344,8 +344,8 @@ function getWriteWorker() {
 }
 
 function writeFontFileToOPFSInWorker(fileName, file) {
-  const worker = getWriteWorker();
   return new Promise((resolve, reject) => {
+    const worker = getWriteWorker();
     worker.onmessage = (event) => {
       if (event.data.error) {
         reject(event.data.error);
