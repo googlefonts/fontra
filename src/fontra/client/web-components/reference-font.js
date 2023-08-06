@@ -304,17 +304,58 @@ async function deleteFontFileFromOPFS(fileName) {
   await fontsDir.removeEntry(fileName);
 }
 
+let opfsSupportsCreateWritable;
+
 async function writeFontFileToOPFS(fileName, file) {
+  if (opfsSupportsCreateWritable == undefined || opfsSupportsCreateWritable === true) {
+    const error = await writeFontFileToOPFSAsync(fileName, file);
+    if (opfsSupportsCreateWritable == undefined) {
+      opfsSupportsCreateWritable = !error;
+    }
+  }
+  if (opfsSupportsCreateWritable === false) {
+    await writeFontFileToOPFSInWorker(fileName, file);
+  }
+}
+
+async function writeFontFileToOPFSAsync(fileName, file) {
   const fontsDir = await getOPFSFontsDir();
   const fileHandle = await fontsDir.getFileHandle(fileName, { create: true });
+  if (!fileHandle.createWritable) {
+    // This is the case in Safari (as of august 2023)
+    return "OPFS does not support fileHandle.createWritable()";
+  }
   const writable = await fileHandle.createWritable();
   try {
     await writable.write(file);
-  } catch (error) {
-    console.error(error);
   } finally {
     await writable.close();
   }
+}
+
+let worker;
+
+function getWriteWorker() {
+  if (!worker) {
+    const path = "/core/opfs-write-worker.js"; // + `?${Math.random()}`;
+    worker = new Worker(path);
+  }
+  return worker;
+}
+
+function writeFontFileToOPFSInWorker(fileName, file) {
+  const worker = getWriteWorker();
+  const objectURL = URL.createObjectURL(file);
+  worker.postMessage({ path: ["reference-fonts", fileName], file });
+  return new Promise((resolve, reject) => {
+    worker.onmessage = (event) => {
+      if (event.data.error) {
+        reject(event.data.error);
+      } else {
+        resolve(event.data.returnValue);
+      }
+    };
+  });
 }
 
 customElements.define("reference-font", ReferenceFont);
