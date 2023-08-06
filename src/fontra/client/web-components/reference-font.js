@@ -1,16 +1,11 @@
 import { ObservableController } from "/core/observable-object.js";
 import { UnlitElement, div, input, label, span } from "/core/unlit.js";
-import { fileNameBasename, fileNameExtension } from "/core/utils.js";
+import { fileNameExtension } from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
 import { dialog } from "/web-components/modal-dialog.js";
 
-const fontTypeMapping = {
-  ttf: "truetype",
-  otf: "opentype",
-  woff: "woff",
-  woff2: "woff2",
-};
+const fontFileExtensions = new Set(["ttf", "otf", "woff", "woff2"]);
 
 export class ReferenceFont extends UnlitElement {
   static styles = `
@@ -41,8 +36,16 @@ export class ReferenceFont extends UnlitElement {
 
   constructor() {
     super();
-    this.fontCounter = 0;
     this.controller = new ObservableController();
+    this.listController = new ObservableController({
+      selectedFontIndex: null,
+      fontList: [],
+    });
+    this.listController.synchronizeWithLocalStorage("fontra.reference-font.");
+    this.listController.addKeyListener("fontList", (event) =>
+      this._fontListChangedHandler(event)
+    );
+    garbageCollectUnusedFiles(this.listController.model.fontList);
   }
 
   get model() {
@@ -52,108 +55,39 @@ export class ReferenceFont extends UnlitElement {
   render() {
     const columnDescriptions = [
       {
-        key: "fileName",
+        key: "uplodadedFileName",
         title: "file name",
       },
     ];
-    const filesUIList = new UIList();
-    filesUIList.columnDescriptions = columnDescriptions;
-    filesUIList.minHeight = "6em";
-    filesUIList.onFilesDrop = (files) => {
-      const fileItemsInvalid = [];
-      const fileItems = [...files]
-        .filter((file) => {
-          const fileExtension = fileNameExtension(file.name).toLowerCase();
-          const fileExtensionSupported = fileExtension in fontTypeMapping;
-          if (!fileExtensionSupported) {
-            fileItemsInvalid.push(file);
-          }
-          return fileExtensionSupported;
-        })
-        .map((file) => {
-          return {
-            fileName: file.name,
-            file: file,
-            fontName: `ReferenceFont${++this.fontCounter}`,
-          };
-        });
-      if (fileItemsInvalid.length) {
-        const dialogTitle = `The following item${
-          fileItemsInvalid.length > 1 ? "s" : ""
-        } can't be used as a reference font:`;
-        const dialogMessage = fileItemsInvalid
-          .map((file) => {
-            return `- ${file.name}`;
-          })
-          .join("\n");
-        dialog(
-          dialogTitle,
-          dialogMessage,
-          [
-            {
-              title: "OK",
-            },
-          ],
-          5000
-        );
-      }
-      fileItems.forEach(async (fileItem) => {
-        await saveFontToOPFS(fileItem.file);
-        updateFontsUIList();
-      });
-    };
-    filesUIList.addEventListener("listSelectionChanged", async () => {
-      const fileItem = filesUIList.getSelectedItem();
-      if (!fileItem) {
-        this.model.referenceFontName = undefined;
-        return;
-      }
-      const file = fileItem.file;
-      const fileExtension = fileNameExtension(file.name);
-      if (!fileItem.fontFace) {
-        const fontName = makeFontFaceName(fileItem.fontName);
-        const fontURL = makeFontFaceURL(
-          await asBase64Data(file),
-          fontTypeMapping[fileExtension]
-        );
-        fileItem.fontFace = new FontFace(fontName, fontURL, {});
-        document.fonts.add(fileItem.fontFace);
-        await fileItem.fontFace.load();
-      }
-      this.model.referenceFontName = fileItem.fontName;
-    });
-    filesUIList.addEventListener("deleteKey", async () => {
-      const index = filesUIList.getSelectedItemIndex();
-      const items = [...filesUIList.items];
-      const fileItem = items[index];
-      document.fonts.delete(fileItem.fontFace);
-      // update model to trigger canvas update (delete reference font from canvas)
-      this.model.referenceFontName = undefined;
-      await deleteFontFromOPFS(fileItem);
-      updateFontsUIList(true);
-    });
+    this.filesUIList = new UIList();
 
-    const updateFontsUIList = function (deselect) {
-      loadAllFontsFromOPFS().then((items) => {
-        filesUIList.setItems([...items]);
-        if (deselect === true) {
-          filesUIList.setSelectedItemIndex(undefined, true);
-        } else {
-          if (filesUIList.getSelectedItemIndex() === undefined) {
-            filesUIList.setSelectedItemIndex(0, true);
-          }
-        }
-      });
-    };
+    this.filesUIList.columnDescriptions = columnDescriptions;
+    this.filesUIList.minHeight = "6em";
 
-    updateFontsUIList();
+    this.filesUIList.onFilesDrop = (files) => this._filesDropHAndler(files);
+
+    this.filesUIList.addEventListener("listSelectionChanged", () =>
+      this._listSelectionChangedHandler()
+    );
+
+    this.filesUIList.addEventListener("deleteKey", () =>
+      this._deleteSelectedItemHAndler()
+    );
+
+    this.filesUIList.setItems([...this.listController.model.fontList]);
+    if (this.listController.model.selectedFontIndex != null) {
+      this.filesUIList.setSelectedItemIndex(
+        this.listController.model.selectedFontIndex,
+        true
+      );
+    }
 
     const content = [
       div({ class: "title" }, ["Reference font"]),
       div({}, [
         "Drop one or more .ttf, .otf, .woff or .woff2 files in the field below:",
       ]),
-      filesUIList,
+      this.filesUIList,
       div(
         {
           style: `
@@ -175,138 +109,211 @@ export class ReferenceFont extends UnlitElement {
     ];
     return content;
   }
+
+  _fontListChangedHandler(event) {
+    if (event.senderInfo?.senderID === this) {
+      return;
+    }
+    this.listController.model.selectedFontIndex = null;
+
+    const itemsByFontID = Object.fromEntries(
+      this.filesUIList.items.map((item) => [item.fontIdentifier, item])
+    );
+
+    const newItems = event.newValue.map((item) => {
+      const existingItem = itemsByFontID[item.fontIdentifier];
+      if (existingItem) {
+        item = existingItem;
+        delete itemsByFontID[item.fontIdentifier];
+      }
+      return item;
+    });
+
+    for (const leftoverItem of Object.values(itemsByFontID)) {
+      garbageCollectFontItem(leftoverItem);
+    }
+
+    const selectedItem = this.filesUIList.getSelectedItem();
+    this.filesUIList.setItems(newItems);
+    this.filesUIList.setSelectedItem(selectedItem, true);
+    if (this.filesUIList.getSelectedItemIndex() === undefined) {
+      this.model.referenceFontName = undefined;
+    }
+  }
+
+  async _filesDropHAndler(files) {
+    const fileItemsInvalid = [];
+    const fileItems = [...files]
+      .filter((file) => {
+        const fileExtension = fileNameExtension(file.name).toLowerCase();
+        const fileTypeSupported = fontFileExtensions.has(fileExtension);
+        if (!fileTypeSupported) {
+          fileItemsInvalid.push(file);
+        }
+        return fileTypeSupported;
+      })
+      .map((file) => {
+        return {
+          uplodadedFileName: file.name,
+          droppedFile: file,
+          objectURL: URL.createObjectURL(file),
+          fontIdentifier: `ReferenceFont-${crypto.randomUUID()}`,
+        };
+      });
+
+    if (fileItemsInvalid.length) {
+      const dialogTitle = `The following item${
+        fileItemsInvalid.length > 1 ? "s" : ""
+      } can't be used as a reference font:`;
+      const dialogMessage = fileItemsInvalid
+        .map((file) => {
+          return `- ${file.name}`;
+        })
+        .join("\n");
+      dialog(
+        dialogTitle,
+        dialogMessage,
+        [
+          {
+            title: "OK",
+          },
+        ],
+        5000
+      );
+    }
+
+    const newSelectedItemIndex = this.filesUIList.items.length;
+    const newItems = [...this.filesUIList.items, ...fileItems];
+    this.filesUIList.setItems(newItems);
+
+    for (const fileItem of fileItems) {
+      await writeFontFileToOPFS(fileItem.fontIdentifier, fileItem.droppedFile);
+      delete fileItem.droppedFile;
+    }
+
+    // Only notify the list controller *after* the files have been written,
+    // or else other tabs will try to read the font data too soon and will
+    // fail
+    this.listController.setItem("fontList", cleanFontItems(newItems), {
+      senderID: this,
+    });
+
+    this.filesUIList.setSelectedItemIndex(newSelectedItemIndex, true);
+  }
+
+  async _listSelectionChangedHandler() {
+    const fileItem = this.filesUIList.getSelectedItem();
+    if (!fileItem) {
+      this.model.referenceFontName = undefined;
+      this.listController.model.selectedFontIndex = null;
+      return;
+    }
+
+    this.listController.model.selectedFontIndex =
+      this.filesUIList.getSelectedItemIndex();
+
+    if (!fileItem.fontFace) {
+      if (!fileItem.objectURL) {
+        fileItem.objectURL = URL.createObjectURL(
+          await readFontFileFromOPFS(fileItem.fontIdentifier)
+        );
+      }
+      fileItem.fontFace = new FontFace(
+        fileItem.fontIdentifier,
+        `url(${fileItem.objectURL})`,
+        {}
+      );
+      document.fonts.add(fileItem.fontFace);
+      await fileItem.fontFace.load();
+    }
+    this.model.referenceFontName = fileItem.fontIdentifier;
+  }
+
+  async _deleteSelectedItemHAndler() {
+    const index = this.filesUIList.getSelectedItemIndex();
+    const fontItems = [...this.filesUIList.items];
+    const fileItem = fontItems[index];
+    fontItems.splice(index, 1);
+
+    this.listController.model.selectedFontIndex = null;
+    this.model.referenceFontName = undefined;
+
+    this.filesUIList.setItems(fontItems);
+    this.listController.setItem("fontList", cleanFontItems(fontItems), {
+      senderID: this,
+    });
+
+    garbageCollectFontItem(fileItem);
+    await deleteFontFileFromOPFS(fileItem.fontIdentifier);
+  }
 }
 
-function makeFontFaceName(fontName) {
-  let name = fontName;
-  // replace all non-alphanumeric characters with hyphen
-  name = name.replace(/[^a-zA-Z0-9]/g, "-");
-  // remove starting and trailing hyphens
-  name = name.replace(/^-+|-+$/g, "");
-  return name;
-}
-
-function makeFontFaceURL(fontData, fontType) {
-  return `url(data:font/${fontType};base64,${fontData})`;
-}
-
-async function asBase64Data(file) {
-  const data = await readFileAsync(file);
-  return btoa(data);
-}
-
-function readFileAsync(file) {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-
-    reader.onerror = reject;
-
-    reader.readAsBinaryString(file);
-  });
-}
-
-async function getOPFSInfo() {
-  return navigator.storage.estimate().then((info) => {
+function cleanFontItems(fontItems) {
+  return fontItems.map((fontItem) => {
     return {
-      free: info.quota - info.usage,
-      usage: info.usage,
-      percent: Math.round((info.usage / info.quota) * 100),
-      quota: info.quota,
+      uplodadedFileName: fontItem.uplodadedFileName,
+      fontIdentifier: fontItem.fontIdentifier,
     };
   });
+}
+
+async function garbageCollectUnusedFiles(fontItems) {
+  const usedFontIdentifiers = new Set(
+    fontItems.map((fontItem) => fontItem.fontIdentifier)
+  );
+  const fileNames = await listFontFileNamesInOPFS();
+  for (const fileName of fileNames) {
+    if (!usedFontIdentifiers.has(fileName)) {
+      // Unused font file
+      deleteFontFileFromOPFS(fileName);
+    }
+  }
+}
+
+function garbageCollectFontItem(fontItem) {
+  if (fontItem.fontFace) {
+    document.fonts.delete(fontItem.fontFace);
+  }
+  if (fontItem.objectURL) {
+    URL.revokeObjectURL(fontItem.objectURL);
+  }
 }
 
 async function getOPFSFontsDir() {
-  let root = await navigator.storage.getDirectory();
+  const root = await navigator.storage.getDirectory();
   return await root.getDirectoryHandle("reference-fonts", { create: true });
 }
 
-async function listFontsInOPFS() {
+async function listFontFileNamesInOPFS() {
   const fontsDir = await getOPFSFontsDir();
-  const fonts = [];
-  for await (let [name, handle] of fontsDir.entries()) {
-    fonts.push({
-      name: name,
-      handle: handle,
-    });
+  const fileNames = [];
+  for await (const [name, handle] of fontsDir.entries()) {
+    fileNames.push(name);
   }
-  return fonts;
+  return fileNames;
 }
 
-async function loadAllFontsFromOPFS() {
-  const fonts = await listFontsInOPFS();
-  // console.log(fonts);
-  for await (let font of fonts) {
-    let fontName = font["name"];
-    font["file"] = await loadFontFromOPFS(fontName);
-    font["fileName"] = fontName;
-    font["fontName"] = fileNameBasename(fontName);
-  }
-  // console.log(fonts);
-  return fonts;
-}
-
-async function loadFontFromOPFS(fontName) {
+async function readFontFileFromOPFS(fileName) {
   const fontsDir = await getOPFSFontsDir();
-  const fontFileHandle = await fontsDir.getFileHandle(fontName);
-  const fontFileData = await fontFileHandle.getFile();
-  const fontFileBuffer = await fontFileData.arrayBuffer();
-  const fontFileBlob = new Blob([fontFileBuffer], { type: "font/ttf" });
-  const fontFile = new File([fontFileBlob], fontName, { type: "font/ttf" });
-  return fontFile;
+  const fileHandle = await fontsDir.getFileHandle(fileName);
+  return await fileHandle.getFile();
 }
 
-async function deleteFontFromOPFS(font) {
+async function deleteFontFileFromOPFS(fileName) {
   const fontsDir = await getOPFSFontsDir();
+  await fontsDir.removeEntry(fileName);
+}
+
+async function writeFontFileToOPFS(fileName, file) {
+  const fontsDir = await getOPFSFontsDir();
+  const fileHandle = await fontsDir.getFileHandle(fileName, { create: true });
+  const writable = await fileHandle.createWritable();
   try {
-    await fontsDir.removeEntry(font.file.name);
+    await writable.write(file);
   } catch (error) {
-    // this happens when the same file is added multiple times.
-    // when one of them gets deleted, the file stored in OPFS gets deleted too,
-    // subsequent items deletion will throw this exception
-    // because the file has already been deleted previously.
-    dialog(
-      "Unable to delete font file from Origin Private File System.",
-      error.toString(),
-      [{ title: "OK" }],
-      5000
-    );
-  }
-}
-
-async function saveFontToOPFS(file) {
-  const info = await getOPFSInfo();
-  if (info.free < file.size) {
-    dialog(
-      "Unable to save font file to Origin Private File System.",
-      `There is not enough free space available (${info.percent}% in use).`,
-      [{ title: "OK" }],
-      5000
-    );
-    return;
-  }
-  const fontsDir = await getOPFSFontsDir();
-  const fontFile = await fontsDir.getFileHandle(file.name, { create: true });
-  const fontFileData = await readFileAsync(file);
-  const fontFileBinaryData = Uint8Array.from(fontFileData, (char) =>
-    char.charCodeAt(0)
-  );
-  const fontFileIO = await fontFile.createWritable();
-  try {
-    await fontFileIO.write(fontFileBinaryData);
-  } catch (error) {
-    dialog(
-      "Unable to save font file to Origin Private File System.",
-      error.toString(),
-      [{ title: "OK" }],
-      5000
-    );
+    console.error(error);
   } finally {
-    await fontFileIO.close();
+    await writable.close();
   }
 }
 
