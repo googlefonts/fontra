@@ -345,7 +345,6 @@ function getWriteWorker() {
 
 function writeFontFileToOPFSInWorker(fileName, file) {
   const worker = getWriteWorker();
-  const objectURL = URL.createObjectURL(file);
   worker.postMessage({ path: ["reference-fonts", fileName], file });
   return new Promise((resolve, reject) => {
     worker.onmessage = (event) => {
