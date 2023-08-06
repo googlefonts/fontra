@@ -345,7 +345,6 @@ function getWriteWorker() {
 
 function writeFontFileToOPFSInWorker(fileName, file) {
   const worker = getWriteWorker();
-  worker.postMessage({ path: ["reference-fonts", fileName], file });
   return new Promise((resolve, reject) => {
     worker.onmessage = (event) => {
       if (event.data.error) {
@@ -354,6 +353,7 @@ function writeFontFileToOPFSInWorker(fileName, file) {
         resolve(event.data.returnValue);
       }
     };
+    worker.postMessage({ path: ["reference-fonts", fileName], file });
   });
 }
 
