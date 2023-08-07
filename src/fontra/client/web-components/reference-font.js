@@ -73,6 +73,7 @@ export class ReferenceFont extends UnlitElement {
     this.filesUIList.addEventListener("deleteKey", () =>
       this._deleteSelectedItemHandler()
     );
+    this.filesUIList.addEventListener("deleteKeyAlt", () => this._deleteAllHandler());
 
     this.filesUIList.setItems([...this.listController.model.fontList]);
     if (this.listController.model.selectedFontIndex != null) {
@@ -230,21 +231,38 @@ export class ReferenceFont extends UnlitElement {
   }
 
   async _deleteSelectedItemHandler() {
-    const index = this.filesUIList.getSelectedItemIndex();
+    await this._deleteItemOrAll(this.filesUIList.getSelectedItemIndex());
+  }
+
+  async _deleteAllHandler() {
+    await this._deleteItemOrAll(undefined);
+  }
+
+  async _deleteItemOrAll(index) {
     const fontItems = [...this.filesUIList.items];
-    const fileItem = fontItems[index];
-    fontItems.splice(index, 1);
+
+    let itemsToDelete, newItems;
+    if (index !== undefined) {
+      itemsToDelete = [fontItems[index]];
+      fontItems.splice(index, 1);
+      newItems = fontItems;
+    } else {
+      itemsToDelete = fontItems;
+      newItems = [];
+    }
 
     this.listController.model.selectedFontIndex = null;
     this.model.referenceFontName = undefined;
 
-    this.filesUIList.setItems(fontItems);
-    this.listController.setItem("fontList", cleanFontItems(fontItems), {
+    this.filesUIList.setItems(newItems);
+    this.listController.setItem("fontList", cleanFontItems(newItems), {
       senderID: this,
     });
 
-    garbageCollectFontItem(fileItem);
-    await deleteFontFileFromOPFS(fileItem.fontIdentifier);
+    for (const fontItem of itemsToDelete) {
+      garbageCollectFontItem(fontItem);
+      await deleteFontFileFromOPFS(fontItem.fontIdentifier);
+    }
   }
 }
 
