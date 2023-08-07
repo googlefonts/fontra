@@ -279,7 +279,7 @@ describe("memoize", () => {
     const func = memoize(async (n) => {
       nTimesWorked += 1;
       await new Promise((resolve) => {
-        setTimeout(resolve, 50);
+        setTimeout(resolve, 10);
       });
       return n * n;
     });
