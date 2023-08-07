@@ -71,7 +71,7 @@ export class ReferenceFont extends UnlitElement {
     );
 
     this.filesUIList.addEventListener("deleteKey", () =>
-      this._deleteSelectedItemHAndler()
+      this._deleteSelectedItemHandler()
     );
 
     this.filesUIList.setItems([...this.listController.model.fontList]);
@@ -229,7 +229,7 @@ export class ReferenceFont extends UnlitElement {
     this.model.referenceFontName = fileItem.fontIdentifier;
   }
 
-  async _deleteSelectedItemHAndler() {
+  async _deleteSelectedItemHandler() {
     const index = this.filesUIList.getSelectedItemIndex();
     const fontItems = [...this.filesUIList.items];
     const fileItem = fontItems[index];
