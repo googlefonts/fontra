@@ -1,4 +1,4 @@
-import { memoize } from "./async-utils";
+import { memoize } from "./utils.js";
 
 export async function callServerAPI(functionName, kwargs) {
   const response = await fetch(`/api/${functionName}`, {
