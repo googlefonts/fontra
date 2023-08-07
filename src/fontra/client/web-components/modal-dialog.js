@@ -29,6 +29,7 @@ export class ModalDialog extends SimpleElement {
     dialog {
       background-color: transparent;
       border: none;
+      white-space: normal;
     }
 
     dialog::backdrop {
@@ -61,7 +62,6 @@ export class ModalDialog extends SimpleElement {
 
     dialog .message {
       grid-column: 1 / -1;
-      white-space: normal;
     }
 
     dialog .button {
