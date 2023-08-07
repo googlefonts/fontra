@@ -61,6 +61,7 @@ export class ModalDialog extends SimpleElement {
 
     dialog .message {
       grid-column: 1 / -1;
+      white-space: normal;
     }
 
     dialog .button {
