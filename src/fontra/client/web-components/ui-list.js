@@ -377,10 +377,14 @@ export class UIList extends UnlitElement {
     }
     if (
       (event.key === "Delete" || event.key === "Backspace") &&
-      this.selectedItemIndex !== undefined
+      (this.selectedItemIndex !== undefined || event.altKey)
     ) {
       event.stopImmediatePropagation();
-      this._dispatchEvent("deleteKey");
+      if (event.altKey) {
+        this._dispatchEvent("deleteKeyAlt");
+      } else {
+        this._dispatchEvent("deleteKey");
+      }
       return;
     }
     if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
