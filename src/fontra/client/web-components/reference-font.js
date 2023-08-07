@@ -64,7 +64,7 @@ export class ReferenceFont extends UnlitElement {
     this.filesUIList.columnDescriptions = columnDescriptions;
     this.filesUIList.minHeight = "6em";
 
-    this.filesUIList.onFilesDrop = (files) => this._filesDropHAndler(files);
+    this.filesUIList.onFilesDrop = (files) => this._filesDropHandler(files);
 
     this.filesUIList.addEventListener("listSelectionChanged", () =>
       this._listSelectionChangedHandler()
@@ -141,7 +141,7 @@ export class ReferenceFont extends UnlitElement {
     }
   }
 
-  async _filesDropHAndler(files) {
+  async _filesDropHandler(files) {
     const fileItemsInvalid = [];
     const fileItems = [...files]
       .filter((file) => {
