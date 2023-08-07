@@ -140,7 +140,7 @@ export class EditorController {
     this.visualizationLayersSettings.addListener((event) => {
       this.visualizationLayers.toggle(event.key, event.newValue);
       this.canvasController.requestUpdate();
-    });
+    }, true);
 
     const sceneView = new SceneView(this.sceneModel, (model, controller) =>
       this.visualizationLayers.drawVisualizationLayers(model, controller)
@@ -585,8 +585,7 @@ export class EditorController {
       if (event.newValue) {
         this.visualizationLayersSettings.model["fontra.reference.font"] = true;
       }
-      // Hmm, delay to next event loop cycle, or our request for update comes to early
-      setTimeout(() => this.canvasController.requestUpdate(), 0);
+      this.canvasController.requestUpdate();
     });
     let charOverride;
     referenceFontElement.controller.addKeyListener("charOverride", (event) => {

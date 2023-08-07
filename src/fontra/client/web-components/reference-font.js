@@ -36,7 +36,6 @@ export class ReferenceFont extends UnlitElement {
 
   constructor() {
     super();
-    this.controller = new ObservableController();
     this.listController = new ObservableController({
       selectedFontIndex: null,
       fontList: [],
@@ -45,6 +44,11 @@ export class ReferenceFont extends UnlitElement {
     this.listController.addKeyListener("fontList", (event) =>
       this._fontListChangedHandler(event)
     );
+    this.controller = new ObservableController({
+      referenceFontName:
+        this.listController.model.fontList[this.listController.model.selectedFontIndex]
+          ?.fontIdentifier,
+    });
     garbageCollectUnusedFiles(this.listController.model.fontList);
   }
 
