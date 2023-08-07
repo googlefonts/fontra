@@ -1,6 +1,6 @@
 import { ObservableController } from "/core/observable-object.js";
 import { UnlitElement, div, input, label, span } from "/core/unlit.js";
-import { fileNameExtension } from "/core/utils.js";
+import { fileNameExtension, withTimeout } from "/core/utils.js";
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
 import { dialog } from "/web-components/modal-dialog.js";
@@ -343,18 +343,21 @@ function getWriteWorker() {
   return worker;
 }
 
-function writeFontFileToOPFSInWorker(fileName, file) {
-  return new Promise((resolve, reject) => {
-    const worker = getWriteWorker();
-    worker.onmessage = (event) => {
-      if (event.data.error) {
-        reject(event.data.error);
-      } else {
-        resolve(event.data.returnValue);
-      }
-    };
-    worker.postMessage({ path: ["reference-fonts", fileName], file });
-  });
+async function writeFontFileToOPFSInWorker(fileName, file) {
+  return await withTimeout(
+    new Promise((resolve, reject) => {
+      const worker = getWriteWorker();
+      worker.onmessage = (event) => {
+        if (event.data.error) {
+          reject(event.data.error);
+        } else {
+          resolve(event.data.returnValue);
+        }
+      };
+      worker.postMessage({ path: ["reference-fonts", fileName], file });
+    }),
+    5000
+  );
 }
 
 customElements.define("reference-font", ReferenceFont);
