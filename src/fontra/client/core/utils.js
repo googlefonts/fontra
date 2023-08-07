@@ -386,3 +386,16 @@ export function withTimeout(thenable, timeout) {
     });
   });
 }
+
+export function memoize(func) {
+  const cache = new Map();
+  return (...args) => {
+    const cacheKey = JSON.stringify(args);
+    if (cache.has(cacheKey)) {
+      return cache.get(cacheKey);
+    }
+    const result = func(...args);
+    cache.set(cacheKey, result);
+    return result;
+  };
+}
