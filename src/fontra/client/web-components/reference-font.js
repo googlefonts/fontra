@@ -143,13 +143,13 @@ export class ReferenceFont extends UnlitElement {
   }
 
   async _filesDropHandler(files) {
-    const fileItemsInvalid = [];
-    const fileItems = [...files]
+    const fontItemsInvalid = [];
+    const fontItems = [...files]
       .filter((file) => {
         const fileExtension = fileNameExtension(file.name).toLowerCase();
         const fileTypeSupported = fontFileExtensions.has(fileExtension);
         if (!fileTypeSupported) {
-          fileItemsInvalid.push(file);
+          fontItemsInvalid.push(file);
         }
         return fileTypeSupported;
       })
@@ -162,11 +162,11 @@ export class ReferenceFont extends UnlitElement {
         };
       });
 
-    if (fileItemsInvalid.length) {
+    if (fontItemsInvalid.length) {
       const dialogTitle = `The following item${
-        fileItemsInvalid.length > 1 ? "s" : ""
+        fontItemsInvalid.length > 1 ? "s" : ""
       } can't be used as a reference font:`;
-      const dialogMessage = fileItemsInvalid
+      const dialogMessage = fontItemsInvalid
         .map((file) => {
           return `- ${file.name}`;
         })
@@ -184,12 +184,12 @@ export class ReferenceFont extends UnlitElement {
     }
 
     const newSelectedItemIndex = this.filesUIList.items.length;
-    const newItems = [...this.filesUIList.items, ...fileItems];
+    const newItems = [...this.filesUIList.items, ...fontItems];
     this.filesUIList.setItems(newItems);
 
-    for (const fileItem of fileItems) {
-      await writeFontFileToOPFS(fileItem.fontIdentifier, fileItem.droppedFile);
-      delete fileItem.droppedFile;
+    for (const fontItem of fontItems) {
+      await writeFontFileToOPFS(fontItem.fontIdentifier, fontItem.droppedFile);
+      delete fontItem.droppedFile;
     }
 
     // Only notify the list controller *after* the files have been written,
@@ -203,8 +203,8 @@ export class ReferenceFont extends UnlitElement {
   }
 
   async _listSelectionChangedHandler() {
-    const fileItem = this.filesUIList.getSelectedItem();
-    if (!fileItem) {
+    const fontItem = this.filesUIList.getSelectedItem();
+    if (!fontItem) {
       this.model.referenceFontName = undefined;
       this.listController.model.selectedFontIndex = null;
       return;
@@ -213,21 +213,21 @@ export class ReferenceFont extends UnlitElement {
     this.listController.model.selectedFontIndex =
       this.filesUIList.getSelectedItemIndex();
 
-    if (!fileItem.fontFace) {
-      if (!fileItem.objectURL) {
-        fileItem.objectURL = URL.createObjectURL(
-          await readFontFileFromOPFS(fileItem.fontIdentifier)
+    if (!fontItem.fontFace) {
+      if (!fontItem.objectURL) {
+        fontItem.objectURL = URL.createObjectURL(
+          await readFontFileFromOPFS(fontItem.fontIdentifier)
         );
       }
-      fileItem.fontFace = new FontFace(
-        fileItem.fontIdentifier,
-        `url(${fileItem.objectURL})`,
+      fontItem.fontFace = new FontFace(
+        fontItem.fontIdentifier,
+        `url(${fontItem.objectURL})`,
         {}
       );
-      document.fonts.add(fileItem.fontFace);
-      await fileItem.fontFace.load();
+      document.fonts.add(fontItem.fontFace);
+      await fontItem.fontFace.load();
     }
-    this.model.referenceFontName = fileItem.fontIdentifier;
+    this.model.referenceFontName = fontItem.fontIdentifier;
   }
 
   async _deleteSelectedItemHandler() {
