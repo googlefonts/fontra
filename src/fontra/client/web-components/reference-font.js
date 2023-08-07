@@ -253,9 +253,18 @@ export class ReferenceFont extends UnlitElement {
     this.model.referenceFontName = undefined;
 
     this.filesUIList.setItems(newItems);
-    this.listController.setItem("fontList", cleanFontItems(newItems), {
-      senderID: this,
-    });
+
+    // Only share those fonts that we successfully stored before
+    const storedFontIDs = new Set(
+      this.listController.model.fontList.map((item) => item.fontIdentifier)
+    );
+    this.listController.setItem(
+      "fontList",
+      cleanFontItems(newItems.filter((item) => storedFontIDs.has(item.fontIdentifier))),
+      {
+        senderID: this,
+      }
+    );
 
     for (const fontItem of itemsToDelete) {
       garbageCollectFontItem(fontItem);
