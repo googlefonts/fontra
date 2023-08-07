@@ -23,7 +23,7 @@
     </rule>
   </rules>
   <sources>
-    <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed">
+    <source filename="MutatorSansLightCondensed.ufo" familyname="MutatorMathTest" stylename="LightCondensed" layer="foreground">
       <lib copy="1"/>
       <groups copy="1"/>
       <features copy="1"/>
