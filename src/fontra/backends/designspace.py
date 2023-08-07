@@ -136,7 +136,13 @@ class DesignspaceBackend:
                 path=source.path, name=sourceLayerName
             )
             sourceStyleName = source.styleName or sourceLayer.fileName
-            sourceName = makeUniqueSourceName(source.layerName or sourceStyleName)
+            sourceName = (
+                sourceStyleName
+                if not source.layerName
+                or source.layerName == reader.getDefaultLayerName()
+                else source.layerName
+            )
+            sourceName = makeUniqueSourceName(sourceName)
 
             self.dsSources.append(
                 DSSource(
