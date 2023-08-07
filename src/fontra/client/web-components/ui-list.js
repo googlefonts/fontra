@@ -172,13 +172,13 @@ export class UIList extends UnlitElement {
     this.requestUpdate();
   }
 
-  setItems(items) {
+  setItems(items, shouldDispatchEvent = false) {
     const selectedItem = this.getSelectedItem();
     this.contents.innerHTML = "";
     this.items = items;
     this._updateVisibility();
     this._itemsBackLog = Array.from(items);
-    this.setSelectedItem(selectedItem, false);
+    this.setSelectedItem(selectedItem, shouldDispatchEvent);
     this._addMoreItemsIfNeeded();
   }
 
