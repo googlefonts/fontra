@@ -179,7 +179,7 @@ export class ReferenceFont extends UnlitElement {
     this.filesUIList.setItems(newItems);
     this.filesUIList.setSelectedItemIndex(newSelectedItemIndex, true);
 
-    const writtenFontItems = [];
+    const writtenFontItems = [...this.listController.model.fontList];
     try {
       for (const fontItem of fontItems) {
         await writeFontFileToOPFS(fontItem.fontIdentifier, fontItem.droppedFile);
@@ -195,7 +195,7 @@ export class ReferenceFont extends UnlitElement {
     // Only notify the list controller *after* the files have been written,
     // or else other tabs will try to read the font data too soon and will
     // fail
-    this.listController.setItem("fontList", cleanFontItems(newItems), {
+    this.listController.setItem("fontList", cleanFontItems(writtenFontItems), {
       senderID: this,
     });
   }
