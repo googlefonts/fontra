@@ -186,6 +186,7 @@ export class ReferenceFont extends UnlitElement {
     const newSelectedItemIndex = this.filesUIList.items.length;
     const newItems = [...this.filesUIList.items, ...fontItems];
     this.filesUIList.setItems(newItems);
+    this.filesUIList.setSelectedItemIndex(newSelectedItemIndex, true);
 
     for (const fontItem of fontItems) {
       await writeFontFileToOPFS(fontItem.fontIdentifier, fontItem.droppedFile);
@@ -198,8 +199,6 @@ export class ReferenceFont extends UnlitElement {
     this.listController.setItem("fontList", cleanFontItems(newItems), {
       senderID: this,
     });
-
-    this.filesUIList.setSelectedItemIndex(newSelectedItemIndex, true);
   }
 
   async _listSelectionChangedHandler() {
