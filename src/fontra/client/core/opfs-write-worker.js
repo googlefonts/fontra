@@ -30,11 +30,8 @@ async function writeFileToOPFS(path, file) {
   const buffer = await bufferFromFile(file);
   const fileHandle = await dir.getFileHandle(fileName, { create: true });
   const writable = await fileHandle.createSyncAccessHandle();
-  try {
-    writable.write(buffer, { at: 0 });
-  } finally {
-    writable.close();
-  }
+  writable.write(buffer, { at: 0 });
+  writable.close();
 }
 
 async function bufferFromFile(file) {

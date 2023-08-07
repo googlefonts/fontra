@@ -171,16 +171,7 @@ export class ReferenceFont extends UnlitElement {
           return `- ${file.name}`;
         })
         .join("\n");
-      dialog(
-        dialogTitle,
-        dialogMessage,
-        [
-          {
-            title: "OK",
-          },
-        ],
-        5000
-      );
+      dialog(dialogTitle, dialogMessage, [{ title: "Okay" }], 5000);
     }
 
     const newSelectedItemIndex = this.filesUIList.items.length;
@@ -188,9 +179,17 @@ export class ReferenceFont extends UnlitElement {
     this.filesUIList.setItems(newItems);
     this.filesUIList.setSelectedItemIndex(newSelectedItemIndex, true);
 
-    for (const fontItem of fontItems) {
-      await writeFontFileToOPFS(fontItem.fontIdentifier, fontItem.droppedFile);
-      delete fontItem.droppedFile;
+    const writtenFontItems = [];
+    try {
+      for (const fontItem of fontItems) {
+        await writeFontFileToOPFS(fontItem.fontIdentifier, fontItem.droppedFile);
+        delete fontItem.droppedFile;
+        writtenFontItems.push(fontItem);
+      }
+    } catch (error) {
+      dialog("Could not store some reference fonts", error.toString(), [
+        { title: "Okay" },
+      ]);
     }
 
     // Only notify the list controller *after* the files have been written,
@@ -343,11 +342,8 @@ async function writeFontFileToOPFSAsync(fileName, file) {
     return "OPFS does not support fileHandle.createWritable()";
   }
   const writable = await fileHandle.createWritable();
-  try {
-    await writable.write(file);
-  } finally {
-    await writable.close();
-  }
+  await writable.write(file);
+  await writable.close();
 }
 
 let worker;
