@@ -62,6 +62,8 @@ export class ReferenceFont extends UnlitElement {
     this.filesUIList = new UIList();
 
     this.filesUIList.columnDescriptions = columnDescriptions;
+    this.filesUIList.itemEqualFunc = (a, b) => a.fontIdentifier == b.fontIdentifier;
+
     this.filesUIList.minHeight = "6em";
 
     this.filesUIList.onFilesDrop = (files) => this._filesDropHandler(files);
@@ -134,9 +136,7 @@ export class ReferenceFont extends UnlitElement {
       garbageCollectFontItem(leftoverItem);
     }
 
-    const selectedItem = this.filesUIList.getSelectedItem();
-    this.filesUIList.setItems(newItems);
-    this.filesUIList.setSelectedItem(selectedItem, true);
+    this.filesUIList.setItems(newItems, true);
     if (this.filesUIList.getSelectedItemIndex() === undefined) {
       this.model.referenceFontName = undefined;
     }
