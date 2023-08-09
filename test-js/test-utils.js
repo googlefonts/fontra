@@ -5,6 +5,7 @@ import {
   capitalizeFirstLetter,
   chain,
   clamp,
+  consolidateCalls,
   enumerate,
   fileNameExtension,
   getCharFromUnicode,
@@ -12,12 +13,18 @@ import {
   hyphenatedToCamelCase,
   makeUPlusStringFromCodePoint,
   modulo,
+  memoize,
   objectsEqual,
+  parseCookies,
+  parseSelection,
   range,
   reversed,
   reversedEnumerate,
+  rgbaToCSS,
   round,
-  memoize,
+  scheduleCalls,
+  throttleCalls,
+  withTimeout,
 } from "../src/fontra/client/core/utils.js";
 
 import { parametrize } from "./test-support.js";
@@ -47,6 +54,113 @@ describe("objectsEquals", () => {
     Thing.prototype.a = 1;
     expect(objectsEqual(new Thing(1), { b: 1 })).equals(true);
     expect(objectsEqual(new Thing(1), { b: 1, a: 1 })).equals(false);
+  });
+});
+
+describe("consolidateCalls", () => {
+  it("returns the function that will be executed in the next cycle of event loop", () => {
+    let itWorked = false;
+    const fun = consolidateCalls(() => {
+      itWorked = true;
+    });
+    fun();
+    expect(itWorked).to.be.false;
+    setTimeout(() => {
+      expect(itWorked).to.be.true;
+    });
+  });
+  it("The callback executed once", () => {
+    let workedTimes = 0;
+    const fun = consolidateCalls(() => {
+      workedTimes++;
+    });
+    expect(workedTimes).to.be.equals(0);
+    fun();
+    expect(workedTimes).to.be.equals(0);
+    fun();
+    setTimeout(() => {
+      expect(workedTimes).to.be.equals(1);
+    });
+  });
+});
+
+describe("scheduleCalls", () => {
+  it("schedules a function to be executed with given timeout", () => {
+    let worked = false;
+    const fun = scheduleCalls(() => {
+      worked = true;
+    });
+    fun();
+    expect(worked).to.be.false;
+    setTimeout(() => {
+      expect(worked).to.be.true;
+    });
+  });
+  it("delete the previous schedule, creates a new one, if the function executed before timeout", () => {
+    let worked = false;
+    const fun = scheduleCalls(() => {
+      worked = true;
+    }, 5);
+    fun();
+    setTimeout(() => {
+      expect(worked).to.be.false;
+      fun();
+    }, 4);
+    setTimeout(() => {
+      expect(worked).to.be.false;
+    }, 8);
+    setTimeout(() => {
+      expect(worked).to.be.true;
+    }, 12);
+  });
+});
+
+describe("throttleCalls", () => {
+  it("delays the consequent call if it is executed before the given time in milliseconds", () => {
+    let workedTimes = 0;
+    const fun = throttleCalls(() => {
+      workedTimes++;
+    }, 10);
+    fun();
+    fun();
+    expect(workedTimes).to.be.equal(1);
+    setTimeout(() => {
+      expect(workedTimes).to.be.equal(2);
+    }, 20);
+  });
+  it("ignore the consequent call if it is another call already scheduled", () => {
+    let workedTimes = 0;
+    const fun = throttleCalls(() => {
+      workedTimes++;
+    }, 10);
+    fun();
+    fun();
+    setTimeout(() => {
+      fun();
+    }, 5);
+    expect(workedTimes).to.be.equal(1);
+    setTimeout(() => {
+      expect(workedTimes).to.be.equal(2);
+    }, 20);
+  });
+});
+
+describe("parseCookies", () => {
+  it("should parse the given cookie string", () => {
+    expect(parseCookies("cacao=yes;fruits=no")).deep.equal({
+      cacao: "yes",
+      fruits: "no",
+    });
+    expect(parseCookies("cacao=no;fruits=no;fruits=yes")).deep.equal({
+      cacao: "no",
+      fruits: "yes",
+    });
+  });
+  it("should parse the given cookie with trailing semicolon", () => {
+    expect(parseCookies("cacao=yes;fruits=no;")).deep.equal({
+      cacao: "yes",
+      fruits: "no",
+    });
   });
 });
 
@@ -170,6 +284,14 @@ describe("makeUPlusStringFromCodePoint", () => {
   });
 });
 
+describe("parseSelection", () => {
+  it("should parse given selection info, return in order", () => {
+    expect(parseSelection(["point/2", "point/3", "point/4"])).deep.equal({
+      point: [2, 3, 4],
+    });
+  });
+});
+
 describe("getCharFromUnicode", () => {
   it("should return an empty string if an argument is not passed", () => {
     expect(getCharFromUnicode()).equals("");
@@ -213,6 +335,21 @@ describe("arrayExtend", () => {
     const destinationArray = [1, 2, 3];
     arrayExtend(destinationArray, [...range(1025)]);
     expect(destinationArray).deep.equals([1, 2, 3, ...range(1025)]);
+  });
+});
+
+describe("rgbaToCSS", () => {
+  it("should convert an array of decimals to rgb string", () => {
+    expect(rgbaToCSS([0, 0, 0])).to.be.equal("rgb(0,0,0)");
+    expect(rgbaToCSS([0, 1, 0])).to.be.equal("rgb(0,255,0)");
+    expect(rgbaToCSS([1, 0, 0, 1])).to.be.equal("rgb(255,0,0)");
+  });
+  it("should convert an array of decimals to rgba string", () => {
+    expect(rgbaToCSS([0, 0, 0, 0])).to.be.equal("rgba(0,0,0,0)");
+    expect(rgbaToCSS([0, 0, 0, 0.2])).to.be.equal("rgba(0,0,0,51)");
+  });
+  it("should always create rgb if the opacity is 1", () => {
+    expect(rgbaToCSS([0, 0, 0, 1])).to.be.equal("rgb(0,0,0)");
   });
 });
 
@@ -291,5 +428,33 @@ describe("memoize", () => {
     const result = await func(4);
     expect(nTimesWorked).equal(2);
     expect(result).equal(16);
+  });
+});
+
+describe("withTimeout", () => {
+  it("creates a promise that resolves if the given promise resolved before the timeout, otherwise rejects", async () => {
+    let thrown = false;
+    try {
+      await withTimeout((resolve) => {}, 10);
+    } catch {
+      thrown = true;
+    }
+    expect(thrown).to.be.true;
+    thrown = false;
+    try {
+      await withTimeout(Promise.resolve(), 10);
+    } catch (e) {
+      console.log(e);
+      thrown = true;
+    }
+    expect(thrown).to.be.false;
+    thrown = false;
+    try {
+      await withTimeout(new Promise((resolve) => setTimeout(resolve, 1)), 10);
+    } catch (e) {
+      console.log(e);
+      thrown = true;
+    }
+    expect(thrown).to.be.false;
   });
 });
