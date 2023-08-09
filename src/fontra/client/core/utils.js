@@ -99,6 +99,7 @@ export function parseCookies(str) {
   }
   return str
     .split(";")
+    .filter((s) => s)
     .map((v) => v.split("="))
     .reduce((acc, v) => {
       acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
@@ -344,7 +345,7 @@ export function rgbaToCSS(rgba) {
   if (channels[3] == 255) {
     channels.pop();
   }
-  return `rgb(${channels.join(",")})`;
+  return `${channels.length === 4 ? "rgba" : "rgb"}(${channels.join(",")})`;
 }
 
 export function clamp(number, min, max) {
