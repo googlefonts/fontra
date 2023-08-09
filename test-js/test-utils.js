@@ -58,7 +58,7 @@ describe("objectsEquals", () => {
 });
 
 describe("consolidateCalls", () => {
-  it("returns the function that will be executed in the next cycle of event loop", () => {
+  it("returns a function that will be executed in the next cycle of event loop", () => {
     let itWorked = false;
     const fun = consolidateCalls(() => {
       itWorked = true;
@@ -69,7 +69,7 @@ describe("consolidateCalls", () => {
       expect(itWorked).to.be.true;
     });
   });
-  it("The callback executed once", () => {
+  it("the callback should be executed only once", () => {
     let workedTimes = 0;
     const fun = consolidateCalls(() => {
       workedTimes++;
