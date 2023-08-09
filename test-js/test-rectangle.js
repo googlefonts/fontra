@@ -19,6 +19,7 @@ import {
   rectAddMargin,
   rectFromPoints,
   rectScaleAroundCenter,
+  rectRound,
   updateRect,
 } from "../src/fontra/client/core/rectangle.js";
 import { parametrize } from "./test-support.js";
@@ -574,6 +575,23 @@ describe("rectScaleAroundCenter", () => {
     testData,
     ([rectangle, scalemultiplier, origin, expectedResult]) => {
       const result = rectScaleAroundCenter(rectangle, scalemultiplier, origin);
+      expect(result).deep.equals(expectedResult);
+    }
+  );
+});
+
+describe("rectRound", () => {
+  const testData = [
+    [
+      { xMin: 0.2, yMin: 0.3, xMax: 10.1, yMax: 10.0000001 },
+      { xMin: 0, yMin: 0, xMax: 10, yMax: 10 },
+    ],
+  ];
+  parametrize(
+    "Rounds rectangle dimensions",
+    testData,
+    ([rectangle, expectedResult]) => {
+      const result = rectRound(rectangle);
       expect(result).deep.equals(expectedResult);
     }
   );
