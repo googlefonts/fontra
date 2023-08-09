@@ -211,6 +211,7 @@ export class RangeSlider extends LitElement {
             type="range"
             @input=${this.changeValue}
             @mousedown=${this.handleMouseDown}
+            @keydown=${this.handleKeyDown}
             class="slider ${isAtDefault ? "is-at-default" : ""}"
             min=${this.minValue}
             max=${this.maxValue}
@@ -221,6 +222,29 @@ export class RangeSlider extends LitElement {
         </div>
       </section>
     `;
+  }
+
+  handleKeyDown(event) {
+    event.preventDefault();
+    let increment = event.shiftKey ? 10 : 1;
+    let newValue;
+    switch (event.key) {
+      case "ArrowLeft":
+      case "ArrowDown":
+        newValue = this.value - increment;
+        break;
+      case "ArrowRight":
+      case "ArrowUp":
+        newValue = this.value + increment;
+        break;
+    }
+    if (
+      newValue !== undefined &&
+      newValue > this.minValue &&
+      newValue < this.maxValue
+    ) {
+      this.value = newValue;
+    }
   }
 
   handleMouseDown(event) {
