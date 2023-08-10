@@ -111,6 +111,7 @@ export class Form {
     {
       // Slider change closure
       let valueStream = undefined;
+      let savedCanvasElement;
       sliderElement.oninput = (event) => {
         // Continuous changes
         inputElement.value = round(sliderElement.value, 3);
@@ -132,7 +133,7 @@ export class Form {
       };
       sliderElement.onmousedown = (event) => {
         const activeElement = document.activeElement;
-        sliderElement._savedCanvasElement =
+        savedCanvasElement =
           activeElement?.id === "edit-canvas" ? activeElement : undefined;
       };
       sliderElement.onmouseup = (event) => {
@@ -142,7 +143,7 @@ export class Form {
         // matter what the final value. To work around this, we also listen to
         // "mouseup".
         sliderElement.onchange(event);
-        sliderElement._savedCanvasElement?.focus();
+        savedCanvasElement?.focus();
       };
     }
 
