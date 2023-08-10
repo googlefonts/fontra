@@ -197,6 +197,7 @@ export class RangeSlider extends LitElement {
             <input
               type="number"
               @change=${this.changeValue}
+              @keydown=${this.handleKeyDown}
               class="slider-numeric-input"
               min=${this.minValue}
               max=${this.maxValue}
