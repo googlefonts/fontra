@@ -241,6 +241,8 @@ export class RangeSlider extends LitElement {
     }
     if (newValue !== undefined) {
       this.value = clamp(newValue, this.minValue, this.maxValue);
+      this.updateIsAtDefault();
+      this.onChangeCallback(this);
     }
   }
 
