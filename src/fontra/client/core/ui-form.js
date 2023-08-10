@@ -130,6 +130,11 @@ export class Form {
           this._dispatchEvent("endChange", { key: fieldItem.key });
         }
       };
+      sliderElement.onmousedown = (event) => {
+        const activeElement = document.activeElement;
+        sliderElement._savedCanvasElement =
+          activeElement?.id === "edit-canvas" ? activeElement : undefined;
+      };
       sliderElement.onmouseup = (event) => {
         // sliderElement.onchange is ONLY triggered when the final slider value
         // is different from the initial value. However, we may have been in
@@ -137,6 +142,7 @@ export class Form {
         // matter what the final value. To work around this, we also listen to
         // "mouseup".
         sliderElement.onchange(event);
+        sliderElement._savedCanvasElement?.focus();
       };
     }
 
