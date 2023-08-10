@@ -229,11 +229,15 @@ export class ModalDialog extends SimpleElement {
   }
 
   show() {
+    const activeElement = document.activeElement;
+    this._savedCanvasElement =
+      activeElement?.id === "edit-canvas" ? activeElement : undefined;
     this.dialogElement.showModal();
   }
 
   hide() {
     this.dialogElement.close();
+    this._savedCanvasElement?.focus();
   }
 
   _handleKeyDown(event) {
