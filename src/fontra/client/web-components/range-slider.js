@@ -211,6 +211,7 @@ export class RangeSlider extends LitElement {
             type="range"
             @input=${this.changeValue}
             @mousedown=${this.handleMouseDown}
+            @mouseup=${this.handleMouseUp}
             class="slider ${isAtDefault ? "is-at-default" : ""}"
             min=${this.minValue}
             max=${this.maxValue}
@@ -224,10 +225,17 @@ export class RangeSlider extends LitElement {
   }
 
   handleMouseDown(event) {
+    const activeElement = document.activeElement;
+    this._savedCanvasElement =
+      activeElement?.id === "edit-canvas" ? activeElement : undefined;
     if (event.altKey) {
       event.preventDefault();
       this.reset(event);
     }
+  }
+
+  handleMouseUp(event) {
+    this._savedCanvasElement?.focus();
   }
 
   changeValue(event) {
