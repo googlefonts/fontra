@@ -1,5 +1,5 @@
 import { themeColorCSS } from "./theme-support.js";
-import { round } from "../core/utils.js";
+import { round, clamp } from "../core/utils.js";
 import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
 
 const colors = {
@@ -239,12 +239,8 @@ export class RangeSlider extends LitElement {
         newValue = this.value + increment;
         break;
     }
-    if (
-      newValue !== undefined &&
-      newValue > this.minValue &&
-      newValue < this.maxValue
-    ) {
-      this.value = newValue;
+    if (newValue !== undefined) {
+      this.value = clamp(newValue, this.minValue, this.maxValue);
     }
   }
 
