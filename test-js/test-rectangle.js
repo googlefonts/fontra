@@ -16,7 +16,10 @@ import {
   rectFromArray,
   rectToArray,
   isEmptyRect,
+  rectAddMargin,
   rectFromPoints,
+  rectScaleAroundCenter,
+  rectRound,
   updateRect,
 } from "../src/fontra/client/core/rectangle.js";
 import { parametrize } from "./test-support.js";
@@ -509,6 +512,87 @@ describe("updateRect", () => {
     ([rectangle, point, acceptance]) => {
       const result = updateRect(rectangle, point);
       expect(result).deep.equals(acceptance);
+    }
+  );
+});
+
+describe("rectAddMargin", () => {
+  const testData = [
+    [
+      { xMin: 0, yMin: 0, xMax: 20, yMax: 20 },
+      1,
+      { xMin: -20, yMin: -20, xMax: 40, yMax: 40 },
+    ],
+    [
+      { xMin: 0, yMin: 0, xMax: 20, yMax: 40 },
+      1,
+      { xMin: -40, yMin: -40, xMax: 60, yMax: 80 },
+    ],
+    [
+      { xMin: 10, yMin: 12, xMax: 21, yMax: 14 },
+      1,
+      { xMin: -1, yMin: 1, xMax: 32, yMax: 25 },
+    ],
+    [
+      { xMin: 10, yMin: 12, xMax: 21, yMax: 14 },
+      0.5,
+      { xMin: 4.5, yMin: 6.5, xMax: 26.5, yMax: 19.5 },
+    ],
+  ];
+  parametrize(
+    "Adds margin to the rectangle relatively to the rect size",
+    testData,
+    ([rectangle, relativeMargin, expectedResult]) => {
+      const result = rectAddMargin(rectangle, relativeMargin);
+      expect(result).deep.equals(expectedResult);
+    }
+  );
+});
+
+describe("rectScaleAroundCenter", () => {
+  const testData = [
+    [
+      { xMin: 0, yMin: 0, xMax: 10, yMax: 10 },
+      1,
+      { x: 5, y: 5 },
+      { xMin: 0, yMin: 0, xMax: 10, yMax: 10 },
+    ],
+    [
+      { xMin: 0, yMin: 0, xMax: 10, yMax: 10 },
+      2,
+      { x: 5, y: 5 },
+      { xMin: -5, yMin: -5, xMax: 15, yMax: 15 },
+    ],
+    [
+      { xMin: 0, yMin: 0, xMax: 10, yMax: 10 },
+      2,
+      { x: 0, y: 0 },
+      { xMin: 0, yMin: 0, xMax: 20, yMax: 20 },
+    ],
+  ];
+  parametrize(
+    "Scale a rectangle by given origin",
+    testData,
+    ([rectangle, scalemultiplier, origin, expectedResult]) => {
+      const result = rectScaleAroundCenter(rectangle, scalemultiplier, origin);
+      expect(result).deep.equals(expectedResult);
+    }
+  );
+});
+
+describe("rectRound", () => {
+  const testData = [
+    [
+      { xMin: 0.2, yMin: 0.3, xMax: 10.1, yMax: 10.0000001 },
+      { xMin: 0, yMin: 0, xMax: 10, yMax: 10 },
+    ],
+  ];
+  parametrize(
+    "Rounds rectangle dimensions",
+    testData,
+    ([rectangle, expectedResult]) => {
+      const result = rectRound(rectangle);
+      expect(result).deep.equals(expectedResult);
     }
   );
 });
