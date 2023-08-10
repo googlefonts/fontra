@@ -13,8 +13,9 @@ export class ReferenceFont extends UnlitElement {
       display: grid;
       padding: 1em;
       gap: 1em;
-
+      height: calc(100% - 2em);
       white-space: normal;
+      align-content: start;
     }
 
     .title {
