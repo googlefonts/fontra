@@ -227,7 +227,6 @@ export class RangeSlider extends LitElement {
   }
 
   handleKeyDown(event) {
-    event.preventDefault();
     let increment = event.shiftKey ? 10 : 1;
     let newValue;
     switch (event.key) {
@@ -241,6 +240,7 @@ export class RangeSlider extends LitElement {
         break;
     }
     if (newValue !== undefined) {
+      event.preventDefault();
       this.value = clamp(newValue, this.minValue, this.maxValue);
       this.updateIsAtDefault();
       this.onChangeCallback(this);
