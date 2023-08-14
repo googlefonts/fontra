@@ -1683,6 +1683,7 @@ export class EditorController {
     }
 
     this.animateToViewBox(viewBox);
+    this.sceneController.autoViewBox = false;
   }
 
   zoomFit() {
@@ -1697,6 +1698,7 @@ export class EditorController {
       }
       this.animateToViewBox(viewBox);
     }
+    this.sceneController.autoViewBox = false;
   }
 
   animateToViewBox(viewBox) {
