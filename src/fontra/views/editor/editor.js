@@ -1414,7 +1414,7 @@ export class EditorController {
     }
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
-    const sourceIndex = instance.sourceIndex;
+    const sourceIndex = this.sceneSettings.selectedSourceIndex;
     let newSourceIndex;
     if (sourceIndex === undefined) {
       newSourceIndex = varGlyphController.findNearestSourceFromGlobalLocation(
