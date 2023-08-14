@@ -230,21 +230,21 @@ export class RangeSlider extends LitElement {
     let increment = event.shiftKey ? 10 : 1;
     let newValue;
     switch (event.key) {
-      case "ArrowLeft":
       case "ArrowDown":
         newValue = this.value - increment;
         break;
-      case "ArrowRight":
       case "ArrowUp":
         newValue = this.value + increment;
         break;
+      default: {
+        return;
+      }
     }
-    if (newValue !== undefined) {
-      event.preventDefault();
-      this.value = clamp(newValue, this.minValue, this.maxValue);
-      this.updateIsAtDefault();
-      this.onChangeCallback(this);
-    }
+
+    event.preventDefault();
+    this.value = clamp(newValue, this.minValue, this.maxValue);
+    this.updateIsAtDefault();
+    this.onChangeCallback(this);
   }
 
   handleMouseDown(event) {
