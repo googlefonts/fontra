@@ -1,5 +1,5 @@
 import { themeColorCSS } from "./theme-support.js";
-import { round } from "../core/utils.js";
+import { round, clamp } from "../core/utils.js";
 import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
 
 const colors = {
@@ -197,6 +197,7 @@ export class RangeSlider extends LitElement {
             <input
               type="number"
               @change=${this.changeValue}
+              @keydown=${this.handleKeyDown}
               class="slider-numeric-input"
               min=${this.minValue}
               max=${this.maxValue}
@@ -211,6 +212,7 @@ export class RangeSlider extends LitElement {
             type="range"
             @input=${this.changeValue}
             @mousedown=${this.handleMouseDown}
+            @keydown=${this.handleKeyDown}
             @mouseup=${this.handleMouseUp}
             class="slider ${isAtDefault ? "is-at-default" : ""}"
             min=${this.minValue}
@@ -222,6 +224,30 @@ export class RangeSlider extends LitElement {
         </div>
       </section>
     `;
+  }
+
+  handleKeyDown(event) {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+    let increment = event.shiftKey ? 10 : 1;
+    let newValue;
+    switch (event.key) {
+      case "ArrowDown":
+        newValue = this.value - increment;
+        break;
+      case "ArrowUp":
+        newValue = this.value + increment;
+        break;
+      default: {
+        return;
+      }
+    }
+
+    event.preventDefault();
+    this.value = clamp(newValue, this.minValue, this.maxValue);
+    this.updateIsAtDefault();
+    this.onChangeCallback(this);
   }
 
   handleMouseDown(event) {
