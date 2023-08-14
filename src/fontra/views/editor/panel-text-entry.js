@@ -104,7 +104,7 @@ export default class TextEntryPanel extends Panel {
     this.textEntryElement.style.height = this.textEntryElement.scrollHeight + 14 + "px";
   }
 
-  setupInteractionObserver() {
+  setupIntersectionObserver() {
     const observer = new IntersectionObserver(
       (entries, observer) => {
         entries.forEach((entry) => {
@@ -131,6 +131,6 @@ export default class TextEntryPanel extends Panel {
 
     this.setupTextEntryElement();
     this.setupTextAlignElement();
-    this.setupInteractionObserver();
+    this.setupIntersectionObserver();
   }
 }
