@@ -227,11 +227,8 @@ export class RangeSlider extends LitElement {
   }
 
   handleKeyDown(event) {
-    switch (event.key) {
-      case "Control":
-      case "Alt":
-      case "Meta":
-        return;
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
     }
     let increment = event.shiftKey ? 10 : 1;
     let newValue;
