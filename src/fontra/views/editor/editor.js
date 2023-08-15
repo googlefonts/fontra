@@ -254,7 +254,10 @@ export class EditorController {
   }
 
   async initUserSettings() {
-    const userSettings = this.getSidebarPanel("user-settings");
+    const userSettings =
+      this.getSidebarPanel("user-settings").contentElement.querySelector(
+        "#user-settings"
+      );
     const items = [];
 
     // Visualization layer settings

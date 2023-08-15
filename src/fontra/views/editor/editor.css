@@ -296,15 +296,6 @@ body {
 
 /* sidebar content styling */
 
-.selection-info {
-  box-sizing: border-box;
-  height: 100%;
-  width: 100%;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  padding: 1em;
-}
-
 #menu-panel-container {
   position: absolute;
   overflow: hidden;

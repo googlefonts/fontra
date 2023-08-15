@@ -8,7 +8,13 @@ export default class ReferenceFontPanel extends Panel {
   name = "reference-font";
   icon = "/images/reference.svg";
 
-  static styles = css``;
+  static styles = css`
+    .sidebar-reference-font {
+      width: 100%;
+      height: 100%;
+      display: flex;
+    }
+  `;
 
   getContentElement() {
     return html.div(

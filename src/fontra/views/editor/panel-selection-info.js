@@ -1,4 +1,5 @@
 import * as html from "/core/unlit.js";
+import { css } from "../third-party/lit.js";
 import { recordChanges } from "/core/change-recorder.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { Form } from "/core/ui-form.js";
@@ -14,6 +15,17 @@ import {
 export default class SelectionInfoPanel extends Panel {
   name = "selection-info";
   icon = "/images/info.svg";
+
+  static styles = css`
+    .selection-info {
+      box-sizing: border-box;
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      padding: 1em;
+    }
+  `;
 
   getContentElement() {
     return html.div(
