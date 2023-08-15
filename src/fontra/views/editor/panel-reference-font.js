@@ -1,4 +1,5 @@
 import * as html from "/core/unlit.js";
+import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
@@ -6,6 +7,8 @@ import { registerVisualizationLayerDefinition } from "./visualization-layer-defi
 export default class ReferenceFontPanel extends Panel {
   name = "reference-font";
   icon = "/images/reference.svg";
+
+  static styles = css``;
 
   getContentElement() {
     return html.div(
@@ -20,20 +23,20 @@ export default class ReferenceFontPanel extends Panel {
     );
   }
 
-  attach(editorController) {
-    const referenceFontElement = document.querySelector("#reference-font");
+  attach() {
+    const referenceFontElement = this.contentElement.querySelector("#reference-font");
     referenceFontElement.controller.addKeyListener("referenceFontName", (event) => {
       if (event.newValue) {
-        editorController.visualizationLayersSettings.model[
+        this.editorController.visualizationLayersSettings.model[
           "fontra.reference.font"
         ] = true;
       }
-      editorController.canvasController.requestUpdate();
+      this.editorController.canvasController.requestUpdate();
     });
     let charOverride;
     referenceFontElement.controller.addKeyListener("charOverride", (event) => {
       charOverride = event.newValue;
-      editorController.canvasController.requestUpdate();
+      this.editorController.canvasController.requestUpdate();
     });
     const referenceFontModel = referenceFontElement.model;
 
@@ -78,3 +81,5 @@ export default class ReferenceFontPanel extends Panel {
     });
   }
 }
+
+customElements.define("panel-reference-font", ReferenceFontPanel);

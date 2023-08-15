@@ -243,7 +243,10 @@ export class EditorController {
   }
 
   async initGlyphsSearch() {
-    this.glyphsSearch = document.querySelector("#glyphs-search");
+    this.glyphsSearch =
+      this.getSidebarPanel("glyph-search").contentElement.querySelector(
+        "#glyphs-search"
+      );
     this.glyphsSearch.glyphMap = this.fontController.glyphMap;
     this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
@@ -251,7 +254,7 @@ export class EditorController {
   }
 
   async initUserSettings() {
-    const userSettings = document.querySelector("#user-settings");
+    const userSettings = this.getSidebarPanel("user-settings");
     const items = [];
 
     // Visualization layer settings
@@ -423,12 +426,12 @@ export class EditorController {
   initSidebars() {
     this.addSidebar(new Sidebar("left"));
     this.addSidebar(new Sidebar("right"));
-    this.addSidebarPanel(new TextEntryPanel(), "left");
-    this.addSidebarPanel(new GlyphSearchPanel(), "left");
-    this.addSidebarPanel(new DesignspaceNavigationPanel(), "left");
-    this.addSidebarPanel(new UserSettingsPanel(), "left");
-    this.addSidebarPanel(new ReferenceFontPanel(), "left");
-    this.addSidebarPanel(new SelectionInfoPanel(), "right");
+    this.addSidebarPanel(new TextEntryPanel(this), "left");
+    this.addSidebarPanel(new GlyphSearchPanel(this), "left");
+    this.addSidebarPanel(new DesignspaceNavigationPanel(this), "left");
+    this.addSidebarPanel(new UserSettingsPanel(this), "left");
+    this.addSidebarPanel(new ReferenceFontPanel(this), "left");
+    this.addSidebarPanel(new SelectionInfoPanel(this), "right");
 
     // Upon reload, the "animating" class may still be set (why?), so remove it
     for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
@@ -462,15 +465,15 @@ export class EditorController {
     this.sidebars.push(sidebar);
   }
 
-  addSidebarPanel(panelInstance, sidebarName) {
+  addSidebarPanel(panelElement, sidebarName) {
     const sidebar = this.sidebars.find((sidebar) => sidebar.identifier === sidebarName);
-    sidebar.addPanel(panelInstance);
-    panelInstance.attach(this);
+    sidebar.addPanel(panelElement);
+    panelElement.attach();
     const tabElement = document.querySelector(
-      `.sidebar-tab[data-sidebar-name="${panelInstance.name}"]`
+      `.sidebar-tab[data-sidebar-name="${panelElement.name}"]`
     );
     tabElement.addEventListener("click", () => {
-      this.toggleSidebar(panelInstance.name, true);
+      this.toggleSidebar(panelElement.name, true);
     });
   }
 

@@ -296,75 +296,6 @@ body {
 
 /* sidebar content styling */
 
-.sidebar-text-entry {
-  box-sizing: border-box;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-  padding: 1em;
-}
-
-#text-align-menu {
-  display: grid;
-  grid-template-columns: auto auto auto;
-  justify-content: start;
-  gap: 0.5em;
-}
-
-#text-align-menu > inline-svg {
-  width: 1.5rem;
-  height: 1.5rem;
-  position: relative;
-  padding: 0.3em 0.45em 0.3em 0.45em;
-  border-radius: 0.75em;
-  cursor: pointer;
-  user-select: none;
-  transition: 120ms;
-}
-
-#text-align-menu > inline-svg:hover {
-  background-color: #c0c0c050;
-}
-
-#text-align-menu > inline-svg:active {
-  background-color: #c0c0c080;
-}
-
-#text-align-menu > inline-svg.selected {
-  background-color: #c0c0c060;
-}
-
-.sidebar-glyph-search {
-  box-sizing: border-box;
-  height: 100%;
-  width: 100%;
-  display: grid;
-  gap: 1em;
-  padding: 1em;
-}
-
-#designspace-navigation {
-  height: 100%;
-  width: 100%;
-  padding: 1em;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-}
-
-.sidebar-settings,
-.sidebar-layer-preferences {
-  box-sizing: border-box;
-  height: 100%;
-  width: 100%;
-  display: grid;
-  gap: 1em;
-  padding: 1em;
-  grid-template-rows: auto 1fr;
-}
-
 .selection-info {
   box-sizing: border-box;
   height: 100%;
@@ -372,11 +303,6 @@ body {
   overflow-x: hidden;
   overflow-y: scroll;
   padding: 1em;
-}
-
-#sidebar-reference-font {
-  width: 100%;
-  height: 100%;
 }
 
 #menu-panel-container {

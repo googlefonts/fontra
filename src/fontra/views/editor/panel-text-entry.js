@@ -1,9 +1,52 @@
 import * as html from "/core/unlit.js";
+import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 
 export default class TextEntryPanel extends Panel {
   name = "text-entry";
   icon = "/images/texttool.svg";
+
+  static styles = css`
+    .sidebar-text-entry {
+      box-sizing: border-box;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      padding: 1em;
+    }
+
+    #text-align-menu {
+      display: grid;
+      grid-template-columns: auto auto auto;
+      justify-content: start;
+      gap: 0.5em;
+    }
+
+    #text-align-menu > inline-svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      position: relative;
+      padding: 0.3em 0.45em 0.3em 0.45em;
+      border-radius: 0.75em;
+      cursor: pointer;
+      user-select: none;
+      transition: 120ms;
+    }
+
+    #text-align-menu > inline-svg:hover {
+      background-color: #c0c0c050;
+    }
+
+    #text-align-menu > inline-svg:active {
+      background-color: #c0c0c080;
+    }
+
+    #text-align-menu > inline-svg.selected {
+      background-color: #c0c0c060;
+    }
+  `;
 
   getContentElement() {
     return html.div(
@@ -22,17 +65,17 @@ export default class TextEntryPanel extends Panel {
           },
           [
             html.createDomElement("inline-svg", {
-              dataAlign: "left",
-              src: "/images/alignleft.svg",
+              "data-align": "left",
+              "src": "/images/alignleft.svg",
             }),
             html.createDomElement("inline-svg", {
-              class: "selected",
-              dataAlign: "center",
-              src: "/images/aligncenter.svg",
+              "class": "selected",
+              "data-align": "center",
+              "src": "/images/aligncenter.svg",
             }),
             html.createDomElement("inline-svg", {
-              dataAlign: "right",
-              src: "/images/alignright.svg",
+              "data-align": "right",
+              "src": "/images/alignright.svg",
             }),
           ]
         ),
@@ -47,7 +90,7 @@ export default class TextEntryPanel extends Panel {
   }
 
   setupTextAlignElement() {
-    this.textAlignElement = document.querySelector("#text-align-menu");
+    this.textAlignElement = this.contentElement.querySelector("#text-align-menu");
     this.updateAlignElement(this.textSettings.align);
 
     this.textSettingsController.addKeyListener("align", (event) => {
@@ -59,13 +102,14 @@ export default class TextEntryPanel extends Panel {
         if (event.target.classList.contains("selected")) {
           return;
         }
+        console.log(el);
         this.textSettings.align = el.dataset.align;
       };
     }
   }
 
   setupTextEntryElement() {
-    this.textEntryElement = document.querySelector("#text-entry-textarea");
+    this.textEntryElement = this.contentElement.querySelector("#text-entry-textarea");
     this.textEntryElement.value = this.textSettings.text;
 
     const updateTextEntryElementFromModel = (event) => {
@@ -124,13 +168,15 @@ export default class TextEntryPanel extends Panel {
     this.textEntryElement.focus();
   }
 
-  attach(editorController) {
-    this.textSettingsController = editorController.sceneSettingsController;
-    this.sceneController = editorController.sceneController;
-    this.textSettings = editorController.sceneSettingsController.model;
+  attach() {
+    this.textSettingsController = this.editorController.sceneSettingsController;
+    this.sceneController = this.editorController.sceneController;
+    this.textSettings = this.editorController.sceneSettingsController.model;
 
     this.setupTextEntryElement();
     this.setupTextAlignElement();
     this.setupIntersectionObserver();
   }
 }
+
+customElements.define("panel-text-entry", TextEntryPanel);

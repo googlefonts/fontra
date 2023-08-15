@@ -2,10 +2,18 @@ import { QueueIterator } from "./queue-iterator.js";
 import { hyphenatedToCamelCase, round } from "./utils.js";
 
 export class Form {
-  constructor(formID, fieldDescriptions) {
-    this.container = document.querySelector(`#${formID}`);
+  constructor(formIDorElement, fieldDescriptions) {
+    if (typeof formIDorElement === "string") {
+      this.container = document.querySelector(`#${formIDorElement}`);
+    } else {
+      this.container = formIDorElement;
+    }
     if (!this.container) {
-      throw new Error(`Expecting an element with id="#${formID}"`);
+      throw new Error(
+        typeof formIDorElement === "string"
+          ? `Expecting an element with id="#${formIDorElement}"`
+          : "Expecting an element"
+      );
     }
     if (this.container.children.length != 0) {
       throw new Error("Form container must be empty");

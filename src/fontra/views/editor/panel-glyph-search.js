@@ -1,14 +1,26 @@
 import * as html from "/core/unlit.js";
+import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 
 export default class GlyphSearchPanel extends Panel {
   name = "glyph-search";
   icon = "/images/magnifyingglass.svg";
 
+  static styles = css`
+    .glyph-search {
+      box-sizing: border-box;
+      height: 100%;
+      width: 100%;
+      display: grid;
+      gap: 1em;
+      padding: 1em;
+    }
+  `;
+
   getContentElement() {
     return html.div(
       {
-        class: "sidebar-glyph-search",
+        class: "glyph-search",
       },
       [
         html.createDomElement("glyphs-search", {
@@ -18,3 +30,5 @@ export default class GlyphSearchPanel extends Panel {
     );
   }
 }
+
+customElements.define("panel-glyph-search", GlyphSearchPanel);

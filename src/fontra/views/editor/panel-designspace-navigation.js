@@ -2,6 +2,7 @@ import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
 import { Layer, Source } from "/core/var-glyph.js";
 import * as html from "/core/unlit.js";
+import { css } from "../third-party/lit.js";
 import {
   enumerate,
   htmlToElement,
@@ -27,6 +28,17 @@ export default class DesignspaceNavigationPanel extends Panel {
   name = "designspace-navigation";
   icon = "/images/sliders.svg";
 
+  static styles = css`
+    #designspace-navigation {
+      height: 100%;
+      width: 100%;
+      padding: 1em;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+  `;
+
   getContentElement() {
     return html.div(
       {
@@ -50,16 +62,16 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
   }
 
-  attach(editorController) {
-    this.fontController = editorController.fontController;
-    this.sceneSettingsController = editorController.sceneSettingsController;
-    this.sceneSettings = editorController.sceneSettingsController.model;
-    this.sceneModel = editorController.sceneController.sceneModel;
-    this.sceneController = editorController.sceneController;
+  attach() {
+    this.fontController = this.editorController.fontController;
+    this.sceneSettingsController = this.editorController.sceneSettingsController;
+    this.sceneSettings = this.editorController.sceneSettingsController.model;
+    this.sceneModel = this.editorController.sceneController.sceneModel;
+    this.sceneController = this.editorController.sceneController;
   }
 
   setup() {
-    this.designspaceLocation = document.querySelector("#designspace-location");
+    this.designspaceLocation = this.contentElement;
     this.designspaceLocation.values = this.sceneSettings.location;
 
     this.designspaceLocation.addEventListener(
@@ -132,11 +144,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
     }
 
-    this.sourcesList = document.querySelector("#sources-list");
+    this.sourcesList = this.contentElement.querySelector("#sources-list");
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
-    this.addRemoveSourceButtons = document.querySelector(
+    this.addRemoveSourceButtons = this.contentElement.querySelector(
       "#sources-list-add-remove-buttons"
     );
 
@@ -714,3 +726,5 @@ function statusListCell(item, colDesc) {
 function cellColorStyle(color) {
   return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
 }
+
+customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);

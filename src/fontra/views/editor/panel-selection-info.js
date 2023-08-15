@@ -31,18 +31,18 @@ export default class SelectionInfoPanel extends Panel {
     );
   }
 
-  attach(editorController) {
-    this.infoForm = new Form("selection-info");
+  attach() {
+    this.infoForm = new Form(this.contentElement.querySelector("#selection-info"));
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
-    this.fontController = editorController.fontController;
-    this.sceneController = editorController.sceneController;
+    this.fontController = this.editorController.fontController;
+    this.sceneController = this.editorController.sceneController;
 
-    editorController.sceneController.sceneSettingsController.addKeyListener(
+    this.editorController.sceneController.sceneSettingsController.addKeyListener(
       ["selectedGlyphName", "selection", "location"],
       (event) => this.throttledUpdate()
     );
 
-    editorController.sceneController.sceneSettingsController.addKeyListener(
+    this.editorController.sceneController.sceneSettingsController.addKeyListener(
       "positionedLines",
       (event) => {
         if (!this.haveInstance) {
@@ -51,7 +51,7 @@ export default class SelectionInfoPanel extends Panel {
       }
     );
 
-    editorController.sceneController.addCurrentGlyphChangeListener((event) => {
+    this.editorController.sceneController.addCurrentGlyphChangeListener((event) => {
       this.throttledUpdate(event.senderID);
     });
   }
@@ -353,3 +353,5 @@ function deleteNestedValue(subject, path) {
   subject = getNestedValue(subject, path);
   delete subject[key];
 }
+
+customElements.define("panel-selection-info", SelectionInfoPanel);
