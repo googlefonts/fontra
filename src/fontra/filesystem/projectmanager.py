@@ -6,6 +6,7 @@ from importlib.metadata import entry_points
 
 from aiohttp import web
 
+from ..backends import getFileSystemBackend
 from ..core.fonthandler import FontHandler
 
 logger = logging.getLogger(__name__)
@@ -47,21 +48,6 @@ def existingFolderOrFontFile(path):
     if ext not in fileExtensions and not path.is_dir():
         raise argparse.ArgumentError("invalid path")
     return path
-
-
-def getFileSystemBackend(path):
-    path = pathlib.Path(path)
-    if not path.exists():
-        raise FileNotFoundError(path)
-    logger.info(f"loading project {path.name}...")
-    fileType = path.suffix.lstrip(".").lower()
-    backendEntryPoints = entry_points(group="fontra.filesystem.backends")
-    entryPoint = backendEntryPoints[fileType]
-    backendClass = entryPoint.load()
-
-    backend = backendClass.fromPath(path)
-    logger.info(f"done loading {path.name}")
-    return backend
 
 
 class FileSystemProjectManager:

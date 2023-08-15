@@ -1,10 +1,10 @@
 import contextlib
 import pathlib
 from dataclasses import asdict
-from importlib.metadata import entry_points
 
 import pytest
 
+from fontra.backends import getFileSystemBackend
 from fontra.core.classes import GlobalAxis, VariableGlyph, from_dict
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -807,10 +807,7 @@ testFontPaths = {
 
 def getTestFont(testFontName):
     fontPath = testFontPaths[testFontName]
-    backendName = fontPath.suffix[1:]
-    backendEntryPoints = entry_points(group="fontra.filesystem.backends")
-    cls = backendEntryPoints[backendName].load()
-    return cls.fromPath(fontPath)
+    return getFileSystemBackend(fontPath)
 
 
 getGlyphNamesTestData = [
