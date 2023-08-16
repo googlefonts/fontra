@@ -25,6 +25,61 @@ export default class SelectionInfoPanel extends Panel {
       overflow-y: scroll;
       padding: 1em;
     }
+
+    .ui-form {
+      display: grid;
+      grid-template-columns: 32% 68%;
+      gap: 0.35rem 0.35rem;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+
+    .ui-form:nth-child(even) {
+      background-color: blue;
+    }
+
+    .ui-form-label {
+      text-align: right;
+      align-self: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ui-form-divider {
+      border: none;
+      border-top: 1px solid #8888;
+      width: 100%;
+      height: 1px;
+      margin-block-start: 0.2em;
+      margin-block-end: 0.1em;
+      grid-column: 1 / span 2;
+    }
+
+    .ui-form-label.header {
+      font-weight: bold;
+      grid-column: 1 / span 2;
+      text-align: left;
+    }
+
+    .ui-form-value input {
+      font-family: "fontra-ui-regular";
+      border: solid 1px var(--ui-form-input-border-color);
+      background-color: var(--ui-form-input-background-color);
+      color: var(--ui-form-input-foreground-color);
+      width: 9.5em;
+    }
+
+    .ui-form-value input[type="number"] {
+      width: 4em;
+    }
+
+    .ui-form-value input[type="range"] {
+      width: 7em;
+    }
+
+    .ui-form-value.text {
+      white-space: normal;
+    }
   `;
 
   getContentElement() {
