@@ -155,7 +155,7 @@ class FontraServer:
             await websocket.close()
         else:
             connection = RemoteObjectConnection(websocket, path, subject, True)
-            with subject.useConnection(connection):
+            async with subject.useConnection(connection):
                 await connection.handleConnection()
         finally:
             self._activeWebsockets.discard(websocket)

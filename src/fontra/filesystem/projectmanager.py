@@ -87,7 +87,18 @@ class FileSystemProjectManager:
             if projectPath is None:
                 raise FileNotFoundError(projectPath)
             backend = getFileSystemBackend(projectPath)
-            fontHandler = FontHandler(backend, readOnly=self.readOnly)
+
+            async def closeFontHandler():
+                logger.info(f"closing FontHandler for '{path}'")
+                del self.fontHandlers[path]
+                await fontHandler.close()
+
+            logger.info(f"new FontHandler for '{path}'")
+            fontHandler = FontHandler(
+                backend,
+                readOnly=self.readOnly,
+                allConnectionsClosedCallback=closeFontHandler,
+            )
             await fontHandler.startTasks()
             self.fontHandlers[path] = fontHandler
         return fontHandler
