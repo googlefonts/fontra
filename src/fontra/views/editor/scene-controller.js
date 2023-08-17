@@ -372,7 +372,7 @@ export class SceneController {
       event.preventDefault();
       return;
     } else {
-      this.selectedTool.handleKeyDown(event);
+      this.selectedTool?.handleKeyDown(event);
     }
   }
 
