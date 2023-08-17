@@ -1,29 +1,74 @@
 import { QueueIterator } from "./queue-iterator.js";
 import { hyphenatedToCamelCase, round } from "./utils.js";
+import { css } from "../third-party/lit.js";
+import { SimpleElement } from "/core/unlit.js";
 
-export class Form {
-  constructor(formIDorElement, fieldDescriptions) {
-    if (typeof formIDorElement === "string") {
-      this.container = document.querySelector(`#${formIDorElement}`);
-    } else {
-      this.container = formIDorElement;
+export class Form extends SimpleElement {
+  static styles = css`
+    .ui-form {
+      display: grid;
+      grid-template-columns: 32% 68%;
+      gap: 0.35rem 0.35rem;
+      overflow-x: hidden;
+      overflow-y: scroll;
     }
-    if (!this.container) {
-      throw new Error(
-        typeof formIDorElement === "string"
-          ? `Expecting an element with id="#${formIDorElement}"`
-          : "Expecting an element"
-      );
+
+    .ui-form:nth-child(even) {
+      background-color: blue;
     }
-    if (this.container.children.length != 0) {
-      throw new Error("Form container must be empty");
+
+    .ui-form-label {
+      text-align: right;
+      align-self: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    this.container.classList.add("ui-form");
-    this.setFieldDescriptions(fieldDescriptions);
+
+    .ui-form-divider {
+      border: none;
+      border-top: 1px solid #8888;
+      width: 100%;
+      height: 1px;
+      margin-block-start: 0.2em;
+      margin-block-end: 0.1em;
+      grid-column: 1 / span 2;
+    }
+
+    .ui-form-label.header {
+      font-weight: bold;
+      grid-column: 1 / span 2;
+      text-align: left;
+    }
+
+    .ui-form-value input {
+      font-family: "fontra-ui-regular";
+      border: solid 1px var(--ui-form-input-border-color);
+      background-color: var(--ui-form-input-background-color);
+      color: var(--ui-form-input-foreground-color);
+      width: 9.5em;
+    }
+
+    .ui-form-value input[type="number"] {
+      width: 4em;
+    }
+
+    .ui-form-value input[type="range"] {
+      width: 7em;
+    }
+
+    .ui-form-value.text {
+      white-space: normal;
+    }
+  `;
+  constructor() {
+    super();
+    this._attachStyles();
+    this.contentElement = this.shadowRoot.appendChild(document.createElement("div"));
+    this.contentElement.classList.add("ui-form");
   }
 
   setFieldDescriptions(fieldDescriptions) {
-    this.container.innerHTML = "";
+    this.contentElement.innerHTML = "";
     this._fieldGetters = {};
     this._fieldSetters = {};
     if (!fieldDescriptions) {
@@ -33,7 +78,7 @@ export class Form {
       if (fieldItem.type === "divider") {
         const dividerElement = document.createElement("hr");
         dividerElement.className = "ui-form-divider";
-        this.container.appendChild(dividerElement);
+        this.contentElement.appendChild(dividerElement);
         continue;
       }
       const labelElement = document.createElement("div");
@@ -46,11 +91,11 @@ export class Form {
         label += ":";
       }
       labelElement.innerHTML = label;
-      this.container.appendChild(labelElement);
+      this.contentElement.appendChild(labelElement);
       if (fieldItem.type === "header") {
         continue;
       }
-      this.container.appendChild(valueElement);
+      this.contentElement.appendChild(valueElement);
 
       const methodName = hyphenatedToCamelCase("_add-" + fieldItem.type);
       if (this[methodName] === undefined) {
@@ -170,7 +215,7 @@ export class Form {
   }
 
   addEventListener(eventName, handler, options) {
-    this.container.addEventListener(eventName, handler, options);
+    this.contentElement.addEventListener(eventName, handler, options);
   }
 
   _fieldChanging(fieldKey, value, valueStream) {
@@ -190,7 +235,7 @@ export class Form {
       bubbles: false,
       detail: detail,
     });
-    this.container.dispatchEvent(event);
+    this.contentElement.dispatchEvent(event);
   }
 
   getKeys() {
@@ -213,3 +258,5 @@ export class Form {
     setter(value);
   }
 }
+
+customElements.define("ui-form", Form);
