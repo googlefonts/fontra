@@ -46,6 +46,19 @@ export default class TextEntryPanel extends Panel {
     #text-align-menu > inline-svg.selected {
       background-color: #c0c0c060;
     }
+
+    #text-entry-textarea {
+      background-color: var(--text-input-background-color);
+      color: var(--text-input-foreground-color);
+      border-radius: 0.25em;
+      border: 0.5px solid lightgray;
+      outline: none;
+      padding: 0.2em 0.5em;
+      font-family: fontra-ui-regular, sans-serif;
+      font-size: 1.1rem;
+      resize: none;
+      overflow-x: scroll;
+    }
   `;
 
   getContentElement() {

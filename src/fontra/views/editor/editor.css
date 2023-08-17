@@ -330,18 +330,6 @@ body {
   padding: 0.5em;
 }
 
-#text-entry-textarea {
-  background-color: var(--text-input-background-color);
-  color: var(--text-input-foreground-color);
-  border-radius: 0.25em;
-  border: 0.5px solid lightgray;
-  outline: none;
-  padding: 0.2em 0.5em;
-  font-family: fontra-ui-regular, sans-serif;
-  font-size: 1.1rem;
-  resize: none;
-}
-
 .axis-sliders {
   display: flex;
   flex-direction: column;
@@ -447,8 +435,4 @@ body {
 
 .text-entry {
   padding: 0.5em;
-}
-
-#text-entry-textarea {
-  overflow-x: scroll;
 }
