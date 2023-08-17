@@ -1,7 +1,7 @@
 import * as html from "/core/unlit.js";
 import { recordChanges } from "/core/change-recorder.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
-import { Form } from "/core/ui-form.js";
+import { Form } from "/web-components/ui-form.js";
 import Panel from "./panel.js";
 import { css } from "../third-party/lit.js";
 import {

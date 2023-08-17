@@ -1,7 +1,7 @@
-import { QueueIterator } from "./queue-iterator.js";
-import { hyphenatedToCamelCase, round } from "./utils.js";
+import { QueueIterator } from "../core/queue-iterator.js";
+import { hyphenatedToCamelCase, round } from "../core/utils.js";
 import { css } from "../third-party/lit.js";
-import { SimpleElement } from "/core/unlit.js";
+import { SimpleElement } from "../core/unlit.js";
 
 export class Form extends SimpleElement {
   static styles = css`
