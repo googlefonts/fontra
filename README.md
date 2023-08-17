@@ -94,6 +94,8 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Write .ttf + variable .ttf (For “hot fixes”. Currently not planned, will still require export step.)
 - Write .otf + variable .otf (Ditto.)
 - Respond to external .ttf and .otf changes (automatic reload)
+- Read .glyphs and .glyphspackage ✅ (Via [fontra-glyphs](https://github.com/googlefonts/fontra-glyphs))
+- Write .glyphs and .glyphspackage
 
 ### Text viewing / editing
 
@@ -140,7 +142,8 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Anchors
 - Guidelines
 - View background layers
-- Edit local variation axes and sources/layers
+- Edit local variation axes
+- Edit local sources/layers ✅
 - Built-in support for Non-Linear Interpolation
 - Remove overlap and other path operators
 
@@ -180,6 +183,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 - FontMake/Fontations integration
 - Incremental compilation using Fontations
+- Experimental [`glyf1`](https://github.com/harfbuzz/boring-expansion-spec/blob/main/glyf1-varComposites.md) export ✅ (Via [fontra-compile](https://github.com/googlefonts/fontra-compile))
 
 ### Collaborative features
 
