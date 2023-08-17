@@ -1408,7 +1408,7 @@ export class EditorController {
   }
 
   async doSelectPreviousNextSource(selectPrevious) {
-    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    const instance = this.sceneModel.getSelectedPositionedGlyph()?.glyph;
     if (!instance) {
       return;
     }
