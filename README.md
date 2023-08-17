@@ -94,7 +94,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Write .ttf + variable .ttf (For “hot fixes”. Currently not planned, will still require export step.)
 - Write .otf + variable .otf (Ditto.)
 - Respond to external .ttf and .otf changes (automatic reload)
-- Read .glyphs and .glyphspackage (via [fontra-glyphs](https://github.com/googlefonts/fontra-glyphs)) ✅
+- Read .glyphs and .glyphspackage ✅ (Via [fontra-glyphs](https://github.com/googlefonts/fontra-glyphs))
 - Write .glyphs and .glyphspackage
 
 ### Text viewing / editing
