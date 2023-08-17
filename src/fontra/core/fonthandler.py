@@ -3,10 +3,10 @@ import functools
 import logging
 import traceback
 from collections import UserDict, defaultdict
-from contextlib import contextmanager
+from contextlib import asynccontextmanager
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable, Optional
 
 from .changes import (
     applyChange,
@@ -51,6 +51,7 @@ backendDeleterNames = {
 class FontHandler:
     backend: Any  # TODO: need Backend protocol
     readOnly: bool = False
+    allConnectionsClosedCallback: Optional[Callable[[], None]] = None
 
     def __post_init__(self):
         if not hasattr(self.backend, "putGlyph"):
@@ -157,13 +158,15 @@ class FontHandler:
                         assert False, errorMessage
             await asyncio.sleep(0)
 
-    @contextmanager
-    def useConnection(self, connection):
+    @asynccontextmanager
+    async def useConnection(self, connection):
         self.connections.add(connection)
         try:
             yield
         finally:
             self.connections.remove(connection)
+            if not self.connections and self.allConnectionsClosedCallback is not None:
+                await self.allConnectionsClosedCallback()
 
     @remoteMethod
     async def getGlyph(self, glyphName, *, connection=None):
