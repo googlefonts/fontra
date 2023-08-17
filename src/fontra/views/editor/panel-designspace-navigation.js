@@ -71,7 +71,9 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   setup() {
-    this.designspaceLocation = this.contentElement;
+    this.designspaceLocation = this.contentElement.querySelector(
+      "#designspace-location"
+    );
     this.designspaceLocation.values = this.sceneSettings.location;
 
     this.designspaceLocation.addEventListener(
