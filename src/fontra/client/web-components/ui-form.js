@@ -1,23 +1,22 @@
 import { QueueIterator } from "../core/queue-iterator.js";
 import { hyphenatedToCamelCase, round } from "../core/utils.js";
-import { css } from "../third-party/lit.js";
+import { css, unsafeCSS } from "../third-party/lit.js";
 import { SimpleElement } from "../core/unlit.js";
+import { themeColorCSS } from "./theme-support.js";
 
 export class Form extends SimpleElement {
+  static colors = {
+    "ui-form-input-foreground-color": ["black", "white"],
+    "ui-form-input-background-color": ["white", "#333"],
+    "ui-form-input-border-color": ["#888", "#222"],
+    "slider-thumb-color": ["#444", "#bbb"],
+  };
   static styles = css`
+    ${unsafeCSS(themeColorCSS(Form.colors))}
     :host {
-      --ui-form-input-foreground-color-light: black;
-      --ui-form-input-foreground-color-dark: white;
-      --ui-form-input-background-color-light: white;
-      --ui-form-input-background-color-dark: #333;
-      --ui-form-input-border-color-light: #888;
-      --ui-form-input-border-color-dark: #222;
       --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-light);
       --ui-form-input-background-color: var(--ui-form-input-background-color-light);
       --ui-form-input-border-color: var(--ui-form-input-border-color-light);
-      --slider-thumb-color-light: #444;
-      --slider-thumb-color-dark: #bbb;
-
       --slider-thumb-color: var(--slider-thumb-color-light);
     }
 
