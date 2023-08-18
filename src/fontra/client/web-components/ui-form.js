@@ -5,23 +5,41 @@ import { SimpleElement } from "../core/unlit.js";
 
 export class Form extends SimpleElement {
   static styles = css`
-    :root {
+    :host {
+      --ui-form-input-foreground-color-light: black;
+      --ui-form-input-foreground-color-dark: white;
+      --ui-form-input-background-color-light: white;
+      --ui-form-input-background-color-dark: #333;
+      --ui-form-input-border-color-light: #888;
+      --ui-form-input-border-color-dark: #222;
+      --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-light);
+      --ui-form-input-background-color: var(--ui-form-input-background-color-light);
+      --ui-form-input-border-color: var(--ui-form-input-border-color-light);
       --slider-thumb-color-light: #444;
       --slider-thumb-color-dark: #bbb;
 
       --slider-thumb-color: var(--slider-thumb-color-light);
     }
 
-    :root.dark-theme {
+    :host.dark-theme {
+      --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-dark);
+      --ui-form-input-background-color: var(--ui-form-input-background-color-dark);
+      --ui-form-input-border-color: var(--ui-form-input-border-color-dark);
       --slider-thumb-color: var(--slider-thumb-color-dark);
     }
 
     @media (prefers-color-scheme: dark) {
-      :root {
+      :host {
+        --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-dark);
+        --ui-form-input-background-color: var(--ui-form-input-background-color-dark);
+        --ui-form-input-border-color: var(--ui-form-input-border-color-dark);
         --slider-thumb-color: var(--slider-thumb-color-dark);
       }
 
-      :root.light-theme {
+      :host.light-theme {
+        --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-light);
+        --ui-form-input-background-color: var(--ui-form-input-background-color-light);
+        --ui-form-input-border-color: var(--ui-form-input-border-color-light);
         --slider-thumb-color: var(--slider-thumb-color-light);
       }
     }
@@ -126,6 +144,63 @@ export class Form extends SimpleElement {
     input[type="range"]:focus::-ms-fill-upper {
       background: var(--slider-track-color);
     }
+    .ui-form {
+      display: grid;
+      grid-template-columns: 32% 68%;
+      gap: 0.35rem 0.35rem;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+
+    .ui-form:nth-child(even) {
+      background-color: blue;
+    }
+
+    .ui-form-label {
+      text-align: right;
+      align-self: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ui-form-divider {
+      border: none;
+      border-top: 1px solid #8888;
+      width: 100%;
+      height: 1px;
+      margin-block-start: 0.2em;
+      margin-block-end: 0.1em;
+      grid-column: 1 / span 2;
+    }
+
+    .ui-form-label.header {
+      font-weight: bold;
+      grid-column: 1 / span 2;
+      text-align: left;
+    }
+
+    .ui-form-value input {
+      font-family: "fontra-ui-regular";
+      border: solid 1px var(--ui-form-input-border-color);
+      background-color: var(--ui-form-input-background-color);
+      color: var(--ui-form-input-foreground-color);
+      width: 9.5em;
+    }
+
+    .ui-form-value input[type="number"] {
+      width: 4em;
+    }
+
+    .ui-form-value input[type="range"] {
+      width: 7em;
+    }
+
+    .ui-form-value.text {
+      white-space: normal;
+    }
+
+    /* ui-form */
+
     .ui-form {
       display: grid;
       grid-template-columns: 32% 68%;
