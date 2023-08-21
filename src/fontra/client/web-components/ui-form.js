@@ -144,6 +144,7 @@ export class Form extends SimpleElement {
     input[type="range"]:focus::-ms-fill-upper {
       background: var(--slider-track-color);
     }
+
     .ui-form {
       display: grid;
       grid-template-columns: 32% 68%;
