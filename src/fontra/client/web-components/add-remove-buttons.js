@@ -12,8 +12,8 @@ const colors = {
 };
 
 export class AddRemoveButtons extends LitElement {
-  static styles = `
-    ${themeColorCSS(colors)}
+  static styles = css`
+    ${unsafeCSS(themeColorCSS(colors))}
 
     .buttons-container {
       padding: 0.5em;
