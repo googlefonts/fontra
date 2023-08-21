@@ -153,10 +153,6 @@ export class Form extends SimpleElement {
       overflow-y: scroll;
     }
 
-    .ui-form:nth-child(even) {
-      background-color: blue;
-    }
-
     .ui-form-label {
       text-align: right;
       align-self: center;
