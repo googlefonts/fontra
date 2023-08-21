@@ -13,8 +13,8 @@ import {
 } from "/core/utils.js";
 
 export default class SelectionInfoPanel extends Panel {
-  name = "selection-info";
-  icon = "/images/info.svg";
+  identifier = "selection-info";
+  iconPath = "/images/info.svg";
 
   static styles = css`
     .selection-info {

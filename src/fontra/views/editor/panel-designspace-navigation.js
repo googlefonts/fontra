@@ -25,8 +25,8 @@ const FONTRA_STATUS_KEY = "fontra.development.status";
 const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";
 
 export default class DesignspaceNavigationPanel extends Panel {
-  name = "designspace-navigation";
-  icon = "/images/sliders.svg";
+  identifier = "designspace-navigation";
+  iconPath = "/images/sliders.svg";
 
   static styles = css`
     #designspace-navigation {

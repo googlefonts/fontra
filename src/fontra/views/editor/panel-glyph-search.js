@@ -3,8 +3,8 @@ import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 
 export default class GlyphSearchPanel extends Panel {
-  name = "glyph-search";
-  icon = "/images/magnifyingglass.svg";
+  identifier = "glyph-search";
+  iconPath = "/images/magnifyingglass.svg";
 
   static styles = css`
     .glyph-search {

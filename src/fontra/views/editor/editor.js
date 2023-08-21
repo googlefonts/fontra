@@ -473,17 +473,17 @@ export class EditorController {
     sidebar.addPanel(panelElement);
     panelElement.attach();
     const tabElement = document.querySelector(
-      `.sidebar-tab[data-sidebar-name="${panelElement.name}"]`
+      `.sidebar-tab[data-sidebar-name="${panelElement.identifier}"]`
     );
     tabElement.addEventListener("click", () => {
-      this.toggleSidebar(panelElement.name, true);
+      this.toggleSidebar(panelElement.identifier, true);
     });
   }
 
   getSidebarPanel(panelName) {
     for (const sidebar of this.sidebars) {
       for (const panel of sidebar.panels) {
-        if (panel.name === panelName) {
+        if (panel.identifier === panelName) {
           return panel;
         }
       }
@@ -492,7 +492,7 @@ export class EditorController {
 
   toggleSidebar(panelName, doFocus = false) {
     const sidebar = this.sidebars.find((sidebar) =>
-      sidebar.panels.find((panel) => panel.name === panelName)
+      sidebar.panels.find((panel) => panel.identifier === panelName)
     );
     if (!sidebar) {
       return;

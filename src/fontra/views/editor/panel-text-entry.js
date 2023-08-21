@@ -3,8 +3,8 @@ import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 
 export default class TextEntryPanel extends Panel {
-  name = "text-entry";
-  icon = "/images/texttool.svg";
+  identifier = "text-entry";
+  iconPath = "/images/texttool.svg";
 
   static styles = css`
     .sidebar-text-entry {

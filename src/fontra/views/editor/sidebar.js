@@ -23,7 +23,7 @@ export default class Sidebar {
     );
 
     const panelContent = html.div(
-      { "class": "sidebar-content", "data-sidebarName": panel.name },
+      { "class": "sidebar-content", "data-sidebarName": panel.identifier },
       [panel]
     );
 
@@ -37,11 +37,11 @@ export default class Sidebar {
       html.div(
         {
           "class": "sidebar-tab",
-          "data-sidebarName": panel.name,
+          "data-sidebarName": panel.identifier,
         },
         [
           html.createDomElement("inline-svg", {
-            src: panel.icon,
+            src: panel.iconPath,
           }),
         ]
       )
@@ -53,12 +53,12 @@ export default class Sidebar {
     let toggledTab;
     for (const tab of this.panels) {
       const tabElement = document.querySelector(
-        `.sidebar-tab[data-sidebar-name="${tab.name}"]`
+        `.sidebar-tab[data-sidebar-name="${tab.identifier}"]`
       );
       const contentElement = document.querySelector(
-        `.sidebar-content[data-sidebar-name="${tab.name}"]`
+        `.sidebar-content[data-sidebar-name="${tab.identifier}"]`
       );
-      if (tabName === tab.name) {
+      if (tabName === tab.identifier) {
         toggledTab = tabElement;
         const isSelected = tabElement.classList.contains("selected");
         tabElement.classList.toggle("selected", !isSelected);

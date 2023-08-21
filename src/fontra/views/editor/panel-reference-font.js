@@ -47,8 +47,8 @@ registerVisualizationLayerDefinition({
 });
 
 export default class ReferenceFontPanel extends Panel {
-  name = "reference-font";
-  icon = "/images/reference.svg";
+  identifier = "reference-font";
+  iconPath = "/images/reference.svg";
 
   static styles = css`
     .sidebar-reference-font {

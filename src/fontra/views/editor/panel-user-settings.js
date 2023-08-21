@@ -3,8 +3,8 @@ import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 
 export default class UserSettingsPanel extends Panel {
-  name = "user-settings";
-  icon = "/images/gear.svg";
+  identifier = "user-settings";
+  iconPath = "/images/gear.svg";
 
   static styles = css`
     .sidebar-settings,
