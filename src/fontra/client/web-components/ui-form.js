@@ -1,6 +1,5 @@
 import { QueueIterator } from "../core/queue-iterator.js";
 import { hyphenatedToCamelCase, round } from "../core/utils.js";
-import { css, unsafeCSS } from "../third-party/lit.js";
 import { SimpleElement } from "../core/unlit.js";
 import { themeColorCSS } from "./theme-support.js";
 
@@ -11,8 +10,8 @@ export class Form extends SimpleElement {
     "ui-form-input-border-color": ["#888", "#222"],
     "slider-thumb-color": ["#444", "#bbb"],
   };
-  static styles = css`
-    ${unsafeCSS(themeColorCSS(Form.colors))}
+  static styles = `
+    ${themeColorCSS(Form.colors)}
     :host {
       --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-light);
       --ui-form-input-background-color: var(--ui-form-input-background-color-light);
