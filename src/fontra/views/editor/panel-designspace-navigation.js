@@ -101,6 +101,15 @@ export default class DesignspaceNavigationPanel extends Panel {
       }, 100)
     );
 
+    this.sceneSettingsController.addKeyListener("location", (event) => {
+      if (event.senderInfo?.senderID === this) {
+        // Sent by us, ignore
+        return;
+      }
+      this.designspaceLocation.values = event.newValue;
+      this._updateRemoveSourceButtonState();
+    });
+
     this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
       this.sourcesList.setSelectedItemIndex(event.newValue);
     });
