@@ -1,28 +1,54 @@
+import * as html from "/core/unlit.js";
 import { recordChanges } from "/core/change-recorder.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
-import { Form } from "/core/ui-form.js";
+import { Form } from "/web-components/ui-form.js";
+import Panel from "./panel.js";
+import { css } from "../third-party/lit.js";
 import {
-  getCharFromUnicode,
-  makeUPlusStringFromCodePoint,
-  parseSelection,
-  round,
   throttleCalls,
+  parseSelection,
+  makeUPlusStringFromCodePoint,
+  getCharFromUnicode,
+  round,
 } from "/core/utils.js";
 
-export class SidebarSelectionInfo {
-  constructor(sceneController, fontController) {
-    this.sceneController = sceneController;
-    this.fontController = fontController;
-    this.infoForm = new Form("selection-info");
+export default class SelectionInfoPanel extends Panel {
+  identifier = "selection-info";
+  iconPath = "/images/info.svg";
 
+  static styles = css`
+    .selection-info {
+      box-sizing: border-box;
+      height: 100%;
+      width: 100%;
+      overflow-x: hidden;
+      overflow-y: scroll;
+      padding: 1em;
+    }
+  `;
+
+  getContentElement() {
+    return html.div(
+      {
+        class: "selection-info",
+      },
+      []
+    );
+  }
+
+  attach() {
+    this.infoForm = new Form();
+    this.contentElement.appendChild(this.infoForm);
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
+    this.fontController = this.editorController.fontController;
+    this.sceneController = this.editorController.sceneController;
 
-    this.sceneController.sceneSettingsController.addKeyListener(
+    this.editorController.sceneController.sceneSettingsController.addKeyListener(
       ["selectedGlyphName", "selection", "location"],
       (event) => this.throttledUpdate()
     );
 
-    this.sceneController.sceneSettingsController.addKeyListener(
+    this.editorController.sceneController.sceneSettingsController.addKeyListener(
       "positionedLines",
       (event) => {
         if (!this.haveInstance) {
@@ -31,7 +57,7 @@ export class SidebarSelectionInfo {
       }
     );
 
-    this.sceneController.addCurrentGlyphChangeListener((event) => {
+    this.editorController.sceneController.addCurrentGlyphChangeListener((event) => {
       this.throttledUpdate(event.senderID);
     });
   }
@@ -42,7 +68,7 @@ export class SidebarSelectionInfo {
       await this.updateDimensions();
       return;
     }
-    if (!this.infoForm.container.offsetParent) {
+    if (!this.infoForm.contentElement.offsetParent) {
       // If the info form is not visible, do nothing
       return;
     }
@@ -66,12 +92,14 @@ export class SidebarSelectionInfo {
       // positionedGlyph.character anyway
       unicodes = [positionedGlyph.character.codePointAt(0)];
     }
+
     const unicodesStr = unicodes
       .map(
         (code) =>
           `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromUnicode(code)})`
       )
       .join(" ");
+
     const canEdit = glyphController?.canEdit;
 
     const formContents = [];
@@ -96,6 +124,7 @@ export class SidebarSelectionInfo {
         disabled: !canEdit,
       });
     }
+
     const { pointIndices, componentIndices } = this._getSelection();
 
     if (glyphController) {
@@ -181,6 +210,7 @@ export class SidebarSelectionInfo {
         }
       }
     }
+
     if (!formContents.length) {
       this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
     } else {
@@ -333,3 +363,5 @@ function deleteNestedValue(subject, path) {
   subject = getNestedValue(subject, path);
   delete subject[key];
 }
+
+customElements.define("panel-selection-info", SelectionInfoPanel);

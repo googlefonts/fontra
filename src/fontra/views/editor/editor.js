@@ -43,13 +43,9 @@ import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
 import { PowerRulerTool } from "./edit-tools-power-ruler.js";
-import { SidebarDesignspace } from "./sidebar-designspace.js";
-import { SidebarSelectionInfo } from "./sidebar-selection-info.js";
-import { SidebarTextEntry } from "./sidebar-text-entry.js";
 import { VisualizationLayers } from "./visualization-layers.js";
 import {
   allGlyphsCleanVisualizationLayerDefinition,
-  registerVisualizationLayerDefinition,
   visualizationLayerDefinitions,
 } from "./visualization-layer-definitions.js";
 import {
@@ -58,11 +54,15 @@ import {
 } from "../core/path-functions.js";
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
-import { clamp } from "../../core/utils.js";
 import { parseClipboard } from "../core/server-utils.js";
+import Sidebar from "./sidebar.js";
 
-const MIN_SIDEBAR_WIDTH = 200;
-const MAX_SIDEBAR_WIDTH = 500;
+import TextEntryPanel from "./panel-text-entry.js";
+import GlyphSearchPanel from "./panel-glyph-search.js";
+import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
+import UserSettingsPanel from "./panel-user-settings.js";
+import ReferenceFontPanel from "./panel-reference-font.js";
+import SelectionInfoPanel from "./panel-selection-info.js";
 
 export class EditorController {
   static async fromWebSocket() {
@@ -126,7 +126,6 @@ export class EditorController {
       }
     );
 
-    this.initSidebarReferenceFont();
     this.cjkDesignFrame = new CJKDesignFrame(this);
 
     this.visualizationLayers = new VisualizationLayers(
@@ -166,14 +165,12 @@ export class EditorController {
       this.showDialogGlyphEditLocationNotAtSource();
     });
 
+    this.sidebars = [];
+
     this.initSidebars();
     this.initContextMenuItems();
     this.initShortCuts();
     this.initMiniConsole();
-    this.sidebarSelectionInfo = new SidebarSelectionInfo(
-      this.sceneController,
-      this.fontController
-    );
 
     window
       .matchMedia("(prefers-color-scheme: dark)")
@@ -246,7 +243,10 @@ export class EditorController {
   }
 
   async initGlyphsSearch() {
-    this.glyphsSearch = document.querySelector("#glyphs-search");
+    this.glyphsSearch =
+      this.getSidebarPanel("glyph-search").contentElement.querySelector(
+        "#glyphs-search"
+      );
     this.glyphsSearch.glyphMap = this.fontController.glyphMap;
     this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
@@ -254,7 +254,10 @@ export class EditorController {
   }
 
   async initUserSettings() {
-    const userSettings = document.querySelector("#user-settings");
+    const userSettings =
+      this.getSidebarPanel("user-settings").contentElement.querySelector(
+        "#user-settings"
+      );
     const items = [];
 
     // Visualization layer settings
@@ -361,7 +364,7 @@ export class EditorController {
     );
     switch (result) {
       case "createNewSource":
-        this.sidebarDesignspace.addSource();
+        this.getSidebarPanel("designspace-navigation").addSource();
         break;
       case "goToNearestSource":
         const glyphController =
@@ -420,10 +423,19 @@ export class EditorController {
   }
 
   async initSidebarDesignspace() {
-    this.sidebarDesignspace = new SidebarDesignspace(this);
+    this.getSidebarPanel("designspace-navigation").setup();
   }
 
   initSidebars() {
+    this.addSidebar(new Sidebar("left"));
+    this.addSidebar(new Sidebar("right"));
+    this.addSidebarPanel(new TextEntryPanel(this), "left");
+    this.addSidebarPanel(new GlyphSearchPanel(this), "left");
+    this.addSidebarPanel(new DesignspaceNavigationPanel(this), "left");
+    this.addSidebarPanel(new UserSettingsPanel(this), "left");
+    this.addSidebarPanel(new ReferenceFontPanel(this), "left");
+    this.addSidebarPanel(new SelectionInfoPanel(this), "right");
+
     // Upon reload, the "animating" class may still be set (why?), so remove it
     for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
       sidebarContainer.classList.remove("animating");
@@ -434,22 +446,7 @@ export class EditorController {
     // ensure we postpone just enough.)
     setTimeout(() => {
       for (const side of ["left", "right"]) {
-        const sidebarWidth = localStorage.getItem(`fontra-sidebar-width-${side}`);
         const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
-        if (sidebarWidth) {
-          let width = clamp(
-            parseInt(sidebarWidth),
-            MIN_SIDEBAR_WIDTH,
-            MAX_SIDEBAR_WIDTH
-          );
-          if (isNaN(width)) {
-            width = MIN_SIDEBAR_WIDTH;
-          }
-          document.documentElement.style.setProperty(
-            `--sidebar-content-width-${side}`,
-            `${width}px`
-          );
-        }
         if (selectedSidebar) {
           this.toggleSidebar(selectedSidebar, false);
         }
@@ -463,175 +460,51 @@ export class EditorController {
         sidebarContainer.classList.add("animating");
       }
     }, 100);
-
-    for (const sidebarTab of document.querySelectorAll(".sidebar-tab")) {
-      sidebarTab.addEventListener("click", (event) => {
-        this.toggleSidebar(sidebarTab.dataset.sidebarName, true);
-      });
-    }
-
-    this.initSidebarTextEntry();
-    this.initSidebarGutters();
   }
 
-  initSidebarGutters() {
-    let initialWidth;
-    let initialPointerCoordinateX;
-    let sidebarResizing;
-    let growDirection;
-    let width;
-    const onPointerMove = (event) => {
-      if (sidebarResizing) {
-        let cssProperty;
-        if (growDirection === "left") {
-          width = initialWidth + (initialPointerCoordinateX - event.clientX);
-          cssProperty = "--sidebar-content-width-right";
-        } else {
-          width = initialWidth + (event.clientX - initialPointerCoordinateX);
-          cssProperty = "--sidebar-content-width-left";
-        }
-        width = clamp(width, MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
-        document.documentElement.style.setProperty(cssProperty, `${width}px`);
-      }
-    };
-    const onPointerUp = () => {
-      localStorage.setItem(
-        `fontra-sidebar-width-${growDirection === "left" ? "right" : "left"}`,
-        width
-      );
-      sidebarResizing.classList.add("animating");
-      sidebarResizing = undefined;
-      initialWidth = undefined;
-      growDirection = undefined;
-      initialPointerCoordinateX = undefined;
-      document.documentElement.classList.remove("sidebar-resizing");
-      document.removeEventListener("pointermove", onPointerMove);
-    };
-    for (const gutter of document.querySelectorAll(".sidebar-resize-gutter")) {
-      gutter.addEventListener("pointerdown", (event) => {
-        sidebarResizing = gutter.parentElement;
-        initialWidth = sidebarResizing.getBoundingClientRect().width;
-        initialPointerCoordinateX = event.clientX;
-        sidebarResizing.classList.remove("animating");
-        growDirection = gutter.dataset.growDirection;
-        document.documentElement.classList.add("sidebar-resizing");
-        document.addEventListener("pointermove", onPointerMove);
-        document.addEventListener("pointerup", onPointerUp, { once: true });
-      });
-    }
+  addSidebar(sidebar) {
+    const editorContainer = document.querySelector(".editor-container");
+    sidebar.attach(editorContainer);
+    this.sidebars.push(sidebar);
   }
 
-  toggleSidebar(sidebarName, doFocus = false) {
-    const toggledTab = document.querySelector(
-      `.sidebar-tab[data-sidebar-name="${sidebarName}"]`
+  addSidebarPanel(panelElement, sidebarName) {
+    const sidebar = this.sidebars.find((sidebar) => sidebar.identifier === sidebarName);
+    sidebar.addPanel(panelElement);
+    panelElement.attach();
+    const tabElement = document.querySelector(
+      `.sidebar-tab[data-sidebar-name="${panelElement.identifier}"]`
     );
-    const side = toggledTab.parentElement.classList.contains("left") ? "left" : "right";
-    const sidebarContainer = document.querySelector(`.sidebar-container.${side}`);
-    const sidebars = {};
-    for (const sideBarContent of document.querySelectorAll(
-      `.sidebar-container.${side} > .sidebar-content`
-    )) {
-      sidebars[sideBarContent.dataset.sidebarName] = sideBarContent;
-    }
+    tabElement.addEventListener("click", () => {
+      this.toggleSidebar(panelElement.identifier, true);
+    });
+  }
 
-    for (const item of document.querySelectorAll(
-      `.tab-overlay-container.${side} > .sidebar-tab`
-    )) {
-      const sidebarContent = sidebars[item.dataset.sidebarName];
-      if (item === toggledTab) {
-        const isSelected = item.classList.contains("selected");
-
-        item.classList.toggle("selected", !isSelected);
-        sidebarContainer.classList.toggle("visible", !isSelected);
-        const shadowBox = document.querySelector(
-          `.tab-overlay-container.${side} > .sidebar-shadow-box`
-        );
-        if (isSelected) {
-          sidebarContainer.addEventListener(
-            "transitionend",
-            () => {
-              sidebarContent?.classList.remove("selected");
-              shadowBox?.classList.remove("visible");
-            },
-            { once: true }
-          );
-        } else {
-          sidebarContent?.classList.add("selected");
-          shadowBox?.classList.add("visible");
+  getSidebarPanel(panelName) {
+    for (const sidebar of this.sidebars) {
+      for (const panel of sidebar.panels) {
+        if (panel.identifier === panelName) {
+          return panel;
         }
-      } else {
-        item.classList.remove("selected");
-        sidebarContent?.classList.remove("selected");
       }
     }
+  }
 
-    const onOff = toggledTab.classList.contains("selected");
-    localStorage.setItem(`fontra-selected-sidebar-${side}`, onOff ? sidebarName : "");
-    const methodName = hyphenatedToCamelCase("toggle-" + sidebarName);
+  toggleSidebar(panelName, doFocus = false) {
+    const sidebar = this.sidebars.find((sidebar) =>
+      sidebar.panels.find((panel) => panel.identifier === panelName)
+    );
+    if (!sidebar) {
+      return;
+    }
+    const onOff = sidebar.toggle(panelName);
+    localStorage.setItem(
+      `fontra-selected-sidebar-${sidebar.identifier}`,
+      onOff ? panelName : ""
+    );
+    const methodName = hyphenatedToCamelCase("toggle-" + panelName);
     setTimeout(() => this[methodName]?.call(this, onOff, doFocus), 10);
     return onOff;
-  }
-
-  initSidebarTextEntry() {
-    this.sidebarTextSettings = new SidebarTextEntry(
-      this.sceneController,
-      this.sceneSettingsController
-    );
-  }
-
-  initSidebarReferenceFont() {
-    const referenceFontElement = document.querySelector("#reference-font");
-    referenceFontElement.controller.addKeyListener("referenceFontName", (event) => {
-      if (event.newValue) {
-        this.visualizationLayersSettings.model["fontra.reference.font"] = true;
-      }
-      this.canvasController.requestUpdate();
-    });
-    let charOverride;
-    referenceFontElement.controller.addKeyListener("charOverride", (event) => {
-      charOverride = event.newValue;
-      this.canvasController.requestUpdate();
-    });
-    const referenceFontModel = referenceFontElement.model;
-
-    registerVisualizationLayerDefinition({
-      identifier: "fontra.reference.font",
-      name: "Reference font",
-      selectionMode: "editing",
-      userSwitchable: true,
-      defaultOn: true,
-      zIndex: 100,
-      screenParameters: { strokeWidth: 1 },
-      colors: { fillColor: "#AAA6" },
-      // colorsDarkMode: { strokeColor: "red" },
-      draw: (context, positionedGlyph, parameters, model, controller) => {
-        if (!referenceFontModel.referenceFontName) {
-          return;
-        }
-        let text = charOverride || positionedGlyph.character;
-        if (!text && positionedGlyph.glyphName.includes(".")) {
-          const baseGlyphName = positionedGlyph.glyphName.split(".")[0];
-          const codePoint = (this.fontController.glyphMap[baseGlyphName] || [])[0];
-          if (codePoint) {
-            text = String.fromCodePoint(codePoint);
-          }
-        }
-        if (!text) {
-          return;
-        }
-        context.lineWidth = parameters.strokeWidth;
-        context.font = `${model.fontController.unitsPerEm}px ${referenceFontModel.referenceFontName}, AdobeBlank`;
-        context.scale(1, -1);
-        if (parameters.fillColor) {
-          context.fillStyle = parameters.fillColor;
-          context.fillText(text, 0, 0);
-        }
-        if (parameters.strokeColor) {
-          context.strokeStyle = parameters.strokeColor;
-          context.strokeText(text, 0, 0);
-        }
-      },
-    });
   }
 
   initMiniConsole() {
@@ -899,7 +772,7 @@ export class EditorController {
       this.toggleSidebar("glyph-search", true);
     });
     this.registerShortCut("i", { metaKey: true, globalOverride: true }, () => {
-      this.toggleSidebar("sidebar-selection-info", true);
+      this.toggleSidebar("selection-info", true);
     });
 
     for (const menuItem of [
@@ -1634,13 +1507,13 @@ export class EditorController {
 
   toggleTextEntry(onOff, doFocus) {
     if (onOff && doFocus) {
-      this.sidebarTextSettings.focusTextEntry();
+      this.getSidebarPanel("text-entry").focusTextEntry();
     }
   }
 
-  toggleSidebarSelectionInfo(onOff) {
+  toggleSelectionInfo(onOff) {
     if (onOff) {
-      this.sidebarSelectionInfo.update();
+      this.getSidebarPanel("selection-info").update();
     }
   }
 

@@ -2,6 +2,7 @@ import { getAxisBaseName } from "/core/glyph-controller.js";
 import { ObservableController } from "/core/observable-object.js";
 import { Layer, Source } from "/core/var-glyph.js";
 import * as html from "/core/unlit.js";
+import { css } from "../third-party/lit.js";
 import {
   enumerate,
   htmlToElement,
@@ -18,22 +19,61 @@ import {
 } from "/core/var-model.js";
 import { showMenu } from "/web-components/menu-panel.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
+import Panel from "./panel.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
 const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";
 
-export class SidebarDesignspace {
-  constructor(editor) {
-    this.fontController = editor.fontController;
-    this.sceneSettingsController = editor.sceneSettingsController;
-    this.sceneSettings = editor.sceneSettingsController.model;
-    this.sceneModel = editor.sceneController.sceneModel;
-    this.sceneController = editor.sceneController;
-    this.setup();
+export default class DesignspaceNavigationPanel extends Panel {
+  identifier = "designspace-navigation";
+  iconPath = "/images/sliders.svg";
+
+  static styles = css`
+    #designspace-navigation {
+      height: 100%;
+      width: 100%;
+      padding: 1em;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+  `;
+
+  getContentElement() {
+    return html.div(
+      {
+        id: "designspace-navigation",
+      },
+      [
+        html.createDomElement(
+          "designspace-location",
+          {
+            id: "designspace-location",
+          },
+          []
+        ),
+        html.createDomElement("ui-list", {
+          id: "sources-list",
+        }),
+        html.createDomElement("add-remove-buttons", {
+          id: "sources-list-add-remove-buttons",
+        }),
+      ]
+    );
+  }
+
+  attach() {
+    this.fontController = this.editorController.fontController;
+    this.sceneSettingsController = this.editorController.sceneSettingsController;
+    this.sceneSettings = this.editorController.sceneSettingsController.model;
+    this.sceneModel = this.editorController.sceneController.sceneModel;
+    this.sceneController = this.editorController.sceneController;
   }
 
   setup() {
-    this.designspaceLocation = document.querySelector("#designspace-location");
+    this.designspaceLocation = this.contentElement.querySelector(
+      "#designspace-location"
+    );
     this.designspaceLocation.values = this.sceneSettings.location;
 
     this.designspaceLocation.addEventListener(
@@ -89,10 +129,12 @@ export class SidebarDesignspace {
         width: "2em",
       },
     ];
+
     const statusFieldDefinitions =
       this.sceneController.sceneModel.fontController.fontLib[
         FONTRA_STATUS_DEFINITIONS_KEY
       ];
+
     if (statusFieldDefinitions) {
       this.defaultStatusValue = statusFieldDefinitions.find(
         (statusDef) => statusDef.isDefault
@@ -112,13 +154,15 @@ export class SidebarDesignspace {
         }),
       });
     }
-    this.sourcesList = document.querySelector("#sources-list");
+
+    this.sourcesList = this.contentElement.querySelector("#sources-list");
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
-    this.addRemoveSourceButtons = document.querySelector(
+    this.addRemoveSourceButtons = this.contentElement.querySelector(
       "#sources-list-add-remove-buttons"
     );
+
     this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
     this.addRemoveSourceButtons.removeButtonCallback = () =>
       this.removeSource(this.sourcesList.getSelectedItemIndex());
@@ -693,3 +737,5 @@ function statusListCell(item, colDesc) {
 function cellColorStyle(color) {
   return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
 }
+
+customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
