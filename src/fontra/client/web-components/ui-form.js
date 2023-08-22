@@ -3,15 +3,16 @@ import { hyphenatedToCamelCase, round } from "../core/utils.js";
 import { SimpleElement } from "../core/unlit.js";
 import { themeColorCSS } from "./theme-support.js";
 
+const colors = {
+  "ui-form-input-foreground-color": ["black", "white"],
+  "ui-form-input-background-color": ["white", "#333"],
+  "ui-form-input-border-color": ["#888", "#222"],
+  "slider-thumb-color": ["#444", "#bbb"],
+};
+
 export class Form extends SimpleElement {
-  static colors = {
-    "ui-form-input-foreground-color": ["black", "white"],
-    "ui-form-input-background-color": ["white", "#333"],
-    "ui-form-input-border-color": ["#888", "#222"],
-    "slider-thumb-color": ["#444", "#bbb"],
-  };
   static styles = `
-    ${themeColorCSS(Form.colors)}
+    ${themeColorCSS(colors)}
     :host {
       --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-light);
       --ui-form-input-background-color: var(--ui-form-input-background-color-light);
