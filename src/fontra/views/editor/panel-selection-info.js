@@ -72,14 +72,18 @@ export default class SelectionInfoPanel extends Panel {
       // If the info form is not visible, do nothing
       return;
     }
+
     await this.fontController.ensureInitialized;
+
     const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
     const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
       glyphName
     );
     let unicodes = this.fontController.glyphMap?.[glyphName] || [];
+
     const positionedGlyph =
       this.sceneController.sceneModel.getSelectedPositionedGlyph();
+
     const instance = positionedGlyph?.glyph.instance;
     this.haveInstance = !!instance;
 
