@@ -41,14 +41,6 @@ export class IconButton extends UnlitElement {
     return ["src", "disabled"];
   }
 
-  // get src() {
-  //   return this.getAttribute("src");
-  // }
-
-  // set src(value) {
-  //   return this.setAttribute("src", value);
-  // }
-
   attributeChangedCallback(name, oldValue, newValue) {
     this.requestUpdate();
   }
