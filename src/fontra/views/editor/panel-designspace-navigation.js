@@ -665,6 +665,33 @@ export default class DesignspaceNavigationPanel extends Panel {
     if (!varGlyphController) {
       return;
     }
+    const dialog = await dialogSetup("Edit local axes", null, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Okay", isDefaultButton: true, result: "ok" },
+    ]);
+
+    const columnDescriptions = [
+      { key: "name", title: "Name", width: "8em" },
+      { key: "minValue", title: "Minimum", width: "5em" },
+      { key: "defaultValue", title: "Default", width: "5em" },
+      { key: "maxValue", title: "Maximum", width: "5em" },
+    ];
+
+    const axisList = html.createDomElement("ui-list");
+    axisList.columnDescriptions = columnDescriptions;
+    axisList.showHeader = true;
+    axisList.setItems(varGlyphController.axes);
+
+    const addRemoveAxisButtons = html.createDomElement("add-remove-buttons", {
+      id: "sources-list-add-remove-buttons",
+    });
+
+    const contentElement = html.div({}, [axisList, addRemoveAxisButtons]);
+
+    dialog.setContent(contentElement);
+    if (!(await dialog.run())) {
+      return;
+    }
   }
 }
 
