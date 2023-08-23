@@ -37,12 +37,15 @@ export class IconButton extends UnlitElement {
     }
   }
 
-  static get observedAttributes() {
-    return ["src", "disabled"];
-  }
+  static properties = {
+    src: { type: String },
+  };
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    this.requestUpdate();
+  set disabled(value) {
+    this._buttonDisabled = value;
+    if (this._button) {
+      this._button.disabled = value;
+    }
   }
 
   set onclick(callback) {
@@ -51,11 +54,11 @@ export class IconButton extends UnlitElement {
   }
 
   render() {
-    const content = html.button(
-      { onclick: this._buttonOnClick, disabled: this.disabled },
+    this._button = html.button(
+      { onclick: this._buttonOnClick, disabled: this._buttonDisabled },
       [html.createDomElement("inline-svg", { src: this.src })]
     );
-    return content;
+    return this._button;
   }
 }
 
