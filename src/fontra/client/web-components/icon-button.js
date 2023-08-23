@@ -41,6 +41,10 @@ export class IconButton extends UnlitElement {
     src: { type: String },
   };
 
+  get disabled() {
+    return this._buttonDisabled;
+  }
+
   set disabled(value) {
     this._buttonDisabled = value;
     if (this._button) {
