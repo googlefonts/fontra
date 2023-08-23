@@ -277,13 +277,13 @@ class FontraServer:
     def _addVersionTokenToReferences(self, data, contentType):
         if self.versionToken is None:
             return data
+        jsAllowedFileExtensions = ["js", "svg"]
         extensionMapping = {
             "text/html": self.allowedFileExtensions,
             "text/css": ["woff2", "svg"],
-            "text/javascript": [
-                "js"
-            ],  # https://github.com/googlefonts/fontra/issues/575
-            "application/javascript": ["js"],
+            # https://github.com/googlefonts/fontra/issues/575
+            "text/javascript": jsAllowedFileExtensions,
+            "application/javascript": jsAllowedFileExtensions,
         }
         extensions = extensionMapping.get(contentType)
         if extensions is not None:
