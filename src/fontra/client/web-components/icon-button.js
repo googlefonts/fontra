@@ -45,10 +45,16 @@ export class IconButton extends UnlitElement {
     this.requestUpdate();
   }
 
+  set onclick(callback) {
+    // Don't assign this.onclick, we only need button.onclick
+    this._buttonOnClick = callback;
+  }
+
   render() {
-    const content = html.button({ onclick: this.onclick, disabled: this.disabled }, [
-      html.createDomElement("inline-svg", { src: this.src }),
-    ]);
+    const content = html.button(
+      { onclick: this._buttonOnClick, disabled: this.disabled },
+      [html.createDomElement("inline-svg", { src: this.src })]
+    );
     return content;
   }
 }
