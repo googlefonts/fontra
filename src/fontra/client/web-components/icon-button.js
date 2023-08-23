@@ -54,8 +54,6 @@ export class IconButton extends UnlitElement {
   }
 
   render() {
-    console.log("heyyy, disa", this.disabled, typeof this.disabled);
-    // console.log("heyyy, disa2", this.disabled, typeof this.disabled);
     const content = html.button({ onclick: this.onclick, disabled: this.disabled }, [
       html.createDomElement("inline-svg", { src: this.src }),
     ]);
