@@ -60,6 +60,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           []
         ),
         html.createDomElement("icon-button", {
+          style: "display: none;", // See _updateResetAllAxesButtonState
           id: "reset-axes-button",
           src: "/tabler-icons/refresh.svg",
           onclick: (event) => this.resetAllAxesToDefault(event),
@@ -219,6 +220,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
     const button = this.contentElement.querySelector("#reset-axes-button");
     button.disabled = locationEmpty;
+    button.style = this.designspaceLocation.axes.length ? "" : "display: none;";
   }
 
   get globalAxes() {
