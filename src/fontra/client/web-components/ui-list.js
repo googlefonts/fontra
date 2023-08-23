@@ -96,8 +96,6 @@ export class UIList extends UnlitElement {
   constructor() {
     super();
 
-    this.hideWhenEmpty = true;
-
     this._columnDescriptions = [
       {
         key: "default",
@@ -191,11 +189,7 @@ export class UIList extends UnlitElement {
   }
 
   _updateVisibility() {
-    if (this.hideWhenEmpty) {
-      this.style.display = this.items?.length || this.minHeight ? "grid" : "none";
-    } else {
-      this.style.display = "grid";
-    }
+    this.style.display = this.items?.length || this.minHeight ? "grid" : "none";
   }
 
   getSelectedItem() {

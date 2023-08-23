@@ -680,7 +680,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const axisList = html.createDomElement("ui-list");
     axisList.columnDescriptions = columnDescriptions;
     axisList.showHeader = true;
-    axisList.hideWhenEmpty = false;
+    axisList.minHeight = "6em";
     axisList.setItems(varGlyphController.axes);
 
     const addRemoveAxisButtons = html.createDomElement("add-remove-buttons", {
