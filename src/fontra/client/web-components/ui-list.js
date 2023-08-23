@@ -294,7 +294,7 @@ export class UIList extends UnlitElement {
   _clickHandler(event) {
     const rowIndex = this._getRowIndexFromTarget(event.target);
     if (rowIndex !== undefined) {
-      this.setSelectedItemIndex(this._getRowIndexFromTarget(event.target), true);
+      this.setSelectedItemIndex(rowIndex, true);
     }
   }
 
@@ -329,13 +329,11 @@ export class UIList extends UnlitElement {
   }
 
   _getRowIndexFromTarget(target) {
-    if (target.parentNode === this.contents) {
-      // clicked on row
-      return target.dataset.rowIndex;
-    } else if (target.parentNode.parentNode === this.contents) {
-      // clicked on cell
-      return target.parentNode.dataset.rowIndex;
+    let node = target;
+    while (node && node.parentNode !== this.contents) {
+      node = node.parentNode;
     }
+    return node?.dataset.rowIndex;
   }
 
   setSelectedItemIndex(rowIndex, shouldDispatchEvent = false) {
