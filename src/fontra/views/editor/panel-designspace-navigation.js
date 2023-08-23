@@ -672,9 +672,24 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     const columnDescriptions = [
       { key: "name", title: "Name", width: "8em" },
-      { key: "minValue", title: "Minimum", width: "5em" },
-      { key: "defaultValue", title: "Default", width: "5em" },
-      { key: "maxValue", title: "Maximum", width: "5em" },
+      {
+        key: "minValue",
+        title: "Minimum",
+        width: "5em",
+        cellFactory: editTextListCell,
+      },
+      {
+        key: "defaultValue",
+        title: "Default",
+        width: "5em",
+        cellFactory: editTextListCell,
+      },
+      {
+        key: "maxValue",
+        title: "Maximum",
+        width: "5em",
+        cellFactory: editTextListCell,
+      },
     ];
 
     const axisList = html.createDomElement("ui-list");
@@ -844,6 +859,26 @@ function statusListCell(item, colDesc) {
 
 function cellColorStyle(color) {
   return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
+}
+
+function editTextListCell(item, colDesc) {
+  const value = item[colDesc.key];
+  const style = `
+    text-align: right;
+    width: 100%;
+    margin: 0;
+    padding: 0 0.5em 0 0.5em;
+    outline: none;
+  `;
+  return html.div(
+    {
+      style: style,
+      ondblclick: (event) => {
+        // console.log(event.target);
+      },
+    },
+    [value]
+  );
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
