@@ -49,7 +49,7 @@ export class ModalDialog extends SimpleElement {
       overflow-wrap: normal;
       font-size: 1.15em;
       background-color: var(--ui-element-background-color);
-      color: var(--ui-form-input-foreground-color);
+      color: var(--ui-element-foreground-color);
       padding: 1em;
       border-radius: 0.5em;
       box-shadow: 1px 3px 8px #0006;

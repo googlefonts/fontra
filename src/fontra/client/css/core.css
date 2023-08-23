@@ -43,6 +43,9 @@
   --background-color-light: var(--fontra-theme-marker) #f6f6f6;
   --background-color-dark: #333;
 
+  --ui-element-foreground-color-light: var(--fontra-theme-marker) black;
+  --ui-element-foreground-color-dark: white;
+
   --ui-element-background-color-light: var(--fontra-theme-marker) white;
   --ui-element-background-color-dark: #484848;
 
@@ -55,6 +58,10 @@
   --foreground-color: var(--foreground-color-light, var(--foreground-color-dark));
   --background-color: var(--background-color-light, var(--background-color-dark));
 
+  --ui-element-foreground-color: var(
+    --ui-element-foreground-color-light,
+    var(--ui-element-foreground-color-dark)
+  );
   --ui-element-background-color: var(
     --ui-element-background-color-light,
     var(--ui-element-background-color-dark)
