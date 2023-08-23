@@ -242,6 +242,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
     }
     this.designspaceLocation.axes = axes;
+
+    this._updateResetAllAxesButtonState();
   }
 
   async _updateSources() {
@@ -286,6 +288,8 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
     this.addRemoveSourceButtons.disableAddButton =
       !this.designspaceLocation.axes.length;
+
+    this._updateRemoveSourceButtonState();
   }
 
   _updateRemoveSourceButtonState() {
