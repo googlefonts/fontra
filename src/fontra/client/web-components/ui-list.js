@@ -172,7 +172,9 @@ export class UIList extends UnlitElement {
     this.requestUpdate();
   }
 
-  setItems(items, shouldDispatchEvent = false) {
+  setItems(items, shouldDispatchEvent = false, keepScrollPosition = false) {
+    const scrollLeft = this.container.scrollLeft;
+    const scrollTop = this.container.scrollTop;
     const selectedItem = this.getSelectedItem();
     this.contents.innerHTML = "";
     this.items = items;
@@ -180,6 +182,10 @@ export class UIList extends UnlitElement {
     this._itemsBackLog = Array.from(items);
     this.setSelectedItem(selectedItem, shouldDispatchEvent);
     this._addMoreItemsIfNeeded();
+    if (keepScrollPosition) {
+      this.container.scrollLeft = scrollLeft;
+      this.container.scrollTop = scrollTop;
+    }
   }
 
   _updateVisibility() {

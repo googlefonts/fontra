@@ -242,7 +242,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
       sourceItems.push(sourceController.model);
     }
-    this.sourcesList.setItems(sourceItems);
+    this.sourcesList.setItems(sourceItems, false, true);
     this.sourcesList.setSelectedItemIndex(this.sceneSettings.selectedSourceIndex);
     this.addRemoveSourceButtons.hidden = !sourceItems.length;
     this.addRemoveSourceButtons.disableAddButton =
