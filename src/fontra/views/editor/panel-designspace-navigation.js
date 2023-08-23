@@ -19,6 +19,7 @@ import {
 } from "/core/var-model.js";
 import { showMenu } from "/web-components/menu-panel.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
+import { IconButton } from "/web-components/icon-button.js";
 import Panel from "./panel.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
@@ -37,6 +38,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       flex-direction: column;
       box-sizing: border-box;
     }
+
+    icon-button {
+      width: 1.5em;
+      height: 1.5em;
+    }
   `;
 
   getContentElement() {
@@ -52,6 +58,12 @@ export default class DesignspaceNavigationPanel extends Panel {
           },
           []
         ),
+        html.createDomElement("icon-button", {
+          id: "reset-axes-button",
+          src: "/tabler-icons/refresh.svg",
+          onclick: (event) => this.resetAllAxesToDefault(event),
+          disabled: false,
+        }),
         html.createDomElement("ui-list", {
           id: "sources-list",
         }),
@@ -180,6 +192,10 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this._updateAxes();
     this._updateSources();
+  }
+
+  resetAllAxesToDefault(event) {
+    this.sceneSettings.location = {};
   }
 
   get globalAxes() {
