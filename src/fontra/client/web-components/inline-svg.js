@@ -1,5 +1,7 @@
 // This isn't really a web component, just a custom element.
 
+import { htmlToElement } from "/core/utils.js";
+
 export class InlineSVG extends HTMLElement {
   constructor(src) {
     super();
@@ -32,7 +34,11 @@ export class InlineSVG extends HTMLElement {
 
   async fetchSVG(svgSRC) {
     const response = await fetch(svgSRC);
-    this.innerHTML = await response.text();
+    const svgElement = htmlToElement(await response.text());
+    svgElement.removeAttribute("width");
+    svgElement.removeAttribute("height");
+    this.innerHTML = "";
+    this.appendChild(svgElement);
   }
 }
 

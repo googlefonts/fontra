@@ -10,6 +10,7 @@ import {
   rgbaToCSS,
   round,
   scheduleCalls,
+  throttleCalls,
 } from "/core/utils.js";
 import {
   locationToString,
@@ -19,6 +20,7 @@ import {
 } from "/core/var-model.js";
 import { showMenu } from "/web-components/menu-panel.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
+import { IconButton } from "/web-components/icon-button.js";
 import Panel from "./panel.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
@@ -37,6 +39,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       flex-direction: column;
       box-sizing: border-box;
     }
+
+    icon-button {
+      width: 1.5em;
+      height: 1.5em;
+    }
   `;
 
   getContentElement() {
@@ -52,6 +59,12 @@ export default class DesignspaceNavigationPanel extends Panel {
           },
           []
         ),
+        html.createDomElement("icon-button", {
+          id: "reset-axes-button",
+          src: "/tabler-icons/refresh.svg",
+          onclick: (event) => this.resetAllAxesToDefault(event),
+          disabled: false,
+        }),
         html.createDomElement("ui-list", {
           id: "sources-list",
         }),
@@ -68,6 +81,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettings = this.editorController.sceneSettingsController.model;
     this.sceneModel = this.editorController.sceneController.sceneModel;
     this.sceneController = this.editorController.sceneController;
+    this.updateResetAllAxesButtonState = throttleCalls(
+      () => this._updateResetAllAxesButtonState(),
+      100
+    );
   }
 
   setup() {
@@ -102,16 +119,17 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.sceneSettingsController.addKeyListener("location", (event) => {
+      this.updateResetAllAxesButtonState();
       if (event.senderInfo?.senderID === this) {
         // Sent by us, ignore
         return;
       }
       this.designspaceLocation.values = event.newValue;
-      this._updateRemoveSourceButtonState();
     });
 
     this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
       this.sourcesList.setSelectedItemIndex(event.newValue);
+      this._updateRemoveSourceButtonState();
     });
 
     const columnDescriptions = [
@@ -180,6 +198,27 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this._updateAxes();
     this._updateSources();
+  }
+
+  resetAllAxesToDefault(event) {
+    this.sceneSettings.location = {};
+  }
+
+  _updateResetAllAxesButtonState() {
+    const location = this.sceneSettings.location;
+    let locationEmpty = true;
+    for (const axis of this.designspaceLocation.axes) {
+      if (
+        axis.name &&
+        axis.name in location &&
+        location[axis.name] !== axis.defaultValue
+      ) {
+        locationEmpty = false;
+        break;
+      }
+    }
+    const button = this.contentElement.querySelector("#reset-axes-button");
+    button.disabled = locationEmpty;
   }
 
   get globalAxes() {
