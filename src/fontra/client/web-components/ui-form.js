@@ -13,35 +13,6 @@ const colors = {
 export class Form extends SimpleElement {
   static styles = `
     ${themeColorCSS(colors)}
-    :host {
-      --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-light);
-      --ui-form-input-background-color: var(--ui-form-input-background-color-light);
-      --ui-form-input-border-color: var(--ui-form-input-border-color-light);
-      --slider-thumb-color: var(--slider-thumb-color-light);
-    }
-
-    :host.dark-theme {
-      --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-dark);
-      --ui-form-input-background-color: var(--ui-form-input-background-color-dark);
-      --ui-form-input-border-color: var(--ui-form-input-border-color-dark);
-      --slider-thumb-color: var(--slider-thumb-color-dark);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :host {
-        --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-dark);
-        --ui-form-input-background-color: var(--ui-form-input-background-color-dark);
-        --ui-form-input-border-color: var(--ui-form-input-border-color-dark);
-        --slider-thumb-color: var(--slider-thumb-color-dark);
-      }
-
-      :host.light-theme {
-        --ui-form-input-foreground-color: var(--ui-form-input-foreground-color-light);
-        --ui-form-input-background-color: var(--ui-form-input-background-color-light);
-        --ui-form-input-border-color: var(--ui-form-input-border-color-light);
-        --slider-thumb-color: var(--slider-thumb-color-light);
-      }
-    }
 
     input[type="range"] {
       --slider-track-width: 10em;
