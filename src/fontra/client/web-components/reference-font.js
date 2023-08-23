@@ -29,7 +29,7 @@ export class ReferenceFont extends UnlitElement {
       outline: none;
       border: none;
       background-color: var(--text-input-background-color);
-      color: var(--ui-form-input-foreground-color);
+      color: var(--text-input-foreground-color);
       padding: 0.4em;
       font-family: fontra-ui-regular;
       font-feature-settings: "tnum" 1;

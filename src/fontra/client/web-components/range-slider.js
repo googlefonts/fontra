@@ -145,7 +145,7 @@ export class RangeSlider extends LitElement {
       outline: none;
       border: none;
       background-color: var(--text-input-background-color);
-      color: var(--ui-form-input-foreground-color);
+      color: var(--ui-element-foreground-color);
 
       padding: 3px;
 
