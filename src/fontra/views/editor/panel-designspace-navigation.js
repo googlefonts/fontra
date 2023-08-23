@@ -37,10 +37,24 @@ export default class DesignspaceNavigationPanel extends Panel {
       padding: 1em;
       display: flex;
       flex-direction: column;
+      gap: 0.1em;
       box-sizing: border-box;
     }
 
+    .axis-buttons-container {
+      display: flex;
+      flex-direction: row;
+      gap: 0.2em;
+    }
+
+    /* this is to counteract the undesired interaction between button.hidden
+       and display: block */
+    [hidden] {
+      display: none !important;
+    }
+
     icon-button {
+      display: block;
       width: 1.5em;
       height: 1.5em;
     }
@@ -59,13 +73,20 @@ export default class DesignspaceNavigationPanel extends Panel {
           },
           []
         ),
-        html.createDomElement("icon-button", {
-          id: "reset-axes-button",
-          src: "/tabler-icons/refresh.svg",
-          onclick: (event) => this.resetAllAxesToDefault(event),
-          disabled: false,
-          hidden: true,
-        }),
+        html.div({ class: "axis-buttons-container" }, [
+          html.createDomElement("icon-button", {
+            id: "reset-axes-button",
+            src: "/tabler-icons/refresh.svg",
+            onclick: (event) => this.resetAllAxesToDefault(event),
+            disabled: false,
+            hidden: true,
+          }),
+          html.createDomElement("icon-button", {
+            id: "edit-local-axes-button",
+            src: "/tabler-icons/tool.svg",
+            onclick: (event) => this.editLocalAxes(event),
+          }),
+        ]),
         html.createDomElement("ui-list", {
           id: "sources-list",
         }),
@@ -110,6 +131,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
       this._updateAxes();
       this._updateSources();
+      this._updateEditLocalAxesButtonState();
     });
 
     this.sceneController.addCurrentGlyphChangeListener(
@@ -630,6 +652,19 @@ export default class DesignspaceNavigationPanel extends Panel {
       ]
     );
     return { contentElement, warningElement };
+  }
+
+  _updateEditLocalAxesButtonState() {
+    const button = this.contentElement.querySelector("#edit-local-axes-button");
+    button.disabled = !this.sceneModel.selectedGlyph;
+  }
+
+  async editLocalAxes(event) {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    if (!varGlyphController) {
+      return;
+    }
   }
 }
 
