@@ -10,6 +10,7 @@ import {
   rgbaToCSS,
   round,
   scheduleCalls,
+  throttleCalls,
 } from "/core/utils.js";
 import {
   locationToString,
@@ -80,6 +81,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettings = this.editorController.sceneSettingsController.model;
     this.sceneModel = this.editorController.sceneController.sceneModel;
     this.sceneController = this.editorController.sceneController;
+    this.updateResetAllAxesButtonState = throttleCalls(
+      () => this._updateResetAllAxesButtonState(),
+      100
+    );
   }
 
   setup() {
@@ -114,16 +119,17 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.sceneSettingsController.addKeyListener("location", (event) => {
+      this.updateResetAllAxesButtonState();
       if (event.senderInfo?.senderID === this) {
         // Sent by us, ignore
         return;
       }
       this.designspaceLocation.values = event.newValue;
-      this._updateRemoveSourceButtonState();
     });
 
     this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
       this.sourcesList.setSelectedItemIndex(event.newValue);
+      this._updateRemoveSourceButtonState();
     });
 
     const columnDescriptions = [
@@ -196,6 +202,23 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   resetAllAxesToDefault(event) {
     this.sceneSettings.location = {};
+  }
+
+  _updateResetAllAxesButtonState() {
+    const location = this.sceneSettings.location;
+    let locationEmpty = true;
+    for (const axis of this.designspaceLocation.axes) {
+      if (
+        axis.name &&
+        axis.name in location &&
+        location[axis.name] !== axis.defaultValue
+      ) {
+        locationEmpty = false;
+        break;
+      }
+    }
+    const button = this.contentElement.querySelector("#reset-axes-button");
+    button.disabled = locationEmpty;
   }
 
   get globalAxes() {
