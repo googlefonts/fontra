@@ -712,7 +712,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     axisList.columnDescriptions = columnDescriptions;
     axisList.showHeader = true;
     axisList.minHeight = "6em";
-    axisList.setItems(varGlyphController.axes);
+    const axisItems = varGlyphController.axes.map((axis) => {
+      return { ...axis };
+    });
+    axisList.setItems(axisItems);
 
     const addRemoveAxisButtons = html.createDomElement("add-remove-buttons", {
       id: "sources-list-add-remove-buttons",
@@ -724,6 +727,14 @@ export default class DesignspaceNavigationPanel extends Panel {
     if (!(await dialog.run())) {
       return;
     }
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      // This doesn't work yet:
+      // glyph.axes = axisItems;
+      // Work around like this:
+      glyph.axes.splice(0, glyph.axes.length, ...axisItems);
+      return "edit axes";
+    });
   }
 }
 
