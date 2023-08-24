@@ -266,16 +266,13 @@ export class UIList extends UnlitElement {
             [colDesc.cellFactory(item, colDesc)]
           );
         } else {
-          cell = document.createElement("div");
-          cell.className = "text-cell " + colDesc.key;
-          if (colDesc.align) {
-            cell.classList.add(colDesc.align);
-          }
+          cell = html.div(
+            { class: `text-cell ${colDesc.key} ${colDesc.align || "left"}` },
+            [colDesc.get ? colDesc.get(item) : item[colDesc.key]]
+          );
           if (colDesc.width) {
             cell.style.width = colDesc.width;
           }
-          const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
-          cell.append(value);
         }
         row.appendChild(cell);
       }
