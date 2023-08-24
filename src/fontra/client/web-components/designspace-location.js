@@ -34,10 +34,10 @@ export class DesignspaceLocation extends UnlitElement {
       display: initial;
     }
 
-    .slider-divider {
+    hr {
       border: none;
-      border-top: 1px solid gray;
-      width: 90%;
+      border-top: 1px solid var(--rule-color);
+      width: 100%;
       height: 1px;
       grid-column: 1 / -1;
     }
@@ -110,7 +110,7 @@ export class DesignspaceLocation extends UnlitElement {
     const elements = [];
     for (const axis of this.axes) {
       if (axis.isDivider) {
-        elements.push(html.hr({ class: "slider-divider" }));
+        elements.push(html.hr());
         continue;
       }
       const modelValue = this.values[axis.name];
