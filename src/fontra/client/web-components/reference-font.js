@@ -49,7 +49,7 @@ export class ReferenceFont extends UnlitElement {
     this.controller.addKeyListener("fontList", (event) =>
       this._fontListChangedHandler(event)
     );
-    garbageCollectUnusedFiles(this.controller.model.fontList);
+    garbageCollectUnusedFiles(this.model.fontList);
   }
 
   get model() {
