@@ -83,7 +83,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           }),
           html.createDomElement("icon-button", {
             id: "edit-local-axes-button",
-            src: "/tabler-icons/tool.svg",
+            src: "/tabler-icons/settings.svg",
             onclick: (event) => this.editLocalAxes(event),
           }),
         ]),
@@ -868,17 +868,27 @@ function editTextListCell(item, colDesc) {
     width: 100%;
     margin: 0;
     padding: 0 0.5em 0 0.5em;
-    outline: none;
   `;
-  return html.div(
+  const cell = html.div(
     {
       style: style,
       ondblclick: (event) => {
-        // console.log(event.target);
+        cell.contentEditable = true;
+        const range = document.createRange();
+        range.selectNodeContents(cell);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        cell.focus();
+      },
+      onblur(event) {
+        // console.log("blurrr");
+        cell.contentEditable = false;
       },
     },
     [value]
   );
+  return cell;
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
