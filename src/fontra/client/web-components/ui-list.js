@@ -90,6 +90,19 @@ export class UIList extends UnlitElement {
     .text-cell, .text-cell-header {
       overflow: hidden;
       text-overflow: ellipsis;
+      padding: 0 0 0 0.2em;
+    }
+
+    .text-cell.left, .text-cell-header.left {
+      text-align: left;
+    }
+
+    .text-cell.center, .text-cell-header.center {
+      text-align: center;
+    }
+
+    .text-cell.right, .text-cell-header.right {
+      text-align: right;
     }
     `;
 
@@ -255,6 +268,9 @@ export class UIList extends UnlitElement {
         } else {
           cell = document.createElement("div");
           cell.className = "text-cell " + colDesc.key;
+          if (colDesc.align) {
+            cell.classList.add(colDesc.align);
+          }
           if (colDesc.width) {
             cell.style.width = colDesc.width;
           }
@@ -275,6 +291,9 @@ export class UIList extends UnlitElement {
     for (const colDesc of this.columnDescriptions) {
       const cell = document.createElement("div");
       cell.className = "text-cell-header " + colDesc.key;
+      if (colDesc.align) {
+        cell.classList.add(colDesc.align);
+      }
       if (colDesc.width) {
         cell.style.width = colDesc.width;
       }
