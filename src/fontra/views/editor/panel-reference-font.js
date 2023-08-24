@@ -87,12 +87,12 @@ export default class ReferenceFontPanel extends Panel {
 
     referenceFontElement.controller.addKeyListener("languageCode", (event) => {
       this.editorController.canvasController.setLangAttribute(
-        referenceFontElement.controller.model.languageCode
+        referenceFontElement.model.languageCode
       );
     });
 
     this.editorController.canvasController.setLangAttribute(
-      referenceFontElement.controller.model.languageCode
+      referenceFontElement.model.languageCode
     );
 
     referenceFontModel = referenceFontElement.model;
