@@ -102,7 +102,7 @@ export class CanvasController {
   }
 
   setLangAttribute(lang) {
-    this.canvas.setAttribute("lang", lang);
+    this.canvas.setAttribute("lang", lang.trim() || "en");
     this.requestUpdate();
   }
 
