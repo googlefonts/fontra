@@ -38,20 +38,18 @@ export class ReferenceFont extends UnlitElement {
 
   constructor() {
     super();
-    this.listController = new ObservableController({
-      selectedFontIndex: null,
+    this.controller = new ObservableController({
+      languageCode: "",
+      selectedFontIndex: -1,
       fontList: [],
+      charOverride: "",
+      referenceFontName: "",
     });
-    this.listController.synchronizeWithLocalStorage("fontra.reference-font.");
-    this.listController.addKeyListener("fontList", (event) =>
+    this.controller.synchronizeWithLocalStorage("fontra.reference-font.");
+    this.controller.addKeyListener("fontList", (event) =>
       this._fontListChangedHandler(event)
     );
-    this.controller = new ObservableController({
-      referenceFontName:
-        this.listController.model.fontList[this.listController.model.selectedFontIndex]
-          ?.fontIdentifier,
-    });
-    garbageCollectUnusedFiles(this.listController.model.fontList);
+    garbageCollectUnusedFiles(this.model.fontList);
   }
 
   get model() {
@@ -83,12 +81,9 @@ export class ReferenceFont extends UnlitElement {
     );
     this.filesUIList.addEventListener("deleteKeyAlt", () => this._deleteAllHandler());
 
-    this.filesUIList.setItems([...this.listController.model.fontList]);
-    if (this.listController.model.selectedFontIndex != null) {
-      this.filesUIList.setSelectedItemIndex(
-        this.listController.model.selectedFontIndex,
-        true
-      );
+    this.filesUIList.setItems([...this.model.fontList]);
+    if (this.model.selectedFontIndex != -1) {
+      this.filesUIList.setSelectedItemIndex(this.model.selectedFontIndex, true);
     }
 
     const content = [
@@ -111,7 +106,17 @@ export class ReferenceFont extends UnlitElement {
           input({
             type: "text",
             id: "char-override",
-            oninput: (event) => (this.model["charOverride"] = event.target.value),
+            value: this.model.charOverride,
+            oninput: (event) => (this.model.charOverride = event.target.value),
+          }),
+          label({ for: "language-code" }, "Language code:"),
+          input({
+            type: "text",
+            id: "language-code",
+            value: this.model.languageCode,
+            oninput: (event) => {
+              this.model.languageCode = event.target.value;
+            },
           }),
         ]
       ),
@@ -123,7 +128,7 @@ export class ReferenceFont extends UnlitElement {
     if (event.senderInfo?.senderID === this) {
       return;
     }
-    this.listController.model.selectedFontIndex = null;
+    this.model.selectedFontIndex = -1;
 
     const itemsByFontID = Object.fromEntries(
       this.filesUIList.items.map((item) => [item.fontIdentifier, item])
@@ -144,7 +149,7 @@ export class ReferenceFont extends UnlitElement {
 
     this.filesUIList.setItems(newItems, true);
     if (this.filesUIList.getSelectedItemIndex() === undefined) {
-      this.model.referenceFontName = undefined;
+      this.model.referenceFontName = "";
     }
   }
 
@@ -185,7 +190,7 @@ export class ReferenceFont extends UnlitElement {
     this.filesUIList.setItems(newItems);
     this.filesUIList.setSelectedItemIndex(newSelectedItemIndex, true);
 
-    const writtenFontItems = [...this.listController.model.fontList];
+    const writtenFontItems = [...this.model.fontList];
     try {
       for (const fontItem of fontItems) {
         await writeFontFileToOPFS(fontItem.fontIdentifier, fontItem.droppedFile);
@@ -201,7 +206,7 @@ export class ReferenceFont extends UnlitElement {
     // Only notify the list controller *after* the files have been written,
     // or else other tabs will try to read the font data too soon and will
     // fail
-    this.listController.setItem("fontList", cleanFontItems(writtenFontItems), {
+    this.controller.setItem("fontList", cleanFontItems(writtenFontItems), {
       senderID: this,
     });
   }
@@ -209,13 +214,14 @@ export class ReferenceFont extends UnlitElement {
   async _listSelectionChangedHandler() {
     const fontItem = this.filesUIList.getSelectedItem();
     if (!fontItem) {
-      this.model.referenceFontName = undefined;
-      this.listController.model.selectedFontIndex = null;
+      this.model.referenceFontName = "";
+      this.model.selectedFontIndex = -1;
       return;
     }
 
-    this.listController.model.selectedFontIndex =
-      this.filesUIList.getSelectedItemIndex();
+    const selectedFontIndex = this.filesUIList.getSelectedItemIndex();
+    this.model.selectedFontIndex =
+      selectedFontIndex !== undefined ? selectedFontIndex : -1;
 
     if (!fontItem.fontFace) {
       if (!fontItem.objectURL) {
@@ -255,16 +261,16 @@ export class ReferenceFont extends UnlitElement {
       newItems = [];
     }
 
-    this.listController.model.selectedFontIndex = null;
-    this.model.referenceFontName = undefined;
+    this.model.selectedFontIndex = -1;
+    this.model.referenceFontName = "";
 
     this.filesUIList.setItems(newItems);
 
     // Only share those fonts that we successfully stored before
     const storedFontIDs = new Set(
-      this.listController.model.fontList.map((item) => item.fontIdentifier)
+      this.model.fontList.map((item) => item.fontIdentifier)
     );
-    this.listController.setItem(
+    this.controller.setItem(
       "fontList",
       cleanFontItems(newItems.filter((item) => storedFontIDs.has(item.fontIdentifier))),
       {
