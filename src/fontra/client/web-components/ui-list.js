@@ -90,7 +90,7 @@ export class UIList extends UnlitElement {
     .text-cell, .text-cell-header {
       overflow: hidden;
       text-overflow: ellipsis;
-      padding: 0 0 0 0.2em;
+      padding: 0 0.2em 0 0.2em;
     }
 
     .text-cell.left, .text-cell-header.left {
@@ -266,12 +266,17 @@ export class UIList extends UnlitElement {
             [colDesc.cellFactory(item, colDesc)]
           );
         } else {
+          const formatter = colDesc.formatter || DefaultFormatter;
+
           cell = html.div(
             { class: `text-cell ${colDesc.key} ${colDesc.align || "left"}` },
-            [colDesc.get ? colDesc.get(item) : item[colDesc.key]]
+            [formatter.toString(colDesc.get ? colDesc.get(item) : item[colDesc.key])]
           );
           if (colDesc.width) {
             cell.style.width = colDesc.width;
+          }
+          if (colDesc.editable) {
+            cell.ondblclick = this._makeCellEditor(cell, colDesc, item);
           }
         }
         row.appendChild(cell);
@@ -305,6 +310,47 @@ export class UIList extends UnlitElement {
       false
     );
     return this.headerContainer;
+  }
+
+  _makeCellEditor(cell, colDesc, item) {
+    const initialValue = item[colDesc.key];
+    let formattingError;
+
+    cell.onblur = (event) => {
+      cell.contentEditable = false;
+      this.contents.focus();
+      if (formattingError) {
+        const formatter = colDesc.formatter || DefaultFormatter;
+        cell.textContent = formatter.toString(initialValue);
+      }
+    };
+
+    cell.oninput = (event) => {
+      const formatter = colDesc.formatter || DefaultFormatter;
+      const { value, error } = formatter.fromString(cell.innerText);
+      if (!error) {
+        item[colDesc.key] = value;
+      }
+      formattingError = error;
+    };
+
+    cell.onkeydown = (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        cell.blur();
+      }
+    };
+
+    return (event) => {
+      cell.contentEditable = true;
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      cell.focus();
+    };
   }
 
   _clickHandler(event) {
@@ -453,5 +499,26 @@ export class UIList extends UnlitElement {
     this._addMoreItemsIfNeeded();
   }
 }
+
+const DefaultFormatter = {
+  toString: (value) => value.toString(),
+  fromString: (value) => {
+    return {
+      value: value,
+    };
+  },
+};
+
+export const NumberFormatter = {
+  toString: (value) => value.toString(),
+  fromString: (value) => {
+    const number = Number(value);
+    if (isNaN(number)) {
+      return { error: "not a number" };
+    } else {
+      return { value: number };
+    }
+  },
+};
 
 customElements.define("ui-list", UIList);

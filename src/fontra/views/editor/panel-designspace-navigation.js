@@ -21,6 +21,7 @@ import {
 import { showMenu } from "/web-components/menu-panel.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { IconButton } from "/web-components/icon-button.js";
+import { NumberFormatter } from "/web-components/ui-list.js";
 import Panel from "./panel.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
@@ -680,24 +681,30 @@ export default class DesignspaceNavigationPanel extends Panel {
     ]);
 
     const columnDescriptions = [
-      { key: "name", title: "Name", width: "8em" },
+      { key: "name", title: "Name", width: "8em", editable: true },
       {
         key: "minValue",
         title: "Minimum",
         width: "5em",
-        cellFactory: editTextListCell,
+        align: "right",
+        editable: true,
+        formatter: NumberFormatter,
       },
       {
         key: "defaultValue",
         title: "Default",
         width: "5em",
-        cellFactory: editTextListCell,
+        align: "right",
+        editable: true,
+        formatter: NumberFormatter,
       },
       {
         key: "maxValue",
         title: "Maximum",
         width: "5em",
-        cellFactory: editTextListCell,
+        align: "right",
+        editable: true,
+        formatter: NumberFormatter,
       },
     ];
 
@@ -868,36 +875,6 @@ function statusListCell(item, colDesc) {
 
 function cellColorStyle(color) {
   return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
-}
-
-function editTextListCell(item, colDesc) {
-  const value = item[colDesc.key];
-  const style = `
-    text-align: right;
-    width: 100%;
-    margin: 0;
-    padding: 0 0.5em 0 0.5em;
-  `;
-  const cell = html.div(
-    {
-      style: style,
-      ondblclick: (event) => {
-        cell.contentEditable = true;
-        const range = document.createRange();
-        range.selectNodeContents(cell);
-        const selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(range);
-        cell.focus();
-      },
-      onblur(event) {
-        // console.log("blurrr");
-        cell.contentEditable = false;
-      },
-    },
-    [value]
-  );
-  return cell;
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
