@@ -36,7 +36,7 @@ export class DesignspaceLocation extends UnlitElement {
 
     hr {
       border: none;
-      border-top: 1px solid var(--rule-color);
+      border-top: 1px dotted var(--rule-color);
       width: 100%;
       height: 1px;
       grid-column: 1 / -1;
