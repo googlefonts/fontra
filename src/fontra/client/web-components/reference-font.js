@@ -39,6 +39,7 @@ export class ReferenceFont extends UnlitElement {
   constructor() {
     super();
     this.listController = new ObservableController({
+      languageCode: "",
       selectedFontIndex: null,
       fontList: [],
     });
@@ -112,6 +113,15 @@ export class ReferenceFont extends UnlitElement {
             type: "text",
             id: "char-override",
             oninput: (event) => (this.model["charOverride"] = event.target.value),
+          }),
+          label({ for: "language-code" }, "Language code:"),
+          input({
+            type: "text",
+            id: "language-code",
+            value: this.listController.model.languageCode,
+            oninput: (event) => {
+              this.listController.setItem("languageCode", event.target.value);
+            },
           }),
         ]
       ),

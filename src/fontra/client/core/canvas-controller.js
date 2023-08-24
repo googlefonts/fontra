@@ -101,6 +101,10 @@ export class CanvasController {
     });
   }
 
+  setLangAttribute(lang) {
+    this.canvas.setAttribute("lang", lang);
+  }
+
   // Event handlers
 
   handleWheel(event) {

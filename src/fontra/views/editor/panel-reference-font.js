@@ -85,6 +85,16 @@ export default class ReferenceFontPanel extends Panel {
       this.editorController.canvasController.requestUpdate();
     });
 
+    referenceFontElement.listController.addKeyListener("languageCode", (event) => {
+      this.editorController.canvasController.setLangAttribute(
+        referenceFontElement.listController.model.languageCode
+      );
+    });
+
+    this.editorController.canvasController.setLangAttribute(
+      referenceFontElement.listController.model.languageCode
+    );
+
     referenceFontModel = referenceFontElement.model;
   }
 }
