@@ -135,7 +135,7 @@ export class Form extends SimpleElement {
 
     hr {
       border: none;
-      border-top: 1px solid var(--rule-color);
+      border-top: 1px solid var(--horizontal-rule-color);
       width: 100%;
       height: 1px;
       margin-block-start: 0.2em;
