@@ -103,6 +103,7 @@ export class CanvasController {
 
   setLangAttribute(lang) {
     this.canvas.setAttribute("lang", lang);
+    this.requestUpdate();
   }
 
   // Event handlers
