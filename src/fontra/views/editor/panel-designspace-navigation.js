@@ -731,7 +731,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         maxValue: 100,
       });
       axisList.setItems(axisItems);
-      axisList.setSelectedItemIndex(index, true);
+      axisList.editCell(index, "name");
     };
 
     addRemoveAxisButtons.removeButtonCallback = (event) => {
