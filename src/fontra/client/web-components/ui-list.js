@@ -427,6 +427,16 @@ export class UIList extends UnlitElement {
     return this.selectedItemIndex;
   }
 
+  editCell(rowIndex, columnKey) {
+    this.setSelectedItemIndex(rowIndex, true);
+    const row = this.contents.children[rowIndex];
+    if (!row) {
+      return;
+    }
+    const cell = [...row.children].find((cell) => cell.classList.contains(columnKey));
+    cell?.ondblclick?.();
+  }
+
   _dispatchEvent(eventName) {
     const event = new CustomEvent(eventName, {
       bubbles: false,
