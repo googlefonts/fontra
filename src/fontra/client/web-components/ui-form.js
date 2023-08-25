@@ -1,6 +1,7 @@
 import { QueueIterator } from "../core/queue-iterator.js";
 import { hyphenatedToCamelCase, round } from "../core/utils.js";
 import { SimpleElement } from "../core/unlit.js";
+import * as html from "../core/unlit.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const colors = {
@@ -132,9 +133,9 @@ export class Form extends SimpleElement {
       text-overflow: ellipsis;
     }
 
-    .ui-form-divider {
+    hr {
       border: none;
-      border-top: 1px solid #8888;
+      border-top: 1px solid var(--horizontal-rule-color);
       width: 100%;
       height: 1px;
       margin-block-start: 0.2em;
@@ -184,9 +185,7 @@ export class Form extends SimpleElement {
     }
     for (const fieldItem of fieldDescriptions) {
       if (fieldItem.type === "divider") {
-        const dividerElement = document.createElement("hr");
-        dividerElement.className = "ui-form-divider";
-        this.contentElement.appendChild(dividerElement);
+        this.contentElement.appendChild(html.hr());
         continue;
       }
       const labelElement = document.createElement("div");

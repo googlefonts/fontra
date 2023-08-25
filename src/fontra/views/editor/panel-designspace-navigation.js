@@ -21,6 +21,7 @@ import {
 import { showMenu } from "/web-components/menu-panel.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { IconButton } from "/web-components/icon-button.js";
+import { NumberFormatter } from "/web-components/ui-list.js";
 import Panel from "./panel.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
@@ -37,12 +38,34 @@ export default class DesignspaceNavigationPanel extends Panel {
       padding: 1em;
       display: flex;
       flex-direction: column;
+      gap: 0.1em;
       box-sizing: border-box;
     }
 
+    .axis-buttons-container {
+      display: flex;
+      flex-direction: row;
+      gap: 0.2em;
+    }
+
+    /* this is to counteract the undesired interaction between button.hidden
+       and display: block */
+    [hidden] {
+      display: none !important;
+    }
+
     icon-button {
+      display: block;
       width: 1.5em;
       height: 1.5em;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--horizontal-rule-color);
+      width: 100%;
+      height: 1px;
+      grid-column: 1 / -1;
     }
   `;
 
@@ -59,13 +82,21 @@ export default class DesignspaceNavigationPanel extends Panel {
           },
           []
         ),
-        html.createDomElement("icon-button", {
-          id: "reset-axes-button",
-          src: "/tabler-icons/refresh.svg",
-          onclick: (event) => this.resetAllAxesToDefault(event),
-          disabled: false,
-          hidden: true,
-        }),
+        html.div({ class: "axis-buttons-container" }, [
+          html.createDomElement("icon-button", {
+            id: "reset-axes-button",
+            src: "/tabler-icons/refresh.svg",
+            onclick: (event) => this.resetAllAxesToDefault(event),
+            disabled: false,
+            hidden: true,
+          }),
+          html.createDomElement("icon-button", {
+            id: "edit-local-axes-button",
+            src: "/tabler-icons/settings.svg",
+            onclick: (event) => this.editLocalAxes(event),
+          }),
+        ]),
+        html.hr(),
         html.createDomElement("ui-list", {
           id: "sources-list",
         }),
@@ -110,6 +141,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
       this._updateAxes();
       this._updateSources();
+      this._updateEditLocalAxesButtonState();
     });
 
     this.sceneController.addCurrentGlyphChangeListener(
@@ -630,6 +662,105 @@ export default class DesignspaceNavigationPanel extends Panel {
       ]
     );
     return { contentElement, warningElement };
+  }
+
+  _updateEditLocalAxesButtonState() {
+    const button = this.contentElement.querySelector("#edit-local-axes-button");
+    button.disabled = !this.sceneModel.selectedGlyph;
+  }
+
+  async editLocalAxes(event) {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    if (!varGlyphController) {
+      return;
+    }
+    const dialog = await dialogSetup("Edit local axes", null, [
+      { title: "Cancel", isCancelButton: true },
+      { title: "Okay", isDefaultButton: true, result: "ok" },
+    ]);
+
+    const columnDescriptions = [
+      { key: "name", title: "Name", width: "8em", editable: true },
+      {
+        key: "minValue",
+        title: "Minimum",
+        width: "5em",
+        align: "right",
+        editable: true,
+        formatter: NumberFormatter,
+      },
+      {
+        key: "defaultValue",
+        title: "Default",
+        width: "5em",
+        align: "right",
+        editable: true,
+        formatter: NumberFormatter,
+      },
+      {
+        key: "maxValue",
+        title: "Maximum",
+        width: "5em",
+        align: "right",
+        editable: true,
+        formatter: NumberFormatter,
+      },
+    ];
+
+    const axisList = html.createDomElement("ui-list");
+    axisList.columnDescriptions = columnDescriptions;
+    axisList.showHeader = true;
+    axisList.minHeight = "6em";
+    const axisItems = varGlyphController.axes.map((axis) => {
+      return { ...axis };
+    });
+    axisList.setItems(axisItems);
+
+    const addRemoveAxisButtons = html.createDomElement("add-remove-buttons", {
+      id: "axis-list-add-remove-buttons",
+    });
+    addRemoveAxisButtons.disableRemoveButton = true;
+
+    addRemoveAxisButtons.addButtonCallback = (event) => {
+      const index = axisItems.length;
+      axisItems.push({
+        name: "UntitledAxis",
+        minValue: 0,
+        defaultValue: 0,
+        maxValue: 100,
+      });
+      axisList.setItems(axisItems);
+      axisList.editCell(index, "name");
+    };
+
+    addRemoveAxisButtons.removeButtonCallback = (event) => {
+      const index = axisList.getSelectedItemIndex();
+      if (index !== undefined) {
+        axisItems.splice(index, 1);
+        axisList.setItems(axisItems);
+      }
+    };
+
+    axisList.addEventListener("listSelectionChanged", (event) => {
+      addRemoveAxisButtons.disableRemoveButton =
+        axisList.getSelectedItemIndex() === undefined;
+    });
+
+    const contentElement = html.div({}, [axisList, addRemoveAxisButtons]);
+
+    dialog.setContent(contentElement);
+    if (!(await dialog.run())) {
+      return;
+    }
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      // This doesn't work yet:
+      // glyph.axes = axisItems;
+      // Work around like this:
+      glyph.axes.splice(0, glyph.axes.length, ...axisItems);
+      return "edit axes";
+    });
   }
 }
 

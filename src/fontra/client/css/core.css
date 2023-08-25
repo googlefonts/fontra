@@ -74,6 +74,8 @@
     --text-input-background-color-light,
     var(--text-input-background-color-dark)
   );
+
+  --horizontal-rule-color: #aaa8;
 }
 
 html,

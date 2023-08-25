@@ -90,6 +90,19 @@ export class UIList extends UnlitElement {
     .text-cell, .text-cell-header {
       overflow: hidden;
       text-overflow: ellipsis;
+      padding: 0 0.2em 0 0.2em;
+    }
+
+    .text-cell.left, .text-cell-header.left {
+      text-align: left;
+    }
+
+    .text-cell.center, .text-cell-header.center {
+      text-align: center;
+    }
+
+    .text-cell.right, .text-cell-header.right {
+      text-align: right;
     }
     `;
 
@@ -253,13 +266,18 @@ export class UIList extends UnlitElement {
             [colDesc.cellFactory(item, colDesc)]
           );
         } else {
-          cell = document.createElement("div");
-          cell.className = "text-cell " + colDesc.key;
+          const formatter = colDesc.formatter || DefaultFormatter;
+
+          cell = html.div(
+            { class: `text-cell ${colDesc.key} ${colDesc.align || "left"}` },
+            [formatter.toString(colDesc.get ? colDesc.get(item) : item[colDesc.key])]
+          );
           if (colDesc.width) {
             cell.style.width = colDesc.width;
           }
-          const value = colDesc.get ? colDesc.get(item) : item[colDesc.key];
-          cell.append(value);
+          if (colDesc.editable) {
+            cell.ondblclick = this._makeCellEditor(cell, colDesc, item);
+          }
         }
         row.appendChild(cell);
       }
@@ -275,6 +293,9 @@ export class UIList extends UnlitElement {
     for (const colDesc of this.columnDescriptions) {
       const cell = document.createElement("div");
       cell.className = "text-cell-header " + colDesc.key;
+      if (colDesc.align) {
+        cell.classList.add(colDesc.align);
+      }
       if (colDesc.width) {
         cell.style.width = colDesc.width;
       }
@@ -291,10 +312,72 @@ export class UIList extends UnlitElement {
     return this.headerContainer;
   }
 
+  _makeCellEditor(cell, colDesc, item) {
+    const initialValue = item[colDesc.key];
+    let formattingError;
+
+    cell.onblur = (event) => {
+      cell.contentEditable = false;
+      this.contents.focus();
+      if (formattingError) {
+        const formatter = colDesc.formatter || DefaultFormatter;
+        cell.textContent = formatter.toString(initialValue);
+      }
+    };
+
+    cell.oninput = (event) => {
+      const formatter = colDesc.formatter || DefaultFormatter;
+      const { value, error } = formatter.fromString(cell.innerText);
+      if (!error) {
+        item[colDesc.key] = value;
+      }
+      formattingError = error;
+    };
+
+    cell.onkeydown = (event) => {
+      if (!cell.contentEditable) {
+        return;
+      }
+      switch (event.key) {
+        case "Enter":
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          cell.blur();
+          break;
+        case "Tab":
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const cells = [...cell.parentElement.children];
+          const direction = event.shiftKey ? -1 : 1;
+          let sibling;
+          do {
+            sibling = event.shiftKey
+              ? cell.previousElementSibling
+              : cell.nextElementSibling;
+          } while (sibling && !sibling.ondblclick);
+          if (sibling) {
+            cell.blur();
+            sibling.ondblclick();
+          }
+          break;
+      }
+    };
+
+    return (event) => {
+      cell.contentEditable = true;
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      cell.focus();
+    };
+  }
+
   _clickHandler(event) {
     const rowIndex = this._getRowIndexFromTarget(event.target);
     if (rowIndex !== undefined) {
-      this.setSelectedItemIndex(this._getRowIndexFromTarget(event.target), true);
+      this.setSelectedItemIndex(rowIndex, true);
     }
   }
 
@@ -329,13 +412,11 @@ export class UIList extends UnlitElement {
   }
 
   _getRowIndexFromTarget(target) {
-    if (target.parentNode === this.contents) {
-      // clicked on row
-      return target.dataset.rowIndex;
-    } else if (target.parentNode.parentNode === this.contents) {
-      // clicked on cell
-      return target.parentNode.dataset.rowIndex;
+    let node = target;
+    while (node && node.parentNode !== this.contents) {
+      node = node.parentNode;
     }
+    return node?.dataset.rowIndex;
   }
 
   setSelectedItemIndex(rowIndex, shouldDispatchEvent = false) {
@@ -365,6 +446,16 @@ export class UIList extends UnlitElement {
 
   getSelectedItemIndex() {
     return this.selectedItemIndex;
+  }
+
+  editCell(rowIndex, columnKey) {
+    this.setSelectedItemIndex(rowIndex, true);
+    const row = this.contents.children[rowIndex];
+    if (!row) {
+      return;
+    }
+    const cell = [...row.children].find((cell) => cell.classList.contains(columnKey));
+    cell?.ondblclick?.();
   }
 
   _dispatchEvent(eventName) {
@@ -439,5 +530,26 @@ export class UIList extends UnlitElement {
     this._addMoreItemsIfNeeded();
   }
 }
+
+const DefaultFormatter = {
+  toString: (value) => value.toString(),
+  fromString: (value) => {
+    return {
+      value: value,
+    };
+  },
+};
+
+export const NumberFormatter = {
+  toString: (value) => value.toString(),
+  fromString: (value) => {
+    const number = Number(value);
+    if (isNaN(number)) {
+      return { error: "not a number" };
+    } else {
+      return { value: number };
+    }
+  },
+};
 
 customElements.define("ui-list", UIList);
