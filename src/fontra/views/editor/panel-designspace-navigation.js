@@ -718,7 +718,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     axisList.setItems(axisItems);
 
     const addRemoveAxisButtons = html.createDomElement("add-remove-buttons", {
-      id: "sources-list-add-remove-buttons",
+      id: "axis-list-add-remove-buttons",
     });
 
     const contentElement = html.div({}, [axisList, addRemoveAxisButtons]);
