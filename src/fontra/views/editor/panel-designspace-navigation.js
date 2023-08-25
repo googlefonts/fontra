@@ -720,6 +720,20 @@ export default class DesignspaceNavigationPanel extends Panel {
     const addRemoveAxisButtons = html.createDomElement("add-remove-buttons", {
       id: "axis-list-add-remove-buttons",
     });
+    addRemoveAxisButtons.disableRemoveButton = true;
+
+    addRemoveAxisButtons.removeButtonCallback = (event) => {
+      const index = axisList.getSelectedItemIndex();
+      if (index !== undefined) {
+        axisItems.splice(index, 1);
+        axisList.setItems(axisItems);
+      }
+    };
+
+    axisList.addEventListener("listSelectionChanged", (event) => {
+      addRemoveAxisButtons.disableRemoveButton =
+        axisList.getSelectedItemIndex() === undefined;
+    });
 
     const contentElement = html.div({}, [axisList, addRemoveAxisButtons]);
 
