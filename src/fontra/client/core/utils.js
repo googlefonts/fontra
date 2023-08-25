@@ -314,9 +314,12 @@ export function isActiveElementTypeable() {
   return false;
 }
 
-function findNestedActiveElement(element) {
+export function findNestedActiveElement(element) {
   // If the element element is part of a Web Component's Shadow DOM, take
   // *its* active element, recursively.
+  if (!element) {
+    element = document.activeElement;
+  }
   return element.shadowRoot && element.shadowRoot.activeElement
     ? findNestedActiveElement(element.shadowRoot.activeElement)
     : element;

@@ -1,4 +1,5 @@
 import * as html from "/core/unlit.js";
+import { findNestedActiveElement } from "/core/utils.js";
 import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 
@@ -130,7 +131,13 @@ export default class TextEntryPanel extends Panel {
         return;
       }
       this.textEntryElement.value = event.newValue;
+
+      // https://github.com/googlefonts/fontra/issues/754
+      // In Safari, setSelectionRange() changes the focus. We don't want that,
+      // so we make sure to restore the focus to whatever it was.
+      const savedActiveElement = findNestedActiveElement();
       this.textEntryElement.setSelectionRange(0, 0);
+      savedActiveElement?.focus();
     };
 
     this.textSettingsController.addKeyListener(
