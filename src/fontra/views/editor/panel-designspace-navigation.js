@@ -722,6 +722,18 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
     addRemoveAxisButtons.disableRemoveButton = true;
 
+    addRemoveAxisButtons.addButtonCallback = (event) => {
+      const index = axisItems.length;
+      axisItems.push({
+        name: "UntitledAxis",
+        minValue: 0,
+        defaultValue: 0,
+        maxValue: 100,
+      });
+      axisList.setItems(axisItems);
+      axisList.setSelectedItemIndex(index, true);
+    };
+
     addRemoveAxisButtons.removeButtonCallback = (event) => {
       const index = axisList.getSelectedItemIndex();
       if (index !== undefined) {
