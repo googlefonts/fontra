@@ -335,10 +335,31 @@ export class UIList extends UnlitElement {
     };
 
     cell.onkeydown = (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        cell.blur();
+      if (!cell.contentEditable) {
+        return;
+      }
+      switch (event.key) {
+        case "Enter":
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          cell.blur();
+          break;
+        case "Tab":
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          const cells = [...cell.parentElement.children];
+          const direction = event.shiftKey ? -1 : 1;
+          let sibling;
+          do {
+            sibling = event.shiftKey
+              ? cell.previousElementSibling
+              : cell.nextElementSibling;
+          } while (sibling && !sibling.ondblclick);
+          if (sibling) {
+            cell.blur();
+            sibling.ondblclick();
+          }
+          break;
       }
     };
 
