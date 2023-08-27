@@ -229,7 +229,7 @@ export class EditorController {
       rootSubscriptionPattern[rootKey] = null;
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
-    await this.initGlyphsSearch();
+    this.getSidebarPanel("glyph-search").setup();
     this.initTools();
     await this.initSidebarDesignspace();
 
@@ -240,17 +240,6 @@ export class EditorController {
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox
     setTimeout(() => this.setupFromWindowLocation(), 20);
-  }
-
-  async initGlyphsSearch() {
-    this.glyphsSearch =
-      this.getSidebarPanel("glyph-search").contentElement.querySelector(
-        "#glyphs-search"
-      );
-    this.glyphsSearch.glyphMap = this.fontController.glyphMap;
-    this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
-      this.glyphNameChangedCallback(event.detail)
-    );
   }
 
   async initUserSettings() {
@@ -560,38 +549,6 @@ export class EditorController {
   canvasMagnificationChanged(magnification) {
     this.visualizationLayers.scaleFactor = 1 / magnification;
     this.cleanGlyphsLayers.scaleFactor = 1 / magnification;
-  }
-
-  glyphNameChangedCallback(glyphName) {
-    if (!glyphName) {
-      return;
-    }
-    const codePoint = this.fontController.codePointForGlyph(glyphName);
-    const glyphInfo = { glyphName: glyphName };
-    if (codePoint !== undefined) {
-      glyphInfo["character"] = getCharFromUnicode(codePoint);
-    }
-    let selectedGlyphState = this.sceneSettings.selectedGlyph;
-    const glyphLines = [...this.sceneSettings.glyphLines];
-    if (selectedGlyphState) {
-      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
-        glyphInfo;
-      this.sceneSettings.glyphLines = glyphLines;
-    } else {
-      if (!glyphLines.length) {
-        glyphLines.push([]);
-      }
-      const lineIndex = glyphLines.length - 1;
-      glyphLines[lineIndex].push(glyphInfo);
-      this.sceneSettings.glyphLines = glyphLines;
-      selectedGlyphState = {
-        lineIndex: lineIndex,
-        glyphIndex: glyphLines[lineIndex].length - 1,
-        isEditing: false,
-      };
-    }
-
-    this.sceneSettings.selectedGlyph = selectedGlyphState;
   }
 
   async doubleClickedComponentsCallback(event) {
