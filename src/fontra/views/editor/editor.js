@@ -242,100 +242,6 @@ export class EditorController {
     setTimeout(() => this.setupFromWindowLocation(), 20);
   }
 
-  async initUserSettings() {
-    const userSettings =
-      this.getSidebarPanel("user-settings").contentElement.querySelector(
-        "#user-settings"
-      );
-    const items = [];
-
-    // Visualization layer settings
-    const layers = this.visualizationLayers.definitions.filter(
-      (layer) => layer.userSwitchable
-    );
-    const layerItems = layers.map((layer) => {
-      return { key: layer.identifier, displayName: layer.name, ui: "checkbox" };
-    });
-    items.push({
-      displayName: "Glyph editor appearance",
-      controller: this.visualizationLayersSettings,
-      descriptions: layerItems,
-    });
-
-    // Clipboard settings
-    items.push({
-      displayName: "Clipboard export format",
-      controller: this.clipboardFormatController,
-      descriptions: [
-        {
-          key: "format",
-          ui: "radio",
-          options: [
-            { key: "glif", displayName: "GLIF (RoboFont)" },
-            { key: "svg", displayName: "SVG" },
-            { key: "fontra-json", displayName: "JSON (Fontra)" },
-          ],
-        },
-      ],
-    });
-
-    // Experimental feature settings
-    items.push({
-      displayName: "Experimental features",
-      controller: this.experimentalFeaturesController,
-      descriptions: [
-        {
-          key: "scalingEditBehavior",
-          displayName: "Scaling edit tool behavior",
-          ui: "checkbox",
-        },
-        {
-          key: "quadPenTool",
-          displayName: "Pen tool draws quadratics",
-          ui: "checkbox",
-        },
-      ],
-    });
-
-    // Theme settings
-    items.push({
-      displayName: "Theme settings",
-      controller: themeController,
-      descriptions: [
-        {
-          key: "theme",
-          ui: "radio",
-          options: [
-            { key: "automatic", displayName: "Automatic (use OS setting)" },
-            { key: "light", displayName: "Light" },
-            { key: "dark", displayName: "Dark" },
-          ],
-        },
-      ],
-    });
-
-    // Server info
-    const serverInfo = await fetchJSON("/serverinfo");
-    items.push({
-      displayName: "Server info",
-      controller: null,
-      descriptions: Object.entries(serverInfo).flatMap((entry) => {
-        return [
-          {
-            displayName: entry[0] + ":",
-            ui: "header",
-          },
-          {
-            displayName: entry[1],
-            ui: "plain",
-          },
-        ];
-      }),
-    });
-
-    userSettings.items = items;
-  }
-
   async showDialogGlyphEditLocationNotAtSource() {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const result = await dialog(
@@ -1477,7 +1383,7 @@ export class EditorController {
   async toggleUserSettings(onOff) {
     if (onOff && !this._didInitUserSettings) {
       this._didInitUserSettings = true;
-      await loaderSpinner(this.initUserSettings());
+      await loaderSpinner(this.getSidebarPanel("user-settings"));
     }
   }
 
