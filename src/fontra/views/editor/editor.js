@@ -241,6 +241,18 @@ export class EditorController {
     setTimeout(() => this.setupFromWindowLocation(), 20);
   }
 
+  initGlyphsSearch() {
+    this.glyphsSearch =
+      this.getSidebarPanel("glyph-search").contentElement.querySelector(
+        "#glyphs-search"
+      );
+    this.glyphsSearch.glyphMap = this.fontController.glyphMap;
+    this.glyphsSearch.addEventListener(
+      "selectedGlyphNameChanged",
+      this.onSelectedGlyphNameChanged.bind(this)
+    );
+  }
+
   async showDialogGlyphEditLocationNotAtSource() {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const result = await dialog(
@@ -270,18 +282,6 @@ export class EditorController {
         this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
         break;
     }
-  }
-
-  initGlyphsSearch() {
-    this.glyphsSearch =
-      this.getSidebarPanel("glyph-search").contentElement.querySelector(
-        "#glyphs-search"
-      );
-    this.glyphsSearch.glyphMap = this.fontController.glyphMap;
-    this.glyphsSearch.addEventListener(
-      "selectedGlyphNameChanged",
-      this.onSelectedGlyphNameChanged.bind(this)
-    );
   }
 
   onSelectedGlyphNameChanged(event) {
