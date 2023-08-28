@@ -1,4 +1,6 @@
 import * as html from "/core/unlit.js";
+import { themeController } from "/core/theme-settings.js";
+import { fetchJSON } from "/core/utils.js";
 import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 
@@ -38,13 +40,13 @@ export default class UserSettingsPanel extends Panel {
     });
     items.push({
       displayName: "Glyph editor appearance",
-      controller: this.visualizationLayersSettings,
+      controller: this.editorController.visualizationLayersSettings,
       descriptions: layerItems,
     });
 
     items.push({
       displayName: "Clipboard export format",
-      controller: this.clipboardFormatController,
+      controller: this.editorController.clipboardFormatController,
       descriptions: [
         {
           key: "format",
@@ -60,7 +62,7 @@ export default class UserSettingsPanel extends Panel {
 
     items.push({
       displayName: "Experimental features",
-      controller: this.experimentalFeaturesController,
+      controller: this.editorController.experimentalFeaturesController,
       descriptions: [
         {
           key: "scalingEditBehavior",

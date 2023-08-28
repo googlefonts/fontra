@@ -19,6 +19,40 @@ export default class GlyphSearchPanel extends Panel {
     }
   `;
 
+  onSelectedGlyphNameChanged(event) {
+    if (!event.detail) {
+      return;
+    }
+    const codePoint = this.editorController.fontController.codePointForGlyph(
+      event.detail
+    );
+    const glyphInfo = { glyphName: event.detail };
+    if (codePoint !== undefined) {
+      glyphInfo["character"] = getCharFromUnicode(codePoint);
+    }
+    let selectedGlyphState = this.editorController.sceneSettings.selectedGlyph;
+    const glyphLines = [...this.editorController.sceneSettings.glyphLines];
+    if (selectedGlyphState) {
+      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
+        glyphInfo;
+      this.editorController.sceneSettings.glyphLines = glyphLines;
+    } else {
+      if (!glyphLines.length) {
+        glyphLines.push([]);
+      }
+      const lineIndex = glyphLines.length - 1;
+      glyphLines[lineIndex].push(glyphInfo);
+      this.editorController.sceneSettings.glyphLines = glyphLines;
+      selectedGlyphState = {
+        lineIndex: lineIndex,
+        glyphIndex: glyphLines[lineIndex].length - 1,
+        isEditing: false,
+      };
+    }
+
+    this.editorController.sceneSettings.selectedGlyph = selectedGlyphState;
+  }
+
   setup() {
     this.editorController.glyphsSearch =
       this.contentElement.querySelector("#glyphs-search");
@@ -26,39 +60,7 @@ export default class GlyphSearchPanel extends Panel {
       this.editorController.fontController.glyphMap;
     this.editorController.glyphsSearch.addEventListener(
       "selectedGlyphNameChanged",
-      (event) => {
-        if (!event.detail) {
-          return;
-        }
-        const codePoint = this.editorController.fontController.codePointForGlyph(
-          event.detail
-        );
-        const glyphInfo = { glyphName: event.detail };
-        if (codePoint !== undefined) {
-          glyphInfo["character"] = getCharFromUnicode(codePoint);
-        }
-        let selectedGlyphState = this.editorController.sceneSettings.selectedGlyph;
-        const glyphLines = [...this.editorController.sceneSettings.glyphLines];
-        if (selectedGlyphState) {
-          glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
-            glyphInfo;
-          this.editorController.sceneSettings.glyphLines = glyphLines;
-        } else {
-          if (!glyphLines.length) {
-            glyphLines.push([]);
-          }
-          const lineIndex = glyphLines.length - 1;
-          glyphLines[lineIndex].push(glyphInfo);
-          this.editorController.sceneSettings.glyphLines = glyphLines;
-          selectedGlyphState = {
-            lineIndex: lineIndex,
-            glyphIndex: glyphLines[lineIndex].length - 1,
-            isEditing: false,
-          };
-        }
-
-        this.editorController.sceneSettings.selectedGlyph = selectedGlyphState;
-      }
+      this.onSelectedGlyphNameChanged.bind(this)
     );
   }
 

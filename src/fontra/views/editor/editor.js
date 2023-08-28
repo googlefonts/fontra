@@ -23,7 +23,6 @@ import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import {
   commandKeyProperty,
   enumerate,
-  fetchJSON,
   getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
@@ -1383,7 +1382,7 @@ export class EditorController {
   async toggleUserSettings(onOff) {
     if (onOff && !this._didInitUserSettings) {
       this._didInitUserSettings = true;
-      await loaderSpinner(this.getSidebarPanel("user-settings"));
+      await loaderSpinner(this.getSidebarPanel("user-settings").setup());
     }
   }
 
