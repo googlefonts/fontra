@@ -192,9 +192,10 @@ class DesignspaceBackend:
             if ufoLayer == self.defaultUFOLayer:
                 localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
                 if localDS is not None:
-                    glyph.axes, glyph.sources = self._unpackLocalDesignSpace(
+                    glyph.axes, localSources = self._unpackLocalDesignSpace(
                         localDS, ufoLayer.path, ufoLayer.name
                     )
+                    glyph.sources.extend(localSources)
             layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
 
         glyph.layers = layers
@@ -212,7 +213,7 @@ class DesignspaceBackend:
             for axis in dsDict["axes"]
         ]
         sources = []
-        for source in dsDict["sources"]:
+        for source in dsDict.get("sources", ()):
             fileName = source.get("filename")
             if fileName is not None:
                 raise NotImplementedError
