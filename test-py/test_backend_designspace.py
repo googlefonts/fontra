@@ -1,11 +1,12 @@
 import pathlib
 import shutil
+from dataclasses import asdict
 
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
-from fontra.core.classes import Layer, Source, StaticGlyph
+from fontra.core.classes import Layer, LocalAxis, Source, StaticGlyph
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -121,6 +122,20 @@ async def test_addNewDenseSource(writableTestFont):
         filename="MutatorSans_widest.ufo",
         layerName="public.default",
     )
+
+
+async def test_addLocalAxis(writableTestFont):
+    glyphName = "period"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert asdict(glyph) == asdict(savedGlyph)
 
 
 def unpackSources(sources):
