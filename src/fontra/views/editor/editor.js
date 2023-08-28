@@ -2,6 +2,7 @@ import { CanvasController } from "../core/canvas-controller.js";
 import { applyChange, matchChangePath } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { FontController } from "../core/font-controller.js";
+import { loaderSpinner } from "../core/loader-spinner.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
   centeredRect,
@@ -17,7 +18,6 @@ import { getRemoteProxy } from "../core/remote.js";
 import * as html from "/core/unlit.js";
 import { SceneView } from "../core/scene-view.js";
 import { StaticGlyph } from "../core/var-glyph.js";
-import { loaderSpinner } from "../core/loader-spinner.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import {
