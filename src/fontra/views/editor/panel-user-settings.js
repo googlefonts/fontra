@@ -2,6 +2,7 @@ import * as html from "/core/unlit.js";
 import { themeController } from "/core/theme-settings.js";
 import { fetchJSON } from "/core/utils.js";
 import { css } from "../third-party/lit.js";
+import { loaderSpinner } from "../core/loader-spinner.js";
 import Panel from "./panel.js";
 
 export default class UserSettingsPanel extends Panel {
@@ -27,6 +28,13 @@ export default class UserSettingsPanel extends Panel {
         id: "user-settings",
       }),
     ]);
+  }
+
+  async toggle(on) {
+    if (on && !this.editorController._didInitUserSettings) {
+      this.editorController._didInitUserSettings = true;
+      await loaderSpinner(this.setup());
+    }
   }
 
   async setup() {

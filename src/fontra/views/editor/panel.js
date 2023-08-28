@@ -11,6 +11,8 @@ export default class Panel extends SimpleElement {
   getContentElement() {}
 
   attach() {}
+
+  async toggle(on, focus) {}
 }
 
 customElements.define("fontra-panel", Panel);

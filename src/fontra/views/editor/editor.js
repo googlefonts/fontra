@@ -2,7 +2,6 @@ import { CanvasController } from "../core/canvas-controller.js";
 import { applyChange, matchChangePath } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
 import { FontController } from "../core/font-controller.js";
-import { loaderSpinner } from "../core/loader-spinner.js";
 import { ObservableController } from "../core/observable-object.js";
 import {
   centeredRect,
@@ -18,6 +17,7 @@ import { getRemoteProxy } from "../core/remote.js";
 import * as html from "/core/unlit.js";
 import { SceneView } from "../core/scene-view.js";
 import { StaticGlyph } from "../core/var-glyph.js";
+import { loaderSpinner } from "../core/loader-spinner.js";
 import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import {
@@ -440,8 +440,7 @@ export class EditorController {
       `fontra-selected-sidebar-${sidebar.identifier}`,
       onOff ? panelName : ""
     );
-    const methodName = hyphenatedToCamelCase("toggle-" + panelName);
-    setTimeout(() => this[methodName]?.call(this, onOff, doFocus), 10);
+    this.getSidebarPanel(panelName).toggle(onOff, doFocus);
     return onOff;
   }
 
@@ -1402,31 +1401,6 @@ export class EditorController {
       window.history.pushState({}, "", url);
     } else {
       window.history.replaceState({}, "", url);
-    }
-  }
-
-  toggleGlyphSearch(onOff, doFocus) {
-    if (onOff && doFocus) {
-      this.glyphsSearch.focusSearchField();
-    }
-  }
-
-  toggleTextEntry(onOff, doFocus) {
-    if (onOff && doFocus) {
-      this.getSidebarPanel("text-entry").focusTextEntry();
-    }
-  }
-
-  toggleSelectionInfo(onOff) {
-    if (onOff) {
-      this.getSidebarPanel("selection-info").update();
-    }
-  }
-
-  async toggleUserSettings(onOff) {
-    if (onOff && !this._didInitUserSettings) {
-      this._didInitUserSettings = true;
-      await loaderSpinner(this.getSidebarPanel("user-settings").setup());
     }
   }
 

@@ -2,6 +2,7 @@ import * as html from "/core/unlit.js";
 import { recordChanges } from "/core/change-recorder.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { Form } from "/web-components/ui-form.js";
+import { loaderSpinner } from "/core/loader-spinner.js";
 import Panel from "./panel.js";
 import { css } from "../third-party/lit.js";
 import {
@@ -34,6 +35,12 @@ export default class SelectionInfoPanel extends Panel {
       },
       []
     );
+  }
+
+  async toggle(on, focus) {
+    if (on) {
+      this.update();
+    }
   }
 
   attach() {
