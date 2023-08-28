@@ -249,7 +249,7 @@ export class EditorController {
     this.glyphsSearch.glyphMap = this.fontController.glyphMap;
     this.glyphsSearch.addEventListener(
       "selectedGlyphNameChanged",
-      this.onSelectedGlyphNameChanged.bind(this)
+      this.glyphNameChangedCallback.bind(this)
     );
   }
 
@@ -282,38 +282,6 @@ export class EditorController {
         this.sceneSettings.selectedSourceIndex = nearestSourceIndex;
         break;
     }
-  }
-
-  onSelectedGlyphNameChanged(event) {
-    if (!event.detail) {
-      return;
-    }
-    const codePoint = this.fontController.codePointForGlyph(event.detail);
-    const glyphInfo = { glyphName: event.detail };
-    if (codePoint !== undefined) {
-      glyphInfo["character"] = getCharFromUnicode(codePoint);
-    }
-    let selectedGlyphState = this.sceneSettings.selectedGlyph;
-    const glyphLines = [...this.sceneSettings.glyphLines];
-    if (selectedGlyphState) {
-      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
-        glyphInfo;
-      this.sceneSettings.glyphLines = glyphLines;
-    } else {
-      if (!glyphLines.length) {
-        glyphLines.push([]);
-      }
-      const lineIndex = glyphLines.length - 1;
-      glyphLines[lineIndex].push(glyphInfo);
-      this.sceneSettings.glyphLines = glyphLines;
-      selectedGlyphState = {
-        lineIndex: lineIndex,
-        glyphIndex: glyphLines[lineIndex].length - 1,
-        isEditing: false,
-      };
-    }
-
-    this.sceneSettings.selectedGlyph = selectedGlyphState;
   }
 
   initTools() {
@@ -497,6 +465,38 @@ export class EditorController {
   canvasMagnificationChanged(magnification) {
     this.visualizationLayers.scaleFactor = 1 / magnification;
     this.cleanGlyphsLayers.scaleFactor = 1 / magnification;
+  }
+
+  glyphNameChangedCallback(event) {
+    if (!event.detail) {
+      return;
+    }
+    const codePoint = this.fontController.codePointForGlyph(event.detail);
+    const glyphInfo = { glyphName: event.detail };
+    if (codePoint !== undefined) {
+      glyphInfo["character"] = getCharFromUnicode(codePoint);
+    }
+    let selectedGlyphState = this.sceneSettings.selectedGlyph;
+    const glyphLines = [...this.sceneSettings.glyphLines];
+    if (selectedGlyphState) {
+      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
+        glyphInfo;
+      this.sceneSettings.glyphLines = glyphLines;
+    } else {
+      if (!glyphLines.length) {
+        glyphLines.push([]);
+      }
+      const lineIndex = glyphLines.length - 1;
+      glyphLines[lineIndex].push(glyphInfo);
+      this.sceneSettings.glyphLines = glyphLines;
+      selectedGlyphState = {
+        lineIndex: lineIndex,
+        glyphIndex: glyphLines[lineIndex].length - 1,
+        isEditing: false,
+      };
+    }
+
+    this.sceneSettings.selectedGlyph = selectedGlyphState;
   }
 
   async doubleClickedComponentsCallback(event) {
