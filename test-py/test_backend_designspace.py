@@ -156,6 +156,26 @@ async def test_addLocalAxis(writableTestFont):
     assert asdict(glyph) == asdict(savedGlyph)
 
 
+async def test_addLocalAxisAndSource(writableTestFont):
+    glyphName = "period"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    layerName = "MutatorSansLightCondensed/test"
+
+    glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+    glyph.sources.append(
+        Source(name="test", location={"test": 100}, layerName=layerName)
+    )
+    glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert asdict(glyph) == asdict(savedGlyph)
+
+
 def unpackSources(sources):
     return [
         {k: getattr(s, k) for k in ["location", "styleName", "filename", "layerName"]}
