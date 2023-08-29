@@ -70,13 +70,36 @@ async def test_roundTripGlyphSingleUFO(writableTestFontSingleUFO, glyphName):
     assert existingData == newData  # just in case the keys differ
 
 
-async def test_addNewSparseSource(writableTestFont):
+@pytest.mark.parametrize(
+    "location, expectedDSSource",
+    [
+        (
+            {"weight": 400, "width": 0},
+            dict(
+                location=dict(weight=400, width=0),
+                styleName="mid",
+                filename="MutatorSansLightCondensed.ufo",
+                layerName="mid",
+            ),
+        ),
+        (
+            {"weight": 400, "width": 1000},
+            dict(
+                location=dict(weight=400, width=1000),
+                styleName="mid",
+                filename="MutatorSansLightWide.ufo",
+                layerName="mid",
+            ),
+        ),
+    ],
+)
+async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
     glyphName = "A"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
     dsSources = unpackSources(writableTestFont.dsDoc.sources)
 
-    glyph.sources.append(Source(name="mid", location={"weight": 400}, layerName="mid"))
+    glyph.sources.append(Source(name="mid", location=location, layerName="mid"))
     glyph.layers["mid"] = Layer(glyph=StaticGlyph())
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
@@ -85,12 +108,7 @@ async def test_addNewSparseSource(writableTestFont):
     newDSSources = unpackSources(newDSDoc.sources)
     assert dsSources == newDSSources[: len(dsSources)]
     assert len(newDSSources) == len(dsSources) + 1
-    assert newDSSources[-1] == dict(
-        location=dict(weight=400, width=0),
-        styleName="mid",
-        filename="MutatorSansLightCondensed.ufo",
-        layerName="mid",
-    )
+    assert newDSSources[-1] == expectedDSSource
 
 
 async def test_addNewDenseSource(writableTestFont):
