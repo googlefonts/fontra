@@ -304,11 +304,9 @@ class DesignspaceBackend:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
 
             if glyphSet == self.defaultUFOLayer.glyphSet:
-                storeInLib(layerGlyph.lib, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
-                storeInLib(
-                    layerGlyph.lib, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping
-                )
-                storeInLib(layerGlyph.lib, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
+                storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
+                storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
+                storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
 
             drawPointsFunc = populateUFOLayerGlyph(layerGlyph, layer.glyph)
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
@@ -773,7 +771,7 @@ def populateUFOLayerGlyph(layerGlyph: UFOGlyph, staticGlyph: StaticGlyph) -> Non
                 cleanupTransform(component.transformation.toTransform()),
             )
 
-    storeInLib(layerGlyph.lib, VARIABLE_COMPONENTS_LIB_KEY, variableComponents)
+    storeInLib(layerGlyph, VARIABLE_COMPONENTS_LIB_KEY, variableComponents)
 
     return pen.replay
 
@@ -858,8 +856,8 @@ def reverseSparseDict(d):
     return {v: k for k, v in d.items() if k != v}
 
 
-def storeInLib(lib, key, value):
+def storeInLib(layerGlyph, key, value):
     if value:
-        lib[key] = value
+        layerGlyph.lib[key] = value
     else:
-        lib.pop(key, None)
+        layerGlyph.lib.pop(key, None)
