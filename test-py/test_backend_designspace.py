@@ -161,7 +161,7 @@ async def test_addLocalAxisAndSource(writableTestFont):
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
 
-    layerName = "MutatorSansLightCondensed/test"
+    layerName = "test"
 
     glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
     glyph.sources.append(
