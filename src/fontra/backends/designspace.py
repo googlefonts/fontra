@@ -400,7 +400,7 @@ class DesignspaceBackend:
                 poleDSSource = self.defaultDSSource
             assert poleDSSource is not None
             ufoPath = poleDSSource.layer.path
-            ufoLayerName = self._newUFOLayer(poleDSSource.layer.path, source.name)
+            ufoLayerName = self._newUFOLayer(poleDSSource.layer.path, source.layerName)
 
         self.dsDoc.addSourceDescriptor(
             styleName=source.name,
