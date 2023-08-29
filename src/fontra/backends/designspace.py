@@ -111,7 +111,7 @@ class DesignspaceBackend:
         return fontInfo
 
     def loadUFOLayers(self):
-        manager = UFOManager()
+        self.ufoManager = manager = UFOManager()
         self.dsSources = ItemList()
         self.ufoLayers = ItemList()
 
@@ -237,11 +237,24 @@ class DesignspaceBackend:
         modTimes = set()
         self.glyphMap[glyphName] = unicodes
         layerNameMapping = {}
-        localDS = self._packLocalDesignSpace(glyph)
+
+        localAxes = packLocalAxes(glyph.axes)
+        localAxisNames = {axis.name for axis in glyph.axes}
+        localSources = []
+
         for source in glyph.sources:
-            globalSource = self._getGlobalSource(source, not localDS)
-            if globalSource is not None:
-                layerNameMapping[source.layerName] = globalSource.layerName
+            normalizedFontraLayerName, localSourceDict = self._prepareUFOLayer(
+                source, localAxisNames
+            )
+            layerNameMapping[source.layerName] = normalizedFontraLayerName
+            if localSourceDict is not None:
+                localSources.append(localSourceDict)
+
+        localDS = {}
+        if localAxes:
+            localDS["axes"] = localAxes
+        if localSources:
+            localDS["sources"] = localSources
 
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
@@ -280,20 +293,50 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
-    def _getGlobalSource(self, source, create=False):
+    def _prepareUFOLayer(self, source, localAxisNames):
         sourceLocation = {**self.defaultLocation, **source.location}
-        sourceLocationTuple = tuplifyLocation(sourceLocation)
-        dsSource = self.dsSources.findItem(locationTuple=sourceLocationTuple)
-        if dsSource is None and create:
-            dsSource = self._createDSSource(source)
+        globalLocation = {
+            name: value
+            for name, value in sourceLocation.items()
+            if name not in localAxisNames
+        }
 
-        return dsSource.newFontraSource() if dsSource is not None else None
+        dsSource = self.dsSources.findItem(
+            locationTuple=tuplifyLocation(globalLocation)
+        )
+        if dsSource is None:
+            dsSource = self._createDSSource(source, globalLocation)
 
-    def _createDSSource(self, source):
-        sourceLocation = {**self.defaultLocation, **source.location}
-        manager = self.defaultUFOLayer.manager
+        if sourceLocation != globalLocation:
+            ufoLayer = self.ufoLayers.findItem(fontraLayerName=source.layerName)
+            if ufoLayer is None:
+                ufoPath = dsSource.layer.path
+                ufoLayerName = self._newUFOLayer(ufoPath, source.name)
+                ufoLayer = UFOLayer(
+                    manager=self.ufoManager,
+                    path=ufoPath,
+                    name=ufoLayerName,
+                )
+                self.ufoLayers.append(ufoLayer)
+            else:
+                ufoLayerName = ufoLayer.name
+            normalizedFontraLayerName = f"{ufoLayer.fileName}/{ufoLayerName}"
+            defaultUFOLayerName = ufoLayer.reader.getDefaultLayerName()
+
+            localSourceDict = {}
+            if ufoLayerName != defaultUFOLayerName:
+                localSourceDict["layername"] = ufoLayerName
+            localSourceDict["location"] = source.location
+        else:
+            normalizedFontraLayerName = dsSource.newFontraSource().layerName
+            localSourceDict = None
+
+        return normalizedFontraLayerName, localSourceDict
+
+    def _createDSSource(self, source, globalLocation):
+        manager = self.ufoManager
         atPole, notAtPole = splitLocationByPolePosition(
-            sourceLocation, self.axisPolePositions
+            globalLocation, self.axisPolePositions
         )
         if not notAtPole:
             # Create a whole new UFO
@@ -323,18 +366,12 @@ class DesignspaceBackend:
             if poleDSSource is None:
                 poleDSSource = self.defaultDSSource
             assert poleDSSource is not None
-            reader = poleDSSource.layer.reader
-            makeUniqueName = uniqueNameMaker(reader.getLayerNames())
-            # TODO: parse source.layerName, in case it's FileName/layerName?
-            ufoLayerName = makeUniqueName(source.name)
-            # Create the new UFO layer now
             ufoPath = poleDSSource.layer.path
-            _ = manager.getGlyphSet(ufoPath, ufoLayerName)
-            reader.writeLayerContents()
+            ufoLayerName = self._newUFOLayer(poleDSSource.layer.path, source.name)
 
         self.dsDoc.addSourceDescriptor(
             styleName=source.name,
-            location=sourceLocation,
+            location=globalLocation,
             path=ufoPath,
             layerName=ufoLayerName,
         )
@@ -349,47 +386,21 @@ class DesignspaceBackend:
         dsSource = DSSource(
             name=source.name,
             layer=ufoLayer,
-            location=sourceLocation,
+            location=globalLocation,
         )
         self.dsSources.append(dsSource)
         self.ufoLayers.append(ufoLayer)
 
         return dsSource
 
-    def _packLocalDesignSpace(self, glyph):
-        if not glyph.axes:
-            return None
-        defaultUFOLayerName = self.defaultReader.getDefaultLayerName()
-        localDS = {}
-        axes = [
-            dict(
-                name=axis.name,
-                minimum=axis.minValue,
-                default=axis.defaultValue,
-                maximum=axis.maxValue,
-            )
-            for axis in glyph.axes
-        ]
-        sources = []
-        for source in glyph.sources:
-            globalSource = self._getGlobalSource(source)
-            if globalSource is not None:
-                # this source is part of the global sources as defined
-                # in the .designspace file, so should not be written
-                # to a local designspace
-                continue
-            # FIXME: ufoLayer not found -> create new layer
-            ufoLayer = self.ufoLayers.findItem(fontraLayerName=source.layerName)
-            assert ufoLayer.path == self.dsDoc.default.path
-            sourceDict = {}
-            if ufoLayer.name != defaultUFOLayerName:
-                sourceDict["layername"] = ufoLayer.name
-            sourceDict["location"] = source.location
-            sources.append(sourceDict)
-        localDS["axes"] = axes
-        if sources:
-            localDS["sources"] = sources
-        return localDS
+    def _newUFOLayer(self, path, suggestedLayerName):
+        reader = self.ufoManager.getReader(path)
+        makeUniqueName = uniqueNameMaker(reader.getLayerNames())
+        ufoLayerName = makeUniqueName(suggestedLayerName)
+        # Create the new UFO layer now
+        _ = self.ufoManager.getGlyphSet(path, ufoLayerName)
+        reader.writeLayerContents()
+        return ufoLayerName
 
     async def getGlobalAxes(self):
         return self.axes
@@ -782,3 +793,15 @@ def splitLocationByPolePosition(location, poles):
         else:
             notAtPole[name] = value
     return atPole, notAtPole
+
+
+def packLocalAxes(axes):
+    return [
+        dict(
+            name=axis.name,
+            minimum=axis.minValue,
+            default=axis.defaultValue,
+            maximum=axis.maxValue,
+        )
+        for axis in axes
+    ]
