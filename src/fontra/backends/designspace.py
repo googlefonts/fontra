@@ -134,8 +134,7 @@ class DesignspaceBackend:
             sourceStyleName = source.styleName or sourceLayer.fileName
             sourceName = (
                 sourceStyleName
-                if not source.layerName
-                or source.layerName == reader.getDefaultLayerName()
+                if ufoLayerName == defaultLayerName
                 else source.layerName
             )
             sourceName = makeUniqueSourceName(sourceName)
