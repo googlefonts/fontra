@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
 GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
+LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 
 
 infoAttrsToCopy = [
@@ -171,6 +172,7 @@ class DesignspaceBackend:
         axes = []
         sources = []
         layers = {}
+        layerNameMapping = {}
 
         for dsSource in self.dsSources:
             glyphSet = dsSource.layer.glyphSet
@@ -190,7 +192,18 @@ class DesignspaceBackend:
                         localDS, ufoLayer.path, ufoLayer.name
                     )
                     sources.extend(localSources)
+                layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
             layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
+
+        def mapLayerName(layerName):
+            return layerNameMapping.get(layerName, layerName)
+
+        if layerNameMapping:
+            for source in sources:
+                source.layerName = mapLayerName(source.layerName)
+            layers = {
+                mapLayerName(layerName): layer for layerName, layer in layers.items()
+            }
 
         return VariableGlyph(glyphName, axes=axes, sources=sources, layers=layers)
 
@@ -226,6 +239,7 @@ class DesignspaceBackend:
         assert all(isinstance(cp, int) for cp in unicodes)
         modTimes = set()
         self.glyphMap[glyphName] = unicodes
+
         layerNameMapping = {}
 
         localAxes = packLocalAxes(glyph.axes)
@@ -246,6 +260,12 @@ class DesignspaceBackend:
         if localSources:
             localDS["sources"] = localSources
 
+        revLayerNameMapping = {
+            normalizedLayerName: layerName
+            for layerName, normalizedLayerName in layerNameMapping.items()
+            if normalizedLayerName != layerName
+        }
+
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
             layerName = layerNameMapping.get(layerName, layerName)
@@ -260,6 +280,10 @@ class DesignspaceBackend:
                     layerGlyph.lib[GLYPH_DESIGNSPACE_LIB_KEY] = localDS
                 else:
                     layerGlyph.lib.pop(GLYPH_DESIGNSPACE_LIB_KEY, None)
+                if revLayerNameMapping:
+                    layerGlyph.lib[LAYER_NAME_MAPPING_LIB_KEY] = revLayerNameMapping
+                else:
+                    layerGlyph.lib.pop(LAYER_NAME_MAPPING_LIB_KEY, None)
 
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
             if writeGlyphSetContents:
@@ -326,7 +350,7 @@ class DesignspaceBackend:
                 localSourceDict["layername"] = ufoLayerName
             localSourceDict["location"] = source.location
         else:
-            normalizedFontraLayerName = dsSource.newFontraSource().layerName
+            normalizedFontraLayerName = dsSource.layer.fontraLayerName
             localSourceDict = None
 
         return normalizedFontraLayerName, localSourceDict
