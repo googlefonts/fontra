@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 VARIABLE_COMPONENTS_LIB_KEY = "com.black-foundry.variable-components"
 GLYPH_DESIGNSPACE_LIB_KEY = "com.black-foundry.glyph-designspace"
+SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 
 
@@ -172,6 +173,7 @@ class DesignspaceBackend:
         axes = []
         sources = []
         layers = {}
+        sourceNameMapping = {}
         layerNameMapping = {}
 
         for dsSource in self.dsSources:
@@ -192,6 +194,7 @@ class DesignspaceBackend:
                         localDS, ufoLayer.path, ufoLayer.name
                     )
                     sources.extend(localSources)
+                sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
             layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
 
@@ -204,6 +207,10 @@ class DesignspaceBackend:
                 layerNameMapping.get(layerName, layerName): layer
                 for layerName, layer in layers.items()
             }
+
+        if sourceNameMapping:
+            for source in sources:
+                source.name = sourceNameMapping.get(source.name, source.name)
 
         return VariableGlyph(glyphName, axes=axes, sources=sources, layers=layers)
 
@@ -239,12 +246,16 @@ class DesignspaceBackend:
         assert all(isinstance(cp, int) for cp in unicodes)
         self.glyphMap[glyphName] = unicodes
 
+        sourceNameMapping = {}
         layerNameMapping = {}
         defaultLayer = self.defaultUFOLayer
         defaultLayerGlyph = None
         if glyphName in defaultLayer.glyphSet:
             defaultLayerGlyph = readGlyphOrCreate(
                 defaultLayer.glyphSet, glyphName, unicodes
+            )
+            sourceNameMapping = defaultLayerGlyph.lib.get(
+                SOURCE_NAME_MAPPING_LIB_KEY, {}
             )
             layerNameMapping = defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
 
@@ -256,9 +267,13 @@ class DesignspaceBackend:
         localSources = []
 
         for source in glyph.sources:
-            normalizedFontraLayerName, localSourceDict = self._prepareUFOLayer(
-                source, localAxisNames, revLayerNameMapping
-            )
+            (
+                normalizedSourceName,
+                normalizedFontraLayerName,
+                localSourceDict,
+            ) = self._prepareUFOLayer(source, localAxisNames, revLayerNameMapping)
+            if normalizedSourceName != source.name:
+                sourceNameMapping[normalizedSourceName] = source.name
             if normalizedFontraLayerName != source.layerName:
                 layerNameMapping[normalizedFontraLayerName] = source.layerName
             if localSourceDict is not None:
@@ -293,6 +308,12 @@ class DesignspaceBackend:
                     layerGlyph.lib[GLYPH_DESIGNSPACE_LIB_KEY] = localDS
                 else:
                     layerGlyph.lib.pop(GLYPH_DESIGNSPACE_LIB_KEY, None)
+
+                if sourceNameMapping:
+                    layerGlyph.lib[SOURCE_NAME_MAPPING_LIB_KEY] = sourceNameMapping
+                else:
+                    layerGlyph.lib.pop(SOURCE_NAME_MAPPING_LIB_KEY, None)
+
                 if layerNameMapping:
                     layerGlyph.lib[LAYER_NAME_MAPPING_LIB_KEY] = layerNameMapping
                 else:
@@ -353,6 +374,7 @@ class DesignspaceBackend:
                 self.ufoLayers.append(ufoLayer)
             else:
                 ufoLayerName = ufoLayer.name
+            normalizedSourceName = source.name
             normalizedFontraLayerName = f"{ufoLayer.fileName}/{ufoLayerName}"
             defaultUFOLayerName = ufoLayer.reader.getDefaultLayerName()
 
@@ -361,10 +383,11 @@ class DesignspaceBackend:
                 localSourceDict["layername"] = ufoLayerName
             localSourceDict["location"] = source.location
         else:
+            normalizedSourceName = dsSource.name
             normalizedFontraLayerName = dsSource.layer.fontraLayerName
             localSourceDict = None
 
-        return normalizedFontraLayerName, localSourceDict
+        return normalizedSourceName, normalizedFontraLayerName, localSourceDict
 
     def _createDSSource(self, source, globalLocation):
         manager = self.ufoManager
