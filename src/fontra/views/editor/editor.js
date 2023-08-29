@@ -247,9 +247,8 @@ export class EditorController {
         "#glyphs-search"
       );
     this.glyphsSearch.glyphMap = this.fontController.glyphMap;
-    this.glyphsSearch.addEventListener(
-      "selectedGlyphNameChanged",
-      this.glyphNameChangedCallback.bind(this)
+    this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
+      this.glyphNameChangedCallback(event.detail)
     );
   }
 
@@ -467,12 +466,12 @@ export class EditorController {
     this.cleanGlyphsLayers.scaleFactor = 1 / magnification;
   }
 
-  glyphNameChangedCallback(event) {
-    if (!event.detail) {
+  glyphNameChangedCallback(glyphName) {
+    if (!glyphName) {
       return;
     }
-    const codePoint = this.fontController.codePointForGlyph(event.detail);
-    const glyphInfo = { glyphName: event.detail };
+    const codePoint = this.fontController.codePointForGlyph();
+    const glyphInfo = { glyphName };
     if (codePoint !== undefined) {
       glyphInfo["character"] = getCharFromUnicode(codePoint);
     }
