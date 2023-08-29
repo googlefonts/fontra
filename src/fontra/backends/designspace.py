@@ -195,14 +195,14 @@ class DesignspaceBackend:
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
             layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
 
-        def mapLayerName(layerName):
-            return layerNameMapping.get(layerName, layerName)
-
         if layerNameMapping:
             for source in sources:
-                source.layerName = mapLayerName(source.layerName)
+                source.layerName = layerNameMapping.get(
+                    source.layerName, source.layerName
+                )
             layers = {
-                mapLayerName(layerName): layer for layerName, layer in layers.items()
+                layerNameMapping.get(layerName, layerName): layer
+                for layerName, layer in layers.items()
             }
 
         return VariableGlyph(glyphName, axes=axes, sources=sources, layers=layers)
