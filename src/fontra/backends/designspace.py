@@ -288,7 +288,10 @@ class DesignspaceBackend:
         dsSource = self.dsSources.findItem(locationTuple=sourceLocationTuple)
         if dsSource is None and create:
             manager = self.defaultUFOLayer.manager
-            if isLocationAtPole(source.location, self.axisPolePositions):
+            atPole, notAtPole = splitLocationByPolePosition(
+                source.location, self.axisPolePositions
+            )
+            if not notAtPole:
                 ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
                 makeUniqueFileName = uniqueNameMaker(
                     p.stem for p in ufoDir.glob("*.ufo")
@@ -309,13 +312,21 @@ class DesignspaceBackend:
                 ufoLayerName = reader.getDefaultLayerName()
                 assert os.path.isdir(ufoPath)
             else:
-                makeUniqueName = uniqueNameMaker(self.defaultReader.getLayerNames())
+                atPole = {**self.defaultLocation, **atPole}
+                poleDSSource = self.dsSources.findItem(
+                    locationTuple=tuplifyLocation(atPole)
+                )
+                if poleDSSource is None:
+                    poleDSSource = self.defaultDSSource
+                assert poleDSSource is not None
+                reader = poleDSSource.layer.reader
+                makeUniqueName = uniqueNameMaker(reader.getLayerNames())
                 # TODO: parse source.layerName, in case it's FileName/layerName?
                 ufoLayerName = makeUniqueName(source.name)
                 # Create the new UFO layer now
-                ufoPath = self.dsDoc.default.path
+                ufoPath = poleDSSource.layer.path
                 _ = manager.getGlyphSet(ufoPath, ufoLayerName)
-                self.defaultReader.writeLayerContents()
+                reader.writeLayerContents()
 
             self.dsDoc.addSourceDescriptor(
                 styleName=source.name,
@@ -758,8 +769,12 @@ def tuplifyLocation(loc):
     return tuple(sorted(loc.items()))
 
 
-def isLocationAtPole(location, poles):
+def splitLocationByPolePosition(location, poles):
+    atPole = {}
+    notAtPole = {}
     for name, value in location.items():
-        if value not in poles.get(name, ()):
-            return False
-    return True
+        if value in poles.get(name, ()):
+            atPole[name] = value
+        else:
+            notAtPole[name] = value
+    return atPole, notAtPole
