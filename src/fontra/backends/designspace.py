@@ -309,6 +309,14 @@ class DesignspaceBackend:
 
         if sourceLocation != globalLocation:
             ufoLayer = self.ufoLayers.findItem(fontraLayerName=source.layerName)
+
+            if ufoLayer is None:
+                # Try again, with a guessed layer name, hmm.
+                guessedFontraLayerName = f"{dsSource.layer.fileName}/{source.layerName}"
+                ufoLayer = self.ufoLayers.findItem(
+                    fontraLayerName=guessedFontraLayerName
+                )
+
             if ufoLayer is None:
                 ufoPath = dsSource.layer.path
                 ufoLayerName = self._newUFOLayer(ufoPath, source.name)
