@@ -248,16 +248,12 @@ class DesignspaceBackend:
 
         sourceNameMapping = {}
         layerNameMapping = {}
-        defaultLayer = self.defaultUFOLayer
-        defaultLayerGlyph = None
-        if glyphName in defaultLayer.glyphSet:
-            defaultLayerGlyph = readGlyphOrCreate(
-                defaultLayer.glyphSet, glyphName, unicodes
-            )
-            sourceNameMapping = defaultLayerGlyph.lib.get(
-                SOURCE_NAME_MAPPING_LIB_KEY, {}
-            )
-            layerNameMapping = defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
+
+        defaultLayerGlyph = readGlyphOrCreate(
+            self.defaultUFOLayer.glyphSet, glyphName, unicodes
+        )
+        sourceNameMapping = defaultLayerGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
+        layerNameMapping = defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
 
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
@@ -295,18 +291,13 @@ class DesignspaceBackend:
             usedLayers.add(layerName)
             writeGlyphSetContents = glyphName not in glyphSet
 
-            if (
-                glyphSet == self.defaultUFOLayer.glyphSet
-                and defaultLayerGlyph is not None
-            ):
-                layerGlyph = defaultLayerGlyph
-            else:
-                layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
-
             if glyphSet == self.defaultUFOLayer.glyphSet:
+                layerGlyph = defaultLayerGlyph
                 storeInLib(layerGlyph, GLYPH_DESIGNSPACE_LIB_KEY, localDS)
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
+            else:
+                layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
 
             drawPointsFunc = populateUFOLayerGlyph(layerGlyph, layer.glyph)
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
