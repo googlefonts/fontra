@@ -296,6 +296,7 @@ class DesignspaceBackend:
             sourceLocation, self.axisPolePositions
         )
         if not notAtPole:
+            # Create a whole new UFO
             ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
             makeUniqueFileName = uniqueNameMaker(p.stem for p in ufoDir.glob("*.ufo"))
             dsFileName = pathlib.Path(self.dsDoc.path).stem
@@ -314,6 +315,7 @@ class DesignspaceBackend:
             ufoLayerName = reader.getDefaultLayerName()
             assert os.path.isdir(ufoPath)
         else:
+            # Create a new layer in the appropriate existing UFO
             atPole = {**self.defaultLocation, **atPole}
             poleDSSource = self.dsSources.findItem(
                 locationTuple=tuplifyLocation(atPole)
