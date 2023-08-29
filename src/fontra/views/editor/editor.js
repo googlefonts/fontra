@@ -470,8 +470,8 @@ export class EditorController {
     if (!glyphName) {
       return;
     }
-    const codePoint = this.fontController.codePointForGlyph();
-    const glyphInfo = { glyphName };
+    const codePoint = this.fontController.codePointForGlyph(glyphName);
+    const glyphInfo = { glyphName: glyphName };
     if (codePoint !== undefined) {
       glyphInfo["character"] = getCharFromUnicode(codePoint);
     }
