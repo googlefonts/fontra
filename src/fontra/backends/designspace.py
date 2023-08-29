@@ -269,13 +269,13 @@ class DesignspaceBackend:
         for source in glyph.sources:
             (
                 normalizedSourceName,
-                normalizedFontraLayerName,
+                normalizedLayerName,
                 localSourceDict,
             ) = self._prepareUFOLayer(source, localAxisNames, revLayerNameMapping)
             if normalizedSourceName != source.name:
                 sourceNameMapping[normalizedSourceName] = source.name
-            if normalizedFontraLayerName != source.layerName:
-                layerNameMapping[normalizedFontraLayerName] = source.layerName
+            if normalizedLayerName != source.layerName:
+                layerNameMapping[normalizedLayerName] = source.layerName
             if localSourceDict is not None:
                 localSources.append(localSourceDict)
 
@@ -375,7 +375,7 @@ class DesignspaceBackend:
             else:
                 ufoLayerName = ufoLayer.name
             normalizedSourceName = source.name
-            normalizedFontraLayerName = f"{ufoLayer.fileName}/{ufoLayerName}"
+            normalizedLayerName = f"{ufoLayer.fileName}/{ufoLayerName}"
             defaultUFOLayerName = ufoLayer.reader.getDefaultLayerName()
 
             localSourceDict = {}
@@ -384,10 +384,10 @@ class DesignspaceBackend:
             localSourceDict["location"] = source.location
         else:
             normalizedSourceName = dsSource.name
-            normalizedFontraLayerName = dsSource.layer.fontraLayerName
+            normalizedLayerName = dsSource.layer.fontraLayerName
             localSourceDict = None
 
-        return normalizedSourceName, normalizedFontraLayerName, localSourceDict
+        return normalizedSourceName, normalizedLayerName, localSourceDict
 
     def _createDSSource(self, source, globalLocation):
         manager = self.ufoManager
