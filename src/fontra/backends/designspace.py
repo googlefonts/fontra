@@ -168,17 +168,16 @@ class DesignspaceBackend:
         if glyphName not in self.glyphMap:
             return None
 
-        glyph = VariableGlyph(glyphName)
-
+        axes = []
         sources = []
+        layers = {}
+
         for dsSource in self.dsSources:
             glyphSet = dsSource.layer.glyphSet
             if glyphName not in glyphSet:
                 continue
             sources.append(dsSource.newFontraSource())
-        glyph.sources = sources
 
-        layers = {}
         for ufoLayer in self.ufoLayers:
             if glyphName not in ufoLayer.glyphSet:
                 continue
@@ -187,15 +186,13 @@ class DesignspaceBackend:
             if ufoLayer == self.defaultUFOLayer:
                 localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
                 if localDS is not None:
-                    glyph.axes, localSources = self._unpackLocalDesignSpace(
+                    axes, localSources = self._unpackLocalDesignSpace(
                         localDS, ufoLayer.path, ufoLayer.name
                     )
-                    glyph.sources.extend(localSources)
+                    sources.extend(localSources)
             layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
 
-        glyph.layers = layers
-
-        return glyph
+        return VariableGlyph(glyphName, axes=axes, sources=sources, layers=layers)
 
     def _unpackLocalDesignSpace(self, dsDict, ufoPath, defaultLayerName):
         axes = [
