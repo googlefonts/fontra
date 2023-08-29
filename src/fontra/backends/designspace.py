@@ -86,9 +86,7 @@ class DesignspaceBackend:
         }
         self.loadUFOLayers()
         self.buildFileNameMapping()
-        self.glyphMap = getGlyphMapFromGlyphSet(
-            self.dsSources.findItem(isDefault=True).layer.glyphSet
-        )
+        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes = {}
 
     def close(self):
