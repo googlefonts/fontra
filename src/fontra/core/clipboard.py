@@ -5,7 +5,7 @@ from fontTools.pens.transformPen import TransformPointPen
 from fontTools.svgLib import SVGPath
 from fontTools.ufoLib.glifLib import readGlyphFromString, writeGlyphToString
 
-from ..backends.designspace import UFOGlyph, buildUFOLayerGlyph, readGlyphOrCreate
+from ..backends.designspace import UFOGlyph, populateUFOLayerGlyph, readGlyphOrCreate
 from .classes import StaticGlyph
 from .packedpath import PackedPathPointPen
 
@@ -51,5 +51,5 @@ def parseGLIF(data):
 
 def serializeStaticGlyphAsGLIF(glyphName, staticGlyph, unicodes):
     layerGlyph = readGlyphOrCreate({}, glyphName, unicodes)
-    drawPointsFunc = buildUFOLayerGlyph(layerGlyph, staticGlyph)
+    drawPointsFunc = populateUFOLayerGlyph(layerGlyph, staticGlyph)
     return writeGlyphToString(glyphName, layerGlyph, drawPointsFunc, validate=False)
