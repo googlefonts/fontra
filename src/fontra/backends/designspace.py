@@ -209,10 +209,6 @@ class DesignspaceBackend:
         ]
         sources = []
         for source in dsDict.get("sources", ()):
-            fileName = source.get("filename")
-            if fileName is not None:
-                raise NotImplementedError
-                # ufoPath = ...
             ufoLayerName = source.get("layername", defaultLayerName)
             sourceName = source.get(
                 "name",
