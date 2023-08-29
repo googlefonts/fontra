@@ -285,70 +285,74 @@ class DesignspaceBackend:
         sourceLocationTuple = tuplifyLocation(sourceLocation)
         dsSource = self.dsSources.findItem(locationTuple=sourceLocationTuple)
         if dsSource is None and create:
-            manager = self.defaultUFOLayer.manager
-            atPole, notAtPole = splitLocationByPolePosition(
-                source.location, self.axisPolePositions
-            )
-            if not notAtPole:
-                ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
-                makeUniqueFileName = uniqueNameMaker(
-                    p.stem for p in ufoDir.glob("*.ufo")
-                )
-                dsFileName = pathlib.Path(self.dsDoc.path).stem
-                ufoFileName = makeUniqueFileName(f"{dsFileName}_{source.name}")
-                ufoFileName = ufoFileName + ".ufo"
-                ufoPath = os.fspath(ufoDir / ufoFileName)
-                assert not os.path.exists(ufoPath)
-                reader = manager.getReader(ufoPath)  # this creates the UFO
-                info = UFOFontInfo()
-                for infoAttr in infoAttrsToCopy:
-                    value = getattr(self.defaultFontInfo, infoAttr, None)
-                    if value is not None:
-                        setattr(info, infoAttr, value)
-                _ = reader.getGlyphSet()  # this creates the default layer
-                reader.writeLayerContents()
-                ufoLayerName = reader.getDefaultLayerName()
-                assert os.path.isdir(ufoPath)
-            else:
-                atPole = {**self.defaultLocation, **atPole}
-                poleDSSource = self.dsSources.findItem(
-                    locationTuple=tuplifyLocation(atPole)
-                )
-                if poleDSSource is None:
-                    poleDSSource = self.defaultDSSource
-                assert poleDSSource is not None
-                reader = poleDSSource.layer.reader
-                makeUniqueName = uniqueNameMaker(reader.getLayerNames())
-                # TODO: parse source.layerName, in case it's FileName/layerName?
-                ufoLayerName = makeUniqueName(source.name)
-                # Create the new UFO layer now
-                ufoPath = poleDSSource.layer.path
-                _ = manager.getGlyphSet(ufoPath, ufoLayerName)
-                reader.writeLayerContents()
-
-            self.dsDoc.addSourceDescriptor(
-                styleName=source.name,
-                location=sourceLocation,
-                path=ufoPath,
-                layerName=ufoLayerName,
-            )
-            self.dsDoc.write(self.dsDoc.path)
-
-            ufoLayer = UFOLayer(
-                manager=manager,
-                path=ufoPath,
-                name=ufoLayerName,
-            )
-
-            dsSource = DSSource(
-                name=source.name,
-                layer=ufoLayer,
-                location=sourceLocation,
-            )
-            self.dsSources.append(dsSource)
-            self.ufoLayers.append(ufoLayer)
+            dsSource = self._createDSSource(source)
 
         return dsSource.newFontraSource() if dsSource is not None else None
+
+    def _createDSSource(self, source):
+        sourceLocation = {**self.defaultLocation, **source.location}
+        manager = self.defaultUFOLayer.manager
+        atPole, notAtPole = splitLocationByPolePosition(
+            sourceLocation, self.axisPolePositions
+        )
+        if not notAtPole:
+            ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
+            makeUniqueFileName = uniqueNameMaker(p.stem for p in ufoDir.glob("*.ufo"))
+            dsFileName = pathlib.Path(self.dsDoc.path).stem
+            ufoFileName = makeUniqueFileName(f"{dsFileName}_{source.name}")
+            ufoFileName = ufoFileName + ".ufo"
+            ufoPath = os.fspath(ufoDir / ufoFileName)
+            assert not os.path.exists(ufoPath)
+            reader = manager.getReader(ufoPath)  # this creates the UFO
+            info = UFOFontInfo()
+            for infoAttr in infoAttrsToCopy:
+                value = getattr(self.defaultFontInfo, infoAttr, None)
+                if value is not None:
+                    setattr(info, infoAttr, value)
+            _ = reader.getGlyphSet()  # this creates the default layer
+            reader.writeLayerContents()
+            ufoLayerName = reader.getDefaultLayerName()
+            assert os.path.isdir(ufoPath)
+        else:
+            atPole = {**self.defaultLocation, **atPole}
+            poleDSSource = self.dsSources.findItem(
+                locationTuple=tuplifyLocation(atPole)
+            )
+            if poleDSSource is None:
+                poleDSSource = self.defaultDSSource
+            assert poleDSSource is not None
+            reader = poleDSSource.layer.reader
+            makeUniqueName = uniqueNameMaker(reader.getLayerNames())
+            # TODO: parse source.layerName, in case it's FileName/layerName?
+            ufoLayerName = makeUniqueName(source.name)
+            # Create the new UFO layer now
+            ufoPath = poleDSSource.layer.path
+            _ = manager.getGlyphSet(ufoPath, ufoLayerName)
+            reader.writeLayerContents()
+
+        self.dsDoc.addSourceDescriptor(
+            styleName=source.name,
+            location=sourceLocation,
+            path=ufoPath,
+            layerName=ufoLayerName,
+        )
+        self.dsDoc.write(self.dsDoc.path)
+
+        ufoLayer = UFOLayer(
+            manager=manager,
+            path=ufoPath,
+            name=ufoLayerName,
+        )
+
+        dsSource = DSSource(
+            name=source.name,
+            layer=ufoLayer,
+            location=sourceLocation,
+        )
+        self.dsSources.append(dsSource)
+        self.ufoLayers.append(ufoLayer)
+
+        return dsSource
 
     def _packLocalDesignSpace(self, glyph):
         if not glyph.axes:
