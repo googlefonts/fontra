@@ -119,9 +119,9 @@ class DesignspaceBackend:
         ufoPaths = {source.path: None for source in self.dsDoc.sources}
         for ufoPath in ufoPaths:
             reader = manager.getReader(ufoPath)
-            for layerName in reader.getLayerNames():
+            for ufoLayerName in reader.getLayerNames():
                 self.ufoLayers.append(
-                    UFOLayer(manager=manager, path=ufoPath, name=layerName)
+                    UFOLayer(manager=manager, path=ufoPath, name=ufoLayerName)
                 )
 
         makeUniqueSourceName = uniqueNameMaker()
