@@ -241,16 +241,27 @@ class DesignspaceBackend:
         self.glyphMap[glyphName] = unicodes
 
         layerNameMapping = {}
+        defaultLayer = self.defaultUFOLayer
+        defaultLayerGlyph = None
+        if glyphName in defaultLayer.glyphSet:
+            defaultLayerGlyph = readGlyphOrCreate(
+                defaultLayer.glyphSet, glyphName, unicodes
+            )
+            layerNameMapping = defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
 
+        revLayerNameMapping = reverseSparseDict(layerNameMapping)
+
+        layerNameMapping = {}
         localAxes = packLocalAxes(glyph.axes)
         localAxisNames = {axis.name for axis in glyph.axes}
         localSources = []
 
         for source in glyph.sources:
             normalizedFontraLayerName, localSourceDict = self._prepareUFOLayer(
-                source, localAxisNames
+                source, localAxisNames, revLayerNameMapping
             )
-            layerNameMapping[source.layerName] = normalizedFontraLayerName
+            if normalizedFontraLayerName != source.layerName:
+                layerNameMapping[normalizedFontraLayerName] = source.layerName
             if localSourceDict is not None:
                 localSources.append(localSourceDict)
 
@@ -260,30 +271,34 @@ class DesignspaceBackend:
         if localSources:
             localDS["sources"] = localSources
 
-        revLayerNameMapping = {
-            normalizedLayerName: layerName
-            for layerName, normalizedLayerName in layerNameMapping.items()
-            if normalizedLayerName != layerName
-        }
+        revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
-            layerName = layerNameMapping.get(layerName, layerName)
+            layerName = revLayerNameMapping.get(layerName, layerName)
             glyphSet = self.ufoLayers.findItem(fontraLayerName=layerName).glyphSet
             usedLayers.add(layerName)
             writeGlyphSetContents = glyphName not in glyphSet
-            layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
-            drawPointsFunc = buildUFOLayerGlyph(layerGlyph, layer.glyph)
+
+            if (
+                glyphSet == self.defaultUFOLayer.glyphSet
+                and defaultLayerGlyph is not None
+            ):
+                layerGlyph = defaultLayerGlyph
+            else:
+                layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
+
             if glyphSet == self.defaultUFOLayer.glyphSet:
                 if localDS:
                     layerGlyph.lib[GLYPH_DESIGNSPACE_LIB_KEY] = localDS
                 else:
                     layerGlyph.lib.pop(GLYPH_DESIGNSPACE_LIB_KEY, None)
-                if revLayerNameMapping:
-                    layerGlyph.lib[LAYER_NAME_MAPPING_LIB_KEY] = revLayerNameMapping
+                if layerNameMapping:
+                    layerGlyph.lib[LAYER_NAME_MAPPING_LIB_KEY] = layerNameMapping
                 else:
                     layerGlyph.lib.pop(LAYER_NAME_MAPPING_LIB_KEY, None)
 
+            drawPointsFunc = populateUFOLayerGlyph(layerGlyph, layer.glyph)
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
             if writeGlyphSetContents:
                 # FIXME: this is inefficient if we write many glyphs
@@ -306,7 +321,7 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
-    def _prepareUFOLayer(self, source, localAxisNames):
+    def _prepareUFOLayer(self, source, localAxisNames, revLayerNameMapping):
         sourceLocation = {**self.defaultLocation, **source.location}
         globalLocation = {
             name: value
@@ -321,18 +336,15 @@ class DesignspaceBackend:
             dsSource = self._createDSSource(source, globalLocation)
 
         if sourceLocation != globalLocation:
-            ufoLayer = self.ufoLayers.findItem(fontraLayerName=source.layerName)
-
-            if ufoLayer is None:
-                # Try again, with a guessed layer name, hmm.
-                guessedFontraLayerName = f"{dsSource.layer.fileName}/{source.layerName}"
-                ufoLayer = self.ufoLayers.findItem(
-                    fontraLayerName=guessedFontraLayerName
+            ufoLayer = self.ufoLayers.findItem(
+                fontraLayerName=revLayerNameMapping.get(
+                    source.layerName, source.layerName
                 )
+            )
 
             if ufoLayer is None:
                 ufoPath = dsSource.layer.path
-                ufoLayerName = self._newUFOLayer(ufoPath, source.name)
+                ufoLayerName = self._newUFOLayer(ufoPath, source.layerName)
                 ufoLayer = UFOLayer(
                     manager=self.ufoManager,
                     path=ufoPath,
@@ -727,7 +739,7 @@ def readGlyphOrCreate(
     return layerGlyph
 
 
-def buildUFOLayerGlyph(layerGlyph: UFOGlyph, staticGlyph: StaticGlyph) -> None:
+def populateUFOLayerGlyph(layerGlyph: UFOGlyph, staticGlyph: StaticGlyph) -> None:
     pen = RecordingPointPen()
     layerGlyph.width = staticGlyph.xAdvance
     layerGlyph.height = staticGlyph.yAdvance
@@ -829,3 +841,7 @@ def packLocalAxes(axes):
         )
         for axis in axes
     ]
+
+
+def reverseSparseDict(d):
+    return {v: k for k, v in d.items() if k != v}
