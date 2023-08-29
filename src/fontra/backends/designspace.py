@@ -272,9 +272,8 @@ class DesignspaceBackend:
             glyphSet = self.ufoLayers.findItem(fontraLayerName=layerName).glyphSet
             usedLayers.add(layerName)
             writeGlyphSetContents = glyphName not in glyphSet
-            layerGlyph, drawPointsFunc = buildUFOLayerGlyph(
-                glyphSet, glyphName, layer.glyph, unicodes
-            )
+            layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
+            drawPointsFunc = buildUFOLayerGlyph(layerGlyph, layer.glyph)
             if glyphSet == self.defaultUFOLayer.glyphSet:
                 if localDS:
                     layerGlyph.lib[GLYPH_DESIGNSPACE_LIB_KEY] = localDS
@@ -713,12 +712,11 @@ def unpackVariableComponents(lib):
     return components
 
 
-def buildUFOLayerGlyph(
+def readGlyphOrCreate(
     glyphSet: GlyphSet,
     glyphName: str,
-    staticGlyph: StaticGlyph,
     unicodes: list[int],
-) -> None:
+):
     layerGlyph = UFOGlyph()
     layerGlyph.lib = {}
     if glyphName in glyphSet:
@@ -726,6 +724,10 @@ def buildUFOLayerGlyph(
         # Fontra doesn't understand
         glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
     layerGlyph.unicodes = unicodes
+    return layerGlyph
+
+
+def buildUFOLayerGlyph(layerGlyph: UFOGlyph, staticGlyph: StaticGlyph) -> None:
     pen = RecordingPointPen()
     layerGlyph.width = staticGlyph.xAdvance
     layerGlyph.height = staticGlyph.yAdvance
@@ -750,7 +752,7 @@ def buildUFOLayerGlyph(
     else:
         layerGlyph.lib.pop(VARIABLE_COMPONENTS_LIB_KEY, None)
 
-    return layerGlyph, pen.replay
+    return pen.replay
 
 
 def getGlyphMapFromGlyphSet(glyphSet):
