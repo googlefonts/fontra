@@ -128,11 +128,9 @@ class DesignspaceBackend:
         for source in self.dsDoc.sources:
             reader = manager.getReader(source.path)
             defaultLayerName = reader.getDefaultLayerName()
-            sourceLayerName = source.layerName or defaultLayerName
+            ufoLayerName = source.layerName or defaultLayerName
 
-            sourceLayer = self.ufoLayers.findItem(
-                path=source.path, name=sourceLayerName
-            )
+            sourceLayer = self.ufoLayers.findItem(path=source.path, name=ufoLayerName)
             sourceStyleName = source.styleName or sourceLayer.fileName
             sourceName = (
                 sourceStyleName
