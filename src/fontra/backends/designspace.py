@@ -237,7 +237,6 @@ class DesignspaceBackend:
     async def putGlyph(self, glyphName, glyph, unicodes):
         assert isinstance(unicodes, list)
         assert all(isinstance(cp, int) for cp in unicodes)
-        modTimes = set()
         self.glyphMap[glyphName] = unicodes
 
         layerNameMapping = {}
@@ -273,6 +272,7 @@ class DesignspaceBackend:
 
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
+        modTimes = set()
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
             layerName = revLayerNameMapping.get(layerName, layerName)
