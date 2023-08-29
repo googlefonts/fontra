@@ -433,8 +433,8 @@ getGlyphTestData = [
             "sources": [
                 {
                     "layerName": "MutatorSansLightCondensed/foreground",
-                    "location": {"flip": 0, "flop": 0},
-                    "name": "<default>",
+                    "location": {"weight": 150.0, "width": 0.0},
+                    "name": "LightCondensed",
                 },
                 {
                     "layerName": "MutatorSansLightCondensed/varco_flip",

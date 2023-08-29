@@ -44,15 +44,6 @@
         <key>sources</key>
         <array>
           <dict>
-            <key>location</key>
-            <dict>
-              <key>flip</key>
-              <integer>0</integer>
-              <key>flop</key>
-              <integer>0</integer>
-            </dict>
-          </dict>
-          <dict>
             <key>layername</key>
             <string>varco_flip</string>
             <key>location</key>
