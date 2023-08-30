@@ -1,11 +1,12 @@
 import pathlib
 import shutil
+from dataclasses import asdict
 
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
-from fontra.core.classes import Layer, Source, StaticGlyph
+from fontra.core.classes import Layer, LocalAxis, Source, StaticGlyph
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -69,13 +70,36 @@ async def test_roundTripGlyphSingleUFO(writableTestFontSingleUFO, glyphName):
     assert existingData == newData  # just in case the keys differ
 
 
-async def test_addNewSparseSource(writableTestFont):
+@pytest.mark.parametrize(
+    "location, expectedDSSource",
+    [
+        (
+            {"weight": 400, "width": 0},
+            dict(
+                location=dict(weight=400, width=0),
+                styleName="mid",
+                filename="MutatorSansLightCondensed.ufo",
+                layerName="mid",
+            ),
+        ),
+        (
+            {"weight": 400, "width": 1000},
+            dict(
+                location=dict(weight=400, width=1000),
+                styleName="mid",
+                filename="MutatorSansLightWide.ufo",
+                layerName="mid",
+            ),
+        ),
+    ],
+)
+async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
     glyphName = "A"
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
     dsSources = unpackSources(writableTestFont.dsDoc.sources)
 
-    glyph.sources.append(Source(name="mid", location={"weight": 400}, layerName="mid"))
+    glyph.sources.append(Source(name="mid", location=location, layerName="mid"))
     glyph.layers["mid"] = Layer(glyph=StaticGlyph())
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
@@ -84,12 +108,7 @@ async def test_addNewSparseSource(writableTestFont):
     newDSSources = unpackSources(newDSDoc.sources)
     assert dsSources == newDSSources[: len(dsSources)]
     assert len(newDSSources) == len(dsSources) + 1
-    assert newDSSources[-1] == dict(
-        location=dict(weight=400, width=0),
-        styleName="mid",
-        filename="MutatorSansLightCondensed.ufo",
-        layerName="mid",
-    )
+    assert newDSSources[-1] == expectedDSSource
 
 
 async def test_addNewDenseSource(writableTestFont):
@@ -121,6 +140,40 @@ async def test_addNewDenseSource(writableTestFont):
         filename="MutatorSans_widest.ufo",
         layerName="public.default",
     )
+
+
+async def test_addLocalAxis(writableTestFont):
+    glyphName = "period"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert asdict(glyph) == asdict(savedGlyph)
+
+
+async def test_addLocalAxisAndSource(writableTestFont):
+    glyphName = "period"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    layerName = "test"
+
+    glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+    glyph.sources.append(
+        Source(name="test", location={"test": 100}, layerName=layerName)
+    )
+    glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert asdict(glyph) == asdict(savedGlyph)
 
 
 def unpackSources(sources):
