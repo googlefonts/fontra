@@ -246,9 +246,6 @@ class DesignspaceBackend:
         assert all(isinstance(cp, int) for cp in unicodes)
         self.glyphMap[glyphName] = unicodes
 
-        sourceNameMapping = {}
-        layerNameMapping = {}
-
         defaultLayerGlyph = readGlyphOrCreate(
             self.defaultUFOLayer.glyphSet, glyphName, unicodes
         )
