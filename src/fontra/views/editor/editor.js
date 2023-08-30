@@ -399,19 +399,10 @@ export class EditorController {
           case "zoom-fit-selection":
             this.zoomFit();
             break;
-          case "toggle-fullscreen":
-            this.toggleFullscreen();
-            break;
         }
         this.canvasController.canvas.focus();
       };
     }
-
-    // init fullscreen button
-    this.updateFullscreenButton();
-    document.addEventListener("fullscreenchange", () => {
-      this.updateFullscreenButton();
-    });
   }
 
   addEditTool(tool) {
@@ -1581,46 +1572,6 @@ export class EditorController {
       this.animateToViewBox(viewBox);
     }
     this.sceneController.autoViewBox = false;
-  }
-
-  toggleFullscreen() {
-    if (document.fullscreenElement) {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
-    } else {
-      const element = document.documentElement;
-      if (element.requestFullscreen) {
-        element.requestFullscreen();
-      }
-    }
-  }
-
-  updateFullscreenButton() {
-    // hide button in case fullscreen is not enabled on device
-    const fullscreenButtonEl = document.querySelector(
-      ".tool-button[data-tool='toggle-fullscreen']"
-    );
-    if (!document.fullscreenEnabled) {
-      fullscreenButtonEl.style.display = "none";
-      return;
-    }
-    // fullscreen is enabled, show the right icon depending on the fullscreen state
-    const fullscreenEnterIconEl = fullscreenButtonEl.querySelector(
-      ".tool-icon--fullscreen-enter"
-    );
-    const fullscreenExitIconEl = fullscreenButtonEl.querySelector(
-      ".tool-icon--fullscreen-exit"
-    );
-    if (document.fullscreenElement) {
-      // fullscreen state is on, display exit-fullscreen button icon
-      fullscreenEnterIconEl.classList.add("tool-icon--hidden");
-      fullscreenExitIconEl.classList.remove("tool-icon--hidden");
-    } else {
-      // fullscreen state is off, display enter-fullscreen button icon
-      fullscreenEnterIconEl.classList.remove("tool-icon--hidden");
-      fullscreenExitIconEl.classList.add("tool-icon--hidden");
-    }
   }
 
   animateToViewBox(viewBox) {
