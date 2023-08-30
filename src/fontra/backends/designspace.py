@@ -249,11 +249,11 @@ class DesignspaceBackend:
         defaultLayerGlyph = readGlyphOrCreate(
             self.defaultUFOLayer.glyphSet, glyphName, unicodes
         )
-        sourceNameMapping = defaultLayerGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
         layerNameMapping = defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
 
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
+        sourceNameMapping = {}
         layerNameMapping = {}
         localAxes = packLocalAxes(glyph.axes)
         localAxisNames = {axis.name for axis in glyph.axes}
