@@ -92,7 +92,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           }),
           html.createDomElement("icon-button", {
             id: "edit-local-axes-button",
-            src: "/tabler-icons/settings.svg",
+            src: "/tabler-icons/tool.svg",
             onclick: (event) => this.editLocalAxes(event),
           }),
         ]),
