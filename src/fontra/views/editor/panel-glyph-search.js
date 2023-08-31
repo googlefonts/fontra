@@ -29,6 +29,12 @@ export default class GlyphSearchPanel extends Panel {
       ]
     );
   }
+
+  async toggle(on, focus) {
+    if (on && focus) {
+      this.editorController.glyphsSearch.focusSearchField();
+    }
+  }
 }
 
 customElements.define("panel-glyph-search", GlyphSearchPanel);

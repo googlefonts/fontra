@@ -197,6 +197,10 @@ export default class TextEntryPanel extends Panel {
     this.setupTextAlignElement();
     this.setupIntersectionObserver();
   }
+
+  async toggle(on, focus) {
+    this.focusTextEntry();
+  }
 }
 
 customElements.define("panel-text-entry", TextEntryPanel);

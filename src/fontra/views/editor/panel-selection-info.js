@@ -36,6 +36,12 @@ export default class SelectionInfoPanel extends Panel {
     );
   }
 
+  async toggle(on, focus) {
+    if (on) {
+      this.update();
+    }
+  }
+
   attach() {
     this.infoForm = new Form();
     this.contentElement.appendChild(this.infoForm);

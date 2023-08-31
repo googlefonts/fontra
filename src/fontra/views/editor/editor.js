@@ -23,7 +23,6 @@ import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import {
   commandKeyProperty,
   enumerate,
-  fetchJSON,
   getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
@@ -229,7 +228,7 @@ export class EditorController {
       rootSubscriptionPattern[rootKey] = null;
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
-    await this.initGlyphsSearch();
+    this.initGlyphsSearch();
     this.initTools();
     await this.initSidebarDesignspace();
 
@@ -242,7 +241,7 @@ export class EditorController {
     setTimeout(() => this.setupFromWindowLocation(), 20);
   }
 
-  async initGlyphsSearch() {
+  initGlyphsSearch() {
     this.glyphsSearch =
       this.getSidebarPanel("glyph-search").contentElement.querySelector(
         "#glyphs-search"
@@ -251,100 +250,6 @@ export class EditorController {
     this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
     );
-  }
-
-  async initUserSettings() {
-    const userSettings =
-      this.getSidebarPanel("user-settings").contentElement.querySelector(
-        "#user-settings"
-      );
-    const items = [];
-
-    // Visualization layer settings
-    const layers = this.visualizationLayers.definitions.filter(
-      (layer) => layer.userSwitchable
-    );
-    const layerItems = layers.map((layer) => {
-      return { key: layer.identifier, displayName: layer.name, ui: "checkbox" };
-    });
-    items.push({
-      displayName: "Glyph editor appearance",
-      controller: this.visualizationLayersSettings,
-      descriptions: layerItems,
-    });
-
-    // Clipboard settings
-    items.push({
-      displayName: "Clipboard export format",
-      controller: this.clipboardFormatController,
-      descriptions: [
-        {
-          key: "format",
-          ui: "radio",
-          options: [
-            { key: "glif", displayName: "GLIF (RoboFont)" },
-            { key: "svg", displayName: "SVG" },
-            { key: "fontra-json", displayName: "JSON (Fontra)" },
-          ],
-        },
-      ],
-    });
-
-    // Experimental feature settings
-    items.push({
-      displayName: "Experimental features",
-      controller: this.experimentalFeaturesController,
-      descriptions: [
-        {
-          key: "scalingEditBehavior",
-          displayName: "Scaling edit tool behavior",
-          ui: "checkbox",
-        },
-        {
-          key: "quadPenTool",
-          displayName: "Pen tool draws quadratics",
-          ui: "checkbox",
-        },
-      ],
-    });
-
-    // Theme settings
-    items.push({
-      displayName: "Theme settings",
-      controller: themeController,
-      descriptions: [
-        {
-          key: "theme",
-          ui: "radio",
-          options: [
-            { key: "automatic", displayName: "Automatic (use OS setting)" },
-            { key: "light", displayName: "Light" },
-            { key: "dark", displayName: "Dark" },
-          ],
-        },
-      ],
-    });
-
-    // Server info
-    const serverInfo = await fetchJSON("/serverinfo");
-    items.push({
-      displayName: "Server info",
-      controller: null,
-      descriptions: Object.entries(serverInfo).flatMap((entry) => {
-        return [
-          {
-            displayName: entry[0] + ":",
-            ui: "header",
-          },
-          {
-            displayName: entry[1],
-            ui: "plain",
-          },
-        ];
-      }),
-    });
-
-    userSettings.items = items;
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
@@ -502,8 +407,7 @@ export class EditorController {
       `fontra-selected-sidebar-${sidebar.identifier}`,
       onOff ? panelName : ""
     );
-    const methodName = hyphenatedToCamelCase("toggle-" + panelName);
-    setTimeout(() => this[methodName]?.call(this, onOff, doFocus), 10);
+    this.getSidebarPanel(panelName).toggle(onOff, doFocus);
     return onOff;
   }
 
@@ -1496,31 +1400,6 @@ export class EditorController {
       window.history.pushState({}, "", url);
     } else {
       window.history.replaceState({}, "", url);
-    }
-  }
-
-  toggleGlyphSearch(onOff, doFocus) {
-    if (onOff && doFocus) {
-      this.glyphsSearch.focusSearchField();
-    }
-  }
-
-  toggleTextEntry(onOff, doFocus) {
-    if (onOff && doFocus) {
-      this.getSidebarPanel("text-entry").focusTextEntry();
-    }
-  }
-
-  toggleSelectionInfo(onOff) {
-    if (onOff) {
-      this.getSidebarPanel("selection-info").update();
-    }
-  }
-
-  async toggleUserSettings(onOff) {
-    if (onOff && !this._didInitUserSettings) {
-      this._didInitUserSettings = true;
-      await loaderSpinner(this.initUserSettings());
     }
   }
 
