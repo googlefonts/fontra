@@ -281,6 +281,14 @@ class DesignspaceBackend:
 
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
+        haveVariableComponents = any(
+            compo.location
+            or compo.transformation.tCenterX
+            or compo.transformation.tCenterY
+            for layer in glyph.layers.values()
+            for compo in layer.glyph.components
+        )
+
         modTimes = set()
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
@@ -297,7 +305,9 @@ class DesignspaceBackend:
             else:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
 
-            drawPointsFunc = populateUFOLayerGlyph(layerGlyph, layer.glyph)
+            drawPointsFunc = populateUFOLayerGlyph(
+                layerGlyph, layer.glyph, haveVariableComponents
+            )
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
             if writeGlyphSetContents:
                 # FIXME: this is inefficient if we write many glyphs
@@ -740,21 +750,25 @@ def readGlyphOrCreate(
     return layerGlyph
 
 
-def populateUFOLayerGlyph(layerGlyph: UFOGlyph, staticGlyph: StaticGlyph) -> None:
+def populateUFOLayerGlyph(
+    layerGlyph: UFOGlyph,
+    staticGlyph: StaticGlyph,
+    forceVariableComponents: bool = False,
+) -> None:
     pen = RecordingPointPen()
     layerGlyph.width = staticGlyph.xAdvance
     layerGlyph.height = staticGlyph.yAdvance
     staticGlyph.path.drawPoints(pen)
     variableComponents = []
     for component in staticGlyph.components:
-        if component.location:
-            # It's a variable component
+        if component.location or forceVariableComponents:
+            # Store as a variable component
             varCoDict = {"base": component.name, "location": component.location}
             if component.transformation != DecomposedTransform():
                 varCoDict["transformation"] = asdict(component.transformation)
             variableComponents.append(varCoDict)
         else:
-            # It's a regular component
+            # Store as a regular component
             pen.addComponent(
                 component.name,
                 cleanupTransform(component.transformation.toTransform()),
