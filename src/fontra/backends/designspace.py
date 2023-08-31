@@ -282,13 +282,11 @@ class DesignspaceBackend:
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
         haveVariableComponents = any(
-            any(
-                compo.location
-                or compo.transformation.tCenterX
-                or compo.transformation.tCenterY
-                for compo in layer.glyph.components
-            )
+            compo.location
+            or compo.transformation.tCenterX
+            or compo.transformation.tCenterY
             for layer in glyph.layers.values()
+            for compo in layer.glyph.components
         )
 
         modTimes = set()
