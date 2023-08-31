@@ -412,6 +412,11 @@ body {
   display: none;
 }
 
+.tool-icon--fullscreen-enter .icon,
+.tool-icon--fullscreen-exit .icon {
+  stroke-width: 1.7px;
+}
+
 .tool-button:hover {
   background-color: var(--editor-tool-button-hover-background-color);
 }
