@@ -1585,14 +1585,10 @@ export class EditorController {
 
   toggleFullscreen() {
     if (document.fullscreenElement) {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      }
+      document.exitFullscreen();
     } else {
       const element = document.documentElement;
-      if (element.requestFullscreen) {
-        element.requestFullscreen();
-      }
+      element.requestFullscreen();
     }
   }
 
