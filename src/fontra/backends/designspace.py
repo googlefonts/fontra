@@ -762,13 +762,13 @@ def populateUFOLayerGlyph(
     variableComponents = []
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:
-            # It's a variable component
+            # Store as a variable component
             varCoDict = {"base": component.name, "location": component.location}
             if component.transformation != DecomposedTransform():
                 varCoDict["transformation"] = asdict(component.transformation)
             variableComponents.append(varCoDict)
         else:
-            # It's a regular component
+            # Store as a regular component
             pen.addComponent(
                 component.name,
                 cleanupTransform(component.transformation.toTransform()),
