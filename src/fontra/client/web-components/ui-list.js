@@ -87,10 +87,10 @@ export class UIList extends UnlitElement {
       background-color: var(--row-selected-background-color);
     }
 
-    .text-cell, .text-cell-header {
+    .list-cell, .text-cell, .text-cell-header {
       overflow: hidden;
       text-overflow: ellipsis;
-      padding: 0 0.2em 0 0.2em;
+      padding: 0 0.2em 0 0.1em;
     }
 
     .text-cell.left, .text-cell-header.left {
@@ -261,6 +261,7 @@ export class UIList extends UnlitElement {
         if (colDesc.cellFactory) {
           cell = html.div(
             {
+              class: "list-cell",
               style: colDesc.width ? `display: flex; width: ${colDesc.width};` : "",
             },
             [colDesc.cellFactory(item, colDesc)]
