@@ -87,7 +87,7 @@ class DesignspaceBackend:
             for axisName, polePosition in axisPolePositions.items()
         }
         self.loadUFOLayers()
-        self.buildFileNameMapping()
+        self.buildGlyphFileNameMapping()
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes = {}
 
@@ -150,7 +150,7 @@ class DesignspaceBackend:
                 )
             )
 
-    def buildFileNameMapping(self):
+    def buildGlyphFileNameMapping(self):
         glifFileNames = {}
         for glyphSet in self.ufoLayers.iterAttrs("glyphSet"):
             for glyphName, fileName in glyphSet.contents.items():
