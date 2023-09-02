@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 from collections import defaultdict
-from copy import copy
+from copy import copy, deepcopy
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from functools import cache, cached_property
@@ -448,6 +448,21 @@ class DesignspaceBackend:
 
     async def getGlobalAxes(self):
         return self.axes
+
+    async def putGlobalAxes(self, axes):
+        axes = deepcopy(axes)
+        self.axes = axes
+        self.dsDoc.axes = []
+        for axis in axes:
+            self.dsDoc.addAxisDescriptor(
+                name=axis.name,
+                tag=axis.tag,
+                minimum=axis.minValue,
+                default=axis.defaultValue,
+                maximum=axis.maxValue,
+                map=axis.mapping if axis.mapping else None,
+            )
+        self.dsDoc.write(self.dsDoc.path)
 
     async def getUnitsPerEm(self):
         return self.defaultFontInfo.unitsPerEm
