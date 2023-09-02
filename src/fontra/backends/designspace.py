@@ -698,18 +698,6 @@ class ItemList:
             yield getattr(item, attrName)
 
 
-def serializeGlyphLayers(glyphSets, glyphName, sourceLayerName):
-    layers = {}
-    sourceLayerGlyph = None
-    for layerName, glyphSet in glyphSets.items():
-        if glyphName in glyphSet:
-            staticGlyph, glyph = serializeStaticGlyph(glyphSet, glyphName)
-            layers[layerName] = Layer(glyph=staticGlyph)
-            if layerName == sourceLayerName:
-                sourceLayerGlyph = glyph
-    return layers, sourceLayerGlyph
-
-
 def serializeStaticGlyph(glyphSet, glyphName):
     glyph = UFOGlyph()
     glyph.lib = {}
