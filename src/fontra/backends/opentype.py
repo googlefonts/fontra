@@ -42,7 +42,7 @@ class OTFBackend:
             return None
         defaultLayerName = "<default>"
         glyph = VariableGlyph(glyphName)
-        staticGlyph = serializeGlyph(self.glyphSet, glyphName)
+        staticGlyph = buildStaticGlyph(self.glyphSet, glyphName)
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}
         defaultLocation = {axis.name: 0 for axis in self.globalAxes}
         sources = [
@@ -59,7 +59,7 @@ class OTFBackend:
             if varGlyphSet is None:
                 varGlyphSet = self.font.getGlyphSet(location=fullLoc, normalized=True)
                 self.variationGlyphSets[locStr] = varGlyphSet
-            varGlyph = serializeGlyph(varGlyphSet, glyphName)
+            varGlyph = buildStaticGlyph(varGlyphSet, glyphName)
             layers[locStr] = Layer(glyph=varGlyph)
             sources.append(Source(location=fullLoc, name=locStr, layerName=locStr))
         if self.charStrings is not None:
@@ -173,7 +173,7 @@ def unpackAxes(font):
     return axisList
 
 
-def serializeGlyph(glyphSet, glyphName):
+def buildStaticGlyph(glyphSet, glyphName):
     pen = PackedPathPointPen()
     ttGlyph = glyphSet[glyphName]
     ttGlyph.drawPoints(GuessSmoothPointPen(pen))
