@@ -186,7 +186,7 @@ class DesignspaceBackend:
             if glyphName not in ufoLayer.glyphSet:
                 continue
 
-            staticGlyph, ufoGlyph = serializeStaticGlyph(ufoLayer.glyphSet, glyphName)
+            staticGlyph, ufoGlyph = ufoLayerToStaticGlyph(ufoLayer.glyphSet, glyphName)
             if ufoLayer == self.defaultUFOLayer:
                 localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
                 if localDS is not None:
@@ -698,7 +698,7 @@ class ItemList:
             yield getattr(item, attrName)
 
 
-def serializeStaticGlyph(glyphSet, glyphName):
+def ufoLayerToStaticGlyph(glyphSet, glyphName):
     glyph = UFOGlyph()
     glyph.lib = {}
     pen = PackedPathPointPen()
