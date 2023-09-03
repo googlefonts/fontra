@@ -322,21 +322,25 @@ class DesignspaceBackend:
             for compo in layer.glyph.components
         )
 
-        modTimes = set()
         usedLayers = set()
+        layers = []
         for layerName, layer in glyph.layers.items():
             layerName = revLayerNameMapping.get(layerName, layerName)
             ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
 
             if ufoLayer is None:
                 # This layer is not used by any source and we haven't seen it
-                # before. Let's create a new layer in the default UFO
+                # before. Let's create a new layer in the default UFO.
                 ufoLayer = self._newUFOLayer(self.defaultUFOLayer.path, layerName)
                 if ufoLayer.fontraLayerName != layerName:
                     layerNameMapping[ufoLayer.fontraLayerName] = layerName
-
-            glyphSet = ufoLayer.glyphSet
+                layerName = ufoLayer.fontraLayerName
+            layers.append((layer, ufoLayer))
             usedLayers.add(layerName)
+
+        modTimes = set()
+        for layer, ufoLayer in layers:
+            glyphSet = ufoLayer.glyphSet
             writeGlyphSetContents = glyphName not in glyphSet
 
             if glyphSet == self.defaultUFOLayer.glyphSet:

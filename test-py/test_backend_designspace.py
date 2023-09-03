@@ -230,6 +230,9 @@ async def test_newFileSystemBackend(tmpdir, testFont):
         "Test_Regular.ufo",
     ] == fileNamesFromDir(tmpdir)
 
+    newGlyph = await font.getGlyph("A")
+    assert glyph == newGlyph
+
 
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
