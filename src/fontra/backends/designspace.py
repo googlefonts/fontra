@@ -315,7 +315,7 @@ class DesignspaceBackend:
 
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
-        haveVariableComponents = any(
+        hasVariableComponents = any(
             compo.location
             or compo.transformation.tCenterX
             or compo.transformation.tCenterY
@@ -353,7 +353,7 @@ class DesignspaceBackend:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
 
             drawPointsFunc = populateUFOLayerGlyph(
-                layerGlyph, layer.glyph, haveVariableComponents
+                layerGlyph, layer.glyph, hasVariableComponents
             )
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
             if writeGlyphSetContents:
