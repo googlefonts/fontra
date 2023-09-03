@@ -210,14 +210,26 @@ async def test_newFileSystemBackend(tmpdir, testFont):
     dsPath = tmpdir / "Test.designspace"
     font = newFileSystemBackend(dsPath)
     assert [] == await font.getGlobalAxes()
-    files = [p.name for p in tmpdir.iterdir()]
-    assert ["Test.designspace", "Test_Regular.ufo"] == sorted(files)
+    files = sorted(p.name for p in tmpdir.iterdir())
+    assert ["Test.designspace", "Test_Regular.ufo"] == files
 
     axes = await testFont.getGlobalAxes()
     await font.putGlobalAxes(axes)
     glyphMap = await testFont.getGlyphMap()
     glyph = await testFont.getGlyph("A")
     await font.putGlyph("A", glyph, glyphMap["A"])
+
+    glyphFiles = sorted(
+        p.name for p in (tmpdir / "Test_Regular.ufo" / "glyphs").iterdir()
+    )
+    assert ["A_.glif", "contents.plist"] == glyphFiles
+    assert [
+        "Test.designspace",
+        "Test_BoldCondensed.ufo",
+        "Test_BoldWide.ufo",
+        "Test_LightWide.ufo",
+        "Test_Regular.ufo",
+    ] == sorted(p.name for p in (tmpdir).iterdir())
 
 
 def unpackSources(sources):

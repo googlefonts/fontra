@@ -88,6 +88,14 @@ class DesignspaceBackend:
 
     def __init__(self, dsDoc):
         self.dsDoc = dsDoc
+        self.ufoManager = UFOManager()
+        self.updateAxisInfo()
+        self.loadUFOLayers()
+        self.buildGlyphFileNameMapping()
+        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
+        self.savedGlyphModificationTimes = {}
+
+    def updateAxisInfo(self):
         self.dsDoc.findDefault()
         axes = []
         axisPolePositions = {}
@@ -115,10 +123,6 @@ class DesignspaceBackend:
             axisName: polePosition[1]
             for axisName, polePosition in axisPolePositions.items()
         }
-        self.loadUFOLayers()
-        self.buildGlyphFileNameMapping()
-        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
-        self.savedGlyphModificationTimes = {}
 
     def close(self):
         pass
@@ -142,7 +146,7 @@ class DesignspaceBackend:
         return fontInfo
 
     def loadUFOLayers(self):
-        self.ufoManager = manager = UFOManager()
+        manager = self.ufoManager
         self.dsSources = ItemList()
         self.ufoLayers = ItemList()
 
@@ -487,8 +491,6 @@ class DesignspaceBackend:
         return self.axes
 
     async def putGlobalAxes(self, axes):
-        axes = deepcopy(axes)
-        self.axes = axes
         self.dsDoc.axes = []
         for axis in axes:
             self.dsDoc.addAxisDescriptor(
@@ -497,9 +499,11 @@ class DesignspaceBackend:
                 minimum=axis.minValue,
                 default=axis.defaultValue,
                 maximum=axis.maxValue,
-                map=axis.mapping if axis.mapping else None,
+                map=deepcopy(axis.mapping) if axis.mapping else None,
             )
         self.dsDoc.write(self.dsDoc.path)
+        self.updateAxisInfo()
+        self.loadUFOLayers()
 
     async def getUnitsPerEm(self):
         return self.defaultFontInfo.unitsPerEm
