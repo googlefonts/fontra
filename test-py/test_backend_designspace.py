@@ -13,6 +13,13 @@ dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 
 @pytest.fixture
+def testFont():
+    return DesignspaceBackend.fromPath(
+        dataDir / "mutatorsans" / "MutatorSans.designspace"
+    )
+
+
+@pytest.fixture
 def writableTestFont(tmpdir):
     mutatorPath = dataDir / "mutatorsans"
     for sourcePath in mutatorPath.iterdir():
@@ -198,13 +205,19 @@ async def test_putGlobalAxes(writableTestFont):
     assert axes == newAxes
 
 
-async def test_newFileSystemBackend(tmpdir):
+async def test_newFileSystemBackend(tmpdir, testFont):
     tmpdir = pathlib.Path(tmpdir)
     dsPath = tmpdir / "Test.designspace"
     font = newFileSystemBackend(dsPath)
     assert [] == await font.getGlobalAxes()
     files = [p.name for p in tmpdir.iterdir()]
     assert ["Test.designspace", "Test_Regular.ufo"] == sorted(files)
+
+    axes = await testFont.getGlobalAxes()
+    await font.putGlobalAxes(axes)
+    glyphMap = await testFont.getGlyphMap()
+    glyph = await testFont.getGlyph("A")
+    await font.putGlyph("A", glyph, glyphMap["A"])
 
 
 def unpackSources(sources):
