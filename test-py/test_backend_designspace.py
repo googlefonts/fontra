@@ -6,7 +6,7 @@ import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
-from fontra.core.classes import Layer, LocalAxis, Source, StaticGlyph
+from fontra.core.classes import GlobalAxis, Layer, LocalAxis, Source, StaticGlyph
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -174,6 +174,27 @@ async def test_addLocalAxisAndSource(writableTestFont):
     savedGlyph = await writableTestFont.getGlyph(glyphName)
 
     assert asdict(glyph) == asdict(savedGlyph)
+
+
+async def test_putGlobalAxes(writableTestFont):
+    axes = await writableTestFont.getGlobalAxes()
+    axes.append(
+        GlobalAxis(
+            name="Testing",
+            tag="TEST",
+            label="Testing",
+            minValue=10,
+            defaultValue=20,
+            maxValue=30,
+            mapping=[[10, 0], [20, 100], [20, 200]],
+        )
+    )
+    await writableTestFont.putGlobalAxes(axes)
+
+    path = writableTestFont.dsDoc.path
+    newFont = DesignspaceBackend.fromPath(path)
+    newAxes = await newFont.getGlobalAxes()
+    assert axes == newAxes
 
 
 def unpackSources(sources):
