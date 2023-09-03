@@ -294,17 +294,15 @@ class DesignspaceBackend:
         localSources = []
 
         for source in glyph.sources:
-            (
-                normalizedSourceName,
-                normalizedLayerName,
-                localSourceDict,
-            ) = self._prepareUFOSourceLayer(source, localAxisNames, revLayerNameMapping)
-            if normalizedSourceName != source.name:
-                sourceNameMapping[normalizedSourceName] = source.name
-            if normalizedLayerName != source.layerName:
-                layerNameMapping[normalizedLayerName] = source.layerName
-            if localSourceDict is not None:
-                localSources.append(localSourceDict)
+            sourceInfo = self._prepareUFOSourceLayer(
+                source, localAxisNames, revLayerNameMapping
+            )
+            if sourceInfo.sourceName != source.name:
+                sourceNameMapping[sourceInfo.sourceName] = source.name
+            if sourceInfo.layerName != source.layerName:
+                layerNameMapping[sourceInfo.layerName] = source.layerName
+            if sourceInfo.localSourceDict is not None:
+                localSources.append(sourceInfo.localSourceDict)
 
         localDS = {}
         if localAxes:
@@ -409,7 +407,11 @@ class DesignspaceBackend:
             normalizedLayerName = dsSource.layer.fontraLayerName
             localSourceDict = None
 
-        return normalizedSourceName, normalizedLayerName, localSourceDict
+        return SimpleNamespace(
+            sourceName=normalizedSourceName,
+            layerName=normalizedLayerName,
+            localSourceDict=localSourceDict,
+        )
 
     def _createDSSource(self, source, globalLocation):
         manager = self.ufoManager
