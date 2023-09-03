@@ -394,13 +394,8 @@ class DesignspaceBackend:
 
             if ufoLayer is None:
                 ufoPath = dsSource.layer.path
-                ufoLayerName = self._newUFOLayer(ufoPath, source.layerName)
-                ufoLayer = UFOLayer(
-                    manager=self.ufoManager,
-                    path=ufoPath,
-                    name=ufoLayerName,
-                )
-                self.ufoLayers.append(ufoLayer)
+                ufoLayer = self._newUFOLayer(ufoPath, source.layerName)
+                ufoLayerName = ufoLayer.name
             else:
                 ufoLayerName = ufoLayer.name
             normalizedSourceName = source.name
@@ -442,6 +437,13 @@ class DesignspaceBackend:
             reader.writeLayerContents()
             ufoLayerName = reader.getDefaultLayerName()
             assert os.path.isdir(ufoPath)
+
+            ufoLayer = UFOLayer(
+                manager=manager,
+                path=ufoPath,
+                name=ufoLayerName,
+            )
+            self.ufoLayers.append(ufoLayer)
         else:
             # Create a new layer in the appropriate existing UFO
             atPole = {**self.defaultLocation, **atPole}
@@ -452,7 +454,8 @@ class DesignspaceBackend:
                 poleDSSource = self.defaultDSSource
             assert poleDSSource is not None
             ufoPath = poleDSSource.layer.path
-            ufoLayerName = self._newUFOLayer(poleDSSource.layer.path, source.layerName)
+            ufoLayer = self._newUFOLayer(poleDSSource.layer.path, source.layerName)
+            ufoLayerName = ufoLayer.name
 
         self.dsDoc.addSourceDescriptor(
             styleName=source.name,
@@ -462,30 +465,31 @@ class DesignspaceBackend:
         )
         self.dsDoc.write(self.dsDoc.path)
 
-        ufoLayer = UFOLayer(
-            manager=manager,
-            path=ufoPath,
-            name=ufoLayerName,
-        )
-
         dsSource = DSSource(
             name=source.name,
             layer=ufoLayer,
             location=globalLocation,
         )
         self.dsSources.append(dsSource)
-        self.ufoLayers.append(ufoLayer)
 
         return dsSource
 
-    def _newUFOLayer(self, path, suggestedLayerName):
-        reader = self.ufoManager.getReader(path)
+    def _newUFOLayer(self, ufoPath, suggestedLayerName):
+        reader = self.ufoManager.getReader(ufoPath)
         makeUniqueName = uniqueNameMaker(reader.getLayerNames())
         ufoLayerName = makeUniqueName(suggestedLayerName)
         # Create the new UFO layer now
-        _ = self.ufoManager.getGlyphSet(path, ufoLayerName)
+        _ = self.ufoManager.getGlyphSet(ufoPath, ufoLayerName)
         reader.writeLayerContents()
-        return ufoLayerName
+
+        ufoLayer = UFOLayer(
+            manager=self.ufoManager,
+            path=ufoPath,
+            name=ufoLayerName,
+        )
+        self.ufoLayers.append(ufoLayer)
+
+        return ufoLayer
 
     async def getGlobalAxes(self):
         return self.axes
