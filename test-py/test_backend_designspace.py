@@ -5,10 +5,18 @@ from dataclasses import asdict
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
+from fontra.backends import newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import GlobalAxis, Layer, LocalAxis, Source, StaticGlyph
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
+
+
+@pytest.fixture
+def testFont():
+    return DesignspaceBackend.fromPath(
+        dataDir / "mutatorsans" / "MutatorSans.designspace"
+    )
 
 
 @pytest.fixture
@@ -195,6 +203,52 @@ async def test_putGlobalAxes(writableTestFont):
     newFont = DesignspaceBackend.fromPath(path)
     newAxes = await newFont.getGlobalAxes()
     assert axes == newAxes
+
+
+async def test_newFileSystemBackend(tmpdir, testFont):
+    tmpdir = pathlib.Path(tmpdir)
+    dsPath = tmpdir / "Test.designspace"
+    font = newFileSystemBackend(dsPath)
+    assert [] == await font.getGlobalAxes()
+    assert ["Test.designspace", "Test_Regular.ufo"] == fileNamesFromDir(tmpdir)
+
+    axes = await testFont.getGlobalAxes()
+    await font.putGlobalAxes(axes)
+    glyphMap = await testFont.getGlyphMap()
+    glyph = await testFont.getGlyph("A")
+    await font.putGlyph("A", glyph, glyphMap["A"])
+
+    assert ["A_.glif", "contents.plist"] == fileNamesFromDir(
+        tmpdir / "Test_Regular.ufo" / "glyphs"
+    )
+
+    assert [
+        "fontinfo.plist",
+        "glyphs",
+        "glyphs.M_utatorS_ansL_ightC_ondensed_support",
+        "layercontents.plist",
+        "metainfo.plist",
+    ] == fileNamesFromDir(tmpdir / "Test_Regular.ufo")
+
+    assert [
+        "Test.designspace",
+        "Test_BoldCondensed.ufo",
+        "Test_BoldWide.ufo",
+        "Test_LightWide.ufo",
+        "Test_Regular.ufo",
+    ] == fileNamesFromDir(tmpdir)
+
+    newGlyph = await font.getGlyph("A")
+    assert glyph == newGlyph
+
+    # Check with freshly opened font
+    referenceFont = DesignspaceBackend.fromPath(dsPath)
+    referenceGlyph = await referenceFont.getGlyph("A")
+    assert glyph == referenceGlyph
+
+
+def fileNamesFromDir(path):
+    return sorted(p.name for p in path.iterdir())
 
 
 def unpackSources(sources):

@@ -40,16 +40,16 @@ SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 
 
-infoAttrsToCopy = [
-    "unitsPerEm",
-    "ascender",
-    "descender",
-    "xHeight",
-    "capHeight",
-    "familyName",
-    "copyright",
-    "year",
-]
+defaultUFOInfoAttrs = {
+    "unitsPerEm": 1000,
+    "ascender": 750,
+    "descender": -250,
+    "xHeight": 500,
+    "capHeight": 750,
+    "familyName": None,
+    "copyright": None,
+    "year": None,
+}
 
 
 class DesignspaceBackend:
@@ -57,8 +57,45 @@ class DesignspaceBackend:
     def fromPath(cls, path):
         return cls(DesignSpaceDocument.fromfile(path))
 
+    @classmethod
+    def createFromPath(cls, path):
+        path = pathlib.Path(path)
+        ufoDir = path.parent
+
+        # Create default UFO
+        makeUniqueFileName = uniqueNameMaker(p.stem for p in ufoDir.glob("*.ufo"))
+        familyName = path.stem
+        styleName = "Regular"
+        ufoFileName = makeUniqueFileName(f"{familyName}_{styleName}")
+        ufoFileName = ufoFileName + ".ufo"
+        ufoPath = os.fspath(ufoDir / ufoFileName)
+        assert not os.path.exists(ufoPath)
+        writer = UFOReaderWriter(ufoPath)  # this creates the UFO
+        info = UFOFontInfo()
+        for infoAttr, value in defaultUFOInfoAttrs.items():
+            if value is not None:
+                setattr(info, infoAttr, value)
+        writer.writeInfo(info)
+        _ = writer.getGlyphSet()  # this creates the default layer
+        writer.writeLayerContents()
+        assert os.path.isdir(ufoPath)
+
+        dsDoc = DesignSpaceDocument()
+        dsDoc.addSourceDescriptor(styleName=styleName, path=ufoPath, location={})
+
+        dsDoc.write(path)
+        return cls(dsDoc)
+
     def __init__(self, dsDoc):
         self.dsDoc = dsDoc
+        self.ufoManager = UFOManager()
+        self.updateAxisInfo()
+        self.loadUFOLayers()
+        self.buildGlyphFileNameMapping()
+        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
+        self.savedGlyphModificationTimes = {}
+
+    def updateAxisInfo(self):
         self.dsDoc.findDefault()
         axes = []
         axisPolePositions = {}
@@ -86,10 +123,6 @@ class DesignspaceBackend:
             axisName: polePosition[1]
             for axisName, polePosition in axisPolePositions.items()
         }
-        self.loadUFOLayers()
-        self.buildGlyphFileNameMapping()
-        self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
-        self.savedGlyphModificationTimes = {}
 
     def close(self):
         pass
@@ -113,7 +146,7 @@ class DesignspaceBackend:
         return fontInfo
 
     def loadUFOLayers(self):
-        self.ufoManager = manager = UFOManager()
+        manager = self.ufoManager
         self.dsSources = ItemList()
         self.ufoLayers = ItemList()
 
@@ -249,30 +282,29 @@ class DesignspaceBackend:
         defaultLayerGlyph = readGlyphOrCreate(
             self.defaultUFOLayer.glyphSet, glyphName, unicodes
         )
-
         revLayerNameMapping = reverseSparseDict(
             defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
         )
 
-        sourceNameMapping = {}
-        layerNameMapping = {}
         localAxes = packLocalAxes(glyph.axes)
         localAxisNames = {axis.name for axis in glyph.axes}
+
+        # Prepare UFO source layers and local sources
+        sourceNameMapping = {}
+        layerNameMapping = {}
         localSources = []
-
         for source in glyph.sources:
-            (
-                normalizedSourceName,
-                normalizedLayerName,
-                localSourceDict,
-            ) = self._prepareUFOLayer(source, localAxisNames, revLayerNameMapping)
-            if normalizedSourceName != source.name:
-                sourceNameMapping[normalizedSourceName] = source.name
-            if normalizedLayerName != source.layerName:
-                layerNameMapping[normalizedLayerName] = source.layerName
-            if localSourceDict is not None:
-                localSources.append(localSourceDict)
+            sourceInfo = self._prepareUFOSourceLayer(
+                source, localAxisNames, revLayerNameMapping
+            )
+            if sourceInfo.sourceName != source.name:
+                sourceNameMapping[sourceInfo.sourceName] = source.name
+            if sourceInfo.layerName != source.layerName:
+                layerNameMapping[sourceInfo.layerName] = source.layerName
+            if sourceInfo.localSourceDict is not None:
+                localSources.append(sourceInfo.localSourceDict)
 
+        # Prepare local design space
         localDS = {}
         if localAxes:
             localDS["axes"] = localAxes
@@ -281,20 +313,28 @@ class DesignspaceBackend:
 
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
-        haveVariableComponents = any(
-            compo.location
-            or compo.transformation.tCenterX
-            or compo.transformation.tCenterY
-            for layer in glyph.layers.values()
-            for compo in layer.glyph.components
-        )
-
-        modTimes = set()
+        # Gather all UFO layers
         usedLayers = set()
+        layers = []
         for layerName, layer in glyph.layers.items():
             layerName = revLayerNameMapping.get(layerName, layerName)
-            glyphSet = self.ufoLayers.findItem(fontraLayerName=layerName).glyphSet
+            ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
+
+            if ufoLayer is None:
+                # This layer is not used by any source and we haven't seen it
+                # before. Let's create a new layer in the default UFO.
+                ufoLayer = self._newUFOLayer(self.defaultUFOLayer.path, layerName)
+                if ufoLayer.fontraLayerName != layerName:
+                    layerNameMapping[ufoLayer.fontraLayerName] = layerName
+                layerName = ufoLayer.fontraLayerName
+            layers.append((layer, ufoLayer))
             usedLayers.add(layerName)
+
+        # Write all UFO layers
+        hasVariableComponents = glyphHasVariableComponents(glyph)
+        modTimes = set()
+        for layer, ufoLayer in layers:
+            glyphSet = ufoLayer.glyphSet
             writeGlyphSetContents = glyphName not in glyphSet
 
             if glyphSet == self.defaultUFOLayer.glyphSet:
@@ -306,7 +346,7 @@ class DesignspaceBackend:
                 layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
 
             drawPointsFunc = populateUFOLayerGlyph(
-                layerGlyph, layer.glyph, haveVariableComponents
+                layerGlyph, layer.glyph, hasVariableComponents
             )
             glyphSet.writeGlyph(glyphName, layerGlyph, drawPointsFunc=drawPointsFunc)
             if writeGlyphSetContents:
@@ -315,6 +355,7 @@ class DesignspaceBackend:
 
             modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
 
+        # Prune unused UFO layers
         relevantLayerNames = set(
             layer.fontraLayerName
             for layer in self.ufoLayers
@@ -330,7 +371,7 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
-    def _prepareUFOLayer(self, source, localAxisNames, revLayerNameMapping):
+    def _prepareUFOSourceLayer(self, source, localAxisNames, revLayerNameMapping):
         sourceLocation = {**self.defaultLocation, **source.location}
         globalLocation = {
             name: value
@@ -353,13 +394,8 @@ class DesignspaceBackend:
 
             if ufoLayer is None:
                 ufoPath = dsSource.layer.path
-                ufoLayerName = self._newUFOLayer(ufoPath, source.layerName)
-                ufoLayer = UFOLayer(
-                    manager=self.ufoManager,
-                    path=ufoPath,
-                    name=ufoLayerName,
-                )
-                self.ufoLayers.append(ufoLayer)
+                ufoLayer = self._newUFOLayer(ufoPath, source.layerName)
+                ufoLayerName = ufoLayer.name
             else:
                 ufoLayerName = ufoLayer.name
             normalizedSourceName = source.name
@@ -375,7 +411,11 @@ class DesignspaceBackend:
             normalizedLayerName = dsSource.layer.fontraLayerName
             localSourceDict = None
 
-        return normalizedSourceName, normalizedLayerName, localSourceDict
+        return SimpleNamespace(
+            sourceName=normalizedSourceName,
+            layerName=normalizedLayerName,
+            localSourceDict=localSourceDict,
+        )
 
     def _createDSSource(self, source, globalLocation):
         manager = self.ufoManager
@@ -393,7 +433,7 @@ class DesignspaceBackend:
             assert not os.path.exists(ufoPath)
             reader = manager.getReader(ufoPath)  # this creates the UFO
             info = UFOFontInfo()
-            for infoAttr in infoAttrsToCopy:
+            for infoAttr in defaultUFOInfoAttrs:
                 value = getattr(self.defaultFontInfo, infoAttr, None)
                 if value is not None:
                     setattr(info, infoAttr, value)
@@ -401,6 +441,13 @@ class DesignspaceBackend:
             reader.writeLayerContents()
             ufoLayerName = reader.getDefaultLayerName()
             assert os.path.isdir(ufoPath)
+
+            ufoLayer = UFOLayer(
+                manager=manager,
+                path=ufoPath,
+                name=ufoLayerName,
+            )
+            self.ufoLayers.append(ufoLayer)
         else:
             # Create a new layer in the appropriate existing UFO
             atPole = {**self.defaultLocation, **atPole}
@@ -411,7 +458,8 @@ class DesignspaceBackend:
                 poleDSSource = self.defaultDSSource
             assert poleDSSource is not None
             ufoPath = poleDSSource.layer.path
-            ufoLayerName = self._newUFOLayer(poleDSSource.layer.path, source.layerName)
+            ufoLayer = self._newUFOLayer(poleDSSource.layer.path, source.layerName)
+            ufoLayerName = ufoLayer.name
 
         self.dsDoc.addSourceDescriptor(
             styleName=source.name,
@@ -421,37 +469,36 @@ class DesignspaceBackend:
         )
         self.dsDoc.write(self.dsDoc.path)
 
-        ufoLayer = UFOLayer(
-            manager=manager,
-            path=ufoPath,
-            name=ufoLayerName,
-        )
-
         dsSource = DSSource(
             name=source.name,
             layer=ufoLayer,
             location=globalLocation,
         )
         self.dsSources.append(dsSource)
-        self.ufoLayers.append(ufoLayer)
 
         return dsSource
 
-    def _newUFOLayer(self, path, suggestedLayerName):
-        reader = self.ufoManager.getReader(path)
+    def _newUFOLayer(self, ufoPath, suggestedLayerName):
+        reader = self.ufoManager.getReader(ufoPath)
         makeUniqueName = uniqueNameMaker(reader.getLayerNames())
         ufoLayerName = makeUniqueName(suggestedLayerName)
         # Create the new UFO layer now
-        _ = self.ufoManager.getGlyphSet(path, ufoLayerName)
+        _ = self.ufoManager.getGlyphSet(ufoPath, ufoLayerName)
         reader.writeLayerContents()
-        return ufoLayerName
+
+        ufoLayer = UFOLayer(
+            manager=self.ufoManager,
+            path=ufoPath,
+            name=ufoLayerName,
+        )
+        self.ufoLayers.append(ufoLayer)
+
+        return ufoLayer
 
     async def getGlobalAxes(self):
         return self.axes
 
     async def putGlobalAxes(self, axes):
-        axes = deepcopy(axes)
-        self.axes = axes
         self.dsDoc.axes = []
         for axis in axes:
             self.dsDoc.addAxisDescriptor(
@@ -460,9 +507,11 @@ class DesignspaceBackend:
                 minimum=axis.minValue,
                 default=axis.defaultValue,
                 maximum=axis.maxValue,
-                map=axis.mapping if axis.mapping else None,
+                map=deepcopy(axis.mapping) if axis.mapping else None,
             )
         self.dsDoc.write(self.dsDoc.path)
+        self.updateAxisInfo()
+        self.loadUFOLayers()
 
     async def getUnitsPerEm(self):
         return self.defaultFontInfo.unitsPerEm
@@ -612,6 +661,10 @@ class UFOBackend:
         dsDoc = DesignSpaceDocument()
         dsDoc.addSourceDescriptor(path=os.fspath(path), styleName="default")
         return DesignspaceBackend(dsDoc)
+
+    @classmethod
+    def createFromPath(cls, path):
+        raise NotImplementedError()
 
 
 class UFOGlyph:
@@ -867,3 +920,11 @@ def storeInLib(layerGlyph, key, value):
         layerGlyph.lib[key] = value
     else:
         layerGlyph.lib.pop(key, None)
+
+
+def glyphHasVariableComponents(glyph):
+    return any(
+        compo.location or compo.transformation.tCenterX or compo.transformation.tCenterY
+        for layer in glyph.layers.values()
+        for compo in layer.glyph.components
+    )

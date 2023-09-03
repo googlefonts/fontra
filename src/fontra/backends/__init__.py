@@ -6,15 +6,33 @@ logger = logging.getLogger(__name__)
 
 
 def getFileSystemBackend(path):
+    return _getFileSystemBackend(path, False)
+
+
+def newFileSystemBackend(path):
+    return _getFileSystemBackend(path, True)
+
+
+def _getFileSystemBackend(path, create):
+    logVerb = "creating" if create else "loading"
+
     path = pathlib.Path(path)
-    if not path.exists():
+
+    if not create and not path.exists():
         raise FileNotFoundError(path)
-    logger.info(f"loading project {path.name}...")
+
+    logger.info(f"{logVerb} project {path.name}...")
     fileType = path.suffix.lstrip(".").lower()
     backendEntryPoints = entry_points(group="fontra.filesystem.backends")
     entryPoint = backendEntryPoints[fileType]
     backendClass = entryPoint.load()
 
-    backend = backendClass.fromPath(path)
-    logger.info(f"done loading {path.name}")
+    if create:
+        if not hasattr(backendClass, "createFromPath"):
+            raise ValueError(f"Creating a new .{fileType} is not supported")
+        backend = backendClass.createFromPath(path)
+    else:
+        backend = backendClass.fromPath(path)
+
+    logger.info(f"done {logVerb} {path.name}")
     return backend
