@@ -299,7 +299,7 @@ class DesignspaceBackend:
                 normalizedSourceName,
                 normalizedLayerName,
                 localSourceDict,
-            ) = self._prepareUFOLayer(source, localAxisNames, revLayerNameMapping)
+            ) = self._prepareUFOSourceLayer(source, localAxisNames, revLayerNameMapping)
             if normalizedSourceName != source.name:
                 sourceNameMapping[normalizedSourceName] = source.name
             if normalizedLayerName != source.layerName:
@@ -377,7 +377,7 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
-    def _prepareUFOLayer(self, source, localAxisNames, revLayerNameMapping):
+    def _prepareUFOSourceLayer(self, source, localAxisNames, revLayerNameMapping):
         sourceLocation = {**self.defaultLocation, **source.location}
         globalLocation = {
             name: value
