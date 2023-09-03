@@ -241,6 +241,11 @@ async def test_newFileSystemBackend(tmpdir, testFont):
     newGlyph = await font.getGlyph("A")
     assert glyph == newGlyph
 
+    # Check with freshly opened font
+    referenceFont = DesignspaceBackend.fromPath(dsPath)
+    referenceGlyph = await referenceFont.getGlyph("A")
+    assert glyph == referenceGlyph
+
 
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
