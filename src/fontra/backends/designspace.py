@@ -282,7 +282,6 @@ class DesignspaceBackend:
         defaultLayerGlyph = readGlyphOrCreate(
             self.defaultUFOLayer.glyphSet, glyphName, unicodes
         )
-
         revLayerNameMapping = reverseSparseDict(
             defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
         )
