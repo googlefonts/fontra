@@ -315,14 +315,6 @@ class DesignspaceBackend:
 
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
-        hasVariableComponents = any(
-            compo.location
-            or compo.transformation.tCenterX
-            or compo.transformation.tCenterY
-            for layer in glyph.layers.values()
-            for compo in layer.glyph.components
-        )
-
         usedLayers = set()
         layers = []
         for layerName, layer in glyph.layers.items():
@@ -339,6 +331,7 @@ class DesignspaceBackend:
             layers.append((layer, ufoLayer))
             usedLayers.add(layerName)
 
+        hasVariableComponents = glyphHasVariableComponents(glyph)
         modTimes = set()
         for layer, ufoLayer in layers:
             glyphSet = ufoLayer.glyphSet
@@ -922,3 +915,11 @@ def storeInLib(layerGlyph, key, value):
         layerGlyph.lib[key] = value
     else:
         layerGlyph.lib.pop(key, None)
+
+
+def glyphHasVariableComponents(glyph):
+    return any(
+        compo.location or compo.transformation.tCenterX or compo.transformation.tCenterY
+        for layer in glyph.layers.values()
+        for compo in layer.glyph.components
+    )
