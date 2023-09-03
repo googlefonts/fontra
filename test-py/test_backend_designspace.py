@@ -5,6 +5,7 @@ from dataclasses import asdict
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
+from fontra.backends import newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import GlobalAxis, Layer, LocalAxis, Source, StaticGlyph
 
@@ -195,6 +196,15 @@ async def test_putGlobalAxes(writableTestFont):
     newFont = DesignspaceBackend.fromPath(path)
     newAxes = await newFont.getGlobalAxes()
     assert axes == newAxes
+
+
+async def test_newFileSystemBackend(tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    dsPath = tmpdir / "Test.designspace"
+    font = newFileSystemBackend(dsPath)
+    assert [] == await font.getGlobalAxes()
+    files = [p.name for p in tmpdir.iterdir()]
+    assert ["Test.designspace", "Test_Regular.ufo"] == sorted(files)
 
 
 def unpackSources(sources):

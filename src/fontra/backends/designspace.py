@@ -57,6 +57,35 @@ class DesignspaceBackend:
     def fromPath(cls, path):
         return cls(DesignSpaceDocument.fromfile(path))
 
+    @classmethod
+    def createFromPath(cls, path):
+        path = pathlib.Path(path)
+        ufoDir = path.parent
+
+        # Create default UFO
+        makeUniqueFileName = uniqueNameMaker(p.stem for p in ufoDir.glob("*.ufo"))
+        familyName = path.stem
+        styleName = "Regular"
+        ufoFileName = makeUniqueFileName(f"{familyName}_{styleName}")
+        ufoFileName = ufoFileName + ".ufo"
+        ufoPath = os.fspath(ufoDir / ufoFileName)
+        assert not os.path.exists(ufoPath)
+        writer = UFOReaderWriter(ufoPath)  # this creates the UFO
+        info = UFOFontInfo()
+        for infoAttr, value in defaultUFOInfoAttrs.items():
+            if value is not None:
+                setattr(info, infoAttr, value)
+        writer.writeInfo(info)
+        _ = writer.getGlyphSet()  # this creates the default layer
+        writer.writeLayerContents()
+        assert os.path.isdir(ufoPath)
+
+        dsDoc = DesignSpaceDocument()
+        dsDoc.addSourceDescriptor(styleName=styleName, path=ufoPath, location={})
+
+        dsDoc.write(path)
+        return cls(dsDoc)
+
     def __init__(self, dsDoc):
         self.dsDoc = dsDoc
         self.dsDoc.findDefault()
@@ -612,6 +641,10 @@ class UFOBackend:
         dsDoc = DesignSpaceDocument()
         dsDoc.addSourceDescriptor(path=os.fspath(path), styleName="default")
         return DesignspaceBackend(dsDoc)
+
+    @classmethod
+    def createFromPath(cls, path):
+        raise NotImplementedError()
 
 
 class UFOGlyph:
