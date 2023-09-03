@@ -27,8 +27,12 @@ def _getFileSystemBackend(path, create):
     entryPoint = backendEntryPoints[fileType]
     backendClass = entryPoint.load()
 
-    backend = (
-        backendClass.createFromPath(path) if create else backendClass.fromPath(path)
-    )
+    if create:
+        if not hasattr(backendClass, "createFromPath"):
+            raise ValueError(f"Creating a new .{fileType} is not supported")
+        backend = backendClass.createFromPath(path)
+    else:
+        backend = backendClass.fromPath(path)
+
     logger.info(f"done {logVerb} {path.name}")
     return backend
