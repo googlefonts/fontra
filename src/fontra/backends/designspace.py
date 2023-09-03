@@ -322,7 +322,15 @@ class DesignspaceBackend:
         usedLayers = set()
         for layerName, layer in glyph.layers.items():
             layerName = revLayerNameMapping.get(layerName, layerName)
-            glyphSet = self.ufoLayers.findItem(fontraLayerName=layerName).glyphSet
+            ufoLayer = self.ufoLayers.findItem(fontraLayerName=layerName)
+
+            if ufoLayer is None:
+                # This layer is not used by any source.
+                # FIXME: create a new UFO layer in the default source?
+                logger.warning(f"Skipping non-source layer {layerName}")
+                continue
+
+            glyphSet = ufoLayer.glyphSet
             usedLayers.add(layerName)
             writeGlyphSetContents = glyphName not in glyphSet
 
