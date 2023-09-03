@@ -223,6 +223,14 @@ async def test_newFileSystemBackend(tmpdir, testFont):
     )
 
     assert [
+        "fontinfo.plist",
+        "glyphs",
+        "glyphs.M_utatorS_ansL_ightC_ondensed_support",
+        "layercontents.plist",
+        "metainfo.plist",
+    ] == fileNamesFromDir(tmpdir / "Test_Regular.ufo")
+
+    assert [
         "Test.designspace",
         "Test_BoldCondensed.ufo",
         "Test_BoldWide.ufo",
