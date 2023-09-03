@@ -287,10 +287,11 @@ class DesignspaceBackend:
             defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
         )
 
-        sourceNameMapping = {}
-        layerNameMapping = {}
         localAxes = packLocalAxes(glyph.axes)
         localAxisNames = {axis.name for axis in glyph.axes}
+
+        sourceNameMapping = {}
+        layerNameMapping = {}
         localSources = []
 
         for source in glyph.sources:
