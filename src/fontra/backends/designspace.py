@@ -289,10 +289,10 @@ class DesignspaceBackend:
         localAxes = packLocalAxes(glyph.axes)
         localAxisNames = {axis.name for axis in glyph.axes}
 
+        # Prepare UFO source layers and local sources
         sourceNameMapping = {}
         layerNameMapping = {}
         localSources = []
-
         for source in glyph.sources:
             sourceInfo = self._prepareUFOSourceLayer(
                 source, localAxisNames, revLayerNameMapping
@@ -304,6 +304,7 @@ class DesignspaceBackend:
             if sourceInfo.localSourceDict is not None:
                 localSources.append(sourceInfo.localSourceDict)
 
+        # Prepare local design space
         localDS = {}
         if localAxes:
             localDS["axes"] = localAxes
@@ -312,6 +313,7 @@ class DesignspaceBackend:
 
         revLayerNameMapping = reverseSparseDict(layerNameMapping)
 
+        # Gather all UFO layers
         usedLayers = set()
         layers = []
         for layerName, layer in glyph.layers.items():
@@ -328,6 +330,7 @@ class DesignspaceBackend:
             layers.append((layer, ufoLayer))
             usedLayers.add(layerName)
 
+        # Write all UFO layers
         hasVariableComponents = glyphHasVariableComponents(glyph)
         modTimes = set()
         for layer, ufoLayer in layers:
@@ -352,6 +355,7 @@ class DesignspaceBackend:
 
             modTimes.add(glyphSet.getGLIFModificationTime(glyphName))
 
+        # Prune unused UFO layers
         relevantLayerNames = set(
             layer.fontraLayerName
             for layer in self.ufoLayers
