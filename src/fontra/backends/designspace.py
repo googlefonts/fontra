@@ -40,16 +40,16 @@ SOURCE_NAME_MAPPING_LIB_KEY = "xyz.fontra.source-names"
 LAYER_NAME_MAPPING_LIB_KEY = "xyz.fontra.layer-names"
 
 
-infoAttrsToCopy = [
-    "unitsPerEm",
-    "ascender",
-    "descender",
-    "xHeight",
-    "capHeight",
-    "familyName",
-    "copyright",
-    "year",
-]
+defaultUFOInfoAttrs = {
+    "unitsPerEm": 1000,
+    "ascender": 750,
+    "descender": -250,
+    "xHeight": 500,
+    "capHeight": 750,
+    "familyName": None,
+    "copyright": None,
+    "year": None,
+}
 
 
 class DesignspaceBackend:
@@ -393,7 +393,7 @@ class DesignspaceBackend:
             assert not os.path.exists(ufoPath)
             reader = manager.getReader(ufoPath)  # this creates the UFO
             info = UFOFontInfo()
-            for infoAttr in infoAttrsToCopy:
+            for infoAttr in defaultUFOInfoAttrs:
                 value = getattr(self.defaultFontInfo, infoAttr, None)
                 if value is not None:
                     setattr(info, infoAttr, value)
