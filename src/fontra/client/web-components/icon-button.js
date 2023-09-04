@@ -51,7 +51,7 @@ export class IconButton extends UnlitElement {
 
       /* disable when reduced-motion */
       animation-name: disappear;
-      animation-delay: 500ms;
+      animation-delay: 1000ms;
       animation-duration: 6s;
     }
 
@@ -62,17 +62,17 @@ export class IconButton extends UnlitElement {
       left: 50%;
       width: 0;
       height: 0;
-      bottom: calc(100% + 2px);
-      margin-left: -6px;
+      bottom: calc(100% + 1px);
+      margin-left: -4px;
       border: 1px solid black;
       border-color: #272727 transparent transparent transparent;
-      border-width: 4px 6px 0;
+      border-width: 5px 3px 0;
       z-index: 1;
       opacity: 0;
 
       /* disable when reduced-motion */
       animation-name: disappear;
-      animation-delay: 500ms;
+      animation-delay: 1000ms;
       animation-duration: 6s;
     }
 
