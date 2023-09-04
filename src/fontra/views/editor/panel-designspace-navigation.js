@@ -84,25 +84,19 @@ export default class DesignspaceNavigationPanel extends Panel {
           []
         ),
         html.div({ class: "axis-buttons-container" }, [
-          html.createDomElement("tool-tip", {
-            text: "Reset all axes",
-            showFor: "#reset-axes-button",
-          }),
           html.createDomElement("icon-button", {
             id: "reset-axes-button",
             src: "/tabler-icons/refresh.svg",
             onclick: (event) => this.resetAllAxesToDefault(event),
             disabled: false,
             hidden: true,
-          }),
-          html.createDomElement("tool-tip", {
-            text: "Edit local axes",
-            showFor: "#edit-local-axes-button",
+            title: "Reset all axes",
           }),
           html.createDomElement("icon-button", {
             id: "edit-local-axes-button",
             src: "/tabler-icons/tool.svg",
             onclick: (event) => this.editLocalAxes(event),
+            title: "Edit local axes",
           }),
         ]),
         html.hr(),
