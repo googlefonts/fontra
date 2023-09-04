@@ -117,13 +117,6 @@ export function createDomElement(tagName, attributes, children) {
   return element;
 }
 
-export function createCSSLinkElement(href) {
-  const linkElement = document.createElement("link");
-  linkElement.setAttribute("rel", "stylesheet");
-  linkElement.setAttribute("href", href);
-  return linkElement;
-}
-
 // Convenience shortcuts
 export const br = createDomElement.bind(null, "br");
 export const button = createDomElement.bind(null, "button");
@@ -132,4 +125,5 @@ export const input = createDomElement.bind(null, "input");
 export const label = createDomElement.bind(null, "label");
 export const span = createDomElement.bind(null, "span");
 export const hr = createDomElement.bind(null, "hr");
+export const link = createDomElement.bind(null, "link");
 // Let's add more once needed

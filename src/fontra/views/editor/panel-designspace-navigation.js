@@ -75,7 +75,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         id: "designspace-navigation",
       },
       [
-        html.createCSSLinkElement("/css/tooltip.css"),
+        html.link({ href: "/css/tooltip.css", rel: "stylesheet" }),
         html.createDomElement(
           "designspace-location",
           {
