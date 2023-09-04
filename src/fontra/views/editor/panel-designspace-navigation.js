@@ -21,7 +21,6 @@ import {
 import { showMenu } from "/web-components/menu-panel.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { IconButton } from "/web-components/icon-button.js";
-import { Tooltip } from "/web-components/tooltip.js";
 import { NumberFormatter } from "/web-components/ui-list.js";
 import Panel from "./panel.js";
 
