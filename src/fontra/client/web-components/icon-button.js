@@ -36,11 +36,8 @@ export class IconButton extends UnlitElement {
     }
   }
 
-  static cssImports = ["/css/tooltip.css"];
-
   static properties = {
     src: { type: String },
-    tooltip: { type: String },
   };
 
   get disabled() {
@@ -62,9 +59,8 @@ export class IconButton extends UnlitElement {
   render() {
     this._button = html.button(
       {
-        "onclick": this._buttonOnClick,
-        "disabled": this._buttonDisabled,
-        "data-tooltip": this.tooltip,
+        onclick: this._buttonOnClick,
+        disabled: this._buttonDisabled,
       },
       [html.createDomElement("inline-svg", { src: this.src })]
     );

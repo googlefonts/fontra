@@ -75,6 +75,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         id: "designspace-navigation",
       },
       [
+        html.createCSSLinkElement("/css/tooltip.css"),
         html.createDomElement(
           "designspace-location",
           {
@@ -84,18 +85,18 @@ export default class DesignspaceNavigationPanel extends Panel {
         ),
         html.div({ class: "axis-buttons-container" }, [
           html.createDomElement("icon-button", {
-            id: "reset-axes-button",
-            src: "/tabler-icons/refresh.svg",
-            onclick: (event) => this.resetAllAxesToDefault(event),
-            disabled: false,
-            hidden: true,
-            tooltip: "Reset all axes",
+            "id": "reset-axes-button",
+            "src": "/tabler-icons/refresh.svg",
+            "onclick": (event) => this.resetAllAxesToDefault(event),
+            "disabled": false,
+            "hidden": true,
+            "data-tooltip": "Reset all axes",
           }),
           html.createDomElement("icon-button", {
-            id: "edit-local-axes-button",
-            src: "/tabler-icons/tool.svg",
-            onclick: (event) => this.editLocalAxes(event),
-            tooltip: "Edit local axes",
+            "id": "edit-local-axes-button",
+            "src": "/tabler-icons/tool.svg",
+            "onclick": (event) => this.editLocalAxes(event),
+            "data-tooltip": "Edit local axes",
           }),
         ]),
         html.hr(),

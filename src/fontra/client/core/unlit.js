@@ -22,21 +22,12 @@ export class SimpleElement extends HTMLElement {
     for (const style of this._additionalStyles) {
       this._appendStyle(style);
     }
-    if (this.constructor.cssImports) {
-      for (const link of this.constructor.cssImports) {
-        this._appendLink(link);
-      }
-    }
   }
 
   _appendStyle(cssText) {
     const styleElement = document.createElement("style");
     styleElement.textContent = cssText;
     this.shadowRoot.appendChild(styleElement);
-  }
-
-  _appendLink(href) {
-    this.shadowRoot.appendChild(createCSSLinkElement(href));
   }
 
   appendStyle(cssText) {

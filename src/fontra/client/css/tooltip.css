@@ -33,7 +33,7 @@
   width: 0;
   height: 0;
   bottom: calc(100% + 1px);
-  margin-left: -6px;
+  margin-left: -4px;
   border: 1px solid black;
   border-color: #272727 transparent transparent transparent;
   border-width: 6px 6px 0;
