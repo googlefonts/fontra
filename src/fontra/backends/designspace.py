@@ -224,7 +224,7 @@ class DesignspaceBackend:
                 localDS = ufoGlyph.lib.get(GLYPH_DESIGNSPACE_LIB_KEY)
                 if localDS is not None:
                     axes, localSources = self._unpackLocalDesignSpace(
-                        localDS, ufoLayer.path, ufoLayer.name
+                        localDS, ufoLayer.name
                     )
                     sources.extend(localSources)
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
@@ -247,7 +247,7 @@ class DesignspaceBackend:
 
         return VariableGlyph(glyphName, axes=axes, sources=sources, layers=layers)
 
-    def _unpackLocalDesignSpace(self, dsDict, ufoPath, defaultLayerName):
+    def _unpackLocalDesignSpace(self, dsDict, defaultLayerName):
         axes = [
             LocalAxis(
                 name=axis["name"],
@@ -257,6 +257,8 @@ class DesignspaceBackend:
             )
             for axis in dsDict["axes"]
         ]
+        localAxisNames = {axis.name for axis in axes}
+
         sources = []
         for source in dsDict.get("sources", ()):
             ufoLayerName = source.get("layername", defaultLayerName)
@@ -264,7 +266,17 @@ class DesignspaceBackend:
                 "name",
                 ufoLayerName if ufoLayerName != defaultLayerName else "<default>",
             )
+
+            sourceLocation = {**self.defaultLocation, **source["location"]}
+            globalLocation = getGlobalPortionOfLocation(sourceLocation, localAxisNames)
+            dsSource = self.dsSources.findItem(
+                locationTuple=tuplifyLocation(globalLocation)
+            )
+            assert dsSource is not None
+            ufoPath = dsSource.layer.path
+
             ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
+            assert ufoLayer is not None
             sources.append(
                 Source(
                     name=sourceName,
@@ -373,11 +385,7 @@ class DesignspaceBackend:
 
     def _prepareUFOSourceLayer(self, source, localAxisNames, revLayerNameMapping):
         sourceLocation = {**self.defaultLocation, **source.location}
-        globalLocation = {
-            name: value
-            for name, value in sourceLocation.items()
-            if name not in localAxisNames
-        }
+        globalLocation = getGlobalPortionOfLocation(sourceLocation, localAxisNames)
 
         dsSource = self.dsSources.findItem(
             locationTuple=tuplifyLocation(globalLocation)
@@ -928,3 +936,9 @@ def glyphHasVariableComponents(glyph):
         for layer in glyph.layers.values()
         for compo in layer.glyph.components
     )
+
+
+def getGlobalPortionOfLocation(location, localAxisNames):
+    return {
+        name: value for name, value in location.items() if name not in localAxisNames
+    }
