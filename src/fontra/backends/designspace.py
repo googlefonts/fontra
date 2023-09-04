@@ -225,6 +225,10 @@ class DesignspaceBackend:
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
             layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
 
+        # When a glyph has axes with names that also exist as global axes, we need
+        # to make sure our source locations use the *local* default values. We do
+        # that with a location dict that only contains local values for such "shadow"
+        # axes.
         localDefaultOverride = {
             axis.name: axis.defaultValue
             for axis in axes
