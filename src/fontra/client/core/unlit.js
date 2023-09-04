@@ -36,10 +36,7 @@ export class SimpleElement extends HTMLElement {
   }
 
   _appendLink(href) {
-    const linkElement = document.createElement("link");
-    linkElement.setAttribute("rel", "stylesheet");
-    linkElement.setAttribute("href", href);
-    this.shadowRoot.appendChild(linkElement);
+    this.shadowRoot.appendChild(createCSSLinkElement(href));
   }
 
   appendStyle(cssText) {
@@ -127,6 +124,13 @@ export function createDomElement(tagName, attributes, children) {
     element.append(child);
   }
   return element;
+}
+
+export function createCSSLinkElement(href) {
+  const linkElement = document.createElement("link");
+  linkElement.setAttribute("rel", "stylesheet");
+  linkElement.setAttribute("href", href);
+  return linkElement;
 }
 
 // Convenience shortcuts
