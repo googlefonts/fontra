@@ -28,13 +28,13 @@ export class IconButton extends UnlitElement {
       transform: none;
     }
 
-    [title] {
+    [data-title] {
       position: relative;
       cursor: default;
     }
 
-    [title]:hover::before {
-      content: attr(title);
+    [data-title]:hover::before {
+      content: attr(data-title);
       font-size: 10px;
       text-align: center;
       position: absolute;
@@ -42,16 +42,20 @@ export class IconButton extends UnlitElement {
       left: 200%;
       bottom: calc(100% + 6px);
       transform: translate(-50%);
-      /* disable when reduced-motion */
-      animation: fade-in 300ms ease;
       background: #272727;
       border-radius: 4px;
       padding: 8px;
       color: #ffffff;
       z-index: 1;
+      opacity: 0;
+
+      /* disable when reduced-motion */
+      animation-name: disappear;
+      animation-delay: 500ms;
+      animation-duration: 6s;
     }
 
-    [title]:hover::after {
+    [data-title]:hover::after {
       content: "";
       position: absolute;
       display: block;
@@ -63,18 +67,36 @@ export class IconButton extends UnlitElement {
       border: 1px solid black;
       border-color: #272727 transparent transparent transparent;
       border-width: 4px 6px 0;
-      /* disable when reduced-motion */
-      animation: fade-in 300ms ease;
       z-index: 1;
+      opacity: 0;
+
+      /* disable when reduced-motion */
+      animation-name: disappear;
+      animation-delay: 500ms;
+      animation-duration: 6s;
     }
 
     /* disable when reduced-motion */
-    @keyframes fade-in {
-      from {
+    @keyframes disappear {
+      0% {
+        opacity: 1;
+      }
+      95% {
+        opacity: 1;
+      }
+      100% {
         opacity: 0;
       }
-      to {
+    }
+
+    @media (prefers-reduced-motion) {
+      [data-title]:hover::before {
         opacity: 1;
+        animation: none;
+      }
+      [data-title]:hover::after {
+        opacity: 1;
+        animation: none;
       }
     }
   `;
@@ -110,9 +132,9 @@ export class IconButton extends UnlitElement {
   render() {
     this._button = html.button(
       {
-        onclick: this._buttonOnClick,
-        disabled: this._buttonDisabled,
-        title: this.title,
+        "onclick": this._buttonOnClick,
+        "disabled": this._buttonDisabled,
+        "data-title": this.title,
       },
       [html.createDomElement("inline-svg", { src: this.src })]
     );
