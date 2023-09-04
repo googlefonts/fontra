@@ -5,7 +5,7 @@ import logging
 import os
 import pathlib
 from collections import defaultdict
-from copy import copy, deepcopy
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from functools import cache, cached_property
@@ -205,15 +205,10 @@ class DesignspaceBackend:
 
         axes = []
         sources = []
+        localSources = []
         layers = {}
         sourceNameMapping = {}
         layerNameMapping = {}
-
-        for dsSource in self.dsSources:
-            glyphSet = dsSource.layer.glyphSet
-            if glyphName not in glyphSet:
-                continue
-            sources.append(dsSource.newFontraSource())
 
         for ufoLayer in self.ufoLayers:
             if glyphName not in ufoLayer.glyphSet:
@@ -226,10 +221,27 @@ class DesignspaceBackend:
                     axes, localSources = self._unpackLocalDesignSpace(
                         localDS, ufoLayer.name
                     )
-                    sources.extend(localSources)
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
             layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
+
+        # When a glyph has axes with names that also exist as global axes, we need
+        # to make sure our source locations use the *local* default values. We do
+        # that with a location dict that only contains local values for such "shadow"
+        # axes.
+        localDefaultOverride = {
+            axis.name: axis.defaultValue
+            for axis in axes
+            if axis.name in self.defaultLocation
+        }
+
+        for dsSource in self.dsSources:
+            glyphSet = dsSource.layer.glyphSet
+            if glyphName not in glyphSet:
+                continue
+            sources.append(dsSource.newFontraSource(localDefaultOverride))
+
+        sources.extend(localSources)
 
         if layerNameMapping:
             for source in sources:
@@ -268,7 +280,9 @@ class DesignspaceBackend:
             )
 
             sourceLocation = {**self.defaultLocation, **source["location"]}
-            globalLocation = getGlobalPortionOfLocation(sourceLocation, localAxisNames)
+            globalLocation = self._getGlobalPortionOfLocation(
+                sourceLocation, localAxisNames
+            )
             dsSource = self.dsSources.findItem(
                 locationTuple=tuplifyLocation(globalLocation)
             )
@@ -299,7 +313,7 @@ class DesignspaceBackend:
         )
 
         localAxes = packLocalAxes(glyph.axes)
-        localAxisNames = {axis.name for axis in glyph.axes}
+        localDefaultLocation = {axis.name: axis.defaultValue for axis in glyph.axes}
 
         # Prepare UFO source layers and local sources
         sourceNameMapping = {}
@@ -307,7 +321,7 @@ class DesignspaceBackend:
         localSources = []
         for source in glyph.sources:
             sourceInfo = self._prepareUFOSourceLayer(
-                source, localAxisNames, revLayerNameMapping
+                source, localDefaultLocation, revLayerNameMapping
             )
             if sourceInfo.sourceName != source.name:
                 sourceNameMapping[sourceInfo.sourceName] = source.name
@@ -383,9 +397,16 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
-    def _prepareUFOSourceLayer(self, source, localAxisNames, revLayerNameMapping):
+    def _prepareUFOSourceLayer(self, source, localDefaultLocation, revLayerNameMapping):
+        sparseLocalLocation = {
+            name: source.location[name]
+            for name, value in localDefaultLocation.items()
+            if source.location.get(name, value) != value
+        }
         sourceLocation = {**self.defaultLocation, **source.location}
-        globalLocation = getGlobalPortionOfLocation(sourceLocation, localAxisNames)
+        globalLocation = self._getGlobalPortionOfLocation(
+            sourceLocation, localDefaultLocation
+        )
 
         dsSource = self.dsSources.findItem(
             locationTuple=tuplifyLocation(globalLocation)
@@ -393,7 +414,7 @@ class DesignspaceBackend:
         if dsSource is None:
             dsSource = self._createDSSource(source, globalLocation)
 
-        if sourceLocation != globalLocation:
+        if sparseLocalLocation:
             ufoLayer = self.ufoLayers.findItem(
                 fontraLayerName=revLayerNameMapping.get(
                     source.layerName, source.layerName
@@ -502,6 +523,14 @@ class DesignspaceBackend:
         self.ufoLayers.append(ufoLayer)
 
         return ufoLayer
+
+    def _getGlobalPortionOfLocation(self, location, localAxisNames):
+        globalLocation = {
+            name: value
+            for name, value in location.items()
+            if name not in localAxisNames
+        }
+        return {**self.defaultLocation, **globalLocation}
 
     async def getGlobalAxes(self):
         return self.axes
@@ -705,10 +734,12 @@ class DSSource:
     def locationTuple(self):
         return tuplifyLocation(self.location)
 
-    def newFontraSource(self):
+    def newFontraSource(self, localDefaultOverride=None):
+        if localDefaultOverride is None:
+            localDefaultOverride = {}
         return Source(
             name=self.name,
-            location=copy(self.location),
+            location={**self.location, **localDefaultOverride},
             layerName=self.layer.fontraLayerName,
         )
 
@@ -936,9 +967,3 @@ def glyphHasVariableComponents(glyph):
         for layer in glyph.layers.values()
         for compo in layer.glyph.components
     )
-
-
-def getGlobalPortionOfLocation(location, localAxisNames):
-    return {
-        name: value for name, value in location.items() if name not in localAxisNames
-    }

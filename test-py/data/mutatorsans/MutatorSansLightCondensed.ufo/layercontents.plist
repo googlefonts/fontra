@@ -34,5 +34,17 @@
       <string>varco_flop</string>
       <string>glyphs.varco_flop</string>
     </array>
+    <array>
+      <string>weight=1</string>
+      <string>glyphs.weight=1</string>
+    </array>
+    <array>
+      <string>width=1</string>
+      <string>glyphs.width=1</string>
+    </array>
+    <array>
+      <string>width=1,weight=1</string>
+      <string>glyphs.width=1,weight=1</string>
+    </array>
   </array>
 </plist>

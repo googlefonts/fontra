@@ -849,8 +849,8 @@ def getTestFont(testFontName):
 
 
 getGlyphNamesTestData = [
-    ("designspace", 51, ["A", "Aacute", "Adieresis", "B"]),
-    ("ufo", 51, ["A", "Aacute", "Adieresis", "B"]),
+    ("designspace", 52, ["A", "Aacute", "Adieresis", "B"]),
+    ("ufo", 52, ["A", "Aacute", "Adieresis", "B"]),
 ]
 
 
@@ -869,10 +869,10 @@ async def test_getGlyphNames(testFontName, numGlyphs, firstFourGlyphNames):
 getGlyphMapTestData = [
     (
         "designspace",
-        51,
+        52,
         {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")], "I.narrow": []},
     ),
-    ("ufo", 51, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")], "I.narrow": []}),
+    ("ufo", 52, {"A": [ord("A"), ord("a")], "B": [ord("B"), ord("b")], "I.narrow": []}),
 ]
 
 
