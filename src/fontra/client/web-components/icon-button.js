@@ -27,78 +27,6 @@ export class IconButton extends UnlitElement {
       opacity: 35%;
       transform: none;
     }
-
-    [data-title] {
-      position: relative;
-      cursor: default;
-    }
-
-    [data-title]:hover::before {
-      content: attr(data-title);
-      font-size: 10px;
-      text-align: center;
-      position: absolute;
-      display: block;
-      left: 200%;
-      bottom: calc(100% + 6px);
-      transform: translate(-50%);
-      background: #272727;
-      border-radius: 4px;
-      padding: 8px;
-      color: #ffffff;
-      z-index: 1;
-      opacity: 0;
-
-      /* disable when reduced-motion */
-      animation-name: disappear;
-      animation-delay: 1000ms;
-      animation-duration: 6s;
-    }
-
-    [data-title]:hover::after {
-      content: "";
-      position: absolute;
-      display: block;
-      left: 50%;
-      width: 0;
-      height: 0;
-      bottom: calc(100% + 1px);
-      margin-left: -4px;
-      border: 1px solid black;
-      border-color: #272727 transparent transparent transparent;
-      border-width: 5px 3px 0;
-      z-index: 1;
-      opacity: 0;
-
-      /* disable when reduced-motion */
-      animation-name: disappear;
-      animation-delay: 1000ms;
-      animation-duration: 6s;
-    }
-
-    /* disable when reduced-motion */
-    @keyframes disappear {
-      0% {
-        opacity: 1;
-      }
-      95% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-      }
-    }
-
-    @media (prefers-reduced-motion) {
-      [data-title]:hover::before {
-        opacity: 1;
-        animation: none;
-      }
-      [data-title]:hover::after {
-        opacity: 1;
-        animation: none;
-      }
-    }
   `;
 
   constructor(src) {
@@ -107,6 +35,8 @@ export class IconButton extends UnlitElement {
       this.setAttribute("src", src);
     }
   }
+
+  static cssImports = ["/css/tooltip.css"];
 
   static properties = {
     src: { type: String },
