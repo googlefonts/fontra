@@ -268,7 +268,9 @@ class DesignspaceBackend:
             )
 
             sourceLocation = {**self.defaultLocation, **source["location"]}
-            globalLocation = getGlobalPortionOfLocation(sourceLocation, localAxisNames)
+            globalLocation = self._getGlobalPortionOfLocation(
+                sourceLocation, localAxisNames
+            )
             dsSource = self.dsSources.findItem(
                 locationTuple=tuplifyLocation(globalLocation)
             )
@@ -385,7 +387,9 @@ class DesignspaceBackend:
 
     def _prepareUFOSourceLayer(self, source, localAxisNames, revLayerNameMapping):
         sourceLocation = {**self.defaultLocation, **source.location}
-        globalLocation = getGlobalPortionOfLocation(sourceLocation, localAxisNames)
+        globalLocation = self._getGlobalPortionOfLocation(
+            sourceLocation, localAxisNames
+        )
 
         dsSource = self.dsSources.findItem(
             locationTuple=tuplifyLocation(globalLocation)
@@ -502,6 +506,14 @@ class DesignspaceBackend:
         self.ufoLayers.append(ufoLayer)
 
         return ufoLayer
+
+    def _getGlobalPortionOfLocation(self, location, localAxisNames):
+        globalLocation = {
+            name: value
+            for name, value in location.items()
+            if name not in localAxisNames
+        }
+        return {**self.defaultLocation, **globalLocation}
 
     async def getGlobalAxes(self):
         return self.axes
@@ -936,9 +948,3 @@ def glyphHasVariableComponents(glyph):
         for layer in glyph.layers.values()
         for compo in layer.glyph.components
     )
-
-
-def getGlobalPortionOfLocation(location, localAxisNames):
-    return {
-        name: value for name, value in location.items() if name not in localAxisNames
-    }
