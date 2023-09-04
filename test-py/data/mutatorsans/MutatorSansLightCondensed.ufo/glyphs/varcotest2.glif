@@ -65,7 +65,23 @@
               <integer>100</integer>
             </dict>
           </dict>
+          <dict>
+            <key>layername</key>
+            <string>weight=850,flip=100</string>
+            <key>location</key>
+            <dict>
+              <key>flip</key>
+              <integer>100</integer>
+              <key>weight</key>
+              <integer>850</integer>
+            </dict>
+          </dict>
         </array>
+      </dict>
+      <key>xyz.fontra.layer-names</key>
+      <dict>
+        <key>MutatorSansBoldCondensed/weight=850,flip=100</key>
+        <string>weight=850,flip=100</string>
       </dict>
     </dict>
   </lib>

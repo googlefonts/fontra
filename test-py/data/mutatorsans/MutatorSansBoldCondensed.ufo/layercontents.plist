@@ -10,5 +10,9 @@
       <string>background</string>
       <string>glyphs.background</string>
     </array>
+    <array>
+      <string>weight=850,flip=100</string>
+      <string>glyphs.weight=850,flip=100</string>
+    </array>
   </array>
 </plist>
