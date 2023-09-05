@@ -321,7 +321,7 @@ class DesignspaceBackend:
         localSources = []
         for source in glyph.sources:
             sourceInfo = self._prepareUFOSourceLayer(
-                source, localDefaultLocation, revLayerNameMapping
+                glyphName, source, localDefaultLocation, revLayerNameMapping
             )
             if sourceInfo.sourceName != source.name:
                 sourceNameMapping[sourceInfo.sourceName] = source.name
@@ -349,7 +349,9 @@ class DesignspaceBackend:
             if ufoLayer is None:
                 # This layer is not used by any source and we haven't seen it
                 # before. Let's create a new layer in the default UFO.
-                ufoLayer = self._newUFOLayer(self.defaultUFOLayer.path, layerName)
+                ufoLayer = self._newUFOLayer(
+                    glyphName, self.defaultUFOLayer.path, layerName
+                )
                 if ufoLayer.fontraLayerName != layerName:
                     layerNameMapping[ufoLayer.fontraLayerName] = layerName
                 layerName = ufoLayer.fontraLayerName
@@ -397,7 +399,9 @@ class DesignspaceBackend:
 
         self.savedGlyphModificationTimes[glyphName] = modTimes
 
-    def _prepareUFOSourceLayer(self, source, localDefaultLocation, revLayerNameMapping):
+    def _prepareUFOSourceLayer(
+        self, glyphName, source, localDefaultLocation, revLayerNameMapping
+    ):
         sparseLocalLocation = {
             name: source.location[name]
             for name, value in localDefaultLocation.items()
@@ -412,7 +416,7 @@ class DesignspaceBackend:
             locationTuple=tuplifyLocation(globalLocation)
         )
         if dsSource is None:
-            dsSource = self._createDSSource(source, globalLocation)
+            dsSource = self._createDSSource(glyphName, source, globalLocation)
 
         if sparseLocalLocation:
             ufoLayer = self.ufoLayers.findItem(
@@ -423,7 +427,7 @@ class DesignspaceBackend:
 
             if ufoLayer is None:
                 ufoPath = dsSource.layer.path
-                ufoLayer = self._newUFOLayer(ufoPath, source.layerName)
+                ufoLayer = self._newUFOLayer(glyphName, ufoPath, source.layerName)
                 ufoLayerName = ufoLayer.name
             else:
                 ufoLayerName = ufoLayer.name
@@ -446,7 +450,7 @@ class DesignspaceBackend:
             localSourceDict=localSourceDict,
         )
 
-    def _createDSSource(self, source, globalLocation):
+    def _createDSSource(self, glyphName, source, globalLocation):
         manager = self.ufoManager
         atPole, notAtPole = splitLocationByPolePosition(
             globalLocation, self.axisPolePositions
@@ -487,7 +491,9 @@ class DesignspaceBackend:
                 poleDSSource = self.defaultDSSource
             assert poleDSSource is not None
             ufoPath = poleDSSource.layer.path
-            ufoLayer = self._newUFOLayer(poleDSSource.layer.path, source.layerName)
+            ufoLayer = self._newUFOLayer(
+                glyphName, poleDSSource.layer.path, source.layerName
+            )
             ufoLayerName = ufoLayer.name
 
         self.dsDoc.addSourceDescriptor(
@@ -507,7 +513,7 @@ class DesignspaceBackend:
 
         return dsSource
 
-    def _newUFOLayer(self, ufoPath, suggestedLayerName):
+    def _newUFOLayer(self, glyphName, ufoPath, suggestedLayerName):
         reader = self.ufoManager.getReader(ufoPath)
         makeUniqueName = uniqueNameMaker(reader.getLayerNames())
         ufoLayerName = makeUniqueName(suggestedLayerName)
