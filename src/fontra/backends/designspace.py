@@ -518,6 +518,7 @@ class DesignspaceBackend:
         existingLayerNames = set(reader.getLayerNames())
         ufoLayerName = suggestedLayerName
         count = 0
+        # getGlyphSet() will create the layer if it doesn't already exist
         while glyphName in self.ufoManager.getGlyphSet(ufoPath, ufoLayerName):
             # The glyph already exists in the layer, which means there is
             # a conflict. Let's make up a layer name in which the glyph
