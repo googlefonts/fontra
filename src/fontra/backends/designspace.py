@@ -515,6 +515,7 @@ class DesignspaceBackend:
 
     def _newUFOLayer(self, glyphName, ufoPath, suggestedLayerName):
         reader = self.ufoManager.getReader(ufoPath)
+        existingLayerNames = set(reader.getLayerNames())
         ufoLayerName = suggestedLayerName
         count = 0
         while glyphName in self.ufoManager.getGlyphSet(ufoPath, ufoLayerName):
@@ -523,7 +524,8 @@ class DesignspaceBackend:
             # does not exist.
             count += 1
             ufoLayerName = f"{suggestedLayerName}#{count}"
-        reader.writeLayerContents()
+        if ufoLayerName not in existingLayerNames:
+            reader.writeLayerContents()
 
         ufoLayer = UFOLayer(
             manager=self.ufoManager,
