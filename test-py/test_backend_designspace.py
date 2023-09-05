@@ -250,6 +250,7 @@ async def test_newFileSystemBackend(tmpdir, testFont):
 
 
 async def test_writeCorrectLayers(tmpdir, testFont):
+    # Check that no redundant layers are written
     tmpdir = pathlib.Path(tmpdir)
     dsPath = tmpdir / "Test.designspace"
     font = newFileSystemBackend(dsPath)
