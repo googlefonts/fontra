@@ -9,7 +9,7 @@ from . import getFileSystemBackend, newFileSystemBackend
 logger = logging.getLogger(__name__)
 
 
-async def copy(sourceBackend, destBackend, *, numTasks=8):
+async def copyFont(sourceBackend, destBackend, *, numTasks=8):
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
     glyphMap = await sourceBackend.getGlyphMap()
     glyphNamesToCopy = sorted(glyphMap)
@@ -63,7 +63,7 @@ async def mainAsync():
     sourceBackend = getFileSystemBackend(sourcePath)
     destBackend = newFileSystemBackend(destPath)
 
-    await copy(sourceBackend, destBackend)
+    await copyFont(sourceBackend, destBackend)
 
 
 def main():
