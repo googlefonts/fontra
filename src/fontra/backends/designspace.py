@@ -515,10 +515,14 @@ class DesignspaceBackend:
 
     def _newUFOLayer(self, glyphName, ufoPath, suggestedLayerName):
         reader = self.ufoManager.getReader(ufoPath)
-        makeUniqueName = uniqueNameMaker(reader.getLayerNames())
-        ufoLayerName = makeUniqueName(suggestedLayerName)
-        # Create the new UFO layer now
-        _ = self.ufoManager.getGlyphSet(ufoPath, ufoLayerName)
+        ufoLayerName = suggestedLayerName
+        count = 0
+        while glyphName in self.ufoManager.getGlyphSet(ufoPath, ufoLayerName):
+            # The glyph already exists in the layer, which means there is
+            # a conflict. Let's make up a layer name in which the glyph
+            # does not exist.
+            count += 1
+            ufoLayerName = f"{suggestedLayerName}#{count}"
         reader.writeLayerContents()
 
         ufoLayer = UFOLayer(
