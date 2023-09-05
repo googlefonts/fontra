@@ -524,6 +524,7 @@ class DesignspaceBackend:
             # does not exist.
             count += 1
             ufoLayerName = f"{suggestedLayerName}#{count}"
+
         if ufoLayerName not in existingLayerNames:
             reader.writeLayerContents()
 
