@@ -249,6 +249,28 @@ async def test_newFileSystemBackend(tmpdir, testFont):
     assert glyph == referenceGlyph
 
 
+async def test_writeCorrectLayers(tmpdir, testFont):
+    # Check that no redundant layers are written
+    tmpdir = pathlib.Path(tmpdir)
+    dsPath = tmpdir / "Test.designspace"
+    font = newFileSystemBackend(dsPath)
+
+    axes = await testFont.getGlobalAxes()
+    await font.putGlobalAxes(axes)
+    glyphMap = await testFont.getGlyphMap()
+    glyph = await testFont.getGlyph("A")
+    await font.putGlyph("A", glyph, glyphMap["A"])
+    await font.putGlyph("A.alt", glyph, [])
+
+    assert [
+        "fontinfo.plist",
+        "glyphs",
+        "glyphs.M_utatorS_ansL_ightC_ondensed_support",
+        "layercontents.plist",
+        "metainfo.plist",
+    ] == fileNamesFromDir(tmpdir / "Test_Regular.ufo")
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
