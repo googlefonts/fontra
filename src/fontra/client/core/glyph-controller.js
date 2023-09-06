@@ -828,7 +828,7 @@ function makeMissingComponentPlaceholderGlyph() {
 
 function makeEmptyComponentPlaceholderGlyph() {
   const path = new VarPackedPath();
-  const numSq = 11;
+  const numSq = 12;
   const side = 14;
   const dist = side * 2;
 
@@ -840,7 +840,7 @@ function makeEmptyComponentPlaceholderGlyph() {
     path.closePath();
   }
 
-  for (const i of range(numSq + 1)) {
+  for (const i of range(numSq)) {
     sq(dist * i, 0);
     sq(0, dist + dist * i);
     sq(dist + dist * i, 12 * dist);
