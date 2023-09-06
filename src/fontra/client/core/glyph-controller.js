@@ -10,7 +10,7 @@ import {
   registerRepresentationFactory,
 } from "./representation-cache.js";
 import { Transform } from "./transform.js";
-import { enumerate, makeAffineTransform } from "./utils.js";
+import { enumerate, makeAffineTransform, range } from "./utils.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
   VariationModel,
@@ -589,6 +589,9 @@ async function* iterFlattenedComponentPaths(
       console.log(errorMessage);
       return;
     }
+    if (!inst.path.numPoints && !inst.components.length) {
+      inst = makeEmptyComponentPlaceholderGlyph();
+    }
   }
   let t = makeAffineTransform(compo.transformation);
   if (transformation) {
@@ -820,6 +823,30 @@ function makeMissingComponentPlaceholderGlyph() {
   path.lineTo(165, 175);
   path.lineTo(10, 20);
   path.closePath();
+  return StaticGlyph.fromObject({ path: path });
+}
+
+function makeEmptyComponentPlaceholderGlyph() {
+  const path = new VarPackedPath();
+  const numSq = 12;
+  const side = 14;
+  const dist = side * 2;
+
+  function sq(x, y) {
+    path.moveTo(x, y);
+    path.lineTo(x, y + side);
+    path.lineTo(x + side, y + side);
+    path.lineTo(x + side, y);
+    path.closePath();
+  }
+
+  for (const i of range(numSq)) {
+    sq(dist * i, 0);
+    sq(0, dist + dist * i);
+    sq(dist + dist * i, 12 * dist);
+    sq(12 * dist, dist * i);
+  }
+
   return StaticGlyph.fromObject({ path: path });
 }
 
