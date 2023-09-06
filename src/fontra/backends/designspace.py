@@ -582,7 +582,7 @@ class DesignspaceBackend:
 
             for glyphName in changedItems.newGlyphs:
                 try:
-                    glifData = self.defaultSourceGlyphSet.getGLIF(glyphName)
+                    glifData = self.defaultDSSource.layer.glyphSet.getGLIF(glyphName)
                 except KeyError:
                     logger.info(f"new glyph '{glyphName}' not found in default source")
                     continue
