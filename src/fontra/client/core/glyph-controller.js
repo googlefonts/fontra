@@ -531,8 +531,10 @@ class ComponentController {
   }
 
   intersectsRect(rect) {
+    const controlBounds = this.controlBounds;
     return (
-      sectRect(rect, this.controlBounds) &&
+      controlBounds &&
+      sectRect(rect, controlBounds) &&
       (pointInConvexPolygon(rect.xMin, rect.yMin, this.convexHull) ||
         rectIntersectsPolygon(rect, this.convexHull)) &&
       this.unpackedContours.some(
