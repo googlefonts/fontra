@@ -47,7 +47,7 @@
   width: 0;
   height: 0;
   bottom: 100%;
-  margin-left: -2px;
+  margin-left: -6px;
   border: 1px solid black;
   border-color: var(--tooltip-background-color) transparent transparent transparent;
   border-width: 7px 7px 0;
