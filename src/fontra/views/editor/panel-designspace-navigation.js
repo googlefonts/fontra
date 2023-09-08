@@ -21,6 +21,8 @@ import {
 import { showMenu } from "/web-components/menu-panel.js";
 import { dialogSetup } from "/web-components/modal-dialog.js";
 import { IconButton } from "/web-components/icon-button.js";
+import { InlineSVG } from "/web-components/inline-svg.js";
+
 import { NumberFormatter } from "/web-components/ui-list.js";
 import Panel from "./panel.js";
 
@@ -169,7 +171,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       {
         title: "on",
         key: "active",
-        cellFactory: checkboxListCell,
+        cellFactory: circleDotListCell,
         width: "2em",
       },
       { key: "name", title: "Source name", width: "12em" },
@@ -856,6 +858,26 @@ function suggestedSourceNameFromLocation(location) {
         return `${name}=${value}`;
       })
       .join(",") || "default"
+  );
+}
+
+function circleDotListCell(item, colDesc) {
+  const value = item[colDesc.key];
+  return html.div(
+    {
+      style: "width: 1.2em; height: 1.2em;",
+      ondblclick: (event) => {
+        item[colDesc.key] = !item[colDesc.key];
+        event.stopImmediatePropagation();
+      },
+    },
+    [
+      html.createDomElement("inline-svg", {
+        src: value
+          ? "/tabler-icons/circle-dot.svg"
+          : "/tabler-icons/circle-dot-filled.svg",
+      }),
+    ]
   );
 }
 
