@@ -178,7 +178,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       {
         title: "bg",
         key: "visible",
-        cellFactory: checkboxListCell,
+        cellFactory: eyeOnOffListCell,
         width: "2em",
       },
     ];
@@ -310,6 +310,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           delete backgroundLayers[layerName];
         }
         this.sceneController.backgroundLayers = backgroundLayers;
+        this._updateSources();
       });
       sourceController.addKeyListener("status", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
@@ -876,6 +877,27 @@ function circleDotListCell(item, colDesc) {
         src: value
           ? "/tabler-icons/circle-dot.svg"
           : "/tabler-icons/circle-dot-filled.svg",
+      }),
+    ]
+  );
+}
+
+function eyeOnOffListCell(item, colDesc) {
+  const value = item[colDesc.key];
+  return html.div(
+    {
+      style: "width: 1.2em; height: 1.2em;",
+      onclick: (event) => {
+        item[colDesc.key] = !item[colDesc.key];
+        event.stopImmediatePropagation();
+      },
+      ondblclick: (event) => {
+        event.stopImmediatePropagation();
+      },
+    },
+    [
+      html.createDomElement("inline-svg", {
+        src: value ? "/tabler-icons/eye.svg" : "/tabler-icons/eye-closed.svg",
       }),
     ]
   );
