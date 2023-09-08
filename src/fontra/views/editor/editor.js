@@ -35,6 +35,7 @@ import {
   reversed,
   scheduleCalls,
   writeToClipboard,
+  fetchJSON,
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
 import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
@@ -173,6 +174,7 @@ export class EditorController {
     this.initContextMenuItems();
     this.initShortCuts();
     this.initMiniConsole();
+    this.initPlugins();
 
     window
       .matchMedia("(prefers-color-scheme: dark)")
@@ -208,6 +210,21 @@ export class EditorController {
     });
 
     this.updateWithDelay();
+  }
+
+  async initPlugins() {
+    const plugins = [["fatih-erikli/fontra-plugin-demo", "0.1.2"]];
+    for (const [pluginGithubPath, version] of plugins) {
+      const meta = await fetchJSON(
+        `https://cdn.jsdelivr.net/gh/${pluginGithubPath}@${version}/plugin.json`
+      );
+      const initScript = meta.init;
+      const functionName = meta.function;
+      const module = await import(
+        `https://cdn.jsdelivr.net/gh/${pluginGithubPath}@${version}/${initScript}`
+      );
+      module[functionName](this);
+    }
   }
 
   async updateWithDelay() {
