@@ -9,7 +9,7 @@ import {
   unionRect,
 } from "../core/rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
-import { enumerate, parseSelection } from "../core/utils.js";
+import { consolidateCalls, enumerate, parseSelection } from "../core/utils.js";
 import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 
 export class SceneModel {
@@ -25,9 +25,14 @@ export class SceneModel {
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
 
-    this.sceneSettingsController.addKeyListener(["glyphLines", "align"], (event) => {
-      this.updateScene();
-    });
+    this.updateScene = consolidateCalls(() => this._updateScene());
+
+    this.sceneSettingsController.addKeyListener(
+      ["glyphLines", "align", "selectedGlyph"],
+      (event) => {
+        this.updateScene();
+      }
+    );
 
     this.sceneSettingsController.addKeyListener("location", (event) => {
       this._syncLocalLocations();
@@ -244,7 +249,7 @@ export class SceneModel {
     }
   }
 
-  async updateScene() {
+  async _updateScene() {
     this.updateBackgroundGlyphs();
     // const startTime = performance.now();
     await this.buildScene();
