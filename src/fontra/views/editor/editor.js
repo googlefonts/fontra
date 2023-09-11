@@ -32,6 +32,7 @@ import {
   readFromClipboard,
   reversed,
   writeToClipboard,
+  clamp,
 } from "../core/utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
@@ -54,7 +55,7 @@ import {
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { parseClipboard } from "../core/server-utils.js";
-import Sidebar from "./sidebar.js";
+import Sidebar, { MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH } from "./sidebar.js";
 
 import TextEntryPanel from "./panel-text-entry.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
@@ -374,6 +375,33 @@ export class EditorController {
         sidebarContainer.classList.add("animating");
       }
     }, 100);
+
+    function getStoredSidebarWidth(identifier) {
+      const sidebarWidth = localStorage.getItem(`fontra-sidebar-width-${identifier}`);
+      let width = clamp(parseInt(sidebarWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
+      if (isNaN(width)) {
+        width = MIN_SIDEBAR_WIDTH;
+      }
+      return width;
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      const leftWidth = getStoredSidebarWidth("left");
+      const rightWidth = getStoredSidebarWidth("right");
+      if (window.innerWidth < leftWidth + rightWidth + 200) {
+        document.documentElement.style.setProperty(
+          "--sidebar-content-width-right",
+          `${MIN_SIDEBAR_WIDTH}px`
+        );
+        document.documentElement.style.setProperty(
+          "--sidebar-content-width-left",
+          `${MIN_SIDEBAR_WIDTH}px`
+        );
+        localStorage.setItem(`fontra-sidebar-width-left`, MIN_SIDEBAR_WIDTH);
+        localStorage.setItem(`fontra-sidebar-width-right`, MIN_SIDEBAR_WIDTH);
+      }
+    });
+    resizeObserver.observe(document.documentElement);
   }
 
   addSidebar(sidebar) {

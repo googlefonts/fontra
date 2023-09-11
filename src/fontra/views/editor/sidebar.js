@@ -1,8 +1,8 @@
 import * as html from "/core/unlit.js";
 import { clamp } from "../../core/utils.js";
 
-const MIN_SIDEBAR_WIDTH = 200;
-const MAX_SIDEBAR_WIDTH = 500;
+export const MIN_SIDEBAR_WIDTH = 200;
+export const MAX_SIDEBAR_WIDTH = 500;
 
 export default class Sidebar {
   constructor(identifier) {
