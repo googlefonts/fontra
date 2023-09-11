@@ -874,9 +874,7 @@ function circleDotListCell(item, colDesc) {
     },
     [
       html.createDomElement("inline-svg", {
-        src: value
-          ? "/tabler-icons/circle-dot.svg"
-          : "/tabler-icons/circle-dot-filled.svg",
+        src: value ? "/tabler-icons/circle-dot.svg" : "/tabler-icons/circle-dotted.svg",
       }),
     ]
   );
