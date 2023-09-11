@@ -175,6 +175,7 @@ export default class ReferenceFontPanel extends Panel {
     }
 
     #reference-font {
+      width: 100%;
       display: grid;
       padding: 1em;
       gap: 1em;
