@@ -1,19 +1,19 @@
 :host {
-  --tooltip-background-color-light: var(--fontra-theme-marker) #c8c8c8;
-  --tooltip-background-color-dark: #0e0e0e;
+  --tooltip-background-color-light: var(--fontra-theme-marker) black;
+  --tooltip-background-color-dark: white;
   --tooltip-background-color: var(
     --tooltip-background-color-light,
     var(--tooltip-background-color-dark)
   );
 
-  --tooltip-foreground-color-light: var(--fontra-theme-marker) #202020;
-  --tooltip-foreground-color-dark: rgb(200, 200, 200);
+  --tooltip-foreground-color-light: var(--fontra-theme-marker) white;
+  --tooltip-foreground-color-dark: black;
   --tooltip-foreground-color: var(
     --tooltip-foreground-color-light,
     var(--tooltip-foreground-color-dark)
   );
 
-  --tooltip-delay: 750ms;
+  --tooltip-delay: 650ms;
   --tooltip-duration: 6s;
 }
 
