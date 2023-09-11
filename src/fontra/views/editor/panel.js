@@ -1,15 +1,9 @@
 import { SimpleElement } from "/core/unlit.js";
 
 export default class Panel extends SimpleElement {
-  constructor(editorController, renderContentElement = true) {
+  constructor(editorController) {
     super();
     this.editorController = editorController;
-    if (renderContentElement) {
-      this.renderContentElement();
-    }
-  }
-
-  renderContentElement() {
     this.contentElement = this.getContentElement();
     this.shadowRoot.appendChild(this.contentElement);
   }

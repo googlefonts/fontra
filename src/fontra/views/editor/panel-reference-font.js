@@ -458,7 +458,6 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   attach() {
-    // const referenceFontElement = this.contentElement.querySelector("#reference-font");
     this.controller.addKeyListener("referenceFontName", (event) => {
       if (event.newValue) {
         this.editorController.visualizationLayersSettings.model[
