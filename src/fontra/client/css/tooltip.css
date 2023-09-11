@@ -14,7 +14,7 @@
   );
 
   --tooltip-delay: 750ms;
-  --tooltip-durations: 6s;
+  --tooltip-duration: 6s;
 }
 
 [data-tooltip] {
@@ -39,7 +39,7 @@
   opacity: 0;
   animation-name: disappear;
   animation-delay: var(--tooltip-delay);
-  animation-duration: var(--tooltip-durations);
+  animation-duration: var(--tooltip-duration);
 }
 
 [data-tooltip]:hover::after {
@@ -58,7 +58,7 @@
   opacity: 0;
   animation-name: disappear;
   animation-delay: var(--tooltip-delay);
-  animation-duration: var(--tooltip-durations);
+  animation-duration: var(--tooltip-duration);
 }
 
 @keyframes disappear {
