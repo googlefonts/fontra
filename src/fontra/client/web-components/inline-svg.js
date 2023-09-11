@@ -41,14 +41,14 @@ export class InlineSVG extends HTMLElement {
   }
 }
 
-const svgCache = new Map();
+const svgDataCache = new Map();
 
 async function cachedSVGData(svgSRC) {
-  let svgData = svgCache.get(svgSRC);
+  let svgData = svgDataCache.get(svgSRC);
   if (!svgData) {
     const response = await fetch(svgSRC);
     svgData = await response.text();
-    svgCache.set(svgSRC, svgData);
+    svgDataCache.set(svgSRC, svgData);
   }
   return svgData;
 }
