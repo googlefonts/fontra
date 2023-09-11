@@ -293,6 +293,11 @@ export class SceneModel {
     const fontController = this.fontController;
     const glyphLines = this.glyphLines;
     const align = this.sceneSettings.align;
+    const {
+      lineIndex: selectedLineIndex,
+      glyphIndex: selectedGlyphIndex,
+      isEditing,
+    } = this.selectedGlyph || {};
 
     let y = 0;
     const lineDistance = 1.1 * fontController.unitsPerEm; // TODO make factor user-configurable
@@ -306,10 +311,18 @@ export class SceneModel {
     );
     await fontController.loadGlyphs([...neededGlyphs]);
 
-    for (const glyphLine of glyphLines) {
+    for (const [lineIndex, glyphLine] of enumerate(glyphLines)) {
       const positionedLine = { glyphs: [] };
       let x = 0;
-      for (const glyphInfo of glyphLine) {
+      for (const [glyphIndex, glyphInfo] of enumerate(glyphLine)) {
+        // if (
+        //   isEditing &&
+        //   lineIndex == selectedLineIndex &&
+        //   glyphIndex == selectedGlyphIndex
+        // ) {
+        //   //
+        //   console.log("--", glyphInfo.glyphName);
+        // }
         let glyphInstance = await this.getGlyphInstance(glyphInfo.glyphName);
         const isUndefined = !glyphInstance;
         if (isUndefined) {
