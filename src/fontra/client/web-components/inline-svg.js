@@ -33,13 +33,24 @@ export class InlineSVG extends HTMLElement {
   }
 
   async fetchSVG(svgSRC) {
-    const response = await fetch(svgSRC);
-    const svgElement = htmlToElement(await response.text());
+    const svgElement = htmlToElement(await cachedSVGData(svgSRC));
     svgElement.removeAttribute("width");
     svgElement.removeAttribute("height");
     this.innerHTML = "";
     this.appendChild(svgElement);
   }
+}
+
+const svgCache = new Map();
+
+async function cachedSVGData(svgSRC) {
+  let svgData = svgCache.get(svgSRC);
+  if (!svgData) {
+    const response = await fetch(svgSRC);
+    svgData = await response.text();
+    svgCache.set(svgSRC, svgData);
+  }
+  return svgData;
 }
 
 customElements.define("inline-svg", InlineSVG);
