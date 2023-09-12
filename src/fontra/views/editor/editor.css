@@ -338,12 +338,6 @@ body {
   padding-bottom: 0.4em;
 }
 
-#sources-list {
-  min-height: 100px;
-  margin-top: 1em;
-  flex-shrink: 1000;
-}
-
 .canvas-container {
   position: relative; /* for the children */
   width: 100%;
