@@ -70,7 +70,6 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     #sources-list {
       min-height: 100px;
-      margin-top: 1em;
       flex-shrink: 1000;
     }
   `;
