@@ -67,6 +67,11 @@ export default class DesignspaceNavigationPanel extends Panel {
       height: 1px;
       grid-column: 1 / -1;
     }
+
+    #sources-list {
+      min-height: 100px;
+      flex-shrink: 1000;
+    }
   `;
 
   getContentElement() {
