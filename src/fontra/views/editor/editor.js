@@ -54,7 +54,7 @@ import {
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { parseClipboard } from "../core/server-utils.js";
-import Sidebar from "./sidebar.js";
+import { Sidebar, MIN_SIDEBAR_WIDTH } from "./sidebar.js";
 
 import TextEntryPanel from "./panel-text-entry.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
@@ -62,6 +62,8 @@ import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
+
+const MIN_CANVAS_SPACE = 200;
 
 export class EditorController {
   static async fromWebSocket() {
@@ -374,6 +376,19 @@ export class EditorController {
         sidebarContainer.classList.add("animating");
       }
     }, 100);
+
+    const resizeObserver = new ResizeObserver(([element]) => {
+      const totalWidth = this.sidebars.reduce(
+        (total, sidebar) => total + sidebar.getStoredWidth(),
+        0
+      );
+      if (element.contentRect.width < totalWidth + MIN_CANVAS_SPACE) {
+        for (const sidebar of this.sidebars) {
+          sidebar.applyWidth(MIN_SIDEBAR_WIDTH, true);
+        }
+      }
+    });
+    resizeObserver.observe(document.documentElement);
   }
 
   addSidebar(sidebar) {

@@ -1,10 +1,10 @@
 import * as html from "/core/unlit.js";
 import { clamp } from "../../core/utils.js";
 
-const MIN_SIDEBAR_WIDTH = 200;
-const MAX_SIDEBAR_WIDTH = 500;
+export const MIN_SIDEBAR_WIDTH = 200;
+export const MAX_SIDEBAR_WIDTH = 500;
 
-export default class Sidebar {
+export class Sidebar {
   constructor(identifier) {
     this.identifier = identifier;
     this.container = null;
@@ -92,6 +92,27 @@ export default class Sidebar {
     this.initResizeGutter();
   }
 
+  applyWidth(width, saveLocalStorage = false) {
+    if (saveLocalStorage) {
+      localStorage.setItem(`fontra-sidebar-width-${this.identifier}`, width);
+    }
+    document.documentElement.style.setProperty(
+      `--sidebar-content-width-${this.identifier}`,
+      `${width}px`
+    );
+  }
+
+  getStoredWidth() {
+    const sidebarWidth = localStorage.getItem(
+      `fontra-sidebar-width-${this.identifier}`
+    );
+    let width = clamp(parseInt(sidebarWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
+    if (isNaN(width)) {
+      width = MIN_SIDEBAR_WIDTH;
+    }
+    return width;
+  }
+
   initResizeGutter() {
     let initialWidth;
     let initialPointerCoordinateX;
@@ -113,7 +134,7 @@ export default class Sidebar {
       }
     };
     const onPointerUp = () => {
-      localStorage.setItem(`fontra-sidebar-width-${this.identifier}`, width);
+      this.applyWidth(width, true);
       sidebarResizing.classList.add("animating");
       sidebarResizing = undefined;
       initialWidth = undefined;
@@ -135,18 +156,9 @@ export default class Sidebar {
       document.addEventListener("pointermove", onPointerMove);
       document.addEventListener("pointerup", onPointerUp, { once: true });
     });
-    const sidebarWidth = localStorage.getItem(
-      `fontra-sidebar-width-${this.identifier}`
-    );
+    const sidebarWidth = this.getStoredWidth();
     if (sidebarWidth) {
-      let width = clamp(parseInt(sidebarWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
-      if (isNaN(width)) {
-        width = MIN_SIDEBAR_WIDTH;
-      }
-      document.documentElement.style.setProperty(
-        `--sidebar-content-width-${this.identifier}`,
-        `${width}px`
-      );
+      this.applyWidth(sidebarWidth);
     }
   }
 }
