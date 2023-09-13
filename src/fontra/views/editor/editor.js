@@ -32,7 +32,6 @@ import {
   readFromClipboard,
   reversed,
   writeToClipboard,
-  clamp,
 } from "../core/utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
@@ -55,7 +54,7 @@ import {
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { parseClipboard } from "../core/server-utils.js";
-import { Sidebar, MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH } from "./sidebar.js";
+import { Sidebar, MIN_SIDEBAR_WIDTH } from "./sidebar.js";
 
 import TextEntryPanel from "./panel-text-entry.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
@@ -378,19 +377,12 @@ export class EditorController {
       }
     }, 100);
 
-    function getStoredSidebarWidth(identifier) {
-      const sidebarWidth = localStorage.getItem(`fontra-sidebar-width-${identifier}`);
-      let width = clamp(parseInt(sidebarWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
-      if (isNaN(width)) {
-        width = MIN_SIDEBAR_WIDTH;
-      }
-      return width;
-    }
-
     const resizeObserver = new ResizeObserver(([element]) => {
-      const leftWidth = getStoredSidebarWidth("left");
-      const rightWidth = getStoredSidebarWidth("right");
-      if (element.contentRect.width < leftWidth + rightWidth + MIN_CANVAS_SPACE) {
+      const totalWidth = this.sidebars.reduce(
+        (total, sidebar) => total + sidebar.getStoredWidth(),
+        0
+      );
+      if (element.contentRect.width < totalWidth + MIN_CANVAS_SPACE) {
         for (const sidebar of this.sidebars) {
           sidebar.applyWidth(MIN_SIDEBAR_WIDTH, true);
         }

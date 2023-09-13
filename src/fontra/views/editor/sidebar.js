@@ -102,6 +102,17 @@ export class Sidebar {
     );
   }
 
+  getStoredWidth() {
+    const sidebarWidth = localStorage.getItem(
+      `fontra-sidebar-width-${this.identifier}`
+    );
+    let width = clamp(parseInt(sidebarWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
+    if (isNaN(width)) {
+      width = MIN_SIDEBAR_WIDTH;
+    }
+    return width;
+  }
+
   initResizeGutter() {
     let initialWidth;
     let initialPointerCoordinateX;
@@ -145,15 +156,9 @@ export class Sidebar {
       document.addEventListener("pointermove", onPointerMove);
       document.addEventListener("pointerup", onPointerUp, { once: true });
     });
-    const sidebarWidth = localStorage.getItem(
-      `fontra-sidebar-width-${this.identifier}`
-    );
+    const sidebarWidth = this.getStoredWidth();
     if (sidebarWidth) {
-      let width = clamp(parseInt(sidebarWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
-      if (isNaN(width)) {
-        width = MIN_SIDEBAR_WIDTH;
-      }
-      this.applyWidth(width);
+      this.applyWidth(sidebarWidth);
     }
   }
 }
