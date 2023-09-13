@@ -108,7 +108,7 @@ class MenuPanel extends SimpleElement {
               }
             },
             onmouseleave: (event) => itemElement.classList.remove("selected"),
-            onclick: (event) => {
+            onmouseup: (event) => {
               event.preventDefault();
               event.stopImmediatePropagation();
               if (item.enabled()) {
