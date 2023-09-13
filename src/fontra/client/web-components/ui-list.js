@@ -26,8 +26,7 @@ export class UIList extends UnlitElement {
     }
 
     .container {
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: auto;
       height: 100%;
       width: 100%;
       box-sizing: border-box;
@@ -51,8 +50,7 @@ export class UIList extends UnlitElement {
     }
 
     .header-container {
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: auto;
       height: 100%;
       width: 100%;
       box-sizing: border-box;
