@@ -4,7 +4,7 @@ import { clamp } from "../../core/utils.js";
 export const MIN_SIDEBAR_WIDTH = 200;
 export const MAX_SIDEBAR_WIDTH = 500;
 
-export default class Sidebar {
+export class Sidebar {
   constructor(identifier) {
     this.identifier = identifier;
     this.container = null;
@@ -92,6 +92,16 @@ export default class Sidebar {
     this.initResizeGutter();
   }
 
+  applyWidth(width, saveLocalStorage = false) {
+    if (saveLocalStorage) {
+      localStorage.setItem(`fontra-sidebar-width-${this.identifier}`, width);
+    }
+    document.documentElement.style.setProperty(
+      `--sidebar-content-width-${this.identifier}`,
+      `${width}px`
+    );
+  }
+
   initResizeGutter() {
     let initialWidth;
     let initialPointerCoordinateX;
@@ -113,7 +123,7 @@ export default class Sidebar {
       }
     };
     const onPointerUp = () => {
-      localStorage.setItem(`fontra-sidebar-width-${this.identifier}`, width);
+      this.applyWidth(width, true);
       sidebarResizing.classList.add("animating");
       sidebarResizing = undefined;
       initialWidth = undefined;
@@ -143,10 +153,7 @@ export default class Sidebar {
       if (isNaN(width)) {
         width = MIN_SIDEBAR_WIDTH;
       }
-      document.documentElement.style.setProperty(
-        `--sidebar-content-width-${this.identifier}`,
-        `${width}px`
-      );
+      this.applyWidth(width);
     }
   }
 }

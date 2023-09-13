@@ -55,7 +55,7 @@ import {
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
 import { parseClipboard } from "../core/server-utils.js";
-import Sidebar, { MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH } from "./sidebar.js";
+import { Sidebar, MAX_SIDEBAR_WIDTH, MIN_SIDEBAR_WIDTH } from "./sidebar.js";
 
 import TextEntryPanel from "./panel-text-entry.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
@@ -63,6 +63,8 @@ import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
+
+const MIN_CANVAS_SPACE = 200;
 
 export class EditorController {
   static async fromWebSocket() {
@@ -385,20 +387,13 @@ export class EditorController {
       return width;
     }
 
-    const resizeObserver = new ResizeObserver(() => {
+    const resizeObserver = new ResizeObserver(([element]) => {
       const leftWidth = getStoredSidebarWidth("left");
       const rightWidth = getStoredSidebarWidth("right");
-      if (window.innerWidth < leftWidth + rightWidth + 200) {
-        document.documentElement.style.setProperty(
-          "--sidebar-content-width-right",
-          `${MIN_SIDEBAR_WIDTH}px`
-        );
-        document.documentElement.style.setProperty(
-          "--sidebar-content-width-left",
-          `${MIN_SIDEBAR_WIDTH}px`
-        );
-        localStorage.setItem(`fontra-sidebar-width-left`, MIN_SIDEBAR_WIDTH);
-        localStorage.setItem(`fontra-sidebar-width-right`, MIN_SIDEBAR_WIDTH);
+      if (element.contentRect.width < leftWidth + rightWidth + MIN_CANVAS_SPACE) {
+        for (const sidebar of this.sidebars) {
+          sidebar.applyWidth(MIN_SIDEBAR_WIDTH, true);
+        }
       }
     });
     resizeObserver.observe(document.documentElement);
