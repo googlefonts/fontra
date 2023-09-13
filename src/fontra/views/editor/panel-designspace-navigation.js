@@ -4,6 +4,7 @@ import { Layer, Source } from "/core/var-glyph.js";
 import * as html from "/core/unlit.js";
 import { css } from "../third-party/lit.js";
 import {
+  boolInt,
   enumerate,
   htmlToElement,
   objectsEqual,
@@ -176,14 +177,20 @@ export default class DesignspaceNavigationPanel extends Panel {
       {
         title: "on",
         key: "active",
-        cellFactory: circleDotListCell,
+        cellFactory: makeIconCellFactory(
+          ["/tabler-icons/circle-dotted.svg", "/tabler-icons/circle-dot.svg"],
+          true
+        ),
         width: "2em",
       },
       { key: "name", title: "Source name", width: "12em" },
       {
         title: "bg",
         key: "visible",
-        cellFactory: eyeOnOffListCell,
+        cellFactory: makeIconCellFactory([
+          "/tabler-icons/eye-closed.svg",
+          "/tabler-icons/eye.svg",
+        ]),
         width: "2em",
       },
     ];
@@ -315,7 +322,6 @@ export default class DesignspaceNavigationPanel extends Panel {
           delete backgroundLayers[layerName];
         }
         this.sceneController.backgroundLayers = backgroundLayers;
-        this._updateSources();
       });
       sourceController.addKeyListener("status", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
@@ -867,43 +873,29 @@ function suggestedSourceNameFromLocation(location) {
   );
 }
 
-function circleDotListCell(item, colDesc) {
-  const value = item[colDesc.key];
-  return html.div(
-    {
-      style: "width: 1.2em; height: 1.2em;",
-      ondblclick: (event) => {
-        item[colDesc.key] = !item[colDesc.key];
-        event.stopImmediatePropagation();
+function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
+  return (item, colDesc) => {
+    const value = item[colDesc.key];
+    const iconElement = html.createDomElement("inline-svg", {
+      src: iconPaths[boolInt(value)],
+    });
+    const clickSymbol = triggerOnDoubleClick ? "ondblclick" : "onclick";
+    return html.div(
+      {
+        style: "width: 1.2em; height: 1.2em;",
+        ondblclick: (event) => {
+          event.stopImmediatePropagation();
+        },
+        [clickSymbol]: (event) => {
+          const newValue = !item[colDesc.key];
+          item[colDesc.key] = newValue;
+          iconElement.src = iconPaths[boolInt(newValue)];
+          event.stopImmediatePropagation();
+        },
       },
-    },
-    [
-      html.createDomElement("inline-svg", {
-        src: value ? "/tabler-icons/circle-dot.svg" : "/tabler-icons/circle-dotted.svg",
-      }),
-    ]
-  );
-}
-
-function eyeOnOffListCell(item, colDesc) {
-  const value = item[colDesc.key];
-  return html.div(
-    {
-      style: "width: 1.2em; height: 1.2em;",
-      onclick: (event) => {
-        item[colDesc.key] = !item[colDesc.key];
-        event.stopImmediatePropagation();
-      },
-      ondblclick: (event) => {
-        event.stopImmediatePropagation();
-      },
-    },
-    [
-      html.createDomElement("inline-svg", {
-        src: value ? "/tabler-icons/eye.svg" : "/tabler-icons/eye-closed.svg",
-      }),
-    ]
-  );
+      [iconElement]
+    );
+  };
 }
 
 function checkboxListCell(item, colDesc) {
