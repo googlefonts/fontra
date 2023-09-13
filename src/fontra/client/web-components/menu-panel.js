@@ -66,6 +66,14 @@ class MenuPanel extends SimpleElement {
       color: #8080a0;
     }
 
+    .context-menu-item:first-of-type {
+        margin-top: 0.5em;
+    }
+
+    .context-menu-item:last-of-type {
+        margin-bottom: 0.5em;
+    }
+
     .context-menu-item.enabled {
       color: inherit;
     }
