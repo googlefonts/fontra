@@ -18,7 +18,7 @@ export class Form extends SimpleElement {
 
     .ui-form {
       display: grid;
-      grid-template-columns: 30% auto;
+      grid-template-columns: 32% auto;
       box-sizing: border-box;
       gap: 0.35rem 0.35rem;
       overflow-x: hidden;
@@ -52,6 +52,14 @@ export class Form extends SimpleElement {
 
     input {
       box-sizing: border-box;
+      background-color: red;
+      background-color: var(--text-input-background-color);
+      color: var(--text-input-foreground-color);
+      border-radius: 0.25em;
+      border: none;
+      outline: none;
+      padding: 0.1em 0.3em;
+      font-family: "fontra-ui-regular";
     }
 
     .ui-form-value {
@@ -59,10 +67,6 @@ export class Form extends SimpleElement {
     }
 
     .ui-form-value input {
-      font-family: "fontra-ui-regular";
-      border: solid 1px var(--ui-form-input-border-color);
-      background-color: var(--ui-form-input-background-color);
-      color: var(--ui-form-input-foreground-color);
       width: min(100%, 9.5em);
     }
 
