@@ -52,10 +52,15 @@ class MenuPanel extends SimpleElement {
       cursor: default;
     }
 
+    .menu-container {
+      margin: 0.2em 0em 0.3em 0em; /* top, right, bottom, left */
+    }
+
     .menu-item-divider {
       border: none;
       border-top: 1px solid #80808080;
       height: 1px;
+      margin: 0.3em 0 0.2em 0;
     }
 
     .context-menu-item {
@@ -88,7 +93,7 @@ class MenuPanel extends SimpleElement {
     this.style = "display: none;";
     this.position = position;
     this.positionContainer = positionContainer;
-    this.menuElement = html.div({ tabindex: 0 });
+    this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
 
     // No context menu on our context menu please:
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
