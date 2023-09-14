@@ -334,7 +334,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4em;
-  overflow: scroll;
+  overflow: auto;
   padding-bottom: 0.4em;
 }
 

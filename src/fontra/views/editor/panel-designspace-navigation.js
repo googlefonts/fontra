@@ -643,7 +643,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const locationElement = html.createDomElement("designspace-location", {
       style: `grid-column: 1 / -1;
         min-height: 0;
-        overflow: scroll;
+        overflow: auto;
         height: 100%;
       `,
     });
