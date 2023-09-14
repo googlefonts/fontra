@@ -26,17 +26,6 @@ export class RangeSlider extends LitElement {
       font-feature-settings: "tnum" 1;
     }
 
-    .slider-name {
-      min-width: 7ch;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-align: right;
-    }
-
-    .slider-name:hover {
-      cursor: pointer;
-    }
-
     .range-container {
       position: relative;
       flex-grow: 1;
@@ -157,7 +146,6 @@ export class RangeSlider extends LitElement {
   `;
 
   static properties = {
-    name: { type: String, reflect: true },
     minValue: { type: Number },
     maxValue: { type: Number },
     defaultValue: { type: Number },
@@ -170,13 +158,13 @@ export class RangeSlider extends LitElement {
   constructor() {
     super();
     // Fallbacks for attributes that are not defined when calling the component
-    this.name = "Slider";
     this.minValue = 0;
     this.maxValue = 100;
     this.defaultValue = this.minValue;
     this.value = this.defaultValue;
     this.tickmarksPositions = [];
     this.step = "any";
+    this.sawMouseDown = false;
     this.onChangeCallback = () => {};
   }
 
@@ -247,10 +235,11 @@ export class RangeSlider extends LitElement {
     event.preventDefault();
     this.value = clamp(newValue, this.minValue, this.maxValue);
     this.updateIsAtDefault();
-    this.onChangeCallback(this);
+    this.onChangeCallback({ value: this.value });
   }
 
   handleMouseDown(event) {
+    this.sawMouseDown = true;
     const activeElement = document.activeElement;
     this._savedCanvasElement =
       activeElement?.id === "edit-canvas" ? activeElement : undefined;
@@ -262,6 +251,8 @@ export class RangeSlider extends LitElement {
 
   handleMouseUp(event) {
     this._savedCanvasElement?.focus();
+    this.sawMouseDown = false;
+    this.onChangeCallback({ value: this.value, dragEnd: true });
   }
 
   changeValue(event) {
@@ -282,7 +273,13 @@ export class RangeSlider extends LitElement {
       }
     }
     this.updateIsAtDefault();
-    this.onChangeCallback(this);
+
+    const callbackEvent = { value: this.value };
+    if (this.sawMouseDown) {
+      callbackEvent.dragBegin = true;
+    }
+    this.sawMouseDown = false;
+    this.onChangeCallback(callbackEvent);
   }
 
   updateIsAtDefault() {
@@ -304,7 +301,7 @@ export class RangeSlider extends LitElement {
 
   reset(event) {
     this.value = this.defaultValue;
-    this.onChangeCallback(this);
+    this.onChangeCallback({ value: this.value });
   }
 
   buildTickmarks() {
