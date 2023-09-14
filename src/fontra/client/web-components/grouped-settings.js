@@ -4,7 +4,7 @@ import { SimpleSettings } from "./simple-settings.js";
 export class GroupedSettings extends UnlitElement {
   static styles = `
     :host {
-      overflow-y: scroll;
+      overflow-y: auto;
     }
 
     .header {

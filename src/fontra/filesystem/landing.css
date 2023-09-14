@@ -146,7 +146,7 @@ a {
 
 #project-list {
   display: grid;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .project-item {

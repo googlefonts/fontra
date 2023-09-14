@@ -22,7 +22,7 @@ export default class SelectionInfoPanel extends Panel {
       height: 100%;
       width: 100%;
       overflow-x: hidden;
-      overflow-y: scroll;
+      overflow-y: auto;
       padding: 1em;
     }
   `;

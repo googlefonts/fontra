@@ -58,7 +58,7 @@ export default class TextEntryPanel extends Panel {
       font-family: fontra-ui-regular, sans-serif;
       font-size: 1.1rem;
       resize: none;
-      overflow-x: scroll;
+      overflow-x: auto;
     }
   `;
 

@@ -330,14 +330,6 @@ body {
   padding: 0.5em;
 }
 
-.axis-sliders {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4em;
-  overflow: scroll;
-  padding-bottom: 0.4em;
-}
-
 .canvas-container {
   position: relative; /* for the children */
   width: 100%;
