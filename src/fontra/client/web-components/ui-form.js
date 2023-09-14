@@ -5,17 +5,8 @@ import * as html from "../core/unlit.js";
 import { themeColorCSS } from "./theme-support.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 
-const colors = {
-  "ui-form-input-foreground-color": ["black", "white"],
-  "ui-form-input-background-color": ["white", "#333"],
-  "ui-form-input-border-color": ["#888", "#222"],
-  "slider-thumb-color": ["#444", "#bbb"],
-};
-
 export class Form extends SimpleElement {
   static styles = `
-    ${themeColorCSS(colors)}
-
     .ui-form {
       display: grid;
       grid-template-columns: 32% auto;
