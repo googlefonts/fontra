@@ -195,7 +195,18 @@ export default class SelectionInfoPanel extends Panel {
             axes[axis.name] = axis;
           }
         }
-        for (const axis of Object.values(axes)) {
+        const axisList = Object.values(axes);
+        // Sort axes: lowercase first, uppercase last
+        axisList.sort((a, b) => {
+          const firstCharAIsUpper = a.name[0] === a.name[0].toUpperCase();
+          const firstCharBIsUpper = b.name[0] === b.name[0].toUpperCase();
+          if (firstCharAIsUpper != firstCharBIsUpper) {
+            return firstCharBIsUpper ? -1 : 1;
+          } else {
+            return a.name < b.name ? -1 : +1;
+          }
+        });
+        for (const axis of axisList) {
           let value = component.location[axis.name];
           if (value === undefined) {
             value = axis.defaultValue;
