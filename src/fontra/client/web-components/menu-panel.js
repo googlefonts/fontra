@@ -62,7 +62,7 @@ class MenuPanel extends SimpleElement {
       display: grid;
       grid-template-columns: 1em auto;
       gap: 0em;
-      padding: 0.05em 0.8em 0.05em 0.0em; /* top, right, bottom, left */
+      padding: 0.1em 0.8em 0.1em 0.0em; /* top, right, bottom, left */
       color: #8080a0;
     }
 
