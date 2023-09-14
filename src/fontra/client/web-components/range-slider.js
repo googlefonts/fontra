@@ -26,17 +26,6 @@ export class RangeSlider extends LitElement {
       font-feature-settings: "tnum" 1;
     }
 
-    .slider-name {
-      min-width: 7ch;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-align: right;
-    }
-
-    .slider-name:hover {
-      cursor: pointer;
-    }
-
     .range-container {
       position: relative;
       flex-grow: 1;
@@ -157,7 +146,6 @@ export class RangeSlider extends LitElement {
   `;
 
   static properties = {
-    name: { type: String, reflect: true },
     minValue: { type: Number },
     maxValue: { type: Number },
     defaultValue: { type: Number },
@@ -170,7 +158,6 @@ export class RangeSlider extends LitElement {
   constructor() {
     super();
     // Fallbacks for attributes that are not defined when calling the component
-    this.name = "Slider";
     this.minValue = 0;
     this.maxValue = 100;
     this.defaultValue = this.minValue;
@@ -247,7 +234,7 @@ export class RangeSlider extends LitElement {
     event.preventDefault();
     this.value = clamp(newValue, this.minValue, this.maxValue);
     this.updateIsAtDefault();
-    this.onChangeCallback(this);
+    this.onChangeCallback({ value: this.value });
   }
 
   handleMouseDown(event) {
@@ -282,7 +269,7 @@ export class RangeSlider extends LitElement {
       }
     }
     this.updateIsAtDefault();
-    this.onChangeCallback(this);
+    this.onChangeCallback({ value: this.value });
   }
 
   updateIsAtDefault() {
@@ -304,7 +291,7 @@ export class RangeSlider extends LitElement {
 
   reset(event) {
     this.value = this.defaultValue;
-    this.onChangeCallback(this);
+    this.onChangeCallback({ value: this.value });
   }
 
   buildTickmarks() {

@@ -65,7 +65,7 @@ export class DesignspaceLocation extends UnlitElement {
         // Event was triggered by us -- ignore
         return;
       }
-      const slider = this.shadowRoot.querySelector(`range-slider[name="${event.key}"]`);
+      const slider = this.shadowRoot.querySelector(`#slider-${event.key}`);
       if (slider) {
         slider.value = event.newValue;
       }
@@ -85,7 +85,7 @@ export class DesignspaceLocation extends UnlitElement {
     this._values = { ...values };
 
     for (const [axisName, value] of Object.entries(values)) {
-      const slider = this.shadowRoot.querySelector(`range-slider[name="${axisName}"]`);
+      const slider = this.shadowRoot.querySelector(`#slider-${axisName}`);
       if (slider) {
         slider.value = value;
       }
@@ -93,9 +93,7 @@ export class DesignspaceLocation extends UnlitElement {
 
     for (const axis of this.axes || []) {
       if (!(axis.name in values)) {
-        const slider = this.shadowRoot.querySelector(
-          `range-slider[name="${axis.name}"]`
-        );
+        const slider = this.shadowRoot.querySelector(`#slider-${axis.name}`);
         if (slider) {
           slider.value = axis.defaultValue;
         }
@@ -133,12 +131,13 @@ export class DesignspaceLocation extends UnlitElement {
       );
       elements.push(
         html.createDomElement("range-slider", {
-          name: axis.name,
+          id: `slider-${axis.name}`,
           minValue: axis.minValue,
           maxValue: axis.maxValue,
           defaultValue: axis.defaultValue,
           value: modelValue !== undefined ? modelValue : axis.defaultValue,
-          onChangeCallback: (event) => this._dispatchLocationChangedEvent(event),
+          onChangeCallback: (event) =>
+            this._dispatchLocationChangedEvent(axis.name, event.value),
         })
       );
       elements.push(infoBox);
@@ -157,11 +156,11 @@ export class DesignspaceLocation extends UnlitElement {
     }
   }
 
-  _dispatchLocationChangedEvent(slider) {
+  _dispatchLocationChangedEvent(name, value) {
     if (this.controller) {
-      this.controller.setItem(slider.name, slider.value, this);
+      this.controller.setItem(name, value, this);
     } else {
-      this.values[slider.name] = slider.value;
+      this.values[name] = value;
       const event = new CustomEvent("locationChanged", {
         bubbles: false,
         detail: this,
