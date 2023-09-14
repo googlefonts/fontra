@@ -164,6 +164,7 @@ export class RangeSlider extends LitElement {
     this.value = this.defaultValue;
     this.tickmarksPositions = [];
     this.step = "any";
+    this.sawMouseDown = false;
     this.onChangeCallback = () => {};
   }
 
@@ -238,6 +239,7 @@ export class RangeSlider extends LitElement {
   }
 
   handleMouseDown(event) {
+    this.sawMouseDown = true;
     const activeElement = document.activeElement;
     this._savedCanvasElement =
       activeElement?.id === "edit-canvas" ? activeElement : undefined;
@@ -249,6 +251,8 @@ export class RangeSlider extends LitElement {
 
   handleMouseUp(event) {
     this._savedCanvasElement?.focus();
+    this.sawMouseDown = false;
+    this.onChangeCallback({ value: this.value, dragEnd: true });
   }
 
   changeValue(event) {
@@ -269,7 +273,13 @@ export class RangeSlider extends LitElement {
       }
     }
     this.updateIsAtDefault();
-    this.onChangeCallback({ value: this.value });
+
+    const callbackEvent = { value: this.value };
+    if (this.sawMouseDown) {
+      callbackEvent.dragBegin = true;
+    }
+    this.sawMouseDown = false;
+    this.onChangeCallback(callbackEvent);
   }
 
   updateIsAtDefault() {
