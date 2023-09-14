@@ -56,6 +56,7 @@ class MenuPanel extends SimpleElement {
       border: none;
       border-top: 1px solid #80808080;
       height: 1px;
+      margin: 0.4em 0 0.35em 0;
     }
 
     .context-menu-item {
