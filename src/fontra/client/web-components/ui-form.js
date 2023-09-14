@@ -123,7 +123,7 @@ export class Form extends SimpleElement {
       grid-template-columns: 32% 68%;
       gap: 0.35rem 0.35rem;
       overflow-x: hidden;
-      overflow-y: scroll;
+      overflow-y: auto;
     }
 
     .ui-form-label {
