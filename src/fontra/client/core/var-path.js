@@ -554,30 +554,18 @@ export class VarPackedPath {
   }
 
   addItemwise(other) {
-    let otherCoordinates;
-    if (other instanceof VarPackedPath) {
-      this._ensureCompatibility(other);
-      otherCoordinates = other.coordinates;
-    } else {
-      otherCoordinates = other;
-    }
+    this._ensureCompatibility(other);
     return new this.constructor(
-      this.coordinates.addItemwise(otherCoordinates),
+      this.coordinates.addItemwise(other.coordinates),
       this.pointTypes,
       this.contourInfo
     );
   }
 
   subItemwise(other) {
-    let otherCoordinates;
-    if (other instanceof VarPackedPath) {
-      this._ensureCompatibility(other);
-      otherCoordinates = other.coordinates;
-    } else {
-      otherCoordinates = other;
-    }
+    this._ensureCompatibility(other);
     return new this.constructor(
-      this.coordinates.subItemwise(otherCoordinates),
+      this.coordinates.subItemwise(other.coordinates),
       this.pointTypes,
       this.contourInfo
     );
@@ -585,6 +573,7 @@ export class VarPackedPath {
 
   _ensureCompatibility(other) {
     if (
+      !(other instanceof VarPackedPath) ||
       !arrayEquals(this.contourInfo, other.contourInfo) ||
       !pointTypesEquals(this.pointTypes, other.pointTypes)
     ) {
