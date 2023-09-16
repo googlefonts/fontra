@@ -859,7 +859,6 @@ async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
 
   glyphs.forEach((glyph) =>
     glyph.components.forEach((compo) => {
-      const axisNames = Object.keys(compo.location);
       let fallbackValues = baseGlyphFallbackValues[compo.name];
       if (!fallbackValues) {
         fallbackValues = {};
