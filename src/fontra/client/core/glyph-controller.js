@@ -219,7 +219,7 @@ export class VariableGlyphController {
       }
       const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
       const defaultSourceGlyph =
-        this.layers[this.sources[defaultSourceIndex].layerName].glyph;
+        layerGlyphs[this.sources[defaultSourceIndex].layerName];
       this._sourceInterpolationStatus = this.sources.map((source) => {
         const sourceGlyph = layerGlyphs[source.layerName];
         if (sourceGlyph !== defaultSourceGlyph) {
