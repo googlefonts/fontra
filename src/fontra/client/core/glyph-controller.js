@@ -217,12 +217,14 @@ export class VariableGlyphController {
           this.layers[source.layerName].glyph
         );
       }
-      const firstSourceGlyph = this.layers[this.sources[0].layerName].glyph;
+      const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
+      const defaultSourceGlyph =
+        this.layers[this.sources[defaultSourceIndex].layerName].glyph;
       this._sourceInterpolationStatus = this.sources.map((source) => {
         const sourceGlyph = layerGlyphs[source.layerName];
-        if (sourceGlyph !== firstSourceGlyph) {
+        if (sourceGlyph !== defaultSourceGlyph) {
           try {
-            const _ = addItemwise(firstSourceGlyph, sourceGlyph);
+            const _ = addItemwise(defaultSourceGlyph, sourceGlyph);
           } catch (error) {
             return { error: error.message };
           }
