@@ -12,6 +12,7 @@ import {
 import { Transform } from "./transform.js";
 import { enumerate, makeAffineTransform, range } from "./utils.js";
 import { StaticGlyph } from "./var-glyph.js";
+import { addItemwise } from "./var-funcs.js";
 import {
   VariationModel,
   locationToString,
@@ -170,6 +171,7 @@ export class VariableGlyphController {
     // Call this when global or local design spaces changed
     delete this._model;
     delete this._deltas;
+    delete this._sourceInterpolationStatus;
     delete this._combinedAxes;
     delete this._localToGlobalMapping;
     this._locationToSourceIndex = {};
@@ -202,6 +204,35 @@ export class VariableGlyphController {
       this._deltas = this.model.getDeltas(masterValues);
     }
     return this._deltas;
+  }
+
+  get sourceInterpolationStatus() {
+    if (this._sourceInterpolationStatus === undefined) {
+      const layerGlyphs = {};
+      for (const source of this.sources) {
+        if (source.layerName in layerGlyphs) {
+          continue;
+        }
+        layerGlyphs[source.layerName] = stripComponentLocations(
+          this.layers[source.layerName].glyph
+        );
+      }
+      const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
+      const defaultSourceGlyph =
+        this.layers[this.sources[defaultSourceIndex].layerName].glyph;
+      this._sourceInterpolationStatus = this.sources.map((source) => {
+        const sourceGlyph = layerGlyphs[source.layerName];
+        if (sourceGlyph !== defaultSourceGlyph) {
+          try {
+            const _ = addItemwise(defaultSourceGlyph, sourceGlyph);
+          } catch (error) {
+            return { error: error.message };
+          }
+        }
+        return {};
+      });
+    }
+    return this._sourceInterpolationStatus;
   }
 
   async getLayerGlyphController(layerName, sourceIndex, getGlyphFunc) {
@@ -895,5 +926,23 @@ async function ensureComponentCompatibility(glyphs, getGlyphFunc) {
       },
       true // noCopy
     )
+  );
+}
+
+function stripComponentLocations(glyph) {
+  if (!glyph.components.length) {
+    return glyph;
+  }
+  return StaticGlyph.fromObject(
+    {
+      ...glyph,
+      components: glyph.components.map((component) => {
+        return {
+          ...component,
+          location: {},
+        };
+      }),
+    },
+    true // noCopy
   );
 }

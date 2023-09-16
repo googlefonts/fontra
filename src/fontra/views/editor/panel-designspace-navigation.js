@@ -20,7 +20,7 @@ import {
   mapForward,
 } from "/core/var-model.js";
 import { showMenu } from "/web-components/menu-panel.js";
-import { dialogSetup } from "/web-components/modal-dialog.js";
+import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { IconButton } from "/web-components/icon-button.js";
 import { InlineSVG } from "/web-components/inline-svg.js";
 
@@ -184,7 +184,13 @@ export default class DesignspaceNavigationPanel extends Panel {
           ["/tabler-icons/circle-dotted.svg", "/tabler-icons/circle-dot.svg"],
           true
         ),
-        width: "2em",
+        width: "1.2em",
+      },
+      {
+        title: "√",
+        key: "interpolationStatus",
+        cellFactory: interpolationErrorCell,
+        width: "1.2em",
       },
       { key: "name", title: "Source name", width: "12em" },
       {
@@ -194,7 +200,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           "/tabler-icons/eye-closed.svg",
           "/tabler-icons/eye.svg",
         ]),
-        width: "2em",
+        width: "1.2em",
       },
     ];
 
@@ -301,7 +307,10 @@ export default class DesignspaceNavigationPanel extends Panel {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
     const sources = varGlyphController?.sources || [];
+    const sourceInterpolationStatus =
+      varGlyphController?.sourceInterpolationStatus || [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
+
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
       const layerName = source.layerName;
@@ -311,6 +320,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         active: !source.inactive,
         visible: backgroundLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
+        interpolationStatus: sourceInterpolationStatus[index]?.error,
       });
       sourceController.addKeyListener("active", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
@@ -899,6 +909,28 @@ function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
       [iconElement]
     );
   };
+}
+
+function interpolationErrorCell(item, colDesc) {
+  const iconElement = html.createDomElement("inline-svg", {
+    src: "/tabler-icons/bug.svg",
+  });
+  return item[colDesc.key]
+    ? html.div(
+        {
+          style: "width: 1.2em; height: 1.2em; color: #F36;",
+          onclick: (event) => {
+            event.stopImmediatePropagation();
+            dialog(
+              "The source has an interpolation incompatibility",
+              item[colDesc.key],
+              [{ title: "Okay" }]
+            );
+          },
+        },
+        [iconElement]
+      )
+    : "";
 }
 
 function checkboxListCell(item, colDesc) {
