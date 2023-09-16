@@ -187,7 +187,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         width: "1.2em",
       },
       {
-        title: "√",
+        title: " ",
         key: "interpolationStatus",
         cellFactory: interpolationErrorCell,
         width: "1.2em",
