@@ -20,7 +20,7 @@ import {
   mapForward,
 } from "/core/var-model.js";
 import { showMenu } from "/web-components/menu-panel.js";
-import { dialogSetup } from "/web-components/modal-dialog.js";
+import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { IconButton } from "/web-components/icon-button.js";
 import { InlineSVG } from "/web-components/inline-svg.js";
 
@@ -921,6 +921,11 @@ function interpolationErrorCell(item, colDesc) {
           style: "width: 1.2em; height: 1.2em; color: #F36;",
           onclick: (event) => {
             event.stopImmediatePropagation();
+            dialog(
+              "The source has an interpolation incompatibility",
+              item[colDesc.key],
+              [{ title: "Okay" }]
+            );
           },
         },
         [iconElement]
