@@ -164,7 +164,7 @@ export class VariationModel {
             delta = subItemwise(delta, mulScalar(out[j], weight));
           }
         } catch (error) {
-          console.log(`error in master ${mapping[i]}`);
+          console.log(`error in source ${mapping[i]}`);
           throw error;
         }
       }
