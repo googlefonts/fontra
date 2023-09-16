@@ -533,7 +533,7 @@ export class UIList extends UnlitElement {
 }
 
 const DefaultFormatter = {
-  toString: (value) => value.toString(),
+  toString: (value) => (value !== undefined ? value.toString() : ""),
   fromString: (value) => {
     return {
       value: value,
