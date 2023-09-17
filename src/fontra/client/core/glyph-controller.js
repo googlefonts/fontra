@@ -237,9 +237,8 @@ export class VariableGlyphController {
 
   getInterpolationContributions(location) {
     location = this.mapLocationGlobalToLocal(location);
-    const scalars = this.model.getScalars(
-      normalizeLocation(location, this.combinedAxes)
-    );
+    location = normalizeLocation(location, this.combinedAxes);
+    const scalars = this.model.getScalars(location);
     const contributions = [...scalars];
     for (const [i, weights] of reversedEnumerate(this.model.deltaWeights)) {
       for (const [j, weight] of weights.entries()) {
