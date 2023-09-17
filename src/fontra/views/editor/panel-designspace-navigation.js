@@ -970,6 +970,7 @@ function interpolationContributionCell(item, colDesc) {
       }
       iconElement.src = interpolationContributionIconSources[index];
       iconElement.style.color = rawValue < 0 ? "#F36" : null;
+      iconElement.style.transform = rawValue < 0 ? "scale(-1, 1)" : null;
     } else {
       iconElement.src = "";
     }
