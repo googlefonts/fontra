@@ -183,7 +183,7 @@ export class VariationModel {
     return interpolateFromDeltasAndScalars(deltas, scalars);
   }
 
-  getContributions(location) {
+  getSourceContributions(location) {
     const contributions = this.getScalars(location);
     for (const [i, weights] of reversedEnumerate(this.deltaWeights)) {
       for (const [j, weight] of weights.entries()) {

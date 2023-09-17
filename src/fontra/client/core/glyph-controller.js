@@ -238,7 +238,7 @@ export class VariableGlyphController {
   getInterpolationContributions(location) {
     location = this.mapLocationGlobalToLocal(location);
     location = normalizeLocation(location, this.combinedAxes);
-    const contributions = this.model.getContributions(location);
+    const contributions = this.model.getSourceContributions(location);
 
     let sourceIndex = 0;
     const orderedContributions = [];
