@@ -3,6 +3,7 @@
 import { VariationError } from "./errors.js";
 import { addItemwise, subItemwise, mulScalar } from "./var-funcs.js";
 import { isSuperset } from "./set-ops.js";
+import { reversedEnumerate } from "./utils.js";
 
 export class VariationModel {
   constructor(locations, axisOrder = null) {
@@ -180,6 +181,19 @@ export class VariationModel {
   interpolateFromDeltas(loc, deltas) {
     const scalars = this.getScalars(loc);
     return interpolateFromDeltasAndScalars(deltas, scalars);
+  }
+
+  getContributions(location) {
+    const contributions = this.getScalars(location);
+    for (const [i, weights] of reversedEnumerate(this.deltaWeights)) {
+      for (const [j, weight] of weights.entries()) {
+        if (j >= i) {
+          throw new Error("assert -- bad i/j indices");
+        }
+        contributions[j] -= contributions[i] * weight;
+      }
+    }
+    return contributions;
   }
 }
 

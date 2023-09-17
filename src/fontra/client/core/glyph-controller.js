@@ -10,7 +10,7 @@ import {
   registerRepresentationFactory,
 } from "./representation-cache.js";
 import { Transform } from "./transform.js";
-import { enumerate, makeAffineTransform, range, reversedEnumerate } from "./utils.js";
+import { enumerate, makeAffineTransform, range } from "./utils.js";
 import { StaticGlyph } from "./var-glyph.js";
 import { addItemwise } from "./var-funcs.js";
 import {
@@ -238,16 +238,8 @@ export class VariableGlyphController {
   getInterpolationContributions(location) {
     location = this.mapLocationGlobalToLocal(location);
     location = normalizeLocation(location, this.combinedAxes);
-    const scalars = this.model.getScalars(location);
-    const contributions = [...scalars];
-    for (const [i, weights] of reversedEnumerate(this.model.deltaWeights)) {
-      for (const [j, weight] of weights.entries()) {
-        if (j >= i) {
-          throw new Error("assert -- bad i/j indices");
-        }
-        contributions[j] -= contributions[i] * weight;
-      }
-    }
+    const contributions = this.model.getContributions(location);
+
     let sourceIndex = 0;
     const orderedContributions = [];
     for (const source of this.sources) {
