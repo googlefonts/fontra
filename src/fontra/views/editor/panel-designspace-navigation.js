@@ -963,12 +963,13 @@ function interpolationContributionCell(item, colDesc) {
     const rawValue = item[colDesc.key];
     if (rawValue != null) {
       let index;
-      index = Math.round(Math.sqrt(rawValue) * 4);
+      index = Math.round(Math.sqrt(Math.abs(rawValue)) * 4);
       if (index === 0 && rawValue > 0) {
         // Ensure non-zero has one "bar"
         index = 1;
       }
       iconElement.src = interpolationContributionIconSources[index];
+      iconElement.style.color = rawValue < 0 ? "#F36" : null;
     } else {
       iconElement.src = "";
     }

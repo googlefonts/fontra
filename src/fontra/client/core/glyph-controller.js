@@ -10,7 +10,7 @@ import {
   registerRepresentationFactory,
 } from "./representation-cache.js";
 import { Transform } from "./transform.js";
-import { enumerate, makeAffineTransform, range } from "./utils.js";
+import { enumerate, makeAffineTransform, range, reversedEnumerate } from "./utils.js";
 import { StaticGlyph } from "./var-glyph.js";
 import { addItemwise } from "./var-funcs.js";
 import {
@@ -237,20 +237,30 @@ export class VariableGlyphController {
 
   getInterpolationContributions(location) {
     location = this.mapLocationGlobalToLocal(location);
-    const rawScalars = this.model.getScalars(
+    const scalars = this.model.getScalars(
       normalizeLocation(location, this.combinedAxes)
     );
+    const contributions = [...scalars];
+    for (const [i, weights] of reversedEnumerate(this.model.deltaWeights)) {
+      for (const [j, weight] of weights.entries()) {
+        if (j >= i) {
+          throw new Error("assert -- bad i/j indices");
+        }
+        contributions[j] -= contributions[i] * weight;
+      }
+    }
     let sourceIndex = 0;
-    const scalars = [];
+    const orderedContributions = [];
     for (const source of this.sources) {
       if (source.inactive) {
-        scalars.push(null);
+        orderedContributions.push(null);
       } else {
-        scalars.push(rawScalars[this.model.mapping[sourceIndex]]);
+        const value = contributions[this.model.mapping[sourceIndex]];
+        orderedContributions.push(value);
         sourceIndex++;
       }
     }
-    return scalars;
+    return orderedContributions;
   }
 
   async getLayerGlyphController(layerName, sourceIndex, getGlyphFunc) {
