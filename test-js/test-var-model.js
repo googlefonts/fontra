@@ -355,6 +355,7 @@ describe("var-model tests", () => {
         { location: { wght: 0, wdth: 0.5 }, result: [0.5, 0, 0.5] },
         { location: { wght: 0, wdth: 1 }, result: [0, 0, 1] },
         { location: { wght: 1, wdth: 1 }, result: [-1, 1, 1] },
+        { location: { wght: 0.5, wdth: 0.5 }, result: [0, 0.5, 0.5] },
       ],
       (testData) => {
         expect(model.getSourceContributions(testData.location)).to.deep.equal(
