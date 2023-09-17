@@ -1,5 +1,5 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
-import { ObservableController } from "/core/observable-object.js";
+import { controllerKey, ObservableController } from "/core/observable-object.js";
 import { Layer, Source } from "/core/var-glyph.js";
 import * as html from "/core/unlit.js";
 import { css } from "../third-party/lit.js";
@@ -165,6 +165,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.sceneSettingsController.addKeyListener("location", (event) => {
       this.updateResetAllAxesButtonState();
+      this.updateInterpolationContributions();
       if (event.senderInfo?.senderID === this) {
         // Sent by us, ignore
         return;
@@ -191,12 +192,6 @@ export default class DesignspaceNavigationPanel extends Panel {
         title: " ",
         key: "interpolationStatus",
         cellFactory: interpolationErrorCell,
-        width: "1.2em",
-      },
-      {
-        title: " ",
-        key: "interpolationContribution",
-        cellFactory: interpolationContributionCell,
         width: "1.2em",
       },
       { key: "name", title: "Source name", width: "12em" },
@@ -235,6 +230,13 @@ export default class DesignspaceNavigationPanel extends Panel {
         }),
       });
     }
+
+    columnDescriptions.push({
+      title: " ",
+      key: "interpolationContribution",
+      cellFactory: interpolationContributionCell,
+      width: "1.2em",
+    });
 
     this.sourcesList = this.contentElement.querySelector("#sources-list");
     this.sourcesList.showHeader = true;
@@ -283,6 +285,20 @@ export default class DesignspaceNavigationPanel extends Panel {
     const button = this.contentElement.querySelector("#reset-axes-button");
     button.disabled = locationEmpty;
     button.hidden = !this.designspaceLocation.axes.length;
+  }
+
+  async updateInterpolationContributions() {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    if (!varGlyphController) {
+      return;
+    }
+    const interpolationContributions = varGlyphController.getInterpolationContributions(
+      this.sceneSettings.location
+    );
+    for (const [index, sourceItem] of enumerate(this.sourcesList.items)) {
+      sourceItem.interpolationContribution = interpolationContributions[index];
+    }
   }
 
   get globalAxes() {
@@ -938,21 +954,34 @@ const interpolationContributionIconSources = [...range(1, 6)].map(
 );
 
 function interpolationContributionCell(item, colDesc) {
-  const rawValue = item[colDesc.key];
-  let index;
-  if (rawValue != null) {
-    index = Math.round(Math.sqrt(rawValue) * 4);
-    if (index === 0 && rawValue > 0) {
-      // Ensure non-zero has one "bar"
-      index = 1;
+  const iconElement = html.createDomElement("inline-svg", {
+    src: "",
+    style: "width: 1.2em; height: 1.2em;",
+  });
+
+  function updateFromItem() {
+    const rawValue = item[colDesc.key];
+    if (rawValue != null) {
+      let index;
+      index = Math.round(Math.sqrt(rawValue) * 4);
+      if (index === 0 && rawValue > 0) {
+        // Ensure non-zero has one "bar"
+        index = 1;
+      }
+      iconElement.src = interpolationContributionIconSources[index];
+    } else {
+      iconElement.src = "";
     }
   }
-  return rawValue != null
-    ? html.createDomElement("inline-svg", {
-        src: interpolationContributionIconSources[index],
-        style: "width: 1.2em; height: 1.2em;",
-      })
-    : "";
+
+  const controller = item[controllerKey];
+  controller.addKeyListener(colDesc.key, (event) => {
+    updateFromItem();
+  });
+
+  updateFromItem();
+
+  return iconElement;
 }
 
 function checkboxListCell(item, colDesc) {
