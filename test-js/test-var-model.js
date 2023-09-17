@@ -344,20 +344,53 @@ describe("var-model tests", () => {
   });
 
   describe("getSourceContributions tests", () => {
-    const locations = [{}, { wght: 1 }, { wdth: 1 }];
-    const model = new VariationModel(locations, ["wght", "wdth"]);
+    const locationsA = [{}, { wght: 1 }, { wdth: 1 }];
+    const locationsB = [{}, { wght: 1 }, { wdth: 1 }, { wght: 1, wdth: 1 }];
     parametrize(
       "test contrib",
       [
-        { location: { wght: 0, wdth: 0 }, result: [1, 0, 0] },
-        { location: { wght: 0.5, wdth: 0 }, result: [0.5, 0.5, 0] },
-        { location: { wght: 1, wdth: 0 }, result: [0, 1, 0] },
-        { location: { wght: 0, wdth: 0.5 }, result: [0.5, 0, 0.5] },
-        { location: { wght: 0, wdth: 1 }, result: [0, 0, 1] },
-        { location: { wght: 1, wdth: 1 }, result: [-1, 1, 1] },
-        { location: { wght: 0.5, wdth: 0.5 }, result: [0, 0.5, 0.5] },
+        { locations: locationsA, location: { wght: 0, wdth: 0 }, result: [1, 0, 0] },
+        {
+          locations: locationsA,
+          location: { wght: 0.5, wdth: 0 },
+          result: [0.5, 0.5, 0],
+        },
+        { locations: locationsA, location: { wght: 1, wdth: 0 }, result: [0, 1, 0] },
+        {
+          locations: locationsA,
+          location: { wght: 0, wdth: 0.5 },
+          result: [0.5, 0, 0.5],
+        },
+        { locations: locationsA, location: { wght: 0, wdth: 1 }, result: [0, 0, 1] },
+        { locations: locationsA, location: { wght: 1, wdth: 1 }, result: [-1, 1, 1] },
+        {
+          locations: locationsA,
+          location: { wght: 0.5, wdth: 0.5 },
+          result: [0, 0.5, 0.5],
+        },
+        {
+          locations: locationsA,
+          location: { wght: 0.75, wdth: 0.75 },
+          result: [-0.5, 0.75, 0.75],
+        },
+        {
+          locations: locationsB,
+          location: { wght: 1, wdth: 1 },
+          result: [0, 0, 0, 1],
+        },
+        {
+          locations: locationsB,
+          location: { wght: 0.5, wdth: 0 },
+          result: [0.5, 0.5, 0, 0],
+        },
+        {
+          locations: locationsB,
+          location: { wght: 0.5, wdth: 0.5 },
+          result: [0.25, 0.25, 0.25, 0.25],
+        },
       ],
       (testData) => {
+        const model = new VariationModel(testData.locations, ["wght", "wdth"]);
         expect(model.getSourceContributions(testData.location)).to.deep.equal(
           testData.result
         );
