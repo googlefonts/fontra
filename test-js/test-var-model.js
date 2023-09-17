@@ -12,6 +12,7 @@ import {
   piecewiseLinearMap,
   supportScalar,
 } from "../src/fontra/client/core/var-model.js";
+import { parametrize } from "./test-support.js";
 
 describe("var-model tests", () => {
   describe("VariationModel tests", () => {
@@ -340,5 +341,26 @@ describe("var-model tests", () => {
       const location = { weight: 150, width: 100 };
       expect(mapBackward(location, axes)).to.deep.equal({ weight: 10, width: 100 });
     });
+  });
+
+  describe("getSourceContributions tests", () => {
+    const locations = [{}, { wght: 1 }, { wdth: 1 }];
+    const model = new VariationModel(locations, ["wght", "wdth"]);
+    parametrize(
+      "test contrib",
+      [
+        { location: { wght: 0, wdth: 0 }, result: [1, 0, 0] },
+        { location: { wght: 0.5, wdth: 0 }, result: [0.5, 0.5, 0] },
+        { location: { wght: 1, wdth: 0 }, result: [0, 1, 0] },
+        { location: { wght: 0, wdth: 0.5 }, result: [0.5, 0, 0.5] },
+        { location: { wght: 0, wdth: 1 }, result: [0, 0, 1] },
+        { location: { wght: 1, wdth: 1 }, result: [-1, 1, 1] },
+      ],
+      (testData) => {
+        expect(model.getSourceContributions(testData.location)).to.deep.equal(
+          testData.result
+        );
+      }
+    );
   });
 });
