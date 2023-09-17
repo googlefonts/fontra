@@ -963,7 +963,7 @@ function interpolationContributionCell(item, colDesc) {
     const rawValue = item[colDesc.key];
     if (rawValue != null) {
       let index;
-      index = Math.max(Math.round(Math.sqrt(Math.abs(rawValue)) * 4), 4);
+      index = Math.min(Math.round(Math.sqrt(Math.abs(rawValue)) * 4), 4);
       if (index === 0 && rawValue > 0) {
         // Ensure non-zero has one "bar"
         index = 1;
