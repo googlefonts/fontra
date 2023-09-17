@@ -235,6 +235,25 @@ export class VariableGlyphController {
     return this._sourceInterpolationStatus;
   }
 
+  getInterpolationContributions(location) {
+    location = this.mapLocationGlobalToLocal(location);
+    location = normalizeLocation(location, this.combinedAxes);
+    const contributions = this.model.getSourceContributions(location);
+
+    let sourceIndex = 0;
+    const orderedContributions = [];
+    for (const source of this.sources) {
+      if (source.inactive) {
+        orderedContributions.push(null);
+      } else {
+        const value = contributions[this.model.mapping[sourceIndex]];
+        orderedContributions.push(value);
+        sourceIndex++;
+      }
+    }
+    return orderedContributions;
+  }
+
   async getLayerGlyphController(layerName, sourceIndex, getGlyphFunc) {
     const cacheKey = `${layerName}/${sourceIndex}`;
     let instanceController = this._layerGlyphControllers[cacheKey];

@@ -12,6 +12,7 @@ import {
   piecewiseLinearMap,
   supportScalar,
 } from "../src/fontra/client/core/var-model.js";
+import { parametrize } from "./test-support.js";
 
 describe("var-model tests", () => {
   describe("VariationModel tests", () => {
@@ -340,5 +341,97 @@ describe("var-model tests", () => {
       const location = { weight: 150, width: 100 };
       expect(mapBackward(location, axes)).to.deep.equal({ weight: 10, width: 100 });
     });
+  });
+
+  describe("getSourceContributions tests", () => {
+    const locationsA = [{}, { wght: 1 }, { wdth: 1 }];
+    const locationsB = [{}, { wght: 1 }, { wdth: 1 }, { wght: 1, wdth: 1 }];
+    const locationsC = [
+      {},
+      { wght: 0.5 },
+      { wght: 1 },
+      { wdth: 1 },
+      { wght: 1, wdth: 1 },
+    ];
+    parametrize(
+      "test contrib",
+      [
+        { locations: locationsA, location: { wght: 0, wdth: 0 }, result: [1, 0, 0] },
+        {
+          locations: locationsA,
+          location: { wght: 0.5, wdth: 0 },
+          result: [0.5, 0.5, 0],
+        },
+        { locations: locationsA, location: { wght: 1, wdth: 0 }, result: [0, 1, 0] },
+        {
+          locations: locationsA,
+          location: { wght: 0, wdth: 0.5 },
+          result: [0.5, 0, 0.5],
+        },
+        { locations: locationsA, location: { wght: 0, wdth: 1 }, result: [0, 0, 1] },
+        { locations: locationsA, location: { wght: 1, wdth: 1 }, result: [-1, 1, 1] },
+        {
+          locations: locationsA,
+          location: { wght: 0.5, wdth: 0.5 },
+          result: [0, 0.5, 0.5],
+        },
+        {
+          locations: locationsA,
+          location: { wght: 0.75, wdth: 0.75 },
+          result: [-0.5, 0.75, 0.75],
+        },
+        {
+          locations: locationsB,
+          location: { wght: 1, wdth: 1 },
+          result: [0, 0, 0, 1],
+        },
+        {
+          locations: locationsB,
+          location: { wght: 0.5, wdth: 0 },
+          result: [0.5, 0.5, 0, 0],
+        },
+        {
+          locations: locationsB,
+          location: { wght: 1, wdth: 0.5 },
+          result: [0, 0.5, 0, 0.5],
+        },
+        {
+          locations: locationsB,
+          location: { wght: 0.5, wdth: 0.5 },
+          result: [0.25, 0.25, 0.25, 0.25],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.5, wdth: 0 },
+          result: [0, 1, 0, 0, 0],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.25, wdth: 0 },
+          result: [0.5, 0.5, 0, 0, 0],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.75, wdth: 0 },
+          result: [0, 0.5, 0.5, 0, 0],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.5, wdth: 1 },
+          result: [-0.5, 1, -0.5, 0.5, 0.5],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.75, wdth: 1 },
+          result: [-0.25, 0.5, -0.25, 0.25, 0.75],
+        },
+      ],
+      (testData) => {
+        const model = new VariationModel(testData.locations, ["wght", "wdth"]);
+        expect(model.getSourceContributions(testData.location)).to.deep.equal(
+          testData.result
+        );
+      }
+    );
   });
 });

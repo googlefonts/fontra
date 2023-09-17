@@ -1,5 +1,5 @@
 import { getAxisBaseName } from "/core/glyph-controller.js";
-import { ObservableController } from "/core/observable-object.js";
+import { controllerKey, ObservableController } from "/core/observable-object.js";
 import { Layer, Source } from "/core/var-glyph.js";
 import * as html from "/core/unlit.js";
 import { css } from "../third-party/lit.js";
@@ -8,6 +8,7 @@ import {
   enumerate,
   htmlToElement,
   objectsEqual,
+  range,
   rgbaToCSS,
   round,
   scheduleCalls,
@@ -164,6 +165,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.sceneSettingsController.addKeyListener("location", (event) => {
       this.updateResetAllAxesButtonState();
+      this.updateInterpolationContributions();
       if (event.senderInfo?.senderID === this) {
         // Sent by us, ignore
         return;
@@ -229,6 +231,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
     }
 
+    columnDescriptions.push({
+      title: " ",
+      key: "interpolationContribution",
+      cellFactory: interpolationContributionCell,
+      width: "1.2em",
+    });
+
     this.sourcesList = this.contentElement.querySelector("#sources-list");
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
@@ -278,6 +287,20 @@ export default class DesignspaceNavigationPanel extends Panel {
     button.hidden = !this.designspaceLocation.axes.length;
   }
 
+  async updateInterpolationContributions() {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    if (!varGlyphController) {
+      return;
+    }
+    const interpolationContributions = varGlyphController.getInterpolationContributions(
+      this.sceneSettings.location
+    );
+    for (const [index, sourceItem] of enumerate(this.sourcesList.items)) {
+      sourceItem.interpolationContribution = interpolationContributions[index];
+    }
+  }
+
   get globalAxes() {
     return this.fontController.globalAxes.filter((axis) => !axis.hidden);
   }
@@ -309,6 +332,9 @@ export default class DesignspaceNavigationPanel extends Panel {
     const sources = varGlyphController?.sources || [];
     const sourceInterpolationStatus =
       varGlyphController?.sourceInterpolationStatus || [];
+    const interpolationContributions =
+      varGlyphController?.getInterpolationContributions(this.sceneSettings.location) ||
+      [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
 
     const sourceItems = [];
@@ -321,6 +347,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         visible: backgroundLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
         interpolationStatus: sourceInterpolationStatus[index]?.error,
+        interpolationContribution: interpolationContributions[index],
       });
       sourceController.addKeyListener("active", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
@@ -920,6 +947,42 @@ function interpolationErrorCell(item, colDesc) {
         },
       })
     : "";
+}
+
+const interpolationContributionIconSources = [...range(1, 6)].map(
+  (index) => `/tabler-icons/antenna-bars-${index}.svg`
+);
+
+function interpolationContributionCell(item, colDesc) {
+  const iconElement = html.createDomElement("inline-svg", {
+    src: "",
+    style: "width: 1.2em; height: 1.2em;",
+  });
+
+  function updateFromItem() {
+    const rawValue = item[colDesc.key];
+    if (rawValue != null) {
+      let index;
+      index = Math.min(Math.round(Math.sqrt(Math.abs(rawValue)) * 4), 4);
+      if (index === 0 && Math.abs(rawValue) > 0.00001) {
+        // Ensure non-zero has one "bar"
+        index = 1;
+      }
+      iconElement.src = interpolationContributionIconSources[index];
+      iconElement.style.color = rawValue < 0 ? "#F36" : null;
+    } else {
+      iconElement.src = "";
+    }
+  }
+
+  const controller = item[controllerKey];
+  controller.addKeyListener(colDesc.key, (event) => {
+    updateFromItem();
+  });
+
+  updateFromItem();
+
+  return iconElement;
 }
 
 function checkboxListCell(item, colDesc) {
