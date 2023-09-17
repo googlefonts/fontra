@@ -346,6 +346,13 @@ describe("var-model tests", () => {
   describe("getSourceContributions tests", () => {
     const locationsA = [{}, { wght: 1 }, { wdth: 1 }];
     const locationsB = [{}, { wght: 1 }, { wdth: 1 }, { wght: 1, wdth: 1 }];
+    const locationsC = [
+      {},
+      { wght: 0.5 },
+      { wght: 1 },
+      { wdth: 1 },
+      { wght: 1, wdth: 1 },
+    ];
     parametrize(
       "test contrib",
       [
@@ -392,6 +399,31 @@ describe("var-model tests", () => {
           locations: locationsB,
           location: { wght: 0.5, wdth: 0.5 },
           result: [0.25, 0.25, 0.25, 0.25],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.5, wdth: 0 },
+          result: [0, 1, 0, 0, 0],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.25, wdth: 0 },
+          result: [0.5, 0.5, 0, 0, 0],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.75, wdth: 0 },
+          result: [0, 0.5, 0.5, 0, 0],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.5, wdth: 1 },
+          result: [-0.5, 1, -0.5, 0.5, 0.5],
+        },
+        {
+          locations: locationsC,
+          location: { wght: 0.75, wdth: 1 },
+          result: [-0.25, 0.5, -0.25, 0.25, 0.75],
         },
       ],
       (testData) => {
