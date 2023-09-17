@@ -385,6 +385,11 @@ describe("var-model tests", () => {
         },
         {
           locations: locationsB,
+          location: { wght: 1, wdth: 0.5 },
+          result: [0, 0.5, 0, 0.5],
+        },
+        {
+          locations: locationsB,
           location: { wght: 0.5, wdth: 0.5 },
           result: [0.25, 0.25, 0.25, 0.25],
         },
