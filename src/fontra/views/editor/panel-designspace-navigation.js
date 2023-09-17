@@ -889,25 +889,21 @@ function suggestedSourceNameFromLocation(location) {
 function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
   return (item, colDesc) => {
     const value = item[colDesc.key];
+    const clickSymbol = triggerOnDoubleClick ? "ondblclick" : "onclick";
     const iconElement = html.createDomElement("inline-svg", {
       src: iconPaths[boolInt(value)],
-    });
-    const clickSymbol = triggerOnDoubleClick ? "ondblclick" : "onclick";
-    return html.div(
-      {
-        style: "width: 1.2em; height: 1.2em;",
-        ondblclick: (event) => {
-          event.stopImmediatePropagation();
-        },
-        [clickSymbol]: (event) => {
-          const newValue = !item[colDesc.key];
-          item[colDesc.key] = newValue;
-          iconElement.src = iconPaths[boolInt(newValue)];
-          event.stopImmediatePropagation();
-        },
+      style: "width: 1.2em; height: 1.2em;",
+      ondblclick: (event) => {
+        event.stopImmediatePropagation();
       },
-      [iconElement]
-    );
+      [clickSymbol]: (event) => {
+        const newValue = !item[colDesc.key];
+        item[colDesc.key] = newValue;
+        iconElement.src = iconPaths[boolInt(newValue)];
+        event.stopImmediatePropagation();
+      },
+    });
+    return iconElement;
   };
 }
 
