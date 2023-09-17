@@ -912,24 +912,17 @@ function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
 }
 
 function interpolationErrorCell(item, colDesc) {
-  const iconElement = html.createDomElement("inline-svg", {
-    src: "/tabler-icons/bug.svg",
-  });
   return item[colDesc.key]
-    ? html.div(
-        {
-          style: "width: 1.2em; height: 1.2em; color: #F36;",
-          onclick: (event) => {
-            event.stopImmediatePropagation();
-            dialog(
-              "The source has an interpolation incompatibility",
-              item[colDesc.key],
-              [{ title: "Okay" }]
-            );
-          },
+    ? html.createDomElement("inline-svg", {
+        src: "/tabler-icons/bug.svg",
+        style: "width: 1.2em; height: 1.2em; color: #F36;",
+        onclick: (event) => {
+          event.stopImmediatePropagation();
+          dialog("The source has an interpolation incompatibility", item[colDesc.key], [
+            { title: "Okay" },
+          ]);
         },
-        [iconElement]
-      )
+      })
     : "";
 }
 
