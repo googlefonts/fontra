@@ -184,6 +184,7 @@ export class VariationModel {
   }
 
   getSourceContributions(location) {
+    // Return the contribution factor for source (master) values
     const contributions = this.getScalars(location);
     for (const [i, weights] of reversedEnumerate(this.deltaWeights)) {
       for (const [j, weight] of weights.entries()) {
