@@ -8,6 +8,7 @@ import {
   enumerate,
   htmlToElement,
   objectsEqual,
+  range,
   rgbaToCSS,
   round,
   scheduleCalls,
@@ -192,6 +193,12 @@ export default class DesignspaceNavigationPanel extends Panel {
         cellFactory: interpolationErrorCell,
         width: "1.2em",
       },
+      {
+        title: " ",
+        key: "interpolationContribution",
+        cellFactory: interpolationContributionCell,
+        width: "1.2em",
+      },
       { key: "name", title: "Source name", width: "12em" },
       {
         title: "bg",
@@ -309,6 +316,9 @@ export default class DesignspaceNavigationPanel extends Panel {
     const sources = varGlyphController?.sources || [];
     const sourceInterpolationStatus =
       varGlyphController?.sourceInterpolationStatus || [];
+    const interpolationContributions =
+      varGlyphController?.getInterpolationContributions(this.sceneSettings.location) ||
+      [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
 
     const sourceItems = [];
@@ -321,6 +331,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         visible: backgroundLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
         interpolationStatus: sourceInterpolationStatus[index]?.error,
+        interpolationContribution: interpolationContributions[index],
       });
       sourceController.addKeyListener("active", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
@@ -918,6 +929,28 @@ function interpolationErrorCell(item, colDesc) {
             { title: "Okay" },
           ]);
         },
+      })
+    : "";
+}
+
+const interpolationContributionIconSources = [...range(1, 6)].map(
+  (index) => `/tabler-icons/antenna-bars-${index}.svg`
+);
+
+function interpolationContributionCell(item, colDesc) {
+  const rawValue = item[colDesc.key];
+  let index;
+  if (rawValue != null) {
+    index = Math.round(Math.sqrt(rawValue) * 4);
+    if (index === 0 && rawValue > 0) {
+      // Ensure non-zero has one "bar"
+      index = 1;
+    }
+  }
+  return rawValue != null
+    ? html.createDomElement("inline-svg", {
+        src: interpolationContributionIconSources[index],
+        style: "width: 1.2em; height: 1.2em;",
       })
     : "";
 }
