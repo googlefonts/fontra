@@ -235,7 +235,8 @@ export class VariableGlyphController {
     return this._sourceInterpolationStatus;
   }
 
-  getInterpolationScalars(location) {
+  getInterpolationContributions(location) {
+    location = this.mapLocationGlobalToLocal(location);
     const rawScalars = this.model.getScalars(
       normalizeLocation(location, this.combinedAxes)
     );
