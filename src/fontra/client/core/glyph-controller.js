@@ -308,6 +308,10 @@ export class VariableGlyphController {
     return instanceController;
   }
 
+  getInterpolationScalars(location) {
+    return this.model.getScalars(normalizeLocation(location, this.combinedAxes));
+  }
+
   mapSourceLocationToGlobal(sourceIndex) {
     const globalDefaultLocation = mapForward(
       makeDefaultLocation(this.globalAxes),
