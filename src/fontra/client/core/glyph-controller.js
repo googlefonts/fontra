@@ -218,13 +218,37 @@ export class VariableGlyphController {
         );
       }
       const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
-      const referenceLayerName = this.sources[defaultSourceIndex].layerName;
-      const errors = checkInterpolationCompatibility(referenceLayerName, layerGlyphs);
+      const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
 
-      this._sourceInterpolationStatus = this.sources.map((source) => {
-        const error = errors[source.layerName];
-        return error ? { error } : {};
-      });
+      let layerNames = Object.keys(layerGlyphs);
+      layerNames = [
+        defaultSourceLayerName,
+        ...layerNames.filter((name) => name !== defaultSourceLayerName),
+      ].slice(0, Math.ceil(layerNames.length / 2));
+
+      const errors = {};
+      let referenceLayerName;
+      for (referenceLayerName of layerNames) {
+        errors[referenceLayerName] = checkInterpolationCompatibility(
+          referenceLayerName,
+          layerGlyphs,
+          errors
+        );
+        if (countTrueValues(errors[referenceLayerName]) <= this.sources.length / 2) {
+          // good enough
+          break;
+        }
+      }
+      if (referenceLayerName) {
+        this._sourceInterpolationStatus = this.sources.map((source) => {
+          const error = errors[referenceLayerName][source.layerName];
+          return error ? { error } : {};
+        });
+      } else {
+        this._sourceInterpolationStatus = this.sources.map((source) => {
+          return {};
+        });
+      }
     }
     return this._sourceInterpolationStatus;
   }
@@ -960,18 +984,40 @@ function stripComponentLocations(glyph) {
   );
 }
 
-function checkInterpolationCompatibility(referenceLayerName, layerGlyphs) {
+function checkInterpolationCompatibility(
+  referenceLayerName,
+  layerGlyphs,
+  previousErrors
+) {
   const referenceGlyph = layerGlyphs[referenceLayerName];
   const errors = {};
   for (const [layerName, glyph] of Object.entries(layerGlyphs)) {
     if (layerName === referenceLayerName) {
       continue;
     }
-    try {
-      const _ = addItemwise(referenceGlyph, glyph);
-    } catch (error) {
-      errors[layerName] = error.message;
+    errors[layerName] = null;
+    if (layerName in previousErrors) {
+      const error = previousErrors[layerName][referenceLayerName];
+      if (error) {
+        errors[layerName] = error;
+      }
+    } else {
+      try {
+        const _ = addItemwise(referenceGlyph, glyph);
+      } catch (error) {
+        errors[layerName] = error.message;
+      }
     }
   }
   return errors;
+}
+
+function countTrueValues(obj) {
+  let count = 0;
+  for (const item of Object.values(obj)) {
+    if (item) {
+      count++;
+    }
+  }
+  return count;
 }
