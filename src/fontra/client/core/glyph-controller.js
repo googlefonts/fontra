@@ -218,18 +218,12 @@ export class VariableGlyphController {
         );
       }
       const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
-      const defaultSourceGlyph =
-        layerGlyphs[this.sources[defaultSourceIndex].layerName];
+      const referenceLayerName = this.sources[defaultSourceIndex].layerName;
+      const errors = checkInterpolationCompatibility(referenceLayerName, layerGlyphs);
+
       this._sourceInterpolationStatus = this.sources.map((source) => {
-        const sourceGlyph = layerGlyphs[source.layerName];
-        if (sourceGlyph !== defaultSourceGlyph) {
-          try {
-            const _ = addItemwise(defaultSourceGlyph, sourceGlyph);
-          } catch (error) {
-            return { error: error.message };
-          }
-        }
-        return {};
+        const error = errors[source.layerName];
+        return error ? { error } : {};
       });
     }
     return this._sourceInterpolationStatus;
@@ -964,4 +958,20 @@ function stripComponentLocations(glyph) {
     },
     true // noCopy
   );
+}
+
+function checkInterpolationCompatibility(referenceLayerName, layerGlyphs) {
+  const referenceGlyph = layerGlyphs[referenceLayerName];
+  const errors = {};
+  for (const [layerName, glyph] of Object.entries(layerGlyphs)) {
+    if (layerName === referenceLayerName) {
+      continue;
+    }
+    try {
+      const _ = addItemwise(referenceGlyph, glyph);
+    } catch (error) {
+      errors[layerName] = error.message;
+    }
+  }
+  return errors;
 }
