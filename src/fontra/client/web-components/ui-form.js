@@ -174,14 +174,13 @@ export class Form extends SimpleElement {
         if (valueStream) {
           valueStream.put(value);
           this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+          if (event.dragEnd) {
+            valueStream.done();
+            valueStream = undefined;
+            this._dispatchEvent("endChange", { key: fieldItem.key });
+          }
         } else {
           this._fieldChanging(fieldItem.key, value, undefined);
-        }
-
-        if (event.dragEnd) {
-          valueStream.done();
-          valueStream = undefined;
-          this._dispatchEvent("endChange", { key: fieldItem.key });
         }
       };
     }
