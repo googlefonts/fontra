@@ -218,19 +218,37 @@ export class VariableGlyphController {
         );
       }
       const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
-      const defaultSourceGlyph =
-        layerGlyphs[this.sources[defaultSourceIndex].layerName];
-      this._sourceInterpolationStatus = this.sources.map((source) => {
-        const sourceGlyph = layerGlyphs[source.layerName];
-        if (sourceGlyph !== defaultSourceGlyph) {
-          try {
-            const _ = addItemwise(defaultSourceGlyph, sourceGlyph);
-          } catch (error) {
-            return { error: error.message };
-          }
+      const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
+
+      let layerNames = Object.keys(layerGlyphs);
+      layerNames = [
+        defaultSourceLayerName,
+        ...layerNames.filter((name) => name !== defaultSourceLayerName),
+      ].slice(0, Math.ceil(layerNames.length / 2));
+
+      const errors = {};
+      let referenceLayerName;
+      for (referenceLayerName of layerNames) {
+        errors[referenceLayerName] = checkInterpolationCompatibility(
+          referenceLayerName,
+          layerGlyphs,
+          errors
+        );
+        if (Object.keys(errors[referenceLayerName]).length <= this.sources.length / 2) {
+          // good enough
+          break;
         }
-        return {};
-      });
+      }
+      if (referenceLayerName) {
+        this._sourceInterpolationStatus = this.sources.map((source) => {
+          const error = errors[referenceLayerName][source.layerName];
+          return error ? { error } : {};
+        });
+      } else {
+        this._sourceInterpolationStatus = this.sources.map((source) => {
+          return {};
+        });
+      }
     }
     return this._sourceInterpolationStatus;
   }
@@ -964,4 +982,31 @@ function stripComponentLocations(glyph) {
     },
     true // noCopy
   );
+}
+
+function checkInterpolationCompatibility(
+  referenceLayerName,
+  layerGlyphs,
+  previousErrors
+) {
+  const referenceGlyph = layerGlyphs[referenceLayerName];
+  const errors = {};
+  for (const [layerName, glyph] of Object.entries(layerGlyphs)) {
+    if (layerName === referenceLayerName) {
+      continue;
+    }
+    if (layerName in previousErrors) {
+      const error = previousErrors[layerName][referenceLayerName];
+      if (error) {
+        errors[layerName] = error;
+      }
+    } else {
+      try {
+        const _ = addItemwise(referenceGlyph, glyph);
+      } catch (error) {
+        errors[layerName] = error.message;
+      }
+    }
+  }
+  return errors;
 }
