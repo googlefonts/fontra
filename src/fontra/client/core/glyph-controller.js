@@ -227,15 +227,17 @@ export class VariableGlyphController {
       ].slice(0, Math.ceil(layerNames.length / 2));
 
       const errors = {};
-      let referenceLayerName;
-      for (referenceLayerName of layerNames) {
-        errors[referenceLayerName] = checkInterpolationCompatibility(
-          referenceLayerName,
+      let referenceLayerName = defaultSourceLayerName;
+      for (const layerName of layerNames) {
+        errors[layerName] = checkInterpolationCompatibility(
+          layerName,
           layerGlyphs,
           errors
         );
-        if (Object.keys(errors[referenceLayerName]).length <= this.sources.length / 2) {
-          // good enough
+        if (Object.keys(errors[layerName]).length <= this.sources.length / 2) {
+          // The number of incompatible sources is half of all sources or less:
+          // we've found the optimal reference layer.
+          referenceLayerName = layerName;
           break;
         }
       }
