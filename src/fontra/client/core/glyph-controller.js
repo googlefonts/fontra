@@ -241,16 +241,10 @@ export class VariableGlyphController {
           break;
         }
       }
-      if (referenceLayerName) {
-        this._sourceInterpolationStatus = this.sources.map((source) => {
-          const error = errors[referenceLayerName][source.layerName];
-          return error ? { error } : {};
-        });
-      } else {
-        this._sourceInterpolationStatus = this.sources.map((source) => {
-          return {};
-        });
-      }
+      this._sourceInterpolationStatus = this.sources.map((source) => {
+        const error = errors[referenceLayerName][source.layerName];
+        return error ? { error } : {};
+      });
     }
     return this._sourceInterpolationStatus;
   }
