@@ -234,7 +234,7 @@ export class VariableGlyphController {
           layerGlyphs,
           errors
         );
-        if (countTrueValues(errors[referenceLayerName]) <= this.sources.length / 2) {
+        if (Object.keys(errors[referenceLayerName]).length <= this.sources.length / 2) {
           // good enough
           break;
         }
@@ -995,7 +995,6 @@ function checkInterpolationCompatibility(
     if (layerName === referenceLayerName) {
       continue;
     }
-    errors[layerName] = null;
     if (layerName in previousErrors) {
       const error = previousErrors[layerName][referenceLayerName];
       if (error) {
@@ -1010,14 +1009,4 @@ function checkInterpolationCompatibility(
     }
   }
   return errors;
-}
-
-function countTrueValues(obj) {
-  let count = 0;
-  for (const item of Object.values(obj)) {
-    if (item) {
-      count++;
-    }
-  }
-  return count;
 }
