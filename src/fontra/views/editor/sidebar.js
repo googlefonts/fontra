@@ -106,11 +106,20 @@ export class Sidebar {
     const sidebarWidth = localStorage.getItem(
       `fontra-sidebar-width-${this.identifier}`
     );
-    let width = clamp(parseInt(sidebarWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
-    if (isNaN(width)) {
-      width = MIN_SIDEBAR_WIDTH;
+
+    if (!sidebarWidth) {
+      return;
     }
-    return width;
+
+    return clamp(parseInt(sidebarWidth), MIN_SIDEBAR_WIDTH, MAX_SIDEBAR_WIDTH);
+  }
+
+  getDOMWidth() {
+    return parseInt(
+      getComputedStyle(document.documentElement)
+        .getPropertyValue(`--sidebar-content-width-${this.identifier}`)
+        .replace("px", "")
+    );
   }
 
   initResizeGutter() {
@@ -157,7 +166,7 @@ export class Sidebar {
       document.addEventListener("pointerup", onPointerUp, { once: true });
     });
     const sidebarWidth = this.getStoredWidth();
-    if (sidebarWidth) {
+    if (sidebarWidth !== undefined) {
       this.applyWidth(sidebarWidth);
     }
   }
