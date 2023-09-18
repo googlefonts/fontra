@@ -379,7 +379,7 @@ export class EditorController {
 
     const resizeObserver = new ResizeObserver(([element]) => {
       const totalWidth = this.sidebars.reduce(
-        (total, sidebar) => total + sidebar.getStoredWidth(),
+        (total, sidebar) => total + sidebar.getDOMWidth(),
         0
       );
       if (element.contentRect.width < totalWidth + MIN_CANVAS_SPACE) {
