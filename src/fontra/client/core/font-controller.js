@@ -269,14 +269,13 @@ export class FontController {
     return varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
   }
 
-  async getGlyphInstance(glyphName, location, instanceCacheKey) {
+  async getGlyphInstance(glyphName, location) {
     if (!this.hasGlyph(glyphName)) {
       return Promise.resolve(null);
     }
     // instanceCacheKey must be unique for glyphName + location
-    if (instanceCacheKey === undefined) {
-      instanceCacheKey = glyphName + locationToString(location);
-    }
+    const instanceCacheKey = glyphName + locationToString(location);
+
     let instancePromise = this._glyphInstancePromiseCache.get(instanceCacheKey);
     if (instancePromise === undefined) {
       instancePromise = this._getGlyphInstance(glyphName, location);
