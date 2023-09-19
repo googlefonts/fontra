@@ -696,8 +696,7 @@ export class SceneController {
       }
 
       editSubject = glyphController.instance;
-      const layerName = varGlyph.sources[glyphController.sourceIndex].layerName;
-      baseChangePath.push("layers", layerName, "glyph");
+      baseChangePath.push("layers", glyphController.layerName, "glyph");
     } else {
       editSubject = varGlyph.glyph;
     }
