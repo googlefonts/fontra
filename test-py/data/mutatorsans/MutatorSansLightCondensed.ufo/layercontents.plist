@@ -46,5 +46,13 @@
       <string>width=1,weight=1</string>
       <string>glyphs.width=1,weight=1</string>
     </array>
+    <array>
+      <string>rotate_end</string>
+      <string>glyphs.rotate_end</string>
+    </array>
+    <array>
+      <string>rotate_off</string>
+      <string>glyphs.rotate_off</string>
+    </array>
   </array>
 </plist>
