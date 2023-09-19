@@ -1,17 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<glyph name="varcotest2" format="2">
-  <advance width="500"/>
-  <unicode hex="E001"/>
+<glyph name="nlitest" format="2">
+  <advance width="750"/>
   <outline>
     <contour>
-      <point x="70" y="278" type="line"/>
-      <point x="309" y="278" type="line"/>
-      <point x="309" y="380" type="line"/>
-      <point x="379" y="380" type="line"/>
-      <point x="379" y="664" type="line"/>
-      <point x="204" y="664" type="line"/>
-      <point x="204" y="588" type="line"/>
-      <point x="70" y="588" type="line"/>
+      <point x="0" y="50" type="line"/>
+      <point x="0" y="0" type="line"/>
+      <point x="50" y="0" type="line"/>
+      <point x="0" y="750" type="line"/>
     </contour>
   </outline>
   <lib>
@@ -28,7 +23,7 @@
             <key>minimum</key>
             <integer>0</integer>
             <key>name</key>
-            <string>flip</string>
+            <string>rotate*1</string>
           </dict>
           <dict>
             <key>default</key>
@@ -38,56 +33,61 @@
             <key>minimum</key>
             <integer>0</integer>
             <key>name</key>
-            <string>flop</string>
+            <string>rotate*2</string>
           </dict>
         </array>
         <key>sources</key>
         <array>
           <dict>
             <key>layername</key>
-            <string>varco_flip</string>
+            <string>rotate_off</string>
             <key>location</key>
             <dict>
-              <key>flip</key>
+              <key>rotate*1</key>
               <integer>100</integer>
-              <key>flop</key>
-              <integer>0</integer>
             </dict>
             <key>name</key>
-            <string>varco_flip</string>
+            <string>rotate_1</string>
           </dict>
           <dict>
             <key>layername</key>
-            <string>varco_flop</string>
+            <string>rotate_off</string>
             <key>location</key>
             <dict>
-              <key>flip</key>
-              <integer>0</integer>
-              <key>flop</key>
+              <key>rotate*2</key>
               <integer>100</integer>
             </dict>
             <key>name</key>
-            <string>varco_flop</string>
+            <string>rotate_2</string>
           </dict>
           <dict>
             <key>layername</key>
-            <string>weight=850,flip=100</string>
+            <string>rotate_end</string>
             <key>location</key>
             <dict>
-              <key>flip</key>
+              <key>rotate*1</key>
               <integer>100</integer>
-              <key>weight</key>
-              <integer>850</integer>
+              <key>rotate*2</key>
+              <integer>100</integer>
             </dict>
             <key>name</key>
-            <string>weight=850,flip=100</string>
+            <string>rotate_end</string>
           </dict>
         </array>
       </dict>
       <key>xyz.fontra.layer-names</key>
       <dict>
-        <key>MutatorSansBoldCondensed/weight=850,flip=100</key>
-        <string>weight=850,flip=100</string>
+        <key>MutatorSansLightCondensed/foreground</key>
+        <string>&lt;default&gt;</string>
+        <key>MutatorSansLightCondensed/rotate_end</key>
+        <string>rotate_end</string>
+        <key>MutatorSansLightCondensed/rotate_off</key>
+        <string>rotate_off</string>
+      </dict>
+      <key>xyz.fontra.source-names</key>
+      <dict>
+        <key>LightCondensed</key>
+        <string>&lt;default&gt;</string>
       </dict>
     </dict>
   </lib>

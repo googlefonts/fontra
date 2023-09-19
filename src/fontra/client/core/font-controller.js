@@ -269,17 +269,16 @@ export class FontController {
     return varGlyph.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
   }
 
-  async getGlyphInstance(glyphName, location, instanceCacheKey) {
+  async getGlyphInstance(glyphName, location, layerName) {
     if (!this.hasGlyph(glyphName)) {
       return Promise.resolve(null);
     }
-    // instanceCacheKey must be unique for glyphName + location
-    if (instanceCacheKey === undefined) {
-      instanceCacheKey = glyphName + locationToString(location);
-    }
+    // instanceCacheKey must be unique for glyphName + location + layerName
+    const instanceCacheKey = glyphName + locationToString(location) + (layerName || "");
+
     let instancePromise = this._glyphInstancePromiseCache.get(instanceCacheKey);
     if (instancePromise === undefined) {
-      instancePromise = this._getGlyphInstance(glyphName, location, instanceCacheKey);
+      instancePromise = this._getGlyphInstance(glyphName, location, layerName);
       const deletedItem = this._glyphInstancePromiseCache.put(
         instanceCacheKey,
         instancePromise
@@ -296,11 +295,12 @@ export class FontController {
     return await instancePromise;
   }
 
-  async _getGlyphInstance(glyphName, location) {
+  async _getGlyphInstance(glyphName, location, layerName) {
     const varGlyph = await this.getGlyph(glyphName);
     const getGlyphFunc = this.getGlyph.bind(this);
     const instanceController = await varGlyph.instantiateController(
       location,
+      layerName,
       getGlyphFunc
     );
     return instanceController;

@@ -9,7 +9,7 @@ import {
   unionRect,
 } from "../core/rectangle.js";
 import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
-import { enumerate, parseSelection } from "../core/utils.js";
+import { consolidateCalls, enumerate, parseSelection } from "../core/utils.js";
 import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 
 export class SceneModel {
@@ -25,9 +25,14 @@ export class SceneModel {
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
 
-    this.sceneSettingsController.addKeyListener(["glyphLines", "align"], (event) => {
-      this.updateScene();
-    });
+    this.updateScene = consolidateCalls(() => this._updateScene());
+
+    this.sceneSettingsController.addKeyListener(
+      ["glyphLines", "align", "selectedGlyph"],
+      (event) => {
+        this.updateScene();
+      }
+    );
 
     this.sceneSettingsController.addKeyListener("location", (event) => {
       this._syncLocalLocations();
@@ -105,7 +110,10 @@ export class SceneModel {
   }
 
   async getSelectedStaticGlyphController() {
-    return await this.getGlyphInstance(this.sceneSettings.selectedGlyphName);
+    return await this.getGlyphInstance(
+      this.sceneSettings.selectedGlyphName,
+      this.sceneSettings.editLayerName
+    );
   }
 
   getGlobalLocation() {
@@ -244,7 +252,7 @@ export class SceneModel {
     }
   }
 
-  async updateScene() {
+  async _updateScene() {
     this.updateBackgroundGlyphs();
     // const startTime = performance.now();
     await this.buildScene();
@@ -288,6 +296,9 @@ export class SceneModel {
     const fontController = this.fontController;
     const glyphLines = this.glyphLines;
     const align = this.sceneSettings.align;
+    const { lineIndex: selectedLineIndex, glyphIndex: selectedGlyphIndex } =
+      this.selectedGlyph || {};
+    const editLayerName = this.sceneSettings.editLayerName;
 
     let y = 0;
     const lineDistance = 1.1 * fontController.unitsPerEm; // TODO make factor user-configurable
@@ -301,11 +312,21 @@ export class SceneModel {
     );
     await fontController.loadGlyphs([...neededGlyphs]);
 
-    for (const glyphLine of glyphLines) {
+    for (const [lineIndex, glyphLine] of enumerate(glyphLines)) {
       const positionedLine = { glyphs: [] };
       let x = 0;
-      for (const glyphInfo of glyphLine) {
-        let glyphInstance = await this.getGlyphInstance(glyphInfo.glyphName);
+      for (const [glyphIndex, glyphInfo] of enumerate(glyphLine)) {
+        const thisGlyphEditLayerName =
+          editLayerName &&
+          lineIndex == selectedLineIndex &&
+          glyphIndex == selectedGlyphIndex
+            ? editLayerName
+            : undefined;
+
+        let glyphInstance = await this.getGlyphInstance(
+          glyphInfo.glyphName,
+          thisGlyphEditLayerName
+        );
         const isUndefined = !glyphInstance;
         if (isUndefined) {
           glyphInstance = fontController.getDummyGlyphInstanceController(
@@ -374,12 +395,12 @@ export class SceneModel {
     this.sceneSettings.positionedLines = positionedLines;
   }
 
-  async getGlyphInstance(glyphName) {
+  async getGlyphInstance(glyphName, layerName) {
     const location = {
       ...this._localLocations[glyphName],
       ...this.getGlobalLocation(),
     };
-    return await this.fontController.getGlyphInstance(glyphName, location);
+    return await this.fontController.getGlyphInstance(glyphName, location, layerName);
   }
 
   selectionAtPoint(point, size, currentSelection, preferTCenter) {

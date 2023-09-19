@@ -314,14 +314,19 @@ export class VariableGlyphController {
     }
   }
 
-  async instantiateController(location, getGlyphFunc) {
+  async instantiateController(location, layerName, getGlyphFunc) {
     const sourceIndex = this.getSourceIndex(location);
-    location = this.mapLocationGlobalToLocal(location);
+    if (!layerName || !(layerName in this.layers)) {
+      if (sourceIndex !== undefined) {
+        layerName = this.sources[sourceIndex].layerName;
+      }
+    }
 
     let instance;
-    if (sourceIndex !== undefined) {
-      instance = this.layers[this.sources[sourceIndex].layerName].glyph;
+    if (layerName !== undefined) {
+      instance = this.layers[layerName].glyph;
     } else {
+      location = this.mapLocationGlobalToLocal(location);
       instance = await this.instantiate(
         normalizeLocation(location, this.combinedAxes),
         getGlyphFunc
@@ -334,7 +339,8 @@ export class VariableGlyphController {
     const instanceController = new StaticGlyphController(
       this.name,
       instance,
-      sourceIndex
+      sourceIndex,
+      layerName
     );
 
     await instanceController.setupComponents(getGlyphFunc, location);
@@ -391,11 +397,12 @@ export class VariableGlyphController {
 }
 
 export class StaticGlyphController {
-  constructor(name, instance, sourceIndex) {
+  constructor(name, instance, sourceIndex, layerName) {
     this.name = name;
     this.instance = instance;
     this.sourceIndex = sourceIndex;
-    this.canEdit = sourceIndex !== undefined;
+    this.layerName = layerName;
+    this.canEdit = layerName !== undefined;
     this.components = [];
   }
 

@@ -139,7 +139,8 @@ export class SceneController {
         const location = varGlyphController.mapSourceLocationToGlobal(sourceIndex);
 
         this.sceneSettingsController.setItem("location", location, { senderID: this });
-      }
+      },
+      true
     );
 
     // Set up convenience property "selectedGlyphName"

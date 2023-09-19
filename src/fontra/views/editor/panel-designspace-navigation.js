@@ -163,15 +163,20 @@ export default class DesignspaceNavigationPanel extends Panel {
       }, 100)
     );
 
-    this.sceneSettingsController.addKeyListener("location", (event) => {
-      this.updateResetAllAxesButtonState();
-      this.updateInterpolationContributions();
-      if (event.senderInfo?.senderID === this) {
-        // Sent by us, ignore
-        return;
-      }
-      this.designspaceLocation.values = event.newValue;
-    });
+    this.sceneSettingsController.addKeyListener(
+      "location",
+      (event) => {
+        this.sceneSettings.editLayerName = null;
+        this.updateResetAllAxesButtonState();
+        this.updateInterpolationContributions();
+        if (event.senderInfo?.senderID === this) {
+          // Sent by us, ignore
+          return;
+        }
+        this.designspaceLocation.values = event.newValue;
+      },
+      true
+    );
 
     this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
       this.sourcesList.setSelectedItemIndex(event.newValue);
@@ -255,6 +260,14 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
       const sourceIndex = this.sourcesList.getSelectedItemIndex();
       this.sceneSettings.selectedSourceIndex = sourceIndex;
+      if (sourceIndex != undefined) {
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        if (varGlyphController) {
+          this.sceneSettings.editLayerName =
+            varGlyphController.sources[sourceIndex]?.layerName;
+        }
+      }
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
