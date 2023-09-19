@@ -110,7 +110,10 @@ export class SceneModel {
   }
 
   async getSelectedStaticGlyphController() {
-    return await this.getGlyphInstance(this.sceneSettings.selectedGlyphName);
+    return await this.getGlyphInstance(
+      this.sceneSettings.selectedGlyphName,
+      this.sceneSettings.editLayerName
+    );
   }
 
   getGlobalLocation() {
@@ -397,7 +400,7 @@ export class SceneModel {
       ...this._localLocations[glyphName],
       ...this.getGlobalLocation(),
     };
-    return await this.fontController.getGlyphInstance(glyphName, location);
+    return await this.fontController.getGlyphInstance(glyphName, location, layerName);
   }
 
   selectionAtPoint(point, size, currentSelection, preferTCenter) {
