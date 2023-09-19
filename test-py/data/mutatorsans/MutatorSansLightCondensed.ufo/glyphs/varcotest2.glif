@@ -53,6 +53,8 @@
               <key>flop</key>
               <integer>0</integer>
             </dict>
+            <key>name</key>
+            <string>varco_flip</string>
           </dict>
           <dict>
             <key>layername</key>
@@ -64,6 +66,8 @@
               <key>flop</key>
               <integer>100</integer>
             </dict>
+            <key>name</key>
+            <string>varco_flop</string>
           </dict>
           <dict>
             <key>layername</key>
@@ -75,6 +79,8 @@
               <key>weight</key>
               <integer>850</integer>
             </dict>
+            <key>name</key>
+            <string>weight=850,flip=100</string>
           </dict>
         </array>
       </dict>

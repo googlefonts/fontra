@@ -46,6 +46,8 @@
               <key>rotate*1</key>
               <integer>100</integer>
             </dict>
+            <key>name</key>
+            <string>rotate_1</string>
           </dict>
           <dict>
             <key>layername</key>
@@ -55,6 +57,8 @@
               <key>rotate*2</key>
               <integer>100</integer>
             </dict>
+            <key>name</key>
+            <string>rotate_2</string>
           </dict>
           <dict>
             <key>layername</key>
@@ -66,6 +70,8 @@
               <key>rotate*2</key>
               <integer>100</integer>
             </dict>
+            <key>name</key>
+            <string>rotate_end</string>
           </dict>
         </array>
       </dict>
