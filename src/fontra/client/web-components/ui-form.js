@@ -156,8 +156,9 @@ export class Form extends SimpleElement {
 
   _addEditNumberSlider(valueElement, fieldItem) {
     const rangeElement = new RangeSlider();
-    rangeElement.minValue = fieldItem.minValue;
     rangeElement.value = fieldItem.value;
+    rangeElement.minValue = fieldItem.minValue;
+    rangeElement.defaultValue = fieldItem.defaultValue;
     rangeElement.maxValue = fieldItem.maxValue;
 
     {

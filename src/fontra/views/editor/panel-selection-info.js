@@ -217,6 +217,7 @@ export default class SelectionInfoPanel extends Panel {
             label: axis.name,
             value: value,
             minValue: axis.minValue,
+            defaultValue: axis.defaultValue,
             maxValue: axis.maxValue,
             disabled: !canEdit,
           });
