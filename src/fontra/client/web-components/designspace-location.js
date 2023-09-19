@@ -65,7 +65,7 @@ export class DesignspaceLocation extends UnlitElement {
         // Event was triggered by us -- ignore
         return;
       }
-      const slider = this.shadowRoot.querySelector(`#slider-${event.key}`);
+      const slider = this._sliders?.[event.key];
       if (slider) {
         slider.value = event.newValue;
       }
@@ -85,7 +85,7 @@ export class DesignspaceLocation extends UnlitElement {
     this._values = { ...values };
 
     for (const [axisName, value] of Object.entries(values)) {
-      const slider = this.shadowRoot.querySelector(`#slider-${axisName}`);
+      const slider = this._sliders?.[axisName];
       if (slider) {
         slider.value = value;
       }
@@ -93,7 +93,7 @@ export class DesignspaceLocation extends UnlitElement {
 
     for (const axis of this.axes || []) {
       if (!(axis.name in values)) {
-        const slider = this.shadowRoot.querySelector(`#slider-${axis.name}`);
+        const slider = this._sliders?.[axis.name];
         if (slider) {
           slider.value = axis.defaultValue;
         }
@@ -105,6 +105,7 @@ export class DesignspaceLocation extends UnlitElement {
     if (!this.axes) {
       return;
     }
+    this._sliders = [];
     const elements = [];
     for (const axis of this.axes) {
       if (axis.isDivider) {
@@ -129,17 +130,16 @@ export class DesignspaceLocation extends UnlitElement {
           [axis.name]
         )
       );
-      elements.push(
-        html.createDomElement("range-slider", {
-          id: `slider-${axis.name}`,
-          minValue: axis.minValue,
-          maxValue: axis.maxValue,
-          defaultValue: axis.defaultValue,
-          value: modelValue !== undefined ? modelValue : axis.defaultValue,
-          onChangeCallback: (event) =>
-            this._dispatchLocationChangedEvent(axis.name, event.value),
-        })
-      );
+      const slider = html.createDomElement("range-slider", {
+        minValue: axis.minValue,
+        maxValue: axis.maxValue,
+        defaultValue: axis.defaultValue,
+        value: modelValue !== undefined ? modelValue : axis.defaultValue,
+        onChangeCallback: (event) =>
+          this._dispatchLocationChangedEvent(axis.name, event.value),
+      });
+      this._sliders[axis.name] = slider;
+      elements.push(slider);
       elements.push(infoBox);
     }
     return elements;
