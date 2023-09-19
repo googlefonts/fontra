@@ -435,7 +435,7 @@ class DesignspaceBackend:
             normalizedLayerName = f"{ufoLayer.fileName}/{ufoLayerName}"
             defaultUFOLayerName = ufoLayer.reader.getDefaultLayerName()
 
-            localSourceDict = {}
+            localSourceDict = {"name": source.name}
             if ufoLayerName != defaultUFOLayerName:
                 localSourceDict["layername"] = ufoLayerName
             localSourceDict["location"] = source.location
