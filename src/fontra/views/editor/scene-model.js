@@ -293,11 +293,9 @@ export class SceneModel {
     const fontController = this.fontController;
     const glyphLines = this.glyphLines;
     const align = this.sceneSettings.align;
-    const {
-      lineIndex: selectedLineIndex,
-      glyphIndex: selectedGlyphIndex,
-      isEditing,
-    } = this.selectedGlyph || {};
+    const { lineIndex: selectedLineIndex, glyphIndex: selectedGlyphIndex } =
+      this.selectedGlyph || {};
+    const editLayerName = this.sceneSettings.editLayerName;
 
     let y = 0;
     const lineDistance = 1.1 * fontController.unitsPerEm; // TODO make factor user-configurable
@@ -315,15 +313,17 @@ export class SceneModel {
       const positionedLine = { glyphs: [] };
       let x = 0;
       for (const [glyphIndex, glyphInfo] of enumerate(glyphLine)) {
-        // if (
-        //   isEditing &&
-        //   lineIndex == selectedLineIndex &&
-        //   glyphIndex == selectedGlyphIndex
-        // ) {
-        //   //
-        //   console.log("--", glyphInfo.glyphName);
-        // }
-        let glyphInstance = await this.getGlyphInstance(glyphInfo.glyphName);
+        const thisGlyphEditLayerName =
+          editLayerName &&
+          lineIndex == selectedLineIndex &&
+          glyphIndex == selectedGlyphIndex
+            ? editLayerName
+            : undefined;
+
+        let glyphInstance = await this.getGlyphInstance(
+          glyphInfo.glyphName,
+          thisGlyphEditLayerName
+        );
         const isUndefined = !glyphInstance;
         if (isUndefined) {
           glyphInstance = fontController.getDummyGlyphInstanceController(
@@ -392,7 +392,7 @@ export class SceneModel {
     this.sceneSettings.positionedLines = positionedLines;
   }
 
-  async getGlyphInstance(glyphName) {
+  async getGlyphInstance(glyphName, layerName) {
     const location = {
       ...this._localLocations[glyphName],
       ...this.getGlobalLocation(),
