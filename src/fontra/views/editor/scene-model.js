@@ -25,8 +25,6 @@ export class SceneModel {
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
 
-    this.updateScene = consolidateCalls(() => this._updateScene());
-
     this.sceneSettingsController.addKeyListener(
       ["glyphLines", "align", "selectedGlyph"],
       (event) => {
@@ -252,7 +250,7 @@ export class SceneModel {
     }
   }
 
-  async _updateScene() {
+  async updateScene() {
     this.updateBackgroundGlyphs();
     // const startTime = performance.now();
     await this.buildScene();
