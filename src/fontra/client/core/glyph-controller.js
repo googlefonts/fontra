@@ -316,6 +316,8 @@ export class VariableGlyphController {
 
   async instantiateController(location, layerName, getGlyphFunc) {
     const sourceIndex = this.getSourceIndex(location);
+    location = this.mapLocationGlobalToLocal(location);
+
     if (!layerName || !(layerName in this.layers)) {
       if (sourceIndex !== undefined) {
         layerName = this.sources[sourceIndex].layerName;
@@ -326,7 +328,6 @@ export class VariableGlyphController {
     if (layerName !== undefined) {
       instance = this.layers[layerName].glyph;
     } else {
-      location = this.mapLocationGlobalToLocal(location);
       instance = await this.instantiate(
         normalizeLocation(location, this.combinedAxes),
         getGlyphFunc
