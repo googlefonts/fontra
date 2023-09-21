@@ -359,7 +359,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         active: !source.inactive,
         visible: backgroundLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
-        interpolationStatus: sourceInterpolationStatus[index]?.error,
+        interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
       });
       sourceController.addKeyListener("active", async (event) => {
@@ -948,13 +948,16 @@ function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
 }
 
 function interpolationErrorCell(item, colDesc) {
-  return item[colDesc.key]
+  const value = item[colDesc.key];
+  return value?.error
     ? html.createDomElement("inline-svg", {
-        src: "/tabler-icons/bug.svg",
+        src: value.isModelError
+          ? "/tabler-icons/exclamation-circle.svg"
+          : "/tabler-icons/bug.svg",
         style: "width: 1.2em; height: 1.2em; color: #F36;",
         onclick: (event) => {
           event.stopImmediatePropagation();
-          dialog("The source has an interpolation incompatibility", item[colDesc.key], [
+          dialog("The source has an interpolation incompatibility", value.error, [
             { title: "Okay" },
           ]);
         },

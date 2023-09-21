@@ -189,11 +189,29 @@ export class VariableGlyphController {
       try {
         this._model = new VariationModel(mappedLocations);
       } catch (error) {
-        console.log("error setting up the variation model", error.toString());
+        console.log("error setting up the variation model:", error.toString());
         this._model = new VariationModel([{}]);
+        this._modelErrors = this._getLocationErrors();
       }
     }
     return this._model;
+  }
+
+  _getLocationErrors() {
+    const locationStrings = this.sources.map((source) =>
+      source.inactive
+        ? null
+        : locationToString(
+            sparsifyLocation(normalizeLocation(source.location, this.combinedAxes))
+          )
+    );
+    const bag = {};
+    for (const s of locationStrings) {
+      if (s) {
+        bag[s] = (bag[s] || 0) + 1;
+      }
+    }
+    return locationStrings.map((s) => (bag[s] > 1 ? "location is not unique" : null));
   }
 
   async getDeltas(getGlyphFunc) {
@@ -245,10 +263,16 @@ export class VariableGlyphController {
           break;
         }
       }
-      this._sourceInterpolationStatus = this.sources.map((source) => {
-        const error = errors[referenceLayerName][source.layerName];
-        return error ? { error } : {};
-      });
+      const status = [];
+      for (const [i, source] of enumerate(this.sources)) {
+        if (this._modelErrors?.[i]) {
+          status.push({ error: this._modelErrors[i], isModelError: true });
+        } else {
+          const error = errors[referenceLayerName][source.layerName];
+          status.push(error ? { error } : {});
+        }
+      }
+      this._sourceInterpolationStatus = status;
     }
     return this._sourceInterpolationStatus;
   }
