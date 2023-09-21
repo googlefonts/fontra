@@ -43,8 +43,7 @@ jobs:
       #     npm install
 
       - name: Run pre-commit
-        run: |
-          pre-commit run --all-files --verbose --show-diff-on-failure
+        uses: pre-commit/action@v3.0.0
 
       - name: Run Python tests with pytest
         run: |
