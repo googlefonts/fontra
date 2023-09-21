@@ -403,3 +403,18 @@ export function memoize(func) {
     return result;
   };
 }
+
+export function escapeHTMLCharacters(dangerousString) {
+  const encodedSymbolMap = {
+    // '"': '&quot;',
+    // '\'': '&#39;',
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+  };
+  const dangerousCharacters = dangerousString.split("");
+  const safeCharacters = dangerousCharacters.map(
+    (character) => encodedSymbolMap[character] || character
+  );
+  return safeCharacters.join("");
+}
