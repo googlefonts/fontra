@@ -4,8 +4,8 @@ const expect = chai.expect;
 import VarArray from "../src/fontra/client/core/var-array.js";
 import {
   addItemwise,
-  subItemwise,
   mulScalar,
+  subItemwise,
 } from "../src/fontra/client/core/var-funcs.js";
 
 describe("var-funcs tests", () => {

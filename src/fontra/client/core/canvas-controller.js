@@ -1,4 +1,4 @@
-import { rectCenter, normalizeRect } from "./rectangle.js";
+import { normalizeRect, rectCenter } from "./rectangle.js";
 import { consolidateCalls, withSavedState } from "./utils.js";
 
 const MIN_MAGNIFICATION = 0.005;

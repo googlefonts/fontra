@@ -1,6 +1,6 @@
-import { UnlitElement } from "/core/unlit.js";
-import * as html from "/core/unlit.js";
 import { InlineSVG } from "./inline-svg.js";
+import * as html from "/core/unlit.js";
+import { UnlitElement } from "/core/unlit.js";
 
 export class IconButton extends UnlitElement {
   static styles = `

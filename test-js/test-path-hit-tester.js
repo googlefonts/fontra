@@ -1,9 +1,9 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import { parametrize } from "./test-support.js";
 import { PathHitTester } from "../src/fontra/client/core/path-hit-tester.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
+import { parametrize } from "./test-support.js";
 
 describe("PathHitTester Tests", () => {
   const hitTest_testData = [

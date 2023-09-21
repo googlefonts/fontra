@@ -1,9 +1,9 @@
-import VarArray from "./var-array.js";
+import { Bezier } from "../third-party/bezier-js.js";
+import { convexHull } from "./convex-hull.js";
 import { VariationError } from "./errors.js";
 import { centeredRect, pointInRect, rectFromPoints, updateRect } from "./rectangle.js";
-import { convexHull } from "./convex-hull.js";
 import { arrayExtend, enumerate, range } from "./utils.js";
-import { Bezier } from "../third-party/bezier-js.js";
+import VarArray from "./var-array.js";
 
 export const POINT_TYPE_OFF_CURVE_QUAD = "quad";
 export const POINT_TYPE_OFF_CURVE_CUBIC = "cubic";

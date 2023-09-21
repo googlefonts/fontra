@@ -1,12 +1,12 @@
-import { ChangeCollector } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
+import { ChangeCollector } from "../core/changes.js";
 import { insertHandles, insertPoint } from "../core/path-functions.js";
 import { isEqualSet } from "../core/set-ops.js";
+import { parseSelection } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
-import { parseSelection } from "../core/utils.js";
-import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
+import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 
 export class PenTool extends BaseTool {
   iconPath = "/images/pointeradd.svg";

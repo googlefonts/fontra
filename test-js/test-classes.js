@@ -1,9 +1,10 @@
 import chai from "chai";
 const expect = chai.expect;
 
-import { enumerate, range } from "../src/fontra/client/core/utils.js";
-import classesSchema from "../src/fontra/client/core/classes.json" assert { type: "json" };
 import { getClassSchema } from "../src/fontra/client/core/classes.js";
+// prettier-ignore
+import classesSchema from "../src/fontra/client/core/classes.json" assert { type: "json" };
+import { enumerate, range } from "../src/fontra/client/core/utils.js";
 import {
   Layer,
   StaticGlyph,

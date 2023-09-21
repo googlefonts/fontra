@@ -1,8 +1,8 @@
-import { range } from "/core/utils.js";
 import {
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
+import { range } from "/core/utils.js";
 
 const cjkDesignFrameGlyphName = "_cjkDesignFrame";
 

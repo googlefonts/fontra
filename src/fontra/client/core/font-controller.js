@@ -1,3 +1,4 @@
+import { getClassSchema } from "../core/classes.js";
 import {
   applyChange,
   collectChangePaths,
@@ -5,14 +6,13 @@ import {
   filterChangePattern,
   matchChangePath,
 } from "./changes.js";
-import { getClassSchema } from "../core/classes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { TaskPool } from "./task-pool.js";
+import { throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
-import { throttleCalls } from "./utils.js";
 
 const GLYPH_CACHE_SIZE = 1000;
 

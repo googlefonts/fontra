@@ -1,9 +1,9 @@
-import * as html from "/core/unlit.js";
-import { themeController } from "/core/theme-settings.js";
-import { fetchJSON } from "/core/utils.js";
-import { css } from "../third-party/lit.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
+import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
+import { themeController } from "/core/theme-settings.js";
+import * as html from "/core/unlit.js";
+import { fetchJSON } from "/core/utils.js";
 
 export default class UserSettingsPanel extends Panel {
   identifier = "user-settings";

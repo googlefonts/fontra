@@ -1,11 +1,11 @@
-import { range, round, throttleCalls } from "/core/utils.js";
-import * as vector from "/core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
 import { BaseTool } from "./edit-tools-base.js";
 import {
   registerVisualizationLayerDefinition,
   strokeLine,
 } from "./visualization-layer-definitions.js";
+import { range, round, throttleCalls } from "/core/utils.js";
+import * as vector from "/core/vector.js";
 
 let thePowerRulerTool; // singleton
 

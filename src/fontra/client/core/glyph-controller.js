@@ -11,17 +11,17 @@ import {
 } from "./representation-cache.js";
 import { Transform } from "./transform.js";
 import { enumerate, makeAffineTransform, range } from "./utils.js";
-import { StaticGlyph } from "./var-glyph.js";
 import { addItemwise } from "./var-funcs.js";
+import { StaticGlyph } from "./var-glyph.js";
 import {
   VariationModel,
   locationToString,
-  mapForward,
   mapBackward,
+  mapForward,
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
-import { VarPackedPath, joinPathsAsync, joinPaths } from "./var-path.js";
+import { VarPackedPath, joinPaths, joinPathsAsync } from "./var-path.js";
 
 export class VariableGlyphController {
   constructor(glyph, globalAxes) {

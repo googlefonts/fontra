@@ -1,6 +1,6 @@
+import { equalGlyphSelection } from "./scene-controller.js";
 import { consolidateCalls, withSavedState } from "/core/utils.js";
 import { mulScalar } from "/core/var-funcs.js";
-import { equalGlyphSelection } from "./scene-controller.js";
 
 export class VisualizationLayers {
   constructor(definitions, darkTheme) {

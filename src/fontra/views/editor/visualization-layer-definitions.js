@@ -1,4 +1,5 @@
 import { difference, isSuperset, union } from "../core/set-ops.js";
+import { subVectors } from "../core/vector.js";
 import {
   chain,
   enumerate,
@@ -9,7 +10,6 @@ import {
   unionIndexSets,
   withSavedState,
 } from "/core/utils.js";
-import { subVectors } from "../core/vector.js";
 
 export const visualizationLayerDefinitions = [];
 
