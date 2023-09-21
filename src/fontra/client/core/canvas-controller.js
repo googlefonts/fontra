@@ -1,6 +1,5 @@
 import { rectCenter, normalizeRect } from "./rectangle.js";
 import { consolidateCalls, withSavedState } from "./utils.js";
-import { mulScalar } from "./var-funcs.js";
 
 const MIN_MAGNIFICATION = 0.005;
 const MAX_MAGNIFICATION = 200;
