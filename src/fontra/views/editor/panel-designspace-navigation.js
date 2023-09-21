@@ -6,6 +6,7 @@ import { css } from "../third-party/lit.js";
 import {
   boolInt,
   enumerate,
+  escapeHTMLCharacters,
   htmlToElement,
   objectsEqual,
   range,
@@ -957,9 +958,11 @@ function interpolationErrorCell(item, colDesc) {
         style: "width: 1.2em; height: 1.2em; color: #F36;",
         onclick: (event) => {
           event.stopImmediatePropagation();
-          dialog("The source has an interpolation incompatibility", value.error, [
-            { title: "Okay" },
-          ]);
+          dialog(
+            "The source has an interpolation incompatibility",
+            escapeHTMLCharacters(value.error),
+            [{ title: "Okay" }]
+          );
         },
       })
     : "";

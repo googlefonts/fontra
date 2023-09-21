@@ -206,12 +206,22 @@ export class VariableGlyphController {
           )
     );
     const bag = {};
-    for (const s of locationStrings) {
+    for (const [i, s] of enumerate(locationStrings)) {
       if (s) {
-        bag[s] = (bag[s] || 0) + 1;
+        if (bag[s]) {
+          bag[s].push(i);
+        } else {
+          bag[s] = [i];
+        }
       }
     }
-    return locationStrings.map((s) => (bag[s] > 1 ? "location is not unique" : null));
+    return locationStrings.map((s) =>
+      bag[s]?.length > 1
+        ? `location is not unique in sources ${bag[s]
+            .map((i) => this.sources[i].name)
+            .join(", ")}`
+        : null
+    );
   }
 
   async getDeltas(getGlyphFunc) {
