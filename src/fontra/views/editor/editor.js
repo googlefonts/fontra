@@ -1,25 +1,28 @@
 import { CanvasController } from "../core/canvas-controller.js";
-import { applyChange, matchChangePath } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
+import { applyChange, matchChangePath } from "../core/changes.js";
 import { FontController } from "../core/font-controller.js";
+import { staticGlyphToGLIF } from "../core/glyph-glif.js";
+import { pathToSVG } from "../core/glyph-svg.js";
 import { loaderSpinner } from "../core/loader-spinner.js";
 import { ObservableController } from "../core/observable-object.js";
+import {
+  deleteSelectedPoints,
+  filterPathByPointIndices,
+} from "../core/path-functions.js";
 import {
   centeredRect,
   rectAddMargin,
   rectCenter,
   rectFromArray,
   rectRound,
-  rectToArray,
   rectScaleAroundCenter,
   rectSize,
+  rectToArray,
 } from "../core/rectangle.js";
 import { getRemoteProxy } from "../core/remote.js";
-import * as html from "/core/unlit.js";
 import { SceneView } from "../core/scene-view.js";
-import { StaticGlyph } from "../core/var-glyph.js";
-import { addItemwise, subItemwise, mulScalar } from "../core/var-funcs.js";
-import { VarPackedPath, joinPaths } from "../core/var-path.js";
+import { parseClipboard } from "../core/server-utils.js";
 import {
   commandKeyProperty,
   enumerate,
@@ -27,41 +30,38 @@ import {
   hyphenatedToCamelCase,
   isActiveElementTypeable,
   parseSelection,
-  scheduleCalls,
   range,
   readFromClipboard,
   reversed,
+  scheduleCalls,
   writeToClipboard,
 } from "../core/utils.js";
-import { themeController } from "/core/theme-settings.js";
-import { showMenu, MenuItemDivider } from "/web-components/menu-panel.js";
-import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
+import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
+import { StaticGlyph } from "../core/var-glyph.js";
+import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
-import { SceneController } from "./scene-controller.js";
 import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
 import { PowerRulerTool } from "./edit-tools-power-ruler.js";
-import { VisualizationLayers } from "./visualization-layers.js";
+import { SceneController } from "./scene-controller.js";
+import { MIN_SIDEBAR_WIDTH, Sidebar } from "./sidebar.js";
 import {
   allGlyphsCleanVisualizationLayerDefinition,
   visualizationLayerDefinitions,
 } from "./visualization-layer-definitions.js";
-import {
-  deleteSelectedPoints,
-  filterPathByPointIndices,
-} from "../core/path-functions.js";
-import { staticGlyphToGLIF } from "../core/glyph-glif.js";
-import { pathToSVG } from "../core/glyph-svg.js";
-import { parseClipboard } from "../core/server-utils.js";
-import { Sidebar, MIN_SIDEBAR_WIDTH } from "./sidebar.js";
+import { VisualizationLayers } from "./visualization-layers.js";
+import { themeController } from "/core/theme-settings.js";
+import * as html from "/core/unlit.js";
+import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
+import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 
-import TextEntryPanel from "./panel-text-entry.js";
-import GlyphSearchPanel from "./panel-glyph-search.js";
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
-import UserSettingsPanel from "./panel-user-settings.js";
+import GlyphSearchPanel from "./panel-glyph-search.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
+import TextEntryPanel from "./panel-text-entry.js";
+import UserSettingsPanel from "./panel-user-settings.js";
 
 const MIN_CANVAS_SPACE = 200;
 

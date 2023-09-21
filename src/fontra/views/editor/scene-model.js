@@ -1,3 +1,4 @@
+import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
 import {
   centeredRect,
   insetRect,
@@ -8,9 +9,8 @@ import {
   sectRect,
   unionRect,
 } from "../core/rectangle.js";
-import { pointInConvexPolygon, rectIntersectsPolygon } from "../core/convex-hull.js";
-import { consolidateCalls, enumerate, parseSelection } from "../core/utils.js";
 import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
+import { consolidateCalls, enumerate, parseSelection } from "../core/utils.js";
 
 export class SceneModel {
   constructor(fontController, sceneSettingsController, isPointInPath) {

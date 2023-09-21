@@ -1,6 +1,6 @@
-import { themeColorCSS } from "./theme-support.js";
-import { round, clamp } from "../core/utils.js";
+import { clamp, round } from "../core/utils.js";
 import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
+import { themeColorCSS } from "./theme-support.js";
 
 const colors = {
   "thumb-color": ["#333", "#ddd"],

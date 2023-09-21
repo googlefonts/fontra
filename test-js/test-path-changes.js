@@ -1,12 +1,12 @@
 import chai from "chai";
-const expect = chai.expect;
 import fs from "fs";
+const expect = chai.expect;
 
 import { applyChange } from "../src/fontra/client/core/changes.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
 
-import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 

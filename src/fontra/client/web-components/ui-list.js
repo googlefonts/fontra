@@ -1,6 +1,6 @@
-import { UnlitElement } from "/core/unlit.js";
-import * as html from "/core/unlit.js";
 import { themeColorCSS } from "./theme-support.js";
+import * as html from "/core/unlit.js";
+import { UnlitElement } from "/core/unlit.js";
 
 const LIST_CHUNK_SIZE = 200; // the amount of items added to the list at a time
 

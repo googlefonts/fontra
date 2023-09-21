@@ -1,6 +1,6 @@
-import * as html from "/core/unlit.js";
 import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
+import * as html from "/core/unlit.js";
 
 export default class GlyphSearchPanel extends Panel {
   identifier = "glyph-search";

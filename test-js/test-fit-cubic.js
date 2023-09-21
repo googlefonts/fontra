@@ -2,8 +2,8 @@ import { expect } from "chai";
 import {
   chordLengthParameterize,
   computeMaxError,
-  generateBezier,
   fitCubic,
+  generateBezier,
   newtonRhapsonRootFind,
 } from "../src/fontra/client/core/fit-cubic.js";
 

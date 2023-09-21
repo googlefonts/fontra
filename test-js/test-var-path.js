@@ -3,6 +3,9 @@ const expect = chai.expect;
 
 import { parametrize } from "./test-support.js";
 
+import { Transform } from "../src/fontra/client/core/transform.js";
+import { enumerate } from "../src/fontra/client/core/utils.js";
+import VarArray from "../src/fontra/client/core/var-array.js";
 import {
   POINT_TYPE_OFF_CURVE_CUBIC,
   POINT_TYPE_OFF_CURVE_QUAD,
@@ -10,9 +13,6 @@ import {
   joinPaths,
   joinPathsAsync,
 } from "../src/fontra/client/core/var-path.js";
-import VarArray from "../src/fontra/client/core/var-array.js";
-import { Transform } from "../src/fontra/client/core/transform.js";
-import { enumerate } from "../src/fontra/client/core/utils.js";
 
 class MockPath2D {
   constructor() {

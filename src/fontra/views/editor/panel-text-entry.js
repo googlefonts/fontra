@@ -1,7 +1,7 @@
-import * as html from "/core/unlit.js";
-import { findNestedActiveElement } from "/core/utils.js";
 import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
+import * as html from "/core/unlit.js";
+import { findNestedActiveElement } from "/core/utils.js";
 
 export default class TextEntryPanel extends Panel {
   identifier = "text-entry";

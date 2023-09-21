@@ -1,5 +1,5 @@
-import { ChangeCollector, applyChange } from "../core/changes.js";
 import { recordChanges } from "../core/change-recorder.js";
+import { ChangeCollector, applyChange } from "../core/changes.js";
 import { connectContours } from "../core/path-functions.js";
 import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
@@ -13,10 +13,10 @@ import {
 } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
-import { dialog } from "/web-components/modal-dialog.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { equalGlyphSelection } from "./scene-controller.js";
+import { dialog } from "/web-components/modal-dialog.js";
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";

@@ -1,16 +1,16 @@
-import * as html from "/core/unlit.js";
+import { css } from "../third-party/lit.js";
+import Panel from "./panel.js";
 import { recordChanges } from "/core/change-recorder.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
-import { Form } from "/web-components/ui-form.js";
-import Panel from "./panel.js";
-import { css } from "../third-party/lit.js";
+import * as html from "/core/unlit.js";
 import {
-  throttleCalls,
-  parseSelection,
-  makeUPlusStringFromCodePoint,
   getCharFromUnicode,
+  makeUPlusStringFromCodePoint,
+  parseSelection,
   round,
+  throttleCalls,
 } from "/core/utils.js";
+import { Form } from "/web-components/ui-form.js";
 
 export default class SelectionInfoPanel extends Panel {
   identifier = "selection-info";

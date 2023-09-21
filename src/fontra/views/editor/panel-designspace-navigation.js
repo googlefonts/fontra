@@ -1,8 +1,7 @@
+import { css } from "../third-party/lit.js";
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import { controllerKey, ObservableController } from "/core/observable-object.js";
-import { Layer, Source } from "/core/var-glyph.js";
 import * as html from "/core/unlit.js";
-import { css } from "../third-party/lit.js";
 import {
   boolInt,
   enumerate,
@@ -14,19 +13,20 @@ import {
   scheduleCalls,
   throttleCalls,
 } from "/core/utils.js";
+import { Layer, Source } from "/core/var-glyph.js";
 import {
   locationToString,
+  mapForward,
   normalizeLocation,
   piecewiseLinearMap,
-  mapForward,
 } from "/core/var-model.js";
-import { showMenu } from "/web-components/menu-panel.js";
-import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { IconButton } from "/web-components/icon-button.js";
 import { InlineSVG } from "/web-components/inline-svg.js";
+import { showMenu } from "/web-components/menu-panel.js";
+import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 
-import { NumberFormatter } from "/web-components/ui-list.js";
 import Panel from "./panel.js";
+import { NumberFormatter } from "/web-components/ui-list.js";
 
 const FONTRA_STATUS_KEY = "fontra.development.status";
 const FONTRA_STATUS_DEFINITIONS_KEY = "fontra.sourceStatusFieldDefinitions";

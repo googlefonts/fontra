@@ -1,21 +1,21 @@
-import { polygonIsConvex } from "../core/convex-hull.js";
 import { consolidateChanges } from "../core/changes.js";
+import { polygonIsConvex } from "../core/convex-hull.js";
+import { Transform } from "../core/transform.js";
 import {
   makeAffineTransform,
   parseSelection,
   reversed,
   unionIndexSets,
 } from "../core/utils.js";
-import { Transform } from "../core/transform.js";
 import * as vector from "../core/vector.js";
 import {
+  ANY,
   NIL,
+  OFF,
   SEL,
-  UNS,
   SHA,
   SMO,
-  OFF,
-  ANY,
+  UNS,
   buildPointMatchTree,
   findPointMatch,
 } from "./edit-behavior-support.js";

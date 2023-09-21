@@ -1,9 +1,9 @@
 import chai from "chai";
-const expect = chai.expect;
 import fs from "fs";
+const expect = chai.expect;
 
-import { applyChange } from "../src/fontra/client/core/changes.js";
 import { recordChanges } from "../src/fontra/client/core/change-recorder.js";
+import { applyChange } from "../src/fontra/client/core/changes.js";
 import { enumerate } from "../src/fontra/client/core/utils.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
 

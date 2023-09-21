@@ -1,12 +1,12 @@
-import * as html from "/core/unlit.js";
 import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
+import * as html from "/core/unlit.js";
 
 import { ObservableController } from "/core/observable-object.js";
 import { div, input, label } from "/core/unlit.js";
 import { fileNameExtension, withTimeout } from "/core/utils.js";
-import { UIList } from "/web-components/ui-list.js";
 import { dialog } from "/web-components/modal-dialog.js";
+import { UIList } from "/web-components/ui-list.js";
 
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
 

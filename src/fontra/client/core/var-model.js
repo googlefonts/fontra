@@ -1,9 +1,9 @@
 // Partial port of fontTools.varLib.models.VariationModel
 
 import { VariationError } from "./errors.js";
-import { addItemwise, subItemwise, mulScalar } from "./var-funcs.js";
 import { isSuperset } from "./set-ops.js";
 import { reversedEnumerate } from "./utils.js";
+import { addItemwise, mulScalar, subItemwise } from "./var-funcs.js";
 
 export class VariationModel {
   constructor(locations, axisOrder = null) {

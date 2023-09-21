@@ -1,3 +1,5 @@
+import { themeColorCSS } from "./theme-support.js";
+import { UIList } from "./ui-list.js";
 import * as html from "/core/unlit.js";
 import { UnlitElement } from "/core/unlit.js";
 import {
@@ -5,8 +7,6 @@ import {
   guessCharFromGlyphName,
   makeUPlusStringFromCodePoint,
 } from "/core/utils.js";
-import { themeColorCSS } from "./theme-support.js";
-import { UIList } from "./ui-list.js";
 
 const colors = {
   "search-input-foreground-color": ["black", "white"],

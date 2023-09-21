@@ -1,6 +1,6 @@
-import { themeColorCSS } from "./theme-support.js";
-import { html, css, LitElement, unsafeCSS } from "../third-party/lit.js";
+import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
 import { InlineSVG } from "./inline-svg.js";
+import { themeColorCSS } from "./theme-support.js";
 
 const colors = {
   "button-color": ["#ddd", "#888"],
