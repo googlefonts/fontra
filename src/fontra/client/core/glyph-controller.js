@@ -183,13 +183,45 @@ export class VariableGlyphController {
       const locations = this.sources
         .filter((source) => !source.inactive)
         .map((source) => source.location);
-      this._model = new VariationModel(
-        locations.map((location) =>
-          sparsifyLocation(normalizeLocation(location, this.combinedAxes))
-        )
+      const mappedLocations = locations.map((location) =>
+        sparsifyLocation(normalizeLocation(location, this.combinedAxes))
       );
+      try {
+        this._model = new VariationModel(mappedLocations);
+      } catch (error) {
+        console.log("error setting up the variation model:", error.toString());
+        this._model = new VariationModel([{}]);
+        this._modelErrors = this._getLocationErrors();
+      }
     }
     return this._model;
+  }
+
+  _getLocationErrors() {
+    const locationStrings = this.sources.map((source) =>
+      source.inactive
+        ? null
+        : locationToString(
+            sparsifyLocation(normalizeLocation(source.location, this.combinedAxes))
+          )
+    );
+    const bag = {};
+    for (const [i, s] of enumerate(locationStrings)) {
+      if (s) {
+        if (bag[s]) {
+          bag[s].push(i);
+        } else {
+          bag[s] = [i];
+        }
+      }
+    }
+    return locationStrings.map((s) =>
+      bag[s]?.length > 1
+        ? `location is not unique in sources ${bag[s]
+            .map((i) => this.sources[i].name)
+            .join(", ")}`
+        : null
+    );
   }
 
   async getDeltas(getGlyphFunc) {
@@ -241,10 +273,16 @@ export class VariableGlyphController {
           break;
         }
       }
-      this._sourceInterpolationStatus = this.sources.map((source) => {
-        const error = errors[referenceLayerName][source.layerName];
-        return error ? { error } : {};
-      });
+      const status = [];
+      for (const [i, source] of enumerate(this.sources)) {
+        if (this._modelErrors?.[i]) {
+          status.push({ error: this._modelErrors[i], isModelError: true });
+        } else {
+          const error = errors[referenceLayerName][source.layerName];
+          status.push(error ? { error } : {});
+        }
+      }
+      this._sourceInterpolationStatus = status;
     }
     return this._sourceInterpolationStatus;
   }
