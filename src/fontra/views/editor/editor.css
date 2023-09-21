@@ -207,7 +207,7 @@ body {
   display: flex;
   align-items: center;
 
-  z-index: 0; /* below the shadow box */
+  z-index: 1; /* below the shadow box but above the tools*/
 
   box-sizing: border-box;
   width: var(--sidebar-tab-width);
@@ -357,6 +357,7 @@ body {
   gap: 1em;
   padding: 1em;
   justify-self: center;
+  position: absolute;
 }
 
 .tools-item {
