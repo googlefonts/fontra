@@ -2,7 +2,8 @@ import chai from "chai";
 const expect = chai.expect;
 
 import { getClassSchema } from "../src/fontra/client/core/classes.js";
-import classesSchema from "../src/fontra/client/core/classes.json";
+// prettier-ignore
+import classesSchema from "../src/fontra/client/core/classes.json" assert { type: "json" };
 import { enumerate, range } from "../src/fontra/client/core/utils.js";
 import {
   Layer,
