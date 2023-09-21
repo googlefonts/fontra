@@ -183,10 +183,10 @@ export class VariableGlyphController {
       const locations = this.sources
         .filter((source) => !source.inactive)
         .map((source) => source.location);
+      const mappedLocations = locations.map((location) =>
+        sparsifyLocation(normalizeLocation(location, this.combinedAxes))
+      );
       try {
-        const mappedLocations = locations.map((location) =>
-          sparsifyLocation(normalizeLocation(location, this.combinedAxes))
-        );
         this._model = new VariationModel(mappedLocations);
       } catch (error) {
         console.log("error setting up the variation model", error.toString());
