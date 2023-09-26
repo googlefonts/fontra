@@ -989,7 +989,11 @@ function suggestedSourceNameFromLocation(location) {
   );
 }
 
-function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
+function makeIconCellFactory(
+  iconPaths,
+  triggerOnDoubleClick = false,
+  switchValue = null
+) {
   return (item, colDesc) => {
     const value = item[colDesc.key];
     const clickSymbol = triggerOnDoubleClick ? "ondblclick" : "onclick";
@@ -1000,7 +1004,9 @@ function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
         event.stopImmediatePropagation();
       },
       [clickSymbol]: (event) => {
-        const newValue = !item[colDesc.key];
+        const newValue = switchValue
+          ? switchValue(item, colDesc.key)
+          : !item[colDesc.key];
         item[colDesc.key] = newValue;
         iconElement.src = iconPaths[boolInt(newValue)];
         event.stopImmediatePropagation();
