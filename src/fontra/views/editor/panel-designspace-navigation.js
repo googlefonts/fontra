@@ -260,6 +260,9 @@ export default class DesignspaceNavigationPanel extends Panel {
         transition: 150ms;
       }
       .visibility-header:hover {
+        transform: scale(1.1);
+      }
+      .visibility-header:active {
         transform: scale(1.2);
       }
     `);
