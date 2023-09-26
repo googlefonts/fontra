@@ -222,7 +222,14 @@ export default class DesignspaceNavigationPanel extends Panel {
           ["", "/tabler-icons/pencil.svg"],
           false,
           (item, key) => {
-            return !item[key] || item === this.sourcesList.getSelectedItem();
+            const selectedItem = this.sourcesList.getSelectedItem();
+            if (
+              item?.interpolationStatus?.error ||
+              (selectedItem?.interpolationStatus?.error && selectedItem !== item)
+            ) {
+              return false;
+            }
+            return !item[key] || item === selectedItem;
           }
         ),
         width: "1.2em",
