@@ -598,6 +598,16 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
+  get editingLayers() {
+    return this.sceneModel.editingLayers || [];
+  }
+
+  set editingLayers(layerNames) {
+    this.sceneModel.editingLayers = layerNames;
+    this.sceneModel.updateBackgroundGlyphs();
+    this.canvasController.requestUpdate();
+  }
+
   getGlobalLocation() {
     return this.sceneModel.getGlobalLocation();
   }

@@ -24,6 +24,7 @@ export class SceneModel {
     this.usedGlyphNames = new Set();
     this.cachedGlyphNames = new Set();
     this.backgroundLayers = {};
+    this.editingLayers = {};
 
     this.sceneSettingsController.addKeyListener(
       ["glyphLines", "align", "selectedGlyph"],
@@ -232,12 +233,32 @@ export class SceneModel {
 
   async updateBackgroundGlyphs() {
     this.backgroundLayerGlyphs = [];
+    this.editingLayerGlyphs = [];
     const glyphName = await this.getSelectedGlyphName();
     if (!glyphName) {
       return;
     }
-    for (const [layerName, sourceName] of Object.entries(this.backgroundLayers)) {
-      const varGlyph = await this.fontController.getGlyph(glyphName);
+    const varGlyph = await this.fontController.getGlyph(glyphName);
+    this.backgroundLayerGlyphs = await this._setupBackgroundGlyphs(
+      glyphName,
+      varGlyph,
+      this.backgroundLayers,
+      this.editingLayers
+    );
+    this.editingLayerGlyphs = await this._setupBackgroundGlyphs(
+      glyphName,
+      varGlyph,
+      this.editingLayers,
+      {}
+    );
+  }
+
+  async _setupBackgroundGlyphs(glyphName, varGlyph, layers, skipLayers) {
+    const layerGlyphs = [];
+    for (const [layerName, sourceName] of Object.entries(layers)) {
+      if (layerName in skipLayers) {
+        continue;
+      }
       let sourceIndex = varGlyph.getSourceIndexFromName(sourceName) || 0;
       const layerGlyph = await this.fontController.getLayerGlyphController(
         glyphName,
@@ -245,9 +266,10 @@ export class SceneModel {
         sourceIndex
       );
       if (layerGlyph) {
-        this.backgroundLayerGlyphs.push(layerGlyph);
+        layerGlyphs.push(layerGlyph);
       }
     }
+    return layerGlyphs;
   }
 
   async updateScene() {

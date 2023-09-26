@@ -417,6 +417,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       varGlyphController?.getInterpolationContributions(this.sceneSettings.location) ||
       [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
+    let editingLayers = { ...this.sceneController.editingLayers };
 
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
@@ -426,6 +427,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         name: source.name,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === source.name,
+        editing: editingLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
@@ -443,6 +445,14 @@ export default class DesignspaceNavigationPanel extends Panel {
           delete backgroundLayers[layerName];
         }
         this.sceneController.backgroundLayers = backgroundLayers;
+      });
+      sourceController.addKeyListener("editing", async (event) => {
+        if (event.newValue) {
+          editingLayers[layerName] = source.name;
+        } else {
+          delete editingLayers[layerName];
+        }
+        this.sceneController.editingLayers = editingLayers;
       });
       sourceController.addKeyListener("status", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
