@@ -238,25 +238,22 @@ export class SceneModel {
     if (!glyphName) {
       return;
     }
-    const editingInstance = await this.getSelectedStaticGlyphController();
     const varGlyph = await this.fontController.getGlyph(glyphName);
     this.backgroundLayerGlyphs = await this._setupBackgroundGlyphs(
       glyphName,
       varGlyph,
       this.backgroundLayers,
-      this.editingLayers,
-      editingInstance
+      this.editingLayers
     );
     this.editingLayerGlyphs = await this._setupBackgroundGlyphs(
       glyphName,
       varGlyph,
       this.editingLayers,
-      {},
-      editingInstance
+      {}
     );
   }
 
-  async _setupBackgroundGlyphs(glyphName, varGlyph, layers, skipLayers, skipInstance) {
+  async _setupBackgroundGlyphs(glyphName, varGlyph, layers, skipLayers) {
     const layerGlyphs = [];
     for (const [layerName, sourceName] of Object.entries(layers)) {
       if (layerName in skipLayers) {
@@ -268,11 +265,7 @@ export class SceneModel {
         layerName,
         sourceIndex
       );
-      if (
-        layerGlyph &&
-        skipInstance.sourceIndex !== layerGlyph.sourceIndex &&
-        skipInstance.layerName !== layerGlyph.layerName
-      ) {
+      if (layerGlyph) {
         layerGlyphs.push(layerGlyph);
       }
     }
