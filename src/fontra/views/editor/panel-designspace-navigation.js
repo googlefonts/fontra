@@ -182,6 +182,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
       this.sourcesList.setSelectedItemIndex(event.newValue);
       this._updateRemoveSourceButtonState();
+      this._updateEditingStatus();
     });
 
     const columnDescriptions = [
@@ -290,6 +291,7 @@ export default class DesignspaceNavigationPanel extends Panel {
             varGlyphController.sources[sourceIndex]?.layerName;
         }
       }
+      this._updateEditingStatus();
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
@@ -441,11 +443,21 @@ export default class DesignspaceNavigationPanel extends Panel {
       !this.designspaceLocation.axes.length;
 
     this._updateRemoveSourceButtonState();
+    this._updateEditingStatus();
   }
 
   _updateRemoveSourceButtonState() {
     this.addRemoveSourceButtons.disableRemoveButton =
       this.sourcesList.getSelectedItemIndex() === undefined;
+  }
+
+  _updateEditingStatus() {
+    const selectedItem = this.sourcesList.getSelectedItem();
+    if (!selectedItem?.editing) {
+      this.sourcesList.items.forEach((item) => {
+        item.editing = item === selectedItem;
+      });
+    }
   }
 
   async removeSource(sourceIndex) {
