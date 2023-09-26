@@ -1,5 +1,6 @@
 import { arrayExtend, range, reversed } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
+import * as vector from "./vector.js";
 import { roundVector } from "./vector.js";
 
 export function insertPoint(path, intersection) {
@@ -16,10 +17,11 @@ export function insertPoint(path, intersection) {
     if (insertIndex <= 0) {
       insertIndex = numContourPoints;
     }
-    path.insertPoint(contourIndex, insertIndex, {
-      x: intersection.x,
-      y: intersection.y,
-    });
+    path.insertPoint(
+      contourIndex,
+      insertIndex,
+      interpolatePoints(...segment.points, intersection.t)
+    );
     selectedPointIndex = insertIndex;
   } else {
     // insert point in curve
@@ -416,4 +418,9 @@ function* rangesToContours(path, startPoint, ranges) {
     delete points.at(-1).smooth;
     yield { points: points, isClosed: false };
   }
+}
+
+function interpolatePoints(pt1, pt2, t) {
+  const d = vector.subVectors(pt2, pt1);
+  return vector.addVectors(pt1, vector.mulVectorScalar(d, t));
 }
