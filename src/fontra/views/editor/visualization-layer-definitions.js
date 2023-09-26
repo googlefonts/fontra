@@ -751,8 +751,8 @@ registerVisualizationLayerDefinition({
   screenParameters: {
     strokeWidth: 1,
   },
-  colors: { color: "#F88" },
-  colorsDarkMode: { color: "#A33" },
+  colors: { color: "#66FA" },
+  colorsDarkMode: { color: "#66FA" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
