@@ -206,6 +206,7 @@ export default class DesignspaceNavigationPanel extends Panel {
           {
             class: "visibility-header",
             style: "height: 1.2em; width: 1.2em;",
+            onclick: (event) => this.onVisibilityHeaderClick(event),
           },
           [
             html.createDomElement("inline-svg", {
@@ -320,6 +321,24 @@ export default class DesignspaceNavigationPanel extends Panel {
     const button = this.contentElement.querySelector("#reset-axes-button");
     button.disabled = locationEmpty;
     button.hidden = !this.designspaceLocation.axes.length;
+  }
+
+  async onVisibilityHeaderClick(event) {
+    let backgroundLayers;
+    if (Object.keys(this.sceneController.backgroundLayers).length) {
+      backgroundLayers = {};
+    } else {
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
+      backgroundLayers = {};
+      for (const source of varGlyphController.sources) {
+        if (!backgroundLayers[source.layerName]) {
+          backgroundLayers[source.layerName] = source.name;
+        }
+      }
+    }
+    this.sceneController.backgroundLayers = backgroundLayers;
+    this._updateSources();
   }
 
   async updateInterpolationContributions() {
