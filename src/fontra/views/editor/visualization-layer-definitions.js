@@ -745,7 +745,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.edit.editing.layers",
-  name: "Background glyph layers",
+  name: "Editing glyph layers",
   selectionMode: "editing",
   zIndex: 490,
   screenParameters: {
