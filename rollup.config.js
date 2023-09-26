@@ -8,6 +8,7 @@ export default Object.keys(dependencies)
       input: `node_modules/${depName}`,
       output: {
         file: `src/fontra/client/third-party/${depName}.js`,
+        inlineDynamicImports: true,
       },
       plugins: [
         commonjs(), // <-- this handles some parsing of js syntax or something (necessary for `export { init } from "mathjax";`)
