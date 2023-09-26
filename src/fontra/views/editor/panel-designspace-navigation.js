@@ -202,17 +202,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       { key: "name", title: "Source name", width: "12em" },
       {
-        title: html.div(
-          {
-            class: "visibility-header",
-            style: "height: 1.2em; width: 1.2em;",
-            onclick: (event) => this.onVisibilityHeaderClick(event),
-          },
-          [
-            html.createDomElement("inline-svg", {
-              src: "/tabler-icons/eye.svg",
-            }),
-          ]
+        title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
+          this.onVisibilityHeaderClick(event)
         ),
         key: "visible",
         cellFactory: makeIconCellFactory([
@@ -257,13 +248,13 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     this.sourcesList = this.contentElement.querySelector("#sources-list");
     this.sourcesList.appendStyle(`
-      .visibility-header {
+      .clickable-icon-header {
         transition: 150ms;
       }
-      .visibility-header:hover {
+      .clickable-icon-header:hover {
         transform: scale(1.1);
       }
-      .visibility-header:active {
+      .clickable-icon-header:active {
         transform: scale(1.2);
       }
     `);
@@ -1098,6 +1089,21 @@ function statusListCell(item, colDesc) {
 
 function cellColorStyle(color) {
   return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
+}
+
+function makeClickableIconHeader(iconPath, onClick) {
+  return html.div(
+    {
+      class: "clickable-icon-header",
+      style: "height: 1.2em; width: 1.2em;",
+      onclick: onClick,
+    },
+    [
+      html.createDomElement("inline-svg", {
+        src: iconPath,
+      }),
+    ]
+  );
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
