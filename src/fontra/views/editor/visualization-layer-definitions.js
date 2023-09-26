@@ -754,11 +754,14 @@ registerVisualizationLayerDefinition({
   colors: { color: "#66FA" },
   colorsDarkMode: { color: "#66FA" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
+    const primaryEditingInstance = positionedGlyph.glyph;
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
     context.strokeStyle = parameters.color;
     for (const layerGlyph of Object.values(model.editingLayerGlyphs || {})) {
-      context.stroke(layerGlyph.flattenedPath2d);
+      if (layerGlyph !== primaryEditingInstance) {
+        context.stroke(layerGlyph.flattenedPath2d);
+      }
     }
   },
 });
