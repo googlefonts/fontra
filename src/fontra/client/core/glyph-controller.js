@@ -315,7 +315,8 @@ export class VariableGlyphController {
         instanceController = new StaticGlyphController(
           this.name,
           layer.glyph,
-          sourceIndex
+          sourceIndex,
+          layerName
         );
         await instanceController.setupComponents(
           getGlyphFunc,
@@ -364,7 +365,7 @@ export class VariableGlyphController {
 
     let instance;
     if (layerName !== undefined) {
-      instance = this.layers[layerName].glyph;
+      return this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
     } else {
       instance = await this.instantiate(
         normalizeLocation(location, this.combinedAxes),
