@@ -202,7 +202,9 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       { key: "name", title: "Source name", width: "12em" },
       {
-        title: "bg",
+        title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
+          this.onVisibilityHeaderClick(event)
+        ),
         key: "visible",
         cellFactory: makeIconCellFactory([
           "/tabler-icons/eye-closed.svg",
@@ -245,6 +247,17 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sourcesList = this.contentElement.querySelector("#sources-list");
+    this.sourcesList.appendStyle(`
+      .clickable-icon-header {
+        transition: 150ms;
+      }
+      .clickable-icon-header:hover {
+        transform: scale(1.1);
+      }
+      .clickable-icon-header:active {
+        transform: scale(1.2);
+      }
+    `);
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
@@ -299,6 +312,24 @@ export default class DesignspaceNavigationPanel extends Panel {
     const button = this.contentElement.querySelector("#reset-axes-button");
     button.disabled = locationEmpty;
     button.hidden = !this.designspaceLocation.axes.length;
+  }
+
+  async onVisibilityHeaderClick(event) {
+    let backgroundLayers;
+    if (Object.keys(this.sceneController.backgroundLayers).length) {
+      backgroundLayers = {};
+    } else {
+      const varGlyphController =
+        await this.sceneModel.getSelectedVariableGlyphController();
+      backgroundLayers = {};
+      for (const source of varGlyphController.sources) {
+        if (!backgroundLayers[source.layerName]) {
+          backgroundLayers[source.layerName] = source.name;
+        }
+      }
+    }
+    this.sceneController.backgroundLayers = backgroundLayers;
+    this._updateSources();
   }
 
   async updateInterpolationContributions() {
@@ -1058,6 +1089,21 @@ function statusListCell(item, colDesc) {
 
 function cellColorStyle(color) {
   return `background-color: ${rgbaToCSS(color)}; width: 100%;`;
+}
+
+function makeClickableIconHeader(iconPath, onClick) {
+  return html.div(
+    {
+      class: "clickable-icon-header",
+      style: "height: 1.2em; width: 1.2em;",
+      onclick: onClick,
+    },
+    [
+      html.createDomElement("inline-svg", {
+        src: iconPath,
+      }),
+    ]
+  );
 }
 
 customElements.define("panel-designspace-navigation", DesignspaceNavigationPanel);
