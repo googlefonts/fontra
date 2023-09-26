@@ -1226,6 +1226,7 @@ export class EditorController {
       newSourceIndex =
         (selectPrevious ? sourceIndex + numSources - 1 : sourceIndex + 1) % numSources;
     }
+    this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
   }
 
