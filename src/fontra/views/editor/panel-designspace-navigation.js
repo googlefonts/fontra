@@ -218,7 +218,13 @@ export default class DesignspaceNavigationPanel extends Panel {
           this.onEditHeaderClick(event)
         ),
         key: "editing",
-        cellFactory: makeIconCellFactory(["", "/tabler-icons/pencil.svg"]),
+        cellFactory: makeIconCellFactory(
+          ["", "/tabler-icons/pencil.svg"],
+          false,
+          (item, key) => {
+            return !item[key] || item === this.sourcesList.getSelectedItem();
+          }
+        ),
         width: "1.2em",
       },
     ];
