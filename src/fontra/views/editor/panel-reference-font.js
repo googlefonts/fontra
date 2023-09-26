@@ -3,10 +3,12 @@ import Panel from "./panel.js";
 import * as html from "/core/unlit.js";
 
 import { ObservableController } from "/core/observable-object.js";
-import { div, input, label } from "/core/unlit.js";
-import { fileNameExtension, withTimeout } from "/core/utils.js";
+import { div, input, label, option, select } from "/core/unlit.js";
+import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
 import { dialog } from "/web-components/modal-dialog.js";
 import { UIList } from "/web-components/ui-list.js";
+
+import { Font } from "/third-party/lib-font.js";
 
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
 
@@ -59,7 +61,47 @@ function cleanFontItems(fontItems) {
     return {
       uplodadedFileName: fontItem.uplodadedFileName,
       fontIdentifier: fontItem.fontIdentifier,
+      supportedLanguages: fontItem.supportedLanguages,
     };
+  });
+}
+
+async function readSupportedLanguages(fontItem, file, languageMapping) {
+  return new Promise((resolve, reject) => {
+    const font = new Font(fontItem.fontIdentifier);
+    font.onerror = (event) => {
+      console.error("Error when creating Font instance (lib-font).", event);
+      resolve([]);
+    };
+    font.onload = (event) => {
+      const font = event.detail.font;
+      const getLangs = (table) => {
+        if (table) {
+          return table
+            .getSupportedScripts()
+            .reduce((acc, script) => {
+              const scriptTable = table.getScriptTable(script);
+              return acc.concat(table.getSupportedLangSys(scriptTable));
+            }, [])
+            .map((lang) => lang.trim());
+        } else {
+          return [];
+        }
+      };
+      const gsubLangs = getLangs(font.opentype.tables.GSUB);
+      const gposLangs = getLangs(font.opentype.tables.GPOS);
+      const allLangs = new Set([...gsubLangs, ...gposLangs]);
+      resolve(
+        [...allLangs]
+          .filter((lang) => languageMapping[lang])
+          .map((lang) => languageMapping[lang])
+      );
+    };
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      font.fromDataBuffer(reader.result);
+    });
+    reader.readAsArrayBuffer(file);
   });
 }
 
@@ -319,6 +361,15 @@ export default class ReferenceFontPanel extends Panel {
       document.fonts.add(fontItem.fontFace);
       await fontItem.fontFace.load();
     }
+    if (!fontItem.supportedLanguages) {
+      const file = await fetch(fontItem.objectURL).then((b) => b.blob());
+      fontItem.supportedLanguages = await readSupportedLanguages(
+        fontItem,
+        file,
+        this.allLanguages
+      );
+    }
+    this.model.supportedLanguages = fontItem.supportedLanguages;
     this.model.referenceFontName = fontItem.fontIdentifier;
   }
 
@@ -366,9 +417,27 @@ export default class ReferenceFontPanel extends Panel {
     }
   }
 
+  setSupportedLanguages(languages, currentLanguage = "") {
+    this.languageCodeInput.innerHTML = "";
+    this.languageCodeInput.appendChild(option({ value: "" }, ["Select a language"]));
+    for (const [name, code] of languages) {
+      this.languageCodeInput.appendChild(
+        option(
+          {
+            value: code,
+            selected: currentLanguage === code,
+          },
+          [name]
+        )
+      );
+    }
+  }
+
   getContentElement() {
+    this.allLanguages = {};
     this.controller = new ObservableController({
       languageCode: "",
+      supportedLanguages: [],
       selectedFontIndex: -1,
       fontList: [],
       charOverride: "",
@@ -378,8 +447,13 @@ export default class ReferenceFontPanel extends Panel {
     this.controller.addKeyListener("fontList", (event) =>
       this._fontListChangedHandler(event)
     );
+    this.controller.addKeyListener("supportedLanguages", () => {
+      this.setSupportedLanguages(
+        this.model.supportedLanguages,
+        this.model.languageCode
+      );
+    });
     garbageCollectUnusedFiles(this.model.fontList);
-
     const columnDescriptions = [
       {
         key: "uplodadedFileName",
@@ -408,6 +482,17 @@ export default class ReferenceFontPanel extends Panel {
     if (this.model.selectedFontIndex != -1) {
       this.filesUIList.setSelectedItemIndex(this.model.selectedFontIndex, true);
     }
+
+    this.languageCodeInput = select(
+      {
+        id: "language-code",
+        style: "width: 100%;",
+        onchange: (event) => {
+          this.model.languageCode = event.target.value;
+        },
+      },
+      []
+    );
 
     return html.div(
       {
@@ -441,15 +526,8 @@ export default class ReferenceFontPanel extends Panel {
                   value: this.model.charOverride,
                   oninput: (event) => (this.model.charOverride = event.target.value),
                 }),
-                label({ for: "language-code" }, "Language code:"),
-                input({
-                  type: "text",
-                  id: "language-code",
-                  value: this.model.languageCode,
-                  oninput: (event) => {
-                    this.model.languageCode = event.target.value;
-                  },
-                }),
+                label({ for: "language-code" }, "Language:"),
+                this.languageCodeInput,
               ]
             ),
           ]
@@ -459,6 +537,9 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   attach() {
+    fetchJSON("/editor/language-mapping.json").then((languageMapping) => {
+      this.allLanguages = languageMapping;
+    });
     this.controller.addKeyListener("referenceFontName", (event) => {
       if (event.newValue) {
         this.editorController.visualizationLayersSettings.model[
