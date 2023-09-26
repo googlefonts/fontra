@@ -212,6 +212,14 @@ export default class DesignspaceNavigationPanel extends Panel {
         ]),
         width: "1.2em",
       },
+      {
+        title: makeClickableIconHeader("/tabler-icons/pencil.svg", (event) =>
+          this.onEditHeaderClick(event)
+        ),
+        key: "editing",
+        cellFactory: makeIconCellFactory(["", "/tabler-icons/pencil.svg"]),
+        width: "1.2em",
+      },
     ];
 
     const statusFieldDefinitions =
@@ -330,6 +338,16 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
     this.sceneController.backgroundLayers = backgroundLayers;
     this._updateSources();
+  }
+
+  onEditHeaderClick(event) {
+    const items = this.sourcesList.items.filter(
+      (item) => !item.interpolationStatus?.error
+    );
+    const onOff = !items.some((item) => item.editing);
+    for (const item of items) {
+      item.editing = onOff;
+    }
   }
 
   async updateInterpolationContributions() {
@@ -974,6 +992,9 @@ function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
         iconElement.src = iconPaths[boolInt(newValue)];
         event.stopImmediatePropagation();
       },
+    });
+    item[controllerKey].addKeyListener(colDesc.key, (event) => {
+      iconElement.src = iconPaths[boolInt(event.newValue)];
     });
     return iconElement;
   };
