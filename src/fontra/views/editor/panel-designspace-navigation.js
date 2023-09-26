@@ -202,7 +202,17 @@ export default class DesignspaceNavigationPanel extends Panel {
       },
       { key: "name", title: "Source name", width: "12em" },
       {
-        title: "bg",
+        title: html.div(
+          {
+            class: "visibility-header",
+            style: "height: 1.2em; width: 1.2em;",
+          },
+          [
+            html.createDomElement("inline-svg", {
+              src: "/tabler-icons/eye.svg",
+            }),
+          ]
+        ),
         key: "visible",
         cellFactory: makeIconCellFactory([
           "/tabler-icons/eye-closed.svg",
@@ -245,6 +255,14 @@ export default class DesignspaceNavigationPanel extends Panel {
     });
 
     this.sourcesList = this.contentElement.querySelector("#sources-list");
+    this.sourcesList.appendStyle(`
+      .visibility-header {
+        transition: 150ms;
+      }
+      .visibility-header:hover {
+        transform: scale(1.2);
+      }
+    `);
     this.sourcesList.showHeader = true;
     this.sourcesList.columnDescriptions = columnDescriptions;
 
