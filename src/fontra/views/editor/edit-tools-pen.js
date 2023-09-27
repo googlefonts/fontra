@@ -133,14 +133,18 @@ export class PenTool extends BaseTool {
     } else if (this.sceneModel.pathInsertHandles) {
       const segmentPointIndices =
         this.sceneModel.pathInsertHandles.hit.segment.pointIndices;
-      await this.sceneController.editInstanceAndRecordChanges((instance) => {
-        const path = instance.path;
-        const selection = insertHandles(
-          path,
-          segmentPointIndices.map((i) => path.getPoint(i)),
-          segmentPointIndices[1],
-          this.curveType
-        );
+      await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+        let selection;
+        for (const layerName of this.sceneController.editingLayerNames) {
+          const instance = glyph.layers[layerName]?.glyph;
+          const path = instance.path;
+          selection = insertHandles(
+            path,
+            segmentPointIndices.map((i) => path.getPoint(i)),
+            segmentPointIndices[1],
+            this.curveType
+          );
+        }
         delete this.sceneModel.pathInsertHandles;
         this.sceneController.selection = selection;
         return "Insert Handles";
