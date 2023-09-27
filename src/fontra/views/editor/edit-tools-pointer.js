@@ -208,13 +208,8 @@ export class PointerTool extends BaseTool {
 
   async handlePointsDoubleClick(pointIndices) {
     let newPointType;
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      const layers = glyph.layers;
-      for (const layerName of this.sceneController.editingLayerNames) {
-        const instance = layers[layerName]?.glyph;
-        if (!instance) {
-          continue;
-        }
+    await this.sceneController.editLayersAndRecordChanges((instances) => {
+      for (const instance of instances) {
         newPointType = toggleSmooth(instance.path, pointIndices, newPointType);
       }
       return "Toggle Smooth";

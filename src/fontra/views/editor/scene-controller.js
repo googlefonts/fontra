@@ -654,6 +654,16 @@ export class SceneController {
     return await this._editGlyphOrInstanceAndRecordChanges(editFunc, senderID, true);
   }
 
+  async editLayersAndRecordChanges(editFunc, senderID) {
+    return await this.editGlyphAndRecordChanges((glyph) => {
+      const layers = glyph.layers;
+      const layerGlyphs = this.editingLayerNames
+        .map((layerName) => layers[layerName]?.glyph)
+        .filter((layerGlyph) => layerGlyph);
+      return editFunc(layerGlyphs);
+    }, senderID);
+  }
+
   async _editGlyphOrInstanceAndRecordChanges(editFunc, senderID, doInstance) {
     await this._editGlyphOrInstance(
       (sendIncrementalChange, subject) => {
