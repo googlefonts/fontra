@@ -823,24 +823,27 @@ export class SceneController {
   }
 
   async reverseSelectedContoursDirection() {
-    await this.editInstanceAndRecordChanges((instance) => {
-      const path = instance.path;
-      const { point: pointSelection } = parseSelection(this.selection);
-      const selectedContours = getSelectedContours(path, pointSelection);
-      const newSelection = reversePointSelection(path, pointSelection);
+    const { point: pointSelection } = parseSelection(this.selection);
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      let selection;
+      for (const layerGlyph of layerGlyphs) {
+        const path = layerGlyph.path;
+        const selectedContours = getSelectedContours(path, pointSelection);
+        selection = reversePointSelection(path, pointSelection);
 
-      for (const contourIndex of selectedContours) {
-        const contour = path.getUnpackedContour(contourIndex);
-        contour.points.reverse();
-        if (contour.isClosed) {
-          const [lastPoint] = contour.points.splice(-1, 1);
-          contour.points.splice(0, 0, lastPoint);
+        for (const contourIndex of selectedContours) {
+          const contour = path.getUnpackedContour(contourIndex);
+          contour.points.reverse();
+          if (contour.isClosed) {
+            const [lastPoint] = contour.points.splice(-1, 1);
+            contour.points.splice(0, 0, lastPoint);
+          }
+          const packedContour = packContour(contour);
+          layerGlyph.path.deleteContour(contourIndex);
+          layerGlyph.path.insertContour(contourIndex, packedContour);
         }
-        const packedContour = packContour(contour);
-        instance.path.deleteContour(contourIndex);
-        instance.path.insertContour(contourIndex, packedContour);
       }
-      this.selection = newSelection;
+      this.selection = selection;
       return "Reverse Contour Direction";
     });
   }
