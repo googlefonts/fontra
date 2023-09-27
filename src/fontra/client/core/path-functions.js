@@ -1,3 +1,4 @@
+import { Bezier } from "../third-party/bezier-js.js";
 import { arrayExtend, range, reversed } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 import * as vector from "./vector.js";
@@ -26,8 +27,11 @@ export function insertPoint(path, intersection) {
     selectedPointIndex = insertIndex;
   } else {
     // insert point in curve
+    const segments = [...path.iterContourDecomposedSegments(contourIndex)];
+    const segment = segments[intersection.segmentIndex];
+    const bezier = new Bezier(...segment.points);
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
-    const { left, right } = segment.bezier.split(intersection.t);
+    const { left, right } = bezier.split(intersection.t);
     if (firstOffCurve.type === "cubic") {
       const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
         roundVector
