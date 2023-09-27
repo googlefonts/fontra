@@ -479,7 +479,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   _updateEditingStatus() {
     const selectedItem = this.sourcesList.getSelectedItem();
-    if (!selectedItem?.editing) {
+    if (!selectedItem?.editing || selectedItem.interpolationStatus?.error) {
       this.sourcesList.items.forEach((item) => {
         item.editing = item === selectedItem;
       });
