@@ -10,10 +10,12 @@ import { isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
   commandKeyProperty,
+  enumerate,
   objectsEqual,
   parseSelection,
   reversed,
   withTimeout,
+  zip,
 } from "../core/utils.js";
 import { packContour } from "../core/var-path.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
@@ -902,33 +904,61 @@ export class SceneController {
   }
 
   async decomposeSelectedComponents() {
+    const varGlyph = await this.sceneModel.getSelectedVariableGlyphController();
+
+    // Retrieve the global location for each editing layer
+    const layerLocations = {};
+    for (const [sourceIndex, source] of enumerate(varGlyph.sources)) {
+      if (
+        this.editingLayerNames.indexOf(source.layerName) >= 0 &&
+        !(source.layerName in layerLocations)
+      ) {
+        layerLocations[source.layerName] =
+          varGlyph.mapSourceLocationToGlobal(sourceIndex);
+      }
+    }
+
+    // Get the decomposed path/components for each editing layer
     const { component: componentSelection } = parseSelection(this.selection);
     componentSelection.sort((a, b) => (a > b) - (a < b));
-    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-
-    const { path: newPath, components: newComponents } = await decomposeComponents(
-      instance.components,
-      componentSelection,
-      this.getGlobalLocation(),
-      (glyphName) => this.fontController.getGlyph(glyphName)
-    );
-
-    await this.editInstanceAndRecordChanges((instance) => {
-      const path = instance.path;
-      const components = instance.components;
-
-      for (const contour of newPath.iterContours()) {
-        // Hm, rounding should be optional
-        // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-        path.appendContour(contour);
+    const getGlyphFunc = (glyphName) => this.fontController.getGlyph(glyphName);
+    const decomposed = [];
+    for (const layerName of this.editingLayerNames) {
+      const layerGlyph = varGlyph.layers[layerName]?.glyph;
+      if (!layerGlyph) {
+        continue;
       }
-      components.push(...newComponents);
+      decomposed.push(
+        await decomposeComponents(
+          layerGlyph.components,
+          componentSelection,
+          layerLocations[layerName],
+          getGlyphFunc
+        )
+      );
+    }
 
-      // Next, delete the components we decomposed
-      for (const componentIndex of reversed(componentSelection)) {
-        components.splice(componentIndex, 1);
+    if (decomposed.length !== this.editingLayerNames.length) {
+      throw new Error("assert -- inconsistent decomposed array");
+    }
+
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const [layerGlyph, decomposeInfo] of zip(layerGlyphs, decomposed)) {
+        const path = layerGlyph.path;
+        const components = layerGlyph.components;
+
+        for (const contour of decomposeInfo.path.iterContours()) {
+          // Hm, rounding should be optional
+          // contour.coordinates = contour.coordinates.map(c => Math.round(c));
+          path.appendContour(contour);
+        }
+        components.push(...decomposeInfo.components);
+
+        // Next, delete the components we decomposed
+        for (const componentIndex of reversed(componentSelection)) {
+          components.splice(componentIndex, 1);
+        }
       }
-
       this.selection = new Set();
       return "Decompose Component" + (componentSelection?.length === 1 ? "" : "s");
     });
