@@ -354,12 +354,20 @@ export class VariableGlyphController {
   }
 
   async instantiateController(location, layerName, getGlyphFunc) {
-    const sourceIndex = this.getSourceIndex(location);
+    let sourceIndex = this.getSourceIndex(location);
     location = this.mapLocationGlobalToLocal(location);
 
     if (!layerName || !(layerName in this.layers)) {
       if (sourceIndex !== undefined) {
         layerName = this.sources[sourceIndex].layerName;
+      }
+    }
+    if (layerName && sourceIndex === undefined) {
+      for (const [i, source] of enumerate(this.sources)) {
+        if (source.layerName === layerName) {
+          sourceIndex = i;
+          break;
+        }
       }
     }
 
