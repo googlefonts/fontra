@@ -131,12 +131,14 @@ export class PenTool extends BaseTool {
       });
       return;
     } else if (this.sceneModel.pathInsertHandles) {
+      const segmentPointIndices =
+        this.sceneModel.pathInsertHandles.hit.segment.pointIndices;
       await this.sceneController.editInstanceAndRecordChanges((instance) => {
-        const handles = this.sceneModel.pathInsertHandles;
+        const path = instance.path;
         const selection = insertHandles(
-          instance.path,
-          handles.points,
-          handles.hit.segment.pointIndices[1],
+          path,
+          segmentPointIndices.map((i) => path.getPoint(i)),
+          segmentPointIndices[1],
           this.curveType
         );
         delete this.sceneModel.pathInsertHandles;

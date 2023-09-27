@@ -103,14 +103,17 @@ function impliedPoint(pointA, pointB) {
   };
 }
 
-export function insertHandles(path, handlePoints, insertIndex, type = "cubic") {
+export function insertHandles(path, segmentPoints, insertIndex, type = "cubic") {
   let [contourIndex, contourPointIndex] = path.getContourAndPointIndex(insertIndex);
   if (!contourPointIndex) {
     contourPointIndex = path.getNumPointsOfContour(contourIndex);
   }
   insertIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex, true);
-  handlePoints = handlePoints.map((pt) => {
-    return { x: pt.x, y: pt.y, type: type };
+  const handlePoints = [
+    vector.interpolateVectors(...segmentPoints, 1 / 3),
+    vector.interpolateVectors(...segmentPoints, 2 / 3),
+  ].map((pt) => {
+    return { ...pt, type: type };
   });
   path.insertPoint(contourIndex, contourPointIndex, handlePoints[1]);
   path.insertPoint(contourIndex, contourPointIndex, handlePoints[0]);
