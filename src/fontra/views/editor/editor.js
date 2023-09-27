@@ -1031,20 +1031,22 @@ export class EditorController {
   }
 
   async doDelete(event) {
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      if (event.altKey) {
-        // Behave like "cut", but don't put anything on the clipboard
-        this._prepareCopyOrCut(instance, true);
-      } else {
-        const { point: pointSelection, component: componentSelection } = parseSelection(
-          this.sceneController.selection
-        );
-        if (pointSelection) {
-          deleteSelectedPoints(instance.path, pointSelection);
-        }
-        if (componentSelection) {
-          for (const componentIndex of reversed(componentSelection)) {
-            instance.components.splice(componentIndex, 1);
+    const { point: pointSelection, component: componentSelection } = parseSelection(
+      this.sceneController.selection
+    );
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of layerGlyphs) {
+        if (event.altKey) {
+          // Behave like "cut", but don't put anything on the clipboard
+          this._prepareCopyOrCut(layerGlyph, true);
+        } else {
+          if (pointSelection) {
+            deleteSelectedPoints(layerGlyph.path, pointSelection);
+          }
+          if (componentSelection) {
+            for (const componentIndex of reversed(componentSelection)) {
+              layerGlyph.components.splice(componentIndex, 1);
+            }
           }
         }
       }
