@@ -413,7 +413,7 @@ export default class ReferenceFontPanel extends Panel {
 
   setSupportedLanguages(languages, currentLanguage = "") {
     this.languageCodeInput.innerHTML = "";
-    this.languageCodeInput.appendChild(option({ value: "" }, ["Select a language"]));
+    this.languageCodeInput.appendChild(option({ value: "" }, ["None"]));
     for (const [name, code] of languages) {
       this.languageCodeInput.appendChild(
         option(
@@ -421,7 +421,7 @@ export default class ReferenceFontPanel extends Panel {
             value: code,
             selected: currentLanguage === code,
           },
-          [name]
+          [`${name} (${code})`]
         )
       );
     }
