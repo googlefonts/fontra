@@ -113,15 +113,11 @@ export class PenTool extends BaseTool {
     }
 
     if (this.sceneModel.pathConnectTargetPoint?.segment) {
-      await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
         let selection;
-        for (const layerName of this.sceneController.editingLayerNames) {
-          const instance = glyph.layers[layerName]?.glyph;
-          if (!instance) {
-            continue;
-          }
+        for (const layerGlyph of layerGlyphs) {
           selection = insertPoint(
-            instance.path,
+            layerGlyph.path,
             this.sceneModel.pathConnectTargetPoint
           );
         }
@@ -133,14 +129,10 @@ export class PenTool extends BaseTool {
     } else if (this.sceneModel.pathInsertHandles) {
       const segmentPointIndices =
         this.sceneModel.pathInsertHandles.hit.segment.pointIndices;
-      await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
         let selection;
-        for (const layerName of this.sceneController.editingLayerNames) {
-          const instance = glyph.layers[layerName]?.glyph;
-          if (!instance) {
-            continue;
-          }
-          const path = instance.path;
+        for (const layerGlyph of layerGlyphs) {
+          const path = layerGlyph.path;
           selection = insertHandles(
             path,
             segmentPointIndices.map((i) => path.getPoint(i)),
