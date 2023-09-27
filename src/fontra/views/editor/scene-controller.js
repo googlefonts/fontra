@@ -924,27 +924,23 @@ export class SceneController {
     const { component: componentSelection } = parseSelection(this.selection);
     componentSelection.sort((a, b) => (a > b) - (a < b));
     const getGlyphFunc = (glyphName) => this.fontController.getGlyph(glyphName);
-    const decomposed = [];
+    const decomposed = {};
     for (const layerName of this.editingLayerNames) {
       const layerGlyph = varGlyph.layers[layerName]?.glyph;
       if (!layerGlyph) {
         continue;
       }
-      decomposed.push(
-        await decomposeComponents(
-          layerGlyph.components,
-          componentSelection,
-          layerLocations[layerName],
-          getGlyphFunc
-        )
+      decomposed[layerName] = await decomposeComponents(
+        layerGlyph.components,
+        componentSelection,
+        layerLocations[layerName],
+        getGlyphFunc
       );
     }
 
     await this.editLayersAndRecordChanges((layerGlyphs) => {
-      for (const [layerGlyph, decomposeInfo] of zip(
-        Object.values(layerGlyphs),
-        decomposed
-      )) {
+      for (const [layerName, layerGlyph] of Object.entries(layerGlyphs)) {
+        const decomposeInfo = decomposed[layerName];
         const path = layerGlyph.path;
         const components = layerGlyph.components;
 
