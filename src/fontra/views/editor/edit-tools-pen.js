@@ -115,7 +115,7 @@ export class PenTool extends BaseTool {
     if (this.sceneModel.pathConnectTargetPoint?.segment) {
       await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
         let selection;
-        for (const layerGlyph of layerGlyphs) {
+        for (const layerGlyph of Object.values(layerGlyphs)) {
           selection = insertPoint(
             layerGlyph.path,
             this.sceneModel.pathConnectTargetPoint
@@ -131,7 +131,7 @@ export class PenTool extends BaseTool {
         this.sceneModel.pathInsertHandles.hit.segment.pointIndices;
       await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
         let selection;
-        for (const layerGlyph of layerGlyphs) {
+        for (const layerGlyph of Object.values(layerGlyphs)) {
           const path = layerGlyph.path;
           selection = insertHandles(
             path,

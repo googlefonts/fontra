@@ -1035,7 +1035,7 @@ export class EditorController {
       this.sceneController.selection
     );
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
-      for (const layerGlyph of layerGlyphs) {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
         if (event.altKey) {
           // Behave like "cut", but don't put anything on the clipboard
           this._prepareCopyOrCut(layerGlyph, true);

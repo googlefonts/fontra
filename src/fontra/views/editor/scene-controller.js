@@ -659,9 +659,11 @@ export class SceneController {
   async editLayersAndRecordChanges(editFunc, senderID) {
     return await this.editGlyphAndRecordChanges((glyph) => {
       const layers = glyph.layers;
-      const layerGlyphs = this.editingLayerNames
-        .map((layerName) => layers[layerName]?.glyph)
-        .filter((layerGlyph) => layerGlyph);
+      const layerGlyphs = Object.fromEntries(
+        this.editingLayerNames
+          .map((layerName) => [layerName, layers[layerName]?.glyph])
+          .filter((layer) => layer[1])
+      );
       return editFunc(layerGlyphs);
     }, senderID);
   }
@@ -828,7 +830,7 @@ export class SceneController {
     const { point: pointSelection } = parseSelection(this.selection);
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       let selection;
-      for (const layerGlyph of layerGlyphs) {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
         const path = layerGlyph.path;
         const selectedContours = getSelectedContours(path, pointSelection);
         selection = reversePointSelection(path, pointSelection);
@@ -853,7 +855,7 @@ export class SceneController {
   async setStartPoint() {
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       let newSelection;
-      for (const layerGlyph of layerGlyphs) {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
         const path = layerGlyph.path;
         const { point: pointSelection } = parseSelection(this.selection);
         const contourToPointMap = new Map();
@@ -895,7 +897,7 @@ export class SceneController {
     const { point: pointIndices } = parseSelection(this.selection);
     await this.editLayersAndRecordChanges((layerGlyphs) => {
       let numSplits;
-      for (const layerGlyph of layerGlyphs) {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
         numSplits = splitPathAtPointIndices(layerGlyph.path, pointIndices);
       }
       this.selection = new Set();
@@ -938,12 +940,11 @@ export class SceneController {
       );
     }
 
-    if (decomposed.length !== this.editingLayerNames.length) {
-      throw new Error("assert -- inconsistent decomposed array");
-    }
-
     await this.editLayersAndRecordChanges((layerGlyphs) => {
-      for (const [layerGlyph, decomposeInfo] of zip(layerGlyphs, decomposed)) {
+      for (const [layerGlyph, decomposeInfo] of zip(
+        Object.values(layerGlyphs),
+        decomposed
+      )) {
         const path = layerGlyph.path;
         const components = layerGlyph.components;
 
