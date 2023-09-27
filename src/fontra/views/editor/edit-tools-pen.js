@@ -137,6 +137,9 @@ export class PenTool extends BaseTool {
         let selection;
         for (const layerName of this.sceneController.editingLayerNames) {
           const instance = glyph.layers[layerName]?.glyph;
+          if (!instance) {
+            continue;
+          }
           const path = instance.path;
           selection = insertHandles(
             path,
