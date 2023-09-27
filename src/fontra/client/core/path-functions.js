@@ -14,13 +14,14 @@ export function insertPoint(path, intersection) {
   let insertIndex = segment.pointIndices.at(-1) + absToRel;
   if (segment.points.length === 2) {
     // insert point in line
+    const points = segment.pointIndices.map((i) => path.getPoint(i));
     if (insertIndex <= 0) {
       insertIndex = numContourPoints;
     }
     path.insertPoint(
       contourIndex,
       insertIndex,
-      interpolatePoints(...segment.points, intersection.t)
+      interpolatePoints(...points, intersection.t)
     );
     selectedPointIndex = insertIndex;
   } else {
