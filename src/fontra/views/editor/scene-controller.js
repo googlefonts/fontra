@@ -609,7 +609,18 @@ export class SceneController {
   }
 
   get editingLayerNames() {
-    return Object.keys(this.editingLayers);
+    const primaryLayerName =
+      this.sceneModel.getSelectedPositionedGlyph()?.glyph?.layerName;
+    const layerNames = Object.keys(this.editingLayers);
+    if (primaryLayerName) {
+      // Ensure the primary editing layer name is first in the list
+      const i = layerNames.indexOf(primaryLayerName);
+      if (i > 0) {
+        layerNames.splice(i, 1);
+        layerNames.unshift(primaryLayerName);
+      }
+    }
+    return layerNames;
   }
 
   getGlobalLocation() {
