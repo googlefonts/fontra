@@ -608,6 +608,10 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
+  get editingLayerNames() {
+    return Object.keys(this.editingLayers);
+  }
+
   getGlobalLocation() {
     return this.sceneModel.getGlobalLocation();
   }
