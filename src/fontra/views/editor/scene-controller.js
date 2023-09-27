@@ -849,37 +849,40 @@ export class SceneController {
   }
 
   async setStartPoint() {
-    await this.editInstanceAndRecordChanges((instance) => {
-      const path = instance.path;
-      const { point: pointSelection } = parseSelection(this.selection);
-      const contourToPointMap = new Map();
-      for (const pointIndex of pointSelection) {
-        const contourIndex = path.getContourIndex(pointIndex);
-        const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
-        if (contourToPointMap.has(contourIndex)) {
-          continue;
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      let newSelection;
+      for (const layerGlyph of layerGlyphs) {
+        const path = layerGlyph.path;
+        const { point: pointSelection } = parseSelection(this.selection);
+        const contourToPointMap = new Map();
+        for (const pointIndex of pointSelection) {
+          const contourIndex = path.getContourIndex(pointIndex);
+          const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
+          if (contourToPointMap.has(contourIndex)) {
+            continue;
+          }
+          contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
         }
-        contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
-      }
-      const newSelection = new Set();
+        newSelection = new Set();
 
-      contourToPointMap.forEach((contourPointIndex, contourIndex) => {
-        if (contourPointIndex === 0) {
-          // Already start point
+        contourToPointMap.forEach((contourPointIndex, contourIndex) => {
+          if (contourPointIndex === 0) {
+            // Already start point
+            newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
+            return;
+          }
+          if (!path.contourInfo[contourIndex].isClosed) {
+            // Open path, ignore
+            return;
+          }
+          const contour = path.getUnpackedContour(contourIndex);
+          const head = contour.points.splice(0, contourPointIndex);
+          contour.points.push(...head);
+          layerGlyph.path.deleteContour(contourIndex);
+          layerGlyph.path.insertContour(contourIndex, packContour(contour));
           newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
-          return;
-        }
-        if (!path.contourInfo[contourIndex].isClosed) {
-          // Open path, ignore
-          return;
-        }
-        const contour = path.getUnpackedContour(contourIndex);
-        const head = contour.points.splice(0, contourPointIndex);
-        contour.points.push(...head);
-        instance.path.deleteContour(contourIndex);
-        instance.path.insertContour(contourIndex, packContour(contour));
-        newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
-      });
+        });
+      }
 
       this.selection = newSelection;
       return "Set Start Point";
