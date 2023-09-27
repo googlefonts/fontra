@@ -69,3 +69,8 @@ export function distance(pt1, pt2) {
 export function dotVector(vectorA, vectorB) {
   return vectorA.x * vectorB.x + vectorA.y * vectorB.y;
 }
+
+export function interpolateVectors(vectorA, vectorB, t) {
+  const d = subVectors(vectorB, vectorA);
+  return addVectors(vectorA, mulVectorScalar(d, t));
+}

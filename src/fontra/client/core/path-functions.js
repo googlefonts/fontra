@@ -22,7 +22,7 @@ export function insertPoint(path, intersection) {
     path.insertPoint(
       contourIndex,
       insertIndex,
-      interpolatePoints(...points, intersection.t)
+      vector.interpolateVectors(...points, intersection.t)
     );
     selectedPointIndex = insertIndex;
   } else {
@@ -423,9 +423,4 @@ function* rangesToContours(path, startPoint, ranges) {
     delete points.at(-1).smooth;
     yield { points: points, isClosed: false };
   }
-}
-
-function interpolatePoints(pt1, pt2, t) {
-  const d = vector.subVectors(pt2, pt1);
-  return vector.addVectors(pt1, vector.mulVectorScalar(d, t));
 }
