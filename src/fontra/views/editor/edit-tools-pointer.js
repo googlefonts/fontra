@@ -1,13 +1,12 @@
 import { recordChanges } from "../core/change-recorder.js";
 import { ChangeCollector, applyChange } from "../core/changes.js";
-import { connectContours } from "../core/path-functions.js";
+import { connectContours, toggleSmooth } from "../core/path-functions.js";
 import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
 import {
   boolInt,
   commandKeyProperty,
   makeUPlusStringFromCodePoint,
-  modulo,
   parseSelection,
   range,
 } from "../core/utils.js";
@@ -208,51 +207,15 @@ export class PointerTool extends BaseTool {
   }
 
   async handlePointsDoubleClick(pointIndices) {
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      const path = instance.path;
-      for (const pointIndex of pointIndices) {
-        const pointType = path.pointTypes[pointIndex];
-        const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(
-          path,
-          pointIndex
-        );
-        if (
-          (!prevPoint || !nextPoint || (!prevPoint.type && !nextPoint.type)) &&
-          pointType !== VarPackedPath.SMOOTH_FLAG
-        ) {
+    let newPointType;
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const layers = glyph.layers;
+      for (const layerName of this.sceneController.editingLayerNames) {
+        const instance = layers[layerName]?.glyph;
+        if (!instance) {
           continue;
         }
-        if (
-          pointType === VarPackedPath.ON_CURVE ||
-          pointType === VarPackedPath.SMOOTH_FLAG
-        ) {
-          const newPointType =
-            pointType === VarPackedPath.ON_CURVE
-              ? VarPackedPath.SMOOTH_FLAG
-              : VarPackedPath.ON_CURVE;
-          path.pointTypes[pointIndex] = newPointType;
-          if (newPointType === VarPackedPath.SMOOTH_FLAG) {
-            const anchorPoint = path.getPoint(pointIndex);
-            if (prevPoint?.type && nextPoint?.type) {
-              // Fix-up both incoming and outgoing handles
-              const [newPrevPoint, newNextPoint] = alignHandles(
-                prevPoint,
-                anchorPoint,
-                nextPoint
-              );
-              path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
-              path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
-            } else if (prevPoint?.type) {
-              // Fix-up incoming handle
-              const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
-              path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
-            } else if (nextPoint?.type) {
-              // Fix-up outgoing handle
-              const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
-              path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
-            }
-          }
-        }
+        newPointType = toggleSmooth(instance.path, pointIndices, newPointType);
       }
       return "Toggle Smooth";
     });
@@ -353,58 +316,6 @@ export class PointerTool extends BaseTool {
 function getBehaviorName(event) {
   const behaviorNames = ["default", "constrain", "alternate", "alternate-constrain"];
   return behaviorNames[boolInt(event.shiftKey) + 2 * boolInt(event.altKey)];
-}
-
-function neighborPoints(path, pointIndex) {
-  const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
-  const contourStartIndex = path.getAbsolutePointIndex(contourIndex, 0);
-  const numPoints = path.getNumPointsOfContour(contourIndex);
-  const isClosed = path.contourInfo[contourIndex].isClosed;
-  let prevIndex = contourPointIndex - 1;
-  let nextIndex = contourPointIndex + 1;
-  if (path.contourInfo[contourIndex].isClosed) {
-    prevIndex = modulo(prevIndex, numPoints);
-    nextIndex = modulo(nextIndex, numPoints);
-  }
-  let prevPoint, nextPoint;
-  if (prevIndex >= 0) {
-    prevIndex += contourStartIndex;
-    prevPoint = path.getPoint(prevIndex);
-  } else {
-    prevIndex = undefined;
-  }
-  if (nextIndex < numPoints) {
-    nextIndex += contourStartIndex;
-    nextPoint = path.getPoint(nextIndex);
-  } else {
-    nextIndex = undefined;
-  }
-  return [prevIndex, prevPoint, nextIndex, nextPoint];
-}
-
-function alignHandle(refPoint1, anchorPoint, handlePoint) {
-  const direction = vector.subVectors(anchorPoint, refPoint1);
-  return alignHandleAlongDirection(direction, anchorPoint, handlePoint);
-}
-
-function alignHandles(handleIn, anchorPoint, handleOut) {
-  const handleVectorIn = vector.subVectors(anchorPoint, handleIn);
-  const handleVectorOut = vector.subVectors(anchorPoint, handleOut);
-  const directionIn = vector.subVectors(handleVectorOut, handleVectorIn);
-  const directionOut = vector.subVectors(handleVectorIn, handleVectorOut);
-  return [
-    alignHandleAlongDirection(directionIn, anchorPoint, handleIn),
-    alignHandleAlongDirection(directionOut, anchorPoint, handleOut),
-  ];
-}
-
-function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
-  const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
-  const handleVector = vector.mulVectorScalar(
-    vector.normalizeVector(direction),
-    length
-  );
-  return vector.roundVector(vector.addVectors(anchorPoint, handleVector));
 }
 
 function replace(setA, setB) {
