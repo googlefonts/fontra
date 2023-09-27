@@ -890,10 +890,12 @@ export class SceneController {
   }
 
   async breakContour() {
-    await this.editInstanceAndRecordChanges((instance) => {
+    const { point: pointIndices } = parseSelection(this.selection);
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
       let numSplits;
-      const { point: pointIndices } = parseSelection(this.selection);
-      numSplits = splitPathAtPointIndices(instance.path, pointIndices);
+      for (const layerGlyph of layerGlyphs) {
+        numSplits = splitPathAtPointIndices(layerGlyph.path, pointIndices);
+      }
       this.selection = new Set();
       return "Break Contour" + (numSplits > 1 ? "s" : "");
     });
