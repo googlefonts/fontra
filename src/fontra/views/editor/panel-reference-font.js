@@ -66,7 +66,7 @@ function cleanFontItems(fontItems) {
   });
 }
 
-async function readSupportedLanguages(fontItem, file, languageMapping) {
+async function readSupportedLanguages(fontItem, languageMapping) {
   return new Promise((resolve, reject) => {
     const font = new Font(fontItem.fontIdentifier);
     font.onerror = (event) => {
@@ -97,11 +97,7 @@ async function readSupportedLanguages(fontItem, file, languageMapping) {
           .map((lang) => languageMapping[lang])
       );
     };
-    const reader = new FileReader();
-    reader.addEventListener("load", () => {
-      font.fromDataBuffer(reader.result);
-    });
-    reader.readAsArrayBuffer(file);
+    font.src = fontItem.objectURL;
   });
 }
 
@@ -362,10 +358,9 @@ export default class ReferenceFontPanel extends Panel {
       await fontItem.fontFace.load();
     }
     if (!fontItem.supportedLanguages) {
-      const file = await fetch(fontItem.objectURL).then((b) => b.blob());
+      // const file = await fetch(fontItem.objectURL).then((b) => b.blob());
       fontItem.supportedLanguages = await readSupportedLanguages(
         fontItem,
-        file,
         this.allLanguages
       );
     }
