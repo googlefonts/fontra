@@ -114,11 +114,18 @@ export class PenTool extends BaseTool {
     }
 
     if (this.sceneModel.pathConnectTargetPoint?.segment) {
-      await this.sceneController.editInstanceAndRecordChanges((instance) => {
-        const selection = insertPoint(
-          instance.path,
-          this.sceneModel.pathConnectTargetPoint
-        );
+      await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+        let selection;
+        for (const layerName of this.sceneController.editingLayerNames) {
+          const instance = glyph.layers[layerName]?.glyph;
+          if (!instance) {
+            continue;
+          }
+          selection = insertPoint(
+            instance.path,
+            this.sceneModel.pathConnectTargetPoint
+          );
+        }
         delete this.sceneModel.pathConnectTargetPoint;
         this.sceneController.selection = selection;
         return "Insert Point";
