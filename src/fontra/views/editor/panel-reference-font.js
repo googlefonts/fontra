@@ -358,7 +358,6 @@ export default class ReferenceFontPanel extends Panel {
       await fontItem.fontFace.load();
     }
     if (!fontItem.supportedLanguages) {
-      // const file = await fetch(fontItem.objectURL).then((b) => b.blob());
       fontItem.supportedLanguages = await readSupportedLanguages(
         fontItem,
         this.allLanguages
