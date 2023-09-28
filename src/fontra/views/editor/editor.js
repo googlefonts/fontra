@@ -213,7 +213,7 @@ export class EditorController {
   }
 
   async initPlugins() {
-    const plugins = [["fatih-erikli/fontra-plugin-demo", "0.1.3"]];
+    const plugins = [["fatih-erikli/fontra-plugin-demo", "0.1.4"]];
     for (const [pluginGithubPath, version] of plugins) {
       const meta = await fetchJSON(
         `https://cdn.jsdelivr.net/gh/${pluginGithubPath}@${version}/plugin.json`
