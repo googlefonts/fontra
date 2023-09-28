@@ -26,6 +26,7 @@ import { parseClipboard } from "../core/server-utils.js";
 import {
   commandKeyProperty,
   enumerate,
+  fetchJSON,
   getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
@@ -35,7 +36,6 @@ import {
   reversed,
   scheduleCalls,
   writeToClipboard,
-  fetchJSON,
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
 import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
@@ -213,7 +213,7 @@ export class EditorController {
   }
 
   async initPlugins() {
-    const plugins = [["fatih-erikli/fontra-plugin-demo", "0.1.2"]];
+    const plugins = [["fatih-erikli/fontra-plugin-demo", "0.1.3"]];
     for (const [pluginGithubPath, version] of plugins) {
       const meta = await fetchJSON(
         `https://cdn.jsdelivr.net/gh/${pluginGithubPath}@${version}/plugin.json`
