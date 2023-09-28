@@ -126,6 +126,7 @@ export default class SelectionInfoPanel extends Panel {
         key: '["xAdvance"]',
         label: "Advance width",
         value: instance.xAdvance,
+        minValue: 0,
         disabled: !canEdit,
       });
     }
