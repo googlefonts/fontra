@@ -82,9 +82,8 @@ export default class SelectionInfoPanel extends Panel {
     await this.fontController.ensureInitialized;
 
     const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
-    const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
-      glyphName
-    );
+    const glyphController =
+      await this.sceneController.sceneModel.getGlyphInstance(glyphName);
     let unicodes = this.fontController.glyphMap?.[glyphName] || [];
 
     const positionedGlyph =
