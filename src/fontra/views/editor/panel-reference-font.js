@@ -91,11 +91,12 @@ async function readSupportedLanguages(fontItem, languageMapping) {
       const gsubLangs = getLangs(font.opentype.tables.GSUB);
       const gposLangs = getLangs(font.opentype.tables.GPOS);
       const allLangs = new Set([...gsubLangs, ...gposLangs]);
-      resolve(
-        [...allLangs]
-          .filter((lang) => languageMapping[lang])
-          .map((lang) => languageMapping[lang])
-      );
+
+      const supportedLanguages = [...allLangs]
+        .filter((lang) => languageMapping[lang])
+        .map((lang) => languageMapping[lang]);
+      supportedLanguages.sort((a, b) => a[0] - b[0]);
+      resolve(supportedLanguages);
     };
     font.src = fontItem.objectURL;
   });
