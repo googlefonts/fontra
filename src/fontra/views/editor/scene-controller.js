@@ -821,6 +821,7 @@ export class SceneController {
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
+        this.scrollAdjustBehavior = "pin-glyph-center";
         this.sceneSettings.location = undoInfo.location;
       }
       await this.sceneModel.updateScene();
