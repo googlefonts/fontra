@@ -144,10 +144,27 @@ export class Form extends SimpleElement {
     const inputElement = document.createElement("input");
     inputElement.type = "number";
     inputElement.value = fieldItem.value;
+    if ("minValue" in fieldItem) {
+      inputElement.min = fieldItem.minValue;
+    }
+    if ("maxValue" in fieldItem) {
+      inputElement.max = fieldItem.maxValue;
+    }
     inputElement.step = "any";
+
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = (event) => {
-      this._fieldChanging(fieldItem.key, parseFloat(inputElement.value), undefined);
+      let value = parseFloat(inputElement.value);
+      if (!inputElement.reportValidity()) {
+        if (inputElement.min != undefined) {
+          value = Math.max(value, inputElement.min);
+        }
+        if (inputElement.max != undefined) {
+          value = Math.min(value, inputElement.max);
+        }
+        inputElement.value = value;
+      }
+      this._fieldChanging(fieldItem.key, value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
