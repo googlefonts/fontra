@@ -113,40 +113,50 @@ export class PenTool extends BaseTool {
     }
 
     if (this.sceneModel.pathConnectTargetPoint?.segment) {
-      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
-        let selection;
-        for (const layerGlyph of Object.values(layerGlyphs)) {
-          selection = insertPoint(
-            layerGlyph.path,
-            this.sceneModel.pathConnectTargetPoint
-          );
-        }
-        delete this.sceneModel.pathConnectTargetPoint;
-        this.sceneController.selection = selection;
-        return "Insert Point";
-      });
-      return;
+      await this._handleInsertPoint();
     } else if (this.sceneModel.pathInsertHandles) {
-      const segmentPointIndices =
-        this.sceneModel.pathInsertHandles.hit.segment.pointIndices;
-      await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
-        let selection;
-        for (const layerGlyph of Object.values(layerGlyphs)) {
-          const path = layerGlyph.path;
-          selection = insertHandles(
-            path,
-            segmentPointIndices.map((i) => path.getPoint(i)),
-            segmentPointIndices[1],
-            this.curveType
-          );
-        }
-        delete this.sceneModel.pathInsertHandles;
-        this.sceneController.selection = selection;
-        return "Insert Handles";
-      });
-      return;
+      await this._handleInsertHandles();
+    } else {
+      await this._handleAddPoints(eventStream, initialEvent);
     }
+  }
 
+  async _handleInsertPoint() {
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      let selection;
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        selection = insertPoint(
+          layerGlyph.path,
+          this.sceneModel.pathConnectTargetPoint
+        );
+      }
+      delete this.sceneModel.pathConnectTargetPoint;
+      this.sceneController.selection = selection;
+      return "Insert Point";
+    });
+  }
+
+  async _handleInsertHandles() {
+    const segmentPointIndices =
+      this.sceneModel.pathInsertHandles.hit.segment.pointIndices;
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      let selection;
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const path = layerGlyph.path;
+        selection = insertHandles(
+          path,
+          segmentPointIndices.map((i) => path.getPoint(i)),
+          segmentPointIndices[1],
+          this.curveType
+        );
+      }
+      delete this.sceneModel.pathInsertHandles;
+      this.sceneController.selection = selection;
+      return "Insert Handles";
+    });
+  }
+
+  async _handleAddPoints(eventStream, initialEvent) {
     await this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
       const behavior = getPenToolBehavior(
         this.sceneController,
