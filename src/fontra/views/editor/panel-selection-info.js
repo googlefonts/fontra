@@ -341,11 +341,10 @@ export default class SelectionInfoPanel extends Panel {
             });
           }
 
-          const plen = changePath.length;
           const undoLabel =
-            plen == 1
-              ? `${changePath[plen - 1]}`
-              : `${changePath[plen - 2]}.${changePath[plen - 1]}`;
+            changePath.length == 1
+              ? `${changePath.at(-1)}`
+              : `${changePath.at(-2)}.${changePath.at(-1)}`;
           return {
             changes: changes,
             undoLabel: undoLabel,
