@@ -658,12 +658,12 @@ export class SceneController {
 
   async editLayersAndRecordChanges(editFunc, senderID) {
     return await this.editGlyphAndRecordChanges((glyph) => {
-      const layerGlyphs = this._getEditingLayerGlyphs(glyph.layers);
+      const layerGlyphs = this.getEditingLayerFromGlyphLayers(glyph.layers);
       return editFunc(layerGlyphs);
     }, senderID);
   }
 
-  _getEditingLayerGlyphs(layers) {
+  getEditingLayerFromGlyphLayers(layers) {
     return Object.fromEntries(
       this.editingLayerNames
         .map((layerName) => [layerName, layers[layerName]?.glyph])
