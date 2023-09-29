@@ -433,19 +433,28 @@ export class SceneController {
         consolidateChanges(rollbackChanges)
       );
 
-      const connectDetector = this.getPathConnectDetector();
-      // if (connectDetector.shouldConnect()) {
-      //   const connectChanges = recordChanges(instance, (instance) => {
-      //     this.selection = connectContours(
-      //       instance.path,
-      //       connectDetector.connectSourcePointIndex,
-      //       connectDetector.connectTargetPointIndex
-      //     );
-      //   });
-      //   if (connectChanges.hasChange) {
-      //     changes = changes.concat(connectChanges);
-      //   }
-      // }
+      let newSelection;
+      for (const { layerGlyph, changePath } of layerInfo) {
+        const connectDetector = this.getPathConnectDetector(layerGlyph.path);
+        if (connectDetector.shouldConnect()) {
+          const connectChanges = recordChanges(layerGlyph, (layerGlyph) => {
+            const thisSelection = connectContours(
+              layerGlyph.path,
+              connectDetector.connectSourcePointIndex,
+              connectDetector.connectTargetPointIndex
+            );
+            if (newSelection === undefined) {
+              newSelection = thisSelection;
+            }
+          });
+          if (connectChanges.hasChange) {
+            changes = changes.concat(connectChanges.prefixed(changePath));
+          }
+        }
+      }
+      if (newSelection) {
+        this.selection = newSelection;
+      }
 
       return {
         changes: changes,
