@@ -229,6 +229,10 @@ export default class SelectionInfoPanel extends Panel {
       }
     }
 
+    this._formFieldsByKey = Object.fromEntries(
+      formContents.map((field) => [field.key, field])
+    );
+
     if (!formContents.length) {
       this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
     } else {
@@ -339,12 +343,24 @@ export default class SelectionInfoPanel extends Panel {
                 deleteNestedValue(layerGlyph, changePath);
               }
             }
-            changes = applyNewValue(glyph, layerInfo, changePath, value);
+            changes = applyNewValue(
+              glyph,
+              layerInfo,
+              changePath,
+              value,
+              this._formFieldsByKey[fieldKey]
+            );
             await sendIncrementalChange(changes.change, true); // true: "may drop"
           }
         } else {
           // Simple, atomic change
-          changes = applyNewValue(glyph, layerInfo, changePath, value);
+          changes = applyNewValue(
+            glyph,
+            layerInfo,
+            changePath,
+            value,
+            this._formFieldsByKey[fieldKey]
+          );
         }
 
         const undoLabel =
@@ -385,16 +401,30 @@ function deleteNestedValue(subject, path) {
   delete subject[key];
 }
 
-function applyNewValue(glyph, layerInfo, changePath, value) {
+function applyNewValue(glyph, layerInfo, changePath, value, field) {
   const primaryOrgValue = layerInfo[0].orgValue;
-  const delta = typeof primaryOrgValue === "number" ? value - primaryOrgValue : null;
+  const isNumber = typeof primaryOrgValue === "number";
+  const delta = isNumber ? value - primaryOrgValue : null;
   return recordChanges(glyph, (glyph) => {
     const layers = glyph.layers;
     for (const { layerName, orgValue } of layerInfo) {
-      const newValue = delta === null ? value : orgValue + delta;
+      let newValue = delta === null ? value : orgValue + delta;
+      if (isNumber) {
+        newValue = maybeClampValue(newValue, field.minValue, field.maxValue);
+      }
       setNestedValue(layers[layerName].glyph, changePath, newValue);
     }
   });
+}
+
+function maybeClampValue(value, min, max) {
+  if (min !== undefined) {
+    value = Math.max(value, min);
+  }
+  if (max !== undefined) {
+    value = Math.min(value, max);
+  }
+  return value;
 }
 
 customElements.define("panel-selection-info", SelectionInfoPanel);
