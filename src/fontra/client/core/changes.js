@@ -104,6 +104,13 @@ export class ChangeCollector {
     }
     return ChangeCollector.fromChanges(forwardChanges, rollbackChanges);
   }
+
+  prefixed(pathPrefix) {
+    return ChangeCollector.fromChanges(
+      consolidateChanges(this.change, pathPrefix),
+      consolidateChanges(this.rollbackChange, pathPrefix)
+    );
+  }
 }
 
 export function consolidateChanges(changes, prefixPath) {
