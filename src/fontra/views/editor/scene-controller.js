@@ -726,11 +726,15 @@ export class SceneController {
     return await this._editGlyphOrInstance(editFunc, senderID, false);
   }
 
+  async editGlyphAtLayer(editFunc, senderID) {
+    return await this._editGlyphOrInstance(editFunc, senderID, false, true);
+  }
+
   async editInstance(editFunc, senderID) {
     return await this._editGlyphOrInstance(editFunc, senderID, true);
   }
 
-  async _editGlyphOrInstance(editFunc, senderID, doInstance) {
+  async _editGlyphOrInstance(editFunc, senderID, doInstance, requireSelectedLayer) {
     if (this._glyphEditingDonePromise) {
       try {
         // A previous call to _editGlyphOrInstance is still ongoing.
@@ -745,7 +749,12 @@ export class SceneController {
       editingDone = resolve;
     });
     try {
-      return await this._editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance);
+      return await this._editGlyphOrInstanceUnchecked(
+        editFunc,
+        senderID,
+        doInstance,
+        requireSelectedLayer
+      );
     } finally {
       // // Simulate slow response
       // console.log("...delay");
@@ -757,19 +766,27 @@ export class SceneController {
     }
   }
 
-  async _editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance) {
+  async _editGlyphOrInstanceUnchecked(
+    editFunc,
+    senderID,
+    doInstance,
+    requireSelectedLayer
+  ) {
     const glyphName = this.sceneModel.getSelectedGlyphName();
     const varGlyph = await this.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
 
-    let editSubject;
-    if (doInstance) {
+    let glyphController;
+    if (doInstance || requireSelectedLayer) {
       const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
       if (!glyphController.canEdit) {
         this._dispatchEvent("glyphEditLocationNotAtSource");
         return;
       }
+    }
 
+    let editSubject;
+    if (doInstance) {
       editSubject = glyphController.instance;
       baseChangePath.push("layers", glyphController.layerName, "glyph");
     } else {
