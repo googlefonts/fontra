@@ -339,30 +339,12 @@ export default class SelectionInfoPanel extends Panel {
                 deleteNestedValue(layerGlyph, changePath);
               }
             }
-            const primaryOrgValue = layerInfo[0].orgValue;
-            const delta =
-              typeof primaryOrgValue === "number" ? value - primaryOrgValue : null;
-            changes = recordChanges(glyph, (glyph) => {
-              const layers = glyph.layers;
-              for (const { layerName, orgValue } of layerInfo) {
-                const newValue = delta === null ? value : orgValue + delta;
-                setNestedValue(layers[layerName].glyph, changePath, newValue);
-              }
-            });
+            changes = applyNewValue(glyph, layerInfo, changePath, value);
             await sendIncrementalChange(changes.change, true); // true: "may drop"
           }
         } else {
           // Simple, atomic change
-          const primaryOrgValue = layerInfo[0].orgValue;
-          const delta =
-            typeof primaryOrgValue === "number" ? value - primaryOrgValue : null;
-          changes = recordChanges(glyph, (glyph) => {
-            const layers = glyph.layers;
-            for (const { layerName, orgValue } of layerInfo) {
-              const newValue = delta === null ? value : orgValue + delta;
-              setNestedValue(layers[layerName].glyph, changePath, newValue);
-            }
-          });
+          changes = applyNewValue(glyph, layerInfo, changePath, value);
         }
 
         const undoLabel =
@@ -401,6 +383,18 @@ function deleteNestedValue(subject, path) {
   path = path.slice(0, -1);
   subject = getNestedValue(subject, path);
   delete subject[key];
+}
+
+function applyNewValue(glyph, layerInfo, changePath, value) {
+  const primaryOrgValue = layerInfo[0].orgValue;
+  const delta = typeof primaryOrgValue === "number" ? value - primaryOrgValue : null;
+  return recordChanges(glyph, (glyph) => {
+    const layers = glyph.layers;
+    for (const { layerName, orgValue } of layerInfo) {
+      const newValue = delta === null ? value : orgValue + delta;
+      setNestedValue(layers[layerName].glyph, changePath, newValue);
+    }
+  });
 }
 
 customElements.define("panel-selection-info", SelectionInfoPanel);
