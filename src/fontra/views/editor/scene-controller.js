@@ -1,5 +1,10 @@
 import { recordChanges } from "../core/change-recorder.js";
-import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
+import {
+  ChangeCollector,
+  applyChange,
+  consolidateChanges,
+  hasChange,
+} from "../core/changes.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { glyphLinesFromText, textFromGlyphLines } from "../core/glyph-lines.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
@@ -392,36 +397,55 @@ export class SceneController {
       dy *= 10;
     }
     const delta = { x: dx, y: dy };
-    await this.editInstance((sendIncrementalChange, instance) => {
-      const behaviorFactory = new EditBehaviorFactory(
-        instance,
-        this.selection,
-        this.experimentalFeatures.scalingEditBehavior
-      );
-      const editBehavior = behaviorFactory.getBehavior(
-        event.altKey ? "alternate" : "default"
-      );
-      const editChange = editBehavior.makeChangeForDelta(delta);
-      applyChange(instance, editChange);
+    await this.editGlyph((sendIncrementalChange, glyph) => {
+      const layerInfo = Object.entries(
+        this.getEditingLayerFromGlyphLayers(glyph.layers)
+      ).map(([layerName, layerGlyph]) => {
+        const behaviorFactory = new EditBehaviorFactory(
+          layerGlyph,
+          this.selection,
+          this.experimentalFeatures.scalingEditBehavior
+        );
+        return {
+          layerName,
+          layerGlyph,
+          changePath: ["layers", layerName, "glyph"],
+          pathPrefix: [],
+          editBehavior: behaviorFactory.getBehavior(
+            event.altKey ? "alternate" : "default"
+          ),
+        };
+      });
+
+      const editChanges = [];
+      const rollbackChanges = [];
+      layerInfo.forEach(({ layerGlyph, changePath, editBehavior }) => {
+        const editChange = editBehavior.makeChangeForDelta(delta);
+        applyChange(layerGlyph, editChange);
+        editChanges.push(consolidateChanges(editChange, changePath));
+        rollbackChanges.push(
+          consolidateChanges(editBehavior.rollbackChange, changePath)
+        );
+      });
 
       let changes = ChangeCollector.fromChanges(
-        editChange,
-        editBehavior.rollbackChange
+        consolidateChanges(editChanges),
+        consolidateChanges(rollbackChanges)
       );
 
       const connectDetector = this.getPathConnectDetector();
-      if (connectDetector.shouldConnect()) {
-        const connectChanges = recordChanges(instance, (instance) => {
-          this.selection = connectContours(
-            instance.path,
-            connectDetector.connectSourcePointIndex,
-            connectDetector.connectTargetPointIndex
-          );
-        });
-        if (connectChanges.hasChange) {
-          changes = changes.concat(connectChanges);
-        }
-      }
+      // if (connectDetector.shouldConnect()) {
+      //   const connectChanges = recordChanges(instance, (instance) => {
+      //     this.selection = connectContours(
+      //       instance.path,
+      //       connectDetector.connectSourcePointIndex,
+      //       connectDetector.connectTargetPointIndex
+      //     );
+      //   });
+      //   if (connectChanges.hasChange) {
+      //     changes = changes.concat(connectChanges);
+      //   }
+      // }
 
       return {
         changes: changes,
