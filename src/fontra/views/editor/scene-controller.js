@@ -690,10 +690,15 @@ export class SceneController {
   }
 
   async editLayersAndRecordChanges(editFunc, senderID) {
-    return await this.editGlyphAndRecordChanges((glyph) => {
-      const layerGlyphs = this.getEditingLayerFromGlyphLayers(glyph.layers);
-      return editFunc(layerGlyphs);
-    }, senderID);
+    return await this._editGlyphOrInstanceAndRecordChanges(
+      (glyph) => {
+        const layerGlyphs = this.getEditingLayerFromGlyphLayers(glyph.layers);
+        return editFunc(layerGlyphs);
+      },
+      senderID,
+      false,
+      true
+    );
   }
 
   getEditingLayerFromGlyphLayers(layers) {
@@ -704,7 +709,12 @@ export class SceneController {
     );
   }
 
-  async _editGlyphOrInstanceAndRecordChanges(editFunc, senderID, doInstance) {
+  async _editGlyphOrInstanceAndRecordChanges(
+    editFunc,
+    senderID,
+    doInstance,
+    requireSelectedLayer
+  ) {
     await this._editGlyphOrInstance(
       (sendIncrementalChange, subject) => {
         let undoLabel;
@@ -718,16 +728,13 @@ export class SceneController {
         };
       },
       senderID,
-      doInstance
+      doInstance,
+      requireSelectedLayer
     );
   }
 
   async editGlyph(editFunc, senderID) {
     return await this._editGlyphOrInstance(editFunc, senderID, false, true);
-  }
-
-  async editInstance(editFunc, senderID) {
-    return await this._editGlyphOrInstance(editFunc, senderID, true);
   }
 
   async _editGlyphOrInstance(editFunc, senderID, doInstance, requireSelectedLayer) {
