@@ -723,10 +723,6 @@ export class SceneController {
   }
 
   async editGlyph(editFunc, senderID) {
-    return await this._editGlyphOrInstance(editFunc, senderID, false);
-  }
-
-  async editGlyphAtLayer(editFunc, senderID) {
     return await this._editGlyphOrInstance(editFunc, senderID, false, true);
   }
 
