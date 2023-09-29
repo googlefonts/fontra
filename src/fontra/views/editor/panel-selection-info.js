@@ -340,7 +340,7 @@ export default class SelectionInfoPanel extends Panel {
             }
             const primaryOrgValue = layerInfo[0].orgValue;
             const delta =
-              primaryOrgValue !== undefined ? value - primaryOrgValue : null;
+              typeof primaryOrgValue === "number" ? value - primaryOrgValue : null;
             changes = recordChanges(glyph, (glyph) => {
               const layers = glyph.layers;
               for (const { layerName, orgValue } of layerInfo) {
@@ -353,7 +353,8 @@ export default class SelectionInfoPanel extends Panel {
         } else {
           // Simple, atomic change
           const primaryOrgValue = layerInfo[0].orgValue;
-          const delta = primaryOrgValue !== undefined ? value - primaryOrgValue : null;
+          const delta =
+            typeof primaryOrgValue === "number" ? value - primaryOrgValue : null;
           changes = recordChanges(glyph, (glyph) => {
             const layers = glyph.layers;
             for (const { layerName, orgValue } of layerInfo) {
