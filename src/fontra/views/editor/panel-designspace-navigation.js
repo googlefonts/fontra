@@ -456,8 +456,15 @@ export default class DesignspaceNavigationPanel extends Panel {
       });
       sourceController.addKeyListener("status", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-          glyph.sources[index].customData[FONTRA_STATUS_KEY] = event.newValue;
-          return `set status ${source.name}`;
+          const editingLayerNames = new Set(this.sceneController.editingLayerNames);
+          let count = 0;
+          for (const [i, source] of enumerate(glyph.sources)) {
+            if (editingLayerNames.has(source.layerName)) {
+              source.customData[FONTRA_STATUS_KEY] = event.newValue;
+              count++;
+            }
+          }
+          return `set status ${count > 1 ? "(multiple)" : source.name}`;
         });
       });
       sourceItems.push(sourceController.model);
