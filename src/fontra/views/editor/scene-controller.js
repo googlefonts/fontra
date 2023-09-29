@@ -419,14 +419,14 @@ export class SceneController {
 
       const editChanges = [];
       const rollbackChanges = [];
-      layerInfo.forEach(({ layerGlyph, changePath, editBehavior }) => {
+      for (const { layerGlyph, changePath, editBehavior } of layerInfo) {
         const editChange = editBehavior.makeChangeForDelta(delta);
         applyChange(layerGlyph, editChange);
         editChanges.push(consolidateChanges(editChange, changePath));
         rollbackChanges.push(
           consolidateChanges(editBehavior.rollbackChange, changePath)
         );
-      });
+      }
 
       let changes = ChangeCollector.fromChanges(
         consolidateChanges(editChanges),
