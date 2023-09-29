@@ -317,7 +317,6 @@ export default class SelectionInfoPanel extends Panel {
     this.infoForm.onFieldChange = async (fieldKey, value, valueStream) => {
       const changePath = JSON.parse(fieldKey);
       await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
-        let changes;
         const layerInfo = Object.entries(
           this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
         ).map(([layerName, layerGlyph]) => {
@@ -327,6 +326,8 @@ export default class SelectionInfoPanel extends Panel {
             orgValue: getNestedValue(layerGlyph, changePath),
           };
         });
+
+        let changes;
 
         if (valueStream) {
           // Continuous changes (eg. slider drag)
