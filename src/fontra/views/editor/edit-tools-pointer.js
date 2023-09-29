@@ -1,5 +1,5 @@
 import { recordChanges } from "../core/change-recorder.js";
-import { ChangeCollector, applyChange } from "../core/changes.js";
+import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { connectContours, toggleSmooth } from "../core/path-functions.js";
 import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
@@ -246,57 +246,98 @@ export class PointerTool extends BaseTool {
 
   async handleDragSelection(eventStream, initialEvent) {
     const sceneController = this.sceneController;
-    await sceneController.editInstance(async (sendIncrementalChange, instance) => {
+    await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.localPoint(initialEvent);
-      const connectDetector = sceneController.getPathConnectDetector();
-      let shouldConnect = false;
-
-      const behaviorFactory = new EditBehaviorFactory(
-        instance,
-        sceneController.selection,
-        sceneController.experimentalFeatures.scalingEditBehavior
-      );
-
       let behaviorName = getBehaviorName(initialEvent);
-      let editBehavior = behaviorFactory.getBehavior(behaviorName);
+
+      const layerInfo = Object.entries(
+        sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
+      ).map(([layerName, layerGlyph]) => {
+        const behaviorFactory = new EditBehaviorFactory(
+          layerGlyph,
+          sceneController.selection,
+          sceneController.experimentalFeatures.scalingEditBehavior
+        );
+        return {
+          layerName,
+          layerGlyph,
+          changePath: ["layers", layerName, "glyph"],
+          pathPrefix: [],
+          connectDetector: sceneController.getPathConnectDetector(layerGlyph.path),
+          shouldConnect: false,
+          behaviorFactory,
+          editBehavior: behaviorFactory.getBehavior(behaviorName),
+        };
+      });
+
+      layerInfo[0].isPrimaryLayer = true;
 
       let editChange;
 
       for await (const event of eventStream) {
         const newEditBehaviorName = getBehaviorName(event);
         if (behaviorName !== newEditBehaviorName) {
-          applyChange(instance, editBehavior.rollbackChange);
-          await sendIncrementalChange(editBehavior.rollbackChange);
+          // Behavior changed, undo current changes
           behaviorName = newEditBehaviorName;
-          editBehavior = behaviorFactory.getBehavior(behaviorName);
+          const rollbackChanges = [];
+          for (const layer of layerInfo) {
+            applyChange(layer.layerGlyph, layer.editBehavior.rollbackChange);
+            rollbackChanges.push(
+              consolidateChanges(layer.editBehavior.rollbackChange, layer.changePath)
+            );
+            layer.editBehavior = layer.behaviorFactory.getBehavior(behaviorName);
+          }
+          await sendIncrementalChange(consolidateChanges(rollbackChanges));
         }
         const currentPoint = sceneController.localPoint(event);
         const delta = {
           x: currentPoint.x - initialPoint.x,
           y: currentPoint.y - initialPoint.y,
         };
-        editChange = editBehavior.makeChangeForDelta(delta);
-        applyChange(instance, editChange);
 
-        shouldConnect = connectDetector.shouldConnect(true);
+        const deepEditChanges = [];
+        for (const layer of layerInfo) {
+          const editChange = layer.editBehavior.makeChangeForDelta(delta);
+          applyChange(layer.layerGlyph, editChange);
+          deepEditChanges.push(consolidateChanges(editChange, layer.changePath));
+          layer.shouldConnect = layer.connectDetector.shouldConnect(
+            layer.isPrimaryLayer
+          );
+        }
 
+        editChange = consolidateChanges(deepEditChanges);
         await sendIncrementalChange(editChange, true); // true: "may drop"
       }
       let changes = ChangeCollector.fromChanges(
         editChange,
-        editBehavior.rollbackChange
+        consolidateChanges(
+          layerInfo.map((layer) =>
+            consolidateChanges(layer.editBehavior.rollbackChange, layer.changePath)
+          )
+        )
       );
-      if (shouldConnect) {
-        connectDetector.clearConnectIndicator();
-        const connectChanges = recordChanges(instance, (instance) => {
-          sceneController.selection = connectContours(
-            instance.path,
-            connectDetector.connectSourcePointIndex,
-            connectDetector.connectTargetPointIndex
+      let shouldConnect;
+      for (const layer of layerInfo) {
+        if (!layer.shouldConnect) {
+          continue;
+        }
+        shouldConnect = true;
+        if (layer.isPrimaryLayer) {
+          layer.connectDetector.clearConnectIndicator();
+        }
+
+        const connectChanges = recordChanges(layer.layerGlyph, (layerGlyph) => {
+          const selection = connectContours(
+            layerGlyph.path,
+            layer.connectDetector.connectSourcePointIndex,
+            layer.connectDetector.connectTargetPointIndex
           );
+          if (layer.isPrimaryLayer) {
+            sceneController.selection = selection;
+          }
         });
         if (connectChanges.hasChange) {
-          changes = changes.concat(connectChanges);
+          changes = changes.concat(connectChanges.prefixed(layer.changePath));
         }
       }
       return {
