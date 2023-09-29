@@ -256,7 +256,10 @@ export class RangeSlider extends LitElement {
     this._savedCanvasElement?.focus();
     this.sawMouseDown = false;
     this.sawMouseUp = true;
-    this.onChangeCallback({ value: this.value, dragEnd: true });
+    if (!this.sawChangeEvent) {
+      this.onChangeCallback({ value: this.value, dragEnd: true });
+    }
+    this.sawChangeEvent = false;
   }
 
   handleChange(event) {
@@ -264,6 +267,7 @@ export class RangeSlider extends LitElement {
       this.onChangeCallback({ value: this.value, dragEnd: true });
     }
     this.sawMouseUp = false;
+    this.sawChangeEvent = true;
   }
 
   changeValue(event) {
