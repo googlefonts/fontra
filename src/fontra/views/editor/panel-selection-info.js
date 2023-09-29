@@ -316,43 +316,63 @@ export default class SelectionInfoPanel extends Panel {
   async _setupSelectionInfoHandlers(glyphName) {
     this.infoForm.onFieldChange = async (fieldKey, value, valueStream) => {
       const changePath = JSON.parse(fieldKey);
-      await this.sceneController.editInstance(
-        async (sendIncrementalChange, instance) => {
-          let changes;
-
-          if (valueStream) {
-            // Continuous changes (eg. slider drag)
-            const orgValue = getNestedValue(instance, changePath);
-            for await (const value of valueStream) {
-              if (orgValue !== undefined) {
-                setNestedValue(instance, changePath, orgValue); // Ensure getting the correct undo change
-              } else {
-                deleteNestedValue(instance, changePath);
-              }
-              changes = recordChanges(instance, (instance) => {
-                setNestedValue(instance, changePath, value);
-              });
-              await sendIncrementalChange(changes.change, true); // true: "may drop"
-            }
-          } else {
-            // Simple, atomic change
-            changes = recordChanges(instance, (instance) => {
-              setNestedValue(instance, changePath, value);
-            });
-          }
-
-          const undoLabel =
-            changePath.length == 1
-              ? `${changePath.at(-1)}`
-              : `${changePath.at(-2)}.${changePath.at(-1)}`;
+      await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
+        let changes;
+        const layerInfo = Object.entries(
+          this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
+        ).map(([layerName, layerGlyph]) => {
           return {
-            changes: changes,
-            undoLabel: undoLabel,
-            broadcast: true,
+            layerName,
+            layerGlyph,
+            orgValue: getNestedValue(layerGlyph, changePath),
           };
-        },
-        this
-      );
+        });
+
+        if (valueStream) {
+          // Continuous changes (eg. slider drag)
+          for await (const value of valueStream) {
+            for (const { layerName, layerGlyph, orgValue } of layerInfo) {
+              if (orgValue !== undefined) {
+                setNestedValue(layerGlyph, changePath, orgValue); // Ensure getting the correct undo change
+              } else {
+                deleteNestedValue(layerGlyph, changePath);
+              }
+            }
+            const primaryOrgValue = layerInfo[0].orgValue;
+            const delta =
+              primaryOrgValue !== undefined ? value - primaryOrgValue : null;
+            changes = recordChanges(glyph, (glyph) => {
+              const layers = glyph.layers;
+              for (const { layerName, orgValue } of layerInfo) {
+                const newValue = delta === null ? value : orgValue + delta;
+                setNestedValue(layers[layerName].glyph, changePath, newValue);
+              }
+            });
+            await sendIncrementalChange(changes.change, true); // true: "may drop"
+          }
+        } else {
+          // Simple, atomic change
+          const primaryOrgValue = layerInfo[0].orgValue;
+          const delta = primaryOrgValue !== undefined ? value - primaryOrgValue : null;
+          changes = recordChanges(glyph, (glyph) => {
+            const layers = glyph.layers;
+            for (const { layerName, orgValue } of layerInfo) {
+              const newValue = delta === null ? value : orgValue + delta;
+              setNestedValue(layers[layerName].glyph, changePath, newValue);
+            }
+          });
+        }
+
+        const undoLabel =
+          changePath.length == 1
+            ? `${changePath.at(-1)}`
+            : `${changePath.at(-2)}.${changePath.at(-1)}`;
+        return {
+          changes: changes,
+          undoLabel: undoLabel,
+          broadcast: true,
+        };
+      }, this);
     };
   }
 }
