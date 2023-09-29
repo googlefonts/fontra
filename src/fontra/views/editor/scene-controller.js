@@ -989,16 +989,19 @@ export class SceneController {
     });
   }
 
-  getPathConnectDetector() {
-    return new PathConnectDetector(this);
+  getPathConnectDetector(path) {
+    if (!path) {
+      const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+      path = positionedGlyph.glyph.path;
+    }
+    return new PathConnectDetector(this, path);
   }
 }
 
 class PathConnectDetector {
-  constructor(sceneController) {
+  constructor(sceneController, path) {
     this.sceneController = sceneController;
-    const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
-    this.path = positionedGlyph.glyph.path;
+    this.path = path;
     const selection = sceneController.selection;
     if (selection.size !== 1) {
       return;
