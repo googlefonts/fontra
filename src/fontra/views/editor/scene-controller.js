@@ -1041,12 +1041,14 @@ class PathConnectDetector {
       connectTargetPointIndex !== undefined &&
       connectTargetPointIndex !== this.connectSourcePointIndex &&
       !!this.path.isStartOrEndPoint(connectTargetPointIndex);
-    if (showConnectIndicator && shouldConnect) {
-      sceneController.sceneModel.pathConnectTargetPoint = this.path.getPoint(
-        connectTargetPointIndex
-      );
-    } else {
-      delete sceneController.sceneModel.pathConnectTargetPoint;
+    if (showConnectIndicator) {
+      if (shouldConnect) {
+        sceneController.sceneModel.pathConnectTargetPoint = this.path.getPoint(
+          connectTargetPointIndex
+        );
+      } else {
+        delete sceneController.sceneModel.pathConnectTargetPoint;
+      }
     }
     this.connectTargetPointIndex = connectTargetPointIndex;
     return shouldConnect;
