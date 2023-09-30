@@ -828,22 +828,21 @@ export class EditorController {
       // We *have* to do this first, as it won't work after any
       // await (Safari insists on that). So we have to do a bit
       // of redundant work by calling _prepareCopyOrCut twice.
-      const { instance, flattenedPath } = this._prepareCopyOrCut(
+      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
         undefined,
-        false,
-        true
+        false
       );
-      await this._writeInstanceToClipboard(instance, flattenedPath, event);
+      await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
     }
     let copyResult;
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      copyResult = this._prepareCopyOrCut(instance, true, true);
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      copyResult = this._prepareCopyOrCutLayers(glyph, true);
       this.sceneController.selection = new Set();
       return "Cut Selection";
     });
     if (copyResult && !event) {
-      const { instance, flattenedPath } = copyResult;
-      await this._writeInstanceToClipboard(instance, flattenedPath);
+      const { layerGlyphs, flattenedPath } = copyResult;
+      await this._writeLayersToClipboard(layerGlyphs, flattenedPath);
     }
   }
 
@@ -853,10 +852,10 @@ export class EditorController {
 
   async doCopy(event) {
     const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(false);
-    await this._writeInstanceToClipboard(layerGlyphs, flattenedPath, event);
+    await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
   }
 
-  async _writeInstanceToClipboard(layerGlyphs, flattenedPath, event) {
+  async _writeLayersToClipboard(layerGlyphs, flattenedPath, event) {
     const bounds = flattenedPath?.getControlBounds();
     if (!bounds || !layerGlyphs?.length) {
       // nothing to do
