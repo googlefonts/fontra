@@ -828,12 +828,12 @@ export class EditorController {
       // We *have* to do this first, as it won't work after any
       // await (Safari insists on that). So we have to do a bit
       // of redundant work by calling _prepareCopyOrCut twice.
-      const { instance, path } = this._prepareCopyOrCut();
+      const { instance, path } = this._prepareCopyOrCut(undefined, false, true);
       await this._writeInstanceToClipboard(instance, path, event);
     }
     let copyResult;
     await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      copyResult = this._prepareCopyOrCut(instance, true);
+      copyResult = this._prepareCopyOrCut(instance, true, true);
       this.sceneController.selection = new Set();
       return "Cut Selection";
     });
@@ -848,7 +848,7 @@ export class EditorController {
   }
 
   async doCopy(event) {
-    const { instance, path } = this._prepareCopyOrCut();
+    const { instance, path } = this._prepareCopyOrCut(undefined, false, true);
     if (!instance) {
       return;
     }
@@ -890,7 +890,7 @@ export class EditorController {
     }
   }
 
-  _prepareCopyOrCut(editInstance, doCut = false) {
+  _prepareCopyOrCut(editInstance, doCut = false, wantFlattenedPath = false) {
     if (doCut !== !!editInstance) {
       throw new Error("assert -- inconsistent editInstance vs doCut argument");
     }
@@ -910,7 +910,7 @@ export class EditorController {
         ? {}
         : {
             instance: editInstance,
-            path: glyphController.flattenedPath,
+            path: wantFlattenedPath ? glyphController.flattenedPath : undefined,
           };
     }
 
@@ -919,13 +919,15 @@ export class EditorController {
     );
     let path;
     let components;
-    const paths = [];
+    const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
-      paths.push(path);
+      flattenedPathList?.push(path);
     }
     if (componentIndices) {
-      paths.push(...componentIndices.map((i) => glyphController.components[i].path));
+      flattenedPathList?.push(
+        ...componentIndices.map((i) => glyphController.components[i].path)
+      );
       components = componentIndices.map((i) => editInstance.components[i]);
       if (doCut) {
         for (const componentIndex of reversed(componentIndices)) {
@@ -938,7 +940,10 @@ export class EditorController {
       path: path,
       components: components,
     });
-    return { instance: instance, path: joinPaths(paths) };
+    return {
+      instance: instance,
+      path: wantFlattenedPath ? joinPaths(flattenedPathList) : undefined,
+    };
   }
 
   canPaste() {
@@ -1038,7 +1043,7 @@ export class EditorController {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         if (event.altKey) {
           // Behave like "cut", but don't put anything on the clipboard
-          this._prepareCopyOrCut(layerGlyph, true);
+          this._prepareCopyOrCut(layerGlyph, true, false);
         } else {
           if (pointSelection) {
             deleteSelectedPoints(layerGlyph.path, pointSelection);
