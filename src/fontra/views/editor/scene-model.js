@@ -239,6 +239,9 @@ export class SceneModel {
       return;
     }
     const varGlyph = await this.fontController.getGlyph(glyphName);
+    if (!varGlyph) {
+      return;
+    }
     this.backgroundLayerGlyphs = await this._setupBackgroundGlyphs(
       glyphName,
       varGlyph,
