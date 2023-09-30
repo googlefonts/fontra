@@ -1073,11 +1073,7 @@ export class EditorController {
           const pasteGlyph =
             pasteLayerGlyphsByLayerName[layerName] || defaultPasteGlyph;
           layerGlyph.path.appendPath(pasteGlyph.path);
-          layerGlyph.components.splice(
-            layerGlyph.components.length,
-            0,
-            ...pasteGlyph.components
-          );
+          layerGlyph.components.push(...pasteGlyph.components);
         }
         this.sceneController.selection = selection;
         return "Paste";
