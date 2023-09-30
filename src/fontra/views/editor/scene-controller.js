@@ -781,7 +781,7 @@ export class SceneController {
 
     let glyphController;
     if (doInstance || requireSelectedLayer) {
-      const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+      glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
       if (!glyphController.canEdit) {
         this._dispatchEvent("glyphEditLocationNotAtSource");
         return;
