@@ -223,13 +223,13 @@ export default class DesignspaceNavigationPanel extends Panel {
           false,
           (item, key) => {
             const selectedItem = this.sourcesList.getSelectedItem();
-            if (
+            const newValue =
+              !selectedItem ||
               item?.interpolationStatus?.error ||
               (selectedItem?.interpolationStatus?.error && selectedItem !== item)
-            ) {
-              return false;
-            }
-            return !item[key] || item === selectedItem;
+                ? false
+                : !item[key] || item === selectedItem;
+            return { newValue, propagateEvent: !selectedItem };
           }
         ),
         width: "1.2em",
@@ -1036,12 +1036,14 @@ function makeIconCellFactory(
         event.stopImmediatePropagation();
       },
       [clickSymbol]: (event) => {
-        const newValue = switchValue
+        const { newValue, propagateEvent } = switchValue
           ? switchValue(item, colDesc.key)
-          : !item[colDesc.key];
+          : { newValue: !item[colDesc.key] };
         item[colDesc.key] = newValue;
         iconElement.src = iconPaths[boolInt(newValue)];
-        event.stopImmediatePropagation();
+        if (!propagateEvent) {
+          event.stopImmediatePropagation();
+        }
       },
     });
     item[controllerKey].addKeyListener(colDesc.key, (event) => {
