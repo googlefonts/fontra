@@ -828,8 +828,12 @@ export class EditorController {
       // We *have* to do this first, as it won't work after any
       // await (Safari insists on that). So we have to do a bit
       // of redundant work by calling _prepareCopyOrCut twice.
-      const { instance, path } = this._prepareCopyOrCut(undefined, false, true);
-      await this._writeInstanceToClipboard(instance, path, event);
+      const { instance, flattenedPath } = this._prepareCopyOrCut(
+        undefined,
+        false,
+        true
+      );
+      await this._writeInstanceToClipboard(instance, flattenedPath, event);
     }
     let copyResult;
     await this.sceneController.editInstanceAndRecordChanges((instance) => {
@@ -838,8 +842,8 @@ export class EditorController {
       return "Cut Selection";
     });
     if (copyResult && !event) {
-      const { instance, path } = copyResult;
-      await this._writeInstanceToClipboard(instance, path);
+      const { instance, flattenedPath } = copyResult;
+      await this._writeInstanceToClipboard(instance, flattenedPath);
     }
   }
 
@@ -848,11 +852,11 @@ export class EditorController {
   }
 
   async doCopy(event) {
-    const { instance, path } = this._prepareCopyOrCut(undefined, false, true);
+    const { instance, flattenedPath } = this._prepareCopyOrCut(undefined, false, true);
     if (!instance) {
       return;
     }
-    await this._writeInstanceToClipboard(instance, path, event);
+    await this._writeInstanceToClipboard(instance, flattenedPath, event);
   }
 
   async _writeInstanceToClipboard(instance, path, event) {
@@ -910,7 +914,9 @@ export class EditorController {
         ? {}
         : {
             instance: editInstance,
-            path: wantFlattenedPath ? glyphController.flattenedPath : undefined,
+            flattenedPath: wantFlattenedPath
+              ? glyphController.flattenedPath
+              : undefined,
           };
     }
 
@@ -942,7 +948,7 @@ export class EditorController {
     });
     return {
       instance: instance,
-      path: wantFlattenedPath ? joinPaths(flattenedPathList) : undefined,
+      flattenedPath: wantFlattenedPath ? joinPaths(flattenedPathList) : undefined,
     };
   }
 
