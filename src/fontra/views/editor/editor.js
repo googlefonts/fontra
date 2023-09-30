@@ -909,7 +909,7 @@ export class EditorController {
       return doCut
         ? {}
         : {
-            instance: glyphController.instance,
+            instance: editInstance,
             path: glyphController.flattenedPath,
           };
     }
@@ -926,7 +926,7 @@ export class EditorController {
     }
     if (componentIndices) {
       paths.push(...componentIndices.map((i) => glyphController.components[i].path));
-      components = componentIndices.map((i) => glyphController.instance.components[i]);
+      components = componentIndices.map((i) => editInstance.components[i]);
       if (doCut) {
         for (const componentIndex of reversed(componentIndices)) {
           editInstance.components.splice(componentIndex, 1);
@@ -934,7 +934,7 @@ export class EditorController {
       }
     }
     const instance = StaticGlyph.fromObject({
-      ...glyphController.instance,
+      ...editInstance,
       path: path,
       components: components,
     });
