@@ -990,6 +990,14 @@ export class EditorController {
   }
 
   async doPaste() {
+    const pasteLayerGlyphs = await this._unpackClipboard();
+    if (!pasteLayerGlyphs?.length) {
+      return;
+    }
+    await this._pasteLayerGlyphs(pasteLayerGlyphs);
+  }
+
+  async _unpackClipboard() {
     const plainText = await readFromClipboard("text/plain");
     if (!plainText) {
       return;
@@ -1029,14 +1037,12 @@ export class EditorController {
     } else {
       pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
     }
+    return pasteLayerGlyphs;
+  }
 
-    if (!pasteLayerGlyphs?.length) {
-      return;
-    }
-
+  async _pasteLayerGlyphs(pasteLayerGlyphs) {
     const defaultPasteGlyph = pasteLayerGlyphs[0].glyph;
-    // Convert to dict, key by layerName
-    pasteLayerGlyphs = Object.fromEntries(
+    const pasteLayerGlyphsByLayerName = Object.fromEntries(
       pasteLayerGlyphs.map((layer) => [layer.layerName, layer.glyph])
     );
 
@@ -1064,7 +1070,8 @@ export class EditorController {
         }
 
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-          const pasteGlyph = pasteLayerGlyphs[layerName] || defaultPasteGlyph;
+          const pasteGlyph =
+            pasteLayerGlyphsByLayerName[layerName] || defaultPasteGlyph;
           layerGlyph.path.appendPath(pasteGlyph.path);
           layerGlyph.components.splice(
             layerGlyph.components.length,
