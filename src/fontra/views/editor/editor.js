@@ -213,15 +213,28 @@ export class EditorController {
   }
 
   async initPlugins() {
-    const plugins = [["fatih-erikli/fontra-plugin-demo", "0.1.4"]];
-    for (const [pluginGithubPath, version] of plugins) {
-      const meta = await fetchJSON(
-        `https://cdn.jsdelivr.net/gh/${pluginGithubPath}@${version}/plugin.json`
-      );
+    const observablePlugins = new ObservableController({
+      plugins: [],
+    });
+    observablePlugins.synchronizeWithLocalStorage("fontra.plugins");
+    for (const { address } of observablePlugins.model.plugins) {
+      const version = "latest";
+      let meta;
+      try {
+        meta = await fetchJSON(
+          `https://cdn.jsdelivr.net/gh/${address}@${version}/plugin.json`
+        );
+      } catch (e) {
+        alert(`${address}Plugin couldn't run.`);
+        // todo: ask for do you want to delete the plugin
+      }
+      if (!meta) {
+        continue;
+      }
       const initScript = meta.init;
       const functionName = meta.function;
       const module = await import(
-        `https://cdn.jsdelivr.net/gh/${pluginGithubPath}@${version}/${initScript}`
+        `https://cdn.jsdelivr.net/gh/${address}@${version}/${initScript}`
       );
       module[functionName](this);
     }
