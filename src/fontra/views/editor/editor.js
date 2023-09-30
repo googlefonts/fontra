@@ -856,14 +856,14 @@ export class EditorController {
     await this._writeInstanceToClipboard(layerGlyphs, flattenedPath, event);
   }
 
-  async _writeInstanceToClipboard(layerGlyphs, path, event) {
-    const bounds = path?.getControlBounds();
+  async _writeInstanceToClipboard(layerGlyphs, flattenedPath, event) {
+    const bounds = flattenedPath?.getControlBounds();
     if (!bounds || !layerGlyphs?.length) {
       // nothing to do
       return;
     }
 
-    const svgString = pathToSVG(path, bounds);
+    const svgString = pathToSVG(flattenedPath, bounds);
     const glyphName = this.sceneSettings.selectedGlyphName;
     const unicodes = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, unicodes);
