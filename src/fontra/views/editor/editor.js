@@ -990,8 +990,6 @@ export class EditorController {
   }
 
   async doPaste() {
-    let pastedGlyph;
-
     const plainText = await readFromClipboard("text/plain");
     if (!plainText) {
       return;
@@ -1010,48 +1008,76 @@ export class EditorController {
     ) {
       customJSON = localStorage.getItem("clipboardSelection.glyph");
     }
+    if (!customJSON && plainText[0] == "{") {
+      customJSON = plainText;
+    }
+
+    let pasteLayerGlyphs;
 
     if (customJSON) {
-      pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
-    } else {
-      if (plainText[0] == "{") {
-        try {
-          pastedGlyph = StaticGlyph.fromObject(JSON.parse(plainText));
-        } catch (error) {
-          console.log("couldn't paste from JSON:", error.toString());
-        }
-      } else {
-        pastedGlyph = await this.parseClipboard(plainText);
+      try {
+        const clipboardObject = JSON.parse(customJSON);
+        pasteLayerGlyphs = clipboardObject.layerGlyphs?.map((layer) => {
+          return {
+            layerName: layer.layerName,
+            glyph: StaticGlyph.fromObject(layer.glyph),
+          };
+        });
+      } catch (error) {
+        console.log("couldn't paste from JSON:", error.toString());
       }
+    } else {
+      pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
     }
 
-    if (!pastedGlyph) {
+    if (!pasteLayerGlyphs?.length) {
       return;
     }
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      const selection = new Set();
-      for (const pointIndex of range(pastedGlyph.path.numPoints)) {
-        const pointType =
-          pastedGlyph.path.pointTypes[pointIndex] & VarPackedPath.POINT_TYPE_MASK;
-        if (pointType === VarPackedPath.ON_CURVE) {
-          selection.add(`point/${pointIndex + instance.path.numPoints}`);
+
+    const defaultPasteGlyph = pasteLayerGlyphs[0].glyph;
+    // Convert to dict, key by layerName
+    pasteLayerGlyphs = Object.fromEntries(
+      pasteLayerGlyphs.map((layer) => [layer.layerName, layer.glyph])
+    );
+
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+          glyph.layers
+        );
+        const firstLayerGlyph = Object.values(editLayerGlyphs)[0];
+
+        const selection = new Set();
+        for (const pointIndex of range(defaultPasteGlyph.path.numPoints)) {
+          const pointType =
+            defaultPasteGlyph.path.pointTypes[pointIndex] &
+            VarPackedPath.POINT_TYPE_MASK;
+          if (pointType === VarPackedPath.ON_CURVE) {
+            selection.add(`point/${pointIndex + firstLayerGlyph.path.numPoints}`);
+          }
         }
-      }
-      for (const componentIndex of range(
-        instance.components.length,
-        instance.components.length + pastedGlyph.components.length
-      )) {
-        selection.add(`component/${componentIndex}`);
-      }
-      instance.path.appendPath(pastedGlyph.path);
-      instance.components.splice(
-        instance.components.length,
-        0,
-        ...pastedGlyph.components
-      );
-      this.sceneController.selection = selection;
-      return "Paste";
-    });
+        for (const componentIndex of range(
+          firstLayerGlyph.components.length,
+          firstLayerGlyph.components.length + defaultPasteGlyph.components.length
+        )) {
+          selection.add(`component/${componentIndex}`);
+        }
+
+        for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+          const pasteGlyph = pasteLayerGlyphs[layerName] || defaultPasteGlyph;
+          layerGlyph.path.appendPath(pasteGlyph.path);
+          layerGlyph.components.splice(
+            layerGlyph.components.length,
+            0,
+            ...pasteGlyph.components
+          );
+        }
+        this.sceneController.selection = selection;
+        return "Paste";
+      },
+      undefined,
+      true
+    );
   }
 
   async parseClipboard(data) {
