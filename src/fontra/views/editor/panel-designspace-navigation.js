@@ -362,7 +362,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const selectedItem = this.sourcesList.getSelectedItem();
     const onOff = selectedItem?.interpolationStatus?.error
       ? false
-      : !items.every((item) => item.editing);
+      : selectedItem && !items.every((item) => item.editing);
     for (const item of items) {
       item.editing = onOff || item === selectedItem;
     }
