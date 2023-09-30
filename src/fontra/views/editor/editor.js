@@ -852,16 +852,13 @@ export class EditorController {
   }
 
   async doCopy(event) {
-    const { instance, flattenedPath } = this._prepareCopyOrCut(undefined, false, true);
-    if (!instance) {
-      return;
-    }
-    await this._writeInstanceToClipboard(instance, flattenedPath, event);
+    const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(false);
+    await this._writeInstanceToClipboard(layerGlyphs, flattenedPath, event);
   }
 
-  async _writeInstanceToClipboard(instance, path, event) {
-    const bounds = path.getControlBounds();
-    if (!bounds) {
+  async _writeInstanceToClipboard(layerGlyphs, path, event) {
+    const bounds = path?.getControlBounds();
+    if (!bounds || !layerGlyphs?.length) {
       // nothing to do
       return;
     }
@@ -869,8 +866,8 @@ export class EditorController {
     const svgString = pathToSVG(path, bounds);
     const glyphName = this.sceneSettings.selectedGlyphName;
     const unicodes = this.fontController.glyphMap[glyphName] || [];
-    const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
-    const jsonString = JSON.stringify(instance);
+    const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, unicodes);
+    const jsonString = JSON.stringify({ layerGlyphs: layerGlyphs });
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
@@ -894,10 +891,43 @@ export class EditorController {
     }
   }
 
-  _prepareCopyOrCut(editInstance, doCut = false, wantFlattenedPath = false) {
-    if (doCut !== !!editInstance) {
-      throw new Error("assert -- inconsistent editInstance vs doCut argument");
+  _prepareCopyOrCutLayers(varGlyph, doCut) {
+    if (!varGlyph) {
+      varGlyph = this.sceneModel.getSelectedPositionedGlyph().varGlyph;
     }
+    if (!varGlyph) {
+      return;
+    }
+    const layerGlyphs = [];
+    let flattenedPath;
+    for (const [layerName, layerGlyph] of Object.entries(
+      this.sceneController.getEditingLayerFromGlyphLayers(varGlyph.layers)
+    )) {
+      const copyResult = this._prepareCopyOrCut(layerGlyph, doCut, !flattenedPath);
+      if (!copyResult.instance) {
+        return;
+      }
+      if (!flattenedPath) {
+        flattenedPath = copyResult.flattenedPath;
+      }
+      layerGlyphs.push({ layerName, glyph: copyResult.instance });
+    }
+    if (!layerGlyphs.length && !doCut) {
+      const { instance, flattenedPath: instancePath } = this._prepareCopyOrCut(
+        undefined,
+        false,
+        true
+      );
+      flattenedPath = instancePath;
+      if (!instance) {
+        return;
+      }
+      layerGlyphs.push({ glyph: instance });
+    }
+    return { layerGlyphs, flattenedPath };
+  }
+
+  _prepareCopyOrCut(editInstance, doCut = false, wantFlattenedPath = false) {
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
     const glyphController = positionedGlyph?.glyph;
     if (!glyphController) {
