@@ -835,11 +835,15 @@ export class EditorController {
       await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
     }
     let copyResult;
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      copyResult = this._prepareCopyOrCutLayers(glyph, true);
-      this.sceneController.selection = new Set();
-      return "Cut Selection";
-    });
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        copyResult = this._prepareCopyOrCutLayers(glyph, true);
+        this.sceneController.selection = new Set();
+        return "Cut Selection";
+      },
+      undefined,
+      true
+    );
     if (copyResult && !event) {
       const { layerGlyphs, flattenedPath } = copyResult;
       await this._writeLayersToClipboard(layerGlyphs, flattenedPath);

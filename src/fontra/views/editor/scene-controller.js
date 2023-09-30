@@ -681,8 +681,13 @@ export class SceneController {
     return this._glyphEditingDonePromise;
   }
 
-  async editGlyphAndRecordChanges(editFunc, senderID) {
-    return await this._editGlyphOrInstanceAndRecordChanges(editFunc, senderID, false);
+  async editGlyphAndRecordChanges(editFunc, senderID, requireSelectedLayer) {
+    return await this._editGlyphOrInstanceAndRecordChanges(
+      editFunc,
+      senderID,
+      false,
+      requireSelectedLayer
+    );
   }
 
   async editInstanceAndRecordChanges(editFunc, senderID) {
