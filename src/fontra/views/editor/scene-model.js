@@ -346,6 +346,7 @@ export class SceneModel {
             ? editLayerName
             : undefined;
 
+        const varGlyph = await this.fontController.getGlyph(glyphInfo.glyphName);
         let glyphInstance = await this.getGlyphInstance(
           glyphInfo.glyphName,
           thisGlyphEditLayerName
@@ -360,6 +361,7 @@ export class SceneModel {
           x: x,
           y: y,
           glyph: glyphInstance,
+          varGlyph: varGlyph,
           glyphName: glyphInfo.glyphName,
           character: glyphInfo.character,
           isUndefined: isUndefined,
