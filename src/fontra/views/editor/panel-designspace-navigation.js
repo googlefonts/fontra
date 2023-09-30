@@ -229,7 +229,7 @@ export default class DesignspaceNavigationPanel extends Panel {
               (selectedItem?.interpolationStatus?.error && selectedItem !== item)
                 ? false
                 : !item[key] || item === selectedItem;
-            return { newValue, propagateEvent: !selectedItem };
+            return { newValue, selectItem: !selectedItem };
           }
         ),
         width: "1.2em",
@@ -1036,12 +1036,12 @@ function makeIconCellFactory(
         event.stopImmediatePropagation();
       },
       [clickSymbol]: (event) => {
-        const { newValue, propagateEvent } = switchValue
+        const { newValue, selectItem } = switchValue
           ? switchValue(item, colDesc.key)
           : { newValue: !item[colDesc.key] };
         item[colDesc.key] = newValue;
         iconElement.src = iconPaths[boolInt(newValue)];
-        if (!propagateEvent) {
+        if (!selectItem) {
           event.stopImmediatePropagation();
         }
       },
