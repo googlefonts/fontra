@@ -66,6 +66,10 @@ export default class SelectionInfoPanel extends Panel {
     this.editorController.sceneController.addCurrentGlyphChangeListener((event) => {
       this.throttledUpdate(event.senderID);
     });
+
+    this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
+      this.update();
+    });
   }
 
   async update(senderID) {
@@ -105,8 +109,6 @@ export default class SelectionInfoPanel extends Panel {
       )
       .join(" ");
 
-    const canEdit = glyphController?.canEdit;
-
     const formContents = [];
     if (glyphName && instance) {
       formContents.push({
@@ -127,7 +129,6 @@ export default class SelectionInfoPanel extends Panel {
         label: "Advance width",
         value: instance.xAdvance,
         minValue: 0,
-        disabled: !canEdit,
       });
     }
 
@@ -177,7 +178,6 @@ export default class SelectionInfoPanel extends Panel {
           key: componentKey("transformation", key),
           label: key,
           value: value,
-          disabled: !canEdit,
         });
       }
       const baseGlyph = await this.fontController.getGlyph(component.name);
@@ -219,7 +219,6 @@ export default class SelectionInfoPanel extends Panel {
             minValue: axis.minValue,
             defaultValue: axis.defaultValue,
             maxValue: axis.maxValue,
-            disabled: !canEdit,
           });
         }
         if (locationItems.length) {
