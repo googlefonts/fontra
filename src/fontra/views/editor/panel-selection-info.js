@@ -49,12 +49,12 @@ export default class SelectionInfoPanel extends Panel {
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
 
-    this.editorController.sceneController.sceneSettingsController.addKeyListener(
+    this.sceneController.sceneSettingsController.addKeyListener(
       ["selectedGlyphName", "selection", "location"],
       (event) => this.throttledUpdate()
     );
 
-    this.editorController.sceneController.sceneSettingsController.addKeyListener(
+    this.sceneController.sceneSettingsController.addKeyListener(
       "positionedLines",
       (event) => {
         if (!this.haveInstance) {
@@ -63,7 +63,7 @@ export default class SelectionInfoPanel extends Panel {
       }
     );
 
-    this.editorController.sceneController.addCurrentGlyphChangeListener((event) => {
+    this.sceneController.addCurrentGlyphChangeListener((event) => {
       this.throttledUpdate(event.senderID);
     });
 
