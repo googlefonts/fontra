@@ -18,12 +18,20 @@ export default class SelectionInfoPanel extends Panel {
 
   static styles = css`
     .selection-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      justify-content: space-between;
       box-sizing: border-box;
       height: 100%;
       width: 100%;
+      padding: 1em;
+      white-space: normal;
+    }
+
+    ui-form {
       overflow-x: hidden;
       overflow-y: auto;
-      padding: 1em;
     }
   `;
 
@@ -45,6 +53,7 @@ export default class SelectionInfoPanel extends Panel {
   attach() {
     this.infoForm = new Form();
     this.contentElement.appendChild(this.infoForm);
+    this.contentElement.appendChild(this.setupBehaviorCheckBox());
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
@@ -70,6 +79,26 @@ export default class SelectionInfoPanel extends Panel {
     this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
       this.update();
     });
+  }
+
+  setupBehaviorCheckBox() {
+    const storageKey = "fontra.selection-info.absolute-value-changes";
+    this.multiEditChangesAreAbsolute = localStorage.getItem(storageKey) === "true";
+    return html.div({ class: "behavior-field" }, [
+      html.input({
+        type: "checkbox",
+        id: "behavior-checkbox",
+        checked: this.multiEditChangesAreAbsolute,
+        onchange: (event) => {
+          this.multiEditChangesAreAbsolute = event.target.checked;
+          localStorage.setItem(storageKey, event.target.checked);
+        },
+      }),
+      html.label(
+        { for: "behavior-checkbox" },
+        "Multi-source value changes are absolute"
+      ),
+    ]);
   }
 
   async update(senderID) {
@@ -347,7 +376,8 @@ export default class SelectionInfoPanel extends Panel {
               layerInfo,
               changePath,
               value,
-              this._formFieldsByKey[fieldKey]
+              this._formFieldsByKey[fieldKey],
+              this.multiEditChangesAreAbsolute
             );
             await sendIncrementalChange(changes.change, true); // true: "may drop"
           }
@@ -358,7 +388,8 @@ export default class SelectionInfoPanel extends Panel {
             layerInfo,
             changePath,
             value,
-            this._formFieldsByKey[fieldKey]
+            this._formFieldsByKey[fieldKey],
+            this.multiEditChangesAreAbsolute
           );
         }
 
@@ -400,10 +431,10 @@ function deleteNestedValue(subject, path) {
   delete subject[key];
 }
 
-function applyNewValue(glyph, layerInfo, changePath, value, field) {
+function applyNewValue(glyph, layerInfo, changePath, value, field, absolute) {
   const primaryOrgValue = layerInfo[0].orgValue;
   const isNumber = typeof primaryOrgValue === "number";
-  const delta = isNumber ? value - primaryOrgValue : null;
+  const delta = isNumber && !absolute ? value - primaryOrgValue : null;
   return recordChanges(glyph, (glyph) => {
     const layers = glyph.layers;
     for (const { layerName, orgValue } of layerInfo) {
