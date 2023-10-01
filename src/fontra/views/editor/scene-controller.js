@@ -690,10 +690,6 @@ export class SceneController {
     );
   }
 
-  async editInstanceAndRecordChanges(editFunc, senderID) {
-    return await this._editGlyphOrInstanceAndRecordChanges(editFunc, senderID, true);
-  }
-
   async editLayersAndRecordChanges(editFunc, senderID) {
     return await this._editGlyphOrInstanceAndRecordChanges(
       (glyph) => {
