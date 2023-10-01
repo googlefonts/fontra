@@ -634,7 +634,7 @@ export class SceneController {
   }
 
   get editingLayers() {
-    return this.sceneModel.editingLayers || [];
+    return this.sceneModel.editingLayers || {};
   }
 
   set editingLayers(layerNames) {
