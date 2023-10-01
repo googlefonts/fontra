@@ -1,13 +1,12 @@
 import { recordChanges } from "../core/change-recorder.js";
-import { ChangeCollector, applyChange } from "../core/changes.js";
-import { connectContours } from "../core/path-functions.js";
+import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
+import { connectContours, toggleSmooth } from "../core/path-functions.js";
 import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
 import {
   boolInt,
   commandKeyProperty,
   makeUPlusStringFromCodePoint,
-  modulo,
   parseSelection,
   range,
 } from "../core/utils.js";
@@ -208,51 +207,10 @@ export class PointerTool extends BaseTool {
   }
 
   async handlePointsDoubleClick(pointIndices) {
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      const path = instance.path;
-      for (const pointIndex of pointIndices) {
-        const pointType = path.pointTypes[pointIndex];
-        const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(
-          path,
-          pointIndex
-        );
-        if (
-          (!prevPoint || !nextPoint || (!prevPoint.type && !nextPoint.type)) &&
-          pointType !== VarPackedPath.SMOOTH_FLAG
-        ) {
-          continue;
-        }
-        if (
-          pointType === VarPackedPath.ON_CURVE ||
-          pointType === VarPackedPath.SMOOTH_FLAG
-        ) {
-          const newPointType =
-            pointType === VarPackedPath.ON_CURVE
-              ? VarPackedPath.SMOOTH_FLAG
-              : VarPackedPath.ON_CURVE;
-          path.pointTypes[pointIndex] = newPointType;
-          if (newPointType === VarPackedPath.SMOOTH_FLAG) {
-            const anchorPoint = path.getPoint(pointIndex);
-            if (prevPoint?.type && nextPoint?.type) {
-              // Fix-up both incoming and outgoing handles
-              const [newPrevPoint, newNextPoint] = alignHandles(
-                prevPoint,
-                anchorPoint,
-                nextPoint
-              );
-              path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
-              path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
-            } else if (prevPoint?.type) {
-              // Fix-up incoming handle
-              const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
-              path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
-            } else if (nextPoint?.type) {
-              // Fix-up outgoing handle
-              const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
-              path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
-            }
-          }
-        }
+    let newPointType;
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        newPointType = toggleSmooth(layerGlyph.path, pointIndices, newPointType);
       }
       return "Toggle Smooth";
     });
@@ -288,57 +246,98 @@ export class PointerTool extends BaseTool {
 
   async handleDragSelection(eventStream, initialEvent) {
     const sceneController = this.sceneController;
-    await sceneController.editInstance(async (sendIncrementalChange, instance) => {
+    await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.localPoint(initialEvent);
-      const connectDetector = sceneController.getPathConnectDetector();
-      let shouldConnect = false;
-
-      const behaviorFactory = new EditBehaviorFactory(
-        instance,
-        sceneController.selection,
-        sceneController.experimentalFeatures.scalingEditBehavior
-      );
-
       let behaviorName = getBehaviorName(initialEvent);
-      let editBehavior = behaviorFactory.getBehavior(behaviorName);
+
+      const layerInfo = Object.entries(
+        sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
+      ).map(([layerName, layerGlyph]) => {
+        const behaviorFactory = new EditBehaviorFactory(
+          layerGlyph,
+          sceneController.selection,
+          sceneController.experimentalFeatures.scalingEditBehavior
+        );
+        return {
+          layerName,
+          layerGlyph,
+          changePath: ["layers", layerName, "glyph"],
+          pathPrefix: [],
+          connectDetector: sceneController.getPathConnectDetector(layerGlyph.path),
+          shouldConnect: false,
+          behaviorFactory,
+          editBehavior: behaviorFactory.getBehavior(behaviorName),
+        };
+      });
+
+      layerInfo[0].isPrimaryLayer = true;
 
       let editChange;
 
       for await (const event of eventStream) {
         const newEditBehaviorName = getBehaviorName(event);
         if (behaviorName !== newEditBehaviorName) {
-          applyChange(instance, editBehavior.rollbackChange);
-          await sendIncrementalChange(editBehavior.rollbackChange);
+          // Behavior changed, undo current changes
           behaviorName = newEditBehaviorName;
-          editBehavior = behaviorFactory.getBehavior(behaviorName);
+          const rollbackChanges = [];
+          for (const layer of layerInfo) {
+            applyChange(layer.layerGlyph, layer.editBehavior.rollbackChange);
+            rollbackChanges.push(
+              consolidateChanges(layer.editBehavior.rollbackChange, layer.changePath)
+            );
+            layer.editBehavior = layer.behaviorFactory.getBehavior(behaviorName);
+          }
+          await sendIncrementalChange(consolidateChanges(rollbackChanges));
         }
         const currentPoint = sceneController.localPoint(event);
         const delta = {
           x: currentPoint.x - initialPoint.x,
           y: currentPoint.y - initialPoint.y,
         };
-        editChange = editBehavior.makeChangeForDelta(delta);
-        applyChange(instance, editChange);
 
-        shouldConnect = connectDetector.shouldConnect(true);
+        const deepEditChanges = [];
+        for (const layer of layerInfo) {
+          const editChange = layer.editBehavior.makeChangeForDelta(delta);
+          applyChange(layer.layerGlyph, editChange);
+          deepEditChanges.push(consolidateChanges(editChange, layer.changePath));
+          layer.shouldConnect = layer.connectDetector.shouldConnect(
+            layer.isPrimaryLayer
+          );
+        }
 
+        editChange = consolidateChanges(deepEditChanges);
         await sendIncrementalChange(editChange, true); // true: "may drop"
       }
       let changes = ChangeCollector.fromChanges(
         editChange,
-        editBehavior.rollbackChange
+        consolidateChanges(
+          layerInfo.map((layer) =>
+            consolidateChanges(layer.editBehavior.rollbackChange, layer.changePath)
+          )
+        )
       );
-      if (shouldConnect) {
-        connectDetector.clearConnectIndicator();
-        const connectChanges = recordChanges(instance, (instance) => {
-          sceneController.selection = connectContours(
-            instance.path,
-            connectDetector.connectSourcePointIndex,
-            connectDetector.connectTargetPointIndex
+      let shouldConnect;
+      for (const layer of layerInfo) {
+        if (!layer.shouldConnect) {
+          continue;
+        }
+        shouldConnect = true;
+        if (layer.isPrimaryLayer) {
+          layer.connectDetector.clearConnectIndicator();
+        }
+
+        const connectChanges = recordChanges(layer.layerGlyph, (layerGlyph) => {
+          const selection = connectContours(
+            layerGlyph.path,
+            layer.connectDetector.connectSourcePointIndex,
+            layer.connectDetector.connectTargetPointIndex
           );
+          if (layer.isPrimaryLayer) {
+            sceneController.selection = selection;
+          }
         });
         if (connectChanges.hasChange) {
-          changes = changes.concat(connectChanges);
+          changes = changes.concat(connectChanges.prefixed(layer.changePath));
         }
       }
       return {
@@ -353,58 +352,6 @@ export class PointerTool extends BaseTool {
 function getBehaviorName(event) {
   const behaviorNames = ["default", "constrain", "alternate", "alternate-constrain"];
   return behaviorNames[boolInt(event.shiftKey) + 2 * boolInt(event.altKey)];
-}
-
-function neighborPoints(path, pointIndex) {
-  const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
-  const contourStartIndex = path.getAbsolutePointIndex(contourIndex, 0);
-  const numPoints = path.getNumPointsOfContour(contourIndex);
-  const isClosed = path.contourInfo[contourIndex].isClosed;
-  let prevIndex = contourPointIndex - 1;
-  let nextIndex = contourPointIndex + 1;
-  if (path.contourInfo[contourIndex].isClosed) {
-    prevIndex = modulo(prevIndex, numPoints);
-    nextIndex = modulo(nextIndex, numPoints);
-  }
-  let prevPoint, nextPoint;
-  if (prevIndex >= 0) {
-    prevIndex += contourStartIndex;
-    prevPoint = path.getPoint(prevIndex);
-  } else {
-    prevIndex = undefined;
-  }
-  if (nextIndex < numPoints) {
-    nextIndex += contourStartIndex;
-    nextPoint = path.getPoint(nextIndex);
-  } else {
-    nextIndex = undefined;
-  }
-  return [prevIndex, prevPoint, nextIndex, nextPoint];
-}
-
-function alignHandle(refPoint1, anchorPoint, handlePoint) {
-  const direction = vector.subVectors(anchorPoint, refPoint1);
-  return alignHandleAlongDirection(direction, anchorPoint, handlePoint);
-}
-
-function alignHandles(handleIn, anchorPoint, handleOut) {
-  const handleVectorIn = vector.subVectors(anchorPoint, handleIn);
-  const handleVectorOut = vector.subVectors(anchorPoint, handleOut);
-  const directionIn = vector.subVectors(handleVectorOut, handleVectorIn);
-  const directionOut = vector.subVectors(handleVectorIn, handleVectorOut);
-  return [
-    alignHandleAlongDirection(directionIn, anchorPoint, handleIn),
-    alignHandleAlongDirection(directionOut, anchorPoint, handleOut),
-  ];
-}
-
-function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
-  const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
-  const handleVector = vector.mulVectorScalar(
-    vector.normalizeVector(direction),
-    length
-  );
-  return vector.roundVector(vector.addVectors(anchorPoint, handleVector));
 }
 
 function replace(setA, setB) {

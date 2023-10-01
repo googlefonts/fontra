@@ -828,18 +828,25 @@ export class EditorController {
       // We *have* to do this first, as it won't work after any
       // await (Safari insists on that). So we have to do a bit
       // of redundant work by calling _prepareCopyOrCut twice.
-      const { instance, path } = this._prepareCopyOrCut();
-      await this._writeInstanceToClipboard(instance, path, event);
+      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
+        undefined,
+        false
+      );
+      await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
     }
     let copyResult;
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      copyResult = this._prepareCopyOrCut(instance, true);
-      this.sceneController.selection = new Set();
-      return "Cut Selection";
-    });
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        copyResult = this._prepareCopyOrCutLayers(glyph, true);
+        this.sceneController.selection = new Set();
+        return "Cut Selection";
+      },
+      undefined,
+      true
+    );
     if (copyResult && !event) {
-      const { instance, path } = copyResult;
-      await this._writeInstanceToClipboard(instance, path);
+      const { layerGlyphs, flattenedPath } = copyResult;
+      await this._writeLayersToClipboard(layerGlyphs, flattenedPath);
     }
   }
 
@@ -848,25 +855,22 @@ export class EditorController {
   }
 
   async doCopy(event) {
-    const { instance, path } = this._prepareCopyOrCut();
-    if (!instance) {
-      return;
-    }
-    await this._writeInstanceToClipboard(instance, path, event);
+    const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(false);
+    await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
   }
 
-  async _writeInstanceToClipboard(instance, path, event) {
-    const bounds = path.getControlBounds();
-    if (!bounds) {
+  async _writeLayersToClipboard(layerGlyphs, flattenedPath, event) {
+    const bounds = flattenedPath?.getControlBounds();
+    if (!bounds || !layerGlyphs?.length) {
       // nothing to do
       return;
     }
 
-    const svgString = pathToSVG(path, bounds);
+    const svgString = pathToSVG(flattenedPath, bounds);
     const glyphName = this.sceneSettings.selectedGlyphName;
     const unicodes = this.fontController.glyphMap[glyphName] || [];
-    const glifString = staticGlyphToGLIF(glyphName, instance, unicodes);
-    const jsonString = JSON.stringify(instance);
+    const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, unicodes);
+    const jsonString = JSON.stringify({ layerGlyphs: layerGlyphs });
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
@@ -890,10 +894,43 @@ export class EditorController {
     }
   }
 
-  _prepareCopyOrCut(editInstance, doCut = false) {
-    if (doCut !== !!editInstance) {
-      throw new Error("assert -- inconsistent editInstance vs doCut argument");
+  _prepareCopyOrCutLayers(varGlyph, doCut) {
+    if (!varGlyph) {
+      varGlyph = this.sceneModel.getSelectedPositionedGlyph().varGlyph;
     }
+    if (!varGlyph) {
+      return;
+    }
+    const layerGlyphs = [];
+    let flattenedPath;
+    for (const [layerName, layerGlyph] of Object.entries(
+      this.sceneController.getEditingLayerFromGlyphLayers(varGlyph.layers)
+    )) {
+      const copyResult = this._prepareCopyOrCut(layerGlyph, doCut, !flattenedPath);
+      if (!copyResult.instance) {
+        return;
+      }
+      if (!flattenedPath) {
+        flattenedPath = copyResult.flattenedPath;
+      }
+      layerGlyphs.push({ layerName, glyph: copyResult.instance });
+    }
+    if (!layerGlyphs.length && !doCut) {
+      const { instance, flattenedPath: instancePath } = this._prepareCopyOrCut(
+        undefined,
+        false,
+        true
+      );
+      flattenedPath = instancePath;
+      if (!instance) {
+        return;
+      }
+      layerGlyphs.push({ glyph: instance });
+    }
+    return { layerGlyphs, flattenedPath };
+  }
+
+  _prepareCopyOrCut(editInstance, doCut = false, wantFlattenedPath = false) {
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
     const glyphController = positionedGlyph?.glyph;
     if (!glyphController) {
@@ -909,8 +946,10 @@ export class EditorController {
       return doCut
         ? {}
         : {
-            instance: glyphController.instance,
-            path: glyphController.flattenedPath,
+            instance: editInstance,
+            flattenedPath: wantFlattenedPath
+              ? glyphController.flattenedPath
+              : undefined,
           };
     }
 
@@ -919,14 +958,16 @@ export class EditorController {
     );
     let path;
     let components;
-    const paths = [];
+    const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
-      paths.push(path);
+      flattenedPathList?.push(path);
     }
     if (componentIndices) {
-      paths.push(...componentIndices.map((i) => glyphController.components[i].path));
-      components = componentIndices.map((i) => glyphController.instance.components[i]);
+      flattenedPathList?.push(
+        ...componentIndices.map((i) => glyphController.components[i].path)
+      );
+      components = componentIndices.map((i) => editInstance.components[i]);
       if (doCut) {
         for (const componentIndex of reversed(componentIndices)) {
           editInstance.components.splice(componentIndex, 1);
@@ -934,11 +975,14 @@ export class EditorController {
       }
     }
     const instance = StaticGlyph.fromObject({
-      ...glyphController.instance,
+      ...editInstance,
       path: path,
       components: components,
     });
-    return { instance: instance, path: joinPaths(paths) };
+    return {
+      instance: instance,
+      flattenedPath: wantFlattenedPath ? joinPaths(flattenedPathList) : undefined,
+    };
   }
 
   canPaste() {
@@ -946,8 +990,14 @@ export class EditorController {
   }
 
   async doPaste() {
-    let pastedGlyph;
+    const pasteLayerGlyphs = await this._unpackClipboard();
+    if (!pasteLayerGlyphs?.length) {
+      return;
+    }
+    await this._pasteLayerGlyphs(pasteLayerGlyphs);
+  }
 
+  async _unpackClipboard() {
     const plainText = await readFromClipboard("text/plain");
     if (!plainText) {
       return;
@@ -966,48 +1016,71 @@ export class EditorController {
     ) {
       customJSON = localStorage.getItem("clipboardSelection.glyph");
     }
+    if (!customJSON && plainText[0] == "{") {
+      customJSON = plainText;
+    }
+
+    let pasteLayerGlyphs;
 
     if (customJSON) {
-      pastedGlyph = StaticGlyph.fromObject(JSON.parse(customJSON));
+      try {
+        const clipboardObject = JSON.parse(customJSON);
+        pasteLayerGlyphs = clipboardObject.layerGlyphs?.map((layer) => {
+          return {
+            layerName: layer.layerName,
+            glyph: StaticGlyph.fromObject(layer.glyph),
+          };
+        });
+      } catch (error) {
+        console.log("couldn't paste from JSON:", error.toString());
+      }
     } else {
-      if (plainText[0] == "{") {
-        try {
-          pastedGlyph = StaticGlyph.fromObject(JSON.parse(plainText));
-        } catch (error) {
-          console.log("couldn't paste from JSON:", error.toString());
-        }
-      } else {
-        pastedGlyph = await this.parseClipboard(plainText);
-      }
+      pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
     }
+    return pasteLayerGlyphs;
+  }
 
-    if (!pastedGlyph) {
-      return;
-    }
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      const selection = new Set();
-      for (const pointIndex of range(pastedGlyph.path.numPoints)) {
-        const pointType =
-          pastedGlyph.path.pointTypes[pointIndex] & VarPackedPath.POINT_TYPE_MASK;
-        if (pointType === VarPackedPath.ON_CURVE) {
-          selection.add(`point/${pointIndex + instance.path.numPoints}`);
+  async _pasteLayerGlyphs(pasteLayerGlyphs) {
+    const defaultPasteGlyph = pasteLayerGlyphs[0].glyph;
+    const pasteLayerGlyphsByLayerName = Object.fromEntries(
+      pasteLayerGlyphs.map((layer) => [layer.layerName, layer.glyph])
+    );
+
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+          glyph.layers
+        );
+        const firstLayerGlyph = Object.values(editLayerGlyphs)[0];
+
+        const selection = new Set();
+        for (const pointIndex of range(defaultPasteGlyph.path.numPoints)) {
+          const pointType =
+            defaultPasteGlyph.path.pointTypes[pointIndex] &
+            VarPackedPath.POINT_TYPE_MASK;
+          if (pointType === VarPackedPath.ON_CURVE) {
+            selection.add(`point/${pointIndex + firstLayerGlyph.path.numPoints}`);
+          }
         }
-      }
-      for (const componentIndex of range(
-        instance.components.length,
-        instance.components.length + pastedGlyph.components.length
-      )) {
-        selection.add(`component/${componentIndex}`);
-      }
-      instance.path.appendPath(pastedGlyph.path);
-      instance.components.splice(
-        instance.components.length,
-        0,
-        ...pastedGlyph.components
-      );
-      this.sceneController.selection = selection;
-      return "Paste";
-    });
+        for (const componentIndex of range(
+          firstLayerGlyph.components.length,
+          firstLayerGlyph.components.length + defaultPasteGlyph.components.length
+        )) {
+          selection.add(`component/${componentIndex}`);
+        }
+
+        for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+          const pasteGlyph =
+            pasteLayerGlyphsByLayerName[layerName] || defaultPasteGlyph;
+          layerGlyph.path.appendPath(pasteGlyph.path);
+          layerGlyph.components.push(...pasteGlyph.components);
+        }
+        this.sceneController.selection = selection;
+        return "Paste";
+      },
+      undefined,
+      true
+    );
   }
 
   async parseClipboard(data) {
@@ -1031,20 +1104,22 @@ export class EditorController {
   }
 
   async doDelete(event) {
-    await this.sceneController.editInstanceAndRecordChanges((instance) => {
-      if (event.altKey) {
-        // Behave like "cut", but don't put anything on the clipboard
-        this._prepareCopyOrCut(instance, true);
-      } else {
-        const { point: pointSelection, component: componentSelection } = parseSelection(
-          this.sceneController.selection
-        );
-        if (pointSelection) {
-          deleteSelectedPoints(instance.path, pointSelection);
-        }
-        if (componentSelection) {
-          for (const componentIndex of reversed(componentSelection)) {
-            instance.components.splice(componentIndex, 1);
+    const { point: pointSelection, component: componentSelection } = parseSelection(
+      this.sceneController.selection
+    );
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        if (event.altKey) {
+          // Behave like "cut", but don't put anything on the clipboard
+          this._prepareCopyOrCut(layerGlyph, true, false);
+        } else {
+          if (pointSelection) {
+            deleteSelectedPoints(layerGlyph.path, pointSelection);
+          }
+          if (componentSelection) {
+            for (const componentIndex of reversed(componentSelection)) {
+              layerGlyph.components.splice(componentIndex, 1);
+            }
           }
         }
       }
@@ -1076,45 +1151,9 @@ export class EditorController {
       { title: "Cancel", isCancelButton: true },
       { title: "Add", isDefaultButton: true, result: "ok", disabled: true },
     ]);
-    const addToAllSourcesLocalStorageKey = "fontra-add-the-component-to-all-sources";
-    let addToAllSources =
-      localStorage.getItem(addToAllSourcesLocalStorageKey) === "true";
 
-    dialog.setContent(
-      html.div(
-        {
-          style: `
-          grid-row: 2 / -1;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5em;
-        `,
-        },
-        [
-          glyphsSearch,
-          html.div({}, [
-            html.input({
-              type: "checkbox",
-              id: "add-to-all-sources",
-              checked: addToAllSources,
-              onclick: (event) => {
-                addToAllSources = event.target.checked;
-                localStorage.setItem(
-                  addToAllSourcesLocalStorageKey,
-                  addToAllSources ? "true" : "false"
-                );
-              },
-            }),
-            html.label(
-              {
-                for: "add-to-all-sources",
-              },
-              ["Add the component to all sources"]
-            ),
-          ]),
-        ]
-      )
-    );
+    dialog.setContent(glyphsSearch);
+
     setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
 
     if (!(await dialog.run())) {
@@ -1148,33 +1187,19 @@ export class EditorController {
       transformation: transformation,
       location: location,
     };
-    if (addToAllSources) {
-      await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-        const layerNames = new Set();
-        for (const source of glyph.sources) {
-          layerNames.add(source.layerName);
-        }
-        for (const layerName of layerNames) {
-          const layer = glyph.layers[layerName];
-          layer.glyph.components.push({
-            name: newComponent.name,
-            transformation: { ...newComponent.transformation },
-            location: { ...newComponent.location },
-          });
-        }
-        const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-        const newComponentIndex = instance.components.length - 1;
-        this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
-        return "Add Component";
-      });
-    } else {
-      await this.sceneController.editInstanceAndRecordChanges((instance) => {
-        const newComponentIndex = instance.components.length;
-        instance.components.push(newComponent);
-        this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
-        return "Add Component";
-      });
-    }
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        layerGlyph.components.push({
+          name: newComponent.name,
+          transformation: { ...newComponent.transformation },
+          location: { ...newComponent.location },
+        });
+      }
+      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+      const newComponentIndex = instance.components.length - 1;
+      this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
+      return "Add Component";
+    });
   }
 
   canSelectAllNone(selectNone) {
@@ -1226,6 +1251,7 @@ export class EditorController {
       newSourceIndex =
         (selectPrevious ? sourceIndex + numSources - 1 : sourceIndex + 1) % numSources;
     }
+    this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
   }
 

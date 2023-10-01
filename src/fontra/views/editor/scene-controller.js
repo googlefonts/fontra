@@ -1,5 +1,10 @@
 import { recordChanges } from "../core/change-recorder.js";
-import { ChangeCollector, applyChange, hasChange } from "../core/changes.js";
+import {
+  ChangeCollector,
+  applyChange,
+  consolidateChanges,
+  hasChange,
+} from "../core/changes.js";
 import { decomposeComponents } from "../core/glyph-controller.js";
 import { glyphLinesFromText, textFromGlyphLines } from "../core/glyph-lines.js";
 import { MouseTracker } from "../core/mouse-tracker.js";
@@ -10,10 +15,12 @@ import { isSuperset, lenientIsEqualSet, union } from "../core/set-ops.js";
 import {
   arrowKeyDeltas,
   commandKeyProperty,
+  enumerate,
   objectsEqual,
   parseSelection,
   reversed,
   withTimeout,
+  zip,
 } from "../core/utils.js";
 import { packContour } from "../core/var-path.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
@@ -390,35 +397,63 @@ export class SceneController {
       dy *= 10;
     }
     const delta = { x: dx, y: dy };
-    await this.editInstance((sendIncrementalChange, instance) => {
-      const behaviorFactory = new EditBehaviorFactory(
-        instance,
-        this.selection,
-        this.experimentalFeatures.scalingEditBehavior
-      );
-      const editBehavior = behaviorFactory.getBehavior(
-        event.altKey ? "alternate" : "default"
-      );
-      const editChange = editBehavior.makeChangeForDelta(delta);
-      applyChange(instance, editChange);
+    await this.editGlyph((sendIncrementalChange, glyph) => {
+      const layerInfo = Object.entries(
+        this.getEditingLayerFromGlyphLayers(glyph.layers)
+      ).map(([layerName, layerGlyph]) => {
+        const behaviorFactory = new EditBehaviorFactory(
+          layerGlyph,
+          this.selection,
+          this.experimentalFeatures.scalingEditBehavior
+        );
+        return {
+          layerName,
+          layerGlyph,
+          changePath: ["layers", layerName, "glyph"],
+          pathPrefix: [],
+          editBehavior: behaviorFactory.getBehavior(
+            event.altKey ? "alternate" : "default"
+          ),
+        };
+      });
+
+      const editChanges = [];
+      const rollbackChanges = [];
+      for (const { layerGlyph, changePath, editBehavior } of layerInfo) {
+        const editChange = editBehavior.makeChangeForDelta(delta);
+        applyChange(layerGlyph, editChange);
+        editChanges.push(consolidateChanges(editChange, changePath));
+        rollbackChanges.push(
+          consolidateChanges(editBehavior.rollbackChange, changePath)
+        );
+      }
 
       let changes = ChangeCollector.fromChanges(
-        editChange,
-        editBehavior.rollbackChange
+        consolidateChanges(editChanges),
+        consolidateChanges(rollbackChanges)
       );
 
-      const connectDetector = this.getPathConnectDetector();
-      if (connectDetector.shouldConnect()) {
-        const connectChanges = recordChanges(instance, (instance) => {
-          this.selection = connectContours(
-            instance.path,
-            connectDetector.connectSourcePointIndex,
-            connectDetector.connectTargetPointIndex
-          );
-        });
-        if (connectChanges.hasChange) {
-          changes = changes.concat(connectChanges);
+      let newSelection;
+      for (const { layerGlyph, changePath } of layerInfo) {
+        const connectDetector = this.getPathConnectDetector(layerGlyph.path);
+        if (connectDetector.shouldConnect()) {
+          const connectChanges = recordChanges(layerGlyph, (layerGlyph) => {
+            const thisSelection = connectContours(
+              layerGlyph.path,
+              connectDetector.connectSourcePointIndex,
+              connectDetector.connectTargetPointIndex
+            );
+            if (newSelection === undefined) {
+              newSelection = thisSelection;
+            }
+          });
+          if (connectChanges.hasChange) {
+            changes = changes.concat(connectChanges.prefixed(changePath));
+          }
         }
+      }
+      if (newSelection) {
+        this.selection = newSelection;
       }
 
       return {
@@ -598,6 +633,31 @@ export class SceneController {
     this.canvasController.requestUpdate();
   }
 
+  get editingLayers() {
+    return this.sceneModel.editingLayers || {};
+  }
+
+  set editingLayers(layerNames) {
+    this.sceneModel.editingLayers = layerNames;
+    this.sceneModel.updateBackgroundGlyphs();
+    this.canvasController.requestUpdate();
+  }
+
+  get editingLayerNames() {
+    const primaryLayerName =
+      this.sceneModel.getSelectedPositionedGlyph()?.glyph?.layerName;
+    const layerNames = Object.keys(this.editingLayers);
+    if (primaryLayerName) {
+      // Ensure the primary editing layer name is first in the list
+      const i = layerNames.indexOf(primaryLayerName);
+      if (i > 0) {
+        layerNames.splice(i, 1);
+        layerNames.unshift(primaryLayerName);
+      }
+    }
+    return layerNames;
+  }
+
   getGlobalLocation() {
     return this.sceneModel.getGlobalLocation();
   }
@@ -621,15 +681,41 @@ export class SceneController {
     return this._glyphEditingDonePromise;
   }
 
-  async editGlyphAndRecordChanges(editFunc, senderID) {
-    return await this._editGlyphOrInstanceAndRecordChanges(editFunc, senderID, false);
+  async editGlyphAndRecordChanges(editFunc, senderID, requireSelectedLayer) {
+    return await this._editGlyphOrInstanceAndRecordChanges(
+      editFunc,
+      senderID,
+      false,
+      requireSelectedLayer
+    );
   }
 
-  async editInstanceAndRecordChanges(editFunc, senderID) {
-    return await this._editGlyphOrInstanceAndRecordChanges(editFunc, senderID, true);
+  async editLayersAndRecordChanges(editFunc, senderID) {
+    return await this._editGlyphOrInstanceAndRecordChanges(
+      (glyph) => {
+        const layerGlyphs = this.getEditingLayerFromGlyphLayers(glyph.layers);
+        return editFunc(layerGlyphs);
+      },
+      senderID,
+      false,
+      true
+    );
   }
 
-  async _editGlyphOrInstanceAndRecordChanges(editFunc, senderID, doInstance) {
+  getEditingLayerFromGlyphLayers(layers) {
+    return Object.fromEntries(
+      this.editingLayerNames
+        .map((layerName) => [layerName, layers[layerName]?.glyph])
+        .filter((layer) => layer[1])
+    );
+  }
+
+  async _editGlyphOrInstanceAndRecordChanges(
+    editFunc,
+    senderID,
+    doInstance,
+    requireSelectedLayer
+  ) {
     await this._editGlyphOrInstance(
       (sendIncrementalChange, subject) => {
         let undoLabel;
@@ -643,19 +729,16 @@ export class SceneController {
         };
       },
       senderID,
-      doInstance
+      doInstance,
+      requireSelectedLayer
     );
   }
 
   async editGlyph(editFunc, senderID) {
-    return await this._editGlyphOrInstance(editFunc, senderID, false);
+    return await this._editGlyphOrInstance(editFunc, senderID, false, true);
   }
 
-  async editInstance(editFunc, senderID) {
-    return await this._editGlyphOrInstance(editFunc, senderID, true);
-  }
-
-  async _editGlyphOrInstance(editFunc, senderID, doInstance) {
+  async _editGlyphOrInstance(editFunc, senderID, doInstance, requireSelectedLayer) {
     if (this._glyphEditingDonePromise) {
       try {
         // A previous call to _editGlyphOrInstance is still ongoing.
@@ -670,7 +753,12 @@ export class SceneController {
       editingDone = resolve;
     });
     try {
-      return await this._editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance);
+      return await this._editGlyphOrInstanceUnchecked(
+        editFunc,
+        senderID,
+        doInstance,
+        requireSelectedLayer
+      );
     } finally {
       // // Simulate slow response
       // console.log("...delay");
@@ -682,19 +770,27 @@ export class SceneController {
     }
   }
 
-  async _editGlyphOrInstanceUnchecked(editFunc, senderID, doInstance) {
+  async _editGlyphOrInstanceUnchecked(
+    editFunc,
+    senderID,
+    doInstance,
+    requireSelectedLayer
+  ) {
     const glyphName = this.sceneModel.getSelectedGlyphName();
     const varGlyph = await this.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
 
-    let editSubject;
-    if (doInstance) {
-      const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+    let glyphController;
+    if (doInstance || requireSelectedLayer) {
+      glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
       if (!glyphController.canEdit) {
         this._dispatchEvent("glyphEditLocationNotAtSource");
         return;
       }
+    }
 
+    let editSubject;
+    if (doInstance) {
       editSubject = glyphController.instance;
       baseChangePath.push("layers", glyphController.layerName, "glyph");
     } else {
@@ -779,6 +875,7 @@ export class SceneController {
     if (undoInfo !== undefined) {
       this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
+        this.scrollAdjustBehavior = "pin-glyph-center";
         this.sceneSettings.location = undoInfo.location;
       }
       await this.sceneModel.updateScene();
@@ -788,60 +885,66 @@ export class SceneController {
   }
 
   async reverseSelectedContoursDirection() {
-    await this.editInstanceAndRecordChanges((instance) => {
-      const path = instance.path;
-      const { point: pointSelection } = parseSelection(this.selection);
-      const selectedContours = getSelectedContours(path, pointSelection);
-      const newSelection = reversePointSelection(path, pointSelection);
+    const { point: pointSelection } = parseSelection(this.selection);
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      let selection;
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const path = layerGlyph.path;
+        const selectedContours = getSelectedContours(path, pointSelection);
+        selection = reversePointSelection(path, pointSelection);
 
-      for (const contourIndex of selectedContours) {
-        const contour = path.getUnpackedContour(contourIndex);
-        contour.points.reverse();
-        if (contour.isClosed) {
-          const [lastPoint] = contour.points.splice(-1, 1);
-          contour.points.splice(0, 0, lastPoint);
+        for (const contourIndex of selectedContours) {
+          const contour = path.getUnpackedContour(contourIndex);
+          contour.points.reverse();
+          if (contour.isClosed) {
+            const [lastPoint] = contour.points.splice(-1, 1);
+            contour.points.splice(0, 0, lastPoint);
+          }
+          const packedContour = packContour(contour);
+          layerGlyph.path.deleteContour(contourIndex);
+          layerGlyph.path.insertContour(contourIndex, packedContour);
         }
-        const packedContour = packContour(contour);
-        instance.path.deleteContour(contourIndex);
-        instance.path.insertContour(contourIndex, packedContour);
       }
-      this.selection = newSelection;
+      this.selection = selection;
       return "Reverse Contour Direction";
     });
   }
 
   async setStartPoint() {
-    await this.editInstanceAndRecordChanges((instance) => {
-      const path = instance.path;
-      const { point: pointSelection } = parseSelection(this.selection);
-      const contourToPointMap = new Map();
-      for (const pointIndex of pointSelection) {
-        const contourIndex = path.getContourIndex(pointIndex);
-        const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
-        if (contourToPointMap.has(contourIndex)) {
-          continue;
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      let newSelection;
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const path = layerGlyph.path;
+        const { point: pointSelection } = parseSelection(this.selection);
+        const contourToPointMap = new Map();
+        for (const pointIndex of pointSelection) {
+          const contourIndex = path.getContourIndex(pointIndex);
+          const contourStartPoint = path.getAbsolutePointIndex(contourIndex, 0);
+          if (contourToPointMap.has(contourIndex)) {
+            continue;
+          }
+          contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
         }
-        contourToPointMap.set(contourIndex, pointIndex - contourStartPoint);
-      }
-      const newSelection = new Set();
+        newSelection = new Set();
 
-      contourToPointMap.forEach((contourPointIndex, contourIndex) => {
-        if (contourPointIndex === 0) {
-          // Already start point
+        contourToPointMap.forEach((contourPointIndex, contourIndex) => {
+          if (contourPointIndex === 0) {
+            // Already start point
+            newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
+            return;
+          }
+          if (!path.contourInfo[contourIndex].isClosed) {
+            // Open path, ignore
+            return;
+          }
+          const contour = path.getUnpackedContour(contourIndex);
+          const head = contour.points.splice(0, contourPointIndex);
+          contour.points.push(...head);
+          layerGlyph.path.deleteContour(contourIndex);
+          layerGlyph.path.insertContour(contourIndex, packContour(contour));
           newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
-          return;
-        }
-        if (!path.contourInfo[contourIndex].isClosed) {
-          // Open path, ignore
-          return;
-        }
-        const contour = path.getUnpackedContour(contourIndex);
-        const head = contour.points.splice(0, contourPointIndex);
-        contour.points.push(...head);
-        instance.path.deleteContour(contourIndex);
-        instance.path.insertContour(contourIndex, packContour(contour));
-        newSelection.add(`point/${path.getAbsolutePointIndex(contourIndex, 0)}`);
-      });
+        });
+      }
 
       this.selection = newSelection;
       return "Set Start Point";
@@ -849,58 +952,86 @@ export class SceneController {
   }
 
   async breakContour() {
-    await this.editInstanceAndRecordChanges((instance) => {
+    const { point: pointIndices } = parseSelection(this.selection);
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
       let numSplits;
-      const { point: pointIndices } = parseSelection(this.selection);
-      numSplits = splitPathAtPointIndices(instance.path, pointIndices);
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        numSplits = splitPathAtPointIndices(layerGlyph.path, pointIndices);
+      }
       this.selection = new Set();
       return "Break Contour" + (numSplits > 1 ? "s" : "");
     });
   }
 
   async decomposeSelectedComponents() {
+    const varGlyph = await this.sceneModel.getSelectedVariableGlyphController();
+
+    // Retrieve the global location for each editing layer
+    const layerLocations = {};
+    for (const [sourceIndex, source] of enumerate(varGlyph.sources)) {
+      if (
+        this.editingLayerNames.indexOf(source.layerName) >= 0 &&
+        !(source.layerName in layerLocations)
+      ) {
+        layerLocations[source.layerName] =
+          varGlyph.mapSourceLocationToGlobal(sourceIndex);
+      }
+    }
+
+    // Get the decomposed path/components for each editing layer
     const { component: componentSelection } = parseSelection(this.selection);
     componentSelection.sort((a, b) => (a > b) - (a < b));
-    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-
-    const { path: newPath, components: newComponents } = await decomposeComponents(
-      instance.components,
-      componentSelection,
-      this.getGlobalLocation(),
-      (glyphName) => this.fontController.getGlyph(glyphName)
-    );
-
-    await this.editInstanceAndRecordChanges((instance) => {
-      const path = instance.path;
-      const components = instance.components;
-
-      for (const contour of newPath.iterContours()) {
-        // Hm, rounding should be optional
-        // contour.coordinates = contour.coordinates.map(c => Math.round(c));
-        path.appendContour(contour);
+    const getGlyphFunc = (glyphName) => this.fontController.getGlyph(glyphName);
+    const decomposed = {};
+    for (const layerName of this.editingLayerNames) {
+      const layerGlyph = varGlyph.layers[layerName]?.glyph;
+      if (!layerGlyph) {
+        continue;
       }
-      components.push(...newComponents);
+      decomposed[layerName] = await decomposeComponents(
+        layerGlyph.components,
+        componentSelection,
+        layerLocations[layerName],
+        getGlyphFunc
+      );
+    }
 
-      // Next, delete the components we decomposed
-      for (const componentIndex of reversed(componentSelection)) {
-        components.splice(componentIndex, 1);
+    await this.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const [layerName, layerGlyph] of Object.entries(layerGlyphs)) {
+        const decomposeInfo = decomposed[layerName];
+        const path = layerGlyph.path;
+        const components = layerGlyph.components;
+
+        for (const contour of decomposeInfo.path.iterContours()) {
+          // Hm, rounding should be optional
+          // contour.coordinates = contour.coordinates.map(c => Math.round(c));
+          path.appendContour(contour);
+        }
+        components.push(...decomposeInfo.components);
+
+        // Next, delete the components we decomposed
+        for (const componentIndex of reversed(componentSelection)) {
+          components.splice(componentIndex, 1);
+        }
       }
-
       this.selection = new Set();
       return "Decompose Component" + (componentSelection?.length === 1 ? "" : "s");
     });
   }
 
-  getPathConnectDetector() {
-    return new PathConnectDetector(this);
+  getPathConnectDetector(path) {
+    if (!path) {
+      const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+      path = positionedGlyph.glyph.path;
+    }
+    return new PathConnectDetector(this, path);
   }
 }
 
 class PathConnectDetector {
-  constructor(sceneController) {
+  constructor(sceneController, path) {
     this.sceneController = sceneController;
-    const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
-    this.path = positionedGlyph.glyph.path;
+    this.path = path;
     const selection = sceneController.selection;
     if (selection.size !== 1) {
       return;
@@ -931,12 +1062,14 @@ class PathConnectDetector {
       connectTargetPointIndex !== undefined &&
       connectTargetPointIndex !== this.connectSourcePointIndex &&
       !!this.path.isStartOrEndPoint(connectTargetPointIndex);
-    if (showConnectIndicator && shouldConnect) {
-      sceneController.sceneModel.pathConnectTargetPoint = this.path.getPoint(
-        connectTargetPointIndex
-      );
-    } else {
-      delete sceneController.sceneModel.pathConnectTargetPoint;
+    if (showConnectIndicator) {
+      if (shouldConnect) {
+        sceneController.sceneModel.pathConnectTargetPoint = this.path.getPoint(
+          connectTargetPointIndex
+        );
+      } else {
+        delete sceneController.sceneModel.pathConnectTargetPoint;
+      }
     }
     this.connectTargetPointIndex = connectTargetPointIndex;
     return shouldConnect;

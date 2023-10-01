@@ -731,14 +731,37 @@ registerVisualizationLayerDefinition({
   screenParameters: {
     strokeWidth: 1,
   },
-  colors: { color: "#BBB" },
-  colorsDarkMode: { color: "#666" },
+  colors: { color: "#AAA8" },
+  colorsDarkMode: { color: "#8888" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
     context.strokeStyle = parameters.color;
     for (const layerGlyph of Object.values(model.backgroundLayerGlyphs || {})) {
       context.stroke(layerGlyph.flattenedPath2d);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.edit.editing.layers",
+  name: "Editing glyph layers",
+  selectionMode: "editing",
+  zIndex: 490,
+  screenParameters: {
+    strokeWidth: 1,
+  },
+  colors: { color: "#66FA" },
+  colorsDarkMode: { color: "#88FA" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const primaryEditingInstance = positionedGlyph.glyph;
+    context.lineJoin = "round";
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = parameters.color;
+    for (const layerGlyph of Object.values(model.editingLayerGlyphs || {})) {
+      if (layerGlyph !== primaryEditingInstance) {
+        context.stroke(layerGlyph.flattenedPath2d);
+      }
     }
   },
 });

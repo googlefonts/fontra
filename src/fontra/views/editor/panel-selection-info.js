@@ -18,12 +18,20 @@ export default class SelectionInfoPanel extends Panel {
 
   static styles = css`
     .selection-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      justify-content: space-between;
       box-sizing: border-box;
       height: 100%;
       width: 100%;
+      padding: 1em;
+      white-space: normal;
+    }
+
+    ui-form {
       overflow-x: hidden;
       overflow-y: auto;
-      padding: 1em;
     }
   `;
 
@@ -45,16 +53,17 @@ export default class SelectionInfoPanel extends Panel {
   attach() {
     this.infoForm = new Form();
     this.contentElement.appendChild(this.infoForm);
+    this.contentElement.appendChild(this.setupBehaviorCheckBox());
     this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
 
-    this.editorController.sceneController.sceneSettingsController.addKeyListener(
+    this.sceneController.sceneSettingsController.addKeyListener(
       ["selectedGlyphName", "selection", "location"],
       (event) => this.throttledUpdate()
     );
 
-    this.editorController.sceneController.sceneSettingsController.addKeyListener(
+    this.sceneController.sceneSettingsController.addKeyListener(
       "positionedLines",
       (event) => {
         if (!this.haveInstance) {
@@ -63,9 +72,33 @@ export default class SelectionInfoPanel extends Panel {
       }
     );
 
-    this.editorController.sceneController.addCurrentGlyphChangeListener((event) => {
+    this.sceneController.addCurrentGlyphChangeListener((event) => {
       this.throttledUpdate(event.senderID);
     });
+
+    this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
+      this.update();
+    });
+  }
+
+  setupBehaviorCheckBox() {
+    const storageKey = "fontra.selection-info.absolute-value-changes";
+    this.multiEditChangesAreAbsolute = localStorage.getItem(storageKey) === "true";
+    return html.div({ class: "behavior-field" }, [
+      html.input({
+        type: "checkbox",
+        id: "behavior-checkbox",
+        checked: this.multiEditChangesAreAbsolute,
+        onchange: (event) => {
+          this.multiEditChangesAreAbsolute = event.target.checked;
+          localStorage.setItem(storageKey, event.target.checked);
+        },
+      }),
+      html.label(
+        { for: "behavior-checkbox" },
+        "Multi-source value changes are absolute"
+      ),
+    ]);
   }
 
   async update(senderID) {
@@ -105,8 +138,6 @@ export default class SelectionInfoPanel extends Panel {
       )
       .join(" ");
 
-    const canEdit = glyphController?.canEdit;
-
     const formContents = [];
     if (glyphName && instance) {
       formContents.push({
@@ -127,7 +158,6 @@ export default class SelectionInfoPanel extends Panel {
         label: "Advance width",
         value: instance.xAdvance,
         minValue: 0,
-        disabled: !canEdit,
       });
     }
 
@@ -177,7 +207,6 @@ export default class SelectionInfoPanel extends Panel {
           key: componentKey("transformation", key),
           label: key,
           value: value,
-          disabled: !canEdit,
         });
       }
       const baseGlyph = await this.fontController.getGlyph(component.name);
@@ -219,7 +248,6 @@ export default class SelectionInfoPanel extends Panel {
             minValue: axis.minValue,
             defaultValue: axis.defaultValue,
             maxValue: axis.maxValue,
-            disabled: !canEdit,
           });
         }
         if (locationItems.length) {
@@ -228,6 +256,10 @@ export default class SelectionInfoPanel extends Panel {
         }
       }
     }
+
+    this._formFieldsByKey = Object.fromEntries(
+      formContents.map((field) => [field.key, field])
+    );
 
     if (!formContents.length) {
       this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
@@ -316,44 +348,61 @@ export default class SelectionInfoPanel extends Panel {
   async _setupSelectionInfoHandlers(glyphName) {
     this.infoForm.onFieldChange = async (fieldKey, value, valueStream) => {
       const changePath = JSON.parse(fieldKey);
-      await this.sceneController.editInstance(
-        async (sendIncrementalChange, instance) => {
-          let changes;
-
-          if (valueStream) {
-            // Continuous changes (eg. slider drag)
-            const orgValue = getNestedValue(instance, changePath);
-            for await (const value of valueStream) {
-              if (orgValue !== undefined) {
-                setNestedValue(instance, changePath, orgValue); // Ensure getting the correct undo change
-              } else {
-                deleteNestedValue(instance, changePath);
-              }
-              changes = recordChanges(instance, (instance) => {
-                setNestedValue(instance, changePath, value);
-              });
-              await sendIncrementalChange(changes.change, true); // true: "may drop"
-            }
-          } else {
-            // Simple, atomic change
-            changes = recordChanges(instance, (instance) => {
-              setNestedValue(instance, changePath, value);
-            });
-          }
-
-          const plen = changePath.length;
-          const undoLabel =
-            plen == 1
-              ? `${changePath[plen - 1]}`
-              : `${changePath[plen - 2]}.${changePath[plen - 1]}`;
+      await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
+        const layerInfo = Object.entries(
+          this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
+        ).map(([layerName, layerGlyph]) => {
           return {
-            changes: changes,
-            undoLabel: undoLabel,
-            broadcast: true,
+            layerName,
+            layerGlyph,
+            orgValue: getNestedValue(layerGlyph, changePath),
           };
-        },
-        this
-      );
+        });
+
+        let changes;
+
+        if (valueStream) {
+          // Continuous changes (eg. slider drag)
+          for await (const value of valueStream) {
+            for (const { layerName, layerGlyph, orgValue } of layerInfo) {
+              if (orgValue !== undefined) {
+                setNestedValue(layerGlyph, changePath, orgValue); // Ensure getting the correct undo change
+              } else {
+                deleteNestedValue(layerGlyph, changePath);
+              }
+            }
+            changes = applyNewValue(
+              glyph,
+              layerInfo,
+              changePath,
+              value,
+              this._formFieldsByKey[fieldKey],
+              this.multiEditChangesAreAbsolute
+            );
+            await sendIncrementalChange(changes.change, true); // true: "may drop"
+          }
+        } else {
+          // Simple, atomic change
+          changes = applyNewValue(
+            glyph,
+            layerInfo,
+            changePath,
+            value,
+            this._formFieldsByKey[fieldKey],
+            this.multiEditChangesAreAbsolute
+          );
+        }
+
+        const undoLabel =
+          changePath.length == 1
+            ? `${changePath.at(-1)}`
+            : `${changePath.at(-2)}.${changePath.at(-1)}`;
+        return {
+          changes: changes,
+          undoLabel: undoLabel,
+          broadcast: true,
+        };
+      }, this);
     };
   }
 }
@@ -380,6 +429,32 @@ function deleteNestedValue(subject, path) {
   path = path.slice(0, -1);
   subject = getNestedValue(subject, path);
   delete subject[key];
+}
+
+function applyNewValue(glyph, layerInfo, changePath, value, field, absolute) {
+  const primaryOrgValue = layerInfo[0].orgValue;
+  const isNumber = typeof primaryOrgValue === "number";
+  const delta = isNumber && !absolute ? value - primaryOrgValue : null;
+  return recordChanges(glyph, (glyph) => {
+    const layers = glyph.layers;
+    for (const { layerName, orgValue } of layerInfo) {
+      let newValue = delta === null ? value : orgValue + delta;
+      if (isNumber) {
+        newValue = maybeClampValue(newValue, field.minValue, field.maxValue);
+      }
+      setNestedValue(layers[layerName].glyph, changePath, newValue);
+    }
+  });
+}
+
+function maybeClampValue(value, min, max) {
+  if (min !== undefined) {
+    value = Math.max(value, min);
+  }
+  if (max !== undefined) {
+    value = Math.min(value, max);
+  }
+  return value;
 }
 
 customElements.define("panel-selection-info", SelectionInfoPanel);

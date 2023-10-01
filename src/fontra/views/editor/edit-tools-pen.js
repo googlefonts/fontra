@@ -1,5 +1,5 @@
 import { recordChanges } from "../core/change-recorder.js";
-import { ChangeCollector } from "../core/changes.js";
+import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { insertHandles, insertPoint } from "../core/path-functions.js";
 import { isEqualSet } from "../core/set-ops.js";
 import { parseSelection } from "../core/utils.js";
@@ -73,9 +73,8 @@ export class PenTool extends BaseTool {
       if (event.altKey && hit.segment?.points?.length === 2) {
         const pt1 = hit.segment.points[0];
         const pt2 = hit.segment.points[1];
-        const d = vector.subVectors(pt2, pt1);
-        const handle1 = vector.addVectors(pt1, vector.mulVectorScalar(d, 1 / 3));
-        const handle2 = vector.addVectors(pt1, vector.mulVectorScalar(d, 2 / 3));
+        const handle1 = vector.interpolateVectors(pt1, pt2, 1 / 3);
+        const handle2 = vector.interpolateVectors(pt1, pt2, 2 / 3);
         return { insertHandles: { points: [handle1, handle2], hit: hit } };
       } else {
         return { targetPoint: hit };
@@ -114,71 +113,121 @@ export class PenTool extends BaseTool {
     }
 
     if (this.sceneModel.pathConnectTargetPoint?.segment) {
-      await this.sceneController.editInstanceAndRecordChanges((instance) => {
-        const selection = insertPoint(
-          instance.path,
+      await this._handleInsertPoint();
+    } else if (this.sceneModel.pathInsertHandles) {
+      await this._handleInsertHandles();
+    } else {
+      await this._handleAddPoints(eventStream, initialEvent);
+    }
+  }
+
+  async _handleInsertPoint() {
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      let selection;
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        selection = insertPoint(
+          layerGlyph.path,
           this.sceneModel.pathConnectTargetPoint
         );
-        delete this.sceneModel.pathConnectTargetPoint;
-        this.sceneController.selection = selection;
-        return "Insert Point";
-      });
-      return;
-    } else if (this.sceneModel.pathInsertHandles) {
-      await this.sceneController.editInstanceAndRecordChanges((instance) => {
-        const handles = this.sceneModel.pathInsertHandles;
-        const selection = insertHandles(
-          instance.path,
-          handles.points,
-          handles.hit.segment.pointIndices[1],
+      }
+      delete this.sceneModel.pathConnectTargetPoint;
+      this.sceneController.selection = selection;
+      return "Insert Point";
+    });
+  }
+
+  async _handleInsertHandles() {
+    const segmentPointIndices =
+      this.sceneModel.pathInsertHandles.hit.segment.pointIndices;
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      let selection;
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const path = layerGlyph.path;
+        selection = insertHandles(
+          path,
+          segmentPointIndices.map((i) => path.getPoint(i)),
+          segmentPointIndices[1],
           this.curveType
         );
-        delete this.sceneModel.pathInsertHandles;
-        this.sceneController.selection = selection;
-        return "Insert Handles";
-      });
-      return;
-    }
+      }
+      delete this.sceneModel.pathInsertHandles;
+      this.sceneController.selection = selection;
+      return "Insert Handles";
+    });
+  }
 
-    await this.sceneController.editInstance(async (sendIncrementalChange, instance) => {
+  async _handleAddPoints(eventStream, initialEvent) {
+    await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
+      const secondaryLayers = Object.entries(
+        this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
+      ).map(([layerName, layerGlyph]) => {
+        return {
+          layerName,
+          changePath: ["layers", layerName, "glyph"],
+          glyph: layerGlyph,
+        };
+      });
+
+      const {
+        layerName: primaryLayerName,
+        changePath: primaryChangePath,
+        glyph: primaryLayerGlyph,
+      } = secondaryLayers.shift();
+
+      const thisPropagateChange = propagateChange.bind(
+        null,
+        primaryChangePath,
+        secondaryLayers
+      );
+
       const behavior = getPenToolBehavior(
         this.sceneController,
         initialEvent,
-        instance.path,
+        primaryLayerGlyph.path,
         this.curveType
       );
+
       if (!behavior) {
         // Nothing to do
         return;
       }
 
-      const initialChanges = recordChanges(instance, (instance) => {
-        behavior.initialChanges(instance.path, initialEvent);
+      const initialChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
+        behavior.initialChanges(primaryLayerGlyph.path, initialEvent);
       });
       this.sceneController.selection = behavior.selection;
-      await sendIncrementalChange(initialChanges.change);
+      const deepInitialChanges = thisPropagateChange(initialChanges.change);
+      await sendIncrementalChange(deepInitialChanges);
       let preDragChanges = new ChangeCollector();
       let dragChanges = new ChangeCollector();
 
       if (await shouldInitiateDrag(eventStream, initialEvent)) {
-        preDragChanges = recordChanges(instance, (instance) => {
-          behavior.setupDrag(instance.path, initialEvent);
+        preDragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
+          behavior.setupDrag(primaryLayerGlyph.path, initialEvent);
         });
         this.sceneController.selection = behavior.selection;
-        await sendIncrementalChange(preDragChanges.change);
+        const deepPreDragChanges = thisPropagateChange(preDragChanges.change);
+        await sendIncrementalChange(deepPreDragChanges);
         for await (const event of eventStream) {
-          dragChanges = recordChanges(instance, (instance) => {
-            behavior.drag(instance.path, event);
+          dragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
+            behavior.drag(primaryLayerGlyph.path, event);
           });
-          await sendIncrementalChange(dragChanges.change, true); // true: "may drop"
+          const deepDragChanges = thisPropagateChange(dragChanges.change);
+          await sendIncrementalChange(deepDragChanges, true); // true: "may drop"
         }
-        await sendIncrementalChange(dragChanges.change);
+        const deepDragChanges = thisPropagateChange(dragChanges.change);
+        await sendIncrementalChange(deepDragChanges);
       }
 
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
 
+      const deepFinalChanges = ChangeCollector.fromChanges(
+        thisPropagateChange(finalChanges.change, false),
+        thisPropagateChange(finalChanges.rollbackChange, false)
+      );
+
       return {
-        changes: finalChanges,
+        changes: deepFinalChanges,
         undoLabel: behavior.undoLabel,
       };
     });
@@ -562,4 +611,20 @@ function handlesEqual(handles1, handles2) {
 
 function pointsEqual(point1, point2) {
   return point1 === point2 || (point1?.x === point2?.x && point1?.y === point2?.y);
+}
+
+function propagateChange(
+  primaryChangePath,
+  secondaryLayers,
+  change,
+  doApplyChange = true
+) {
+  const primaryChange = consolidateChanges(change, primaryChangePath);
+  const layerChanges = secondaryLayers.map((layerInfo) => {
+    if (doApplyChange) {
+      applyChange(layerInfo.glyph, change);
+    }
+    return consolidateChanges(change, layerInfo.changePath);
+  });
+  return consolidateChanges([primaryChange, ...layerChanges]);
 }

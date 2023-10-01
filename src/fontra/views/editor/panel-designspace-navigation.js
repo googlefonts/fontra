@@ -182,6 +182,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
       this.sourcesList.setSelectedItemIndex(event.newValue);
       this._updateRemoveSourceButtonState();
+      this._updateEditingStatus();
     });
 
     const columnDescriptions = [
@@ -210,6 +211,27 @@ export default class DesignspaceNavigationPanel extends Panel {
           "/tabler-icons/eye-closed.svg",
           "/tabler-icons/eye.svg",
         ]),
+        width: "1.2em",
+      },
+      {
+        title: makeClickableIconHeader("/tabler-icons/pencil.svg", (event) =>
+          this.onEditHeaderClick(event)
+        ),
+        key: "editing",
+        cellFactory: makeIconCellFactory(
+          ["", "/tabler-icons/pencil.svg"],
+          false,
+          (item, key) => {
+            const selectedItem = this.sourcesList.getSelectedItem();
+            const newValue =
+              !selectedItem ||
+              item?.interpolationStatus?.error ||
+              (selectedItem?.interpolationStatus?.error && selectedItem !== item)
+                ? false
+                : !item[key] || item === selectedItem;
+            return { newValue, selectItem: !selectedItem };
+          }
+        ),
         width: "1.2em",
       },
     ];
@@ -282,6 +304,7 @@ export default class DesignspaceNavigationPanel extends Panel {
             varGlyphController.sources[sourceIndex]?.layerName;
         }
       }
+      this._updateEditingStatus();
     });
 
     this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
@@ -330,6 +353,19 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
     this.sceneController.backgroundLayers = backgroundLayers;
     this._updateSources();
+  }
+
+  onEditHeaderClick(event) {
+    const items = this.sourcesList.items.filter(
+      (item) => !item.interpolationStatus?.error
+    );
+    const selectedItem = this.sourcesList.getSelectedItem();
+    const onOff = selectedItem?.interpolationStatus?.error
+      ? false
+      : selectedItem && !items.every((item) => item.editing);
+    for (const item of items) {
+      item.editing = onOff || item === selectedItem;
+    }
   }
 
   async updateInterpolationContributions() {
@@ -381,6 +417,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       varGlyphController?.getInterpolationContributions(this.sceneSettings.location) ||
       [];
     let backgroundLayers = { ...this.sceneController.backgroundLayers };
+    let editingLayers = { ...this.sceneController.editingLayers };
 
     const sourceItems = [];
     for (const [index, source] of enumerate(sources)) {
@@ -390,6 +427,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         name: source.name,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === source.name,
+        editing: editingLayers[layerName] === source.name,
         status: status !== undefined ? status : this.defaultStatusValue,
         interpolationStatus: sourceInterpolationStatus[index],
         interpolationContribution: interpolationContributions[index],
@@ -408,10 +446,25 @@ export default class DesignspaceNavigationPanel extends Panel {
         }
         this.sceneController.backgroundLayers = backgroundLayers;
       });
+      sourceController.addKeyListener("editing", async (event) => {
+        if (event.newValue) {
+          editingLayers[layerName] = source.name;
+        } else {
+          delete editingLayers[layerName];
+        }
+        this.sceneController.editingLayers = editingLayers;
+      });
       sourceController.addKeyListener("status", async (event) => {
         await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-          glyph.sources[index].customData[FONTRA_STATUS_KEY] = event.newValue;
-          return `set status ${source.name}`;
+          const editingLayerNames = new Set(this.sceneController.editingLayerNames);
+          let count = 0;
+          for (const [i, source] of enumerate(glyph.sources)) {
+            if (editingLayerNames.has(source.layerName)) {
+              source.customData[FONTRA_STATUS_KEY] = event.newValue;
+              count++;
+            }
+          }
+          return `set status ${count > 1 ? "(multiple)" : source.name}`;
         });
       });
       sourceItems.push(sourceController.model);
@@ -423,11 +476,21 @@ export default class DesignspaceNavigationPanel extends Panel {
       !this.designspaceLocation.axes.length;
 
     this._updateRemoveSourceButtonState();
+    this._updateEditingStatus();
   }
 
   _updateRemoveSourceButtonState() {
     this.addRemoveSourceButtons.disableRemoveButton =
       this.sourcesList.getSelectedItemIndex() === undefined;
+  }
+
+  _updateEditingStatus() {
+    const selectedItem = this.sourcesList.getSelectedItem();
+    if (!selectedItem?.editing || selectedItem.interpolationStatus?.error) {
+      this.sourcesList.items.forEach((item) => {
+        item.editing = item === selectedItem;
+      });
+    }
   }
 
   async removeSource(sourceIndex) {
@@ -958,7 +1021,11 @@ function suggestedSourceNameFromLocation(location) {
   );
 }
 
-function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
+function makeIconCellFactory(
+  iconPaths,
+  triggerOnDoubleClick = false,
+  switchValue = null
+) {
   return (item, colDesc) => {
     const value = item[colDesc.key];
     const clickSymbol = triggerOnDoubleClick ? "ondblclick" : "onclick";
@@ -969,11 +1036,18 @@ function makeIconCellFactory(iconPaths, triggerOnDoubleClick = false) {
         event.stopImmediatePropagation();
       },
       [clickSymbol]: (event) => {
-        const newValue = !item[colDesc.key];
+        const { newValue, selectItem } = switchValue
+          ? switchValue(item, colDesc.key)
+          : { newValue: !item[colDesc.key] };
         item[colDesc.key] = newValue;
         iconElement.src = iconPaths[boolInt(newValue)];
-        event.stopImmediatePropagation();
+        if (!selectItem) {
+          event.stopImmediatePropagation();
+        }
       },
+    });
+    item[controllerKey].addKeyListener(colDesc.key, (event) => {
+      iconElement.src = iconPaths[boolInt(event.newValue)];
     });
     return iconElement;
   };

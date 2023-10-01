@@ -418,3 +418,23 @@ export function escapeHTMLCharacters(dangerousString) {
   );
   return safeCharacters.join("");
 }
+
+export function* zip(...args) {
+  const iterators = args.map((arg) => iter(arg));
+  while (true) {
+    const results = iterators.map((it) => it.next());
+    if (results.some((r) => r.done)) {
+      if (!results.every((r) => r.done)) {
+        throw new Error("zip: input arguments have different lengths");
+      }
+      break;
+    }
+    yield results.map((r) => r.value);
+  }
+}
+
+export function* iter(iterable) {
+  for (const item of iterable) {
+    yield item;
+  }
+}

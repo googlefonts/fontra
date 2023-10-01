@@ -1,4 +1,5 @@
-import { arrayExtend, range, reversed } from "./utils.js";
+import { Bezier } from "../third-party/bezier-js.js";
+import { arrayExtend, modulo, range, reversed } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 import * as vector from "./vector.js";
 import { roundVector } from "./vector.js";
@@ -14,19 +15,23 @@ export function insertPoint(path, intersection) {
   let insertIndex = segment.pointIndices.at(-1) + absToRel;
   if (segment.points.length === 2) {
     // insert point in line
+    const points = segment.pointIndices.map((i) => path.getPoint(i));
     if (insertIndex <= 0) {
       insertIndex = numContourPoints;
     }
     path.insertPoint(
       contourIndex,
       insertIndex,
-      interpolatePoints(...segment.points, intersection.t)
+      vector.interpolateVectors(...points, intersection.t)
     );
     selectedPointIndex = insertIndex;
   } else {
     // insert point in curve
+    const segments = [...path.iterContourDecomposedSegments(contourIndex)];
+    const segment = segments[intersection.segmentIndex];
+    const bezier = new Bezier(...segment.points);
     const firstOffCurve = path.getPoint(segment.parentPointIndices[1]);
-    const { left, right } = segment.bezier.split(intersection.t);
+    const { left, right } = bezier.split(intersection.t);
     if (firstOffCurve.type === "cubic") {
       const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
         roundVector
@@ -98,14 +103,17 @@ function impliedPoint(pointA, pointB) {
   };
 }
 
-export function insertHandles(path, handlePoints, insertIndex, type = "cubic") {
+export function insertHandles(path, segmentPoints, insertIndex, type = "cubic") {
   let [contourIndex, contourPointIndex] = path.getContourAndPointIndex(insertIndex);
   if (!contourPointIndex) {
     contourPointIndex = path.getNumPointsOfContour(contourIndex);
   }
   insertIndex = path.getAbsolutePointIndex(contourIndex, contourPointIndex, true);
-  handlePoints = handlePoints.map((pt) => {
-    return { x: pt.x, y: pt.y, type: type };
+  const handlePoints = [
+    vector.interpolateVectors(...segmentPoints, 1 / 3),
+    vector.interpolateVectors(...segmentPoints, 2 / 3),
+  ].map((pt) => {
+    return { ...pt, type: type };
   });
   path.insertPoint(contourIndex, contourPointIndex, handlePoints[1]);
   path.insertPoint(contourIndex, contourPointIndex, handlePoints[0]);
@@ -420,7 +428,105 @@ function* rangesToContours(path, startPoint, ranges) {
   }
 }
 
-function interpolatePoints(pt1, pt2, t) {
-  const d = vector.subVectors(pt2, pt1);
-  return vector.addVectors(pt1, vector.mulVectorScalar(d, t));
+export function toggleSmooth(path, pointIndices, newPointType) {
+  for (const pointIndex of pointIndices) {
+    const pointType = path.pointTypes[pointIndex];
+    const [prevIndex, prevPoint, nextIndex, nextPoint] = neighborPoints(
+      path,
+      pointIndex
+    );
+    if (
+      (!prevPoint || !nextPoint || (!prevPoint.type && !nextPoint.type)) &&
+      pointType !== VarPackedPath.SMOOTH_FLAG
+    ) {
+      continue;
+    }
+    if (
+      pointType === VarPackedPath.ON_CURVE ||
+      pointType === VarPackedPath.SMOOTH_FLAG
+    ) {
+      if (newPointType === undefined) {
+        // Compute new point type based on the primary editing layer
+        newPointType =
+          pointType === VarPackedPath.ON_CURVE
+            ? VarPackedPath.SMOOTH_FLAG
+            : VarPackedPath.ON_CURVE;
+      }
+      path.pointTypes[pointIndex] = newPointType;
+      if (newPointType === VarPackedPath.SMOOTH_FLAG) {
+        const anchorPoint = path.getPoint(pointIndex);
+        if (prevPoint?.type && nextPoint?.type) {
+          // Fix-up both incoming and outgoing handles
+          const [newPrevPoint, newNextPoint] = alignHandles(
+            prevPoint,
+            anchorPoint,
+            nextPoint
+          );
+          path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
+          path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
+        } else if (prevPoint?.type) {
+          // Fix-up incoming handle
+          const newPrevPoint = alignHandle(nextPoint, anchorPoint, prevPoint);
+          path.setPointPosition(prevIndex, newPrevPoint.x, newPrevPoint.y);
+        } else if (nextPoint?.type) {
+          // Fix-up outgoing handle
+          const newNextPoint = alignHandle(prevPoint, anchorPoint, nextPoint);
+          path.setPointPosition(nextIndex, newNextPoint.x, newNextPoint.y);
+        }
+      }
+    }
+  }
+  return newPointType;
+}
+
+function neighborPoints(path, pointIndex) {
+  const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
+  const contourStartIndex = path.getAbsolutePointIndex(contourIndex, 0);
+  const numPoints = path.getNumPointsOfContour(contourIndex);
+  const isClosed = path.contourInfo[contourIndex].isClosed;
+  let prevIndex = contourPointIndex - 1;
+  let nextIndex = contourPointIndex + 1;
+  if (path.contourInfo[contourIndex].isClosed) {
+    prevIndex = modulo(prevIndex, numPoints);
+    nextIndex = modulo(nextIndex, numPoints);
+  }
+  let prevPoint, nextPoint;
+  if (prevIndex >= 0) {
+    prevIndex += contourStartIndex;
+    prevPoint = path.getPoint(prevIndex);
+  } else {
+    prevIndex = undefined;
+  }
+  if (nextIndex < numPoints) {
+    nextIndex += contourStartIndex;
+    nextPoint = path.getPoint(nextIndex);
+  } else {
+    nextIndex = undefined;
+  }
+  return [prevIndex, prevPoint, nextIndex, nextPoint];
+}
+
+function alignHandle(refPoint1, anchorPoint, handlePoint) {
+  const direction = vector.subVectors(anchorPoint, refPoint1);
+  return alignHandleAlongDirection(direction, anchorPoint, handlePoint);
+}
+
+function alignHandles(handleIn, anchorPoint, handleOut) {
+  const handleVectorIn = vector.subVectors(anchorPoint, handleIn);
+  const handleVectorOut = vector.subVectors(anchorPoint, handleOut);
+  const directionIn = vector.subVectors(handleVectorOut, handleVectorIn);
+  const directionOut = vector.subVectors(handleVectorIn, handleVectorOut);
+  return [
+    alignHandleAlongDirection(directionIn, anchorPoint, handleIn),
+    alignHandleAlongDirection(directionOut, anchorPoint, handleOut),
+  ];
+}
+
+function alignHandleAlongDirection(direction, anchorPoint, handlePoint) {
+  const length = vector.vectorLength(vector.subVectors(handlePoint, anchorPoint));
+  const handleVector = vector.mulVectorScalar(
+    vector.normalizeVector(direction),
+    length
+  );
+  return vector.roundVector(vector.addVectors(anchorPoint, handleVector));
 }
