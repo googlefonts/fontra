@@ -84,7 +84,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 ### Input / Output
 
 - Read .designspace ✅
-- Write .designspace
+- Write .designspace ✅
 - Respond to external .designspace changes (automatic reload)
 - Read .ufo ✅
 - Write .ufo ✅
@@ -111,7 +111,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Advanced character / glyph search
 - Display kerning
 - Apply proper text shaping
-- Full screen mode
+- Full screen mode ✅
 - Right-to-left mode
 - Vertical top-to-bottom mode
 - Enter “edit mode” for glyph by double-clicking on a glyph in the text ✅
@@ -142,7 +142,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Anchors
 - Guidelines
 - View background layers
-- Edit local variation axes
+- Edit local variation axes ✅
 - Edit local sources/layers ✅
 - Built-in support for Non-Linear Interpolation
 - Remove overlap and other path operators
