@@ -93,6 +93,10 @@ export class SceneModel {
     ];
   }
 
+  getSelectedGlyphInfo() {
+    return getSelectedGlyphInfo(this.selectedGlyph, this.glyphLines);
+  }
+
   getSelectedGlyphName() {
     return getSelectedGlyphName(this.selectedGlyph, this.glyphLines);
   }
@@ -739,8 +743,12 @@ function makeGlyphNamesPattern(glyphNames) {
   return { glyphs: glyphsObj };
 }
 
-export function getSelectedGlyphName(selectedGlyph, glyphLines) {
+export function getSelectedGlyphInfo(selectedGlyph, glyphLines) {
   if (selectedGlyph) {
-    return glyphLines[selectedGlyph.lineIndex]?.[selectedGlyph.glyphIndex]?.glyphName;
+    return glyphLines[selectedGlyph.lineIndex]?.[selectedGlyph.glyphIndex];
   }
+}
+
+export function getSelectedGlyphName(selectedGlyph, glyphLines) {
+  return getSelectedGlyphInfo(selectedGlyph, glyphLines)?.glyphName;
 }
