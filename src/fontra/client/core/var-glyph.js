@@ -63,7 +63,7 @@ export class StaticGlyph {
   }
 }
 
-function copyComponent(component) {
+export function copyComponent(component) {
   return {
     name: component.name,
     transformation: { ...component.transformation },

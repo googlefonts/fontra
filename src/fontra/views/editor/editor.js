@@ -37,7 +37,7 @@ import {
   writeToClipboard,
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
-import { StaticGlyph } from "../core/var-glyph.js";
+import { StaticGlyph, copyComponent } from "../core/var-glyph.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -1072,8 +1072,9 @@ export class EditorController {
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           const pasteGlyph =
             pasteLayerGlyphsByLayerName[layerName] || defaultPasteGlyph;
+          console.log(layerName, pasteGlyph);
           layerGlyph.path.appendPath(pasteGlyph.path);
-          layerGlyph.components.push(...pasteGlyph.components);
+          layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
         }
         this.sceneController.selection = selection;
         return "Paste";
