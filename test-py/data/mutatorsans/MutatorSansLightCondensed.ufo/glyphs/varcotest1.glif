@@ -76,7 +76,7 @@
           <key>location</key>
           <dict>
             <key>flip</key>
-            <real>20.0</real>
+            <integer>20</integer>
             <key>flop</key>
             <real>80.0</real>
           </dict>

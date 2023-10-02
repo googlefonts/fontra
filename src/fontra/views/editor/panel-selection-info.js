@@ -67,7 +67,7 @@ export default class SelectionInfoPanel extends Panel {
       "positionedLines",
       (event) => {
         if (!this.haveInstance) {
-          this.update(event.senderID?.senderID);
+          this.update(event.senderInfo?.senderID);
         }
       }
     );
@@ -101,8 +101,13 @@ export default class SelectionInfoPanel extends Panel {
     ]);
   }
 
-  async update(senderID) {
-    if (senderID === this) {
+  async update(senderInfo) {
+    if (
+      senderInfo?.senderID === this &&
+      senderInfo?.fieldKeyPath?.length !== 3 &&
+      senderInfo?.fieldKeyPath?.[0] !== "component" &&
+      senderInfo?.fieldKeyPath?.[2] !== "name"
+    ) {
       // Don't rebuild, just update the Dimensions field
       await this.updateDimensions();
       return;
@@ -348,6 +353,7 @@ export default class SelectionInfoPanel extends Panel {
   async _setupSelectionInfoHandlers(glyphName) {
     this.infoForm.onFieldChange = async (fieldKey, value, valueStream) => {
       const changePath = JSON.parse(fieldKey);
+      const senderInfo = { senderID: this, fieldKeyPath: changePath };
       await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
         const layerInfo = Object.entries(
           this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
@@ -402,7 +408,7 @@ export default class SelectionInfoPanel extends Panel {
           undoLabel: undoLabel,
           broadcast: true,
         };
-      }, this);
+      }, senderInfo);
     };
   }
 }
