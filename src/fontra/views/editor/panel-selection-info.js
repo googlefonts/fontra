@@ -124,16 +124,19 @@ export default class SelectionInfoPanel extends Panel {
       await this.sceneController.sceneModel.getGlyphInstance(glyphName);
     let unicodes = this.fontController.glyphMap?.[glyphName] || [];
 
-    const positionedGlyph =
-      this.sceneController.sceneModel.getSelectedPositionedGlyph();
-
-    const instance = positionedGlyph?.glyph.instance;
+    const instance = glyphController?.instance;
     this.haveInstance = !!instance;
 
-    if (positionedGlyph?.isUndefined && positionedGlyph.character && !unicodes.length) {
+    const selectedGlyphInfo = this.sceneController.sceneModel.getSelectedGlyphInfo();
+
+    if (
+      selectedGlyphInfo?.isUndefined &&
+      selectedGlyphInfo.character &&
+      !unicodes.length
+    ) {
       // Glyph does not yet exist in the font, but we can grab the unicode from
-      // positionedGlyph.character anyway
-      unicodes = [positionedGlyph.character.codePointAt(0)];
+      // selectedGlyphInfo.character anyway
+      unicodes = [selectedGlyphInfo.character.codePointAt(0)];
     }
 
     const unicodesStr = unicodes
@@ -144,7 +147,7 @@ export default class SelectionInfoPanel extends Panel {
       .join(" ");
 
     const formContents = [];
-    if (glyphName && instance) {
+    if (glyphName) {
       formContents.push({
         key: "glyphName",
         type: "text",
@@ -157,13 +160,15 @@ export default class SelectionInfoPanel extends Panel {
         label: "Unicode",
         value: unicodesStr,
       });
-      formContents.push({
-        type: "edit-number",
-        key: '["xAdvance"]',
-        label: "Advance width",
-        value: instance.xAdvance,
-        minValue: 0,
-      });
+      if (instance) {
+        formContents.push({
+          type: "edit-number",
+          key: '["xAdvance"]',
+          label: "Advance width",
+          value: instance.xAdvance,
+          minValue: 0,
+        });
+      }
     }
 
     const { pointIndices, componentIndices } = this._getSelection();
