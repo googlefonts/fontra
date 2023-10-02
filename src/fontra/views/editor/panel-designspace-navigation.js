@@ -224,11 +224,12 @@ export default class DesignspaceNavigationPanel extends Panel {
           (item, key) => {
             const selectedItem = this.sourcesList.getSelectedItem();
             const newValue =
-              !selectedItem ||
+              item === selectedItem ||
+              (!selectedItem ||
               item?.interpolationStatus?.error ||
-              (selectedItem?.interpolationStatus?.error && selectedItem !== item)
+              selectedItem?.interpolationStatus?.error
                 ? false
-                : !item[key] || item === selectedItem;
+                : !item[key]);
             return { newValue, selectItem: !selectedItem };
           }
         ),
