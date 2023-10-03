@@ -336,7 +336,6 @@ function expandPointSelection(path, pointIndices) {
   // Given a "sparse" selection, fill in the gaps by adding all off-curve points
   // that are included in selected segments
   const selectionByContour = getSelectionByContour(path, pointIndices);
-  const filteredUnpackedContours = [];
   const expandedIndices = [];
   for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
     const contour = path.getUnpackedContour(contourIndex);
