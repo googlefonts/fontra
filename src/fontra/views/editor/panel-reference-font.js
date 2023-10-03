@@ -368,7 +368,7 @@ export default class ReferenceFontPanel extends Panel {
     }
     this.model.referenceFontName = fontItem.fontIdentifier;
 
-    if (Object.hasOwn(this.supportedLanguagesMemoized, fontItem.fontIdentifier)) {
+    if (fontItem.fontIdentifier in this.supportedLanguagesMemoized) {
       this.setSupportedLanguages(
         this.supportedLanguagesMemoized[fontItem.fontIdentifier],
         this.model.languageCode
