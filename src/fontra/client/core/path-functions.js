@@ -197,6 +197,8 @@ function makeExpandedIndexSet(
     const firstPointIndex = indices[0];
     const lastPointIndex = indices.at(-1);
     if (
+      (greedyLevel > 1 &&
+        (indexSet.has(firstPointIndex) || indexSet.has(lastPointIndex))) ||
       (greedyLevel &&
         indices.length > 2 &&
         indices.slice(1, -1).some((i) => indexSet.has(i))) ||
