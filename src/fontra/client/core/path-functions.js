@@ -1,4 +1,5 @@
 import { Bezier } from "../third-party/bezier-js.js";
+import { union } from "./set-ops.js";
 import { arrayExtend, modulo, range, reversed } from "./utils.js";
 import { VarPackedPath } from "./var-path.js";
 import * as vector from "./vector.js";
@@ -132,7 +133,8 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
       path,
       contourPointIndices,
       contourIndex,
-      startPoint
+      startPoint,
+      1
     );
     if (indexSet.size === numContourPoints) {
       // Easy: the whole contour is copied
@@ -184,25 +186,26 @@ function makeExpandedIndexSet(
   contourPointIndices,
   contourIndex,
   startPoint,
-  greedy = true
+  greedyLevel = 0
 ) {
   // Given a "sparse" selection, fill in the gaps by adding all off-curve points
   // that are included in selected segments
   const indexSet = new Set(contourPointIndices);
+  const newIndexSet = new Set();
   for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
     const indices = segment.pointIndices.map((i) => i - startPoint);
     const firstPointIndex = indices[0];
     const lastPointIndex = indices.at(-1);
     if (
-      (greedy &&
+      (greedyLevel &&
         indices.length > 2 &&
         indices.slice(1, -1).some((i) => indexSet.has(i))) ||
       (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
     ) {
-      indices.forEach((i) => indexSet.add(i));
+      indices.forEach((i) => newIndexSet.add(i));
     }
   }
-  return indexSet;
+  return union(newIndexSet, indexSet);
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
@@ -341,7 +344,7 @@ function expandPointSelection(path, pointIndices) {
       contourPointIndices,
       contourIndex,
       startPoint,
-      false
+      0
     );
     arrayExtend(
       expandedIndices,
