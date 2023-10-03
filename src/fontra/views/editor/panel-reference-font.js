@@ -8,6 +8,13 @@ import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
 import { dialog } from "/web-components/modal-dialog.js";
 import { UIList } from "/web-components/ui-list.js";
 
+// prettier-ignore
+import "/third-party/lib-font/inflate.js";
+
+// prettier-ignore
+import "/third-party/lib-font/unbrotli.js";
+
+// prettier-ignore
 import { Font } from "/third-party/lib-font.js";
 
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
