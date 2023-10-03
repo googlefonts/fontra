@@ -61,14 +61,15 @@ function cleanFontItems(fontItems) {
     return {
       uplodadedFileName: fontItem.uplodadedFileName,
       fontIdentifier: fontItem.fontIdentifier,
-      supportedLanguages: fontItem.supportedLanguages,
     };
   });
 }
 
-async function readSupportedLanguages(fontItem, languageMapping) {
+function readSupportedLanguages(fontItem, languageMapping) {
   return new Promise((resolve, reject) => {
-    const font = new Font(fontItem.fontIdentifier);
+    const font = new Font(fontItem.fontIdentifier, {
+      skipStyleSheet: true,
+    });
     font.onerror = (event) => {
       console.error("Error when creating Font instance (lib-font).", event);
       resolve([]);
@@ -95,7 +96,7 @@ async function readSupportedLanguages(fontItem, languageMapping) {
       const supportedLanguages = [...allLangs]
         .filter((lang) => languageMapping[lang])
         .map((lang) => languageMapping[lang]);
-      supportedLanguages.sort((a, b) => a[0] - b[0]);
+      supportedLanguages.sort((a, b) => a[0].localeCompare(b[0]));
       resolve(supportedLanguages);
     };
     font.src = fontItem.objectURL;
@@ -358,14 +359,25 @@ export default class ReferenceFontPanel extends Panel {
       document.fonts.add(fontItem.fontFace);
       await fontItem.fontFace.load();
     }
-    if (!fontItem.supportedLanguages) {
-      fontItem.supportedLanguages = await readSupportedLanguages(
-        fontItem,
-        this.allLanguages
-      );
-    }
-    this.model.supportedLanguages = fontItem.supportedLanguages;
     this.model.referenceFontName = fontItem.fontIdentifier;
+
+    if (Object.hasOwn(this.supportedLanguagesMemoized, fontItem.fontIdentifier)) {
+      this.setSupportedLanguages(
+        this.supportedLanguagesMemoized[fontItem.fontIdentifier],
+        this.model.languageCode
+      );
+    } else {
+      setTimeout(async () => {
+        // file is not resolved when it's read consecutively after creating object url
+        // I do not know the reason. I will investigate later, leaving it with a timeout
+        const supportedLanguages = await readSupportedLanguages(
+          fontItem,
+          this.languageMapping
+        );
+        this.setSupportedLanguages(supportedLanguages, this.model.languageCode);
+        this.supportedLanguagesMemoized[fontItem.fontIdentifier] = supportedLanguages;
+      }, 100);
+    }
   }
 
   async _deleteSelectedItemHandler() {
@@ -429,10 +441,11 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   getContentElement() {
-    this.allLanguages = {};
+    this.languageMapping = {};
+    this.supportedLanguagesMemoized = {};
+
     this.controller = new ObservableController({
       languageCode: "",
-      supportedLanguages: [],
       selectedFontIndex: -1,
       fontList: [],
       charOverride: "",
@@ -442,12 +455,6 @@ export default class ReferenceFontPanel extends Panel {
     this.controller.addKeyListener("fontList", (event) =>
       this._fontListChangedHandler(event)
     );
-    this.controller.addKeyListener("supportedLanguages", () => {
-      this.setSupportedLanguages(
-        this.model.supportedLanguages,
-        this.model.languageCode
-      );
-    });
     garbageCollectUnusedFiles(this.model.fontList);
     const columnDescriptions = [
       {
@@ -533,7 +540,7 @@ export default class ReferenceFontPanel extends Panel {
 
   attach() {
     fetchJSON("/editor/language-mapping.json").then((languageMapping) => {
-      this.allLanguages = languageMapping;
+      this.languageMapping = languageMapping;
     });
     this.controller.addKeyListener("referenceFontName", (event) => {
       if (event.newValue) {
