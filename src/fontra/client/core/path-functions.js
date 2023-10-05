@@ -1,7 +1,12 @@
 import { Bezier } from "../third-party/bezier-js.js";
-import { union } from "./set-ops.js";
+import { fitCubic } from "./fit-cubic.js";
+import { intersection, union } from "./set-ops.js";
 import { arrayExtend, modulo, range, reversed } from "./utils.js";
-import { VarPackedPath } from "./var-path.js";
+import {
+  POINT_TYPE_OFF_CURVE_CUBIC,
+  POINT_TYPE_OFF_CURVE_QUAD,
+  VarPackedPath,
+} from "./var-path.js";
 import * as vector from "./vector.js";
 import { roundVector } from "./vector.js";
 
@@ -190,24 +195,41 @@ function makeExpandedIndexSet(
 ) {
   // Given a "sparse" selection, fill in the gaps by adding all off-curve points
   // that are included in selected segments
+  const indexSet = new Set();
+  for (const { selected, pointIndices } of iterSelectedSegments(
+    path,
+    contourPointIndices,
+    contourIndex,
+    startPoint,
+    greedyLevel
+  )) {
+    if (selected) {
+      pointIndices.forEach((i) => indexSet.add(i - startPoint));
+    }
+  }
+  return indexSet;
+}
+
+function* iterSelectedSegments(
+  path,
+  contourPointIndices,
+  contourIndex,
+  startPoint,
+  greedyLevel
+) {
   const indexSet = new Set(contourPointIndices);
-  const newIndexSet = new Set();
   for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
     const indices = segment.pointIndices.map((i) => i - startPoint);
-    const firstPointIndex = indices[0];
-    const lastPointIndex = indices.at(-1);
-    if (
-      (greedyLevel > 1 &&
-        (indexSet.has(firstPointIndex) || indexSet.has(lastPointIndex))) ||
+    const firstPointSelected = indexSet.has(indices[0]);
+    const lastPointSelected = indexSet.has(indices.at(-1));
+    const selected =
+      (greedyLevel > 1 && (firstPointSelected || lastPointSelected)) ||
       (greedyLevel &&
         indices.length > 2 &&
         indices.slice(1, -1).some((i) => indexSet.has(i))) ||
-      (indexSet.has(firstPointIndex) && indexSet.has(lastPointIndex))
-    ) {
-      indices.forEach((i) => newIndexSet.add(i));
-    }
+      (firstPointSelected && lastPointSelected);
+    yield { selected, firstPointSelected, lastPointSelected, ...segment };
   }
-  return union(newIndexSet, indexSet);
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
@@ -319,41 +341,169 @@ export function connectContours(path, sourcePointIndex, targetPointIndex) {
 }
 
 export function deleteSelectedPoints(path, pointIndices) {
-  pointIndices = expandPointSelection(path, pointIndices);
-  for (const pointIndex of reversed(pointIndices)) {
-    const [contourIndex, contourPointIndex] = path.getContourAndPointIndex(pointIndex);
-    const numContourPoints = path.getNumPointsOfContour(contourIndex);
+  const contourFragmentsToDelete = preparePointDeletion(path, pointIndices);
+  const contoursToDelete = [];
+  for (const {
+    contourIndex,
+    fragmentsToDelete,
+    startPoint,
+  } of contourFragmentsToDelete) {
+    if (!fragmentsToDelete) {
+      contoursToDelete.push(contourIndex);
+      continue;
+    }
+    for (const fragment of reversed(fragmentsToDelete)) {
+      const points = fragment.contour.points;
+      const { curveType, onlyOffCurvePoints } = determineDominantCurveType(
+        points.slice(1, -1)
+      );
+      const indices = fragment.indices.map((i) => i - startPoint);
+      let insertIndex = indices.at(-1);
+      let newPoints;
 
-    if (numContourPoints > 1) {
-      path.deletePoint(contourIndex, contourPointIndex);
-    } else {
-      path.deleteContour(contourIndex);
+      if (curveType && !onlyOffCurvePoints) {
+        newPoints = computeHandlesFromFragment(curveType, fragment.contour);
+        // pathFragment: VarPackedPath.fromUnpackedContours(contourFragments),
+      } else {
+        newPoints = [];
+        path.setPointType(indices[0] + startPoint, points[0].type, false);
+        path.setPointType(indices.at(-1) + startPoint, points.at(-1).type, false);
+      }
+      for (const newPoint of newPoints) {
+        path.insertPoint(contourIndex, insertIndex, newPoint);
+        insertIndex++;
+      }
+
+      for (const index of reversed(indices.slice(1, -1).sort((a, b) => a - b))) {
+        const delIndex = index + (index >= insertIndex ? newPoints.length : 0);
+        path.deletePoint(contourIndex, delIndex);
+      }
     }
   }
+  contoursToDelete.sort((a, b) => b - a); // reverse sort
+  contoursToDelete.forEach((i) => path.deleteContour(i));
 }
 
-function expandPointSelection(path, pointIndices) {
-  // Given a "sparse" selection, fill in the gaps by adding all off-curve points
-  // that are included in selected segments
+function preparePointDeletion(path, pointIndices) {
+  const contourFragmentsToDelete = [];
   const selectionByContour = getSelectionByContour(path, pointIndices);
-  const expandedIndices = [];
   for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
     const contour = path.getUnpackedContour(contourIndex);
     const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
-    const indexSet = makeExpandedIndexSet(
+
+    const fragmentsToDelete = [];
+    let allSelected = true;
+    let previousSegment = null;
+    for (const segment of iterSelectedSegments(
       path,
       contourPointIndices,
       contourIndex,
       startPoint,
-      0
-    );
-    arrayExtend(
-      expandedIndices,
-      [...indexSet].map((i) => i + startPoint)
-    );
+      2
+    )) {
+      if (segment.selected) {
+        if (previousSegment && segment.firstPointSelected) {
+          fragmentsToDelete.at(-1).push(segment);
+        } else {
+          fragmentsToDelete.push([segment]);
+        }
+        previousSegment = segment.lastPointSelected ? segment : null;
+        if (!segment.firstPointSelected || !segment.lastPointSelected) {
+          allSelected = false;
+        }
+      } else {
+        allSelected = false;
+        previousSegment = null;
+      }
+    }
+
+    if (
+      fragmentsToDelete.length > 1 &&
+      contour.isClosed &&
+      previousSegment &&
+      fragmentsToDelete[0]?.[0].firstPointSelected
+    ) {
+      // Wrap around
+      fragmentsToDelete.at(-1).push(...fragmentsToDelete[0]);
+      fragmentsToDelete.shift();
+    }
+
+    contourFragmentsToDelete.push({
+      contourIndex,
+      fragmentsToDelete: !allSelected
+        ? fragmentsToDelete.map((segments) => segmentsToContour(path, segments))
+        : null,
+      startPoint,
+    });
   }
-  expandedIndices.sort((a, b) => a - b);
-  return expandedIndices;
+  return contourFragmentsToDelete;
+}
+
+function segmentsToContour(path, segments) {
+  const indices = [segments[0].pointIndices[0]];
+  for (const segment of segments) {
+    indices.push(...segment.pointIndices.slice(1));
+  }
+  return {
+    indices,
+    contour: {
+      isClosed: false,
+      points: indices.map((i) => path.getPoint(i)),
+    },
+  };
+}
+
+function determineDominantCurveType(points) {
+  const numOffCurvePoints = points.reduce((acc, pt) => acc + (pt.type ? 1 : 0), 0);
+  const numQuadPoints = points.reduce(
+    (acc, pt) => acc + (pt.type == POINT_TYPE_OFF_CURVE_QUAD ? 1 : 0),
+    0
+  );
+  const curveType = numOffCurvePoints
+    ? numQuadPoints > numOffCurvePoints / 2
+      ? POINT_TYPE_OFF_CURVE_QUAD
+      : POINT_TYPE_OFF_CURVE_CUBIC
+    : null;
+  return { curveType, onlyOffCurvePoints: numOffCurvePoints === points.length };
+}
+
+function computeHandlesFromFragment(curveType, contour) {
+  const path = VarPackedPath.fromUnpackedContours([contour]);
+  const samplePoints = [contour.points[0]];
+  for (const segment of path.iterContourDecomposedSegments(0)) {
+    const points = segment.points;
+    if (points.length >= 3) {
+      const bezier = new Bezier(...points);
+      const ts = [0.25, 0.5, 0.75];
+      ts.forEach((t) => samplePoints.push(bezier.compute(t)));
+    }
+    samplePoints.push(points.at(-1));
+  }
+  const leftTangent = vector.normalizeVector(
+    vector.subVectors(contour.points[1], contour.points[0])
+  );
+  const rightTangent = vector.normalizeVector(
+    vector.subVectors(contour.points.at(-2), contour.points.at(-1))
+  );
+  const bezier = fitCubic(samplePoints, leftTangent, rightTangent, 1);
+  let handle1, handle2;
+  handle1 = bezier.points[1];
+  handle2 = bezier.points[2];
+  if (curveType === POINT_TYPE_OFF_CURVE_QUAD) {
+    handle1 = scalePoint(contour.points[0], handle1, 0.75);
+    handle2 = scalePoint(contour.points.at(-1), handle2, 0.75);
+  }
+  return [
+    { ...handle1, type: curveType },
+    { ...handle2, type: curveType },
+  ];
+}
+
+function scalePoint(pinPoint, point, factor) {
+  return vector.addVectors(
+    pinPoint,
+    vector.mulVectorScalar(vector.subVectors(point, pinPoint), factor)
+  );
 }
 
 export function getSelectionByContour(path, pointIndices) {
