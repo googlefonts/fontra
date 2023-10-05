@@ -138,8 +138,7 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
       path,
       contourPointIndices,
       contourIndex,
-      startPoint,
-      1
+      startPoint
     );
     if (indexSet.size === numContourPoints) {
       // Easy: the whole contour is copied
@@ -186,13 +185,7 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
   return VarPackedPath.fromUnpackedContours(filteredUnpackedContours);
 }
 
-function makeExpandedIndexSet(
-  path,
-  contourPointIndices,
-  contourIndex,
-  startPoint,
-  greedyLevel = 0
-) {
+function makeExpandedIndexSet(path, contourPointIndices, contourIndex, startPoint) {
   // Given a "sparse" selection, fill in the gaps by adding all off-curve points
   // that are included in selected segments
   const indexSet = new Set();
@@ -201,35 +194,13 @@ function makeExpandedIndexSet(
     contourPointIndices,
     contourIndex,
     startPoint,
-    greedyLevel
+    1
   )) {
     if (selected) {
       pointIndices.forEach((i) => indexSet.add(i - startPoint));
     }
   }
   return indexSet;
-}
-
-function* iterSelectedSegments(
-  path,
-  contourPointIndices,
-  contourIndex,
-  startPoint,
-  greedyLevel
-) {
-  const indexSet = new Set(contourPointIndices);
-  for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
-    const indices = segment.pointIndices.map((i) => i - startPoint);
-    const firstPointSelected = indexSet.has(indices[0]);
-    const lastPointSelected = indexSet.has(indices.at(-1));
-    const selected =
-      (greedyLevel > 1 && (firstPointSelected || lastPointSelected)) ||
-      (greedyLevel &&
-        indices.length > 2 &&
-        indices.slice(1, -1).some((i) => indexSet.has(i))) ||
-      (firstPointSelected && lastPointSelected);
-    yield { selected, firstPointSelected, lastPointSelected, ...segment };
-  }
 }
 
 export function splitPathAtPointIndices(path, pointIndices) {
@@ -437,6 +408,28 @@ function preparePointDeletion(path, pointIndices) {
     });
   }
   return contourFragmentsToDelete;
+}
+
+function* iterSelectedSegments(
+  path,
+  contourPointIndices,
+  contourIndex,
+  startPoint,
+  greedyLevel
+) {
+  const indexSet = new Set(contourPointIndices);
+  for (const segment of path.iterContourSegmentPointIndices(contourIndex)) {
+    const indices = segment.pointIndices.map((i) => i - startPoint);
+    const firstPointSelected = indexSet.has(indices[0]);
+    const lastPointSelected = indexSet.has(indices.at(-1));
+    const selected =
+      (greedyLevel > 1 && (firstPointSelected || lastPointSelected)) ||
+      (greedyLevel &&
+        indices.length > 2 &&
+        indices.slice(1, -1).some((i) => indexSet.has(i))) ||
+      (firstPointSelected && lastPointSelected);
+    yield { selected, firstPointSelected, lastPointSelected, ...segment };
+  }
 }
 
 function segmentsToContour(path, segments) {
