@@ -11,7 +11,7 @@ import { UIList } from "/web-components/ui-list.js";
 import "/third-party/lib-font/inflate.js";
 import "/third-party/lib-font/unbrotli.js";
 
-// lib-font expect it's dependencies to be imported. prettier lifts the imports up
+// lib-font expects its dependencies to be imported first. Prettier moves the imports.
 // prettier-ignore: organizeImportsSkipDestructiveCodeActions
 import { Font } from "/third-party/lib-font.js";
 
