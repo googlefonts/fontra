@@ -461,6 +461,7 @@ export default class ReferenceFontPanel extends Panel {
       this._fontListChangedHandler(event)
     );
     garbageCollectUnusedFiles(this.model.fontList);
+
     const columnDescriptions = [
       {
         key: "uplodadedFileName",
