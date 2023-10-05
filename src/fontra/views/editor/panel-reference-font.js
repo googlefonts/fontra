@@ -8,13 +8,11 @@ import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
 import { dialog } from "/web-components/modal-dialog.js";
 import { UIList } from "/web-components/ui-list.js";
 
-// prettier-ignore
 import "/third-party/lib-font/inflate.js";
-
-// prettier-ignore
 import "/third-party/lib-font/unbrotli.js";
 
-// prettier-ignore
+// lib-font expect it's dependencies to be imported. prettier lifts the imports up
+// prettier-ignore: organizeImportsSkipDestructiveCodeActions
 import { Font } from "/third-party/lib-font.js";
 
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
