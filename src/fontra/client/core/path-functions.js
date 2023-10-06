@@ -475,7 +475,7 @@ function computeHandlesFromFragment(curveType, contour) {
     const points = segment.points;
     if (points.length >= 3) {
       const bezier = new Bezier(...points);
-      const ts = [0.25, 0.5, 0.75];
+      const ts = [0.2, 0.4, 0.6, 0.8];
       ts.forEach((t) => samplePoints.push(bezier.compute(t)));
     }
     samplePoints.push(points.at(-1));
@@ -486,7 +486,7 @@ function computeHandlesFromFragment(curveType, contour) {
   const rightTangent = vector.normalizeVector(
     vector.subVectors(contour.points.at(-2), contour.points.at(-1))
   );
-  const bezier = fitCubic(samplePoints, leftTangent, rightTangent, 1);
+  const bezier = fitCubic(samplePoints, leftTangent, rightTangent, 0.5);
   let handle1, handle2;
   handle1 = bezier.points[1];
   handle2 = bezier.points[2];
