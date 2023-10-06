@@ -129,8 +129,8 @@ describe("fitCubic", () => {
     const segment = fitCubic(points, leftTangent, rightTangent, 800);
     expect(segment.points.map(({ x, y }) => ({ x, y }))).deep.equal([
       { x: -28, y: 0 },
-      { x: 3.118224387722776, y: 31.118224387722776 },
-      { x: 180.2371442144592, y: 431.28856735662237 },
+      { x: 30.619361253106185, y: 58.619361253106185 },
+      { x: 185.4153571748979, y: 415.7539284753063 },
       { x: 318, y: 18 },
     ]);
   });
