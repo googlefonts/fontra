@@ -331,31 +331,50 @@ export function deleteSelectedPoints(path, pointIndices) {
       contoursToDelete.push(contourIndex);
       continue;
     }
+    let indexBias = 0;
     for (const fragment of reversed(fragmentsToDelete)) {
       const points = fragment.contour.points;
       const { curveType, onlyOffCurvePoints } = determineDominantCurveType(
         points.slice(1, -1)
       );
-      const indices = fragment.indices.map((i) => i - startPoint);
-      let insertIndex = indices.at(-1);
+      const indices = fragment.indices.map((i) => i - startPoint + indexBias);
+      const firstIndex = indices[0];
+      const lastIndex = indices.at(-1);
+      const wraps = lastIndex < firstIndex;
+      if (wraps && indexBias) {
+        throw new Error("assert -- unexpected index bias");
+      }
+      let insertIndex = firstIndex + 1;
+
       let newPoints;
 
       if (curveType && !onlyOffCurvePoints) {
         newPoints = computeHandlesFromFragment(curveType, fragment.contour);
-        // pathFragment: VarPackedPath.fromUnpackedContours(contourFragments),
       } else {
         newPoints = [];
-        path.setPointType(indices[0] + startPoint, points[0].type, false);
-        path.setPointType(indices.at(-1) + startPoint, points.at(-1).type, false);
+        path.setPointType(indices[0] + startPoint + indexBias, points[0].type, false);
+        path.setPointType(
+          indices.at(-1) + startPoint + indexBias,
+          points.at(-1).type,
+          false
+        );
       }
       for (const newPoint of newPoints) {
         path.insertPoint(contourIndex, insertIndex, newPoint);
         insertIndex++;
       }
 
-      for (const index of reversed(indices.slice(1, -1).sort((a, b) => a - b))) {
-        const delIndex = index + (index >= insertIndex ? newPoints.length : 0);
-        path.deletePoint(contourIndex, delIndex);
+      const delIndices = indices.slice(1, -1);
+      delIndices.sort((a, b) => b - a); // reverse sort
+      for (const index of delIndices) {
+        let adjustedIndex;
+        if (wraps && index < lastIndex) {
+          adjustedIndex = index;
+          indexBias--;
+        } else {
+          adjustedIndex = index + newPoints.length;
+        }
+        path.deletePoint(contourIndex, adjustedIndex);
       }
     }
   }
