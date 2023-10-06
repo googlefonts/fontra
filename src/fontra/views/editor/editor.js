@@ -1072,7 +1072,6 @@ export class EditorController {
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           const pasteGlyph =
             pasteLayerGlyphsByLayerName[layerName] || defaultPasteGlyph;
-          console.log(layerName, pasteGlyph);
           layerGlyph.path.appendPath(pasteGlyph.path);
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
         }
