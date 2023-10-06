@@ -1,7 +1,7 @@
 import { Bezier } from "../third-party/bezier-js.js";
 import { fitCubic } from "./fit-cubic.js";
 import { intersection, union } from "./set-ops.js";
-import { arrayExtend, modulo, range, reversed } from "./utils.js";
+import { arrayExtend, enumerate, modulo, range, reversed } from "./utils.js";
 import {
   POINT_TYPE_OFF_CURVE_CUBIC,
   POINT_TYPE_OFF_CURVE_QUAD,
@@ -333,11 +333,20 @@ export function deleteSelectedPoints(path, pointIndices) {
     }
     let indexBias = 0;
     for (const fragment of reversed(fragmentsToDelete)) {
+      const indices = fragment.indices.map((i) => i + indexBias);
+
+      if (!fragment.contour) {
+        // Start or end fragment of an open path: just delete points
+        for (const index of reversed(indices)) {
+          path.deletePoint(contourIndex, index);
+        }
+        continue;
+      }
+
       const points = fragment.contour.points;
       const { curveType, onlyOffCurvePoints } = determineDominantCurveType(
         points.slice(1, -1)
       );
-      const indices = fragment.indices.map((i) => i - startPoint + indexBias);
       const firstIndex = indices[0];
       const lastIndex = indices.at(-1);
       const wraps = lastIndex < firstIndex;
@@ -426,10 +435,22 @@ function preparePointDeletion(path, pointIndices) {
       fragmentsToDelete.shift();
     }
 
+    const { firstOnCurveIndex, lastOnCurveIndex } = findBoundaryOnCurvePoints(contour);
+
     contourFragmentsToDelete.push({
       contourIndex,
       fragmentsToDelete: !allSelected
-        ? fragmentsToDelete.map((segments) => segmentsToContour(path, segments))
+        ? fragmentsToDelete.map((segments) =>
+            segmentsToContour(
+              segments,
+              path,
+              contourIndex,
+              startPoint,
+              contour.isClosed,
+              firstOnCurveIndex,
+              lastOnCurveIndex
+            )
+          )
         : null,
       startPoint,
     });
@@ -459,18 +480,58 @@ function* iterSelectedSegments(
   }
 }
 
-function segmentsToContour(path, segments) {
-  const indices = [segments[0].pointIndices[0]];
+function segmentsToContour(
+  segments,
+  path,
+  contourIndex,
+  startPoint,
+  isClosed,
+  firstOnCurveIndex,
+  lastOnCurveIndex
+) {
+  let indices = [segments[0].pointIndices[0]];
   for (const segment of segments) {
     indices.push(...segment.pointIndices.slice(1));
   }
+  indices = indices.map((i) => i - startPoint);
+
+  if (!isClosed) {
+    if (indices[0] === firstOnCurveIndex && segments[0].firstPointSelected) {
+      // Delete entire first fragment
+      return { indices: [...range(0, indices.at(-1))] };
+    } else if (
+      indices.at(-1) === lastOnCurveIndex &&
+      segments.at(-1).lastPointSelected
+    ) {
+      // Delete entire last fragment
+      return {
+        indices: [...range(indices[1], path.getNumPointsOfContour(contourIndex))],
+      };
+    }
+  }
+
   return {
     indices,
     contour: {
       isClosed: false,
-      points: indices.map((i) => path.getPoint(i)),
+      points: indices.map((i) => path.getPoint(i + startPoint)),
     },
   };
+}
+
+function findBoundaryOnCurvePoints(contour) {
+  let firstOnCurveIndex, lastOnCurveIndex;
+  if (!contour.isClosed) {
+    for (const [index, point] of enumerate(contour.points)) {
+      if (!point.type) {
+        if (firstOnCurveIndex === undefined) {
+          firstOnCurveIndex = index;
+        }
+        lastOnCurveIndex = index;
+      }
+    }
+  }
+  return { firstOnCurveIndex, lastOnCurveIndex };
 }
 
 function determineDominantCurveType(points) {
