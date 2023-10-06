@@ -293,11 +293,22 @@ export class VarPackedPath {
   }
 
   setPointPosition(pointIndex, x, y) {
-    this.coordinates[pointIndex * 2] = x;
-    this.coordinates[pointIndex * 2 + 1] = y;
+    const coordIndex = pointIndex * 2;
+    if (coordIndex + 1 >= this.coordinates.length) {
+      throw new Error(
+        `pointIndex out of range: ${coordIndex} >= ${this.coordinates.length}`
+      );
+    }
+    this.coordinates[coordIndex] = x;
+    this.coordinates[coordIndex + 1] = y;
   }
 
   setPointType(pointIndex, type, smooth) {
+    if (pointIndex >= this.pointTypes.length) {
+      throw new Error(
+        `pointIndex out of range: ${pointIndex} >= ${this.pointTypes.length}`
+      );
+    }
     this.pointTypes[pointIndex] = packPointType(type, smooth);
   }
 
