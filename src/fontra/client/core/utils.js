@@ -168,8 +168,14 @@ export function* range(start, stop, step = 1) {
     stop = start;
     start = 0;
   }
-  for (let i = start; i < stop; i += step) {
-    yield i;
+  if (step > 0) {
+    for (let i = start; i < stop; i += step) {
+      yield i;
+    }
+  } else if (step < 0) {
+    for (let i = start; i > stop; i += step) {
+      yield i;
+    }
   }
 }
 
