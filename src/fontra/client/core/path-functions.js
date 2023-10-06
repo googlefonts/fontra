@@ -497,13 +497,13 @@ function segmentsToContour(
 
   if (!isClosed) {
     if (indices[0] === firstOnCurveIndex && segments[0].firstPointSelected) {
-      // Delete entire first fragment
+      // Delete entire leading fragment
       return { indices: [...range(0, indices.at(-1))] };
     } else if (
       indices.at(-1) === lastOnCurveIndex &&
       segments.at(-1).lastPointSelected
     ) {
-      // Delete entire last fragment
+      // Delete entire trailing fragment
       return {
         indices: [...range(indices[1], path.getNumPointsOfContour(contourIndex))],
       };
