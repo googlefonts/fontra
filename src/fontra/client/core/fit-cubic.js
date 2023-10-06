@@ -98,6 +98,7 @@ function reparameterize(bezier, points, parameters) {
 }
 
 export function fitCubic(points, leftTangent, rightTangent, error) {
+  // Parameterize points, and attempt to fit curve
   let parameters = chordLengthParameterize(points);
   let bezier = generateBezier(points, parameters, leftTangent, rightTangent);
   let [maxError, splitPoint] = computeMaxError(points, bezier, parameters);
@@ -105,14 +106,17 @@ export function fitCubic(points, leftTangent, rightTangent, error) {
     return bezier;
   }
 
-  if (maxError < error ** 2) {
+  // If error not too large, try some reparameterization and iteration
+  if (maxError < error * 1000) {
+    let prevMaxError = maxError;
     for (let i = 0; i < 20; i++) {
       const parametersPrime = reparameterize(bezier, points, parameters);
       bezier = generateBezier(points, parametersPrime, leftTangent, rightTangent);
       [maxError, splitPoint] = computeMaxError(points, bezier, parametersPrime);
-      if (maxError < error) {
+      if (maxError < error || prevMaxError - maxError < 0.5) {
         break;
       }
+      prevMaxError = maxError;
       parameters = parametersPrime;
     }
   }
