@@ -326,8 +326,6 @@ export function deleteSelectedPoints(path, pointIndices) {
     contourIndex,
     fragmentsToDelete,
     startPoint,
-    deleteLeadingOffCurves,
-    deleteTrailingOffCurves,
   } of contourFragmentsToDelete) {
     if (!fragmentsToDelete) {
       contoursToDelete.push(contourIndex);
@@ -386,29 +384,6 @@ export function deleteSelectedPoints(path, pointIndices) {
           adjustedIndex = index + newPoints.length;
         }
         path.deletePoint(contourIndex, adjustedIndex);
-      }
-    }
-
-    if (deleteLeadingOffCurves) {
-      while (path.getNumPointsOfContour(contourIndex)) {
-        const point = path.getContourPoint(contourIndex, 0);
-        if (!point.type) {
-          path.setPointType(startPoint, undefined, false);
-          break;
-        }
-        path.deletePoint(contourIndex, 0);
-      }
-    }
-    if (deleteTrailingOffCurves) {
-      let numContourPoints = path.getNumPointsOfContour(contourIndex);
-      while (numContourPoints) {
-        numContourPoints--;
-        const point = path.getContourPoint(contourIndex, numContourPoints);
-        if (!point.type) {
-          path.setPointType(startPoint + numContourPoints, undefined, false);
-          break;
-        }
-        path.deletePoint(contourIndex, numContourPoints);
       }
     }
   }
@@ -470,14 +445,6 @@ function findContourFragments(path, contourIndex, contourPointIndices) {
 
   const { firstOnCurveIndex, lastOnCurveIndex } = findBoundaryOnCurvePoints(contour);
 
-  const { deleteLeadingOffCurves, deleteTrailingOffCurves } =
-    shouldDeleteDanglingOffCurves(
-      contour,
-      contourPointIndices,
-      firstOnCurveIndex,
-      lastOnCurveIndex
-    );
-
   const contourFragments = !allSelected
     ? fragmentsToDelete.map((segments) =>
         segmentsToContour(
@@ -492,12 +459,27 @@ function findContourFragments(path, contourIndex, contourPointIndices) {
       )
     : null;
 
+  const { deleteLeadingOffCurves, deleteTrailingOffCurves } =
+    shouldDeleteDanglingOffCurves(
+      contour,
+      contourPointIndices,
+      firstOnCurveIndex,
+      lastOnCurveIndex
+    );
+
+  if (deleteLeadingOffCurves) {
+    contourFragments.unshift({ indices: [...range(0, firstOnCurveIndex)] });
+  }
+  if (deleteTrailingOffCurves) {
+    contourFragments.push({
+      indices: [...range(lastOnCurveIndex + 1, contour.points.length)],
+    });
+  }
+
   return {
     contourIndex,
     fragmentsToDelete: contourFragments,
     startPoint,
-    deleteLeadingOffCurves,
-    deleteTrailingOffCurves,
   };
 }
 
@@ -576,14 +558,18 @@ function shouldDeleteDanglingOffCurves(
   lastOnCurveIndex
 ) {
   const deleteLeadingOffCurves = firstOnCurveIndex
-    ? contourPointIndices.slice(0, firstOnCurveIndex).some((i) => i < firstOnCurveIndex)
+    ? contourPointIndices
+        .slice(0, firstOnCurveIndex)
+        .some((i) => i < firstOnCurveIndex) &&
+      contourPointIndices.indexOf(firstOnCurveIndex) < 0
     : false;
   const numContourPoints = contour.points.length;
   const deleteTrailingOffCurves =
     lastOnCurveIndex !== numContourPoints - 1
       ? contourPointIndices
           .slice(lastOnCurveIndex - numContourPoints - 1, numContourPoints)
-          .some((i) => i > lastOnCurveIndex)
+          .some((i) => i > lastOnCurveIndex) &&
+        contourPointIndices.indexOf(lastOnCurveIndex) < 0
       : false;
 
   return { deleteLeadingOffCurves, deleteTrailingOffCurves };
