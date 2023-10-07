@@ -558,17 +558,12 @@ function shouldDeleteDanglingOffCurves(
   lastOnCurveIndex
 ) {
   const deleteLeadingOffCurves = firstOnCurveIndex
-    ? contourPointIndices
-        .slice(0, firstOnCurveIndex)
-        .some((i) => i < firstOnCurveIndex) &&
+    ? contourPointIndices.some((i) => i < firstOnCurveIndex) &&
       contourPointIndices.indexOf(firstOnCurveIndex) < 0
     : false;
-  const numContourPoints = contour.points.length;
   const deleteTrailingOffCurves =
-    lastOnCurveIndex !== numContourPoints - 1
-      ? contourPointIndices
-          .slice(lastOnCurveIndex - numContourPoints - 1, numContourPoints)
-          .some((i) => i > lastOnCurveIndex) &&
+    lastOnCurveIndex !== contour.points.length - 1
+      ? contourPointIndices.some((i) => i > lastOnCurveIndex) &&
         contourPointIndices.indexOf(lastOnCurveIndex) < 0
       : false;
 
