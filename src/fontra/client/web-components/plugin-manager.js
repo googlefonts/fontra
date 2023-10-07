@@ -83,7 +83,7 @@ export class PluginManager extends SimpleElement {
   }
 
   async validatePlugin(plugin) {
-    if (!plugin.address.includes("/")) {
+    if (!plugin.address.startsWith("local:") && !plugin.address.includes("/")) {
       return [
         false,
         "Provide the github repository in 'github-username/repository-name' format.",

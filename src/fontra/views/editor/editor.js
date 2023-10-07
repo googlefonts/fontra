@@ -219,13 +219,18 @@ export class EditorController {
     observablePlugins.synchronizeWithLocalStorage("fontra.plugins");
     for (const { address } of observablePlugins.model.plugins) {
       const version = "latest";
+      const localPluginAddressPrefix = "local:";
+      let pluginUrl;
+      if (address.startsWith(localPluginAddressPrefix)) {
+        pluginUrl = `/localplugins/${address.slice(localPluginAddressPrefix.length)}`;
+      } else {
+        pluginUrl = `https://cdn.jsdelivr.net/gh/${address}@${version}`;
+      }
       let meta;
       try {
-        meta = await fetchJSON(
-          `https://cdn.jsdelivr.net/gh/${address}@${version}/plugin.json`
-        );
+        meta = await fetchJSON(`${pluginUrl}/plugin.json`);
       } catch (e) {
-        alert(`${address}Plugin couldn't run.`);
+        alert(`${address} Plugin metada not found.`);
         // todo: ask for do you want to delete the plugin
       }
       if (!meta) {
@@ -233,9 +238,7 @@ export class EditorController {
       }
       const initScript = meta.init;
       const functionName = meta.function;
-      const module = await import(
-        `https://cdn.jsdelivr.net/gh/${address}@${version}/${initScript}`
-      );
+      const module = await import(`${pluginUrl}/${initScript}`);
       module[functionName](this);
     }
   }
