@@ -257,3 +257,6 @@ dist
 /vault/
 /icons/*.ttf
 /icons/*.woff2
+
+# Local plugins
+src/fontra/localplugins/
