@@ -422,13 +422,13 @@ function preparePointDeletion(path, pointIndices) {
   const selectionByContour = getSelectionByContour(path, pointIndices);
   for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
     contourFragmentsToDelete.push(
-      prepareContourPointDeletion(path, contourIndex, contourPointIndices)
+      findContourFragments(path, contourIndex, contourPointIndices)
     );
   }
   return contourFragmentsToDelete;
 }
 
-function prepareContourPointDeletion(path, contourIndex, contourPointIndices) {
+function findContourFragments(path, contourIndex, contourPointIndices) {
   const contour = path.getUnpackedContour(contourIndex);
   const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
 
@@ -478,21 +478,23 @@ function prepareContourPointDeletion(path, contourIndex, contourPointIndices) {
       lastOnCurveIndex
     );
 
+  const contourFragments = !allSelected
+    ? fragmentsToDelete.map((segments) =>
+        segmentsToContour(
+          segments,
+          path,
+          contourIndex,
+          startPoint,
+          contour.isClosed,
+          firstOnCurveIndex,
+          lastOnCurveIndex
+        )
+      )
+    : null;
+
   return {
     contourIndex,
-    fragmentsToDelete: !allSelected
-      ? fragmentsToDelete.map((segments) =>
-          segmentsToContour(
-            segments,
-            path,
-            contourIndex,
-            startPoint,
-            contour.isClosed,
-            firstOnCurveIndex,
-            lastOnCurveIndex
-          )
-        )
-      : null,
+    fragmentsToDelete: contourFragments,
     startPoint,
     deleteLeadingOffCurves,
     deleteTrailingOffCurves,
