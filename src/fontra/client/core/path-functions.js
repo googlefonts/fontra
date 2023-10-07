@@ -421,76 +421,82 @@ function preparePointDeletion(path, pointIndices) {
   const contourFragmentsToDelete = [];
   const selectionByContour = getSelectionByContour(path, pointIndices);
   for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
-    const contour = path.getUnpackedContour(contourIndex);
-    const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
-
-    const fragmentsToDelete = [];
-    let allSelected = true;
-    let previousSegment = null;
-    for (const segment of iterSelectedSegments(
-      path,
-      contourPointIndices,
-      contourIndex,
-      startPoint
-    )) {
-      if (segment.selected) {
-        if (previousSegment && segment.firstPointSelected) {
-          fragmentsToDelete.at(-1).push(segment);
-        } else {
-          fragmentsToDelete.push([segment]);
-        }
-        previousSegment = segment.lastPointSelected ? segment : null;
-        if (!segment.firstPointSelected || !segment.lastPointSelected) {
-          allSelected = false;
-        }
-      } else {
-        allSelected = false;
-        previousSegment = null;
-      }
-    }
-
-    if (
-      fragmentsToDelete.length > 1 &&
-      contour.isClosed &&
-      previousSegment &&
-      fragmentsToDelete[0]?.[0].firstPointSelected
-    ) {
-      // Wrap around
-      fragmentsToDelete.at(-1).push(...fragmentsToDelete[0]);
-      fragmentsToDelete.shift();
-    }
-
-    const { firstOnCurveIndex, lastOnCurveIndex } = findBoundaryOnCurvePoints(contour);
-
-    const { deleteLeadingOffCurves, deleteTrailingOffCurves } =
-      shouldDeleteDanglingOffCurves(
-        contour,
-        contourPointIndices,
-        firstOnCurveIndex,
-        lastOnCurveIndex
-      );
-
-    contourFragmentsToDelete.push({
-      contourIndex,
-      fragmentsToDelete: !allSelected
-        ? fragmentsToDelete.map((segments) =>
-            segmentsToContour(
-              segments,
-              path,
-              contourIndex,
-              startPoint,
-              contour.isClosed,
-              firstOnCurveIndex,
-              lastOnCurveIndex
-            )
-          )
-        : null,
-      startPoint,
-      deleteLeadingOffCurves,
-      deleteTrailingOffCurves,
-    });
+    contourFragmentsToDelete.push(
+      prepareContourPointDeletion(path, contourIndex, contourPointIndices)
+    );
   }
   return contourFragmentsToDelete;
+}
+
+function prepareContourPointDeletion(path, contourIndex, contourPointIndices) {
+  const contour = path.getUnpackedContour(contourIndex);
+  const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
+
+  const fragmentsToDelete = [];
+  let allSelected = true;
+  let previousSegment = null;
+  for (const segment of iterSelectedSegments(
+    path,
+    contourPointIndices,
+    contourIndex,
+    startPoint
+  )) {
+    if (segment.selected) {
+      if (previousSegment && segment.firstPointSelected) {
+        fragmentsToDelete.at(-1).push(segment);
+      } else {
+        fragmentsToDelete.push([segment]);
+      }
+      previousSegment = segment.lastPointSelected ? segment : null;
+      if (!segment.firstPointSelected || !segment.lastPointSelected) {
+        allSelected = false;
+      }
+    } else {
+      allSelected = false;
+      previousSegment = null;
+    }
+  }
+
+  if (
+    fragmentsToDelete.length > 1 &&
+    contour.isClosed &&
+    previousSegment &&
+    fragmentsToDelete[0]?.[0].firstPointSelected
+  ) {
+    // Wrap around
+    fragmentsToDelete.at(-1).push(...fragmentsToDelete[0]);
+    fragmentsToDelete.shift();
+  }
+
+  const { firstOnCurveIndex, lastOnCurveIndex } = findBoundaryOnCurvePoints(contour);
+
+  const { deleteLeadingOffCurves, deleteTrailingOffCurves } =
+    shouldDeleteDanglingOffCurves(
+      contour,
+      contourPointIndices,
+      firstOnCurveIndex,
+      lastOnCurveIndex
+    );
+
+  return {
+    contourIndex,
+    fragmentsToDelete: !allSelected
+      ? fragmentsToDelete.map((segments) =>
+          segmentsToContour(
+            segments,
+            path,
+            contourIndex,
+            startPoint,
+            contour.isClosed,
+            firstOnCurveIndex,
+            lastOnCurveIndex
+          )
+        )
+      : null,
+    startPoint,
+    deleteLeadingOffCurves,
+    deleteTrailingOffCurves,
+  };
 }
 
 function* iterSelectedSegments(path, contourPointIndices, contourIndex, startPoint) {
