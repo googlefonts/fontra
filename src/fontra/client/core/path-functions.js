@@ -7,7 +7,6 @@ import {
   VarPackedPath,
 } from "./var-path.js";
 import * as vector from "./vector.js";
-import { roundVector } from "./vector.js";
 
 export function insertPoint(path, intersection) {
   let selectedPointIndex;
@@ -39,7 +38,7 @@ export function insertPoint(path, intersection) {
     const { left, right } = bezier.split(intersection.t);
     if (firstOffCurve.type === "cubic") {
       const points = [...left.points.slice(1), ...right.points.slice(1, 3)].map(
-        roundVector
+        vector.roundVector
       );
       points[0].type = "cubic";
       points[1].type = "cubic";
@@ -66,7 +65,9 @@ export function insertPoint(path, intersection) {
       );
     } else {
       // quad
-      const points = [left.points[1], left.points[2], right.points[1]].map(roundVector);
+      const points = [left.points[1], left.points[2], right.points[1]].map(
+        vector.roundVector
+      );
       points[0].type = "quad";
       points[1].smooth = true;
       points[2].type = "quad";
