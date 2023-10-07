@@ -431,8 +431,7 @@ function preparePointDeletion(path, pointIndices) {
       path,
       contourPointIndices,
       contourIndex,
-      startPoint,
-      2
+      startPoint
     )) {
       if (segment.selected) {
         if (previousSegment && segment.firstPointSelected) {
