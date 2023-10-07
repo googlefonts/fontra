@@ -1,7 +1,6 @@
 import { Bezier } from "../third-party/bezier-js.js";
 import { fitCubic } from "./fit-cubic.js";
-import { intersection, union } from "./set-ops.js";
-import { arrayExtend, enumerate, modulo, range, reversed } from "./utils.js";
+import { enumerate, modulo, range, reversed } from "./utils.js";
 import {
   POINT_TYPE_OFF_CURVE_CUBIC,
   POINT_TYPE_OFF_CURVE_QUAD,
