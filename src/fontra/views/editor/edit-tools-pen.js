@@ -215,16 +215,14 @@ export class PenTool extends BaseTool {
           const deepDragChanges = thisPropagateChange(dragChanges.change);
           await sendIncrementalChange(deepDragChanges, true); // true: "may drop"
         }
-        const deepDragChanges = thisPropagateChange(dragChanges.change);
-        await sendIncrementalChange(deepDragChanges);
       } else {
         dragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
           behavior.noDrag(primaryLayerGlyph.path);
         });
         this.sceneController.selection = behavior.selection;
-        const deepDragChanges = thisPropagateChange(dragChanges.change);
-        await sendIncrementalChange(deepDragChanges);
       }
+      const deepDragChanges = thisPropagateChange(dragChanges.change);
+      await sendIncrementalChange(deepDragChanges);
 
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
 
