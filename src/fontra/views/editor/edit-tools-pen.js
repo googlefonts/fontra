@@ -49,6 +49,7 @@ export class PenTool extends BaseTool {
       this.canvasController.canvas.style.cursor = "crosshair";
     }
   }
+
   _getPathConnectTargetPoint(event) {
     // Requirements:
     // - we must have an edited glyph at an editable location
