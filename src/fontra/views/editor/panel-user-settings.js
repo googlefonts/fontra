@@ -82,6 +82,11 @@ export default class UserSettingsPanel extends Panel {
           displayName: "Pen tool draws quadratics",
           ui: "checkbox",
         },
+        {
+          key: "rectSelectLiveModifierKeys",
+          displayName: "Rect-select live modifier keys",
+          ui: "checkbox",
+        },
       ],
     });
 

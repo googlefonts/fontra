@@ -103,6 +103,7 @@ export class EditorController {
     this.experimentalFeaturesController = new ObservableController({
       scalingEditBehavior: false,
       quadPenTool: false,
+      rectSelectLiveModifiers: false,
     });
     this.experimentalFeaturesController.synchronizeWithLocalStorage(
       "fontra-editor-experimental-features."
