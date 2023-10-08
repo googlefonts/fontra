@@ -530,7 +530,11 @@ function connectToContour(context, path, point, shiftConstrain) {
 }
 
 function ensureCubicOffCurves(context, path) {
-  if (context.curveType !== "cubic" || context.isOnCurve) {
+  if (
+    context.curveType !== "cubic" ||
+    context.isOnCurve ||
+    path.getNumPointsOfContour(context.contourIndex) < 3
+  ) {
     return;
   }
 
