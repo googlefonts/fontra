@@ -307,6 +307,7 @@ function getPenToolBehavior(sceneController, initialEvent, path, curveType) {
           setup: [setupExistingAnchorPoint],
           setupDrag: insertHandleOut,
           drag: dragHandle,
+          noDrag: clickOnCurveNoDragSetSelection,
         };
       }
     } else if (clickedSelection.size === 1) {
@@ -595,6 +596,14 @@ function ensureCubicOffCurves(context, path) {
       context.anchorIndex + context.appendBias,
       path.getNumPointsOfContour(context.contourIndex)
     )
+  );
+}
+
+function clickOnCurveNoDragSetSelection(context, path) {
+  context.selection = getPointSelection(
+    path,
+    context.contourIndex,
+    context.anchorIndex
   );
 }
 
