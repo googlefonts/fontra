@@ -547,6 +547,8 @@ function ensureCubicOffCurves(context, path) {
     return;
   }
 
+  // Compute handles for a cubic segment that will look the same as the
+  // one-off-curve quad segment we have.
   const [handle1, handle2] = [prevPrevPoint, thisPoint].map((point) => {
     return {
       ...vector.roundVector(scalePoint(point, prevPoint, 2 / 3)),
