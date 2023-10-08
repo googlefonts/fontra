@@ -11,6 +11,7 @@ import {
 } from "../core/rectangle.js";
 import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 import { consolidateCalls, enumerate, parseSelection } from "../core/utils.js";
+import * as vector from "../core/vector.js";
 
 export class SceneModel {
   constructor(fontController, sceneSettingsController, isPointInPath) {
@@ -476,7 +477,11 @@ export class SceneModel {
 
   segmentSelectionAtPoint(point, size) {
     const pathHit = this.pathHitAtPoint(point, size);
-    if (pathHit.contourIndex !== undefined) {
+    if (
+      pathHit.segment?.parentPoints.every(
+        (point) => vector.distance(pathHit, point) > size
+      )
+    ) {
       const selection = new Set(
         [
           pathHit.segment.parentPointIndices[0],
