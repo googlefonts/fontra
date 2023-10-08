@@ -18,16 +18,23 @@ export class PenTool extends BaseTool {
       return;
     }
     this.setCursor();
-    const { insertHandles, targetPoint } = this._getPathConnectTargetPoint(event);
+    const { insertHandles, targetPoint, danglingOffCurve, canDragOffCurve } =
+      this._getPathConnectTargetPoint(event);
     const prevInsertHandles = this.sceneModel.pathInsertHandles;
     const prevTargetPoint = this.sceneModel.pathConnectTargetPoint;
+    const prevDanglingOffCurve = this.sceneModel.pathDanglingOffCurve;
+    const prevCanDragOffCurve = this.sceneModel.pathCanDragOffCurve;
 
     if (
       !handlesEqual(insertHandles, prevInsertHandles) ||
-      !pointsEqual(targetPoint, prevTargetPoint)
+      !pointsEqual(targetPoint, prevTargetPoint) ||
+      !pointsEqual(danglingOffCurve, prevDanglingOffCurve) ||
+      !pointsEqual(canDragOffCurve, prevCanDragOffCurve)
     ) {
       this.sceneModel.pathInsertHandles = insertHandles;
       this.sceneModel.pathConnectTargetPoint = targetPoint;
+      this.sceneModel.pathDanglingOffCurve = danglingOffCurve;
+      this.sceneModel.pathCanDragOffCurve = canDragOffCurve;
       this.canvasController.requestUpdate();
     }
   }
@@ -37,9 +44,15 @@ export class PenTool extends BaseTool {
   }
 
   deactivate() {
+    this._resetHover();
+    this.canvasController.requestUpdate();
+  }
+
+  _resetHover() {
     delete this.sceneModel.pathInsertHandles;
     delete this.sceneModel.pathConnectTargetPoint;
-    this.canvasController.requestUpdate();
+    delete this.sceneModel.pathDanglingOffCurve;
+    delete this.sceneModel.pathCanDragOffCurve;
   }
 
   setCursor() {
@@ -95,7 +108,12 @@ export class PenTool extends BaseTool {
       appendInfo.contourPointIndex == contourPointIndex
     ) {
       // We're hovering over the source point
-      return {};
+      const point = path.getPoint(hoveredPointIndex);
+      if (!appendInfo.isOnCurve) {
+        return { danglingOffCurve: point };
+      } else {
+        return { canDragOffCurve: point };
+      }
     }
 
     if (
@@ -118,6 +136,7 @@ export class PenTool extends BaseTool {
     } else if (this.sceneModel.pathInsertHandles) {
       await this._handleInsertHandles();
     } else {
+      this._resetHover();
       await this._handleAddPoints(eventStream, initialEvent);
     }
   }
@@ -288,6 +307,7 @@ function getPenToolBehavior(sceneController, initialEvent, path, curveType) {
           setup: [setupExistingAnchorPoint],
           setupDrag: insertHandleOut,
           drag: dragHandle,
+          noDrag: clickOnCurveNoDragSetSelection,
         };
       }
     } else if (clickedSelection.size === 1) {
@@ -576,6 +596,14 @@ function ensureCubicOffCurves(context, path) {
       context.anchorIndex + context.appendBias,
       path.getNumPointsOfContour(context.contourIndex)
     )
+  );
+}
+
+function clickOnCurveNoDragSetSelection(context, path) {
+  context.selection = getPointSelection(
+    path,
+    context.contourIndex,
+    context.anchorIndex
   );
 }
 

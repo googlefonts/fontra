@@ -702,16 +702,26 @@ registerVisualizationLayerDefinition({
   screenParameters: {
     connectRadius: 11,
     insertHandlesRadius: 5,
+    deleteOffCurveIndicatorLength: 7,
+    canDragOffCurveIndicatorRadius: 9,
+    strokeWidth: 2,
   },
   colors: { color: "#3080FF80" },
   colorsDarkMode: { color: "#50A0FF80" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const targetPoint = model.pathConnectTargetPoint;
     const insertHandles = model.pathInsertHandles;
-    if (!targetPoint && !insertHandles) {
+    const danglingOffCurve = model.pathDanglingOffCurve;
+    const canDragOffCurve = model.pathCanDragOffCurve;
+    if (!targetPoint && !insertHandles && !danglingOffCurve && !canDragOffCurve) {
       return;
     }
+
     context.fillStyle = parameters.color;
+    context.strokeStyle = parameters.color;
+    context.lineWidth = parameters.strokeWidth;
+    context.lineCap = "round";
+
     if (targetPoint) {
       const radius = parameters.connectRadius;
       fillRoundNode(context, targetPoint, 2 * radius);
@@ -719,6 +729,26 @@ registerVisualizationLayerDefinition({
     for (const point of insertHandles?.points || []) {
       const radius = parameters.insertHandlesRadius;
       fillRoundNode(context, point, 2 * radius);
+    }
+    if (danglingOffCurve) {
+      const d = parameters.deleteOffCurveIndicatorLength;
+      const { x, y } = danglingOffCurve;
+      let dx = d;
+      let dy = d;
+      const inner = 0.666;
+      for (let i = 0; i < 4; i++) {
+        [dx, dy] = [-dy, dx];
+        strokeLine(context, x + inner * dx, y + inner * dy, x + dx, y + dy);
+      }
+    }
+    if (canDragOffCurve) {
+      const dashLength = (parameters.canDragOffCurveIndicatorRadius * Math.PI) / 6;
+      context.setLineDash([dashLength]);
+      strokeRoundNode(
+        context,
+        canDragOffCurve,
+        2 * parameters.canDragOffCurveIndicatorRadius
+      );
     }
   },
 });

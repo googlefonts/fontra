@@ -8,10 +8,10 @@ export class ChangeCollector {
 
   static fromChanges(forwardChanges, rollbackChanges) {
     if (!Array.isArray(forwardChanges)) {
-      forwardChanges = [forwardChanges];
+      forwardChanges = hasChange(forwardChanges) ? [forwardChanges] : [];
     }
     if (!Array.isArray(rollbackChanges)) {
-      rollbackChanges = [rollbackChanges];
+      rollbackChanges = hasChange(rollbackChanges) ? [rollbackChanges] : [];
     }
     const collector = new ChangeCollector();
     collector._forwardChanges = forwardChanges;
