@@ -1,8 +1,8 @@
 import { recordChanges } from "../core/change-recorder.js";
 import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
-import { insertHandles, insertPoint } from "../core/path-functions.js";
+import { insertHandles, insertPoint, scalePoint } from "../core/path-functions.js";
 import { isEqualSet } from "../core/set-ops.js";
-import { parseSelection } from "../core/utils.js";
+import { modulo, parseSelection } from "../core/utils.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { constrainHorVerDiag } from "./edit-behavior.js";
@@ -215,9 +215,14 @@ export class PenTool extends BaseTool {
           const deepDragChanges = thisPropagateChange(dragChanges.change);
           await sendIncrementalChange(deepDragChanges, true); // true: "may drop"
         }
-        const deepDragChanges = thisPropagateChange(dragChanges.change);
-        await sendIncrementalChange(deepDragChanges);
+      } else {
+        dragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
+          behavior.noDrag(primaryLayerGlyph.path);
+        });
+        this.sceneController.selection = behavior.selection;
       }
+      const deepDragChanges = thisPropagateChange(dragChanges.change);
+      await sendIncrementalChange(deepDragChanges);
 
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
 
@@ -256,6 +261,7 @@ function getPenToolBehavior(sceneController, initialEvent, path, curveType) {
       setup: [setupAnchorPoint, insertAnchorPoint],
       setupDrag: appendInfo.isOnCurve ? insertHandleOut : insertHandleInOut,
       drag: dragHandle,
+      noDrag: ensureCubicOffCurves,
     };
 
     const selectedPoint = path.getContourPoint(
@@ -300,12 +306,12 @@ function getPenToolBehavior(sceneController, initialEvent, path, curveType) {
           );
           if (clickedContourIndex === appendInfo.contourIndex) {
             // Close the current contour
-            behaviorFuncs = { setup: [closeContour] };
+            behaviorFuncs = { setup: [closeContour], noDrag: ensureCubicOffCurves };
           } else {
             // Connect to other open contour
             appendInfo.targetContourIndex = clickedContourIndex;
             appendInfo.targetContourPointIndex = clickedContourPointIndex;
-            behaviorFuncs = { setup: [connectToContour] };
+            behaviorFuncs = { setup: [connectToContour], noDrag: ensureCubicOffCurves };
           }
           if (!clickedPoint.type && selectedPoint.type) {
             behaviorFuncs.setupDrag = insertHandleIn;
@@ -354,6 +360,10 @@ class PenToolBehavior {
   drag(path, event) {
     const point = this.getPointFromEvent(event);
     this.behaviorFuncs.drag?.(this.context, path, point, event.shiftKey);
+  }
+
+  noDrag(path) {
+    this.behaviorFuncs.noDrag?.(this.context, path);
   }
 }
 
@@ -512,6 +522,60 @@ function connectToContour(context, path, point, shiftConstrain) {
       ? sourceContourPoints.length
       : (context.anchorIndex = targetContourPoints.length - 1);
   context.anchorPoint = path.getContourPoint(context.contourIndex, context.anchorIndex);
+  context.selection = getPointSelection(
+    path,
+    context.contourIndex,
+    context.anchorIndex
+  );
+}
+
+function ensureCubicOffCurves(context, path) {
+  if (
+    context.curveType !== "cubic" ||
+    context.isOnCurve ||
+    path.getNumPointsOfContour(context.contourIndex) < 3
+  ) {
+    return;
+  }
+
+  const [prevPrevPoint, prevPoint] = [
+    context.anchorIndex - 2 * context.appendDirection,
+    context.anchorIndex - context.appendDirection,
+  ].map((i) => path.getContourPoint(context.contourIndex, i));
+  const thisPoint = context.anchorPoint;
+
+  if (prevPrevPoint.type || !prevPoint.type || thisPoint.type) {
+    // Sanity check: we expect on-curve/off-curve/on-curve
+    return;
+  }
+
+  // Compute handles for a cubic segment that will look the same as the
+  // one-off-curve quad segment we have.
+  const [handle1, handle2] = [prevPrevPoint, thisPoint].map((point) => {
+    return {
+      ...vector.roundVector(scalePoint(point, prevPoint, 2 / 3)),
+      type: "cubic",
+    };
+  });
+
+  path.setContourPoint(
+    context.contourIndex,
+    context.anchorIndex - context.appendDirection,
+    handle1
+  );
+  path.insertPoint(
+    context.contourIndex,
+    context.anchorIndex + context.prependBias,
+    handle2
+  );
+  context.selection = getPointSelection(
+    path,
+    context.contourIndex,
+    modulo(
+      context.anchorIndex + context.appendBias,
+      path.getNumPointsOfContour(context.contourIndex)
+    )
+  );
 }
 
 function getPointSelection(path, contourIndex, contourPointIndex) {
