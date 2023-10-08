@@ -220,6 +220,10 @@ export class PointerTool extends BaseTool {
     const sceneController = this.sceneController;
     const initialPoint = sceneController.localPoint(initialEvent);
     for await (const event of eventStream) {
+      const modifierEvent = sceneController.experimentalFeatures
+        .rectSelectLiveModifierKeys
+        ? event
+        : initialEvent;
       const currentPoint = sceneController.localPoint(event);
       const selRect = normalizeRect({
         xMin: initialPoint.x,
@@ -229,7 +233,7 @@ export class PointerTool extends BaseTool {
       });
       const selection = this.sceneModel.selectionAtRect(
         selRect,
-        event.altKey ? (point) => !!point.type : (point) => !point.type
+        modifierEvent.altKey ? (point) => !!point.type : (point) => !point.type
       );
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
       sceneController.selectionRect = offsetRect(
@@ -238,7 +242,7 @@ export class PointerTool extends BaseTool {
         -positionedGlyph.y
       );
 
-      const modeFunc = getSelectModeFunction(event);
+      const modeFunc = getSelectModeFunction(modifierEvent);
       sceneController.selection = modeFunc(initialSelection, selection);
     }
     sceneController.selectionRect = undefined;
