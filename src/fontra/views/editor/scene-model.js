@@ -478,9 +478,11 @@ export class SceneModel {
   segmentSelectionAtPoint(point, size) {
     const pathHit = this.pathHitAtPoint(point, size);
     if (pathHit.contourIndex !== undefined) {
-      const d1 = vector.distance(pathHit, pathHit.segment.parentPoints[0]);
-      const d2 = vector.distance(pathHit, pathHit.segment.parentPoints.at(-1));
-      if (d1 > size && d2 > size) {
+      if (
+        pathHit.segment.parentPoints.every(
+          (point) => vector.distance(pathHit, point) > size
+        )
+      ) {
         const selection = new Set(
           [
             pathHit.segment.parentPointIndices[0],
