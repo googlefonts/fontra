@@ -616,7 +616,7 @@ function computeHandlesFromFragment(curveType, contour) {
   ];
 }
 
-function scalePoint(pinPoint, point, factor) {
+export function scalePoint(pinPoint, point, factor) {
   return vector.addVectors(
     pinPoint,
     vector.mulVectorScalar(vector.subVectors(point, pinPoint), factor)
