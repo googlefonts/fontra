@@ -477,20 +477,19 @@ export class SceneModel {
 
   segmentSelectionAtPoint(point, size) {
     const pathHit = this.pathHitAtPoint(point, size);
-    if (pathHit.contourIndex !== undefined) {
-      if (
-        pathHit.segment.parentPoints.every(
-          (point) => vector.distance(pathHit, point) > size
-        )
-      ) {
-        const selection = new Set(
-          [
-            pathHit.segment.parentPointIndices[0],
-            pathHit.segment.parentPointIndices.at(-1),
-          ].map((i) => `point/${i}`)
-        );
-        return { selection, pathHit };
-      }
+    if (
+      pathHit.contourIndex !== undefined &&
+      pathHit.segment.parentPoints.every(
+        (point) => vector.distance(pathHit, point) > size
+      )
+    ) {
+      const selection = new Set(
+        [
+          pathHit.segment.parentPointIndices[0],
+          pathHit.segment.parentPointIndices.at(-1),
+        ].map((i) => `point/${i}`)
+      );
+      return { selection, pathHit };
     }
     return { selection: new Set() };
   }
