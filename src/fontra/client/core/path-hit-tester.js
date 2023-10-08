@@ -122,6 +122,9 @@ export class PathHitTester {
     segments.forEach((segment) => {
       segment.bezier = new Bezier(segment.points);
       segment.bounds = rectFromPoints(segment.points);
+      segment.parentPoints = segment.parentPointIndices.map((i) =>
+        this.path.getPoint(i)
+      );
     });
     contour.segments = segments;
   }
