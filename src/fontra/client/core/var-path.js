@@ -313,7 +313,6 @@ export class VarPackedPath {
   }
 
   getContourPoint(contourIndex, contourPointIndex) {
-    contourIndex = this._normalizeContourIndex(contourIndex);
     const pointIndex = this.getAbsolutePointIndex(
       contourIndex,
       contourPointIndex,
@@ -323,7 +322,6 @@ export class VarPackedPath {
   }
 
   setContourPoint(contourIndex, contourPointIndex, point) {
-    contourIndex = this._normalizeContourIndex(contourIndex);
     const pointIndex = this.getAbsolutePointIndex(
       contourIndex,
       contourPointIndex,
@@ -334,7 +332,7 @@ export class VarPackedPath {
 
   insertPoint(contourIndex, contourPointIndex, point) {
     contourIndex = this._normalizeContourIndex(contourIndex);
-    const pointIndex = this.getAbsolutePointIndex(
+    const pointIndex = this._getAbsolutePointIndex(
       contourIndex,
       contourPointIndex,
       true
@@ -350,7 +348,7 @@ export class VarPackedPath {
 
   deletePoint(contourIndex, contourPointIndex) {
     contourIndex = this._normalizeContourIndex(contourIndex);
-    const pointIndex = this.getAbsolutePointIndex(contourIndex, contourPointIndex);
+    const pointIndex = this._getAbsolutePointIndex(contourIndex, contourPointIndex);
     this.coordinates.splice(pointIndex * 2, 2);
     this.pointTypes.splice(pointIndex, 1);
     this._moveEndPoints(contourIndex, -1);
@@ -387,6 +385,12 @@ export class VarPackedPath {
   }
 
   getAbsolutePointIndex(contourIndex, contourPointIndex, forInsert = false) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
+    return this._getAbsolutePointIndex(contourIndex, contourPointIndex, forInsert);
+  }
+
+  _getAbsolutePointIndex(contourIndex, contourPointIndex, forInsert = false) {
+    contourIndex = this._normalizeContourIndex(contourIndex);
     const startPoint = this._getContourStartPoint(contourIndex);
     const contour = this.contourInfo[contourIndex];
     const numPoints = contour.endPoint + 1 - startPoint;
