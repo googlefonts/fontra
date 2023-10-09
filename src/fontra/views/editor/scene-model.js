@@ -334,12 +334,13 @@ export class SceneModel {
     const positionedLines = [];
     let longestLineLength = 0;
 
-    let neededGlyphs = new Set(
-      glyphLines
-        .map((glyphLine) => glyphLine.map((glyphInfo) => glyphInfo.glyphName))
-        .flat()
-    );
-    neededGlyphs = [...neededGlyphs];
+    const neededGlyphs = [
+      ...new Set(
+        glyphLines
+          .map((glyphLine) => glyphLine.map((glyphInfo) => glyphInfo.glyphName))
+          .flat()
+      ),
+    ];
     if (!fontController.areGlyphsCached(neededGlyphs)) {
       await loaderSpinner(fontController.loadGlyphs(neededGlyphs));
     } else {
