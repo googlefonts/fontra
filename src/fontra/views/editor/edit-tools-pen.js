@@ -82,7 +82,11 @@ export class PenTool extends BaseTool {
     const appendInfo = getAppendInfo(path, this.sceneController.selection);
     if (hoveredPointIndex === undefined && appendInfo.createContour) {
       const point = this.sceneController.localPoint(event);
-      const size = this.sceneController.mouseClickMargin;
+      // The following max() call makes sure that the margin is never
+      // less than half a font unit. This works around a visualization
+      // artifact caused by bezier-js: Bezier.project() returns t values
+      // with a max precision of 0.001.
+      const size = Math.max(1, this.sceneController.mouseClickMargin);
       const hit = this.sceneModel.pathHitAtPoint(point, size);
       if (event.altKey && hit.segment?.points?.length === 2) {
         const pt1 = hit.segment.points[0];
