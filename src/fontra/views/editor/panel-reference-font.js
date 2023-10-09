@@ -3,10 +3,17 @@ import Panel from "./panel.js";
 import * as html from "/core/unlit.js";
 
 import { ObservableController } from "/core/observable-object.js";
-import { div, input, label } from "/core/unlit.js";
-import { fileNameExtension, withTimeout } from "/core/utils.js";
+import { div, input, label, option, select } from "/core/unlit.js";
+import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
 import { dialog } from "/web-components/modal-dialog.js";
 import { UIList } from "/web-components/ui-list.js";
+
+import "/third-party/lib-font/inflate.js";
+import "/third-party/lib-font/unbrotli.js";
+
+// lib-font expects its dependencies to be imported first. Prettier moves the imports.
+// prettier-ignore: organizeImportsSkipDestructiveCodeActions
+import { Font } from "/third-party/lib-font.js";
 
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
 
@@ -60,6 +67,44 @@ function cleanFontItems(fontItems) {
       uplodadedFileName: fontItem.uplodadedFileName,
       fontIdentifier: fontItem.fontIdentifier,
     };
+  });
+}
+
+function readSupportedLanguages(fontItem, languageMapping) {
+  return new Promise((resolve, reject) => {
+    const font = new Font(fontItem.fontIdentifier, {
+      skipStyleSheet: true,
+    });
+    font.onerror = (event) => {
+      console.error("Error when creating Font instance (lib-font).", event);
+      resolve([]);
+    };
+    font.onload = (event) => {
+      const font = event.detail.font;
+      const getLangs = (table) => {
+        if (table) {
+          return table
+            .getSupportedScripts()
+            .reduce((acc, script) => {
+              const scriptTable = table.getScriptTable(script);
+              return acc.concat(table.getSupportedLangSys(scriptTable));
+            }, [])
+            .map((lang) => lang.trim());
+        } else {
+          return [];
+        }
+      };
+      const gsubLangs = getLangs(font.opentype.tables.GSUB);
+      const gposLangs = getLangs(font.opentype.tables.GPOS);
+      const allLangs = new Set([...gsubLangs, ...gposLangs]);
+
+      const supportedLanguages = [...allLangs]
+        .filter((lang) => languageMapping[lang])
+        .map((lang) => languageMapping[lang]);
+      supportedLanguages.sort((a, b) => a[0].localeCompare(b[0]));
+      resolve(supportedLanguages);
+    };
+    font.src = fontItem.objectURL;
   });
 }
 
@@ -320,6 +365,24 @@ export default class ReferenceFontPanel extends Panel {
       await fontItem.fontFace.load();
     }
     this.model.referenceFontName = fontItem.fontIdentifier;
+
+    if (fontItem.fontIdentifier in this.supportedLanguagesMemoized) {
+      this.setSupportedLanguages(
+        this.supportedLanguagesMemoized[fontItem.fontIdentifier],
+        this.model.languageCode
+      );
+    } else {
+      setTimeout(async () => {
+        // file is not resolved when it's read consecutively after creating object url
+        // I do not know the reason. I will investigate later, leaving it with a timeout
+        const supportedLanguages = await readSupportedLanguages(
+          fontItem,
+          this.languageMapping
+        );
+        this.setSupportedLanguages(supportedLanguages, this.model.languageCode);
+        this.supportedLanguagesMemoized[fontItem.fontIdentifier] = supportedLanguages;
+      }, 100);
+    }
   }
 
   async _deleteSelectedItemHandler() {
@@ -366,7 +429,26 @@ export default class ReferenceFontPanel extends Panel {
     }
   }
 
+  setSupportedLanguages(languages, currentLanguage = "") {
+    this.languageCodeInput.innerHTML = "";
+    this.languageCodeInput.appendChild(option({ value: "" }, ["None"]));
+    for (const [name, code] of languages) {
+      this.languageCodeInput.appendChild(
+        option(
+          {
+            value: code,
+            selected: currentLanguage === code,
+          },
+          [`${name} (${code})`]
+        )
+      );
+    }
+  }
+
   getContentElement() {
+    this.languageMapping = {};
+    this.supportedLanguagesMemoized = {};
+
     this.controller = new ObservableController({
       languageCode: "",
       selectedFontIndex: -1,
@@ -409,6 +491,17 @@ export default class ReferenceFontPanel extends Panel {
       this.filesUIList.setSelectedItemIndex(this.model.selectedFontIndex, true);
     }
 
+    this.languageCodeInput = select(
+      {
+        id: "language-code",
+        style: "width: 100%;",
+        onchange: (event) => {
+          this.model.languageCode = event.target.value;
+        },
+      },
+      []
+    );
+
     return html.div(
       {
         class: "sidebar-reference-font",
@@ -441,15 +534,8 @@ export default class ReferenceFontPanel extends Panel {
                   value: this.model.charOverride,
                   oninput: (event) => (this.model.charOverride = event.target.value),
                 }),
-                label({ for: "language-code" }, "Language code:"),
-                input({
-                  type: "text",
-                  id: "language-code",
-                  value: this.model.languageCode,
-                  oninput: (event) => {
-                    this.model.languageCode = event.target.value;
-                  },
-                }),
+                label({ for: "language-code" }, "Language:"),
+                this.languageCodeInput,
               ]
             ),
           ]
@@ -459,6 +545,9 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   attach() {
+    fetchJSON("/editor/language-mapping.json").then((languageMapping) => {
+      this.languageMapping = languageMapping;
+    });
     this.controller.addKeyListener("referenceFontName", (event) => {
       if (event.newValue) {
         this.editorController.visualizationLayersSettings.model[
