@@ -16,6 +16,10 @@ export class LRUCache {
     this.tail.prev = this.head;
   }
 
+  has(key) {
+    return this.map.has(key);
+  }
+
   get(key) {
     const node = this.map.get(key);
     if (node !== undefined) {
