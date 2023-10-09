@@ -94,6 +94,7 @@ export class FontController {
     // Return true if all glyph names in the `glyphNames` array are cached,
     // even if they may not yet be fully loaded. Mainly useful to determine
     // whether loading the glyphs may result in significant loading time.
+    // This does _not_ take the cache status of dependent glyphs into account.
     return !glyphNames.some((glyphName) => !this._glyphsPromiseCache.has(glyphName));
   }
 
