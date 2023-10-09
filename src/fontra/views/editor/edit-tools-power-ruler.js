@@ -262,7 +262,12 @@ export class PowerRulerTool extends BaseTool {
     if (!this.currentGlyphName) {
       return;
     }
-    this.editor.visualizationLayersSettings.model[POWER_RULER_IDENTIFIER] = true;
+    const isDoubleClick = initialEvent.detail == 2;
+    this.editor.visualizationLayersSettings.model[POWER_RULER_IDENTIFIER] =
+      !isDoubleClick;
+    if (isDoubleClick) {
+      return;
+    }
 
     const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
     const point = this.sceneController.localPoint(initialEvent);
