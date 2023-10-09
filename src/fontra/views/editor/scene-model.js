@@ -342,9 +342,10 @@ export class SceneModel {
       ),
     ];
     if (!fontController.areGlyphsCached(neededGlyphs)) {
+      // Pre-load the needed glyphs. loadGlyphs() does this in parallel
+      // if possible, so can be a lot faster than requesting the glyphs
+      // sequentially.
       await loaderSpinner(fontController.loadGlyphs(neededGlyphs));
-    } else {
-      await fontController.loadGlyphs(neededGlyphs);
     }
 
     for (const [lineIndex, glyphLine] of enumerate(glyphLines)) {
