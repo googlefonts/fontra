@@ -136,10 +136,15 @@ class FileSystemProjectManager:
 def _iterFolder(folderPath, extensions, maxDepth=3):
     if maxDepth is not None and maxDepth <= 0:
         return
-    for childPath in folderPath.iterdir():
-        if childPath.suffix.lower() in extensions:
-            yield childPath
-        elif childPath.is_dir():
-            yield from _iterFolder(
-                childPath, extensions, maxDepth - 1 if maxDepth is not None else None
-            )
+    try:
+        for childPath in folderPath.iterdir():
+            if childPath.suffix.lower() in extensions:
+                yield childPath
+            elif childPath.is_dir():
+                yield from _iterFolder(
+                    childPath,
+                    extensions,
+                    maxDepth - 1 if maxDepth is not None else None,
+                )
+    except PermissionError:
+        logger.info(f"Skipping {str(folderPath)!r} (no permission)")
