@@ -26,7 +26,7 @@ export function insertPoint(path, intersection) {
     path.insertPoint(
       contourIndex,
       insertIndex,
-      vector.interpolateVectors(...points, intersection.t)
+      vector.roundVector(vector.interpolateVectors(...points, intersection.t))
     );
     selectedPointIndex = insertIndex;
   } else {
@@ -119,7 +119,7 @@ export function insertHandles(path, segmentPoints, insertIndex, type = "cubic") 
     vector.interpolateVectors(...segmentPoints, 1 / 3),
     vector.interpolateVectors(...segmentPoints, 2 / 3),
   ].map((pt) => {
-    return { ...pt, type: type };
+    return { ...vector.roundVector(pt), type: type };
   });
   path.insertPoint(contourIndex, contourPointIndex, handlePoints[1]);
   path.insertPoint(contourIndex, contourPointIndex, handlePoints[0]);
