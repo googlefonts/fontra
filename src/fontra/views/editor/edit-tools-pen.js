@@ -91,7 +91,14 @@ export class PenTool extends BaseTool {
         const handle2 = vector.roundVector(vector.interpolateVectors(pt1, pt2, 2 / 3));
         return { insertHandles: { points: [handle1, handle2], hit: hit } };
       } else {
-        return { targetPoint: hit };
+        const targetPoint = { ...hit };
+        if ("x" in targetPoint) {
+          // Don't use vector.roundVector, as there are more properties besides
+          // x and y, and we want to preserve them
+          targetPoint.x = Math.round(targetPoint.x);
+          targetPoint.y = Math.round(targetPoint.y);
+        }
+        return { targetPoint: targetPoint };
       }
     }
 
