@@ -12,6 +12,7 @@ import {
 import { difference, isEqualSet, updateSet } from "../core/set-ops.js";
 import { consolidateCalls, enumerate, parseSelection } from "../core/utils.js";
 import * as vector from "../core/vector.js";
+import { loaderSpinner } from "/core/loader-spinner.js";
 
 export class SceneModel {
   constructor(fontController, sceneSettingsController, isPointInPath) {
@@ -333,12 +334,17 @@ export class SceneModel {
     const positionedLines = [];
     let longestLineLength = 0;
 
-    const neededGlyphs = new Set(
+    let neededGlyphs = new Set(
       glyphLines
         .map((glyphLine) => glyphLine.map((glyphInfo) => glyphInfo.glyphName))
         .flat()
     );
-    await fontController.loadGlyphs([...neededGlyphs]);
+    neededGlyphs = [...neededGlyphs];
+    if (!fontController.areGlyphsCached(neededGlyphs)) {
+      await loaderSpinner(fontController.loadGlyphs(neededGlyphs));
+    } else {
+      await fontController.loadGlyphs(neededGlyphs);
+    }
 
     for (const [lineIndex, glyphLine] of enumerate(glyphLines)) {
       const positionedLine = { glyphs: [] };
