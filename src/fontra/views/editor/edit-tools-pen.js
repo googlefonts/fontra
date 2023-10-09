@@ -82,16 +82,27 @@ export class PenTool extends BaseTool {
     const appendInfo = getAppendInfo(path, this.sceneController.selection);
     if (hoveredPointIndex === undefined && appendInfo.createContour) {
       const point = this.sceneController.localPoint(event);
-      const size = this.sceneController.mouseClickMargin;
+      // The following max() call makes sure that the margin is never
+      // less than half a font unit. This works around a visualization
+      // artifact caused by bezier-js: Bezier.project() returns t values
+      // with a max precision of 0.001.
+      const size = Math.max(1, this.sceneController.mouseClickMargin);
       const hit = this.sceneModel.pathHitAtPoint(point, size);
       if (event.altKey && hit.segment?.points?.length === 2) {
         const pt1 = hit.segment.points[0];
         const pt2 = hit.segment.points[1];
-        const handle1 = vector.interpolateVectors(pt1, pt2, 1 / 3);
-        const handle2 = vector.interpolateVectors(pt1, pt2, 2 / 3);
+        const handle1 = vector.roundVector(vector.interpolateVectors(pt1, pt2, 1 / 3));
+        const handle2 = vector.roundVector(vector.interpolateVectors(pt1, pt2, 2 / 3));
         return { insertHandles: { points: [handle1, handle2], hit: hit } };
       } else {
-        return { targetPoint: hit };
+        const targetPoint = { ...hit };
+        if ("x" in targetPoint) {
+          // Don't use vector.roundVector, as there are more properties besides
+          // x and y, and we want to preserve them
+          targetPoint.x = Math.round(targetPoint.x);
+          targetPoint.y = Math.round(targetPoint.y);
+        }
+        return { targetPoint: targetPoint };
       }
     }
 
