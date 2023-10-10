@@ -232,7 +232,11 @@ export class EditorController {
       const initScript = meta.init;
       const functionName = meta.function;
       const module = await import(`${pluginPath}/${initScript}`);
-      module[functionName](this);
+      try {
+        module[functionName](this);
+      } catch (e) {
+        console.warn(`Error occured when running (${meta.name || address}) plugin.`);
+      }
     }
   }
 
