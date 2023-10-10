@@ -1,7 +1,7 @@
 import { themeColorCSS } from "./theme-support.js";
 import { UIList } from "./ui-list.js";
-import * as html from "/core/unlit.js";
-import { UnlitElement } from "/core/unlit.js";
+import * as html from "/core/html-utils.js";
+import { UnlitElement } from "/core/html-utils.js";
 import {
   getCharFromUnicode,
   guessCharFromGlyphName,

@@ -1,6 +1,6 @@
 // This isn't really a web component, just a custom element.
 
-import { htmlToElement } from "/core/utils.js";
+import { htmlToElement } from "/core/html-utils.js";
 
 export class InlineSVG extends HTMLElement {
   constructor(src) {

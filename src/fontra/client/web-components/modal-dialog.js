@@ -1,5 +1,5 @@
-import * as html from "/core/unlit.js";
-import { SimpleElement } from "/core/unlit.js";
+import * as html from "/core/html-utils.js";
+import { SimpleElement } from "/core/html-utils.js";
 import { enumerate } from "/core/utils.js";
 
 export async function dialog(headline, message, buttonDefs, autoDismissTimeout) {

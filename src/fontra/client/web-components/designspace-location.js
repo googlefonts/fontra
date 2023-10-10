@@ -1,7 +1,6 @@
 import { RangeSlider } from "./range-slider.js";
-import * as html from "/core/unlit.js";
-import { UnlitElement } from "/core/unlit.js";
-import { htmlToElement } from "/core/utils.js";
+import * as html from "/core/html-utils.js";
+import { UnlitElement, htmlToElement } from "/core/html-utils.js";
 
 export class DesignspaceLocation extends UnlitElement {
   static styles = `

@@ -1,6 +1,6 @@
+import * as html from "../core/html-utils.js";
+import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
-import * as html from "../core/unlit.js";
-import { SimpleElement } from "../core/unlit.js";
 import { hyphenatedToCamelCase } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 

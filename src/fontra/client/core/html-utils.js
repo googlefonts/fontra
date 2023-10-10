@@ -117,6 +117,23 @@ export function createDomElement(tagName, attributes, children) {
   return element;
 }
 
+export function htmlToElement(html) {
+  var template = document.createElement("template");
+  html = html.trim();
+  template.innerHTML = html;
+  if (template.content.childNodes.length !== 1) {
+    throw new Error("The html should contain a single node");
+  }
+  return template.content.firstChild;
+}
+
+export function htmlToElements(html) {
+  var template = document.createElement("template");
+  html = html.trim();
+  template.innerHTML = html;
+  return template.content.childNodes;
+}
+
 // Convenience shortcuts
 export const br = createDomElement.bind(null, "br");
 export const button = createDomElement.bind(null, "button");
