@@ -303,7 +303,11 @@ export default class DesignspaceNavigationPanel extends Panel {
         if (varGlyphController) {
           this.sceneSettings.editLayerName =
             varGlyphController.sources[sourceIndex]?.layerName;
+        } else {
+          this.sceneSettings.editLayerName = null;
         }
+      } else {
+        this.sceneSettings.editLayerName = null;
       }
       this._updateEditingStatus();
     });
@@ -545,6 +549,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
       return "delete source" + layerMessage;
     });
+    this.sourcesList.setSelectedItemIndex(undefined, true);
   }
 
   async addSource() {
