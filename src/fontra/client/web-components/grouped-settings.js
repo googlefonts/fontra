@@ -1,5 +1,5 @@
 import { SimpleSettings } from "./simple-settings.js";
-import { UnlitElement, div } from "/core/unlit.js";
+import { UnlitElement, div } from "/core/html-utils.js";
 
 export class GroupedSettings extends UnlitElement {
   static styles = `

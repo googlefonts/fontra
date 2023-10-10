@@ -1,6 +1,6 @@
 import { themeColorCSS } from "./theme-support.js";
-import * as html from "/core/unlit.js";
-import { SimpleElement } from "/core/unlit.js";
+import * as html from "/core/html-utils.js";
+import { SimpleElement } from "/core/html-utils.js";
 import { capitalizeFirstLetter, reversed } from "/core/utils.js";
 
 export const MenuItemDivider = { title: "-" };

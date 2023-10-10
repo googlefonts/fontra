@@ -1,4 +1,4 @@
-import { SimpleElement } from "/core/unlit.js";
+import { SimpleElement } from "/core/html-utils.js";
 
 export default class Panel extends SimpleElement {
   constructor(editorController) {

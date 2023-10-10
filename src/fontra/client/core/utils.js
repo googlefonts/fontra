@@ -271,23 +271,6 @@ export function makeAffineTransform(transformation) {
   return t;
 }
 
-export function htmlToElement(html) {
-  var template = document.createElement("template");
-  html = html.trim();
-  template.innerHTML = html;
-  if (template.content.childNodes.length !== 1) {
-    throw new Error("The html should contain a single node");
-  }
-  return template.content.firstChild;
-}
-
-export function htmlToElements(html) {
-  var template = document.createElement("template");
-  html = html.trim();
-  template.innerHTML = html;
-  return template.content.childNodes;
-}
-
 export function getCharFromUnicode(codePoint) {
   return codePoint !== undefined ? String.fromCodePoint(codePoint) : "";
 }

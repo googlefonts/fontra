@@ -51,8 +51,8 @@ import {
   visualizationLayerDefinitions,
 } from "./visualization-layer-definitions.js";
 import { VisualizationLayers } from "./visualization-layers.js";
+import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
-import * as html from "/core/unlit.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 

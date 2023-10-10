@@ -1,8 +1,8 @@
 import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 import { recordChanges } from "/core/change-recorder.js";
+import * as html from "/core/html-utils.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
-import * as html from "/core/unlit.js";
 import {
   getCharFromUnicode,
   makeUPlusStringFromCodePoint,

@@ -1,8 +1,8 @@
 import { loaderSpinner } from "../core/loader-spinner.js";
 import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
+import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
-import * as html from "/core/unlit.js";
 import { fetchJSON } from "/core/utils.js";
 
 export default class UserSettingsPanel extends Panel {
