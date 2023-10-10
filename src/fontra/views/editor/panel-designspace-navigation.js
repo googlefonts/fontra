@@ -179,11 +179,26 @@ export default class DesignspaceNavigationPanel extends Panel {
       true
     );
 
-    this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
-      this.sourcesList.setSelectedItemIndex(event.newValue);
-      this._updateRemoveSourceButtonState();
-      this._updateEditingStatus();
-    });
+    this.sceneSettingsController.addKeyListener(
+      "selectedSourceIndex",
+      async (event) => {
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        let index = event.newValue;
+        if (
+          varGlyphController?.sources[index]?.name !==
+          this.sourcesList.items[index]?.name
+        ) {
+          // the selectedSourceIndex event may come at a time that the
+          // sourcesList hasn't been updated yet, so could be out of
+          // sync. Prevent setting it to a wrong value.
+          index = undefined;
+        }
+        this.sourcesList.setSelectedItemIndex(index);
+        this._updateRemoveSourceButtonState();
+        this._updateEditingStatus();
+      }
+    );
 
     const columnDescriptions = [
       {
