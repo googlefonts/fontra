@@ -413,6 +413,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateSources() {
+    await this._pruneEditingLayers();
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
     const sources = varGlyphController?.sources || [];
@@ -489,13 +490,30 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sourcesList.getSelectedItemIndex() === undefined;
   }
 
-  _updateEditingStatus() {
+  async _updateEditingStatus() {
+    await this._pruneEditingLayers();
     const selectedItem = this.sourcesList.getSelectedItem();
     if (!selectedItem?.editing || selectedItem.interpolationStatus?.error) {
       this.sourcesList.items.forEach((item) => {
         item.editing = item === selectedItem;
       });
     }
+  }
+
+  async _pruneEditingLayers() {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    if (!varGlyphController) {
+      return;
+    }
+    const layers = varGlyphController.layers;
+    const editingLayers = { ...this.sceneController.editingLayers };
+    for (const layerName of Object.keys(editingLayers)) {
+      if (!(layerName in layers)) {
+        delete editingLayers[layerName];
+      }
+    }
+    this.sceneController.editingLayers = editingLayers;
   }
 
   async removeSource(sourceIndex) {
