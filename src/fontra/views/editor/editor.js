@@ -56,6 +56,7 @@ import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
+import { parsePluginBasePath } from "/web-components/plugin-manager.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
@@ -218,27 +219,19 @@ export class EditorController {
     });
     observablePlugins.synchronizeWithLocalStorage("fontra.plugins");
     for (const { address } of observablePlugins.model.plugins) {
-      const version = "latest";
-      const localPluginAddressPrefix = "local:";
-      let pluginUrl;
-      if (address.startsWith(localPluginAddressPrefix)) {
-        pluginUrl = `/localplugins/${address.slice(localPluginAddressPrefix.length)}`;
-      } else {
-        pluginUrl = `https://cdn.jsdelivr.net/gh/${address}@${version}`;
-      }
+      const pluginPath = parsePluginBasePath(address);
       let meta;
       try {
-        meta = await fetchJSON(`${pluginUrl}/plugin.json`);
+        meta = await fetchJSON(`${pluginPath}/plugin.json`);
       } catch (e) {
-        alert(`${address} Plugin metada not found.`);
-        // todo: ask for do you want to delete the plugin
+        alert(`${address} Plugin metadata not found.`);
       }
       if (!meta) {
         continue;
       }
       const initScript = meta.init;
       const functionName = meta.function;
-      const module = await import(`${pluginUrl}/${initScript}`);
+      const module = await import(`${pluginPath}/${initScript}`);
       module[functionName](this);
     }
   }

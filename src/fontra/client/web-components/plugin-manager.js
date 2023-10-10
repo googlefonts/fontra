@@ -68,7 +68,9 @@ export class PluginManager extends SimpleElement {
     const pluginPromptResult = await newPluginPrompt.run();
     if (pluginPromptResult === "ok") {
       const newPlugin = { address };
-      const [ok, errorMessage] = await this.validatePlugin(newPlugin);
+      const [ok, errorMessage] = await this.validatePlugin(
+        parsePluginBasePath(address)
+      );
       if (ok) {
         this.observable.setItem("plugins", [
           ...this.observable.model.plugins,
@@ -82,17 +84,22 @@ export class PluginManager extends SimpleElement {
     }
   }
 
-  async validatePlugin(plugin) {
-    if (!plugin.address.startsWith("local:") && !plugin.address.includes("/")) {
-      return [
-        false,
-        "Provide the github repository in 'github-username/repository-name' format.",
-      ];
-    }
+  async validatePlugin(pluginPath) {
     if (
-      this.observable.model.plugins.some(({ address }) => address === plugin.address)
+      this.observable.model.plugins.some(
+        ({ address }) => parsePluginBasePath(address) === pluginPath
+      )
     ) {
       return [false, "Plugin exists."];
+    }
+    let response;
+    try {
+      response = await fetch(`${pluginPath}/plugin.json`);
+    } catch (e) {
+      return [false, "An error occured when fetching the plugin."];
+    }
+    if (response.status === 404) {
+      return [false, "Plugin not found."];
     }
     return [true];
   }
@@ -148,3 +155,13 @@ export class PluginManager extends SimpleElement {
 }
 
 customElements.define("plugin-manager", PluginManager);
+
+export function parsePluginBasePath(address, version = "latest") {
+  let baseURL;
+  if (address.split("/").length === 2) {
+    baseURL = `https://cdn.jsdelivr.net/gh/${address}@${version}`;
+  } else {
+    baseURL = address.endsWith("/") ? address.slice(0, -1) : address;
+  }
+  return baseURL;
+}
