@@ -877,7 +877,10 @@ export class SceneController {
       this.selection = undoInfo.undoSelection;
       if (undoInfo.location) {
         this.scrollAdjustBehavior = "pin-glyph-center";
-        this.sceneSettings.location = undoInfo.location;
+        // Pass a copy of the location to ensure the listeners are called even
+        // if the location didn't change: its dependents may vary depending on
+        // the glyph data (eg. a source being there or not)
+        this.sceneSettings.location = { ...undoInfo.location };
       }
       await this.sceneModel.updateScene();
       this.canvasController.requestUpdate();

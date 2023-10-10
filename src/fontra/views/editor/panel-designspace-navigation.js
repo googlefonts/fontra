@@ -179,11 +179,26 @@ export default class DesignspaceNavigationPanel extends Panel {
       true
     );
 
-    this.sceneSettingsController.addKeyListener("selectedSourceIndex", (event) => {
-      this.sourcesList.setSelectedItemIndex(event.newValue);
-      this._updateRemoveSourceButtonState();
-      this._updateEditingStatus();
-    });
+    this.sceneSettingsController.addKeyListener(
+      "selectedSourceIndex",
+      async (event) => {
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        let index = event.newValue;
+        if (
+          varGlyphController?.sources[index]?.name !==
+          this.sourcesList.items[index]?.name
+        ) {
+          // the selectedSourceIndex event may come at a time that the
+          // sourcesList hasn't been updated yet, so could be out of
+          // sync. Prevent setting it to a wrong value.
+          index = undefined;
+        }
+        this.sourcesList.setSelectedItemIndex(index);
+        this._updateRemoveSourceButtonState();
+        this._updateEditingStatus();
+      }
+    );
 
     const columnDescriptions = [
       {
@@ -303,7 +318,11 @@ export default class DesignspaceNavigationPanel extends Panel {
         if (varGlyphController) {
           this.sceneSettings.editLayerName =
             varGlyphController.sources[sourceIndex]?.layerName;
+        } else {
+          this.sceneSettings.editLayerName = null;
         }
+      } else {
+        this.sceneSettings.editLayerName = null;
       }
       this._updateEditingStatus();
     });
@@ -409,6 +428,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   }
 
   async _updateSources() {
+    await this._pruneEditingLayers();
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
     const sources = varGlyphController?.sources || [];
@@ -485,13 +505,30 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sourcesList.getSelectedItemIndex() === undefined;
   }
 
-  _updateEditingStatus() {
+  async _updateEditingStatus() {
+    await this._pruneEditingLayers();
     const selectedItem = this.sourcesList.getSelectedItem();
     if (!selectedItem?.editing || selectedItem.interpolationStatus?.error) {
       this.sourcesList.items.forEach((item) => {
         item.editing = item === selectedItem;
       });
     }
+  }
+
+  async _pruneEditingLayers() {
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    if (!varGlyphController) {
+      return;
+    }
+    const layers = varGlyphController.layers;
+    const editingLayers = { ...this.sceneController.editingLayers };
+    for (const layerName of Object.keys(editingLayers)) {
+      if (!(layerName in layers)) {
+        delete editingLayers[layerName];
+      }
+    }
+    this.sceneController.editingLayers = editingLayers;
   }
 
   async removeSource(sourceIndex) {
@@ -545,6 +582,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
       return "delete source" + layerMessage;
     });
+    this.sourcesList.setSelectedItemIndex(undefined, true);
   }
 
   async addSource() {
