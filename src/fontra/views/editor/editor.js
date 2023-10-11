@@ -231,11 +231,18 @@ export class EditorController {
       }
       const initScript = meta.init;
       const functionName = meta.function;
-      const module = await import(`${pluginPath}/${initScript}`);
+      let module;
       try {
-        module[functionName](this);
+        module = await import(`${pluginPath}/${initScript}`);
       } catch (e) {
-        console.warn(`Error occured when running (${meta.name || address}) plugin.`);
+        console.error("Module didn't load");
+        console.log(e);
+      }
+      try {
+        module[functionName](this, pluginPath);
+      } catch (e) {
+        console.error(`Error occured when running (${meta.name || address}) plugin.`);
+        console.log(e);
       }
     }
   }
@@ -430,6 +437,16 @@ export class EditorController {
 
   addSidebarPanel(panelElement, sidebarName) {
     const sidebar = this.sidebars.find((sidebar) => sidebar.identifier === sidebarName);
+    if (!sidebar) {
+      throw new Error(
+        `"${sidebarName}" not a valid sidebar name. Available sidebars: ${this.sidebars
+          .map((sidebar) => `"${sidebar.identifier}"`)
+          .join(", ")}`
+      );
+    }
+    if (sidebar.panels.some((panel) => panel.identifier === panelElement.identifier)) {
+      throw new Error(`Panel "${panelElement.identifier}" in "${sidebarName}" exists.`);
+    }
     sidebar.addPanel(panelElement);
     panelElement.attach();
     const tabElement = document.querySelector(
