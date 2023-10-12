@@ -62,6 +62,7 @@ filesystem = "fontra.filesystem.projectmanager:FileSystemProjectManagerFactory"
 filesystem = "fontra.filesystem"
 localplugins = "fontra.localplugins"
 
+
 [project.entry-points."fontra.filesystem.backends"]
 designspace = "fontra.backends.designspace:DesignspaceBackend"
 ufo = "fontra.backends.designspace:UFOBackend"
