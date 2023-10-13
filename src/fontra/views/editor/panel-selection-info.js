@@ -8,6 +8,7 @@ import {
   makeUPlusStringFromCodePoint,
   parseSelection,
   round,
+  splitGlyphNameExtension,
   throttleCalls,
 } from "/core/utils.js";
 import { Form } from "/web-components/ui-form.js";
@@ -139,12 +140,14 @@ export default class SelectionInfoPanel extends Panel {
       unicodes = [selectedGlyphInfo.character.codePointAt(0)];
     }
 
-    const unicodesStr = unicodes
-      .map(
-        (code) =>
-          `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromUnicode(code)})`
-      )
-      .join(" ");
+    const unicodesStr = makeUnicodesString(unicodes);
+    let baseUnicodesStr;
+    if (glyphName && !unicodes.length) {
+      const [baseGlyphName, _] = splitGlyphNameExtension(glyphName);
+      baseUnicodesStr = makeUnicodesString(
+        this.fontController.glyphMap?.[baseGlyphName]
+      );
+    }
 
     const formContents = [];
     if (glyphName) {
@@ -160,6 +163,14 @@ export default class SelectionInfoPanel extends Panel {
         label: "Unicode",
         value: unicodesStr,
       });
+      if (baseUnicodesStr) {
+        formContents.push({
+          key: "baseUnicodes",
+          type: "text",
+          label: "Base unicode",
+          value: baseUnicodesStr,
+        });
+      }
       if (instance) {
         formContents.push({
           type: "edit-number",
@@ -466,6 +477,15 @@ function maybeClampValue(value, min, max) {
     value = Math.min(value, max);
   }
   return value;
+}
+
+function makeUnicodesString(unicodes) {
+  return (unicodes || [])
+    .map(
+      (code) =>
+        `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromUnicode(code)})`
+    )
+    .join(" ");
 }
 
 customElements.define("panel-selection-info", SelectionInfoPanel);

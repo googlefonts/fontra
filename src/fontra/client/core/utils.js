@@ -427,3 +427,10 @@ export function* iter(iterable) {
     yield item;
   }
 }
+
+export function splitGlyphNameExtension(glyphName) {
+  const periodIndex = glyphName.indexOf(".");
+  const baseGlyphName = periodIndex >= 1 ? glyphName.slice(0, periodIndex) : glyphName;
+  const extension = periodIndex >= 1 ? glyphName.slice(periodIndex) : "";
+  return [baseGlyphName, extension];
+}

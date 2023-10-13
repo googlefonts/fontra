@@ -1,4 +1,5 @@
 import { getSuggestedGlyphName, getUnicodeFromGlyphName } from "./server-utils.js";
+import { splitGlyphNameExtension } from "./utils.js";
 
 export async function glyphLinesFromText(text, characterMap, glyphMap) {
   const glyphLines = [];
@@ -52,10 +53,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
             // happens to be a character that we know a glyph name for.
             // This allows us to write /Å.alt instead of /Aring.alt in the
             // text entry field.
-            const periodIndex = glyphName.indexOf(".");
-            const baseGlyphName =
-              periodIndex >= 1 ? glyphName.slice(0, periodIndex) : glyphName;
-            const extension = periodIndex >= 1 ? glyphName.slice(periodIndex) : "";
+            const [baseGlyphName, extension] = splitGlyphNameExtension(glyphName);
             const baseCharCode = baseGlyphName.codePointAt(0);
             const charString = String.fromCodePoint(baseCharCode);
             if (baseGlyphName === charString) {
