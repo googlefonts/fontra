@@ -704,11 +704,16 @@ export class SceneController {
   }
 
   getEditingLayerFromGlyphLayers(layers) {
-    return Object.fromEntries(
-      this.editingLayerNames
-        .map((layerName) => [layerName, layers[layerName]?.glyph])
-        .filter((layer) => layer[1])
-    );
+    const layerArray = this.editingLayerNames
+      .map((layerName) => [layerName, layers[layerName]?.glyph])
+      .filter((layer) => layer[1]);
+    if (!layerArray.length) {
+      const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+      if (glyphController?.canEdit) {
+        layerArray.push([glyphController.layerName, glyphController.instance]);
+      }
+    }
+    return Object.fromEntries(layerArray);
   }
 
   async _editGlyphOrInstanceAndRecordChanges(
