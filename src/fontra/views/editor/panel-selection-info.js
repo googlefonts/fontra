@@ -8,6 +8,7 @@ import {
   makeUPlusStringFromCodePoint,
   parseSelection,
   round,
+  splitGlyphNameExtension,
   throttleCalls,
 } from "/core/utils.js";
 import { Form } from "/web-components/ui-form.js";
@@ -140,6 +141,13 @@ export default class SelectionInfoPanel extends Panel {
     }
 
     const unicodesStr = makeUnicodesString(unicodes);
+    let baseUnicodesStr;
+    if (glyphName && !unicodes.length) {
+      const [baseGlyphName, _] = splitGlyphNameExtension(glyphName);
+      baseUnicodesStr = makeUnicodesString(
+        this.fontController.glyphMap?.[baseGlyphName]
+      );
+    }
 
     const formContents = [];
     if (glyphName) {
@@ -155,6 +163,14 @@ export default class SelectionInfoPanel extends Panel {
         label: "Unicode",
         value: unicodesStr,
       });
+      if (baseUnicodesStr) {
+        formContents.push({
+          key: "baseUnicodes",
+          type: "text",
+          label: "Base unicode",
+          value: baseUnicodesStr,
+        });
+      }
       if (instance) {
         formContents.push({
           type: "edit-number",
