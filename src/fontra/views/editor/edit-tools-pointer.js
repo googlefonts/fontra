@@ -185,7 +185,7 @@ export class PointerTool extends BaseTool {
       const { point: pointIndices, component: componentIndices } = parseSelection(
         sceneController.selection
       );
-      if (componentIndices?.length) {
+      if (componentIndices?.length && !pointIndices?.length) {
         componentIndices.sort();
         sceneController.doubleClickedComponentIndices = componentIndices;
         sceneController._dispatchEvent("doubleClickedComponents");
