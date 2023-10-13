@@ -74,7 +74,7 @@ export class PointerTool extends BaseTool {
     if (initialEvent.detail == 2 || initialEvent.myTapCount == 2) {
       initialEvent.preventDefault(); // don't let our dbl click propagate to other elements
       eventStream.done();
-      await this.handleDoubleCick(selection, point);
+      await this.handleDoubleCick(selection, point, initialEvent);
       return;
     }
 
@@ -97,6 +97,7 @@ export class PointerTool extends BaseTool {
       event.altKey ||
       !isSuperset(sceneController.selection, cleanSel)
     ) {
+      this._selectionBeforeSingleClick = sceneController.selection;
       sceneController.selection = newSelection;
     }
 
@@ -138,7 +139,7 @@ export class PointerTool extends BaseTool {
     }
   }
 
-  async handleDoubleCick(selection, point) {
+  async handleDoubleCick(selection, point, event) {
     const sceneController = this.sceneController;
     if (!sceneController.hoverPathHit && (!selection || !selection.size)) {
       const selectedGlyph = this.sceneModel.glyphAtPoint(point);
@@ -201,7 +202,10 @@ export class PointerTool extends BaseTool {
             newSelection.add(`point/${i}`);
           }
         }
-        sceneController.selection = newSelection;
+        const selection = this._selectionBeforeSingleClick || sceneController.selection;
+        this._selectionBeforeSingleClick = undefined;
+        const modeFunc = getSelectModeFunction(event);
+        sceneController.selection = modeFunc(selection, newSelection);
       }
     }
   }
@@ -246,9 +250,11 @@ export class PointerTool extends BaseTool {
       sceneController.selection = modeFunc(initialSelection, selection);
     }
     sceneController.selectionRect = undefined;
+    this._selectionBeforeSingleClick = undefined;
   }
 
   async handleDragSelection(eventStream, initialEvent) {
+    this._selectionBeforeSingleClick = undefined;
     const sceneController = this.sceneController;
     await sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const initialPoint = sceneController.localPoint(initialEvent);
