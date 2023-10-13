@@ -708,6 +708,9 @@ export class SceneController {
       .map((layerName) => [layerName, layers[layerName]?.glyph])
       .filter((layer) => layer[1]);
     if (!layerArray.length) {
+      // While this shouldn't really happen, it is mostly harmless:
+      // if the layers list is empty but we are in fact at an editable position,
+      // populate the list with the editing instance.
       const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
       if (glyphController?.canEdit) {
         layerArray.push([glyphController.layerName, glyphController.instance]);
