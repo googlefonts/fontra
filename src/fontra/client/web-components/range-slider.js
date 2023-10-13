@@ -210,6 +210,7 @@ export class RangeSlider extends LitElement {
             step=${this.step}
             .value=${this.value}
             list="markers"
+            tabindex="-1"
           />
         </div>
       </section>
