@@ -178,6 +178,7 @@ export class PointerTool extends BaseTool {
             ...this.sceneSettings.selectedGlyph,
             isEditing: true,
           };
+          this.sceneSettings.selectedSourceIndex = 0;
         }
       }
     } else {

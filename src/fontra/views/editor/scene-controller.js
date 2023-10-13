@@ -704,11 +704,19 @@ export class SceneController {
   }
 
   getEditingLayerFromGlyphLayers(layers) {
-    return Object.fromEntries(
-      this.editingLayerNames
-        .map((layerName) => [layerName, layers[layerName]?.glyph])
-        .filter((layer) => layer[1])
-    );
+    const layerArray = this.editingLayerNames
+      .map((layerName) => [layerName, layers[layerName]?.glyph])
+      .filter((layer) => layer[1]);
+    if (!layerArray.length) {
+      // While this shouldn't really happen, it is mostly harmless:
+      // if the layers list is empty but we are in fact at an editable position,
+      // populate the list with the editing instance.
+      const glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;
+      if (glyphController?.canEdit) {
+        layerArray.push([glyphController.layerName, glyphController.instance]);
+      }
+    }
+    return Object.fromEntries(layerArray);
   }
 
   async _editGlyphOrInstanceAndRecordChanges(
