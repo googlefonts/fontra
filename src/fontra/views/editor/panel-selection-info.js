@@ -139,12 +139,7 @@ export default class SelectionInfoPanel extends Panel {
       unicodes = [selectedGlyphInfo.character.codePointAt(0)];
     }
 
-    const unicodesStr = unicodes
-      .map(
-        (code) =>
-          `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromUnicode(code)})`
-      )
-      .join(" ");
+    const unicodesStr = makeUnicodesString(unicodes);
 
     const formContents = [];
     if (glyphName) {
@@ -466,6 +461,15 @@ function maybeClampValue(value, min, max) {
     value = Math.min(value, max);
   }
   return value;
+}
+
+function makeUnicodesString(unicodes) {
+  return (unicodes || [])
+    .map(
+      (code) =>
+        `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromUnicode(code)})`
+    )
+    .join(" ");
 }
 
 customElements.define("panel-selection-info", SelectionInfoPanel);
