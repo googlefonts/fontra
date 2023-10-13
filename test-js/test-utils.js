@@ -23,6 +23,7 @@ import {
   rgbaToCSS,
   round,
   scheduleCalls,
+  splitGlyphNameExtension,
   throttleCalls,
   withTimeout,
 } from "../src/fontra/client/core/utils.js";
@@ -457,4 +458,23 @@ describe("withTimeout", () => {
     }
     expect(thrown).to.be.false;
   });
+});
+
+describe("splitGlyphNameExtension", () => {
+  parametrize(
+    "splitGlyphNameExtension tests",
+    [
+      ["", ["", ""]],
+      ["a", ["a", ""]],
+      [".notdef", [".notdef", ""]],
+      [".x", [".x", ""]],
+      ["a.alt", ["a", ".alt"]],
+      ["a.alt.etc", ["a", ".alt.etc"]],
+      ["aring.alt.etc", ["aring", ".alt.etc"]],
+    ],
+    (testData) => {
+      const [inputGlyphName, expectedResult] = testData;
+      expect(splitGlyphNameExtension(inputGlyphName)).to.deep.equal(expectedResult);
+    }
+  );
 });
