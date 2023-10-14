@@ -1,6 +1,7 @@
 import { ObservableController } from "../core/observable-object.js";
 import * as html from "../core/unlit.js";
-import { SimpleElement } from "../core/unlit.js";
+import { SimpleElement, createDomElement } from "../core/unlit.js";
+import "/web-components/add-remove-buttons.js";
 import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { UIList } from "/web-components/ui-list.js";
 
@@ -41,8 +42,8 @@ export class PluginManager extends SimpleElement {
     this.render();
     this.renderPlugins();
     this.pluginList.addEventListener("listSelectionChanged", async (event) => {
-      this.deleteButton.style.display =
-        this.pluginList.selectedItemIndex === undefined ? "none" : "unset";
+      this.addRemoveButton.disableRemoveButton =
+        this.pluginList.selectedItemIndex === undefined;
     });
   }
 
@@ -116,34 +117,24 @@ export class PluginManager extends SimpleElement {
 
   render() {
     const fragment = document.createDocumentFragment();
-    fragment.appendChild(
-      html.div({ class: "buttons" }, [
-        html.button(
-          {
-            onclick: () => {
-              this.promptAddPlugin();
-            },
-          },
-          ["Add a plugin"]
-        ),
-        (this.deleteButton = html.button(
-          {
-            style: "display: none",
-            onclick: () => {
-              this.observable.setItem(
-                "plugins",
-                this.observable.model.plugins.filter(
-                  (plugin, index) => index !== this.pluginList.getSelectedItemIndex()
-                )
-              );
-              this.renderPlugins();
-            },
-          },
-          ["Delete"]
-        )),
-      ])
-    );
     fragment.appendChild(this.pluginList);
+    fragment.appendChild(
+      (this.addRemoveButton = createDomElement("add-remove-buttons", {
+        addButtonCallback: () => {
+          this.promptAddPlugin();
+        },
+        removeButtonCallback: () => {
+          this.observable.setItem(
+            "plugins",
+            this.observable.model.plugins.filter(
+              (plugin, index) => index !== this.pluginList.getSelectedItemIndex()
+            )
+          );
+          this.renderPlugins();
+        },
+        disableRemoveButton: true,
+      }))
+    );
     fragment.appendChild(
       (this.pluginsEmptyState = html.div(
         { class: "no-plugins", style: "display: none" },

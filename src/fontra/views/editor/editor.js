@@ -445,7 +445,9 @@ export class EditorController {
       );
     }
     if (sidebar.panels.some((panel) => panel.identifier === panelElement.identifier)) {
-      throw new Error(`Panel "${panelElement.identifier}" in "${sidebarName}" exists.`);
+      throw new Error(
+        `Panel "${panelElement.identifier}" in "${sidebarName}" sidebar exists.`
+      );
     }
     sidebar.addPanel(panelElement);
     panelElement.attach();
