@@ -24,7 +24,7 @@ export class Sidebar {
 
     const panelContent = html.div(
       { "class": "sidebar-content", "data-sidebarName": panel.identifier },
-      [panel instanceof HTMLElement ? panel : panel.contentElement]
+      [panel]
     );
 
     sidebarContainer.append(panelContent);

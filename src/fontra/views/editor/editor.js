@@ -64,6 +64,7 @@ import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import TextEntryPanel from "./panel-text-entry.js";
 import UserSettingsPanel from "./panel-user-settings.js";
+import Panel from "./panel.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -237,12 +238,14 @@ export class EditorController {
       } catch (e) {
         console.error("Module didn't load");
         console.log(e);
+        continue;
       }
       try {
         module[functionName](this, pluginPath);
       } catch (e) {
         console.error(`Error occured when running (${meta.name || address}) plugin.`);
         console.log(e);
+        continue;
       }
     }
   }
@@ -435,7 +438,7 @@ export class EditorController {
     this.sidebars.push(sidebar);
   }
 
-  addSidebarPanel(panelElement, sidebarName) {
+  addSidebarPanel(panelElement, sidebarName, contentElement) {
     const sidebar = this.sidebars.find((sidebar) => sidebar.identifier === sidebarName);
     if (!sidebar) {
       throw new Error(
@@ -449,13 +452,30 @@ export class EditorController {
         `Panel "${panelElement.identifier}" in "${sidebarName}" sidebar exists.`
       );
     }
-    sidebar.addPanel(panelElement);
-    panelElement.attach();
+    const isHtmlElement = panelElement instanceof HTMLElement;
+    let panel;
+    if (isHtmlElement) {
+      panel = panelElement;
+    } else {
+      class PanelClass extends Panel {
+        identifier = panelElement.name;
+        iconPath = panelElement.icon;
+        getContentElement() {
+          return panelElement.contentElement || contentElement;
+        }
+      }
+      customElements.define(panelElement.name, PanelClass);
+      panel = new PanelClass();
+    }
+
+    sidebar.addPanel(panel);
+    panel.attach();
+
     const tabElement = document.querySelector(
-      `.sidebar-tab[data-sidebar-name="${panelElement.identifier}"]`
+      `.sidebar-tab[data-sidebar-name="${panel.identifier}"]`
     );
     tabElement.addEventListener("click", () => {
-      this.toggleSidebar(panelElement.identifier, true);
+      this.toggleSidebar(panel.identifier, true);
     });
   }
 
