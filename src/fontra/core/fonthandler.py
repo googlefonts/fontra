@@ -65,13 +65,13 @@ class FontHandler:
 
     async def startTasks(self):
         if hasattr(self.backend, "watchExternalChanges"):
-            self._watcherTask = asyncio.create_task(self.processExternalChanges())
-            self._watcherTask.add_done_callback(taskDoneHelper)
+            self._watcherTask = scheduleTaskAndLogException(
+                self.processExternalChanges()
+            )
         self._processWritesError = None
         self._processWritesEvent = asyncio.Event()
-        self._processWritesTask = asyncio.create_task(self.processWrites())
+        self._processWritesTask = scheduleTaskAndLogException(self.processWrites())
         self._processWritesTask.add_done_callback(self._processWritesTaskDone)
-        self._processWritesTask.add_done_callback(taskDoneHelper)
         self._writingInProgressEvent = asyncio.Event()
         self._writingInProgressEvent.set()
 
@@ -266,9 +266,8 @@ class FontHandler:
             )
         ]
 
-        await asyncio.gather(
-            *[connection.proxy.externalChange(change) for connection in connections]
-        )
+        for connection in connections:
+            scheduleTaskAndLogException(connection.proxy.externalChange(change))
 
     async def updateLocalDataWithExternalChange(self, change):
         await self._updateLocalDataAndWriteToBackend(change, None, True)
@@ -462,11 +461,21 @@ def popFirstItem(d):
     return (key, d.pop(key))
 
 
-def taskDoneHelper(task):
+_tasks = set()
+
+
+def taskDoneCallback(task):
     if not task.cancelled() and task.exception() is not None:
-        logger.exception(
-            f"fatal exception in asyncio task {task}", exc_info=task.exception()
-        )
+        logger.error(f"exception in asyncio task {task}", exc_info=task.exception())
+    _tasks.discard(task)
+
+
+def scheduleTaskAndLogException(awaitable):
+    # AKA fire-and-forget
+    task = asyncio.create_task(awaitable)
+    task.add_done_callback(taskDoneCallback)
+    _tasks.add(task)  # Prevent task from being GC'ed before it is done
+    return task
 
 
 def _writeKeyToPattern(writeKey):
