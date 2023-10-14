@@ -474,7 +474,7 @@ def scheduleTaskAndLogException(awaitable):
     # AKA fire-and-forget
     task = asyncio.create_task(awaitable)
     task.add_done_callback(taskDoneCallback)
-    _tasks.add(task)  # Prevent task from being GC'ed
+    _tasks.add(task)  # Prevent task from being GC'ed before it is done
     return task
 
 
