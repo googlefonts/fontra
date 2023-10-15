@@ -176,7 +176,9 @@ export class EditorController {
     this.initContextMenuItems();
     this.initShortCuts();
     this.initMiniConsole();
-    this.initPlugins();
+    this.initPlugins().then(() => {
+      this.restoreOpenTabs();
+    });
 
     window
       .matchMedia("(prefers-color-scheme: dark)")
@@ -212,6 +214,16 @@ export class EditorController {
     });
 
     this.updateWithDelay();
+  }
+
+  restoreOpenTabs() {
+    // Restore the sidebar selection/visible state from localStorage.
+    for (const side of ["left", "right"]) {
+      const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
+      if (selectedSidebar) {
+        this.toggleSidebar(selectedSidebar, false);
+      }
+    }
   }
 
   async initPlugins() {
@@ -397,18 +409,6 @@ export class EditorController {
     for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
       sidebarContainer.classList.remove("animating");
     }
-
-    // Restore the sidebar selection/visible state from localStorage.
-    // (Due to the previous step only being visible after an event loop iteration,
-    // ensure we postpone just enough.)
-    setTimeout(() => {
-      for (const side of ["left", "right"]) {
-        const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
-        if (selectedSidebar) {
-          this.toggleSidebar(selectedSidebar, false);
-        }
-      }
-    }, 0);
 
     // After the initial set up we want clicking the sidebar tabs to animate in and out
     // (Here we can afford a longer delay.)
