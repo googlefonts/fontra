@@ -286,7 +286,8 @@ body {
 /* overlay content styling */
 
 .tool-overlay-container {
-  display: grid;
+  display: flex;
+  justify-content: center;
   margin: 0;
 }
 
@@ -356,7 +357,6 @@ body {
   flex-direction: row;
   gap: 1em;
   padding: 1em;
-  justify-self: center;
   position: absolute;
 }
 
