@@ -177,7 +177,8 @@ export class EditorController {
     this.initShortCuts();
     this.initMiniConsole();
     this.initPlugins().then(() => {
-      this.restoreOpenTabs();
+      this.restoreOpenTabs("left");
+      this.restoreOpenTabs("right");
     });
 
     window
@@ -216,13 +217,11 @@ export class EditorController {
     this.updateWithDelay();
   }
 
-  restoreOpenTabs() {
+  restoreOpenTabs(sidebarName) {
     // Restore the sidebar selection/visible state from localStorage.
-    for (const side of ["left", "right"]) {
-      const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
-      if (selectedSidebar) {
-        this.toggleSidebar(selectedSidebar, false);
-      }
+    const panelName = localStorage.getItem(`fontra-selected-sidebar-${sidebarName}`);
+    if (panelName) {
+      this.toggleSidebar(panelName, false);
     }
   }
 
