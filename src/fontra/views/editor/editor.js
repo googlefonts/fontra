@@ -236,9 +236,7 @@ export class EditorController {
       try {
         meta = await fetchJSON(`${pluginPath}/plugin.json`);
       } catch (e) {
-        alert(`${address} Plugin metadata not found.`);
-      }
-      if (!meta) {
+        console.error(`${address} Plugin metadata not found.`);
         continue;
       }
       const initScript = meta.init;
