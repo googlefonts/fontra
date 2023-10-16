@@ -8,23 +8,23 @@ export class Sidebar {
   constructor(identifier) {
     this.identifier = identifier;
     this.container = null;
-    this.panels = [];
+    this.panelIdentifiers = [];
   }
 
-  addPanel(panel) {
+  addPanel(panelIdentifier, iconPath, panelElement) {
     if (!this.container) {
       throw new Error("Sidebar needs to be attached to a container element.");
     }
 
-    this.panels.push(panel);
+    this.panelIdentifiers.push(panelIdentifier);
 
     const sidebarContainer = this.container.querySelector(
       `.sidebar-container.${this.identifier}`
     );
 
     const panelContent = html.div(
-      { "class": "sidebar-content", "data-sidebarName": panel.identifier },
-      [panel]
+      { "class": "sidebar-content", "data-sidebarName": panelIdentifier },
+      [panelElement]
     );
 
     sidebarContainer.append(panelContent);
@@ -37,13 +37,9 @@ export class Sidebar {
       html.div(
         {
           "class": "sidebar-tab",
-          "data-sidebarName": panel.identifier,
+          "data-sidebarName": panelIdentifier,
         },
-        [
-          html.createDomElement("inline-svg", {
-            src: panel.iconPath,
-          }),
-        ]
+        [html.createDomElement("inline-svg", { src: iconPath })]
       )
     );
   }
@@ -51,14 +47,14 @@ export class Sidebar {
   toggle(tabName) {
     const container = document.querySelector(`.sidebar-container.${this.identifier}`);
     let toggledTab;
-    for (const tab of this.panels) {
+    for (const panelIdentifier of this.panelIdentifiers) {
       const tabElement = document.querySelector(
-        `.sidebar-tab[data-sidebar-name="${tab.identifier}"]`
+        `.sidebar-tab[data-sidebar-name="${panelIdentifier}"]`
       );
       const contentElement = document.querySelector(
-        `.sidebar-content[data-sidebar-name="${tab.identifier}"]`
+        `.sidebar-content[data-sidebar-name="${panelIdentifier}"]`
       );
-      if (tabName === tab.identifier) {
+      if (tabName === panelIdentifier) {
         toggledTab = tabElement;
         const isSelected = tabElement.classList.contains("selected");
         tabElement.classList.toggle("selected", !isSelected);

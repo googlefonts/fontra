@@ -444,51 +444,39 @@ export class EditorController {
           .join(", ")}`
       );
     }
-    if (sidebar.panels.some((panel) => panel.identifier === panelElement.identifier)) {
+    if (sidebar.panelIdentifiers.includes(panelElement.name)) {
       throw new Error(
         `Panel "${panelElement.identifier}" in "${sidebarName}" sidebar exists.`
       );
     }
-    const isHtmlElement = panelElement instanceof HTMLElement;
-    let panel;
-    if (isHtmlElement) {
-      panel = panelElement;
-    } else {
-      class PanelClass extends Panel {
-        identifier = panelElement.name;
-        iconPath = panelElement.icon;
-        getContentElement() {
-          return panelElement.contentElement || contentElement;
-        }
-      }
-      customElements.define(panelElement.name, PanelClass);
-      panel = new PanelClass();
+
+    sidebar.addPanel(
+      panelElement.identifier,
+      panelElement.iconPath,
+      panelElement instanceof HTMLElement
+        ? panelElement
+        : panelElement.contentElement || contentElement
+    );
+
+    if (typeof panelElement["attach"] === "function") {
+      panelElement.attach();
     }
 
-    sidebar.addPanel(panel);
-    panel.attach();
-
     const tabElement = document.querySelector(
-      `.sidebar-tab[data-sidebar-name="${panel.identifier}"]`
+      `.sidebar-tab[data-sidebar-name="${panelElement.identifier}"]`
     );
     tabElement.addEventListener("click", () => {
-      this.toggleSidebar(panel.identifier, true);
+      this.toggleSidebar(panelElement.identifier, true);
     });
   }
 
   getSidebarPanel(panelName) {
-    for (const sidebar of this.sidebars) {
-      for (const panel of sidebar.panels) {
-        if (panel.identifier === panelName) {
-          return panel;
-        }
-      }
-    }
+    return document.querySelector(`[data-sidebar-name="${panelName}"]`).children[0];
   }
 
   toggleSidebar(panelName, doFocus = false) {
     const sidebar = this.sidebars.find((sidebar) =>
-      sidebar.panels.find((panel) => panel.identifier === panelName)
+      sidebar.panelIdentifiers.includes(panelName)
     );
     if (!sidebar) {
       return;
@@ -498,7 +486,10 @@ export class EditorController {
       `fontra-selected-sidebar-${sidebar.identifier}`,
       onOff ? panelName : ""
     );
-    this.getSidebarPanel(panelName).toggle(onOff, doFocus);
+    const panel = this.getSidebarPanel(panelName);
+    if (typeof panel.toggle === "function") {
+      panel.toggle(onOff, doFocus);
+    }
     return onOff;
   }
 
