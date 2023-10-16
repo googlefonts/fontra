@@ -435,8 +435,9 @@ export class EditorController {
     this.sidebars.push(sidebar);
   }
 
-  addSidebarPanel(panelElement, sidebarName, contentElement) {
+  addSidebarPanel(panelElement, sidebarName) {
     const sidebar = this.sidebars.find((sidebar) => sidebar.identifier === sidebarName);
+
     if (!sidebar) {
       throw new Error(
         `"${sidebarName}" not a valid sidebar name. Available sidebars: ${this.sidebars
@@ -444,19 +445,14 @@ export class EditorController {
           .join(", ")}`
       );
     }
+
     if (sidebar.panelIdentifiers.includes(panelElement.name)) {
       throw new Error(
         `Panel "${panelElement.identifier}" in "${sidebarName}" sidebar exists.`
       );
     }
 
-    sidebar.addPanel(
-      panelElement.identifier,
-      panelElement.iconPath,
-      panelElement instanceof HTMLElement
-        ? panelElement
-        : panelElement.contentElement || contentElement
-    );
+    sidebar.addPanel(panelElement);
 
     if (typeof panelElement["attach"] === "function") {
       panelElement.attach();
@@ -465,6 +461,7 @@ export class EditorController {
     const tabElement = document.querySelector(
       `.sidebar-tab[data-sidebar-name="${panelElement.identifier}"]`
     );
+
     tabElement.addEventListener("click", () => {
       this.toggleSidebar(panelElement.identifier, true);
     });

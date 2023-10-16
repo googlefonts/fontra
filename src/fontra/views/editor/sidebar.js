@@ -11,19 +11,19 @@ export class Sidebar {
     this.panelIdentifiers = [];
   }
 
-  addPanel(panelIdentifier, iconPath, panelElement) {
+  addPanel(panelElement) {
     if (!this.container) {
       throw new Error("Sidebar needs to be attached to a container element.");
     }
 
-    this.panelIdentifiers.push(panelIdentifier);
+    this.panelIdentifiers.push(panelElement.identifier);
 
     const sidebarContainer = this.container.querySelector(
       `.sidebar-container.${this.identifier}`
     );
 
     const panelContent = html.div(
-      { "class": "sidebar-content", "data-sidebarName": panelIdentifier },
+      { "class": "sidebar-content", "data-sidebarName": panelElement.identifier },
       [panelElement]
     );
 
@@ -37,9 +37,9 @@ export class Sidebar {
       html.div(
         {
           "class": "sidebar-tab",
-          "data-sidebarName": panelIdentifier,
+          "data-sidebarName": panelElement.identifier,
         },
-        [html.createDomElement("inline-svg", { src: iconPath })]
+        [html.createDomElement("inline-svg", { src: panelElement.iconPath })]
       )
     );
   }
