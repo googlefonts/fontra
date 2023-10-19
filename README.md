@@ -152,6 +152,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Create new font project
 - Cell-based font overview
 - List-based font overview
+- Edit font meta data (“font info”)
 - Edit kerning
 - Edit OpenType features
 - Edit variation axes
