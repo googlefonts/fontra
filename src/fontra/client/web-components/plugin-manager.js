@@ -113,7 +113,7 @@ export class PluginManager extends SimpleElement {
 
   render() {
     const fragment = document.createDocumentFragment();
-    fragment.appendChild(html.div({}, ["Plugin list:"]));
+    fragment.appendChild(html.div({}, ["Fontra plugins:"]));
     fragment.appendChild(this.pluginList);
     fragment.appendChild(
       (this.addRemoveButton = createDomElement("add-remove-buttons", {
