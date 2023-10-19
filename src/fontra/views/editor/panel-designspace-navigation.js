@@ -142,6 +142,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       "locationChanged",
       scheduleCalls(async (event) => {
         this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+        this.sceneController.autoViewBox = false;
 
         this.sceneSettingsController.setItem(
           "location",
