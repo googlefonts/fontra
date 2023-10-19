@@ -32,6 +32,7 @@ export class PluginManager extends SimpleElement {
     observable.synchronizeWithLocalStorage("fontra.plugins");
     this.observable = observable;
     this.pluginList = new UIList();
+    this.pluginList.minHeight = "5em";
     this.pluginList.setItems(observable.model.plugins);
     this.pluginList.columnDescriptions = [
       {
@@ -108,15 +109,11 @@ export class PluginManager extends SimpleElement {
   renderPlugins() {
     const plugins = this.observable.model.plugins;
     this.pluginList.setItems(plugins);
-    if (plugins.length === 0) {
-      this.pluginsEmptyState.style.display = "unset";
-    } else {
-      this.pluginsEmptyState.style.display = "none";
-    }
   }
 
   render() {
     const fragment = document.createDocumentFragment();
+    fragment.appendChild(html.div({}, ["Plugin list:"]));
     fragment.appendChild(this.pluginList);
     fragment.appendChild(
       (this.addRemoveButton = createDomElement("add-remove-buttons", {
@@ -134,12 +131,6 @@ export class PluginManager extends SimpleElement {
         },
         disableRemoveButton: true,
       }))
-    );
-    fragment.appendChild(
-      (this.pluginsEmptyState = html.div(
-        { class: "no-plugins", style: "display: none" },
-        ["No plugins added."]
-      ))
     );
     this.contentElement.appendChild(fragment);
   }
