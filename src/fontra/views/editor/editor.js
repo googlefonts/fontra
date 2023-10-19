@@ -468,7 +468,8 @@ export class EditorController {
   }
 
   getSidebarPanel(panelName) {
-    return document.querySelector(`[data-sidebar-name="${panelName}"]`).children[0];
+    return document.querySelector(`.sidebar-content[data-sidebar-name="${panelName}"]`)
+      .children[0];
   }
 
   toggleSidebar(panelName, doFocus = false) {
