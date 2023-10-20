@@ -5,16 +5,16 @@
   },
   "type": "module",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.5",
+    "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "chai": "^4.3.10",
     "mocha": "^10.2.0",
     "prettier-plugin-organize-imports": "^3.2.3",
-    "rollup": "^4.0.2"
+    "rollup": "^4.1.4"
   },
   "dependencies": {
     "bezier-js": "^6.1.4",
-    "lit": "^2.8.0",
-    "lib-font": "^2.4.0"
+    "lit": "^3.0.0",
+    "lib-font": "^2.4.1"
   }
 }
