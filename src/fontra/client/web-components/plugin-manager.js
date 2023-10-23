@@ -13,6 +13,7 @@ export class PluginManager extends SimpleElement {
     grid-auto-rows: auto auto;
     grid-gap: .5rem;
   }
+
   .buttons {
     display: flex;
     gap: 0.2rem;
@@ -49,24 +50,35 @@ export class PluginManager extends SimpleElement {
   }
 
   async promptAddPlugin(text = "") {
-    const newPluginPrompt = await dialogSetup(
-      "Provide a github handle/repository",
-      "",
+    const newPluginPrompt = await dialogSetup("Add plugin", "", [
+      { title: "Cancel", resultValue: "no", isCancelButton: true },
+      { title: "Create", resultValue: "ok", isDefaultButton: true, disabled: true },
+    ]);
+    let address = text;
+    const pluginContent = html.div(
+      {
+        style: "display: grid; grid-template-columns: auto 1fr; grid-gap: 1rem;",
+      },
       [
-        { title: "Cancel", resultValue: "no", isCancelButton: true },
-        { title: "Create", resultValue: "ok", isDefaultButton: true },
+        html.div({}, "Plugin path:"),
+        html.input({
+          autofocus: true,
+          value: text,
+          oninput: (event) => {
+            address = event.target.value;
+            const isEmpty = !address.trim();
+            const isButtonDisabled =
+              newPluginPrompt.defaultButton.classList.contains("disabled");
+            if (!isEmpty && isButtonDisabled) {
+              newPluginPrompt.defaultButton.classList.remove("disabled");
+            } else if (!isButtonDisabled && isEmpty) {
+              newPluginPrompt.defaultButton.classList.add("disabled");
+            }
+          },
+        }),
       ]
     );
-    let address = text;
-    newPluginPrompt.setContent(
-      html.input({
-        autofocus: true,
-        value: text,
-        oninput: (event) => {
-          address = event.target.value;
-        },
-      })
-    );
+    newPluginPrompt.setContent(pluginContent);
     const pluginPromptResult = await newPluginPrompt.run();
     if (pluginPromptResult === "ok") {
       const newPlugin = { address };

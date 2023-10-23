@@ -1,7 +1,10 @@
 .plugins-page {
   padding: 2rem;
-  font-size: 1.1rem;
   max-width: 50rem;
+}
+
+#plugin-manager {
+  font-size: 1.1rem;
 }
 
 .logo {
