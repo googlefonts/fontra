@@ -1016,6 +1016,7 @@ export class EditorController {
       return;
     }
     if (varGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
+      // TODO: build new glyph from pasteLayerGlyphs if we don't have varGlyph
       await this._pasteVariableGlyph(varGlyph);
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
