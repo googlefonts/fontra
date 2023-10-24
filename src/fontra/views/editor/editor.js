@@ -37,7 +37,7 @@ import {
   writeToClipboard,
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
-import { StaticGlyph, copyComponent } from "../core/var-glyph.js";
+import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -1011,17 +1011,21 @@ export class EditorController {
   }
 
   async doPaste() {
-    const pasteLayerGlyphs = await this._unpackClipboard();
+    const { varGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
     if (!pasteLayerGlyphs?.length) {
       return;
     }
-    await this._pasteLayerGlyphs(pasteLayerGlyphs);
+    if (varGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
+      await this._pasteVariableGlyph(varGlyph);
+    } else {
+      await this._pasteLayerGlyphs(pasteLayerGlyphs);
+    }
   }
 
   async _unpackClipboard() {
     const plainText = await readFromClipboard("text/plain");
     if (!plainText) {
-      return;
+      return {};
     }
 
     let customJSON;
@@ -1042,6 +1046,7 @@ export class EditorController {
     }
 
     let pasteLayerGlyphs;
+    let varGlyph;
 
     if (customJSON) {
       try {
@@ -1052,13 +1057,31 @@ export class EditorController {
             glyph: StaticGlyph.fromObject(layer.glyph),
           };
         });
+        if (clipboardObject.variableGlyph) {
+          varGlyph = VariableGlyph.fromObject(clipboardObject.variableGlyph);
+        }
       } catch (error) {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
       pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
     }
-    return pasteLayerGlyphs;
+    return { varGlyph, pasteLayerGlyphs };
+  }
+
+  async _pasteVariableGlyph(varGlyph) {
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        for (const [property, value] of Object.entries(varGlyph)) {
+          if (property !== "name") {
+            glyph[property] = value;
+          }
+        }
+        return "Paste";
+      },
+      undefined,
+      false
+    );
   }
 
   async _pasteLayerGlyphs(pasteLayerGlyphs) {
