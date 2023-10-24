@@ -1011,13 +1011,13 @@ export class EditorController {
   }
 
   async doPaste() {
-    const { varGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
+    const { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
     if (!pasteLayerGlyphs?.length) {
       return;
     }
-    if (varGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
-      // TODO: build new glyph from pasteLayerGlyphs if we don't have varGlyph
-      await this._pasteVariableGlyph(varGlyph);
+    if (pasteVarGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
+      // TODO: build new glyph from pasteLayerGlyphs if we don't have pasteVarGlyph
+      await this._pasteVariableGlyph(pasteVarGlyph);
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
@@ -1047,7 +1047,7 @@ export class EditorController {
     }
 
     let pasteLayerGlyphs;
-    let varGlyph;
+    let pasteVarGlyph;
 
     if (customJSON) {
       try {
@@ -1059,7 +1059,7 @@ export class EditorController {
           };
         });
         if (clipboardObject.variableGlyph) {
-          varGlyph = VariableGlyph.fromObject(clipboardObject.variableGlyph);
+          pasteVarGlyph = VariableGlyph.fromObject(clipboardObject.variableGlyph);
         }
       } catch (error) {
         console.log("couldn't paste from JSON:", error.toString());
@@ -1067,7 +1067,7 @@ export class EditorController {
     } else {
       pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
     }
-    return { varGlyph, pasteLayerGlyphs };
+    return { pasteVarGlyph, pasteLayerGlyphs };
   }
 
   async _pasteVariableGlyph(varGlyph) {
