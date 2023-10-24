@@ -154,7 +154,6 @@ def makeCastFuncs(schema, config=None):
                 continue
             originType = get_origin(fieldType)
             itemType = get_args(fieldType)[-1]
-            print("===", fieldType, originType, itemType)
             if itemType in atomicTypes:
                 continue
             if originType == list:
