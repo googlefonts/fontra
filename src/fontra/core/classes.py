@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field, is_dataclass
 from functools import partial
-from typing import Any, Optional, get_args, get_type_hints
+from typing import Any, Optional, get_args, get_origin, get_type_hints
 
 import dacite
 from fontTools.misc.transform import DecomposedTransform
@@ -133,10 +133,35 @@ def makeSchema(*classes, schema=None):
     return schema
 
 
+atomicTypes = [str, int, float, bool, Any]
+
+
+def castTypedList(itemClass, config, obj):
+    return [dacite.from_dict(itemClass, v, config=config) for v in obj]
+
+
+def castTypedDict(itemClass, config, obj):
+    return {k: dacite.from_dict(itemClass, v, config=config) for k, v in obj.items()}
+
+
 def makeCastFuncs(schema, config=None):
     castFuncs = {}
-    for cls in schema.keys():
+    for cls, fields in schema.items():
         castFuncs[cls] = partial(dacite.from_dict, cls, config=config)
+        for fieldName, fieldInfo in fields.items():
+            fieldType = fieldInfo["type"]
+            if fieldType in atomicTypes or fieldType in schema:
+                continue
+            originType = get_origin(fieldType)
+            itemType = get_args(fieldType)[-1]
+            if itemType in atomicTypes:
+                continue
+            if originType == list:
+                castFuncs[fieldType] = partial(castTypedList, itemType, config)
+            elif originType == dict:
+                castFuncs[fieldType] = partial(castTypedDict, itemType, config)
+            else:
+                raise TypeError(f"unknown origin type: {originType}")
     return castFuncs
 
 

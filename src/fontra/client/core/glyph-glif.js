@@ -6,6 +6,8 @@ export function staticGlyphToGLIF(glyphName, glyph, unicodes) {
     `<glyph name="${glyphName}" format="2">`,
   ];
 
+  lines.push(`  <advance width="${glyph.xAdvance}"/>`);
+
   for (const codePoint of unicodes || []) {
     const unicode_hex = codePoint.toString(16).toUpperCase().padStart(4, "0");
     lines.push(`  <unicode hex="${unicode_hex}"/>`);

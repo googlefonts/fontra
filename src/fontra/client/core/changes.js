@@ -273,6 +273,8 @@ const changeFunctions = {
 // "c": Array of child changes. Optional.
 //
 
+const atomicTypes = new Set(["str", "int", "float", "bool", "Any"]);
+
 export function applyChange(subject, change, subjectClassDef) {
   const path = change["p"] || [];
   const functionName = change["f"];
@@ -289,7 +291,23 @@ export function applyChange(subject, change, subjectClassDef) {
   if (functionName) {
     const changeFunc = changeFunctions[functionName];
     const args = change["a"] || [];
-    changeFunc(subject, subjectClassDef?.itemCast || noopItemCast, ...args);
+    let itemCast = subjectClassDef?.itemCast;
+    if (
+      !subjectClassDef?.subType &&
+      args.length &&
+      functionName in baseChangeFunctions
+    ) {
+      // Ensure we cast list/dict with typed elements
+      const classDef = subjectClassDef?.getSubType(args[0]);
+      if (
+        classDef &&
+        (classDef.className == "list" || classDef.className == "dict") &&
+        !atomicTypes.has(classDef.subType)
+      ) {
+        itemCast = classDef.cast.bind(classDef);
+      }
+    }
+    changeFunc(subject, itemCast || noopItemCast, ...args);
   }
 
   for (const subChange of children) {

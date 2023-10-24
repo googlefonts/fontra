@@ -37,7 +37,7 @@ import {
   writeToClipboard,
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
-import { StaticGlyph, copyComponent } from "../core/var-glyph.js";
+import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -833,7 +833,7 @@ export class EditorController {
         undefined,
         false
       );
-      await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
     }
     let copyResult;
     await this.sceneController.editGlyphAndRecordChanges(
@@ -847,7 +847,7 @@ export class EditorController {
     );
     if (copyResult && !event) {
       const { layerGlyphs, flattenedPath } = copyResult;
-      await this._writeLayersToClipboard(layerGlyphs, flattenedPath);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath);
     }
   }
 
@@ -856,11 +856,27 @@ export class EditorController {
   }
 
   async doCopy(event) {
-    const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(false);
-    await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
+    if (!this.canCopy()) {
+      return;
+    }
+
+    if (this.sceneSettings.selectedGlyph.isEditing) {
+      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(false);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
+    } else {
+      const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+      const varGlyph = positionedGlyph.varGlyph.glyph;
+      const glyphController = positionedGlyph.glyph;
+      await this._writeLayersToClipboard(
+        varGlyph,
+        [{ glyph: glyphController.instance }],
+        glyphController.flattenedPath,
+        event
+      );
+    }
   }
 
-  async _writeLayersToClipboard(layerGlyphs, flattenedPath, event) {
+  async _writeLayersToClipboard(varGlyph, layerGlyphs, flattenedPath, event) {
     const bounds = flattenedPath?.getControlBounds();
     if (!bounds || !layerGlyphs?.length) {
       // nothing to do
@@ -871,7 +887,11 @@ export class EditorController {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const unicodes = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, unicodes);
-    const jsonString = JSON.stringify({ layerGlyphs: layerGlyphs });
+    const jsonObject = { layerGlyphs: layerGlyphs };
+    if (varGlyph) {
+      jsonObject.variableGlyph = varGlyph;
+    }
+    const jsonString = JSON.stringify(jsonObject);
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
@@ -991,17 +1011,22 @@ export class EditorController {
   }
 
   async doPaste() {
-    const pasteLayerGlyphs = await this._unpackClipboard();
+    const { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
     if (!pasteLayerGlyphs?.length) {
       return;
     }
-    await this._pasteLayerGlyphs(pasteLayerGlyphs);
+    if (pasteVarGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
+      // TODO: build new glyph from pasteLayerGlyphs if we don't have pasteVarGlyph
+      await this._pasteVariableGlyph(pasteVarGlyph);
+    } else {
+      await this._pasteLayerGlyphs(pasteLayerGlyphs);
+    }
   }
 
   async _unpackClipboard() {
     const plainText = await readFromClipboard("text/plain");
     if (!plainText) {
-      return;
+      return {};
     }
 
     let customJSON;
@@ -1022,6 +1047,7 @@ export class EditorController {
     }
 
     let pasteLayerGlyphs;
+    let pasteVarGlyph;
 
     if (customJSON) {
       try {
@@ -1032,13 +1058,31 @@ export class EditorController {
             glyph: StaticGlyph.fromObject(layer.glyph),
           };
         });
+        if (clipboardObject.variableGlyph) {
+          pasteVarGlyph = VariableGlyph.fromObject(clipboardObject.variableGlyph);
+        }
       } catch (error) {
         console.log("couldn't paste from JSON:", error.toString());
       }
     } else {
       pasteLayerGlyphs = [{ glyph: await this.parseClipboard(plainText) }];
     }
-    return pasteLayerGlyphs;
+    return { pasteVarGlyph, pasteLayerGlyphs };
+  }
+
+  async _pasteVariableGlyph(varGlyph) {
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        for (const [property, value] of Object.entries(varGlyph)) {
+          if (property !== "name") {
+            glyph[property] = value;
+          }
+        }
+        return "Paste";
+      },
+      undefined,
+      false
+    );
   }
 
   async _pasteLayerGlyphs(pasteLayerGlyphs) {
@@ -1326,6 +1370,9 @@ export class EditorController {
       }
       this.glyphsSearch.updateGlyphNamesListContent();
     }
+    // Force sync between location and selectedSourceIndex, as the glyph's
+    // source list may have changed
+    this.sceneSettings.location = { ...this.sceneSettings.location };
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
