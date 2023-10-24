@@ -57,12 +57,15 @@ export class PluginManager extends SimpleElement {
     let address = text;
     const pluginContent = html.div(
       {
-        style: "display: grid; grid-template-columns: auto 1fr; grid-gap: 1rem;",
+        style:
+          "display: grid; grid-template-columns: auto 1fr; grid-gap: 1rem; align-items: center;",
       },
       [
-        html.div({}, "Plugin path:"),
+        html.label({ for: `plugin-path` }, "Plugin path:"),
         html.input({
+          id: "plugin-path",
           autofocus: true,
+          type: "text",
           value: text,
           oninput: (event) => {
             address = event.target.value;
