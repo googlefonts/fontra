@@ -95,7 +95,7 @@ export class PluginManager extends SimpleElement {
         ]);
         this.renderPlugins();
       } else {
-        await dialog("Error", errorMessage, [{ title: "Ok", isDefaultButton: true }]);
+        await dialog("Error", errorMessage, [{ title: "Okay", isDefaultButton: true }]);
         return this.promptAddPlugin(address);
       }
     }
