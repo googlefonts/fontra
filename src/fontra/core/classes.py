@@ -133,7 +133,7 @@ def makeSchema(*classes, schema=None):
     return schema
 
 
-atomicTypes = [str, float, int, bool, Any]
+atomicTypes = [str, int, float, bool, Any]
 
 
 def castTypedList(itemClass, config, obj):

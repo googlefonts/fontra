@@ -273,7 +273,7 @@ const changeFunctions = {
 // "c": Array of child changes. Optional.
 //
 
-const atomicTypes = new Set(["int", "float", "bool", "Any"]);
+const atomicTypes = new Set(["str", "int", "float", "bool", "Any"]);
 
 export function applyChange(subject, change, subjectClassDef) {
   const path = change["p"] || [];
