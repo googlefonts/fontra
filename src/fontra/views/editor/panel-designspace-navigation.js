@@ -187,8 +187,8 @@ export default class DesignspaceNavigationPanel extends Panel {
           await this.sceneModel.getSelectedVariableGlyphController();
         let index = event.newValue;
         if (
-          varGlyphController?.sources[index]?.name !==
-          this.sourcesList.items[index]?.name
+          varGlyphController?.sources[index]?.layerName !==
+          this.sourcesList.items[index]?.layerName
         ) {
           // the selectedSourceIndex event may come at a time that the
           // sourcesList hasn't been updated yet, so could be out of
@@ -447,6 +447,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       const status = source.customData[FONTRA_STATUS_KEY];
       const sourceController = new ObservableController({
         name: source.name,
+        layerName: source.layerName,
         active: !source.inactive,
         visible: backgroundLayers[layerName] === source.name,
         editing: editingLayers[layerName] === source.name,
