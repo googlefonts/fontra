@@ -833,7 +833,7 @@ export class EditorController {
         undefined,
         false
       );
-      await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
     }
     let copyResult;
     await this.sceneController.editGlyphAndRecordChanges(
@@ -847,7 +847,7 @@ export class EditorController {
     );
     if (copyResult && !event) {
       const { layerGlyphs, flattenedPath } = copyResult;
-      await this._writeLayersToClipboard(layerGlyphs, flattenedPath);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath);
     }
   }
 
@@ -856,11 +856,27 @@ export class EditorController {
   }
 
   async doCopy(event) {
-    const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(false);
-    await this._writeLayersToClipboard(layerGlyphs, flattenedPath, event);
+    if (!this.canCopy()) {
+      return;
+    }
+
+    if (this.sceneSettings.selectedGlyph.isEditing) {
+      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(false);
+      await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
+    } else {
+      const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+      const varGlyph = positionedGlyph.varGlyph.glyph;
+      const glyphController = positionedGlyph.glyph;
+      await this._writeLayersToClipboard(
+        varGlyph,
+        [{ glyph: glyphController.instance }],
+        glyphController.flattenedPath,
+        event
+      );
+    }
   }
 
-  async _writeLayersToClipboard(layerGlyphs, flattenedPath, event) {
+  async _writeLayersToClipboard(varGlyph, layerGlyphs, flattenedPath, event) {
     const bounds = flattenedPath?.getControlBounds();
     if (!bounds || !layerGlyphs?.length) {
       // nothing to do
@@ -871,7 +887,11 @@ export class EditorController {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const unicodes = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, unicodes);
-    const jsonString = JSON.stringify({ layerGlyphs: layerGlyphs });
+    const jsonObject = { layerGlyphs: layerGlyphs };
+    if (varGlyph) {
+      jsonObject.variableGlyph = varGlyph;
+    }
+    const jsonString = JSON.stringify(jsonObject);
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
