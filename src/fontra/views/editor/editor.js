@@ -1370,6 +1370,9 @@ export class EditorController {
       }
       this.glyphsSearch.updateGlyphNamesListContent();
     }
+    // Force sync between location and selectedSourceIndex, as the glyph's
+    // source list may have changed
+    this.sceneSettings.location = { ...this.sceneSettings.location };
     await this.sceneModel.updateScene();
     this.canvasController.requestUpdate();
   }
