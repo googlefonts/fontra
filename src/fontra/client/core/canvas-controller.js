@@ -109,16 +109,23 @@ export class CanvasController {
 
   handleWheel(event) {
     event.preventDefault();
-    if (event.ctrlKey) {
-      // Note: this is *also* how zoom gestures on an Apple trackpad are received
-      this._doPinchMagnify(event, 1 - event.deltaY / 100);
-    } else if (event.altKey) {
-      this._doPinchMagnify(event, 1 - event.deltaY / 200);
+    let { deltaX, deltaY, wheelDeltaX, wheelDeltaY } = event;
+    // We try to detect whether the event comes from a "clunky" scroll wheel, one
+    // that outputs rather large values for deltaY (this appears to be common on
+    // Windows), so we can scale down to keep zoom speed and scroll speed in check.
+    const clunkyScrollWheel =
+      Math.abs(deltaY) > 50 && Math.abs(wheelDeltaY / deltaY) < 2;
+    if (event.ctrlKey || event.altKey) {
+      // Note: with event.ctrlKey is *also* how zoom gestures on trackpads are received,
+      // on both Windows and macOS.
+      const scale = clunkyScrollWheel ? 500 : event.ctrlKey ? 100 : 300;
+      this._doPinchMagnify(event, 1 - deltaY / scale);
     } else {
-      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
-        this.origin.x -= event.deltaX;
+      const scale = clunkyScrollWheel ? 3 : 1;
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        this.origin.x -= deltaX / scale;
       } else {
-        this.origin.y -= event.deltaY;
+        this.origin[event.shiftKey ? "x" : "y"] -= deltaY / scale;
       }
       this.requestUpdate();
       this._dispatchEvent("viewBoxChanged", "origin");
