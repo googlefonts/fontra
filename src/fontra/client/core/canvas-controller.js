@@ -118,14 +118,14 @@ export class CanvasController {
     if (event.ctrlKey || event.altKey) {
       // Note: with event.ctrlKey is *also* how zoom gestures on trackpads are received,
       // on both Windows and macOS.
-      const scale = clunkyScrollWheel ? 500 : event.ctrlKey ? 100 : 300;
-      this._doPinchMagnify(event, 1 - deltaY / scale);
+      const scaleDown = clunkyScrollWheel ? 500 : event.ctrlKey ? 100 : 300;
+      this._doPinchMagnify(event, 1 - deltaY / scaleDown);
     } else {
-      const scale = clunkyScrollWheel ? 3 : 1;
+      const scaleDown = clunkyScrollWheel ? 3 : 1;
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        this.origin.x -= deltaX / scale;
+        this.origin.x -= deltaX / scaleDown;
       } else {
-        this.origin[event.shiftKey ? "x" : "y"] -= deltaY / scale;
+        this.origin[event.shiftKey ? "x" : "y"] -= deltaY / scaleDown;
       }
       this.requestUpdate();
       this._dispatchEvent("viewBoxChanged", "origin");
