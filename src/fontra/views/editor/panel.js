@@ -14,5 +14,3 @@ export default class Panel extends SimpleElement {
 
   async toggle(on, focus) {}
 }
-
-customElements.define("fontra-panel", Panel);

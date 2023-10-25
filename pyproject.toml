@@ -51,6 +51,7 @@ fontra-copy = "fontra.backends.copy:main"
 
 [project.entry-points."fontra.views"]
 editor = "fontra.views.editor"
+plugins = "fontra.views.plugins"
 
 
 [project.entry-points."fontra.projectmanagers"]
@@ -59,6 +60,7 @@ filesystem = "fontra.filesystem.projectmanager:FileSystemProjectManagerFactory"
 
 [project.entry-points."fontra.webcontent"]
 filesystem = "fontra.filesystem"
+localplugins = "fontra.localplugins"
 
 
 [project.entry-points."fontra.filesystem.backends"]

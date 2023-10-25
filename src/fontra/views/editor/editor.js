@@ -26,6 +26,7 @@ import { parseClipboard } from "../core/server-utils.js";
 import {
   commandKeyProperty,
   enumerate,
+  fetchJSON,
   getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
@@ -55,6 +56,7 @@ import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
+import { parsePluginBasePath } from "/web-components/plugin-manager.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
@@ -62,6 +64,7 @@ import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import TextEntryPanel from "./panel-text-entry.js";
 import UserSettingsPanel from "./panel-user-settings.js";
+import Panel from "./panel.js";
 
 const MIN_CANVAS_SPACE = 200;
 
@@ -173,6 +176,10 @@ export class EditorController {
     this.initContextMenuItems();
     this.initShortCuts();
     this.initMiniConsole();
+    this.initPlugins().then(() => {
+      this.restoreOpenTabs("left");
+      this.restoreOpenTabs("right");
+    });
 
     window
       .matchMedia("(prefers-color-scheme: dark)")
@@ -208,6 +215,48 @@ export class EditorController {
     });
 
     this.updateWithDelay();
+  }
+
+  restoreOpenTabs(sidebarName) {
+    // Restore the sidebar selection/visible state from localStorage.
+    const panelName = localStorage.getItem(`fontra-selected-sidebar-${sidebarName}`);
+    if (panelName) {
+      this.toggleSidebar(panelName, false);
+    }
+  }
+
+  async initPlugins() {
+    const observablePlugins = new ObservableController({
+      plugins: [],
+    });
+    observablePlugins.synchronizeWithLocalStorage("fontra.plugins");
+    for (const { address } of observablePlugins.model.plugins) {
+      const pluginPath = parsePluginBasePath(address);
+      let meta;
+      try {
+        meta = await fetchJSON(`${pluginPath}/plugin.json`);
+      } catch (e) {
+        console.error(`${address} Plugin metadata not found.`);
+        continue;
+      }
+      const initScript = meta.init;
+      const functionName = meta.function;
+      let module;
+      try {
+        module = await import(`${pluginPath}/${initScript}`);
+      } catch (e) {
+        console.error("Module didn't load");
+        console.log(e);
+        continue;
+      }
+      try {
+        module[functionName](this, pluginPath);
+      } catch (e) {
+        console.error(`Error occured when running (${meta.name || address}) plugin.`);
+        console.log(e);
+        continue;
+      }
+    }
   }
 
   async updateWithDelay() {
@@ -358,18 +407,6 @@ export class EditorController {
       sidebarContainer.classList.remove("animating");
     }
 
-    // Restore the sidebar selection/visible state from localStorage.
-    // (Due to the previous step only being visible after an event loop iteration,
-    // ensure we postpone just enough.)
-    setTimeout(() => {
-      for (const side of ["left", "right"]) {
-        const selectedSidebar = localStorage.getItem(`fontra-selected-sidebar-${side}`);
-        if (selectedSidebar) {
-          this.toggleSidebar(selectedSidebar, false);
-        }
-      }
-    }, 0);
-
     // After the initial set up we want clicking the sidebar tabs to animate in and out
     // (Here we can afford a longer delay.)
     setTimeout(() => {
@@ -400,29 +437,44 @@ export class EditorController {
 
   addSidebarPanel(panelElement, sidebarName) {
     const sidebar = this.sidebars.find((sidebar) => sidebar.identifier === sidebarName);
+
+    if (!sidebar) {
+      throw new Error(
+        `"${sidebarName}" not a valid sidebar name. Available sidebars: ${this.sidebars
+          .map((sidebar) => `"${sidebar.identifier}"`)
+          .join(", ")}`
+      );
+    }
+
+    if (sidebar.panelIdentifiers.includes(panelElement.name)) {
+      throw new Error(
+        `Panel "${panelElement.identifier}" in "${sidebarName}" sidebar exists.`
+      );
+    }
+
     sidebar.addPanel(panelElement);
-    panelElement.attach();
+
+    if (typeof panelElement["attach"] === "function") {
+      panelElement.attach();
+    }
+
     const tabElement = document.querySelector(
       `.sidebar-tab[data-sidebar-name="${panelElement.identifier}"]`
     );
+
     tabElement.addEventListener("click", () => {
       this.toggleSidebar(panelElement.identifier, true);
     });
   }
 
   getSidebarPanel(panelName) {
-    for (const sidebar of this.sidebars) {
-      for (const panel of sidebar.panels) {
-        if (panel.identifier === panelName) {
-          return panel;
-        }
-      }
-    }
+    return document.querySelector(`.sidebar-content[data-sidebar-name="${panelName}"]`)
+      .children[0];
   }
 
   toggleSidebar(panelName, doFocus = false) {
     const sidebar = this.sidebars.find((sidebar) =>
-      sidebar.panels.find((panel) => panel.identifier === panelName)
+      sidebar.panelIdentifiers.includes(panelName)
     );
     if (!sidebar) {
       return;
@@ -432,7 +484,10 @@ export class EditorController {
       `fontra-selected-sidebar-${sidebar.identifier}`,
       onOff ? panelName : ""
     );
-    this.getSidebarPanel(panelName).toggle(onOff, doFocus);
+    const panel = this.getSidebarPanel(panelName);
+    if (typeof panel.toggle === "function") {
+      panel.toggle(onOff, doFocus);
+    }
     return onOff;
   }
 
