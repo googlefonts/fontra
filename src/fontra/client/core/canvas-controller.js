@@ -116,8 +116,8 @@ export class CanvasController {
     const clunkyScrollWheel =
       Math.abs(deltaY) > 50 && Math.abs(wheelDeltaY / deltaY) < 2;
     if (event.ctrlKey || event.altKey) {
-      // Note: with event.ctrlKey is *also* how zoom gestures on trackpads are received,
-      // on both Windows and macOS.
+      // Note: wheel events with ctrlKey down is *also* how zoom gestures on trackpads
+      // are received, on both Windows and macOS.
       const scaleDown = clunkyScrollWheel ? 500 : event.ctrlKey ? 100 : 300;
       this._doPinchMagnify(event, 1 - deltaY / scaleDown);
     } else {
