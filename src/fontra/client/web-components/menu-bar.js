@@ -22,22 +22,17 @@ export class MenuBar extends SimpleElement {
     border-radius: 5px;
   }
   `;
+
   constructor(items = []) {
     super();
-    this._items = items;
+    this.items = items;
     this.contentElement = this.shadowRoot.appendChild(html.div());
     this.contentElement.classList.add("menu-bar");
     this.render();
     window.addEventListener("mousedown", this.clearCurrentSelection.bind(this));
     window.addEventListener("blur", this.clearCurrentSelection.bind(this));
   }
-  get items() {
-    return this._items;
-  }
-  set items(items) {
-    this._items = items;
-    this.render();
-  }
+
   clearCurrentSelection() {
     const currentSelection = this.contentElement.querySelector(".current");
     if (!currentSelection) {
