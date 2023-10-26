@@ -6,15 +6,106 @@
     <link href="/css/core.css" rel="stylesheet" />
     <link href="/css/plugins.css" rel="stylesheet" />
     <script type="module" src="/web-components/plugin-manager.js"></script>
+    <!-- <script type="module" src="/web-components/menu-bar.js"></script> -->
     <title>Fontra Plugins</title>
   </head>
   <body>
+    <div id="menu-bar"></div>
     <div class="plugins-page">
       <div class="logo">
         <img src="/images/fontra-icon.svg" width="100" height="100" />
       </div>
       <modal-dialog></modal-dialog>
       <plugin-manager id="plugin-manager" />
+      <script type="module">
+        import { MenuBar } from "/web-components/menu-bar.js";
+        const menuBar = new MenuBar([
+          {
+            title: "File",
+            items: [
+              {
+                title: "File",
+                enabled: () => true,
+                callback: () => {
+                  console.log(1);
+                },
+                shortCut: undefined,
+              },
+            ],
+          },
+          {
+            title: "Edit",
+            items: [
+              {
+                title: "Undo",
+                enabled: () => true,
+                callback: () => {},
+              },
+              {
+                title: "Redo",
+                enabled: () => true,
+                callback: () => {},
+              },
+              {
+                title: "Cut",
+                enabled: () => true,
+                callback: () => {},
+              },
+              {
+                title: "Copy",
+                enabled: () => true,
+                callback: () => {},
+              },
+              {
+                title: "Paste",
+                enabled: () => true,
+                callback: () => {},
+              },
+              {
+                title: "Select all",
+                enabled: () => true,
+                callback: () => {},
+              },
+            ],
+          },
+          {
+            title: "View",
+            items: [
+              {
+                title: "Reset zoom",
+                enabled: () => true,
+                callback: () => {},
+              },
+            ],
+          },
+          {
+            title: "Go to",
+            items: [
+              {
+                title: "Switch to plugins",
+                enabled: () => true,
+                callback: () => {},
+              },
+              {
+                title: "Font overview",
+                enabled: () => true,
+                callback: () => {},
+              },
+            ],
+          },
+          {
+            title: "Help",
+            items: [
+              {
+                title: "Documentation",
+                enabled: () => true,
+                callback: () => {},
+              },
+            ],
+          },
+        ]);
+        document.getElementById("menu-bar").appendChild(menuBar);
+      </script>
     </div>
   </body>
 </html>

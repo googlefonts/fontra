@@ -13,7 +13,7 @@ export function showMenu(menuItems, position, positionContainer, container) {
   container.appendChild(menu);
 }
 
-class MenuPanel extends SimpleElement {
+export class MenuPanel extends SimpleElement {
   static openMenuPanels = [];
 
   static closeAllMenus(event) {
