@@ -491,8 +491,8 @@ export function piecewiseLinearMap(v, mapping) {
 }
 
 export function makeSparseLocation(location, axisList) {
-  // Return a subset of `locations` that only contains values for axes
-  // defined in axisList, and that are not equal to the default value
+  // Return a subset of `location` that only contains values for axes
+  // defined in `axisList`, and that are not equal to the default value
   // for the axis.
   return Object.fromEntries(
     axisList
