@@ -235,7 +235,7 @@ export class FontController {
         { p: ["glyphMap"], f: "d", a: [glyphName] },
       ],
     };
-    const error = await this.font.editFinal(
+    const error = await this.editFinal(
       change,
       rollbackChange,
       `new glyph "${glyphName}"`,
@@ -358,6 +358,14 @@ export class FontController {
     for (const listener of this._editListeners) {
       await listener(editMethodName, senderID, ...args);
     }
+  }
+
+  editIncremental(change) {
+    this.font.editIncremental(change);
+  }
+
+  async editFinal(finalChange, rollbackChange, editLabel, broadcast) {
+    return await this.font.editFinal(finalChange, rollbackChange, editLabel, broadcast);
   }
 
   async getGlyphEditContext(glyphName, baseChangePath, senderID) {
@@ -495,7 +503,7 @@ export class FontController {
     }
     // Hmmm, would be nice to have this abstracted more
     await this.applyChange(undoRecord.rollbackChange);
-    const error = await this.font.editFinal(
+    const error = await this.editFinal(
       undoRecord.rollbackChange,
       undoRecord.change,
       undoRecord.info.label,
@@ -537,7 +545,7 @@ class GlyphEditContext {
     this.baseChangePath = baseChangePath;
     this.senderID = senderID;
     this.throttledEditIncremental = throttleCalls(async (change) => {
-      fontController.font.editIncremental(change);
+      fontController.editIncremental(change);
     }, 50);
     this._throttledEditIncrementalTimeoutID = null;
   }
@@ -555,7 +563,7 @@ class GlyphEditContext {
       this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
     } else {
       clearTimeout(this._throttledEditIncrementalTimeoutID);
-      this.fontController.font.editIncremental(change);
+      this.fontController.editIncremental(change);
     }
     await this.fontController.notifyEditListeners("editIncremental", this.senderID);
   }
@@ -568,7 +576,7 @@ class GlyphEditContext {
     }
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
-    const error = await this.fontController.font.editFinal(
+    const error = await this.fontController.editFinal(
       change,
       rollback,
       undoInfo.label,
