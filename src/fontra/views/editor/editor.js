@@ -1085,7 +1085,7 @@ export class EditorController {
   }
 
   async doPaste() {
-    const { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
+    let { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
     if (!pasteLayerGlyphs?.length) {
       return;
     }
@@ -1098,6 +1098,19 @@ export class EditorController {
         return;
       }
       replaceGlyph = result === PASTE_BEHAVIOR_REPLACE;
+      if (!replaceGlyph) {
+        const varGlyphController =
+          this.fontController.makeVariableGlyphController(pasteVarGlyph);
+        const combinedAxes = varGlyphController.combinedAxes;
+        pasteLayerGlyphs = [pasteLayerGlyphs[0]];
+        for (const source of pasteVarGlyph.sources) {
+          pasteLayerGlyphs.push({
+            layerName: source.layerName,
+            location: makeSparseLocation(source.location, combinedAxes),
+            glyph: pasteVarGlyph.layers[source.layerName].glyph,
+          });
+        }
+      }
     }
 
     if (replaceGlyph && pasteVarGlyph) {
