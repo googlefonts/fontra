@@ -1849,7 +1849,7 @@ async function runDialogWholeGlyphPaste() {
     controller.model.behavior = PASTE_BEHAVIOR_REPLACE;
   }
 
-  const dialog = await dialogSetup("Pasting an entire glyph", null, [
+  const dialog = await dialogSetup("You are about to paste an entire glyph", null, [
     { title: "Cancel", resultValue: "cancel", isCancelButton: true },
     { title: "Okay", resultValue: "ok", isDefaultButton: true },
   ]);
@@ -1858,6 +1858,7 @@ async function runDialogWholeGlyphPaste() {
     html.div({}, "What would you like to do with the glyph on the clipboard?"),
     html.br(),
   ];
+
   for (const [label, value] of [
     ["Replace the current glyph", PASTE_BEHAVIOR_REPLACE],
     ["Add to the current glyph (match layers)", PASTE_BEHAVIOR_ADD],
