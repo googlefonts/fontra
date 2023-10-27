@@ -69,6 +69,9 @@ import Panel from "./panel.js";
 
 const MIN_CANVAS_SPACE = 200;
 
+const PASTE_BEHAVIOR_REPLACE = "replace";
+const PASTE_BEHAVIOR_ADD = "add";
+
 export class EditorController {
   static async fromWebSocket() {
     const pathItems = window.location.pathname.split("/").slice(3);
@@ -1086,9 +1089,20 @@ export class EditorController {
     if (!pasteLayerGlyphs?.length) {
       return;
     }
-    if (pasteVarGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
+
+    let replaceGlyph = true;
+
+    if (pasteVarGlyph && this.sceneSettings.selectedGlyph.isEditing) {
+      const result = await runDialogWholeGlyphPaste();
+      if (!result) {
+        return;
+      }
+      replaceGlyph = result === PASTE_BEHAVIOR_REPLACE;
+    }
+
+    if (replaceGlyph && pasteVarGlyph) {
       // TODO: build new glyph from pasteLayerGlyphs if we don't have pasteVarGlyph
-      await this._pasteVariableGlyph(pasteVarGlyph);
+      await this._pasteReplaceGlyph(pasteVarGlyph);
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
@@ -1142,7 +1156,7 @@ export class EditorController {
     return { pasteVarGlyph, pasteLayerGlyphs };
   }
 
-  async _pasteVariableGlyph(varGlyph) {
+  async _pasteReplaceGlyph(varGlyph) {
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         for (const [property, value] of Object.entries(varGlyph)) {
@@ -1805,4 +1819,44 @@ function newVisualizationLayersSettings(visualizationLayers) {
     visualizationLayers.toggle(key, onOff);
   }
   return controller;
+}
+
+async function runDialogWholeGlyphPaste() {
+  const controller = new ObservableController({ behavior: PASTE_BEHAVIOR_REPLACE });
+  controller.synchronizeWithLocalStorage("fontra-glyph-paste");
+  if (
+    controller.model.behavior !== PASTE_BEHAVIOR_REPLACE &&
+    controller.model.behavior !== PASTE_BEHAVIOR_ADD
+  ) {
+    controller.model.behavior = PASTE_BEHAVIOR_REPLACE;
+  }
+
+  const dialog = await dialogSetup("Pasting an entire glyph", null, [
+    { title: "Cancel", resultValue: "cancel", isCancelButton: true },
+    { title: "Okay", resultValue: "ok", isDefaultButton: true },
+  ]);
+
+  const radioGroup = [html.div({}, "What would you like to do with the copied glyph?")];
+  for (const [label, value] of [
+    ["Replace glyph", PASTE_BEHAVIOR_REPLACE],
+    ["Add to glyph", PASTE_BEHAVIOR_ADD],
+  ]) {
+    radioGroup.push(
+      html.input({
+        type: "radio",
+        id: value,
+        value: value,
+        name: "paste-replace-radio-group",
+        checked: controller.model.behavior === value,
+        onchange: (event) => (controller.model.behavior = event.target.value),
+      }),
+      html.label({ for: value }, [label]),
+      html.br()
+    );
+  }
+
+  dialog.setContent(html.div({}, radioGroup));
+  const result = await dialog.run();
+
+  return result === "ok" ? controller.model.behavior : null;
 }
