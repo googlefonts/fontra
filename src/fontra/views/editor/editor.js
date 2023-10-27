@@ -39,6 +39,7 @@ import {
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
 import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
+import { locationToString, makeSparseLocation } from "../core/var-model.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -977,6 +978,17 @@ export class EditorController {
     if (!varGlyph) {
       return;
     }
+
+    const layerLocations = {};
+    for (const source of varGlyph.sources) {
+      if (!(source.layerName in layerLocations)) {
+        layerLocations[source.layerName] = makeSparseLocation(
+          source.location,
+          varGlyph.combinedAxes
+        );
+      }
+    }
+
     const layerGlyphs = [];
     let flattenedPath;
     for (const [layerName, layerGlyph] of Object.entries(
@@ -989,7 +1001,11 @@ export class EditorController {
       if (!flattenedPath) {
         flattenedPath = copyResult.flattenedPath;
       }
-      layerGlyphs.push({ layerName, glyph: copyResult.instance });
+      layerGlyphs.push({
+        layerName,
+        location: layerLocations[layerName],
+        glyph: copyResult.instance,
+      });
     }
     if (!layerGlyphs.length && !doCut) {
       const { instance, flattenedPath: instancePath } = this._prepareCopyOrCut(
