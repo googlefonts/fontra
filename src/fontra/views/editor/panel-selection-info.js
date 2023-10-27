@@ -51,7 +51,7 @@ export default class SelectionInfoPanel extends Panel {
     }
   }
 
-  attach() {
+  connectedCallback() {
     this.infoForm = new Form();
     this.contentElement.appendChild(this.infoForm);
     this.contentElement.appendChild(this.setupBehaviorCheckBox());

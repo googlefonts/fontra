@@ -188,7 +188,7 @@ export default class TextEntryPanel extends Panel {
     this.textEntryElement.focus();
   }
 
-  attach() {
+  connectedCallback() {
     this.textSettingsController = this.editorController.sceneSettingsController;
     this.sceneController = this.editorController.sceneController;
     this.textSettings = this.editorController.sceneSettingsController.model;

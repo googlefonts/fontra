@@ -10,7 +10,5 @@ export default class Panel extends SimpleElement {
 
   getContentElement() {}
 
-  attach() {}
-
   async toggle(on, focus) {}
 }

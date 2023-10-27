@@ -544,7 +544,7 @@ export default class ReferenceFontPanel extends Panel {
     );
   }
 
-  attach() {
+  connectedCallback() {
     fetchJSON("/editor/language-mapping.json").then((languageMapping) => {
       this.languageMapping = languageMapping;
     });

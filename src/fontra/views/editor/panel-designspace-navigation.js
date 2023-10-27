@@ -121,7 +121,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
   }
 
-  attach() {
+  connectedCallback() {
     this.fontController = this.editorController.fontController;
     this.sceneSettingsController = this.editorController.sceneSettingsController;
     this.sceneSettings = this.editorController.sceneSettingsController.model;
