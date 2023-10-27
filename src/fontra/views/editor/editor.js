@@ -30,6 +30,7 @@ import {
   getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
+  isObjectEmpty,
   parseSelection,
   range,
   readFromClipboard,
@@ -68,6 +69,9 @@ import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
 
 const MIN_CANVAS_SPACE = 200;
+
+const PASTE_BEHAVIOR_REPLACE = "replace";
+const PASTE_BEHAVIOR_ADD = "add";
 
 export class EditorController {
   static async fromWebSocket() {
@@ -943,11 +947,9 @@ export class EditorController {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const unicodes = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, unicodes);
-    const jsonObject = { layerGlyphs: layerGlyphs };
-    if (varGlyph) {
-      jsonObject.variableGlyph = varGlyph;
-    }
-    const jsonString = JSON.stringify(jsonObject);
+    const jsonString = JSON.stringify(
+      varGlyph ? { variableGlyph: varGlyph } : { layerGlyphs: layerGlyphs }
+    );
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
@@ -1082,13 +1084,39 @@ export class EditorController {
   }
 
   async doPaste() {
-    const { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
-    if (!pasteLayerGlyphs?.length) {
+    let { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
+    if (!pasteVarGlyph && !pasteLayerGlyphs?.length) {
       return;
     }
-    if (pasteVarGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
-      // TODO: build new glyph from pasteLayerGlyphs if we don't have pasteVarGlyph
-      await this._pasteVariableGlyph(pasteVarGlyph);
+
+    if (pasteVarGlyph && this.sceneSettings.selectedGlyph.isEditing) {
+      const result = await runDialogWholeGlyphPaste();
+      if (!result) {
+        return;
+      }
+      if (result === PASTE_BEHAVIOR_ADD) {
+        // We will paste an entire variable glyph onto the existing layers.
+        // Build pasteLayerGlyphs from the glyph's sources.
+        const varGlyphController =
+          this.fontController.makeVariableGlyphController(pasteVarGlyph);
+        const combinedAxes = varGlyphController.combinedAxes;
+        pasteLayerGlyphs = pasteVarGlyph.sources.map((source) => {
+          return {
+            layerName: source.layerName,
+            location: makeSparseLocation(source.location, combinedAxes),
+            glyph: pasteVarGlyph.layers[source.layerName].glyph,
+          };
+        });
+        // Sort so the default source comes first, as it is used as a fallback
+        pasteLayerGlyphs.sort((a, b) =>
+          !isObjectEmpty(a.location) && isObjectEmpty(b.location) ? 1 : -1
+        );
+        pasteVarGlyph = null;
+      }
+    }
+
+    if (pasteVarGlyph) {
+      await this._pasteReplaceGlyph(pasteVarGlyph);
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
@@ -1142,7 +1170,7 @@ export class EditorController {
     return { pasteVarGlyph, pasteLayerGlyphs };
   }
 
-  async _pasteVariableGlyph(varGlyph) {
+  async _pasteReplaceGlyph(varGlyph) {
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         for (const [property, value] of Object.entries(varGlyph)) {
@@ -1805,4 +1833,49 @@ function newVisualizationLayersSettings(visualizationLayers) {
     visualizationLayers.toggle(key, onOff);
   }
   return controller;
+}
+
+async function runDialogWholeGlyphPaste() {
+  const controller = new ObservableController({ behavior: PASTE_BEHAVIOR_REPLACE });
+  controller.synchronizeWithLocalStorage("fontra-glyph-paste");
+  if (
+    controller.model.behavior !== PASTE_BEHAVIOR_REPLACE &&
+    controller.model.behavior !== PASTE_BEHAVIOR_ADD
+  ) {
+    controller.model.behavior = PASTE_BEHAVIOR_REPLACE;
+  }
+
+  const dialog = await dialogSetup("You are about to paste an entire glyph", null, [
+    { title: "Cancel", resultValue: "cancel", isCancelButton: true },
+    { title: "Okay", resultValue: "ok", isDefaultButton: true },
+  ]);
+
+  const radioGroup = [
+    html.div({}, "What would you like to do with the glyph on the clipboard?"),
+    html.br(),
+  ];
+
+  for (const [label, value] of [
+    ["Replace the current glyph", PASTE_BEHAVIOR_REPLACE],
+    ["Add to the current glyph (match layers)", PASTE_BEHAVIOR_ADD],
+  ]) {
+    radioGroup.push(
+      html.input({
+        type: "radio",
+        id: value,
+        value: value,
+        name: "paste-replace-radio-group",
+        checked: controller.model.behavior === value,
+        onchange: (event) => (controller.model.behavior = event.target.value),
+      }),
+      html.label({ for: value }, [label]),
+      html.br()
+    );
+  }
+  radioGroup.push(html.br());
+
+  dialog.setContent(html.div({}, radioGroup));
+  const result = await dialog.run();
+
+  return result === "ok" ? controller.model.behavior : null;
 }
