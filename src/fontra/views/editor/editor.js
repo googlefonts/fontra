@@ -1095,8 +1095,8 @@ export class EditorController {
         return;
       }
       if (result !== PASTE_BEHAVIOR_REPLACE) {
-        // We will paste the whole glyph onto the existing layers.
-        // Build pasteLayerGlyphs, based on the whole glyph's sources.
+        // We will paste an entire variable glyph onto the existing layers.
+        // Build pasteLayerGlyphs from the glyph's sources.
         const varGlyphController =
           this.fontController.makeVariableGlyphController(pasteVarGlyph);
         const combinedAxes = varGlyphController.combinedAxes;
