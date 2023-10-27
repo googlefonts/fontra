@@ -30,6 +30,7 @@ import {
   getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
+  isObjectEmpty,
   parseSelection,
   range,
   readFromClipboard,
@@ -1099,17 +1100,21 @@ export class EditorController {
       }
       replaceGlyph = result === PASTE_BEHAVIOR_REPLACE;
       if (!replaceGlyph) {
+        // We'll paste the whole glyph onto the existing layers. Build new
         const varGlyphController =
           this.fontController.makeVariableGlyphController(pasteVarGlyph);
         const combinedAxes = varGlyphController.combinedAxes;
-        pasteLayerGlyphs = [pasteLayerGlyphs[0]];
-        for (const source of pasteVarGlyph.sources) {
-          pasteLayerGlyphs.push({
+        pasteLayerGlyphs = pasteVarGlyph.sources.map((source) => {
+          return {
             layerName: source.layerName,
             location: makeSparseLocation(source.location, combinedAxes),
             glyph: pasteVarGlyph.layers[source.layerName].glyph,
-          });
-        }
+          };
+        });
+        // Sort so the default source comes first, as it is used as a fallback
+        pasteLayerGlyphs.sort((a, b) =>
+          !isObjectEmpty(a.location) && isObjectEmpty(b.location) ? 1 : -1
+        );
       }
     }
 
