@@ -1854,10 +1854,12 @@ async function runDialogWholeGlyphPaste() {
     { title: "Okay", resultValue: "ok", isDefaultButton: true },
   ]);
 
-  const radioGroup = [html.div({}, "What would you like to do with the copied glyph?")];
+  const radioGroup = [
+    html.div({}, "What would you like to do with the glyph on the clipboard?"),
+  ];
   for (const [label, value] of [
-    ["Replace glyph", PASTE_BEHAVIOR_REPLACE],
-    ["Add to glyph", PASTE_BEHAVIOR_ADD],
+    ["Replace the current glyph", PASTE_BEHAVIOR_REPLACE],
+    ["Add to the current glyph (match layers)", PASTE_BEHAVIOR_ADD],
   ]) {
     radioGroup.push(
       html.input({
