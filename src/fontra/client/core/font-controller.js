@@ -11,7 +11,7 @@ import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { TaskPool } from "./task-pool.js";
-import { throttleCalls } from "./utils.js";
+import { chain, throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 
@@ -382,7 +382,9 @@ export class FontController {
   }
 
   notifyChangeListeners(change, isLiveChange) {
-    const listeners = isLiveChange ? this._changeListenersLive : this._changeListeners;
+    const listeners = isLiveChange
+      ? this._changeListenersLive
+      : chain(this._changeListenersLive, this._changeListeners);
     for (const listenerInfo of listeners) {
       if (matchChangePattern(change, listenerInfo.matchPattern)) {
         setTimeout(() => listenerInfo.listener(change), 0);
