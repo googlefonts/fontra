@@ -39,6 +39,7 @@ import {
 } from "../core/utils.js";
 import { addItemwise, mulScalar, subItemwise } from "../core/var-funcs.js";
 import { StaticGlyph, VariableGlyph, copyComponent } from "../core/var-glyph.js";
+import { locationToString, makeSparseLocation } from "../core/var-model.js";
 import { VarPackedPath, joinPaths } from "../core/var-path.js";
 import { CJKDesignFrame } from "./cjk-design-frame.js";
 import { HandTool } from "./edit-tools-hand.js";
@@ -977,6 +978,17 @@ export class EditorController {
     if (!varGlyph) {
       return;
     }
+
+    const layerLocations = {};
+    for (const source of varGlyph.sources) {
+      if (!(source.layerName in layerLocations)) {
+        layerLocations[source.layerName] = makeSparseLocation(
+          source.location,
+          varGlyph.combinedAxes
+        );
+      }
+    }
+
     const layerGlyphs = [];
     let flattenedPath;
     for (const [layerName, layerGlyph] of Object.entries(
@@ -989,7 +1001,11 @@ export class EditorController {
       if (!flattenedPath) {
         flattenedPath = copyResult.flattenedPath;
       }
-      layerGlyphs.push({ layerName, glyph: copyResult.instance });
+      layerGlyphs.push({
+        layerName,
+        location: layerLocations[layerName],
+        glyph: copyResult.instance,
+      });
     }
     if (!layerGlyphs.length && !doCut) {
       const { instance, flattenedPath: instancePath } = this._prepareCopyOrCut(
@@ -1110,6 +1126,7 @@ export class EditorController {
         pasteLayerGlyphs = clipboardObject.layerGlyphs?.map((layer) => {
           return {
             layerName: layer.layerName,
+            location: layer.location,
             glyph: StaticGlyph.fromObject(layer.glyph),
           };
         });
@@ -1146,6 +1163,23 @@ export class EditorController {
       pasteLayerGlyphs.map((layer) => [layer.layerName, layer.glyph])
     );
 
+    const pasteLayerGlyphsByLocationString = Object.fromEntries(
+      pasteLayerGlyphs
+        .filter((layer) => layer.location)
+        .map((layer) => [locationToString(layer.location), layer.glyph])
+    );
+
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    const locationStringsBySourceLayerName = Object.fromEntries(
+      varGlyphController.sources.map((source) => [
+        source.layerName,
+        locationToString(
+          makeSparseLocation(source.location, varGlyphController.combinedAxes)
+        ),
+      ])
+    );
+
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
@@ -1171,7 +1205,11 @@ export class EditorController {
 
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           const pasteGlyph =
-            pasteLayerGlyphsByLayerName[layerName] || defaultPasteGlyph;
+            pasteLayerGlyphsByLayerName[layerName] ||
+            pasteLayerGlyphsByLocationString[
+              locationStringsBySourceLayerName[layerName]
+            ] ||
+            defaultPasteGlyph;
           layerGlyph.path.appendPath(pasteGlyph.path);
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
         }
