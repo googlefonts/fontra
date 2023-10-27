@@ -171,11 +171,14 @@ export class FontController {
   async _getGlyph(glyphName) {
     let glyph = await this.font.getGlyph(glyphName);
     if (glyph !== null) {
-      glyph = VariableGlyph.fromObject(glyph);
-      glyph = new VariableGlyphController(glyph, this.globalAxes);
+      glyph = this.makeVariableGlyphController(VariableGlyph.fromObject(glyph));
       this.updateGlyphDependencies(glyph);
     }
     return glyph;
+  }
+
+  makeVariableGlyphController(glyph) {
+    return new VariableGlyphController(glyph, this.globalAxes);
   }
 
   updateGlyphDependencies(glyph) {
@@ -212,7 +215,7 @@ export class FontController {
       sources: [{ name: sourceName, location: {}, layerName: sourceName }],
       layers: { [sourceName]: { glyph: structuredClone(templateInstance) } },
     });
-    const glyphController = new VariableGlyphController(glyph, this.globalAxes);
+    const glyphController = this.makeVariableGlyphController(glyph);
     this._glyphsPromiseCache.put(glyphName, Promise.resolve(glyphController));
 
     const codePoints = typeof codePoint == "number" ? [codePoint] : [];
