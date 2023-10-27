@@ -1475,7 +1475,7 @@ export class EditorController {
     const selectedGlyphName = this.sceneSettings.selectedGlyphName;
 
     await this.fontController.applyChange(change, true);
-    this.fontController.dispatchChange(change, isLiveChange);
+    this.fontController.notifyChangeListeners(change, isLiveChange);
 
     if (matchChangePath(change, ["glyphMap"])) {
       const selectedGlyph = this.sceneSettings.selectedGlyph;

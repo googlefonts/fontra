@@ -5,6 +5,7 @@ import {
   consolidateChanges,
   filterChangePattern,
   matchChangePath,
+  matchChangePattern,
 } from "./changes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
@@ -23,6 +24,8 @@ export class FontController {
     this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // instance cache key -> instance promise
     this._glyphInstancePromiseCacheKeys = {}; // glyphName -> Set(instance cache keys)
     this._editListeners = new Set();
+    this._changeListeners = [];
+    this._changeListenersLive = [];
     this._glyphChangeListeners = {};
     this.glyphUsedBy = {}; // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
@@ -360,9 +363,36 @@ export class FontController {
     }
   }
 
+  addChangeListener(matchPattern, listener, wantLiveChanges) {
+    if (wantLiveChanges) {
+      this._changeListenersLive.push({ matchPattern, listener });
+    } else {
+      this._changeListeners.push({ matchPattern, listener });
+    }
+  }
+
+  removeChangeListener(matchPattern, listener, wantLiveChanges) {
+    const filterFunc = (listenerInfo) =>
+      listenerInfo.matchPattern !== matchPattern || listenerInfo.listener !== listener;
+    if (wantLiveChanges) {
+      this._changeListenersLive = this._changeListenersLive.filter(filterFunc);
+    } else {
+      this._changeListeners = this._changeListeners.filter(filterFunc);
+    }
+  }
+
+  notifyChangeListeners(change, isLiveChange) {
+    const listeners = isLiveChange ? this._changeListenersLive : this._changeListeners;
+    for (const listenerInfo of listeners) {
+      if (matchChangePattern(change, listenerInfo.matchPattern)) {
+        setTimeout(() => listenerInfo.listener(change), 0);
+      }
+    }
+  }
+
   editIncremental(change) {
     this.font.editIncremental(change);
-    this.dispatchChange(change, true);
+    this.notifyChangeListeners(change, true);
   }
 
   async editFinal(finalChange, rollbackChange, editLabel, broadcast) {
@@ -372,7 +402,7 @@ export class FontController {
       editLabel,
       broadcast
     );
-    this.dispatchChange(finalChange, false);
+    this.notifyChangeListeners(finalChange, false);
     return result;
   }
 
@@ -401,10 +431,6 @@ export class FontController {
         delete this.undoStacks[glyphName];
       }
     }
-  }
-
-  dispatchChange(change, isLiveChange) {
-    // console.log("change", isLiveChange, change);
   }
 
   getCachedDataPattern() {
