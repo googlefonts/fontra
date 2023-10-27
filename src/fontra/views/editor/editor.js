@@ -1094,7 +1094,7 @@ export class EditorController {
       if (!result) {
         return;
       }
-      if (result !== PASTE_BEHAVIOR_REPLACE) {
+      if (result === PASTE_BEHAVIOR_ADD) {
         // We will paste an entire variable glyph onto the existing layers.
         // Build pasteLayerGlyphs from the glyph's sources.
         const varGlyphController =
