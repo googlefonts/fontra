@@ -947,11 +947,9 @@ export class EditorController {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const unicodes = this.fontController.glyphMap[glyphName] || [];
     const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, unicodes);
-    const jsonObject = { layerGlyphs: layerGlyphs };
-    if (varGlyph) {
-      jsonObject.variableGlyph = varGlyph;
-    }
-    const jsonString = JSON.stringify(jsonObject);
+    const jsonString = JSON.stringify(
+      varGlyph ? { variableGlyph: varGlyph } : { layerGlyphs: layerGlyphs }
+    );
 
     const mapping = { "svg": svgString, "glif": glifString, "fontra-json": jsonString };
     const plainTextString =
@@ -1087,19 +1085,16 @@ export class EditorController {
 
   async doPaste() {
     let { pasteVarGlyph, pasteLayerGlyphs } = await this._unpackClipboard();
-    if (!pasteLayerGlyphs?.length) {
+    if (!pasteVarGlyph && !pasteLayerGlyphs?.length) {
       return;
     }
-
-    let replaceGlyph = true;
 
     if (pasteVarGlyph && this.sceneSettings.selectedGlyph.isEditing) {
       const result = await runDialogWholeGlyphPaste();
       if (!result) {
         return;
       }
-      replaceGlyph = result === PASTE_BEHAVIOR_REPLACE;
-      if (!replaceGlyph) {
+      if (result !== PASTE_BEHAVIOR_REPLACE) {
         // We will paste the whole glyph onto the existing layers.
         // Build pasteLayerGlyphs, based on the whole glyph's sources.
         const varGlyphController =
@@ -1116,11 +1111,11 @@ export class EditorController {
         pasteLayerGlyphs.sort((a, b) =>
           !isObjectEmpty(a.location) && isObjectEmpty(b.location) ? 1 : -1
         );
+        pasteVarGlyph = null;
       }
     }
 
-    if (replaceGlyph && pasteVarGlyph) {
-      // TODO: build new glyph from pasteLayerGlyphs if we don't have pasteVarGlyph
+    if (pasteVarGlyph) {
       await this._pasteReplaceGlyph(pasteVarGlyph);
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
