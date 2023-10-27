@@ -489,3 +489,17 @@ export function piecewiseLinearMap(v, mapping) {
   const vb = mapping[b];
   return va + ((vb - va) * (v - a)) / (b - a);
 }
+
+export function makeSparseLocation(location, axisList) {
+  // Return a subset of `locations` that only contains values for axes
+  // defined in axisList, and that are not equal to the default value
+  // for the axis.
+  return Object.fromEntries(
+    axisList
+      .filter(
+        (axis) =>
+          location[axis.name] !== undefined && location[axis.name] !== axis.defaultValue
+      )
+      .map((axis) => [axis.name, location[axis.name]])
+  );
+}

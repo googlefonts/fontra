@@ -17,6 +17,7 @@ import {
 import { Layer, Source } from "/core/var-glyph.js";
 import {
   locationToString,
+  makeSparseLocation,
   mapForward,
   normalizeLocation,
   piecewiseLinearMap,
@@ -1026,17 +1027,6 @@ function roundComponentOrigins(components) {
       component.transformation.translateY
     );
   });
-}
-
-function makeSparseLocation(location, axes) {
-  return Object.fromEntries(
-    axes
-      .filter(
-        (axis) =>
-          location[axis.name] !== undefined && location[axis.name] !== axis.defaultValue
-      )
-      .map((axis) => [axis.name, location[axis.name]])
-  );
 }
 
 function getAxisInfoFromGlyph(glyph) {
