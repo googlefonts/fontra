@@ -434,3 +434,11 @@ export function splitGlyphNameExtension(glyphName) {
   const extension = periodIndex >= 1 ? glyphName.slice(periodIndex) : "";
   return [baseGlyphName, extension];
 }
+
+export function isObjectEmpty(obj) {
+  // Return true if `obj` has no properties
+  for (const _ in obj) {
+    return false;
+  }
+  return true;
+}
