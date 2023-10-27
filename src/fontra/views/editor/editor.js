@@ -1856,6 +1856,7 @@ async function runDialogWholeGlyphPaste() {
 
   const radioGroup = [
     html.div({}, "What would you like to do with the glyph on the clipboard?"),
+    html.br(),
   ];
   for (const [label, value] of [
     ["Replace the current glyph", PASTE_BEHAVIOR_REPLACE],
@@ -1874,6 +1875,7 @@ async function runDialogWholeGlyphPaste() {
       html.br()
     );
   }
+  radioGroup.push(html.br());
 
   dialog.setContent(html.div({}, radioGroup));
   const result = await dialog.run();
