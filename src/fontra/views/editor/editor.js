@@ -1471,10 +1471,11 @@ export class EditorController {
     this.glyphsSearch.updateGlyphNamesListContent();
   }
 
-  async externalChange(change) {
+  async externalChange(change, isLiveChange) {
     const selectedGlyphName = this.sceneSettings.selectedGlyphName;
 
     await this.fontController.applyChange(change, true);
+    this.fontController.dispatchChange(change, isLiveChange);
 
     if (matchChangePath(change, ["glyphMap"])) {
       const selectedGlyph = this.sceneSettings.selectedGlyph;

@@ -362,10 +362,18 @@ export class FontController {
 
   editIncremental(change) {
     this.font.editIncremental(change);
+    this.dispatchChange(change, true);
   }
 
   async editFinal(finalChange, rollbackChange, editLabel, broadcast) {
-    return await this.font.editFinal(finalChange, rollbackChange, editLabel, broadcast);
+    const result = await this.font.editFinal(
+      finalChange,
+      rollbackChange,
+      editLabel,
+      broadcast
+    );
+    this.dispatchChange(finalChange, false);
+    return result;
   }
 
   async getGlyphEditContext(glyphName, baseChangePath, senderID) {
@@ -393,6 +401,10 @@ export class FontController {
         delete this.undoStacks[glyphName];
       }
     }
+  }
+
+  dispatchChange(change, isLiveChange) {
+    // console.log("change", isLiveChange, change);
   }
 
   getCachedDataPattern() {
