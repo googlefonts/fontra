@@ -32,7 +32,8 @@ export default class GlyphSearchPanel extends Panel {
 
   async toggle(on, focus) {
     if (on && focus) {
-      this.editorController.glyphsSearch.focusSearchField();
+      const glyphsSearch = this.contentElement.querySelector("#glyphs-search");
+      glyphsSearch.focusSearchField();
     }
   }
 }

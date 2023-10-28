@@ -300,16 +300,16 @@ export class EditorController {
 
   initGlyphsSearch() {
     // TODO: this should move to panel-glyph-search.js
-    this.glyphsSearch =
+    const glyphsSearch =
       this.getSidebarPanel("glyph-search").contentElement.querySelector(
         "#glyphs-search"
       );
-    this.glyphsSearch.glyphMap = this.fontController.glyphMap;
-    this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
+    glyphsSearch.glyphMap = this.fontController.glyphMap;
+    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
     );
     this.fontController.addChangeListener({ glyphMap: null }, () => {
-      this.glyphsSearch.updateGlyphNamesListContent();
+      glyphsSearch.updateGlyphNamesListContent();
     });
   }
 
