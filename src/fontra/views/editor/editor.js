@@ -299,6 +299,7 @@ export class EditorController {
   }
 
   initGlyphsSearch() {
+    // TODO: this should move to panel-glyph-search.js
     this.glyphsSearch =
       this.getSidebarPanel("glyph-search").contentElement.querySelector(
         "#glyphs-search"
@@ -307,6 +308,9 @@ export class EditorController {
     this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
     );
+    this.fontController.addChangeListener({ glyphMap: null }, () => {
+      this.glyphsSearch.updateGlyphNamesListContent();
+    });
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
@@ -1465,10 +1469,6 @@ export class EditorController {
 
   async newGlyph(glyphName, codePoint, templateInstance) {
     await this.fontController.newGlyph(glyphName, codePoint, templateInstance);
-    this.sceneModel.updateGlyphLinesCharacterMapping();
-    await this.sceneModel.updateScene();
-    this.canvasController.requestUpdate();
-    this.glyphsSearch.updateGlyphNamesListContent();
   }
 
   async externalChange(change, isLiveChange) {
@@ -1479,7 +1479,6 @@ export class EditorController {
 
     if (matchChangePath(change, ["glyphMap"])) {
       const selectedGlyph = this.sceneSettings.selectedGlyph;
-      this.sceneModel.updateGlyphLinesCharacterMapping();
       if (
         selectedGlyph?.isEditing &&
         !this.fontController.hasGlyph(selectedGlyphName)
@@ -1490,7 +1489,6 @@ export class EditorController {
           isEditing: false,
         };
       }
-      this.glyphsSearch.updateGlyphNamesListContent();
     }
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
