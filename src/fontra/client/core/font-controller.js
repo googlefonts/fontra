@@ -4,7 +4,6 @@ import {
   collectChangePaths,
   consolidateChanges,
   filterChangePattern,
-  matchChangePath,
   matchChangePattern,
 } from "./changes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
