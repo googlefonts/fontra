@@ -218,7 +218,7 @@ export class SceneController {
         selectedGlyph?.isEditing &&
         !this.fontController.hasGlyph(this.sceneSettings.selectedGlyphName)
       ) {
-        // The glyph being edited got deleted, change state merely "selected"
+        // The glyph being edited got deleted, change state to selected
         this.sceneSettings.selectedGlyph = {
           ...selectedGlyph,
           isEditing: false,
