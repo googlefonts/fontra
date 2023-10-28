@@ -1,6 +1,6 @@
 import { CanvasController } from "../core/canvas-controller.js";
 import { recordChanges } from "../core/change-recorder.js";
-import { applyChange, matchChangePath } from "../core/changes.js";
+import { applyChange } from "../core/changes.js";
 import { FontController } from "../core/font-controller.js";
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
