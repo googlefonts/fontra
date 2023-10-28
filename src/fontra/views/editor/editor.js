@@ -299,7 +299,8 @@ export class EditorController {
   }
 
   initGlyphsSearch() {
-    // TODO: this should move to panel-glyph-search.js
+    // TODO: this and glyphNameChangedCallback() should move to panel-glyph-search.js
+    // After https://github.com/googlefonts/fontra/pull/934 gets merged
     const glyphsSearch =
       this.getSidebarPanel("glyph-search").contentElement.querySelector(
         "#glyphs-search"
