@@ -212,6 +212,18 @@ export class SceneController {
   setupChangeListeners() {
     this.fontController.addChangeListener({ glyphMap: null }, () => {
       this.sceneModel.updateGlyphLinesCharacterMapping();
+
+      const selectedGlyph = this.sceneSettings.selectedGlyph;
+      if (
+        selectedGlyph?.isEditing &&
+        !this.fontController.hasGlyph(this.sceneSettings.selectedGlyphName)
+      ) {
+        // The glyph being edited got deleted, change state merely "selected"
+        this.sceneSettings.selectedGlyph = {
+          ...selectedGlyph,
+          isEditing: false,
+        };
+      }
     });
   }
 

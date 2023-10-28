@@ -1472,24 +1472,9 @@ export class EditorController {
   }
 
   async externalChange(change, isLiveChange) {
-    const selectedGlyphName = this.sceneSettings.selectedGlyphName;
-
     await this.fontController.applyChange(change, true);
     this.fontController.notifyChangeListeners(change, isLiveChange);
 
-    if (matchChangePath(change, ["glyphMap"])) {
-      const selectedGlyph = this.sceneSettings.selectedGlyph;
-      if (
-        selectedGlyph?.isEditing &&
-        !this.fontController.hasGlyph(selectedGlyphName)
-      ) {
-        // The glyph being edited got deleted, change state merely "selected"
-        this.sceneSettings.selectedGlyph = {
-          ...selectedGlyph,
-          isEditing: false,
-        };
-      }
-    }
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
     this.sceneSettings.location = { ...this.sceneSettings.location };
