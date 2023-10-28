@@ -4,13 +4,13 @@ import {
   collectChangePaths,
   consolidateChanges,
   filterChangePattern,
-  matchChangePath,
+  matchChangePattern,
 } from "./changes.js";
 import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { TaskPool } from "./task-pool.js";
-import { throttleCalls } from "./utils.js";
+import { chain, throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 
@@ -23,6 +23,8 @@ export class FontController {
     this._glyphInstancePromiseCache = new LRUCache(GLYPH_CACHE_SIZE); // instance cache key -> instance promise
     this._glyphInstancePromiseCacheKeys = {}; // glyphName -> Set(instance cache keys)
     this._editListeners = new Set();
+    this._changeListeners = [];
+    this._changeListenersLive = [];
     this._glyphChangeListeners = {};
     this.glyphUsedBy = {}; // Loaded glyphs only: this is for updating the scene
     this.glyphMadeOf = {};
@@ -235,7 +237,7 @@ export class FontController {
         { p: ["glyphMap"], f: "d", a: [glyphName] },
       ],
     };
-    const error = await this.font.editFinal(
+    const error = await this.editFinal(
       change,
       rollbackChange,
       `new glyph "${glyphName}"`,
@@ -358,6 +360,51 @@ export class FontController {
     for (const listener of this._editListeners) {
       await listener(editMethodName, senderID, ...args);
     }
+  }
+
+  addChangeListener(matchPattern, listener, wantLiveChanges) {
+    if (wantLiveChanges) {
+      this._changeListenersLive.push({ matchPattern, listener });
+    } else {
+      this._changeListeners.push({ matchPattern, listener });
+    }
+  }
+
+  removeChangeListener(matchPattern, listener, wantLiveChanges) {
+    const filterFunc = (listenerInfo) =>
+      listenerInfo.matchPattern !== matchPattern || listenerInfo.listener !== listener;
+    if (wantLiveChanges) {
+      this._changeListenersLive = this._changeListenersLive.filter(filterFunc);
+    } else {
+      this._changeListeners = this._changeListeners.filter(filterFunc);
+    }
+  }
+
+  notifyChangeListeners(change, isLiveChange) {
+    const listeners = isLiveChange
+      ? this._changeListenersLive
+      : chain(this._changeListenersLive, this._changeListeners);
+    for (const listenerInfo of listeners) {
+      if (matchChangePattern(change, listenerInfo.matchPattern)) {
+        setTimeout(() => listenerInfo.listener(change), 0);
+      }
+    }
+  }
+
+  editIncremental(change) {
+    this.font.editIncremental(change);
+    this.notifyChangeListeners(change, true);
+  }
+
+  async editFinal(finalChange, rollbackChange, editLabel, broadcast) {
+    const result = await this.font.editFinal(
+      finalChange,
+      rollbackChange,
+      editLabel,
+      broadcast
+    );
+    this.notifyChangeListeners(finalChange, false);
+    return result;
   }
 
   async getGlyphEditContext(glyphName, baseChangePath, senderID) {
@@ -495,7 +542,7 @@ export class FontController {
     }
     // Hmmm, would be nice to have this abstracted more
     await this.applyChange(undoRecord.rollbackChange);
-    const error = await this.font.editFinal(
+    const error = await this.editFinal(
       undoRecord.rollbackChange,
       undoRecord.change,
       undoRecord.info.label,
@@ -537,7 +584,7 @@ class GlyphEditContext {
     this.baseChangePath = baseChangePath;
     this.senderID = senderID;
     this.throttledEditIncremental = throttleCalls(async (change) => {
-      fontController.font.editIncremental(change);
+      fontController.editIncremental(change);
     }, 50);
     this._throttledEditIncrementalTimeoutID = null;
   }
@@ -555,7 +602,7 @@ class GlyphEditContext {
       this._throttledEditIncrementalTimeoutID = this.throttledEditIncremental(change);
     } else {
       clearTimeout(this._throttledEditIncrementalTimeoutID);
-      this.fontController.font.editIncremental(change);
+      this.fontController.editIncremental(change);
     }
     await this.fontController.notifyEditListeners("editIncremental", this.senderID);
   }
@@ -568,7 +615,7 @@ class GlyphEditContext {
     }
     change = consolidateChanges(change, this.baseChangePath);
     rollback = consolidateChanges(rollback, this.baseChangePath);
-    const error = await this.fontController.font.editFinal(
+    const error = await this.fontController.editFinal(
       change,
       rollback,
       undoInfo.label,

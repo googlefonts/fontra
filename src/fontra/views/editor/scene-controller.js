@@ -51,6 +51,7 @@ export class SceneController {
     this.selectedTool = undefined;
     this._currentGlyphChangeListeners = [];
 
+    this.setupChangeListeners();
     this.setupSettingsListeners();
     this.setupEventHandling();
   }
@@ -205,6 +206,24 @@ export class SceneController {
         this.canvasController.getViewBox(),
         { senderID: this }
       );
+    });
+  }
+
+  setupChangeListeners() {
+    this.fontController.addChangeListener({ glyphMap: null }, () => {
+      this.sceneModel.updateGlyphLinesCharacterMapping();
+
+      const selectedGlyph = this.sceneSettings.selectedGlyph;
+      if (
+        selectedGlyph?.isEditing &&
+        !this.fontController.hasGlyph(this.sceneSettings.selectedGlyphName)
+      ) {
+        // The glyph being edited got deleted, change state to selected
+        this.sceneSettings.selectedGlyph = {
+          ...selectedGlyph,
+          isEditing: false,
+        };
+      }
     });
   }
 

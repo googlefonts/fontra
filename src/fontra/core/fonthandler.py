@@ -267,7 +267,9 @@ class FontHandler:
         ]
 
         for connection in connections:
-            scheduleTaskAndLogException(connection.proxy.externalChange(change))
+            scheduleTaskAndLogException(
+                connection.proxy.externalChange(change, isLiveChange)
+            )
 
     async def updateLocalDataWithExternalChange(self, change):
         await self._updateLocalDataAndWriteToBackend(change, None, True)

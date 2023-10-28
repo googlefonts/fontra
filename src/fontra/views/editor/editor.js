@@ -1,6 +1,6 @@
 import { CanvasController } from "../core/canvas-controller.js";
 import { recordChanges } from "../core/change-recorder.js";
-import { applyChange, matchChangePath } from "../core/changes.js";
+import { applyChange } from "../core/changes.js";
 import { FontController } from "../core/font-controller.js";
 import { staticGlyphToGLIF } from "../core/glyph-glif.js";
 import { pathToSVG } from "../core/glyph-svg.js";
@@ -299,14 +299,19 @@ export class EditorController {
   }
 
   initGlyphsSearch() {
-    this.glyphsSearch =
+    // TODO: this and glyphNameChangedCallback() should move to panel-glyph-search.js
+    // After https://github.com/googlefonts/fontra/pull/934 gets merged
+    const glyphsSearch =
       this.getSidebarPanel("glyph-search").contentElement.querySelector(
         "#glyphs-search"
       );
-    this.glyphsSearch.glyphMap = this.fontController.glyphMap;
-    this.glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
+    glyphsSearch.glyphMap = this.fontController.glyphMap;
+    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
       this.glyphNameChangedCallback(event.detail)
     );
+    this.fontController.addChangeListener({ glyphMap: null }, () => {
+      glyphsSearch.updateGlyphNamesListContent();
+    });
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
@@ -1465,32 +1470,12 @@ export class EditorController {
 
   async newGlyph(glyphName, codePoint, templateInstance) {
     await this.fontController.newGlyph(glyphName, codePoint, templateInstance);
-    this.sceneModel.updateGlyphLinesCharacterMapping();
-    await this.sceneModel.updateScene();
-    this.canvasController.requestUpdate();
-    this.glyphsSearch.updateGlyphNamesListContent();
   }
 
-  async externalChange(change) {
-    const selectedGlyphName = this.sceneSettings.selectedGlyphName;
-
+  async externalChange(change, isLiveChange) {
     await this.fontController.applyChange(change, true);
+    this.fontController.notifyChangeListeners(change, isLiveChange);
 
-    if (matchChangePath(change, ["glyphMap"])) {
-      const selectedGlyph = this.sceneSettings.selectedGlyph;
-      this.sceneModel.updateGlyphLinesCharacterMapping();
-      if (
-        selectedGlyph?.isEditing &&
-        !this.fontController.hasGlyph(selectedGlyphName)
-      ) {
-        // The glyph being edited got deleted, change state merely "selected"
-        this.sceneSettings.selectedGlyph = {
-          ...selectedGlyph,
-          isEditing: false,
-        };
-      }
-      this.glyphsSearch.updateGlyphNamesListContent();
-    }
     // Force sync between location and selectedSourceIndex, as the glyph's
     // source list may have changed
     this.sceneSettings.location = { ...this.sceneSettings.location };
