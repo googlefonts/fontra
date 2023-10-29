@@ -926,7 +926,10 @@ export class EditorController {
     }
 
     if (this.sceneSettings.selectedGlyph.isEditing) {
-      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(false);
+      const { layerGlyphs, flattenedPath } = this._prepareCopyOrCutLayers(
+        undefined,
+        false
+      );
       await this._writeLayersToClipboard(null, layerGlyphs, flattenedPath, event);
     } else {
       const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
@@ -979,8 +982,12 @@ export class EditorController {
   }
 
   _prepareCopyOrCutLayers(varGlyph, doCut) {
+    let varGlyphController;
     if (!varGlyph) {
-      varGlyph = this.sceneModel.getSelectedPositionedGlyph().varGlyph;
+      varGlyphController = this.sceneModel.getSelectedPositionedGlyph().varGlyph;
+      varGlyph = varGlyphController.glyph;
+    } else {
+      varGlyphController = this.fontController.makeVariableGlyphController(varGlyph);
     }
     if (!varGlyph) {
       return;
@@ -991,7 +998,7 @@ export class EditorController {
       if (!(source.layerName in layerLocations)) {
         layerLocations[source.layerName] = makeSparseLocation(
           source.location,
-          varGlyph.combinedAxes
+          varGlyphController.combinedAxes
         );
       }
     }
