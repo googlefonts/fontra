@@ -247,6 +247,10 @@ export class FontController {
     this.notifyEditListeners("editFinal", this);
   }
 
+  async deleteGlyph(glyphName) {
+    console.log("deleting", glyphName);
+  }
+
   async glyphChanged(glyphName, senderInfo) {
     const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)];
     for (const glyphName of glyphNames) {

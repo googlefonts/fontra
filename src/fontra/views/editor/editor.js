@@ -1276,12 +1276,40 @@ export class EditorController {
 
   canDelete() {
     return (
-      this.sceneSettings.selectedGlyph?.isEditing &&
-      this.sceneController.selection.size > 0
+      this.sceneSettings.selectedGlyph ||
+      (this.sceneSettings.selectedGlyph?.isEditing &&
+        this.sceneController.selection.size > 0)
     );
   }
 
   async doDelete(event) {
+    if (
+      this.sceneSettings.selectedGlyph &&
+      !this.sceneSettings.selectedGlyph.isEditing
+    ) {
+      await this._deleteCurrentGlyph(event);
+    } else {
+      await this._deleteSelection(event);
+    }
+  }
+
+  async _deleteCurrentGlyph(event) {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+    const result = await dialog(
+      `Are you sure you want to delete glyph "${glyphName}"?`,
+      "This can not be undone.",
+      [
+        { title: "Cancel", isCancelButton: true },
+        { title: "Delete glyph", isDefaultButton: true, resultValue: "ok" },
+      ]
+    );
+    if (!result) {
+      return;
+    }
+    this.fontController.deleteGlyph(glyphName);
+  }
+
+  async _deleteSelection(event) {
     const { point: pointSelection, component: componentSelection } = parseSelection(
       this.sceneController.selection
     );
