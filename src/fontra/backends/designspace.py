@@ -546,6 +546,13 @@ class DesignspaceBackend:
         }
         return {**self.defaultLocation, **globalLocation}
 
+    async def deleteGlyph(self, glyphName):
+        for glyphSet in self.ufoLayers.iterAttrs("glyphSet"):
+            if glyphName in glyphSet:
+                glyphSet.deleteGlyph(glyphName)
+                glyphSet.writeContents()
+        del self.glyphMap[glyphName]
+
     async def getGlobalAxes(self):
         return self.axes
 

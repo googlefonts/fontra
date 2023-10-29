@@ -271,6 +271,20 @@ async def test_writeCorrectLayers(tmpdir, testFont):
     ] == fileNamesFromDir(tmpdir / "Test_Regular.ufo")
 
 
+async def test_deleteGlyph(writableTestFont):
+    glyphName = "A"
+    assert any(glyphName in layer.glyphSet for layer in writableTestFont.ufoLayers)
+    assert any(
+        glyphName in layer.glyphSet.contents for layer in writableTestFont.ufoLayers
+    )
+    await writableTestFont.deleteGlyph(glyphName)
+    assert not any(glyphName in layer.glyphSet for layer in writableTestFont.ufoLayers)
+    assert not any(
+        glyphName in layer.glyphSet.contents for layer in writableTestFont.ufoLayers
+    )
+    assert await writableTestFont.getGlyph(glyphName) is None
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
