@@ -80,6 +80,19 @@ export default class DesignspaceNavigationPanel extends Panel {
     }
   `;
 
+  constructor(editorController) {
+    super(editorController);
+    this.fontController = this.editorController.fontController;
+    this.sceneSettingsController = this.editorController.sceneSettingsController;
+    this.sceneSettings = this.editorController.sceneSettingsController.model;
+    this.sceneModel = this.editorController.sceneController.sceneModel;
+    this.sceneController = this.editorController.sceneController;
+    this.updateResetAllAxesButtonState = throttleCalls(
+      () => this._updateResetAllAxesButtonState(),
+      100
+    );
+  }
+
   getContentElement() {
     return html.div(
       {
@@ -118,18 +131,6 @@ export default class DesignspaceNavigationPanel extends Panel {
           id: "sources-list-add-remove-buttons",
         }),
       ]
-    );
-  }
-
-  connectedCallback() {
-    this.fontController = this.editorController.fontController;
-    this.sceneSettingsController = this.editorController.sceneSettingsController;
-    this.sceneSettings = this.editorController.sceneSettingsController.model;
-    this.sceneModel = this.editorController.sceneController.sceneModel;
-    this.sceneController = this.editorController.sceneController;
-    this.updateResetAllAxesButtonState = throttleCalls(
-      () => this._updateResetAllAxesButtonState(),
-      100
     );
   }
 
