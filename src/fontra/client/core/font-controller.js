@@ -184,6 +184,9 @@ export class FontController {
   }
 
   updateGlyphDependencies(glyph) {
+    if (!glyph) {
+      return;
+    }
     const glyphName = glyph.name;
     // Zap previous used-by data for this glyph, if any
     for (const componentName of this.glyphMadeOf[glyphName] || []) {
