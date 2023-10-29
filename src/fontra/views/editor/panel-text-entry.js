@@ -116,7 +116,6 @@ export default class TextEntryPanel extends Panel {
         if (event.target.classList.contains("selected")) {
           return;
         }
-        console.log(el);
         this.textSettings.align = el.dataset.align;
       };
     }
