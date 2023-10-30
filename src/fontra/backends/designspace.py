@@ -547,6 +547,8 @@ class DesignspaceBackend:
         return {**self.defaultLocation, **globalLocation}
 
     async def deleteGlyph(self, glyphName):
+        if glyphName not in self.glyphMap:
+            raise KeyError(f"Glyph '{glyphName}' does not exist")
         for glyphSet in self.ufoLayers.iterAttrs("glyphSet"):
             if glyphName in glyphSet:
                 glyphSet.deleteGlyph(glyphName)

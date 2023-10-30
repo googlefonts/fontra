@@ -285,6 +285,12 @@ async def test_deleteGlyph(writableTestFont):
     assert await writableTestFont.getGlyph(glyphName) is None
 
 
+async def test_deleteGlyphRaisesKeyError(writableTestFont):
+    glyphName = "A.doesnotexist"
+    with pytest.raises(KeyError, match="Glyph 'A.doesnotexist' does not exist"):
+        await writableTestFont.deleteGlyph(glyphName)
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
