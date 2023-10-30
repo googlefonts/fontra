@@ -1296,8 +1296,8 @@ export class EditorController {
   async _deleteCurrentGlyph(event) {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const result = await dialog(
-      `Are you sure you want to delete glyph "${glyphName}"?`,
-      "This can not be undone.",
+      `Are you sure you want to delete glyph "${glyphName}" from the font project?`,
+      "",
       [
         { title: "Cancel", isCancelButton: true },
         { title: "Delete glyph", isDefaultButton: true, resultValue: "ok" },

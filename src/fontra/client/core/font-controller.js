@@ -240,14 +240,12 @@ export class FontController {
         { p: ["glyphMap"], f: "d", a: [glyphName] },
       ],
     };
-    const error = await this.editFinal(
-      change,
-      rollbackChange,
-      `new glyph "${glyphName}"`,
-      true
-    );
+
+    const undoInfo = { label: `new glyph "${glyphName}"` };
+    const error = await this.editFinal(change, rollbackChange, undoInfo.label, true);
     // TODO handle error
     this.notifyEditListeners("editFinal", this);
+    this.pushUndoRecordForGlyph(glyphName, change, rollbackChange, undoInfo);
   }
 
   async deleteGlyph(glyphName) {
@@ -272,14 +270,11 @@ export class FontController {
       ],
     };
 
-    const error = await this.editFinal(
-      change,
-      rollbackChange,
-      `delete glyph "${glyphName}"`,
-      true
-    );
+    const undoInfo = { label: `delete glyph "${glyphName}"` };
+    const error = await this.editFinal(change, rollbackChange, undoInfo.label, true);
     // TODO handle error
     this.notifyEditListeners("editFinal", this);
+    this.pushUndoRecordForGlyph(glyphName, change, rollbackChange, undoInfo);
   }
 
   async glyphChanged(glyphName, senderInfo) {
@@ -345,6 +340,9 @@ export class FontController {
 
   async _getGlyphInstance(glyphName, location, layerName) {
     const varGlyph = await this.getGlyph(glyphName);
+    if (!varGlyph) {
+      return null;
+    }
     const getGlyphFunc = this.getGlyph.bind(this);
     const instanceController = await varGlyph.instantiateController(
       location,
@@ -551,7 +549,10 @@ export class FontController {
     if (glyphNames.length !== 1 || rbgn.length !== 1 || glyphNames[0] !== rbgn[0]) {
       throw new Error("assertion -- change inconsistency for glyph undo");
     }
-    const glyphName = glyphNames[0];
+    this.pushUndoRecordForGlyph(glyphNames[0], change, rollbackChange, undoInfo);
+  }
+
+  pushUndoRecordForGlyph(glyphName, change, rollbackChange, undoInfo) {
     if (this.undoStacks[glyphName] === undefined) {
       this.undoStacks[glyphName] = new UndoStack();
     }
