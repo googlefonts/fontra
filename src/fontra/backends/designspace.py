@@ -546,6 +546,16 @@ class DesignspaceBackend:
         }
         return {**self.defaultLocation, **globalLocation}
 
+    async def deleteGlyph(self, glyphName):
+        if glyphName not in self.glyphMap:
+            raise KeyError(f"Glyph '{glyphName}' does not exist")
+        for glyphSet in self.ufoLayers.iterAttrs("glyphSet"):
+            if glyphName in glyphSet:
+                glyphSet.deleteGlyph(glyphName)
+                glyphSet.writeContents()
+        del self.glyphMap[glyphName]
+        self.savedGlyphModificationTimes[glyphName] = None
+
     async def getGlobalAxes(self):
         return self.axes
 
@@ -590,7 +600,8 @@ class DesignspaceBackend:
                 glyphMapUpdates[glyphName] = unicodes
 
             for glyphName in changedItems.deletedGlyphs:
-                glyphMapUpdates[glyphName] = None
+                if glyphName in self.glyphMap:
+                    glyphMapUpdates[glyphName] = None
 
             externalChange = makeGlyphMapChange(glyphMapUpdates)
 
@@ -681,7 +692,7 @@ class DesignspaceBackend:
         else:
             mtime = None
         savedMTimes = self.savedGlyphModificationTimes.get(glyphName, ())
-        if mtime not in savedMTimes:
+        if savedMTimes is not None and mtime not in savedMTimes:
             logger.info(f"external change '{glyphName}'")
             changedItems.changedGlyphs.add(glyphName)
 

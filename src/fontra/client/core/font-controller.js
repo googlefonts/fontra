@@ -184,6 +184,9 @@ export class FontController {
   }
 
   updateGlyphDependencies(glyph) {
+    if (!glyph) {
+      return;
+    }
     const glyphName = glyph.name;
     // Zap previous used-by data for this glyph, if any
     for (const componentName of this.glyphMadeOf[glyphName] || []) {
@@ -241,6 +244,38 @@ export class FontController {
       change,
       rollbackChange,
       `new glyph "${glyphName}"`,
+      true
+    );
+    // TODO handle error
+    this.notifyEditListeners("editFinal", this);
+  }
+
+  async deleteGlyph(glyphName) {
+    const codePoints = this.glyphMap[glyphName];
+    if (!codePoints) {
+      throw new Error(`assert -- glyph "${glyphName}" does not exists`);
+    }
+    const glyph = (await this.getGlyph(glyphName)).glyph;
+    this._purgeGlyphCache(glyphName);
+    delete this.glyphMap[glyphName];
+
+    const change = {
+      c: [
+        { p: ["glyphs"], f: "d", a: [glyphName] },
+        { p: ["glyphMap"], f: "d", a: [glyphName] },
+      ],
+    };
+    const rollbackChange = {
+      c: [
+        { p: ["glyphs"], f: "=", a: [glyphName, glyph] },
+        { p: ["glyphMap"], f: "=", a: [glyphName, codePoints] },
+      ],
+    };
+
+    const error = await this.editFinal(
+      change,
+      rollbackChange,
+      `delete glyph "${glyphName}"`,
       true
     );
     // TODO handle error
