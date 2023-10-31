@@ -17,7 +17,6 @@ import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { equalGlyphSelection } from "./scene-controller.js";
 import { dialog } from "/web-components/modal-dialog.js";
-VariableGlyph;
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
