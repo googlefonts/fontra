@@ -884,10 +884,7 @@ export class EditorController {
 
   canCut() {
     return (
-      !!(
-        this.sceneSettings.selectedGlyph.isEditing &&
-        this.sceneController.selection.size
-      ) || !this.sceneSettings.selectedGlyph.isEditing
+      !this.sceneSettings.selectedGlyph.isEditing || this.sceneController.selection.size
     );
   }
 
@@ -904,7 +901,6 @@ export class EditorController {
         this.sceneSettings.selectedGlyphName,
         `cut glyph "${this.sceneSettings.selectedGlyphName}"`
       );
-      console.log("cut whole glpyhhh");
       return;
     }
     if (event) {
