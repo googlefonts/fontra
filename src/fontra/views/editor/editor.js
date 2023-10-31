@@ -1125,10 +1125,39 @@ export class EditorController {
         );
         pasteVarGlyph = null;
       }
+    } else if (!pasteVarGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
+      // We're pasting layers onto a glyph in select mode. Build a VariableGlyph
+      // from the layers as good as we can.
+      const layers = {};
+      const sources = [];
+      if (pasteLayerGlyphs.length === 1) {
+        const layerName = "<default>";
+        layers[layerName] = { glyph: pasteLayerGlyphs[0].glyph };
+        sources.push({ name: layerName, layerName });
+      } else {
+        for (const { layerName, location, glyph } of pasteLayerGlyphs) {
+          if (layerName) {
+            layers[layerName] = { glyph };
+            sources.push({ name: layerName, layerName, location: location || {} });
+          }
+        }
+      }
+      pasteVarGlyph = VariableGlyph.fromObject({ layers, sources });
+      pasteLayerGlyphs = null;
     }
 
     if (pasteVarGlyph) {
-      await this._pasteReplaceGlyph(pasteVarGlyph);
+      const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+      if (positionedGlyph.isUndefined) {
+        await this.newGlyph(
+          positionedGlyph.glyphName,
+          positionedGlyph.character?.codePointAt(0),
+          pasteVarGlyph,
+          `paste new glyph "${positionedGlyph.glyphName}"`
+        );
+      } else {
+        await this._pasteReplaceGlyph(pasteVarGlyph);
+      }
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
@@ -1503,8 +1532,8 @@ export class EditorController {
     showMenu(menuItems, { x: x + 1, y: y - 1 }, event.target);
   }
 
-  async newGlyph(glyphName, codePoint, templateInstance) {
-    await this.fontController.newGlyph(glyphName, codePoint, templateInstance);
+  async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {
+    await this.fontController.newGlyph(glyphName, codePoint, varGlyph, undoLabel);
   }
 
   async externalChange(change, isLiveChange) {
