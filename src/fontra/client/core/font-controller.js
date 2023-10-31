@@ -216,6 +216,7 @@ export class FontController {
     const sourceName = "<default>"; // TODO: get from backend (via namedLocations?)
 
     const glyph = VariableGlyph.fromObject(varGlyph);
+    glyph.name = glyphName;
     const glyphController = this.makeVariableGlyphController(glyph);
     this._glyphsPromiseCache.put(glyphName, Promise.resolve(glyphController));
 
