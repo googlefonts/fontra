@@ -1125,6 +1125,25 @@ export class EditorController {
         );
         pasteVarGlyph = null;
       }
+    } else if (!pasteVarGlyph && !this.sceneSettings.selectedGlyph.isEditing) {
+      // We're pasting layers onto a glyph in select mode. Build a VariableGlyph
+      // from the layers as good as we can.
+      const layers = {};
+      const sources = [];
+      if (pasteLayerGlyphs.length === 1) {
+        const layerName = "<default>";
+        layers[layerName] = { glyph: pasteLayerGlyphs[0].glyph };
+        sources.push({ name: layerName, layerName });
+      } else {
+        for (const { layerName, location, glyph } of pasteLayerGlyphs) {
+          if (layerName) {
+            layers[layerName] = { glyph };
+            sources.push({ name: layerName, layerName, location: location || {} });
+          }
+        }
+      }
+      pasteVarGlyph = VariableGlyph.fromObject({ layers, sources });
+      pasteLayerGlyphs = null;
     }
 
     if (pasteVarGlyph) {
