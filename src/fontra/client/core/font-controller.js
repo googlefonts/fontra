@@ -245,7 +245,7 @@ export class FontController {
     this.pushUndoRecordForGlyph(glyphName, change, rollbackChange, undoInfo);
   }
 
-  async deleteGlyph(glyphName) {
+  async deleteGlyph(glyphName, undoLabel = null) {
     const codePoints = this.glyphMap[glyphName];
     if (!codePoints) {
       throw new Error(`assert -- glyph "${glyphName}" does not exists`);
@@ -267,7 +267,7 @@ export class FontController {
       ],
     };
 
-    const undoInfo = { label: `delete glyph "${glyphName}"` };
+    const undoInfo = { label: undoLabel || `delete glyph "${glyphName}"` };
     const error = await this.editFinal(change, rollbackChange, undoInfo.label, true);
     // TODO handle error
     this.notifyEditListeners("editFinal", this);
