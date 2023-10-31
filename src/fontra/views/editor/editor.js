@@ -1152,7 +1152,8 @@ export class EditorController {
         await this.newGlyph(
           positionedGlyph.glyphName,
           positionedGlyph.character?.codePointAt(0),
-          pasteVarGlyph
+          pasteVarGlyph,
+          `paste new glyph "${positionedGlyph.glyphName}"`
         );
       } else {
         await this._pasteReplaceGlyph(pasteVarGlyph);
@@ -1531,8 +1532,8 @@ export class EditorController {
     showMenu(menuItems, { x: x + 1, y: y - 1 }, event.target);
   }
 
-  async newGlyph(glyphName, codePoint, varGlyph) {
-    await this.fontController.newGlyph(glyphName, codePoint, varGlyph);
+  async newGlyph(glyphName, codePoint, varGlyph, undoLabel) {
+    await this.fontController.newGlyph(glyphName, codePoint, varGlyph, undoLabel);
   }
 
   async externalChange(change, isLiveChange) {

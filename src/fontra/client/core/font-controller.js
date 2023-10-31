@@ -204,7 +204,7 @@ export class FontController {
     }
   }
 
-  async newGlyph(glyphName, codePoint, varGlyph) {
+  async newGlyph(glyphName, codePoint, varGlyph, undoLabel) {
     if (this.glyphMap[glyphName]) {
       throw new Error(`assert -- glyph "${glyphName}" already exists`);
     }
@@ -238,7 +238,7 @@ export class FontController {
       ],
     };
 
-    const undoInfo = { label: `new glyph "${glyphName}"` };
+    const undoInfo = { label: undoLabel || `new glyph "${glyphName}"` };
     const error = await this.editFinal(change, rollbackChange, undoInfo.label, true);
     // TODO handle error
     this.notifyEditListeners("editFinal", this);
