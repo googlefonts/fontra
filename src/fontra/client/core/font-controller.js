@@ -204,7 +204,7 @@ export class FontController {
     }
   }
 
-  async newGlyph(glyphName, codePoint, varGlyph, undoLabel) {
+  async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {
     if (this.glyphMap[glyphName]) {
       throw new Error(`assert -- glyph "${glyphName}" already exists`);
     }

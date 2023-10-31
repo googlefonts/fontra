@@ -1532,7 +1532,7 @@ export class EditorController {
     showMenu(menuItems, { x: x + 1, y: y - 1 }, event.target);
   }
 
-  async newGlyph(glyphName, codePoint, varGlyph, undoLabel) {
+  async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {
     await this.fontController.newGlyph(glyphName, codePoint, varGlyph, undoLabel);
   }
 
