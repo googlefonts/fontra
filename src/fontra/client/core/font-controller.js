@@ -460,6 +460,7 @@ export class FontController {
     for (const glyphName of glyphNames) {
       glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
     }
+
     this._rootObject["glyphs"] = glyphSet;
     applyChange(this._rootObject, change, this._rootClassDef);
     delete this._rootObject["glyphs"];
