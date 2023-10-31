@@ -448,6 +448,11 @@ export class FontController {
 
   async applyChange(change, isExternalChange) {
     const cachedPattern = this.getCachedDataPattern();
+
+    const unmatched = filterChangePattern(change, cachedPattern, true);
+    const glyphSetChange = unmatched
+      ? filterChangePattern(unmatched, { glyphs: null })
+      : null;
     change = filterChangePattern(change, cachedPattern);
 
     const glyphNames = collectGlyphNames(change);
@@ -455,9 +460,33 @@ export class FontController {
     for (const glyphName of glyphNames) {
       glyphSet[glyphName] = (await this.getGlyph(glyphName)).glyph;
     }
+
     this._rootObject["glyphs"] = glyphSet;
     applyChange(this._rootObject, change, this._rootClassDef);
     delete this._rootObject["glyphs"];
+
+    if (glyphSetChange) {
+      // Some glyphs got added and/or some glyphs got deleted, let's find out which.
+      const glyphSet = {};
+      const glyphSetTracker = objectPropertyTracker(glyphSet);
+      applyChange(
+        { glyphs: glyphSetTracker.proxy },
+        glyphSetChange,
+        this._rootClassDef
+      );
+      for (const glyphName of glyphSetTracker.addedProperties) {
+        this._glyphsPromiseCache.put(
+          glyphName,
+          Promise.resolve(this.makeVariableGlyphController(glyphSet[glyphName]))
+        );
+        glyphNames.push(glyphName);
+      }
+      for (const glyphName of glyphSetTracker.deletedProperties) {
+        this._glyphsPromiseCache.delete(glyphName);
+        glyphNames.push(glyphName);
+      }
+    }
+
     for (const glyphName of glyphNames) {
       this.glyphChanged(glyphName, { senderID: this });
       if (isExternalChange) {
@@ -721,4 +750,27 @@ function setPopFirst(set) {
   }
   set.delete(firstItem);
   return firstItem;
+}
+
+function objectPropertyTracker(obj) {
+  const addedProperties = new Set();
+  const deletedProperties = new Set();
+
+  const handler = {
+    set(obj, prop, value) {
+      deletedProperties.delete(prop);
+      addedProperties.add(prop);
+      obj[prop] = value;
+      return true;
+    },
+    deleteProperty(glyphMap, prop) {
+      addedProperties.delete(prop);
+      deletedProperties.add(prop);
+      delete obj[prop];
+      return true;
+    },
+  };
+
+  const proxy = new Proxy(obj, handler);
+  return { proxy, addedProperties, deletedProperties };
 }
