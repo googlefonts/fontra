@@ -1147,7 +1147,16 @@ export class EditorController {
     }
 
     if (pasteVarGlyph) {
-      await this._pasteReplaceGlyph(pasteVarGlyph);
+      const positionedGlyph = this.sceneModel.getSelectedPositionedGlyph();
+      if (positionedGlyph.isUndefined) {
+        await this.newGlyph(
+          positionedGlyph.glyphName,
+          positionedGlyph.character?.codePointAt(0),
+          pasteVarGlyph
+        );
+      } else {
+        await this._pasteReplaceGlyph(pasteVarGlyph);
+      }
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
