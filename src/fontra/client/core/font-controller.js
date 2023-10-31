@@ -204,7 +204,7 @@ export class FontController {
     }
   }
 
-  async newGlyph(glyphName, codePoint, templateInstance) {
+  async newGlyph(glyphName, codePoint, varGlyph) {
     if (this.glyphMap[glyphName]) {
       throw new Error(`assert -- glyph "${glyphName}" already exists`);
     }
@@ -215,11 +215,7 @@ export class FontController {
     }
     const sourceName = "<default>"; // TODO: get from backend (via namedLocations?)
 
-    const glyph = VariableGlyph.fromObject({
-      name: glyphName,
-      sources: [{ name: sourceName, location: {}, layerName: sourceName }],
-      layers: { [sourceName]: { glyph: structuredClone(templateInstance) } },
-    });
+    const glyph = VariableGlyph.fromObject(varGlyph);
     const glyphController = this.makeVariableGlyphController(glyph);
     this._glyphsPromiseCache.put(glyphName, Promise.resolve(glyphController));
 

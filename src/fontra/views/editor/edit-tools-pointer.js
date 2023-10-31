@@ -10,12 +10,14 @@ import {
   parseSelection,
   range,
 } from "../core/utils.js";
+import { VariableGlyph } from "../core/var-glyph.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { equalGlyphSelection } from "./scene-controller.js";
 import { dialog } from "/web-components/modal-dialog.js";
+VariableGlyph;
 
 export class PointerTool extends BaseTool {
   iconPath = "/images/pointer.svg";
@@ -148,6 +150,8 @@ export class PointerTool extends BaseTool {
         : undefined;
       const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph?.isUndefined) {
+        // Create a new glyph
+        // TODO: dispatch event and let editor.js handle it
         this.sceneSettings.selectedGlyph = {
           ...this.sceneSettings.selectedGlyph,
           isEditing: false,
@@ -169,10 +173,15 @@ export class PointerTool extends BaseTool {
           ]
         );
         if (result === "ok") {
+          const layerName = "<default>";
           await this.editor.newGlyph(
             positionedGlyph.glyphName,
             positionedGlyph.character?.codePointAt(0),
-            positionedGlyph.glyph.instance
+            VariableGlyph.fromObject({
+              name: positionedGlyph.glyphName,
+              sources: [{ name: layerName, location: {}, layerName: layerName }],
+              layers: { [layerName]: { glyph: positionedGlyph.glyph.instance } },
+            })
           );
           this.sceneSettings.selectedGlyph = {
             ...this.sceneSettings.selectedGlyph,

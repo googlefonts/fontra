@@ -1522,8 +1522,8 @@ export class EditorController {
     showMenu(menuItems, { x: x + 1, y: y - 1 }, event.target);
   }
 
-  async newGlyph(glyphName, codePoint, templateInstance) {
-    await this.fontController.newGlyph(glyphName, codePoint, templateInstance);
+  async newGlyph(glyphName, codePoint, varGlyph) {
+    await this.fontController.newGlyph(glyphName, codePoint, varGlyph);
   }
 
   async externalChange(change, isLiveChange) {
