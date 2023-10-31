@@ -883,11 +883,24 @@ export class EditorController {
   }
 
   canCut() {
-    return !!this.sceneController.selection.size;
+    return (
+      !this.sceneSettings.selectedGlyph.isEditing || this.sceneController.selection.size
+    );
   }
 
   async doCut(event = null) {
-    if (!this.sceneController.selection.size) {
+    if (
+      this.sceneSettings.selectedGlyph.isEditing &&
+      !this.sceneController.selection.size
+    ) {
+      return;
+    }
+    if (!this.sceneSettings.selectedGlyph.isEditing) {
+      await this.doCopy(event);
+      this.fontController.deleteGlyph(
+        this.sceneSettings.selectedGlyphName,
+        `cut glyph "${this.sceneSettings.selectedGlyphName}"`
+      );
       return;
     }
     if (event) {
