@@ -178,7 +178,6 @@ export class RangeSlider extends html.UnlitElement {
     const isValid = event.target.reportValidity() && isNumeric(value);
     if (isValid) {
       value = Number(value);
-      value = clamp(value, this.minValue, this.maxValue);
     } else {
       event.target.setAttribute("aria-invalid", !isValid);
       if (!isNumeric(value)) {
