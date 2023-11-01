@@ -1,5 +1,5 @@
+import * as html from "../core/html-utils.js";
 import { clamp, round } from "../core/utils.js";
-import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const colors = {
@@ -8,9 +8,9 @@ const colors = {
   "track-color": ["#ccc", "#222"],
 };
 
-export class RangeSlider extends LitElement {
-  static styles = css`
-    ${unsafeCSS(themeColorCSS(colors))}
+export class RangeSlider extends html.UnlitElement {
+  static styles = `
+    ${themeColorCSS(colors)}
 
     :host {
       --thumb-height: 14px;
@@ -150,7 +150,6 @@ export class RangeSlider extends LitElement {
     maxValue: { type: Number },
     defaultValue: { type: Number },
     value: { type: Number },
-    tickmarksPositions: { type: Array },
     step: { type: Number },
     onChangeCallback: { type: Function },
   };
@@ -162,73 +161,51 @@ export class RangeSlider extends LitElement {
     this.maxValue = 100;
     this.defaultValue = this.minValue;
     this.value = this.defaultValue;
-    this.tickmarksPositions = [];
-    this.step = "any";
+    this.step = 1;
     this.sawMouseDown = false;
     this.sawMouseUp = false;
     this.onChangeCallback = () => {};
   }
 
-  render() {
-    delete this._rangeInputElement;
+  get valueFormatted() {
     const minMaxRange = this.maxValue - this.minValue;
     const decimalPlaces = minMaxRange < 100 ? 3 : 2;
-    const value = round(this.value, decimalPlaces);
-    const minValue = round(this.minValue, decimalPlaces);
-    const defaultValue = round(this.defaultValue, decimalPlaces);
-    const maxValue = round(this.maxValue, decimalPlaces);
-    const isAtDefault = this.value == this.defaultValue;
-    this.updateIsAtDefault();
-    return html`
-      <section class="wrapper">
-        <div class="numeric-input">
-          <section class="slider-input">
-            <input
-              type="number"
-              @change=${this.changeValue}
-              @keydown=${this.handleKeyDown}
-              class="slider-numeric-input"
-              min=${this.minValue}
-              max=${this.maxValue}
-              step=${this.step}
-              pattern="[0-9]+"
-              .value=${value}
-            />
-          </section>
-        </div>
-        <div class="range-container">
-          <input
-            type="range"
-            @input=${this.changeValue}
-            @change=${this.handleChange}
-            @mousedown=${this.handleMouseDown}
-            @keydown=${this.handleKeyDown}
-            @mouseup=${this.handleMouseUp}
-            class="slider ${isAtDefault ? "is-at-default" : ""}"
-            min=${this.minValue}
-            max=${this.maxValue}
-            step=${this.step}
-            .value=${this.value}
-            list="markers"
-            tabindex="-1"
-          />
-        </div>
-      </section>
-    `;
+    return round(this.value, decimalPlaces);
   }
 
-  handleKeyDown(event) {
+  getValueFromEventTarget(event) {
+    let value = event.target.value;
+    const isValid = event.target.reportValidity() && isNumeric(value);
+    if (isValid) {
+      value = Number(value);
+      value = clamp(value, this.minValue, this.maxValue);
+    } else {
+      event.target.setAttribute("aria-invalid", !isValid);
+      if (!isNumeric(value)) {
+        value = this.defaultValue;
+      } else if (value < this.minValue) {
+        value = this.minValue;
+      } else if (value > this.maxValue) {
+        value = this.maxValue;
+      } else {
+        value = this.defaultValue;
+      }
+    }
+    return value;
+  }
+
+  onKeyDown(event) {
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
     }
+    let value = this.getValueFromEventTarget(event);
     let increment = event.shiftKey ? 10 : 1;
-    let newValue;
     switch (event.key) {
       case "ArrowDown":
-        newValue = this.value - increment;
+        value = value - increment;
         break;
       case "ArrowUp":
-        newValue = this.value + increment;
+        value = value + increment;
         break;
       default: {
         return;
@@ -236,94 +213,112 @@ export class RangeSlider extends LitElement {
     }
 
     event.preventDefault();
-    this.value = clamp(newValue, this.minValue, this.maxValue);
-    this.updateIsAtDefault();
-    this.onChangeCallback({ value: this.value });
+
+    value = clamp(value, this.minValue, this.maxValue);
+    this.rangeInput.value = value;
+    this.numberInput.value = value;
+    this.updateIsAtDefault(value);
   }
 
-  handleMouseDown(event) {
-    this.sawMouseDown = true;
-    this.sawMouseUp = false;
-    const activeElement = document.activeElement;
-    this._savedCanvasElement =
-      activeElement?.id === "edit-canvas" ? activeElement : undefined;
-    if (event.altKey) {
-      event.preventDefault();
-      this.reset(event);
-    }
+  updateIsAtDefault(value) {
+    this.rangeInput.classList.toggle("is-at-default", value == this.defaultValue);
   }
 
-  handleMouseUp(event) {
-    this._savedCanvasElement?.focus();
-    this.sawMouseDown = false;
-    this.sawMouseUp = true;
-    if (!this.sawChangeEvent) {
-      this.onChangeCallback({ value: this.value, dragEnd: true });
-    }
-    this.sawChangeEvent = false;
-  }
-
-  handleChange(event) {
-    if (!this.sawMouseUp) {
-      this.onChangeCallback({ value: this.value, dragEnd: true });
-    }
-    this.sawMouseUp = false;
-    this.sawChangeEvent = true;
-  }
-
-  changeValue(event) {
-    const value = event.target.value;
-    const isValid = event.target.reportValidity() && isNumeric(value);
-    if (isValid) {
-      this.value = Number(value);
-    } else {
-      event.target.setAttribute("aria-invalid", !isValid);
-      if (!isNumeric(value)) {
-        this.value = this.defaultValue;
-      } else if (value < this.minValue) {
-        this.value = this.minValue;
-      } else if (value > this.maxValue) {
-        this.value = this.maxValue;
-      } else {
-        this.value = this.defaultValue;
-      }
-    }
-    this.updateIsAtDefault();
-
-    const callbackEvent = { value: this.value };
-    if (this.sawMouseDown) {
-      callbackEvent.dragBegin = true;
-    }
-    this.sawMouseDown = false;
-    this.onChangeCallback(callbackEvent);
-  }
-
-  updateIsAtDefault() {
-    if (!this._rangeInputElement) {
-      this._rangeInputElement = this.shadowRoot.querySelector(`input[type="range"]`);
-    }
-    this._rangeInputElement?.classList.toggle(
-      "is-at-default",
-      this.value == this.defaultValue
+  render() {
+    const isAtDefault = this.value == this.defaultValue;
+    return html.div(
+      {
+        class: "wrapper",
+      },
+      [
+        html.div({ class: "numeric-input" }, [
+          html.section({ class: "slider-input" }, [
+            (this.numberInput = html.input({
+              type: "number",
+              class: "slider-numeric-input",
+              value: this.valueFormatted,
+              step: this.step,
+              min: this.minValue,
+              max: this.maxValue,
+              pattern: "[0-9]+",
+              onkeydown: (event) => this.onKeyDown(event),
+              onchange: (event) => {
+                const value = this.getValueFromEventTarget(event);
+                this.rangeInput.value = value;
+                this.numberInput.value = value;
+                const callbackEvent = { value };
+                if (this.sawMouseDown) {
+                  callbackEvent.dragBegin = true;
+                }
+                this.sawMouseDown = false;
+                this.onChangeCallback(callbackEvent);
+                this.updateIsAtDefault(value);
+              },
+            })),
+          ]),
+        ]),
+        html.div({ class: "range-container" }, [
+          (this.rangeInput = html.input({
+            type: "range",
+            class: isAtDefault ? "slider is-at-default" : "slider",
+            min: this.minValue,
+            max: this.maxValue,
+            value: this.valueFormatted,
+            tabindex: "-1",
+            onkeydown: (event) => this.onKeyDown(event),
+            onmouseup: (event) => {
+              this._savedCanvasElement?.focus();
+              this.sawMouseDown = false;
+              this.sawMouseUp = true;
+              if (!this.sawChangeEvent) {
+                this.onChangeCallback({
+                  value: this.getValueFromEventTarget(event),
+                  dragEnd: true,
+                });
+              }
+              this.sawChangeEvent = false;
+            },
+            onmousedown: (event) => {
+              this.sawMouseDown = true;
+              this.sawMouseUp = false;
+              const activeElement = document.activeElement;
+              this._savedCanvasElement =
+                activeElement?.id === "edit-canvas" ? activeElement : undefined;
+              if (event.altKey) {
+                event.preventDefault();
+                this.reset(event);
+              }
+            },
+            onchange: (event) => {
+              if (!this.sawMouseUp) {
+                this.onChangeCallback({
+                  value: this.getValueFromEventTarget(event),
+                  dragEnd: true,
+                });
+              }
+              this.sawMouseUp = false;
+              this.sawChangeEvent = true;
+            },
+            oninput: (event) => {
+              const value = this.getValueFromEventTarget(event);
+              this.numberInput.value = value;
+              const callbackEvent = { value };
+              if (this.sawMouseDown) {
+                callbackEvent.dragBegin = true;
+              }
+              this.sawMouseDown = false;
+              this.onChangeCallback(callbackEvent);
+              this.updateIsAtDefault(value);
+            },
+          })),
+        ]),
+      ]
     );
-  }
-
-  toggleFoldable(event) {
-    const marker = this.shadowRoot.querySelector(".foldable-marker");
-    marker?.classList.toggle("active");
-    const foldable = this.shadowRoot.querySelector(".foldable");
-    foldable.classList.toggle("active");
   }
 
   reset(event) {
     this.value = this.defaultValue;
     this.onChangeCallback({ value: this.value });
-  }
-
-  buildTickmarks() {
-    if (this.defaultValue > this.minValue && this.defaultValue <= this.maxValue) {
-      this.tickmarksPositions.push(this.defaultValue);
-    }
   }
 }
 
