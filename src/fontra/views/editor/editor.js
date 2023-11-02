@@ -686,7 +686,10 @@ export class EditorController {
       //   shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: true },
       // },
       {
-        title: "Delete",
+        title: () =>
+          this.sceneSettings.selectedGlyph?.isEditing
+            ? "Delete selection"
+            : "Delete glyph",
         enabled: () => this.canDelete(),
         callback: (event) => this.doDelete(event),
         shortCut: {
