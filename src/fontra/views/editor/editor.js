@@ -1314,7 +1314,8 @@ export class EditorController {
 
   canDelete() {
     return (
-      this.sceneSettings.selectedGlyph ||
+      (this.sceneSettings.selectedGlyph &&
+        !this.sceneSettings.selectedGlyph.isEditing) ||
       (this.sceneSettings.selectedGlyph?.isEditing &&
         this.sceneController.selection.size > 0)
     );
