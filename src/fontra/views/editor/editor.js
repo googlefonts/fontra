@@ -678,27 +678,19 @@ export class EditorController {
       );
     }
 
-    this.basicContextMenuItems.push(
-      // {
-      //   title: "Deep Paste",
-      //   enabled: () => this.canDeepPaste(),
-      //   callback: () => this.doDeepPaste(),
-      //   shortCut: { keysOrCodes: "v", metaKey: true, shiftKey: true },
-      // },
-      {
-        title: () =>
-          this.sceneSettings.selectedGlyph?.isEditing
-            ? "Delete selection"
-            : "Delete glyph",
-        enabled: () => this.canDelete(),
-        callback: (event) => this.doDelete(event),
-        shortCut: {
-          keysOrCodes: ["Delete", "Backspace"],
-          metaKey: false,
-          shiftKey: false,
-        },
-      }
-    );
+    this.basicContextMenuItems.push({
+      title: () =>
+        this.sceneSettings.selectedGlyph?.isEditing
+          ? "Delete selection"
+          : "Delete glyph",
+      enabled: () => this.canDelete(),
+      callback: (event) => this.doDelete(event),
+      shortCut: {
+        keysOrCodes: ["Delete", "Backspace"],
+        metaKey: false,
+        shiftKey: false,
+      },
+    });
 
     this.basicContextMenuItems.push(MenuItemDivider);
 
@@ -1305,14 +1297,6 @@ export class EditorController {
   async parseClipboard(data) {
     const result = await parseClipboard(data);
     return result ? StaticGlyph.fromObject(result) : undefined;
-  }
-
-  canDeepPaste() {
-    return true;
-  }
-
-  doDeepPaste() {
-    console.log("deep paste");
   }
 
   canDelete() {
