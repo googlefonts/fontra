@@ -464,10 +464,6 @@ export class EditorController {
 
     sidebar.addPanel(panelElement);
 
-    if (typeof panelElement["attach"] === "function") {
-      panelElement.attach();
-    }
-
     const tabElement = document.querySelector(
       `.sidebar-tab[data-sidebar-name="${panelElement.identifier}"]`
     );

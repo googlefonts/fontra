@@ -62,6 +62,18 @@ export default class TextEntryPanel extends Panel {
     }
   `;
 
+  constructor(editorController) {
+    super(editorController);
+
+    this.textSettingsController = this.editorController.sceneSettingsController;
+    this.sceneController = this.editorController.sceneController;
+    this.textSettings = this.editorController.sceneSettingsController.model;
+
+    this.setupTextEntryElement();
+    this.setupTextAlignElement();
+    this.setupIntersectionObserver();
+  }
+
   getContentElement() {
     return html.div(
       {
@@ -185,16 +197,6 @@ export default class TextEntryPanel extends Panel {
 
   focusTextEntry() {
     this.textEntryElement.focus();
-  }
-
-  attach() {
-    this.textSettingsController = this.editorController.sceneSettingsController;
-    this.sceneController = this.editorController.sceneController;
-    this.textSettings = this.editorController.sceneSettingsController.model;
-
-    this.setupTextEntryElement();
-    this.setupTextAlignElement();
-    this.setupIntersectionObserver();
   }
 
   async toggle(on, focus) {

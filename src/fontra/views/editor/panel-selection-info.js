@@ -36,22 +36,8 @@ export default class SelectionInfoPanel extends Panel {
     }
   `;
 
-  getContentElement() {
-    return html.div(
-      {
-        class: "selection-info",
-      },
-      []
-    );
-  }
-
-  async toggle(on, focus) {
-    if (on) {
-      this.update();
-    }
-  }
-
-  attach() {
+  constructor(editorController) {
+    super(editorController);
     this.infoForm = new Form();
     this.contentElement.appendChild(this.infoForm);
     this.contentElement.appendChild(this.setupBehaviorCheckBox());
@@ -80,6 +66,21 @@ export default class SelectionInfoPanel extends Panel {
     this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
       this.update();
     });
+  }
+
+  getContentElement() {
+    return html.div(
+      {
+        class: "selection-info",
+      },
+      []
+    );
+  }
+
+  async toggle(on, focus) {
+    if (on) {
+      this.update();
+    }
   }
 
   setupBehaviorCheckBox() {

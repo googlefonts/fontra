@@ -247,6 +247,35 @@ export default class ReferenceFontPanel extends Panel {
     }
   `;
 
+  constructor(editorController) {
+    super(editorController);
+
+    fetchJSON("/editor/language-mapping.json").then((languageMapping) => {
+      this.languageMapping = languageMapping;
+    });
+
+    this.controller.addKeyListener("referenceFontName", (event) => {
+      if (event.newValue) {
+        this.editorController.visualizationLayersSettings.model[
+          "fontra.reference.font"
+        ] = true;
+      }
+      this.editorController.canvasController.requestUpdate();
+    });
+
+    this.controller.addKeyListener("charOverride", (event) => {
+      this.editorController.canvasController.requestUpdate();
+    });
+
+    this.controller.addKeyListener("languageCode", (event) => {
+      this.editorController.canvasController.setLangAttribute(this.model.languageCode);
+    });
+
+    this.editorController.canvasController.setLangAttribute(this.model.languageCode);
+
+    referenceFontModel = this.model;
+  }
+
   _fontListChangedHandler(event) {
     if (event.senderInfo?.senderID === this) {
       return;
@@ -542,31 +571,6 @@ export default class ReferenceFontPanel extends Panel {
         ),
       ]
     );
-  }
-
-  attach() {
-    fetchJSON("/editor/language-mapping.json").then((languageMapping) => {
-      this.languageMapping = languageMapping;
-    });
-    this.controller.addKeyListener("referenceFontName", (event) => {
-      if (event.newValue) {
-        this.editorController.visualizationLayersSettings.model[
-          "fontra.reference.font"
-        ] = true;
-      }
-      this.editorController.canvasController.requestUpdate();
-    });
-    this.controller.addKeyListener("charOverride", (event) => {
-      this.editorController.canvasController.requestUpdate();
-    });
-
-    this.controller.addKeyListener("languageCode", (event) => {
-      this.editorController.canvasController.setLangAttribute(this.model.languageCode);
-    });
-
-    this.editorController.canvasController.setLangAttribute(this.model.languageCode);
-
-    referenceFontModel = this.model;
   }
 }
 
