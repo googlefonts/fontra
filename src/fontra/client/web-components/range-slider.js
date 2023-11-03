@@ -158,6 +158,7 @@ export class RangeSlider extends html.UnlitElement {
     // Fallbacks for attributes that are not defined when calling the component
     this.minValue = 0;
     this.maxValue = 100;
+    this.defaultValue = this.minValue;
     this.value = this.defaultValue;
     this.step = 1;
     this.sawMouseDown = false;
