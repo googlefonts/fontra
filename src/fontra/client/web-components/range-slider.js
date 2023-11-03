@@ -149,7 +149,6 @@ export class RangeSlider extends html.UnlitElement {
     minValue: { type: Number },
     maxValue: { type: Number },
     defaultValue: { type: Number },
-    value: { type: Number },
     step: { type: Number },
     onChangeCallback: { type: Function },
   };
@@ -160,7 +159,6 @@ export class RangeSlider extends html.UnlitElement {
     this.minValue = 0;
     this.maxValue = 100;
     this.defaultValue = this.minValue;
-    this.value = this.defaultValue;
     this.step = 1;
     this.sawMouseDown = false;
     this.sawMouseUp = false;
@@ -171,6 +169,16 @@ export class RangeSlider extends html.UnlitElement {
     const minMaxRange = this.maxValue - this.minValue;
     const decimalPlaces = minMaxRange < 100 ? 3 : 2;
     return round(this.value, decimalPlaces);
+  }
+
+  set value(value) {
+    this._value = value;
+    if (this.rangeInput) this.rangeInput.value = value;
+    if (this.numberInput) this.numberInput.value = value;
+  }
+
+  get value() {
+    return this._value;
   }
 
   getValueFromEventTarget(event) {
@@ -214,8 +222,7 @@ export class RangeSlider extends html.UnlitElement {
     event.preventDefault();
 
     value = clamp(value, this.minValue, this.maxValue);
-    this.rangeInput.value = value;
-    this.numberInput.value = value;
+    this.value = value;
     this.updateIsAtDefault(value);
   }
 
@@ -243,8 +250,7 @@ export class RangeSlider extends html.UnlitElement {
               onkeydown: (event) => this.onKeyDown(event),
               onchange: (event) => {
                 const value = this.getValueFromEventTarget(event);
-                this.rangeInput.value = value;
-                this.numberInput.value = value;
+                this.value = value;
                 const callbackEvent = { value };
                 if (this.sawMouseDown) {
                   callbackEvent.dragBegin = true;
@@ -300,7 +306,7 @@ export class RangeSlider extends html.UnlitElement {
             },
             oninput: (event) => {
               const value = this.getValueFromEventTarget(event);
-              this.numberInput.value = value;
+              this.value = value;
               const callbackEvent = { value };
               if (this.sawMouseDown) {
                 callbackEvent.dragBegin = true;
