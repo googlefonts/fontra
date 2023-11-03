@@ -66,7 +66,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
             }
           } else {
             // This is a regular glyph name, but it doesn't exist in the font.
-            // Try to see if there's a code point assiciated with it.
+            // Try to see if there's a code point associated with it.
             const codePoint = await getUnicodeFromGlyphName(glyphName);
             if (codePoint) {
               char = String.fromCodePoint(codePoint);
