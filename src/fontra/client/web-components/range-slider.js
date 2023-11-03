@@ -191,7 +191,7 @@ export class RangeSlider extends html.UnlitElement {
     const isValid = event.target.reportValidity();
     if (!isValid) {
       event.target.setAttribute("aria-invalid", "true");
-      if (event.target.validity.badInput) {
+      if (event.target.validity.badInput || event.target.validity.valueMissing) {
         value = this.defaultValue;
       } else if (value < this.minValue) {
         value = this.minValue;
@@ -247,6 +247,7 @@ export class RangeSlider extends html.UnlitElement {
               class: "slider-numeric-input",
               value: this.valueFormatted,
               step: this.step,
+              required: "required",
               min: this.minValue,
               max: this.maxValue,
               pattern: "[0-9]+",
