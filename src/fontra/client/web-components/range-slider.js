@@ -183,13 +183,11 @@ export class RangeSlider extends html.UnlitElement {
   }
 
   getValueFromEventTarget(event) {
-    let value = event.target.value;
-    const isValid = event.target.reportValidity() && isNumeric(value);
-    if (isValid) {
-      value = Number(value);
-    } else {
-      event.target.setAttribute("aria-invalid", !isValid);
-      if (!isNumeric(value)) {
+    let value = event.target.valueAsNumber;
+    const isValid = event.target.reportValidity();
+    if (!isValid) {
+      event.target.setAttribute("aria-invalid", "true");
+      if (event.target.validity.badInput) {
         value = this.defaultValue;
       } else if (value < this.minValue) {
         value = this.minValue;
@@ -329,14 +327,3 @@ export class RangeSlider extends html.UnlitElement {
 }
 
 customElements.define("range-slider", RangeSlider);
-
-function isNumeric(str) {
-  if (typeof str != "string") {
-    // we only process strings
-    return false;
-  }
-  return (
-    !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
-    !isNaN(parseFloat(str))
-  ); // ...and ensure strings of whitespace fail
-}
