@@ -42,6 +42,19 @@ class RemoteObjectConnection:
 
     async def _handleConnection(self):
         tasks = []
+        try:
+            async for task in self._iterCallTasks():
+                tasks = [task for task in tasks if not task.done()]
+                task.add_done_callback(checkWebSocketTaskError)
+                tasks.append(task)
+        finally:
+            # The websocket closed: cancel all pending call tasks, as they will have
+            # no way to communicate their result back to the now-closed websocket.
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+
+    async def _iterCallTasks(self):
         async for message in self.websocket:
             if message.type == WSMsgType.ERROR:
                 # We need to explicitly check for an error, or else
@@ -53,12 +66,9 @@ class RemoteObjectConnection:
             if message.get("connection") == "close":
                 logger.info("client requested connection close")
                 break
-            tasks = [task for task in tasks if not task.done()]
             if "client-call-id" in message:
                 # this is an incoming client -> server call
-                tasks.append(
-                    asyncio.create_task(self._performCall(message, self.subject))
-                )
+                yield asyncio.create_task(self._performCall(message, self.subject))
             elif "server-call-id" in message:
                 # this is a response to a server -> client call
                 fut = self.callReturnFutures[message["server-call-id"]]
@@ -134,6 +144,18 @@ def _genNextServerCallID():
     while True:
         yield serverCallID
         serverCallID += 1
+
+
+def checkWebSocketTaskError(task):
+    if task.cancelled():
+        return
+    exc = task.exception()
+    if exc is None:
+        return
+    if isinstance(exc, ConnectionResetError):
+        # The client is gone, there's no need to be sad about it
+        return
+    logger.error(f"exception in {task}", exc_info=exc)
 
 
 try:
