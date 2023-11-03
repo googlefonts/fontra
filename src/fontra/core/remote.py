@@ -34,8 +34,6 @@ class RemoteObjectConnection:
             raise RemoteObjectConnectionException("unrecognized message")
         try:
             await self._handleConnection()
-        # except websockets.exceptions.ConnectionClosedError as e:
-        #     logger.info(f"websocket connection closed: {e!r}")
         except Exception as e:
             logger.error("error while handling incoming websocket messages: %r", e)
             if self.verboseErrors:
