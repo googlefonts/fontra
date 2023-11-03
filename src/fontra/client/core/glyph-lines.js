@@ -44,29 +44,32 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
           }
         }
         if (glyphName && !char && !glyphMap[glyphName]) {
-          // Glyph doesn't exist in the font, try to find a unicode value
-          const codePoint = await getUnicodeFromGlyphName(glyphName);
-          if (codePoint) {
-            char = String.fromCodePoint(codePoint);
+          // See if the "glyph name" after stripping the extension (if any)
+          // happens to be a character that we know a glyph name for.
+          // This allows us to write /Å.alt instead of /Aring.alt in the
+          // text entry field.
+          const [baseGlyphName, extension] = splitGlyphNameExtension(glyphName);
+          const baseCharCode = baseGlyphName.codePointAt(0);
+          const charString = String.fromCodePoint(baseCharCode);
+          if (baseGlyphName === charString) {
+            // The base glyph name is a single character, let's see if there's
+            // a glyph name associated with that character
+            let properBaseGlyphName = characterMap[baseCharCode];
+            if (!properBaseGlyphName) {
+              properBaseGlyphName = await getSuggestedGlyphName(baseCharCode);
+            }
+            if (properBaseGlyphName) {
+              glyphName = properBaseGlyphName + extension;
+              if (!extension) {
+                char = charString;
+              }
+            }
           } else {
-            // See if the "glyph name" after stripping the extension (if any)
-            // happens to be a character that we know a glyph name for.
-            // This allows us to write /Å.alt instead of /Aring.alt in the
-            // text entry field.
-            const [baseGlyphName, extension] = splitGlyphNameExtension(glyphName);
-            const baseCharCode = baseGlyphName.codePointAt(0);
-            const charString = String.fromCodePoint(baseCharCode);
-            if (baseGlyphName === charString) {
-              let properBaseGlyphName = characterMap[baseCharCode];
-              if (!properBaseGlyphName) {
-                properBaseGlyphName = await getSuggestedGlyphName(baseCharCode);
-              }
-              if (properBaseGlyphName) {
-                glyphName = properBaseGlyphName + extension;
-                if (!extension) {
-                  char = charString;
-                }
-              }
+            // This is a regular glyph name, but it doesn't exist in the font.
+            // Try to see if there's a code point associated with it.
+            const codePoint = await getUnicodeFromGlyphName(glyphName);
+            if (codePoint) {
+              char = String.fromCodePoint(codePoint);
             }
           }
         }
@@ -84,6 +87,8 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
       if (!glyphName && char) {
         glyphName = await getSuggestedGlyphName(char.codePointAt(0));
         isUndefined = true;
+      } else if (glyphName) {
+        isUndefined = !(glyphName in glyphMap);
       }
       glyphNames.push({
         character: char,
