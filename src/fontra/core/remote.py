@@ -48,6 +48,8 @@ class RemoteObjectConnection:
                 task.add_done_callback(checkWebSocketTaskError)
                 tasks.append(task)
         finally:
+            # The websocket closed: cancel all pending call tasks, as they will have
+            # no way to communicate their result back to the now-closed websocket.
             for task in tasks:
                 if not task.done():
                     task.cancel()
