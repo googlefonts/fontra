@@ -14,7 +14,7 @@ import { chain, throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 
-const GLYPH_CACHE_SIZE = 1000;
+const GLYPH_CACHE_SIZE = 2000;
 
 export class FontController {
   constructor(font) {
@@ -133,7 +133,7 @@ export class FontController {
         }
       };
 
-      const pool = new TaskPool(8);
+      const pool = new TaskPool(16);
 
       const t = performance.now();
       let count = 0;
