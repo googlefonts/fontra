@@ -156,14 +156,3 @@ def checkWebSocketTaskError(task):
         # The client is gone, there's no need to be sad about it
         return
     logger.error(f"exception in {task}", exc_info=exc)
-
-
-try:
-    anext
-except NameError:
-    # Python < 3.10
-    def aiter(iterable):
-        return iterable.__aiter__()
-
-    def anext(it):
-        return it.__anext__()
