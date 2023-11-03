@@ -174,8 +174,12 @@ export class RangeSlider extends html.UnlitElement {
 
   set value(value) {
     this._value = value;
-    if (this.rangeInput) this.rangeInput.value = value;
-    if (this.numberInput) this.numberInput.value = value;
+    if (this.rangeInput) {
+      this.rangeInput.value = value;
+    }
+    if (this.numberInput) {
+      this.numberInput.value = value;
+    }
   }
 
   get value() {
