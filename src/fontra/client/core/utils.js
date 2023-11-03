@@ -442,3 +442,11 @@ export function isObjectEmpty(obj) {
   }
   return true;
 }
+
+export async function timeIt(func, label) {
+  const t = performance.now();
+  const returnValue = await func();
+  const elapsed = round(performance.now() - t, 1);
+  console.log(`time elapsed for ${label}: ${elapsed} ms`);
+  return returnValue;
+}
