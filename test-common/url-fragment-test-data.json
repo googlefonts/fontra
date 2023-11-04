@@ -4,5 +4,9 @@
   {
     "object": { "a": { "b": 123, "c": 456 } },
     "fragment": "#eJyrVkpUsqpWSlKyMjQy1lFKVrIyMTWrrQUARnAF8g=="
+  },
+  {
+    "object": { "text": "Å" },
+    "fragment": "#eJyrVipJrShRslI63KpUCwAg+gTI"
   }
 ]
