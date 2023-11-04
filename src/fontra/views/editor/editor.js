@@ -1614,6 +1614,7 @@ export class EditorController {
       // to for selectedGlyphName, so we'll wait until it's done
       await this.sceneSettingsController.waitForKeyChange("glyphLines");
     }
+    this._previousURLText = viewInfo["text"];
 
     this.sceneModel.setLocalLocations(viewInfo["localLocations"]);
 
@@ -1638,8 +1639,6 @@ export class EditorController {
     }
     const viewInfo = {};
     const viewBox = this.sceneSettings.viewBox;
-    const url = new URL(window.location);
-    const previousText = url.hash ? loadURLFragment(url.hash)["text"] : null;
 
     if (viewBox && Object.values(viewBox).every((value) => !isNaN(value))) {
       viewInfo["viewBox"] = rectToArray(rectRound(viewBox));
@@ -1663,13 +1662,15 @@ export class EditorController {
       viewInfo["align"] = this.sceneSettings.align;
     }
 
+    const url = new URL(window.location);
     clearSearchParams(url.searchParams); /* clear legacy URL format */
     url.hash = dumpURLFragment(viewInfo);
-    if (previousText !== viewInfo["text"]) {
+    if (this._previousURLText !== viewInfo["text"]) {
       window.history.pushState({}, "", url);
     } else {
       window.history.replaceState({}, "", url);
     }
+    this._previousURLText = viewInfo["text"];
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
