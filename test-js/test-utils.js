@@ -6,11 +6,13 @@ import {
   chain,
   clamp,
   consolidateCalls,
+  dumpURLFragment,
   enumerate,
   fileNameExtension,
   getCharFromUnicode,
   guessCharFromGlyphName,
   hyphenatedToCamelCase,
+  loadURLFragment,
   makeUPlusStringFromCodePoint,
   memoize,
   modulo,
@@ -28,7 +30,7 @@ import {
   withTimeout,
 } from "../src/fontra/client/core/utils.js";
 
-import { parametrize } from "./test-support.js";
+import { getTestData, parametrize } from "./test-support.js";
 
 const expect = chai.expect;
 
@@ -477,4 +479,15 @@ describe("splitGlyphNameExtension", () => {
       expect(splitGlyphNameExtension(inputGlyphName)).to.deep.equal(expectedResult);
     }
   );
+});
+
+describe("loadURLFragment + dumpURLFragment", () => {
+  const testData = getTestData("url-fragment-test-data.json");
+  parametrize("loadURLFragment/dumpURLFragment tests", testData, (testCase) => {
+    const obj = testCase.object;
+    const expectedFragment = testCase.fragment;
+    expect(dumpURLFragment(obj)).to.equal(expectedFragment);
+    expect(loadURLFragment(expectedFragment)).to.deep.equal(obj);
+    expect(loadURLFragment(dumpURLFragment(obj))).to.deep.equal(obj);
+  });
 });

@@ -25,12 +25,14 @@ import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
 import {
   commandKeyProperty,
+  dumpURLFragment,
   enumerate,
   fetchJSON,
   getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
   isObjectEmpty,
+  loadURLFragment,
   parseSelection,
   range,
   readFromClipboard,
@@ -1586,10 +1588,16 @@ export class EditorController {
   }
 
   async _setupFromWindowLocation() {
+    let viewInfo;
     const url = new URL(window.location);
-    const viewInfo = {};
-    for (const key of url.searchParams.keys()) {
-      viewInfo[key] = JSON.parse(url.searchParams.get(key));
+    if (url.hash) {
+      viewInfo = loadURLFragment(url.hash);
+    } else {
+      // Legacy URL format
+      viewInfo = {};
+      for (const key of url.searchParams.keys()) {
+        viewInfo[key] = JSON.parse(url.searchParams.get(key));
+      }
     }
     this.sceneSettings.align = viewInfo["align"] || "center";
     if (viewInfo["viewBox"]) {
@@ -1606,6 +1614,7 @@ export class EditorController {
       // to for selectedGlyphName, so we'll wait until it's done
       await this.sceneSettingsController.waitForKeyChange("glyphLines");
     }
+    this._previousURLText = viewInfo["text"];
 
     this.sceneModel.setLocalLocations(viewInfo["localLocations"]);
 
@@ -1630,12 +1639,6 @@ export class EditorController {
     }
     const viewInfo = {};
     const viewBox = this.sceneSettings.viewBox;
-    const url = new URL(window.location);
-    let previousText = url.searchParams.get("text");
-    if (previousText) {
-      previousText = JSON.parse(previousText);
-    }
-    clearSearchParams(url.searchParams);
 
     if (viewBox && Object.values(viewBox).every((value) => !isNaN(value))) {
       viewInfo["viewBox"] = rectToArray(rectRound(viewBox));
@@ -1658,14 +1661,16 @@ export class EditorController {
     if (this.sceneSettings.align !== "center") {
       viewInfo["align"] = this.sceneSettings.align;
     }
-    for (const [key, value] of Object.entries(viewInfo)) {
-      url.searchParams.set(key, JSON.stringify(value));
-    }
-    if (previousText !== viewInfo["text"]) {
+
+    const url = new URL(window.location);
+    clearSearchParams(url.searchParams); /* clear legacy URL format */
+    url.hash = dumpURLFragment(viewInfo);
+    if (this._previousURLText !== viewInfo["text"]) {
       window.history.pushState({}, "", url);
     } else {
       window.history.replaceState({}, "", url);
     }
+    this._previousURLText = viewInfo["text"];
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {

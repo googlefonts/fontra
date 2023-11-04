@@ -1,5 +1,4 @@
 import chai from "chai";
-import fs from "fs";
 const expect = chai.expect;
 
 import {
@@ -11,16 +10,7 @@ import {
   matchChangePath,
   matchChangePattern,
 } from "../src/fontra/client/core/changes.js";
-
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-function getTestData(fileName) {
-  const path = join(dirname(__dirname), "test-common", fileName);
-  return JSON.parse(fs.readFileSync(path, "utf8"));
-}
+import { getTestData } from "./test-support.js";
 
 describe("applyChange Tests", () => {
   const test_data = getTestData("apply-change-test-data.json");

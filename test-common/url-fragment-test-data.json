@@ -1,0 +1,8 @@
+[
+  { "object": {}, "fragment": "#eJyrrgUAAXUA+Q==" },
+  { "object": { "a": [1, 2, 3] }, "fragment": "#eJyrVkpUsoo21DHSMY6tBQAYHgN+" },
+  {
+    "object": { "a": { "b": 123, "c": 456 } },
+    "fragment": "#eJyrVkpUsqpWSlKyMjQy1lFKVrIyMTWrrQUARnAF8g=="
+  }
+]

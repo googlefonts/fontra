@@ -1,3 +1,4 @@
+import { strFromU8, strToU8, unzlibSync, zlibSync } from "../third-party/fflate.js";
 import { Transform } from "./transform.js";
 
 export function objectsEqual(obj1, obj2) {
@@ -449,4 +450,25 @@ export async function timeIt(func, label) {
   const elapsed = round(performance.now() - t, 1);
   console.log(`time elapsed for ${label}: ${elapsed} ms`);
   return returnValue;
+}
+
+export function base64ToBytes(base64) {
+  const binString = atob(base64);
+  return Uint8Array.from(binString, (m) => m.codePointAt(0));
+}
+
+export function bytesToBase64(bytes) {
+  const binString = String.fromCodePoint(...bytes);
+  return btoa(binString);
+}
+
+export function loadURLFragment(fragment) {
+  if (fragment[0] != "#") {
+    throw new Error("assert -- invalid fragment");
+  }
+  return JSON.parse(strFromU8(unzlibSync(base64ToBytes(fragment.slice(1)))));
+}
+
+export function dumpURLFragment(obj) {
+  return "#" + bytesToBase64(zlibSync(strToU8(JSON.stringify(obj))));
 }
