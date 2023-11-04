@@ -4,7 +4,7 @@ import zlib
 
 
 def dumpURLFragment(obj):
-    text = json.dumps(obj, separators=(",", ":"))
+    text = json.dumps(obj, separators=(",", ":"), ensure_ascii=False)
     compressed = zlib.compress(text.encode("utf-8"))
     return "#" + base64.b64encode(compressed).decode("ascii")
 
