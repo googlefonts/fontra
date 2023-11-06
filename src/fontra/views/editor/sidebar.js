@@ -86,6 +86,15 @@ export class Sidebar {
   attach(element) {
     this.container = element;
     this.initResizeGutter();
+
+    if (localStorage.getItem(`fontra-selected-sidebar-${this.identifier}`)) {
+      const container = document.querySelector(`.sidebar-container.${this.identifier}`);
+      const shadowBox = document.querySelector(
+        `.tab-overlay-container.${this.identifier} > .sidebar-shadow-box`
+      );
+      container.classList.add("visible");
+      shadowBox.classList.add("visible");
+    }
   }
 
   applyWidth(width, saveLocalStorage = false) {
