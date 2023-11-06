@@ -294,7 +294,7 @@ export class RangeSlider extends html.UnlitElement {
                 activeElement?.id === "edit-canvas" ? activeElement : undefined;
               if (event.altKey) {
                 event.preventDefault();
-                this.reset(event);
+                this.reset();
               }
             },
             onchange: (event) => {
