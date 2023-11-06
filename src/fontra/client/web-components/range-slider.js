@@ -325,8 +325,9 @@ export class RangeSlider extends html.UnlitElement {
     );
   }
 
-  reset(event) {
+  reset() {
     this.value = this.defaultValue;
+    this.updateIsAtDefault();
     this.onChangeCallback({ value: this.value });
   }
 }
