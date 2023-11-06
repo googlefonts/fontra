@@ -183,9 +183,29 @@ export class EditorController {
     this.initContextMenuItems();
     this.initShortCuts();
     this.initMiniConsole();
-    this.initPlugins().then(() => {
-      this.restoreOpenTabs("left");
-      this.restoreOpenTabs("right");
+
+    let waitPluginsToRestoreTabs = [];
+    for (const sidebar of this.sidebars) {
+      const panelName = localStorage.getItem(
+        `fontra-selected-sidebar-${sidebar.identifier}`
+      );
+      if (!sidebar.panelIdentifiers.includes(panelName)) {
+        waitPluginsToRestoreTabs.push(sidebar.identifier);
+      }
+    }
+
+    const initPluginsPromise = this.initPlugins();
+
+    for (const sidebar of this.sidebars) {
+      if (!waitPluginsToRestoreTabs.includes(sidebar.identifier)) {
+        this.restoreOpenTabs(sidebar.identifier);
+      }
+    }
+
+    initPluginsPromise.then(() => {
+      for (const identifier of waitPluginsToRestoreTabs) {
+        this.restoreOpenTabs(identifier);
+      }
     });
 
     window
@@ -233,6 +253,9 @@ export class EditorController {
   }
 
   async initPlugins() {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
     const observablePlugins = new ObservableController({
       plugins: [],
     });
