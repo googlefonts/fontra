@@ -176,6 +176,7 @@ export class RangeSlider extends html.UnlitElement {
     this._value = value;
     if (this.rangeInput) {
       this.rangeInput.value = value;
+      this.updateIsAtDefault();
     }
     if (this.numberInput) {
       this.numberInput.value = value;
@@ -226,11 +227,10 @@ export class RangeSlider extends html.UnlitElement {
 
     value = clamp(value, this.minValue, this.maxValue);
     this.value = value;
-    this.updateIsAtDefault(value);
   }
 
-  updateIsAtDefault(value) {
-    this.rangeInput.classList.toggle("is-at-default", value == this.defaultValue);
+  updateIsAtDefault() {
+    this.rangeInput.classList.toggle("is-at-default", this.value == this.defaultValue);
   }
 
   render() {
@@ -261,7 +261,6 @@ export class RangeSlider extends html.UnlitElement {
                 }
                 this.sawMouseDown = false;
                 this.onChangeCallback(callbackEvent);
-                this.updateIsAtDefault(value);
               },
             })),
           ]),
@@ -317,7 +316,6 @@ export class RangeSlider extends html.UnlitElement {
               }
               this.sawMouseDown = false;
               this.onChangeCallback(callbackEvent);
-              this.updateIsAtDefault(value);
             },
           })),
         ]),
@@ -327,7 +325,6 @@ export class RangeSlider extends html.UnlitElement {
 
   reset() {
     this.value = this.defaultValue;
-    this.updateIsAtDefault();
     this.onChangeCallback({ value: this.value });
   }
 }
