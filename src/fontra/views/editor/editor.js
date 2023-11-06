@@ -253,9 +253,6 @@ export class EditorController {
   }
 
   async initPlugins() {
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1000);
-    });
     const observablePlugins = new ObservableController({
       plugins: [],
     });
