@@ -189,20 +189,14 @@ export class EditorController {
       const panelName = localStorage.getItem(
         `fontra-selected-sidebar-${sidebar.identifier}`
       );
-      if (!sidebar.panelIdentifiers.includes(panelName)) {
+      if (sidebar.panelIdentifiers.includes(panelName)) {
+        this.restoreOpenTabs(sidebar.identifier);
+      } else {
         deferRestoreOpenTabs.push(sidebar.identifier);
       }
     }
 
-    const initPluginsPromise = this.initPlugins();
-
-    for (const sidebar of this.sidebars) {
-      if (!deferRestoreOpenTabs.includes(sidebar.identifier)) {
-        this.restoreOpenTabs(sidebar.identifier);
-      }
-    }
-
-    initPluginsPromise.then(() => {
+    this.initPlugins().then(() => {
       for (const identifier of deferRestoreOpenTabs) {
         this.restoreOpenTabs(identifier);
       }
