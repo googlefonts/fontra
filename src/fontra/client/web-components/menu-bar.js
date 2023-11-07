@@ -8,6 +8,7 @@ export class MenuBar extends SimpleElement {
     padding: 0.5rem 1rem;
     align-items: center;
     position: absolute;
+    font-size: 1rem;
   }
 
   .menu-item {
@@ -17,6 +18,7 @@ export class MenuBar extends SimpleElement {
     user-select: none;
   }
 
+  .menu-item:hover,
   .menu-item.current {
     background: #e1e1e1;
     border-radius: 5px;
