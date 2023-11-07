@@ -134,7 +134,8 @@ class FontraServer:
 
     async def websocketHandler(self, request):
         path = "/" + request.match_info["path"]
-        logger.info(f"incoming connection: {path!r}")
+        remote = request.headers.get("X-FORWARDED-FOR", request.remote)
+        logger.info(f"incoming connection from {remote} for {path!r}")
 
         cookies = SimpleCookie()
         cookies.load(request.headers.get("Cookie", ""))
