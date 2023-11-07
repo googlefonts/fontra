@@ -183,9 +183,25 @@ export class EditorController {
     this.initContextMenuItems();
     this.initShortCuts();
     this.initMiniConsole();
+
+    // If a stored active panel is not a plug-in, we can restore it before the plug-ins
+    // are loaded. Else, it has to wait until after.
+    const deferRestoreOpenTabs = [];
+    for (const sidebar of this.sidebars) {
+      const panelName = localStorage.getItem(
+        `fontra-selected-sidebar-${sidebar.identifier}`
+      );
+      if (sidebar.panelIdentifiers.includes(panelName)) {
+        this.restoreOpenTabs(sidebar.identifier);
+      } else {
+        deferRestoreOpenTabs.push(sidebar.identifier);
+      }
+    }
+
     this.initPlugins().then(() => {
-      this.restoreOpenTabs("left");
-      this.restoreOpenTabs("right");
+      for (const identifier of deferRestoreOpenTabs) {
+        this.restoreOpenTabs(identifier);
+      }
     });
 
     window
