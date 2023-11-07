@@ -184,6 +184,8 @@ export class EditorController {
     this.initShortCuts();
     this.initMiniConsole();
 
+    // If a stored active panel is not a plug-in, we can restore it before the plug-ins
+    // are loaded. Else, it has to wait until after.
     const deferRestoreOpenTabs = [];
     for (const sidebar of this.sidebars) {
       const panelName = localStorage.getItem(
