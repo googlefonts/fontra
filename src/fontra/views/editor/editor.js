@@ -1164,6 +1164,9 @@ export class EditorController {
       } else {
         await this._pasteReplaceGlyph(pasteVarGlyph);
       }
+      // Force sync between location and selectedSourceIndex, as the glyph's
+      // source list may have changed
+      this.sceneSettings.location = { ...this.sceneSettings.location };
     } else {
       await this._pasteLayerGlyphs(pasteLayerGlyphs);
     }
