@@ -184,26 +184,26 @@ export class EditorController {
     this.initShortCuts();
     this.initMiniConsole();
 
-    let waitPluginsToRestoreTabs = [];
+    const deferRestoreOpenTabs = [];
     for (const sidebar of this.sidebars) {
       const panelName = localStorage.getItem(
         `fontra-selected-sidebar-${sidebar.identifier}`
       );
       if (!sidebar.panelIdentifiers.includes(panelName)) {
-        waitPluginsToRestoreTabs.push(sidebar.identifier);
+        deferRestoreOpenTabs.push(sidebar.identifier);
       }
     }
 
     const initPluginsPromise = this.initPlugins();
 
     for (const sidebar of this.sidebars) {
-      if (!waitPluginsToRestoreTabs.includes(sidebar.identifier)) {
+      if (!deferRestoreOpenTabs.includes(sidebar.identifier)) {
         this.restoreOpenTabs(sidebar.identifier);
       }
     }
 
     initPluginsPromise.then(() => {
-      for (const identifier of waitPluginsToRestoreTabs) {
+      for (const identifier of deferRestoreOpenTabs) {
         this.restoreOpenTabs(identifier);
       }
     });
