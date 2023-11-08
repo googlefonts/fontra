@@ -132,6 +132,7 @@ export class DesignspaceLocation extends UnlitElement {
       const slider = html.createDomElement("range-slider", {
         minValue: axis.minValue,
         maxValue: axis.maxValue,
+        values: [0, 100, 400, 500, 1000],
         defaultValue: axis.defaultValue,
         value: modelValue !== undefined ? modelValue : axis.defaultValue,
         onChangeCallback: (event) =>

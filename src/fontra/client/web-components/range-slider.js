@@ -151,6 +151,7 @@ export class RangeSlider extends html.UnlitElement {
     defaultValue: { type: Number },
     step: {},
     onChangeCallback: { type: Function },
+    values: { type: Array },
   };
 
   constructor() {
@@ -164,6 +165,17 @@ export class RangeSlider extends html.UnlitElement {
     this.sawMouseDown = false;
     this.sawMouseUp = false;
     this.onChangeCallback = () => {};
+    this.values = [];
+    this._sortedValuesCached = undefined;
+  }
+
+  get valuesSorted() {
+    if (this._sortedValuesCached === undefined) {
+      const values = [...this.values];
+      values.sort((a, b) => a - b);
+      this._sortedValuesCached = values;
+    }
+    return this._sortedValuesCached;
   }
 
   get valueFormatted() {
@@ -175,7 +187,13 @@ export class RangeSlider extends html.UnlitElement {
   set value(value) {
     this._value = value;
     if (this.rangeInput) {
-      this.rangeInput.value = value;
+      if (this.isDiscrete()) {
+        this.rangeInput.value = this.values.indexOf(
+          this.getClosestDiscreteValue(value)
+        );
+      } else {
+        this.rangeInput.value = value;
+      }
       this.updateIsAtDefault();
     }
     if (this.numberInput) {
@@ -187,8 +205,25 @@ export class RangeSlider extends html.UnlitElement {
     return this._value;
   }
 
+  getClosestDiscreteValue(value) {
+    const values = this.valuesSorted;
+    for (const discreteValue of this.valuesSorted) {
+      if (value <= discreteValue) {
+        return discreteValue;
+      }
+    }
+    return Math.max(...values);
+  }
+
   getValueFromEventTarget(event) {
     let value = event.target.valueAsNumber;
+    if (this.isDiscrete()) {
+      if (event.target === this.rangeInput) {
+        value = this.valuesSorted[value];
+      } else {
+        value = this.getClosestDiscreteValue(value);
+      }
+    }
     const isValid = event.target.reportValidity();
     if (!isValid) {
       event.target.setAttribute("aria-invalid", "true");
@@ -242,7 +277,24 @@ export class RangeSlider extends html.UnlitElement {
     this.rangeInput.classList.toggle("is-at-default", this.value == this.defaultValue);
   }
 
+  isDiscrete() {
+    return this.values.length > 0;
+  }
+
   render() {
+    const isDiscrete = this.isDiscrete();
+    let minValue, maxValue, step, value;
+    if (isDiscrete) {
+      minValue = 0;
+      maxValue = this.values.length - 1;
+      step = 1;
+      value = this.valueFormatted;
+    } else {
+      step = this.step;
+      minValue = this.minValue;
+      maxValue = this.maxValue;
+      value = this.getClosestDiscreteValue(this.value);
+    }
     const isAtDefault = this.value == this.defaultValue;
     return html.div(
       {
@@ -278,10 +330,10 @@ export class RangeSlider extends html.UnlitElement {
           (this.rangeInput = html.input({
             type: "range",
             class: isAtDefault ? "slider is-at-default" : "slider",
-            min: this.minValue,
-            step: this.step,
-            max: this.maxValue,
-            value: this.valueFormatted,
+            min: minValue,
+            max: maxValue,
+            step,
+            value,
             tabindex: "-1",
             onkeydown: (event) => this.onKeyDown(event),
             onmouseup: (event) => {
