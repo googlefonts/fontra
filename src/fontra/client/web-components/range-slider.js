@@ -149,7 +149,7 @@ export class RangeSlider extends html.UnlitElement {
     minValue: { type: Number },
     maxValue: { type: Number },
     defaultValue: { type: Number },
-    step: { type: Number },
+    step: {},
     onChangeCallback: { type: Function },
   };
 
@@ -160,7 +160,7 @@ export class RangeSlider extends html.UnlitElement {
     this.maxValue = 100;
     this.defaultValue = this.minValue;
     this.value = this.defaultValue;
-    this.step = 1;
+    this.step = "any";
     this.sawMouseDown = false;
     this.sawMouseUp = false;
     this.onChangeCallback = () => {};
@@ -272,6 +272,7 @@ export class RangeSlider extends html.UnlitElement {
             min: this.minValue,
             max: this.maxValue,
             value: this.valueFormatted,
+            step: this.step,
             tabindex: "-1",
             onkeydown: (event) => this.onKeyDown(event),
             onmouseup: (event) => {
