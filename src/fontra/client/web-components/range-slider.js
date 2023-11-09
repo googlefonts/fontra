@@ -180,16 +180,6 @@ export class RangeSlider extends html.UnlitElement {
     this.sawMouseUp = false;
     this.onChangeCallback = () => {};
     this.values = [];
-    this._sortedValuesCached = undefined;
-  }
-
-  get valuesSorted() {
-    if (this._sortedValuesCached === undefined) {
-      const values = [...this.values];
-      values.sort((a, b) => a - b);
-      this._sortedValuesCached = values;
-    }
-    return this._sortedValuesCached;
   }
 
   get valueFormatted() {
@@ -220,25 +210,28 @@ export class RangeSlider extends html.UnlitElement {
   }
 
   getClosestDiscreteValue(value) {
-    const values = this.valuesSorted;
-    for (const discreteValue of this.valuesSorted) {
-      if (value <= discreteValue) {
-        return discreteValue;
+    let closestDistance;
+    let closestDiscreteValue;
+    for (const discreteValue of this.values) {
+      const distance = Math.abs(value - discreteValue);
+      if (closestDistance === undefined || distance < closestDistance) {
+        closestDiscreteValue = discreteValue;
+        closestDistance = distance;
       }
     }
-    return Math.max(...values);
+    return closestDiscreteValue;
   }
 
   getValueFromEventTarget(event) {
     let value = event.target.valueAsNumber;
-    if (this.isDiscrete()) {
+    const isValid = event.target.reportValidity();
+    if (isValid && this.isDiscrete()) {
       if (event.target === this.rangeInput) {
-        value = this.valuesSorted[value];
+        value = this.values[value];
       } else {
         value = this.getClosestDiscreteValue(value);
       }
     }
-    const isValid = event.target.reportValidity();
     if (!isValid) {
       event.target.setAttribute("aria-invalid", "true");
       if (event.target.validity.badInput || event.target.validity.valueMissing) {
