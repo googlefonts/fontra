@@ -143,6 +143,18 @@ export class RangeSlider extends html.UnlitElement {
       font-feature-settings: "tnum" 1;
       font-size: 0.9em;
     }
+
+    .tickmarks {
+      display: flex;
+      height: 0.6rem;
+      justify-content: space-between;
+      padding: 0.6rem 0.4rem;
+    }
+
+    .tickmark {
+      width: 1px;
+      background: black;
+    }
   `;
 
   static properties = {
@@ -326,61 +338,78 @@ export class RangeSlider extends html.UnlitElement {
             })),
           ]),
         ]),
-        html.div({ class: "range-container" }, [
-          (this.rangeInput = html.input({
-            type: "range",
-            class: isAtDefault ? "slider is-at-default" : "slider",
-            min: minValue,
-            max: maxValue,
-            step,
-            value,
-            tabindex: "-1",
-            onkeydown: (event) => this.onKeyDown(event),
-            onmouseup: (event) => {
-              this._savedCanvasElement?.focus();
-              this.sawMouseDown = false;
-              this.sawMouseUp = true;
-              if (!this.sawChangeEvent) {
-                this.onChangeCallback({
-                  value: this.getValueFromEventTarget(event),
-                  dragEnd: true,
-                });
-              }
-              this.sawChangeEvent = false;
-            },
-            onmousedown: (event) => {
-              this.sawMouseDown = true;
-              this.sawMouseUp = false;
-              const activeElement = document.activeElement;
-              this._savedCanvasElement =
-                activeElement?.id === "edit-canvas" ? activeElement : undefined;
-              if (event.altKey) {
-                event.preventDefault();
-                this.reset();
-              }
-            },
-            onchange: (event) => {
-              if (!this.sawMouseUp) {
-                this.onChangeCallback({
-                  value: this.getValueFromEventTarget(event),
-                  dragEnd: true,
-                });
-              }
-              this.sawMouseUp = false;
-              this.sawChangeEvent = true;
-            },
-            oninput: (event) => {
-              const value = this.getValueFromEventTarget(event);
-              this.value = value;
-              const callbackEvent = { value };
-              if (this.sawMouseDown) {
-                callbackEvent.dragBegin = true;
-              }
-              this.sawMouseDown = false;
-              this.onChangeCallback(callbackEvent);
-            },
-          })),
-        ]),
+        html.div(
+          { class: "range-container" },
+          [
+            (this.rangeInput = html.input({
+              type: "range",
+              class: isAtDefault ? "slider is-at-default" : "slider",
+              min: minValue,
+              max: maxValue,
+              step,
+              value,
+              tabindex: "-1",
+              onkeydown: (event) => this.onKeyDown(event),
+              onmouseup: (event) => {
+                this._savedCanvasElement?.focus();
+                this.sawMouseDown = false;
+                this.sawMouseUp = true;
+                if (!this.sawChangeEvent) {
+                  this.onChangeCallback({
+                    value: this.getValueFromEventTarget(event),
+                    dragEnd: true,
+                  });
+                }
+                this.sawChangeEvent = false;
+              },
+              onmousedown: (event) => {
+                this.sawMouseDown = true;
+                this.sawMouseUp = false;
+                const activeElement = document.activeElement;
+                this._savedCanvasElement =
+                  activeElement?.id === "edit-canvas" ? activeElement : undefined;
+                if (event.altKey) {
+                  event.preventDefault();
+                  this.reset();
+                }
+              },
+              onchange: (event) => {
+                if (!this.sawMouseUp) {
+                  this.onChangeCallback({
+                    value: this.getValueFromEventTarget(event),
+                    dragEnd: true,
+                  });
+                }
+                this.sawMouseUp = false;
+                this.sawChangeEvent = true;
+              },
+              oninput: (event) => {
+                const value = this.getValueFromEventTarget(event);
+                this.value = value;
+                const callbackEvent = { value };
+                if (this.sawMouseDown) {
+                  callbackEvent.dragBegin = true;
+                }
+                this.sawMouseDown = false;
+                this.onChangeCallback(callbackEvent);
+              },
+            })),
+            isDiscrete &&
+              html.div(
+                {
+                  class: "tickmarks",
+                },
+                new Array(this.values.length).fill("").map(() =>
+                  html.span(
+                    {
+                      class: "tickmark",
+                    },
+                    []
+                  )
+                )
+              ),
+          ].filter((e) => e)
+        ),
       ]
     );
   }
