@@ -288,12 +288,12 @@ export class RangeSlider extends html.UnlitElement {
       minValue = 0;
       maxValue = this.values.length - 1;
       step = 1;
-      value = this.valueFormatted;
+      value = this.getClosestDiscreteValue(this.value);
     } else {
       step = this.step;
       minValue = this.minValue;
       maxValue = this.maxValue;
-      value = this.getClosestDiscreteValue(this.value);
+      value = this.valueFormatted;
     }
     const isAtDefault = this.value == this.defaultValue;
     return html.div(
@@ -306,7 +306,7 @@ export class RangeSlider extends html.UnlitElement {
             (this.numberInput = html.input({
               type: "number",
               class: "slider-numeric-input",
-              value: this.valueFormatted,
+              value,
               step: this.step,
               required: "required",
               min: this.minValue,
