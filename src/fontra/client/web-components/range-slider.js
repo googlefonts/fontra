@@ -179,7 +179,7 @@ export class RangeSlider extends html.UnlitElement {
       this.updateIsAtDefault();
     }
     if (this.numberInput) {
-      this.numberInput.value = value;
+      this.numberInput.value = this.valueFormatted;
     }
   }
 
