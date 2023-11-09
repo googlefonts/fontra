@@ -147,9 +147,10 @@ export class RangeSlider extends html.UnlitElement {
 
     .tickmarks {
       display: flex;
-      height: 0.6rem;
+      height: 6px;
       justify-content: space-between;
-      padding: 12px calc(var(--thumb-width)/2);
+      padding: 7px calc(var(--thumb-width)/2 - 0.5px);
+      padding-bottom: 0;
     }
 
     .tickmark {
