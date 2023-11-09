@@ -49,6 +49,7 @@ export class RangeSlider extends html.UnlitElement {
       margin: 0;
       width: 100%;
       background: transparent;
+      height: 1rem;
     }
 
     /* Special styling for WebKit/Blink */
@@ -148,12 +149,12 @@ export class RangeSlider extends html.UnlitElement {
       display: flex;
       height: 0.6rem;
       justify-content: space-between;
-      padding: 0.6rem 0.4rem;
+      padding: 12px calc(var(--thumb-width)/2);
     }
 
     .tickmark {
       width: 1px;
-      background: black;
+      background: var(--track-color);
     }
   `;
 
