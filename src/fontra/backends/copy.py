@@ -23,8 +23,14 @@ async def copyFont(sourceBackend, destBackend, *, numTasks=8):
         )
         for i in range(numTasks)
     ]
-    done, pending = await asyncio.wait(tasks)
-    # await asyncio.sleep(4)
+    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+    for task in pending:
+        task.cancel()
+    exceptions = [task.exception() for task in done if task.exception()]
+    if exceptions:
+        if len(exceptions) > 1:
+            logger.error(f"Multiple exceptions were raised: {exceptions}")
+        raise exceptions[0]
     assert not pending
 
 
