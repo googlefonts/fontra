@@ -2,10 +2,38 @@ import logging
 from copy import copy
 from dataclasses import dataclass, field
 from enum import IntEnum
+from typing import Optional, TypedDict
 
 from fontTools.misc.transform import DecomposedTransform
 
 logger = logging.getLogger(__name__)
+
+
+# Path, aka "unpacked path"
+
+
+class Point(TypedDict):
+    x: float
+    y: float
+    type: Optional[str]
+    smooth: Optional[bool] = False
+
+
+@dataclass
+class Contour:
+    points: list[Point] = field(default_factory=[])
+    isClosed: bool = False
+
+
+@dataclass
+class Path:
+    contours: list[Contour] = field(default_factory=[])
+
+    def asPackedPath(self):
+        return PackedPath.fromUnpackedContours(self.contours)
+
+
+# Packed Path
 
 
 @dataclass
@@ -44,6 +72,9 @@ class PackedPath:
         return cls(
             coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo
         )
+
+    def asPath(self):
+        return Path(contours=self.unpackedContours())
 
     def unpackedContours(self):
         unpackedContours = []

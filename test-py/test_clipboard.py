@@ -2,7 +2,7 @@ import pytest
 
 from fontra.core.classes import StaticGlyph
 from fontra.core.clipboard import parseClipboard, serializeStaticGlyphAsGLIF
-from fontra.core.packedpath import ContourInfo, PackedPath
+from fontra.core.path import ContourInfo, PackedPath
 
 
 @pytest.mark.parametrize(

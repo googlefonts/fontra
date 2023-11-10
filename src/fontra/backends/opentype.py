@@ -3,7 +3,7 @@ from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
 
 from ..core.classes import GlobalAxis, Layer, Source, StaticGlyph, VariableGlyph
-from ..core.packedpath import PackedPath, PackedPathPointPen
+from ..core.path import PackedPath, PackedPathPointPen
 
 
 class OTFBackend:

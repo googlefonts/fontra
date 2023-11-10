@@ -28,7 +28,7 @@ from ..core.classes import (
     StaticGlyph,
     VariableGlyph,
 )
-from ..core.packedpath import PackedPathPointPen
+from ..core.path import PackedPathPointPen
 from .ufo_utils import extractGlyphNameAndUnicodes
 
 logger = logging.getLogger(__name__)

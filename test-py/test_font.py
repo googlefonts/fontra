@@ -971,3 +971,15 @@ async def test_cff2InterpolationCompatibility():
     firstPointTypes = layers[0].glyph.path.pointTypes
     for layer in layers:
         assert layer.glyph.path.pointTypes == firstPointTypes
+
+
+@pytest.mark.asyncio
+async def test_glyphPathConversion():
+    font = getTestFont("otf")
+    glyph = await font.getGlyph("B")
+    glyphWithUnpackedPaths = glyph.convertToPaths()
+    glyphWithPackedPaths = glyphWithUnpackedPaths.convertToPackedPaths()
+    assert glyph == glyphWithPackedPaths
+    assert glyph is not glyphWithPackedPaths
+    assert glyph is glyph.convertToPackedPaths()
+    assert glyphWithUnpackedPaths is glyphWithUnpackedPaths.convertToPaths()

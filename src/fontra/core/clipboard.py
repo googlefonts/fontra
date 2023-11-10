@@ -7,7 +7,7 @@ from fontTools.ufoLib.glifLib import readGlyphFromString, writeGlyphToString
 
 from ..backends.designspace import UFOGlyph, populateUFOLayerGlyph, readGlyphOrCreate
 from .classes import StaticGlyph
-from .packedpath import PackedPathPointPen
+from .path import PackedPathPointPen
 
 
 def parseClipboard(data):

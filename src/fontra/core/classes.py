@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass, field, is_dataclass
+from dataclasses import dataclass, field, is_dataclass, replace
 from functools import partial
-from typing import Any, Optional, get_args, get_origin, get_type_hints
+from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 
 import dacite
 from fontTools.misc.transform import DecomposedTransform
 
-from .packedpath import PackedPath, PointType
+from .path import PackedPath, Path, PointType
 
 Location = dict[str, float]
 CustomData = dict[str, Any]
@@ -23,7 +23,7 @@ class Component:
 
 @dataclass
 class StaticGlyph:
-    path: PackedPath = field(default_factory=PackedPath)
+    path: Union[PackedPath, Path] = field(default_factory=PackedPath)
     components: list[Component] = field(default_factory=list)
     xAdvance: Optional[float] = None
     yAdvance: Optional[float] = None
@@ -60,6 +60,39 @@ class VariableGlyph:
     sources: list[Source] = field(default_factory=list)
     layers: dict[str, Layer] = field(default_factory=dict)
     customData: CustomData = field(default_factory=CustomData)
+
+    def convertToPackedPaths(self):
+        return _convertToPathType(self, True)
+
+    def convertToPaths(self):
+        return _convertToPathType(self, False)
+
+
+def _hasAnyPathType(varGlyph, pathType):
+    return any(
+        isinstance(layer.glyph.path, pathType) for layer in varGlyph.layers.values()
+    )
+
+
+def _convertToPathType(varGlyph, packedPath):
+    if not _hasAnyPathType(varGlyph, Path if packedPath else PackedPath):
+        return varGlyph
+    converter = (
+        (lambda path: path.asPackedPath())
+        if packedPath
+        else (lambda path: path.asPath())
+    )
+
+    return replace(
+        varGlyph,
+        layers={
+            k: replace(
+                v,
+                glyph=replace(v.glyph, path=converter(v.glyph.path)),
+            )
+            for k, v in varGlyph.layers.items()
+        },
+    )
 
 
 @dataclass(kw_only=True)
@@ -129,6 +162,10 @@ def makeSchema(*classes, schema=None):
                 fieldDef["subtype"] = subtype
                 if is_dataclass(subtype):
                     makeSchema(subtype, schema=schema)
+            elif tp.__name__ == "Union":
+                tp = get_args(tp)[0]
+                fieldDef = dict(type=tp)
+                makeSchema(tp, schema=schema)
             classFields[name] = fieldDef
     return schema
 
@@ -160,6 +197,10 @@ def makeCastFuncs(schema, config=None):
                 castFuncs[fieldType] = partial(castTypedList, itemType, config)
             elif originType == dict:
                 castFuncs[fieldType] = partial(castTypedDict, itemType, config)
+            elif originType == Union:
+                # Use the first type from the union
+                cls = get_args(fieldType)[0]
+                castFuncs[cls] = partial(dacite.from_dict, cls, config=config)
             else:
                 raise TypeError(f"unknown origin type: {originType}")
     return castFuncs
