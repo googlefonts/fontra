@@ -3,12 +3,13 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field, is_dataclass
 from functools import partial
-from typing import Any, Optional, get_args, get_origin, get_type_hints
+from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 
 import dacite
 from fontTools.misc.transform import DecomposedTransform
 
 from .packedpath import PackedPath, PointType
+from .path import Path
 
 Location = dict[str, float]
 CustomData = dict[str, Any]
@@ -23,7 +24,7 @@ class Component:
 
 @dataclass
 class StaticGlyph:
-    path: PackedPath = field(default_factory=PackedPath)
+    path: Union[PackedPath, Path] = field(default_factory=PackedPath)
     components: list[Component] = field(default_factory=list)
     xAdvance: Optional[float] = None
     yAdvance: Optional[float] = None
@@ -129,6 +130,10 @@ def makeSchema(*classes, schema=None):
                 fieldDef["subtype"] = subtype
                 if is_dataclass(subtype):
                     makeSchema(subtype, schema=schema)
+            elif tp.__name__ == "Union":
+                tp = get_args(tp)[0]
+                fieldDef = dict(type=tp)
+                makeSchema(tp, schema=schema)
             classFields[name] = fieldDef
     return schema
 
@@ -160,6 +165,10 @@ def makeCastFuncs(schema, config=None):
                 castFuncs[fieldType] = partial(castTypedList, itemType, config)
             elif originType == dict:
                 castFuncs[fieldType] = partial(castTypedDict, itemType, config)
+            elif originType == Union:
+                # Use the first type from the union
+                cls = get_args(fieldType)[0]
+                castFuncs[cls] = partial(dacite.from_dict, cls, config=config)
             else:
                 raise TypeError(f"unknown origin type: {originType}")
     return castFuncs
