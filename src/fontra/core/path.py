@@ -304,7 +304,7 @@ def _iterPoints(coordinates, pointTypes, startIndex, endIndex):
         pointType = pointTypes[i]
         if pointType == PointType.OFF_CURVE_CUBIC:
             point["type"] = "cubic"
-        elif pointType == PointType.OFF_CURVE_CUBIC:
+        elif pointType == PointType.OFF_CURVE_QUAD:
             point["type"] = "quad"
         elif pointType == PointType.ON_CURVE_SMOOTH:
             point["smooth"] = True
