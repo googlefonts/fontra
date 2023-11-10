@@ -8,7 +8,7 @@ from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 import dacite
 from fontTools.misc.transform import DecomposedTransform
 
-from .packedpath import PackedPath, Path, PointType
+from .path import PackedPath, Path, PointType
 
 Location = dict[str, float]
 CustomData = dict[str, Any]
