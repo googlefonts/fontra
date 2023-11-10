@@ -46,9 +46,7 @@ def fileNameToUserName(fileName):
 class FontraBackend:
     @classmethod
     def fromPath(cls, path):
-        return cls(
-            path=path,
-        )
+        return cls(path=path)
 
     @classmethod
     def createFromPath(cls, path):
