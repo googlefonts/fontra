@@ -39,7 +39,10 @@ export class UnlitElement extends SimpleElement {
   _postInit() {
     this._setupProperties();
     this.requestUpdate = consolidateCalls(() => this._render());
-    this.requestUpdate();
+  }
+
+  connectedCallback() {
+    this._render();
   }
 
   _setupProperties() {
