@@ -119,7 +119,7 @@ export class DesignspaceLocation extends UnlitElement {
             values && values.length
               ? `
           <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
-          <span>Possible values: <strong style="white-space: break-spaces;">${axis.values.join(
+          <span>Values: <strong style="white-space: break-spaces;">${axis.values.join(
             ", "
           )}</strong></span>
           `
