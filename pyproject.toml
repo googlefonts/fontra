@@ -68,6 +68,7 @@ designspace = "fontra.backends.designspace:DesignspaceBackend"
 ufo = "fontra.backends.designspace:UFOBackend"
 ttf = "fontra.backends.opentype:OTFBackend"
 otf = "fontra.backends.opentype:OTFBackend"
+fontra = "fontra.backends.fontra:FontraBackend"
 
 
 [tool.hatch.build.targets.wheel]
