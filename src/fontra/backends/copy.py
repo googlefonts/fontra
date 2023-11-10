@@ -69,7 +69,7 @@ async def mainAsync():
     sourceBackend = getFileSystemBackend(sourcePath)
     destBackend = newFileSystemBackend(destPath)
 
-    # TODO: determin numTasks based on whether either backend supports parallelism
+    # TODO: determine numTasks based on whether either backend supports parallelism
 
     await copyFont(sourceBackend, destBackend)
 
