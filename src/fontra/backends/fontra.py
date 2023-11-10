@@ -200,12 +200,12 @@ base32chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
 assert len(set(base32chars)) == 32
 
 
-def stringToFileName(userName):
+def stringToFileName(string):
     codeDigits = []
-    for i in range(0, len(userName), 5):
+    for i in range(0, len(string), 5):
         digit = 0
         bit = 1
-        for c in userName[i : i + 5]:
+        for c in string[i : i + 5]:
             if c.isupper():
                 digit |= bit
             bit <<= 1
@@ -213,18 +213,20 @@ def stringToFileName(userName):
     # strip trailing zeros
     while codeDigits and codeDigits[-1] == 0:
         codeDigits.pop()
-    name = "".join(f"%{ord(c):02X}" if c in reservedCharacters else c for c in userName)
-    if name[0] == ".":
-        name = "%2E" + name[1:]
-    if not codeDigits and name.lower() in reservedFileNames:
+    fileName = "".join(
+        f"%{ord(c):02X}" if c in reservedCharacters else c for c in string
+    )
+    if fileName[0] == ".":
+        fileName = "%2E" + fileName[1:]
+    if not codeDigits and fileName.lower() in reservedFileNames:
         codeDigits = [0]
     if codeDigits:
         disambiguationCode = separatorChar + "".join(base32chars[d] for d in codeDigits)
     else:
         disambiguationCode = ""
-    return name + disambiguationCode
+    return fileName + disambiguationCode
 
 
 def fileNameToString(fileName):
-    name = fileName.split(separatorChar, 1)[0]
-    return unquote(name, encoding="ascii", errors="strict")
+    string = fileName.split(separatorChar, 1)[0]
+    return unquote(string, encoding="ascii", errors="strict")
