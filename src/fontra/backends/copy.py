@@ -9,7 +9,7 @@ from . import getFileSystemBackend, newFileSystemBackend
 logger = logging.getLogger(__name__)
 
 
-async def copyFont(sourceBackend, destBackend, *, numTasks=8):
+async def copyFont(sourceBackend, destBackend, *, numTasks=8, progressInterval=0):
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
     glyphMap = await sourceBackend.getGlyphMap()
     glyphNamesToCopy = sorted(glyphMap)
@@ -19,7 +19,9 @@ async def copyFont(sourceBackend, destBackend, *, numTasks=8):
 
     tasks = [
         asyncio.create_task(
-            copyGlyphs(sourceBackend, destBackend, glyphMap, glyphNamesToCopy)
+            copyGlyphs(
+                sourceBackend, destBackend, glyphMap, glyphNamesToCopy, progressInterval
+            )
         )
         for i in range(numTasks)
     ]
@@ -33,12 +35,16 @@ async def copyFont(sourceBackend, destBackend, *, numTasks=8):
         raise exceptions[0]
 
 
-async def copyGlyphs(sourceBackend, destBackend, glyphMap, glyphNamesToCopy):
+async def copyGlyphs(
+    sourceBackend, destBackend, glyphMap, glyphNamesToCopy, progressInterval
+):
     while glyphNamesToCopy:
+        if progressInterval and not (len(glyphNamesToCopy) % progressInterval):
+            logger.info(f"{len(glyphNamesToCopy)} glyphs left to copy")
         glyphName = glyphNamesToCopy.pop(0)
-        logger.info(f"reading {glyphName}")
+        logger.debug(f"reading {glyphName}")
         glyph = await sourceBackend.getGlyph(glyphName)
-        logger.info(f"writing {glyphName}")
+        logger.debug(f"writing {glyphName}")
         error = await destBackend.putGlyph(glyphName, glyph, glyphMap[glyphName])
         if error:
             # FIXME: putGlyph should always raise, and not return some error string
@@ -47,10 +53,16 @@ async def copyGlyphs(sourceBackend, destBackend, glyphMap, glyphNamesToCopy):
 
 
 async def mainAsync():
+    logging.basicConfig(
+        format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
+        level=logging.INFO,
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
     parser.add_argument("destination")
     parser.add_argument("--overwrite", type=bool, default=False)
+    parser.add_argument("--progress-interval", type=int, default=0)
 
     args = parser.parse_args()
 
@@ -70,7 +82,7 @@ async def mainAsync():
 
     # TODO: determine numTasks based on whether either backend supports parallelism
 
-    await copyFont(sourceBackend, destBackend)
+    await copyFont(sourceBackend, destBackend, progressInterval=args.progress_interval)
 
 
 def main():
