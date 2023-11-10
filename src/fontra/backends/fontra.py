@@ -120,7 +120,7 @@ class FontraBackend:
         fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
 
     def _getGlyphFilePath(self, glyphName):
-        return self.glyphsDir / (userNameToFileName(glyphName) + ".json")
+        return self.glyphsDir / (stringToFileName(glyphName) + ".json")
 
 
 def serializeGlyph(glyph, glyphName=None):
@@ -201,7 +201,7 @@ base32chars = string.digits + string.ascii_uppercase[:22]
 assert len(set(base32chars)) == 32
 
 
-def userNameToFileName(userName):
+def stringToFileName(userName):
     codeDigits = []
     for i in range(0, len(userName), 5):
         digit = 0
@@ -226,6 +226,6 @@ def userNameToFileName(userName):
     return name + disambiguationCode
 
 
-def fileNameToUserName(fileName):
+def fileNameToString(fileName):
     name = fileName.split(separatorChar, 1)[0]
     return unquote(name, encoding="ascii", errors="strict")
