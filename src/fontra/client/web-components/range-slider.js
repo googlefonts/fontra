@@ -394,14 +394,7 @@ export class RangeSlider extends html.UnlitElement {
                 {
                   class: "tickmarks",
                 },
-                new Array(this.values.length).fill("").map(() =>
-                  html.span(
-                    {
-                      class: "tickmark",
-                    },
-                    []
-                  )
-                )
+                this.values.map(() => html.span({ class: "tickmark" }))
               ),
           ].filter((e) => e)
         ),
