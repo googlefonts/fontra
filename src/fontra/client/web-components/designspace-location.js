@@ -111,7 +111,7 @@ export class DesignspaceLocation extends UnlitElement {
         elements.push(html.hr());
         continue;
       }
-      const values = axis.values ? axis.values : [];
+      const values = axis.values;
       const modelValue = this.values[axis.name];
       const infoBox = htmlToElement(
         `<div class="info-box">

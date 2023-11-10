@@ -165,7 +165,7 @@ export class RangeSlider extends html.UnlitElement {
     defaultValue: { type: Number },
     step: {},
     onChangeCallback: { type: Function },
-    values: { type: Array },
+    values: {},
   };
 
   constructor() {
@@ -285,7 +285,7 @@ export class RangeSlider extends html.UnlitElement {
   }
 
   isDiscrete() {
-    return this.values.length > 0;
+    return this.values && this.values.length > 0;
   }
 
   render() {
