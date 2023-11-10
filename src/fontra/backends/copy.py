@@ -31,7 +31,6 @@ async def copyFont(sourceBackend, destBackend, *, numTasks=8):
         if len(exceptions) > 1:
             logger.error(f"Multiple exceptions were raised: {exceptions}")
         raise exceptions[0]
-    assert not pending
 
 
 async def copyGlyphs(sourceBackend, destBackend, glyphMap, glyphNamesToCopy):
