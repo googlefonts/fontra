@@ -2,7 +2,6 @@ import csv
 import json
 import pathlib
 import shutil
-import string
 from copy import deepcopy
 from dataclasses import asdict
 from urllib.parse import unquote
@@ -197,7 +196,7 @@ COM4
 )
 
 
-base32chars = string.digits + string.ascii_uppercase[:22]
+base32chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
 assert len(set(base32chars)) == 32
 
 
