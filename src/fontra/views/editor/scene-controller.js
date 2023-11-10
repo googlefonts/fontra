@@ -242,7 +242,6 @@ export class SceneController {
 
     this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
       this._updateCurrentGlyphChangeListeners();
-      this.editingLayers = {};
     });
 
     this.sceneSettingsController.addKeyListener(
