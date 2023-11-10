@@ -29,6 +29,9 @@ class Contour:
 class Path:
     contours: list[Contour] = field(default_factory=[])
 
+    def asPackedPath(self):
+        return PackedPath.fromUnpackedContours(self.contours)
+
 
 # Packed Path
 
@@ -69,6 +72,9 @@ class PackedPath:
         return cls(
             coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo
         )
+
+    def asPath(self):
+        return Path(contours=self.unpackedContours())
 
     def unpackedContours(self):
         unpackedContours = []

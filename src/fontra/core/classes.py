@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass, field, is_dataclass
+from dataclasses import dataclass, field, is_dataclass, replace
 from functools import partial
 from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 
@@ -60,6 +60,39 @@ class VariableGlyph:
     sources: list[Source] = field(default_factory=list)
     layers: dict[str, Layer] = field(default_factory=dict)
     customData: CustomData = field(default_factory=CustomData)
+
+    def convertToPackedPaths(self):
+        return _convertToPathType(self, True)
+
+    def convertToPaths(self):
+        return _convertToPathType(self, False)
+
+
+def _hasAnyPathType(varGlyph, pathType):
+    return any(
+        isinstance(layer.glyph.path, pathType) for layer in varGlyph.layers.values()
+    )
+
+
+def _convertToPathType(varGlyph, packedPath):
+    if not _hasAnyPathType(varGlyph, Path if packedPath else PackedPath):
+        return varGlyph
+    converter = (
+        (lambda path: path.asPackedPath())
+        if packedPath
+        else (lambda path: path.asPath())
+    )
+
+    return replace(
+        varGlyph,
+        layers={
+            k: replace(
+                v,
+                glyph=replace(v.glyph, path=converter(v.glyph.path)),
+            )
+            for k, v in varGlyph.layers.items()
+        },
+    )
 
 
 @dataclass(kw_only=True)
