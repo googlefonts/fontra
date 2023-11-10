@@ -12,6 +12,10 @@ import dacite
 from fontra.core.classes import Font, VariableGlyph
 from fontra.core.path import PackedPath, Path
 
+FILENAME_GLYPH_INFO = "glyph-info.csv"
+FILENAME_FONT_DATA = "font-data.json"
+DIRNAME_GLYPHS = "glyphs"
+
 
 class FontraBackend:
     @classmethod
@@ -30,11 +34,11 @@ class FontraBackend:
             elif self.path.exists():
                 self.path.unlink()
             self.path.mkdir()
-        self.glyphsDir = self.path / "glyphs"
+        self.glyphsDir = self.path / DIRNAME_GLYPHS
         self.glyphsDir.mkdir(exist_ok=True)
         self.glyphMap = {}
         if not create:
-            self._readGlyphMap()
+            self._readGlyphInfo()
             self._readFontData()
         else:
             self.fontData = Font()
@@ -64,7 +68,7 @@ class FontraBackend:
         filePath = self._getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")
         self.glyphMap[glyphName] = codePoints
-        self._writeGlyphMap()
+        self._writeGlyphInfo()
 
     async def deleteGlyph(self, glyphName):
         self.glyphMap.pop(glyphName, None)
@@ -79,9 +83,9 @@ class FontraBackend:
     async def getFontLib(self):
         return {}
 
-    def _readGlyphMap(self):
-        glyphMapPath = self.path / "glyph-map.csv"
-        with open(glyphMapPath, "r", encoding="utf-8") as file:
+    def _readGlyphInfo(self):
+        glyphInfoPath = self.path / FILENAME_GLYPH_INFO
+        with open(glyphInfoPath, "r", encoding="utf-8") as file:
             reader = csv.reader(file, delimiter=";")
             header = next(reader)
             assert header[:2] == ["glyph name", "code points"]
@@ -93,9 +97,9 @@ class FontraBackend:
                     codePoints = []
                 self.glyphMap[glyphName] = codePoints
 
-    def _writeGlyphMap(self):
-        glyphMapPath = self.path / "glyph-map.csv"
-        with open(glyphMapPath, "w", encoding="utf-8") as file:
+    def _writeGlyphInfo(self):
+        glyphInfoPath = self.path / FILENAME_GLYPH_INFO
+        with open(glyphInfoPath, "w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=";")
             writer.writerow(["glyph name", "code points"])
             for glyphName, codePoints in sorted(self.glyphMap.items()):
@@ -103,13 +107,13 @@ class FontraBackend:
                 writer.writerow([glyphName, codePoints])
 
     def _readFontData(self):
-        fontDataPath = self.path / "font-data.json"
+        fontDataPath = self.path / FILENAME_FONT_DATA
         self.fontData = dacite.from_dict(
             Font, json.loads(fontDataPath.read_text(encoding="utf-8"))
         )
 
     def _writeFontData(self):
-        fontDataPath = self.path / "font-data.json"
+        fontDataPath = self.path / FILENAME_FONT_DATA
         fontData = asdict(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
