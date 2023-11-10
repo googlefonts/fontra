@@ -136,7 +136,7 @@ def deserializeGlyph(jsonSource, glyphName=None):
 
 
 def serialize(data):
-    return json.dumps(data, indent=2)
+    return json.dumps(data, indent=0)
 
 
 def _ensurePackedPathData(data):
