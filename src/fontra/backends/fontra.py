@@ -13,36 +13,6 @@ from fontra.core.classes import Font, VariableGlyph
 from fontra.core.path import PackedPath, Path
 
 
-def userNameToFileName(userName):
-    codeDigits = []
-    for i in range(0, len(userName), 5):
-        digit = 0
-        bit = 1
-        for c in userName[i : i + 5]:
-            if c.isupper():
-                digit |= bit
-            bit <<= 1
-        codeDigits.append(digit)
-    # strip trailing zeros
-    while codeDigits and codeDigits[-1] == 0:
-        codeDigits.pop()
-    name = "".join(f"%{ord(c):02X}" if c in reservedCharacters else c for c in userName)
-    if name[0] == ".":
-        name = "%2E" + name[1:]
-    if not codeDigits and name.lower() in reservedFileNames:
-        codeDigits = [0]
-    if codeDigits:
-        disambiguationCode = separatorChar + "".join(base32chars[d] for d in codeDigits)
-    else:
-        disambiguationCode = ""
-    return name + disambiguationCode
-
-
-def fileNameToUserName(fileName):
-    name = fileName.split(separatorChar, 1)[0]
-    return unquote(name, encoding="ascii", errors="strict")
-
-
 class FontraBackend:
     @classmethod
     def fromPath(cls, path):
@@ -186,7 +156,12 @@ daciteConfig = dacite.Config(
     strict_unions_match=False,
 )
 
+
+#
+# Glyph name to file name algorithm, originally proposed for UFO
 # See also https://github.com/unified-font-object/ufo-spec/issues/164
+#
+
 
 separatorChar = "^"
 
@@ -220,3 +195,33 @@ COM4
 
 base32chars = string.digits + string.ascii_uppercase[:22]
 assert len(set(base32chars)) == 32
+
+
+def userNameToFileName(userName):
+    codeDigits = []
+    for i in range(0, len(userName), 5):
+        digit = 0
+        bit = 1
+        for c in userName[i : i + 5]:
+            if c.isupper():
+                digit |= bit
+            bit <<= 1
+        codeDigits.append(digit)
+    # strip trailing zeros
+    while codeDigits and codeDigits[-1] == 0:
+        codeDigits.pop()
+    name = "".join(f"%{ord(c):02X}" if c in reservedCharacters else c for c in userName)
+    if name[0] == ".":
+        name = "%2E" + name[1:]
+    if not codeDigits and name.lower() in reservedFileNames:
+        codeDigits = [0]
+    if codeDigits:
+        disambiguationCode = separatorChar + "".join(base32chars[d] for d in codeDigits)
+    else:
+        disambiguationCode = ""
+    return name + disambiguationCode
+
+
+def fileNameToUserName(fileName):
+    name = fileName.split(separatorChar, 1)[0]
+    return unquote(name, encoding="ascii", errors="strict")
