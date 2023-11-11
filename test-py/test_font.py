@@ -974,8 +974,9 @@ async def test_cff2InterpolationCompatibility():
 
 
 @pytest.mark.asyncio
-async def test_glyphPathConversion():
-    font = getTestFont("otf")
+@pytest.mark.parametrize("testFont", ["otf", "ttf"])
+async def test_glyphPathConversion(testFont):
+    font = getTestFont(testFont)
     glyph = await font.getGlyph("B")
     glyphWithUnpackedPaths = glyph.convertToPaths()
     glyphWithPackedPaths = glyphWithUnpackedPaths.convertToPackedPaths()

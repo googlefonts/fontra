@@ -1,7 +1,7 @@
 import pathlib
 import subprocess
 
-from test_backend_designspace import fileNamesFromDir
+from test_backends_designspace import fileNamesFromDir
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont

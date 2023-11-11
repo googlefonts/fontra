@@ -3,37 +3,46 @@ import asyncio
 import logging
 import pathlib
 import shutil
+from contextlib import closing
 
 from . import getFileSystemBackend, newFileSystemBackend
 
 logger = logging.getLogger(__name__)
 
 
-async def copyFont(sourceBackend, destBackend, *, numTasks=8):
+async def copyFont(sourceBackend, destBackend, *, numTasks=1, progressInterval=0):
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
     glyphMap = await sourceBackend.getGlyphMap()
     glyphNamesToCopy = sorted(glyphMap)
 
-    # Needed for rcjk backend, but is a bug there
-    # _ = await destBackend.getGlyphMap()
-
     tasks = [
         asyncio.create_task(
-            copyGlyphs(sourceBackend, destBackend, glyphMap, glyphNamesToCopy)
+            copyGlyphs(
+                sourceBackend, destBackend, glyphMap, glyphNamesToCopy, progressInterval
+            )
         )
         for i in range(numTasks)
     ]
-    done, pending = await asyncio.wait(tasks)
-    # await asyncio.sleep(4)
-    assert not pending
+    done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+    for task in pending:
+        task.cancel()
+    exceptions = [task.exception() for task in done if task.exception()]
+    if exceptions:
+        if len(exceptions) > 1:
+            logger.error(f"Multiple exceptions were raised: {exceptions}")
+        raise exceptions[0]
 
 
-async def copyGlyphs(sourceBackend, destBackend, glyphMap, glyphNamesToCopy):
+async def copyGlyphs(
+    sourceBackend, destBackend, glyphMap, glyphNamesToCopy, progressInterval
+):
     while glyphNamesToCopy:
+        if progressInterval and not (len(glyphNamesToCopy) % progressInterval):
+            logger.info(f"{len(glyphNamesToCopy)} glyphs left to copy")
         glyphName = glyphNamesToCopy.pop(0)
-        logger.info(f"reading {glyphName}")
+        logger.debug(f"reading {glyphName}")
         glyph = await sourceBackend.getGlyph(glyphName)
-        logger.info(f"writing {glyphName}")
+        logger.debug(f"writing {glyphName}")
         error = await destBackend.putGlyph(glyphName, glyph, glyphMap[glyphName])
         if error:
             # FIXME: putGlyph should always raise, and not return some error string
@@ -42,10 +51,17 @@ async def copyGlyphs(sourceBackend, destBackend, glyphMap, glyphNamesToCopy):
 
 
 async def mainAsync():
+    logging.basicConfig(
+        format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
+        level=logging.INFO,
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
     parser.add_argument("destination")
     parser.add_argument("--overwrite", type=bool, default=False)
+    parser.add_argument("--progress-interval", type=int, default=0)
+    parser.add_argument("--num-tasks", type=int, default=1)
 
     args = parser.parse_args()
 
@@ -63,7 +79,15 @@ async def mainAsync():
     sourceBackend = getFileSystemBackend(sourcePath)
     destBackend = newFileSystemBackend(destPath)
 
-    await copyFont(sourceBackend, destBackend)
+    # TODO: determine numTasks based on whether either backend supports parallelism
+
+    with closing(sourceBackend), closing(destBackend):
+        await copyFont(
+            sourceBackend,
+            destBackend,
+            numTasks=args.num_tasks,
+            progressInterval=args.progress_interval,
+        )
 
 
 def main():
