@@ -1,4 +1,5 @@
 import pathlib
+from contextlib import closing
 
 import pytest
 
@@ -19,7 +20,8 @@ def newFontraFont(tmpdir):
 
 
 async def test_copy_to_fontra(testDSFont, newFontraFont):
-    await copyFont(testDSFont, newFontraFont)
+    with closing(newFontraFont):
+        await copyFont(testDSFont, newFontraFont)
 
     fontraFont = getFileSystemBackend(newFontraFont.path)
 
