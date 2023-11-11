@@ -15,9 +15,6 @@ async def copyFont(sourceBackend, destBackend, *, numTasks=1, progressInterval=0
     glyphMap = await sourceBackend.getGlyphMap()
     glyphNamesToCopy = sorted(glyphMap)
 
-    # Needed for rcjk backend, but is a bug there
-    # _ = await destBackend.getGlyphMap()
-
     tasks = [
         asyncio.create_task(
             copyGlyphs(
