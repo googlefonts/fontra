@@ -3,6 +3,7 @@ import asyncio
 import logging
 import pathlib
 import shutil
+from contextlib import closing
 
 from . import getFileSystemBackend, newFileSystemBackend
 
@@ -82,7 +83,10 @@ async def mainAsync():
 
     # TODO: determine numTasks based on whether either backend supports parallelism
 
-    await copyFont(sourceBackend, destBackend, progressInterval=args.progress_interval)
+    with closing(sourceBackend), closing(destBackend):
+        await copyFont(
+            sourceBackend, destBackend, progressInterval=args.progress_interval
+        )
 
 
 def main():
