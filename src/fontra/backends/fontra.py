@@ -187,7 +187,7 @@ class Scheduler:
         if self.timerHandle is not None:
             self.timerHandle.cancel()
             self.timerHandle = None
-        logger.info("flush scheduled calls")
+        logger.debug("calling scheduled callables")
         for callable in self.scheduledCallables.values():
             callable()
         self.scheduledCallables = {}
