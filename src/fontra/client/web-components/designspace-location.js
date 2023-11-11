@@ -111,12 +111,11 @@ export class DesignspaceLocation extends UnlitElement {
         elements.push(html.hr());
         continue;
       }
-      const values = axis.values;
       const modelValue = this.values[axis.name];
       const infoBox = htmlToElement(
         `<div class="info-box">
           ${
-            values && values.length
+            axis.values && axis.values.length > 0
               ? `
           <span>Default: <strong>${axis.defaultValue}</strong></span>&nbsp; |
           <span>Values: <strong style="white-space: break-spaces;">${axis.values.join(
@@ -143,7 +142,7 @@ export class DesignspaceLocation extends UnlitElement {
       const slider = html.createDomElement("range-slider", {
         minValue: axis.minValue,
         maxValue: axis.maxValue,
-        values,
+        values: axis.values,
         defaultValue: axis.defaultValue,
         value: modelValue !== undefined ? modelValue : axis.defaultValue,
         onChangeCallback: (event) =>

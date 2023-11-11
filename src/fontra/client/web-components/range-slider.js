@@ -289,9 +289,8 @@ export class RangeSlider extends html.UnlitElement {
   }
 
   render() {
-    const isDiscrete = this.isDiscrete();
     let minValue, maxValue, step, value;
-    if (isDiscrete) {
+    if (this.isDiscrete()) {
       minValue = 0;
       maxValue = this.values.length - 1;
       step = 1;
@@ -389,7 +388,7 @@ export class RangeSlider extends html.UnlitElement {
                 this.onChangeCallback(callbackEvent);
               },
             })),
-            isDiscrete &&
+            this.isDiscrete() &&
               html.div(
                 {
                   class: "tickmarks",
