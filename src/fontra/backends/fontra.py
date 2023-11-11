@@ -1,9 +1,12 @@
+import asyncio
 import csv
 import json
+import logging
 import pathlib
 import shutil
+import typing
 from copy import deepcopy
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, field
 
 import dacite
 
@@ -15,6 +18,8 @@ from .filenames import stringToFileName
 FILENAME_GLYPH_INFO = "glyph-info.csv"
 FILENAME_FONT_DATA = "font-data.json"
 DIRNAME_GLYPHS = "glyphs"
+
+logger = logging.getLogger(__name__)
 
 
 class FontraBackend:
@@ -42,16 +47,20 @@ class FontraBackend:
             self._readFontData()
         else:
             self.fontData = Font()
+        self._scheduler = Scheduler()
 
     def close(self):
-        pass
+        self.flush()
+
+    def flush(self):
+        self._scheduler.flush()
 
     async def getUnitsPerEm(self):
         return self.fontData.unitsPerEm
 
     async def putUnitsPerEm(self, unitsPerEm):
         self.fontData.unitsPerEm = unitsPerEm
-        self._writeFontData()
+        self._scheduler.schedule(self._writeFontData)
 
     async def getGlyphMap(self):
         return dict(self.glyphMap)
@@ -68,7 +77,7 @@ class FontraBackend:
         filePath = self._getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")
         self.glyphMap[glyphName] = codePoints
-        self._writeGlyphInfo()
+        self._scheduler.schedule(self._writeGlyphInfo)
 
     async def deleteGlyph(self, glyphName):
         self.glyphMap.pop(glyphName, None)
@@ -78,7 +87,7 @@ class FontraBackend:
 
     async def putGlobalAxes(self, axes):
         self.fontData.axes = deepcopy(axes)
-        self._writeFontData()
+        self._scheduler.schedule(self._writeFontData)
 
     async def getFontLib(self):
         return {}
@@ -159,3 +168,26 @@ daciteConfig = dacite.Config(
     type_hooks={PackedPath: _ensurePackedPathData, Path: _ensurePathData},
     strict_unions_match=False,
 )
+
+
+@dataclass(kw_only=True)
+class Scheduler:
+    delay: float = 0.2
+    scheduledCallables: dict[str, callable] = field(default_factory=dict)
+    timerHandle: typing.Optional[asyncio.TimerHandle] = None
+
+    def schedule(self, callable):
+        self.scheduledCallables[callable.__name__] = callable
+        if self.timerHandle is not None:
+            self.timerHandle.cancel()
+        loop = asyncio.get_running_loop()
+        self.timerHandle = loop.call_later(self.delay, self.flush)
+
+    def flush(self):
+        if self.timerHandle is not None:
+            self.timerHandle.cancel()
+            self.timerHandle = None
+        logger.info("flush scheduled calls")
+        for callable in self.scheduledCallables.values():
+            callable()
+        self.scheduledCallables = {}
