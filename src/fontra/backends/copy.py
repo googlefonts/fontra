@@ -10,7 +10,7 @@ from . import getFileSystemBackend, newFileSystemBackend
 logger = logging.getLogger(__name__)
 
 
-async def copyFont(sourceBackend, destBackend, *, numTasks=8, progressInterval=0):
+async def copyFont(sourceBackend, destBackend, *, numTasks=1, progressInterval=0):
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
     glyphMap = await sourceBackend.getGlyphMap()
     glyphNamesToCopy = sorted(glyphMap)
@@ -64,6 +64,7 @@ async def mainAsync():
     parser.add_argument("destination")
     parser.add_argument("--overwrite", type=bool, default=False)
     parser.add_argument("--progress-interval", type=int, default=0)
+    parser.add_argument("--num-tasks", type=int, default=1)
 
     args = parser.parse_args()
 
@@ -85,7 +86,10 @@ async def mainAsync():
 
     with closing(sourceBackend), closing(destBackend):
         await copyFont(
-            sourceBackend, destBackend, progressInterval=args.progress_interval
+            sourceBackend,
+            destBackend,
+            numTasks=args.num_tasks,
+            progressInterval=args.progress_interval,
         )
 
 
