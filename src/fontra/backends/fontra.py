@@ -15,14 +15,14 @@ from fontra.core.path import PackedPath, Path
 
 from .filenames import stringToFileName
 
-FILENAME_GLYPH_INFO = "glyph-info.csv"
-FILENAME_FONT_DATA = "font-data.json"
-DIRNAME_GLYPHS = "glyphs"
-
 logger = logging.getLogger(__name__)
 
 
 class FontraBackend:
+    glyphInfoFileName = "glyph-info.csv"
+    fontDataFileName = "font-data.json"
+    glyphsDirName = "glyphs"
+
     @classmethod
     def fromPath(cls, path):
         return cls(path=path)
@@ -39,7 +39,6 @@ class FontraBackend:
             elif self.path.exists():
                 self.path.unlink()
             self.path.mkdir()
-        self.glyphsDir = self.path / DIRNAME_GLYPHS
         self.glyphsDir.mkdir(exist_ok=True)
         self.glyphMap = {}
         if not create:
@@ -48,6 +47,18 @@ class FontraBackend:
         else:
             self.fontData = Font()
         self._scheduler = Scheduler()
+
+    @property
+    def fontDataPath(self):
+        return self.path / self.fontDataFileName
+
+    @property
+    def glyphInfoPath(self):
+        return self.path / self.glyphInfoFileName
+
+    @property
+    def glyphsDir(self):
+        return self.path / self.glyphsDirName
 
     def close(self):
         self.flush()
@@ -66,15 +77,12 @@ class FontraBackend:
         return dict(self.glyphMap)
 
     async def getGlyph(self, glyphName):
-        filePath = self._getGlyphFilePath(glyphName)
-        if not filePath.is_file():
-            raise KeyError(glyphName)
-        jsonSource = filePath.read_text(encoding="utf-8")
+        jsonSource = self.getGlyphData(glyphName)
         return deserializeGlyph(jsonSource, glyphName)
 
     async def putGlyph(self, glyphName, glyph, codePoints):
         jsonSource = serializeGlyph(glyph, glyphName)
-        filePath = self._getGlyphFilePath(glyphName)
+        filePath = self.getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")
         self.glyphMap[glyphName] = codePoints
         self._scheduler.schedule(self._writeGlyphInfo)
@@ -93,8 +101,7 @@ class FontraBackend:
         return {}
 
     def _readGlyphInfo(self):
-        glyphInfoPath = self.path / FILENAME_GLYPH_INFO
-        with open(glyphInfoPath, "r", encoding="utf-8") as file:
+        with open(self.glyphInfoPath, "r", encoding="utf-8") as file:
             reader = csv.reader(file, delimiter=";")
             header = next(reader)
             assert header[:2] == ["glyph name", "code points"]
@@ -107,8 +114,7 @@ class FontraBackend:
                 self.glyphMap[glyphName] = codePoints
 
     def _writeGlyphInfo(self):
-        glyphInfoPath = self.path / FILENAME_GLYPH_INFO
-        with open(glyphInfoPath, "w", encoding="utf-8") as file:
+        with open(self.glyphInfoPath, "w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=";")
             writer.writerow(["glyph name", "code points"])
             for glyphName, codePoints in sorted(self.glyphMap.items()):
@@ -116,19 +122,23 @@ class FontraBackend:
                 writer.writerow([glyphName, codePoints])
 
     def _readFontData(self):
-        fontDataPath = self.path / FILENAME_FONT_DATA
         self.fontData = dacite.from_dict(
-            Font, json.loads(fontDataPath.read_text(encoding="utf-8"))
+            Font, json.loads(self.fontDataPath.read_text(encoding="utf-8"))
         )
 
     def _writeFontData(self):
-        fontDataPath = self.path / FILENAME_FONT_DATA
         fontData = asdict(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
-        fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
+        self.fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
 
-    def _getGlyphFilePath(self, glyphName):
+    def getGlyphData(self, glyphName):
+        filePath = self.getGlyphFilePath(glyphName)
+        if not filePath.is_file():
+            raise KeyError(glyphName)
+        return filePath.read_text(encoding="utf-8")
+
+    def getGlyphFilePath(self, glyphName):
         return self.glyphsDir / (stringToFileName(glyphName) + ".json")
 
 

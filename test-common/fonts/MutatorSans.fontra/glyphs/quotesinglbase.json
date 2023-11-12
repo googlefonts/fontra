@@ -1,0 +1,161 @@
+{
+"name": "quotesinglbase",
+"axes": [],
+"sources": [
+{
+"name": "LightCondensed",
+"layerName": "MutatorSansLightCondensed/foreground",
+"location": {
+"width": 0.0,
+"weight": 150.0
+},
+"inactive": false,
+"customData": {}
+},
+{
+"name": "BoldCondensed",
+"layerName": "MutatorSansBoldCondensed/foreground",
+"location": {
+"width": 0.0,
+"weight": 850.0
+},
+"inactive": false,
+"customData": {}
+},
+{
+"name": "LightWide",
+"layerName": "MutatorSansLightWide/foreground",
+"location": {
+"width": 1000.0,
+"weight": 150.0
+},
+"inactive": false,
+"customData": {}
+},
+{
+"name": "BoldWide",
+"layerName": "MutatorSansBoldWide/foreground",
+"location": {
+"width": 1000.0,
+"weight": 850.0
+},
+"inactive": false,
+"customData": {}
+}
+],
+"layers": {
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"path": {
+"contours": []
+},
+"components": [
+{
+"name": "comma",
+"transformation": {
+"translateX": 0,
+"translateY": 0,
+"rotation": 0.0,
+"scaleX": 1.0,
+"scaleY": 1.0,
+"skewX": 0.0,
+"skewY": 0.0,
+"tCenterX": 0,
+"tCenterY": 0
+},
+"location": {}
+}
+],
+"xAdvance": 171,
+"yAdvance": null,
+"verticalOrigin": null
+},
+"customData": {}
+},
+"MutatorSansBoldCondensed/foreground": {
+"glyph": {
+"path": {
+"contours": []
+},
+"components": [
+{
+"name": "comma",
+"transformation": {
+"translateX": 0,
+"translateY": 0,
+"rotation": 0.0,
+"scaleX": 1.0,
+"scaleY": 1.0,
+"skewX": 0.0,
+"skewY": 0.0,
+"tCenterX": 0,
+"tCenterY": 0
+},
+"location": {}
+}
+],
+"xAdvance": 250,
+"yAdvance": null,
+"verticalOrigin": null
+},
+"customData": {}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"path": {
+"contours": []
+},
+"components": [
+{
+"name": "comma",
+"transformation": {
+"translateX": 0,
+"translateY": 0,
+"rotation": 0.0,
+"scaleX": 1.0,
+"scaleY": 1.0,
+"skewX": 0.0,
+"skewY": 0.0,
+"tCenterX": 0,
+"tCenterY": 0
+},
+"location": {}
+}
+],
+"xAdvance": 291,
+"yAdvance": null,
+"verticalOrigin": null
+},
+"customData": {}
+},
+"MutatorSansBoldWide/foreground": {
+"glyph": {
+"path": {
+"contours": []
+},
+"components": [
+{
+"name": "comma",
+"transformation": {
+"translateX": 0,
+"translateY": 2,
+"rotation": 0.0,
+"scaleX": 1.0,
+"scaleY": 1.0,
+"skewX": 0.0,
+"skewY": 0.0,
+"tCenterX": 0,
+"tCenterY": 0
+},
+"location": {}
+}
+],
+"xAdvance": 310,
+"yAdvance": null,
+"verticalOrigin": null
+},
+"customData": {}
+}
+},
+"customData": {}
+}
