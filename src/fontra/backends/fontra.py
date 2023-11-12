@@ -15,14 +15,14 @@ from fontra.core.path import PackedPath, Path
 
 from .filenames import stringToFileName
 
-FILENAME_GLYPH_INFO = "glyph-info.csv"
-FILENAME_FONT_DATA = "font-data.json"
-DIRNAME_GLYPHS = "glyphs"
-
 logger = logging.getLogger(__name__)
 
 
 class FontraBackend:
+    glyphInfoFileName = "glyph-info.csv"
+    fontDataFileName = "font-data.json"
+    glyphsDirName = "glyphs"
+
     @classmethod
     def fromPath(cls, path):
         return cls(path=path)
@@ -39,7 +39,7 @@ class FontraBackend:
             elif self.path.exists():
                 self.path.unlink()
             self.path.mkdir()
-        self.glyphsDir = self.path / DIRNAME_GLYPHS
+        self.glyphsDir = self.path / self.glyphsDirName
         self.glyphsDir.mkdir(exist_ok=True)
         self.glyphMap = {}
         if not create:
@@ -90,7 +90,7 @@ class FontraBackend:
         return {}
 
     def _readGlyphInfo(self):
-        glyphInfoPath = self.path / FILENAME_GLYPH_INFO
+        glyphInfoPath = self.path / self.glyphInfoFileName
         with open(glyphInfoPath, "r", encoding="utf-8") as file:
             reader = csv.reader(file, delimiter=";")
             header = next(reader)
@@ -104,7 +104,7 @@ class FontraBackend:
                 self.glyphMap[glyphName] = codePoints
 
     def _writeGlyphInfo(self):
-        glyphInfoPath = self.path / FILENAME_GLYPH_INFO
+        glyphInfoPath = self.path / self.glyphInfoFileName
         with open(glyphInfoPath, "w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=";")
             writer.writerow(["glyph name", "code points"])
@@ -113,13 +113,13 @@ class FontraBackend:
                 writer.writerow([glyphName, codePoints])
 
     def _readFontData(self):
-        fontDataPath = self.path / FILENAME_FONT_DATA
+        fontDataPath = self.path / self.fontDataFileName
         self.fontData = dacite.from_dict(
             Font, json.loads(fontDataPath.read_text(encoding="utf-8"))
         )
 
     def _writeFontData(self):
-        fontDataPath = self.path / FILENAME_FONT_DATA
+        fontDataPath = self.path / self.fontDataFileName
         fontData = asdict(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
