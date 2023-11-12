@@ -48,3 +48,11 @@ async def test_fontraFormat(testFontraFont, newFontraFont):
         assert testFontraFont.getGlyphData(glyphName) == newFontraFont.getGlyphData(
             glyphName
         )
+
+    assert testFontraFont.fontDataPath.read_text(
+        encoding="utf-8"
+    ) == newFontraFont.fontDataPath.read_text(encoding="utf-8")
+
+    assert testFontraFont.glyphInfoPath.read_text(
+        encoding="utf-8"
+    ) == newFontraFont.glyphInfoPath.read_text(encoding="utf-8")
