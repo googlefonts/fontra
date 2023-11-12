@@ -29,5 +29,8 @@ def test_cast():
     )
     originalGlyph = deserializeGlyph(glyphPath.read_text(encoding="utf-8"))
     unstructuredGlyph = asdict(originalGlyph)
+    # Ensure that the PointType enums get converted to ints
+    unstructuredGlyph = json.loads(json.dumps(unstructuredGlyph))
     glyph = classCastFuncs[VariableGlyph](unstructuredGlyph)
     assert glyph == originalGlyph
+    assert str(glyph) == str(originalGlyph)
