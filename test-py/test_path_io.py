@@ -1,8 +1,8 @@
 from dataclasses import asdict
 
+import cattrs
 import pytest
 
-from fontra.core.classes import from_dict
 from fontra.core.path import PackedPath, PackedPathPointPen
 
 pathTestData = [
@@ -121,7 +121,7 @@ pathTestData = [
 
 @pytest.mark.parametrize("path", pathTestData)
 async def test_packedPathPointPenRoundTrip(path):
-    path = from_dict(PackedPath, path)
+    path = cattrs.structure(path, PackedPath)
     pen = PackedPathPointPen()
     path.drawPoints(pen)
     repackedPath = pen.getPath()
@@ -131,7 +131,7 @@ async def test_packedPathPointPenRoundTrip(path):
 
 @pytest.mark.parametrize("path", pathTestData)
 async def test_unpackPathRoundTrip(path):
-    path = from_dict(PackedPath, path)
+    path = cattrs.structure(path, PackedPath)
     unpackedPath = path.unpackedContours()
     repackedPath = PackedPath.fromUnpackedContours(unpackedPath)
     assert path == repackedPath
