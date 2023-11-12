@@ -66,15 +66,12 @@ class FontraBackend:
         return dict(self.glyphMap)
 
     async def getGlyph(self, glyphName):
-        filePath = self._getGlyphFilePath(glyphName)
-        if not filePath.is_file():
-            raise KeyError(glyphName)
-        jsonSource = filePath.read_text(encoding="utf-8")
+        jsonSource = self.getGlyphData(glyphName)
         return deserializeGlyph(jsonSource, glyphName)
 
     async def putGlyph(self, glyphName, glyph, codePoints):
         jsonSource = serializeGlyph(glyph, glyphName)
-        filePath = self._getGlyphFilePath(glyphName)
+        filePath = self.getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")
         self.glyphMap[glyphName] = codePoints
         self._scheduler.schedule(self._writeGlyphInfo)
@@ -128,7 +125,13 @@ class FontraBackend:
         fontData.pop("glyphMap", None)
         fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
 
-    def _getGlyphFilePath(self, glyphName):
+    def getGlyphData(self, glyphName):
+        filePath = self.getGlyphFilePath(glyphName)
+        if not filePath.is_file():
+            raise KeyError(glyphName)
+        return filePath.read_text(encoding="utf-8")
+
+    def getGlyphFilePath(self, glyphName):
         return self.glyphsDir / (stringToFileName(glyphName) + ".json")
 
 
