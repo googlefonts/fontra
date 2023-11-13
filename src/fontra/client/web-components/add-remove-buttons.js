@@ -1,5 +1,4 @@
-import { LitElement, css, html, unsafeCSS } from "../third-party/lit.js";
-import { InlineSVG } from "./inline-svg.js";
+import * as html from "../core/html-utils.js";
 import { themeColorCSS } from "./theme-support.js";
 
 const colors = {
@@ -11,9 +10,9 @@ const colors = {
   "text-disabled-color": ["#aaa", "#888"],
 };
 
-export class AddRemoveButtons extends LitElement {
-  static styles = css`
-    ${unsafeCSS(themeColorCSS(colors))}
+class AddRemoveButtons extends html.UnlitElement {
+  static styles = `
+    ${themeColorCSS(colors)}
 
     .buttons-container {
       padding: 0.5em;
@@ -79,24 +78,31 @@ export class AddRemoveButtons extends LitElement {
   render() {
     return this.hidden
       ? ""
-      : html`
-          <div class="buttons-container">
-            <button
-              name="add-button"
-              .disabled=${this.disableAddButton}
-              @click=${() => this.addButtonCallback()}
-            >
-              <inline-svg src="/images/plus.svg"></inline-svg>
-            </button>
-            <button
-              name="remove-button"
-              .disabled=${this.disableRemoveButton}
-              @click=${() => this.removeButtonCallback()}
-            >
-              <inline-svg src="/images/minus.svg"></inline-svg>
-            </button>
-          </div>
-        `;
+      : html.div(
+          {
+            class: "buttons-container",
+          },
+          [
+            html.button(
+              {
+                disabled: this.disableAddButton,
+                onclick: () => {
+                  this.addButtonCallback();
+                },
+              },
+              [html.createDomElement("inline-svg", { src: "/images/plus.svg" })]
+            ),
+            html.button(
+              {
+                disabled: this.disableRemoveButton,
+                onclick: () => {
+                  this.removeButtonCallback();
+                },
+              },
+              [html.createDomElement("inline-svg", { src: "/images/minus.svg" })]
+            ),
+          ]
+        );
   }
 }
 
