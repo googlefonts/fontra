@@ -204,7 +204,14 @@ cattrs.register_unstructure_hook(Point, _unstructurePoint)
 cattrs.register_structure_hook(bool, lambda x, y: x)
 cattrs.register_structure_hook(PointType, _structurePointType)
 
-for _class in [DecomposedTransform, VariableGlyph, StaticGlyph]:
+for _class in [
+    DecomposedTransform,
+    StaticGlyph,
+    VariableGlyph,
+    Layer,
+    Path,
+    PackedPath,
+]:
     _hook = cattrs.gen.make_dict_unstructure_fn(
         _class,
         cattrs.global_converter,
