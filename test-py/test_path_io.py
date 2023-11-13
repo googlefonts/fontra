@@ -144,23 +144,37 @@ async def test_pathConversion(path):
     assert packedPath == packedPath2
 
 
-expectedPackedPathRepr = "PackedPath(coordinates=[60, 0, 110, 0, 110, 120, 60, 120], \
-pointTypes=[<PointType.ON_CURVE: 0>, <PointType.ON_CURVE: 0>, <PointType.ON_CURVE: 0>, \
-<PointType.ON_CURVE: 0>], contourInfo=[ContourInfo(endPoint=3, isClosed=True)])"
+expectedPackedPathRepr = "PackedPath(coordinates=[232, -10, 338, -10, 403, 38, 403, 182, \
+403, 700, 363, 700, 363, 182, 363, 60, 313, 26, 232, 26, 151, 26, 100, 60, 100, 182, \
+100, 280, 60, 280, 60, 182, 60, 38, 124, -10], pointTypes=[<PointType.ON_CURVE_SMOOTH: \
+8>, <PointType.OFF_CURVE_CUBIC: 2>, <PointType.OFF_CURVE_CUBIC: 2>, \
+<PointType.ON_CURVE_SMOOTH: 8>, <PointType.ON_CURVE: 0>, <PointType.ON_CURVE: 0>, \
+<PointType.ON_CURVE_SMOOTH: 8>, <PointType.OFF_CURVE_CUBIC: 2>, \
+<PointType.OFF_CURVE_CUBIC: 2>, <PointType.ON_CURVE_SMOOTH: 8>, \
+<PointType.OFF_CURVE_CUBIC: 2>, <PointType.OFF_CURVE_CUBIC: 2>, \
+<PointType.ON_CURVE_SMOOTH: 8>, <PointType.ON_CURVE: 0>, <PointType.ON_CURVE: 0>, \
+<PointType.ON_CURVE_SMOOTH: 8>, <PointType.OFF_CURVE_CUBIC: 2>, \
+<PointType.OFF_CURVE_CUBIC: 2>], contourInfo=[ContourInfo(endPoint=17, isClosed=True)])"
 
 
 async def test_packedPathRepr():
-    path = pathTestData[0]
+    path = pathTestData[1]
     packedPath = cattrs.structure(path, PackedPath)
     assert expectedPackedPathRepr == str(packedPath)
 
 
-expectedPathRepr = "Path(contours=[Contour(points=[{'x': 60, 'y': 0}, {'x': 110, 'y': \
-0}, {'x': 110, 'y': 120}, {'x': 60, 'y': 120}], isClosed=True)])"
+expectedPathRepr = "Path(contours=[Contour(points=[{'x': 232, 'y': -10, 'smooth': True}, \
+{'x': 338, 'y': -10, 'type': 'cubic'}, {'x': 403, 'y': 38, 'type': 'cubic'}, {'x': 403, \
+'y': 182, 'smooth': True}, {'x': 403, 'y': 700}, {'x': 363, 'y': 700}, {'x': 363, 'y': \
+182, 'smooth': True}, {'x': 363, 'y': 60, 'type': 'cubic'}, {'x': 313, 'y': 26, 'type': \
+'cubic'}, {'x': 232, 'y': 26, 'smooth': True}, {'x': 151, 'y': 26, 'type': 'cubic'}, \
+{'x': 100, 'y': 60, 'type': 'cubic'}, {'x': 100, 'y': 182, 'smooth': True}, {'x': 100, \
+'y': 280}, {'x': 60, 'y': 280}, {'x': 60, 'y': 182, 'smooth': True}, {'x': 60, 'y': 38, \
+'type': 'cubic'}, {'x': 124, 'y': -10, 'type': 'cubic'}], isClosed=True)])"
 
 
 async def test_pathRepr():
-    path = pathTestData[0]
+    path = pathTestData[1]
     packedPath = cattrs.structure(path, PackedPath)
     path = packedPath.asPath()
     assert expectedPathRepr == str(path)
