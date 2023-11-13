@@ -1,6 +1,5 @@
 {
 "name": "space",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -92,6 +91,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

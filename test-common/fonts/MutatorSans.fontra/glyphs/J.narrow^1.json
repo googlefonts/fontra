@@ -1,6 +1,5 @@
 {
 "name": "J.narrow",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -420,6 +419,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

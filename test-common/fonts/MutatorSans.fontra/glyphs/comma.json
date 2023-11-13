@@ -1,6 +1,5 @@
 {
 "name": "comma",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -244,6 +243,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

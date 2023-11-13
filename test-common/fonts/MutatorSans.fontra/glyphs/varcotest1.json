@@ -1,6 +1,5 @@
 {
 "name": "varcotest1",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -68,6 +67,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

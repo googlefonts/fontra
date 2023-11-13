@@ -1,6 +1,5 @@
 {
 "name": "dieresis",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -157,6 +156,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

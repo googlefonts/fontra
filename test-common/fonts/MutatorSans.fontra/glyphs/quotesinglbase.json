@@ -1,6 +1,5 @@
 {
 "name": "quotesinglbase",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -118,6 +117,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

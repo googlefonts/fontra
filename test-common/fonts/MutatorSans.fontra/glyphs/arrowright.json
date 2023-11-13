@@ -1,6 +1,5 @@
 {
 "name": "arrowright",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -248,6 +247,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

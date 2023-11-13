@@ -1,6 +1,5 @@
 {
 "name": "Adieresis",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -149,6 +148,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

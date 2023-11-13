@@ -1,6 +1,5 @@
 {
 "name": "O",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -694,6 +693,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

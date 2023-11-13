@@ -1,6 +1,5 @@
 {
 "name": "period",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -214,6 +213,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }

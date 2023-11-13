@@ -1,6 +1,5 @@
 {
 "name": "colon",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -148,6 +147,5 @@
 },
 "customData": {}
 }
-},
-"customData": {}
+}
 }
