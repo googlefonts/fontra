@@ -33,6 +33,9 @@ class Path:
     def asPackedPath(self):
         return PackedPath.fromUnpackedContours(cattrs.unstructure(self.contours))
 
+    def isEmpty(self):
+        return not self.contours
+
 
 # Packed Path
 
@@ -76,6 +79,9 @@ class PackedPath:
 
     def asPath(self):
         return Path(contours=cattrs.structure(self.unpackedContours(), list[Contour]))
+
+    def isEmpty(self):
+        return not self.contourInfo
 
     def unpackedContours(self):
         unpackedContours = []
@@ -336,3 +342,21 @@ def packPointType(type, smooth):
     else:
         pointType = PointType.ON_CURVE
     return pointType
+
+
+# A hack so an empty Path equals and empty PackedPath, so cattrs can know to
+# omit an empty path for a Union[PackedPath, Path] field, regardless of the
+# actual path type.
+def _add_eq_trap(cls):
+    original_eq = cls.__eq__
+
+    def _trap_eq(self, other):
+        if self.isEmpty() and other.isEmpty():
+            return True
+        return original_eq(self, other)
+
+    cls.__eq__ = _trap_eq
+
+
+_add_eq_trap(Path)
+_add_eq_trap(PackedPath)
