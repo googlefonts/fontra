@@ -1,5 +1,3 @@
-from dataclasses import asdict
-
 import cattrs
 import pytest
 
@@ -126,7 +124,7 @@ async def test_packedPathPointPenRoundTrip(path):
     path.drawPoints(pen)
     repackedPath = pen.getPath()
     assert path == repackedPath
-    assert asdict(path) == asdict(repackedPath)
+    assert cattrs.unstructure(path) == cattrs.unstructure(repackedPath)
 
 
 @pytest.mark.parametrize("path", pathTestData)
@@ -135,4 +133,4 @@ async def test_unpackPathRoundTrip(path):
     unpackedPath = path.unpackedContours()
     repackedPath = PackedPath.fromUnpackedContours(unpackedPath)
     assert path == repackedPath
-    assert asdict(path) == asdict(repackedPath)
+    assert cattrs.unstructure(path) == cattrs.unstructure(repackedPath)
