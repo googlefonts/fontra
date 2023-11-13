@@ -3,6 +3,7 @@ import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
 import { hyphenatedToCamelCase } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
+import { RotaryControl } from "/web-components/rotary-control.js";
 
 export class Form extends SimpleElement {
   static styles = `
@@ -184,6 +185,34 @@ export class Form extends SimpleElement {
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
     valueElement.appendChild(inputElement);
+  }
+
+  _addEditAngle(valueElement, fieldItem) {
+    const inputElement = document.createElement("input");
+    inputElement.type = "number";
+    inputElement.value = fieldItem.value;
+
+    inputElement.min = 0;
+    inputElement.max = 360;
+    inputElement.step = "any";
+
+    inputElement.disabled = fieldItem.disabled;
+    inputElement.onchange = (event) => {
+      let value = parseFloat(inputElement.value);
+      this._fieldChanging(fieldItem.key, value);
+    };
+    this._fieldGetters[fieldItem.key] = () => inputElement.value;
+    this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
+    valueElement.appendChild(inputElement);
+    valueElement.appendChild(
+      html.createDomElement("rotary-control", {
+        value: fieldItem.value,
+        onChangeCallback: (value) => {
+          inputElement.value = value;
+          this._fieldChanging(fieldItem.key, value);
+        },
+      })
+    );
   }
 
   _addEditNumberSlider(valueElement, fieldItem) {

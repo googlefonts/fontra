@@ -226,7 +226,7 @@ export default class SelectionInfoPanel extends Panel {
       ]) {
         const value = component.transformation[key];
         formContents.push({
-          type: "edit-number",
+          type: key === "rotation" ? "edit-angle" : "edit-number",
           key: componentKey("transformation", key),
           label: key,
           value: value,
