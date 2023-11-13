@@ -1,4 +1,3 @@
-import { css } from "../third-party/lit.js";
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import * as html from "/core/html-utils.js";
 import { htmlToElement } from "/core/html-utils.js";
@@ -37,7 +36,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   identifier = "designspace-navigation";
   iconPath = "/images/sliders.svg";
 
-  static styles = css`
+  static styles = `
     #designspace-navigation {
       height: 100%;
       width: 100%;

@@ -1,4 +1,3 @@
-import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { findNestedActiveElement } from "/core/utils.js";
@@ -7,7 +6,7 @@ export default class TextEntryPanel extends Panel {
   identifier = "text-entry";
   iconPath = "/images/texttool.svg";
 
-  static styles = css`
+  static styles = `
     .sidebar-text-entry {
       box-sizing: border-box;
       height: 100%;

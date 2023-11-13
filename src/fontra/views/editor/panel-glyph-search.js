@@ -1,4 +1,3 @@
-import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 
@@ -6,7 +5,7 @@ export default class GlyphSearchPanel extends Panel {
   identifier = "glyph-search";
   iconPath = "/images/magnifyingglass.svg";
 
-  static styles = css`
+  static styles = `
     .glyph-search {
       box-sizing: border-box;
       height: 100%;

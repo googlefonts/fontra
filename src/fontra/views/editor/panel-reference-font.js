@@ -1,4 +1,3 @@
-import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 
@@ -212,7 +211,7 @@ export default class ReferenceFontPanel extends Panel {
   identifier = "reference-font";
   iconPath = "/images/reference.svg";
 
-  static styles = css`
+  static styles = `
     .sidebar-reference-font {
       width: 100%;
       height: 100%;
