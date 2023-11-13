@@ -21,13 +21,11 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {},
 "xAdvance": 500
 }
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {},
 "xAdvance": 0
 }
 }

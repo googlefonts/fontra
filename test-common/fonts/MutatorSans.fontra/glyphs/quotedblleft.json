@@ -37,7 +37,6 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "comma",
@@ -63,7 +62,6 @@
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "comma",
@@ -89,7 +87,6 @@
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "comma",
@@ -115,7 +112,6 @@
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "comma",

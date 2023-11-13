@@ -37,7 +37,6 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "A"
@@ -55,7 +54,6 @@
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "A",
@@ -75,7 +73,6 @@
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "A"
@@ -93,7 +90,6 @@
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "A"

@@ -37,25 +37,21 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {},
 "xAdvance": 250
 }
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {},
 "xAdvance": 250
 }
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {},
 "xAdvance": 250
 }
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {},
 "xAdvance": 250
 }
 }

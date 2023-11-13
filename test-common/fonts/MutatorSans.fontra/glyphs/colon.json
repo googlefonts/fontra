@@ -37,7 +37,6 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "period"
@@ -54,7 +53,6 @@
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "period",
@@ -74,7 +72,6 @@
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "period"
@@ -91,7 +88,6 @@
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {},
 "components": [
 {
 "name": "period",
