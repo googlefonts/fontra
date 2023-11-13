@@ -204,6 +204,14 @@ cattrs.register_unstructure_hook(Point, _unstructurePoint)
 cattrs.register_structure_hook(bool, lambda x, y: x)
 cattrs.register_structure_hook(PointType, _structurePointType)
 
+for _class in [DecomposedTransform]:
+    _hook = cattrs.gen.make_dict_unstructure_fn(
+        _class,
+        cattrs.global_converter,
+        _cattrs_omit_if_default=True,
+    )
+    cattrs.register_unstructure_hook(_class, _hook)
+
 
 atomicTypes = [str, int, float, bool, Any]
 
