@@ -1,5 +1,5 @@
 import logging
-from copy import copy
+from copy import copy, deepcopy
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import TypedDict
@@ -224,6 +224,33 @@ class PackedPath:
     def _moveEndPoints(self, fromContourIndex, offset):
         for contourInfo in self.contourInfo[fromContourIndex:]:
             contourInfo.endPoint += offset
+
+    def _ensureCompatibility(self, other):
+        if self.contourInfo != other.contourInfo:
+            # TODO: we should also compare self.pointTypes with other.pointTypes,
+            # but ignoring the smooth flag
+            # TODO: more specific exception
+            raise ValueError("paths are not compatible")
+
+    def __sub__(self, other):
+        self._ensureCompatibility(other)
+        coordinates = [v1 - v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
+        return PackedPath(
+            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+        )
+
+    def __add__(self, other):
+        self._ensureCompatibility(other)
+        coordinates = [v1 + v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
+        return PackedPath(
+            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+        )
+
+    def __mul__(self, scalar):
+        coordinates = [v * scalar for v in self.coordinates]
+        return PackedPath(
+            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+        )
 
 
 class PackedPathPointPen:
