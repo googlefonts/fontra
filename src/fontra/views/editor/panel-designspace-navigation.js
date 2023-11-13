@@ -1,4 +1,3 @@
-import { css } from "../third-party/lit.js";
 import { getAxisBaseName } from "/core/glyph-controller.js";
 import * as html from "/core/html-utils.js";
 import { htmlToElement } from "/core/html-utils.js";
