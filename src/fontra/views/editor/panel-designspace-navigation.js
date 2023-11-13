@@ -37,7 +37,7 @@ export default class DesignspaceNavigationPanel extends Panel {
   identifier = "designspace-navigation";
   iconPath = "/images/sliders.svg";
 
-  static styles = css`
+  static styles = `
     #designspace-navigation {
       height: 100%;
       width: 100%;

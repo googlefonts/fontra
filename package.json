@@ -15,7 +15,6 @@
   "dependencies": {
     "bezier-js": "^6.1.4",
     "fflate": "^0.8.1",
-    "lib-font": "^2.4.2",
-    "lit": "^3.0.2"
+    "lib-font": "^2.4.2"
   }
 }

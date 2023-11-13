@@ -1,4 +1,3 @@
-import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 import { recordChanges } from "/core/change-recorder.js";
 import * as html from "/core/html-utils.js";
@@ -17,7 +16,7 @@ export default class SelectionInfoPanel extends Panel {
   identifier = "selection-info";
   iconPath = "/images/info.svg";
 
-  static styles = css`
+  static styles = `
     .selection-info {
       display: flex;
       flex-direction: column;

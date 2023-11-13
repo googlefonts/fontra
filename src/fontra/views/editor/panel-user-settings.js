@@ -1,5 +1,4 @@
 import { loaderSpinner } from "../core/loader-spinner.js";
-import { css } from "../third-party/lit.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
@@ -9,7 +8,7 @@ export default class UserSettingsPanel extends Panel {
   identifier = "user-settings";
   iconPath = "/images/gear.svg";
 
-  static styles = css`
+  static styles = `
     .sidebar-settings,
     .sidebar-layer-preferences {
       box-sizing: border-box;

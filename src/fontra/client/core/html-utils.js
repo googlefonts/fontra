@@ -150,3 +150,7 @@ export const link = createDomElement.bind(null, "link");
 export const select = createDomElement.bind(null, "select");
 export const option = createDomElement.bind(null, "option");
 // Let's add more once needed
+
+export function css(text) {
+  return text;
+} // this is for highlighting css code
