@@ -70,10 +70,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 170,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 170
 },
 "customData": {}
 },
@@ -104,10 +101,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 170,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 170
 },
 "customData": {}
 },
@@ -138,10 +132,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 250,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 250
 },
 "customData": {}
 },
@@ -172,10 +163,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 290,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 290
 },
 "customData": {}
 },
@@ -206,10 +194,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 310,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 310
 },
 "customData": {}
 }

@@ -45,9 +45,7 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "period",
@@ -62,17 +60,13 @@
 "location": {}
 }
 ],
-"xAdvance": 170,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 170
 },
 "customData": {}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "period",
@@ -89,17 +83,13 @@
 "location": {}
 }
 ],
-"xAdvance": 250,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 250
 },
 "customData": {}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "period",
@@ -114,17 +104,13 @@
 "location": {}
 }
 ],
-"xAdvance": 290,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 290
 },
 "customData": {}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "period",
@@ -141,9 +127,7 @@
 "location": {}
 }
 ],
-"xAdvance": 310,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 310
 },
 "customData": {}
 }

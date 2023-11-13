@@ -15,9 +15,7 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "A",
@@ -61,9 +59,7 @@
 }
 }
 ],
-"xAdvance": 900,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 900
 },
 "customData": {}
 }

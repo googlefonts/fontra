@@ -45,9 +45,7 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "comma",
@@ -65,17 +63,13 @@
 "location": {}
 }
 ],
-"xAdvance": 301,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 301
 },
 "customData": {}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "comma",
@@ -93,17 +87,13 @@
 "location": {}
 }
 ],
-"xAdvance": 480,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 480
 },
 "customData": {}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "comma",
@@ -121,17 +111,13 @@
 "location": {}
 }
 ],
-"xAdvance": 421,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 421
 },
 "customData": {}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "comma",
@@ -149,9 +135,7 @@
 "location": {}
 }
 ],
-"xAdvance": 540,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 540
 },
 "customData": {}
 }

@@ -45,49 +45,29 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 250,
-"yAdvance": null,
-"verticalOrigin": null
+"path": {},
+"xAdvance": 250
 },
 "customData": {}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 250,
-"yAdvance": null,
-"verticalOrigin": null
+"path": {},
+"xAdvance": 250
 },
 "customData": {}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 250,
-"yAdvance": null,
-"verticalOrigin": null
+"path": {},
+"xAdvance": 250
 },
 "customData": {}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 250,
-"yAdvance": null,
-"verticalOrigin": null
+"path": {},
+"xAdvance": 250
 },
 "customData": {}
 }

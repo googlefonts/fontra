@@ -45,9 +45,7 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "A",
@@ -63,17 +61,13 @@
 "location": {}
 }
 ],
-"xAdvance": 396,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 396
 },
 "customData": {}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "A",
@@ -88,17 +82,13 @@
 "location": {}
 }
 ],
-"xAdvance": 740,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 740
 },
 "customData": {}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "A",
@@ -114,17 +104,13 @@
 "location": {}
 }
 ],
-"xAdvance": 1190,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 1190
 },
 "customData": {}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
+"path": {},
 "components": [
 {
 "name": "A",
@@ -140,9 +126,7 @@
 "location": {}
 }
 ],
-"xAdvance": 1290,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 1290
 },
 "customData": {}
 }

@@ -133,22 +133,14 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 396,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 396
 },
 "customData": {}
 },
 "MutatorSansLightCondensed/support": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 930,
-"yAdvance": null,
-"verticalOrigin": null
+"path": {},
+"xAdvance": 930
 },
 "customData": {}
 },
@@ -242,10 +234,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 740,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 740
 },
 "customData": {}
 },
@@ -339,10 +328,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 1190,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 1190
 },
 "customData": {}
 },
@@ -436,10 +422,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 1290,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 1290
 },
 "customData": {}
 }

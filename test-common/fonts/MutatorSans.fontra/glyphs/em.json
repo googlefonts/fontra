@@ -25,25 +25,15 @@
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 500,
-"yAdvance": null,
-"verticalOrigin": null
+"path": {},
+"xAdvance": 500
 },
 "customData": {}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 0,
-"yAdvance": null,
-"verticalOrigin": null
+"path": {},
+"xAdvance": 0
 },
 "customData": {}
 }

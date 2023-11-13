@@ -82,10 +82,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 750,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 750
 },
 "customData": {}
 },
@@ -116,10 +113,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 750,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 750
 },
 "customData": {}
 },
@@ -150,10 +144,7 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 750,
-"yAdvance": null,
-"verticalOrigin": null
+"xAdvance": 750
 },
 "customData": {}
 }
