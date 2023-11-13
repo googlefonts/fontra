@@ -22,13 +22,13 @@ class Point(TypedDict):
 
 @dataclass
 class Contour:
-    points: list[Point] = field(default_factory=[])
+    points: list[Point] = field(default_factory=list)
     isClosed: bool = False
 
 
 @dataclass
 class Path:
-    contours: list[Contour] = field(default_factory=[])
+    contours: list[Contour] = field(default_factory=list)
 
     def asPackedPath(self):
         return PackedPath.fromUnpackedContours(cattrs.unstructure(self.contours))
