@@ -279,8 +279,7 @@
 ]
 },
 "xAdvance": 398
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/background": {
 "glyph": {
@@ -730,8 +729,7 @@
 ]
 },
 "xAdvance": 1185
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/support.S.wide": {
 "glyph": {
@@ -961,8 +959,7 @@
 ]
 },
 "xAdvance": 1227
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/support.S.middle": {
 "glyph": {
@@ -1192,8 +1189,7 @@
 ]
 },
 "xAdvance": 980
-},
-"customData": {}
+}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
@@ -1423,8 +1419,7 @@
 ]
 },
 "xAdvance": 751
-},
-"customData": {}
+}
 },
 "MutatorSansBoldCondensed/background": {
 "glyph": {
@@ -1654,8 +1649,7 @@
 ]
 },
 "xAdvance": 1246
-},
-"customData": {}
+}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
@@ -1884,8 +1878,7 @@
 ]
 },
 "xAdvance": 1175
-},
-"customData": {}
+}
 },
 "MutatorSansLightWide/background": {
 "glyph": {
@@ -2114,8 +2107,7 @@
 ]
 },
 "xAdvance": 1185
-},
-"customData": {}
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
@@ -2345,8 +2337,7 @@
 ]
 },
 "xAdvance": 1313
-},
-"customData": {}
+}
 },
 "MutatorSansBoldWide/background": {
 "glyph": {
@@ -2576,8 +2567,7 @@
 ]
 },
 "xAdvance": 1210
-},
-"customData": {}
+}
 }
 }
 }

@@ -79,8 +79,7 @@
 ]
 },
 "xAdvance": 171
-},
-"customData": {}
+}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
@@ -126,8 +125,7 @@
 ]
 },
 "xAdvance": 250
-},
-"customData": {}
+}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
@@ -173,8 +171,7 @@
 ]
 },
 "xAdvance": 291
-},
-"customData": {}
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
@@ -220,8 +217,7 @@
 ]
 },
 "xAdvance": 310
-},
-"customData": {}
+}
 }
 }
 }

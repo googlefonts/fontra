@@ -93,8 +93,7 @@
 ]
 },
 "xAdvance": 500
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/varco_flip": {
 "glyph": {
@@ -140,8 +139,7 @@
 ]
 },
 "xAdvance": 500
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/varco_flop": {
 "glyph": {
@@ -187,8 +185,7 @@
 ]
 },
 "xAdvance": 500
-},
-"customData": {}
+}
 },
 "weight=850,flip=100": {
 "glyph": {
@@ -234,8 +231,7 @@
 ]
 },
 "xAdvance": 500
-},
-"customData": {}
+}
 }
 }
 }

@@ -39,29 +39,25 @@
 "glyph": {
 "path": {},
 "xAdvance": 250
-},
-"customData": {}
+}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "path": {},
 "xAdvance": 250
-},
-"customData": {}
+}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
 "path": {},
 "xAdvance": 250
-},
-"customData": {}
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "path": {},
 "xAdvance": 250
-},
-"customData": {}
+}
 }
 }
 }

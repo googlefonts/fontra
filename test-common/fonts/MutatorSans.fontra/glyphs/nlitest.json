@@ -75,8 +75,7 @@
 ]
 },
 "xAdvance": 750
-},
-"customData": {}
+}
 },
 "rotate_end": {
 "glyph": {
@@ -106,8 +105,7 @@
 ]
 },
 "xAdvance": 750
-},
-"customData": {}
+}
 },
 "rotate_off": {
 "glyph": {
@@ -137,8 +135,7 @@
 ]
 },
 "xAdvance": 750
-},
-"customData": {}
+}
 }
 }
 }

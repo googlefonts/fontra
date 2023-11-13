@@ -271,8 +271,7 @@
 ]
 },
 "xAdvance": 393
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/support": {
 "glyph": {
@@ -502,8 +501,7 @@
 ]
 },
 "xAdvance": 752
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/background": {
 "glyph": {
@@ -733,8 +731,7 @@
 ]
 },
 "xAdvance": 500
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/support.S.wide": {
 "glyph": {
@@ -964,8 +961,7 @@
 ]
 },
 "xAdvance": 1265
-},
-"customData": {}
+}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
@@ -1195,8 +1191,7 @@
 ]
 },
 "xAdvance": 698
-},
-"customData": {}
+}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
@@ -1425,8 +1420,7 @@
 ]
 },
 "xAdvance": 1160
-},
-"customData": {}
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
@@ -1656,8 +1650,7 @@
 ]
 },
 "xAdvance": 1210
-},
-"customData": {}
+}
 },
 "MutatorSansBoldWide/background": {
 "glyph": {
@@ -1887,8 +1880,7 @@
 ]
 },
 "xAdvance": 1313
-},
-"customData": {}
+}
 }
 }
 }

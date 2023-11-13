@@ -208,8 +208,8 @@ for _class in [
     DecomposedTransform,
     StaticGlyph,
     Source,
-    VariableGlyph,
     Layer,
+    VariableGlyph,
     Path,
     PackedPath,
 ]:

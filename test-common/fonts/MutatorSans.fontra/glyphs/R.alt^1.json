@@ -202,8 +202,7 @@
 ]
 },
 "xAdvance": 454
-},
-"customData": {}
+}
 },
 "weight=1": {
 "glyph": {
@@ -360,8 +359,7 @@
 ]
 },
 "xAdvance": 720
-},
-"customData": {}
+}
 },
 "width=1": {
 "glyph": {
@@ -518,8 +516,7 @@
 ]
 },
 "xAdvance": 1171
-},
-"customData": {}
+}
 },
 "width=1,weight=1": {
 "glyph": {
@@ -676,8 +673,7 @@
 ]
 },
 "xAdvance": 1277
-},
-"customData": {}
+}
 }
 }
 }

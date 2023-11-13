@@ -23,15 +23,13 @@
 "glyph": {
 "path": {},
 "xAdvance": 500
-},
-"customData": {}
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "path": {},
 "xAdvance": 0
-},
-"customData": {}
+}
 }
 }
 }

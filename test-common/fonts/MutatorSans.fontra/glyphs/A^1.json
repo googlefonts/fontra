@@ -126,15 +126,13 @@
 ]
 },
 "xAdvance": 396
-},
-"customData": {}
+}
 },
 "MutatorSansLightCondensed/support": {
 "glyph": {
 "path": {},
 "xAdvance": 930
-},
-"customData": {}
+}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
@@ -227,8 +225,7 @@
 ]
 },
 "xAdvance": 740
-},
-"customData": {}
+}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
@@ -321,8 +318,7 @@
 ]
 },
 "xAdvance": 1190
-},
-"customData": {}
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
@@ -415,8 +411,7 @@
 ]
 },
 "xAdvance": 1290
-},
-"customData": {}
+}
 }
 }
 }
