@@ -365,7 +365,7 @@ export class RangeSlider extends html.UnlitElement {
               min: minValue,
               max: maxValue,
               step,
-              value,
+              value: this.isDiscrete() ? this.values.indexOf(value) : value,
               tabindex: "-1",
               onkeydown: (event) => this.onKeyDown(event),
               onmouseup: (event) => {
