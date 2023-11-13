@@ -204,23 +204,25 @@ cattrs.register_unstructure_hook(Point, _unstructurePoint)
 cattrs.register_structure_hook(bool, lambda x, y: x)
 cattrs.register_structure_hook(PointType, _structurePointType)
 
-# The order in which the hooks are applied is significant, for unclear reasons
-for _class in [
-    DecomposedTransform,
-    Component,
-    StaticGlyph,
-    Source,
-    Layer,
-    VariableGlyph,
-    Path,
-    PackedPath,
-]:
+
+def registerOmitDefaultHook(cls):
     _hook = cattrs.gen.make_dict_unstructure_fn(
-        _class,
+        cls,
         cattrs.global_converter,
         _cattrs_omit_if_default=True,
     )
-    cattrs.register_unstructure_hook(_class, _hook)
+    cattrs.register_unstructure_hook(cls, _hook)
+
+
+# The order in which the hooks are applied is significant, for unclear reasons
+registerOmitDefaultHook(DecomposedTransform)
+registerOmitDefaultHook(Component)
+registerOmitDefaultHook(StaticGlyph)
+registerOmitDefaultHook(Source)
+registerOmitDefaultHook(Layer)
+registerOmitDefaultHook(VariableGlyph)
+registerOmitDefaultHook(Path)
+registerOmitDefaultHook(PackedPath)
 
 
 atomicTypes = [str, int, float, bool, Any]
