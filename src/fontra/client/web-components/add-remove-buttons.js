@@ -1,5 +1,6 @@
 import * as html from "../core/html-utils.js";
 import { themeColorCSS } from "./theme-support.js";
+import "/web-components/inline-svg.js";
 
 const colors = {
   "button-color": ["#ddd", "#888"],
