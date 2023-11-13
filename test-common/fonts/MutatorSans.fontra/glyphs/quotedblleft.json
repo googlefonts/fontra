@@ -55,13 +55,8 @@
 "transformation": {
 "translateX": 171,
 "translateY": 607,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"scaleY": -1.0
 },
 "location": {}
 },
@@ -70,13 +65,8 @@
 "transformation": {
 "translateX": 301,
 "translateY": 607,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"scaleY": -1.0
 },
 "location": {}
 }
@@ -98,13 +88,8 @@
 "transformation": {
 "translateX": 250,
 "translateY": 657,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"scaleY": -1.0
 },
 "location": {}
 },
@@ -113,13 +98,8 @@
 "transformation": {
 "translateX": 480,
 "translateY": 657,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"scaleY": -1.0
 },
 "location": {}
 }
@@ -141,13 +121,8 @@
 "transformation": {
 "translateX": 291,
 "translateY": 607,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"scaleY": -1.0
 },
 "location": {}
 },
@@ -156,13 +131,8 @@
 "transformation": {
 "translateX": 421,
 "translateY": 607,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"scaleY": -1.0
 },
 "location": {}
 }
@@ -184,13 +154,8 @@
 "transformation": {
 "translateX": 310,
 "translateY": 657,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"scaleY": -1.0
 },
 "location": {}
 },
@@ -199,13 +164,8 @@
 "transformation": {
 "translateX": 540,
 "translateY": 657,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"scaleY": -1.0
 },
 "location": {}
 }

@@ -52,31 +52,14 @@
 "components": [
 {
 "name": "A",
-"transformation": {
-"translateX": 0,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
+"transformation": {},
 "location": {}
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 89,
-"translateY": 20,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"translateY": 20
 },
 "location": {}
 }
@@ -96,30 +79,14 @@
 {
 "name": "A",
 "transformation": {
-"translateX": 20,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"translateX": 20
 },
 "location": {}
 },
 {
 "name": "dieresis",
 "transformation": {
-"translateX": 120,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"translateX": 120
 },
 "location": {}
 }
@@ -138,31 +105,14 @@
 "components": [
 {
 "name": "A",
-"transformation": {
-"translateX": 0,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
+"transformation": {},
 "location": {}
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 421,
-"translateY": 20,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"translateY": 20
 },
 "location": {}
 }
@@ -181,31 +131,14 @@
 "components": [
 {
 "name": "A",
-"transformation": {
-"translateX": 0,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
+"transformation": {},
 "location": {}
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 362,
-"translateY": 20,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
+"translateY": 20
 },
 "location": {}
 }
