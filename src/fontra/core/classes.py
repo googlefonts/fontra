@@ -8,7 +8,7 @@ from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 import cattrs
 from fontTools.misc.transform import DecomposedTransform
 
-from .path import PackedPath, Path
+from .path import PackedPath, Path, Point, PointType
 
 Location = dict[str, float]
 CustomData = dict[str, Any]
@@ -182,8 +182,24 @@ def convertNumber(d, tp):
     return d
 
 
+def structurePoint(d, tp):
+    return d
+
+
+def unstructurePoint(v):
+    return v
+
+
+def structurePointType(v, tp):
+    return PointType(v)
+
+
 cattrs.register_structure_hook(Union[PackedPath, Path], convertPath)
 cattrs.register_structure_hook(float, convertNumber)
+cattrs.register_structure_hook(Point, structurePoint)
+cattrs.register_unstructure_hook(Point, unstructurePoint)
+cattrs.register_structure_hook(bool, lambda x, y: x)
+cattrs.register_structure_hook(PointType, structurePointType)
 
 
 atomicTypes = [str, int, float, bool, Any]
