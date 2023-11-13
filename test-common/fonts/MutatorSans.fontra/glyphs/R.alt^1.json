@@ -21,27 +21,21 @@
 "location": {
 "width": 0,
 "weight": 0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "weight=1",
 "layerName": "weight=1",
 "location": {
 "weight": 1
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "width=1",
 "layerName": "width=1",
 "location": {
 "width": 1
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "width=1,weight=1",
@@ -49,9 +43,7 @@
 "location": {
 "weight": 1,
 "width": 1
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {

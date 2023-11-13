@@ -7,9 +7,7 @@
 "location": {
 "width": 0.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldCondensed",
@@ -17,9 +15,7 @@
 "location": {
 "width": 0.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "LightWide",
@@ -27,9 +23,7 @@
 "location": {
 "width": 1000.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldWide",
@@ -37,9 +31,7 @@
 "location": {
 "width": 1000.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "support.S.wide",
@@ -47,9 +39,7 @@
 "location": {
 "width": 1000.0,
 "weight": 595.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "support.S.middle",
@@ -57,9 +47,7 @@
 "location": {
 "width": 569.078,
 "weight": 595.0
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {

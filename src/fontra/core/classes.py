@@ -207,6 +207,7 @@ cattrs.register_structure_hook(PointType, _structurePointType)
 for _class in [
     DecomposedTransform,
     StaticGlyph,
+    Source,
     VariableGlyph,
     Layer,
     Path,
