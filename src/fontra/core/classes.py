@@ -170,36 +170,39 @@ def makeSchema(*classes, schema=None):
     return schema
 
 
-def convertPath(d, tp):
+# cattrs hooks
+
+
+def _structurePath(d, tp):
     if "pointTypes" not in d:
         return cattrs.structure(d, Path)
     else:
         return cattrs.structure(d, PackedPath)
 
 
-def convertNumber(d, tp):
+def _structureNumber(d, tp):
     assert isinstance(d, (float, int))
     return d
 
 
-def structurePoint(d, tp):
+def _structurePoint(d, tp):
     return d
 
 
-def unstructurePoint(v):
+def _unstructurePoint(v):
     return v
 
 
-def structurePointType(v, tp):
+def _structurePointType(v, tp):
     return PointType(v)
 
 
-cattrs.register_structure_hook(Union[PackedPath, Path], convertPath)
-cattrs.register_structure_hook(float, convertNumber)
-cattrs.register_structure_hook(Point, structurePoint)
-cattrs.register_unstructure_hook(Point, unstructurePoint)
+cattrs.register_structure_hook(Union[PackedPath, Path], _structurePath)
+cattrs.register_structure_hook(float, _structureNumber)
+cattrs.register_structure_hook(Point, _structurePoint)
+cattrs.register_unstructure_hook(Point, _unstructurePoint)
 cattrs.register_structure_hook(bool, lambda x, y: x)
-cattrs.register_structure_hook(PointType, structurePointType)
+cattrs.register_structure_hook(PointType, _structurePointType)
 
 
 atomicTypes = [str, int, float, bool, Any]
