@@ -30,6 +30,9 @@ class Contour:
 class Path:
     contours: list[Contour] = field(default_factory=list)
 
+    def asPath(self):
+        return self
+
     def asPackedPath(self):
         return PackedPath.fromUnpackedContours(cattrs.unstructure(self.contours))
 
@@ -79,6 +82,9 @@ class PackedPath:
 
     def asPath(self):
         return Path(contours=cattrs.structure(self.unpackedContours(), list[Contour]))
+
+    def asPackedPath(self):
+        return self
 
     def isEmpty(self):
         return not self.contourInfo
