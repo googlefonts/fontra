@@ -1,6 +1,6 @@
 import * as html from "../core/html-utils.js";
+import { InlineSVG } from "./inline-svg.js";
 import { themeColorCSS } from "./theme-support.js";
-import "/web-components/inline-svg.js";
 
 const colors = {
   "button-color": ["#ddd", "#888"],
@@ -91,7 +91,7 @@ class AddRemoveButtons extends html.UnlitElement {
                   this.addButtonCallback();
                 },
               },
-              [html.createDomElement("inline-svg", { src: "/images/plus.svg" })]
+              [new InlineSVG("/images/plus.svg")]
             ),
             html.button(
               {
@@ -100,7 +100,7 @@ class AddRemoveButtons extends html.UnlitElement {
                   this.removeButtonCallback();
                 },
               },
-              [html.createDomElement("inline-svg", { src: "/images/minus.svg" })]
+              [new InlineSVG("/images/minus.svg")]
             ),
           ]
         );
