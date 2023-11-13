@@ -361,7 +361,7 @@ def _add_eq_override(cls):
     original_eq = cls.__eq__
 
     def __eq__(self, other):
-        if self.isEmpty() and other.isEmpty():
+        if hasattr(other, "isEmpty") and self.isEmpty() and other.isEmpty():
             return True
         return original_eq(self, other)
 
