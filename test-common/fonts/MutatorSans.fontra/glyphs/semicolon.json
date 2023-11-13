@@ -40,16 +40,13 @@
 "path": {},
 "components": [
 {
-"name": "comma",
-"transformation": {},
-"location": {}
+"name": "comma"
 },
 {
 "name": "period",
 "transformation": {
 "translateY": 360
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 171
@@ -63,15 +60,13 @@
 "name": "comma",
 "transformation": {
 "translateY": 2
-},
-"location": {}
+}
 },
 {
 "name": "period",
 "transformation": {
 "translateY": 372
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 250
@@ -82,16 +77,13 @@
 "path": {},
 "components": [
 {
-"name": "comma",
-"transformation": {},
-"location": {}
+"name": "comma"
 },
 {
 "name": "period",
 "transformation": {
 "translateY": 360
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 291
@@ -105,15 +97,13 @@
 "name": "comma",
 "transformation": {
 "translateY": 2
-},
-"location": {}
+}
 },
 {
 "name": "period",
 "transformation": {
 "translateY": 372
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 310

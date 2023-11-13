@@ -40,16 +40,13 @@
 "path": {},
 "components": [
 {
-"name": "comma",
-"transformation": {},
-"location": {}
+"name": "comma"
 },
 {
 "name": "comma",
 "transformation": {
 "translateX": 130
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 301
@@ -60,16 +57,13 @@
 "path": {},
 "components": [
 {
-"name": "comma",
-"transformation": {},
-"location": {}
+"name": "comma"
 },
 {
 "name": "comma",
 "transformation": {
 "translateX": 230
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 480
@@ -80,16 +74,13 @@
 "path": {},
 "components": [
 {
-"name": "comma",
-"transformation": {},
-"location": {}
+"name": "comma"
 },
 {
 "name": "comma",
 "transformation": {
 "translateX": 130
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 421
@@ -103,16 +94,14 @@
 "name": "comma",
 "transformation": {
 "translateY": 1
-},
-"location": {}
+}
 },
 {
 "name": "comma",
 "transformation": {
 "translateX": 250,
 "translateY": 1
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 560

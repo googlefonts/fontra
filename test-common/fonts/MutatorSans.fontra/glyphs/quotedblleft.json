@@ -46,8 +46,7 @@
 "translateY": 607,
 "scaleX": -1.0,
 "scaleY": -1.0
-},
-"location": {}
+}
 },
 {
 "name": "comma",
@@ -56,8 +55,7 @@
 "translateY": 607,
 "scaleX": -1.0,
 "scaleY": -1.0
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 301
@@ -74,8 +72,7 @@
 "translateY": 657,
 "scaleX": -1.0,
 "scaleY": -1.0
-},
-"location": {}
+}
 },
 {
 "name": "comma",
@@ -84,8 +81,7 @@
 "translateY": 657,
 "scaleX": -1.0,
 "scaleY": -1.0
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 480
@@ -102,8 +98,7 @@
 "translateY": 607,
 "scaleX": -1.0,
 "scaleY": -1.0
-},
-"location": {}
+}
 },
 {
 "name": "comma",
@@ -112,8 +107,7 @@
 "translateY": 607,
 "scaleX": -1.0,
 "scaleY": -1.0
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 421
@@ -130,8 +124,7 @@
 "translateY": 657,
 "scaleX": -1.0,
 "scaleY": -1.0
-},
-"location": {}
+}
 },
 {
 "name": "comma",
@@ -140,8 +133,7 @@
 "translateY": 657,
 "scaleX": -1.0,
 "scaleY": -1.0
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 540

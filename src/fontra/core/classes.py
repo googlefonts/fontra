@@ -207,6 +207,7 @@ cattrs.register_structure_hook(PointType, _structurePointType)
 # The order in which the hooks are applied is significant, for unclear reasons
 for _class in [
     DecomposedTransform,
+    Component,
     StaticGlyph,
     Source,
     Layer,

@@ -40,9 +40,7 @@
 "path": {},
 "components": [
 {
-"name": "comma",
-"transformation": {},
-"location": {}
+"name": "comma"
 }
 ],
 "xAdvance": 171
@@ -53,9 +51,7 @@
 "path": {},
 "components": [
 {
-"name": "comma",
-"transformation": {},
-"location": {}
+"name": "comma"
 }
 ],
 "xAdvance": 250
@@ -66,9 +62,7 @@
 "path": {},
 "components": [
 {
-"name": "comma",
-"transformation": {},
-"location": {}
+"name": "comma"
 }
 ],
 "xAdvance": 291
@@ -82,8 +76,7 @@
 "name": "comma",
 "transformation": {
 "translateY": 2
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 310

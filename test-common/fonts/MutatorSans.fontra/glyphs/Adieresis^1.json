@@ -40,17 +40,14 @@
 "path": {},
 "components": [
 {
-"name": "A",
-"transformation": {},
-"location": {}
+"name": "A"
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 89,
 "translateY": 20
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 396
@@ -64,15 +61,13 @@
 "name": "A",
 "transformation": {
 "translateX": 20
-},
-"location": {}
+}
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 120
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 760
@@ -83,17 +78,14 @@
 "path": {},
 "components": [
 {
-"name": "A",
-"transformation": {},
-"location": {}
+"name": "A"
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 421,
 "translateY": 20
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 1190
@@ -104,17 +96,14 @@
 "path": {},
 "components": [
 {
-"name": "A",
-"transformation": {},
-"location": {}
+"name": "A"
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 362,
 "translateY": 20
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 1290

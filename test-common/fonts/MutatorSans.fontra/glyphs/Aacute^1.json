@@ -40,17 +40,14 @@
 "path": {},
 "components": [
 {
-"name": "A",
-"transformation": {},
-"location": {}
+"name": "A"
 },
 {
 "name": "acute",
 "transformation": {
 "translateX": 99,
 "translateY": 20
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 396
@@ -61,16 +58,13 @@
 "path": {},
 "components": [
 {
-"name": "A",
-"transformation": {},
-"location": {}
+"name": "A"
 },
 {
 "name": "acute",
 "transformation": {
 "translateX": 204
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 740
@@ -81,17 +75,14 @@
 "path": {},
 "components": [
 {
-"name": "A",
-"transformation": {},
-"location": {}
+"name": "A"
 },
 {
 "name": "acute",
 "transformation": {
 "translateX": 494,
 "translateY": 20
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 1190
@@ -102,17 +93,14 @@
 "path": {},
 "components": [
 {
-"name": "A",
-"transformation": {},
-"location": {}
+"name": "A"
 },
 {
 "name": "acute",
 "transformation": {
 "translateX": 484,
 "translateY": 20
-},
-"location": {}
+}
 }
 ],
 "xAdvance": 1290
