@@ -249,9 +249,7 @@ export class RangeSlider extends html.UnlitElement {
 
   getNextValue() {
     let index = this.values.indexOf(this.value);
-    if (index === this.values.length - 1) {
-      index = 0;
-    } else {
+    if (index !== this.values.length - 1) {
       index = index + 1;
     }
     return this.values[index];
@@ -259,9 +257,7 @@ export class RangeSlider extends html.UnlitElement {
 
   getPrevValue() {
     let index = this.values.indexOf(this.value);
-    if (index === 0) {
-      index = this.values.length - 1;
-    } else {
+    if (index > 0) {
       index = index - 1;
     }
     return this.values[index];
