@@ -49,6 +49,7 @@ export class RangeSlider extends html.UnlitElement {
       margin: 0;
       width: 100%;
       background: transparent;
+      height: 1rem;
     }
 
     /* Special styling for WebKit/Blink */
@@ -143,6 +144,19 @@ export class RangeSlider extends html.UnlitElement {
       font-feature-settings: "tnum" 1;
       font-size: 0.9em;
     }
+
+    .tickmarks {
+      display: flex;
+      height: 6px;
+      justify-content: space-between;
+      padding: 7px calc(var(--thumb-width)/2 - 0.5px);
+      padding-bottom: 0;
+    }
+
+    .tickmark {
+      width: 1px;
+      background: var(--track-color);
+    }
   `;
 
   static properties = {
@@ -151,6 +165,7 @@ export class RangeSlider extends html.UnlitElement {
     defaultValue: { type: Number },
     step: {},
     onChangeCallback: { type: Function },
+    values: {},
   };
 
   constructor() {
@@ -164,6 +179,7 @@ export class RangeSlider extends html.UnlitElement {
     this.sawMouseDown = false;
     this.sawMouseUp = false;
     this.onChangeCallback = () => {};
+    this.values = [];
   }
 
   get valueFormatted() {
@@ -175,7 +191,13 @@ export class RangeSlider extends html.UnlitElement {
   set value(value) {
     this._value = value;
     if (this.rangeInput) {
-      this.rangeInput.value = value;
+      if (this.isDiscrete()) {
+        this.rangeInput.value = this.values.indexOf(
+          this.getClosestDiscreteValue(value)
+        );
+      } else {
+        this.rangeInput.value = value;
+      }
       this.updateIsAtDefault();
     }
     if (this.numberInput) {
@@ -187,9 +209,29 @@ export class RangeSlider extends html.UnlitElement {
     return this._value;
   }
 
+  getClosestDiscreteValue(value) {
+    let closestDistance;
+    let closestDiscreteValue;
+    for (const discreteValue of this.values) {
+      const distance = Math.abs(value - discreteValue);
+      if (closestDistance === undefined || distance < closestDistance) {
+        closestDiscreteValue = discreteValue;
+        closestDistance = distance;
+      }
+    }
+    return closestDiscreteValue;
+  }
+
   getValueFromEventTarget(event) {
     let value = event.target.valueAsNumber;
     const isValid = event.target.reportValidity();
+    if (isValid && this.isDiscrete()) {
+      if (event.target === this.rangeInput) {
+        value = this.values[value];
+      } else {
+        value = this.getClosestDiscreteValue(value);
+      }
+    }
     if (!isValid) {
       event.target.setAttribute("aria-invalid", "true");
       if (event.target.validity.badInput || event.target.validity.valueMissing) {
@@ -205,6 +247,22 @@ export class RangeSlider extends html.UnlitElement {
     return value;
   }
 
+  getNextValue() {
+    let index = this.values.indexOf(this.value);
+    if (index !== this.values.length - 1) {
+      index = index + 1;
+    }
+    return this.values[index];
+  }
+
+  getPrevValue() {
+    let index = this.values.indexOf(this.value);
+    if (index > 0) {
+      index = index - 1;
+    }
+    return this.values[index];
+  }
+
   onKeyDown(event) {
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
@@ -214,11 +272,19 @@ export class RangeSlider extends html.UnlitElement {
     let dispatch;
     switch (event.key) {
       case "ArrowDown":
-        value = value - increment;
+        if (this.isDiscrete()) {
+          value = this.getPrevValue();
+        } else {
+          value = value - increment;
+        }
         dispatch = true;
         break;
       case "ArrowUp":
-        value = value + increment;
+        if (this.isDiscrete()) {
+          value = this.getNextValue();
+        } else {
+          value = value + increment;
+        }
         dispatch = true;
         break;
       default: {
@@ -242,7 +308,23 @@ export class RangeSlider extends html.UnlitElement {
     this.rangeInput.classList.toggle("is-at-default", this.value == this.defaultValue);
   }
 
+  isDiscrete() {
+    return this.values && this.values.length > 0;
+  }
+
   render() {
+    let minValue, maxValue, step, value;
+    if (this.isDiscrete()) {
+      minValue = 0;
+      maxValue = this.values.length - 1;
+      step = 1;
+      value = this.getClosestDiscreteValue(this.value);
+    } else {
+      step = this.step;
+      minValue = this.minValue;
+      maxValue = this.maxValue;
+      value = this.valueFormatted;
+    }
     const isAtDefault = this.value == this.defaultValue;
     return html.div(
       {
@@ -254,7 +336,7 @@ export class RangeSlider extends html.UnlitElement {
             (this.numberInput = html.input({
               type: "number",
               class: "slider-numeric-input",
-              value: this.valueFormatted,
+              value,
               step: this.step,
               required: "required",
               min: this.minValue,
@@ -274,61 +356,71 @@ export class RangeSlider extends html.UnlitElement {
             })),
           ]),
         ]),
-        html.div({ class: "range-container" }, [
-          (this.rangeInput = html.input({
-            type: "range",
-            class: isAtDefault ? "slider is-at-default" : "slider",
-            min: this.minValue,
-            step: this.step,
-            max: this.maxValue,
-            value: this.valueFormatted,
-            tabindex: "-1",
-            onkeydown: (event) => this.onKeyDown(event),
-            onmouseup: (event) => {
-              this._savedCanvasElement?.focus();
-              this.sawMouseDown = false;
-              this.sawMouseUp = true;
-              if (!this.sawChangeEvent) {
-                this.onChangeCallback({
-                  value: this.getValueFromEventTarget(event),
-                  dragEnd: true,
-                });
-              }
-              this.sawChangeEvent = false;
-            },
-            onmousedown: (event) => {
-              this.sawMouseDown = true;
-              this.sawMouseUp = false;
-              const activeElement = document.activeElement;
-              this._savedCanvasElement =
-                activeElement?.id === "edit-canvas" ? activeElement : undefined;
-              if (event.altKey) {
-                event.preventDefault();
-                this.reset();
-              }
-            },
-            onchange: (event) => {
-              if (!this.sawMouseUp) {
-                this.onChangeCallback({
-                  value: this.getValueFromEventTarget(event),
-                  dragEnd: true,
-                });
-              }
-              this.sawMouseUp = false;
-              this.sawChangeEvent = true;
-            },
-            oninput: (event) => {
-              const value = this.getValueFromEventTarget(event);
-              this.value = value;
-              const callbackEvent = { value };
-              if (this.sawMouseDown) {
-                callbackEvent.dragBegin = true;
-              }
-              this.sawMouseDown = false;
-              this.onChangeCallback(callbackEvent);
-            },
-          })),
-        ]),
+        html.div(
+          { class: "range-container" },
+          [
+            (this.rangeInput = html.input({
+              type: "range",
+              class: isAtDefault ? "slider is-at-default" : "slider",
+              min: minValue,
+              max: maxValue,
+              step,
+              value: this.isDiscrete() ? this.values.indexOf(value) : value,
+              tabindex: "-1",
+              onkeydown: (event) => this.onKeyDown(event),
+              onmouseup: (event) => {
+                this._savedCanvasElement?.focus();
+                this.sawMouseDown = false;
+                this.sawMouseUp = true;
+                if (!this.sawChangeEvent) {
+                  this.onChangeCallback({
+                    value: this.getValueFromEventTarget(event),
+                    dragEnd: true,
+                  });
+                }
+                this.sawChangeEvent = false;
+              },
+              onmousedown: (event) => {
+                this.sawMouseDown = true;
+                this.sawMouseUp = false;
+                const activeElement = document.activeElement;
+                this._savedCanvasElement =
+                  activeElement?.id === "edit-canvas" ? activeElement : undefined;
+                if (event.altKey) {
+                  event.preventDefault();
+                  this.reset();
+                }
+              },
+              onchange: (event) => {
+                if (!this.sawMouseUp) {
+                  this.onChangeCallback({
+                    value: this.getValueFromEventTarget(event),
+                    dragEnd: true,
+                  });
+                }
+                this.sawMouseUp = false;
+                this.sawChangeEvent = true;
+              },
+              oninput: (event) => {
+                const value = this.getValueFromEventTarget(event);
+                this.value = value;
+                const callbackEvent = { value };
+                if (this.sawMouseDown) {
+                  callbackEvent.dragBegin = true;
+                }
+                this.sawMouseDown = false;
+                this.onChangeCallback(callbackEvent);
+              },
+            })),
+            this.isDiscrete() &&
+              html.div(
+                {
+                  class: "tickmarks",
+                },
+                this.values.map(() => html.span({ class: "tickmark" }))
+              ),
+          ].filter((e) => e)
+        ),
       ]
     );
   }
