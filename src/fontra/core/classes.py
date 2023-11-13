@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field, is_dataclass, replace
 from functools import partial
-from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
+from typing import Any, Optional, Union, get_args, get_type_hints
 
 import cattrs
 from fontTools.misc.transform import DecomposedTransform
@@ -208,14 +208,6 @@ cattrs.register_structure_hook(PointType, _structurePointType)
 atomicTypes = [str, int, float, bool, Any]
 
 
-def castTypedList(itemClass, obj):
-    return [cattrs.structure(v, itemClass) for v in obj]
-
-
-def castTypedDict(itemClass, obj):
-    return {k: cattrs.structure(v, itemClass) for k, v in obj.items()}
-
-
 def makeCastFuncs(schema):
     castFuncs = {}
     for cls, fields in schema.items():
@@ -224,16 +216,10 @@ def makeCastFuncs(schema):
             fieldType = fieldInfo["type"]
             if fieldType in atomicTypes or fieldType in schema:
                 continue
-            originType = get_origin(fieldType)
             itemType = get_args(fieldType)[-1]
             if itemType in atomicTypes:
                 continue
-            if originType == list:
-                castFuncs[fieldType] = partial(castTypedList, itemType)
-            elif originType == dict:
-                castFuncs[fieldType] = partial(castTypedDict, itemType)
-            else:
-                raise TypeError(f"unknown origin type: {originType}")
+            castFuncs[fieldType] = partial(cattrs.structure, cl=fieldType)
     return castFuncs
 
 
