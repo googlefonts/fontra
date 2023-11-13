@@ -350,19 +350,23 @@ def packPointType(type, smooth):
     return pointType
 
 
-# A hack so an empty Path equals and empty PackedPath, so cattrs can know to
-# omit an empty path for a Union[PackedPath, Path] field, regardless of the
-# actual path type.
-def _add_eq_trap(cls):
+#
+# 1. A conceptual hack making an empty Path equal an empty PackedPath, so that
+# cattrs can know to omit an empty path for a Union[PackedPath, Path] field,
+# regardless of the actual path type.
+# 2. A technical hack because we can't just override __eq__ as it is *generated*
+# by @dataclass, and we want to use its implementation in all other cases.
+#
+def _add_eq_override(cls):
     original_eq = cls.__eq__
 
-    def _trap_eq(self, other):
+    def __eq__(self, other):
         if self.isEmpty() and other.isEmpty():
             return True
         return original_eq(self, other)
 
-    cls.__eq__ = _trap_eq
+    cls.__eq__ = __eq__
 
 
-_add_eq_trap(Path)
-_add_eq_trap(PackedPath)
+_add_eq_override(Path)
+_add_eq_override(PackedPath)
