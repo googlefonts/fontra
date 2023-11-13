@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Optional, TypedDict
 
+import cattrs
 from fontTools.misc.transform import DecomposedTransform
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class Path:
     contours: list[Contour] = field(default_factory=[])
 
     def asPackedPath(self):
-        return PackedPath.fromUnpackedContours(self.contours)
+        return PackedPath.fromUnpackedContours(cattrs.unstructure(self.contours))
 
 
 # Packed Path
@@ -74,7 +75,7 @@ class PackedPath:
         )
 
     def asPath(self):
-        return Path(contours=self.unpackedContours())
+        return Path(contours=cattrs.structure(self.unpackedContours(), list[Contour]))
 
     def unpackedContours(self):
         unpackedContours = []
