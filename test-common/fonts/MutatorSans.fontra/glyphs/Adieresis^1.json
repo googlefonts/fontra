@@ -1,6 +1,5 @@
 {
 "name": "Adieresis",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -8,9 +7,7 @@
 "location": {
 "width": 0.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldCondensed",
@@ -18,9 +15,7 @@
 "location": {
 "width": 0.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "LightWide",
@@ -28,9 +23,7 @@
 "location": {
 "width": 1000.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldWide",
@@ -38,184 +31,79 @@
 "location": {
 "width": 1000.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
-"name": "A",
-"transformation": {
-"translateX": 0,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"name": "A"
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 89,
-"translateY": 20,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"translateY": 20
+}
 }
 ],
-"xAdvance": 396,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 396
+}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
 "name": "A",
 "transformation": {
-"translateX": 20,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"translateX": 20
+}
 },
 {
 "name": "dieresis",
 "transformation": {
-"translateX": 120,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"translateX": 120
+}
 }
 ],
-"xAdvance": 760,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 760
+}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
-"name": "A",
-"transformation": {
-"translateX": 0,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"name": "A"
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 421,
-"translateY": 20,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"translateY": 20
+}
 }
 ],
-"xAdvance": 1190,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 1190
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
-"name": "A",
-"transformation": {
-"translateX": 0,
-"translateY": 0,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"name": "A"
 },
 {
 "name": "dieresis",
 "transformation": {
 "translateX": 362,
-"translateY": 20,
-"rotation": 0.0,
-"scaleX": 1.0,
-"scaleY": 1.0,
-"skewX": 0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"translateY": 20
+}
 }
 ],
-"xAdvance": 1290,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 1290
 }
-},
-"customData": {}
+}
+}
 }

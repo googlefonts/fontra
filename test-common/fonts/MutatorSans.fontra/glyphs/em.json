@@ -1,6 +1,5 @@
 {
 "name": "em",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -8,9 +7,7 @@
 "location": {
 "width": 0.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldWide",
@@ -18,36 +15,19 @@
 "location": {
 "width": 1000.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 500,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 500
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
-"components": [],
-"xAdvance": 0,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 0
 }
-},
-"customData": {}
+}
+}
 }

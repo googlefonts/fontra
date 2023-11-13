@@ -1,6 +1,5 @@
 {
 "name": "quotedblleft",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -8,9 +7,7 @@
 "location": {
 "width": 0.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldCondensed",
@@ -18,9 +15,7 @@
 "location": {
 "width": 0.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "LightWide",
@@ -28,9 +23,7 @@
 "location": {
 "width": 1000.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldWide",
@@ -38,184 +31,109 @@
 "location": {
 "width": 1000.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
 "name": "comma",
 "transformation": {
 "translateX": 171,
 "translateY": 607,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"scaleY": -1.0
+}
 },
 {
 "name": "comma",
 "transformation": {
 "translateX": 301,
 "translateY": 607,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"scaleY": -1.0
+}
 }
 ],
-"xAdvance": 301,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 301
+}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
 "name": "comma",
 "transformation": {
 "translateX": 250,
 "translateY": 657,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"scaleY": -1.0
+}
 },
 {
 "name": "comma",
 "transformation": {
 "translateX": 480,
 "translateY": 657,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"scaleY": -1.0
+}
 }
 ],
-"xAdvance": 480,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 480
+}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
 "name": "comma",
 "transformation": {
 "translateX": 291,
 "translateY": 607,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"scaleY": -1.0
+}
 },
 {
 "name": "comma",
 "transformation": {
 "translateX": 421,
 "translateY": 607,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"scaleY": -1.0
+}
 }
 ],
-"xAdvance": 421,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 421
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
 "name": "comma",
 "transformation": {
 "translateX": 310,
 "translateY": 657,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"scaleY": -1.0
+}
 },
 {
 "name": "comma",
 "transformation": {
 "translateX": 540,
 "translateY": 657,
-"rotation": 0.0,
 "scaleX": -1.0,
-"scaleY": -1.0,
-"skewX": -0.0,
-"skewY": 0.0,
-"tCenterX": 0,
-"tCenterY": 0
-},
-"location": {}
+"scaleY": -1.0
+}
 }
 ],
-"xAdvance": 540,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 540
 }
-},
-"customData": {}
+}
+}
 }

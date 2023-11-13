@@ -1,0 +1,3 @@
+# Ignore .fontra font project, they contain .json files that should not be reformatted
+
+*.fontra

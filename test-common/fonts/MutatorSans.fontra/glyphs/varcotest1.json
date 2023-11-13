@@ -1,6 +1,5 @@
 {
 "name": "varcotest1",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -8,27 +7,17 @@
 "location": {
 "width": 0.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
-"path": {
-"contours": []
-},
 "components": [
 {
 "name": "A",
 "transformation": {
-"translateX": 0,
-"translateY": 0,
 "rotation": -10,
-"scaleX": 1,
-"scaleY": 1,
-"skewX": 0,
 "skewY": 20,
 "tCenterX": 250,
 "tCenterY": 300
@@ -42,13 +31,9 @@
 "transformation": {
 "translateX": 527,
 "translateY": 410,
-"rotation": 0,
 "scaleX": 0.5,
 "scaleY": 0.5,
-"skewX": -20,
-"skewY": 0,
-"tCenterX": 0,
-"tCenterY": 0
+"skewX": -20
 },
 "location": {
 "flip": 70.0,
@@ -63,10 +48,7 @@
 "rotation": 10,
 "scaleX": 0.75,
 "scaleY": 0.75,
-"skewX": 0,
-"skewY": 20,
-"tCenterX": 0,
-"tCenterY": 0
+"skewY": 20
 },
 "location": {
 "flip": 20,
@@ -74,12 +56,8 @@
 }
 }
 ],
-"xAdvance": 900,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 900
 }
-},
-"customData": {}
+}
+}
 }

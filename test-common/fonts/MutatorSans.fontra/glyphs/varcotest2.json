@@ -21,9 +21,7 @@
 "location": {
 "width": 0.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "varco_flip",
@@ -31,9 +29,7 @@
 "location": {
 "flip": 100,
 "flop": 0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "varco_flop",
@@ -41,9 +37,7 @@
 "location": {
 "flip": 0,
 "flop": 100
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "weight=850,flip=100",
@@ -51,9 +45,7 @@
 "location": {
 "flip": 100,
 "weight": 850
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {
@@ -100,12 +92,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 500,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 500
+}
 },
 "MutatorSansLightCondensed/varco_flip": {
 "glyph": {
@@ -150,12 +138,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 500,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 500
+}
 },
 "MutatorSansLightCondensed/varco_flop": {
 "glyph": {
@@ -200,12 +184,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 500,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 500
+}
 },
 "weight=850,flip=100": {
 "glyph": {
@@ -250,13 +230,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 500,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 500
 }
-},
-"customData": {}
+}
+}
 }

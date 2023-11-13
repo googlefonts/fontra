@@ -21,27 +21,21 @@
 "location": {
 "width": 0.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "rotate_1",
 "layerName": "rotate_off",
 "location": {
 "rotate*1": 100
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "rotate_2",
 "layerName": "rotate_off",
 "location": {
 "rotate*2": 100
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "rotate_end",
@@ -49,9 +43,7 @@
 "location": {
 "rotate*1": 100,
 "rotate*2": 100
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {
@@ -82,12 +74,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 750,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 750
+}
 },
 "rotate_end": {
 "glyph": {
@@ -116,12 +104,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 750,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 750
+}
 },
 "rotate_off": {
 "glyph": {
@@ -150,13 +134,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 750,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 750
 }
-},
-"customData": {}
+}
+}
 }

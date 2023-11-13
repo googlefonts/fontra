@@ -21,27 +21,21 @@
 "location": {
 "width": 0,
 "weight": 0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "weight=1",
 "layerName": "weight=1",
 "location": {
 "weight": 1
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "width=1",
 "layerName": "width=1",
 "location": {
 "width": 1
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "width=1,weight=1",
@@ -49,9 +43,7 @@
 "location": {
 "weight": 1,
 "width": 1
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {
@@ -209,12 +201,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 454,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 454
+}
 },
 "weight=1": {
 "glyph": {
@@ -370,12 +358,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 720,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 720
+}
 },
 "width=1": {
 "glyph": {
@@ -531,12 +515,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 1171,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 1171
+}
 },
 "width=1,weight=1": {
 "glyph": {
@@ -692,13 +672,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 1277,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 1277
 }
-},
-"customData": {}
+}
+}
 }

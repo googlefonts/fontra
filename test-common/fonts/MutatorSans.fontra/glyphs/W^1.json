@@ -1,6 +1,5 @@
 {
 "name": "W",
-"axes": [],
 "sources": [
 {
 "name": "LightCondensed",
@@ -8,9 +7,7 @@
 "location": {
 "width": 0.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldCondensed",
@@ -18,9 +15,7 @@
 "location": {
 "width": 0.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "LightWide",
@@ -28,9 +23,7 @@
 "location": {
 "width": 1000.0,
 "weight": 150.0
-},
-"inactive": false,
-"customData": {}
+}
 },
 {
 "name": "BoldWide",
@@ -38,9 +31,7 @@
 "location": {
 "width": 1000.0,
 "weight": 850.0
-},
-"inactive": false,
-"customData": {}
+}
 }
 ],
 "layers": {
@@ -119,12 +110,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 521,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 521
+}
 },
 "MutatorSansLightCondensed/support": {
 "glyph": {
@@ -201,12 +188,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 521,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 521
+}
 },
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
@@ -283,12 +266,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 887,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 887
+}
 },
 "MutatorSansLightWide/foreground": {
 "glyph": {
@@ -365,12 +344,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 1367,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 1367
+}
 },
 "MutatorSansBoldWide/foreground": {
 "glyph": {
@@ -447,13 +422,8 @@
 }
 ]
 },
-"components": [],
-"xAdvance": 1369,
-"yAdvance": null,
-"verticalOrigin": null
-},
-"customData": {}
+"xAdvance": 1369
 }
-},
-"customData": {}
+}
+}
 }

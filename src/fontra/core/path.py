@@ -22,16 +22,22 @@ class Point(TypedDict):
 
 @dataclass
 class Contour:
-    points: list[Point] = field(default_factory=[])
+    points: list[Point] = field(default_factory=list)
     isClosed: bool = False
 
 
 @dataclass
 class Path:
-    contours: list[Contour] = field(default_factory=[])
+    contours: list[Contour] = field(default_factory=list)
+
+    def asPath(self):
+        return self
 
     def asPackedPath(self):
         return PackedPath.fromUnpackedContours(cattrs.unstructure(self.contours))
+
+    def isEmpty(self):
+        return not self.contours
 
 
 # Packed Path
@@ -76,6 +82,12 @@ class PackedPath:
 
     def asPath(self):
         return Path(contours=cattrs.structure(self.unpackedContours(), list[Contour]))
+
+    def asPackedPath(self):
+        return self
+
+    def isEmpty(self):
+        return not self.contourInfo
 
     def unpackedContours(self):
         unpackedContours = []
@@ -336,3 +348,25 @@ def packPointType(type, smooth):
     else:
         pointType = PointType.ON_CURVE
     return pointType
+
+
+#
+# 1. A conceptual hack making an empty Path equal an empty PackedPath, so that
+# cattrs can know to omit an empty path for a Union[PackedPath, Path] field,
+# regardless of the actual path type.
+# 2. A technical hack because we can't just override __eq__ as it is *generated*
+# by @dataclass, and we want to use its implementation in all other cases.
+#
+def _add_eq_override(cls):
+    original_eq = cls.__eq__
+
+    def __eq__(self, other):
+        if hasattr(other, "isEmpty") and self.isEmpty() and other.isEmpty():
+            return True
+        return original_eq(self, other)
+
+    cls.__eq__ = __eq__
+
+
+_add_eq_override(Path)
+_add_eq_override(PackedPath)
