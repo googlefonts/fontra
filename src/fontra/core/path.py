@@ -10,7 +10,7 @@ from fontTools.misc.transform import DecomposedTransform
 logger = logging.getLogger(__name__)
 
 
-# Path, aka "unpacked path"
+# Path, aka "unpacked path", but structured
 
 
 class Point(TypedDict):
