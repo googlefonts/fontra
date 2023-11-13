@@ -232,10 +232,6 @@ def makeCastFuncs(schema):
                 castFuncs[fieldType] = partial(castTypedList, itemType)
             elif originType == dict:
                 castFuncs[fieldType] = partial(castTypedDict, itemType)
-            elif originType == Union:
-                # Use the first type from the union
-                cls = get_args(fieldType)[0]
-                castFuncs[cls] = partial(cattrs.structure, cl=cls)
             else:
                 raise TypeError(f"unknown origin type: {originType}")
     return castFuncs
