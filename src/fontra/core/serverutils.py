@@ -1,4 +1,4 @@
-from dataclasses import asdict
+import cattrs
 
 from . import clipboard, glyphnames
 
@@ -22,4 +22,4 @@ def getUnicodeFromGlyphName(glyphName):
 
 @api
 def parseClipboard(data):
-    return asdict(clipboard.parseClipboard(data))
+    return cattrs.unstructure(clipboard.parseClipboard(data))

@@ -6,12 +6,11 @@ import pathlib
 import shutil
 import typing
 from copy import deepcopy
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 
-import dacite
+import cattrs
 
 from fontra.core.classes import Font, VariableGlyph
-from fontra.core.path import PackedPath, Path
 
 from .filenames import stringToFileName
 
@@ -122,12 +121,12 @@ class FontraBackend:
                 writer.writerow([glyphName, codePoints])
 
     def _readFontData(self):
-        self.fontData = dacite.from_dict(
-            Font, json.loads(self.fontDataPath.read_text(encoding="utf-8"))
+        self.fontData = cattrs.structure(
+            json.loads(self.fontDataPath.read_text(encoding="utf-8")), Font
         )
 
     def _writeFontData(self):
-        fontData = asdict(self.fontData)
+        fontData = cattrs.unstructure(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
         self.fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
@@ -144,7 +143,7 @@ class FontraBackend:
 
 def serializeGlyph(glyph, glyphName=None):
     glyph = glyph.convertToPaths()
-    jsonGlyph = asdict(glyph)
+    jsonGlyph = cattrs.unstructure(glyph)
     if glyphName is not None:
         jsonGlyph["name"] = glyphName
     return serialize(jsonGlyph) + "\n"
@@ -154,30 +153,12 @@ def deserializeGlyph(jsonSource, glyphName=None):
     jsonGlyph = json.loads(jsonSource)
     if glyphName is not None:
         jsonGlyph["name"] = glyphName
-    glyph = dacite.from_dict(VariableGlyph, jsonGlyph, daciteConfig)
+    glyph = cattrs.structure(jsonGlyph, VariableGlyph)
     return glyph.convertToPackedPaths()
 
 
 def serialize(data):
     return json.dumps(data, indent=0)
-
-
-def _ensurePackedPathData(data):
-    if "coordinates" not in data:
-        raise TypeError("not a PackedPath")
-    raise TypeError("PackedPath not supported in this context")
-
-
-def _ensurePathData(data):
-    if "contours" not in data:
-        raise TypeError("not a Path")
-    return Path(**data)
-
-
-daciteConfig = dacite.Config(
-    type_hooks={PackedPath: _ensurePackedPathData, Path: _ensurePathData},
-    strict_unions_match=False,
-)
 
 
 @dataclass(kw_only=True)

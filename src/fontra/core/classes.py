@@ -3,12 +3,12 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field, is_dataclass, replace
 from functools import partial
-from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
+from typing import Any, Optional, Union, get_args, get_type_hints
 
-import dacite
+import cattrs
 from fontTools.misc.transform import DecomposedTransform
 
-from .path import PackedPath, Path, PointType
+from .path import PackedPath, Path, Point, PointType
 
 Location = dict[str, float]
 CustomData = dict[str, Any]
@@ -170,39 +170,56 @@ def makeSchema(*classes, schema=None):
     return schema
 
 
+# cattrs hooks
+
+
+def _structurePath(d, tp):
+    if "pointTypes" not in d:
+        return cattrs.structure(d, Path)
+    else:
+        return cattrs.structure(d, PackedPath)
+
+
+def _structureNumber(d, tp):
+    assert isinstance(d, (float, int))
+    return d
+
+
+def _structurePoint(d, tp):
+    return d
+
+
+def _unstructurePoint(v):
+    return v
+
+
+def _structurePointType(v, tp):
+    return PointType(v)
+
+
+cattrs.register_structure_hook(Union[PackedPath, Path], _structurePath)
+cattrs.register_structure_hook(float, _structureNumber)
+cattrs.register_structure_hook(Point, _structurePoint)
+cattrs.register_unstructure_hook(Point, _unstructurePoint)
+cattrs.register_structure_hook(bool, lambda x, y: x)
+cattrs.register_structure_hook(PointType, _structurePointType)
+
+
 atomicTypes = [str, int, float, bool, Any]
 
 
-def castTypedList(itemClass, config, obj):
-    return [dacite.from_dict(itemClass, v, config=config) for v in obj]
-
-
-def castTypedDict(itemClass, config, obj):
-    return {k: dacite.from_dict(itemClass, v, config=config) for k, v in obj.items()}
-
-
-def makeCastFuncs(schema, config=None):
+def makeCastFuncs(schema):
     castFuncs = {}
     for cls, fields in schema.items():
-        castFuncs[cls] = partial(dacite.from_dict, cls, config=config)
+        castFuncs[cls] = partial(cattrs.structure, cl=cls)
         for fieldName, fieldInfo in fields.items():
             fieldType = fieldInfo["type"]
             if fieldType in atomicTypes or fieldType in schema:
                 continue
-            originType = get_origin(fieldType)
             itemType = get_args(fieldType)[-1]
             if itemType in atomicTypes:
                 continue
-            if originType == list:
-                castFuncs[fieldType] = partial(castTypedList, itemType, config)
-            elif originType == dict:
-                castFuncs[fieldType] = partial(castTypedDict, itemType, config)
-            elif originType == Union:
-                # Use the first type from the union
-                cls = get_args(fieldType)[0]
-                castFuncs[cls] = partial(dacite.from_dict, cls, config=config)
-            else:
-                raise TypeError(f"unknown origin type: {originType}")
+            castFuncs[fieldType] = partial(cattrs.structure, cl=fieldType)
     return castFuncs
 
 
@@ -219,10 +236,8 @@ def classesToStrings(schema):
     }
 
 
-_castConfig = dacite.Config(cast=[PointType])
-from_dict = partial(dacite.from_dict, config=_castConfig)
 classSchema = makeSchema(Font)
-classCastFuncs = makeCastFuncs(classSchema, config=_castConfig)
+classCastFuncs = makeCastFuncs(classSchema)
 
 
 def serializableClassSchema():
