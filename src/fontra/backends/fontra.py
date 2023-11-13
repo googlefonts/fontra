@@ -6,7 +6,7 @@ import pathlib
 import shutil
 import typing
 from copy import deepcopy
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 
 import cattrs
 
@@ -126,7 +126,7 @@ class FontraBackend:
         )
 
     def _writeFontData(self):
-        fontData = asdict(self.fontData)
+        fontData = cattrs.unstructure(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
         self.fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
@@ -143,7 +143,7 @@ class FontraBackend:
 
 def serializeGlyph(glyph, glyphName=None):
     glyph = glyph.convertToPaths()
-    jsonGlyph = asdict(glyph)
+    jsonGlyph = cattrs.unstructure(glyph)
     if glyphName is not None:
         jsonGlyph["name"] = glyphName
     return serialize(jsonGlyph) + "\n"
