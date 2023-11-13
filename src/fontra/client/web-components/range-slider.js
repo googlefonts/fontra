@@ -247,6 +247,26 @@ export class RangeSlider extends html.UnlitElement {
     return value;
   }
 
+  getNextValue() {
+    let index = this.values.indexOf(this.value);
+    if (index === this.values.length - 1) {
+      index = 0;
+    } else {
+      index = index + 1;
+    }
+    return this.values[index];
+  }
+
+  getPrevValue() {
+    let index = this.values.indexOf(this.value);
+    if (index === 0) {
+      index = this.values.length - 1;
+    } else {
+      index = index - 1;
+    }
+    return this.values[index];
+  }
+
   onKeyDown(event) {
     if (event.ctrlKey || event.metaKey || event.altKey) {
       return;
@@ -256,11 +276,19 @@ export class RangeSlider extends html.UnlitElement {
     let dispatch;
     switch (event.key) {
       case "ArrowDown":
-        value = value - increment;
+        if (this.isDiscrete()) {
+          value = this.getPrevValue();
+        } else {
+          value = value - increment;
+        }
         dispatch = true;
         break;
       case "ArrowUp":
-        value = value + increment;
+        if (this.isDiscrete()) {
+          value = this.getNextValue();
+        } else {
+          value = value + increment;
+        }
         dispatch = true;
         break;
       default: {
