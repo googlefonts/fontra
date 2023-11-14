@@ -29,6 +29,12 @@ class StaticGlyph:
     yAdvance: Optional[float] = None
     verticalOrigin: Optional[float] = None
 
+    def convertToPackedPaths(self):
+        return replace(self, path=self.path.asPackedPath())
+
+    def convertToPaths(self):
+        return replace(self, path=self.path.asPath())
+
 
 @dataclass
 class Source:
@@ -78,19 +84,15 @@ def _convertToPathType(varGlyph, packedPath):
     if not _hasAnyPathType(varGlyph, Path if packedPath else PackedPath):
         return varGlyph
     converter = (
-        (lambda path: path.asPackedPath())
+        (lambda glyph: glyph.convertToPackedPaths())
         if packedPath
-        else (lambda path: path.asPath())
+        else (lambda glyph: glyph.convertToPaths())
     )
 
     return replace(
         varGlyph,
         layers={
-            k: replace(
-                v,
-                glyph=replace(v.glyph, path=converter(v.glyph.path)),
-            )
-            for k, v in varGlyph.layers.items()
+            k: replace(v, glyph=converter(v.glyph)) for k, v in varGlyph.layers.items()
         },
     )
 
