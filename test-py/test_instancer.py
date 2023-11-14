@@ -72,31 +72,13 @@ def instancer(testFont):
                 components=[
                     Component(
                         name="A",
-                        transformation=DecomposedTransform(
-                            translateX=0.0,
-                            translateY=0.0,
-                            rotation=0.0,
-                            scaleX=1.0,
-                            scaleY=1.0,
-                            skewX=0.0,
-                            skewY=0.0,
-                            tCenterX=0.0,
-                            tCenterY=0.0,
-                        ),
+                        transformation=DecomposedTransform(),
                         location={},
                     ),
                     Component(
                         name="acute",
                         transformation=DecomposedTransform(
-                            translateX=99.0,
-                            translateY=20.0,
-                            rotation=0.0,
-                            scaleX=1.0,
-                            scaleY=1.0,
-                            skewX=0.0,
-                            skewY=0.0,
-                            tCenterX=0.0,
-                            tCenterY=0.0,
+                            translateX=99.0, translateY=20.0
                         ),
                         location={},
                     ),
