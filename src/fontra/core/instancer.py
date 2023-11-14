@@ -336,25 +336,6 @@ def _(v: type(None), scalar):
     return None
 
 
-@add.register
-def _(v1: str, v2):
-    if v1 != v2:
-        raise InterpolationError("incompatible string, same value expected")
-    return v1
-
-
-@subtract.register
-def _(v1: str, v2):
-    if v1 != v2:
-        raise InterpolationError("incompatible string, same value expected")
-    return v1
-
-
-@multiply.register
-def _(v: str, scalar):
-    return v
-
-
 def _dataClassOperator(v1, v2, op):
     return type(v1)(
         **{
