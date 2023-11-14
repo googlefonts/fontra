@@ -185,7 +185,7 @@ class GlyphInstancer:
         ]
         return self.model.getDeltas(sourceValues)
 
-    def instantiate(self, location, coordSystem=LocationCoordinateSystem.SOURCE):
+    def instantiate(self, location, *, coordSystem=LocationCoordinateSystem.SOURCE):
         if coordSystem == LocationCoordinateSystem.USER:
             location = {
                 **location,
