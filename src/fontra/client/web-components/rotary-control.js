@@ -1,11 +1,12 @@
 import * as html from "../core/html-utils.js";
+import { round } from "../core/utils.js";
 import { subVectors } from "../core/vector.js";
 
 export class RotaryControl extends html.UnlitElement {
   static styles = `
   :host {
     --knob-size: 2rem;
-    --thumb-width: 0.2rem;
+    --thumb-size: calc(var(--knob-size) / 5);
   }
 
   .knob {
@@ -13,24 +14,16 @@ export class RotaryControl extends html.UnlitElement {
     height: var(--knob-size);
     border-radius: 50%;
     background: #e3e3e3;
-    position: relative;
+    display: flex;
+    justify-content: center;
   }
 
   .thumb {
-    width: var(--thumb-width);
-    height: var(--knob-size);
-    left: 50%;
-    position: absolute;
-    margin-left: calc((var(--thumb-width) / 2) * -1);
-    background: #ccc;
-    border-radius: 10px;
-  }
-
-  .dot {
-    width: var(--thumb-width);
-    height: var(--thumb-width);
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    background: rgb(89, 89, 89);
     border-radius: 50%;
-    background: #d23737;
+    margin-top: calc(var(--knob-size) / 8);
   }
 
   .rotary-control {
@@ -40,19 +33,41 @@ export class RotaryControl extends html.UnlitElement {
   }
 
   .number-input {
-    width: 4rem;
+    width: 5rem;
   }
   `;
 
   constructor() {
     super();
     this.onChangeCallback = () => {};
+
+    document.body.addEventListener("mousemove", (event) => {
+      if (this.startAngle === undefined) {
+        return;
+      }
+      const origin = originOfElement(this.knob);
+      const target = { x: event.clientX, y: event.clientY };
+      const diff = angle(origin, target) - this.angleWhenDragStart;
+      let value = this.startAngle + diff;
+      this.value = round(value);
+      this.onChangeCallback(this.value);
+    });
+
+    document.body.addEventListener("mouseup", () => {
+      this.startAngle = undefined;
+      this.angleWhenDragStart = undefined;
+    });
   }
 
   set value(value) {
+    if (value < 0) {
+      // minus 90 degrees should be considered as 270
+      value = 360 + value;
+    }
+    value = value % 360;
     this._value = value;
-    if (this.thumb) {
-      this.thumb.style.transform = `rotate(${this.value}deg)`;
+    if (this.knob) {
+      this.knob.style.transform = `rotate(${this.value}deg)`;
     }
     if (this.numberInput) {
       this.numberInput.value = this.value;
@@ -81,7 +96,15 @@ export class RotaryControl extends html.UnlitElement {
       })),
       (this.knob = html.div(
         {
+          onwheel: (event) => {
+            const delta =
+              Math.abs(event.deltaX) > Math.abs(event.deltaY)
+                ? -1 * event.deltaX
+                : event.deltaY;
+            this.value = this.value + delta;
+          },
           class: "knob",
+          style: `transform: rotate(${this.value}deg);`,
           onmousedown: (event) => {
             this.startAngle = this.value;
             const origin = originOfElement(this.knob);
@@ -89,38 +112,8 @@ export class RotaryControl extends html.UnlitElement {
             const deg = angle(origin, target);
             this.angleWhenDragStart = deg;
           },
-          onmouseup: (event) => {
-            this.startAngle = undefined;
-            this.angleWhenDragStart = undefined;
-          },
-          onmousemove: (event) => {
-            if (this.startAngle === undefined) {
-              return;
-            }
-            const origin = originOfElement(this.knob);
-            const target = { x: event.clientX, y: event.clientY };
-            const diff = angle(origin, target) - this.angleWhenDragStart;
-            let value = this.startAngle + diff;
-            if (value < 0) {
-              value = 270 + (90 + value);
-            }
-            this.value = value;
-            this.onChangeCallback(this.value);
-          },
         },
-        [
-          (this.thumb = html.div(
-            {
-              class: "thumb",
-              style: `transform: rotate(${this.value}deg);`,
-            },
-            [
-              html.div({
-                class: "dot",
-              }),
-            ]
-          )),
-        ]
+        [html.div({ class: "thumb" })]
       )),
     ]);
   }
@@ -139,8 +132,15 @@ function toDegrees(radians) {
 }
 
 function angle(origin, target) {
-  const sub = subVectors(target, origin);
-  const deg = toDegrees(Math.atan2(sub.y, sub.x));
+  const vec = subVectors(target, origin);
+  let deg = toDegrees(Math.atan2(vec.y, vec.x));
+
+  // the north of the target should be 0
+  deg += 90;
+
+  if (deg < 0) {
+    deg = 270 + (90 + deg);
+  }
   return deg;
 }
 
