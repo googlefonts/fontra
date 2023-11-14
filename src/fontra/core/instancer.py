@@ -140,6 +140,20 @@ class GlyphInstancer:
     glyph: VariableGlyph
     globalAxes: list[GlobalAxis]
 
+    def instantiate(self, location, *, coordSystem=LocationCoordinateSystem.SOURCE):
+        if coordSystem == LocationCoordinateSystem.USER:
+            location = {
+                **location,
+                **mapLocationFromUserToSource(location, self.globalAxes),
+            }
+
+        if coordSystem != LocationCoordinateSystem.NORMALIZED:
+            location = normalizeLocation(location, self.combinedAxisTuples)
+
+        result = self.model.interpolateFromDeltas(location, self.deltas)
+        assert isinstance(result, MathWrapper)
+        return result.subject
+
     @cached_property
     def combinedAxes(self):
         combinedAxes = list(self.glyph.axes)
@@ -184,20 +198,6 @@ class GlyphInstancer:
             MathWrapper(layers[source.layerName].glyph) for source in self.activeSources
         ]
         return self.model.getDeltas(sourceValues)
-
-    def instantiate(self, location, *, coordSystem=LocationCoordinateSystem.SOURCE):
-        if coordSystem == LocationCoordinateSystem.USER:
-            location = {
-                **location,
-                **mapLocationFromUserToSource(location, self.globalAxes),
-            }
-
-        if coordSystem != LocationCoordinateSystem.NORMALIZED:
-            location = normalizeLocation(location, self.combinedAxisTuples)
-
-        result = self.model.interpolateFromDeltas(location, self.deltas)
-        assert isinstance(result, MathWrapper)
-        return result.subject
 
 
 @dataclass
