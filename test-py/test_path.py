@@ -1,7 +1,9 @@
+import operator
+
 import cattrs
 import pytest
 
-from fontra.core.path import PackedPath, PackedPathPointPen
+from fontra.core.path import Contour, PackedPath, PackedPathPointPen, Path
 
 pathTestData = [
     {
@@ -178,3 +180,106 @@ def test_pathRepr():
     packedPath = cattrs.structure(path, PackedPath)
     path = packedPath.asPath()
     assert expectedPathRepr == str(path)
+
+
+pathMathPath1 = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 60, "y": 0},
+                {"x": 110, "y": 0},
+                {"x": 110, "y": 120},
+                {"x": 60, "y": 120},
+            ],
+            isClosed=True,
+        )
+    ]
+)
+pathMathPath2 = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 30, "y": 2},
+                {"x": 10, "y": 5},
+                {"x": 20, "y": -20},
+                {"x": -10, "y": -4},
+            ],
+            isClosed=True,
+        )
+    ]
+)
+pathMathPathIncompatible = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 30, "y": 2},
+                {"x": 10, "y": 5},
+                {"x": 20, "y": -20},
+            ],
+            isClosed=True,
+        )
+    ]
+)
+pathMathPathAdd = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 90, "y": 2},
+                {"x": 120, "y": 5},
+                {"x": 130, "y": 100},
+                {"x": 50, "y": 116},
+            ],
+            isClosed=True,
+        )
+    ]
+)
+pathMathPathSub = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 30, "y": -2},
+                {"x": 100, "y": -5},
+                {"x": 90, "y": 140},
+                {"x": 70, "y": 124},
+            ],
+            isClosed=True,
+        )
+    ]
+)
+pathMathPathMul = Path(
+    contours=[
+        Contour(
+            points=[
+                {"x": 120, "y": 0},
+                {"x": 220, "y": 0},
+                {"x": 220, "y": 240},
+                {"x": 120, "y": 240},
+            ],
+            isClosed=True,
+        )
+    ]
+)
+
+
+@pytest.mark.parametrize(
+    "path, arg, expectedResult, op, exception",
+    [
+        (pathMathPath1, pathMathPath2, pathMathPathAdd, operator.add, None),
+        (pathMathPath1, pathMathPath2, pathMathPathSub, operator.sub, None),
+        (pathMathPath1, 2, pathMathPathMul, operator.mul, None),
+        (pathMathPath1, pathMathPathIncompatible, None, operator.add, ValueError),
+        (pathMathPath1, pathMathPathIncompatible, None, operator.sub, ValueError),
+    ],
+)
+def test_pathMath(path, arg, expectedResult, op, exception):
+    path = path.asPackedPath()
+    if isinstance(arg, Path):
+        arg = arg.asPackedPath()
+
+    if exception is None:
+        result = op(path, arg)
+        result = result.asPath()
+        assert expectedResult == result
+    else:
+        with pytest.raises(exception):
+            _ = op(path, arg)
