@@ -63,10 +63,22 @@ export class StaticGlyph {
   }
 }
 
+const identityTransformation = {
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+  scaleX: 1,
+  scaleY: 1,
+  skewX: 0,
+  skewY: 0,
+  tCenterX: 0,
+  tCenterY: 0,
+};
+
 export function copyComponent(component) {
   return {
     name: component.name,
-    transformation: { ...component.transformation },
+    transformation: { ...identityTransformation, ...component.transformation },
     location: { ...component.location },
   };
 }
