@@ -140,6 +140,44 @@ class GlyphInstancer:
     glyph: VariableGlyph
     globalAxes: list[GlobalAxis]
 
+    async def drawPoints(
+        self,
+        pen,
+        location,
+        *,
+        coordSystem=LocationCoordinateSystem.USER,
+        flattenComponents=False,
+        flattenVarComponents=True,
+    ):
+        if coordSystem == LocationCoordinateSystem.USER:
+            location = mapLocationFromUserToSource(location, self.globalAxes)
+        elif coordSystem == LocationCoordinateSystem.NORMALIZED:
+            raise ValueError("location must be in 'user' or 'source' coordinates")
+
+        instance = self.instantiate(location)
+        instance.path.drawPoints(pen)
+        for component, isVarComponent in zip(
+            instance.components, self.componentTypes, strict=True
+        ):
+            if isVarComponent:
+                if flattenComponents or flattenVarComponents:
+                    assert 0, "TODO"
+                else:
+                    pen.addVarComponent(
+                        component.name,
+                        component.transformation,
+                        location | component.location,
+                    )
+            else:
+                if flattenComponents:
+                    assert 0, "TODO"
+                else:
+                    pen.addComponent(
+                        component.name, component.transformation.toTransform()
+                    )
+
+        return instance
+
     def instantiate(self, location, *, coordSystem=LocationCoordinateSystem.SOURCE):
         if coordSystem == LocationCoordinateSystem.USER:
             location = mapLocationFromUserToSource(location, self.globalAxes)

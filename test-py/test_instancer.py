@@ -2,6 +2,7 @@ import pathlib
 
 import pytest
 from fontTools.misc.transform import DecomposedTransform
+from fontTools.pens.recordingPen import RecordingPointPen
 
 from fontra.backends import getFileSystemBackend
 from fontra.core.classes import Component, StaticGlyph
@@ -187,3 +188,12 @@ async def test_instancer(instancer, glyphName, location, coordSystem, expectedRe
     result = glyphInstancer.instantiate(location, coordSystem=coordSystem)
     result = result.convertToPaths()
     assert expectedResult == result
+
+
+async def test_drawPoints(instancer):
+    glyphInstancer = await instancer.getGlyphInstancer("varcotest1")
+    pen = RecordingPointPen()
+    _ = await glyphInstancer.drawPoints(
+        pen, {"weight": 500}, flattenVarComponents=False
+    )
+    assert 0, pen.value
