@@ -180,6 +180,11 @@ class GlyphInstancer:
         return [source for source in self.glyph.sources if not source.inactive]
 
     @cached_property
+    def activeLayerGlyphs(self):
+        layers = self.glyph.layers
+        return [layers[source.layerName].glyph for source in self.activeSources]
+
+    @cached_property
     def model(self):
         locations = [
             normalizeLocation(source.location, self.combinedAxisTuples)
@@ -190,9 +195,8 @@ class GlyphInstancer:
 
     @cached_property
     def deltas(self):
-        layers = self.glyph.layers
         sourceValues = [
-            MathWrapper(layers[source.layerName].glyph) for source in self.activeSources
+            MathWrapper(layerGlyph) for layerGlyph in self.activeLayerGlyphs
         ]
         return self.model.getDeltas(sourceValues)
 
