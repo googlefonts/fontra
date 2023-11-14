@@ -366,6 +366,11 @@ getGlyphTestData = [
                     "location": {"weight": 150.0, "width": 0.0},
                     "layerName": "MutatorSansLightCondensed/foreground",
                 },
+                {
+                    "name": "weight=850",
+                    "location": {"weight": 850.0, "width": 0.0},
+                    "layerName": "weight=850",
+                },
             ],
             "layers": {
                 "MutatorSansLightCondensed/foreground": {
@@ -374,6 +379,58 @@ getGlyphTestData = [
                             {
                                 "name": "A",
                                 "location": {"weight": 500},
+                                "transformation": {
+                                    "translateX": 0,
+                                    "translateY": 0,
+                                    "rotation": -10,
+                                    "scaleX": 1,
+                                    "scaleY": 1,
+                                    "skewX": 0,
+                                    "skewY": 20,
+                                    "tCenterX": 250,
+                                    "tCenterY": 300,
+                                },
+                            },
+                            {
+                                "name": "varcotest2",
+                                "location": {"flip": 70, "flop": 30},
+                                "transformation": {
+                                    "translateX": 527,
+                                    "translateY": 410,
+                                    "rotation": 0,
+                                    "scaleX": 0.5,
+                                    "scaleY": 0.5,
+                                    "skewX": -20,
+                                    "skewY": 0,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                },
+                            },
+                            {
+                                "name": "varcotest2",
+                                "location": {"flip": 20, "flop": 80},
+                                "transformation": {
+                                    "translateX": 627,
+                                    "translateY": -175,
+                                    "rotation": 10,
+                                    "scaleX": 0.75,
+                                    "scaleY": 0.75,
+                                    "skewX": 0,
+                                    "skewY": 20,
+                                    "tCenterX": 0,
+                                    "tCenterY": 0,
+                                },
+                            },
+                        ],
+                        "xAdvance": 900,
+                    },
+                },
+                "weight=850": {
+                    "glyph": {
+                        "components": [
+                            {
+                                "name": "A",
+                                "location": {"weight": 100},
                                 "transformation": {
                                     "translateX": 0,
                                     "translateY": 0,
