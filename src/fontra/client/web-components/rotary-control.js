@@ -5,7 +5,7 @@ import { subVectors } from "../core/vector.js";
 export class RotaryControl extends html.UnlitElement {
   static styles = `
   :host {
-    --knob-size: 2rem;
+    --knob-size: 1.4rem;
     --thumb-size: calc(var(--knob-size) / 5);
   }
 
@@ -30,10 +30,6 @@ export class RotaryControl extends html.UnlitElement {
     display: flex;
     gap: 0.4rem;
     margin: 0.2rem;
-  }
-
-  .number-input {
-    width: 5rem;
   }
   `;
 
@@ -69,9 +65,6 @@ export class RotaryControl extends html.UnlitElement {
     if (this.knob) {
       this.knob.style.transform = `rotate(${this.value}deg)`;
     }
-    if (this.numberInput) {
-      this.numberInput.value = this.value;
-    }
   }
 
   get value() {
@@ -80,20 +73,6 @@ export class RotaryControl extends html.UnlitElement {
 
   render() {
     return html.div({ class: "rotary-control" }, [
-      (this.numberInput = html.input({
-        class: "number-input",
-        type: "number",
-        step: "any",
-        required: "required",
-        min: 0,
-        max: 360,
-        value: this.value,
-        onchange: (event) => {
-          if (event.target.reportValidity()) {
-            this.value = event.target.valueAsNumber;
-          }
-        },
-      })),
       (this.knob = html.div(
         {
           onwheel: (event) => {
@@ -102,6 +81,7 @@ export class RotaryControl extends html.UnlitElement {
                 ? -1 * event.deltaX
                 : event.deltaY;
             this.value = this.value + delta;
+            this.onChangeCallback(this.value);
           },
           class: "knob",
           style: `transform: rotate(${this.value}deg);`,

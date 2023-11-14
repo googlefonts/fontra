@@ -203,15 +203,17 @@ export class Form extends SimpleElement {
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
-    valueElement.appendChild(inputElement);
     valueElement.appendChild(
-      html.createDomElement("rotary-control", {
-        value: fieldItem.value,
-        onChangeCallback: (value) => {
-          inputElement.value = value;
-          this._fieldChanging(fieldItem.key, value);
-        },
-      })
+      html.div({ style: "display: flex" }, [
+        inputElement,
+        html.createDomElement("rotary-control", {
+          value: fieldItem.value,
+          onChangeCallback: (value) => {
+            inputElement.value = value;
+            this._fieldChanging(fieldItem.key, value);
+          },
+        }),
+      ])
     );
   }
 
