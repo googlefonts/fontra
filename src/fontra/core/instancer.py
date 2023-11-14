@@ -152,6 +152,17 @@ class GlyphInstancer:
         return result.subject
 
     @cached_property
+    def componentTypes(self):
+        numComponents = len(self.activeLayerGlyphs[0].components)
+        return [
+            any(
+                layerGlyph.components[i].location
+                for layerGlyph in self.activeLayerGlyphs
+            )
+            for i in range(numComponents)
+        ]
+
+    @cached_property
     def combinedAxes(self):
         combinedAxes = list(self.glyph.axes)
         localAxisNames = {axis.name for axis in self.glyph.axes}
