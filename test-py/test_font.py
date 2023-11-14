@@ -430,7 +430,7 @@ getGlyphTestData = [
                         "components": [
                             {
                                 "name": "A",
-                                "location": {"weight": 100},
+                                "location": {"weight": 100, "unknown-axis": 200},
                                 "transformation": {
                                     "translateX": 0,
                                     "translateY": 0,

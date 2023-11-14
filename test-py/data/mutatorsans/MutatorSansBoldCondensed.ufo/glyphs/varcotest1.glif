@@ -13,6 +13,8 @@
           <string>A</string>
           <key>location</key>
           <dict>
+            <key>unknown-axis</key>
+            <integer>200</integer>
             <key>weight</key>
             <integer>100</integer>
           </dict>
