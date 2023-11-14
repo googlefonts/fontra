@@ -62,6 +62,7 @@ import { themeController } from "/core/theme-settings.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
+import { RotaryControl } from "/web-components/rotary-control.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
@@ -75,6 +76,16 @@ const MIN_CANVAS_SPACE = 200;
 
 const PASTE_BEHAVIOR_REPLACE = "replace";
 const PASTE_BEHAVIOR_ADD = "add";
+
+class RotaryControlDemoPanel extends Panel {
+  identifier = "rotary-control-demo";
+  iconPath = "/images/info.svg";
+
+  getContentElement() {
+    return html.div({}, [html.createDomElement("rotary-control", { value: 0 })]);
+  }
+}
+customElements.define("panel-rotary-control", RotaryControlDemoPanel);
 
 export class EditorController {
   static async fromWebSocket() {
@@ -474,6 +485,7 @@ export class EditorController {
     this.addSidebarPanel(new UserSettingsPanel(this), "left");
     this.addSidebarPanel(new ReferenceFontPanel(this), "left");
     this.addSidebarPanel(new SelectionInfoPanel(this), "right");
+    this.addSidebarPanel(new RotaryControlDemoPanel(this), "right");
 
     // Upon reload, the "animating" class may still be set (why?), so remove it
     for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
