@@ -13,21 +13,23 @@ export class RotaryControl extends html.UnlitElement {
   }
 
   .thumb {
-    width: 0.2rem;
-    height: 100%;
+    width: 0.4rem;
+    height: 90%;
     left: 50%;
     position: absolute;
-    margin-left: -0.1rem;
-    background: #d7d7d7;
+    margin-left: -0.2rem;
+    background: #ccc;
+    top: 5%;
+    border-radius: 10px;
   }
 
   .dot {
-    width: 0.2rem;
-    height: 0.2rem;
-    background: black;
+    width: 0.3rem;
+    height: 0.3rem;
     border-radius: 50%;
-    margin-top: 5px;
-    background: #d92020;
+    margin-top: 0.05rem;
+    background: #d23737;
+    margin-left: 0.05rem;
   }
   `;
 
