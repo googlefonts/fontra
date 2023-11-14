@@ -14,7 +14,7 @@
           <key>location</key>
           <dict>
             <key>weight</key>
-            <integer>500</integer>
+            <integer>100</integer>
           </dict>
           <key>transformation</key>
           <dict>
@@ -44,9 +44,9 @@
           <key>location</key>
           <dict>
             <key>flip</key>
-            <real>70.0</real>
+            <integer>70</integer>
             <key>flop</key>
-            <real>30.0</real>
+            <integer>30</integer>
           </dict>
           <key>transformation</key>
           <dict>
@@ -78,7 +78,7 @@
             <key>flip</key>
             <integer>20</integer>
             <key>flop</key>
-            <real>80.0</real>
+            <integer>80</integer>
           </dict>
           <key>transformation</key>
           <dict>
@@ -103,16 +103,6 @@
           </dict>
         </dict>
       </array>
-      <key>xyz.fontra.layer-names</key>
-      <dict>
-        <key>MutatorSansBoldCondensed/foreground</key>
-        <string>weight=850</string>
-      </dict>
-      <key>xyz.fontra.source-names</key>
-      <dict>
-        <key>BoldCondensed</key>
-        <string>weight=850</string>
-      </dict>
     </dict>
   </lib>
 </glyph>
