@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import Enum
 from functools import cached_property, partial, singledispatch
 from typing import Any
@@ -12,7 +12,7 @@ from fontTools.varLib.models import (
     piecewiseLinearMap,
 )
 
-from .classes import Component, GlobalAxis, LocalAxis, StaticGlyph, VariableGlyph
+from .classes import Component, GlobalAxis, Layer, LocalAxis, StaticGlyph, VariableGlyph
 
 
 class InterpolationError(Exception):
@@ -39,10 +39,100 @@ class FontInstancer:
             if self.globalAxes is None:
                 self.globalAxes = await self.backend.getGlobalAxes()
             glyph = await self.backend.getGlyph(glyphName)
+            glyph = await self._ensureComponentLocationCompatibility(glyph)
             glyphInstancer = GlyphInstancer(glyph, self.globalAxes)
             if addToCache:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
+
+    async def _ensureComponentLocationCompatibility(self, glyph):
+        layerGlyphs = {
+            source.layerName: glyph.layers[source.layerName].glyph
+            for source in glyph.sources
+            if not source.inactive
+        }
+
+        componentConfigs = {
+            tuple(component.name for component in layerGlyph.components)
+            for layerGlyph in layerGlyphs.values()
+        }
+        if len(componentConfigs) != 1:
+            raise InterpolationError("components are not interpolatable")
+
+        ok, componentAxisNames = _areComponentLocationsCompatible(layerGlyphs.values())
+        if ok:
+            # All good
+            return glyph
+
+        componentGlyphNames = set(list(componentConfigs)[0])
+
+        baseGlyphs = [
+            (glyphName, await self.getGlyphInstancer(glyphName, True))
+            for glyphName in componentGlyphNames
+        ]
+
+        axisDefaults = {
+            glyphName: {axis.name: axis.defaultValue for axis in baseGlyph.combinedAxes}
+            for glyphName, baseGlyph in baseGlyphs
+        }
+
+        return _fixComponentLocationsCompatibility(
+            glyph, layerGlyphs, componentAxisNames, axisDefaults
+        )
+
+
+def _areComponentLocationsCompatible(glyphs):
+    ok = True
+    numComponents = None
+    componentAxisNames = None
+
+    for glyph in glyphs:
+        if numComponents is None:
+            numComponents = len(glyph.components)
+            componentAxisNames = [None] * numComponents
+
+        for i in range(numComponents):
+            compo = glyph.components[i]
+            axisNames = set(compo.location)
+            if componentAxisNames[i] is None:
+                componentAxisNames[i] = axisNames
+            elif axisNames != componentAxisNames[i]:
+                ok = False
+                componentAxisNames[i] |= axisNames
+
+    return ok, componentAxisNames
+
+
+def _fixComponentLocationsCompatibility(
+    glyph, layerGlyphs, componentAxisNames, axisDefaults
+):
+    return replace(
+        glyph,
+        layers={
+            layerName: Layer(
+                glyph=replace(
+                    layerGlyph,
+                    components=[
+                        _fixComponentLocation(compo, axisNames, axisDefaults)
+                        for compo, axisNames in zip(
+                            layerGlyph.components, componentAxisNames, strict=True
+                        )
+                    ],
+                )
+            )
+            for layerName, layerGlyph in layerGlyphs.items()
+        },
+    )
+
+
+def _fixComponentLocation(component, axisNames, axisDefaults):
+    return replace(
+        component,
+        location={
+            axisName: component.location.get(axisName, axisDefaults.get(axisName, 0))
+            for axisName in axisNames
+        },
+    )
 
 
 @dataclass

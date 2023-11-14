@@ -114,7 +114,7 @@ def instancer(testFont):
                         transformation=DecomposedTransform(
                             rotation=-10.0, skewY=20.0, tCenterX=250.0, tCenterY=300.0
                         ),
-                        location={"weight": 500.0},
+                        location={"weight": 500.0, "unknown-axis": 0},
                     ),
                     Component(
                         name="varcotest2",
@@ -153,7 +153,7 @@ def instancer(testFont):
                         transformation=DecomposedTransform(
                             rotation=-10.0, skewY=20.0, tCenterX=250.0, tCenterY=300.0
                         ),
-                        location={"weight": 300.0},
+                        location={"weight": 300.0, "unknown-axis": 100},
                     ),
                     Component(
                         name="varcotest2",
