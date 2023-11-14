@@ -142,10 +142,7 @@ class GlyphInstancer:
 
     def instantiate(self, location, *, coordSystem=LocationCoordinateSystem.SOURCE):
         if coordSystem == LocationCoordinateSystem.USER:
-            location = {
-                **location,
-                **mapLocationFromUserToSource(location, self.globalAxes),
-            }
+            location = mapLocationFromUserToSource(location, self.globalAxes)
 
         if coordSystem != LocationCoordinateSystem.NORMALIZED:
             location = normalizeLocation(location, self.combinedAxisTuples)
@@ -362,12 +359,12 @@ def _listMul(v1, scalar):
     return [multiply(i1, scalar) for i1 in v1]
 
 
-def mapLocationFromUserToSource(location, axes):
-    return {
+def mapLocationFromUserToSource(location, globalAxes):
+    return location | {
         axis.name: mapValueFromUserToSource(
             location.get(axis.name, axis.defaultValue), axis
         )
-        for axis in axes
+        for axis in globalAxes
     }
 
 
