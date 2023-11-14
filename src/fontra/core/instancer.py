@@ -153,6 +153,10 @@ class GlyphInstancer:
 
     @cached_property
     def componentTypes(self):
+        """A list with a boolean for each component: True if the component is
+        variable (has a non-empty location) and False if it is a "classic"
+        component.
+        """
         numComponents = len(self.activeLayerGlyphs[0].components)
         return [
             any(
