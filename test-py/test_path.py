@@ -118,7 +118,7 @@ pathTestData = [
 
 
 @pytest.mark.parametrize("path", pathTestData)
-async def test_packedPathPointPenRoundTrip(path):
+def test_packedPathPointPenRoundTrip(path):
     path = cattrs.structure(path, PackedPath)
     pen = PackedPathPointPen()
     path.drawPoints(pen)
@@ -128,7 +128,7 @@ async def test_packedPathPointPenRoundTrip(path):
 
 
 @pytest.mark.parametrize("path", pathTestData)
-async def test_unpackPathRoundTrip(path):
+def test_unpackPathRoundTrip(path):
     path = cattrs.structure(path, PackedPath)
     unpackedPath = path.unpackedContours()
     repackedPath = PackedPath.fromUnpackedContours(unpackedPath)
@@ -137,7 +137,7 @@ async def test_unpackPathRoundTrip(path):
 
 
 @pytest.mark.parametrize("path", pathTestData)
-async def test_pathConversion(path):
+def test_pathConversion(path):
     packedPath = cattrs.structure(path, PackedPath)
     path = packedPath.asPath()
     packedPath2 = path.asPackedPath()
@@ -157,7 +157,7 @@ expectedPackedPathRepr = "PackedPath(coordinates=[232, -10, 338, -10, 403, 38, 4
 <PointType.OFF_CURVE_CUBIC: 2>], contourInfo=[ContourInfo(endPoint=17, isClosed=True)])"
 
 
-async def test_packedPathRepr():
+def test_packedPathRepr():
     path = pathTestData[1]
     packedPath = cattrs.structure(path, PackedPath)
     assert expectedPackedPathRepr == str(packedPath)
@@ -173,7 +173,7 @@ expectedPathRepr = "Path(contours=[Contour(points=[{'x': 232, 'y': -10, 'smooth'
 'type': 'cubic'}, {'x': 124, 'y': -10, 'type': 'cubic'}], isClosed=True)])"
 
 
-async def test_pathRepr():
+def test_pathRepr():
     path = pathTestData[1]
     packedPath = cattrs.structure(path, PackedPath)
     path = packedPath.asPath()
