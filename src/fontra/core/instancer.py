@@ -12,7 +12,15 @@ from fontTools.varLib.models import (
     piecewiseLinearMap,
 )
 
-from .classes import Component, Layer, LocalAxis, StaticGlyph, VariableGlyph
+from .classes import (
+    Component,
+    GlobalAxis,
+    Layer,
+    LocalAxis,
+    Source,
+    StaticGlyph,
+    VariableGlyph,
+)
 
 
 class InterpolationError(Exception):
@@ -32,7 +40,7 @@ class FontInstancer:
         self.glyphInstancers = {}
         self.globalAxes = None
 
-    async def getGlyphInstancer(self, glyphName, addToCache=False):
+    async def getGlyphInstancer(self, glyphName, addToCache=False) -> GlyphInstancer:
         glyphInstancer = self.glyphInstancers.get(glyphName)
         if glyphInstancer is None:
             if self.globalAxes is None:
@@ -176,11 +184,11 @@ class GlyphInstancer:
         )
 
     @cached_property
-    def globalAxes(self):
+    def globalAxes(self) -> list[GlobalAxis]:
         return self.fontInstancer.globalAxes
 
     @cached_property
-    def componentTypes(self):
+    def componentTypes(self) -> list[bool]:
         """A list with a boolean for each component: True if the component is
         variable (has a non-empty location) and False if it is a "classic"
         component.
@@ -195,7 +203,7 @@ class GlyphInstancer:
         ]
 
     @cached_property
-    def combinedAxes(self):
+    def combinedAxes(self) -> list[LocalAxis]:
         combinedAxes = list(self.glyph.axes)
         localAxisNames = {axis.name for axis in self.glyph.axes}
         for axis in self.globalAxes:
@@ -212,23 +220,23 @@ class GlyphInstancer:
         return combinedAxes
 
     @cached_property
-    def combinedAxisTuples(self):
+    def combinedAxisTuples(self) -> dict[str, tuple[float, float, float]]:
         return {
             axis.name: (axis.minValue, axis.defaultValue, axis.maxValue)
             for axis in self.combinedAxes
         }
 
     @cached_property
-    def activeSources(self):
+    def activeSources(self) -> list[Source]:
         return [source for source in self.glyph.sources if not source.inactive]
 
     @cached_property
-    def activeLayerGlyphs(self):
+    def activeLayerGlyphs(self) -> list[StaticGlyph]:
         layers = self.glyph.layers
         return [layers[source.layerName].glyph for source in self.activeSources]
 
     @cached_property
-    def model(self):
+    def model(self) -> VariationModel:
         locations = [
             normalizeLocation(source.location, self.combinedAxisTuples)
             for source in self.activeSources
@@ -237,7 +245,7 @@ class GlyphInstancer:
         return VariationModel(locations)
 
     @cached_property
-    def deltas(self):
+    def deltas(self) -> list[MathGlyph]:
         sourceValues = [MathGlyph(layerGlyph) for layerGlyph in self.activeLayerGlyphs]
         return self.model.getDeltas(sourceValues)
 
@@ -269,7 +277,7 @@ class GlyphInstance:
         *,
         flattenComponents=False,
         flattenVarComponents=False,
-    ):
+    ) -> GlyphInstance:
         assert self.componentTypes is not None
         assert self.parentLocation is not None
         self.glyph.path.drawPoints(pen)
