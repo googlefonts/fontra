@@ -21,6 +21,7 @@ from .classes import (
     StaticGlyph,
     VariableGlyph,
 )
+from .path import joinPaths
 
 
 class InterpolationError(Exception):
@@ -271,6 +272,18 @@ class GlyphInstance:
     parentLocation: dict[str, float]  # LocationCoordinateSystem.SOURCE
     fontInstancer: FontInstancer
 
+    async def getFlattenedPath(self):
+        paths = [self.glyph.path]
+        for component in self.glyph.components:
+            paths.append(await self.getComponentPath(component))
+        return joinPaths(paths)
+
+    async def getComponentPath(self, component):
+        instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
+        instance = instancer.instantiate(self.parentLocation | component.location)
+        path = await instance.getFlattenedPath()
+        return path.transformed(component.transformation.toTransform())
+
     async def drawPoints(
         self,
         pen,
@@ -288,7 +301,7 @@ class GlyphInstance:
             self.glyph.components, self.componentTypes, strict=True
         ):
             if flattenComponents or (isVarComponent and flattenVarComponents):
-                assert 0, "TODO"
+                paths.append(await self.getComponentPath(component))
             else:
                 components.append((component, isVarComponent))
 
