@@ -199,7 +199,9 @@ export default class TextEntryPanel extends Panel {
   }
 
   async toggle(on, focus) {
-    this.focusTextEntry();
+    if (focus) {
+      this.focusTextEntry();
+    }
   }
 }
 
