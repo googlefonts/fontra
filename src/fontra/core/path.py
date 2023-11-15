@@ -1,6 +1,6 @@
 import logging
 from copy import copy, deepcopy
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import IntEnum
 from typing import TypedDict
 
@@ -91,6 +91,24 @@ class PackedPath:
 
     def isEmpty(self):
         return not self.contourInfo
+
+    def appendPath(self, path):
+        self.coordinates.extend(path.coordinates)
+        self.pointTypes.extend(path.pointTypes)
+        endPointOffset = (
+            0 if not self.contourInfo else self.contourInfo[-1].endPoint + 1
+        )
+        self.contourInfo.extend(
+            replace(contourInfo, endPoint=contourInfo.endPoint + endPointOffset)
+            for contourInfo in path.contourInfo
+        )
+
+    def transformed(self, transform):
+        coordinates = self.coordinates
+        newCoordinates = []
+        for i in range(0, len(self.coordinates), 2):
+            newCoordinates.extend(transform.transformPoint(coordinates[i : i + 2]))
+        return replace(self, coordinates=newCoordinates)
 
     def unpackedContours(self):
         unpackedContours = []
@@ -251,6 +269,13 @@ class PackedPath:
         return PackedPath(
             coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
         )
+
+
+def joinPaths(paths) -> PackedPath:
+    result = PackedPath()
+    for path in paths:
+        result.appendPath(path)
+    return result
 
 
 class PackedPathPointPen:
