@@ -41,7 +41,7 @@
 "translateY": 410,
 "scaleX": 0.5,
 "scaleY": 0.5,
-"skewX": -20
+"skewX": 20
 },
 "location": {
 "flip": 70.0,
@@ -90,7 +90,7 @@
 "translateY": 410,
 "scaleX": 0.5,
 "scaleY": 0.5,
-"skewX": -20
+"skewX": 20
 },
 "location": {
 "flip": 70,
