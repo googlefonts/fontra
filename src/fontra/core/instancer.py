@@ -277,16 +277,26 @@ class GlyphInstance:
         *,
         flattenComponents=False,
         flattenVarComponents=False,
-    ) -> GlyphInstance:
+    ):
         assert self.componentTypes is not None
         assert self.parentLocation is not None
-        self.glyph.path.drawPoints(pen)
+
+        paths = [self.glyph.path]
+        components = []
+
         for component, isVarComponent in zip(
             self.glyph.components, self.componentTypes, strict=True
         ):
             if flattenComponents or (isVarComponent and flattenVarComponents):
                 assert 0, "TODO"
-            elif isVarComponent:
+            else:
+                components.append((component, isVarComponent))
+
+        for path in paths:
+            path.drawPoints(pen)
+
+        for component, isVarComponent in components:
+            if isVarComponent:
                 pen.addVarComponent(
                     component.name,
                     component.transformation,
@@ -294,8 +304,6 @@ class GlyphInstance:
                 )
             else:
                 pen.addComponent(component.name, component.transformation.toTransform())
-
-        return self  # Flattened
 
 
 @singledispatch
