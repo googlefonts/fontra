@@ -751,9 +751,12 @@ export async function decomposeComponents(
       // Missing base glyph
       continue;
     }
-    parentLocation = baseGlyph.mapLocationGlobalToLocal(parentLocation);
-    let location = { ...parentLocation, ...component.location };
+    const parentSourceLocation = baseGlyph.mapLocationGlobalToLocal(parentLocation);
 
+    const location = {
+      ...parentSourceLocation,
+      ...mapLocationExpandNLI(component.location, baseGlyph.axes),
+    };
     const compoInstance = await baseGlyph.instantiate(
       normalizeLocation(location, baseGlyph.combinedAxes),
       getGlyphFunc
