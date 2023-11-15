@@ -265,7 +265,7 @@ export function makeAffineTransform(transformation) {
   t = t.rotate(transformation.rotation * (Math.PI / 180));
   t = t.scale(transformation.scaleX, transformation.scaleY);
   t = t.skew(
-    -transformation.skewX * (Math.PI / 180),
+    transformation.skewX * (Math.PI / 180),
     transformation.skewY * (Math.PI / 180)
   );
   t = t.translate(-transformation.tCenterX, -transformation.tCenterY);
