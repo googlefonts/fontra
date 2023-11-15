@@ -187,10 +187,125 @@ async def test_instancer(instancer, glyphName, location, coordSystem, expectedRe
     assert expectedResult == result
 
 
-async def test_drawPoints(instancer):
-    glyphInstancer = await instancer.getGlyphInstancer("varcotest1")
+penTestData = [
+    (
+        "period",
+        {"weight": 500},
+        False,
+        False,
+        [
+            ("beginPath", (), {}),
+            ("addPoint", ((45.0, 0.0), "line", False, None), {}),
+            ("addPoint", ((165.0, 0.0), "line", False, None), {}),
+            ("addPoint", ((165.0, 210.0), "line", False, None), {}),
+            ("addPoint", ((45.0, 210.0), "line", False, None), {}),
+            ("endPath", (), {}),
+        ],
+    ),
+    (
+        "Aacute",
+        {},
+        False,
+        False,
+        [
+            ("addComponent", ("A", (1, 0, 0, 1, 0, 0)), {}),
+            ("addComponent", ("acute", (1, 0, 0, 1, 99, 20)), {}),
+        ],
+    ),
+    (
+        "dieresis",
+        {},
+        False,
+        False,
+        [
+            ("addComponent", ("dot", (1, 0, 0, 1, 0, -10)), {}),
+            ("addComponent", ("dot", (1, 0, 0, 1, 80, -10)), {}),
+        ],
+    ),
+    # (
+    #     "dieresis",
+    #     {},
+    #     True,
+    #     False,
+    #     [
+    #         ("addComponent", ("dot", (1, 0, 0, 1, 0, -10)), {}),
+    #         ("addComponent", ("dot", (1, 0, 0, 1, 80, -10)), {}),
+    #     ],
+    # ),
+    (
+        "varcotest1",
+        {"weight": 500},
+        False,
+        False,
+        [
+            (
+                "addVarComponent",
+                (
+                    "A",
+                    DecomposedTransform(
+                        rotation=-10.0,
+                        skewY=20.0,
+                        tCenterX=250.0,
+                        tCenterY=300.0,
+                    ),
+                    {"unknown-axis": 100.0, "weight": 300.0, "width": 0.0},
+                ),
+                {},
+            ),
+            (
+                "addVarComponent",
+                (
+                    "varcotest2",
+                    DecomposedTransform(
+                        translateX=527.0,
+                        translateY=410.0,
+                        scaleX=0.5,
+                        scaleY=0.5,
+                        skewX=-20.0,
+                    ),
+                    {"flip": 70.0, "flop": 30.0, "weight": 500.0, "width": 0.0},
+                ),
+                {},
+            ),
+            (
+                "addVarComponent",
+                (
+                    "varcotest2",
+                    DecomposedTransform(
+                        translateX=627.0,
+                        translateY=-175.0,
+                        rotation=10.0,
+                        scaleX=0.75,
+                        scaleY=0.75,
+                        skewY=20.0,
+                    ),
+                    {"flip": 20.0, "flop": 80.0, "weight": 500.0, "width": 0.0},
+                ),
+                {},
+            ),
+        ],
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    "glyphName, location, flattenComponents, flattenVarComponents, expectedResult",
+    penTestData,
+)
+async def test_drawPoints(
+    instancer,
+    glyphName,
+    location,
+    flattenComponents,
+    flattenVarComponents,
+    expectedResult,
+):
+    glyphInstancer = await instancer.getGlyphInstancer(glyphName)
     pen = RecordingPointPen()
     _ = await glyphInstancer.drawPoints(
-        pen, {"weight": 500}, flattenVarComponents=False
+        pen,
+        location,
+        flattenComponents=flattenComponents,
+        flattenVarComponents=flattenVarComponents,
     )
-    assert 0, pen.value
+    assert expectedResult == pen.value
