@@ -12,7 +12,7 @@ from fontTools.varLib.models import (
     piecewiseLinearMap,
 )
 
-from .classes import Component, GlobalAxis, Layer, LocalAxis, StaticGlyph, VariableGlyph
+from .classes import Component, Layer, LocalAxis, StaticGlyph, VariableGlyph
 
 
 class InterpolationError(Exception):
@@ -22,7 +22,6 @@ class InterpolationError(Exception):
 class LocationCoordinateSystem(Enum):
     USER = 1
     SOURCE = 2  # "designspace coords"
-    NORMALIZED = 3
 
 
 @dataclass
@@ -40,7 +39,7 @@ class FontInstancer:
                 self.globalAxes = await self.backend.getGlobalAxes()
             glyph = await self.backend.getGlyph(glyphName)
             glyph = await self._ensureComponentLocationCompatibility(glyph)
-            glyphInstancer = GlyphInstancer(glyph, self.globalAxes)
+            glyphInstancer = GlyphInstancer(glyph, self)
             if addToCache:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
@@ -138,7 +137,7 @@ def _fixComponentLocation(component, axisNames, axisDefaults):
 @dataclass
 class GlyphInstancer:
     glyph: VariableGlyph
-    globalAxes: list[GlobalAxis]
+    fontInstancer: FontInstancer
 
     async def drawPoints(
         self,
@@ -148,46 +147,37 @@ class GlyphInstancer:
         coordSystem=LocationCoordinateSystem.USER,
         flattenComponents=False,
         flattenVarComponents=True,
-    ):
+    ) -> GlyphInstance:
         if coordSystem == LocationCoordinateSystem.USER:
             location = mapLocationFromUserToSource(location, self.globalAxes)
-        elif coordSystem == LocationCoordinateSystem.NORMALIZED:
-            raise ValueError("location must be in 'user' or 'source' coordinates")
 
         instance = self.instantiate(location)
-        instance.path.drawPoints(pen)
-        for component, isVarComponent in zip(
-            instance.components, self.componentTypes, strict=True
-        ):
-            if isVarComponent:
-                if flattenComponents or flattenVarComponents:
-                    assert 0, "TODO"
-                else:
-                    pen.addVarComponent(
-                        component.name,
-                        component.transformation,
-                        location | component.location,
-                    )
-            else:
-                if flattenComponents:
-                    assert 0, "TODO"
-                else:
-                    pen.addComponent(
-                        component.name, component.transformation.toTransform()
-                    )
-
+        await instance.drawPoints(
+            pen,
+            flattenComponents=flattenComponents,
+            flattenVarComponents=flattenVarComponents,
+        )
         return instance
 
-    def instantiate(self, location, *, coordSystem=LocationCoordinateSystem.SOURCE):
+    def instantiate(
+        self, location, *, coordSystem=LocationCoordinateSystem.SOURCE
+    ) -> GlyphInstance:
         if coordSystem == LocationCoordinateSystem.USER:
             location = mapLocationFromUserToSource(location, self.globalAxes)
 
-        if coordSystem != LocationCoordinateSystem.NORMALIZED:
-            location = normalizeLocation(location, self.combinedAxisTuples)
+        result = self.model.interpolateFromDeltas(
+            normalizeLocation(location, self.combinedAxisTuples), self.deltas
+        )
+        assert isinstance(result, MathGlyph)
+        assert isinstance(result.glyph, StaticGlyph)
 
-        result = self.model.interpolateFromDeltas(location, self.deltas)
-        assert isinstance(result, MathWrapper)
-        return result.subject
+        return GlyphInstance(
+            result.glyph, self.componentTypes, location, self.fontInstancer
+        )
+
+    @cached_property
+    def globalAxes(self):
+        return self.fontInstancer.globalAxes
 
     @cached_property
     def componentTypes(self):
@@ -248,24 +238,56 @@ class GlyphInstancer:
 
     @cached_property
     def deltas(self):
-        sourceValues = [
-            MathWrapper(layerGlyph) for layerGlyph in self.activeLayerGlyphs
-        ]
+        sourceValues = [MathGlyph(layerGlyph) for layerGlyph in self.activeLayerGlyphs]
         return self.model.getDeltas(sourceValues)
 
 
 @dataclass
-class MathWrapper:
-    subject: Any
+class MathGlyph:
+    glyph: StaticGlyph
 
     def __add__(self, other):
-        return MathWrapper(add(self.subject, other.subject))
+        return MathGlyph(add(self.glyph, other.glyph))
 
     def __sub__(self, other):
-        return MathWrapper(subtract(self.subject, other.subject))
+        return MathGlyph(subtract(self.glyph, other.glyph))
 
     def __mul__(self, scalar):
-        return MathWrapper(multiply(self.subject, scalar))
+        return MathGlyph(multiply(self.glyph, scalar))
+
+
+@dataclass
+class GlyphInstance:
+    glyph: StaticGlyph
+    componentTypes: list[bool]
+    parentLocation: dict[str, float]  # LocationCoordinateSystem.SOURCE
+    fontInstancer: FontInstancer
+
+    async def drawPoints(
+        self,
+        pen,
+        *,
+        flattenComponents=False,
+        flattenVarComponents=False,
+    ):
+        assert self.componentTypes is not None
+        assert self.parentLocation is not None
+        self.glyph.path.drawPoints(pen)
+        for component, isVarComponent in zip(
+            self.glyph.components, self.componentTypes, strict=True
+        ):
+            if flattenComponents or (isVarComponent and flattenVarComponents):
+                assert 0, "TODO"
+            elif isVarComponent:
+                pen.addVarComponent(
+                    component.name,
+                    component.transformation,
+                    self.parentLocation | component.location,
+                )
+            else:
+                pen.addComponent(component.name, component.transformation.toTransform())
+
+        return self  # Flattened
 
 
 @singledispatch

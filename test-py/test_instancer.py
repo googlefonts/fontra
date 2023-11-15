@@ -68,10 +68,8 @@ testData = [
         [
             ({}, LocationCoordinateSystem.USER),
             ({}, LocationCoordinateSystem.SOURCE),
-            ({}, LocationCoordinateSystem.NORMALIZED),
             ({"weight": 100}, LocationCoordinateSystem.USER),
             ({"weight": 150}, LocationCoordinateSystem.SOURCE),
-            ({"weight": 0}, LocationCoordinateSystem.NORMALIZED),
         ],
         StaticGlyph(
             xAdvance=396,
@@ -135,7 +133,6 @@ testData = [
         [
             ({"weight": 500, "width": 500}, LocationCoordinateSystem.USER),
             ({"weight": 500, "width": 500}, LocationCoordinateSystem.SOURCE),
-            ({"weight": 0.5, "width": 0.5}, LocationCoordinateSystem.NORMALIZED),
         ],
         StaticGlyph(
             xAdvance=900,
@@ -185,8 +182,8 @@ testData = [
 @pytest.mark.parametrize("glyphName, location, coordSystem, expectedResult", testData)
 async def test_instancer(instancer, glyphName, location, coordSystem, expectedResult):
     glyphInstancer = await instancer.getGlyphInstancer(glyphName)
-    result = glyphInstancer.instantiate(location, coordSystem=coordSystem)
-    result = result.convertToPaths()
+    instance = glyphInstancer.instantiate(location, coordSystem=coordSystem)
+    result = instance.glyph.convertToPaths()
     assert expectedResult == result
 
 
