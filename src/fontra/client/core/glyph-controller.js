@@ -751,10 +751,11 @@ export async function decomposeComponents(
       // Missing base glyph
       continue;
     }
+    parentLocation = baseGlyph.mapLocationGlobalToLocal(parentLocation);
     let location = { ...parentLocation, ...component.location };
-    const normLocation = baseGlyph.mapLocationGlobalToLocal(location);
+
     const compoInstance = await baseGlyph.instantiate(
-      normalizeLocation(normLocation, baseGlyph.combinedAxes),
+      normalizeLocation(location, baseGlyph.combinedAxes),
       getGlyphFunc
     );
     const t = makeAffineTransform(component.transformation);
