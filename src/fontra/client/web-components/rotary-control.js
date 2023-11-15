@@ -46,7 +46,7 @@ export class RotaryControl extends html.UnlitElement {
       const diff = angle(origin, target) - this.angleWhenDragStart;
       let value = this.startAngle + diff;
       this.value = round(value);
-      this.onChangeCallback(this.value);
+      this.dispatch(this.value);
     });
 
     document.body.addEventListener("mouseup", () => {
@@ -57,7 +57,6 @@ export class RotaryControl extends html.UnlitElement {
 
   set value(value) {
     if (value < 0) {
-      // minus 90 degrees should be considered as 270
       value = 360 + value;
     }
     value = value % 360;
@@ -71,6 +70,13 @@ export class RotaryControl extends html.UnlitElement {
     return this._value;
   }
 
+  dispatch(value) {
+    if (value > 180) {
+      value -= 360;
+    }
+    this.onChangeCallback(value);
+  }
+
   render() {
     return html.div({ class: "rotary-control" }, [
       (this.knob = html.div(
@@ -81,7 +87,7 @@ export class RotaryControl extends html.UnlitElement {
                 ? -1 * event.deltaX
                 : event.deltaY;
             this.value = this.value + delta;
-            this.onChangeCallback(this.value);
+            this.dispatch(this.value);
           },
           class: "knob",
           style: `transform: rotate(${this.value}deg);`,
@@ -115,7 +121,6 @@ function angle(origin, target) {
   const vec = subVectors(target, origin);
   let deg = toDegrees(Math.atan2(vec.y, vec.x));
 
-  // the north of the target should be 0
   deg += 90;
 
   if (deg < 0) {

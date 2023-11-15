@@ -192,28 +192,27 @@ export class Form extends SimpleElement {
     inputElement.type = "number";
     inputElement.value = fieldItem.value;
 
-    inputElement.min = 0;
-    inputElement.max = 360;
     inputElement.step = "any";
 
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = (event) => {
       let value = parseFloat(inputElement.value);
       this._fieldChanging(fieldItem.key, value);
+      rotaryControl.value = value;
     };
+
+    const rotaryControl = html.createDomElement("rotary-control", {
+      value: fieldItem.value,
+      onChangeCallback: (value) => {
+        inputElement.value = value;
+        this._fieldChanging(fieldItem.key, value);
+      },
+    });
+
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
     valueElement.appendChild(
-      html.div({ style: "display: flex" }, [
-        inputElement,
-        html.createDomElement("rotary-control", {
-          value: fieldItem.value,
-          onChangeCallback: (value) => {
-            inputElement.value = value;
-            this._fieldChanging(fieldItem.key, value);
-          },
-        }),
-      ])
+      html.div({ style: "display: flex" }, [inputElement, rotaryControl])
     );
   }
 
