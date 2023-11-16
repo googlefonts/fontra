@@ -179,8 +179,8 @@ export class EditorController {
       this.showDialogGlyphEditLocationNotAtSource();
     });
 
-    this.sceneController.addEventListener("requestedNewGlyphCreate", (event) => {
-      this.showDialogNewGlyph(event.detail);
+    this.sceneController.addEventListener("requestedNewGlyphCreate", () => {
+      this.showDialogNewGlyph();
     });
 
     this.sidebars = [];
@@ -339,7 +339,8 @@ export class EditorController {
   }
 
   async showDialogNewGlyph() {
-      const positionedGlyph = this.sceneController.sceneModel.getSelectedPositionedGlyph();
+    const positionedGlyph =
+      this.sceneController.sceneModel.getSelectedPositionedGlyph();
     this.sceneSettings.selectedGlyph = {
       ...this.sceneSettings.selectedGlyph,
       isEditing: false,
