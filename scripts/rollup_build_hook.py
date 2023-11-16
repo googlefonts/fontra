@@ -15,6 +15,6 @@ class RollupBuildHook(BuildHookInterface):
             / "third-party"
         )
         if path.exists():
-            shutil.rmtree(path.resolve())
+            shutil.rmtree(path)
         subprocess.check_output("npm install", shell=True)
         subprocess.check_output("npm run bundle-rollup", shell=True)
