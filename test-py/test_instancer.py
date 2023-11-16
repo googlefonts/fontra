@@ -464,7 +464,7 @@ penTestData = [
         ],
     ),
     (
-        "varcotest3",
+        "nestedcomponents",
         {"weight": 500},
         True,
         False,

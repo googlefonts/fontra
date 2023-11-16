@@ -42,6 +42,7 @@ comma;002C
 dieresis;00A8
 dot;27D1
 em;
+nestedcomponents;
 nlitest;
 period;002E
 quotedblbase;201E
@@ -52,4 +53,3 @@ semicolon;003B
 space;0020
 varcotest1;E000
 varcotest2;E001
-varcotest3;
