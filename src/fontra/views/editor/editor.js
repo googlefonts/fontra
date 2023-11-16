@@ -338,7 +338,8 @@ export class EditorController {
     });
   }
 
-  async showDialogNewGlyph({ positionedGlyph }) {
+  async showDialogNewGlyph() {
+      const positionedGlyph = this.sceneController.sceneModel.getSelectedPositionedGlyph();
     this.sceneSettings.selectedGlyph = {
       ...this.sceneSettings.selectedGlyph,
       isEditing: false,
