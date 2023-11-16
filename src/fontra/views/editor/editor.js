@@ -178,7 +178,7 @@ export class EditorController {
       this.showDialogGlyphEditLocationNotAtSource();
     });
 
-    this.sceneController.addEventListener("requestedNewGlyphCreate", () => {
+    this.sceneController.addEventListener("doubleClickedUndefinedGlyph", () => {
       this.showDialogNewGlyph();
     });
 
