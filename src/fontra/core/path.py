@@ -10,6 +10,10 @@ from fontTools.misc.transform import DecomposedTransform
 logger = logging.getLogger(__name__)
 
 
+class InterpolationError(Exception):
+    pass
+
+
 # Path, aka "unpacked path", but structured
 
 
@@ -248,7 +252,7 @@ class PackedPath:
             # TODO: we should also compare self.pointTypes with other.pointTypes,
             # but ignoring the smooth flag
             # TODO: more specific exception
-            raise ValueError("paths are not compatible")
+            raise InterpolationError("paths are not compatible")
 
     def __sub__(self, other):
         self._ensureCompatibility(other)

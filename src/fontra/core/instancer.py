@@ -21,11 +21,7 @@ from .classes import (
     StaticGlyph,
     VariableGlyph,
 )
-from .path import PackedPath, joinPaths
-
-
-class InterpolationError(Exception):
-    pass
+from .path import InterpolationError, PackedPath, joinPaths
 
 
 class LocationCoordinateSystem(Enum):

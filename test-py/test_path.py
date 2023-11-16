@@ -3,7 +3,13 @@ import operator
 import cattrs
 import pytest
 
-from fontra.core.path import Contour, PackedPath, PackedPathPointPen, Path
+from fontra.core.path import (
+    Contour,
+    InterpolationError,
+    PackedPath,
+    PackedPathPointPen,
+    Path,
+)
 
 pathTestData = [
     {
@@ -267,8 +273,20 @@ pathMathPathMul = Path(
         (pathMathPath1, pathMathPath2, pathMathPathAdd, operator.add, None),
         (pathMathPath1, pathMathPath2, pathMathPathSub, operator.sub, None),
         (pathMathPath1, 2, pathMathPathMul, operator.mul, None),
-        (pathMathPath1, pathMathPathIncompatible, None, operator.add, ValueError),
-        (pathMathPath1, pathMathPathIncompatible, None, operator.sub, ValueError),
+        (
+            pathMathPath1,
+            pathMathPathIncompatible,
+            None,
+            operator.add,
+            InterpolationError,
+        ),
+        (
+            pathMathPath1,
+            pathMathPathIncompatible,
+            None,
+            operator.sub,
+            InterpolationError,
+        ),
     ],
 )
 def test_pathMath(path, arg, expectedResult, op, exception):
