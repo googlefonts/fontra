@@ -275,10 +275,10 @@ class GlyphInstance:
     async def getFlattenedPath(self):
         paths = [self.glyph.path]
         for component in self.glyph.components:
-            paths.append(await self.getComponentPath(component))
+            paths.append(await self._getComponentPath(component))
         return joinPaths(paths)
 
-    async def getComponentPath(self, component):
+    async def _getComponentPath(self, component):
         instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
         instance = instancer.instantiate(self.parentLocation | component.location)
         path = await instance.getFlattenedPath()
@@ -301,7 +301,7 @@ class GlyphInstance:
             self.glyph.components, self.componentTypes, strict=True
         ):
             if flattenComponents or (isVarComponent and flattenVarComponents):
-                paths.append(await self.getComponentPath(component))
+                paths.append(await self._getComponentPath(component))
             else:
                 components.append((component, isVarComponent))
 
