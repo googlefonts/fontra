@@ -170,7 +170,6 @@ export class EditorController {
     });
 
     // TODO move event stuff out of here
-    // TODO maybe we can add a method something like bindEvents
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
       this.doubleClickedComponentsCallback(event);
     });
