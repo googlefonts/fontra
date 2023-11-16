@@ -33,6 +33,7 @@ import {
   isActiveElementTypeable,
   isObjectEmpty,
   loadURLFragment,
+  makeUPlusStringFromCodePoint,
   parseSelection,
   range,
   readFromClipboard,
@@ -169,12 +170,17 @@ export class EditorController {
     });
 
     // TODO move event stuff out of here
+    // TODO maybe we can add a method something like bindEvents
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
       this.doubleClickedComponentsCallback(event);
     });
 
     this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
       this.showDialogGlyphEditLocationNotAtSource();
+    });
+
+    this.sceneController.addEventListener("requestedNewGlyphCreate", (event) => {
+      this.showDialogNewGlyph(event.detail);
     });
 
     this.sidebars = [];
@@ -330,6 +336,44 @@ export class EditorController {
     this.fontController.addChangeListener({ glyphMap: null }, () => {
       glyphsSearch.updateGlyphNamesListContent();
     });
+  }
+
+  async showDialogNewGlyph({ positionedGlyph }) {
+    this.sceneSettings.selectedGlyph = {
+      ...this.sceneSettings.selectedGlyph,
+      isEditing: false,
+    };
+    const uniString = makeUPlusStringFromCodePoint(
+      positionedGlyph.character?.codePointAt(0)
+    );
+    const charMsg = positionedGlyph.character
+      ? ` for character “${positionedGlyph.character}” (${uniString})`
+      : "";
+    const result = await dialog(
+      `Create a new glyph “${positionedGlyph.glyphName}”?`,
+      `Click “Create” if you want to create a new glyph named “${positionedGlyph.glyphName}”${charMsg}.`,
+      [
+        { title: "Cancel", resultValue: "no", isCancelButton: true },
+        { title: "Create", resultValue: "ok", isDefaultButton: true },
+      ]
+    );
+    if (result === "ok") {
+      const layerName = "<default>";
+      await this.newGlyph(
+        positionedGlyph.glyphName,
+        positionedGlyph.character?.codePointAt(0),
+        VariableGlyph.fromObject({
+          name: positionedGlyph.glyphName,
+          sources: [{ name: layerName, location: {}, layerName: layerName }],
+          layers: { [layerName]: { glyph: positionedGlyph.glyph.instance } },
+        })
+      );
+      this.sceneSettings.selectedGlyph = {
+        ...this.sceneSettings.selectedGlyph,
+        isEditing: true,
+      };
+      this.sceneSettings.selectedSourceIndex = 0;
+    }
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
