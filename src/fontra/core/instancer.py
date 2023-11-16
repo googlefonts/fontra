@@ -404,34 +404,6 @@ def _(v: Component, scalar):
     return _componentMul(v, scalar)
 
 
-def _componentOperator(compo1, compo2, op):
-    if compo1.name != compo2.name:
-        raise InterpolationError("incompatible component name")
-    return Component(
-        name=compo1.name,
-        transformation=op(compo1.transformation, compo2.transformation),
-        location=_locationOperator(compo1.location, compo2.location, op),
-    )
-
-
-def _componentMul(compo, scalar):
-    return Component(
-        name=compo.name,
-        transformation=multiply(compo.transformation, scalar),
-        location=_locationMul(compo.location, scalar),
-    )
-
-
-def _locationOperator(v1, v2, op):
-    if v1.keys() != v2.keys():
-        raise InterpolationError("incompatible component location")
-    return {k: op(v, v2[k]) for k, v in v1.items()}
-
-
-def _locationMul(location, scalar):
-    return {k: v * scalar for k, v in location.items()}
-
-
 @add.register
 def _(v1: type(None), v2):
     if v2 is not None:
@@ -475,6 +447,34 @@ def _listOperator(v1, v2, op):
 
 def _listMul(v1, scalar):
     return [multiply(i1, scalar) for i1 in v1]
+
+
+def _componentOperator(compo1, compo2, op):
+    if compo1.name != compo2.name:
+        raise InterpolationError("incompatible component name")
+    return Component(
+        name=compo1.name,
+        transformation=op(compo1.transformation, compo2.transformation),
+        location=_locationOperator(compo1.location, compo2.location, op),
+    )
+
+
+def _componentMul(compo, scalar):
+    return Component(
+        name=compo.name,
+        transformation=multiply(compo.transformation, scalar),
+        location=_locationMul(compo.location, scalar),
+    )
+
+
+def _locationOperator(v1, v2, op):
+    if v1.keys() != v2.keys():
+        raise InterpolationError("incompatible component location")
+    return {k: op(v, v2[k]) for k, v in v1.items()}
+
+
+def _locationMul(location, scalar):
+    return {k: v * scalar for k, v in location.items()}
 
 
 def mapLocationFromUserToSource(location, globalAxes):
