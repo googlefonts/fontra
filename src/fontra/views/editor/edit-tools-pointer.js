@@ -143,8 +143,6 @@ export class PointerTool extends BaseTool {
         : undefined;
       const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph?.isUndefined) {
-        // Create a new glyph
-        // TODO: dispatch event and let editor.js handle it
         sceneController._dispatchEvent("requestedNewGlyphCreate", { positionedGlyph });
       }
     } else {
