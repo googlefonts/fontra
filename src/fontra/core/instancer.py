@@ -470,7 +470,7 @@ def _dataClassMul(v1, scalar):
 
 
 def _listOperator(v1, v2, op):
-    return [op(i1, i2) for i1, i2 in zip(v1, v2)]
+    return [op(i1, i2) for i1, i2 in zip(v1, v2, strict=True)]
 
 
 def _listMul(v1, scalar):
