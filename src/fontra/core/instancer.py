@@ -3,9 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from enum import Enum
 from functools import cached_property, partial, singledispatch
-from typing import Any
+from typing import Any, Optional
 
-from fontTools.misc.transform import DecomposedTransform
+from fontTools.misc.transform import DecomposedTransform, Transform
 from fontTools.varLib.models import (
     VariationModel,
     normalizeLocation,
@@ -21,7 +21,7 @@ from .classes import (
     StaticGlyph,
     VariableGlyph,
 )
-from .path import joinPaths
+from .path import PackedPath, joinPaths
 
 
 class InterpolationError(Exception):
@@ -272,10 +272,16 @@ class GlyphInstance:
     parentLocation: dict[str, float]  # LocationCoordinateSystem.SOURCE
     fontInstancer: FontInstancer
 
-    async def getFlattenedPath(self):
-        paths = [self.glyph.path]
+    async def getFlattenedPath(
+        self, transform: Optional[Transform] = None
+    ) -> PackedPath:
+        paths = [
+            self.glyph.path
+            if transform is None
+            else self.glyph.path.transformed(transform)
+        ]
         for component in self.glyph.components:
-            paths.append(await self._getComponentPath(component))
+            paths.append(await self._getComponentPath(component, transform))
         return joinPaths(paths)
 
     async def drawPoints(
@@ -312,11 +318,15 @@ class GlyphInstance:
             else:
                 pen.addComponent(component.name, component.transformation.toTransform())
 
-    async def _getComponentPath(self, component):
+    async def _getComponentPath(
+        self, component, parentTransform: Optional[Transform] = None
+    ) -> PackedPath:
         instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
         instance = instancer.instantiate(self.parentLocation | component.location)
-        path = await instance.getFlattenedPath()
-        return path.transformed(component.transformation.toTransform())
+        transform = component.transformation.toTransform()
+        if parentTransform is not None:
+            transform = parentTransform.transform(transform)
+        return await instance.getFlattenedPath(transform)
 
 
 @singledispatch
