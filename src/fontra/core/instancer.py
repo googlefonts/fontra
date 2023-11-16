@@ -278,12 +278,6 @@ class GlyphInstance:
             paths.append(await self._getComponentPath(component))
         return joinPaths(paths)
 
-    async def _getComponentPath(self, component):
-        instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
-        instance = instancer.instantiate(self.parentLocation | component.location)
-        path = await instance.getFlattenedPath()
-        return path.transformed(component.transformation.toTransform())
-
     async def drawPoints(
         self,
         pen,
@@ -317,6 +311,12 @@ class GlyphInstance:
                 )
             else:
                 pen.addComponent(component.name, component.transformation.toTransform())
+
+    async def _getComponentPath(self, component):
+        instancer = await self.fontInstancer.getGlyphInstancer(component.name, True)
+        instance = instancer.instantiate(self.parentLocation | component.location)
+        path = await instance.getFlattenedPath()
+        return path.transformed(component.transformation.toTransform())
 
 
 @singledispatch
