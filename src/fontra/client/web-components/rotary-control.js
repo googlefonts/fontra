@@ -1,6 +1,6 @@
 import * as html from "../core/html-utils.js";
 import { round } from "../core/utils.js";
-import { subVectors } from "../core/vector.js";
+import { distance, subVectors } from "../core/vector.js";
 
 export class RotaryControl extends html.UnlitElement {
   static styles = `
@@ -31,35 +31,27 @@ export class RotaryControl extends html.UnlitElement {
     gap: 0.4rem;
     margin: 0.2rem;
   }
+
+  .overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
   `;
 
   constructor() {
     super();
     this.onChangeCallback = () => {};
-
-    document.body.addEventListener("mousemove", (event) => {
-      if (this.startAngle === undefined) {
-        return;
-      }
-      const origin = originOfElement(this.knob);
-      const target = { x: event.clientX, y: event.clientY };
-      const diff = angle(origin, target) - this.angleWhenDragStart;
-      let value = this.startAngle + diff;
-      this.value = round(value);
-      this.dispatch(this.value);
-    });
-
-    document.body.addEventListener("mouseup", () => {
-      this.startAngle = undefined;
-      this.angleWhenDragStart = undefined;
-    });
   }
 
   set value(value) {
+    value %= 360;
     if (value < 0) {
       value = 360 + value;
     }
-    value = value % 360;
     this._value = value;
     if (this.knob) {
       this.knob.style.transform = `rotate(${this.value}deg)`;
@@ -71,10 +63,45 @@ export class RotaryControl extends html.UnlitElement {
   }
 
   dispatch(value) {
+    value %= 360;
     if (value > 180) {
       value -= 360;
     }
     this.onChangeCallback(value);
+  }
+
+  attachOverlay() {
+    const overlay = html.div(
+      {
+        class: "overlay",
+        onmouseup: () => {
+          this.coordinatesDragBegin = undefined;
+          this.angleWhenDragStart = undefined;
+          this.shadowRoot.removeChild(overlay);
+        },
+        onmousemove: (event) => {
+          if (this.coordinatesDragBegin === undefined) {
+            return;
+          }
+          const diff = distance(this.coordinatesDragBegin, {
+            x: event.clientX,
+            y: event.clientY,
+          });
+          let value = this.angleWhenDragStart + diff;
+          if (
+            event.clientX < this.coordinatesDragBegin.x ||
+            event.clientY < this.coordinatesDragBegin.y
+          ) {
+            value *= -1;
+          }
+          this.value = round(value);
+          this.dispatch(this.value);
+        },
+      },
+      []
+    );
+    this.overlay = overlay;
+    this.shadowRoot.appendChild(overlay);
   }
 
   render() {
@@ -92,11 +119,10 @@ export class RotaryControl extends html.UnlitElement {
           class: "knob",
           style: `transform: rotate(${this.value}deg);`,
           onmousedown: (event) => {
-            this.startAngle = this.value;
-            const origin = originOfElement(this.knob);
-            const target = { x: event.clientX, y: event.clientY };
-            const deg = angle(origin, target);
-            this.angleWhenDragStart = deg;
+            this.coordinatesDragBegin = { x: event.clientX, y: event.clientY };
+            this.angleWhenDragStart = this.value;
+            event.preventDefault();
+            this.attachOverlay();
           },
         },
         [html.div({ class: "thumb" })]
@@ -115,18 +141,6 @@ function originOfElement(element) {
 
 function toDegrees(radians) {
   return (radians * 180) / Math.PI;
-}
-
-function angle(origin, target) {
-  const vec = subVectors(target, origin);
-  let deg = toDegrees(Math.atan2(vec.y, vec.x));
-
-  deg += 90;
-
-  if (deg < 0) {
-    deg = 270 + (90 + deg);
-  }
-  return deg;
 }
 
 customElements.define("rotary-control", RotaryControl);
