@@ -66,7 +66,7 @@ export class RotaryControl extends html.UnlitElement {
     if (value > 180) {
       value -= 360;
     }
-    this.onChangeCallback(value);
+    this.onChangeCallback(value * -1);
   }
 
   attachOverlay() {
@@ -88,8 +88,8 @@ export class RotaryControl extends html.UnlitElement {
           });
           let value = this.angleWhenDragStart + diff;
           if (
-            event.clientX < this.coordinatesDragBegin.x ||
-            event.clientY < this.coordinatesDragBegin.y
+            event.clientX < this.coordinatesDragBegin.x
+            // || event.clientY < this.coordinatesDragBegin.y
           ) {
             value *= -1;
           }
