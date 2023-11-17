@@ -76,7 +76,7 @@ export class RotaryControl extends html.UnlitElement {
           }
           const diffX = event.clientX - this.coordinatesDragBegin.x;
           const diffY = event.clientY - this.coordinatesDragBegin.y;
-          let value =
+          const value =
             this.angleWhenDragStart +
             (Math.abs(diffX) > Math.abs(diffY) ? diffX : diffY);
           this.value = value;
