@@ -63,7 +63,6 @@ export class RotaryControl extends html.UnlitElement {
   }
 
   dispatch(value) {
-    value %= 360;
     if (value > 180) {
       value -= 360;
     }
