@@ -3,13 +3,7 @@ import { ChangeCollector, applyChange, consolidateChanges } from "../core/change
 import { connectContours, toggleSmooth } from "../core/path-functions.js";
 import { centeredRect, normalizeRect, offsetRect } from "../core/rectangle.js";
 import { difference, isSuperset, symmetricDifference, union } from "../core/set-ops.js";
-import {
-  boolInt,
-  commandKeyProperty,
-  makeUPlusStringFromCodePoint,
-  parseSelection,
-  range,
-} from "../core/utils.js";
+import { boolInt, commandKeyProperty, parseSelection, range } from "../core/utils.js";
 import { VariableGlyph } from "../core/var-glyph.js";
 import { VarPackedPath } from "../core/var-path.js";
 import * as vector from "../core/vector.js";
@@ -149,45 +143,7 @@ export class PointerTool extends BaseTool {
         : undefined;
       const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph?.isUndefined) {
-        // Create a new glyph
-        // TODO: dispatch event and let editor.js handle it
-        this.sceneSettings.selectedGlyph = {
-          ...this.sceneSettings.selectedGlyph,
-          isEditing: false,
-        };
-        // Create a new glyph
-        // Or: ask user if they want to create a new glyph
-        const uniString = makeUPlusStringFromCodePoint(
-          positionedGlyph.character?.codePointAt(0)
-        );
-        const charMsg = positionedGlyph.character
-          ? ` for character “${positionedGlyph.character}” (${uniString})`
-          : "";
-        const result = await dialog(
-          `Create a new glyph “${positionedGlyph.glyphName}”?`,
-          `Click “Create” if you want to create a new glyph named “${positionedGlyph.glyphName}”${charMsg}.`,
-          [
-            { title: "Cancel", resultValue: "no", isCancelButton: true },
-            { title: "Create", resultValue: "ok", isDefaultButton: true },
-          ]
-        );
-        if (result === "ok") {
-          const layerName = "<default>";
-          await this.editor.newGlyph(
-            positionedGlyph.glyphName,
-            positionedGlyph.character?.codePointAt(0),
-            VariableGlyph.fromObject({
-              name: positionedGlyph.glyphName,
-              sources: [{ name: layerName, location: {}, layerName: layerName }],
-              layers: { [layerName]: { glyph: positionedGlyph.glyph.instance } },
-            })
-          );
-          this.sceneSettings.selectedGlyph = {
-            ...this.sceneSettings.selectedGlyph,
-            isEditing: true,
-          };
-          this.sceneSettings.selectedSourceIndex = 0;
-        }
+        sceneController._dispatchEvent("doubleClickedUndefinedGlyph");
       }
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
