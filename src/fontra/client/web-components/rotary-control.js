@@ -130,16 +130,4 @@ export class RotaryControl extends html.UnlitElement {
   }
 }
 
-function originOfElement(element) {
-  const boundingClientRect = element.getBoundingClientRect();
-  return {
-    x: boundingClientRect.x + boundingClientRect.width / 2,
-    y: boundingClientRect.y + boundingClientRect.height / 2,
-  };
-}
-
-function toDegrees(radians) {
-  return (radians * 180) / Math.PI;
-}
-
 customElements.define("rotary-control", RotaryControl);
