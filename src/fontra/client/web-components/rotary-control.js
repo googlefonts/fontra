@@ -1,6 +1,5 @@
 import * as html from "../core/html-utils.js";
 import { round } from "../core/utils.js";
-import { distance, subVectors } from "../core/vector.js";
 
 export class RotaryControl extends html.UnlitElement {
   static styles = `
@@ -48,10 +47,6 @@ export class RotaryControl extends html.UnlitElement {
   }
 
   set value(value) {
-    value %= 360;
-    if (value < 0) {
-      value = 360 + value;
-    }
     this._value = value;
     if (this.knob) {
       this.knob.style.transform = `rotate(${this.value}deg)`;
@@ -63,10 +58,7 @@ export class RotaryControl extends html.UnlitElement {
   }
 
   dispatch(value) {
-    if (value > 180) {
-      value -= 360;
-    }
-    this.onChangeCallback(value * -1);
+    this.onChangeCallback(value);
   }
 
   attachOverlay() {
@@ -82,18 +74,12 @@ export class RotaryControl extends html.UnlitElement {
           if (this.coordinatesDragBegin === undefined) {
             return;
           }
-          const diff = distance(this.coordinatesDragBegin, {
-            x: event.clientX,
-            y: event.clientY,
-          });
-          let value = this.angleWhenDragStart + diff;
-          if (
-            event.clientX < this.coordinatesDragBegin.x
-            // || event.clientY < this.coordinatesDragBegin.y
-          ) {
-            value *= -1;
-          }
-          this.value = round(value);
+          const diffX = event.clientX - this.coordinatesDragBegin.x;
+          const diffY = event.clientY - this.coordinatesDragBegin.y;
+          let value =
+            this.angleWhenDragStart +
+            (Math.abs(diffX) > Math.abs(diffY) ? diffX : diffY);
+          this.value = value;
           this.dispatch(this.value);
         },
       },
