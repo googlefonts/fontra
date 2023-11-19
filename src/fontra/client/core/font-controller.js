@@ -15,6 +15,7 @@ import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 
 const GLYPH_CACHE_SIZE = 2000;
+const NUM_TASKS = 12;
 
 export class FontController {
   constructor(font) {
@@ -133,7 +134,7 @@ export class FontController {
         }
       };
 
-      const pool = new TaskPool(16);
+      const pool = new TaskPool(NUM_TASKS);
 
       const t = performance.now();
       let count = 0;
