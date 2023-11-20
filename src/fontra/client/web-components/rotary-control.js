@@ -1,5 +1,4 @@
 import * as html from "../core/html-utils.js";
-import { round } from "../core/utils.js";
 
 export class RotaryControl extends html.UnlitElement {
   static styles = `
@@ -57,8 +56,20 @@ export class RotaryControl extends html.UnlitElement {
     return this._value;
   }
 
-  dispatch(value) {
-    this.onChangeCallback(value);
+  dispatch() {
+    const event = { value: this.value };
+
+    if (this.dragBegin) {
+      event.dragBegin = true;
+      this.dragBegin = false;
+    }
+
+    if (this.dragEnd) {
+      event.dragEnd = true;
+      this.dragEnd = false;
+    }
+
+    this.onChangeCallback(event);
   }
 
   attachOverlay() {
@@ -69,6 +80,8 @@ export class RotaryControl extends html.UnlitElement {
           this.coordinatesDragBegin = undefined;
           this.angleWhenDragStart = undefined;
           this.shadowRoot.removeChild(overlay);
+          this.dragEnd = true;
+          this.dispatch();
         },
         onmousemove: (event) => {
           if (this.coordinatesDragBegin === undefined) {
@@ -80,7 +93,7 @@ export class RotaryControl extends html.UnlitElement {
             this.angleWhenDragStart +
             (Math.abs(diffX) > Math.abs(diffY) ? diffX : diffY);
           this.value = value;
-          this.dispatch(this.value);
+          this.dispatch();
         },
       },
       []
@@ -99,13 +112,14 @@ export class RotaryControl extends html.UnlitElement {
                 ? -1 * event.deltaX
                 : event.deltaY;
             this.value = this.value + delta;
-            this.dispatch(this.value);
+            this.dispatch();
           },
           class: "knob",
           style: `transform: rotate(${this.value}deg);`,
           onmousedown: (event) => {
             this.coordinatesDragBegin = { x: event.clientX, y: event.clientY };
             this.angleWhenDragStart = this.value;
+            this.dragBegin = true;
             event.preventDefault();
             this.attachOverlay();
           },

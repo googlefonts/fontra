@@ -203,9 +203,11 @@ export class Form extends SimpleElement {
 
     const rotaryControl = html.createDomElement("rotary-control", {
       value: fieldItem.value,
-      onChangeCallback: (value) => {
-        inputElement.value = value * -1;
-        this._fieldChanging(fieldItem.key, value * -1);
+      onChangeCallback: (event) => {
+        const value = event.value * -1;
+        inputElement.value = value;
+        this._fieldChanging(fieldItem.key, value);
+        console.log(event);
       },
     });
 
