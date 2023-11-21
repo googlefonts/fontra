@@ -248,20 +248,6 @@ class GlyphInstancer:
 
 
 @dataclass
-class MathGlyph:
-    glyph: StaticGlyph
-
-    def __add__(self, other):
-        return MathGlyph(add(self.glyph, other.glyph))
-
-    def __sub__(self, other):
-        return MathGlyph(subtract(self.glyph, other.glyph))
-
-    def __mul__(self, scalar):
-        return MathGlyph(multiply(self.glyph, scalar))
-
-
-@dataclass
 class GlyphInstance:
     glyph: StaticGlyph
     componentTypes: list[bool]
@@ -323,6 +309,20 @@ class GlyphInstance:
         if parentTransform is not None:
             transform = parentTransform.transform(transform)
         return await instance.getFlattenedPath(transform)
+
+
+@dataclass
+class MathGlyph:
+    glyph: StaticGlyph
+
+    def __add__(self, other):
+        return MathGlyph(add(self.glyph, other.glyph))
+
+    def __sub__(self, other):
+        return MathGlyph(subtract(self.glyph, other.glyph))
+
+    def __mul__(self, scalar):
+        return MathGlyph(multiply(self.glyph, scalar))
 
 
 @singledispatch
