@@ -717,12 +717,12 @@ def makeGlyphMapChange(glyphMapUpdates):
     return glyphMapChange
 
 
-class UFOBackend:
+class UFOBackend(DesignspaceBackend):
     @classmethod
     def fromPath(cls, path):
         dsDoc = DesignSpaceDocument()
         dsDoc.addSourceDescriptor(path=os.fspath(path), styleName="default")
-        return DesignspaceBackend(dsDoc)
+        return cls(dsDoc)
 
     @classmethod
     def createFromPath(cls, path):
