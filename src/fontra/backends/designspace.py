@@ -69,20 +69,8 @@ class DesignspaceBackend:
         ufoFileName = makeUniqueFileName(f"{familyName}_{styleName}")
         ufoFileName = ufoFileName + ".ufo"
         ufoPath = os.fspath(ufoDir / ufoFileName)
-        assert not os.path.exists(ufoPath)
-        writer = UFOReaderWriter(ufoPath)  # this creates the UFO
-        info = UFOFontInfo()
-        for infoAttr, value in defaultUFOInfoAttrs.items():
-            if value is not None:
-                setattr(info, infoAttr, value)
-        writer.writeInfo(info)
-        _ = writer.getGlyphSet()  # this creates the default layer
-        writer.writeLayerContents()
-        assert os.path.isdir(ufoPath)
 
-        dsDoc = DesignSpaceDocument()
-        dsDoc.addSourceDescriptor(styleName=styleName, path=ufoPath, location={})
-
+        dsDoc = createDSDocFromUFOPath(ufoPath, styleName)
         dsDoc.write(path)
         return cls(dsDoc)
 
@@ -731,6 +719,23 @@ class UFOBackend(DesignspaceBackend):
     async def putGlobalAxes(self, axes):
         if axes:
             raise ValueError("The single-UFO backend does not support variation axes")
+
+
+def createDSDocFromUFOPath(ufoPath, styleName):
+    assert not os.path.exists(ufoPath)
+    writer = UFOReaderWriter(ufoPath)  # this creates the UFO
+    info = UFOFontInfo()
+    for infoAttr, value in defaultUFOInfoAttrs.items():
+        if value is not None:
+            setattr(info, infoAttr, value)
+    writer.writeInfo(info)
+    _ = writer.getGlyphSet()  # this creates the default layer
+    writer.writeLayerContents()
+    assert os.path.isdir(ufoPath)
+
+    dsDoc = DesignSpaceDocument()
+    dsDoc.addSourceDescriptor(styleName=styleName, path=ufoPath, location={})
+    return dsDoc
 
 
 class UFOGlyph:
