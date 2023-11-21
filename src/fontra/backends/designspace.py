@@ -728,6 +728,10 @@ class UFOBackend(DesignspaceBackend):
     def createFromPath(cls, path):
         raise NotImplementedError()
 
+    async def putGlobalAxes(self, axes):
+        if axes:
+            raise ValueError("The single-UFO backend does not support variation axes")
+
 
 class UFOGlyph:
     unicodes: list = []
