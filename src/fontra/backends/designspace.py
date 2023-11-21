@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 import pathlib
+import shutil
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict, dataclass
@@ -68,8 +69,7 @@ class DesignspaceBackend:
         styleName = "Regular"
         ufoFileName = makeUniqueFileName(f"{familyName}_{styleName}")
         ufoFileName = ufoFileName + ".ufo"
-        ufoPath = os.fspath(ufoDir / ufoFileName)
-
+        ufoPath = ufoDir / ufoFileName
         dsDoc = createDSDocFromUFOPath(ufoPath, styleName)
         dsDoc.write(path)
         return cls(dsDoc)
@@ -714,7 +714,13 @@ class UFOBackend(DesignspaceBackend):
 
     @classmethod
     def createFromPath(cls, path):
-        raise NotImplementedError()
+        path = pathlib.Path(path).resolve()
+        if path.is_dir():
+            shutil.rmtree(path)
+        elif path.exists():
+            path.unlink()
+        dsDoc = createDSDocFromUFOPath(path, "default")
+        return cls(dsDoc)
 
     async def putGlobalAxes(self, axes):
         if axes:
@@ -722,6 +728,7 @@ class UFOBackend(DesignspaceBackend):
 
 
 def createDSDocFromUFOPath(ufoPath, styleName):
+    ufoPath = os.fspath(ufoPath)
     assert not os.path.exists(ufoPath)
     writer = UFOReaderWriter(ufoPath)  # this creates the UFO
     info = UFOFontInfo()
