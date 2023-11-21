@@ -12,7 +12,7 @@ from fontra.core.classes import GlobalAxis, Layer, LocalAxis, Source, StaticGlyp
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 
-def testFontFunc():
+def getTestFont():
     return DesignspaceBackend.fromPath(
         dataDir / "mutatorsans" / "MutatorSans.designspace"
     )
@@ -20,10 +20,10 @@ def testFontFunc():
 
 @pytest.fixture
 def testFont():
-    return testFontFunc()
+    return getTestFont()
 
 
-def testFontSingleUFOFunc():
+def getFontSingleUFO():
     return UFOBackend.fromPath(
         dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo"
     )
@@ -31,7 +31,7 @@ def testFontSingleUFOFunc():
 
 @pytest.fixture
 def testFontSingleUFO():
-    return testFontSingleUFOFunc()
+    return getFontSingleUFO()
 
 
 @pytest.fixture
@@ -226,7 +226,7 @@ async def test_putGlobalAxes(writableTestFont):
     "sourceFont, fileName, initialExpectedFileNames, expectedFileNames",
     [
         (
-            testFontFunc(),
+            getTestFont(),
             "Test.designspace",
             ["Test.designspace", "Test_Regular.ufo"],
             [
@@ -238,7 +238,7 @@ async def test_putGlobalAxes(writableTestFont):
             ],
         ),
         (
-            testFontSingleUFOFunc(),
+            getFontSingleUFO(),
             "Test_Regular.ufo",
             ["Test_Regular.ufo"],
             ["Test_Regular.ufo"],
