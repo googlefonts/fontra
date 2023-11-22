@@ -730,8 +730,10 @@ class UFOBackend:
 
 
 class UFOGlyph:
-    unicodes = ()
-    width = 0
+    unicodes: list = []
+    width: float | None = 0
+    height: float | None = None
+    lib: dict
 
 
 class UFOFontInfo:
