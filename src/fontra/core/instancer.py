@@ -33,11 +33,13 @@ class LocationCoordinateSystem(Enum):
 class FontInstancer:
     backend: Any
 
-    def __post_init__(self):
-        self.glyphInstancers = {}
-        self.globalAxes = None
+    def __post_init__(self) -> None:
+        self.glyphInstancers: dict[str, GlyphInstancer] = {}
+        self.globalAxes: list[GlobalAxis] | None = None
 
-    async def getGlyphInstancer(self, glyphName, addToCache=False) -> GlyphInstancer:
+    async def getGlyphInstancer(
+        self, glyphName: str, addToCache: bool = False
+    ) -> GlyphInstancer:
         glyphInstancer = self.glyphInstancers.get(glyphName)
         if glyphInstancer is None:
             if self.globalAxes is None:
@@ -182,6 +184,7 @@ class GlyphInstancer:
 
     @cached_property
     def globalAxes(self) -> list[GlobalAxis]:
+        assert self.fontInstancer.globalAxes is not None
         return self.fontInstancer.globalAxes
 
     @cached_property
