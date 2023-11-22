@@ -2,7 +2,7 @@ import pytest
 
 from fontra.core.classes import StaticGlyph
 from fontra.core.clipboard import parseClipboard, serializeStaticGlyphAsGLIF
-from fontra.core.path import ContourInfo, PackedPath
+from fontra.core.path import ContourInfo, PackedPath, PointType
 
 
 @pytest.mark.parametrize(
@@ -18,7 +18,12 @@ from fontra.core.path import ContourInfo, PackedPath
             StaticGlyph(
                 path=PackedPath(
                     coordinates=[60.0, 0.0, 110.0, 0.0, 110.0, 120.0, 60.0, 120.0],
-                    pointTypes=[0, 0, 0, 0],
+                    pointTypes=[
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                    ],
                     contourInfo=[ContourInfo(endPoint=3, isClosed=True)],
                 ),
                 xAdvance=110.0,
@@ -47,7 +52,12 @@ from fontra.core.path import ContourInfo, PackedPath
             StaticGlyph(
                 path=PackedPath(
                     coordinates=[60, 0, 110, 0, 110, 120, 60, 120],
-                    pointTypes=[0, 0, 0, 0],
+                    pointTypes=[
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                    ],
                     contourInfo=[ContourInfo(endPoint=3, isClosed=True)],
                 ),
                 components=[],
@@ -73,7 +83,12 @@ def test_parseClipboard(inputData, expectedResult):
             StaticGlyph(
                 path=PackedPath(
                     coordinates=[60, 0, 110, 0, 110, 120, 60, 120],
-                    pointTypes=[0, 0, 0, 0],
+                    pointTypes=[
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                        PointType.ON_CURVE,
+                    ],
                     contourInfo=[ContourInfo(endPoint=3, isClosed=True)],
                 ),
                 components=[],
