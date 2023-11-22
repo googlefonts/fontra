@@ -317,13 +317,13 @@ class GlyphInstance:
 class MathGlyph:
     glyph: StaticGlyph
 
-    def __add__(self, other):
+    def __add__(self, other: MathGlyph) -> MathGlyph:
         return MathGlyph(add(self.glyph, other.glyph))
 
-    def __sub__(self, other):
+    def __sub__(self, other: MathGlyph) -> MathGlyph:
         return MathGlyph(subtract(self.glyph, other.glyph))
 
-    def __mul__(self, scalar):
+    def __mul__(self, scalar: MathGlyph) -> MathGlyph:
         return MathGlyph(multiply(self.glyph, scalar))
 
 
