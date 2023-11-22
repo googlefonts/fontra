@@ -39,6 +39,9 @@ class Path:
     def isEmpty(self):
         return not self.contours
 
+    def drawPoints(self, pen):
+        raise NotImplementedError()
+
 
 # Packed Path
 
