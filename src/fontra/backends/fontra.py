@@ -4,9 +4,9 @@ import json
 import logging
 import pathlib
 import shutil
-import typing
 from copy import deepcopy
 from dataclasses import dataclass, field
+from typing import Callable
 
 import cattrs
 
@@ -164,10 +164,10 @@ def serialize(data):
 @dataclass(kw_only=True)
 class Scheduler:
     delay: float = 0.2
-    scheduledCallables: dict[str, callable] = field(default_factory=dict)
-    timerHandle: typing.Optional[asyncio.TimerHandle] = None
+    scheduledCallables: dict[str, Callable] = field(default_factory=dict)
+    timerHandle: asyncio.TimerHandle | None = None
 
-    def schedule(self, callable):
+    def schedule(self, callable: Callable):
         self.scheduledCallables[callable.__name__] = callable
         if self.timerHandle is not None:
             self.timerHandle.cancel()

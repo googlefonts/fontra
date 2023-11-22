@@ -51,6 +51,10 @@ jobs:
         run: |
           pytest -vv
 
+      - name: Run mypy
+        run: |
+          mypy src/fontra/ test-py/
+
       - name: Run Node tests
         run: |
           npm test

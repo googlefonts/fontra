@@ -41,5 +41,5 @@ def test_stringToFileName(string, fileName, tmpdir):
     assert string == fileNameToString(fileName)
     path = tmpdir / (fileName + ".test")
     path.write_bytes(b"")
-    resultingPath, *_ = [*tmpdir.glob("*.test")]
+    resultingPath, *_ = list(tmpdir.glob("*.test"))
     assert string == fileNameToString(resultingPath.stem)

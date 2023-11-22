@@ -103,7 +103,7 @@ class GlobalAxis:
     minValue: float
     defaultValue: float
     maxValue: float
-    mapping: list[list[float, float]] = field(default_factory=list)
+    mapping: list[list[float]] = field(default_factory=list)
     hidden: bool = False
 
 
