@@ -207,13 +207,14 @@ class GlyphInstancer:
             if axis.name in localAxisNames:
                 continue
             mapFunc = makeAxisMapFunc(axis)
-            axis = LocalAxis(
-                axis.name,
-                minValue=mapFunc(axis.minValue),
-                defaultValue=mapFunc(axis.defaultValue),
-                maxValue=mapFunc(axis.maxValue),
+            combinedAxes.append(
+                LocalAxis(
+                    axis.name,
+                    minValue=mapFunc(axis.minValue),
+                    defaultValue=mapFunc(axis.defaultValue),
+                    maxValue=mapFunc(axis.maxValue),
+                )
             )
-            combinedAxes.append(axis)
         return combinedAxes
 
     @cached_property
@@ -401,21 +402,21 @@ def _(v: Component, scalar):
 
 
 @add.register
-def _(v1: type(None), v2):
+def _(v1: None, v2):
     if v2 is not None:
         raise InterpolationError("incompatible value, None expected")
     return None
 
 
 @subtract.register
-def _(v1: type(None), v2):
+def _(v1: None, v2):
     if v2 is not None:
         raise InterpolationError("incompatible value, None expected")
     return None
 
 
 @multiply.register
-def _(v: type(None), scalar):
+def _(v: None, scalar):
     return None
 
 

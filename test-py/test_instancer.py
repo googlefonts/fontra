@@ -22,7 +22,7 @@ def instancer(testFont):
     return FontInstancer(testFont)
 
 
-testData = [
+testData: list = [
     (
         "period",
         [({}, LocationCoordinateSystem.SOURCE)],
@@ -172,14 +172,16 @@ testData = [
     ),
 ]
 
-testData = [
+expandedTestData = [
     (glyphName, location, coordSystem, expectedResult)
     for glyphName, locations, expectedResult in testData
     for location, coordSystem in locations
 ]
 
 
-@pytest.mark.parametrize("glyphName, location, coordSystem, expectedResult", testData)
+@pytest.mark.parametrize(
+    "glyphName, location, coordSystem, expectedResult", expandedTestData
+)
 async def test_instancer(instancer, glyphName, location, coordSystem, expectedResult):
     glyphInstancer = await instancer.getGlyphInstancer(glyphName)
     instance = glyphInstancer.instantiate(location, coordSystem=coordSystem)

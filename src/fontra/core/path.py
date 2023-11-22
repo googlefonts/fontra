@@ -17,11 +17,11 @@ class InterpolationError(Exception):
 # Path, aka "unpacked path", but structured
 
 
-class Point(TypedDict):
+class Point(TypedDict, total=False):
     x: float
     y: float
     type: str | None
-    smooth: bool
+    smooth: bool | None
 
 
 @dataclass
@@ -44,6 +44,9 @@ class Path:
         return not self.contours
 
     def drawPoints(self, pen):
+        raise NotImplementedError()
+
+    def transformed(self, transform):
         raise NotImplementedError()
 
 
