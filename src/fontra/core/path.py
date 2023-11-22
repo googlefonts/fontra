@@ -20,8 +20,8 @@ class InterpolationError(Exception):
 class Point(TypedDict, total=False):
     x: float
     y: float
-    type: str | None
-    smooth: bool | None
+    type: str  # Py 3.11: NotRequired[str]
+    smooth: bool  # Py 3.11: NotRequired[bool]
 
 
 @dataclass
