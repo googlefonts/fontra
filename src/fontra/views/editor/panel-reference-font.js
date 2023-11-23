@@ -319,7 +319,7 @@ export default class ReferenceFontPanel extends Panel {
       this.editorController.sceneSettings.glyphLines
     );
 
-    const letter = this.model.charOverride || selectedGlyphInfo?.glyphName;
+    const letter = this.model.charOverride || selectedGlyphInfo?.character;
 
     if (!letter) {
       return;
