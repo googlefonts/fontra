@@ -1731,10 +1731,11 @@ export class EditorController {
     url.hash = dumpURLFragment(viewInfo);
     if (this._previousURLText !== viewInfo["text"]) {
       window.history.pushState({}, "", url);
-    } else {
+    } else if (this._previousURLHash !== url.hash) {
       window.history.replaceState({}, "", url);
     }
     this._previousURLText = viewInfo["text"];
+    this._previousURLHash = url.hash;
   }
 
   async editListenerCallback(editMethodName, senderID, ...args) {
