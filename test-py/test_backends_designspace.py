@@ -5,18 +5,33 @@ from dataclasses import asdict
 import pytest
 from fontTools.designspaceLib import DesignSpaceDocument
 
-from fontra.backends import newFileSystemBackend
+from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import GlobalAxis, Layer, LocalAxis, Source, StaticGlyph
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
 
-@pytest.fixture
-def testFont():
+def getTestFont():
     return DesignspaceBackend.fromPath(
         dataDir / "mutatorsans" / "MutatorSans.designspace"
     )
+
+
+@pytest.fixture
+def testFont():
+    return getTestFont()
+
+
+def getFontSingleUFO():
+    return UFOBackend.fromPath(
+        dataDir / "mutatorsans" / "MutatorSansLightCondensed.ufo"
+    )
+
+
+@pytest.fixture
+def testFontSingleUFO():
+    return getFontSingleUFO()
 
 
 @pytest.fixture
@@ -207,17 +222,42 @@ async def test_putGlobalAxes(writableTestFont):
     assert axes == newAxes
 
 
-async def test_newFileSystemBackend(tmpdir, testFont):
+@pytest.mark.parametrize(
+    "sourceFont, fileName, initialExpectedFileNames, expectedFileNames",
+    [
+        (
+            getTestFont(),
+            "Test.designspace",
+            ["Test.designspace", "Test_Regular.ufo"],
+            [
+                "Test.designspace",
+                "Test_BoldCondensed.ufo",
+                "Test_BoldWide.ufo",
+                "Test_LightWide.ufo",
+                "Test_Regular.ufo",
+            ],
+        ),
+        (
+            getFontSingleUFO(),
+            "Test_Regular.ufo",
+            ["Test_Regular.ufo"],
+            ["Test_Regular.ufo"],
+        ),
+    ],
+)
+async def test_newFileSystemBackend(
+    tmpdir, sourceFont, fileName, initialExpectedFileNames, expectedFileNames
+):
     tmpdir = pathlib.Path(tmpdir)
-    dsPath = tmpdir / "Test.designspace"
-    font = newFileSystemBackend(dsPath)
+    destPath = tmpdir / fileName
+    font = newFileSystemBackend(destPath)
     assert [] == await font.getGlobalAxes()
-    assert ["Test.designspace", "Test_Regular.ufo"] == fileNamesFromDir(tmpdir)
+    assert initialExpectedFileNames == fileNamesFromDir(tmpdir)
 
-    axes = await testFont.getGlobalAxes()
+    axes = await sourceFont.getGlobalAxes()
     await font.putGlobalAxes(axes)
-    glyphMap = await testFont.getGlyphMap()
-    glyph = await testFont.getGlyph("A")
+    glyphMap = await sourceFont.getGlyphMap()
+    glyph = await sourceFont.getGlyph("A")
     await font.putGlyph("A", glyph, glyphMap["A"])
 
     assert ["A_.glif", "contents.plist"] == fileNamesFromDir(
@@ -232,19 +272,13 @@ async def test_newFileSystemBackend(tmpdir, testFont):
         "metainfo.plist",
     ] == fileNamesFromDir(tmpdir / "Test_Regular.ufo")
 
-    assert [
-        "Test.designspace",
-        "Test_BoldCondensed.ufo",
-        "Test_BoldWide.ufo",
-        "Test_LightWide.ufo",
-        "Test_Regular.ufo",
-    ] == fileNamesFromDir(tmpdir)
+    assert expectedFileNames == fileNamesFromDir(tmpdir)
 
     newGlyph = await font.getGlyph("A")
     assert glyph == newGlyph
 
     # Check with freshly opened font
-    referenceFont = DesignspaceBackend.fromPath(dsPath)
+    referenceFont = getFileSystemBackend(destPath)
     referenceGlyph = await referenceFont.getGlyph("A")
     assert glyph == referenceGlyph
 

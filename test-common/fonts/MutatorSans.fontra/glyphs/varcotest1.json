@@ -8,6 +8,14 @@
 "width": 0.0,
 "weight": 150.0
 }
+},
+{
+"name": "weight=850",
+"layerName": "weight=850",
+"location": {
+"width": 0.0,
+"weight": 850.0
+}
 }
 ],
 "layers": {
@@ -33,7 +41,7 @@
 "translateY": 410,
 "scaleX": 0.5,
 "scaleY": 0.5,
-"skewX": -20
+"skewX": 20
 },
 "location": {
 "flip": 70.0,
@@ -53,6 +61,55 @@
 "location": {
 "flip": 20,
 "flop": 80.0
+}
+}
+],
+"xAdvance": 900
+}
+},
+"weight=850": {
+"glyph": {
+"components": [
+{
+"name": "A",
+"transformation": {
+"rotation": -10,
+"skewY": 20,
+"tCenterX": 250,
+"tCenterY": 300
+},
+"location": {
+"unknown-axis": 200,
+"weight": 100
+}
+},
+{
+"name": "varcotest2",
+"transformation": {
+"translateX": 527,
+"translateY": 410,
+"scaleX": 0.5,
+"scaleY": 0.5,
+"skewX": 20
+},
+"location": {
+"flip": 70,
+"flop": 30
+}
+},
+{
+"name": "varcotest2",
+"transformation": {
+"translateX": 627,
+"translateY": -175,
+"rotation": 10,
+"scaleX": 0.75,
+"scaleY": 0.75,
+"skewY": 20
+},
+"location": {
+"flip": 20,
+"flop": 80
 }
 }
 ],

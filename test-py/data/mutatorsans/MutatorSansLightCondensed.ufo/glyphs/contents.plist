@@ -108,5 +108,7 @@
     <string>varcotest1.glif</string>
     <key>varcotest2</key>
     <string>varcotest2.glif</string>
+    <key>nestedcomponents</key>
+    <string>nestedcomponents.glif</string>
   </dict>
 </plist>

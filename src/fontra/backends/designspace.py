@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 import pathlib
+import shutil
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict, dataclass
@@ -68,21 +69,8 @@ class DesignspaceBackend:
         styleName = "Regular"
         ufoFileName = makeUniqueFileName(f"{familyName}_{styleName}")
         ufoFileName = ufoFileName + ".ufo"
-        ufoPath = os.fspath(ufoDir / ufoFileName)
-        assert not os.path.exists(ufoPath)
-        writer = UFOReaderWriter(ufoPath)  # this creates the UFO
-        info = UFOFontInfo()
-        for infoAttr, value in defaultUFOInfoAttrs.items():
-            if value is not None:
-                setattr(info, infoAttr, value)
-        writer.writeInfo(info)
-        _ = writer.getGlyphSet()  # this creates the default layer
-        writer.writeLayerContents()
-        assert os.path.isdir(ufoPath)
-
-        dsDoc = DesignSpaceDocument()
-        dsDoc.addSourceDescriptor(styleName=styleName, path=ufoPath, location={})
-
+        ufoPath = ufoDir / ufoFileName
+        dsDoc = createDSDocFromUFOPath(ufoPath, styleName)
         dsDoc.write(path)
         return cls(dsDoc)
 
@@ -717,16 +705,44 @@ def makeGlyphMapChange(glyphMapUpdates):
     return glyphMapChange
 
 
-class UFOBackend:
+class UFOBackend(DesignspaceBackend):
     @classmethod
     def fromPath(cls, path):
         dsDoc = DesignSpaceDocument()
         dsDoc.addSourceDescriptor(path=os.fspath(path), styleName="default")
-        return DesignspaceBackend(dsDoc)
+        return cls(dsDoc)
 
     @classmethod
     def createFromPath(cls, path):
-        raise NotImplementedError()
+        path = pathlib.Path(path).resolve()
+        if path.is_dir():
+            shutil.rmtree(path)
+        elif path.exists():
+            path.unlink()
+        dsDoc = createDSDocFromUFOPath(path, "default")
+        return cls(dsDoc)
+
+    async def putGlobalAxes(self, axes):
+        if axes:
+            raise ValueError("The single-UFO backend does not support variation axes")
+
+
+def createDSDocFromUFOPath(ufoPath, styleName):
+    ufoPath = os.fspath(ufoPath)
+    assert not os.path.exists(ufoPath)
+    writer = UFOReaderWriter(ufoPath)  # this creates the UFO
+    info = UFOFontInfo()
+    for infoAttr, value in defaultUFOInfoAttrs.items():
+        if value is not None:
+            setattr(info, infoAttr, value)
+    writer.writeInfo(info)
+    _ = writer.getGlyphSet()  # this creates the default layer
+    writer.writeLayerContents()
+    assert os.path.isdir(ufoPath)
+
+    dsDoc = DesignSpaceDocument()
+    dsDoc.addSourceDescriptor(styleName=styleName, path=ufoPath, location={})
+    return dsDoc
 
 
 class UFOGlyph:

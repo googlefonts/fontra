@@ -1,6 +1,6 @@
 import logging
-from copy import copy
-from dataclasses import dataclass, field
+from copy import copy, deepcopy
+from dataclasses import dataclass, field, replace
 from enum import IntEnum
 from typing import TypedDict
 
@@ -10,14 +10,18 @@ from fontTools.misc.transform import DecomposedTransform
 logger = logging.getLogger(__name__)
 
 
+class InterpolationError(Exception):
+    pass
+
+
 # Path, aka "unpacked path", but structured
 
 
-class Point(TypedDict):
+class Point(TypedDict, total=False):
     x: float
     y: float
-    type: str | None
-    smooth: bool
+    type: str  # Py 3.11: NotRequired[str]
+    smooth: bool  # Py 3.11: NotRequired[bool]
 
 
 @dataclass
@@ -40,6 +44,9 @@ class Path:
         return not self.contours
 
     def drawPoints(self, pen):
+        raise NotImplementedError()
+
+    def transformed(self, transform):
         raise NotImplementedError()
 
 
@@ -91,6 +98,24 @@ class PackedPath:
 
     def isEmpty(self):
         return not self.contourInfo
+
+    def appendPath(self, path):
+        self.coordinates.extend(path.coordinates)
+        self.pointTypes.extend(path.pointTypes)
+        endPointOffset = (
+            0 if not self.contourInfo else self.contourInfo[-1].endPoint + 1
+        )
+        self.contourInfo.extend(
+            replace(contourInfo, endPoint=contourInfo.endPoint + endPointOffset)
+            for contourInfo in path.contourInfo
+        )
+
+    def transformed(self, transform):
+        coordinates = self.coordinates
+        newCoordinates = []
+        for i in range(0, len(self.coordinates), 2):
+            newCoordinates.extend(transform.transformPoint(coordinates[i : i + 2]))
+        return replace(self, coordinates=newCoordinates)
 
     def unpackedContours(self):
         unpackedContours = []
@@ -224,6 +249,40 @@ class PackedPath:
     def _moveEndPoints(self, fromContourIndex, offset):
         for contourInfo in self.contourInfo[fromContourIndex:]:
             contourInfo.endPoint += offset
+
+    def _ensureCompatibility(self, other):
+        if self.contourInfo != other.contourInfo:
+            # TODO: we should also compare self.pointTypes with other.pointTypes,
+            # but ignoring the smooth flag
+            # TODO: more specific exception
+            raise InterpolationError("paths are not compatible")
+
+    def __sub__(self, other):
+        self._ensureCompatibility(other)
+        coordinates = [v1 - v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
+        return PackedPath(
+            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+        )
+
+    def __add__(self, other):
+        self._ensureCompatibility(other)
+        coordinates = [v1 + v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
+        return PackedPath(
+            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+        )
+
+    def __mul__(self, scalar):
+        coordinates = [v * scalar for v in self.coordinates]
+        return PackedPath(
+            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+        )
+
+
+def joinPaths(paths) -> PackedPath:
+    result = PackedPath()
+    for path in paths:
+        result.appendPath(path)
+    return result
 
 
 class PackedPathPointPen:
