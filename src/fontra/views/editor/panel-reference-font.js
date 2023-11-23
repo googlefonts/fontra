@@ -1,7 +1,7 @@
 import Panel from "./panel.js";
-import * as html from "/core/html-utils.js";
 
-import { div, input, label, option, select } from "/core/html-utils.js";
+import { getSelectedGlyphInfo } from "./scene-model.js";
+import { div, input, label, option, select, span } from "/core/html-utils.js";
 import { ObservableController } from "/core/observable-object.js";
 import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
 import { dialog } from "/web-components/modal-dialog.js";
@@ -244,6 +244,14 @@ export default class ReferenceFontPanel extends Panel {
       font-family: fontra-ui-regular;
       font-feature-settings: "tnum" 1;
     }
+
+    .current-character {
+      font-size: 14px;
+    }
+
+    .current-character-font-size {
+      width: 100%;
+    }
   `;
 
   constructor(editorController) {
@@ -273,6 +281,52 @@ export default class ReferenceFontPanel extends Panel {
     this.editorController.canvasController.setLangAttribute(this.model.languageCode);
 
     referenceFontModel = this.model;
+
+    this.editorController.sceneSettingsController.addKeyListener(
+      ["selectedGlyph", "glyphLines"],
+      (event) => {
+        this.displayCurrentGlyphInReferenceFonts();
+      }
+    );
+  }
+
+  async displayCurrentGlyphInReferenceFonts() {
+    const container = this.contentElement.querySelector(
+      ".current-character-in-reference-fonts"
+    );
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+    const selectedGlyphInfo = getSelectedGlyphInfo(
+      this.editorController.sceneSettings.selectedGlyph,
+      this.editorController.sceneSettings.glyphLines
+    );
+    if (!selectedGlyphInfo) {
+      return;
+    }
+
+    const currentCharacter = div({ class: "current-character" }, []);
+    const rangeSlider = input({
+      class: "current-character-font-size",
+      type: "range",
+      value: 14,
+      min: 10,
+      max: 40,
+      onchange: (event) => {
+        currentCharacter.style.fontSize = `${event.target.value}px`;
+      },
+    });
+
+    for (const font of this.model.fontList) {
+      await this.ensureFontLoaded(font);
+      currentCharacter.appendChild(
+        span({ style: `font-family: ${font.fontIdentifier};` }, [
+          ` ${selectedGlyphInfo.glyphName}`,
+        ])
+      );
+    }
+    container.appendChild(currentCharacter);
+    container.appendChild(rangeSlider);
   }
 
   _fontListChangedHandler(event) {
@@ -366,18 +420,7 @@ export default class ReferenceFontPanel extends Panel {
     });
   }
 
-  async _listSelectionChangedHandler() {
-    const fontItem = this.filesUIList.getSelectedItem();
-    if (!fontItem) {
-      this.model.referenceFontName = "";
-      this.model.selectedFontIndex = -1;
-      return;
-    }
-
-    const selectedFontIndex = this.filesUIList.getSelectedItemIndex();
-    this.model.selectedFontIndex =
-      selectedFontIndex !== undefined ? selectedFontIndex : -1;
-
+  async ensureFontLoaded(fontItem) {
     if (!fontItem.fontFace) {
       if (!fontItem.objectURL) {
         fontItem.objectURL = URL.createObjectURL(
@@ -392,6 +435,21 @@ export default class ReferenceFontPanel extends Panel {
       document.fonts.add(fontItem.fontFace);
       await fontItem.fontFace.load();
     }
+  }
+
+  async _listSelectionChangedHandler() {
+    const fontItem = this.filesUIList.getSelectedItem();
+    if (!fontItem) {
+      this.model.referenceFontName = "";
+      this.model.selectedFontIndex = -1;
+      return;
+    }
+
+    const selectedFontIndex = this.filesUIList.getSelectedItemIndex();
+    this.model.selectedFontIndex =
+      selectedFontIndex !== undefined ? selectedFontIndex : -1;
+
+    await this.ensureFontLoaded(fontItem);
     this.model.referenceFontName = fontItem.fontIdentifier;
 
     if (fontItem.fontIdentifier in this.supportedLanguagesMemoized) {
@@ -485,9 +543,10 @@ export default class ReferenceFontPanel extends Panel {
       referenceFontName: "",
     });
     this.controller.synchronizeWithLocalStorage("fontra.reference-font.");
-    this.controller.addKeyListener("fontList", (event) =>
-      this._fontListChangedHandler(event)
-    );
+    this.controller.addKeyListener("fontList", (event) => {
+      this._fontListChangedHandler(event);
+      this.displayCurrentGlyphInReferenceFonts();
+    });
     garbageCollectUnusedFiles(this.model.fontList);
 
     const columnDescriptions = [
@@ -505,9 +564,10 @@ export default class ReferenceFontPanel extends Panel {
 
     this.filesUIList.onFilesDrop = (files) => this._filesDropHandler(files);
 
-    this.filesUIList.addEventListener("listSelectionChanged", () =>
-      this._listSelectionChangedHandler()
-    );
+    this.filesUIList.addEventListener("listSelectionChanged", () => {
+      // this.displayCurrentGlyphInReferenceFonts();
+      this._listSelectionChangedHandler();
+    });
 
     this.filesUIList.addEventListener("deleteKey", () =>
       this._deleteSelectedItemHandler()
@@ -530,12 +590,12 @@ export default class ReferenceFontPanel extends Panel {
       []
     );
 
-    return html.div(
+    return div(
       {
         class: "sidebar-reference-font",
       },
       [
-        html.div(
+        div(
           {
             id: "reference-font",
           },
@@ -566,6 +626,7 @@ export default class ReferenceFontPanel extends Panel {
                 this.languageCodeInput,
               ]
             ),
+            div({ class: "current-character-in-reference-fonts" }, []),
           ]
         ),
       ]
