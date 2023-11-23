@@ -164,7 +164,7 @@ def makeSchema(*classes, schema=None):
             elif tp.__name__ == "list":
                 [subtype] = get_args(tp)
                 if get_origin(subtype) == Union:
-                    subtype = get_args(subtype)[0]
+                    subtype = get_args(subtype)[0]  # just take the first for now
                 fieldDef["subtype"] = subtype
                 if is_dataclass(subtype):
                     makeSchema(subtype, schema=schema)
@@ -178,7 +178,7 @@ def makeSchema(*classes, schema=None):
                 if is_dataclass(subtype):
                     makeSchema(subtype, schema=schema)
             elif tp.__name__ == "Union":
-                tp = get_args(tp)[0]
+                tp = get_args(tp)[0]  # just take the first for now
                 fieldDef = dict(type=tp)
                 makeSchema(tp, schema=schema)
             classFields[name] = fieldDef
