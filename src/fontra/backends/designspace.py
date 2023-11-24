@@ -9,11 +9,15 @@ from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from functools import cache, cached_property
+from functools import cache, cached_property, singledispatch
 from types import SimpleNamespace
 
 import watchfiles
-from fontTools.designspaceLib import DesignSpaceDocument
+from fontTools.designspaceLib import (
+    AxisDescriptor,
+    DesignSpaceDocument,
+    DiscreteAxisDescriptor,
+)
 from fontTools.misc.transform import DecomposedTransform
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
@@ -23,6 +27,7 @@ from ..core.changes import applyChange
 from ..core.classes import (
     Component,
     GlobalAxis,
+    GlobalDiscreteAxis,
     Layer,
     LocalAxis,
     Source,
@@ -87,30 +92,15 @@ class DesignspaceBackend:
         self.dsDoc.findDefault()
         axes = []
         axisPolePositions = {}
+        defaultLocation = {}
         for dsAxis in self.dsDoc.axes:
-            axis = GlobalAxis(
-                minValue=dsAxis.minimum,
-                defaultValue=dsAxis.default,
-                maxValue=dsAxis.maximum,
-                label=dsAxis.name,
-                name=dsAxis.name,
-                tag=dsAxis.tag,
-                hidden=dsAxis.hidden,
-            )
-            if dsAxis.map:
-                axis.mapping = [[a, b] for a, b in dsAxis.map]
+            axis, poles = unpackDSAxis(dsAxis)
             axes.append(axis)
-            axisPolePositions[dsAxis.name] = (
-                dsAxis.map_forward(dsAxis.minimum),
-                dsAxis.map_forward(dsAxis.default),
-                dsAxis.map_forward(dsAxis.maximum),
-            )
+            axisPolePositions[dsAxis.name] = {dsAxis.map_forward(p) for p in poles}
+            defaultLocation[dsAxis.name] = dsAxis.map_forward(dsAxis.default)
         self.axes = axes
         self.axisPolePositions = axisPolePositions
-        self.defaultLocation = {
-            axisName: polePosition[1]
-            for axisName, polePosition in axisPolePositions.items()
-        }
+        self.defaultLocation = defaultLocation
 
     def close(self):
         pass
@@ -550,14 +540,19 @@ class DesignspaceBackend:
     async def putGlobalAxes(self, axes):
         self.dsDoc.axes = []
         for axis in axes:
-            self.dsDoc.addAxisDescriptor(
+            axisParameters = dict(
                 name=axis.name,
                 tag=axis.tag,
-                minimum=axis.minValue,
                 default=axis.defaultValue,
-                maximum=axis.maxValue,
                 map=deepcopy(axis.mapping) if axis.mapping else None,
             )
+            if isinstance(axis, GlobalAxis):
+                axisParameters["minimum"] = axis.minValue
+                axisParameters["maximum"] = axis.maxValue
+            else:
+                assert isinstance(axis, GlobalDiscreteAxis)
+                axisParameters["values"] = axis.values
+            self.dsDoc.addAxisDescriptor(**axisParameters)
         self.dsDoc.write(self.dsDoc.path)
         self.updateAxisInfo()
         self.loadUFOLayers()
@@ -683,6 +678,38 @@ class DesignspaceBackend:
         if savedMTimes is not None and mtime not in savedMTimes:
             logger.info(f"external change '{glyphName}'")
             changedItems.changedGlyphs.add(glyphName)
+
+
+@singledispatch
+def unpackDSAxis(dsAxis: AxisDescriptor):
+    axis = GlobalAxis(
+        minValue=dsAxis.minimum,
+        defaultValue=dsAxis.default,
+        maxValue=dsAxis.maximum,
+        label=dsAxis.name,
+        name=dsAxis.name,
+        tag=dsAxis.tag,
+        hidden=dsAxis.hidden,
+    )
+    if dsAxis.map:
+        axis.mapping = [[a, b] for a, b in dsAxis.map]
+    poles = (dsAxis.minimum, dsAxis.default, dsAxis.maximum)
+    return axis, poles
+
+
+@unpackDSAxis.register
+def _(dsAxis: DiscreteAxisDescriptor):
+    axis = GlobalDiscreteAxis(
+        values=dsAxis.values,
+        defaultValue=dsAxis.default,
+        label=dsAxis.name,
+        name=dsAxis.name,
+        tag=dsAxis.tag,
+        hidden=dsAxis.hidden,
+    )
+    if dsAxis.map:
+        axis.mapping = [[a, b] for a, b in dsAxis.map]
+    return axis, dsAxis.values
 
 
 def makeGlyphMapChange(glyphMapUpdates):
