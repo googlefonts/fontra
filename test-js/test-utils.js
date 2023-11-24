@@ -496,6 +496,9 @@ describe("loadURLFragment + dumpURLFragment", () => {
 describe("product", () => {
   const testData = [
     { args: [], product: [[]] },
+    { args: [[]], product: [] },
+    { args: [[1], []], product: [] },
+    { args: [[], [2]], product: [] },
     { args: [[1, 2]], product: [[1], [2]] },
     {
       args: [
