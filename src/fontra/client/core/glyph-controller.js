@@ -69,6 +69,10 @@ export class VariableGlyphController {
       localAxisDict[localAxis.name] = localAxis;
     }
     for (let globalAxis of this.globalAxes) {
+      if (globalAxis.values) {
+        // For now, skip discrete axes
+        continue;
+      }
       // Apply user-facing avar mapping: we need "designspace" coordinates here
       const mapFunc = makeAxisMapFunc(globalAxis);
       globalAxis = {
