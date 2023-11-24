@@ -194,7 +194,7 @@ export class VariationModel {
         contributions[j] -= contributions[i] * weight;
       }
     }
-    return contributions;
+    return this.mapping.map((i) => contributions[i]);
   }
 }
 

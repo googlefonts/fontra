@@ -71,10 +71,9 @@ export class DiscreteVariationModel {
     const splitLoc = splitDiscreteLocation(location, this._discreteAxes);
     const key = JSON.stringify(splitLoc.discreteLocation);
     const model = this._getModel(key);
-    let contributions = model.getSourceContributions(
+    const contributions = model.getSourceContributions(
       normalizeLocation(splitLoc.location, this._continuousAxes)
     );
-    contributions = model.mapping.map((index) => contributions[index]);
     let index = 0;
     return this._locationKeys.map((k) => (k === key ? contributions[index++] : null));
   }
