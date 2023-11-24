@@ -3,7 +3,12 @@
 "sources": [
 {
 "name": "<default>",
-"layerName": "<default>"
+"layerName": "<default>",
+"location": {
+"width": 0.0,
+"weight": 150.0,
+"italic": 0.0
+}
 }
 ],
 "layers": {

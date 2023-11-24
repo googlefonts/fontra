@@ -6,7 +6,8 @@
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
 "width": 0.0,
-"weight": 150.0
+"weight": 150.0,
+"italic": 0.0
 }
 },
 {
@@ -14,7 +15,8 @@
 "layerName": "weight=850",
 "location": {
 "width": 0.0,
-"weight": 850.0
+"weight": 850.0,
+"italic": 0.0
 }
 }
 ],
