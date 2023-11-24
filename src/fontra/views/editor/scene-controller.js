@@ -60,12 +60,12 @@ export class SceneController {
     this.sceneSettingsController = new ObservableController({
       text: "",
       align: "center",
+      editLayerName: null,
       glyphLines: [],
       location: {},
       selectedGlyph: null,
       selectedGlyphName: null,
       selectedSourceIndex: null,
-      selectedLayerName: null,
       selection: new Set(),
       hoverSelection: new Set(),
       combinedSelection: new Set(), // dynamic: selection | hoverSelection
