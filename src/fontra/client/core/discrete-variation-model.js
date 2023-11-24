@@ -12,7 +12,11 @@ export class DiscreteVariationModel {
       const splitLoc = splitDiscreteLocation(location, discreteAxes);
       const key = JSON.stringify(splitLoc.discreteLocation);
       this._locationKeys.push(key);
-      this._locationIndices[key] = index;
+      if (!this._locationIndices[key]) {
+        this._locationIndices[key] = [index];
+      } else {
+        this._locationIndices[key].push(index);
+      }
       const normalizedLocation = sparsifyLocation(
         normalizeLocation(splitLoc.location, continuousAxes)
       );
@@ -71,7 +75,8 @@ export class DiscreteVariationModel {
       normalizeLocation(splitLoc.location, this._continuousAxes)
     );
     contributions = model.mapping.map((index) => contributions[index]);
-    return this._locationKeys.map((k) => (k === key ? contributions.shift() : null));
+    let index = 0;
+    return this._locationKeys.map((k) => (k === key ? contributions[index++] : null));
   }
 }
 
