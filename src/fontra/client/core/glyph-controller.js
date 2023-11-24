@@ -310,7 +310,6 @@ export class VariableGlyphController {
 
   getInterpolationContributions(location) {
     location = this.mapLocationGlobalToLocal(location);
-    location = normalizeLocation(location, this.combinedAxes);
     const contributions = this.model.getSourceContributions(location);
 
     let sourceIndex = 0;
@@ -319,7 +318,7 @@ export class VariableGlyphController {
       if (source.inactive) {
         orderedContributions.push(null);
       } else {
-        const value = contributions[this.model.mapping[sourceIndex]];
+        const value = contributions[sourceIndex];
         orderedContributions.push(value);
         sourceIndex++;
       }
