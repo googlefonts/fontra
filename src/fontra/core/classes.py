@@ -114,7 +114,7 @@ class GlobalDiscreteAxis:
     name: str  # this identifies the axis
     label: str  # a user friendly label
     tag: str  # the opentype 4-char tag
-    values: float
+    values: list[float]
     defaultValue: float
     mapping: list[list[float]] = field(default_factory=list)
     hidden: bool = False
