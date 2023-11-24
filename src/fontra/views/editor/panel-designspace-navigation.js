@@ -617,10 +617,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     const instance = (
-      await glyphController.instantiate(
-        normalizeLocation(newLocation, glyphController.combinedAxes),
-        getGlyphFunc
-      )
+      await glyphController.instantiate(newLocation, getGlyphFunc)
     ).copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();

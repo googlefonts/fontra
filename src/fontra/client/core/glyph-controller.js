@@ -3,6 +3,10 @@ import {
   rectIntersectsPolygon,
   simplePolygonArea,
 } from "./convex-hull.js";
+import {
+  DiscreteVariationModel,
+  sparsifyLocation,
+} from "./discrete-variation-model.js";
 import { PathHitTester } from "./path-hit-tester.js";
 import { sectRect } from "./rectangle.js";
 import {
@@ -54,6 +58,13 @@ export class VariableGlyphController {
     return this._combinedAxes;
   }
 
+  get discreteAxes() {
+    if (this._discreteAxes === undefined) {
+      this._setupAxisMapping();
+    }
+    return this._discreteAxes;
+  }
+
   get localToGlobalMapping() {
     if (this._localToGlobalMapping === undefined) {
       this._setupAxisMapping();
@@ -63,18 +74,23 @@ export class VariableGlyphController {
 
   _setupAxisMapping() {
     this._combinedAxes = Array.from(this.axes);
+    this._discreteAxes = [];
     this._localToGlobalMapping = [];
     const localAxisDict = {};
     for (const localAxis of this.axes) {
       localAxisDict[localAxis.name] = localAxis;
     }
     for (let globalAxis of this.globalAxes) {
+      // Apply user-facing avar mapping: we need "source" / "designspace" coordinates here
+      const mapFunc = makeAxisMapFunc(globalAxis);
       if (globalAxis.values) {
-        // For now, skip discrete axes
+        this._discreteAxes.push({
+          name: globalAxis.name,
+          defaultValue: mapFunc(globalAxis.defaultValue),
+          values: globalAxis.values.map(mapFunc),
+        });
         continue;
       }
-      // Apply user-facing avar mapping: we need "designspace" coordinates here
-      const mapFunc = makeAxisMapFunc(globalAxis);
       globalAxis = {
         name: globalAxis.name,
         minValue: mapFunc(globalAxis.minValue),
@@ -187,11 +203,12 @@ export class VariableGlyphController {
       const locations = this.sources
         .filter((source) => !source.inactive)
         .map((source) => source.location);
-      const mappedLocations = locations.map((location) =>
-        sparsifyLocation(normalizeLocation(location, this.combinedAxes))
-      );
       try {
-        this._model = new VariationModel(mappedLocations);
+        this._model = new DiscreteVariationModel(
+          locations,
+          this.discreteAxes,
+          this.combinedAxes
+        );
       } catch (error) {
         console.log("error setting up the variation model:", error.toString());
         this._model = new VariationModel([{}]);
@@ -334,10 +351,10 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  async instantiate(normalizedLocation, getGlyphFunc) {
+  async instantiate(location, getGlyphFunc) {
     try {
       return this.model.interpolateFromDeltas(
-        normalizedLocation,
+        location,
         await this.getDeltas(getGlyphFunc)
       );
     } catch (error) {
@@ -348,6 +365,8 @@ export class VariableGlyphController {
         this.name
       } (${error.toString()})`;
       console.log(errorMessage);
+      // XXXX fix for discrete axes
+      const normalizedLocation = normalizeLocation(location, this.combinedAxes);
       const indexInfo = findNearestSourceIndexFromLocation(
         this.glyph,
         normalizedLocation,
@@ -379,10 +398,7 @@ export class VariableGlyphController {
     if (layerName !== undefined) {
       return this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
     } else {
-      instance = await this.instantiate(
-        normalizeLocation(location, this.combinedAxes),
-        getGlyphFunc
-      );
+      instance = await this.instantiate(location, getGlyphFunc);
     }
 
     if (!instance) {
@@ -698,10 +714,7 @@ async function* iterFlattenedComponentPaths(
     inst = makeMissingComponentPlaceholderGlyph();
   } else {
     try {
-      inst = await glyph.instantiate(
-        normalizeLocation(compoLocation, glyph.combinedAxes),
-        getGlyphFunc
-      );
+      inst = await glyph.instantiate(compoLocation, getGlyphFunc);
     } catch (error) {
       if (error.name !== "VariationError") {
         throw error;
@@ -761,10 +774,7 @@ export async function decomposeComponents(
       ...parentSourceLocation,
       ...mapLocationExpandNLI(component.location, baseGlyph.axes),
     };
-    const compoInstance = await baseGlyph.instantiate(
-      normalizeLocation(location, baseGlyph.combinedAxes),
-      getGlyphFunc
-    );
+    const compoInstance = await baseGlyph.instantiate(location, getGlyphFunc);
     const t = makeAffineTransform(component.transformation);
     newPaths.push(compoInstance.path.transformed(t));
     for (const nestedCompo of compoInstance.components) {
@@ -787,17 +797,6 @@ function makeAxisMapFunc(axis) {
   }
   const mapping = Object.fromEntries(axis.mapping);
   return (v) => piecewiseLinearMap(v, mapping);
-}
-
-function sparsifyLocation(location) {
-  // location must be normalized
-  const sparseLocation = {};
-  for (const [name, value] of Object.entries(location)) {
-    if (value) {
-      sparseLocation[name] = value;
-    }
-  }
-  return sparseLocation;
 }
 
 export function getAxisBaseName(axisName) {
