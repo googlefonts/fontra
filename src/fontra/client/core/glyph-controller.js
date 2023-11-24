@@ -372,8 +372,8 @@ export class VariableGlyphController {
     }
 
     let instance;
-    if (layerName !== undefined) {
-      return this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
+    if (layerName != undefined) {
+      return await this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
     } else {
       instance = await this.instantiate(
         normalizeLocation(location, this.combinedAxes),
