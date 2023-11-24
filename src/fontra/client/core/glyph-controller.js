@@ -261,51 +261,55 @@ export class VariableGlyphController {
 
   get sourceInterpolationStatus() {
     if (this._sourceInterpolationStatus === undefined) {
-      const layerGlyphs = {};
-      for (const source of this.sources) {
-        if (source.layerName in layerGlyphs) {
-          continue;
-        }
-        layerGlyphs[source.layerName] = stripComponentLocations(
-          this.layers[source.layerName].glyph
-        );
-      }
-      const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
-      const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
-
-      let layerNames = Object.keys(layerGlyphs);
-      layerNames = [
-        defaultSourceLayerName,
-        ...layerNames.filter((name) => name !== defaultSourceLayerName),
-      ].slice(0, Math.ceil(layerNames.length / 2));
-
-      const errors = {};
-      let referenceLayerName = defaultSourceLayerName;
-      for (const layerName of layerNames) {
-        errors[layerName] = checkInterpolationCompatibility(
-          layerName,
-          layerGlyphs,
-          errors
-        );
-        if (Object.keys(errors[layerName]).length <= this.sources.length / 2) {
-          // The number of incompatible sources is half of all sources or less:
-          // we've found the optimal reference layer.
-          referenceLayerName = layerName;
-          break;
-        }
-      }
-      const status = [];
-      for (const [i, source] of enumerate(this.sources)) {
-        if (this._modelErrors?.[i]) {
-          status.push({ error: this._modelErrors[i], isModelError: true });
-        } else {
-          const error = errors[referenceLayerName][source.layerName];
-          status.push(error ? { error } : {});
-        }
-      }
-      this._sourceInterpolationStatus = status;
+      this._sourceInterpolationStatus = this._computeSourceInterpolationStatus();
     }
     return this._sourceInterpolationStatus;
+  }
+
+  _computeSourceInterpolationStatus() {
+    const layerGlyphs = {};
+    for (const source of this.sources) {
+      if (source.layerName in layerGlyphs) {
+        continue;
+      }
+      layerGlyphs[source.layerName] = stripComponentLocations(
+        this.layers[source.layerName].glyph
+      );
+    }
+    const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
+    const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
+
+    let layerNames = Object.keys(layerGlyphs);
+    layerNames = [
+      defaultSourceLayerName,
+      ...layerNames.filter((name) => name !== defaultSourceLayerName),
+    ].slice(0, Math.ceil(layerNames.length / 2));
+
+    const errors = {};
+    let referenceLayerName = defaultSourceLayerName;
+    for (const layerName of layerNames) {
+      errors[layerName] = checkInterpolationCompatibility(
+        layerName,
+        layerGlyphs,
+        errors
+      );
+      if (Object.keys(errors[layerName]).length <= this.sources.length / 2) {
+        // The number of incompatible sources is half of all sources or less:
+        // we've found the optimal reference layer.
+        referenceLayerName = layerName;
+        break;
+      }
+    }
+    const status = [];
+    for (const [i, source] of enumerate(this.sources)) {
+      if (this._modelErrors?.[i]) {
+        status.push({ error: this._modelErrors[i], isModelError: true });
+      } else {
+        const error = errors[referenceLayerName][source.layerName];
+        status.push(error ? { error } : {});
+      }
+    }
+    return status;
   }
 
   getInterpolationContributions(location) {
