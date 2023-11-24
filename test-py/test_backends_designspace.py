@@ -99,18 +99,18 @@ async def test_roundTripGlyphSingleUFO(writableTestFontSingleUFO, glyphName):
     "location, expectedDSSource",
     [
         (
-            {"weight": 400, "width": 0},
+            {"italic": 0, "weight": 400, "width": 0},
             dict(
-                location=dict(weight=400, width=0),
+                location=dict(italic=0, weight=400, width=0),
                 styleName="mid",
                 filename="MutatorSansLightCondensed.ufo",
                 layerName="mid",
             ),
         ),
         (
-            {"weight": 400, "width": 1000},
+            {"italic": 0, "weight": 400, "width": 1000},
             dict(
-                location=dict(weight=400, width=1000),
+                location=dict(italic=0, weight=400, width=1000),
                 styleName="mid",
                 filename="MutatorSansLightWide.ufo",
                 layerName="mid",
@@ -160,7 +160,7 @@ async def test_addNewDenseSource(writableTestFont):
     assert dsSources == newDSSources[: len(dsSources)]
     assert len(newDSSources) == len(dsSources) + 1
     assert newDSSources[-1] == dict(
-        location=dict(weight=150, width=1500),
+        location=dict(italic=0, weight=150, width=1500),
         styleName="widest",
         filename="MutatorSans_widest.ufo",
         layerName="public.default",
