@@ -73,14 +73,28 @@ function splitDiscreteLocation(location, discreteAxes) {
   const discreteLocation = {};
   location = { ...location };
   for (const axis of discreteAxes) {
-    if (axis.name in location) {
-      discreteLocation[axis.name] = location[axis.name];
+    let value = location[axis.name];
+    if (value !== undefined) {
       delete location[axis.name];
+      if (axis.values.indexOf(value) < 0) {
+        // Ensure the value is actually in the values list
+        value = findNearest(value, axis.values);
+      }
     } else {
-      discreteLocation[axis.name] = axis.defaultValue;
+      value = axis.defaultValue;
     }
+    discreteLocation[axis.name] = value;
   }
   return { discreteLocation, location };
+}
+
+function findNearest(value, values) {
+  if (!values.length) {
+    return value;
+  }
+  const decorated = values.map((v) => [Math.abs(v - value), v]);
+  decorated.sort((a, b) => a[0] - b[0]);
+  return decorated[0][1];
 }
 
 function getAllDiscreteLocations(discreteAxes) {
