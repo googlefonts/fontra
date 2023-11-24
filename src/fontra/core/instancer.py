@@ -210,7 +210,9 @@ class GlyphInstancer:
             if axis.name in localAxisNames:
                 continue
             mapFunc = makeAxisMapFunc(axis)
-            assert isinstance(axis, GlobalAxis)
+            if not isinstance(axis, GlobalAxis):
+                # Skip discrete axes
+                continue
             combinedAxes.append(
                 LocalAxis(
                     axis.name,
