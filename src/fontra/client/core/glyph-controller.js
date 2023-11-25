@@ -333,7 +333,7 @@ export class VariableGlyphController {
           splitLoc.discreteLocation
         );
         const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
-        splitSources[key] = { sources: [], defaultSourceLayerName };
+        splitSources[key] = { sources: [], defaultSourceIndex, defaultSourceLayerName };
       }
       splitSources[key].sources.push({ sourceIndex, source });
     }
