@@ -88,7 +88,7 @@ function splitDiscreteLocation(location, discreteAxes) {
       delete location[axis.name];
       if (axis.values.indexOf(value) < 0) {
         // Ensure the value is actually in the values list
-        value = findNearest(value, axis.values);
+        value = findNearestValue(value, axis.values);
       }
     } else {
       value = axis.defaultValue;
@@ -98,7 +98,7 @@ function splitDiscreteLocation(location, discreteAxes) {
   return { discreteLocation, location };
 }
 
-function findNearest(value, values) {
+function findNearestValue(value, values) {
   if (!values.length) {
     return value;
   }
