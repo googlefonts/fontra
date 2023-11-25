@@ -286,8 +286,8 @@ registerVisualizationLayerDefinition({
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
-  colors: { fillColor: "#000", strokeColor: "#7778" },
-  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8" },
+  colors: { fillColor: "#000", strokeColor: "#7778", substituteColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8", substituteColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
   },
@@ -300,8 +300,8 @@ registerVisualizationLayerDefinition({
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
-  colors: { fillColor: "#000", strokeColor: "#BBB8" },
-  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8" },
+  colors: { fillColor: "#000", strokeColor: "#BBB8", substituteColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8", substituteColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
   },
@@ -314,7 +314,9 @@ function _drawSelectedGlyphLayer(context, positionedGlyph, parameters) {
     parameters.outerStrokeWidth,
     parameters.innerStrokeWidth,
     parameters.strokeColor,
-    parameters.fillColor
+    positionedGlyph.glyph.isDiscreteSubstitute
+      ? parameters.substituteColor
+      : parameters.fillColor
   );
 }
 
