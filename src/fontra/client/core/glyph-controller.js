@@ -6,6 +6,7 @@ import {
 import {
   DiscreteVariationModel,
   sparsifyLocation,
+  splitDiscreteLocation,
 } from "./discrete-variation-model.js";
 import { PathHitTester } from "./path-hit-tester.js";
 import { sectRect } from "./rectangle.js";
@@ -267,8 +268,29 @@ export class VariableGlyphController {
   }
 
   _computeSourceInterpolationStatus() {
+    const status = new Array(this.sources.length);
+    status.fill({});
+    for (const sourcesInfo of this._splitSourcesByDiscreteLocation()) {
+      const { errors, referenceLayerName } = this._computeInterpolStatusForSources(
+        sourcesInfo.sources,
+        sourcesInfo.defaultSourceLayerName
+      );
+
+      for (const { sourceIndex, source } of sourcesInfo.sources) {
+        if (this._modelErrors?.[i]) {
+          status[sourceIndex] = { error: this._modelErrors[i], isModelError: true };
+        } else {
+          const error = errors[referenceLayerName][source.layerName];
+          status[sourceIndex] = error ? { error } : {};
+        }
+      }
+    }
+    return status;
+  }
+
+  _computeInterpolStatusForSources(sources, defaultSourceLayerName) {
     const layerGlyphs = {};
-    for (const source of this.sources) {
+    for (const { source } of sources) {
       if (source.layerName in layerGlyphs) {
         continue;
       }
@@ -276,8 +298,6 @@ export class VariableGlyphController {
         this.layers[source.layerName].glyph
       );
     }
-    const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
-    const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
 
     let layerNames = Object.keys(layerGlyphs);
     layerNames = [
@@ -293,23 +313,31 @@ export class VariableGlyphController {
         layerGlyphs,
         errors
       );
-      if (Object.keys(errors[layerName]).length <= this.sources.length / 2) {
+      if (Object.keys(errors[layerName]).length <= sources.length / 2) {
         // The number of incompatible sources is half of all sources or less:
         // we've found the optimal reference layer.
         referenceLayerName = layerName;
         break;
       }
     }
-    const status = [];
-    for (const [i, source] of enumerate(this.sources)) {
-      if (this._modelErrors?.[i]) {
-        status.push({ error: this._modelErrors[i], isModelError: true });
-      } else {
-        const error = errors[referenceLayerName][source.layerName];
-        status.push(error ? { error } : {});
+    return { errors, referenceLayerName };
+  }
+
+  _splitSourcesByDiscreteLocation() {
+    const splitSources = {};
+    for (const [sourceIndex, source] of enumerate(this.sources)) {
+      const splitLoc = splitDiscreteLocation(source.location, this.discreteAxes);
+      const key = JSON.stringify(splitLoc.discreteLocation);
+      if (!(key in splitSources)) {
+        const defaultSourceIndex = this.model.getDefaultSourceIndexForDiscreteLocation(
+          splitLoc.discreteLocation
+        );
+        const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
+        splitSources[key] = { sources: [], defaultSourceLayerName };
       }
+      splitSources[key].sources.push({ sourceIndex, source });
     }
-    return status;
+    return Object.values(splitSources);
   }
 
   getInterpolationContributions(location) {

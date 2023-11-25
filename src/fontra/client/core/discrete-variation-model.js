@@ -77,9 +77,16 @@ export class DiscreteVariationModel {
     let index = 0;
     return this._locationKeys.map((k) => (k === key ? contributions[index++] : null));
   }
+
+  getDefaultSourceIndexForDiscreteLocation(discreteLocation) {
+    const key = JSON.stringify(discreteLocation);
+    const model = this._getModel(key);
+    const localIndex = model.reverseMapping[0] || 0;
+    return this._locationIndices[key][localIndex];
+  }
 }
 
-function splitDiscreteLocation(location, discreteAxes) {
+export function splitDiscreteLocation(location, discreteAxes) {
   const discreteLocation = {};
   location = { ...location };
   for (const axis of discreteAxes) {
