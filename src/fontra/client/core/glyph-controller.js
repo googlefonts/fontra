@@ -385,10 +385,11 @@ export class VariableGlyphController {
 
   async instantiate(location, getGlyphFunc) {
     try {
-      return this.model.interpolateFromDeltas(
+      const { instance, isDiscreteSubstitute } = this.model.interpolateFromDeltas(
         location,
         await this.getDeltas(getGlyphFunc)
       );
+      return { instance, isDiscreteSubstitute };
     } catch (error) {
       if (!(error instanceof VariationError)) {
         throw error;
@@ -404,7 +405,8 @@ export class VariableGlyphController {
         normalizedLocation,
         this.combinedAxes
       );
-      return this.layers[this.sources[indexInfo.index].layerName].glyph;
+      const instance = this.layers[this.sources[indexInfo.index].layerName].glyph;
+      return { instance, error };
     }
   }
 
@@ -426,12 +428,14 @@ export class VariableGlyphController {
       }
     }
 
-    let instance;
     if (layerName !== undefined) {
       return this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
-    } else {
-      instance = await this.instantiate(location, getGlyphFunc);
     }
+
+    const { instance, isDiscreteSubstitute } = await this.instantiate(
+      location,
+      getGlyphFunc
+    );
 
     if (!instance) {
       throw new Error("assert -- instance is undefined");
@@ -440,7 +444,8 @@ export class VariableGlyphController {
       this.name,
       instance,
       sourceIndex,
-      layerName
+      layerName,
+      isDiscreteSubstitute
     );
 
     await instanceController.setupComponents(getGlyphFunc, location);
@@ -497,11 +502,12 @@ export class VariableGlyphController {
 }
 
 export class StaticGlyphController {
-  constructor(name, instance, sourceIndex, layerName) {
+  constructor(name, instance, sourceIndex, layerName, isDiscreteSubstitute) {
     this.name = name;
     this.instance = instance;
     this.sourceIndex = sourceIndex;
     this.layerName = layerName;
+    this.isDiscreteSubstitute = isDiscreteSubstitute;
     this.canEdit = layerName !== undefined;
     this.components = [];
   }
@@ -745,12 +751,9 @@ async function* iterFlattenedComponentPaths(
     // console.log(`component glyph ${compo.name} was not found`);
     inst = makeMissingComponentPlaceholderGlyph();
   } else {
-    try {
-      inst = await glyph.instantiate(compoLocation, getGlyphFunc);
-    } catch (error) {
-      if (!(error instanceof VariationError)) {
-        throw error;
-      }
+    const { instance, error } = await glyph.instantiate(compoLocation, getGlyphFunc);
+    inst = instance;
+    if (error) {
       const errorMessage = `Interpolation error while instantiating component ${
         compo.name
       } (${error.toString()})`;
@@ -806,7 +809,10 @@ export async function decomposeComponents(
       ...parentSourceLocation,
       ...mapLocationExpandNLI(component.location, baseGlyph.axes),
     };
-    const compoInstance = await baseGlyph.instantiate(location, getGlyphFunc);
+    const { instance: compoInstance } = await baseGlyph.instantiate(
+      location,
+      getGlyphFunc
+    );
     const t = makeAffineTransform(component.transformation);
     newPaths.push(compoInstance.path.transformed(t));
     for (const nestedCompo of compoInstance.components) {

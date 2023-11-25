@@ -616,9 +616,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneController.sceneModel.fontController
     );
 
-    const instance = (
-      await glyphController.instantiate(newLocation, getGlyphFunc)
-    ).copy();
+    let { instance } = await glyphController.instantiate(newLocation, getGlyphFunc);
+    instance = instance.copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
     roundComponentOrigins(instance.components);

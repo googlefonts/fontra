@@ -7,6 +7,7 @@ export class DiscreteVariationModel {
     this._discreteAxes = discreteAxes;
     this._continuousAxes = continuousAxes;
     this._locations = {};
+    this._locationsKeyToDiscreteLocation = {};
     this._locationKeys = [];
     this._locationIndices = {};
     for (const [index, location] of enumerate(locations)) {
@@ -23,6 +24,7 @@ export class DiscreteVariationModel {
       );
       if (!(key in this._locations)) {
         this._locations[key] = [normalizedLocation];
+        this._locationsKeyToDiscreteLocation[key] = splitLoc.discreteLocation;
       } else {
         this._locations[key].push(normalizedLocation);
       }
@@ -43,45 +45,74 @@ export class DiscreteVariationModel {
   }
 
   _getModel(key) {
-    let model = this._models[key];
-    if (!model) {
+    let cachedModelInfo = this._models[key];
+    if (!cachedModelInfo) {
+      let model;
+      let usedKey = key;
+      let isDiscreteSubstitute = false;
+      usedKey = key;
       const locations = this._locations[key];
       if (!locations) {
-        throw new VariationError(`no sources at discrete location ${key}`);
+        const nearestKey = this._findNearestDiscreteLocationKey(key);
+        const { model: substModel } = this._getModel(nearestKey);
+        model = substModel;
+        isDiscreteSubstitute = true;
+        usedKey = nearestKey;
+      } else {
+        model = new VariationModel(locations);
       }
-      model = new VariationModel(locations);
-      this._models[key] = model;
+      cachedModelInfo = { model, usedKey, isDiscreteSubstitute };
+      this._models[key] = cachedModelInfo;
     }
-    return model;
+    return cachedModelInfo;
+  }
+
+  _findNearestDiscreteLocationKey(key) {
+    const discreteLocation = JSON.parse(key);
+    const distances = [];
+
+    for (const loc of Object.values(this._locationsKeyToDiscreteLocation)) {
+      let distanceSquared = 0;
+      for (const [axisName, value] of Object.entries(discreteLocation)) {
+        const sourceValue = loc[axisName];
+        distanceSquared += (sourceValue - value) ** 2;
+      }
+      distances.push([distanceSquared, loc]);
+    }
+    distances.sort((a, b) => a[0] - b[0]);
+    return JSON.stringify(distances[0][1]);
   }
 
   interpolateFromDeltas(location, deltas) {
     const splitLoc = splitDiscreteLocation(location, this._discreteAxes);
     const key = JSON.stringify(splitLoc.discreteLocation);
-    const model = this._getModel(key);
+    const { model, usedKey, isDiscreteSubstitute } = this._getModel(key);
     if (!(key in deltas.deltas)) {
-      deltas.deltas[key] = model.getDeltas(deltas.sources[key]);
+      deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey]);
     }
-    return model.interpolateFromDeltas(
+    const instance = model.interpolateFromDeltas(
       normalizeLocation(splitLoc.location, this._continuousAxes),
       deltas.deltas[key]
     );
+    return { instance, isDiscreteSubstitute };
   }
 
   getSourceContributions(location) {
     const splitLoc = splitDiscreteLocation(location, this._discreteAxes);
     const key = JSON.stringify(splitLoc.discreteLocation);
-    const model = this._getModel(key);
+    const { model, usedKey } = this._getModel(key);
     const contributions = model.getSourceContributions(
       normalizeLocation(splitLoc.location, this._continuousAxes)
     );
     let index = 0;
-    return this._locationKeys.map((k) => (k === key ? contributions[index++] : null));
+    return this._locationKeys.map((k) =>
+      k === usedKey ? contributions[index++] : null
+    );
   }
 
   getDefaultSourceIndexForDiscreteLocation(discreteLocation) {
     const key = JSON.stringify(discreteLocation);
-    const model = this._getModel(key);
+    const { model } = this._getModel(key);
     const localIndex = model.reverseMapping[0] || 0;
     return this._locationIndices[key][localIndex];
   }
