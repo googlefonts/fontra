@@ -1,13 +1,13 @@
 export class RemoteError extends Error {
   constructor(message) {
     super(message);
-    this.name = "RemoteError";
+    this.name = this.constructor.name;
   }
 }
 
 export class VariationError extends Error {
   constructor(message) {
     super(message);
-    this.name = "VariationError";
+    this.name = this.constructor.name;
   }
 }
