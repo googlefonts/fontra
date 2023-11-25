@@ -27,10 +27,6 @@ export class DiscreteVariationModel {
       }
     }
     this._models = {};
-
-    // XXXXX for contribution
-    this.mapping = [...range(locations.length)];
-    this.reverseMapping = [...range(locations.length)];
   }
 
   getDeltas(sourceValues) {
