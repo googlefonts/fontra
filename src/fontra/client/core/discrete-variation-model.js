@@ -1,3 +1,4 @@
+import { VariationError } from "./errors.js";
 import { enumerate, product, range, zip } from "./utils.js";
 import { VariationModel, normalizeLocation } from "./var-model.js";
 
@@ -44,7 +45,11 @@ export class DiscreteVariationModel {
   _getModel(key) {
     let model = this._models[key];
     if (!model) {
-      model = new VariationModel(this._locations[key]);
+      const locations = this._locations[key];
+      if (!locations) {
+        throw new VariationError(`no sources at discrete location ${key}`);
+      }
+      model = new VariationModel(locations);
       this._models[key] = model;
     }
     return model;
