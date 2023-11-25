@@ -8,6 +8,7 @@ import {
   sparsifyLocation,
   splitDiscreteLocation,
 } from "./discrete-variation-model.js";
+import { VariationError } from "./errors.js";
 import { PathHitTester } from "./path-hit-tester.js";
 import { sectRect } from "./rectangle.js";
 import {
@@ -389,7 +390,7 @@ export class VariableGlyphController {
         await this.getDeltas(getGlyphFunc)
       );
     } catch (error) {
-      if (error.name !== "VariationError") {
+      if (!(error instanceof VariationError)) {
         throw error;
       }
       const errorMessage = `Interpolation error while instantiating glyph ${
@@ -747,7 +748,7 @@ async function* iterFlattenedComponentPaths(
     try {
       inst = await glyph.instantiate(compoLocation, getGlyphFunc);
     } catch (error) {
-      if (error.name !== "VariationError") {
+      if (!(error instanceof VariationError)) {
         throw error;
       }
       const errorMessage = `Interpolation error while instantiating component ${
