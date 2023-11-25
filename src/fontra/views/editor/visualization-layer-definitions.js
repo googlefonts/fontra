@@ -104,10 +104,12 @@ registerVisualizationLayerDefinition({
   name: "Context glyphs",
   selectionMode: "unselected",
   zIndex: 200,
-  colors: { fillColor: "#000" },
-  colorsDarkMode: { fillColor: "#FFF" },
+  colors: { fillColor: "#000", substituteColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", substituteColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    context.fillStyle = parameters.fillColor;
+    context.fillStyle = positionedGlyph.glyph.isDiscreteSubstitute
+      ? parameters.substituteColor
+      : parameters.fillColor;
     context.fill(positionedGlyph.glyph.flattenedPath2d);
   },
 });
