@@ -5,6 +5,7 @@ import {
 } from "./convex-hull.js";
 import {
   DiscreteVariationModel,
+  findNearestLocationIndex,
   sparsifyLocation,
   splitDiscreteLocation,
 } from "./discrete-variation-model.js";
@@ -444,17 +445,28 @@ export class VariableGlyphController {
   }
 
   findNearestSourceFromGlobalLocation(location, skipInactive = false) {
-    const normalizedLocation = normalizeLocation(
-      this.mapLocationGlobalToLocal(location),
-      this.combinedAxes
-    );
-    const indexInfo = findNearestSourceIndexFromLocation(
-      this.glyph,
-      normalizedLocation,
-      this.combinedAxes,
-      skipInactive
-    );
-    return indexInfo.index;
+    const splitLoc = splitDiscreteLocation(location, this.discreteAxes);
+    // Ensure the targetLocation is *not* sparse
+    const targetLocation = {
+      ...splitLoc.discreteLocation,
+      ...Object.fromEntries(
+        this.combinedAxes.map((axis) => [
+          axis.name,
+          axis.name in location ? location[axis.name] : axis.defaultValue,
+        ])
+      ),
+    };
+    const sourceIndexMapping = [];
+    const activeLocations = [];
+    for (const [index, source] of enumerate(this.sources)) {
+      if (source.inactive) {
+        continue;
+      }
+      sourceIndexMapping.push(index);
+      activeLocations.push(source.location);
+    }
+    const nearestIndex = findNearestLocationIndex(targetLocation, activeLocations);
+    return sourceIndexMapping[nearestIndex];
   }
 
   mapLocationGlobalToLocal(location) {
@@ -945,41 +957,6 @@ function subsetLocation(location, axes) {
     }
   }
   return subsettedLocation;
-}
-
-function findNearestSourceIndexFromLocation(
-  glyph,
-  location,
-  axes,
-  skipInactive = false
-) {
-  const distances = [];
-  if (!glyph.sources.length) {
-    throw Error("assert -- glyph has no sources");
-  }
-  for (let i = 0; i < glyph.sources.length; i++) {
-    const source = glyph.sources[i];
-    if (skipInactive && source.inactive) {
-      continue;
-    }
-    const sourceLocation = normalizeLocation(source.location, axes);
-    let distanceSquared = 0;
-    for (const [axisName, value] of Object.entries(location)) {
-      const sourceValue = sourceLocation[axisName];
-      distanceSquared += (sourceValue - value) ** 2;
-    }
-    if (distanceSquared === 0) {
-      // exact match, no need to look further
-      return { distance: 0, index: i };
-    }
-    distances.push([distanceSquared, i]);
-  }
-  distances.sort((a, b) => {
-    const da = a[0];
-    const db = b[0];
-    return (a > b) - (a < b);
-  });
-  return { distance: Math.sqrt(distances[0][0]), index: distances[0][1] };
 }
 
 function makeMissingComponentPlaceholderGlyph() {
