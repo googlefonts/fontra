@@ -104,7 +104,7 @@ export class DiscreteVariationModel {
         if (!errors) {
           errors = [];
         }
-        errors.push({ message: `Interpolation error: ${exc}`, type: "error" });
+        errors.push({ message: exc.message, type: "error" });
         model = new BrokenVariationModel(this._locations[key]);
         deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey]);
         const cachedModelInfo = { model, usedKey, errors };
