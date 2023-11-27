@@ -49,14 +49,19 @@ export class DiscreteVariationModel {
     if (!cachedModelInfo) {
       let model;
       let usedKey = key;
-      let errors;
+      let errors = [];
       usedKey = key;
       const locations = this._locations[key];
       if (!locations) {
         const nearestKey = this._findNearestDiscreteLocationKey(key);
         const { model: substModel } = this._getModel(nearestKey);
         model = substModel;
-        errors = [{ message: `no variation model found at ${key}`, type: "warning" }];
+        errors = [
+          {
+            message: `no variation model for ${formatDiscreteLocationKey(key)}`,
+            type: "warning",
+          },
+        ];
         usedKey = nearestKey;
       } else {
         try {
@@ -65,10 +70,11 @@ export class DiscreteVariationModel {
           if (!(exc instanceof VariationError)) {
             throw exc;
           }
+          errors.push({ message: `model error: ${exc.message}`, type: "error" });
           model = new BrokenVariationModel(locations);
         }
       }
-      cachedModelInfo = { model, usedKey, errors };
+      cachedModelInfo = { model, usedKey, errors: errors.length ? errors : undefined };
       this._models[key] = cachedModelInfo;
     }
     return cachedModelInfo;
@@ -236,4 +242,11 @@ function findNearestLocationIndex(targetLocation, locations) {
     }
   }
   return closestIndex;
+}
+
+function formatDiscreteLocationKey(key) {
+  const loc = JSON.parse(key);
+  return Object.entries(loc)
+    .map(([axisName, value]) => `${axisName}=${value}`)
+    .join(",");
 }
