@@ -485,7 +485,7 @@ export class StaticGlyphController {
     this.sourceIndex = sourceIndex;
     this.layerName = layerName;
     this.errors = errors;
-    this.canEdit = layerName !== undefined;
+    this.canEdit = layerName != undefined;
     this.components = [];
   }
 
