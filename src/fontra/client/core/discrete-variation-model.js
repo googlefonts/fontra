@@ -1,5 +1,5 @@
 import { VariationError } from "./errors.js";
-import { enumerate, product, range, zip } from "./utils.js";
+import { enumerate, isObjectEmpty, product, range, zip } from "./utils.js";
 import { VariationModel, normalizeLocation } from "./var-model.js";
 
 export class DiscreteVariationModel {
@@ -86,9 +86,20 @@ export class DiscreteVariationModel {
   interpolateFromDeltas(location, deltas) {
     const splitLoc = splitDiscreteLocation(location, this._discreteAxes);
     const key = JSON.stringify(splitLoc.discreteLocation);
-    const { model, usedKey, isDiscreteSubstitute } = this._getModel(key);
+    let { model, usedKey, isDiscreteSubstitute } = this._getModel(key);
     if (!(key in deltas.deltas)) {
-      deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey]);
+      try {
+        deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey]);
+      } catch (exc) {
+        if (!(exc instanceof VariationError)) {
+          throw exc;
+        }
+        model = new BrokenVariationModel(this._locations[key]);
+        deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey]);
+        const cachedModelInfo = { model, usedKey, isDiscreteSubstitute };
+        this._models[key] = cachedModelInfo;
+        // collect error
+      }
     }
     const instance = model.interpolateFromDeltas(
       normalizeLocation(splitLoc.location, this._continuousAxes),
@@ -113,8 +124,39 @@ export class DiscreteVariationModel {
   getDefaultSourceIndexForDiscreteLocation(discreteLocation) {
     const key = JSON.stringify(discreteLocation);
     const { model } = this._getModel(key);
-    const localIndex = model.reverseMapping[0] || 0;
+    const localIndex = model.getDefaultSourceIndex() || 0;
     return this._locationIndices[key][localIndex];
+  }
+}
+
+class BrokenVariationModel {
+  constructor(locations) {
+    this.locations = locations;
+  }
+
+  getDefaultSourceIndex() {
+    for (const [index, loc] of enumerate(this.locations)) {
+      if (isObjectEmpty(loc)) {
+        return index;
+      }
+    }
+  }
+
+  getDeltas(sourceValues) {
+    return sourceValues;
+  }
+
+  interpolateFromDeltas(location, deltas) {
+    const index = findNearestLocationIndex(location, this.locations);
+    return deltas[index];
+  }
+
+  getSourceContributions(location) {
+    const index = findNearestLocationIndex(location, this.locations);
+    const contributions = new Array(this.locations.length);
+    contributions.fill(null);
+    contributions[index] = 1;
+    return contributions;
   }
 }
 
@@ -162,4 +204,26 @@ export function sparsifyLocation(location) {
     }
   }
   return sparseLocation;
+}
+
+function findNearestLocationIndex(targetLocation, locations) {
+  // Return the index of the location in `locations` that is nearest to
+  // `targetLocation`.
+  // If `locations` are sparse, they must be normalized.
+  // `targetLocation` must *not* be sparse.
+  let closestIndex;
+  let smallestDistanceSquared;
+  const locationEntries = Object.entries(targetLocation);
+  for (const [index, loc] of enumerate(locations)) {
+    let distanceSquared = 0;
+    for (const [axisName, value] of locationEntries) {
+      const otherValue = loc[axisName] || 0;
+      distanceSquared += (value - otherValue) ** 2;
+    }
+    if (closestIndex === undefined || distanceSquared < smallestDistanceSquared) {
+      closestIndex = index;
+      smallestDistanceSquared = distanceSquared;
+    }
+  }
+  return closestIndex;
 }
