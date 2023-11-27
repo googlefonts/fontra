@@ -378,10 +378,15 @@ export class VariableGlyphController {
   }
 
   async instantiate(location, getGlyphFunc) {
-    const { instance, errors } = this.model.interpolateFromDeltas(
+    let { instance, errors } = this.model.interpolateFromDeltas(
       location,
       await this.getDeltas(getGlyphFunc)
     );
+    if (errors) {
+      errors = errors.map((error) => {
+        return { ...error, glyphs: [this.name] };
+      });
+    }
     return { instance, errors };
   }
 
@@ -767,8 +772,7 @@ async function* iterFlattenedComponentPaths(
     const { instance, errors } = await glyph.instantiate(compoLocation, getGlyphFunc);
     inst = instance;
     instErrors = errors?.map((error) => {
-      const parentGlyphs = [parentGlyphName, ...(error.parentGlyphs || [])];
-      return { ...error, parentGlyphs };
+      return { ...error, glyphs: [parentGlyphName, ...(error.glyphs || [])] };
     });
     if (!inst.path.numPoints && !inst.components.length) {
       inst = makeEmptyComponentPlaceholderGlyph();
