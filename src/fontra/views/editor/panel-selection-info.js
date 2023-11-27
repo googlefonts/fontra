@@ -186,7 +186,8 @@ export default class SelectionInfoPanel extends Panel {
 
     if (glyphController) {
       formContents.push(
-        ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices)
+        ...this._setupDimensionsInfo(glyphController, pointIndices, componentIndices),
+        ...this._setupInterpolationErrorInfo(glyphController)
       );
     }
 
@@ -305,6 +306,31 @@ export default class SelectionInfoPanel extends Panel {
         label: "Dimensions",
         value: dimensionsString,
       });
+    }
+    return formContents;
+  }
+
+  _setupInterpolationErrorInfo(glyphController) {
+    const formContents = [];
+    if (glyphController.errors?.length) {
+      formContents.push({ type: "divider" });
+      for (const error of glyphController.errors) {
+        const iconChar = error.type === "warning" ? "⚠️" : "🔴";
+        const nestedGlyphs =
+          error.glyphs.length > 1
+            ? error.glyphs
+                .slice(1)
+                .map((gn) => "-> " + gn)
+                .join(" ")
+            : "";
+        const errorString = `${iconChar} ${error.message} ${nestedGlyphs}`;
+        formContents.push({
+          key: "interpolation-error",
+          type: "text",
+          label: "Interpolation",
+          value: errorString,
+        });
+      }
     }
     return formContents;
   }
