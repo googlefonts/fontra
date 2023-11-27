@@ -445,17 +445,17 @@ export class VariableGlyphController {
   }
 
   findNearestSourceFromGlobalLocation(location, skipInactive = false) {
+    location = this.mapLocationGlobalToLocal(location);
     const splitLoc = splitDiscreteLocation(location, this.discreteAxes);
-    // Ensure the targetLocation is *not* sparse
-    const targetLocation = {
-      ...splitLoc.discreteLocation,
-      ...Object.fromEntries(
-        this.combinedAxes.map((axis) => [
-          axis.name,
-          axis.name in location ? location[axis.name] : axis.defaultValue,
-        ])
-      ),
-    };
+
+    // Ensure locations are *not* sparse
+
+    const allSourceAxes = [...this.discreteAxes, ...this.combinedAxes];
+    const defaultLocation = Object.fromEntries(
+      allSourceAxes.map((axis) => [axis.name, axis.defaultValue])
+    );
+
+    const targetLocation = { ...defaultLocation, ...location };
     const sourceIndexMapping = [];
     const activeLocations = [];
     for (const [index, source] of enumerate(this.sources)) {
@@ -463,8 +463,9 @@ export class VariableGlyphController {
         continue;
       }
       sourceIndexMapping.push(index);
-      activeLocations.push(source.location);
+      activeLocations.push({ ...defaultLocation, ...source.location });
     }
+
     const nearestIndex = findNearestLocationIndex(targetLocation, activeLocations);
     return sourceIndexMapping[nearestIndex];
   }
