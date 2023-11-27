@@ -214,7 +214,7 @@ export function sparsifyLocation(location) {
   return sparseLocation;
 }
 
-function findNearestLocationIndex(targetLocation, locations) {
+export function findNearestLocationIndex(targetLocation, locations) {
   // Return the index of the location in `locations` that is nearest to
   // `targetLocation`.
   // If `locations` are sparse, they must be normalized.
