@@ -61,6 +61,13 @@ export class VariableGlyphController {
     return this._combinedAxes;
   }
 
+  get continuousAxes() {
+    if (this._continuousAxes === undefined) {
+      this._setupAxisMapping();
+    }
+    return this._continuousAxes;
+  }
+
   get discreteAxes() {
     if (this._discreteAxes === undefined) {
       this._setupAxisMapping();
@@ -76,8 +83,8 @@ export class VariableGlyphController {
   }
 
   _setupAxisMapping() {
-    this._combinedAxes = Array.from(this.axes);
     this._discreteAxes = [];
+    this._continuousAxes = Array.from(this.axes);
     this._localToGlobalMapping = [];
     const localAxisDict = {};
     for (const localAxis of this.axes) {
@@ -92,6 +99,10 @@ export class VariableGlyphController {
           defaultValue: mapFunc(globalAxis.defaultValue),
           values: globalAxis.values.map(mapFunc),
         });
+        // We don't support local discrete axes.
+        // TODO: a name conflict between a discrete global axis and a
+        // continuous local axis is a true conflict. We don't catch that
+        // now, and TBH I'm not sure how to resolve that.
         continue;
       }
       globalAxis = {
@@ -109,9 +120,10 @@ export class VariableGlyphController {
         ];
         this._localToGlobalMapping.push({ name: globalAxis.name, mapping: mapping });
       } else {
-        this._combinedAxes.push(globalAxis);
+        this._continuousAxes.push(globalAxis);
       }
     }
+    this._combinedAxes = [...this._discreteAxes, ...this._continuousAxes];
   }
 
   getSourceIndex(location) {
@@ -196,6 +208,8 @@ export class VariableGlyphController {
     delete this._deltas;
     delete this._sourceInterpolationStatus;
     delete this._combinedAxes;
+    delete this._discreteAxes;
+    delete this._continuousAxes;
     delete this._localToGlobalMapping;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
@@ -209,13 +223,14 @@ export class VariableGlyphController {
       this._model = new DiscreteVariationModel(
         locations,
         this.discreteAxes,
-        this.combinedAxes
+        this.continuousAxes
       );
     }
     return this._model;
   }
 
   _getLocationErrors() {
+    // XXXX This method is currently not used, and also broken wrt. discrete axes
     const locationStrings = this.sources.map((source) =>
       source.inactive
         ? null
@@ -450,9 +465,8 @@ export class VariableGlyphController {
 
     // Ensure locations are *not* sparse
 
-    const allSourceAxes = [...this.discreteAxes, ...this.combinedAxes];
     const defaultLocation = Object.fromEntries(
-      allSourceAxes.map((axis) => [axis.name, axis.defaultValue])
+      this.combinedAxes.map((axis) => [axis.name, axis.defaultValue])
     );
 
     const targetLocation = { ...defaultLocation, ...location };
