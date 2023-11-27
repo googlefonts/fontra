@@ -104,11 +104,11 @@ registerVisualizationLayerDefinition({
   name: "Context glyphs",
   selectionMode: "unselected",
   zIndex: 200,
-  colors: { fillColor: "#000", substituteColor: "#AAA" },
-  colorsDarkMode: { fillColor: "#FFF", substituteColor: "#999" },
+  colors: { fillColor: "#000", errorColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", errorColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    context.fillStyle = positionedGlyph.glyph.isDiscreteSubstitute
-      ? parameters.substituteColor
+    context.fillStyle = positionedGlyph.glyph.errors?.length
+      ? parameters.errorColor
       : parameters.fillColor;
     context.fill(positionedGlyph.glyph.flattenedPath2d);
   },
@@ -286,8 +286,8 @@ registerVisualizationLayerDefinition({
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
-  colors: { fillColor: "#000", strokeColor: "#7778", substituteColor: "#AAA" },
-  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8", substituteColor: "#999" },
+  colors: { fillColor: "#000", strokeColor: "#7778", errorColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8", errorColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
   },
@@ -300,8 +300,8 @@ registerVisualizationLayerDefinition({
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
-  colors: { fillColor: "#000", strokeColor: "#BBB8", substituteColor: "#AAA" },
-  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8", substituteColor: "#999" },
+  colors: { fillColor: "#000", strokeColor: "#BBB8", errorColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8", errorColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
   },
@@ -314,9 +314,7 @@ function _drawSelectedGlyphLayer(context, positionedGlyph, parameters) {
     parameters.outerStrokeWidth,
     parameters.innerStrokeWidth,
     parameters.strokeColor,
-    positionedGlyph.glyph.isDiscreteSubstitute
-      ? parameters.substituteColor
-      : parameters.fillColor
+    positionedGlyph.glyph.errors?.length ? parameters.errorColor : parameters.fillColor
   );
 }
 

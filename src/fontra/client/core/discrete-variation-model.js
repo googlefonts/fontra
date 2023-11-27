@@ -49,14 +49,14 @@ export class DiscreteVariationModel {
     if (!cachedModelInfo) {
       let model;
       let usedKey = key;
-      let isDiscreteSubstitute = false;
+      let errors;
       usedKey = key;
       const locations = this._locations[key];
       if (!locations) {
         const nearestKey = this._findNearestDiscreteLocationKey(key);
         const { model: substModel } = this._getModel(nearestKey);
         model = substModel;
-        isDiscreteSubstitute = true;
+        errors = [{ message: `no variation model found at ${key}`, type: "warning" }];
         usedKey = nearestKey;
       } else {
         try {
@@ -68,7 +68,7 @@ export class DiscreteVariationModel {
           model = new BrokenVariationModel(locations);
         }
       }
-      cachedModelInfo = { model, usedKey, isDiscreteSubstitute };
+      cachedModelInfo = { model, usedKey, errors };
       this._models[key] = cachedModelInfo;
     }
     return cachedModelInfo;
@@ -93,7 +93,7 @@ export class DiscreteVariationModel {
   interpolateFromDeltas(location, deltas) {
     const splitLoc = splitDiscreteLocation(location, this._discreteAxes);
     const key = JSON.stringify(splitLoc.discreteLocation);
-    let { model, usedKey, isDiscreteSubstitute } = this._getModel(key);
+    let { model, usedKey, errors } = this._getModel(key);
     if (!(key in deltas.deltas)) {
       try {
         deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey]);
@@ -101,18 +101,21 @@ export class DiscreteVariationModel {
         if (!(exc instanceof VariationError)) {
           throw exc;
         }
+        if (!errors) {
+          errors = [];
+        }
+        errors.push({ message: `Interpolation error: ${exc}`, type: "error" });
         model = new BrokenVariationModel(this._locations[key]);
         deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey]);
-        const cachedModelInfo = { model, usedKey, isDiscreteSubstitute };
+        const cachedModelInfo = { model, usedKey, errors };
         this._models[key] = cachedModelInfo;
-        // collect error
       }
     }
     const instance = model.interpolateFromDeltas(
       normalizeLocation(splitLoc.location, this._continuousAxes),
       deltas.deltas[key]
     );
-    return { instance, isDiscreteSubstitute };
+    return { instance, errors };
   }
 
   getSourceContributions(location) {

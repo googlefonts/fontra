@@ -27,7 +27,7 @@ import {
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
-import { VarPackedPath, joinPaths, joinPathsAsync } from "./var-path.js";
+import { VarPackedPath, joinPaths } from "./var-path.js";
 
 export class VariableGlyphController {
   constructor(glyph, globalAxes) {
@@ -205,17 +205,11 @@ export class VariableGlyphController {
       const locations = this.sources
         .filter((source) => !source.inactive)
         .map((source) => source.location);
-      try {
-        this._model = new DiscreteVariationModel(
-          locations,
-          this.discreteAxes,
-          this.combinedAxes
-        );
-      } catch (error) {
-        console.log("error setting up the variation model:", error.toString());
-        this._model = new VariationModel([{}]);
-        this._modelErrors = this._getLocationErrors();
-      }
+      this._model = new DiscreteVariationModel(
+        locations,
+        this.discreteAxes,
+        this.combinedAxes
+      );
     }
     return this._model;
   }
@@ -384,30 +378,11 @@ export class VariableGlyphController {
   }
 
   async instantiate(location, getGlyphFunc) {
-    try {
-      const { instance, isDiscreteSubstitute } = this.model.interpolateFromDeltas(
-        location,
-        await this.getDeltas(getGlyphFunc)
-      );
-      return { instance, isDiscreteSubstitute };
-    } catch (error) {
-      if (!(error instanceof VariationError)) {
-        throw error;
-      }
-      const errorMessage = `Interpolation error while instantiating glyph ${
-        this.name
-      } (${error.toString()})`;
-      console.log(errorMessage);
-      // XXXX fix for discrete axes
-      const normalizedLocation = normalizeLocation(location, this.combinedAxes);
-      const indexInfo = findNearestSourceIndexFromLocation(
-        this.glyph,
-        normalizedLocation,
-        this.combinedAxes
-      );
-      const instance = this.layers[this.sources[indexInfo.index].layerName].glyph;
-      return { instance, error };
-    }
+    const { instance, errors } = this.model.interpolateFromDeltas(
+      location,
+      await this.getDeltas(getGlyphFunc)
+    );
+    return { instance, errors };
   }
 
   async instantiateController(location, layerName, getGlyphFunc) {
@@ -432,10 +407,7 @@ export class VariableGlyphController {
       return this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
     }
 
-    const { instance, isDiscreteSubstitute } = await this.instantiate(
-      location,
-      getGlyphFunc
-    );
+    const { instance, errors } = await this.instantiate(location, getGlyphFunc);
 
     if (!instance) {
       throw new Error("assert -- instance is undefined");
@@ -445,7 +417,7 @@ export class VariableGlyphController {
       instance,
       sourceIndex,
       layerName,
-      isDiscreteSubstitute
+      errors
     );
 
     await instanceController.setupComponents(getGlyphFunc, location);
@@ -502,23 +474,42 @@ export class VariableGlyphController {
 }
 
 export class StaticGlyphController {
-  constructor(name, instance, sourceIndex, layerName, isDiscreteSubstitute) {
+  constructor(name, instance, sourceIndex, layerName, errors) {
     this.name = name;
     this.instance = instance;
     this.sourceIndex = sourceIndex;
     this.layerName = layerName;
-    this.isDiscreteSubstitute = isDiscreteSubstitute;
+    this.errors = errors;
     this.canEdit = layerName !== undefined;
     this.components = [];
   }
 
   async setupComponents(getGlyphFunc, parentLocation) {
     this.components = [];
+    const componentErrors = [];
     for (const compo of this.instance.components) {
       const compoController = new ComponentController(compo);
-      await compoController.setupPath(getGlyphFunc, parentLocation);
+      const errors = await compoController.setupPath(
+        getGlyphFunc,
+        parentLocation,
+        this.name
+      );
+      if (errors) {
+        componentErrors.push(...errors);
+      }
       this.components.push(compoController);
     }
+    this._extendErrors(componentErrors);
+  }
+
+  _extendErrors(errors) {
+    if (!errors.length) {
+      return;
+    }
+    if (!this.errors) {
+      this.errors = [];
+    }
+    this.errors.push(...errors);
   }
 
   get xAdvance() {
@@ -661,8 +652,15 @@ class ComponentController {
     this.compo = compo;
   }
 
-  async setupPath(getGlyphFunc, parentLocation) {
-    this.path = await flattenComponent(this.compo, getGlyphFunc, parentLocation);
+  async setupPath(getGlyphFunc, parentLocation, parentGlyphName) {
+    const { path, errors } = await flattenComponent(
+      this.compo,
+      getGlyphFunc,
+      parentLocation,
+      parentGlyphName
+    );
+    this.path = path;
+    return errors;
   }
 
   get path2d() {
@@ -723,16 +721,31 @@ class ComponentController {
   }
 }
 
-async function flattenComponent(compo, getGlyphFunc, parentLocation) {
-  return await joinPathsAsync(
-    iterFlattenedComponentPaths(compo, getGlyphFunc, parentLocation)
-  );
+async function flattenComponent(compo, getGlyphFunc, parentLocation, parentGlyphName) {
+  let componentErrors = [];
+  const paths = [];
+  for await (const { path, errors } of iterFlattenedComponentPaths(
+    compo,
+    getGlyphFunc,
+    parentLocation,
+    parentGlyphName
+  )) {
+    paths.push(path);
+    if (errors) {
+      componentErrors.push(...errors);
+    }
+  }
+  if (!componentErrors.length) {
+    componentErrors = undefined;
+  }
+  return { path: joinPaths(paths), errors: componentErrors };
 }
 
 async function* iterFlattenedComponentPaths(
   compo,
   getGlyphFunc,
   parentLocation,
+  parentGlyphName,
   transformation = null,
   seenGlyphNames = null
 ) {
@@ -746,20 +759,17 @@ async function* iterFlattenedComponentPaths(
 
   const compoLocation = mergeLocations(parentLocation, compo.location) || {};
   const glyph = await getGlyphFunc(compo.name);
-  let inst;
+  let inst, instErrors;
   if (!glyph) {
     // console.log(`component glyph ${compo.name} was not found`);
     inst = makeMissingComponentPlaceholderGlyph();
   } else {
-    const { instance, error } = await glyph.instantiate(compoLocation, getGlyphFunc);
+    const { instance, errors } = await glyph.instantiate(compoLocation, getGlyphFunc);
     inst = instance;
-    if (error) {
-      const errorMessage = `Interpolation error while instantiating component ${
-        compo.name
-      } (${error.toString()})`;
-      console.log(errorMessage);
-      return;
-    }
+    instErrors = errors?.map((error) => {
+      const parentGlyphs = [parentGlyphName, ...(error.parentGlyphs || [])];
+      return { ...error, parentGlyphs };
+    });
     if (!inst.path.numPoints && !inst.components.length) {
       inst = makeEmptyComponentPlaceholderGlyph();
     }
@@ -770,13 +780,14 @@ async function* iterFlattenedComponentPaths(
   }
   const componentPaths = {};
   if (inst.path.numPoints) {
-    yield inst.path.transformed(t);
+    yield { path: inst.path.transformed(t), errors: instErrors };
   }
   for (const subCompo of inst.components) {
     yield* iterFlattenedComponentPaths(
       subCompo,
       getGlyphFunc,
       compoLocation,
+      compo.name,
       t,
       seenGlyphNames
     );
@@ -809,7 +820,7 @@ export async function decomposeComponents(
       ...parentSourceLocation,
       ...mapLocationExpandNLI(component.location, baseGlyph.axes),
     };
-    const { instance: compoInstance } = await baseGlyph.instantiate(
+    const { instance: compoInstance, errors } = await baseGlyph.instantiate(
       location,
       getGlyphFunc
     );
