@@ -59,7 +59,14 @@ export class DiscreteVariationModel {
         isDiscreteSubstitute = true;
         usedKey = nearestKey;
       } else {
-        model = new VariationModel(locations);
+        try {
+          model = new VariationModel(locations);
+        } catch (exc) {
+          if (!(exc instanceof VariationError)) {
+            throw exc;
+          }
+          model = new BrokenVariationModel(locations);
+        }
       }
       cachedModelInfo = { model, usedKey, isDiscreteSubstitute };
       this._models[key] = cachedModelInfo;
