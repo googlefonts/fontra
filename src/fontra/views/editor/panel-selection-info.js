@@ -314,23 +314,24 @@ export default class SelectionInfoPanel extends Panel {
     const formContents = [];
     if (glyphController.errors?.length) {
       formContents.push({ type: "divider" });
+      const errorStrings = [];
       for (const error of glyphController.errors) {
         const iconChar = error.type === "warning" ? "⚠️" : "🔴";
         const nestedGlyphs =
           error.glyphs.length > 1
             ? error.glyphs
                 .slice(1)
-                .map((gn) => "-> " + gn)
+                .map((gn) => "→ " + gn)
                 .join(" ")
             : "";
-        const errorString = `${iconChar} ${error.message} ${nestedGlyphs}`;
-        formContents.push({
-          key: "interpolation-error",
-          type: "text",
-          label: "Interpolation",
-          value: errorString,
-        });
+        errorStrings.push(`${iconChar} ${error.message} ${nestedGlyphs}`);
       }
+      formContents.push({
+        key: "interpolation-error",
+        type: "text",
+        label: "Interpolation",
+        value: errorStrings.join("\n"),
+      });
     }
     return formContents;
   }
