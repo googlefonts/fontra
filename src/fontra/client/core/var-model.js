@@ -196,6 +196,10 @@ export class VariationModel {
     }
     return this.mapping.map((i) => contributions[i]);
   }
+
+  getDefaultSourceIndex() {
+    return this.reverseMapping[0];
+  }
 }
 
 function sortedLocations(locations, axisOrder = null) {
