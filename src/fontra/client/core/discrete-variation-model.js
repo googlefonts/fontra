@@ -81,19 +81,11 @@ export class DiscreteVariationModel {
   }
 
   _findNearestDiscreteLocationKey(key) {
-    const discreteLocation = JSON.parse(key);
-    const distances = [];
-
-    for (const loc of Object.values(this._locationsKeyToDiscreteLocation)) {
-      let distanceSquared = 0;
-      for (const [axisName, value] of Object.entries(discreteLocation)) {
-        const sourceValue = loc[axisName];
-        distanceSquared += (sourceValue - value) ** 2;
-      }
-      distances.push([distanceSquared, loc]);
-    }
-    distances.sort((a, b) => a[0] - b[0]);
-    return JSON.stringify(distances[0][1]);
+    const targetLocation = JSON.parse(key);
+    const locationKeys = Object.keys(this._locationsKeyToDiscreteLocation);
+    const locations = Object.values(this._locationsKeyToDiscreteLocation);
+    const nearestIndex = findNearestLocationIndex(JSON.parse(key), locations);
+    return locationKeys[nearestIndex];
   }
 
   interpolateFromDeltas(location, deltas) {
