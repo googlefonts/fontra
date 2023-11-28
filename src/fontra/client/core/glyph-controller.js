@@ -521,11 +521,9 @@ export class StaticGlyphController {
     const componentErrors = [];
     for (const compo of this.instance.components) {
       const compoController = new ComponentController(compo);
-      const errors = await compoController.setupPath(
-        getGlyphFunc,
-        parentLocation,
-        this.name
-      );
+      const errors = await compoController.setupPath(getGlyphFunc, parentLocation, [
+        this.name,
+      ]);
       if (errors) {
         componentErrors.push(...errors);
       }
@@ -684,12 +682,12 @@ class ComponentController {
     this.compo = compo;
   }
 
-  async setupPath(getGlyphFunc, parentLocation, parentGlyphName) {
+  async setupPath(getGlyphFunc, parentLocation, parentGlyphNames) {
     const { path, errors } = await flattenComponent(
       this.compo,
       getGlyphFunc,
       parentLocation,
-      parentGlyphName
+      parentGlyphNames
     );
     this.path = path;
     return errors;
@@ -753,14 +751,14 @@ class ComponentController {
   }
 }
 
-async function flattenComponent(compo, getGlyphFunc, parentLocation, parentGlyphName) {
+async function flattenComponent(compo, getGlyphFunc, parentLocation, parentGlyphNames) {
   let componentErrors = [];
   const paths = [];
   for await (const { path, errors } of iterFlattenedComponentPaths(
     compo,
     getGlyphFunc,
     parentLocation,
-    parentGlyphName
+    parentGlyphNames
   )) {
     paths.push(path);
     if (errors) {
@@ -777,7 +775,7 @@ async function* iterFlattenedComponentPaths(
   compo,
   getGlyphFunc,
   parentLocation,
-  parentGlyphName,
+  parentGlyphNames,
   transformation = null,
   seenGlyphNames = null
 ) {
@@ -788,6 +786,7 @@ async function* iterFlattenedComponentPaths(
     return;
   }
   seenGlyphNames.add(compo.name);
+  parentGlyphNames = [...parentGlyphNames, compo.name];
 
   const compoLocation = mergeLocations(parentLocation, compo.location) || {};
   const glyph = await getGlyphFunc(compo.name);
@@ -799,7 +798,7 @@ async function* iterFlattenedComponentPaths(
     const { instance, errors } = await glyph.instantiate(compoLocation, getGlyphFunc);
     inst = instance;
     instErrors = errors?.map((error) => {
-      return { ...error, glyphs: [parentGlyphName, ...(error.glyphs || [])] };
+      return { ...error, glyphs: parentGlyphNames };
     });
     if (!inst.path.numPoints && !inst.components.length) {
       inst = makeEmptyComponentPlaceholderGlyph();
@@ -818,7 +817,7 @@ async function* iterFlattenedComponentPaths(
       subCompo,
       getGlyphFunc,
       compoLocation,
-      compo.name,
+      parentGlyphNames,
       t,
       seenGlyphNames
     );
