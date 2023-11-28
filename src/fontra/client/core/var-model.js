@@ -15,7 +15,7 @@ export class VariationModel {
       throw new VariationError("locations must be unique");
     }
     if (!locationsSet.has("{}")) {
-      throw new VariationError("locations must contain {} default");
+      throw new VariationError("locations must contain default (missing base source)");
     }
     this.locations = sortedLocations(locations, axisOrder);
     // Mapping from user's master order to our master order
