@@ -58,7 +58,7 @@ export class DiscreteVariationModel {
         model = substModel;
         errors = [
           {
-            message: `no variation model for ${formatDiscreteLocationKey(key)}`,
+            message: `there are no sources for ${formatDiscreteLocationKey(key)}`,
             type: "warning",
           },
         ];
