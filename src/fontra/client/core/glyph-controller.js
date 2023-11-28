@@ -287,12 +287,18 @@ export class VariableGlyphController {
         sourcesInfo.defaultSourceLayerName
       );
 
-      for (const { sourceIndex, source } of sourcesInfo.sources) {
+      for (const { sourceIndex, source, discreteLocationKey } of sourcesInfo.sources) {
         if (this._modelErrors?.[i]) {
-          status[sourceIndex] = { error: this._modelErrors[i], isModelError: true };
+          status[sourceIndex] = {
+            error: this._modelErrors[i],
+            isModelError: true,
+            discreteLocationKey,
+          };
         } else {
           const error = errors[referenceLayerName][source.layerName];
-          status[sourceIndex] = error ? { error } : {};
+          status[sourceIndex] = error
+            ? { error, discreteLocationKey }
+            : { discreteLocationKey };
         }
       }
     }
@@ -346,7 +352,7 @@ export class VariableGlyphController {
         const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
         splitSources[key] = { sources: [], defaultSourceIndex, defaultSourceLayerName };
       }
-      splitSources[key].sources.push({ sourceIndex, source });
+      splitSources[key].sources.push({ sourceIndex, source, discreteLocationKey: key });
     }
     return Object.values(splitSources);
   }
