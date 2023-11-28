@@ -10,15 +10,26 @@ from . import getFileSystemBackend, newFileSystemBackend
 logger = logging.getLogger(__name__)
 
 
-async def copyFont(sourceBackend, destBackend, *, numTasks=1, progressInterval=0):
+async def copyFont(
+    sourceBackend, destBackend, *, glyphNames=None, numTasks=1, progressInterval=0
+):
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
     glyphMap = await sourceBackend.getGlyphMap()
-    glyphNamesToCopy = sorted(glyphMap)
+    glyphNamesInFont = set(glyphMap)
+    glyphNamesToCopy = sorted(
+        glyphNamesInFont if not glyphNames else set(glyphNames) & set(glyphMap)
+    )
+    glyphNamesCopied = set()
 
     tasks = [
         asyncio.create_task(
             copyGlyphs(
-                sourceBackend, destBackend, glyphMap, glyphNamesToCopy, progressInterval
+                sourceBackend,
+                destBackend,
+                glyphMap,
+                glyphNamesToCopy,
+                glyphNamesCopied,
+                progressInterval,
             )
         )
         for i in range(numTasks)
@@ -34,15 +45,29 @@ async def copyFont(sourceBackend, destBackend, *, numTasks=1, progressInterval=0
 
 
 async def copyGlyphs(
-    sourceBackend, destBackend, glyphMap, glyphNamesToCopy, progressInterval
+    sourceBackend,
+    destBackend,
+    glyphMap,
+    glyphNamesToCopy,
+    glyphNamesCopied,
+    progressInterval,
 ):
     while glyphNamesToCopy:
         if progressInterval and not (len(glyphNamesToCopy) % progressInterval):
             logger.info(f"{len(glyphNamesToCopy)} glyphs left to copy")
         glyphName = glyphNamesToCopy.pop(0)
+        glyphNamesCopied.update(glyphNamesToCopy)
         logger.debug(f"reading {glyphName}")
         glyph = await sourceBackend.getGlyph(glyphName)
         logger.debug(f"writing {glyphName}")
+
+        componentNames = {
+            compo.name
+            for layer in glyph.layers.values()
+            for compo in layer.glyph.components
+        }
+        glyphNamesToCopy.extend(sorted(componentNames - glyphNamesCopied))
+
         error = await destBackend.putGlyph(glyphName, glyph, glyphMap[glyphName])
         if error:
             # FIXME: putGlyph should always raise, and not return some error string
@@ -60,10 +85,24 @@ async def mainAsync():
     parser.add_argument("source")
     parser.add_argument("destination")
     parser.add_argument("--overwrite", type=bool, default=False)
+    parser.add_argument(
+        "--glyphs", help="A comma- or space-separated list of glyph names", default=""
+    )
+    parser.add_argument(
+        "--glyphs-file",
+        type=argparse.FileType("r"),
+        help="A file containing a space-separated list glyph names",
+    )
     parser.add_argument("--progress-interval", type=int, default=0)
     parser.add_argument("--num-tasks", type=int, default=1)
 
     args = parser.parse_args()
+
+    glyphNames = [
+        glyphName for part in args.glyphs.split(",") for glyphName in part.split()
+    ]
+    if args.glyphs_file is not None:
+        glyphNames.extend(args.glyphs_file.read().split())
 
     sourcePath = pathlib.Path(args.source)
     assert sourcePath.exists()
@@ -85,6 +124,7 @@ async def mainAsync():
         await copyFont(
             sourceBackend,
             destBackend,
+            glyphNames=glyphNames,
             numTasks=args.num_tasks,
             progressInterval=args.progress_interval,
         )
