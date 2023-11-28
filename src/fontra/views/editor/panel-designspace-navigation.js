@@ -1012,9 +1012,9 @@ export default class DesignspaceNavigationPanel extends Panel {
           ? error.glyphs
               .slice(1)
               .map((gn) => "→\u00A0" + gn)
-              .join(" ")
+              .join(" ") + ": "
           : "";
-      const msg = `${error.message} ${nestedGlyphs}`;
+      const msg = `${nestedGlyphs}${error.message}`;
       infoElement.appendChild(new InlineSVG(`/tabler-icons/${icon}.svg`));
       infoElement.append(msg);
       infoElement.appendChild(html.br());
