@@ -104,7 +104,7 @@ export class DesignspaceLocation extends UnlitElement {
     if (!this.axes) {
       return;
     }
-    this._sliders = [];
+    this._sliders = {};
     const elements = [];
     for (const axis of this.axes) {
       if (axis.isDivider) {
