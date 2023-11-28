@@ -401,11 +401,21 @@ export default class DesignspaceNavigationPanel extends Panel {
       (item) => !item.interpolationStatus?.error
     );
     const selectedItem = this.sourcesList.getSelectedItem();
+    const discreteLocationKey = selectedItem?.interpolationStatus.discreteLocationKey;
     const onOff = selectedItem?.interpolationStatus?.error
       ? false
-      : selectedItem && !items.every((item) => item.editing);
+      : selectedItem &&
+        !items.every(
+          (item) =>
+            item.editing ||
+            item.interpolationStatus.discreteLocationKey !== discreteLocationKey
+        );
+
     for (const item of items) {
-      item.editing = onOff || item === selectedItem;
+      item.editing =
+        (onOff &&
+          item.interpolationStatus.discreteLocationKey === discreteLocationKey) ||
+        item === selectedItem;
     }
   }
 
