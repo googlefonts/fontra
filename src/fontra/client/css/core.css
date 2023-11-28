@@ -36,6 +36,7 @@
 
 :root {
   --fontra-red-color: #f11759;
+  --fontra-light-red-color: #ff3366;
 
   --foreground-color-light: var(--fontra-theme-marker) black;
   --foreground-color-dark: white;
