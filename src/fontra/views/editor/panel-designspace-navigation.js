@@ -77,6 +77,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       min-height: 100px;
       flex-shrink: 1000;
     }
+
+    #interpolation-error-info {
+      text-wrap: wrap;
+    }
   `;
 
   constructor(editorController) {
@@ -129,6 +133,9 @@ export default class DesignspaceNavigationPanel extends Panel {
         html.createDomElement("add-remove-buttons", {
           id: "sources-list-add-remove-buttons",
         }),
+        html.createDomElement("div", {
+          id: "interpolation-error-info",
+        }),
       ]
     );
   }
@@ -157,12 +164,14 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateAxes();
       this._updateSources();
       this._updateEditLocalAxesButtonState();
+      this._updateInterpolationErrorInfo();
     });
 
     this.sceneController.addCurrentGlyphChangeListener(
       scheduleCalls((event) => {
         this._updateAxes();
         this._updateSources();
+        this._updateInterpolationErrorInfo();
       }, 100)
     );
 
@@ -172,6 +181,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
         this.updateInterpolationContributions();
+        this._updateInterpolationErrorInfo();
         if (event.senderInfo?.senderID === this) {
           // Sent by us, ignore
           return;
@@ -960,6 +970,31 @@ export default class DesignspaceNavigationPanel extends Panel {
       glyph.axes.splice(0, glyph.axes.length, ...axisItems);
       return "edit axes";
     });
+  }
+
+  async _updateInterpolationErrorInfo() {
+    const infoElement = this.contentElement.querySelector("#interpolation-error-info");
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    if (!glyphController?.errors?.length) {
+      infoElement.innerText = "";
+      return;
+    }
+    infoElement.innerText = "heyyyy";
+
+    const errorStrings = [];
+    for (const error of glyphController.errors) {
+      const iconChar = error.type === "warning" ? "⚠️" : "🔴";
+      const nestedGlyphs =
+        error.glyphs.length > 1
+          ? error.glyphs
+              .slice(1)
+              .map((gn) => "→ " + gn)
+              .join(" ")
+          : "";
+      errorStrings.push(`${iconChar} ${error.message} ${nestedGlyphs}`);
+    }
+
+    infoElement.innerText = errorStrings.join("\n");
   }
 }
 
