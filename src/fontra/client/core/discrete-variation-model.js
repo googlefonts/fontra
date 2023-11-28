@@ -70,8 +70,9 @@ export class DiscreteVariationModel {
           if (!(exc instanceof VariationError)) {
             throw exc;
           }
+          const niceKey = key ? `${formatDiscreteLocationKey(key)}: ` : "";
           errors.push({
-            message: `${exc.message} (${formatDiscreteLocationKey(key)})`,
+            message: `${niceKey}${exc.message}`,
             type: "model-error",
           });
           model = new BrokenVariationModel(locations);
