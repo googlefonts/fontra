@@ -259,11 +259,14 @@ export default class DesignspaceNavigationPanel extends Panel {
           false,
           (item, key) => {
             const selectedItem = this.sourcesList.getSelectedItem();
+            const discreteLocationKey =
+              selectedItem?.interpolationStatus?.discreteLocationKey;
             const newValue =
               item === selectedItem ||
               (!selectedItem ||
               item?.interpolationStatus?.error ||
-              selectedItem?.interpolationStatus?.error
+              selectedItem?.interpolationStatus?.error ||
+              item?.interpolationStatus?.discreteLocationKey !== discreteLocationKey
                 ? false
                 : !item[key]);
             return { newValue, selectItem: !selectedItem };
@@ -401,7 +404,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       (item) => !item.interpolationStatus?.error
     );
     const selectedItem = this.sourcesList.getSelectedItem();
-    const discreteLocationKey = selectedItem?.interpolationStatus.discreteLocationKey;
+    const discreteLocationKey = selectedItem?.interpolationStatus?.discreteLocationKey;
     const onOff = selectedItem?.interpolationStatus?.error
       ? false
       : selectedItem &&
