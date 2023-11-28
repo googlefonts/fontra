@@ -70,7 +70,7 @@ export class DiscreteVariationModel {
           if (!(exc instanceof VariationError)) {
             throw exc;
           }
-          errors.push({ message: `model error: ${exc.message}`, type: "error" });
+          errors.push({ message: `${exc.message}`, type: "model-error" });
           model = new BrokenVariationModel(locations);
         }
       }
@@ -102,7 +102,7 @@ export class DiscreteVariationModel {
         if (!errors) {
           errors = [];
         }
-        errors.push({ message: exc.message, type: "error" });
+        errors.push({ message: exc.message, type: "interpolation-error" });
         model = new BrokenVariationModel(this._locations[key]);
         deltas.deltas[key] = model.getDeltas(deltas.sources[usedKey]);
         const cachedModelInfo = { model, usedKey, errors };
@@ -114,6 +114,17 @@ export class DiscreteVariationModel {
       deltas.deltas[key]
     );
     return { instance, errors };
+  }
+
+  getModelErrors() {
+    const modelErrors = [];
+    for (const key of Object.keys(this._locationsKeyToDiscreteLocation)) {
+      const { errors } = this._getModel(key);
+      if (errors) {
+        modelErrors.push(...errors);
+      }
+    }
+    return modelErrors;
   }
 
   getSourceContributions(location) {
