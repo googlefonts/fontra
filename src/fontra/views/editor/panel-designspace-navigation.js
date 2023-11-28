@@ -84,10 +84,10 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     inline-svg {
       display: inline-block;
-      height: 1.5em;
-      width: 1.5em;
+      height: 1.35em;
+      width: 1.35em;
       color: var(--fontra-light-red-color);
-      transform: translate(0, 0.4em);
+      transform: translate(0, 0.3em);
       margin-right: 0.25em;
     }
   `;
