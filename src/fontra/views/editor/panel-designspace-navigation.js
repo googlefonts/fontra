@@ -1004,7 +1004,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         error.glyphs?.length > 1
           ? error.glyphs
               .slice(1)
-              .map((gn) => "→ " + gn)
+              .map((gn) => "→\u00A0" + gn)
               .join(" ")
           : "";
       const msg = `${error.message} ${nestedGlyphs}`;
