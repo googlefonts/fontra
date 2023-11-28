@@ -81,6 +81,15 @@ export default class DesignspaceNavigationPanel extends Panel {
     #interpolation-error-info {
       text-wrap: wrap;
     }
+
+    inline-svg {
+      display: inline-block;
+      height: 1.5em;
+      width: 1.5em;
+      color: var(--fontra-red-color);
+      transform: translate(0, 0.4em);
+      margin-right: 0.25em;
+    }
   `;
 
   constructor(editorController) {
@@ -975,15 +984,13 @@ export default class DesignspaceNavigationPanel extends Panel {
   async _updateInterpolationErrorInfo() {
     const infoElement = this.contentElement.querySelector("#interpolation-error-info");
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    infoElement.innerText = "";
     if (!glyphController?.errors?.length) {
-      infoElement.innerText = "";
       return;
     }
-    infoElement.innerText = "heyyyy";
 
-    const errorStrings = [];
     for (const error of glyphController.errors) {
-      const iconChar = error.type === "warning" ? "⚠️" : "🔴";
+      const icon = error.type === "warning" ? "alert-triangle" : "bug";
       const nestedGlyphs =
         error.glyphs.length > 1
           ? error.glyphs
@@ -991,10 +998,11 @@ export default class DesignspaceNavigationPanel extends Panel {
               .map((gn) => "→ " + gn)
               .join(" ")
           : "";
-      errorStrings.push(`${iconChar} ${error.message} ${nestedGlyphs}`);
+      const msg = `${error.message} ${nestedGlyphs}`;
+      infoElement.appendChild(new InlineSVG(`/tabler-icons/${icon}.svg`));
+      infoElement.append(msg);
+      infoElement.appendChild(html.br());
     }
-
-    infoElement.innerText = errorStrings.join("\n");
   }
 }
 
@@ -1119,7 +1127,7 @@ function interpolationErrorCell(item, colDesc) {
   return value?.error
     ? html.createDomElement("inline-svg", {
         src: value.isModelError
-          ? "/tabler-icons/exclamation-circle.svg"
+          ? "/tabler-icons/alert-circle.svg"
           : "/tabler-icons/bug.svg",
         style: "width: 1.2em; height: 1.2em; color: #F36;",
         onclick: (event) => {
