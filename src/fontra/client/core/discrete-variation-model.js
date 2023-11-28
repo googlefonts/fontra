@@ -70,7 +70,10 @@ export class DiscreteVariationModel {
           if (!(exc instanceof VariationError)) {
             throw exc;
           }
-          errors.push({ message: `${exc.message}`, type: "model-error" });
+          errors.push({
+            message: `${exc.message} (${formatDiscreteLocationKey(key)})`,
+            type: "model-error",
+          });
           model = new BrokenVariationModel(locations);
         }
       }
