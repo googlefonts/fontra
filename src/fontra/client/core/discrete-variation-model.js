@@ -59,7 +59,7 @@ export class DiscreteVariationModel {
         errors = [
           {
             message: `there are no sources for ${formatDiscreteLocationKey(key)}`,
-            type: "warning",
+            type: "model-warning",
           },
         ];
         usedKey = nearestKey;

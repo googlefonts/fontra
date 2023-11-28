@@ -999,7 +999,14 @@ export default class DesignspaceNavigationPanel extends Panel {
     const errors = instantiateErrors.length ? instantiateErrors : modelErrors;
 
     for (const error of errors) {
-      const icon = error.type === "warning" ? "alert-triangle" : "bug";
+      let icon = "bug";
+      switch (error.type) {
+        case "model-warning":
+          icon = "alert-triangle";
+          break;
+        case "model-error":
+          icon = "alert-circle";
+      }
       const nestedGlyphs =
         error.glyphs?.length > 1
           ? error.glyphs
