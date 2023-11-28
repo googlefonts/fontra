@@ -983,16 +983,25 @@ export default class DesignspaceNavigationPanel extends Panel {
 
   async _updateInterpolationErrorInfo() {
     const infoElement = this.contentElement.querySelector("#interpolation-error-info");
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+
+    const modelErrors = varGlyphController?.model.getModelErrors() || [];
+    const instantiateErrors = glyphController?.errors || [];
+
     infoElement.innerText = "";
-    if (!glyphController?.errors?.length) {
+
+    if (!instantiateErrors.length && !modelErrors.length) {
       return;
     }
 
-    for (const error of glyphController.errors) {
+    const errors = instantiateErrors.length ? instantiateErrors : modelErrors;
+
+    for (const error of errors) {
       const icon = error.type === "warning" ? "alert-triangle" : "bug";
       const nestedGlyphs =
-        error.glyphs.length > 1
+        error.glyphs?.length > 1
           ? error.glyphs
               .slice(1)
               .map((gn) => "→ " + gn)
