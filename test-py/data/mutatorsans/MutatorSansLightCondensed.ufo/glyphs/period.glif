@@ -10,4 +10,13 @@
       <point x="60" y="120" type="line"/>
     </contour>
   </outline>
+  <lib>
+    <dict>
+      <key>xyz.fontra.layer-names</key>
+      <dict>
+        <key>MutatorSans_LightCondensedItalic/public.default</key>
+        <string>LightCondensedItalic</string>
+      </dict>
+    </dict>
+  </lib>
 </glyph>
