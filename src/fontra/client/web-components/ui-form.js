@@ -3,7 +3,7 @@ import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
 import { hyphenatedToCamelCase } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
-import { RotaryControl } from "/web-components/rotary-control.js";
+import "/web-components/rotary-control.js";
 
 export class Form extends SimpleElement {
   static styles = `
@@ -200,14 +200,27 @@ export class Form extends SimpleElement {
       this._fieldChanging(fieldItem.key, value);
       rotaryControl.value = value;
     };
-
+    let valueStream;
     const rotaryControl = html.createDomElement("rotary-control", {
       value: fieldItem.value,
       onChangeCallback: (event) => {
         const value = event.value * -1;
         inputElement.value = value;
-        this._fieldChanging(fieldItem.key, value);
-        console.log(event);
+        if (event.dragBegin) {
+          valueStream = new QueueIterator(5, true);
+          this._fieldChanging(fieldItem.key, value, valueStream);
+        }
+        if (valueStream) {
+          valueStream.put(value);
+          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+          if (event.dragEnd) {
+            valueStream.done();
+            valueStream = undefined;
+            this._dispatchEvent("endChange", { key: fieldItem.key });
+          }
+        } else {
+          this._fieldChanging(fieldItem.key, value, undefined);
+        }
       },
     });
 

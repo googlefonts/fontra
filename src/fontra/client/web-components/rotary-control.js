@@ -106,14 +106,6 @@ export class RotaryControl extends html.UnlitElement {
     return html.div({ class: "rotary-control" }, [
       (this.knob = html.div(
         {
-          onwheel: (event) => {
-            const delta =
-              Math.abs(event.deltaX) > Math.abs(event.deltaY)
-                ? -1 * event.deltaX
-                : event.deltaY;
-            this.value = this.value + delta;
-            this.dispatch();
-          },
           class: "knob",
           style: `transform: rotate(${this.value}deg);`,
           onmousedown: (event) => {
