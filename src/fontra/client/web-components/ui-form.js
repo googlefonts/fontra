@@ -188,18 +188,17 @@ export class Form extends SimpleElement {
   }
 
   _addEditAngle(valueElement, fieldItem) {
-    const inputElement = document.createElement("input");
-    inputElement.type = "number";
-    inputElement.value = fieldItem.value;
-
-    inputElement.step = "any";
-
-    inputElement.disabled = fieldItem.disabled;
-    inputElement.onchange = (event) => {
-      let value = parseFloat(inputElement.value);
-      this._fieldChanging(fieldItem.key, value);
-      rotaryControl.value = value;
-    };
+    const inputElement = html.input({
+      type: "number",
+      value: fieldItem.value,
+      step: "any",
+      disabled: fieldItem.disabled,
+      onchange: () => {
+        let value = parseFloat(inputElement.value);
+        this._fieldChanging(fieldItem.key, value);
+        rotaryControl.value = value;
+      },
+    });
     let valueStream;
     const rotaryControl = html.createDomElement("rotary-control", {
       value: fieldItem.value,
