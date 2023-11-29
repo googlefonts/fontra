@@ -30,6 +30,18 @@
 ]
 ],
 "hidden": false
+},
+{
+"name": "italic",
+"label": "italic",
+"tag": "ital",
+"values": [
+0.0,
+1.0
+],
+"defaultValue": 0.0,
+"mapping": [],
+"hidden": false
 }
 ]
 }

@@ -6,17 +6,9 @@
     <contour>
       <point x="60" y="0" type="line"/>
       <point x="110" y="0" type="line"/>
+      <point x="133" y="62" type="line"/>
       <point x="110" y="120" type="line"/>
       <point x="60" y="120" type="line"/>
     </contour>
   </outline>
-  <lib>
-    <dict>
-      <key>xyz.fontra.layer-names</key>
-      <dict>
-        <key>MutatorSans_LightCondensedItalic/public.default</key>
-        <string>LightCondensedItalic</string>
-      </dict>
-    </dict>
-  </lib>
 </glyph>

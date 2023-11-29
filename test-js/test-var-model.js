@@ -100,10 +100,10 @@ describe("var-model tests", () => {
     it("throw missing base master", () => {
       new VariationModel([{}]); // should not throw
       expect(() => new VariationModel([])).to.throw(
-        "locations must contain {} default"
+        "locations must contain default (missing base source)"
       );
       expect(() => new VariationModel([{ a: 100 }])).to.throw(
-        "locations must contain {} default"
+        "locations must contain default (missing base source)"
       );
     });
 

@@ -36,6 +36,7 @@ async def test_copy_to_fontra(testDSFont, newFontraFont):
             srcGlyph = await testDSFont.getGlyph(glyphName)
             dstGlyph = await dstFont.getGlyph(glyphName)
             assert srcGlyph == dstGlyph
+        assert await testDSFont.getGlobalAxes() == await dstFont.getGlobalAxes()
 
 
 async def test_fontraFormat(testFontraFont, newFontraFont):
@@ -48,6 +49,7 @@ async def test_fontraFormat(testFontraFont, newFontraFont):
         assert testFontraFont.getGlyphData(glyphName) == newFontraFont.getGlyphData(
             glyphName
         )
+    assert await testFontraFont.getGlobalAxes() == await newFontraFont.getGlobalAxes()
 
     assert testFontraFont.fontDataPath.read_text(
         encoding="utf-8"

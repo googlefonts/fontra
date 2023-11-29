@@ -19,6 +19,7 @@ import {
   objectsEqual,
   parseCookies,
   parseSelection,
+  product,
   range,
   reversed,
   reversedEnumerate,
@@ -489,5 +490,47 @@ describe("loadURLFragment + dumpURLFragment", () => {
     expect(dumpURLFragment(obj)).to.equal(expectedFragment);
     expect(loadURLFragment(expectedFragment)).to.deep.equal(obj);
     expect(loadURLFragment(dumpURLFragment(obj))).to.deep.equal(obj);
+  });
+});
+
+describe("product", () => {
+  const testData = [
+    { args: [], product: [[]] },
+    { args: [[]], product: [] },
+    { args: [[1], []], product: [] },
+    { args: [[], [2]], product: [] },
+    { args: [[1, 2]], product: [[1], [2]] },
+    {
+      args: [
+        [1, 2],
+        [3, 4],
+      ],
+      product: [
+        [1, 3],
+        [1, 4],
+        [2, 3],
+        [2, 4],
+      ],
+    },
+    {
+      args: [
+        [1, 2],
+        [3, 4],
+        [5, 6],
+      ],
+      product: [
+        [1, 3, 5],
+        [1, 3, 6],
+        [1, 4, 5],
+        [1, 4, 6],
+        [2, 3, 5],
+        [2, 3, 6],
+        [2, 4, 5],
+        [2, 4, 6],
+      ],
+    },
+  ];
+  parametrize("product test", testData, (testCase) => {
+    expect([...product(...testCase.args)]).to.deep.equal(testCase.product);
   });
 });

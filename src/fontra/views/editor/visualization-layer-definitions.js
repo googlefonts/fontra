@@ -104,10 +104,12 @@ registerVisualizationLayerDefinition({
   name: "Context glyphs",
   selectionMode: "unselected",
   zIndex: 200,
-  colors: { fillColor: "#000" },
-  colorsDarkMode: { fillColor: "#FFF" },
+  colors: { fillColor: "#000", errorColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", errorColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    context.fillStyle = parameters.fillColor;
+    context.fillStyle = positionedGlyph.glyph.errors?.length
+      ? parameters.errorColor
+      : parameters.fillColor;
     context.fill(positionedGlyph.glyph.flattenedPath2d);
   },
 });
@@ -284,8 +286,8 @@ registerVisualizationLayerDefinition({
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
-  colors: { fillColor: "#000", strokeColor: "#7778" },
-  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8" },
+  colors: { fillColor: "#000", strokeColor: "#7778", errorColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#FFF8", errorColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
   },
@@ -298,8 +300,8 @@ registerVisualizationLayerDefinition({
   selectionFilter: (positionedGlyph) => !positionedGlyph.isEmpty,
   zIndex: 200,
   screenParameters: { outerStrokeWidth: 10, innerStrokeWidth: 3 },
-  colors: { fillColor: "#000", strokeColor: "#BBB8" },
-  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8" },
+  colors: { fillColor: "#000", strokeColor: "#BBB8", errorColor: "#AAA" },
+  colorsDarkMode: { fillColor: "#FFF", strokeColor: "#CCC8", errorColor: "#999" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     _drawSelectedGlyphLayer(context, positionedGlyph, parameters);
   },
@@ -312,7 +314,7 @@ function _drawSelectedGlyphLayer(context, positionedGlyph, parameters) {
     parameters.outerStrokeWidth,
     parameters.innerStrokeWidth,
     parameters.strokeColor,
-    parameters.fillColor
+    positionedGlyph.glyph.errors?.length ? parameters.errorColor : parameters.fillColor
   );
 }
 

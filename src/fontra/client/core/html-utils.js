@@ -58,12 +58,12 @@ export class UnlitElement extends SimpleElement {
           if (
             description.type &&
             !(
-              value.constructor === description.type ||
+              value?.constructor === description.type ||
               value instanceof description.type
             )
           ) {
             throw new TypeError(
-              `expected instance of ${description.type.name}, got ${value.constructor.name}`
+              `${prop}: expected instance of ${description.type.name}, got ${value?.constructor.name}`
             );
           }
           this._propertyValues[prop] = value;

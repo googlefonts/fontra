@@ -189,6 +189,29 @@ export function* chain(...iterables) {
   }
 }
 
+export function* product(...args) {
+  // Cartesian product of input iterables.  Equivalent to nested for-loops.
+  // After Python's itertools.product()
+  if (!args.length) {
+    yield [];
+    return;
+  }
+  const first = args[0];
+  args = args.slice(1);
+  if (args.length) {
+    for (const v of first) {
+      const prod = [...product(...args)];
+      for (const w of prod) {
+        yield [v, ...w];
+      }
+    }
+  } else {
+    for (const v of first) {
+      yield [v];
+    }
+  }
+}
+
 export function parseSelection(selection) {
   const result = {};
   for (const item of selection) {

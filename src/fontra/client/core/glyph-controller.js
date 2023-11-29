@@ -3,6 +3,13 @@ import {
   rectIntersectsPolygon,
   simplePolygonArea,
 } from "./convex-hull.js";
+import {
+  DiscreteVariationModel,
+  findNearestLocationIndex,
+  sparsifyLocation,
+  splitDiscreteLocation,
+} from "./discrete-variation-model.js";
+import { VariationError } from "./errors.js";
 import { PathHitTester } from "./path-hit-tester.js";
 import { sectRect } from "./rectangle.js";
 import {
@@ -21,7 +28,7 @@ import {
   normalizeLocation,
   piecewiseLinearMap,
 } from "./var-model.js";
-import { VarPackedPath, joinPaths, joinPathsAsync } from "./var-path.js";
+import { VarPackedPath, joinPaths } from "./var-path.js";
 
 export class VariableGlyphController {
   constructor(glyph, globalAxes) {
@@ -54,6 +61,20 @@ export class VariableGlyphController {
     return this._combinedAxes;
   }
 
+  get continuousAxes() {
+    if (this._continuousAxes === undefined) {
+      this._setupAxisMapping();
+    }
+    return this._continuousAxes;
+  }
+
+  get discreteAxes() {
+    if (this._discreteAxes === undefined) {
+      this._setupAxisMapping();
+    }
+    return this._discreteAxes;
+  }
+
   get localToGlobalMapping() {
     if (this._localToGlobalMapping === undefined) {
       this._setupAxisMapping();
@@ -62,15 +83,28 @@ export class VariableGlyphController {
   }
 
   _setupAxisMapping() {
-    this._combinedAxes = Array.from(this.axes);
+    this._discreteAxes = [];
+    this._continuousAxes = Array.from(this.axes);
     this._localToGlobalMapping = [];
     const localAxisDict = {};
     for (const localAxis of this.axes) {
       localAxisDict[localAxis.name] = localAxis;
     }
     for (let globalAxis of this.globalAxes) {
-      // Apply user-facing avar mapping: we need "designspace" coordinates here
+      // Apply user-facing avar mapping: we need "source" / "designspace" coordinates here
       const mapFunc = makeAxisMapFunc(globalAxis);
+      if (globalAxis.values) {
+        this._discreteAxes.push({
+          name: globalAxis.name,
+          defaultValue: mapFunc(globalAxis.defaultValue),
+          values: globalAxis.values.map(mapFunc),
+        });
+        // We don't support local discrete axes.
+        // TODO: a name conflict between a discrete global axis and a
+        // continuous local axis is a true conflict. We don't catch that
+        // now, and TBH I'm not sure how to resolve that.
+        continue;
+      }
       globalAxis = {
         name: globalAxis.name,
         minValue: mapFunc(globalAxis.minValue),
@@ -86,9 +120,10 @@ export class VariableGlyphController {
         ];
         this._localToGlobalMapping.push({ name: globalAxis.name, mapping: mapping });
       } else {
-        this._combinedAxes.push(globalAxis);
+        this._continuousAxes.push(globalAxis);
       }
     }
+    this._combinedAxes = [...this._discreteAxes, ...this._continuousAxes];
   }
 
   getSourceIndex(location) {
@@ -173,6 +208,8 @@ export class VariableGlyphController {
     delete this._deltas;
     delete this._sourceInterpolationStatus;
     delete this._combinedAxes;
+    delete this._discreteAxes;
+    delete this._continuousAxes;
     delete this._localToGlobalMapping;
     this._locationToSourceIndex = {};
     this._layerGlyphControllers = {};
@@ -183,21 +220,17 @@ export class VariableGlyphController {
       const locations = this.sources
         .filter((source) => !source.inactive)
         .map((source) => source.location);
-      const mappedLocations = locations.map((location) =>
-        sparsifyLocation(normalizeLocation(location, this.combinedAxes))
+      this._model = new DiscreteVariationModel(
+        locations,
+        this.discreteAxes,
+        this.continuousAxes
       );
-      try {
-        this._model = new VariationModel(mappedLocations);
-      } catch (error) {
-        console.log("error setting up the variation model:", error.toString());
-        this._model = new VariationModel([{}]);
-        this._modelErrors = this._getLocationErrors();
-      }
     }
     return this._model;
   }
 
   _getLocationErrors() {
+    // XXXX This method is currently not used, and also broken wrt. discrete axes
     const locationStrings = this.sources.map((source) =>
       source.inactive
         ? null
@@ -240,56 +273,92 @@ export class VariableGlyphController {
 
   get sourceInterpolationStatus() {
     if (this._sourceInterpolationStatus === undefined) {
-      const layerGlyphs = {};
-      for (const source of this.sources) {
-        if (source.layerName in layerGlyphs) {
-          continue;
-        }
-        layerGlyphs[source.layerName] = stripComponentLocations(
-          this.layers[source.layerName].glyph
-        );
-      }
-      const defaultSourceIndex = this.model?.reverseMapping[0] || 0;
-      const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
-
-      let layerNames = Object.keys(layerGlyphs);
-      layerNames = [
-        defaultSourceLayerName,
-        ...layerNames.filter((name) => name !== defaultSourceLayerName),
-      ].slice(0, Math.ceil(layerNames.length / 2));
-
-      const errors = {};
-      let referenceLayerName = defaultSourceLayerName;
-      for (const layerName of layerNames) {
-        errors[layerName] = checkInterpolationCompatibility(
-          layerName,
-          layerGlyphs,
-          errors
-        );
-        if (Object.keys(errors[layerName]).length <= this.sources.length / 2) {
-          // The number of incompatible sources is half of all sources or less:
-          // we've found the optimal reference layer.
-          referenceLayerName = layerName;
-          break;
-        }
-      }
-      const status = [];
-      for (const [i, source] of enumerate(this.sources)) {
-        if (this._modelErrors?.[i]) {
-          status.push({ error: this._modelErrors[i], isModelError: true });
-        } else {
-          const error = errors[referenceLayerName][source.layerName];
-          status.push(error ? { error } : {});
-        }
-      }
-      this._sourceInterpolationStatus = status;
+      this._sourceInterpolationStatus = this._computeSourceInterpolationStatus();
     }
     return this._sourceInterpolationStatus;
   }
 
+  _computeSourceInterpolationStatus() {
+    const status = new Array(this.sources.length);
+    status.fill({});
+    for (const sourcesInfo of this._splitSourcesByDiscreteLocation()) {
+      const { errors, referenceLayerName } = this._computeInterpolStatusForSources(
+        sourcesInfo.sources,
+        sourcesInfo.defaultSourceLayerName
+      );
+
+      for (const { sourceIndex, source, discreteLocationKey } of sourcesInfo.sources) {
+        if (this._modelErrors?.[i]) {
+          status[sourceIndex] = {
+            error: this._modelErrors[i],
+            isModelError: true,
+            discreteLocationKey,
+          };
+        } else {
+          const error = errors[referenceLayerName][source.layerName];
+          status[sourceIndex] = error
+            ? { error, discreteLocationKey }
+            : { discreteLocationKey };
+        }
+      }
+    }
+    return status;
+  }
+
+  _computeInterpolStatusForSources(sources, defaultSourceLayerName) {
+    const layerGlyphs = {};
+    for (const { source } of sources) {
+      if (source.layerName in layerGlyphs) {
+        continue;
+      }
+      layerGlyphs[source.layerName] = stripComponentLocations(
+        this.layers[source.layerName].glyph
+      );
+    }
+
+    let layerNames = Object.keys(layerGlyphs);
+    layerNames = [
+      defaultSourceLayerName,
+      ...layerNames.filter((name) => name !== defaultSourceLayerName),
+    ].slice(0, Math.ceil(layerNames.length / 2));
+
+    const errors = {};
+    let referenceLayerName = defaultSourceLayerName;
+    for (const layerName of layerNames) {
+      errors[layerName] = checkInterpolationCompatibility(
+        layerName,
+        layerGlyphs,
+        errors
+      );
+      if (Object.keys(errors[layerName]).length <= sources.length / 2) {
+        // The number of incompatible sources is half of all sources or less:
+        // we've found the optimal reference layer.
+        referenceLayerName = layerName;
+        break;
+      }
+    }
+    return { errors, referenceLayerName };
+  }
+
+  _splitSourcesByDiscreteLocation() {
+    const splitSources = {};
+    for (const [sourceIndex, source] of enumerate(this.sources)) {
+      const splitLoc = splitDiscreteLocation(source.location, this.discreteAxes);
+      const key = JSON.stringify(splitLoc.discreteLocation);
+      if (!(key in splitSources)) {
+        const defaultSourceIndex = this.model.getDefaultSourceIndexForDiscreteLocation(
+          splitLoc.discreteLocation
+        );
+        const defaultSourceLayerName = this.sources[defaultSourceIndex].layerName;
+        splitSources[key] = { sources: [], defaultSourceIndex, defaultSourceLayerName };
+      }
+      splitSources[key].sources.push({ sourceIndex, source, discreteLocationKey: key });
+    }
+    return Object.values(splitSources);
+  }
+
   getInterpolationContributions(location) {
     location = this.mapLocationGlobalToLocal(location);
-    location = normalizeLocation(location, this.combinedAxes);
     const contributions = this.model.getSourceContributions(location);
 
     let sourceIndex = 0;
@@ -298,7 +367,7 @@ export class VariableGlyphController {
       if (source.inactive) {
         orderedContributions.push(null);
       } else {
-        const value = contributions[this.model.mapping[sourceIndex]];
+        const value = contributions[sourceIndex];
         orderedContributions.push(value);
         sourceIndex++;
       }
@@ -330,27 +399,17 @@ export class VariableGlyphController {
     return instanceController;
   }
 
-  async instantiate(normalizedLocation, getGlyphFunc) {
-    try {
-      return this.model.interpolateFromDeltas(
-        normalizedLocation,
-        await this.getDeltas(getGlyphFunc)
-      );
-    } catch (error) {
-      if (error.name !== "VariationError") {
-        throw error;
-      }
-      const errorMessage = `Interpolation error while instantiating glyph ${
-        this.name
-      } (${error.toString()})`;
-      console.log(errorMessage);
-      const indexInfo = findNearestSourceIndexFromLocation(
-        this.glyph,
-        normalizedLocation,
-        this.combinedAxes
-      );
-      return this.layers[this.sources[indexInfo.index].layerName].glyph;
+  async instantiate(location, getGlyphFunc) {
+    let { instance, errors } = this.model.interpolateFromDeltas(
+      location,
+      await this.getDeltas(getGlyphFunc)
+    );
+    if (errors) {
+      errors = errors.map((error) => {
+        return { ...error, glyphs: [this.name] };
+      });
     }
+    return { instance, errors };
   }
 
   async instantiateController(location, layerName, getGlyphFunc) {
@@ -371,15 +430,11 @@ export class VariableGlyphController {
       }
     }
 
-    let instance;
     if (layerName != undefined) {
       return await this.getLayerGlyphController(layerName, sourceIndex, getGlyphFunc);
-    } else {
-      instance = await this.instantiate(
-        normalizeLocation(location, this.combinedAxes),
-        getGlyphFunc
-      );
     }
+
+    const { instance, errors } = await this.instantiate(location, getGlyphFunc);
 
     if (!instance) {
       throw new Error("assert -- instance is undefined");
@@ -388,7 +443,8 @@ export class VariableGlyphController {
       this.name,
       instance,
       sourceIndex,
-      layerName
+      layerName,
+      errors
     );
 
     await instanceController.setupComponents(getGlyphFunc, location);
@@ -410,17 +466,28 @@ export class VariableGlyphController {
   }
 
   findNearestSourceFromGlobalLocation(location, skipInactive = false) {
-    const normalizedLocation = normalizeLocation(
-      this.mapLocationGlobalToLocal(location),
-      this.combinedAxes
+    location = this.mapLocationGlobalToLocal(location);
+    const splitLoc = splitDiscreteLocation(location, this.discreteAxes);
+
+    // Ensure locations are *not* sparse
+
+    const defaultLocation = Object.fromEntries(
+      this.combinedAxes.map((axis) => [axis.name, axis.defaultValue])
     );
-    const indexInfo = findNearestSourceIndexFromLocation(
-      this.glyph,
-      normalizedLocation,
-      this.combinedAxes,
-      skipInactive
-    );
-    return indexInfo.index;
+
+    const targetLocation = { ...defaultLocation, ...location };
+    const sourceIndexMapping = [];
+    const activeLocations = [];
+    for (const [index, source] of enumerate(this.sources)) {
+      if (source.inactive) {
+        continue;
+      }
+      sourceIndexMapping.push(index);
+      activeLocations.push({ ...defaultLocation, ...source.location });
+    }
+
+    const nearestIndex = findNearestLocationIndex(targetLocation, activeLocations);
+    return sourceIndexMapping[nearestIndex];
   }
 
   mapLocationGlobalToLocal(location) {
@@ -445,22 +512,40 @@ export class VariableGlyphController {
 }
 
 export class StaticGlyphController {
-  constructor(name, instance, sourceIndex, layerName) {
+  constructor(name, instance, sourceIndex, layerName, errors) {
     this.name = name;
     this.instance = instance;
     this.sourceIndex = sourceIndex;
     this.layerName = layerName;
-    this.canEdit = layerName !== undefined;
+    this.errors = errors;
+    this.canEdit = layerName != undefined;
     this.components = [];
   }
 
   async setupComponents(getGlyphFunc, parentLocation) {
     this.components = [];
+    const componentErrors = [];
     for (const compo of this.instance.components) {
       const compoController = new ComponentController(compo);
-      await compoController.setupPath(getGlyphFunc, parentLocation);
+      const errors = await compoController.setupPath(getGlyphFunc, parentLocation, [
+        this.name,
+      ]);
+      if (errors) {
+        componentErrors.push(...errors);
+      }
       this.components.push(compoController);
     }
+    this._extendErrors(componentErrors);
+  }
+
+  _extendErrors(errors) {
+    if (!errors.length) {
+      return;
+    }
+    if (!this.errors) {
+      this.errors = [];
+    }
+    this.errors.push(...errors);
   }
 
   get xAdvance() {
@@ -603,8 +688,15 @@ class ComponentController {
     this.compo = compo;
   }
 
-  async setupPath(getGlyphFunc, parentLocation) {
-    this.path = await flattenComponent(this.compo, getGlyphFunc, parentLocation);
+  async setupPath(getGlyphFunc, parentLocation, parentGlyphNames) {
+    const { path, errors } = await flattenComponent(
+      this.compo,
+      getGlyphFunc,
+      parentLocation,
+      parentGlyphNames
+    );
+    this.path = path;
+    return errors;
   }
 
   get path2d() {
@@ -665,16 +757,31 @@ class ComponentController {
   }
 }
 
-async function flattenComponent(compo, getGlyphFunc, parentLocation) {
-  return await joinPathsAsync(
-    iterFlattenedComponentPaths(compo, getGlyphFunc, parentLocation)
-  );
+async function flattenComponent(compo, getGlyphFunc, parentLocation, parentGlyphNames) {
+  let componentErrors = [];
+  const paths = [];
+  for await (const { path, errors } of iterFlattenedComponentPaths(
+    compo,
+    getGlyphFunc,
+    parentLocation,
+    parentGlyphNames
+  )) {
+    paths.push(path);
+    if (errors) {
+      componentErrors.push(...errors);
+    }
+  }
+  if (!componentErrors.length) {
+    componentErrors = undefined;
+  }
+  return { path: joinPaths(paths), errors: componentErrors };
 }
 
 async function* iterFlattenedComponentPaths(
   compo,
   getGlyphFunc,
   parentLocation,
+  parentGlyphNames,
   transformation = null,
   seenGlyphNames = null
 ) {
@@ -685,29 +792,20 @@ async function* iterFlattenedComponentPaths(
     return;
   }
   seenGlyphNames.add(compo.name);
+  parentGlyphNames = [...parentGlyphNames, compo.name];
 
   const compoLocation = mergeLocations(parentLocation, compo.location) || {};
   const glyph = await getGlyphFunc(compo.name);
-  let inst;
+  let inst, instErrors;
   if (!glyph) {
     // console.log(`component glyph ${compo.name} was not found`);
     inst = makeMissingComponentPlaceholderGlyph();
   } else {
-    try {
-      inst = await glyph.instantiate(
-        normalizeLocation(compoLocation, glyph.combinedAxes),
-        getGlyphFunc
-      );
-    } catch (error) {
-      if (error.name !== "VariationError") {
-        throw error;
-      }
-      const errorMessage = `Interpolation error while instantiating component ${
-        compo.name
-      } (${error.toString()})`;
-      console.log(errorMessage);
-      return;
-    }
+    const { instance, errors } = await glyph.instantiate(compoLocation, getGlyphFunc);
+    inst = instance;
+    instErrors = errors?.map((error) => {
+      return { ...error, glyphs: parentGlyphNames };
+    });
     if (!inst.path.numPoints && !inst.components.length) {
       inst = makeEmptyComponentPlaceholderGlyph();
     }
@@ -718,13 +816,14 @@ async function* iterFlattenedComponentPaths(
   }
   const componentPaths = {};
   if (inst.path.numPoints) {
-    yield inst.path.transformed(t);
+    yield { path: inst.path.transformed(t), errors: instErrors };
   }
   for (const subCompo of inst.components) {
     yield* iterFlattenedComponentPaths(
       subCompo,
       getGlyphFunc,
       compoLocation,
+      parentGlyphNames,
       t,
       seenGlyphNames
     );
@@ -757,8 +856,8 @@ export async function decomposeComponents(
       ...parentSourceLocation,
       ...mapLocationExpandNLI(component.location, baseGlyph.axes),
     };
-    const compoInstance = await baseGlyph.instantiate(
-      normalizeLocation(location, baseGlyph.combinedAxes),
+    const { instance: compoInstance, errors } = await baseGlyph.instantiate(
+      location,
       getGlyphFunc
     );
     const t = makeAffineTransform(component.transformation);
@@ -783,17 +882,6 @@ function makeAxisMapFunc(axis) {
   }
   const mapping = Object.fromEntries(axis.mapping);
   return (v) => piecewiseLinearMap(v, mapping);
-}
-
-function sparsifyLocation(location) {
-  // location must be normalized
-  const sparseLocation = {};
-  for (const [name, value] of Object.entries(location)) {
-    if (value) {
-      sparseLocation[name] = value;
-    }
-  }
-  return sparseLocation;
 }
 
 export function getAxisBaseName(axisName) {
@@ -889,41 +977,6 @@ function subsetLocation(location, axes) {
     }
   }
   return subsettedLocation;
-}
-
-function findNearestSourceIndexFromLocation(
-  glyph,
-  location,
-  axes,
-  skipInactive = false
-) {
-  const distances = [];
-  if (!glyph.sources.length) {
-    throw Error("assert -- glyph has no sources");
-  }
-  for (let i = 0; i < glyph.sources.length; i++) {
-    const source = glyph.sources[i];
-    if (skipInactive && source.inactive) {
-      continue;
-    }
-    const sourceLocation = normalizeLocation(source.location, axes);
-    let distanceSquared = 0;
-    for (const [axisName, value] of Object.entries(location)) {
-      const sourceValue = sourceLocation[axisName];
-      distanceSquared += (sourceValue - value) ** 2;
-    }
-    if (distanceSquared === 0) {
-      // exact match, no need to look further
-      return { distance: 0, index: i };
-    }
-    distances.push([distanceSquared, i]);
-  }
-  distances.sort((a, b) => {
-    const da = a[0];
-    const db = b[0];
-    return (a > b) - (a < b);
-  });
-  return { distance: Math.sqrt(distances[0][0]), index: distances[0][1] };
 }
 
 function makeMissingComponentPlaceholderGlyph() {

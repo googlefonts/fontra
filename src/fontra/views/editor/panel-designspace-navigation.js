@@ -77,6 +77,19 @@ export default class DesignspaceNavigationPanel extends Panel {
       min-height: 100px;
       flex-shrink: 1000;
     }
+
+    #interpolation-error-info {
+      text-wrap: wrap;
+    }
+
+    inline-svg {
+      display: inline-block;
+      height: 1.35em;
+      width: 1.35em;
+      color: var(--fontra-light-red-color);
+      transform: translate(0, 0.3em);
+      margin-right: 0.25em;
+    }
   `;
 
   constructor(editorController) {
@@ -129,6 +142,9 @@ export default class DesignspaceNavigationPanel extends Panel {
         html.createDomElement("add-remove-buttons", {
           id: "sources-list-add-remove-buttons",
         }),
+        html.createDomElement("div", {
+          id: "interpolation-error-info",
+        }),
       ]
     );
   }
@@ -157,12 +173,14 @@ export default class DesignspaceNavigationPanel extends Panel {
       this._updateAxes();
       this._updateSources();
       this._updateEditLocalAxesButtonState();
+      this._updateInterpolationErrorInfo();
     });
 
     this.sceneController.addCurrentGlyphChangeListener(
       scheduleCalls((event) => {
         this._updateAxes();
         this._updateSources();
+        this._updateInterpolationErrorInfo();
       }, 100)
     );
 
@@ -172,6 +190,7 @@ export default class DesignspaceNavigationPanel extends Panel {
         this.sceneSettings.editLayerName = null;
         this.updateResetAllAxesButtonState();
         this.updateInterpolationContributions();
+        this._updateInterpolationErrorInfo();
         if (event.senderInfo?.senderID === this) {
           // Sent by us, ignore
           return;
@@ -240,11 +259,14 @@ export default class DesignspaceNavigationPanel extends Panel {
           false,
           (item, key) => {
             const selectedItem = this.sourcesList.getSelectedItem();
+            const discreteLocationKey =
+              selectedItem?.interpolationStatus?.discreteLocationKey;
             const newValue =
               item === selectedItem ||
               (!selectedItem ||
               item?.interpolationStatus?.error ||
-              selectedItem?.interpolationStatus?.error
+              selectedItem?.interpolationStatus?.error ||
+              item?.interpolationStatus?.discreteLocationKey !== discreteLocationKey
                 ? false
                 : !item[key]);
             return { newValue, selectItem: !selectedItem };
@@ -382,11 +404,21 @@ export default class DesignspaceNavigationPanel extends Panel {
       (item) => !item.interpolationStatus?.error
     );
     const selectedItem = this.sourcesList.getSelectedItem();
+    const discreteLocationKey = selectedItem?.interpolationStatus?.discreteLocationKey;
     const onOff = selectedItem?.interpolationStatus?.error
       ? false
-      : selectedItem && !items.every((item) => item.editing);
+      : selectedItem &&
+        !items.every(
+          (item) =>
+            item.editing ||
+            item.interpolationStatus.discreteLocationKey !== discreteLocationKey
+        );
+
     for (const item of items) {
-      item.editing = onOff || item === selectedItem;
+      item.editing =
+        (onOff &&
+          item.interpolationStatus.discreteLocationKey === discreteLocationKey) ||
+        item === selectedItem;
     }
   }
 
@@ -616,12 +648,8 @@ export default class DesignspaceNavigationPanel extends Panel {
       this.sceneController.sceneModel.fontController
     );
 
-    const instance = (
-      await glyphController.instantiate(
-        normalizeLocation(newLocation, glyphController.combinedAxes),
-        getGlyphFunc
-      )
-    ).copy();
+    let { instance } = await glyphController.instantiate(newLocation, getGlyphFunc);
+    instance = instance.copy();
     // Round coordinates and component positions
     instance.path = instance.path.roundCoordinates();
     roundComponentOrigins(instance.components);
@@ -965,6 +993,46 @@ export default class DesignspaceNavigationPanel extends Panel {
       return "edit axes";
     });
   }
+
+  async _updateInterpolationErrorInfo() {
+    const infoElement = this.contentElement.querySelector("#interpolation-error-info");
+    const varGlyphController =
+      await this.sceneModel.getSelectedVariableGlyphController();
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+
+    const modelErrors = varGlyphController?.model.getModelErrors() || [];
+    const instantiateErrors = glyphController?.errors || [];
+
+    infoElement.innerText = "";
+
+    if (!instantiateErrors.length && !modelErrors.length) {
+      return;
+    }
+
+    const errors = instantiateErrors.length ? instantiateErrors : modelErrors;
+
+    for (const error of errors) {
+      let icon = "bug";
+      switch (error.type) {
+        case "model-warning":
+          icon = "alert-triangle";
+          break;
+        case "model-error":
+          icon = "alert-circle";
+      }
+      const nestedGlyphs =
+        error.glyphs?.length > 1
+          ? error.glyphs
+              .slice(1)
+              .map((gn) => "→\u00A0" + gn)
+              .join(" ") + ": "
+          : "";
+      const msg = `${nestedGlyphs}${error.message}`;
+      infoElement.appendChild(new InlineSVG(`/tabler-icons/${icon}.svg`));
+      infoElement.append(msg);
+      infoElement.appendChild(html.br());
+    }
+  }
 }
 
 function mapAxesFromUserSpaceToDesignspace(axes) {
@@ -1088,9 +1156,9 @@ function interpolationErrorCell(item, colDesc) {
   return value?.error
     ? html.createDomElement("inline-svg", {
         src: value.isModelError
-          ? "/tabler-icons/exclamation-circle.svg"
+          ? "/tabler-icons/alert-circle.svg"
           : "/tabler-icons/bug.svg",
-        style: "width: 1.2em; height: 1.2em; color: #F36;",
+        style: "width: 1.2em; height: 1.2em; color: var(--fontra-light-red-color);",
         onclick: (event) => {
           event.stopImmediatePropagation();
           dialog(

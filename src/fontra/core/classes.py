@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass, field, is_dataclass, replace
 from functools import partial
-from typing import Any, Optional, Union, get_args, get_type_hints
+from typing import Any, Optional, Union, get_args, get_origin, get_type_hints
 
 import cattrs
 from fontTools.misc.transform import DecomposedTransform
@@ -109,6 +109,17 @@ class GlobalAxis:
     hidden: bool = False
 
 
+@dataclass(kw_only=True)
+class GlobalDiscreteAxis:
+    name: str  # this identifies the axis
+    label: str  # a user friendly label
+    tag: str  # the opentype 4-char tag
+    values: list[float]
+    defaultValue: float
+    mapping: list[list[float]] = field(default_factory=list)
+    hidden: bool = False
+
+
 GlyphSet = dict[str, VariableGlyph]
 GlyphMap = dict[str, list[int]]
 
@@ -119,7 +130,7 @@ class Font:
     glyphs: GlyphSet = field(default_factory=GlyphSet)
     glyphMap: GlyphMap = field(default_factory=GlyphMap)
     lib: dict = field(default_factory=dict)
-    axes: list[GlobalAxis] = field(default_factory=list)
+    axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
 
     def _trackAssignedAttributeNames(self):
         # see fonthandler.py
@@ -152,6 +163,8 @@ def makeSchema(*classes, schema=None):
                     makeSchema(subtype, schema=schema)
             elif tp.__name__ == "list":
                 [subtype] = get_args(tp)
+                if get_origin(subtype) == Union:
+                    subtype = get_args(subtype)[0]  # just take the first for now
                 fieldDef["subtype"] = subtype
                 if is_dataclass(subtype):
                     makeSchema(subtype, schema=schema)
@@ -165,7 +178,7 @@ def makeSchema(*classes, schema=None):
                 if is_dataclass(subtype):
                     makeSchema(subtype, schema=schema)
             elif tp.__name__ == "Union":
-                tp = get_args(tp)[0]
+                tp = get_args(tp)[0]  # just take the first for now
                 fieldDef = dict(type=tp)
                 makeSchema(tp, schema=schema)
             classFields[name] = fieldDef
@@ -180,6 +193,13 @@ def _structurePath(d, tp):
         return cattrs.structure(d, Path)
     else:
         return cattrs.structure(d, PackedPath)
+
+
+def _structureGlobalAxis(d, tp):
+    if "values" not in d:
+        return cattrs.structure(d, GlobalAxis)
+    else:
+        return cattrs.structure(d, GlobalDiscreteAxis)
 
 
 def _structureNumber(d, tp):
@@ -200,6 +220,9 @@ def _structurePointType(v, tp):
 
 
 cattrs.register_structure_hook(Union[PackedPath, Path], _structurePath)
+cattrs.register_structure_hook(
+    Union[GlobalAxis, GlobalDiscreteAxis], _structureGlobalAxis
+)
 cattrs.register_structure_hook(float, _structureNumber)
 cattrs.register_structure_hook(Point, _structurePoint)
 cattrs.register_unstructure_hook(Point, _unstructurePoint)

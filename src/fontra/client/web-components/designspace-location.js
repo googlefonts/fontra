@@ -139,15 +139,21 @@ export class DesignspaceLocation extends UnlitElement {
           [axis.name]
         )
       );
-      const slider = html.createDomElement("range-slider", {
-        minValue: axis.minValue,
-        maxValue: axis.maxValue,
-        values: axis.values,
+      const parms = {
         defaultValue: axis.defaultValue,
         value: modelValue !== undefined ? modelValue : axis.defaultValue,
         onChangeCallback: (event) =>
           this._dispatchLocationChangedEvent(axis.name, event.value),
-      });
+      };
+      if (axis.values) {
+        // Discrete axis
+        parms.values = axis.values;
+      } else {
+        // Continuous axis
+        parms.minValue = axis.minValue;
+        parms.maxValue = axis.maxValue;
+      }
+      const slider = html.createDomElement("range-slider", parms);
       this._sliders[axis.name] = slider;
       elements.push(slider);
       elements.push(infoBox);

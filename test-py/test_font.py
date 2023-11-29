@@ -6,7 +6,7 @@ import cattrs
 import pytest
 
 from fontra.backends import getFileSystemBackend
-from fontra.core.classes import GlobalAxis, VariableGlyph
+from fontra.core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -105,23 +105,28 @@ getGlyphTestData = [
             "sources": [
                 {
                     "name": "LightCondensed",
-                    "location": {"weight": 150.0, "width": 0.0},
+                    "location": {"italic": 0, "weight": 150.0, "width": 0.0},
                     "layerName": "MutatorSansLightCondensed/foreground",
                 },
                 {
                     "name": "BoldCondensed",
-                    "location": {"weight": 850.0, "width": 0.0},
+                    "location": {"italic": 0, "weight": 850.0, "width": 0.0},
                     "layerName": "MutatorSansBoldCondensed/foreground",
                 },
                 {
                     "name": "LightWide",
-                    "location": {"weight": 150.0, "width": 1000.0},
+                    "location": {"italic": 0, "weight": 150.0, "width": 1000.0},
                     "layerName": "MutatorSansLightWide/foreground",
                 },
                 {
                     "name": "BoldWide",
-                    "location": {"weight": 850.0, "width": 1000.0},
+                    "location": {"italic": 0, "weight": 850.0, "width": 1000.0},
                     "layerName": "MutatorSansBoldWide/foreground",
+                },
+                {
+                    "name": "LightCondensedItalic",
+                    "location": {"italic": 1, "weight": 150.0, "width": 0.0},
+                    "layerName": "MutatorSansLightCondensedItalic/public.default",
                 },
             ],
             "layers": {
@@ -175,6 +180,16 @@ getGlyphTestData = [
                         },
                     },
                 },
+                "MutatorSansLightCondensedItalic/public.default": {
+                    "glyph": {
+                        "xAdvance": 170,
+                        "path": {
+                            "contourInfo": [{"endPoint": 4, "isClosed": True}],
+                            "coordinates": [60, 0, 110, 0, 133, 62, 110, 120, 60, 120],
+                            "pointTypes": [0, 0, 0, 0, 0],
+                        },
+                    }
+                },
             },
         },
     ),
@@ -185,22 +200,22 @@ getGlyphTestData = [
             "sources": [
                 {
                     "name": "LightCondensed",
-                    "location": {"weight": 150.0, "width": 0.0},
+                    "location": {"italic": 0, "weight": 150.0, "width": 0.0},
                     "layerName": "MutatorSansLightCondensed/foreground",
                 },
                 {
                     "name": "BoldCondensed",
-                    "location": {"weight": 850.0, "width": 0.0},
+                    "location": {"italic": 0, "weight": 850.0, "width": 0.0},
                     "layerName": "MutatorSansBoldCondensed/foreground",
                 },
                 {
                     "name": "LightWide",
-                    "location": {"weight": 150.0, "width": 1000.0},
+                    "location": {"italic": 0, "weight": 150.0, "width": 1000.0},
                     "layerName": "MutatorSansLightWide/foreground",
                 },
                 {
                     "name": "BoldWide",
-                    "location": {"weight": 850.0, "width": 1000.0},
+                    "location": {"italic": 0, "weight": 850.0, "width": 1000.0},
                     "layerName": "MutatorSansBoldWide/foreground",
                 },
             ],
@@ -363,12 +378,12 @@ getGlyphTestData = [
             "sources": [
                 {
                     "name": "LightCondensed",
-                    "location": {"weight": 150.0, "width": 0.0},
+                    "location": {"italic": 0, "weight": 150.0, "width": 0.0},
                     "layerName": "MutatorSansLightCondensed/foreground",
                 },
                 {
                     "name": "weight=850",
-                    "location": {"weight": 850.0, "width": 0.0},
+                    "location": {"italic": 0, "weight": 850.0, "width": 0.0},
                     "layerName": "weight=850",
                 },
             ],
@@ -491,7 +506,7 @@ getGlyphTestData = [
             "sources": [
                 {
                     "layerName": "MutatorSansLightCondensed/foreground",
-                    "location": {"weight": 150.0, "width": 0.0},
+                    "location": {"italic": 0, "weight": 150.0, "width": 0.0},
                     "name": "LightCondensed",
                 },
                 {
@@ -976,6 +991,15 @@ getGlobalAxesTestData = [
                 label="weight",
                 name="weight",
                 tag="wght",
+            ),
+            GlobalDiscreteAxis(
+                name="italic",
+                label="italic",
+                tag="ital",
+                values=[0.0, 1.0],
+                defaultValue=0.0,
+                mapping=[],
+                hidden=False,
             ),
         ],
     ),
