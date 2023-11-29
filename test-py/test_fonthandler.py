@@ -27,6 +27,7 @@ mutatorFiles = [
     "MutatorSansBoldCondensed.ufo",
     "MutatorSansBoldWide.ufo",
     "MutatorSansLightCondensed.ufo",
+    "MutatorSansLightCondensedItalic.ufo",
     "MutatorSansLightWide.ufo",
 ]
 

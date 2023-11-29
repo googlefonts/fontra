@@ -123,6 +123,11 @@ getGlyphTestData = [
                     "location": {"italic": 0, "weight": 850.0, "width": 1000.0},
                     "layerName": "MutatorSansBoldWide/foreground",
                 },
+                {
+                    "name": "LightCondensedItalic",
+                    "location": {"italic": 1, "weight": 150.0, "width": 0.0},
+                    "layerName": "MutatorSansLightCondensedItalic/public.default",
+                },
             ],
             "layers": {
                 "MutatorSansLightCondensed/foreground": {
@@ -174,6 +179,16 @@ getGlyphTestData = [
                             "pointTypes": [0, 0, 0, 0],
                         },
                     },
+                },
+                "MutatorSansLightCondensedItalic/public.default": {
+                    "glyph": {
+                        "xAdvance": 170,
+                        "path": {
+                            "contourInfo": [{"endPoint": 4, "isClosed": True}],
+                            "coordinates": [60, 0, 110, 0, 133, 62, 110, 120, 60, 120],
+                            "pointTypes": [0, 0, 0, 0, 0],
+                        },
+                    }
                 },
             },
         },
