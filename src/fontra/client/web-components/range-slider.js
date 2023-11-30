@@ -178,6 +178,7 @@ export class RangeSlider extends html.UnlitElement {
     this.step = "any";
     this.sawMouseDown = false;
     this.sawMouseUp = false;
+    this.sawChangeEvent = false;
     this.onChangeCallback = () => {};
     this.values = [];
   }
@@ -381,6 +382,7 @@ export class RangeSlider extends html.UnlitElement {
                 this.sawChangeEvent = false;
               },
               onmousedown: (event) => {
+                this.sawChangeEvent = false;
                 this.sawMouseDown = true;
                 this.sawMouseUp = false;
                 const activeElement = document.activeElement;
