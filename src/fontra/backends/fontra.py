@@ -45,6 +45,7 @@ class FontraBackend:
             self._readFontData()
         else:
             self.fontData = Font()
+            self._writeGlyphInfo()
         self._scheduler = Scheduler()
 
     @property
