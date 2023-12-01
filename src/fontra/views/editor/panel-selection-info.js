@@ -462,7 +462,8 @@ function applyNewValue(glyph, layerInfo, changePath, value, field, absolute) {
   return recordChanges(glyph, (glyph) => {
     const layers = glyph.layers;
     for (const { layerName, orgValue } of layerInfo) {
-      let newValue = delta === null ? value : orgValue + delta;
+      let newValue =
+        delta === null || orgValue === undefined ? value : orgValue + delta;
       if (isNumber) {
         newValue = maybeClampValue(newValue, field.minValue, field.maxValue);
       }
