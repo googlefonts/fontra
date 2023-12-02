@@ -1,6 +1,5 @@
-import cattrs
-
 from . import clipboard, glyphnames
+from .classes import unstructure
 
 apiFunctions = {}
 
@@ -22,4 +21,4 @@ def getUnicodeFromGlyphName(glyphName):
 
 @api
 def parseClipboard(data):
-    return cattrs.unstructure(clipboard.parseClipboard(data))
+    return unstructure(clipboard.parseClipboard(data))

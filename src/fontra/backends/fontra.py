@@ -8,9 +8,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Callable
 
-import cattrs
-
-from fontra.core.classes import Font, VariableGlyph
+from fontra.core.classes import Font, VariableGlyph, structure, unstructure
 
 from .filenames import stringToFileName
 
@@ -122,12 +120,12 @@ class FontraBackend:
                 writer.writerow([glyphName, codePoints])
 
     def _readFontData(self):
-        self.fontData = cattrs.structure(
+        self.fontData = structure(
             json.loads(self.fontDataPath.read_text(encoding="utf-8")), Font
         )
 
     def _writeFontData(self):
-        fontData = cattrs.unstructure(self.fontData)
+        fontData = unstructure(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
         self.fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
@@ -144,7 +142,7 @@ class FontraBackend:
 
 def serializeGlyph(glyph, glyphName=None):
     glyph = glyph.convertToPaths()
-    jsonGlyph = cattrs.unstructure(glyph)
+    jsonGlyph = unstructure(glyph)
     if glyphName is not None:
         jsonGlyph["name"] = glyphName
     return serialize(jsonGlyph) + "\n"
@@ -154,7 +152,7 @@ def deserializeGlyph(jsonSource, glyphName=None):
     jsonGlyph = json.loads(jsonSource)
     if glyphName is not None:
         jsonGlyph["name"] = glyphName
-    glyph = cattrs.structure(jsonGlyph, VariableGlyph)
+    glyph = structure(jsonGlyph, VariableGlyph)
     return glyph.convertToPackedPaths()
 
 

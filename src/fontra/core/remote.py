@@ -2,8 +2,9 @@ import asyncio
 import logging
 import traceback
 
-import cattrs
 from aiohttp import WSMsgType
+
+from .classes import unstructure
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ class RemoteObjectConnection:
             methodHandler = getattr(subject, methodName, None)
             if getattr(methodHandler, "fontraRemoteMethod", False):
                 returnValue = await methodHandler(*arguments, connection=self)
-                returnValue = cattrs.unstructure(returnValue)
+                returnValue = unstructure(returnValue)
                 response = {"client-call-id": clientCallID, "return-value": returnValue}
             else:
                 response = {

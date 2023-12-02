@@ -2,11 +2,10 @@ import contextlib
 import pathlib
 from dataclasses import asdict
 
-import cattrs
 import pytest
 
 from fontra.backends import getFileSystemBackend
-from fontra.core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
+from fontra.core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph, structure
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -963,7 +962,7 @@ async def test_getGlyphMap(testFontName, numGlyphs, testMapping):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("testFontName, expectedGlyph", getGlyphTestData)
 async def test_getGlyph(testFontName, expectedGlyph):
-    expectedGlyph = cattrs.structure(expectedGlyph, VariableGlyph)
+    expectedGlyph = structure(expectedGlyph, VariableGlyph)
     font = getTestFont(testFontName)
     with contextlib.closing(font):
         glyph = await font.getGlyph(expectedGlyph.name)
