@@ -11,6 +11,10 @@
       "type": "dict",
       "subtype": "list"
     },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    },
     "axes": {
       "type": "list",
       "subtype": "GlobalAxis"
