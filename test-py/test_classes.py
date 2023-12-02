@@ -1,8 +1,6 @@
 import json
 import pathlib
 
-import cattrs
-
 from fontra.backends.fontra import deserializeGlyph
 from fontra.core.classes import (
     Layer,
@@ -10,6 +8,7 @@ from fontra.core.classes import (
     VariableGlyph,
     classCastFuncs,
     serializableClassSchema,
+    unstructure,
 )
 
 repoRoot = pathlib.Path(__file__).resolve().parent.parent
@@ -35,17 +34,17 @@ def test_cast():
         / "B^1.json"
     )
     originalGlyph = deserializeGlyph(glyphPath.read_text(encoding="utf-8"))
-    unstructuredGlyph = cattrs.unstructure(originalGlyph)
+    unstructuredGlyph = unstructure(originalGlyph)
     # Ensure that the PointType enums get converted to ints
     unstructuredGlyph = json.loads(json.dumps(unstructuredGlyph))
     glyph = classCastFuncs[VariableGlyph](unstructuredGlyph)
     assert glyph == originalGlyph
     assert str(glyph) == str(originalGlyph)
 
-    sourcesList = cattrs.unstructure(glyph.sources)
+    sourcesList = unstructure(glyph.sources)
     sources = classCastFuncs[list[Source]](sourcesList)
     assert glyph.sources == sources
 
-    layersDict = cattrs.unstructure(glyph.layers)
+    layersDict = unstructure(glyph.layers)
     layers = classCastFuncs[dict[str, Layer]](layersDict)
     assert glyph.layers == layers

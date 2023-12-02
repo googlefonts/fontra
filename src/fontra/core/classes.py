@@ -185,21 +185,21 @@ def makeSchema(*classes, schema=None):
     return schema
 
 
-# cattrs hooks
+# cattrs hooks + structure/unstructure support
 
 
 def _structurePath(d, tp):
     if "pointTypes" not in d:
-        return cattrs.structure(d, Path)
+        return structure(d, Path)
     else:
-        return cattrs.structure(d, PackedPath)
+        return structure(d, PackedPath)
 
 
 def _structureGlobalAxis(d, tp):
     if "values" not in d:
-        return cattrs.structure(d, GlobalAxis)
+        return structure(d, GlobalAxis)
     else:
-        return cattrs.structure(d, GlobalDiscreteAxis)
+        return structure(d, GlobalDiscreteAxis)
 
 
 def _structureNumber(d, tp):
@@ -219,24 +219,26 @@ def _structurePointType(v, tp):
     return PointType(v)
 
 
-cattrs.register_structure_hook(Union[PackedPath, Path], _structurePath)
-cattrs.register_structure_hook(
+_cattrsConverter = cattrs.Converter()
+
+_cattrsConverter.register_structure_hook(Union[PackedPath, Path], _structurePath)
+_cattrsConverter.register_structure_hook(
     Union[GlobalAxis, GlobalDiscreteAxis], _structureGlobalAxis
 )
-cattrs.register_structure_hook(float, _structureNumber)
-cattrs.register_structure_hook(Point, _structurePoint)
-cattrs.register_unstructure_hook(Point, _unstructurePoint)
-cattrs.register_structure_hook(bool, lambda x, y: x)
-cattrs.register_structure_hook(PointType, _structurePointType)
+_cattrsConverter.register_structure_hook(float, _structureNumber)
+_cattrsConverter.register_structure_hook(Point, _structurePoint)
+_cattrsConverter.register_unstructure_hook(Point, _unstructurePoint)
+_cattrsConverter.register_structure_hook(bool, lambda x, y: x)
+_cattrsConverter.register_structure_hook(PointType, _structurePointType)
 
 
 def registerOmitDefaultHook(cls):
     _hook = cattrs.gen.make_dict_unstructure_fn(
         cls,
-        cattrs.global_converter,
+        _cattrsConverter,
         _cattrs_omit_if_default=True,
     )
-    cattrs.register_unstructure_hook(cls, _hook)
+    _cattrsConverter.register_unstructure_hook(cls, _hook)
 
 
 # The order in which the hooks are applied is significant, for unclear reasons
@@ -250,13 +252,21 @@ registerOmitDefaultHook(Path)
 registerOmitDefaultHook(PackedPath)
 
 
+def structure(obj, cls):
+    return _cattrsConverter.structure(obj, cls)
+
+
+def unstructure(obj):
+    return _cattrsConverter.unstructure(obj)
+
+
 atomicTypes = [str, int, float, bool, Any]
 
 
 def makeCastFuncs(schema):
     castFuncs = {}
     for cls, fields in schema.items():
-        castFuncs[cls] = partial(cattrs.structure, cl=cls)
+        castFuncs[cls] = partial(structure, cls=cls)
         for fieldName, fieldInfo in fields.items():
             fieldType = fieldInfo["type"]
             if fieldType in atomicTypes or fieldType in schema:
@@ -264,7 +274,7 @@ def makeCastFuncs(schema):
             itemType = get_args(fieldType)[-1]
             if itemType in atomicTypes:
                 continue
-            castFuncs[fieldType] = partial(cattrs.structure, cl=fieldType)
+            castFuncs[fieldType] = partial(structure, cls=fieldType)
     return castFuncs
 
 
