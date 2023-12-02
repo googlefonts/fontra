@@ -66,6 +66,10 @@
       "type": "dict",
       "subtype": "float"
     },
+    "locationBase": {
+      "type": "str",
+      "optional": true
+    },
     "inactive": {
       "type": "bool"
     },
