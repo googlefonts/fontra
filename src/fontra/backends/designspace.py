@@ -561,7 +561,11 @@ class DesignspaceBackend:
         return self.defaultFontInfo.unitsPerEm
 
     async def getFontLib(self):
-        return self.dsDoc.lib
+        return deepcopy(self.dsDoc.lib)
+
+    async def putFontLib(self, lib):
+        self.dsDoc.lib = deepcopy(lib)
+        self.dsDoc.write(self.dsDoc.path)
 
     async def watchExternalChanges(self):
         ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))

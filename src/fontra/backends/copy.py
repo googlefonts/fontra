@@ -14,6 +14,7 @@ async def copyFont(
     sourceBackend, destBackend, *, glyphNames=None, numTasks=1, progressInterval=0
 ):
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
+    await destBackend.putFontLib(await sourceBackend.getFontLib())
     glyphMap = await sourceBackend.getGlyphMap()
     glyphNamesInFont = set(glyphMap)
     glyphNamesToCopy = sorted(
