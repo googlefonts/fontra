@@ -110,7 +110,7 @@ class FontraBackend:
             for row in reader:
                 glyphName, *rest = row
                 if rest:
-                    codePoints = [int(cp, 16) for cp in rest[0].split(",") if cp]
+                    codePoints = _parseCodePoints(rest[0])
                 else:
                     codePoints = []
                 self.glyphMap[glyphName] = codePoints
@@ -120,7 +120,7 @@ class FontraBackend:
             writer = csv.writer(file, delimiter=";")
             writer.writerow(["glyph name", "code points"])
             for glyphName, codePoints in sorted(self.glyphMap.items()):
-                codePoints = ",".join(f"{cp:04X}" for cp in codePoints)
+                codePoints = ",".join(f"U+{cp:04X}" for cp in codePoints)
                 writer.writerow([glyphName, codePoints])
 
     def _readFontData(self):
@@ -142,6 +142,19 @@ class FontraBackend:
 
     def getGlyphFilePath(self, glyphName):
         return self.glyphsDir / (stringToFileName(glyphName) + ".json")
+
+
+def _parseCodePoints(cell):
+    codePoints = []
+    cell = cell.strip()
+    if cell:
+        for s in cell.split(","):
+            s = s.strip()
+            # U+ should become mandatory, but for now let's be lenient
+            if s.startswith("U+"):
+                s = s[2:]
+            codePoints.append(int(s, 16))
+    return codePoints
 
 
 def serializeGlyph(glyph, glyphName=None):
