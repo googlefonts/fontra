@@ -129,7 +129,7 @@ class Font:
     unitsPerEm: int = 1000
     glyphs: GlyphSet = field(default_factory=GlyphSet)
     glyphMap: GlyphMap = field(default_factory=GlyphMap)
-    lib: dict = field(default_factory=dict)
+    customData: CustomData = field(default_factory=CustomData)
     axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
 
     def _trackAssignedAttributeNames(self):

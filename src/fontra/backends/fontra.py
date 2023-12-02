@@ -96,10 +96,10 @@ class FontraBackend:
         self._scheduler.schedule(self._writeFontData)
 
     async def getFontLib(self):
-        return deepcopy(self.fontData.lib)
+        return deepcopy(self.fontData.customData)
 
-    async def putFontLib(self, lib):
-        self.fontData.lib = deepcopy(lib)
+    async def putFontLib(self, customData):
+        self.fontData.customData = deepcopy(customData)
         self._scheduler.schedule(self._writeFontData)
 
     def _readGlyphInfo(self):
