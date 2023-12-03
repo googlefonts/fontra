@@ -41,7 +41,7 @@ class OTFBackend:
         if glyphName not in self.glyphSet:
             return None
         defaultLayerName = "<default>"
-        glyph = VariableGlyph(glyphName)
+        glyph = VariableGlyph(name=glyphName)
         staticGlyph = buildStaticGlyph(self.glyphSet, glyphName)
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}
         defaultLocation = {axis.name: 0 for axis in self.globalAxes}
