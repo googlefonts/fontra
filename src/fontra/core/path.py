@@ -354,7 +354,7 @@ class PackedPathPointPen:
         from .classes import Component
 
         transformation = DecomposedTransform.fromTransform(transformation)
-        self.components.append(Component(glyphName, transformation))
+        self.components.append(Component(name=glyphName, transformation=transformation))
 
     def addVarComponent(
         self, glyphName, transformation, location, identifier=None, **kwargs
@@ -362,7 +362,9 @@ class PackedPathPointPen:
         from .classes import Component
 
         transformation = copy(transformation)
-        self.components.append(Component(glyphName, transformation, location))
+        self.components.append(
+            Component(name=glyphName, transformation=transformation, location=location)
+        )
 
 
 _pointToSegmentType = {

@@ -215,7 +215,7 @@ class GlyphInstancer:
                 continue
             combinedAxes.append(
                 LocalAxis(
-                    axis.name,
+                    name=axis.name,
                     minValue=mapFunc(axis.minValue),
                     defaultValue=mapFunc(axis.defaultValue),
                     maxValue=mapFunc(axis.maxValue),

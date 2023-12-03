@@ -14,14 +14,14 @@ Location = dict[str, float]
 CustomData = dict[str, Any]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Component:
     name: str
     transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
     location: Location = field(default_factory=Location)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StaticGlyph:
     path: Union[PackedPath, Path] = field(default_factory=PackedPath)
     components: list[Component] = field(default_factory=list)
@@ -36,7 +36,7 @@ class StaticGlyph:
         return replace(self, path=self.path.asPath())
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Source:
     name: str
     layerName: str
@@ -45,13 +45,13 @@ class Source:
     customData: CustomData = field(default_factory=CustomData)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Layer:
     glyph: StaticGlyph
     customData: CustomData = field(default_factory=CustomData)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class LocalAxis:
     name: str
     minValue: float
@@ -59,7 +59,7 @@ class LocalAxis:
     maxValue: float
 
 
-@dataclass(slots=True)
+@dataclass(kw_only=True)
 class VariableGlyph:
     name: str
     axes: list[LocalAxis] = field(default_factory=list)
@@ -124,7 +124,7 @@ GlyphSet = dict[str, VariableGlyph]
 GlyphMap = dict[str, list[int]]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Font:
     unitsPerEm: int = 1000
     glyphs: GlyphSet = field(default_factory=GlyphSet)

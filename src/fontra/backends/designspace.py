@@ -201,7 +201,7 @@ class DesignspaceBackend:
                     )
                 sourceNameMapping = ufoGlyph.lib.get(SOURCE_NAME_MAPPING_LIB_KEY, {})
                 layerNameMapping = ufoGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
-            layers[ufoLayer.fontraLayerName] = Layer(staticGlyph)
+            layers[ufoLayer.fontraLayerName] = Layer(glyph=staticGlyph)
 
         # When a glyph has axes with names that also exist as global axes, we need
         # to make sure our source locations use the *local* default values. We do
@@ -235,7 +235,7 @@ class DesignspaceBackend:
             for source in sources:
                 source.name = sourceNameMapping.get(source.name, source.name)
 
-        return VariableGlyph(glyphName, axes=axes, sources=sources, layers=layers)
+        return VariableGlyph(name=glyphName, axes=axes, sources=sources, layers=layers)
 
     def _unpackLocalDesignSpace(self, dsDict, defaultLayerName):
         axes = [
@@ -900,7 +900,9 @@ def unpackVariableComponents(lib):
         transformationDict = componentDict.get("transformation", {})
         transformation = DecomposedTransform(**transformationDict)
         location = componentDict.get("location", {})
-        components.append(Component(glyphName, transformation, location))
+        components.append(
+            Component(name=glyphName, transformation=transformation, location=location)
+        )
     return components
 
 
