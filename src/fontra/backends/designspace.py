@@ -560,10 +560,10 @@ class DesignspaceBackend:
     async def getUnitsPerEm(self):
         return self.defaultFontInfo.unitsPerEm
 
-    async def getFontLib(self):
+    async def getCustomData(self):
         return deepcopy(self.dsDoc.lib)
 
-    async def putFontLib(self, lib):
+    async def putCustomData(self, lib):
         self.dsDoc.lib = deepcopy(lib)
         self.dsDoc.write(self.dsDoc.path)
 

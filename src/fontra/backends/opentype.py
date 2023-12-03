@@ -101,8 +101,8 @@ class OTFBackend:
     async def getUnitsPerEm(self):
         return self.font["head"].unitsPerEm
 
-    async def getFontLib(self):
-        return []
+    async def getCustomData(self):
+        return {}
 
 
 def tuplifyLocation(loc):

@@ -95,10 +95,10 @@ class FontraBackend:
         self.fontData.axes = deepcopy(axes)
         self._scheduler.schedule(self._writeFontData)
 
-    async def getFontLib(self):
+    async def getCustomData(self):
         return deepcopy(self.fontData.customData)
 
-    async def putFontLib(self, customData):
+    async def putCustomData(self, customData):
         self.fontData.customData = deepcopy(customData)
         self._scheduler.schedule(self._writeFontData)
 
