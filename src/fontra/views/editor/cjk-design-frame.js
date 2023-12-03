@@ -66,7 +66,7 @@ export class CJKDesignFrame {
       this.cjkDesignFrameParameters = makeParametersFromGlyph(frameGlyph, unitsPerEm);
     } else {
       const legacyParameters =
-        this.sceneController.sceneModel.fontController.fontLib[
+        this.sceneController.sceneModel.fontController.customData[
           "CJKDesignFrameSettings"
         ];
       if (legacyParameters) {

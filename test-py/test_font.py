@@ -1022,9 +1022,9 @@ getLibTestData = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("testFontName, expectedLibLen", getLibTestData)
-async def test_getFontLib(testFontName, expectedLibLen):
+async def test_getCustomData(testFontName, expectedLibLen):
     font = getTestFont(testFontName)
-    lib = await font.getFontLib()
+    lib = await font.getCustomData()
     assert expectedLibLen == len(lib)
 
 

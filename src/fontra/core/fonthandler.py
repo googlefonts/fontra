@@ -36,7 +36,7 @@ def remoteMethod(method):
 backendAttrMapping = [
     ("axes", "GlobalAxes"),
     ("glyphMap", "GlyphMap"),
-    ("lib", "FontLib"),
+    ("customData", "CustomData"),
     ("unitsPerEm", "UnitsPerEm"),
 ]
 
@@ -209,8 +209,8 @@ class FontHandler:
         return await self.getData("unitsPerEm")
 
     @remoteMethod
-    async def getFontLib(self, *, connection):
-        return await self.getData("lib")
+    async def getCustomData(self, *, connection):
+        return await self.getData("customData")
 
     def _getClientData(self, connection, key, default=None):
         return self.clientData[connection.clientUUID].get(key, default)

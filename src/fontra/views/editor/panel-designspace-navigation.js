@@ -277,7 +277,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     ];
 
     const statusFieldDefinitions =
-      this.sceneController.sceneModel.fontController.fontLib[
+      this.sceneController.sceneModel.fontController.customData[
         FONTRA_STATUS_DEFINITIONS_KEY
       ];
 
