@@ -319,9 +319,44 @@ export default class ReferenceFontPanel extends Panel {
       this.editorController.sceneSettings.glyphLines
     );
 
-    const letter = this.model.charOverride || selectedGlyphInfo?.character;
+    let textToDisplay;
 
-    if (!letter) {
+    if (this.model.charOverride) {
+      textToDisplay = this.model.charOverride.charAt(0);
+    } else {
+      if (selectedGlyphInfo) {
+        if (selectedGlyphInfo.glyphName.includes(".")) {
+          const baseGlyphName = selectedGlyphInfo.glyphName.split(".")[0];
+          const codePoint = (this.editorController.fontController.glyphMap[
+            baseGlyphName
+          ] || [])[0];
+          if (codePoint) {
+            textToDisplay = String.fromCodePoint(codePoint);
+          }
+        } else {
+          textToDisplay = selectedGlyphInfo.character;
+        }
+      }
+    }
+
+    if (!textToDisplay) {
+      return;
+    }
+
+    if (
+      !textToDisplay &&
+      selectedGlyphInfo &&
+      selectedGlyphInfo.glyphName.includes(".")
+    ) {
+      const baseGlyphName = positionedGlyph.glyphName.split(".")[0];
+      const codePoint = (this.editorController.fontController.glyphMap[baseGlyphName] ||
+        [])[0];
+      if (codePoint) {
+        textToDisplay = String.fromCodePoint(codePoint);
+      }
+    }
+
+    if (!textToDisplay) {
       return;
     }
 
@@ -340,7 +375,7 @@ export default class ReferenceFontPanel extends Panel {
     for (const font of this.model.fontList) {
       await this.ensureFontLoaded(font);
       currentCharacter.appendChild(
-        span({ style: `font-family: ${font.fontIdentifier};` }, [` ${letter}`])
+        span({ style: `font-family: ${font.fontIdentifier};` }, [` ${textToDisplay}`])
       );
     }
     container.appendChild(currentCharacter);
