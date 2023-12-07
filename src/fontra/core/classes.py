@@ -219,6 +219,10 @@ def _structurePointType(v, tp):
     return PointType(v)
 
 
+def _unstructurePointType(v):
+    return int(v)
+
+
 _cattrsConverter = cattrs.Converter()
 
 _cattrsConverter.register_structure_hook(Union[PackedPath, Path], _structurePath)
@@ -230,6 +234,7 @@ _cattrsConverter.register_structure_hook(Point, _structurePoint)
 _cattrsConverter.register_unstructure_hook(Point, _unstructurePoint)
 _cattrsConverter.register_structure_hook(bool, lambda x, y: x)
 _cattrsConverter.register_structure_hook(PointType, _structurePointType)
+_cattrsConverter.register_unstructure_hook(PointType, _unstructurePointType)
 
 
 def registerOmitDefaultHook(cls):
