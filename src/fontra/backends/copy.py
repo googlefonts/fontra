@@ -60,6 +60,10 @@ async def copyGlyphs(
         glyphNamesCopied.update(glyphNamesToCopy)
         logger.debug(f"reading {glyphName}")
         glyph = await sourceBackend.getGlyph(glyphName)
+        if glyph is None:
+            logger.warn(f"glyph {glyphName} not found")
+            continue
+
         logger.debug(f"writing {glyphName}")
 
         componentNames = {
