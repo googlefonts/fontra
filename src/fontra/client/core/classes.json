@@ -214,6 +214,10 @@
       "type": "dict",
       "subtype": "GlobalMetric"
     },
+    "guidelines": {
+      "type": "list",
+      "subtype": "Guideline"
+    },
     "customData": {
       "type": "dict",
       "subtype": "Any"
@@ -221,6 +225,25 @@
   },
   "GlobalMetric": {
     "value": {
+      "type": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
+  "Guideline": {
+    "name": {
+      "type": "str",
+      "optional": true
+    },
+    "x": {
+      "type": "float"
+    },
+    "y": {
+      "type": "float"
+    },
+    "angle": {
       "type": "float"
     },
     "customData": {

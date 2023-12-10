@@ -35,12 +35,38 @@ class GlobalSource:
     name: str
     location: Location = field(default_factory=dict)
     verticalMetrics: dict[str, GlobalMetric] = field(default_factory=dict)
+    guidelines: list[Union[Guideline, HorizontalGuideline, VerticalGuideline]] = field(
+        default_factory=list
+    )
     customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
 class GlobalMetric:
     value: float
+    customData: CustomData = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class Guideline:
+    name: Optional[str]
+    x: float
+    y: float
+    angle: float
+    customData: CustomData = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class HorizontalGuideline:
+    name: Optional[str]
+    y: float
+    customData: CustomData = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class VerticalGuideline:
+    name: str | None
+    x: float
     customData: CustomData = field(default_factory=dict)
 
 
