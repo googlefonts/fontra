@@ -110,6 +110,10 @@
     "verticalOrigin": {
       "type": "float",
       "optional": true
+    },
+    "guidelines": {
+      "type": "list",
+      "subtype": "Guideline"
     }
   },
   "PackedPath": {
@@ -175,6 +179,25 @@
       "type": "float"
     }
   },
+  "Guideline": {
+    "name": {
+      "type": "str",
+      "optional": true
+    },
+    "x": {
+      "type": "float"
+    },
+    "y": {
+      "type": "float"
+    },
+    "angle": {
+      "type": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
   "GlobalAxis": {
     "name": {
       "type": "str"
@@ -225,25 +248,6 @@
   },
   "GlobalMetric": {
     "value": {
-      "type": "float"
-    },
-    "customData": {
-      "type": "dict",
-      "subtype": "Any"
-    }
-  },
-  "Guideline": {
-    "name": {
-      "type": "str",
-      "optional": true
-    },
-    "x": {
-      "type": "float"
-    },
-    "y": {
-      "type": "float"
-    },
-    "angle": {
       "type": "float"
     },
     "customData": {

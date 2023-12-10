@@ -139,6 +139,9 @@ class StaticGlyph:
     xAdvance: Optional[float] = None
     yAdvance: Optional[float] = None
     verticalOrigin: Optional[float] = None
+    guidelines: list[Union[Guideline, HorizontalGuideline, VerticalGuideline]] = field(
+        default_factory=list
+    )
 
     def convertToPackedPaths(self):
         return replace(self, path=self.path.asPackedPath())
