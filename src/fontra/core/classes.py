@@ -18,6 +18,7 @@ class Font:
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
     axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
+    sources: list[GlobalSource] = field(default_factory=list)
 
     def _trackAssignedAttributeNames(self):
         # see fonthandler.py
@@ -27,6 +28,13 @@ class Font:
         if hasattr(self, "_assignedAttributeNames"):
             self._assignedAttributeNames.add(attrName)
         super().__setattr__(attrName, value)
+
+
+@dataclass(kw_only=True)
+class GlobalSource:
+    name: str
+    location: Location = field(default_factory=dict)
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
