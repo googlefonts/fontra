@@ -10,54 +10,23 @@ from fontTools.misc.transform import DecomposedTransform
 
 from .path import PackedPath, Path, Point, PointType
 
-Location = dict[str, float]
-CustomData = dict[str, Any]
-
 
 @dataclass(kw_only=True)
-class Component:
-    name: str
-    transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
-    location: Location = field(default_factory=dict)
-
-
-@dataclass(kw_only=True)
-class StaticGlyph:
-    path: Union[PackedPath, Path] = field(default_factory=PackedPath)
-    components: list[Component] = field(default_factory=list)
-    xAdvance: Optional[float] = None
-    yAdvance: Optional[float] = None
-    verticalOrigin: Optional[float] = None
-
-    def convertToPackedPaths(self):
-        return replace(self, path=self.path.asPackedPath())
-
-    def convertToPaths(self):
-        return replace(self, path=self.path.asPath())
-
-
-@dataclass(kw_only=True)
-class Source:
-    name: str
-    layerName: str
-    location: Location = field(default_factory=dict)
-    locationBase: Optional[str] = None
-    inactive: bool = False
+class Font:
+    unitsPerEm: int = 1000
+    glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
+    glyphMap: dict[str, list[int]] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
+    axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
 
+    def _trackAssignedAttributeNames(self):
+        # see fonthandler.py
+        self._assignedAttributeNames = set()
 
-@dataclass(kw_only=True)
-class Layer:
-    glyph: StaticGlyph
-    customData: CustomData = field(default_factory=dict)
-
-
-@dataclass(kw_only=True)
-class LocalAxis:
-    name: str
-    minValue: float
-    defaultValue: float
-    maxValue: float
+    def __setattr__(self, attrName, value):
+        if hasattr(self, "_assignedAttributeNames"):
+            self._assignedAttributeNames.add(attrName)
+        super().__setattr__(attrName, value)
 
 
 @dataclass(kw_only=True)
@@ -73,29 +42,6 @@ class VariableGlyph:
 
     def convertToPaths(self):
         return _convertToPathType(self, False)
-
-
-def _hasAnyPathType(varGlyph, pathType):
-    return any(
-        isinstance(layer.glyph.path, pathType) for layer in varGlyph.layers.values()
-    )
-
-
-def _convertToPathType(varGlyph, packedPath):
-    if not _hasAnyPathType(varGlyph, Path if packedPath else PackedPath):
-        return varGlyph
-    converter = (
-        (lambda glyph: glyph.convertToPackedPaths())
-        if packedPath
-        else (lambda glyph: glyph.convertToPaths())
-    )
-
-    return replace(
-        varGlyph,
-        layers={
-            k: replace(v, glyph=converter(v.glyph)) for k, v in varGlyph.layers.items()
-        },
-    )
 
 
 @dataclass(kw_only=True)
@@ -122,21 +68,76 @@ class GlobalDiscreteAxis:
 
 
 @dataclass(kw_only=True)
-class Font:
-    unitsPerEm: int = 1000
-    glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
-    glyphMap: dict[str, list[int]] = field(default_factory=dict)
+class LocalAxis:
+    name: str
+    minValue: float
+    defaultValue: float
+    maxValue: float
+
+
+@dataclass(kw_only=True)
+class Source:
+    name: str
+    layerName: str
+    location: Location = field(default_factory=dict)
+    locationBase: Optional[str] = None
+    inactive: bool = False
     customData: CustomData = field(default_factory=dict)
-    axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
 
-    def _trackAssignedAttributeNames(self):
-        # see fonthandler.py
-        self._assignedAttributeNames = set()
 
-    def __setattr__(self, attrName, value):
-        if hasattr(self, "_assignedAttributeNames"):
-            self._assignedAttributeNames.add(attrName)
-        super().__setattr__(attrName, value)
+@dataclass(kw_only=True)
+class Layer:
+    glyph: StaticGlyph
+    customData: CustomData = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class StaticGlyph:
+    path: Union[PackedPath, Path] = field(default_factory=PackedPath)
+    components: list[Component] = field(default_factory=list)
+    xAdvance: Optional[float] = None
+    yAdvance: Optional[float] = None
+    verticalOrigin: Optional[float] = None
+
+    def convertToPackedPaths(self):
+        return replace(self, path=self.path.asPackedPath())
+
+    def convertToPaths(self):
+        return replace(self, path=self.path.asPath())
+
+
+@dataclass(kw_only=True)
+class Component:
+    name: str
+    transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
+    location: Location = field(default_factory=dict)
+
+
+Location = dict[str, float]
+CustomData = dict[str, Any]
+
+
+def _convertToPathType(varGlyph, packedPath):
+    if not _hasAnyPathType(varGlyph, Path if packedPath else PackedPath):
+        return varGlyph
+    converter = (
+        (lambda glyph: glyph.convertToPackedPaths())
+        if packedPath
+        else (lambda glyph: glyph.convertToPaths())
+    )
+
+    return replace(
+        varGlyph,
+        layers={
+            k: replace(v, glyph=converter(v.glyph)) for k, v in varGlyph.layers.items()
+        },
+    )
+
+
+def _hasAnyPathType(varGlyph, pathType):
+    return any(
+        isinstance(layer.glyph.path, pathType) for layer in varGlyph.layers.values()
+    )
 
 
 def makeSchema(*classes, schema=None):
