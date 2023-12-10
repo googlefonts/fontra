@@ -34,6 +34,13 @@ class Font:
 class GlobalSource:
     name: str
     location: Location = field(default_factory=dict)
+    verticalMetrics: dict[str, GlobalMetric] = field(default_factory=dict)
+    customData: CustomData = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class GlobalMetric:
+    value: float
     customData: CustomData = field(default_factory=dict)
 
 

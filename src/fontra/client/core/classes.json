@@ -210,6 +210,19 @@
       "type": "dict",
       "subtype": "float"
     },
+    "verticalMetrics": {
+      "type": "dict",
+      "subtype": "GlobalMetric"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
+  "GlobalMetric": {
+    "value": {
+      "type": "float"
+    },
     "customData": {
       "type": "dict",
       "subtype": "Any"
