@@ -121,15 +121,11 @@ class GlobalDiscreteAxis:
     hidden: bool = False
 
 
-GlyphSet = dict[str, VariableGlyph]
-GlyphMap = dict[str, list[int]]
-
-
 @dataclass(kw_only=True)
 class Font:
     unitsPerEm: int = 1000
-    glyphs: GlyphSet = field(default_factory=GlyphSet)
-    glyphMap: GlyphMap = field(default_factory=GlyphMap)
+    glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
+    glyphMap: dict[str, list[int]] = field(default_factory=dict)
     customData: CustomData = field(default_factory=CustomData)
     axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
 
