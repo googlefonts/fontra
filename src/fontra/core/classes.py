@@ -38,21 +38,6 @@ class GlobalSource:
 
 
 @dataclass(kw_only=True)
-class VariableGlyph:
-    name: str
-    axes: list[LocalAxis] = field(default_factory=list)
-    sources: list[Source] = field(default_factory=list)
-    layers: dict[str, Layer] = field(default_factory=dict)
-    customData: CustomData = field(default_factory=dict)
-
-    def convertToPackedPaths(self):
-        return _convertToPathType(self, True)
-
-    def convertToPaths(self):
-        return _convertToPathType(self, False)
-
-
-@dataclass(kw_only=True)
 class GlobalAxis:
     name: str  # this identifies the axis
     label: str  # a user friendly label
@@ -81,6 +66,21 @@ class LocalAxis:
     minValue: float
     defaultValue: float
     maxValue: float
+
+
+@dataclass(kw_only=True)
+class VariableGlyph:
+    name: str
+    axes: list[LocalAxis] = field(default_factory=list)
+    sources: list[Source] = field(default_factory=list)
+    layers: dict[str, Layer] = field(default_factory=dict)
+    customData: CustomData = field(default_factory=dict)
+
+    def convertToPackedPaths(self):
+        return _convertToPathType(self, True)
+
+    def convertToPaths(self):
+        return _convertToPathType(self, False)
 
 
 @dataclass(kw_only=True)
