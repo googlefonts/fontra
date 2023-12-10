@@ -18,6 +18,10 @@
     "axes": {
       "type": "list",
       "subtype": "GlobalAxis"
+    },
+    "sources": {
+      "type": "list",
+      "subtype": "GlobalSource"
     }
   },
   "VariableGlyph": {
@@ -196,6 +200,19 @@
     },
     "hidden": {
       "type": "bool"
+    }
+  },
+  "GlobalSource": {
+    "name": {
+      "type": "str"
+    },
+    "location": {
+      "type": "dict",
+      "subtype": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   }
 }
