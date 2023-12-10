@@ -18,7 +18,7 @@ CustomData = dict[str, Any]
 class Component:
     name: str
     transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
-    location: Location = field(default_factory=Location)
+    location: Location = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -40,16 +40,16 @@ class StaticGlyph:
 class Source:
     name: str
     layerName: str
-    location: Location = field(default_factory=Location)
+    location: Location = field(default_factory=dict)
     locationBase: Optional[str] = None
     inactive: bool = False
-    customData: CustomData = field(default_factory=CustomData)
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
 class Layer:
     glyph: StaticGlyph
-    customData: CustomData = field(default_factory=CustomData)
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -66,7 +66,7 @@ class VariableGlyph:
     axes: list[LocalAxis] = field(default_factory=list)
     sources: list[Source] = field(default_factory=list)
     layers: dict[str, Layer] = field(default_factory=dict)
-    customData: CustomData = field(default_factory=CustomData)
+    customData: CustomData = field(default_factory=dict)
 
     def convertToPackedPaths(self):
         return _convertToPathType(self, True)
@@ -126,7 +126,7 @@ class Font:
     unitsPerEm: int = 1000
     glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
-    customData: CustomData = field(default_factory=CustomData)
+    customData: CustomData = field(default_factory=dict)
     axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
 
     def _trackAssignedAttributeNames(self):
