@@ -139,6 +139,7 @@ class StaticGlyph:
     xAdvance: Optional[float] = None
     yAdvance: Optional[float] = None
     verticalOrigin: Optional[float] = None
+    anchors: list[Anchor] = field(default_factory=list)
     guidelines: list[Union[Guideline, HorizontalGuideline, VerticalGuideline]] = field(
         default_factory=list
     )
@@ -155,6 +156,14 @@ class Component:
     name: str
     transformation: DecomposedTransform = field(default_factory=DecomposedTransform)
     location: Location = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class Anchor:
+    name: str
+    x: float
+    y: float
+    customData: CustomData = field(default_factory=dict)
 
 
 Location = dict[str, float]

@@ -111,6 +111,10 @@
       "type": "float",
       "optional": true
     },
+    "anchors": {
+      "type": "list",
+      "subtype": "Anchor"
+    },
     "guidelines": {
       "type": "list",
       "subtype": "Guideline"
@@ -177,6 +181,21 @@
     },
     "tCenterY": {
       "type": "float"
+    }
+  },
+  "Anchor": {
+    "name": {
+      "type": "str"
+    },
+    "x": {
+      "type": "float"
+    },
+    "y": {
+      "type": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "Guideline": {
