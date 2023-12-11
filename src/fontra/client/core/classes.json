@@ -18,6 +18,10 @@
     "axes": {
       "type": "list",
       "subtype": "GlobalAxis"
+    },
+    "sources": {
+      "type": "list",
+      "subtype": "GlobalSource"
     }
   },
   "VariableGlyph": {
@@ -66,6 +70,10 @@
       "type": "dict",
       "subtype": "float"
     },
+    "locationBase": {
+      "type": "str",
+      "optional": true
+    },
     "inactive": {
       "type": "bool"
     },
@@ -102,6 +110,14 @@
     "verticalOrigin": {
       "type": "float",
       "optional": true
+    },
+    "anchors": {
+      "type": "list",
+      "subtype": "Anchor"
+    },
+    "guidelines": {
+      "type": "list",
+      "subtype": "Guideline"
     }
   },
   "PackedPath": {
@@ -167,6 +183,40 @@
       "type": "float"
     }
   },
+  "Anchor": {
+    "name": {
+      "type": "str"
+    },
+    "x": {
+      "type": "float"
+    },
+    "y": {
+      "type": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
+  "Guideline": {
+    "name": {
+      "type": "str",
+      "optional": true
+    },
+    "x": {
+      "type": "float"
+    },
+    "y": {
+      "type": "float"
+    },
+    "angle": {
+      "type": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
   "GlobalAxis": {
     "name": {
       "type": "str"
@@ -192,6 +242,36 @@
     },
     "hidden": {
       "type": "bool"
+    }
+  },
+  "GlobalSource": {
+    "name": {
+      "type": "str"
+    },
+    "location": {
+      "type": "dict",
+      "subtype": "float"
+    },
+    "verticalMetrics": {
+      "type": "dict",
+      "subtype": "GlobalMetric"
+    },
+    "guidelines": {
+      "type": "list",
+      "subtype": "Guideline"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
+  "GlobalMetric": {
+    "value": {
+      "type": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   }
 }
