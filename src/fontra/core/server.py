@@ -311,7 +311,7 @@ def getResourcePath(modulePath: str, resourceName: str) -> Traversable:
     return moduleRoot.joinpath(*moduleParts[1:], resourceName)
 
 
-def splitVersionToken(fileName: str) -> (str, str | None):
+def splitVersionToken(fileName: str) -> tuple[str, str | None]:
     parts = fileName.rsplit(".", 2)
     if len(parts) == 3:
         fileName, versionToken, ext = parts
