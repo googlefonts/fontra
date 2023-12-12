@@ -178,8 +178,11 @@ class DesignspaceBackend:
         for glyphName, fileName in glyphSet.contents.items():
             glifFileNames[fileName] = glyphName
 
-    async def getGlyphMap(self):
+    async def getGlyphMap(self) -> dict[str, list[int]]:
         return dict(self.glyphMap)
+
+    async def putGlyphMap(self, value: dict[str, list[int]]) -> None:
+        pass
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         if glyphName not in self.glyphMap:
@@ -538,7 +541,7 @@ class DesignspaceBackend:
         del self.glyphMap[glyphName]
         self.savedGlyphModificationTimes[glyphName] = None
 
-    async def getGlobalAxes(self):
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.axes
 
     async def putGlobalAxes(self, axes):
@@ -561,10 +564,20 @@ class DesignspaceBackend:
         self.updateAxisInfo()
         self.loadUFOLayers()
 
-    async def getUnitsPerEm(self):
+    async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm
 
-    async def getCustomData(self):
+    async def putUnitsPerEm(self, value: int) -> None:
+        del self.defaultFontInfo
+        ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
+        for ufoPath in ufoPaths:
+            reader = self.ufoManager.getReader(ufoPath)
+            info = UFOFontInfo()
+            reader.readInfo(info)
+            info.unitsPerEm = value
+            reader.writeInfo(info)
+
+    async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
 
     async def putCustomData(self, lib):

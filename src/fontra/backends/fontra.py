@@ -7,9 +7,16 @@ import shutil
 from copy import deepcopy
 from dataclasses import dataclass, field
 from os import PathLike
-from typing import Callable
+from typing import Any, Callable
 
-from fontra.core.classes import Font, VariableGlyph, structure, unstructure
+from fontra.core.classes import (
+    Font,
+    GlobalAxis,
+    GlobalDiscreteAxis,
+    VariableGlyph,
+    structure,
+    unstructure,
+)
 from fontra.core.protocols import WritableFontBackend
 
 from .filenames import stringToFileName
@@ -66,15 +73,18 @@ class FontraBackend:
     def flush(self):
         self._scheduler.flush()
 
-    async def getUnitsPerEm(self):
+    async def getUnitsPerEm(self) -> int:
         return self.fontData.unitsPerEm
 
     async def putUnitsPerEm(self, unitsPerEm):
         self.fontData.unitsPerEm = unitsPerEm
         self._scheduler.schedule(self._writeFontData)
 
-    async def getGlyphMap(self):
+    async def getGlyphMap(self) -> dict[str, list[int]]:
         return dict(self.glyphMap)
+
+    async def putGlyphMap(self, value: dict[str, list[int]]) -> None:
+        pass
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         try:
@@ -95,14 +105,14 @@ class FontraBackend:
     async def deleteGlyph(self, glyphName):
         self.glyphMap.pop(glyphName, None)
 
-    async def getGlobalAxes(self):
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return deepcopy(self.fontData.axes)
 
     async def putGlobalAxes(self, axes):
         self.fontData.axes = deepcopy(axes)
         self._scheduler.schedule(self._writeFontData)
 
-    async def getCustomData(self):
+    async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.fontData.customData)
 
     async def putCustomData(self, customData):

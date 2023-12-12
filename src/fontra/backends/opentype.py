@@ -1,4 +1,5 @@
 from os import PathLike
+from typing import Any
 
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
@@ -6,7 +7,14 @@ from fontTools.ttLib import TTFont
 
 from fontra.core.protocols import ReadableFontBackend
 
-from ..core.classes import GlobalAxis, Layer, Source, StaticGlyph, VariableGlyph
+from ..core.classes import (
+    GlobalAxis,
+    GlobalDiscreteAxis,
+    Layer,
+    Source,
+    StaticGlyph,
+    VariableGlyph,
+)
 from ..core.path import PackedPath, PackedPathPointPen
 
 
@@ -39,7 +47,7 @@ class OTFBackend:
     def close(self):
         self.font.close()
 
-    async def getGlyphMap(self):
+    async def getGlyphMap(self) -> dict[str, list[int]]:
         return self.glyphMap
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
@@ -100,13 +108,13 @@ class OTFBackend:
             }
         return [dict(loc) for loc in sorted(locations)]
 
-    async def getGlobalAxes(self):
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.globalAxes
 
-    async def getUnitsPerEm(self):
+    async def getUnitsPerEm(self) -> int:
         return self.font["head"].unitsPerEm
 
-    async def getCustomData(self):
+    async def getCustomData(self) -> dict[str, Any]:
         return {}
 
 
