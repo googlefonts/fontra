@@ -134,7 +134,7 @@ class FontraServer:
     async def closeProjectManager(self, httpApp: web.Application) -> None:
         await self.projectManager.close()
 
-    async def websocketHandler(self, request) -> web.WebSocketResponse:
+    async def websocketHandler(self, request: web.Request) -> web.WebSocketResponse:
         path = "/" + request.match_info["path"]
         remote = request.headers.get("X-FORWARDED-FOR", request.remote)
         logger.info(f"incoming connection from {remote} for {path!r}")

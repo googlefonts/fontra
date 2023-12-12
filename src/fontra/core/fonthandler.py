@@ -161,7 +161,7 @@ class FontHandler:
             await asyncio.sleep(0)
 
     @asynccontextmanager
-    async def useConnection(self, connection) -> AsyncGenerator:
+    async def useConnection(self, connection) -> AsyncGenerator[None, None]:
         self.connections.add(connection)
         try:
             yield
