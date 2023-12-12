@@ -20,7 +20,7 @@ from .changes import (
 )
 from .classes import Font, VariableGlyph
 from .lrucache import LRUCache
-from .protocols import ReadableFontBackend, WritableFontBackend
+from .protocols import ReadableFontBackend, WatchableFontBackend, WritableFontBackend
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class FontHandler:
         self._dataScheduledForWriting = {}
 
     async def startTasks(self) -> None:
-        if hasattr(self.backend, "watchExternalChanges"):
+        if isinstance(self.backend, WatchableFontBackend):
             self._watcherTask = scheduleTaskAndLogException(
                 self.processExternalChanges()
             )
@@ -84,7 +84,8 @@ class FontHandler:
             await self.finishWriting()  # shield for cancel?
             self._processWritesTask.cancel()
 
-    async def processExternalChanges(self):
+    async def processExternalChanges(self) -> None:
+        assert isinstance(self.backend, WatchableFontBackend)
         async for change, reloadPattern in self.backend.watchExternalChanges():
             try:
                 if change is not None:

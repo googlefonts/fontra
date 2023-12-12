@@ -12,7 +12,7 @@ from datetime import datetime
 from functools import cache, cached_property, singledispatch
 from os import PathLike
 from types import SimpleNamespace
-from typing import Callable
+from typing import Any, AsyncGenerator, Callable
 
 import watchfiles
 from fontTools.designspaceLib import (
@@ -571,7 +571,7 @@ class DesignspaceBackend:
         self.dsDoc.lib = deepcopy(lib)
         self.dsDoc.write(self.dsDoc.path)
 
-    async def watchExternalChanges(self):
+    async def watchExternalChanges(self) -> AsyncGenerator[tuple[Any, Any], None]:
         ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
         async for changes in watchfiles.awatch(*ufoPaths):
             changes = cleanupWatchFilesChanges(changes)
