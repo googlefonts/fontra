@@ -6,7 +6,7 @@ from collections import UserDict, defaultdict
 from contextlib import asynccontextmanager
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from typing import Any, AsyncGenerator, Awaitable, Callable, Optional
 
 from .changes import (
     applyChange,
@@ -18,8 +18,9 @@ from .changes import (
     patternIntersect,
     patternUnion,
 )
-from .classes import Font
+from .classes import Font, VariableGlyph
 from .lrucache import LRUCache
+from .protocols import ReadableFontBackend, WritableFontBackend
 
 logger = logging.getLogger(__name__)
 
@@ -49,12 +50,12 @@ backendDeleterNames = {
 
 @dataclass
 class FontHandler:
-    backend: Any  # TODO: need Backend protocol
+    backend: ReadableFontBackend
     readOnly: bool = False
-    allConnectionsClosedCallback: Optional[Callable[[], None]] = None
+    allConnectionsClosedCallback: Optional[Callable[[], Awaitable[Any]]] = None
 
     def __post_init__(self):
-        if not hasattr(self.backend, "putGlyph"):
+        if not isinstance(self.backend, WritableFontBackend):
             self.readOnly = True
         self.connections = set()
         self.glyphUsedBy = {}
@@ -63,19 +64,19 @@ class FontHandler:
         self.localData = LRUCache()
         self._dataScheduledForWriting = {}
 
-    async def startTasks(self):
+    async def startTasks(self) -> None:
         if hasattr(self.backend, "watchExternalChanges"):
             self._watcherTask = scheduleTaskAndLogException(
                 self.processExternalChanges()
             )
-        self._processWritesError = None
+        self._processWritesError: Exception | None = None
         self._processWritesEvent = asyncio.Event()
         self._processWritesTask = scheduleTaskAndLogException(self.processWrites())
         self._processWritesTask.add_done_callback(self._processWritesTaskDone)
         self._writingInProgressEvent = asyncio.Event()
         self._writingInProgressEvent.set()
 
-    async def close(self):
+    async def close(self) -> None:
         self.backend.close()
         if hasattr(self, "_watcherTask"):
             self._watcherTask.cancel()
@@ -95,16 +96,16 @@ class FontHandler:
                 logger.error("exception in external changes watcher: %r", e)
                 traceback.print_exc()
 
-    def _processWritesTaskDone(self, task):
+    def _processWritesTaskDone(self, task) -> None:
         # Signal that the write-"thread" is no longer running
         self._dataScheduledForWriting = None
 
-    async def finishWriting(self):
+    async def finishWriting(self) -> None:
         if self._processWritesError is not None:
             raise self._processWritesError
         await self._writingInProgressEvent.wait()
 
-    async def processWrites(self):
+    async def processWrites(self) -> None:
         while True:
             await self._processWritesEvent.wait()
             try:
@@ -116,7 +117,7 @@ class FontHandler:
                 self._processWritesEvent.clear()
                 self._writingInProgressEvent.set()
 
-    async def _processWritesOneCycle(self):
+    async def _processWritesOneCycle(self) -> None:
         while self._dataScheduledForWriting:
             writeKey, (writeFunc, connection) = popFirstItem(
                 self._dataScheduledForWriting
@@ -159,7 +160,7 @@ class FontHandler:
             await asyncio.sleep(0)
 
     @asynccontextmanager
-    async def useConnection(self, connection):
+    async def useConnection(self, connection) -> AsyncGenerator:
         self.connections.add(connection)
         try:
             yield
@@ -169,17 +170,19 @@ class FontHandler:
                 await self.allConnectionsClosedCallback()
 
     @remoteMethod
-    async def getGlyph(self, glyphName, *, connection=None):
+    async def getGlyph(
+        self, glyphName: str, *, connection=None
+    ) -> VariableGlyph | None:
         glyph = self.localData.get(("glyphs", glyphName))
         if glyph is None:
             glyph = await self._getGlyph(glyphName)
             self.localData[("glyphs", glyphName)] = glyph
         return glyph
 
-    def _getGlyph(self, glyphName):
+    def _getGlyph(self, glyphName) -> Awaitable[VariableGlyph | None]:
         return asyncio.create_task(self._getGlyphFromBackend(glyphName))
 
-    async def _getGlyphFromBackend(self, glyphName):
+    async def _getGlyphFromBackend(self, glyphName) -> VariableGlyph | None:
         glyph = await self.backend.getGlyph(glyphName)
         if glyph is not None:
             self.updateGlyphDependencies(glyphName, glyph)
