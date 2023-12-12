@@ -52,5 +52,7 @@ EXTENSIONS = ["css", "html", "ico", "js", "svg", "woff2"]
     ],
 )
 def test_addVersionTokenToReferences(inputData, expectedData):
-    data = addVersionTokenToReferences(inputData, VERSION_TOKEN, EXTENSIONS)
-    assert expectedData == data
+    data = addVersionTokenToReferences(
+        inputData.encode("utf-8"), VERSION_TOKEN, EXTENSIONS
+    )
+    assert expectedData == data.decode("utf-8")

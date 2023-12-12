@@ -13,6 +13,7 @@ from functools import partial
 from http.cookies import SimpleCookie
 from importlib import resources
 from importlib.metadata import entry_points
+from importlib.resources.abc import Traversable
 from typing import Any, Optional
 from urllib.parse import quote
 
@@ -240,7 +241,7 @@ class FontraServer:
         ext = resourceName.rsplit(".", 1)[-1].lower()
         if ext not in self.allowedFileExtensions:
             raise web.HTTPNotFound()
-        contentType = mimeTypes.get(resourceName.rsplit(".")[-1])
+        contentType = mimeTypes.get(resourceName.rsplit(".")[-1], "")
         data = self._addVersionTokenToReferences(data, contentType)
         response = web.Response(body=data, content_type=contentType)
         response.last_modified = self.startupTime
@@ -255,7 +256,9 @@ class FontraServer:
         )
         return response
 
-    async def viewPathHandler(self, viewName, request):
+    async def viewPathHandler(
+        self, viewName: str, request: web.Request
+    ) -> web.Response:
         authToken = await self.projectManager.authorize(request)
         if not authToken:
             qs = quote(request.path_qs, safe="")
@@ -268,15 +271,15 @@ class FontraServer:
         try:
             html = getResourcePath(
                 self.viewEntryPoints[viewName], f"{viewName}.html"
-            ).read_text()
+            ).read_bytes()
         except (FileNotFoundError, ModuleNotFoundError):
             raise web.HTTPNotFound()
 
         html = self._addVersionTokenToReferences(html, "text/html")
 
-        return web.Response(text=html, content_type="text/html")
+        return web.Response(body=html, content_type="text/html")
 
-    def _addVersionTokenToReferences(self, data, contentType):
+    def _addVersionTokenToReferences(self, data: bytes, contentType: str) -> bytes:
         if self.versionToken is None:
             return data
         jsAllowedFileExtensions = ["css", "js", "svg"]
@@ -293,17 +296,16 @@ class FontraServer:
         return data
 
 
-def addVersionTokenToReferences(data, versionToken, extensions):
-    pattern = rf"""((['"])[./][./A-Za-z-]+)(\.({"|".join(extensions)})\2)"""
-    repl = rf"\1.{versionToken}\3"
-    if isinstance(data, bytes):
-        data = re.sub(pattern, repl, data.decode("utf-8")).encode("utf-8")
-    else:
-        data = re.sub(pattern, repl, data)
-    return data
+def addVersionTokenToReferences(data: bytes, versionToken, extensions) -> bytes:
+    assert isinstance(data, bytes)
+    pattern = rf"""((['"])[./][./A-Za-z-]+)(\.({"|".join(extensions)})\2)""".encode(
+        "utf-8"
+    )
+    repl = rf"\1.{versionToken}\3".encode("utf-8")
+    return re.sub(pattern, repl, data)
 
 
-def getResourcePath(modulePath, resourceName):
+def getResourcePath(modulePath: str, resourceName: str) -> Traversable:
     moduleParts = modulePath.split(".")
     moduleRoot = resources.files(moduleParts[0])
     return moduleRoot.joinpath(*moduleParts[1:], resourceName)
@@ -317,7 +319,7 @@ def splitVersionToken(fileName):
     return fileName, None
 
 
-def findFreeTCPPort(startPort=8000):
+def findFreeTCPPort(startPort: int = 8000) -> int:
     port = startPort
     while True:
         tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
