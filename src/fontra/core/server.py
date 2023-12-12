@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from functools import partial
 from http.cookies import SimpleCookie
 from importlib import resources
+from importlib.abc import Traversable
 from importlib.metadata import entry_points
 from typing import Any, Optional
 from urllib.parse import quote
@@ -304,7 +305,7 @@ def addVersionTokenToReferences(data: bytes, versionToken, extensions) -> bytes:
     return re.sub(pattern, repl, data)
 
 
-def getResourcePath(modulePath: str, resourceName: str) -> Any:
+def getResourcePath(modulePath: str, resourceName: str) -> Traversable:
     moduleParts = modulePath.split(".")
     moduleRoot = resources.files(moduleParts[0])
     return moduleRoot.joinpath(*moduleParts[1:], resourceName)
