@@ -25,6 +25,9 @@ class WritableFontBackend(ReadableFontBackend, Protocol):
     ) -> VariableGlyph:
         ...
 
+    async def deleteGlyph(self, glyphName: str) -> None:
+        ...
+
 
 @runtime_checkable
 class WatchableFontBackend(Protocol):
