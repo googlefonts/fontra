@@ -120,7 +120,9 @@ class FileSystemProjectManager:
             if not projectPath.is_absolute():
                 projectPath = "/" / projectPath
         else:
-            projectPath = self.rootPath.joinpath(*path.split("/"))
+            projectPath = self.rootPath
+            for pathItem in path.split("/"):
+                projectPath = projectPath.joinpath(pathItem)
 
         if projectPath.suffix.lower() in fileExtensions and projectPath.exists():
             return projectPath
