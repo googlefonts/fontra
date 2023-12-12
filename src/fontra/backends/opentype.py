@@ -1,6 +1,10 @@
+from os import PathLike
+
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
 from fontTools.ttLib import TTFont
+
+from fontra.core.protocols import ReadableFontBackend
 
 from ..core.classes import GlobalAxis, Layer, Source, StaticGlyph, VariableGlyph
 from ..core.path import PackedPath, PackedPathPointPen
@@ -8,8 +12,10 @@ from ..core.path import PackedPath, PackedPathPointPen
 
 class OTFBackend:
     @classmethod
-    def fromPath(cls, path):
-        self = cls()
+    def fromPath(cls, path: PathLike) -> ReadableFontBackend:
+        return cls(path=path)
+
+    def __init__(self, *, path):
         self.path = path
         self.font = TTFont(path, lazy=True)
         self.globalAxes = unpackAxes(self.font)
@@ -29,7 +35,6 @@ class OTFBackend:
         self.glyphMap = glyphMap
         self.glyphSet = self.font.getGlyphSet()
         self.variationGlyphSets = {}
-        return self
 
     def close(self):
         self.font.close()
@@ -37,14 +42,14 @@ class OTFBackend:
     async def getGlyphMap(self):
         return self.glyphMap
 
-    async def getGlyph(self, glyphName):
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         if glyphName not in self.glyphSet:
             return None
         defaultLayerName = "<default>"
         glyph = VariableGlyph(name=glyphName)
         staticGlyph = buildStaticGlyph(self.glyphSet, glyphName)
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}
-        defaultLocation = {axis.name: 0 for axis in self.globalAxes}
+        defaultLocation = {axis.name: 0.0 for axis in self.globalAxes}
         sources = [
             Source(
                 location=defaultLocation,
