@@ -285,7 +285,9 @@ class DesignspaceBackend:
             )
         return axes, sources
 
-    async def putGlyph(self, glyphName: str, glyph: VariableGlyph, unicodes: list[int]):
+    async def putGlyph(
+        self, glyphName: str, glyph: VariableGlyph, unicodes: list[int]
+    ) -> None:
         assert isinstance(unicodes, list)
         assert all(isinstance(cp, int) for cp in unicodes)
         self.glyphMap[glyphName] = unicodes

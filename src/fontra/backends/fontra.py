@@ -95,7 +95,7 @@ class FontraBackend:
 
     async def putGlyph(
         self, glyphName: str, glyph: VariableGlyph, codePoints: list[int]
-    ):
+    ) -> None:
         jsonSource = serializeGlyph(glyph, glyphName)
         filePath = self.getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")

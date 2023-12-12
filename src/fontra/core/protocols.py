@@ -34,7 +34,7 @@ class ReadableFontBackend(Protocol):
 class WritableFontBackend(ReadableFontBackend, Protocol):
     async def putGlyph(
         self, glyphName: str, glyph: VariableGlyph, codePoints: list[int]
-    ) -> VariableGlyph:
+    ) -> None:
         ...
 
     async def deleteGlyph(self, glyphName: str) -> None:
