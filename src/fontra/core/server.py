@@ -13,7 +13,6 @@ from functools import partial
 from http.cookies import SimpleCookie
 from importlib import resources
 from importlib.metadata import entry_points
-from importlib.resources.abc import Traversable
 from typing import Any, Optional
 from urllib.parse import quote
 
@@ -305,7 +304,7 @@ def addVersionTokenToReferences(data: bytes, versionToken, extensions) -> bytes:
     return re.sub(pattern, repl, data)
 
 
-def getResourcePath(modulePath: str, resourceName: str) -> Traversable:
+def getResourcePath(modulePath: str, resourceName: str) -> Any:
     moduleParts = modulePath.split(".")
     moduleRoot = resources.files(moduleParts[0])
     return moduleRoot.joinpath(*moduleParts[1:], resourceName)
