@@ -78,13 +78,15 @@ class FileSystemProjectManager:
         return "yes"  # arbitrary non-false string token
 
     async def projectPageHandler(
-        self, request: web.Request, filterContent: Callable | None = None
+        self,
+        request: web.Request,
+        filterContent: Callable[[bytes, str], bytes] | None = None,
     ) -> web.Response:
         htmlPath = resources.files("fontra") / "filesystem" / "landing.html"
-        html = htmlPath.read_text()
+        html = htmlPath.read_bytes()
         if filterContent is not None:
             html = filterContent(html, "text/html")
-        return web.Response(text=html, content_type="text/html")
+        return web.Response(body=html, content_type="text/html")
 
     async def projectAvailable(self, path: str, token: str) -> bool:
         return bool(self._getProjectPath(path))
@@ -120,9 +122,7 @@ class FileSystemProjectManager:
             if not projectPath.is_absolute():
                 projectPath = "/" / projectPath
         else:
-            projectPath = self.rootPath
-            for pathItem in path.split("/"):
-                projectPath = projectPath.joinpath(pathItem)
+            projectPath = self.rootPath.joinpath(*path.split("/"))
 
         if projectPath.suffix.lower() in fileExtensions and projectPath.exists():
             return projectPath
