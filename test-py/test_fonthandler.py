@@ -182,6 +182,7 @@ async def test_fontHandler_getData(testFontHandler):
 async def test_fontHandler_setData(testFontHandler, caplog):
     caplog.set_level(logging.INFO)
     async with asyncClosing(testFontHandler):
+        await testFontHandler.startTasks()
         glyphMap = await testFontHandler.getData("glyphMap")
         assert [65, 97] == glyphMap["A"]
         change = {
@@ -200,13 +201,14 @@ async def test_fontHandler_setData(testFontHandler, caplog):
 
         glyphMap = await testFontHandler.getData("glyphMap")
         assert [97] == glyphMap["A"]
-    assert "No backend write method found for glyphMap" == caplog.records[0].message
+    assert "write glyphMap to backend" == caplog.records[0].message
 
 
 @pytest.mark.asyncio
 async def test_fontHandler_setData_unitsPerEm(testFontHandler, caplog):
     caplog.set_level(logging.INFO)
     async with asyncClosing(testFontHandler):
+        await testFontHandler.startTasks()
         unitsPerEm = await testFontHandler.getData("unitsPerEm")
         assert 1000 == unitsPerEm
         change = {
@@ -224,7 +226,8 @@ async def test_fontHandler_setData_unitsPerEm(testFontHandler, caplog):
         unitsPerEm = await testFontHandler.getData("unitsPerEm")
         assert 2000 == unitsPerEm
 
-    assert "No backend write method found for unitsPerEm" == caplog.records[0].message
+    assert 2000 == await testFontHandler.backend.getUnitsPerEm()
+    assert "write unitsPerEm to backend" == caplog.records[0].message
 
 
 @pytest.mark.asyncio
