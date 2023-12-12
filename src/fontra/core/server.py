@@ -57,8 +57,7 @@ class FontraServer:
         self.viewEntryPoints = {
             ep.name: ep.value for ep in entry_points(group="fontra.views")
         }
-        if hasattr(self.projectManager, "setupWebRoutes"):
-            self.projectManager.setupWebRoutes(self)
+        self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
         routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))

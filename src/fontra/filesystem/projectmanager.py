@@ -145,6 +145,9 @@ class FileSystemProjectManager:
             projectPaths.append("/".join(projectItems[len(rootItems) :]))
         return projectPaths
 
+    def setupWebRoutes(self, server):
+        pass
+
 
 def _iterFolder(folderPath, extensions, maxDepth=3):
     if maxDepth is not None and maxDepth <= 0:

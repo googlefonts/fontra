@@ -92,3 +92,6 @@ class ProjectManager(Protocol):
         self, request: web.Request, filterContent: Callable | None = None
     ) -> web.Response:
         ...
+
+    def setupWebRoutes(self, server) -> None:
+        ...
