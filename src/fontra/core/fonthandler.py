@@ -6,6 +6,7 @@ from collections import UserDict, defaultdict
 from contextlib import asynccontextmanager
 from copy import deepcopy
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Any, AsyncGenerator, Awaitable, Callable, Optional
 
 from .changes import (
@@ -55,7 +56,7 @@ class FontHandler:
     allConnectionsClosedCallback: Optional[Callable[[], Awaitable[Any]]] = None
 
     def __post_init__(self):
-        if not isinstance(self.backend, WritableFontBackend):
+        if self.writableBackend is None:
             self.readOnly = True
         self.connections = set()
         self.glyphUsedBy = {}
@@ -63,6 +64,10 @@ class FontHandler:
         self.clientData = defaultdict(dict)
         self.localData = LRUCache()
         self._dataScheduledForWriting = {}
+
+    @cached_property
+    def writableBackend(self) -> WritableFontBackend | None:
+        return self.backend if isinstance(self.backend, WritableFontBackend) else None
 
     async def startTasks(self) -> None:
         if isinstance(self.backend, WatchableFontBackend):
@@ -189,14 +194,14 @@ class FontHandler:
             self.updateGlyphDependencies(glyphName, glyph)
         return glyph
 
-    async def getData(self, key):
+    async def getData(self, key: str) -> Any:
         data = self.localData.get(key)
         if data is None:
             data = await self._getData(key)
             self.localData[key] = data
         return data
 
-    async def _getData(self, key):
+    async def _getData(self, key: str) -> Any:
         getterName = backendGetterNames[key]
         return await getattr(self.backend, getterName)()
 
@@ -339,7 +344,8 @@ class FontHandler:
 
     async def _updateLocalData(
         self, rootKeys, rootObject, sourceConnection, writeToBackEnd
-    ):
+    ) -> None:
+        writeFunc: Callable[[], Awaitable]  # inferencing with partial() goes wrong
         for rootKey in rootKeys + sorted(rootObject._assignedAttributeNames):
             if rootKey == "glyphs":
                 glyphSet = rootObject.glyphs
@@ -350,8 +356,9 @@ class FontHandler:
                         self.localData[writeKey] = glyphSet[glyphName]
                     if not writeToBackEnd:
                         continue
+                    assert self.writableBackend is not None
                     writeFunc = functools.partial(
-                        self.backend.putGlyph,
+                        self.writableBackend.putGlyph,
                         glyphName,
                         deepcopy(glyphSet[glyphName]),
                         glyphMap.get(glyphName, []),
@@ -362,14 +369,20 @@ class FontHandler:
                     _ = self.localData.pop(writeKey, None)
                     if not writeToBackEnd:
                         continue
-                    writeFunc = functools.partial(self.backend.deleteGlyph, glyphName)
+                    assert self.writableBackend is not None
+                    writeFunc = functools.partial(
+                        self.writableBackend.deleteGlyph, glyphName
+                    )
                     await self.scheduleDataWrite(writeKey, writeFunc, sourceConnection)
             else:
                 if rootKey in rootObject._assignedAttributeNames:
                     self.localData[rootKey] = getattr(rootObject, rootKey)
                 if not writeToBackEnd:
                     continue
-                method = getattr(self.backend, backendSetterNames[rootKey], None)
+                assert self.writableBackend is not None
+                method = getattr(
+                    self.writableBackend, backendSetterNames[rootKey], None
+                )
                 if method is None:
                     logger.info(f"No backend write method found for {rootKey}")
                     continue
