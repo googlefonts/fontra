@@ -35,20 +35,6 @@ def remoteMethod(method):
     return method
 
 
-backendAttrMapping = [
-    ("axes", "GlobalAxes"),
-    ("glyphMap", "GlyphMap"),
-    ("customData", "CustomData"),
-    ("unitsPerEm", "UnitsPerEm"),
-]
-
-backendGetterNames = {attr: "get" + baseName for attr, baseName in backendAttrMapping}
-backendSetterNames = {attr: "set" + baseName for attr, baseName in backendAttrMapping}
-backendDeleterNames = {
-    attr: "delete" + baseName for attr, baseName in backendAttrMapping
-}
-
-
 @dataclass
 class FontHandler:
     backend: ReadableFontBackend
@@ -110,6 +96,8 @@ class FontHandler:
         if self._processWritesError is not None:
             raise self._processWritesError
         await self._writingInProgressEvent.wait()
+        if self._processWritesError is not None:
+            raise self._processWritesError
 
     async def processWrites(self) -> None:
         while True:
@@ -202,8 +190,35 @@ class FontHandler:
         return data
 
     async def _getData(self, key: str) -> Any:
-        getterName = backendGetterNames[key]
-        return await getattr(self.backend, getterName)()
+        value: Any
+
+        match key:
+            case "axes":
+                value = await self.backend.getGlobalAxes()
+            case "glyphMap":
+                value = await self.backend.getGlyphMap()
+            case "customData":
+                value = await self.backend.getCustomData()
+            case "unitsPerEm":
+                value = await self.backend.getUnitsPerEm()
+            case _:
+                raise KeyError(key)
+
+        return value
+
+    async def _putData(self, key: str, value: Any) -> None:
+        assert self.writableBackend is not None
+        match key:
+            case "axes":
+                await self.writableBackend.putGlobalAxes(value)
+            case "glyphMap":
+                await self.writableBackend.putGlyphMap(value)
+            case "customData":
+                await self.writableBackend.putCustomData(value)
+            case "unitsPerEm":
+                await self.writableBackend.putUnitsPerEm(value)
+            case _:
+                raise KeyError(key)
 
     @remoteMethod
     async def getGlyphMap(self, *, connection):
@@ -380,13 +395,9 @@ class FontHandler:
                 if not writeToBackEnd:
                     continue
                 assert self.writableBackend is not None
-                method = getattr(
-                    self.writableBackend, backendSetterNames[rootKey], None
+                writeFunc = functools.partial(
+                    self._putData, rootKey, deepcopy(self.localData[rootKey])
                 )
-                if method is None:
-                    logger.info(f"No backend write method found for {rootKey}")
-                    continue
-                writeFunc = functools.partial(method, deepcopy(rootObject[rootKey]))
                 await self.scheduleDataWrite(rootKey, writeFunc, sourceConnection)
 
     async def scheduleDataWrite(self, writeKey, writeFunc, connection):
