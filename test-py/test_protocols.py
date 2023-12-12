@@ -4,7 +4,12 @@ from os import PathLike
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.backends.fontra import FontraBackend
 from fontra.backends.opentype import OTFBackend
-from fontra.core.protocols import ReadableFontBackend, WritableFontBackend
+from fontra.core.protocols import (
+    ProjectManagerFactory,
+    ReadableFontBackend,
+    WritableFontBackend,
+)
+from fontra.filesystem.projectmanager import FileSystemProjectManagerFactory
 
 repoRoot = pathlib.Path(__file__).resolve().parent.parent
 
@@ -55,3 +60,8 @@ def test_opentype_read() -> None:
         repoRoot / "test-py" / "data" / "mutatorsans" / "MutatorSans.ttf"
     )
     assert isinstance(backend, ReadableFontBackend)
+
+
+def test_FileSystemProjectManagerFactory() -> None:
+    factory: ProjectManagerFactory = FileSystemProjectManagerFactory()
+    assert isinstance(factory, ProjectManagerFactory)
