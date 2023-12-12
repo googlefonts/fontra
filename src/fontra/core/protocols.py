@@ -12,6 +12,9 @@ from .fonthandler import FontHandler
 
 @runtime_checkable
 class ReadableFontBackend(Protocol):
+    def close(self) -> None:
+        ...
+
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         ...
 
