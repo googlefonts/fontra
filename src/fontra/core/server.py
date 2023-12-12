@@ -308,7 +308,10 @@ def addVersionTokenToReferences(data: bytes, versionToken, extensions) -> bytes:
 def getResourcePath(modulePath: str, resourceName: str) -> Traversable:
     moduleParts = modulePath.split(".")
     moduleRoot = resources.files(moduleParts[0])
-    return moduleRoot.joinpath(*moduleParts[1:], resourceName)
+    resourcePath = moduleRoot
+    for pathItem in [*moduleParts[1:], resourceName]:
+        resourcePath = resourcePath.joinpath(pathItem)
+    return resourcePath
 
 
 def splitVersionToken(fileName: str) -> tuple[str, str | None]:
