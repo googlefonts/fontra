@@ -55,7 +55,12 @@ def existingFolderOrFontFile(path):
 
 
 class FileSystemProjectManager:
-    def __init__(self, rootPath, maxFolderDepth=3, readOnly=False):
+    def __init__(
+        self,
+        rootPath: pathlib.Path | None,
+        maxFolderDepth: int = 3,
+        readOnly: bool = False,
+    ):
         self.rootPath = rootPath
         self.singleFilePath = None
         self.maxFolderDepth = maxFolderDepth
@@ -63,9 +68,9 @@ class FileSystemProjectManager:
         if self.rootPath is not None and self.rootPath.suffix.lower() in fileExtensions:
             self.singleFilePath = self.rootPath
             self.rootPath = self.rootPath.parent
-        self.fontHandlers = {}
+        self.fontHandlers: dict[str, FontHandler] = {}
 
-    async def close(self):
+    async def close(self) -> None:
         for fontHandler in self.fontHandlers.values():
             await fontHandler.close()
 
