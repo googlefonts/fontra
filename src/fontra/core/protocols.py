@@ -7,7 +7,6 @@ from typing import Any, AsyncGenerator, Callable, Protocol, runtime_checkable
 from aiohttp import web
 
 from .classes import VariableGlyph
-from .fonthandler import FontHandler
 
 
 @runtime_checkable
@@ -56,7 +55,7 @@ class ProjectManager(Protocol):
     async def projectAvailable(self, path: str, token: str) -> bool:
         ...
 
-    async def getRemoteSubject(self, path: str, token: str) -> FontHandler:
+    async def getRemoteSubject(self, path: str, token: str) -> Any:
         ...
 
     async def getProjectList(self, token: str) -> list[str]:
