@@ -6,7 +6,7 @@ from typing import Any, AsyncGenerator, Callable, Protocol, runtime_checkable
 
 from aiohttp import web
 
-from .classes import VariableGlyph
+from .classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
 
 
 @runtime_checkable
@@ -15,6 +15,18 @@ class ReadableFontBackend(Protocol):
         ...
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        ...
+
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        ...
+
+    async def getGlyphMap(self) -> dict[str, list[int]]:
+        ...
+
+    async def getCustomData(self) -> dict[str, Any]:
+        ...
+
+    async def getUnitsPerEm(self) -> int:
         ...
 
 
@@ -26,6 +38,18 @@ class WritableFontBackend(ReadableFontBackend, Protocol):
         ...
 
     async def deleteGlyph(self, glyphName: str) -> None:
+        ...
+
+    async def putGlobalAxes(self, value: list[GlobalAxis | GlobalDiscreteAxis]) -> None:
+        ...
+
+    async def putGlyphMap(self, value: dict[str, list[int]]) -> None:
+        ...
+
+    async def putCustomData(self, value: dict[str, Any]) -> None:
+        ...
+
+    async def putUnitsPerEm(self, value: int) -> None:
         ...
 
 
