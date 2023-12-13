@@ -1,8 +1,11 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import traceback
+from typing import Any, AsyncGenerator
 
-from aiohttp import WSMsgType
+from aiohttp import WSMsgType, web
 
 from .classes import unstructure
 
@@ -14,23 +17,29 @@ class RemoteObjectConnectionException(Exception):
 
 
 class RemoteObjectConnection:
-    def __init__(self, websocket, path, subject, verboseErrors):
+    def __init__(
+        self,
+        websocket: web.WebSocketResponse,
+        path: str,
+        subject: Any,
+        verboseErrors: bool,
+    ):
         self.websocket = websocket
         self.path = path
         self.subject = subject
         self.verboseErrors = verboseErrors
         self.clientUUID = None
-        self.callReturnFutures = {}
+        self.callReturnFutures: dict[str, asyncio.Future] = {}
         self.getNextServerCallID = _genNextServerCallID()
 
     @property
-    def proxy(self):
+    def proxy(self) -> RemoteClientProxy:
         return RemoteClientProxy(self)
 
-    async def handleConnection(self):
+    async def handleConnection(self) -> None:
         message = await anext(aiter(self.websocket))
-        message = message.json()
-        self.clientUUID = message.get("client-uuid")
+        messageObj = message.json()
+        self.clientUUID = messageObj.get("client-uuid")
         if self.clientUUID is None:
             raise RemoteObjectConnectionException("unrecognized message")
         try:
@@ -41,8 +50,8 @@ class RemoteObjectConnection:
                 traceback.print_exc()
             await self.websocket.close()
 
-    async def _handleConnection(self):
-        tasks = []
+    async def _handleConnection(self) -> None:
+        tasks: list[asyncio.Task] = []
         try:
             async for task in self._iterCallTasks():
                 tasks = [task for task in tasks if not task.done()]
@@ -55,26 +64,26 @@ class RemoteObjectConnection:
                 if not task.done():
                     task.cancel()
 
-    async def _iterCallTasks(self):
+    async def _iterCallTasks(self) -> AsyncGenerator[asyncio.Task, None]:
         async for message in self.websocket:
             if message.type == WSMsgType.ERROR:
                 # We need to explicitly check for an error, or else
                 # message.json() will fail with a TypeError.
                 # https://github.com/aio-libs/aiohttp/issues/7313#issuecomment-1586150267
                 raise message.data
-            message = message.json()
+            messageObj = message.json()
 
-            if message.get("connection") == "close":
+            if messageObj.get("connection") == "close":
                 logger.info("client requested connection close")
                 break
-            if "client-call-id" in message:
+            if "client-call-id" in messageObj:
                 # this is an incoming client -> server call
-                yield asyncio.create_task(self._performCall(message, self.subject))
-            elif "server-call-id" in message:
+                yield asyncio.create_task(self._performCall(messageObj, self.subject))
+            elif "server-call-id" in messageObj:
                 # this is a response to a server -> client call
-                fut = self.callReturnFutures[message["server-call-id"]]
-                returnValue = message.get("return-value")
-                error = message.get("error")
+                fut = self.callReturnFutures[messageObj["server-call-id"]]
+                returnValue = messageObj.get("return-value")
+                error = messageObj.get("error")
                 if error is None:
                     fut.set_result(returnValue)
                 else:
@@ -83,14 +92,16 @@ class RemoteObjectConnection:
                 logger.info("invalid message, closing connection")
                 break
 
-    async def _performCall(self, message, subject):
+    async def _performCall(self, message: dict, subject: Any) -> None:
         clientCallID = "unknown-client-call-id"
         try:
             clientCallID = message["client-call-id"]
             methodName = message["method-name"]
             arguments = message.get("arguments", [])
             methodHandler = getattr(subject, methodName, None)
-            if getattr(methodHandler, "fontraRemoteMethod", False):
+            if methodHandler is not None and getattr(
+                methodHandler, "fontraRemoteMethod", False
+            ):
                 returnValue = await methodHandler(*arguments, connection=self)
                 returnValue = unstructure(returnValue)
                 response = {"client-call-id": clientCallID, "return-value": returnValue}

@@ -4,12 +4,13 @@ import secrets
 from importlib.metadata import entry_points
 
 from . import __version__ as fontraVersion
+from .core.protocols import ProjectManager, ProjectManagerFactory
 from .core.server import FontraServer, findFreeTCPPort
 
 DEFAULT_PORT = 8000
 
 
-def main():
+def main() -> None:
     logging.basicConfig(
         format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
         level=logging.INFO,
@@ -41,7 +42,7 @@ def main():
             # See https://github.com/googlefonts/fontra/issues/141
             continue
         subParser = subParsers.add_parser(entryPoint.name)
-        pmFactory = entryPoint.load()
+        pmFactory: ProjectManagerFactory = entryPoint.load()
         pmFactory.addArguments(subParser)
         subParser.set_defaults(getProjectManager=pmFactory.getProjectManager)
 
@@ -49,7 +50,7 @@ def main():
 
     host = args.host
     httpPort = args.http_port
-    manager = args.getProjectManager(args)
+    manager: ProjectManager = args.getProjectManager(args)
     server = FontraServer(
         host=host,
         httpPort=httpPort if httpPort is not None else findFreeTCPPort(DEFAULT_PORT),

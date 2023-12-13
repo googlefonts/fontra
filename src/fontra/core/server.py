@@ -12,12 +12,14 @@ from datetime import datetime, timezone
 from functools import partial
 from http.cookies import SimpleCookie
 from importlib import resources
+from importlib.abc import Traversable
 from importlib.metadata import entry_points
 from typing import Any, Optional
 from urllib.parse import quote
 
 from aiohttp import WSCloseCode, web
 
+from .protocols import ProjectManager
 from .remote import RemoteObjectConnection, RemoteObjectConnectionException
 from .serverutils import apiFunctions
 
@@ -41,7 +43,7 @@ mimeTypes = {
 class FontraServer:
     host: str
     httpPort: int
-    projectManager: Any
+    projectManager: ProjectManager
     launchWebBrowser: bool = False
     versionToken: Optional[str] = None
     cookieMaxAge: int = 7 * 24 * 60 * 60
@@ -49,14 +51,13 @@ class FontraServer:
         ["css", "html", "ico", "js", "json", "svg", "woff2"]
     )
 
-    def setup(self):
+    def setup(self) -> None:
         self.startupTime = datetime.now(timezone.utc).replace(microsecond=0)
         self.httpApp = web.Application()
         self.viewEntryPoints = {
             ep.name: ep.value for ep in entry_points(group="fontra.views")
         }
-        if hasattr(self.projectManager, "setupWebRoutes"):
-            self.projectManager.setupWebRoutes(self)
+        self.projectManager.setupWebRoutes(self)
         routes = []
         routes.append(web.get("/", self.rootDocumentHandler))
         routes.append(web.get("/websocket/{path:.*}", self.websocketHandler))
@@ -91,9 +92,9 @@ class FontraServer:
             self.httpApp.on_startup.append(self.launchWebBrowserCallback)
         self.httpApp.on_shutdown.append(self.closeActiveWebsockets)
         self.httpApp.on_shutdown.append(self.closeProjectManager)
-        self._activeWebsockets = set()
+        self._activeWebsockets: set = set()
 
-    def run(self, showLaunchBanner=True):
+    def run(self, showLaunchBanner: bool = True) -> None:
         host = self.host
         httpPort = self.httpPort
         if showLaunchBanner:
@@ -109,7 +110,7 @@ class FontraServer:
             print("+---------------------------------------------------+")
         web.run_app(self.httpApp, host=host, port=httpPort)
 
-    async def launchWebBrowserCallback(self, httpApp):
+    async def launchWebBrowserCallback(self, httpApp: web.Application) -> None:
         import asyncio
         import webbrowser
 
@@ -123,24 +124,24 @@ class FontraServer:
 
         asyncio.create_task(_launcher())
 
-    async def closeActiveWebsockets(self, httpApp):
+    async def closeActiveWebsockets(self, httpApp: web.Application) -> None:
         for websocket in list(self._activeWebsockets):
             await websocket.close(
                 code=WSCloseCode.GOING_AWAY, message="Server shutdown"
             )
 
-    async def closeProjectManager(self, httpApp):
+    async def closeProjectManager(self, httpApp: web.Application) -> None:
         await self.projectManager.close()
 
-    async def websocketHandler(self, request):
+    async def websocketHandler(self, request: web.Request) -> web.WebSocketResponse:
         path = "/" + request.match_info["path"]
         remote = request.headers.get("X-FORWARDED-FOR", request.remote)
         logger.info(f"incoming connection from {remote} for {path!r}")
 
         cookies = SimpleCookie()
         cookies.load(request.headers.get("Cookie", ""))
-        cookies = {k: v.value for k, v in cookies.items()}
-        token = cookies.get("fontra-authorization-token")
+        cookieValues = {k: v.value for k, v in cookies.items()}
+        token = cookieValues.get("fontra-authorization-token")
 
         websocket = web.WebSocketResponse(heartbeat=55, max_msg_size=0x2000000)
         await websocket.prepare(request)
@@ -163,13 +164,13 @@ class FontraServer:
 
         return websocket
 
-    async def getSubject(self, websocket, path, token):
+    async def getSubject(self, websocket, path, token) -> Any:
         subject = await self.projectManager.getRemoteSubject(path, token)
         if subject is None:
             raise RemoteObjectConnectionException("unauthorized")
         return subject
 
-    async def projectListHandler(self, request):
+    async def projectListHandler(self, request) -> web.Response:
         authToken = await self.projectManager.authorize(request)
         if not authToken:
             raise web.HTTPUnauthorized()
@@ -178,7 +179,7 @@ class FontraServer:
             text=json.dumps(projectList), content_type="application/json"
         )
 
-    async def serverInfoHandler(self, request):
+    async def serverInfoHandler(self, request) -> web.Response:
         from .. import __version__ as fontraVersion
 
         authToken = await self.projectManager.authorize(request)
@@ -204,7 +205,7 @@ class FontraServer:
             text=json.dumps(serverInfo), content_type="application/json"
         )
 
-    async def webAPIHandler(self, request):
+    async def webAPIHandler(self, request) -> web.Response:
         functionName = request.match_info["function"]
         function = apiFunctions.get(functionName)
         if function is None:
@@ -219,7 +220,7 @@ class FontraServer:
             result = {"returnValue": returnValue}
         return web.Response(text=json.dumps(result), content_type="application/json")
 
-    async def staticContentHandler(self, packageName, request):
+    async def staticContentHandler(self, packageName, request) -> web.Response:
         ifModSince = request.if_modified_since
         if ifModSince is not None and ifModSince >= self.startupTime:
             raise web.HTTPNotModified()
@@ -239,22 +240,24 @@ class FontraServer:
         ext = resourceName.rsplit(".", 1)[-1].lower()
         if ext not in self.allowedFileExtensions:
             raise web.HTTPNotFound()
-        contentType = mimeTypes.get(resourceName.rsplit(".")[-1])
+        contentType = mimeTypes.get(resourceName.rsplit(".")[-1], "")
         data = self._addVersionTokenToReferences(data, contentType)
         response = web.Response(body=data, content_type=contentType)
         response.last_modified = self.startupTime
         return response
 
-    async def notFoundHandler(self, request):
+    async def notFoundHandler(self, request) -> web.Response:
         raise web.HTTPNotFound()
 
-    async def rootDocumentHandler(self, request):
+    async def rootDocumentHandler(self, request) -> web.Response:
         response = await self.projectManager.projectPageHandler(
             request, self._addVersionTokenToReferences
         )
         return response
 
-    async def viewPathHandler(self, viewName, request):
+    async def viewPathHandler(
+        self, viewName: str, request: web.Request
+    ) -> web.Response:
         authToken = await self.projectManager.authorize(request)
         if not authToken:
             qs = quote(request.path_qs, safe="")
@@ -267,15 +270,15 @@ class FontraServer:
         try:
             html = getResourcePath(
                 self.viewEntryPoints[viewName], f"{viewName}.html"
-            ).read_text()
+            ).read_bytes()
         except (FileNotFoundError, ModuleNotFoundError):
             raise web.HTTPNotFound()
 
         html = self._addVersionTokenToReferences(html, "text/html")
 
-        return web.Response(text=html, content_type="text/html")
+        return web.Response(body=html, content_type="text/html")
 
-    def _addVersionTokenToReferences(self, data, contentType):
+    def _addVersionTokenToReferences(self, data: bytes, contentType: str) -> bytes:
         if self.versionToken is None:
             return data
         jsAllowedFileExtensions = ["css", "js", "svg"]
@@ -292,23 +295,25 @@ class FontraServer:
         return data
 
 
-def addVersionTokenToReferences(data, versionToken, extensions):
-    pattern = rf"""((['"])[./][./A-Za-z-]+)(\.({"|".join(extensions)})\2)"""
-    repl = rf"\1.{versionToken}\3"
-    if isinstance(data, bytes):
-        data = re.sub(pattern, repl, data.decode("utf-8")).encode("utf-8")
-    else:
-        data = re.sub(pattern, repl, data)
-    return data
+def addVersionTokenToReferences(data: bytes, versionToken, extensions) -> bytes:
+    assert isinstance(data, bytes)
+    pattern = rf"""((['"])[./][./A-Za-z-]+)(\.({"|".join(extensions)})\2)""".encode(
+        "utf-8"
+    )
+    repl = rf"\1.{versionToken}\3".encode("utf-8")
+    return re.sub(pattern, repl, data)
 
 
-def getResourcePath(modulePath, resourceName):
+def getResourcePath(modulePath: str, resourceName: str) -> Traversable:
     moduleParts = modulePath.split(".")
     moduleRoot = resources.files(moduleParts[0])
-    return moduleRoot.joinpath(*moduleParts[1:], resourceName)
+    resourcePath = moduleRoot
+    for pathItem in [*moduleParts[1:], resourceName]:
+        resourcePath = resourcePath.joinpath(pathItem)
+    return resourcePath
 
 
-def splitVersionToken(fileName):
+def splitVersionToken(fileName: str) -> tuple[str, str | None]:
     parts = fileName.rsplit(".", 2)
     if len(parts) == 3:
         fileName, versionToken, ext = parts
@@ -316,7 +321,7 @@ def splitVersionToken(fileName):
     return fileName, None
 
 
-def findFreeTCPPort(startPort=8000):
+def findFreeTCPPort(startPort: int = 8000) -> int:
     port = startPort
     while True:
         tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

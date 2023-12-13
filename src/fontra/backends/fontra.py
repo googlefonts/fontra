@@ -6,9 +6,18 @@ import pathlib
 import shutil
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Callable
+from os import PathLike
+from typing import Any, Callable
 
-from fontra.core.classes import Font, VariableGlyph, structure, unstructure
+from fontra.core.classes import (
+    Font,
+    GlobalAxis,
+    GlobalDiscreteAxis,
+    VariableGlyph,
+    structure,
+    unstructure,
+)
+from fontra.core.protocols import WritableFontBackend
 
 from .filenames import stringToFileName
 
@@ -21,15 +30,15 @@ class FontraBackend:
     glyphsDirName = "glyphs"
 
     @classmethod
-    def fromPath(cls, path):
+    def fromPath(cls, path) -> WritableFontBackend:
         return cls(path=path)
 
     @classmethod
-    def createFromPath(cls, path):
+    def createFromPath(cls, path) -> WritableFontBackend:
         return cls(path=path, create=True)
 
-    def __init__(self, *, path=None, create=False):
-        self.path = pathlib.Path(path).resolve() if path is not None else None
+    def __init__(self, *, path: PathLike, create: bool = False):
+        self.path = pathlib.Path(path).resolve()
         if create:
             if self.path.is_dir():
                 shutil.rmtree(self.path)
@@ -37,7 +46,7 @@ class FontraBackend:
                 self.path.unlink()
             self.path.mkdir()
         self.glyphsDir.mkdir(exist_ok=True)
-        self.glyphMap = {}
+        self.glyphMap: dict[str, list[int]] = {}
         if not create:
             self._readGlyphInfo()
             self._readFontData()
@@ -64,21 +73,29 @@ class FontraBackend:
     def flush(self):
         self._scheduler.flush()
 
-    async def getUnitsPerEm(self):
+    async def getUnitsPerEm(self) -> int:
         return self.fontData.unitsPerEm
 
     async def putUnitsPerEm(self, unitsPerEm):
         self.fontData.unitsPerEm = unitsPerEm
         self._scheduler.schedule(self._writeFontData)
 
-    async def getGlyphMap(self):
+    async def getGlyphMap(self) -> dict[str, list[int]]:
         return dict(self.glyphMap)
 
-    async def getGlyph(self, glyphName):
-        jsonSource = self.getGlyphData(glyphName)
+    async def putGlyphMap(self, value: dict[str, list[int]]) -> None:
+        pass
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        try:
+            jsonSource = self.getGlyphData(glyphName)
+        except KeyError:
+            return None
         return deserializeGlyph(jsonSource, glyphName)
 
-    async def putGlyph(self, glyphName, glyph, codePoints):
+    async def putGlyph(
+        self, glyphName: str, glyph: VariableGlyph, codePoints: list[int]
+    ) -> None:
         jsonSource = serializeGlyph(glyph, glyphName)
         filePath = self.getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")
@@ -88,14 +105,14 @@ class FontraBackend:
     async def deleteGlyph(self, glyphName):
         self.glyphMap.pop(glyphName, None)
 
-    async def getGlobalAxes(self):
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return deepcopy(self.fontData.axes)
 
     async def putGlobalAxes(self, axes):
         self.fontData.axes = deepcopy(axes)
         self._scheduler.schedule(self._writeFontData)
 
-    async def getCustomData(self):
+    async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.fontData.customData)
 
     async def putCustomData(self, customData):

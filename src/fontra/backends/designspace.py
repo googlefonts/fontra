@@ -10,7 +10,9 @@ from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from functools import cache, cached_property, singledispatch
+from os import PathLike
 from types import SimpleNamespace
+from typing import Any, AsyncGenerator, Callable
 
 import watchfiles
 from fontTools.designspaceLib import (
@@ -19,6 +21,7 @@ from fontTools.designspaceLib import (
     DiscreteAxisDescriptor,
 )
 from fontTools.misc.transform import DecomposedTransform
+from fontTools.pens.pointPen import AbstractPointPen
 from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
@@ -35,6 +38,7 @@ from ..core.classes import (
     VariableGlyph,
 )
 from ..core.path import PackedPathPointPen
+from ..core.protocols import WritableFontBackend
 from .ufo_utils import extractGlyphNameAndUnicodes
 
 logger = logging.getLogger(__name__)
@@ -60,11 +64,11 @@ defaultUFOInfoAttrs = {
 
 class DesignspaceBackend:
     @classmethod
-    def fromPath(cls, path):
+    def fromPath(cls, path: PathLike) -> WritableFontBackend:
         return cls(DesignSpaceDocument.fromfile(path))
 
     @classmethod
-    def createFromPath(cls, path):
+    def createFromPath(cls, path: PathLike) -> WritableFontBackend:
         path = pathlib.Path(path)
         ufoDir = path.parent
 
@@ -174,10 +178,13 @@ class DesignspaceBackend:
         for glyphName, fileName in glyphSet.contents.items():
             glifFileNames[fileName] = glyphName
 
-    async def getGlyphMap(self):
+    async def getGlyphMap(self) -> dict[str, list[int]]:
         return dict(self.glyphMap)
 
-    async def getGlyph(self, glyphName):
+    async def putGlyphMap(self, value: dict[str, list[int]]) -> None:
+        pass
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         if glyphName not in self.glyphMap:
             return None
 
@@ -278,7 +285,9 @@ class DesignspaceBackend:
             )
         return axes, sources
 
-    async def putGlyph(self, glyphName, glyph, unicodes):
+    async def putGlyph(
+        self, glyphName: str, glyph: VariableGlyph, unicodes: list[int]
+    ) -> None:
         assert isinstance(unicodes, list)
         assert all(isinstance(cp, int) for cp in unicodes)
         self.glyphMap[glyphName] = unicodes
@@ -534,7 +543,7 @@ class DesignspaceBackend:
         del self.glyphMap[glyphName]
         self.savedGlyphModificationTimes[glyphName] = None
 
-    async def getGlobalAxes(self):
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.axes
 
     async def putGlobalAxes(self, axes):
@@ -557,17 +566,27 @@ class DesignspaceBackend:
         self.updateAxisInfo()
         self.loadUFOLayers()
 
-    async def getUnitsPerEm(self):
+    async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm
 
-    async def getCustomData(self):
+    async def putUnitsPerEm(self, value: int) -> None:
+        del self.defaultFontInfo
+        ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
+        for ufoPath in ufoPaths:
+            reader = self.ufoManager.getReader(ufoPath)
+            info = UFOFontInfo()
+            reader.readInfo(info)
+            info.unitsPerEm = value
+            reader.writeInfo(info)
+
+    async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
 
     async def putCustomData(self, lib):
         self.dsDoc.lib = deepcopy(lib)
         self.dsDoc.write(self.dsDoc.path)
 
-    async def watchExternalChanges(self):
+    async def watchExternalChanges(self) -> AsyncGenerator[tuple[Any, Any], None]:
         ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
         async for changes in watchfiles.awatch(*ufoPaths):
             changes = cleanupWatchFilesChanges(changes)
@@ -910,7 +929,7 @@ def readGlyphOrCreate(
     glyphSet: GlyphSet,
     glyphName: str,
     unicodes: list[int],
-):
+) -> UFOGlyph:
     layerGlyph = UFOGlyph()
     layerGlyph.lib = {}
     if glyphName in glyphSet:
@@ -925,7 +944,7 @@ def populateUFOLayerGlyph(
     layerGlyph: UFOGlyph,
     staticGlyph: StaticGlyph,
     forceVariableComponents: bool = False,
-) -> None:
+) -> Callable[[AbstractPointPen], None]:
     pen = RecordingPointPen()
     layerGlyph.width = staticGlyph.xAdvance
     layerGlyph.height = staticGlyph.yAdvance

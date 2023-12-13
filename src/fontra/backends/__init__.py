@@ -1,19 +1,22 @@
 import logging
 import pathlib
 from importlib.metadata import entry_points
+from os import PathLike
+
+from ..core.protocols import ReadableFontBackend, WritableFontBackend
 
 logger = logging.getLogger(__name__)
 
 
-def getFileSystemBackend(path):
+def getFileSystemBackend(path: PathLike) -> ReadableFontBackend:
     return _getFileSystemBackend(path, False)
 
 
-def newFileSystemBackend(path):
+def newFileSystemBackend(path: PathLike) -> WritableFontBackend:
     return _getFileSystemBackend(path, True)
 
 
-def _getFileSystemBackend(path, create):
+def _getFileSystemBackend(path: PathLike, create: bool) -> WritableFontBackend:
     logVerb = "creating" if create else "loading"
 
     path = pathlib.Path(path)
@@ -33,6 +36,11 @@ def _getFileSystemBackend(path, create):
         backend = backendClass.createFromPath(path)
     else:
         backend = backendClass.fromPath(path)
+
+    if create:
+        assert isinstance(backend, WritableFontBackend)
+    else:
+        assert isinstance(backend, ReadableFontBackend)
 
     logger.info(f"done {logVerb} {path.name}")
     return backend

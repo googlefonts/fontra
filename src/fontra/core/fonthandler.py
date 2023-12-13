@@ -6,7 +6,8 @@ from collections import UserDict, defaultdict
 from contextlib import asynccontextmanager
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Callable, Optional
+from functools import cached_property
+from typing import Any, AsyncGenerator, Awaitable, Callable, Optional
 
 from .changes import (
     applyChange,
@@ -18,8 +19,9 @@ from .changes import (
     patternIntersect,
     patternUnion,
 )
-from .classes import Font
+from .classes import Font, VariableGlyph
 from .lrucache import LRUCache
+from .protocols import ReadableFontBackend, WatchableFontBackend, WritableFontBackend
 
 logger = logging.getLogger(__name__)
 
@@ -33,28 +35,14 @@ def remoteMethod(method):
     return method
 
 
-backendAttrMapping = [
-    ("axes", "GlobalAxes"),
-    ("glyphMap", "GlyphMap"),
-    ("customData", "CustomData"),
-    ("unitsPerEm", "UnitsPerEm"),
-]
-
-backendGetterNames = {attr: "get" + baseName for attr, baseName in backendAttrMapping}
-backendSetterNames = {attr: "set" + baseName for attr, baseName in backendAttrMapping}
-backendDeleterNames = {
-    attr: "delete" + baseName for attr, baseName in backendAttrMapping
-}
-
-
 @dataclass
 class FontHandler:
-    backend: Any  # TODO: need Backend protocol
+    backend: ReadableFontBackend
     readOnly: bool = False
-    allConnectionsClosedCallback: Optional[Callable[[], None]] = None
+    allConnectionsClosedCallback: Optional[Callable[[], Awaitable[Any]]] = None
 
     def __post_init__(self):
-        if not hasattr(self.backend, "putGlyph"):
+        if self.writableBackend is None:
             self.readOnly = True
         self.connections = set()
         self.glyphUsedBy = {}
@@ -63,19 +51,23 @@ class FontHandler:
         self.localData = LRUCache()
         self._dataScheduledForWriting = {}
 
-    async def startTasks(self):
-        if hasattr(self.backend, "watchExternalChanges"):
+    @cached_property
+    def writableBackend(self) -> WritableFontBackend | None:
+        return self.backend if isinstance(self.backend, WritableFontBackend) else None
+
+    async def startTasks(self) -> None:
+        if isinstance(self.backend, WatchableFontBackend):
             self._watcherTask = scheduleTaskAndLogException(
                 self.processExternalChanges()
             )
-        self._processWritesError = None
+        self._processWritesError: Exception | None = None
         self._processWritesEvent = asyncio.Event()
         self._processWritesTask = scheduleTaskAndLogException(self.processWrites())
         self._processWritesTask.add_done_callback(self._processWritesTaskDone)
         self._writingInProgressEvent = asyncio.Event()
         self._writingInProgressEvent.set()
 
-    async def close(self):
+    async def close(self) -> None:
         self.backend.close()
         if hasattr(self, "_watcherTask"):
             self._watcherTask.cancel()
@@ -83,7 +75,8 @@ class FontHandler:
             await self.finishWriting()  # shield for cancel?
             self._processWritesTask.cancel()
 
-    async def processExternalChanges(self):
+    async def processExternalChanges(self) -> None:
+        assert isinstance(self.backend, WatchableFontBackend)
         async for change, reloadPattern in self.backend.watchExternalChanges():
             try:
                 if change is not None:
@@ -95,16 +88,18 @@ class FontHandler:
                 logger.error("exception in external changes watcher: %r", e)
                 traceback.print_exc()
 
-    def _processWritesTaskDone(self, task):
+    def _processWritesTaskDone(self, task) -> None:
         # Signal that the write-"thread" is no longer running
         self._dataScheduledForWriting = None
 
-    async def finishWriting(self):
+    async def finishWriting(self) -> None:
         if self._processWritesError is not None:
             raise self._processWritesError
         await self._writingInProgressEvent.wait()
+        if self._processWritesError is not None:
+            raise self._processWritesError
 
-    async def processWrites(self):
+    async def processWrites(self) -> None:
         while True:
             await self._processWritesEvent.wait()
             try:
@@ -116,7 +111,7 @@ class FontHandler:
                 self._processWritesEvent.clear()
                 self._writingInProgressEvent.set()
 
-    async def _processWritesOneCycle(self):
+    async def _processWritesOneCycle(self) -> None:
         while self._dataScheduledForWriting:
             writeKey, (writeFunc, connection) = popFirstItem(
                 self._dataScheduledForWriting
@@ -159,7 +154,7 @@ class FontHandler:
             await asyncio.sleep(0)
 
     @asynccontextmanager
-    async def useConnection(self, connection):
+    async def useConnection(self, connection) -> AsyncGenerator[None, None]:
         self.connections.add(connection)
         try:
             yield
@@ -169,32 +164,61 @@ class FontHandler:
                 await self.allConnectionsClosedCallback()
 
     @remoteMethod
-    async def getGlyph(self, glyphName, *, connection=None):
+    async def getGlyph(
+        self, glyphName: str, *, connection=None
+    ) -> VariableGlyph | None:
         glyph = self.localData.get(("glyphs", glyphName))
         if glyph is None:
             glyph = await self._getGlyph(glyphName)
             self.localData[("glyphs", glyphName)] = glyph
         return glyph
 
-    def _getGlyph(self, glyphName):
+    def _getGlyph(self, glyphName) -> Awaitable[VariableGlyph | None]:
         return asyncio.create_task(self._getGlyphFromBackend(glyphName))
 
-    async def _getGlyphFromBackend(self, glyphName):
+    async def _getGlyphFromBackend(self, glyphName) -> VariableGlyph | None:
         glyph = await self.backend.getGlyph(glyphName)
         if glyph is not None:
             self.updateGlyphDependencies(glyphName, glyph)
         return glyph
 
-    async def getData(self, key):
+    async def getData(self, key: str) -> Any:
         data = self.localData.get(key)
         if data is None:
             data = await self._getData(key)
             self.localData[key] = data
         return data
 
-    async def _getData(self, key):
-        getterName = backendGetterNames[key]
-        return await getattr(self.backend, getterName)()
+    async def _getData(self, key: str) -> Any:
+        value: Any
+
+        match key:
+            case "axes":
+                value = await self.backend.getGlobalAxes()
+            case "glyphMap":
+                value = await self.backend.getGlyphMap()
+            case "customData":
+                value = await self.backend.getCustomData()
+            case "unitsPerEm":
+                value = await self.backend.getUnitsPerEm()
+            case _:
+                raise KeyError(key)
+
+        return value
+
+    async def _putData(self, key: str, value: Any) -> None:
+        assert self.writableBackend is not None
+        match key:
+            case "axes":
+                await self.writableBackend.putGlobalAxes(value)
+            case "glyphMap":
+                await self.writableBackend.putGlyphMap(value)
+            case "customData":
+                await self.writableBackend.putCustomData(value)
+            case "unitsPerEm":
+                await self.writableBackend.putUnitsPerEm(value)
+            case _:
+                raise KeyError(key)
 
     @remoteMethod
     async def getGlyphMap(self, *, connection):
@@ -335,7 +359,8 @@ class FontHandler:
 
     async def _updateLocalData(
         self, rootKeys, rootObject, sourceConnection, writeToBackEnd
-    ):
+    ) -> None:
+        writeFunc: Callable[[], Awaitable]  # inferencing with partial() goes wrong
         for rootKey in rootKeys + sorted(rootObject._assignedAttributeNames):
             if rootKey == "glyphs":
                 glyphSet = rootObject.glyphs
@@ -346,8 +371,9 @@ class FontHandler:
                         self.localData[writeKey] = glyphSet[glyphName]
                     if not writeToBackEnd:
                         continue
+                    assert self.writableBackend is not None
                     writeFunc = functools.partial(
-                        self.backend.putGlyph,
+                        self.writableBackend.putGlyph,
                         glyphName,
                         deepcopy(glyphSet[glyphName]),
                         glyphMap.get(glyphName, []),
@@ -358,18 +384,20 @@ class FontHandler:
                     _ = self.localData.pop(writeKey, None)
                     if not writeToBackEnd:
                         continue
-                    writeFunc = functools.partial(self.backend.deleteGlyph, glyphName)
+                    assert self.writableBackend is not None
+                    writeFunc = functools.partial(
+                        self.writableBackend.deleteGlyph, glyphName
+                    )
                     await self.scheduleDataWrite(writeKey, writeFunc, sourceConnection)
             else:
                 if rootKey in rootObject._assignedAttributeNames:
                     self.localData[rootKey] = getattr(rootObject, rootKey)
                 if not writeToBackEnd:
                     continue
-                method = getattr(self.backend, backendSetterNames[rootKey], None)
-                if method is None:
-                    logger.info(f"No backend write method found for {rootKey}")
-                    continue
-                writeFunc = functools.partial(method, deepcopy(rootObject[rootKey]))
+                assert self.writableBackend is not None
+                writeFunc = functools.partial(
+                    self._putData, rootKey, deepcopy(self.localData[rootKey])
+                )
                 await self.scheduleDataWrite(rootKey, writeFunc, sourceConnection)
 
     async def scheduleDataWrite(self, writeKey, writeFunc, connection):

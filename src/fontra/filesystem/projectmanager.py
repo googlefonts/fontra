@@ -3,11 +3,15 @@ import logging
 import pathlib
 from importlib import resources
 from importlib.metadata import entry_points
+from os import PathLike
+from types import SimpleNamespace
+from typing import Callable
 
 from aiohttp import web
 
 from ..backends import getFileSystemBackend
 from ..core.fonthandler import FontHandler
+from ..core.protocols import ProjectManager
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +23,7 @@ fileExtensions = {
 
 class FileSystemProjectManagerFactory:
     @staticmethod
-    def addArguments(parser):
+    def addArguments(parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "path",
             type=existingFolderOrFontFile,
@@ -32,7 +36,7 @@ class FileSystemProjectManagerFactory:
         parser.add_argument("--read-only", action="store_true")
 
     @staticmethod
-    def getProjectManager(arguments):
+    def getProjectManager(arguments: SimpleNamespace) -> ProjectManager:
         return FileSystemProjectManager(
             rootPath=arguments.path,
             maxFolderDepth=arguments.max_folder_depth,
@@ -51,7 +55,12 @@ def existingFolderOrFontFile(path):
 
 
 class FileSystemProjectManager:
-    def __init__(self, rootPath, maxFolderDepth=3, readOnly=False):
+    def __init__(
+        self,
+        rootPath: pathlib.Path | None,
+        maxFolderDepth: int = 3,
+        readOnly: bool = False,
+    ):
         self.rootPath = rootPath
         self.singleFilePath = None
         self.maxFolderDepth = maxFolderDepth
@@ -59,26 +68,30 @@ class FileSystemProjectManager:
         if self.rootPath is not None and self.rootPath.suffix.lower() in fileExtensions:
             self.singleFilePath = self.rootPath
             self.rootPath = self.rootPath.parent
-        self.fontHandlers = {}
+        self.fontHandlers: dict[str, FontHandler] = {}
 
-    async def close(self):
+    async def close(self) -> None:
         for fontHandler in self.fontHandlers.values():
             await fontHandler.close()
 
-    async def authorize(self, request):
+    async def authorize(self, request: web.Request) -> str:
         return "yes"  # arbitrary non-false string token
 
-    async def projectPageHandler(self, request, filterContent=None):
+    async def projectPageHandler(
+        self,
+        request: web.Request,
+        filterContent: Callable[[bytes, str], bytes] | None = None,
+    ) -> web.Response:
         htmlPath = resources.files("fontra") / "filesystem" / "landing.html"
-        html = htmlPath.read_text()
+        html = htmlPath.read_bytes()
         if filterContent is not None:
             html = filterContent(html, "text/html")
-        return web.Response(text=html, content_type="text/html")
+        return web.Response(body=html, content_type="text/html")
 
-    async def projectAvailable(self, path, token):
+    async def projectAvailable(self, path: str, token: str) -> bool:
         return bool(self._getProjectPath(path))
 
-    async def getRemoteSubject(self, path, token):
+    async def getRemoteSubject(self, path: str, token: str) -> FontHandler:
         assert path[0] == "/"
         path = path[1:]
         fontHandler = self.fontHandlers.get(path)
@@ -103,7 +116,7 @@ class FileSystemProjectManager:
             self.fontHandlers[path] = fontHandler
         return fontHandler
 
-    def _getProjectPath(self, path):
+    def _getProjectPath(self, path: str) -> PathLike | None:
         if self.rootPath is None:
             projectPath = pathlib.Path(path)
             if not projectPath.is_absolute():
@@ -115,7 +128,7 @@ class FileSystemProjectManager:
             return projectPath
         return None
 
-    async def getProjectList(self, token):
+    async def getProjectList(self, token: str) -> list[str]:
         if self.rootPath is None:
             return []
         projectPaths = []
@@ -131,6 +144,9 @@ class FileSystemProjectManager:
             assert projectItems[: len(rootItems)] == rootItems
             projectPaths.append("/".join(projectItems[len(rootItems) :]))
         return projectPaths
+
+    def setupWebRoutes(self, server):
+        pass
 
 
 def _iterFolder(folderPath, extensions, maxDepth=3):
