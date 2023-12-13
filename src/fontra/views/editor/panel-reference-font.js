@@ -367,7 +367,7 @@ export default class ReferenceFontPanel extends Panel {
       value: 14,
       min: 10,
       max: 40,
-      onchange: (event) => {
+      oninput: (event) => {
         currentCharacter.style.fontSize = `${event.target.value}px`;
       },
     });
