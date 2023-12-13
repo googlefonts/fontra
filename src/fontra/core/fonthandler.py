@@ -112,6 +112,9 @@ class FontHandler:
                 self._writingInProgressEvent.set()
 
     async def _processWritesOneCycle(self) -> None:
+        writeFunc: Callable[
+            [], Awaitable[None]
+        ]  # inferencing with partial() goes wrong
         while self._dataScheduledForWriting:
             writeKey, (writeFunc, connection) = popFirstItem(
                 self._dataScheduledForWriting
@@ -119,7 +122,7 @@ class FontHandler:
             reloadPattern = _writeKeyToPattern(writeKey)
             logger.info(f"write {writeKey} to backend")
             try:
-                errorMessage = await writeFunc()
+                await writeFunc()
             except Exception as e:
                 logger.error("exception while writing data: %r", e)
                 traceback.print_exc()
@@ -132,25 +135,6 @@ class FontHandler:
                 else:
                     # No connection to inform, let's error
                     raise
-            else:
-                if errorMessage:
-                    messageDetail = f"The edit has been reverted.\n\n{errorMessage}"
-                    try:
-                        await self.reloadData(reloadPattern)
-                    except Exception as e:
-                        messageDetail = (
-                            f"{errorMessage}\n\n"
-                            "The edit could not be reverted due to an additional error."
-                            f"\n\n{e!r}"
-                        )
-                    if connection is not None:
-                        await connection.proxy.messageFromServer(
-                            "The data could not be saved.",
-                            messageDetail,
-                        )
-                    else:
-                        # This ideally can't happen
-                        assert False, errorMessage
             await asyncio.sleep(0)
 
     @asynccontextmanager
@@ -360,7 +344,9 @@ class FontHandler:
     async def _updateLocalData(
         self, rootKeys, rootObject, sourceConnection, writeToBackEnd
     ) -> None:
-        writeFunc: Callable[[], Awaitable]  # inferencing with partial() goes wrong
+        writeFunc: Callable[
+            [], Awaitable[None]
+        ]  # inferencing with partial() goes wrong
         for rootKey in rootKeys + sorted(rootObject._assignedAttributeNames):
             if rootKey == "glyphs":
                 glyphSet = rootObject.glyphs
