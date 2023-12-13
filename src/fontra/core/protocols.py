@@ -76,7 +76,7 @@ class ProjectManager(Protocol):
     async def close(self) -> None:
         ...
 
-    async def authorize(self, request: web.Request) -> str:
+    async def authorize(self, request: web.Request) -> str | None:
         ...
 
     async def projectAvailable(self, path: str, token: str) -> bool:
