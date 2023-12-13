@@ -378,8 +378,8 @@ export default class ReferenceFontPanel extends Panel {
         span({ style: `font-family: ${font.fontIdentifier};` }, [` ${textToDisplay}`])
       );
     }
-    container.appendChild(currentCharacter);
     container.appendChild(rangeSlider);
+    container.appendChild(currentCharacter);
   }
 
   _fontListChangedHandler(event) {
