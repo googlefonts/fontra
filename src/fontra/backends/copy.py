@@ -5,14 +5,20 @@ import pathlib
 import shutil
 from contextlib import closing
 
+from ..core.protocols import ReadableFontBackend, WritableFontBackend
 from . import getFileSystemBackend, newFileSystemBackend
 
 logger = logging.getLogger(__name__)
 
 
 async def copyFont(
-    sourceBackend, destBackend, *, glyphNames=None, numTasks=1, progressInterval=0
-):
+    sourceBackend: ReadableFontBackend,
+    destBackend: WritableFontBackend,
+    *,
+    glyphNames=None,
+    numTasks=1,
+    progressInterval=0,
+) -> None:
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
     await destBackend.putCustomData(await sourceBackend.getCustomData())
     glyphMap = await sourceBackend.getGlyphMap()
@@ -20,7 +26,7 @@ async def copyFont(
     glyphNamesToCopy = sorted(
         glyphNamesInFont if not glyphNames else set(glyphNames) & set(glyphMap)
     )
-    glyphNamesCopied = set()
+    glyphNamesCopied: set[str] = set()
 
     tasks = [
         asyncio.create_task(
@@ -38,21 +44,25 @@ async def copyFont(
     done, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
     for task in pending:
         task.cancel()
-    exceptions = [task.exception() for task in done if task.exception()]
+    exceptions: list[BaseException | None] = [
+        task.exception() for task in done if task.exception()
+    ]
     if exceptions:
         if len(exceptions) > 1:
             logger.error(f"Multiple exceptions were raised: {exceptions}")
-        raise exceptions[0]
+        e = exceptions[0]
+        assert e is not None
+        raise e
 
 
 async def copyGlyphs(
-    sourceBackend,
-    destBackend,
-    glyphMap,
-    glyphNamesToCopy,
-    glyphNamesCopied,
-    progressInterval,
-):
+    sourceBackend: ReadableFontBackend,
+    destBackend: WritableFontBackend,
+    glyphMap: dict[str, list[int]],
+    glyphNamesToCopy: list[str],
+    glyphNamesCopied: set[str],
+    progressInterval: int,
+) -> None:
     while glyphNamesToCopy:
         if progressInterval and not (len(glyphNamesToCopy) % progressInterval):
             logger.info(f"{len(glyphNamesToCopy)} glyphs left to copy")
@@ -73,14 +83,10 @@ async def copyGlyphs(
         }
         glyphNamesToCopy.extend(sorted(componentNames - glyphNamesCopied))
 
-        error = await destBackend.putGlyph(glyphName, glyph, glyphMap[glyphName])
-        if error:
-            # FIXME: putGlyph should always raise, and not return some error string
-            # This may be unique to the rcjk backend, though.
-            raise ValueError(error)
+        await destBackend.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
 
-async def mainAsync():
+async def mainAsync() -> None:
     logging.basicConfig(
         format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
         level=logging.INFO,
@@ -118,7 +124,7 @@ async def mainAsync():
         elif destPath.exists():
             destPath.unlink()
     elif destPath.exists():
-        raise argparse.ArgumentError("the destination file already exists")
+        raise argparse.ArgumentError(None, "the destination file already exists")
 
     sourceBackend = getFileSystemBackend(sourcePath)
     destBackend = newFileSystemBackend(destPath)
