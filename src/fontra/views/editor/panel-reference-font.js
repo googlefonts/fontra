@@ -1,7 +1,15 @@
 import Panel from "./panel.js";
 
 import { getSelectedGlyphInfo } from "./scene-model.js";
-import { div, input, label, option, select, span } from "/core/html-utils.js";
+import {
+  createDomElement,
+  div,
+  input,
+  label,
+  option,
+  select,
+  span,
+} from "/core/html-utils.js";
 import { ObservableController } from "/core/observable-object.js";
 import {
   consolidateCalls,
@@ -10,6 +18,7 @@ import {
   withTimeout,
 } from "/core/utils.js";
 import { dialog } from "/web-components/modal-dialog.js";
+import "/web-components/range-slider.js";
 import { UIList } from "/web-components/ui-list.js";
 
 import "/third-party/lib-font/inflate.js";
@@ -361,14 +370,14 @@ export default class ReferenceFontPanel extends Panel {
     }
 
     const currentCharacter = div({ class: "current-character" }, []);
-    const rangeSlider = input({
-      class: "current-character-font-size",
+    const rangeSlider = createDomElement("range-slider", {
       type: "range",
       value: 14,
-      min: 10,
-      max: 40,
-      oninput: (event) => {
-        currentCharacter.style.fontSize = `${event.target.value}px`;
+      minValue: 10,
+      maxValue: 40,
+      step: 0.1,
+      onChangeCallback: (event) => {
+        currentCharacter.style.fontSize = `${event.value}px`;
       },
     });
 
