@@ -369,7 +369,10 @@ export default class ReferenceFontPanel extends Panel {
       return;
     }
 
-    const currentCharacter = div({ class: "current-character" }, []);
+    const currentCharacter = div(
+      { class: "current-character", lang: this.model.languageCode },
+      []
+    );
     const rangeSlider = createDomElement("range-slider", {
       type: "range",
       value: 14,
