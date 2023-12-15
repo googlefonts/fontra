@@ -291,6 +291,7 @@ export default class ReferenceFontPanel extends Panel {
 
     this.controller.addKeyListener("languageCode", (event) => {
       this.editorController.canvasController.setLangAttribute(this.model.languageCode);
+      this.displayCurrentGlyphInReferenceFonts();
     });
 
     this.editorController.canvasController.setLangAttribute(this.model.languageCode);
@@ -359,7 +360,11 @@ export default class ReferenceFontPanel extends Panel {
     }
 
     const currentCharacter = div(
-      { class: "current-character", lang: this.model.languageCode },
+      {
+        class: "current-character",
+        style: `font-size: ${this.model.fontSize}px`,
+        lang: this.model.languageCode,
+      },
       []
     );
     const rangeSlider = createDomElement("range-slider", {
