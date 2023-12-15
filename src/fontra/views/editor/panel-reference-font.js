@@ -364,12 +364,13 @@ export default class ReferenceFontPanel extends Panel {
     );
     const rangeSlider = createDomElement("range-slider", {
       type: "range",
-      value: 14,
+      value: this.model.fontSize,
       minValue: 10,
       maxValue: 200,
       step: 0.1,
       onChangeCallback: (event) => {
         currentCharacter.style.fontSize = `${event.value}px`;
+        this.model.fontSize = event.value;
       },
     });
 
@@ -591,6 +592,7 @@ export default class ReferenceFontPanel extends Panel {
 
     this.controller = new ObservableController({
       languageCode: "",
+      fontSize: 14,
       selectedFontIndex: -1,
       fontList: [],
       charOverride: "",
