@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from enum import Enum
 from functools import cached_property, partial, singledispatch
-from typing import Any
+from typing import Any, Iterable
 
 from fontTools.misc.transform import DecomposedTransform, Transform
 from fontTools.varLib.models import (
@@ -51,7 +51,9 @@ class FontInstancer:
                 self.glyphInstancers[glyphName] = glyphInstancer
         return glyphInstancer
 
-    async def _ensureComponentLocationCompatibility(self, glyph):
+    async def _ensureComponentLocationCompatibility(
+        self, glyph: VariableGlyph
+    ) -> VariableGlyph:
         layerGlyphs = {
             source.layerName: glyph.layers[source.layerName].glyph
             for source in glyph.sources
@@ -87,10 +89,12 @@ class FontInstancer:
         )
 
 
-def _areComponentLocationsCompatible(glyphs):
+def _areComponentLocationsCompatible(
+    glyphs: Iterable[StaticGlyph],
+) -> tuple[bool, list[set[str]]]:
     ok = True
     numComponents = None
-    componentAxisNames = None
+    componentAxisNames: list[Any] | None = None
 
     for glyph in glyphs:
         if numComponents is None:
@@ -106,12 +110,17 @@ def _areComponentLocationsCompatible(glyphs):
                 ok = False
                 componentAxisNames[i] |= axisNames
 
+    assert componentAxisNames is not None
+
     return ok, componentAxisNames
 
 
 def _fixComponentLocationsCompatibility(
-    glyph, layerGlyphs, componentAxisNames, axisDefaults
-):
+    glyph: VariableGlyph,
+    layerGlyphs: dict,
+    componentAxisNames: list[set[str]],
+    axisDefaults,
+) -> VariableGlyph:
     return replace(
         glyph,
         layers={
@@ -131,12 +140,14 @@ def _fixComponentLocationsCompatibility(
     )
 
 
-def _fixComponentLocation(component, axisNames, axisDefaults):
+def _fixComponentLocation(
+    component: Component, axisNames: set[str], axisDefaults: dict[str, float]
+):
     return replace(
         component,
         location={
             axisName: component.location.get(axisName, axisDefaults.get(axisName, 0))
-            for axisName in axisNames
+            for axisName in sorted(axisNames)
         },
     )
 
