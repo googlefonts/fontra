@@ -9,6 +9,8 @@ from fontra.core.path import ContourInfo, PackedPath, PointType
     "inputData, expectedResult",
     [
         ("dasasdad", None),  # unparsable
+        ("<svg xxxx", None),  # unparsable
+        ("<?xml xxxx <glyph ", None),  # unparsable
         (
             '<svg xmlns="http://www.w3.org/2000/svg" width="50" '
             'height="120" viewBox="60 0 50 120">'
@@ -68,10 +70,8 @@ from fontra.core.path import ContourInfo, PackedPath, PointType
         ),
     ],
 )
-def test_parseClipboard(inputData, expectedResult):
-    result = parseClipboard(inputData)
-    if result is not None:
-        result = result
+def test_parseClipboard(inputData: str, expectedResult: StaticGlyph):
+    result: StaticGlyph | None = parseClipboard(inputData)
     assert expectedResult == result
 
 
@@ -113,8 +113,8 @@ def test_parseClipboard(inputData, expectedResult):
         ),
     ],
 )
-def test_serializeStaticGlyphAsGLIF(glyphName, glyph, unicodes, expectedResult):
-    result = serializeStaticGlyphAsGLIF(glyphName, glyph, unicodes)
-    if result is not None:
-        result = result
+def test_serializeStaticGlyphAsGLIF(
+    glyphName: str, glyph: StaticGlyph, unicodes: list[int], expectedResult: str
+):
+    result: str = serializeStaticGlyphAsGLIF(glyphName, glyph, unicodes)
     assert expectedResult == result
