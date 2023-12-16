@@ -592,7 +592,7 @@ class DesignspaceBackend:
             changes = cleanupWatchFilesChanges(changes)
             changedItems = await self._analyzeExternalChanges(changes)
 
-            glyphMapUpdates = {}
+            glyphMapUpdates: dict[str, list[int] | None] = {}
 
             # TODO: update glyphMap for changed non-new glyphs
 

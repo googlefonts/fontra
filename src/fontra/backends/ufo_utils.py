@@ -10,7 +10,9 @@ _glyphNamePat = re.compile(rb'<glyph\s+name\s*=\s*"([^"]+)"')
 _unicodePat = re.compile(rb'<unicode\s+hex\s*=\s*"([^"]+)"')
 
 
-def extractGlyphNameAndUnicodes(data, fileName=None):
+def extractGlyphNameAndUnicodes(
+    data: bytes, fileName: str | None = None
+) -> tuple[str, list[int]]:
     m = _glyphNamePat.search(data)
     if m is None:
         raise ValueError(f"invalid .glif file, glyph name not found ({fileName})")
