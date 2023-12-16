@@ -1,8 +1,11 @@
+from xml.etree.ElementTree import ParseError
+
 from fontTools.pens.boundsPen import ControlBoundsPen
 from fontTools.pens.pointPen import GuessSmoothPointPen, SegmentToPointPen
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.transformPen import TransformPointPen
 from fontTools.svgLib import SVGPath
+from fontTools.ufoLib.errors import GlifLibError
 from fontTools.ufoLib.glifLib import readGlyphFromString, writeGlyphToString
 
 from ..backends.designspace import UFOGlyph, populateUFOLayerGlyph, readGlyphOrCreate
@@ -10,7 +13,7 @@ from .classes import StaticGlyph
 from .path import PackedPathPointPen
 
 
-def parseClipboard(data):
+def parseClipboard(data: str) -> StaticGlyph | None:
     if "<svg" in data:
         return parseSVG(data)
     if "<?xml" in data and "<glyph " in data:
@@ -18,9 +21,13 @@ def parseClipboard(data):
     return None
 
 
-def parseSVG(data):
-    data = data.encode("utf-8")
-    svgPath = SVGPath.fromstring(data, transform=(1, 0, 0, -1, 0, 0))
+def parseSVG(data: str) -> StaticGlyph | None:
+    try:
+        svgPath = SVGPath.fromstring(
+            data.encode("utf-8"), transform=(1, 0, 0, -1, 0, 0)
+        )
+    except ParseError:
+        return None
     recPen = RecordingPen()
     svgPath.draw(recPen)
     boundsPen = ControlBoundsPen(None)
@@ -36,20 +43,25 @@ def parseSVG(data):
     return StaticGlyph(path=pen.getPath(), xAdvance=xMax)
 
 
-def parseGLIF(data):
+def parseGLIF(data: str) -> StaticGlyph | None:
     pen = PackedPathPointPen()
     ufoGlyph = UFOGlyph()
-    readGlyphFromString(
-        data,
-        glyphObject=ufoGlyph,
-        pointPen=pen,
-    )
+    try:
+        readGlyphFromString(
+            data,
+            glyphObject=ufoGlyph,
+            pointPen=pen,
+        )
+    except GlifLibError:
+        return None
     return StaticGlyph(
         path=pen.getPath(), components=pen.components, xAdvance=ufoGlyph.width
     )
 
 
-def serializeStaticGlyphAsGLIF(glyphName, staticGlyph, unicodes):
+def serializeStaticGlyphAsGLIF(
+    glyphName: str, staticGlyph: StaticGlyph, unicodes: list[int]
+) -> str:
     layerGlyph = readGlyphOrCreate({}, glyphName, unicodes)
     drawPointsFunc = populateUFOLayerGlyph(layerGlyph, staticGlyph)
     return writeGlyphToString(glyphName, layerGlyph, drawPointsFunc, validate=False)
