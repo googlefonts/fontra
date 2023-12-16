@@ -14,7 +14,7 @@ from http.cookies import SimpleCookie
 from importlib import resources
 from importlib.abc import Traversable
 from importlib.metadata import entry_points
-from typing import Any, Optional
+from typing import Any, Collection, Optional
 from urllib.parse import quote
 
 from aiohttp import WSCloseCode, web
@@ -253,7 +253,7 @@ class FontraServer:
     async def notFoundHandler(self, request: web.Request) -> web.Response:
         return web.HTTPNotFound()
 
-    async def rootDocumentHandler(self, request) -> web.Response:
+    async def rootDocumentHandler(self, request: web.Request) -> web.Response:
         response = await self.projectManager.projectPageHandler(
             request, self._addVersionTokenToReferences
         )
@@ -299,7 +299,9 @@ class FontraServer:
         return data
 
 
-def addVersionTokenToReferences(data: bytes, versionToken, extensions) -> bytes:
+def addVersionTokenToReferences(
+    data: bytes, versionToken: str, extensions: Collection[str]
+) -> bytes:
     assert isinstance(data, bytes)
     pattern = rf"""((['"])[./][./A-Za-z-]+)(\.({"|".join(extensions)})\2)""".encode(
         "utf-8"
