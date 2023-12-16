@@ -208,6 +208,10 @@ class FontraServer:
         )
 
     async def webAPIHandler(self, request: web.Request) -> web.Response:
+        authToken = await self.projectManager.authorize(request)
+        if not authToken:
+            raise web.HTTPUnauthorized()
+
         functionName = request.match_info["function"]
         function = apiFunctions.get(functionName)
         if function is None:
