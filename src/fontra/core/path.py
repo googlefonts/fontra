@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import logging
 from copy import copy, deepcopy
 from dataclasses import dataclass, field, replace
 from enum import IntEnum
 from typing import TypedDict
 
-from fontTools.misc.transform import DecomposedTransform
+from fontTools.misc.transform import DecomposedTransform, Transform
 
 logger = logging.getLogger(__name__)
 
@@ -33,18 +35,18 @@ class Contour:
 class Path:
     contours: list[Contour] = field(default_factory=list)
 
-    def asPath(self):
+    def asPath(self) -> Path:
         return self
 
-    def asPackedPath(self):
+    def asPackedPath(self) -> PackedPath:
         from .classes import unstructure
 
         return PackedPath.fromUnpackedContours(unstructure(self.contours))
 
-    def isEmpty(self):
+    def isEmpty(self) -> bool:
         return not self.contours
 
-    def drawPoints(self, pen):
+    def drawPoints(self, pen) -> None:
         raise NotImplementedError()
 
     def transformed(self, transform):
@@ -74,7 +76,7 @@ class PackedPath:
     contourInfo: list[ContourInfo] = field(default_factory=list)
 
     @classmethod
-    def fromUnpackedContours(cls, unpackedContours):
+    def fromUnpackedContours(cls, unpackedContours: list[dict]) -> PackedPath:
         coordinates = []
         pointTypes = []
         contourInfo = []
@@ -91,18 +93,18 @@ class PackedPath:
             coordinates=coordinates, pointTypes=pointTypes, contourInfo=contourInfo
         )
 
-    def asPath(self):
+    def asPath(self) -> Path:
         from .classes import structure
 
         return Path(contours=structure(self.unpackedContours(), list[Contour]))
 
-    def asPackedPath(self):
+    def asPackedPath(self) -> PackedPath:
         return self
 
-    def isEmpty(self):
+    def isEmpty(self) -> bool:
         return not self.contourInfo
 
-    def appendPath(self, path):
+    def appendPath(self, path: PackedPath) -> None:
         self.coordinates.extend(path.coordinates)
         self.pointTypes.extend(path.pointTypes)
         endPointOffset = (
@@ -113,14 +115,14 @@ class PackedPath:
             for contourInfo in path.contourInfo
         )
 
-    def transformed(self, transform):
+    def transformed(self, transform: Transform) -> PackedPath:
         coordinates = self.coordinates
         newCoordinates = []
         for i in range(0, len(self.coordinates), 2):
             newCoordinates.extend(transform.transformPoint(coordinates[i : i + 2]))
         return replace(self, coordinates=newCoordinates)
 
-    def unpackedContours(self):
+    def unpackedContours(self) -> list[dict]:
         unpackedContours = []
         coordinates = self.coordinates
         pointTypes = self.pointTypes
@@ -132,7 +134,7 @@ class PackedPath:
             startIndex = endIndex
         return unpackedContours
 
-    def drawPoints(self, pen):
+    def drawPoints(self, pen) -> None:
         startPoint = 0
         for contourInfo in self.contourInfo:
             endIndex = contourInfo.endPoint + 1
@@ -176,13 +178,13 @@ class PackedPath:
             pen.endPath()
             startPoint = endIndex
 
-    def setPointPosition(self, pointIndex, x, y):
+    def setPointPosition(self, pointIndex: int, x: float, y: float) -> None:
         coords = self.coordinates
         i = pointIndex * 2
         coords[i] = x
         coords[i + 1] = y
 
-    def deleteContour(self, contourIndex):
+    def deleteContour(self, contourIndex: int) -> None:
         contourIndex = self._normalizeContourIndex(contourIndex)
         contour = self.contourInfo[contourIndex]
         startPoint = self._getContourStartPoint(contourIndex)
@@ -191,7 +193,7 @@ class PackedPath:
         del self.contourInfo[contourIndex]
         self._moveEndPoints(contourIndex, -numPoints)
 
-    def insertContour(self, contourIndex, contour):
+    def insertContour(self, contourIndex: int, contour: dict) -> None:
         contourIndex = self._normalizeContourIndex(contourIndex, True)
         startPoint = self._getContourStartPoint(contourIndex)
         self._replacePoints(
@@ -201,25 +203,27 @@ class PackedPath:
         self.contourInfo.insert(contourIndex, contourInfo)
         self._moveEndPoints(contourIndex, len(contour["pointTypes"]))
 
-    def deletePoint(self, contourIndex, contourPointIndex):
+    def deletePoint(self, contourIndex: int, contourPointIndex: int) -> None:
         contourIndex = self._normalizeContourIndex(contourIndex)
         pointIndex = self._getAbsolutePointIndex(contourIndex, contourPointIndex)
         self._replacePoints(pointIndex, 1, [], [])
         self._moveEndPoints(contourIndex, -1)
 
-    def insertPoint(self, contourIndex, contourPointIndex, point):
+    def insertPoint(self, contourIndex: int, contourPointIndex: int, point: dict):
         contourIndex = self._normalizeContourIndex(contourIndex)
         pointIndex = self._getAbsolutePointIndex(contourIndex, contourPointIndex, True)
         pointType = packPointType(point.get("type"), point.get("smooth"))
         self._replacePoints(pointIndex, 0, [point["x"], point["y"]], [pointType])
         self._moveEndPoints(contourIndex, 1)
 
-    def _getContourStartPoint(self, contourIndex):
+    def _getContourStartPoint(self, contourIndex: int) -> int:
         return (
             0 if contourIndex == 0 else self.contourInfo[contourIndex - 1].endPoint + 1
         )
 
-    def _getAbsolutePointIndex(self, contourIndex, contourPointIndex, forInsert=False):
+    def _getAbsolutePointIndex(
+        self, contourIndex: int, contourPointIndex: int, forInsert: bool = False
+    ) -> int:
         startPoint = self._getContourStartPoint(contourIndex)
         contour = self.contourInfo[contourIndex]
         numPoints = contour.endPoint + 1 - startPoint
@@ -234,7 +238,7 @@ class PackedPath:
             )
         return startPoint + contourPointIndex
 
-    def _normalizeContourIndex(self, contourIndex, forInsert=False):
+    def _normalizeContourIndex(self, contourIndex: int, forInsert: bool = False) -> int:
         originalContourIndex = contourIndex
         numContours = len(self.contourInfo)
         if contourIndex < 0:
@@ -244,44 +248,50 @@ class PackedPath:
             raise IndexError(f"contourIndex out of bounds: {originalContourIndex}")
         return contourIndex
 
-    def _replacePoints(self, startPoint, numPoints, coordinates, pointTypes):
+    def _replacePoints(
+        self,
+        startPoint: int,
+        numPoints: int,
+        coordinates: list[float],
+        pointTypes: list[PointType],
+    ):
         dblIndex = startPoint * 2
         self.coordinates[dblIndex : dblIndex + numPoints * 2] = coordinates
         self.pointTypes[startPoint : startPoint + numPoints] = pointTypes
 
-    def _moveEndPoints(self, fromContourIndex, offset):
+    def _moveEndPoints(self, fromContourIndex: int, offset: int) -> None:
         for contourInfo in self.contourInfo[fromContourIndex:]:
             contourInfo.endPoint += offset
 
-    def _ensureCompatibility(self, other):
+    def _ensureCompatibility(self, other: PackedPath) -> None:
         if self.contourInfo != other.contourInfo:
             # TODO: we should also compare self.pointTypes with other.pointTypes,
             # but ignoring the smooth flag
             # TODO: more specific exception
             raise InterpolationError("paths are not compatible")
 
-    def __sub__(self, other):
+    def __sub__(self, other: PackedPath) -> PackedPath:
         self._ensureCompatibility(other)
         coordinates = [v1 - v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
         return PackedPath(
             coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
         )
 
-    def __add__(self, other):
+    def __add__(self, other: PackedPath) -> PackedPath:
         self._ensureCompatibility(other)
         coordinates = [v1 + v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
         return PackedPath(
             coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
         )
 
-    def __mul__(self, scalar):
+    def __mul__(self, scalar: float) -> PackedPath:
         coordinates = [v * scalar for v in self.coordinates]
         return PackedPath(
             coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
         )
 
 
-def joinPaths(paths) -> PackedPath:
+def joinPaths(paths: list[PackedPath]) -> PackedPath:
     result = PackedPath()
     for path in paths:
         result.appendPath(path)
@@ -296,20 +306,20 @@ class PackedPathPointPen:
         self.components = []
         self._currentContour = None
 
-    def getPath(self):
+    def getPath(self) -> PackedPath:
         return PackedPath(
             self.coordinates,
             [PointType(tp) for tp in self.pointTypes],
             self.contourInfo,
         )
 
-    def beginPath(self, **kwargs):
+    def beginPath(self, **kwargs) -> None:
         self._currentContour = []
 
-    def addPoint(self, pt, segmentType=None, smooth=False, *args, **kwargs):
+    def addPoint(self, pt, segmentType=None, smooth=False, *args, **kwargs) -> None:
         self._currentContour.append((pt, segmentType, smooth))
 
-    def endPath(self):
+    def endPath(self) -> None:
         if not self._currentContour:
             return
         isClosed = self._currentContour[0][1] != "move"
@@ -350,15 +360,20 @@ class PackedPathPointPen:
         )
         self._currentContour = None
 
-    def addComponent(self, glyphName, transformation, **kwargs):
+    def addComponent(self, glyphName: str, transformation, **kwargs) -> None:
         from .classes import Component
 
         transformation = DecomposedTransform.fromTransform(transformation)
         self.components.append(Component(name=glyphName, transformation=transformation))
 
     def addVarComponent(
-        self, glyphName, transformation, location, identifier=None, **kwargs
-    ):
+        self,
+        glyphName: str,
+        transformation: DecomposedTransform,
+        location: dict,
+        identifier=None,
+        **kwargs,
+    ) -> None:
         from .classes import Component
 
         transformation = copy(transformation)

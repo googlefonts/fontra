@@ -262,7 +262,8 @@ class GlyphInstance:
     fontInstancer: FontInstancer
 
     async def getFlattenedPath(self, transform: Transform | None = None) -> PackedPath:
-        paths = [
+        assert isinstance(self.glyph.path, PackedPath)
+        paths: list[PackedPath] = [
             self.glyph.path
             if transform is None
             else self.glyph.path.transformed(transform)
