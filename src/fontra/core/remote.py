@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import traceback
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Generator
 
 from aiohttp import WSMsgType, web
 
@@ -144,14 +144,14 @@ class RemoteClientProxy:
         return methodWrapper
 
 
-def _genNextServerCallID():
+def _genNextServerCallID() -> Generator[int, None, None]:
     serverCallID = 0
     while True:
         yield serverCallID
         serverCallID += 1
 
 
-def checkWebSocketTaskError(task):
+def checkWebSocketTaskError(task: asyncio.Task) -> None:
     if task.cancelled():
         return
     exc = task.exception()
