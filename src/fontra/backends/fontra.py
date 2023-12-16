@@ -76,7 +76,7 @@ class FontraBackend:
     async def getUnitsPerEm(self) -> int:
         return self.fontData.unitsPerEm
 
-    async def putUnitsPerEm(self, unitsPerEm):
+    async def putUnitsPerEm(self, unitsPerEm: int) -> None:
         self.fontData.unitsPerEm = unitsPerEm
         self._scheduler.schedule(self._writeFontData)
 
@@ -102,24 +102,24 @@ class FontraBackend:
         self.glyphMap[glyphName] = codePoints
         self._scheduler.schedule(self._writeGlyphInfo)
 
-    async def deleteGlyph(self, glyphName):
+    async def deleteGlyph(self, glyphName: str) -> None:
         self.glyphMap.pop(glyphName, None)
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return deepcopy(self.fontData.axes)
 
-    async def putGlobalAxes(self, axes):
+    async def putGlobalAxes(self, axes: list[GlobalAxis | GlobalDiscreteAxis]) -> None:
         self.fontData.axes = deepcopy(axes)
         self._scheduler.schedule(self._writeFontData)
 
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.fontData.customData)
 
-    async def putCustomData(self, customData):
+    async def putCustomData(self, customData: dict[str, Any]) -> None:
         self.fontData.customData = deepcopy(customData)
         self._scheduler.schedule(self._writeFontData)
 
-    def _readGlyphInfo(self):
+    def _readGlyphInfo(self) -> None:
         with open(self.glyphInfoPath, "r", encoding="utf-8") as file:
             reader = csv.reader(file, delimiter=";")
             header = next(reader)
@@ -132,26 +132,26 @@ class FontraBackend:
                     codePoints = []
                 self.glyphMap[glyphName] = codePoints
 
-    def _writeGlyphInfo(self):
+    def _writeGlyphInfo(self) -> None:
         with open(self.glyphInfoPath, "w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=";")
             writer.writerow(["glyph name", "code points"])
             for glyphName, codePoints in sorted(self.glyphMap.items()):
-                codePoints = ",".join(f"U+{cp:04X}" for cp in codePoints)
-                writer.writerow([glyphName, codePoints])
+                codePointsString = ",".join(f"U+{cp:04X}" for cp in codePoints)
+                writer.writerow([glyphName, codePointsString])
 
-    def _readFontData(self):
+    def _readFontData(self) -> None:
         self.fontData = structure(
             json.loads(self.fontDataPath.read_text(encoding="utf-8")), Font
         )
 
-    def _writeFontData(self):
+    def _writeFontData(self) -> None:
         fontData = unstructure(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
         self.fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
 
-    def getGlyphData(self, glyphName):
+    def getGlyphData(self, glyphName: str) -> str:
         filePath = self.getGlyphFilePath(glyphName)
         if not filePath.is_file():
             raise KeyError(glyphName)
@@ -161,7 +161,7 @@ class FontraBackend:
         return self.glyphsDir / (stringToFileName(glyphName) + ".json")
 
 
-def _parseCodePoints(cell):
+def _parseCodePoints(cell: str) -> list[int]:
     codePoints = []
     cell = cell.strip()
     if cell:
@@ -182,7 +182,7 @@ def serializeGlyph(glyph, glyphName=None):
     return serialize(jsonGlyph) + "\n"
 
 
-def deserializeGlyph(jsonSource, glyphName=None):
+def deserializeGlyph(jsonSource: str, glyphName: str | None = None) -> VariableGlyph:
     jsonGlyph = json.loads(jsonSource)
     if glyphName is not None:
         jsonGlyph["name"] = glyphName
@@ -190,7 +190,7 @@ def deserializeGlyph(jsonSource, glyphName=None):
     return glyph.convertToPackedPaths()
 
 
-def serialize(data):
+def serialize(data: list | dict) -> str:
     return json.dumps(data, indent=0)
 
 
