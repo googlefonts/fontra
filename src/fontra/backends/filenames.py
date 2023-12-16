@@ -37,7 +37,7 @@ base32chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
 assert len(set(base32chars)) == 32
 
 
-def stringToFileName(string):
+def stringToFileName(string: str) -> str:
     codeDigits = []
     for i in range(0, len(string), 5):
         digit = 0
@@ -64,6 +64,6 @@ def stringToFileName(string):
     return fileName + disambiguationCode
 
 
-def fileNameToString(fileName):
+def fileNameToString(fileName: str) -> str:
     string = fileName.split(separatorChar, 1)[0]
     return unquote(string, encoding="ascii", errors="strict")
