@@ -191,7 +191,7 @@ def deserializeGlyph(jsonSource: str, glyphName: str | None = None) -> VariableG
 
 
 def serialize(data: list | dict) -> str:
-    return json.dumps(data, indent=0)
+    return json.dumps(data, indent=0, ensure_ascii=False)
 
 
 @dataclass(kw_only=True)
