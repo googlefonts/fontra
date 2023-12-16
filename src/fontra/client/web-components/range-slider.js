@@ -361,7 +361,7 @@ export class RangeSlider extends html.UnlitElement {
           {
             class: "range-container",
             style: this.isDiscrete()
-              ? `max-width: ${this.values.length * 40}px; width: 100%;`
+              ? `max-width: ${this.values.length * 20}px; width: 100%;`
               : "",
           },
           [
