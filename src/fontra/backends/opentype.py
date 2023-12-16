@@ -1,5 +1,5 @@
 from os import PathLike
-from typing import Any
+from typing import Any, Generator
 
 from fontTools.misc.psCharStrings import SimpleT2Decompiler
 from fontTools.pens.pointPen import GuessSmoothPointPen
@@ -23,7 +23,7 @@ class OTFBackend:
     def fromPath(cls, path: PathLike) -> ReadableFontBackend:
         return cls(path=path)
 
-    def __init__(self, *, path):
+    def __init__(self, *, path: PathLike) -> None:
         self.path = path
         self.font = TTFont(path, lazy=True)
         self.globalAxes = unpackAxes(self.font)
@@ -35,14 +35,14 @@ class OTFBackend:
             else None
         )
         self.characterMap = self.font.getBestCmap()
-        glyphMap = {}
+        glyphMap: dict[str, list[int]] = {}
         for glyphName in self.font.getGlyphOrder():
             glyphMap[glyphName] = []
         for code, glyphName in sorted(self.characterMap.items()):
             glyphMap[glyphName].append(code)
         self.glyphMap = glyphMap
         self.glyphSet = self.font.getGlyphSet()
-        self.variationGlyphSets = {}
+        self.variationGlyphSets: dict[str, Any] = {}
 
     def close(self):
         self.font.close()
@@ -81,7 +81,7 @@ class OTFBackend:
         glyph.sources = sources
         return glyph
 
-    def _getGlyphVariationLocations(self, glyphName):
+    def _getGlyphVariationLocations(self, glyphName: str) -> list[dict[str, float]]:
         # TODO/FIXME: This misses variations that only exist in HVAR/VVAR
         locations = set()
         if self.gvarVariations is not None:
@@ -118,11 +118,13 @@ class OTFBackend:
         return {}
 
 
-def tuplifyLocation(loc):
+def tuplifyLocation(loc: dict[str, float]) -> tuple:
     return tuple(sorted(loc.items()))
 
 
-def getLocationsFromVarstore(varDataIndex, varStore, fvarAxes):
+def getLocationsFromVarstore(
+    varDataIndex: int, varStore, fvarAxes
+) -> Generator[dict[str, float], None, None]:
     regions = varStore.VarRegionList.Region
     for regionIndex in varStore.VarData[varDataIndex].VarRegionIndex:
         location = {
@@ -133,7 +135,7 @@ def getLocationsFromVarstore(varDataIndex, varStore, fvarAxes):
         yield location
 
 
-def unpackAxes(font):
+def unpackAxes(font: TTFont) -> list[GlobalAxis | GlobalDiscreteAxis]:
     fvar = font.get("fvar")
     if fvar is None:
         return []
@@ -144,7 +146,7 @@ def unpackAxes(font):
         if avar is not None
         else {}
     )
-    axisList = []
+    axisList: list[GlobalAxis | GlobalDiscreteAxis] = []
     for axis in fvar.axes:
         normMin = -1 if axis.minValue < axis.defaultValue else 0
         normMax = 1 if axis.maxValue > axis.defaultValue else 0
