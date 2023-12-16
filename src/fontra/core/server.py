@@ -211,7 +211,7 @@ class FontraServer:
         functionName = request.match_info["function"]
         function = apiFunctions.get(functionName)
         if function is None:
-            return web.HTTPNotFound()
+            raise web.HTTPNotFound()
         kwargs = await request.json()
         try:
             returnValue = function(**kwargs)
