@@ -3,7 +3,7 @@ from glyphsLib.glyphdata import GlyphData
 GLYPHDATA = None
 
 
-def _getGlyphData():
+def _getGlyphData() -> GlyphData:
     global GLYPHDATA
     if GLYPHDATA is None:
         from importlib.resources import files
@@ -14,7 +14,7 @@ def _getGlyphData():
     return GLYPHDATA
 
 
-def getSuggestedGlyphName(codePoint):
+def getSuggestedGlyphName(codePoint: int) -> str:
     data = _getGlyphData()
     uniStr = f"{codePoint:04X}"
     info = data.unicodes.get(uniStr)
@@ -23,7 +23,7 @@ def getSuggestedGlyphName(codePoint):
     return "uni" + uniStr if len(uniStr) == 4 else "u" + uniStr
 
 
-def getUnicodeFromGlyphName(glyphName):
+def getUnicodeFromGlyphName(glyphName: str) -> int | None:
     data = _getGlyphData()
 
     info = data.names.get(glyphName)
@@ -45,7 +45,7 @@ def getUnicodeFromGlyphName(glyphName):
                 codePoint = int(uniStr, 16)
             except ValueError:
                 pass
-            if codePoint > 0x10FFFF:
+            if codePoint is not None and codePoint > 0x10FFFF:
                 codePoint = None
 
     return codePoint
