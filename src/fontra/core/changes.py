@@ -1,4 +1,12 @@
-from typing import Mapping, MutableMapping, MutableSequence, Sequence
+from typing import (
+    Any,
+    Callable,
+    Generator,
+    Mapping,
+    MutableMapping,
+    MutableSequence,
+    Sequence,
+)
 
 from .classes import classCastFuncs, classSchema
 
@@ -35,7 +43,7 @@ def spliceItems(subject, index, deleteCount, *items, itemCast=None):
     subject[index : index + deleteCount] = items
 
 
-baseChangeFunctions = {
+baseChangeFunctions: dict[str, Callable[..., None]] = {
     "=": setItem,
     "d": delAttr,
     "-": delItems,
@@ -46,7 +54,7 @@ baseChangeFunctions = {
 
 # TODO: Refactor. These don't really belong here,
 # and should ideally be registered from outside
-changeFunctions = {
+changeFunctions: dict[str, Callable[..., None]] = {
     **baseChangeFunctions,
     "=xy": lambda path, pointIndex, x, y: path.setPointPosition(pointIndex, x, y),
     "insertContour": lambda path, contourIndex, contour: path.insertContour(
@@ -83,7 +91,7 @@ def applyChange(subject, change):
     _applyChange(subject, change)
 
 
-def _applyChange(subject, change, *, itemCast=None):
+def _applyChange(subject: Any, change: dict[str, Any], *, itemCast=None) -> None:
     path = change.get("p", [])
     functionName = change.get("f")
     children = change.get("c", [])
@@ -97,7 +105,7 @@ def _applyChange(subject, change, *, itemCast=None):
             subject = getattr(subject, pathElement)
 
     if functionName is not None:
-        changeFunc = changeFunctions[functionName]
+        changeFunc: Callable[..., None] = changeFunctions[functionName]
         args = change.get("a", [])
         if functionName in baseChangeFunctions:
             if itemCast is None and args:
@@ -123,7 +131,9 @@ def getItemCast(subject, attrName, fieldKey):
 _MISSING = object()
 
 
-def matchChangePattern(change, matchPattern):
+def matchChangePattern(
+    change: dict[str, Any], matchPattern: dict[str | int, Any]
+) -> bool:
     """Return `True` or `False`, depending on whether the `change` matches
     the `matchPattern`.
 
@@ -148,7 +158,9 @@ def matchChangePattern(change, matchPattern):
     return False
 
 
-def filterChangePattern(change, matchPattern, inverse=False):
+def filterChangePattern(
+    change: dict[str, Any], matchPattern: dict[str | int, Any], inverse: bool = False
+) -> dict[str, Any] | None:
     """Return a subset of the `change` according to the `matchPattern`, or `None`
     if the `change` doesn't match `matchPattern` at all. If there is a match,
     all parts of the change that do not match are not included in the returned
@@ -186,8 +198,10 @@ def filterChangePattern(change, matchPattern, inverse=False):
     return _normalizeChange(result)
 
 
-def _normalizeChange(change):
+def _normalizeChange(change: dict[str, Any]) -> dict[str, Any] | None:
     children = change.get("c", ())
+
+    result: dict[str, Any] | None
 
     if "f" not in change and len(children) == 1:
         # Turn only child into root change
@@ -215,7 +229,7 @@ def _normalizeChange(change):
     return result
 
 
-def patternFromPath(matchPath):
+def patternFromPath(matchPath: list) -> dict[str | int, Any]:
     """Given a list of path elements, return a pattern dict."""
     pattern = {}
     if matchPath:
@@ -225,7 +239,9 @@ def patternFromPath(matchPath):
     return pattern
 
 
-def patternUnion(patternA, patternB):
+def patternUnion(
+    patternA: dict[str | int, Any], patternB: dict[str | int, Any]
+) -> dict[str | int, Any]:
     """Return a pattern which is the union of `patternA` and `patternB`:
     the result will match everything from `patternA` and `patternB`.
     """
@@ -243,7 +259,9 @@ def patternUnion(patternA, patternB):
     return result
 
 
-def patternDifference(patternA, patternB):
+def patternDifference(
+    patternA: dict[str | int, Any], patternB: dict[str | int, Any]
+) -> dict[str | int, Any]:
     """Return a pattern which is `patternA` minus `patternB`: the result will
     only match the items from `patternA` that are not included in `patternB`.
     """
@@ -263,7 +281,9 @@ def patternDifference(patternA, patternB):
     return result
 
 
-def patternIntersect(patternA, patternB):
+def patternIntersect(
+    patternA: dict[str | int, Any], patternB: dict[str | int, Any]
+) -> dict[str | int, Any]:
     """Return the intersection of `patternA` and `patternB`. The resulting pattern
     will only match items that are included in both patterns.
     """
@@ -283,13 +303,15 @@ def patternIntersect(patternA, patternB):
     return result
 
 
-def collectChangePaths(change, depth):
+def collectChangePaths(change: dict[str, Any], depth: int) -> list[tuple]:
     """Return a sorted list of paths of the specified `depth` that the `change`
     includes."""
     return sorted(set(_iterateChangePaths(change, depth)))
 
 
-def _iterateChangePaths(change, depth, prefix=()):
+def _iterateChangePaths(
+    change: dict[str, Any], depth: int, prefix: tuple = ()
+) -> Generator[tuple, None, None]:
     path = prefix + tuple(change.get("p", ()))
     if len(path) >= depth:
         yield path[:depth]
