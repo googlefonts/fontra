@@ -141,7 +141,7 @@ class FontraServer:
         cookies = SimpleCookie()
         cookies.load(request.headers.get("Cookie", ""))
         cookieValues = {k: v.value for k, v in cookies.items()}
-        token = cookieValues.get("fontra-authorization-token")
+        token = cookieValues.get("fontra-authorization-token", "")
 
         websocket = web.WebSocketResponse(heartbeat=55, max_msg_size=0x2000000)
         await websocket.prepare(request)
@@ -164,13 +164,15 @@ class FontraServer:
 
         return websocket
 
-    async def getSubject(self, websocket, path, token) -> Any:
+    async def getSubject(
+        self, websocket: web.WebSocketResponse, path: str, token: str
+    ) -> Any:
         subject = await self.projectManager.getRemoteSubject(path, token)
         if subject is None:
             raise RemoteObjectConnectionException("unauthorized")
         return subject
 
-    async def projectListHandler(self, request) -> web.Response:
+    async def projectListHandler(self, request: web.Request) -> web.Response:
         authToken = await self.projectManager.authorize(request)
         if not authToken:
             raise web.HTTPUnauthorized()
@@ -179,7 +181,7 @@ class FontraServer:
             text=json.dumps(projectList), content_type="application/json"
         )
 
-    async def serverInfoHandler(self, request) -> web.Response:
+    async def serverInfoHandler(self, request: web.Request) -> web.Response:
         from .. import __version__ as fontraVersion
 
         authToken = await self.projectManager.authorize(request)
@@ -205,7 +207,7 @@ class FontraServer:
             text=json.dumps(serverInfo), content_type="application/json"
         )
 
-    async def webAPIHandler(self, request) -> web.Response:
+    async def webAPIHandler(self, request: web.Request) -> web.Response:
         functionName = request.match_info["function"]
         function = apiFunctions.get(functionName)
         if function is None:
@@ -220,7 +222,9 @@ class FontraServer:
             result = {"returnValue": returnValue}
         return web.Response(text=json.dumps(result), content_type="application/json")
 
-    async def staticContentHandler(self, packageName, request) -> web.Response:
+    async def staticContentHandler(
+        self, packageName: str, request: web.Request
+    ) -> web.Response:
         ifModSince = request.if_modified_since
         if ifModSince is not None and ifModSince >= self.startupTime:
             raise web.HTTPNotModified()
@@ -246,8 +250,8 @@ class FontraServer:
         response.last_modified = self.startupTime
         return response
 
-    async def notFoundHandler(self, request) -> web.Response:
-        raise web.HTTPNotFound()
+    async def notFoundHandler(self, request: web.Request) -> web.Response:
+        return web.HTTPNotFound()
 
     async def rootDocumentHandler(self, request) -> web.Response:
         response = await self.projectManager.projectPageHandler(
