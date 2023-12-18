@@ -1571,16 +1571,9 @@ export class EditorController {
       const glyphsSearch = document.createElement("glyphs-search");
       glyphsSearch.glyphMap = glyphMap;
 
-      // glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
-      //   dialog.defaultButton.classList.toggle(
-      //     "disabled",
-      //     !glyphsSearch.getSelectedGlyphName()
-      //   );
-      // });
-
-      // glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
-      //   dialog.defaultButton.click();
-      // });
+      glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+        dialog.defaultButton.click();
+      });
 
       const dialog = await dialogSetup(
         `Glyphs that use glyph '${glyphName}' as a component`,
@@ -1615,7 +1608,10 @@ export class EditorController {
           break;
         }
         case "add": {
-          const glyphInfos = usedBy.map((glyphName) =>
+          const glyphName = glyphsSearch.getSelectedGlyphName();
+          const glyphNames = glyphName ? [glyphName] : usedBy;
+
+          const glyphInfos = glyphNames.map((glyphName) =>
             glyphInfoFromGlyphName(glyphName, this.fontController)
           );
           const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
