@@ -1561,69 +1561,68 @@ export class EditorController {
         [{ title: "Okay", resultValue: "ok" }]
       );
       return;
-    } else {
-      usedBy.sort();
+    }
+    usedBy.sort();
 
-      const glyphMap = Object.fromEntries(
-        usedBy.map((glyphName) => [glyphName, this.fontController.glyphMap[glyphName]])
-      );
+    const glyphMap = Object.fromEntries(
+      usedBy.map((glyphName) => [glyphName, this.fontController.glyphMap[glyphName]])
+    );
 
-      const glyphsSearch = document.createElement("glyphs-search");
-      glyphsSearch.glyphMap = glyphMap;
+    const glyphsSearch = document.createElement("glyphs-search");
+    glyphsSearch.glyphMap = glyphMap;
 
-      glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
-        dialog.defaultButton.click();
-      });
+    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+      theDialog.defaultButton.click();
+    });
 
-      const dialog = await dialogSetup(
-        `Glyphs that use glyph '${glyphName}' as a component`,
-        null,
-        [
-          { title: "Cancel", isCancelButton: true },
-          { title: "Copy names", resultValue: "copy" },
-          {
-            title: "Add to text",
-            isDefaultButton: true,
-            resultValue: "add",
-            // disabled: true,
-          },
-        ]
-      );
+    const theDialog = await dialogSetup(
+      `Glyphs that use glyph '${glyphName}' as a component`,
+      null,
+      [
+        { title: "Cancel", isCancelButton: true },
+        { title: "Copy names", resultValue: "copy" },
+        {
+          title: "Add to text",
+          isDefaultButton: true,
+          resultValue: "add",
+          // disabled: true,
+        },
+      ]
+    );
 
-      dialog.setContent(glyphsSearch);
+    theDialog.setContent(glyphsSearch);
 
-      setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
 
-      switch (await dialog.run()) {
-        case "copy": {
-          const glyphNamesString = chunks(usedBy, 16)
-            .map((chunked) => chunked.map((glyphName) => "/" + glyphName).join(""))
-            .join("\n");
-          // .map((glyphName) => "/" + glyphName)
-          // .join("\n");
-          const clipboardObject = {
-            "text/plain": glyphNamesString,
-          };
-          await writeToClipboard(clipboardObject);
-          break;
-        }
-        case "add": {
-          const glyphName = glyphsSearch.getSelectedGlyphName();
-          const glyphNames = glyphName ? [glyphName] : usedBy;
+    switch (await theDialog.run()) {
+      case "copy": {
+        const glyphNamesString = chunks(usedBy, 16)
+          .map((chunked) => chunked.map((glyphName) => "/" + glyphName).join(""))
+          .join("\n");
+        // .map((glyphName) => "/" + glyphName)
+        // .join("\n");
+        const clipboardObject = {
+          "text/plain": glyphNamesString,
+        };
+        await writeToClipboard(clipboardObject);
+        break;
+      }
+      case "add": {
+        const glyphName = glyphsSearch.getSelectedGlyphName();
+        const glyphNames = glyphName ? [glyphName] : usedBy;
 
-          const glyphInfos = glyphNames.map((glyphName) =>
-            glyphInfoFromGlyphName(glyphName, this.fontController)
-          );
-          const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
-          const glyphLines = [...this.sceneSettings.glyphLines];
-          glyphLines[selectedGlyphInfo.lineIndex].splice(
-            selectedGlyphInfo.glyphIndex + 1,
-            0,
-            ...glyphInfos
-          );
-          this.sceneSettings.glyphLines = glyphLines;
-          break;
-        }
+        const glyphInfos = glyphNames.map((glyphName) =>
+          glyphInfoFromGlyphName(glyphName, this.fontController)
+        );
+        const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
+        const glyphLines = [...this.sceneSettings.glyphLines];
+        glyphLines[selectedGlyphInfo.lineIndex].splice(
+          selectedGlyphInfo.glyphIndex + 1,
+          0,
+          ...glyphInfos
+        );
+        this.sceneSettings.glyphLines = glyphLines;
+        break;
       }
     }
   }
