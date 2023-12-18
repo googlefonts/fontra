@@ -157,10 +157,12 @@ export class Form extends SimpleElement {
       if (event.shiftKey) {
         switch (event.key) {
           case "ArrowUp":
+            // We add to the "regular" +1 increment
             event.target.value = event.target.valueAsNumber + 9;
             break;
 
           case "ArrowDown":
+            // We add to the "regular" -1 increment
             event.target.value = event.target.valueAsNumber - 9;
             break;
         }
