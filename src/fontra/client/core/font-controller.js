@@ -44,7 +44,7 @@ export class FontController {
     this._rootObject["unitsPerEm"] = await this.font.getUnitsPerEm();
     this._rootObject["customData"] = await this.font.getCustomData();
     this._rootClassDef = (await getClassSchema())["Font"];
-    this.backendInfo = await await this.font.getBackEndInfo();
+    this.backendInfo = await this.font.getBackEndInfo();
     this._resolveInitialized();
   }
 
