@@ -1587,7 +1587,6 @@ export class EditorController {
           title: "Add to text",
           isDefaultButton: true,
           resultValue: "add",
-          // disabled: true,
         },
       ]
     );
