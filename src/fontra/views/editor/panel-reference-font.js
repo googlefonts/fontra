@@ -286,12 +286,12 @@ export default class ReferenceFontPanel extends Panel {
 
     this.controller.addKeyListener("charOverride", (event) => {
       this.editorController.canvasController.requestUpdate();
-      this.displayCurrentGlyphInReferenceFonts();
+      this.requestReferenceFontsPreview();
     });
 
     this.controller.addKeyListener("languageCode", (event) => {
       this.editorController.canvasController.setLangAttribute(this.model.languageCode);
-      this.displayCurrentGlyphInReferenceFonts();
+      this.requestReferenceFontsPreview();
     });
 
     this.editorController.canvasController.setLangAttribute(this.model.languageCode);
@@ -301,9 +301,18 @@ export default class ReferenceFontPanel extends Panel {
     this.editorController.sceneSettingsController.addKeyListener(
       ["selectedGlyph", "glyphLines"],
       (event) => {
-        this.displayCurrentGlyphInReferenceFonts();
+        this.requestReferenceFontsPreview();
       }
     );
+  }
+
+  async requestReferenceFontsPreview() {
+    if (this.referenceFontsPreviewPromise) {
+      return this.referenceFontsPreviewPromise;
+    }
+    this.referenceFontsPreviewPromise = this.displayCurrentGlyphInReferenceFonts();
+    await this.referenceFontsPreviewPromise;
+    delete this.referenceFontsPreviewPromise;
   }
 
   async displayCurrentGlyphInReferenceFonts() {
@@ -606,7 +615,7 @@ export default class ReferenceFontPanel extends Panel {
     this.controller.synchronizeWithLocalStorage("fontra.reference-font.");
     this.controller.addKeyListener("fontList", (event) => {
       this._fontListChangedHandler(event);
-      this.displayCurrentGlyphInReferenceFonts();
+      this.requestReferenceFontsPreview();
     });
     garbageCollectUnusedFiles(this.model.fontList);
 
