@@ -545,6 +545,11 @@ export class FontController {
     }
   }
 
+  async getGlyphsUsedBy(glyphName) {
+    // Ask the backend about which glyphs use glyph `glyphName` as a component
+    return await this.font.getGlyphsUsedBy(glyphName);
+  }
+
   _purgeGlyphCache(glyphName) {
     this._glyphsPromiseCache.delete(glyphName);
     this._purgeInstanceCache(glyphName);
