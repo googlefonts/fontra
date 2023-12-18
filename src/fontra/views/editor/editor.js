@@ -619,11 +619,7 @@ export class EditorController {
     if (!glyphName) {
       return;
     }
-    const codePoint = this.fontController.codePointForGlyph(glyphName);
-    const glyphInfo = { glyphName: glyphName };
-    if (codePoint !== undefined) {
-      glyphInfo["character"] = getCharFromUnicode(codePoint);
-    }
+    const glyphInfo = glyphInfoFromGlyphName(glyphName, this.fontController);
     let selectedGlyphState = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     if (selectedGlyphState) {
@@ -678,12 +674,7 @@ export class EditorController {
       if (location) {
         localLocations[glyphName] = location;
       }
-      const glyphInfo = { glyphName: glyphName };
-      const codePoint = this.fontController.codePointForGlyph(glyphName);
-      if (codePoint !== undefined) {
-        glyphInfo["character"] = getCharFromUnicode(codePoint);
-      }
-      glyphInfos.push(glyphInfo);
+      glyphInfos.push(glyphInfoFromGlyphName(glyphName, this.fontController));
     }
     this.sceneController.updateLocalLocations(localLocations);
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
@@ -1600,7 +1591,7 @@ export class EditorController {
           {
             title: "Add to text",
             isDefaultButton: true,
-            resultValue: "ok",
+            resultValue: "add",
             // disabled: true,
           },
         ]
@@ -1611,7 +1602,7 @@ export class EditorController {
       setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
 
       switch (await dialog.run()) {
-        case "copy":
+        case "copy": {
           const glyphNamesString = chunks(usedBy, 16)
             .map((chunked) => chunked.map((glyphName) => "/" + glyphName).join(""))
             .join("\n");
@@ -1622,6 +1613,21 @@ export class EditorController {
           };
           await writeToClipboard(clipboardObject);
           break;
+        }
+        case "add": {
+          const glyphInfos = usedBy.map((glyphName) =>
+            glyphInfoFromGlyphName(glyphName, this.fontController)
+          );
+          const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
+          const glyphLines = [...this.sceneSettings.glyphLines];
+          glyphLines[selectedGlyphInfo.lineIndex].splice(
+            selectedGlyphInfo.glyphIndex + 1,
+            0,
+            ...glyphInfos
+          );
+          this.sceneSettings.glyphLines = glyphLines;
+          break;
+        }
       }
     }
   }
@@ -2075,4 +2081,13 @@ function chunks(array, n) {
     chunked.push(array.slice(i, i + n));
   }
   return chunked;
+}
+
+function glyphInfoFromGlyphName(glyphName, fontController) {
+  const glyphInfo = { glyphName: glyphName };
+  const codePoint = fontController.codePointForGlyph(glyphName);
+  if (codePoint !== undefined) {
+    glyphInfo["character"] = getCharFromUnicode(codePoint);
+  }
+  return glyphInfo;
 }
