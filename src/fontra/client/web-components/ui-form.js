@@ -167,7 +167,6 @@ export class Form extends SimpleElement {
       }
     };
     inputElement.onchange = (event) => {
-      console.log("onchange");
       let value = parseFloat(inputElement.value);
       if (!inputElement.reportValidity()) {
         if (inputElement.min != undefined) {
