@@ -1599,8 +1599,6 @@ export class EditorController {
         const glyphNamesString = chunks(usedBy, 16)
           .map((chunked) => chunked.map((glyphName) => "/" + glyphName).join(""))
           .join("\n");
-        // .map((glyphName) => "/" + glyphName)
-        // .join("\n");
         const clipboardObject = {
           "text/plain": glyphNamesString,
         };
