@@ -148,6 +148,13 @@ class FontHandler:
                 await self.allConnectionsClosedCallback()
 
     @remoteMethod
+    async def getBackEndInfo(self, *, connection=None) -> dict:
+        features = {}
+        for key, methodName in [("glyphs-used-by", "getGlyphsUsedBy")]:
+            features[key] = hasattr(self.backend, methodName)
+        return dict(name=self.backend.__class__.__name__, features=features)
+
+    @remoteMethod
     async def getGlyph(
         self, glyphName: str, *, connection=None
     ) -> VariableGlyph | None:

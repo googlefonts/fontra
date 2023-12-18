@@ -795,7 +795,7 @@ export class EditorController {
 
     this.glyphSelectedContextMenuItems.push({
       title: "Find glyphs that use this glyph",
-      enabled: () => true,
+      enabled: () => this.fontController.backendInfo.features["glyphs-used-by"],
       callback: () => this.doFindGlyphsUsedBy(),
     });
   }
