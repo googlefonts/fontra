@@ -358,7 +358,18 @@ export class RangeSlider extends html.UnlitElement {
           ]),
         ]),
         html.div(
-          { class: "range-container" },
+          {
+            class: "range-container",
+            style: this.isDiscrete()
+              ? // In the discrete case, to keep the spacing between tick marks
+                // constant, the max-width for the slider is computed like this:
+                // (the number of values - 1) * (desired distance from left of
+                // tickmark to left of next tickmark = 20px)
+                // + one tickmark thickness (1px)
+                // + the total padding of the tickmarks span (6.5px * 2)
+                `max-width: ${(this.values.length - 1) * 20 + 1 + 13}px; width: 100%;`
+              : "",
+          },
           [
             (this.rangeInput = html.input({
               type: "range",
