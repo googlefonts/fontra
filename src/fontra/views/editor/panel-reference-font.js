@@ -266,6 +266,11 @@ export default class ReferenceFontPanel extends Panel {
     .current-character-font-size {
       width: 100%;
     }
+
+    .reference-font-preview {
+      height: 100%;
+      overflow: scroll;
+    }
   `;
 
   constructor(editorController) {
@@ -316,9 +321,7 @@ export default class ReferenceFontPanel extends Panel {
   }
 
   async displayCurrentGlyphInReferenceFonts() {
-    const container = this.contentElement.querySelector(
-      ".current-character-in-reference-fonts"
-    );
+    const container = this.contentElement.querySelector(".reference-font-preview");
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
@@ -695,7 +698,7 @@ export default class ReferenceFontPanel extends Panel {
                 this.languageCodeInput,
               ]
             ),
-            div({ class: "current-character-in-reference-fonts" }, []),
+            div({ class: "reference-font-preview" }, []),
           ]
         ),
       ]
