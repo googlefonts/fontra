@@ -1554,6 +1554,7 @@ export class EditorController {
     const glyphName = this.sceneSettings.selectedGlyphName;
 
     const usedBy = await loaderSpinner(this.fontController.getGlyphsUsedBy(glyphName));
+
     if (!usedBy.length) {
       await dialog(
         `Glyph '${glyphName}' is not used as a component by any glyph.`,
@@ -1562,6 +1563,7 @@ export class EditorController {
       );
       return;
     }
+
     usedBy.sort();
 
     const glyphMap = Object.fromEntries(
