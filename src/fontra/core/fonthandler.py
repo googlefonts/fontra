@@ -227,9 +227,9 @@ class FontHandler:
         self.clientData[connection.clientUUID][key] = value
 
     @remoteMethod
-    async def getUsedBy(self, glyphName: str, *, connection) -> list[str]:
-        if hasattr(self.backend, "getUsedBy"):
-            return await self.backend.getUsedBy(glyphName)
+    async def getGlyphsUsedBy(self, glyphName: str, *, connection) -> list[str]:
+        if hasattr(self.backend, "getGlyphsUsedBy"):
+            return await self.backend.getGlyphsUsedBy(glyphName)
         return []
 
     @remoteMethod
