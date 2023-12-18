@@ -792,6 +792,12 @@ export class EditorController {
         },
       });
     }
+
+    this.glyphSelectedContextMenuItems.push({
+      title: "Find glyphs used by this glyph",
+      enabled: () => true,
+      callback: () => this.doFindGlyphsUsedBy(),
+    });
   }
 
   initShortCuts() {
@@ -1447,7 +1453,7 @@ export class EditorController {
 
     const dialog = await dialogSetup("Add Component", null, [
       { title: "Cancel", isCancelButton: true },
-      { title: "Add", isDefaultButton: true, result: "ok", disabled: true },
+      { title: "Add", isDefaultButton: true, resultValue: "ok", disabled: true },
     ]);
 
     dialog.setContent(glyphsSearch);
@@ -1551,6 +1557,69 @@ export class EditorController {
     }
     this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
+  }
+
+  async doFindGlyphsUsedBy() {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+
+    const usedBy = await loaderSpinner(this.fontController.getGlyphsUsedBy(glyphName));
+    if (!usedBy.length) {
+      await dialog(`Glyph '${glyphName}' is not used as a component anywhere.`, null, [
+        { title: "Okay", resultValue: "ok" },
+      ]);
+      return;
+    } else {
+      usedBy.sort();
+
+      const glyphMap = Object.fromEntries(
+        usedBy.map((glyphName) => [glyphName, this.fontController.glyphMap[glyphName]])
+      );
+
+      const glyphsSearch = document.createElement("glyphs-search");
+      glyphsSearch.glyphMap = glyphMap;
+
+      // glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) => {
+      //   dialog.defaultButton.classList.toggle(
+      //     "disabled",
+      //     !glyphsSearch.getSelectedGlyphName()
+      //   );
+      // });
+
+      // glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+      //   dialog.defaultButton.click();
+      // });
+
+      const dialog = await dialogSetup(
+        `Glyphs that use glyph '${glyphName}' as a component`,
+        null,
+        [
+          { title: "Cancel", isCancelButton: true },
+          { title: "Copy names", resultValue: "copy" },
+          {
+            title: "Add to text",
+            isDefaultButton: true,
+            resultValue: "ok",
+            // disabled: true,
+          },
+        ]
+      );
+
+      dialog.setContent(glyphsSearch);
+
+      setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+
+      switch (await dialog.run()) {
+        case "copy":
+          const glyphNamesString = usedBy
+            .map((glyphName) => "/" + glyphName)
+            .join("\n");
+          const clipboardObject = {
+            "text/plain": glyphNamesString,
+          };
+          await writeToClipboard(clipboardObject);
+          break;
+      }
+    }
   }
 
   keyUpHandler(event) {
