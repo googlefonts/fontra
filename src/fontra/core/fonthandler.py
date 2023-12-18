@@ -227,6 +227,12 @@ class FontHandler:
         self.clientData[connection.clientUUID][key] = value
 
     @remoteMethod
+    async def getUsedBy(self, glyphName: str) -> list[str]:
+        if hasattr(self.backend, "getUsedBy"):
+            return await self.backend.getUsedBy(glyphName)
+        return []
+
+    @remoteMethod
     async def subscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
         pattern = _ensurePattern(pathOrPattern)
         self._adjustMatchPattern(patternUnion, pattern, wantLiveChanges, connection)
