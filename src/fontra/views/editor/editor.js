@@ -1564,9 +1564,11 @@ export class EditorController {
 
     const usedBy = await loaderSpinner(this.fontController.getGlyphsUsedBy(glyphName));
     if (!usedBy.length) {
-      await dialog(`Glyph '${glyphName}' is not used as a component anywhere.`, null, [
-        { title: "Okay", resultValue: "ok" },
-      ]);
+      await dialog(
+        `Glyph '${glyphName}' is not used as a component by any glyph.`,
+        null,
+        [{ title: "Okay", resultValue: "ok" }]
+      );
       return;
     } else {
       usedBy.sort();
