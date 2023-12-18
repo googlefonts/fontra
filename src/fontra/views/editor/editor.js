@@ -1610,9 +1610,11 @@ export class EditorController {
 
       switch (await dialog.run()) {
         case "copy":
-          const glyphNamesString = usedBy
-            .map((glyphName) => "/" + glyphName)
+          const glyphNamesString = chunks(usedBy, 16)
+            .map((chunked) => chunked.map((glyphName) => "/" + glyphName).join(""))
             .join("\n");
+          // .map((glyphName) => "/" + glyphName)
+          // .join("\n");
           const clipboardObject = {
             "text/plain": glyphNamesString,
           };
@@ -2063,4 +2065,12 @@ async function runDialogWholeGlyphPaste() {
   const result = await dialog.run();
 
   return result === "ok" ? controller.model.behavior : null;
+}
+
+function chunks(array, n) {
+  const chunked = [];
+  for (const i of range(0, array.length, n)) {
+    chunked.push(array.slice(i, i + n));
+  }
+  return chunked;
 }
