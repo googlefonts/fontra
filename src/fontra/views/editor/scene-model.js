@@ -742,7 +742,10 @@ function getUsedGlyphNames(fontController, positionedLines) {
   for (const line of positionedLines) {
     for (const glyph of line.glyphs) {
       usedGlyphNames.add(glyph.glyph.name);
-      updateSet(usedGlyphNames, fontController.iterGlyphMadeOf(glyph.glyph.name));
+      updateSet(
+        usedGlyphNames,
+        fontController.iterGlyphsMadeOfRecursively(glyph.glyph.name)
+      );
     }
   }
   return usedGlyphNames;

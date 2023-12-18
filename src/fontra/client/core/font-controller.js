@@ -129,7 +129,7 @@ export class FontController {
 
         await this.getGlyph(glyphName);
 
-        for (const subGlyphName of this.iterGlyphMadeOf(glyphName)) {
+        for (const subGlyphName of this.iterGlyphsMadeOfRecursively(glyphName)) {
           todo.add(subGlyphName);
         }
       };
@@ -276,7 +276,7 @@ export class FontController {
   }
 
   async glyphChanged(glyphName, senderInfo) {
-    const glyphNames = [glyphName, ...this.iterGlyphUsedBy(glyphName)];
+    const glyphNames = [glyphName, ...this.iterGlyphsUsedByRecursively(glyphName)];
     for (const glyphName of glyphNames) {
       this._purgeInstanceCache(glyphName);
     }
@@ -507,7 +507,8 @@ export class FontController {
     return cachedPattern;
   }
 
-  *iterGlyphMadeOf(glyphName, seenGlyphNames = null) {
+  *iterGlyphsMadeOfRecursively(glyphName, seenGlyphNames = null) {
+    // Yield the names of all glyphs that are used as a component in `glyphName`, recursively.
     if (!seenGlyphNames) {
       seenGlyphNames = new Set();
     } else if (seenGlyphNames.has(glyphName)) {
@@ -517,7 +518,7 @@ export class FontController {
     seenGlyphNames.add(glyphName);
     for (const dependantGlyphName of this.glyphMadeOf[glyphName] || []) {
       yield dependantGlyphName;
-      for (const deeperGlyphName of this.iterGlyphMadeOf(
+      for (const deeperGlyphName of this.iterGlyphsMadeOfRecursively(
         dependantGlyphName,
         seenGlyphNames
       )) {
@@ -526,7 +527,8 @@ export class FontController {
     }
   }
 
-  *iterGlyphUsedBy(glyphName, seenGlyphNames = null) {
+  *iterGlyphsUsedByRecursively(glyphName, seenGlyphNames = null) {
+    // Yield the names of all *loaded* glyphs that use `glyphName` as a component, recursively.
     if (!seenGlyphNames) {
       seenGlyphNames = new Set();
     } else if (seenGlyphNames.has(glyphName)) {
@@ -536,7 +538,7 @@ export class FontController {
     seenGlyphNames.add(glyphName);
     for (const dependantGlyphName of this.glyphUsedBy[glyphName] || []) {
       yield dependantGlyphName;
-      for (const deeperGlyphName of this.iterGlyphUsedBy(
+      for (const deeperGlyphName of this.iterGlyphsUsedByRecursively(
         dependantGlyphName,
         seenGlyphNames
       )) {
@@ -546,7 +548,7 @@ export class FontController {
   }
 
   async getGlyphsUsedBy(glyphName) {
-    // Ask the backend about which glyphs use glyph `glyphName` as a component
+    // Ask the backend about which glyphs use glyph `glyphName` as a component, non-recursively.
     return await this.font.getGlyphsUsedBy(glyphName);
   }
 
