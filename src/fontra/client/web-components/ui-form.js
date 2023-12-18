@@ -153,7 +153,21 @@ export class Form extends SimpleElement {
     inputElement.step = "any";
 
     inputElement.disabled = fieldItem.disabled;
+    inputElement.onkeydown = (event) => {
+      if (event.shiftKey) {
+        switch (event.key) {
+          case "ArrowUp":
+            event.target.value = event.target.valueAsNumber + 9;
+            break;
+
+          case "ArrowDown":
+            event.target.value = event.target.valueAsNumber - 9;
+            break;
+        }
+      }
+    };
     inputElement.onchange = (event) => {
+      console.log("onchange");
       let value = parseFloat(inputElement.value);
       if (!inputElement.reportValidity()) {
         if (inputElement.min != undefined) {
