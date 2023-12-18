@@ -408,16 +408,6 @@ class FontHandler:
             self._processWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()
 
-    def iterGlyphMadeOf(self, glyphName):
-        for dependantGlyphName in self.glyphMadeOf.get(glyphName, ()):
-            yield dependantGlyphName
-            yield from self.iterGlyphMadeOf(dependantGlyphName)
-
-    def iterGlyphUsedBy(self, glyphName):
-        for dependantGlyphName in self.glyphUsedBy.get(glyphName, ()):
-            yield dependantGlyphName
-            yield from self.iterGlyphUsedBy(dependantGlyphName)
-
     def updateGlyphDependencies(self, glyphName, glyph):
         # Zap previous used-by data for this glyph, if any
         for componentName in self.glyphMadeOf.get(glyphName, ()):
