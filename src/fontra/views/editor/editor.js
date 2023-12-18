@@ -1609,7 +1609,13 @@ export class EditorController {
       }
       case "add": {
         const glyphName = glyphsSearch.getSelectedGlyphName();
-        const glyphNames = glyphName ? [glyphName] : usedBy;
+        const MAX_NUM_GLYPHS = 100;
+        const truncate = !glyphName && usedBy.length > MAX_NUM_GLYPHS;
+        const glyphNames = glyphName
+          ? [glyphName]
+          : truncate
+          ? usedBy.slice(0, MAX_NUM_GLYPHS)
+          : usedBy;
 
         const glyphInfos = glyphNames.map((glyphName) =>
           glyphInfoFromGlyphName(glyphName, this.fontController)
@@ -1622,6 +1628,13 @@ export class EditorController {
           ...glyphInfos
         );
         this.sceneSettings.glyphLines = glyphLines;
+        if (truncate) {
+          await dialog(
+            `The number of added glyphs was truncated to ${MAX_NUM_GLYPHS}`,
+            null,
+            [{ title: "Okay", resultValue: "ok" }]
+          );
+        }
         break;
       }
     }
