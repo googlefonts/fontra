@@ -148,6 +148,13 @@ class FontHandler:
                 await self.allConnectionsClosedCallback()
 
     @remoteMethod
+    async def getBackEndInfo(self, *, connection=None) -> dict:
+        features = {}
+        for key, methodName in [("glyphs-used-by", "getGlyphsUsedBy")]:
+            features[key] = hasattr(self.backend, methodName)
+        return dict(name=self.backend.__class__.__name__, features=features)
+
+    @remoteMethod
     async def getGlyph(
         self, glyphName: str, *, connection=None
     ) -> VariableGlyph | None:
@@ -225,6 +232,12 @@ class FontHandler:
 
     def _setClientData(self, connection, key, value):
         self.clientData[connection.clientUUID][key] = value
+
+    @remoteMethod
+    async def getGlyphsUsedBy(self, glyphName: str, *, connection) -> list[str]:
+        if hasattr(self.backend, "getGlyphsUsedBy"):
+            return await self.backend.getGlyphsUsedBy(glyphName)
+        return []
 
     @remoteMethod
     async def subscribeChanges(self, pathOrPattern, wantLiveChanges, *, connection):
@@ -401,16 +414,6 @@ class FontHandler:
         if shouldSignal:
             self._processWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()
-
-    def iterGlyphMadeOf(self, glyphName):
-        for dependantGlyphName in self.glyphMadeOf.get(glyphName, ()):
-            yield dependantGlyphName
-            yield from self.iterGlyphMadeOf(dependantGlyphName)
-
-    def iterGlyphUsedBy(self, glyphName):
-        for dependantGlyphName in self.glyphUsedBy.get(glyphName, ()):
-            yield dependantGlyphName
-            yield from self.iterGlyphUsedBy(dependantGlyphName)
 
     def updateGlyphDependencies(self, glyphName, glyph):
         # Zap previous used-by data for this glyph, if any

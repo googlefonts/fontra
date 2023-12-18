@@ -619,11 +619,7 @@ export class EditorController {
     if (!glyphName) {
       return;
     }
-    const codePoint = this.fontController.codePointForGlyph(glyphName);
-    const glyphInfo = { glyphName: glyphName };
-    if (codePoint !== undefined) {
-      glyphInfo["character"] = getCharFromUnicode(codePoint);
-    }
+    const glyphInfo = glyphInfoFromGlyphName(glyphName, this.fontController);
     let selectedGlyphState = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     if (selectedGlyphState) {
@@ -678,12 +674,7 @@ export class EditorController {
       if (location) {
         localLocations[glyphName] = location;
       }
-      const glyphInfo = { glyphName: glyphName };
-      const codePoint = this.fontController.codePointForGlyph(glyphName);
-      if (codePoint !== undefined) {
-        glyphInfo["character"] = getCharFromUnicode(codePoint);
-      }
-      glyphInfos.push(glyphInfo);
+      glyphInfos.push(glyphInfoFromGlyphName(glyphName, this.fontController));
     }
     this.sceneController.updateLocalLocations(localLocations);
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
@@ -792,6 +783,12 @@ export class EditorController {
         },
       });
     }
+
+    this.glyphSelectedContextMenuItems.push({
+      title: () => `Find glyphs that use '${this.sceneSettings.selectedGlyphName}'`,
+      enabled: () => this.fontController.backendInfo.features["glyphs-used-by"],
+      callback: () => this.doFindGlyphsUsedBy(),
+    });
   }
 
   initShortCuts() {
@@ -1447,7 +1444,7 @@ export class EditorController {
 
     const dialog = await dialogSetup("Add Component", null, [
       { title: "Cancel", isCancelButton: true },
-      { title: "Add", isDefaultButton: true, result: "ok", disabled: true },
+      { title: "Add", isDefaultButton: true, resultValue: "ok", disabled: true },
     ]);
 
     dialog.setContent(glyphsSearch);
@@ -1551,6 +1548,95 @@ export class EditorController {
     }
     this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
+  }
+
+  async doFindGlyphsUsedBy() {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+
+    const usedBy = await loaderSpinner(this.fontController.getGlyphsUsedBy(glyphName));
+
+    if (!usedBy.length) {
+      await dialog(
+        `Glyph '${glyphName}' is not used as a component by any glyph.`,
+        null,
+        [{ title: "Okay", resultValue: "ok" }]
+      );
+      return;
+    }
+
+    usedBy.sort();
+
+    const glyphMap = Object.fromEntries(
+      usedBy.map((glyphName) => [glyphName, this.fontController.glyphMap[glyphName]])
+    );
+
+    const glyphsSearch = document.createElement("glyphs-search");
+    glyphsSearch.glyphMap = glyphMap;
+
+    glyphsSearch.addEventListener("selectedGlyphNameDoubleClicked", (event) => {
+      theDialog.defaultButton.click();
+    });
+
+    const theDialog = await dialogSetup(
+      `Glyphs that use glyph '${glyphName}' as a component`,
+      null,
+      [
+        { title: "Cancel", isCancelButton: true },
+        { title: "Copy names", resultValue: "copy" },
+        {
+          title: "Add to text",
+          isDefaultButton: true,
+          resultValue: "add",
+        },
+      ]
+    );
+
+    theDialog.setContent(glyphsSearch);
+
+    setTimeout(() => glyphsSearch.focusSearchField(), 0); // next event loop iteration
+
+    switch (await theDialog.run()) {
+      case "copy": {
+        const glyphNamesString = chunks(usedBy, 16)
+          .map((chunked) => chunked.map((glyphName) => "/" + glyphName).join(""))
+          .join("\n");
+        const clipboardObject = {
+          "text/plain": glyphNamesString,
+        };
+        await writeToClipboard(clipboardObject);
+        break;
+      }
+      case "add": {
+        const glyphName = glyphsSearch.getSelectedGlyphName();
+        const MAX_NUM_GLYPHS = 100;
+        const truncate = !glyphName && usedBy.length > MAX_NUM_GLYPHS;
+        const glyphNames = glyphName
+          ? [glyphName]
+          : truncate
+          ? usedBy.slice(0, MAX_NUM_GLYPHS)
+          : usedBy;
+
+        const glyphInfos = glyphNames.map((glyphName) =>
+          glyphInfoFromGlyphName(glyphName, this.fontController)
+        );
+        const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
+        const glyphLines = [...this.sceneSettings.glyphLines];
+        glyphLines[selectedGlyphInfo.lineIndex].splice(
+          selectedGlyphInfo.glyphIndex + 1,
+          0,
+          ...glyphInfos
+        );
+        this.sceneSettings.glyphLines = glyphLines;
+        if (truncate) {
+          await dialog(
+            `The number of added glyphs was truncated to ${MAX_NUM_GLYPHS}`,
+            null,
+            [{ title: "Okay", resultValue: "ok" }]
+          );
+        }
+        break;
+      }
+    }
   }
 
   keyUpHandler(event) {
@@ -1994,4 +2080,21 @@ async function runDialogWholeGlyphPaste() {
   const result = await dialog.run();
 
   return result === "ok" ? controller.model.behavior : null;
+}
+
+function chunks(array, n) {
+  const chunked = [];
+  for (const i of range(0, array.length, n)) {
+    chunked.push(array.slice(i, i + n));
+  }
+  return chunked;
+}
+
+function glyphInfoFromGlyphName(glyphName, fontController) {
+  const glyphInfo = { glyphName: glyphName };
+  const codePoint = fontController.codePointForGlyph(glyphName);
+  if (codePoint !== undefined) {
+    glyphInfo["character"] = getCharFromUnicode(codePoint);
+  }
+  return glyphInfo;
 }
