@@ -261,6 +261,7 @@ export default class ReferenceFontPanel extends Panel {
 
     .current-character {
       font-size: 14px;
+      overflow: auto;
     }
 
     .current-character-font-size {
@@ -268,8 +269,8 @@ export default class ReferenceFontPanel extends Panel {
     }
 
     .reference-font-preview {
-      height: 100%;
-      overflow: scroll;
+      display: grid;
+      overflow: auto;
     }
   `;
 
