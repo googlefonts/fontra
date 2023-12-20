@@ -28,6 +28,7 @@ import { registerVisualizationLayerDefinition } from "./visualization-layer-defi
 let referenceFontModel;
 
 const fontFileExtensions = new Set(["ttf", "otf", "woff", "woff2"]);
+const DEFAULT_FONT_SIZE = 100;
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.reference.font",
@@ -255,7 +256,6 @@ export default class ReferenceFontPanel extends Panel {
     }
 
     .current-character {
-      font-size: 14px;
       overflow: auto;
     }
 
@@ -379,7 +379,7 @@ export default class ReferenceFontPanel extends Panel {
       type: "range",
       value: this.model.fontSize,
       minValue: 10,
-      defaultValue: 100,
+      defaultValue: DEFAULT_FONT_SIZE,
       maxValue: 300,
       step: 0.1,
       onChangeCallback: (event) => {
@@ -606,7 +606,7 @@ export default class ReferenceFontPanel extends Panel {
 
     this.controller = new ObservableController({
       languageCode: "",
-      fontSize: 14,
+      fontSize: DEFAULT_FONT_SIZE,
       selectedFontIndex: -1,
       fontList: [],
       charOverride: "",
