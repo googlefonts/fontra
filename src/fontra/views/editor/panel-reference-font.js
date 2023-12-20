@@ -11,12 +11,7 @@ import {
   span,
 } from "/core/html-utils.js";
 import { ObservableController } from "/core/observable-object.js";
-import {
-  consolidateCalls,
-  fetchJSON,
-  fileNameExtension,
-  withTimeout,
-} from "/core/utils.js";
+import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
 import { dialog } from "/web-components/modal-dialog.js";
 import "/web-components/range-slider.js";
 import { UIList } from "/web-components/ui-list.js";
