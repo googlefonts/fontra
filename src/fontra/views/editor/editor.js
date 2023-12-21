@@ -308,7 +308,6 @@ export class EditorController {
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
     this.initTools();
-    await this.initSidebarDesignspace();
 
     const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
     document.fonts.add(blankFont);
@@ -441,10 +440,6 @@ export class EditorController {
     };
 
     editToolsElement.appendChild(toolButton);
-  }
-
-  async initSidebarDesignspace() {
-    this.getSidebarPanel("designspace-navigation").setup();
   }
 
   initSidebars() {
