@@ -350,23 +350,6 @@ export default class ReferenceFontPanel extends Panel {
       return;
     }
 
-    if (
-      !textToDisplay &&
-      selectedGlyphInfo &&
-      selectedGlyphInfo.glyphName.includes(".")
-    ) {
-      const baseGlyphName = positionedGlyph.glyphName.split(".")[0];
-      const codePoint = (this.editorController.fontController.glyphMap[baseGlyphName] ||
-        [])[0];
-      if (codePoint) {
-        textToDisplay = String.fromCodePoint(codePoint);
-      }
-    }
-
-    if (!textToDisplay) {
-      return;
-    }
-
     const currentCharacter = div(
       {
         class: "current-character",
