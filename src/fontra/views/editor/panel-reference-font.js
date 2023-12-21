@@ -300,7 +300,7 @@ export default class ReferenceFontPanel extends Panel {
     referenceFontModel = this.model;
 
     this.editorController.sceneSettingsController.addKeyListener(
-      ["selectedGlyph", "glyphLines"],
+      ["selectedGlyphName"],
       (event) => {
         this.requestReferenceFontsPreview();
       }
