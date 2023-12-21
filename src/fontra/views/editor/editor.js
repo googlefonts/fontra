@@ -28,7 +28,6 @@ import {
   dumpURLFragment,
   enumerate,
   fetchJSON,
-  getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
   isObjectEmpty,
@@ -64,7 +63,7 @@ import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
-import GlyphSearchPanel from "./panel-glyph-search.js";
+import GlyphSearchPanel, { glyphInfoFromGlyphName } from "./panel-glyph-search.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import TextEntryPanel from "./panel-text-entry.js";
@@ -308,7 +307,6 @@ export class EditorController {
       rootSubscriptionPattern[rootKey] = null;
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
-    this.initGlyphsSearch();
     this.initTools();
     await this.initSidebarDesignspace();
 
@@ -319,22 +317,6 @@ export class EditorController {
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox
     setTimeout(() => this.setupFromWindowLocation(), 20);
-  }
-
-  initGlyphsSearch() {
-    // TODO: this and glyphNameChangedCallback() should move to panel-glyph-search.js
-    // After https://github.com/googlefonts/fontra/pull/934 gets merged
-    const glyphsSearch =
-      this.getSidebarPanel("glyph-search").contentElement.querySelector(
-        "#glyphs-search"
-      );
-    glyphsSearch.glyphMap = this.fontController.glyphMap;
-    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
-      this.glyphNameChangedCallback(event.detail)
-    );
-    this.fontController.addChangeListener({ glyphMap: null }, () => {
-      glyphsSearch.updateGlyphNamesListContent();
-    });
   }
 
   async showDialogNewGlyph() {
@@ -2088,13 +2070,4 @@ function chunks(array, n) {
     chunked.push(array.slice(i, i + n));
   }
   return chunked;
-}
-
-function glyphInfoFromGlyphName(glyphName, fontController) {
-  const glyphInfo = { glyphName: glyphName };
-  const codePoint = fontController.codePointForGlyph(glyphName);
-  if (codePoint !== undefined) {
-    glyphInfo["character"] = getCharFromUnicode(codePoint);
-  }
-  return glyphInfo;
 }
