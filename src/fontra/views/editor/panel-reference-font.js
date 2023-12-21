@@ -318,9 +318,8 @@ export default class ReferenceFontPanel extends Panel {
 
   async displayCurrentGlyphInReferenceFonts() {
     const container = this.contentElement.querySelector(".reference-font-preview");
-    while (container.firstChild) {
-      container.removeChild(container.firstChild);
-    }
+    container.innerHTML = "";
+
     const selectedGlyphInfo = getSelectedGlyphInfo(
       this.editorController.sceneSettings.selectedGlyph,
       this.editorController.sceneSettings.glyphLines
