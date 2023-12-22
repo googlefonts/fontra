@@ -105,213 +105,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     );
 
     this.fontController.ensureInitialized.then(() => {
-      this.designspaceLocation = this.contentElement.querySelector(
-        "#designspace-location"
-      );
-      this.designspaceLocation.values = this.sceneSettings.location;
-
-      this.designspaceLocation.addEventListener(
-        "locationChanged",
-        scheduleCalls(async (event) => {
-          this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
-          this.sceneController.autoViewBox = false;
-
-          this.sceneSettingsController.setItem(
-            "location",
-            { ...this.designspaceLocation.values },
-            { senderID: this }
-          );
-        })
-      );
-
-      this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
-        this._updateAxes();
-        this._updateSources();
-        this._updateEditLocalAxesButtonState();
-        this._updateInterpolationErrorInfo();
-      });
-
-      this.sceneController.addCurrentGlyphChangeListener(
-        scheduleCalls((event) => {
-          this._updateAxes();
-          this._updateSources();
-          this._updateInterpolationErrorInfo();
-        }, 100)
-      );
-
-      this.sceneSettingsController.addKeyListener(
-        "location",
-        (event) => {
-          this.sceneSettings.editLayerName = null;
-          this.updateResetAllAxesButtonState();
-          this.updateInterpolationContributions();
-          this._updateInterpolationErrorInfo();
-          if (event.senderInfo?.senderID === this) {
-            // Sent by us, ignore
-            return;
-          }
-          this.designspaceLocation.values = event.newValue;
-        },
-        true
-      );
-
-      this.sceneSettingsController.addKeyListener(
-        "selectedSourceIndex",
-        async (event) => {
-          const varGlyphController =
-            await this.sceneModel.getSelectedVariableGlyphController();
-          let index = event.newValue;
-          if (
-            varGlyphController?.sources[index]?.layerName !==
-            this.sourcesList.items[index]?.layerName
-          ) {
-            // the selectedSourceIndex event may come at a time that the
-            // sourcesList hasn't been updated yet, so could be out of
-            // sync. Prevent setting it to a wrong value.
-            index = undefined;
-          }
-          this.sourcesList.setSelectedItemIndex(index);
-          this._updateRemoveSourceButtonState();
-          this._updateEditingStatus();
-        }
-      );
-
-      const columnDescriptions = [
-        {
-          title: "on",
-          key: "active",
-          cellFactory: makeIconCellFactory(
-            ["/tabler-icons/circle-dotted.svg", "/tabler-icons/circle-dot.svg"],
-            true
-          ),
-          width: "1.2em",
-        },
-        {
-          title: " ",
-          key: "interpolationStatus",
-          cellFactory: interpolationErrorCell,
-          width: "1.2em",
-        },
-        { key: "name", title: "Source name", width: "12em" },
-        {
-          title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
-            this.onVisibilityHeaderClick(event)
-          ),
-          key: "visible",
-          cellFactory: makeIconCellFactory([
-            "/tabler-icons/eye-closed.svg",
-            "/tabler-icons/eye.svg",
-          ]),
-          width: "1.2em",
-        },
-        {
-          title: makeClickableIconHeader("/tabler-icons/pencil.svg", (event) =>
-            this.onEditHeaderClick(event)
-          ),
-          key: "editing",
-          cellFactory: makeIconCellFactory(
-            ["", "/tabler-icons/pencil.svg"],
-            false,
-            (item, key) => {
-              const selectedItem = this.sourcesList.getSelectedItem();
-              const discreteLocationKey =
-                selectedItem?.interpolationStatus?.discreteLocationKey;
-              const newValue =
-                item === selectedItem ||
-                (!selectedItem ||
-                item?.interpolationStatus?.error ||
-                selectedItem?.interpolationStatus?.error ||
-                item?.interpolationStatus?.discreteLocationKey !== discreteLocationKey
-                  ? false
-                  : !item[key]);
-              return { newValue, selectItem: !selectedItem };
-            }
-          ),
-          width: "1.2em",
-        },
-      ];
-
-      const statusFieldDefinitions =
-        this.sceneController.sceneModel.fontController.customData[
-          FONTRA_STATUS_DEFINITIONS_KEY
-        ];
-
-      if (statusFieldDefinitions) {
-        this.defaultStatusValue = statusFieldDefinitions.find(
-          (statusDef) => statusDef.isDefault
-        )?.value;
-        columnDescriptions.push({
-          title: "status",
-          key: "status",
-          cellFactory: statusListCell,
-          width: "3em",
-          statusFieldDefinitions: statusFieldDefinitions,
-          menuItems: statusFieldDefinitions.map((statusDef) => {
-            return {
-              title: statusDef.label,
-              enabled: () => true,
-              statusDef: statusDef,
-            };
-          }),
-        });
-      }
-
-      columnDescriptions.push({
-        title: " ",
-        key: "interpolationContribution",
-        cellFactory: interpolationContributionCell,
-        width: "1.2em",
-      });
-
-      this.sourcesList = this.contentElement.querySelector("#sources-list");
-      this.sourcesList.appendStyle(`
-        .clickable-icon-header {
-          transition: 150ms;
-        }
-        .clickable-icon-header:hover {
-          transform: scale(1.1);
-        }
-        .clickable-icon-header:active {
-          transform: scale(1.2);
-        }
-      `);
-      this.sourcesList.showHeader = true;
-      this.sourcesList.columnDescriptions = columnDescriptions;
-
-      this.addRemoveSourceButtons = this.contentElement.querySelector(
-        "#sources-list-add-remove-buttons"
-      );
-
-      this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
-      this.addRemoveSourceButtons.removeButtonCallback = () =>
-        this.removeSource(this.sourcesList.getSelectedItemIndex());
-      this.addRemoveSourceButtons.hidden = true;
-
-      this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
-        this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
-        const sourceIndex = this.sourcesList.getSelectedItemIndex();
-        this.sceneSettings.selectedSourceIndex = sourceIndex;
-        if (sourceIndex != undefined) {
-          const varGlyphController =
-            await this.sceneModel.getSelectedVariableGlyphController();
-          if (varGlyphController) {
-            this.sceneSettings.editLayerName =
-              varGlyphController.sources[sourceIndex]?.layerName;
-          } else {
-            this.sceneSettings.editLayerName = null;
-          }
-        } else {
-          this.sceneSettings.editLayerName = null;
-        }
-        this._updateEditingStatus();
-      });
-
-      this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
-        this.editSourceProperties(event.detail.doubleClickedRowIndex);
-      });
-
-      this._updateAxes();
-      this._updateSources();
+      this.setup();
     });
   }
 
@@ -357,6 +151,216 @@ export default class DesignspaceNavigationPanel extends Panel {
         }),
       ]
     );
+  }
+
+  setup() {
+    this.designspaceLocation = this.contentElement.querySelector(
+      "#designspace-location"
+    );
+    this.designspaceLocation.values = this.sceneSettings.location;
+
+    this.designspaceLocation.addEventListener(
+      "locationChanged",
+      scheduleCalls(async (event) => {
+        this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+        this.sceneController.autoViewBox = false;
+
+        this.sceneSettingsController.setItem(
+          "location",
+          { ...this.designspaceLocation.values },
+          { senderID: this }
+        );
+      })
+    );
+
+    this.sceneSettingsController.addKeyListener("selectedGlyphName", (event) => {
+      this._updateAxes();
+      this._updateSources();
+      this._updateEditLocalAxesButtonState();
+      this._updateInterpolationErrorInfo();
+    });
+
+    this.sceneController.addCurrentGlyphChangeListener(
+      scheduleCalls((event) => {
+        this._updateAxes();
+        this._updateSources();
+        this._updateInterpolationErrorInfo();
+      }, 100)
+    );
+
+    this.sceneSettingsController.addKeyListener(
+      "location",
+      (event) => {
+        this.sceneSettings.editLayerName = null;
+        this.updateResetAllAxesButtonState();
+        this.updateInterpolationContributions();
+        this._updateInterpolationErrorInfo();
+        if (event.senderInfo?.senderID === this) {
+          // Sent by us, ignore
+          return;
+        }
+        this.designspaceLocation.values = event.newValue;
+      },
+      true
+    );
+
+    this.sceneSettingsController.addKeyListener(
+      "selectedSourceIndex",
+      async (event) => {
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        let index = event.newValue;
+        if (
+          varGlyphController?.sources[index]?.layerName !==
+          this.sourcesList.items[index]?.layerName
+        ) {
+          // the selectedSourceIndex event may come at a time that the
+          // sourcesList hasn't been updated yet, so could be out of
+          // sync. Prevent setting it to a wrong value.
+          index = undefined;
+        }
+        this.sourcesList.setSelectedItemIndex(index);
+        this._updateRemoveSourceButtonState();
+        this._updateEditingStatus();
+      }
+    );
+
+    const columnDescriptions = [
+      {
+        title: "on",
+        key: "active",
+        cellFactory: makeIconCellFactory(
+          ["/tabler-icons/circle-dotted.svg", "/tabler-icons/circle-dot.svg"],
+          true
+        ),
+        width: "1.2em",
+      },
+      {
+        title: " ",
+        key: "interpolationStatus",
+        cellFactory: interpolationErrorCell,
+        width: "1.2em",
+      },
+      { key: "name", title: "Source name", width: "12em" },
+      {
+        title: makeClickableIconHeader("/tabler-icons/eye.svg", (event) =>
+          this.onVisibilityHeaderClick(event)
+        ),
+        key: "visible",
+        cellFactory: makeIconCellFactory([
+          "/tabler-icons/eye-closed.svg",
+          "/tabler-icons/eye.svg",
+        ]),
+        width: "1.2em",
+      },
+      {
+        title: makeClickableIconHeader("/tabler-icons/pencil.svg", (event) =>
+          this.onEditHeaderClick(event)
+        ),
+        key: "editing",
+        cellFactory: makeIconCellFactory(
+          ["", "/tabler-icons/pencil.svg"],
+          false,
+          (item, key) => {
+            const selectedItem = this.sourcesList.getSelectedItem();
+            const discreteLocationKey =
+              selectedItem?.interpolationStatus?.discreteLocationKey;
+            const newValue =
+              item === selectedItem ||
+              (!selectedItem ||
+              item?.interpolationStatus?.error ||
+              selectedItem?.interpolationStatus?.error ||
+              item?.interpolationStatus?.discreteLocationKey !== discreteLocationKey
+                ? false
+                : !item[key]);
+            return { newValue, selectItem: !selectedItem };
+          }
+        ),
+        width: "1.2em",
+      },
+    ];
+
+    const statusFieldDefinitions =
+      this.sceneController.sceneModel.fontController.customData[
+        FONTRA_STATUS_DEFINITIONS_KEY
+      ];
+
+    if (statusFieldDefinitions) {
+      this.defaultStatusValue = statusFieldDefinitions.find(
+        (statusDef) => statusDef.isDefault
+      )?.value;
+      columnDescriptions.push({
+        title: "status",
+        key: "status",
+        cellFactory: statusListCell,
+        width: "3em",
+        statusFieldDefinitions: statusFieldDefinitions,
+        menuItems: statusFieldDefinitions.map((statusDef) => {
+          return {
+            title: statusDef.label,
+            enabled: () => true,
+            statusDef: statusDef,
+          };
+        }),
+      });
+    }
+
+    columnDescriptions.push({
+      title: " ",
+      key: "interpolationContribution",
+      cellFactory: interpolationContributionCell,
+      width: "1.2em",
+    });
+
+    this.sourcesList = this.contentElement.querySelector("#sources-list");
+    this.sourcesList.appendStyle(`
+      .clickable-icon-header {
+        transition: 150ms;
+      }
+      .clickable-icon-header:hover {
+        transform: scale(1.1);
+      }
+      .clickable-icon-header:active {
+        transform: scale(1.2);
+      }
+    `);
+    this.sourcesList.showHeader = true;
+    this.sourcesList.columnDescriptions = columnDescriptions;
+
+    this.addRemoveSourceButtons = this.contentElement.querySelector(
+      "#sources-list-add-remove-buttons"
+    );
+
+    this.addRemoveSourceButtons.addButtonCallback = () => this.addSource();
+    this.addRemoveSourceButtons.removeButtonCallback = () =>
+      this.removeSource(this.sourcesList.getSelectedItemIndex());
+    this.addRemoveSourceButtons.hidden = true;
+
+    this.sourcesList.addEventListener("listSelectionChanged", async (event) => {
+      this.sceneController.scrollAdjustBehavior = "pin-glyph-center";
+      const sourceIndex = this.sourcesList.getSelectedItemIndex();
+      this.sceneSettings.selectedSourceIndex = sourceIndex;
+      if (sourceIndex != undefined) {
+        const varGlyphController =
+          await this.sceneModel.getSelectedVariableGlyphController();
+        if (varGlyphController) {
+          this.sceneSettings.editLayerName =
+            varGlyphController.sources[sourceIndex]?.layerName;
+        } else {
+          this.sceneSettings.editLayerName = null;
+        }
+      } else {
+        this.sceneSettings.editLayerName = null;
+      }
+      this._updateEditingStatus();
+    });
+
+    this.sourcesList.addEventListener("rowDoubleClicked", (event) => {
+      this.editSourceProperties(event.detail.doubleClickedRowIndex);
+    });
+
+    this._updateAxes();
+    this._updateSources();
   }
 
   resetAllAxesToDefault(event) {
