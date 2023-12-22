@@ -1,6 +1,5 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
-import { getCharFromUnicode } from "/core/utils.js";
 
 export default class GlyphSearchPanel extends Panel {
   identifier = "glyph-search";
@@ -35,10 +34,8 @@ export default class GlyphSearchPanel extends Panel {
     if (!glyphName) {
       return;
     }
-    const glyphInfo = this.glyphInfoFromGlyphName(
-      glyphName,
-      this.editorController.fontController
-    );
+    const glyphInfo =
+      this.editorController.fontController.glyphInfoFromGlyphName(glyphName);
     let selectedGlyphState = this.editorController.sceneSettings.selectedGlyph;
     const glyphLines = [...this.editorController.sceneSettings.glyphLines];
     if (selectedGlyphState) {
@@ -80,15 +77,6 @@ export default class GlyphSearchPanel extends Panel {
       const glyphsSearch = this.contentElement.querySelector("#glyphs-search");
       glyphsSearch.focusSearchField();
     }
-  }
-
-  glyphInfoFromGlyphName(glyphName, fontController) {
-    const glyphInfo = { glyphName: glyphName };
-    const codePoint = fontController.codePointForGlyph(glyphName);
-    if (codePoint !== undefined) {
-      glyphInfo["character"] = getCharFromUnicode(codePoint);
-    }
-    return glyphInfo;
   }
 }
 

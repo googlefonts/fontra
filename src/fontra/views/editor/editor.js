@@ -596,10 +596,7 @@ export class EditorController {
     if (!glyphName) {
       return;
     }
-    const glyphInfo = this.getSidebarPanel("glyph-search").glyphInfoFromGlyphName(
-      glyphName,
-      this.fontController
-    );
+    const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphName);
     let selectedGlyphState = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     if (selectedGlyphState) {
@@ -654,7 +651,7 @@ export class EditorController {
       if (location) {
         localLocations[glyphName] = location;
       }
-      glyphInfos.push(glyphInfoFromGlyphName(glyphName, this.fontController));
+      glyphInfos.push(this.fontController.glyphInfoFromGlyphName(glyphName));
     }
     this.sceneController.updateLocalLocations(localLocations);
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
@@ -1597,7 +1594,7 @@ export class EditorController {
           : usedBy;
 
         const glyphInfos = glyphNames.map((glyphName) =>
-          glyphInfoFromGlyphName(glyphName, this.fontController)
+          this.fontController.glyphInfoFromGlyphName(glyphName)
         );
         const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
         const glyphLines = [...this.sceneSettings.glyphLines];
