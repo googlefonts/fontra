@@ -63,7 +63,7 @@ import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
-import GlyphSearchPanel, { glyphInfoFromGlyphName } from "./panel-glyph-search.js";
+import GlyphSearchPanel from "./panel-glyph-search.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import TextEntryPanel from "./panel-text-entry.js";
@@ -596,7 +596,10 @@ export class EditorController {
     if (!glyphName) {
       return;
     }
-    const glyphInfo = glyphInfoFromGlyphName(glyphName, this.fontController);
+    const glyphInfo = this.getSidebarPanel("glyph-search").glyphInfoFromGlyphName(
+      glyphName,
+      this.fontController
+    );
     let selectedGlyphState = this.sceneSettings.selectedGlyph;
     const glyphLines = [...this.sceneSettings.glyphLines];
     if (selectedGlyphState) {

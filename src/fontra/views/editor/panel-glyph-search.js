@@ -35,7 +35,7 @@ export default class GlyphSearchPanel extends Panel {
     if (!glyphName) {
       return;
     }
-    const glyphInfo = glyphInfoFromGlyphName(
+    const glyphInfo = this.glyphInfoFromGlyphName(
       glyphName,
       this.editorController.fontController
     );
@@ -81,15 +81,15 @@ export default class GlyphSearchPanel extends Panel {
       glyphsSearch.focusSearchField();
     }
   }
-}
 
-export function glyphInfoFromGlyphName(glyphName, fontController) {
-  const glyphInfo = { glyphName: glyphName };
-  const codePoint = fontController.codePointForGlyph(glyphName);
-  if (codePoint !== undefined) {
-    glyphInfo["character"] = getCharFromUnicode(codePoint);
+  glyphInfoFromGlyphName(glyphName, fontController) {
+    const glyphInfo = { glyphName: glyphName };
+    const codePoint = fontController.codePointForGlyph(glyphName);
+    if (codePoint !== undefined) {
+      glyphInfo["character"] = getCharFromUnicode(codePoint);
+    }
+    return glyphInfo;
   }
-  return glyphInfo;
 }
 
 customElements.define("panel-glyph-search", GlyphSearchPanel);
