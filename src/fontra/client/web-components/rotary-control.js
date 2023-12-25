@@ -81,7 +81,6 @@ export class RotaryControl extends html.UnlitElement {
           this.angleWhenDragStart = undefined;
           this.shadowRoot.removeChild(overlay);
           this.dragEnd = true;
-          delete this.cachedRotationAxis;
           this.dispatch();
         },
         onmousemove: (event) => {
@@ -90,23 +89,9 @@ export class RotaryControl extends html.UnlitElement {
           }
           const diffX = event.clientX - this.coordinatesDragBegin.x;
           const diffY = event.clientY - this.coordinatesDragBegin.y;
-
-          let rotationAxis = this.cachedRotationAxis;
-
-          if (!rotationAxis) {
-            if (Math.abs(diffX) > Math.abs(diffY)) {
-              rotationAxis = "x";
-            } else {
-              rotationAxis = "y";
-            }
-          }
-
-          if (Math.abs(diffX) > 5 || Math.abs(diffY) > 5) {
-            this.cachedRotationAxis = rotationAxis;
-          }
-
           const value =
-            this.angleWhenDragStart + (rotationAxis === "x" ? diffX : -diffY);
+            this.angleWhenDragStart +
+            (Math.abs(diffX) > Math.abs(diffY) ? diffX : -diffY);
           this.value = value;
           this.dispatch();
         },
