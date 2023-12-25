@@ -103,6 +103,10 @@ export default class DesignspaceNavigationPanel extends Panel {
       () => this._updateResetAllAxesButtonState(),
       100
     );
+
+    this.fontController.ensureInitialized.then(() => {
+      this.setup();
+    });
   }
 
   getContentElement() {

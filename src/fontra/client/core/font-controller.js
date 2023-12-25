@@ -10,7 +10,7 @@ import { getGlyphMapProxy, makeCharacterMapFromGlyphMap } from "./cmap.js";
 import { StaticGlyphController, VariableGlyphController } from "./glyph-controller.js";
 import { LRUCache } from "./lru-cache.js";
 import { TaskPool } from "./task-pool.js";
-import { chain, throttleCalls } from "./utils.js";
+import { chain, getCharFromUnicode, throttleCalls } from "./utils.js";
 import { StaticGlyph, VariableGlyph } from "./var-glyph.js";
 import { locationToString } from "./var-model.js";
 
@@ -625,6 +625,15 @@ export class FontController {
     // edit listeners need that new selection. TODO: think of a better solution...
     setTimeout(() => this.notifyEditListeners("editFinal", this), 0);
     return undoRecord["info"];
+  }
+
+  glyphInfoFromGlyphName(glyphName) {
+    const glyphInfo = { glyphName: glyphName };
+    const codePoint = this.codePointForGlyph(glyphName);
+    if (codePoint !== undefined) {
+      glyphInfo["character"] = getCharFromUnicode(codePoint);
+    }
+    return glyphInfo;
   }
 }
 

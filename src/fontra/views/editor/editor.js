@@ -28,7 +28,6 @@ import {
   dumpURLFragment,
   enumerate,
   fetchJSON,
-  getCharFromUnicode,
   hyphenatedToCamelCase,
   isActiveElementTypeable,
   isObjectEmpty,
@@ -308,9 +307,7 @@ export class EditorController {
       rootSubscriptionPattern[rootKey] = null;
     }
     await this.fontController.subscribeChanges(rootSubscriptionPattern, false);
-    this.initGlyphsSearch();
     this.initTools();
-    await this.initSidebarDesignspace();
 
     const blankFont = new FontFace("AdobeBlank", `url("/fonts/AdobeBlank.woff2")`, {});
     document.fonts.add(blankFont);
@@ -319,22 +316,6 @@ export class EditorController {
     // Delay a tiny amount to account for a delay in the sidebars being set up,
     // which affects the available viewBox
     setTimeout(() => this.setupFromWindowLocation(), 20);
-  }
-
-  initGlyphsSearch() {
-    // TODO: this and glyphNameChangedCallback() should move to panel-glyph-search.js
-    // After https://github.com/googlefonts/fontra/pull/934 gets merged
-    const glyphsSearch =
-      this.getSidebarPanel("glyph-search").contentElement.querySelector(
-        "#glyphs-search"
-      );
-    glyphsSearch.glyphMap = this.fontController.glyphMap;
-    glyphsSearch.addEventListener("selectedGlyphNameChanged", (event) =>
-      this.glyphNameChangedCallback(event.detail)
-    );
-    this.fontController.addChangeListener({ glyphMap: null }, () => {
-      glyphsSearch.updateGlyphNamesListContent();
-    });
   }
 
   async showDialogNewGlyph() {
@@ -459,10 +440,6 @@ export class EditorController {
     };
 
     editToolsElement.appendChild(toolButton);
-  }
-
-  async initSidebarDesignspace() {
-    this.getSidebarPanel("designspace-navigation").setup();
   }
 
   initSidebars() {
@@ -615,34 +592,6 @@ export class EditorController {
     this.cleanGlyphsLayers.scaleFactor = 1 / magnification;
   }
 
-  glyphNameChangedCallback(glyphName) {
-    if (!glyphName) {
-      return;
-    }
-    const glyphInfo = glyphInfoFromGlyphName(glyphName, this.fontController);
-    let selectedGlyphState = this.sceneSettings.selectedGlyph;
-    const glyphLines = [...this.sceneSettings.glyphLines];
-    if (selectedGlyphState) {
-      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
-        glyphInfo;
-      this.sceneSettings.glyphLines = glyphLines;
-    } else {
-      if (!glyphLines.length) {
-        glyphLines.push([]);
-      }
-      const lineIndex = glyphLines.length - 1;
-      glyphLines[lineIndex].push(glyphInfo);
-      this.sceneSettings.glyphLines = glyphLines;
-      selectedGlyphState = {
-        lineIndex: lineIndex,
-        glyphIndex: glyphLines[lineIndex].length - 1,
-        isEditing: false,
-      };
-    }
-
-    this.sceneSettings.selectedGlyph = selectedGlyphState;
-  }
-
   async doubleClickedComponentsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
@@ -674,7 +623,7 @@ export class EditorController {
       if (location) {
         localLocations[glyphName] = location;
       }
-      glyphInfos.push(glyphInfoFromGlyphName(glyphName, this.fontController));
+      glyphInfos.push(this.fontController.glyphInfoFromGlyphName(glyphName));
     }
     this.sceneController.updateLocalLocations(localLocations);
     const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
@@ -1617,7 +1566,7 @@ export class EditorController {
           : usedBy;
 
         const glyphInfos = glyphNames.map((glyphName) =>
-          glyphInfoFromGlyphName(glyphName, this.fontController)
+          this.fontController.glyphInfoFromGlyphName(glyphName)
         );
         const selectedGlyphInfo = this.sceneSettings.selectedGlyph;
         const glyphLines = [...this.sceneSettings.glyphLines];
@@ -2088,13 +2037,4 @@ function chunks(array, n) {
     chunked.push(array.slice(i, i + n));
   }
   return chunked;
-}
-
-function glyphInfoFromGlyphName(glyphName, fontController) {
-  const glyphInfo = { glyphName: glyphName };
-  const codePoint = fontController.codePointForGlyph(glyphName);
-  if (codePoint !== undefined) {
-    glyphInfo["character"] = getCharFromUnicode(codePoint);
-  }
-  return glyphInfo;
 }
