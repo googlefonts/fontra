@@ -62,7 +62,6 @@ import { themeController } from "/core/theme-settings.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
-import { RotaryControl } from "/web-components/rotary-control.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
 import GlyphSearchPanel from "./panel-glyph-search.js";
