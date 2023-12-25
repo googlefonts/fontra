@@ -77,18 +77,18 @@ export class RotaryControl extends html.UnlitElement {
       {
         class: "overlay",
         onmouseup: () => {
-          this.coordinatesDragBegin = undefined;
+          this.positionDragBegin = undefined;
           this.angleWhenDragStart = undefined;
           this.shadowRoot.removeChild(overlay);
           this.dragEnd = true;
           this.dispatch();
         },
         onmousemove: (event) => {
-          if (this.coordinatesDragBegin === undefined) {
+          if (this.positionDragBegin === undefined) {
             return;
           }
           const value =
-            this.angleWhenDragStart + (this.coordinatesDragBegin.y - event.clientY);
+            this.angleWhenDragStart + (this.positionDragBegin - event.clientY);
           this.value = value;
           this.dispatch();
         },
@@ -106,7 +106,7 @@ export class RotaryControl extends html.UnlitElement {
           class: "knob",
           style: `transform: rotate(${this.value}deg);`,
           onmousedown: (event) => {
-            this.coordinatesDragBegin = { x: event.clientX, y: event.clientY };
+            this.positionDragBegin = event.clientY;
             this.angleWhenDragStart = this.value;
             this.dragBegin = true;
             event.preventDefault();
