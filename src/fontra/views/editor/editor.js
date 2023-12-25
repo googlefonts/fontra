@@ -592,34 +592,6 @@ export class EditorController {
     this.cleanGlyphsLayers.scaleFactor = 1 / magnification;
   }
 
-  glyphNameChangedCallback(glyphName) {
-    if (!glyphName) {
-      return;
-    }
-    const glyphInfo = this.fontController.glyphInfoFromGlyphName(glyphName);
-    let selectedGlyphState = this.sceneSettings.selectedGlyph;
-    const glyphLines = [...this.sceneSettings.glyphLines];
-    if (selectedGlyphState) {
-      glyphLines[selectedGlyphState.lineIndex][selectedGlyphState.glyphIndex] =
-        glyphInfo;
-      this.sceneSettings.glyphLines = glyphLines;
-    } else {
-      if (!glyphLines.length) {
-        glyphLines.push([]);
-      }
-      const lineIndex = glyphLines.length - 1;
-      glyphLines[lineIndex].push(glyphInfo);
-      this.sceneSettings.glyphLines = glyphLines;
-      selectedGlyphState = {
-        lineIndex: lineIndex,
-        glyphIndex: glyphLines[lineIndex].length - 1,
-        isEditing: false,
-      };
-    }
-
-    this.sceneSettings.selectedGlyph = selectedGlyphState;
-  }
-
   async doubleClickedComponentsCallback(event) {
     const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
     const instance = glyphController.instance;
