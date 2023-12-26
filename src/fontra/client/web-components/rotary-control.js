@@ -27,7 +27,7 @@ export class RotaryControl extends html.UnlitElement {
   .rotary-control {
     display: flex;
     gap: 0.4rem;
-    margin: 0.2rem;
+    margin: 0 0.2rem;
   }
 
   .overlay {
