@@ -139,11 +139,15 @@ export class EditorController {
     );
 
     this.sceneSettingsController.addKeyListener("location", () => {
+      const fontVariationSettingsCssString = this.fontController.globalAxes
+        .map((axis) => `'${axis.tag}' ${this.sceneSettings.location[axis.tag]}`)
+        .join(",");
       this.canvasController.canvas.style.fontVariationSettings =
-        this.fontController.globalAxes
-          .map((axis) => `'${axis.tag}' ${this.sceneSettings.location[axis.tag]}`)
-          .join(",");
+        fontVariationSettingsCssString;
       this.canvasController.requestUpdate();
+      const referenceFontsPanel = this.getSidebarPanel("reference-font");
+      referenceFontsPanel.contentElement.style.fontVariationSettings =
+        fontVariationSettingsCssString;
     });
 
     this.cjkDesignFrame = new CJKDesignFrame(this);
