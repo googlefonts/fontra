@@ -138,6 +138,14 @@ export class EditorController {
       }
     );
 
+    this.sceneSettingsController.addKeyListener("location", () => {
+      this.canvasController.canvas.style.fontVariationSettings =
+        this.fontController.globalAxes
+          .map((axis) => `'${axis.tag}' ${this.sceneSettings.location[axis.tag]}`)
+          .join(",");
+      this.canvasController.requestUpdate();
+    });
+
     this.cjkDesignFrame = new CJKDesignFrame(this);
 
     this.visualizationLayers = new VisualizationLayers(
