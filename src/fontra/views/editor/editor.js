@@ -139,9 +139,13 @@ export class EditorController {
     );
 
     this.sceneSettingsController.addKeyListener("location", () => {
-      const fontVariationSettingsCssString = this.fontController.globalAxes
-        .map((axis) => `'${axis.tag}' ${this.sceneSettings.location[axis.tag]}`)
-        .join(",");
+      const fontVaritionSettings = [];
+      for (const axis of this.fontController.globalAxes) {
+        fontVaritionSettings.push(
+          `'${axis.tag}' ${this.sceneSettings.location[axis.tag]}`
+        );
+      }
+      const fontVariationSettingsCssString = fontVaritionSettings.join(",");
       this.canvasController.canvas.style.fontVariationSettings =
         fontVariationSettingsCssString;
       this.canvasController.requestUpdate();
