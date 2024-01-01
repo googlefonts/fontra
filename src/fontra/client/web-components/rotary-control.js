@@ -16,7 +16,8 @@ export class RotaryControl extends html.UnlitElement {
     justify-content: center;
   }
 
-  .thumb {
+  .knob:before {
+    content: "";
     width: var(--thumb-size);
     height: var(--thumb-size);
     background: rgb(89, 89, 89);
@@ -113,7 +114,7 @@ export class RotaryControl extends html.UnlitElement {
             this.attachOverlay();
           },
         },
-        [html.div({ class: "thumb" })]
+        []
       )),
     ]);
   }
