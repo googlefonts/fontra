@@ -121,6 +121,7 @@ export class SceneController {
 
     // Set up the mutual dependencies between location and selectedSourceIndex
     this.sceneSettingsController.addKeyListener("location", async (event) => {
+      this.setCanvasFontVariables();
       if (event.senderInfo?.senderID === this) {
         return;
       }
@@ -1055,6 +1056,22 @@ export class SceneController {
       path = positionedGlyph.glyph.path;
     }
     return new PathConnectDetector(this, path);
+  }
+
+  buildFontVariablesCssString() {
+    const fontVariationSettings = [];
+    for (const axis of this.fontController.globalAxes) {
+      fontVariationSettings.push(
+        `'${axis.tag}' ${this.sceneSettings.location[axis.tag]}`
+      );
+    }
+    return fontVariationSettings.join(",");
+  }
+
+  setCanvasFontVariables() {
+    this.canvasController.canvas.style.fontVariationSettings =
+      this.buildFontVariablesCssString();
+    this.canvasController.requestUpdate();
   }
 }
 

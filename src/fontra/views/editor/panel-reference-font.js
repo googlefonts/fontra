@@ -305,6 +305,11 @@ export default class ReferenceFontPanel extends Panel {
         this.requestReferenceFontsPreview();
       }
     );
+
+    editorController.sceneSettingsController.addKeyListener("location", () => {
+      this.contentElement.style.fontVariationSettings =
+        editorController.sceneController.buildFontVariablesCssString();
+    });
   }
 
   async requestReferenceFontsPreview() {

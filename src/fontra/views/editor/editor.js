@@ -138,22 +138,6 @@ export class EditorController {
       }
     );
 
-    this.sceneSettingsController.addKeyListener("location", () => {
-      const fontVariationSettings = [];
-      for (const axis of this.fontController.globalAxes) {
-        fontVariationSettings.push(
-          `'${axis.tag}' ${this.sceneSettings.location[axis.tag]}`
-        );
-      }
-      const fontVariationSettingsCssString = fontVariationSettings.join(",");
-      this.canvasController.canvas.style.fontVariationSettings =
-        fontVariationSettingsCssString;
-      this.canvasController.requestUpdate();
-      const referenceFontsPanel = this.getSidebarPanel("reference-font");
-      referenceFontsPanel.contentElement.style.fontVariationSettings =
-        fontVariationSettingsCssString;
-    });
-
     this.cjkDesignFrame = new CJKDesignFrame(this);
 
     this.visualizationLayers = new VisualizationLayers(
