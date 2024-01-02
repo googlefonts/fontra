@@ -66,9 +66,14 @@ export class MenuPanel extends SimpleElement {
     .context-menu-item {
       display: grid;
       grid-template-columns: 1em auto;
+      align-items: center;
       gap: 0em;
       padding: 0.1em 0.8em 0.1em 0.5em; /* top, right, bottom, left */
       color: #8080a0;
+    }
+
+    .with-submenu {
+      grid-template-columns: 1em auto auto;
     }
 
     .context-menu-item.enabled {
@@ -86,11 +91,16 @@ export class MenuPanel extends SimpleElement {
       gap: 0.5em;
       justify-content: space-between;
     }
+
+    .submenu-icon {
+      font-size: 0.8em;
+    }
   `;
 
-  constructor(menuItems, position, positionContainer) {
+  constructor(menuItems, position, positionContainer, visible = true) {
     super();
     this.style = "display: none;";
+    this.visible = visible;
     this.position = position;
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
@@ -99,13 +109,42 @@ export class MenuPanel extends SimpleElement {
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
 
     for (const item of menuItems) {
+      const hasSubMenu = item.items && item.items.length > 0;
       let itemElement;
       if (item === MenuItemDivider || item.title === "-") {
         itemElement = html.hr({ class: "menu-item-divider" });
       } else {
+        const classNames = ["context-menu-item"];
+        if (typeof item.enabled === "function" && item.enabled()) {
+          classNames.push("enabled");
+        }
+        if (hasSubMenu) {
+          classNames.push("with-submenu");
+        }
+        const itemElementContent = [
+          html.div({ class: "check-mark" }, [item.checked ? "✓" : ""]),
+          html.div({ class: "item-content" }, [
+            typeof item.title === "function" ? item.title() : item.title,
+            html.span({}, [buildShortCutString(item.shortCut)]),
+          ]),
+        ];
+        if (hasSubMenu) {
+          itemElementContent.push(html.div({ class: "submenu-icon" }, ["►"]));
+          itemElementContent.push(
+            new MenuPanel(
+              item.items,
+              {
+                x: 0,
+                y: 0,
+              },
+              undefined,
+              false
+            )
+          );
+        }
         itemElement = html.div(
           {
-            class: `context-menu-item ${item.enabled() ? "enabled" : ""}`,
+            class: classNames.join(" "),
             onmouseenter: (event) => this.selectItem(itemElement),
             onmousemove: (event) => {
               if (!itemElement.classList.contains("selected")) {
@@ -122,13 +161,7 @@ export class MenuPanel extends SimpleElement {
               }
             },
           },
-          [
-            html.div({ class: "check-mark" }, [item.checked ? "✓" : ""]),
-            html.div({ class: "item-content" }, [
-              typeof item.title === "function" ? item.title() : item.title,
-              html.span({}, [buildShortCutString(item.shortCut)]),
-            ]),
-          ]
+          itemElementContent
         );
       }
       this.menuElement.appendChild(itemElement);
@@ -142,6 +175,16 @@ export class MenuPanel extends SimpleElement {
   }
 
   connectedCallback() {
+    if (this.visible) {
+      this.show();
+    }
+  }
+
+  hide() {
+    this.style.display = "none";
+  }
+
+  show() {
     this._savedActiveElement = document.activeElement;
     const position = { ...this.position };
     this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
@@ -169,11 +212,22 @@ export class MenuPanel extends SimpleElement {
   }
 
   selectItem(itemElement) {
+    if (this._recentSubMenu) {
+      this._recentSubMenu.hide();
+    }
     const selectedItem = this.findSelectedItem();
     if (selectedItem && selectedItem !== itemElement) {
       selectedItem.classList.remove("selected");
     }
     itemElement.classList.add("selected");
+    if (itemElement.classList.contains("with-submenu")) {
+      const { y: menuElementY } = this.getBoundingClientRect();
+      const { y, width } = itemElement.getBoundingClientRect();
+      const submenu = itemElement.querySelector("menu-panel");
+      submenu.position = { x: width, y: y - menuElementY };
+      submenu.show();
+      this._recentSubMenu = submenu;
+    }
   }
 
   handleKeyDown(event) {
