@@ -3,6 +3,7 @@ import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
 import { hyphenatedToCamelCase } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
+import "/web-components/rotary-control.js";
 
 export class Form extends SimpleElement {
   static styles = `
@@ -184,6 +185,54 @@ export class Form extends SimpleElement {
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
     valueElement.appendChild(inputElement);
+  }
+
+  _addEditAngle(valueElement, fieldItem) {
+    const inputElement = html.input({
+      type: "number",
+      value: fieldItem.value,
+      step: "any",
+      disabled: fieldItem.disabled,
+      onchange: () => {
+        let value = parseFloat(inputElement.value);
+        this._fieldChanging(fieldItem.key, value);
+        rotaryControl.value = value * -1;
+      },
+    });
+    const rotaryControl = html.createDomElement("rotary-control", {
+      value: fieldItem.value,
+    });
+    {
+      // Rotary change closure
+      let valueStream;
+
+      rotaryControl.onChangeCallback = (event) => {
+        const value = -event.value;
+        inputElement.value = value;
+        if (event.dragBegin) {
+          valueStream = new QueueIterator(5, true);
+          this._fieldChanging(fieldItem.key, value, valueStream);
+        }
+
+        if (valueStream) {
+          valueStream.put(value);
+          this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
+          if (event.dragEnd) {
+            valueStream.done();
+            valueStream = undefined;
+            this._dispatchEvent("endChange", { key: fieldItem.key });
+          }
+        } else {
+          this._fieldChanging(fieldItem.key, value, undefined);
+        }
+      };
+    }
+
+    this._fieldGetters[fieldItem.key] = () => inputElement.value;
+    this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
+    valueElement.appendChild(
+      html.div({ style: "display: flex; gap: 0.15rem;" }, [inputElement, rotaryControl])
+    );
   }
 
   _addEditNumberSlider(valueElement, fieldItem) {
