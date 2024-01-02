@@ -2,7 +2,7 @@
 
 import { VariationError } from "./errors.js";
 import { isSuperset } from "./set-ops.js";
-import { reversedEnumerate } from "./utils.js";
+import { clamp, reversedEnumerate } from "./utils.js";
 import { addItemwise, mulScalar, subItemwise } from "./var-funcs.js";
 
 export class VariationModel {
@@ -316,7 +316,12 @@ export function normalizeLocation(location, axisList) {
     if (v === undefined) {
       v = axis.defaultValue;
     }
-    out[axis.name] = normalizeValue(v, axis.minValue, axis.defaultValue, axis.maxValue);
+    out[axis.name] = normalizeValue(
+      v,
+      axis.minValue,
+      clamp(axis.defaultValue, axis.minValue, axis.maxValue),
+      clamp(axis.maxValue, axis.minValue, axis.maxValue)
+    );
   }
   return out;
 }
