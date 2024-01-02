@@ -199,16 +199,21 @@ export class Form extends SimpleElement {
         rotaryControl.value = value * -1;
       },
     });
-    let valueStream;
     const rotaryControl = html.createDomElement("rotary-control", {
       value: fieldItem.value,
-      onChangeCallback: (event) => {
+    });
+    {
+      // Rotary change closure
+      let valueStream;
+
+      rotaryControl.onChangeCallback = (event) => {
         const value = event.value * -1;
         inputElement.value = value;
         if (event.dragBegin) {
           valueStream = new QueueIterator(5, true);
           this._fieldChanging(fieldItem.key, value, valueStream);
         }
+
         if (valueStream) {
           valueStream.put(value);
           this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
@@ -220,13 +225,13 @@ export class Form extends SimpleElement {
         } else {
           this._fieldChanging(fieldItem.key, value, undefined);
         }
-      },
-    });
+      };
+    }
 
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
     valueElement.appendChild(
-      html.div({ style: "display: flex" }, [inputElement, rotaryControl])
+      html.div({ style: "display: flex; gap: 0.15rem;" }, [inputElement, rotaryControl])
     );
   }
 
