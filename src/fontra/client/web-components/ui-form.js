@@ -207,7 +207,7 @@ export class Form extends SimpleElement {
       let valueStream;
 
       rotaryControl.onChangeCallback = (event) => {
-        const value = event.value * -1;
+        const value = -event.value;
         inputElement.value = value;
         if (event.dragBegin) {
           valueStream = new QueueIterator(5, true);
