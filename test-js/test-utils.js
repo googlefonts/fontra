@@ -1,4 +1,4 @@
-import chai from "chai";
+import { expect } from "chai";
 import {
   arrayExtend,
   boolInt,
@@ -32,8 +32,6 @@ import {
 } from "../src/fontra/client/core/utils.js";
 
 import { getTestData, parametrize } from "./test-support.js";
-
-const expect = chai.expect;
 
 describe("objectsEquals", () => {
   it("falsy values", () => {

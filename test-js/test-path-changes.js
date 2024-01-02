@@ -1,6 +1,5 @@
-import chai from "chai";
+import { expect } from "chai";
 import fs from "fs";
-const expect = chai.expect;
 
 import { applyChange } from "../src/fontra/client/core/changes.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";

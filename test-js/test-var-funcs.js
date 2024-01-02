@@ -1,5 +1,4 @@
-import chai from "chai";
-const expect = chai.expect;
+import { expect } from "chai";
 
 import VarArray from "../src/fontra/client/core/var-array.js";
 import {
