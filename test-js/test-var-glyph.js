@@ -1,5 +1,4 @@
-import chai from "chai";
-const expect = chai.expect;
+import { expect } from "chai";
 
 import { enumerate } from "../src/fontra/client/core/utils.js";
 import { StaticGlyph, VariableGlyph } from "../src/fontra/client/core/var-glyph.js";

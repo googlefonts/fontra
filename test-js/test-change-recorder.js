@@ -1,6 +1,5 @@
-import chai from "chai";
+import { expect } from "chai";
 import fs from "fs";
-const expect = chai.expect;
 
 import { recordChanges } from "../src/fontra/client/core/change-recorder.js";
 import { applyChange } from "../src/fontra/client/core/changes.js";

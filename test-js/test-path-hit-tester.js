@@ -1,5 +1,4 @@
-import chai from "chai";
-const expect = chai.expect;
+import { expect } from "chai";
 
 import { PathHitTester } from "../src/fontra/client/core/path-hit-tester.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
