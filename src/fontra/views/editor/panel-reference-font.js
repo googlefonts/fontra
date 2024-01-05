@@ -305,6 +305,20 @@ export default class ReferenceFontPanel extends Panel {
         this.requestReferenceFontsPreview();
       }
     );
+
+    editorController.sceneSettingsController.addKeyListener("location", () => {
+      const fontVariationSettings = [];
+      for (const axis of this.editorController.fontController.globalAxes) {
+        fontVariationSettings.push(
+          `'${axis.tag}' ${this.editorController.sceneSettings.location[axis.name]}`
+        );
+      }
+      const cssString = fontVariationSettings.join(",");
+      this.contentElement.style.fontVariationSettings = cssString;
+      this.editorController.canvasController.canvas.style.fontVariationSettings =
+        cssString;
+      this.editorController.canvasController.requestUpdate();
+    });
   }
 
   async requestReferenceFontsPreview() {
