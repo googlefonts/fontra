@@ -313,10 +313,10 @@ export default class ReferenceFontPanel extends Panel {
           `'${axis.tag}' ${this.editorController.sceneSettings.location[axis.name]}`
         );
       }
-      const buildFontVariablesCssString = fontVariationSettings.join(",");
-      this.contentElement.style.fontVariationSettings = buildFontVariablesCssString;
+      const cssString = fontVariationSettings.join(",");
+      this.contentElement.style.fontVariationSettings = cssString;
       this.editorController.canvasController.canvas.style.fontVariationSettings =
-        buildFontVariablesCssString;
+        cssString;
       this.editorController.canvasController.requestUpdate();
     });
   }
