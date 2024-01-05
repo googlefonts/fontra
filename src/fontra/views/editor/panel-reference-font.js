@@ -310,7 +310,7 @@ export default class ReferenceFontPanel extends Panel {
       const fontVariationSettings = [];
       for (const axis of this.editorController.fontController.globalAxes) {
         fontVariationSettings.push(
-          `'${axis.tag}' ${this.editorController.sceneSettings.location[axis.tag]}`
+          `'${axis.tag}' ${this.editorController.sceneSettings.location[axis.name]}`
         );
       }
       const buildFontVariablesCssString = fontVariationSettings.join(",");
