@@ -298,6 +298,10 @@ export class Form extends SimpleElement {
     return Object.keys(this._fieldGetters);
   }
 
+  hasKey(key) {
+    return key in this._fieldGetters;
+  }
+
   getValue(key) {
     const getter = this._fieldGetters[key];
     if (getter === undefined) {
