@@ -320,7 +320,9 @@ export default class SelectionInfoPanel extends Panel {
       pointIndices,
       componentIndices
     );
-    this.infoForm.setValue("dimensions", dimensionsString);
+    if (this.infoForm.hasKey("dimensions")) {
+      this.infoForm.setValue("dimensions", dimensionsString);
+    }
   }
 
   _getSelection() {
