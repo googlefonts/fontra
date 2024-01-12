@@ -958,10 +958,14 @@ export class EditorController {
   }
 
   async _writeLayersToClipboard(varGlyph, layerGlyphs, flattenedPath, event) {
-    const bounds = flattenedPath?.getControlBounds();
-    if (!bounds || !layerGlyphs?.length) {
+    if (!layerGlyphs?.length) {
       // nothing to do
       return;
+    }
+
+    let bounds = flattenedPath?.getControlBounds();
+    if (!bounds) {
+      bounds = { xMin: 0, yMin: 0, xMax: 0, yMax: 0 };
     }
 
     const svgString = pathToSVG(flattenedPath, bounds);
