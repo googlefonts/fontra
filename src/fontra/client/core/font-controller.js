@@ -34,6 +34,7 @@ export class FontController {
     });
     this.undoStacks = {}; // glyph name -> undo stack
     this._rootObject = {};
+    this.readOnly = true;
   }
 
   async initialize() {
@@ -45,6 +46,7 @@ export class FontController {
     this._rootObject["customData"] = await this.font.getCustomData();
     this._rootClassDef = (await getClassSchema())["Font"];
     this.backendInfo = await this.font.getBackEndInfo();
+    this.readOnly = await this.font.isReadOnly();
     this._resolveInitialized();
   }
 
@@ -207,6 +209,10 @@ export class FontController {
   }
 
   async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {
+    if (this.readOnly) {
+      console.log("can't create glyph in read-only mode");
+      return;
+    }
     if (this.glyphMap[glyphName]) {
       throw new Error(`assert -- glyph "${glyphName}" already exists`);
     }
@@ -424,11 +430,19 @@ export class FontController {
   }
 
   editIncremental(change) {
+    if (this.readOnly) {
+      console.log("can't edit font in read-only mode");
+      return;
+    }
     this.font.editIncremental(change);
     this.notifyChangeListeners(change, true);
   }
 
   async editFinal(finalChange, rollbackChange, editLabel, broadcast) {
+    if (this.readOnly) {
+      console.log("can't edit font in read-only mode");
+      return;
+    }
     const result = await this.font.editFinal(
       finalChange,
       rollbackChange,
@@ -446,6 +460,10 @@ export class FontController {
   }
 
   async applyChange(change, isExternalChange) {
+    if (!isExternalChange && this.readOnly) {
+      console.log("can't edit font in read-only mode");
+      return;
+    }
     const cachedPattern = this.getCachedDataPattern();
 
     const unmatched = filterChangePattern(change, cachedPattern, true);

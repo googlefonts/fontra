@@ -173,12 +173,20 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event);
     });
 
+    this.sceneController.addEventListener("glyphEditCannotEditReadOnly", async () => {
+      this.showDialogGlyphEditCannotEditReadOnly();
+    });
+
     this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
       this.showDialogGlyphEditLocationNotAtSource();
     });
 
     this.sceneController.addEventListener("doubleClickedUndefinedGlyph", () => {
-      this.showDialogNewGlyph();
+      if (this.fontController.readOnly) {
+        this.showDialogGlyphEditCannotEditReadOnly(true);
+      } else {
+        this.showDialogNewGlyph();
+      }
     });
 
     this.sidebars = [];
@@ -356,6 +364,15 @@ export class EditorController {
       };
       this.sceneSettings.selectedSourceIndex = 0;
     }
+  }
+
+  async showDialogGlyphEditCannotEditReadOnly(create = false) {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+    const result = await dialog(
+      `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
+      "The font is read-only.",
+      [{ title: "Okay", isDefaultButton: true }]
+    );
   }
 
   async showDialogGlyphEditLocationNotAtSource() {
