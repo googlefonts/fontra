@@ -366,7 +366,7 @@ export class EditorController {
     }
   }
 
-  async showDialogGlyphEditCannotEditReadOnly(create) {
+  async showDialogGlyphEditCannotEditReadOnly(create = false) {
     const glyphName = this.sceneSettings.selectedGlyphName;
     const result = await dialog(
       `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
