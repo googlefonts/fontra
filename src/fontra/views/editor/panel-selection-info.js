@@ -62,6 +62,10 @@ export default class SelectionInfoPanel extends Panel {
       this.throttledUpdate(event.senderID);
     });
 
+    this.sceneController.addEventListener("glyphEditCannotEditReadOnly", async () => {
+      this.update();
+    });
+
     this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
       this.update();
     });

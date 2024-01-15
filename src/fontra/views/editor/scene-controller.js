@@ -803,6 +803,10 @@ export class SceneController {
     doInstance,
     requireSelectedLayer
   ) {
+    if (this.fontController.readOnly) {
+      this._dispatchEvent("glyphEditCannotEditReadOnly");
+      return;
+    }
     const glyphName = this.sceneModel.getSelectedGlyphName();
     const varGlyph = await this.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
