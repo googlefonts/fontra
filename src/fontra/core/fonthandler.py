@@ -39,6 +39,7 @@ def remoteMethod(method):
 class FontHandler:
     backend: ReadableFontBackend
     readOnly: bool = False
+    dummyEditor: bool = False  # allow editing in read-only mode, don't write to backend
     allConnectionsClosedCallback: Optional[Callable[[], Awaitable[Any]]] = None
 
     def __post_init__(self):
@@ -149,7 +150,7 @@ class FontHandler:
 
     @remoteMethod
     async def isReadOnly(self, *, connection=None) -> bool:
-        return self.readOnly
+        return self.readOnly and not self.dummyEditor
 
     @remoteMethod
     async def getBackEndInfo(self, *, connection=None) -> dict:
