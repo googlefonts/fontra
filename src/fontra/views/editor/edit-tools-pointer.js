@@ -137,13 +137,14 @@ export class PointerTool extends BaseTool {
   async handleDoubleCick(selection, point, event) {
     const sceneController = this.sceneController;
     if (!sceneController.hoverPathHit && (!selection || !selection.size)) {
-      const selectedGlyph = this.sceneModel.glyphAtPoint(point);
-      this.sceneSettings.selectedGlyph = selectedGlyph
-        ? { ...selectedGlyph, isEditing: true }
-        : undefined;
       const positionedGlyph = sceneController.sceneModel.getSelectedPositionedGlyph();
       if (positionedGlyph?.isUndefined) {
         sceneController._dispatchEvent("doubleClickedUndefinedGlyph");
+      } else {
+        const selectedGlyph = this.sceneModel.glyphAtPoint(point);
+        this.sceneSettings.selectedGlyph = selectedGlyph
+          ? { ...selectedGlyph, isEditing: true }
+          : undefined;
       }
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
