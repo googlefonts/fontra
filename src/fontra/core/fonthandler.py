@@ -148,6 +148,10 @@ class FontHandler:
                 await self.allConnectionsClosedCallback()
 
     @remoteMethod
+    async def isReadOnly(self, *, connection=None) -> bool:
+        return self.readOnly
+
+    @remoteMethod
     async def getBackEndInfo(self, *, connection=None) -> dict:
         features = {}
         for key, methodName in [("glyphs-used-by", "getGlyphsUsedBy")]:
