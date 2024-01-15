@@ -371,12 +371,7 @@ export class EditorController {
     const result = await dialog(
       `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
       "The font is read-only.",
-      [
-        {
-          title: "Okay",
-          isDefaultButton: true,
-        },
-      ]
+      [{ title: "Okay", isDefaultButton: true }]
     );
   }
 
