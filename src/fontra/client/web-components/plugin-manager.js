@@ -2,7 +2,7 @@ import * as html from "../core/html-utils.js";
 import { SimpleElement, createDomElement } from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
 import "/web-components/add-remove-buttons.js";
-import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
+import { dialogSetup, message } from "/web-components/modal-dialog.js";
 import { UIList } from "/web-components/ui-list.js";
 
 export class PluginManager extends SimpleElement {
@@ -95,7 +95,7 @@ export class PluginManager extends SimpleElement {
         ]);
         this.renderPlugins();
       } else {
-        await dialog("Error", errorMessage, [{ title: "Okay", isDefaultButton: true }]);
+        await message("Error", errorMessage);
         return this.promptAddPlugin(address);
       }
     }

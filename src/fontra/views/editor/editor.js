@@ -59,7 +59,7 @@ import { VisualizationLayers } from "./visualization-layers.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
-import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
+import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
 
 import DesignspaceNavigationPanel from "./panel-designspace-navigation.js";
@@ -368,10 +368,9 @@ export class EditorController {
 
   async showDialogGlyphEditCannotEditReadOnly(create = false) {
     const glyphName = this.sceneSettings.selectedGlyphName;
-    const result = await dialog(
+    await message(
       `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
-      "The font is read-only.",
-      [{ title: "Okay", isDefaultButton: true }]
+      "The font is read-only."
     );
   }
 
@@ -1526,10 +1525,9 @@ export class EditorController {
     const usedBy = await loaderSpinner(this.fontController.getGlyphsUsedBy(glyphName));
 
     if (!usedBy.length) {
-      await dialog(
+      await message(
         `Glyph '${glyphName}' is not used as a component by any glyph.`,
-        null,
-        [{ title: "Okay", resultValue: "ok" }]
+        null
       );
       return;
     }
@@ -1598,10 +1596,9 @@ export class EditorController {
         );
         this.sceneSettings.glyphLines = glyphLines;
         if (truncate) {
-          await dialog(
+          await message(
             `The number of added glyphs was truncated to ${MAX_NUM_GLYPHS}`,
-            null,
-            [{ title: "Okay", resultValue: "ok" }]
+            null
           );
         }
         break;
