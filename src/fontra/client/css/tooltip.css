@@ -74,7 +74,7 @@
 }
 
 [data-tooltipposition="top-right"]:hover::before {
-  right: -100%;
+  right: calc(var(--tooltip-arrow-size) * -1);
   transform: translateY(calc(-100% - var(--tooltip-arrow-size)));
 }
 
@@ -97,7 +97,7 @@
 }
 
 [data-tooltipposition="bottom-right"]:hover::before {
-  right: -100%;
+  right: calc(var(--tooltip-arrow-size) * -1);
   top: calc(100% + var(--tooltip-arrow-size));
 }
 
