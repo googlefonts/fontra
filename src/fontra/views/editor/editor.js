@@ -785,6 +785,9 @@ export class EditorController {
     this.registerShortCut("i", { metaKey: true, globalOverride: true }, () => {
       this.toggleSidebar("selection-info", true);
     });
+    this.registerShortCut("e", { metaKey: true, globalOverride: true }, () => {
+      this.getSidebarPanel("designspace-navigation").onEditHeaderClick();
+    });
 
     for (const menuItem of [
       ...this.basicContextMenuItems,
