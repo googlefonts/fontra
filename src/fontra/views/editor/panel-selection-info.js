@@ -324,9 +324,15 @@ export default class SelectionInfoPanel extends Panel {
       }
     }
 
-    this._formFieldsByKey = Object.fromEntries(
-      formContents.map((field) => [field.key, field])
-    );
+    this._formFieldsByKey = {};
+    for (const field of formContents) {
+      if (field.fieldX) {
+        this._formFieldsByKey[field.fieldX.key] = field.fieldX;
+        this._formFieldsByKey[field.fieldY.key] = field.fieldY;
+      } else {
+        this._formFieldsByKey[field.key] = field;
+      }
+    }
 
     if (!formContents.length) {
       this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
