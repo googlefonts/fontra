@@ -25,7 +25,7 @@ import {
 import { packContour } from "../core/var-path.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import { SceneModel, getSelectedGlyphName } from "./scene-model.js";
-import { dialog } from "/web-components/modal-dialog.js";
+import { dialog, message } from "/web-components/modal-dialog.js";
 
 export class SceneController {
   constructor(fontController, canvasController, experimentalFeaturesController) {
@@ -873,10 +873,9 @@ export class SceneController {
         applyChange(editSubject, changes.rollbackChange);
         await editContext.editIncremental(changes.rollbackChange, false);
         editContext.editCancel();
-        dialog(
+        message(
           "The glyph could not be saved.",
-          `The edit has been reverted.\n\n${this._cancelGlyphEditing}`,
-          [{ title: "Okay", resultValue: "ok" }]
+          `The edit has been reverted.\n\n${this._cancelGlyphEditing}`
         );
       }
     } else {

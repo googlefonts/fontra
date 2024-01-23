@@ -12,7 +12,7 @@ import {
 } from "/core/html-utils.js";
 import { ObservableController } from "/core/observable-object.js";
 import { fetchJSON, fileNameExtension, withTimeout } from "/core/utils.js";
-import { dialog } from "/web-components/modal-dialog.js";
+import { dialog, message } from "/web-components/modal-dialog.js";
 import "/web-components/range-slider.js";
 import { UIList } from "/web-components/ui-list.js";
 
@@ -472,9 +472,7 @@ export default class ReferenceFontPanel extends Panel {
         writtenFontItems.push(fontItem);
       }
     } catch (error) {
-      dialog("Could not store some reference fonts", error.toString(), [
-        { title: "Okay" },
-      ]);
+      message("Could not store some reference fonts", error.toString());
     }
 
     // Only notify the list controller *after* the files have been written,

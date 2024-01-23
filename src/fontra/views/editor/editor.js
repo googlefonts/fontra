@@ -1695,7 +1695,7 @@ export class EditorController {
 
   async messageFromServer(headline, message) {
     // don't await the dialog result, the server doesn't need an answer
-    dialog(headline, message, [{ title: "Okay", isDefaultButton: true }]);
+    message(headline, message);
   }
 
   async setupFromWindowLocation() {
