@@ -24,7 +24,7 @@ import {
 import { IconButton } from "/web-components/icon-button.js";
 import { InlineSVG } from "/web-components/inline-svg.js";
 import { showMenu } from "/web-components/menu-panel.js";
-import { dialog, dialogSetup } from "/web-components/modal-dialog.js";
+import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 
 import Panel from "./panel.js";
 import { NumberFormatter } from "/web-components/ui-list.js";
@@ -1167,10 +1167,9 @@ function interpolationErrorCell(item, colDesc) {
         style: "width: 1.2em; height: 1.2em; color: var(--fontra-light-red-color);",
         onclick: (event) => {
           event.stopImmediatePropagation();
-          dialog(
+          message(
             "The source has an interpolation incompatibility",
-            escapeHTMLCharacters(value.error),
-            [{ title: "Okay" }]
+            escapeHTMLCharacters(value.error)
           );
         },
       })

@@ -23,6 +23,10 @@ export async function dialogSetup(headline, message, buttonDefs, autoDismissTime
   return dialogContentElement;
 }
 
+export function message(headline, message) {
+  return dialog(headline, message, [{ title: "Okay", isDefaultButton: true }]);
+}
+
 export class ModalDialog extends SimpleElement {
   static styles = `
 
