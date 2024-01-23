@@ -206,11 +206,11 @@ export class Form extends SimpleElement {
       onchange: () => {
         let value = parseFloat(inputElement.value);
         this._fieldChanging(fieldItem.key, value);
-        rotaryControl.value = value * -1;
+        rotaryControl.value = -value;
       },
     });
     const rotaryControl = html.createDomElement("rotary-control", {
-      value: fieldItem.value,
+      value: -fieldItem.value,
     });
     {
       // Rotary change closure
