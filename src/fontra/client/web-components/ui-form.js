@@ -147,7 +147,6 @@ export class Form extends SimpleElement {
   }
 
   _addEditNumberXY(valueElement, fieldItem) {
-    const div = document.createElement("div");
     this._addEditNumber(valueElement, fieldItem.fieldX);
     this._addEditNumber(valueElement, fieldItem.fieldY);
   }
