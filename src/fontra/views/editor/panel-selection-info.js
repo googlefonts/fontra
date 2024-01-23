@@ -217,25 +217,65 @@ export default class SelectionInfoPanel extends Panel {
       });
       formContents.push({ type: "header", label: "Transformation" });
 
-      for (const key of [
-        "translateX",
-        "translateY",
-        "rotation",
-        "scaleX",
-        "scaleY",
-        "skewX",
-        "skewY",
-        "tCenterX",
-        "tCenterY",
-      ]) {
-        const value = component.transformation[key];
-        formContents.push({
-          type: key === "rotation" ? "edit-angle" : "edit-number",
-          key: componentKey("transformation", key),
-          label: key,
-          value: value,
-        });
-      }
+      formContents.push({
+        type: "edit-number-x-y",
+        label: "translate",
+        fieldX: {
+          key: componentKey("transformation", "translateX"),
+          value: component.transformation.translateX,
+        },
+        fieldY: {
+          key: componentKey("transformation", "translateY"),
+          value: component.transformation.translateY,
+        },
+      });
+
+      formContents.push({
+        type: "edit-angle",
+        key: componentKey("transformation", "rotation"),
+        label: "rotation",
+        value: component.transformation.rotation,
+      });
+
+      formContents.push({
+        type: "edit-number-x-y",
+        label: "scale",
+        fieldX: {
+          key: componentKey("transformation", "scaleX"),
+          value: component.transformation.scaleX,
+        },
+        fieldY: {
+          key: componentKey("transformation", "scaleY"),
+          value: component.transformation.scaleY,
+        },
+      });
+
+      formContents.push({
+        type: "edit-number-x-y",
+        label: "skew",
+        fieldX: {
+          key: componentKey("transformation", "skewX"),
+          value: component.transformation.skewX,
+        },
+        fieldY: {
+          key: componentKey("transformation", "skewY"),
+          value: component.transformation.skewY,
+        },
+      });
+
+      formContents.push({
+        type: "edit-number-x-y",
+        label: "center",
+        fieldX: {
+          key: componentKey("transformation", "tCenterX"),
+          value: component.transformation.tCenterX,
+        },
+        fieldY: {
+          key: componentKey("transformation", "tCenterY"),
+          value: component.transformation.tCenterY,
+        },
+      });
+
       const baseGlyph = await this.fontController.getGlyph(component.name);
       if (baseGlyph && component.location) {
         const locationItems = [];

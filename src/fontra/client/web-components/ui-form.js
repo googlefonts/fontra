@@ -68,6 +68,11 @@ export class Form extends SimpleElement {
     .ui-form-value.text {
       white-space: normal;
     }
+
+    .ui-form-value.edit-number-x-y {
+      display: flex;
+      gap: 0.3rem;
+    }
   `;
 
   constructor() {
@@ -139,6 +144,12 @@ export class Form extends SimpleElement {
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
     valueElement.appendChild(inputElement);
+  }
+
+  _addEditNumberXY(valueElement, fieldItem) {
+    const div = document.createElement("div");
+    this._addEditNumber(valueElement, fieldItem.fieldX);
+    this._addEditNumber(valueElement, fieldItem.fieldY);
   }
 
   _addEditNumber(valueElement, fieldItem) {
