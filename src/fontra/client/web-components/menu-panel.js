@@ -208,8 +208,8 @@ export class MenuPanel extends SimpleElement {
   }
 
   selectItem(itemElement) {
-    if (this._recentSubMenu) {
-      this._recentSubMenu.hide();
+    if (this._lastShownSubMenu) {
+      this._lastShownSubMenu.hide();
     }
     const selectedItem = this.findSelectedItem();
     if (selectedItem && selectedItem !== itemElement) {
@@ -231,7 +231,7 @@ export class MenuPanel extends SimpleElement {
       itemElement.appendChild(submenu);
       submenu.position = { x: width, y: y - menuElementY };
       submenu.show();
-      this._recentSubMenu = submenu;
+      this._lastShownSubMenu = submenu;
     }
   }
 
