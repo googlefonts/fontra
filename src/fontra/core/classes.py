@@ -333,6 +333,8 @@ registerOmitDefaultHook(PackedPath)
 registerOmitDefaultHook(GlobalAxis)
 registerOmitDefaultHook(GlobalDiscreteAxis)
 registerOmitDefaultHook(AxisValueLabel)
+registerOmitDefaultHook(GlobalMetric)
+registerOmitDefaultHook(GlobalSource)
 
 
 def structure(obj, cls):

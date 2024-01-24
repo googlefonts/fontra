@@ -31,6 +31,7 @@ from ..core.classes import (
     Component,
     GlobalAxis,
     GlobalDiscreteAxis,
+    GlobalMetric,
     GlobalSource,
     Layer,
     LocalAxis,
@@ -63,6 +64,14 @@ defaultUFOInfoAttrs = {
     "familyName": None,
     "copyright": None,
     "year": None,
+}
+
+verticalMetricsDefaults = {
+    "descender": -0.25,
+    "xHeight": 0.5,
+    "capHeight": 0.75,
+    "ascender": 0.75,
+    "italicAngle": 0,
 }
 
 
@@ -621,7 +630,8 @@ class DesignspaceBackend:
         self.loadUFOLayers()
 
     async def getSources(self) -> list[GlobalSource]:
-        return []
+        unitsPerEm = await self.getUnitsPerEm()
+        return [unpackDSSource(dsSource, unitsPerEm) for dsSource in self.dsSources]
 
     async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm
@@ -875,6 +885,22 @@ def packAxisLabels(valueLabels):
         )
         for label in valueLabels
     ]
+
+def unpackDSSource(dsSource, unitsPerEm):
+    fontInfo = UFOFontInfo()
+    dsSource.layer.reader.readInfo(fontInfo)
+    verticalMetrics = {}
+    for name, defaultFactor in verticalMetricsDefaults.items():
+        value = getattr(fontInfo, name, None)
+        if value is None:
+            value = round(defaultFactor * unitsPerEm)
+        verticalMetrics[name] = GlobalMetric(value=value)
+
+    return GlobalSource(
+        name=dsSource.name,
+        location=dsSource.location,
+        verticalMetrics=verticalMetrics,
+    )
 
 
 class UFOBackend(DesignspaceBackend):

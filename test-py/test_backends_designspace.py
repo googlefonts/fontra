@@ -8,7 +8,14 @@ from fontTools.designspaceLib import DesignSpaceDocument
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
-from fontra.core.classes import GlobalAxis, Layer, LocalAxis, Source, StaticGlyph
+from fontra.core.classes import (
+    GlobalAxis,
+    Layer,
+    LocalAxis,
+    Source,
+    StaticGlyph,
+    unstructure,
+)
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 
@@ -345,6 +352,104 @@ async def test_findGlyphsThatUseGlyph(writableTestFont):
             "B",
             "varcotest1",
         ] == await writableTestFont.findGlyphsThatUseGlyph("A")
+
+
+getSourcesTestData = [
+    {
+        "location": {"italic": 0.0, "weight": 150.0, "width": 0.0},
+        "name": "LightCondensed",
+        "verticalMetrics": {
+            "ascender": {"value": 700},
+            "capHeight": {"value": 700},
+            "descender": {"value": -200},
+            "italicAngle": {"value": 0},
+            "xHeight": {"value": 500},
+        },
+    },
+    {
+        "location": {"italic": 0.0, "weight": 850.0, "width": 0.0},
+        "name": "BoldCondensed",
+        "verticalMetrics": {
+            "ascender": {"value": 800},
+            "capHeight": {"value": 800},
+            "descender": {"value": -200},
+            "italicAngle": {"value": 0},
+            "xHeight": {"value": 500},
+        },
+    },
+    {
+        "location": {"italic": 0.0, "weight": 150.0, "width": 1000.0},
+        "name": "LightWide",
+        "verticalMetrics": {
+            "ascender": {"value": 700},
+            "capHeight": {"value": 700},
+            "descender": {"value": -200},
+            "italicAngle": {"value": 0},
+            "xHeight": {"value": 500},
+        },
+    },
+    {
+        "location": {"italic": 0.0, "weight": 850.0, "width": 1000.0},
+        "name": "BoldWide",
+        "verticalMetrics": {
+            "ascender": {"value": 800},
+            "capHeight": {"value": 800},
+            "descender": {"value": -200},
+            "italicAngle": {"value": 0},
+            "xHeight": {"value": 500},
+        },
+    },
+    {
+        "location": {"italic": 0.0, "weight": 595.0, "width": 0.0},
+        "name": "support.crossbar",
+        "verticalMetrics": {
+            "ascender": {"value": 700},
+            "capHeight": {"value": 700},
+            "descender": {"value": -200},
+            "italicAngle": {"value": 0},
+            "xHeight": {"value": 500},
+        },
+    },
+    {
+        "location": {"italic": 0.0, "weight": 595.0, "width": 1000.0},
+        "name": "support.S.wide",
+        "verticalMetrics": {
+            "ascender": {"value": 700},
+            "capHeight": {"value": 700},
+            "descender": {"value": -200},
+            "italicAngle": {"value": 0},
+            "xHeight": {"value": 500},
+        },
+    },
+    {
+        "location": {"italic": 0.0, "weight": 595.0, "width": 569.078},
+        "name": "support.S.middle",
+        "verticalMetrics": {
+            "ascender": {"value": 700},
+            "capHeight": {"value": 700},
+            "descender": {"value": -200},
+            "italicAngle": {"value": 0},
+            "xHeight": {"value": 500},
+        },
+    },
+    {
+        "location": {"italic": 1.0, "weight": 150.0, "width": 0.0},
+        "name": "LightCondensedItalic",
+        "verticalMetrics": {
+            "ascender": {"value": 750},
+            "capHeight": {"value": 750},
+            "descender": {"value": -250},
+            "italicAngle": {"value": 0},
+            "xHeight": {"value": 500},
+        },
+    },
+]
+
+
+async def test_getSources(testFont):
+    sources = await testFont.getSources()
+    sources = unstructure(sources)
+    assert sources == getSourcesTestData
 
 
 def fileNamesFromDir(path):
