@@ -65,12 +65,12 @@ export class MenuBar extends SimpleElement {
         {
           onmouseover: () => {
             if (this.clearCurrentSelection()) {
-              this.showMenu(item.items, menuItem);
+              this.showMenu(item.getItems(), menuItem);
             }
           },
           onclick: () => {
             this.clearCurrentSelection();
-            this.showMenu(item.items, menuItem);
+            this.showMenu(item.getItems(), menuItem);
           },
           class: "menu-item",
         },
