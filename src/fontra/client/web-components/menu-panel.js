@@ -2,6 +2,7 @@ import { themeColorCSS } from "./theme-support.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
 import { capitalizeFirstLetter, enumerate, reversed } from "/core/utils.js";
+import { InlineSVG } from "/web-components/inline-svg.js";
 
 export const MenuItemDivider = { title: "-" };
 
@@ -93,7 +94,8 @@ export class MenuPanel extends SimpleElement {
     }
 
     .submenu-icon {
-      font-size: 0.8em;
+      width: 1rem;
+      margin-top: 0.3rem;
     }
   `;
 
@@ -135,7 +137,11 @@ export class MenuPanel extends SimpleElement {
           ]),
         ];
         if (hasSubMenu) {
-          itemElementContent.push(html.div({ class: "submenu-icon" }, ["►"]));
+          itemElementContent.push(
+            html.div({ class: "submenu-icon" }, [
+              new InlineSVG(`/tabler-icons/chevron-right.svg`),
+            ])
+          );
         }
         itemElement = html.div(
           {
