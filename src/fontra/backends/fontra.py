@@ -87,6 +87,8 @@ class FontraBackend:
         pass
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        if glyphName not in self.glyphMap:
+            return None
         try:
             jsonSource = self.getGlyphData(glyphName)
         except KeyError:
@@ -103,7 +105,12 @@ class FontraBackend:
         self._scheduler.schedule(self._writeGlyphInfo)
 
     async def deleteGlyph(self, glyphName: str) -> None:
-        self.glyphMap.pop(glyphName, None)
+        if glyphName not in self.glyphMap:
+            raise KeyError(f"Glyph '{glyphName}' does not exist")
+        filePath = self.getGlyphFilePath(glyphName)
+        filePath.unlink()
+        del self.glyphMap[glyphName]
+        self._scheduler.schedule(self._writeGlyphInfo)
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return deepcopy(self.fontData.axes)
