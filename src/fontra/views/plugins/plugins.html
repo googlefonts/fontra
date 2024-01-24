@@ -46,6 +46,56 @@
                         callback: () => {
                           console.log(1);
                         },
+                        getItems() {
+                          return [
+                            {
+                              title: "File 1",
+                              enabled: () => true,
+                              callback: () => {
+                                console.log(1);
+                              },
+                              getItems() {
+                                return [
+                                  {
+                                    title: "File 1",
+                                    enabled: () => true,
+                                    callback: () => {
+                                      console.log(1);
+                                    },
+                                  },
+                                  {
+                                    title: "File 2",
+                                    enabled: () => true,
+                                    callback: () => {
+                                      console.log(2);
+                                    },
+                                  },
+                                  {
+                                    title: "File 3",
+                                    enabled: () => true,
+                                    callback: () => {
+                                      console.log(3);
+                                    },
+                                  },
+                                ];
+                              },
+                            },
+                            {
+                              title: "File 2",
+                              enabled: () => true,
+                              callback: () => {
+                                console.log(2);
+                              },
+                            },
+                            {
+                              title: "File 3",
+                              enabled: () => true,
+                              callback: () => {
+                                console.log(3);
+                              },
+                            },
+                          ];
+                        },
                       },
                       {
                         title: "File 2",

@@ -94,8 +94,8 @@ export class MenuPanel extends SimpleElement {
     }
 
     .submenu-icon {
-      width: 1rem;
-      margin-top: 0.3rem;
+      width: 10px;
+      height: 14px;
     }
   `;
 
@@ -139,7 +139,9 @@ export class MenuPanel extends SimpleElement {
         if (hasSubMenu) {
           itemElementContent.push(
             html.div({ class: "submenu-icon" }, [
-              new InlineSVG(`/tabler-icons/chevron-right.svg`),
+              new InlineSVG(`/tabler-icons/chevron-right.svg`, {
+                style: "margin-top: 2px",
+              }),
             ])
           );
         }
@@ -236,7 +238,7 @@ export class MenuPanel extends SimpleElement {
         false
       );
       itemElement.appendChild(submenu);
-      submenu.position = { x: width, y: y - menuElementY };
+      submenu.position = { x: width, y: y - menuElementY - 4 };
       submenu.show();
       this._lastShownSubMenu = submenu;
     }
