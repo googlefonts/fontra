@@ -136,17 +136,6 @@ export class MenuPanel extends SimpleElement {
         ];
         if (hasSubMenu) {
           itemElementContent.push(html.div({ class: "submenu-icon" }, ["►"]));
-          // itemElementContent.push(
-          //   new MenuPanel(
-          //     [],
-          //     {
-          //       x: 0,
-          //       y: 0,
-          //     },
-          //     undefined,
-          //     false
-          //   )
-          // );
         }
         itemElement = html.div(
           {
