@@ -209,7 +209,8 @@ export class MenuPanel extends SimpleElement {
 
   selectItem(itemElement) {
     if (this._lastShownSubMenu) {
-      this._lastShownSubMenu.hide();
+      this._lastShownSubMenu.parentElement.removeChild(this._lastShownSubMenu);
+      this._lastShownSubMenu = undefined;
     }
     const selectedItem = this.findSelectedItem();
     if (selectedItem && selectedItem !== itemElement) {
