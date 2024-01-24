@@ -1,7 +1,7 @@
 import { themeColorCSS } from "./theme-support.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
-import { capitalizeFirstLetter, reversed } from "/core/utils.js";
+import { capitalizeFirstLetter, enumerate, reversed } from "/core/utils.js";
 
 export const MenuItemDivider = { title: "-" };
 
@@ -108,14 +108,20 @@ export class MenuPanel extends SimpleElement {
     // No context menu on our context menu please:
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
 
-    for (const item of menuItems) {
-      const hasSubMenu = item.items && item.items.length > 0;
+    this.menuItems = menuItems;
+
+    for (const [index, item] of enumerate(menuItems)) {
+      const hasSubMenu = typeof item.getItems === "function";
       let itemElement;
       if (item === MenuItemDivider || item.title === "-") {
         itemElement = html.hr({ class: "menu-item-divider" });
       } else {
         const classNames = ["context-menu-item"];
-        if (typeof item.enabled === "function" && item.enabled()) {
+        if (
+          (!hasSubMenu || item.getItems().length > 0) &&
+          typeof item.enabled === "function" &&
+          item.enabled()
+        ) {
           classNames.push("enabled");
         }
         if (hasSubMenu) {
@@ -130,17 +136,17 @@ export class MenuPanel extends SimpleElement {
         ];
         if (hasSubMenu) {
           itemElementContent.push(html.div({ class: "submenu-icon" }, ["►"]));
-          itemElementContent.push(
-            new MenuPanel(
-              item.items,
-              {
-                x: 0,
-                y: 0,
-              },
-              undefined,
-              false
-            )
-          );
+          // itemElementContent.push(
+          //   new MenuPanel(
+          //     [],
+          //     {
+          //       x: 0,
+          //       y: 0,
+          //     },
+          //     undefined,
+          //     false
+          //   )
+          // );
         }
         itemElement = html.div(
           {
@@ -163,6 +169,7 @@ export class MenuPanel extends SimpleElement {
           },
           itemElementContent
         );
+        itemElement.dataset.index = index;
       }
       this.menuElement.appendChild(itemElement);
     }
@@ -223,7 +230,16 @@ export class MenuPanel extends SimpleElement {
     if (itemElement.classList.contains("with-submenu")) {
       const { y: menuElementY } = this.getBoundingClientRect();
       const { y, width } = itemElement.getBoundingClientRect();
-      const submenu = itemElement.querySelector("menu-panel");
+      const submenu = new MenuPanel(
+        this.menuItems[itemElement.dataset.index].getItems(),
+        {
+          x: 0,
+          y: 0,
+        },
+        undefined,
+        false
+      );
+      itemElement.appendChild(submenu);
       submenu.position = { x: width, y: y - menuElementY };
       submenu.show();
       this._recentSubMenu = submenu;
