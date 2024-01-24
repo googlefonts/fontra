@@ -10,6 +10,7 @@ from fontra.core.protocols import ReadableFontBackend
 from ..core.classes import (
     GlobalAxis,
     GlobalDiscreteAxis,
+    GlobalSource,
     Layer,
     Source,
     StaticGlyph,
@@ -110,6 +111,9 @@ class OTFBackend:
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.globalAxes
+
+    async def getSources(self) -> list[GlobalSource]:
+        return []
 
     async def getUnitsPerEm(self) -> int:
         return self.font["head"].unitsPerEm

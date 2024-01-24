@@ -31,6 +31,7 @@ from ..core.classes import (
     Component,
     GlobalAxis,
     GlobalDiscreteAxis,
+    GlobalSource,
     Layer,
     LocalAxis,
     Source,
@@ -618,6 +619,9 @@ class DesignspaceBackend:
         self._writeDesignSpaceDocument()
         self.updateAxisInfo()
         self.loadUFOLayers()
+
+    async def getSources(self) -> list[GlobalSource]:
+        return []
 
     async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm

@@ -13,6 +13,7 @@ from fontra.core.classes import (
     Font,
     GlobalAxis,
     GlobalDiscreteAxis,
+    GlobalSource,
     VariableGlyph,
     structure,
     unstructure,
@@ -119,6 +120,9 @@ class FontraBackend:
     async def putGlobalAxes(self, axes: list[GlobalAxis | GlobalDiscreteAxis]) -> None:
         self.fontData.axes = deepcopy(axes)
         self._scheduler.schedule(self._writeFontData)
+
+    async def getSources(self) -> list[GlobalSource]:
+        return []
 
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.fontData.customData)

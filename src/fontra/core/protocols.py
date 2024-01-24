@@ -6,7 +6,7 @@ from typing import Any, Awaitable, Callable, Protocol, runtime_checkable
 
 from aiohttp import web
 
-from .classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
+from .classes import GlobalAxis, GlobalDiscreteAxis, GlobalSource, VariableGlyph
 
 
 @runtime_checkable
@@ -19,6 +19,9 @@ class ReadableFontBackend(Protocol):
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         pass
+
+    async def getSources(self) -> list[GlobalSource]:
+        ...
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         pass
