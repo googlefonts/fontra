@@ -1696,9 +1696,9 @@ export class EditorController {
     this.canvasController.requestUpdate();
   }
 
-  async messageFromServer(headline, message) {
+  async messageFromServer(headline, msg) {
     // don't await the dialog result, the server doesn't need an answer
-    message(headline, message);
+    message(headline, msg);
   }
 
   async setupFromWindowLocation() {
