@@ -546,6 +546,11 @@ export class SceneController {
           (this.contextMenuState.componentSelection?.length === 1 ? "" : "s"),
         enabled: () => this.contextMenuState.componentSelection?.length,
         callback: () => this.decomposeSelectedComponents(),
+        shortCut: {
+          keysOrCodes: "d",
+          metaKey: true,
+          shiftKey: true,
+        },
       },
     ];
     return contextMenuItems;
