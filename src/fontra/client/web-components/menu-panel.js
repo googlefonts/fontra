@@ -77,6 +77,10 @@ export class MenuPanel extends SimpleElement {
       grid-template-columns: 1em auto auto;
     }
 
+    .has-open-submenu {
+      background-color: #dedede;
+    }
+
     .context-menu-item.enabled {
       color: inherit;
     }
@@ -99,13 +103,14 @@ export class MenuPanel extends SimpleElement {
     }
   `;
 
-  constructor(menuItems, position, positionContainer, visible = true) {
+  constructor(menuItems, position, positionContainer, visible = true, childOf) {
     super();
     this.style = "display: none;";
     this.visible = visible;
     this.position = position;
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
+    this.childOf = childOf;
 
     // No context menu on our context menu please:
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
@@ -154,7 +159,9 @@ export class MenuPanel extends SimpleElement {
                 this.selectItem(itemElement);
               }
             },
-            onmouseleave: (event) => itemElement.classList.remove("selected"),
+            onmouseleave: (event) => {
+              itemElement.classList.remove("selected");
+            },
             onmouseup: (event) => {
               event.preventDefault();
               event.stopImmediatePropagation();
@@ -216,15 +223,25 @@ export class MenuPanel extends SimpleElement {
   }
 
   selectItem(itemElement) {
-    if (this._lastShownSubMenu) {
-      this._lastShownSubMenu.parentElement.removeChild(this._lastShownSubMenu);
-      this._lastShownSubMenu = undefined;
+    for (const menuPanel of MenuPanel.openMenuPanels) {
+      if (menuPanel.childOf === this) {
+        menuPanel.dismiss();
+        break;
+      }
     }
+
+    for (const item of this.menuElement.children) {
+      if (item.classList.contains("has-open-submenu")) {
+        item.classList.remove("has-open-submenu");
+      }
+    }
+
     const selectedItem = this.findSelectedItem();
     if (selectedItem && selectedItem !== itemElement) {
       selectedItem.classList.remove("selected");
     }
     itemElement.classList.add("selected");
+
     if (itemElement.classList.contains("with-submenu")) {
       const { y: menuElementY } = this.getBoundingClientRect();
       const { y, width } = itemElement.getBoundingClientRect();
@@ -235,12 +252,13 @@ export class MenuPanel extends SimpleElement {
           y: 0,
         },
         undefined,
-        false
+        false,
+        this
       );
-      itemElement.appendChild(submenu);
+      this.menuElement.appendChild(submenu);
       submenu.position = { x: width, y: y - menuElementY - 4 };
       submenu.show();
-      this._lastShownSubMenu = submenu;
+      itemElement.classList.add("has-open-submenu");
     }
   }
 
