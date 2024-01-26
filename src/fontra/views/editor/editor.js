@@ -790,6 +790,7 @@ export class EditorController {
 
     for (const menuItem of [
       ...this.basicContextMenuItems,
+      ...this.glyphEditContextMenuItems,
       ...this.glyphSelectedContextMenuItems,
     ]) {
       if (menuItem.shortCut) {
