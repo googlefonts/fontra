@@ -495,27 +495,31 @@ export class SceneController {
     this._eventElement.dispatchEvent(event);
   }
 
-  updateContextMenuState(event) {
+  updateContextMenuState(event = null) {
     this.contextMenuState = {};
     if (!this.sceneSettings.selectedGlyph?.isEditing) {
       return;
     }
-    const { selection: clickedSelection } = this.sceneModel.selectionAtPoint(
-      this.localPoint(event),
-      this.mouseClickMargin
-    );
     let relevantSelection;
-    if (!clickedSelection.size) {
-      // Clicked on nothing, ignore selection
-      relevantSelection = clickedSelection;
-    } else {
-      if (!isSuperset(this.selection, clickedSelection)) {
-        // Clicked on something that wasn't yet selected; select it
-        this.selection = clickedSelection;
-      } else {
-        // Use the existing selection as context
-      }
+    if (!event) {
       relevantSelection = this.selection;
+    } else {
+      const { selection: clickedSelection } = this.sceneModel.selectionAtPoint(
+        this.localPoint(event),
+        this.mouseClickMargin
+      );
+      if (!clickedSelection.size) {
+        // Clicked on nothing, ignore selection
+        relevantSelection = clickedSelection;
+      } else {
+        if (!isSuperset(this.selection, clickedSelection)) {
+          // Clicked on something that wasn't yet selected; select it
+          this.selection = clickedSelection;
+        } else {
+          // Use the existing selection as context
+        }
+        relevantSelection = this.selection;
+      }
     }
     const { point: pointSelection, component: componentSelection } =
       parseSelection(relevantSelection);
@@ -544,7 +548,7 @@ export class SceneController {
         title: () =>
           "Decompose Component" +
           (this.contextMenuState.componentSelection?.length === 1 ? "" : "s"),
-        enabled: () => this.contextMenuState.componentSelection?.length,
+        enabled: () => !!this.contextMenuState?.componentSelection?.length,
         callback: () => this.decomposeSelectedComponents(),
         shortCut: { keysOrCodes: "d", metaKey: true, shiftKey: true },
       },
