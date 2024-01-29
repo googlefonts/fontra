@@ -35,7 +35,7 @@ export class MenuBar extends SimpleElement {
     window.addEventListener("blur", this.clearCurrentSelection.bind(this));
   }
 
-  clearCurrentSelection() {
+  clearCurrentSelection(event) {
     const currentSelection = this.contentElement.querySelector(".current");
     if (!currentSelection) {
       return false;
@@ -51,21 +51,17 @@ export class MenuBar extends SimpleElement {
   showMenu(items, menuItemElement) {
     menuItemElement.classList.add("current");
     const clientRect = menuItemElement.getBoundingClientRect();
-    const menuPanel = new MenuPanel(items, {
+    const position = {
       x: clientRect.x,
       y: clientRect.y + clientRect.height,
-    });
+    };
+    const menuPanel = new MenuPanel(
+      items,
+      position,
+      undefined,
+      this.clearCurrentSelection.bind(this)
+    );
     this.contentElement.appendChild(menuPanel);
-  }
-
-  overrideCallbacks(items) {
-    return items.map((item) => ({
-      ...item,
-      callback: () => {
-        this.clearCurrentSelection();
-        item.callback();
-      },
-    }));
   }
 
   render() {
@@ -75,12 +71,12 @@ export class MenuBar extends SimpleElement {
         {
           onmouseover: () => {
             if (this.clearCurrentSelection()) {
-              this.showMenu(this.overrideCallbacks(item.getItems()), menuItem);
+              this.showMenu(item.getItems(), menuItem);
             }
           },
-          onclick: (event) => {
+          onclick: () => {
             this.clearCurrentSelection();
-            this.showMenu(this.overrideCallbacks(item.getItems()), menuItem);
+            this.showMenu(item.getItems(), menuItem);
           },
           class: "menu-item",
         },

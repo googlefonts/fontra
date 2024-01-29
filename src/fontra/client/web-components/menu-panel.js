@@ -17,11 +17,11 @@ export class MenuPanel extends SimpleElement {
   static openMenuPanels = [];
 
   static closeAllMenus(event) {
-    if (event) {
-      if (event.target instanceof MenuPanel) {
-        return;
-      }
-    }
+    // if (event) {
+    //   if (event.target instanceof MenuPanel) {
+    //     return;
+    //   }
+    // }
     for (const element of MenuPanel.openMenuPanels) {
       element.parentElement?.removeChild(element);
     }
@@ -88,10 +88,11 @@ export class MenuPanel extends SimpleElement {
     }
   `;
 
-  constructor(menuItems, position, positionContainer) {
+  constructor(menuItems, position, positionContainer, onSelect) {
     super();
     this.style = "display: none;";
     this.position = position;
+    this.onSelect = onSelect;
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
 
@@ -112,17 +113,18 @@ export class MenuPanel extends SimpleElement {
                 this.selectItem(itemElement);
               }
             },
-            onmouseleave: (event) => itemElement.classList.remove("selected"),
             onmousedown: (event) => {
               event.preventDefault();
               event.stopImmediatePropagation();
             },
+            onmouseleave: (event) => itemElement.classList.remove("selected"),
             onmouseup: (event) => {
               event.preventDefault();
               event.stopImmediatePropagation();
               if (item.enabled()) {
                 item.callback?.(event);
                 this.dismiss();
+                this.onSelect?.(itemElement);
               }
             },
           },
