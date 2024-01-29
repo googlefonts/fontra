@@ -17,11 +17,6 @@ export class MenuPanel extends SimpleElement {
   static openMenuPanels = [];
 
   static closeAllMenus(event) {
-    // if (event) {
-    //   if (event.target instanceof MenuPanel) {
-    //     return;
-    //   }
-    // }
     for (const element of MenuPanel.openMenuPanels) {
       element.parentElement?.removeChild(element);
     }
