@@ -113,6 +113,10 @@ export class MenuPanel extends SimpleElement {
               }
             },
             onmouseleave: (event) => itemElement.classList.remove("selected"),
+            onmousedown: (event) => {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+            },
             onmouseup: (event) => {
               event.preventDefault();
               event.stopImmediatePropagation();

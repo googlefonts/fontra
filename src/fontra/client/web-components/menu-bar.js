@@ -58,6 +58,16 @@ export class MenuBar extends SimpleElement {
     this.contentElement.appendChild(menuPanel);
   }
 
+  overrideCallbacks(items) {
+    return items.map((item) => ({
+      ...item,
+      callback: () => {
+        this.clearCurrentSelection();
+        item.callback();
+      },
+    }));
+  }
+
   render() {
     const fragment = document.createDocumentFragment();
     for (const item of this.items) {
@@ -65,12 +75,12 @@ export class MenuBar extends SimpleElement {
         {
           onmouseover: () => {
             if (this.clearCurrentSelection()) {
-              this.showMenu(item.getItems(), menuItem);
+              this.showMenu(this.overrideCallbacks(item.getItems()), menuItem);
             }
           },
-          onclick: () => {
+          onclick: (event) => {
             this.clearCurrentSelection();
-            this.showMenu(item.getItems(), menuItem);
+            this.showMenu(this.overrideCallbacks(item.getItems()), menuItem);
           },
           class: "menu-item",
         },
