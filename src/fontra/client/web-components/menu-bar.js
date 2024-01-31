@@ -9,6 +9,7 @@ export class MenuBar extends SimpleElement {
     align-items: center;
     position: absolute;
     font-size: 1rem;
+    width: 100%;
   }
 
   .menu-item {
@@ -31,21 +32,60 @@ export class MenuBar extends SimpleElement {
     this.contentElement = this.shadowRoot.appendChild(html.div());
     this.contentElement.classList.add("menu-bar");
     this.render();
-    window.addEventListener("mousedown", this.clearCurrentSelection.bind(this));
-    window.addEventListener("blur", this.clearCurrentSelection.bind(this));
+    window.addEventListener("mousedown", this.onBlur.bind(this));
+    window.addEventListener("blur", this.onBlur.bind(this));
+    this.contentElement.addEventListener("mouseover", this.onMouseover.bind(this));
+    this.contentElement.addEventListener("click", this.onClick.bind(this));
+    this.showMenuWhenHover = false;
+  }
+
+  onClick(event) {
+    if (event.target.classList.contains("menu-item")) {
+      for (let i = 0; i < this.contentElement.childElementCount; i++) {
+        const node = this.contentElement.childNodes[i];
+        if (node === event.target) {
+          this.clearCurrentSelection();
+          this.showMenuWhenHover = true;
+          this.showMenu(this.items[i].getItems(), node);
+          break;
+        }
+      }
+    }
+  }
+
+  onMouseover(event) {
+    if (event.target === this.contentElement) {
+      this.clearCurrentSelection();
+      return;
+    }
+    if (event.target.classList.contains("menu-item")) {
+      this.clearCurrentSelection();
+      for (let i = 0; i < this.contentElement.childElementCount; i++) {
+        const node = this.contentElement.childNodes[i];
+        if (node === event.target) {
+          if (this.showMenuWhenHover) {
+            this.showMenu(this.items[i].getItems(), node);
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  onBlur() {
+    this.clearCurrentSelection();
+    this.showMenuWhenHover = false;
   }
 
   clearCurrentSelection(event) {
     const currentSelection = this.contentElement.querySelector(".current");
-    if (!currentSelection) {
-      return false;
+    if (currentSelection) {
+      currentSelection.classList.remove("current");
+      const menuPanel = this.contentElement.querySelector("menu-panel");
+      if (menuPanel) {
+        this.contentElement.removeChild(menuPanel);
+      }
     }
-    currentSelection.classList.remove("current");
-    const menuPanel = this.contentElement.querySelector("menu-panel");
-    if (menuPanel) {
-      this.contentElement.removeChild(menuPanel);
-    }
-    return true;
   }
 
   showMenu(items, menuItemElement) {
@@ -55,34 +95,17 @@ export class MenuBar extends SimpleElement {
       x: clientRect.x,
       y: clientRect.y + clientRect.height,
     };
-    const menuPanel = new MenuPanel(
-      items,
-      position,
-      undefined,
-      this.clearCurrentSelection.bind(this)
-    );
+    const menuPanel = new MenuPanel(items, position, undefined, () => {
+      this.showMenuWhenHover = false;
+      this.clearCurrentSelection();
+    });
     this.contentElement.appendChild(menuPanel);
   }
 
   render() {
     const fragment = document.createDocumentFragment();
     for (const item of this.items) {
-      const menuItem = html.div(
-        {
-          onmouseover: () => {
-            if (this.clearCurrentSelection()) {
-              this.showMenu(item.getItems(), menuItem);
-            }
-          },
-          onclick: () => {
-            this.clearCurrentSelection();
-            this.showMenu(item.getItems(), menuItem);
-          },
-          class: "menu-item",
-        },
-        [item.title]
-      );
-      fragment.appendChild(menuItem);
+      fragment.appendChild(html.div({ class: "menu-item" }, [item.title]));
     }
     this.contentElement.appendChild(fragment);
   }
