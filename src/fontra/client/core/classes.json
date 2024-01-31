@@ -107,6 +107,14 @@
       "type": "float",
       "optional": true
     },
+    "leftSidebearing": {
+      "type": "float",
+      "optional": true
+    },
+    "rightSidebearing": {
+      "type": "float",
+      "optional": true
+    },
     "verticalOrigin": {
       "type": "float",
       "optional": true

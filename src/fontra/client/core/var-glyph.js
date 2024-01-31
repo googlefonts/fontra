@@ -53,6 +53,24 @@ export class StaticGlyph {
     } else {
       source.path = new VarPackedPath();
     }
+    
+    let x_coordinates = [];
+    let y_coordinates = [];
+
+    for (let i = 0; i < source.path.coordinates.length; i++) {
+      if (i % 2 === 0) {
+        x_coordinates.push(source.path.coordinates[i]);
+      } else {
+        y_coordinates.push(source.path.coordinates[i]);
+      }
+    }
+
+    let leftSidebearing = Math.min(...x_coordinates);
+    source.leftSidebearing = leftSidebearing
+
+    let rightSidebearing = source.xAdvance-Math.max(...x_coordinates)
+    source.rightSidebearing = rightSidebearing
+
     source.components =
       (noCopy ? obj.components : obj.components?.map(copyComponent)) || [];
     return source;

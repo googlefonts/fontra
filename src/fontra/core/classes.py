@@ -138,6 +138,8 @@ class StaticGlyph:
     components: list[Component] = field(default_factory=list)
     xAdvance: Optional[float] = None
     yAdvance: Optional[float] = None
+    leftSidebearing: Optional[float] = None
+    rightSidebearing: Optional[float] = None
     verticalOrigin: Optional[float] = None
     anchors: list[Anchor] = field(default_factory=list)
     guidelines: list[Union[Guideline, HorizontalGuideline, VerticalGuideline]] = field(

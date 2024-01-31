@@ -186,6 +186,25 @@ export default class SelectionInfoPanel extends Panel {
           minValue: 0,
         });
       }
+      // console.log(instance.path.coordinates)
+      if (instance) {
+        formContents.push({
+          type: "edit-number",
+          key: '["leftSidebearing"]',
+          label: "left",
+          value: instance.leftSidebearing,
+          minValue: 0,
+        });
+      }
+      if (instance) {
+        formContents.push({
+          type: "edit-number",
+          key: '["rightSidebearing"]',
+          label: "right",
+          value: instance.rightSidebearing,
+          minValue: 0,
+        });
+      }
     }
 
     const { pointIndices, componentIndices } = this._getSelection();

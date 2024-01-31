@@ -556,6 +556,14 @@ export class StaticGlyphController {
     return this.instance.yAdvance;
   }
 
+  get leftSidebearing() {
+    return this.instance.leftSidebearing;
+  }
+
+  get rightSidebearing() {
+    return this.instance.rightSidebearing;
+  }
+
   get verticalOrigin() {
     return this.instance.verticalOrigin;
   }
