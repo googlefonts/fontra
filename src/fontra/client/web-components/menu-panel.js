@@ -103,14 +103,13 @@ export class MenuPanel extends SimpleElement {
     }
   `;
 
-  constructor(menuItems, position, positionContainer, visible = true, childOf) {
+  constructor(menuItems, position, positionContainer, visible = true) {
     super();
     this.style = "display: none;";
     this.visible = visible;
     this.position = position;
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
-    this.childOf = childOf;
 
     // No context menu on our context menu please:
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
