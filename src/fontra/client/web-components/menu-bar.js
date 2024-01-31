@@ -1,7 +1,6 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement } from "../core/html-utils.js";
 import { MenuPanel } from "./menu-panel.js";
-import { InlineSVG } from "/web-components/inline-svg.js";
 
 export class MenuBar extends SimpleElement {
   static styles = `
