@@ -137,3 +137,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "glyphsLib.glyphdata"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "importlib.resources.abc"
+ignore_missing_imports = true
