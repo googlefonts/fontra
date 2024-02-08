@@ -12,7 +12,12 @@ from datetime import datetime, timezone
 from functools import partial
 from http.cookies import SimpleCookie
 from importlib import resources
-from importlib.abc import Traversable
+
+try:
+    from importlib.resources.abc import Traversable
+except ImportError:
+    # < 3.11
+    from importlib.abc import Traversable
 from importlib.metadata import entry_points
 from typing import Any, Collection, Optional
 from urllib.parse import quote
