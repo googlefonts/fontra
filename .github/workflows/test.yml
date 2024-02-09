@@ -43,7 +43,7 @@ jobs:
       #     npm install
 
       - name: Run pre-commit
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
         with:
           extra_args: --all-files --verbose --show-diff-on-failure
 
