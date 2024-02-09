@@ -8,13 +8,13 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "chai": "^5.0.3",
-    "mocha": "^10.2.0",
+    "mocha": "^10.3.0",
     "prettier-plugin-organize-imports": "^3.2.4",
     "rollup": "^4.9.6"
   },
   "dependencies": {
     "bezier-js": "^6.1.4",
-    "fflate": "^0.8.1",
+    "fflate": "^0.8.2",
     "lib-font": "^2.4.2"
   }
 }
