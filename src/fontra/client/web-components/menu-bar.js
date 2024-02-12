@@ -41,21 +41,32 @@ export class MenuBar extends SimpleElement {
 
   onClick(event) {
     if (event.target.classList.contains("menu-item")) {
-      for (let i = 0; i < this.contentElement.childElementCount; i++) {
-        const node = this.contentElement.childNodes[i];
-        if (node === event.target) {
-          this.clearCurrentSelection();
-          this.showMenuWhenHover = true;
-          this.showMenu(this.items[i].getItems(), node);
-          break;
+      const currentSelection = this.contentElement.querySelector(".current");
+      if (currentSelection === event.target) {
+        this.clearCurrentSelection();
+        this.showMenuWhenHover = false;
+      } else {
+        for (let i = 0; i < this.contentElement.childElementCount; i++) {
+          const node = this.contentElement.childNodes[i];
+          if (node === event.target) {
+            this.clearCurrentSelection();
+            this.showMenuWhenHover = true;
+            this.showMenu(this.items[i].getItems(), node);
+            break;
+          }
         }
       }
     }
   }
 
   onMouseover(event) {
+    const currentSelection = this.contentElement.querySelector(".current");
+    if (!currentSelection && !this.showMenuWhenHover) {
+      return;
+    }
     if (event.target === this.contentElement) {
       this.clearCurrentSelection();
+      this.showMenuWhenHover = true;
       return;
     }
     if (event.target.classList.contains("menu-item")) {
@@ -72,7 +83,7 @@ export class MenuBar extends SimpleElement {
     }
   }
 
-  onBlur() {
+  onBlur(event) {
     this.clearCurrentSelection();
     this.showMenuWhenHover = false;
   }
@@ -105,7 +116,21 @@ export class MenuBar extends SimpleElement {
   render() {
     const fragment = document.createDocumentFragment();
     for (const item of this.items) {
-      fragment.appendChild(html.div({ class: "menu-item" }, [item.title]));
+      fragment.appendChild(
+        html.div(
+          {
+            class: "menu-item",
+            onmousedown: (event) => {
+              const currentSelection = this.contentElement.querySelector(".current");
+              if (currentSelection === event.target) {
+                event.stopImmediatePropagation();
+                console.log(1);
+              }
+            },
+          },
+          [item.title]
+        )
+      );
     }
     this.contentElement.appendChild(fragment);
   }
