@@ -124,7 +124,6 @@ export class MenuBar extends SimpleElement {
               const currentSelection = this.contentElement.querySelector(".current");
               if (currentSelection === event.target) {
                 event.stopImmediatePropagation();
-                console.log(1);
               }
             },
           },
