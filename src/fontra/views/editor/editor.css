@@ -13,6 +13,14 @@
 
   --editor-mini-console-foreground-color-light: black;
   --editor-mini-console-foreground-color-dark: white;
+
+  --editor-top-bar-background-color-light: #eee;
+  --editor-top-bar-background-color-dark: #444;
+  --editor-top-bar-border-color-light: #d3d3d3;
+  --editor-top-bar-border-color-dark: #2e2e2e;
+  --editor-top-bar-link-hover-light: #e1e1e1;
+  --editor-top-bar-link-hover-dark: rgb(47, 47, 47);
+  --editor-top-bar-height: 45px;
 }
 
 :root {
@@ -31,6 +39,10 @@
   --editor-mini-console-foreground-color: var(
     --editor-mini-console-foreground-color-light
   );
+
+  --editor-top-bar-background-color: var(--editor-top-bar-background-color-light);
+  --editor-top-bar-border-color: var(--editor-top-bar-border-color-light);
+  --editor-top-bar-link-hover: var(--editor-top-bar-link-hover-light);
 }
 
 :root.dark-theme {
@@ -49,6 +61,7 @@
   --editor-mini-console-foreground-color: var(
     --editor-mini-console-foreground-color-dark
   );
+  --editor-top-bar-link-hover: var(--editor-top-bar-link-hover-dark);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -68,6 +81,9 @@
     --editor-mini-console-foreground-color: var(
       --editor-mini-console-foreground-color-dark
     );
+    --editor-top-bar-background-color: var(--editor-top-bar-background-color-dark);
+    --editor-top-bar-border-color: var(--editor-top-bar-border-color-dark);
+    --editor-top-bar-link-hover: var(--editor-top-bar-link-hover-dark);
   }
 
   :root.light-theme {
@@ -86,6 +102,9 @@
     --editor-mini-console-foreground-color: var(
       --editor-mini-console-foreground-color-light
     );
+    --editor-top-bar-background-color: var(--editor-top-bar-background-color-light);
+    --editor-top-bar-border-color: var(--editor-top-bar-border-color-light);
+    --editor-top-bar-link-hover: var(--editor-top-bar-link-hover-light);
   }
 }
 
@@ -100,9 +119,26 @@ body {
   display: grid;
   position: relative;
   grid-template-columns: auto 1fr auto;
-  grid-template-rows: 100%;
+  grid-template-rows: 1fr calc(100% - var(--editor-top-bar-height));
   height: 100%;
   width: 100%;
+}
+
+.top-bar-container {
+  grid-row-start: 1;
+  grid-row-end: 2;
+  grid-column-start: 1;
+  grid-column-end: 4;
+  z-index: 200;
+  height: var(--editor-top-bar-height);
+  background: var(--editor-top-bar-background-color);
+  border-bottom: 1px solid var(--editor-top-bar-border-color);
+}
+
+.sidebar-container,
+.main-container {
+  grid-row-start: 2;
+  grid-row-end: 3;
 }
 
 .sidebar-container {

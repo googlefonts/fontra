@@ -21,7 +21,7 @@ export class MenuBar extends SimpleElement {
 
   .menu-item:hover,
   .menu-item.current {
-    background: #e1e1e1;
+    background: var(--editor-top-bar-link-hover);
     border-radius: 5px;
   }
   `;
