@@ -51,7 +51,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
           const [baseGlyphName, extension] = splitGlyphNameExtension(glyphName);
           const baseCharCode = baseGlyphName.codePointAt(0);
           const charString = String.fromCodePoint(baseCharCode);
-          if (baseGlyphName === charString) {
+          if (baseGlyphName === charString && !isPlainLatinLetter(baseGlyphName)) {
             // The base glyph name is a single character, let's see if there's
             // a glyph name associated with that character
             let properBaseGlyphName = characterMap[baseCharCode];
@@ -118,4 +118,8 @@ export function textFromGlyphLines(glyphLines) {
     textLines.push(textLine);
   }
   return textLines.join("\n");
+}
+
+function isPlainLatinLetter(glyphName) {
+  return glyphName.match(/^[A-Za-z]$/);
 }
