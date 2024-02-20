@@ -1,7 +1,8 @@
 import { themeColorCSS } from "./theme-support.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
-import { capitalizeFirstLetter, reversed } from "/core/utils.js";
+import { capitalizeFirstLetter, enumerate, reversed } from "/core/utils.js";
+import { InlineSVG } from "/web-components/inline-svg.js";
 
 export const MenuItemDivider = { title: "-" };
 
@@ -61,9 +62,18 @@ export class MenuPanel extends SimpleElement {
     .context-menu-item {
       display: grid;
       grid-template-columns: 1em auto;
+      align-items: center;
       gap: 0em;
       padding: 0.1em 0.8em 0.1em 0.5em; /* top, right, bottom, left */
       color: #8080a0;
+    }
+
+    .with-submenu {
+      grid-template-columns: 1em auto auto;
+    }
+
+    .has-open-submenu {
+      background-color: #dedede;
     }
 
     .context-menu-item.enabled {
@@ -81,27 +91,71 @@ export class MenuPanel extends SimpleElement {
       gap: 0.5em;
       justify-content: space-between;
     }
+
+    .submenu-icon {
+      width: 10px;
+      height: 14px;
+    }
   `;
 
-  constructor(menuItems, position, positionContainer, onSelect) {
+  constructor(
+    menuItems,
+    position,
+    positionContainer,
+    onSelect,
+    visible = true,
+    childOf
+  ) {
     super();
     this.style = "display: none;";
+    this.visible = visible;
     this.position = position;
     this.onSelect = onSelect;
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
+    this.childOf = childOf;
 
     // No context menu on our context menu please:
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
 
-    for (const item of menuItems) {
+    this.menuItems = menuItems;
+
+    for (const [index, item] of enumerate(menuItems)) {
+      const hasSubMenu = typeof item.getItems === "function";
       let itemElement;
       if (item === MenuItemDivider || item.title === "-") {
         itemElement = html.hr({ class: "menu-item-divider" });
       } else {
+        const classNames = ["context-menu-item"];
+        if (
+          (!hasSubMenu || item.getItems().length > 0) &&
+          typeof item.enabled === "function" &&
+          item.enabled()
+        ) {
+          classNames.push("enabled");
+        }
+        if (hasSubMenu) {
+          classNames.push("with-submenu");
+        }
+        const itemElementContent = [
+          html.div({ class: "check-mark" }, [item.checked ? "✓" : ""]),
+          html.div({ class: "item-content" }, [
+            typeof item.title === "function" ? item.title() : item.title,
+            html.span({}, [buildShortCutString(item.shortCut)]),
+          ]),
+        ];
+        if (hasSubMenu) {
+          itemElementContent.push(
+            html.div({ class: "submenu-icon" }, [
+              new InlineSVG(`/tabler-icons/chevron-right.svg`, {
+                style: "margin-top: 2px",
+              }),
+            ])
+          );
+        }
         itemElement = html.div(
           {
-            class: `context-menu-item ${item.enabled() ? "enabled" : ""}`,
+            class: classNames.join(" "),
             onmouseenter: (event) => this.selectItem(itemElement),
             onmousemove: (event) => {
               if (!itemElement.classList.contains("selected")) {
@@ -123,14 +177,9 @@ export class MenuPanel extends SimpleElement {
               }
             },
           },
-          [
-            html.div({ class: "check-mark" }, [item.checked ? "✓" : ""]),
-            html.div({ class: "item-content" }, [
-              typeof item.title === "function" ? item.title() : item.title,
-              html.span({}, [buildShortCutString(item.shortCut)]),
-            ]),
-          ]
+          itemElementContent
         );
+        itemElement.dataset.index = index;
       }
       this.menuElement.appendChild(itemElement);
     }
@@ -143,6 +192,16 @@ export class MenuPanel extends SimpleElement {
   }
 
   connectedCallback() {
+    if (this.visible) {
+      this.show();
+    }
+  }
+
+  hide() {
+    this.style.display = "none";
+  }
+
+  show() {
     this._savedActiveElement = document.activeElement;
     const position = { ...this.position };
     this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
@@ -170,11 +229,44 @@ export class MenuPanel extends SimpleElement {
   }
 
   selectItem(itemElement) {
+    for (const menuPanel of MenuPanel.openMenuPanels) {
+      if (menuPanel.childOf === this) {
+        menuPanel.dismiss();
+        break;
+      }
+    }
+
+    for (const item of this.menuElement.children) {
+      if (item.classList.contains("has-open-submenu")) {
+        item.classList.remove("has-open-submenu");
+      }
+    }
+
     const selectedItem = this.findSelectedItem();
     if (selectedItem && selectedItem !== itemElement) {
       selectedItem.classList.remove("selected");
     }
     itemElement.classList.add("selected");
+
+    if (itemElement.classList.contains("with-submenu")) {
+      const { y: menuElementY } = this.getBoundingClientRect();
+      const { y, width } = itemElement.getBoundingClientRect();
+      const submenu = new MenuPanel(
+        this.menuItems[itemElement.dataset.index].getItems(),
+        {
+          x: 0,
+          y: 0,
+        },
+        undefined,
+        undefined,
+        false,
+        this
+      );
+      this.menuElement.appendChild(submenu);
+      submenu.position = { x: width, y: y - menuElementY - 4 };
+      submenu.show();
+      itemElement.classList.add("has-open-submenu");
+    }
   }
 
   handleKeyDown(event) {

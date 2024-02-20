@@ -31,6 +31,103 @@
                   },
                   shortCut: undefined,
                 },
+                {
+                  title: "Recently opened",
+                  enabled: () => true,
+                  callback: () => {
+                    console.log(1);
+                  },
+                  shortCut: undefined,
+                  getItems() {
+                    return [
+                      {
+                        title: "File 1",
+                        enabled: () => true,
+                        callback: () => {
+                          console.log(1);
+                        },
+                        getItems() {
+                          return [
+                            {
+                              title: "File 1",
+                              enabled: () => true,
+                              callback: () => {
+                                console.log(1);
+                              },
+                              getItems() {
+                                return [
+                                  {
+                                    title: "File 1",
+                                    enabled: () => true,
+                                    callback: () => {
+                                      console.log(1);
+                                    },
+                                  },
+                                  {
+                                    title: "File 2",
+                                    enabled: () => true,
+                                    callback: () => {
+                                      console.log(2);
+                                    },
+                                  },
+                                  {
+                                    title: "File 3",
+                                    enabled: () => true,
+                                    callback: () => {
+                                      console.log(3);
+                                    },
+                                  },
+                                ];
+                              },
+                            },
+                            {
+                              title: "File 2",
+                              enabled: () => true,
+                              callback: () => {
+                                console.log(2);
+                              },
+                            },
+                            {
+                              title: "File 3",
+                              enabled: () => true,
+                              callback: () => {
+                                console.log(3);
+                              },
+                            },
+                          ];
+                        },
+                      },
+                      {
+                        title: "File 2",
+                        enabled: () => true,
+                        callback: () => {
+                          console.log(2);
+                        },
+                      },
+                      {
+                        title: "File 3",
+                        enabled: () => true,
+                        callback: () => {
+                          console.log(3);
+                        },
+                      },
+                      {
+                        title: "File 4",
+                        enabled: () => true,
+                        callback: () => {
+                          console.log(4);
+                        },
+                      },
+                      {
+                        title: "File 5",
+                        enabled: () => true,
+                        callback: () => {
+                          console.log(5);
+                        },
+                      },
+                    ];
+                  },
+                },
               ];
             },
           },
