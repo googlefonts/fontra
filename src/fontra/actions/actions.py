@@ -1,5 +1,4 @@
 from dataclasses import dataclass, replace
-from functools import cached_property
 from typing import Any
 
 from fontTools.misc.transform import Transform
@@ -82,32 +81,31 @@ class BaseAction:
 @registerActionClass("scale")
 @dataclass(kw_only=True)
 class ScaleAction(BaseAction):
-    @cached_property
-    def _transformation(self):
-        return Transform().scale(self.arguments["scaleFactor"])
-
     async def processGlyph(self, glyph):
+        transformation = Transform().scale(self.arguments["scaleFactor"])
         return replace(
             glyph,
             layers={
-                layerName: replace(layer, glyph=self._scaleGlyph(layer.glyph))
+                layerName: replace(
+                    layer, glyph=self._scaleGlyph(layer.glyph, transformation)
+                )
                 for layerName, layer in glyph.layers.items()
             },
         )
 
-    def _scaleGlyph(self, glyph):
+    def _scaleGlyph(self, glyph, transformation):
         return replace(
             glyph,
-            path=glyph.path.transformed(self._transformation),
+            path=glyph.path.transformed(transformation),
             components=[
                 self._scaleComponentOrigin(component) for component in glyph.components
             ],
         )
 
     def _scaleComponentOrigin(self, component):
-        x, y = self._transformation.transformPoint(
-            (component.transformation.translateX, component.transformation.translateY)
-        )
+        scaleFactor = self.arguments["scaleFactor"]
+        x = component.transformation.translateX * scaleFactor
+        y = component.transformation.translateY * scaleFactor
         return replace(
             component,
             transformation=replace(
