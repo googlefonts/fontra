@@ -9,11 +9,11 @@ from ..core.protocols import ReadableFontBackend
 _actions = {}
 
 
-def registerActionClass(name):
+def registerActionClass(name, argumentsType):
     def wrapper(cls):
         assert name not in _actions
         cls.actionName = name
-        _actions[name] = cls
+        _actions[name] = cls, argumentsType
         return cls
 
     return wrapper
@@ -23,9 +23,9 @@ def getActionClass(name):
     return _actions[name]
 
 
-def getAction(name, input, arguments):
-    cls = getActionClass(name)
-    action = cls(input=input, arguments=arguments)
+def getAction(name, input, **arguments):
+    cls, argumentsType = getActionClass(name)
+    action = cls(input=input, arguments=argumentsType(**arguments))
     assert isinstance(action, ReadableFontBackend)
     return action
 
@@ -78,11 +78,17 @@ class BaseAction:
         return unitsPerEm
 
 
-@registerActionClass("scale")
+@dataclass(kw_only=True)
+class ScaleActionArguments:
+    scaleFactor: float
+    scaleUnitsPerEm: bool = True
+
+
+@registerActionClass("scale", ScaleActionArguments)
 @dataclass(kw_only=True)
 class ScaleAction(BaseAction):
     async def processGlyph(self, glyph):
-        transformation = Transform().scale(self.arguments["scaleFactor"])
+        transformation = Transform().scale(self.arguments.scaleFactor)
         return replace(
             glyph,
             layers={
@@ -103,7 +109,7 @@ class ScaleAction(BaseAction):
         )
 
     def _scaleComponentOrigin(self, component):
-        scaleFactor = self.arguments["scaleFactor"]
+        scaleFactor = self.arguments.scaleFactor
         x = component.transformation.translateX * scaleFactor
         y = component.transformation.translateY * scaleFactor
         return replace(
@@ -112,3 +118,6 @@ class ScaleAction(BaseAction):
                 component.transformation, translateX=x, translateY=y
             ),
         )
+
+    async def processUnitsPerEm(self, unitsPerEm):
+        return unitsPerEm * self.arguments.scaleFactor

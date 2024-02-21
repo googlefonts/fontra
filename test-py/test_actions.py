@@ -20,9 +20,13 @@ async def test_scaleAction(testFontraFont, glyphName):
     scaleFactor = 2
 
     unscaledGlyph = await testFontraFont.getGlyph(glyphName)
-    arguments = {"scaleFactor": scaleFactor}
-    action = getAction("scale", testFontraFont, arguments)
+    action = getAction("scale", testFontraFont, scaleFactor=scaleFactor)
     scaledGlyph = await action.getGlyph(glyphName)
+
+    assert (
+        await testFontraFont.getUnitsPerEm() * scaleFactor
+        == await action.getUnitsPerEm()
+    )
 
     for unscaledLayer, scaledLayer in zip(
         unscaledGlyph.layers.values(), scaledGlyph.layers.values()
