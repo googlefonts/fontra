@@ -17,8 +17,8 @@ export const getSuggestedGlyphName = memoize(async (codePoint) => {
   return await callServerAPI("getSuggestedGlyphName", { codePoint });
 });
 
-export const getUnicodeFromGlyphName = memoize(async (glyphName) => {
-  return await callServerAPI("getUnicodeFromGlyphName", { glyphName });
+export const getCodePointFromGlyphName = memoize(async (glyphName) => {
+  return await callServerAPI("getCodePointFromGlyphName", { glyphName });
 });
 
 export async function parseClipboard(data) {

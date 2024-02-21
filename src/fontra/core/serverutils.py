@@ -15,8 +15,8 @@ def getSuggestedGlyphName(codePoint):
 
 
 @api
-def getUnicodeFromGlyphName(glyphName):
-    return glyphnames.getUnicodeFromGlyphName(glyphName)
+def getCodePointFromGlyphName(glyphName):
+    return glyphnames.getCodePointFromGlyphName(glyphName)
 
 
 @api
