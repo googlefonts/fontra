@@ -19,12 +19,10 @@ def registerActionClass(name, argumentsType):
     return wrapper
 
 
-def getActionClass(name):
-    return _actions[name]
-
-
 def getAction(name, input, **arguments):
-    cls, argumentsType = getActionClass(name)
+    if name not in _actions:
+        raise KeyError(f"No action found named '{name}'")
+    cls, argumentsType = _actions[name]
     action = cls(input=input, arguments=argumentsType(**arguments))
     assert isinstance(action, ReadableFontBackend)
     return action
