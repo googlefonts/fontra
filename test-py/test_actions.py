@@ -1,9 +1,11 @@
 import pathlib
 
 import pytest
+import yaml
 from fontTools.misc.arrayTools import scaleRect
 
 from fontra.actions.actions import getAction
+from fontra.actions.pipeline import Pipeline
 from fontra.backends import getFileSystemBackend
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -88,3 +90,33 @@ async def test_subsetAction(testFontraFont, tmp_path):
     }
 
     assert expectedGlyphMap == glyphMap
+
+
+testConfigYAML = """
+steps:
+
+- action: input
+  source: "test-py/data/mutatorsans/MutatorSans.designspace"
+  steps:
+  - action: scale
+    scaleFactor: 0.75
+    scaleUnitsPerEm: false
+  - action: subset
+    glyphNames: ["A", "B", "Adieresis"]
+
+- action: input
+  source: "test-common/fonts/MutatorSans.fontra"
+  steps:
+  - action: subset
+    glyphNames: ["C", "D"]
+
+- action: output
+  destination: "testing.fontra"
+  steps:
+"""
+
+
+async def test_pipeline():
+    config = yaml.safe_load(testConfigYAML)
+    pipeline = Pipeline(config=config)
+    print(pipeline)
