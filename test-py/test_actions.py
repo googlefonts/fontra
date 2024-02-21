@@ -50,10 +50,15 @@ async def test_scaleAction(testFontraFont, glyphName):
             )
 
 
-async def test_subsetAction(testFontraFont):
-    glyphNames = {"A", "B", "C", "Adieresis"}
+async def test_subsetAction(testFontraFont, tmp_path):
+    glyphNames = {"A"}
 
-    action = getAction("subset", testFontraFont, glyphNames=glyphNames)
+    glyphNamesFile = pathlib.Path(tmp_path) / "subset-glyphs.txt"
+    glyphNamesFile.write_text("B\nC Adieresis\n")
+
+    action = getAction(
+        "subset", testFontraFont, glyphNames=glyphNames, glyphNamesFile=glyphNamesFile
+    )
 
     glyphMap = await action.getGlyphMap()
 

@@ -1,3 +1,4 @@
+import pathlib
 from dataclasses import dataclass, field, replace
 from typing import Any
 
@@ -131,8 +132,10 @@ class SubsetActionArguments:
 
     def __post_init__(self):
         if self.glyphNamesFile:
-            # read file containing glyph names
-            ...
+            path = pathlib.Path(self.glyphNamesFile)
+            assert path.is_file()
+            glyphNames = set(path.read_text().split())
+            self.glyphNames = self.glyphNames | glyphNames
 
 
 @registerActionClass("subset", SubsetActionArguments)
