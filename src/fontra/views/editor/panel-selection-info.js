@@ -436,7 +436,7 @@ export default class SelectionInfoPanel extends Panel {
           return {
             layerName,
             layerGlyph,
-            orgValue: getFieldValue(layerGlyph, fieldItem),
+            orgValue: getFieldValue(layerGlyph, layerName, fieldItem),
           };
         });
 
@@ -447,9 +447,9 @@ export default class SelectionInfoPanel extends Panel {
           for await (const value of valueStream) {
             for (const { layerName, layerGlyph, orgValue } of layerInfo) {
               if (orgValue !== undefined) {
-                setFieldValue(layerGlyph, fieldItem, orgValue); // Ensure getting the correct undo change
+                setFieldValue(layerGlyph, layerName, fieldItem, orgValue); // Ensure getting the correct undo change
               } else {
-                deleteFieldValue(layerGlyph, fieldItem);
+                deleteFieldValue(layerGlyph, layerName, fieldItem);
               }
             }
             changes = applyNewValue(
@@ -486,17 +486,17 @@ export default class SelectionInfoPanel extends Panel {
   }
 }
 
-function defaultGetFieldValue(subject, fieldItem) {
+function defaultGetFieldValue(subject, layerName, fieldItem) {
   const changePath = JSON.parse(fieldItem.key);
   return getNestedValue(subject, changePath);
 }
 
-function defaultSetFieldValue(subject, fieldItem, value) {
+function defaultSetFieldValue(subject, layerName, fieldItem, value) {
   const changePath = JSON.parse(fieldItem.key);
   return setNestedValue(subject, changePath, value);
 }
 
-function defaultDeleteFieldValue(subject, fieldItem) {
+function defaultDeleteFieldValue(subject, layerName, fieldItem) {
   const changePath = JSON.parse(fieldItem.key);
   return deleteNestedValue(subject, changePath);
 }
@@ -539,7 +539,7 @@ function applyNewValue(glyph, layerInfo, value, fieldItem, absolute) {
       if (isNumber) {
         newValue = maybeClampValue(newValue, fieldItem.minValue, fieldItem.maxValue);
       }
-      setFieldValue(layers[layerName].glyph, fieldItem, newValue);
+      setFieldValue(layers[layerName].glyph, layerName, fieldItem, newValue);
     }
   });
 }
