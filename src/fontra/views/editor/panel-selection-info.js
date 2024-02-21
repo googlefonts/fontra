@@ -421,9 +421,11 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   async _setupSelectionInfoHandlers(glyphName) {
-    this.infoForm.onFieldChange = async (fieldKey, value, valueStream) => {
-      const changePath = JSON.parse(fieldKey);
-      const senderInfo = { senderID: this, fieldKeyPath: changePath };
+    this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
+      const getFieldValue = fieldItem.getValue || defaultGetFieldValue;
+      const setFieldValue = fieldItem.setValue || defaultSetFieldValue;
+      const deleteFieldValue = fieldItem.deleteValue || defaultDeleteFieldValue;
+
       await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
         const layerInfo = Object.entries(
           this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
@@ -431,7 +433,7 @@ export default class SelectionInfoPanel extends Panel {
           return {
             layerName,
             layerGlyph,
-            orgValue: getNestedValue(layerGlyph, changePath),
+            orgValue: getFieldValue(layerGlyph, fieldItem),
           };
         });
 
@@ -442,17 +444,16 @@ export default class SelectionInfoPanel extends Panel {
           for await (const value of valueStream) {
             for (const { layerName, layerGlyph, orgValue } of layerInfo) {
               if (orgValue !== undefined) {
-                setNestedValue(layerGlyph, changePath, orgValue); // Ensure getting the correct undo change
+                setFieldValue(layerGlyph, fieldItem, orgValue); // Ensure getting the correct undo change
               } else {
-                deleteNestedValue(layerGlyph, changePath);
+                deleteFieldValue(layerGlyph, fieldItem);
               }
             }
             changes = applyNewValue(
               glyph,
               layerInfo,
-              changePath,
               value,
-              this._formFieldsByKey[fieldKey],
+              fieldItem,
               this.multiEditChangesAreAbsolute
             );
             await sendIncrementalChange(changes.change, true); // true: "may drop"
@@ -462,12 +463,14 @@ export default class SelectionInfoPanel extends Panel {
           changes = applyNewValue(
             glyph,
             layerInfo,
-            changePath,
             value,
-            this._formFieldsByKey[fieldKey],
+            fieldItem,
             this.multiEditChangesAreAbsolute
           );
         }
+
+        const changePath = JSON.parse(fieldItem.key);
+        const senderInfo = { senderID: this, fieldKeyPath: changePath };
 
         const undoLabel =
           changePath.length == 1
@@ -481,6 +484,21 @@ export default class SelectionInfoPanel extends Panel {
       }, senderInfo);
     };
   }
+}
+
+function defaultGetFieldValue(subject, fieldItem) {
+  const changePath = JSON.parse(fieldItem.key);
+  return getNestedValue(subject, changePath);
+}
+
+function defaultSetFieldValue(subject, fieldItem, value) {
+  const changePath = JSON.parse(fieldItem.key);
+  return setNestedValue(subject, changePath, value);
+}
+
+function defaultDeleteFieldValue(subject, fieldItem) {
+  const changePath = JSON.parse(fieldItem.key);
+  return deleteNestedValue(subject, changePath);
 }
 
 function getNestedValue(subject, path) {
@@ -507,7 +525,9 @@ function deleteNestedValue(subject, path) {
   delete subject[key];
 }
 
-function applyNewValue(glyph, layerInfo, changePath, value, field, absolute) {
+function applyNewValue(glyph, layerInfo, value, fieldItem, absolute) {
+  const setFieldValue = fieldItem.setValue || defaultSetFieldValue;
+
   const primaryOrgValue = layerInfo[0].orgValue;
   const isNumber = typeof primaryOrgValue === "number";
   const delta = isNumber && !absolute ? value - primaryOrgValue : null;
@@ -517,9 +537,9 @@ function applyNewValue(glyph, layerInfo, changePath, value, field, absolute) {
       let newValue =
         delta === null || orgValue === undefined ? value : orgValue + delta;
       if (isNumber) {
-        newValue = maybeClampValue(newValue, field.minValue, field.maxValue);
+        newValue = maybeClampValue(newValue, fieldItem.minValue, fieldItem.maxValue);
       }
-      setNestedValue(layers[layerName].glyph, changePath, newValue);
+      setFieldValue(layers[layerName].glyph, fieldItem, newValue);
     }
   });
 }
