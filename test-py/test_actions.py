@@ -48,3 +48,38 @@ async def test_scaleAction(testFontraFont, glyphName):
                 unscaledComponent.transformation.translateX * scaleFactor
                 == scaledComponent.transformation.translateX
             )
+
+
+async def test_subsetAction(testFontraFont):
+    glyphNames = {"A", "B", "C", "Adieresis"}
+
+    action = getAction("subset", testFontraFont, glyphNames=glyphNames)
+
+    glyphMap = await action.getGlyphMap()
+
+    expectedGlyphMap = {
+        "A": [
+            65,
+            97,
+        ],
+        "Adieresis": [
+            196,
+            228,
+        ],
+        "B": [
+            66,
+            98,
+        ],
+        "C": [
+            67,
+            99,
+        ],
+        "dieresis": [
+            168,
+        ],
+        "dot": [
+            10193,
+        ],
+    }
+
+    assert expectedGlyphMap == glyphMap

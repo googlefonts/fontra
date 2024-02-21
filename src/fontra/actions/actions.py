@@ -1,4 +1,4 @@
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from fontTools.misc.transform import Transform
@@ -122,3 +122,55 @@ class ScaleAction(BaseAction):
             return unitsPerEm * self.arguments.scaleFactor
         else:
             return unitsPerEm
+
+
+@dataclass(kw_only=True)
+class SubsetActionArguments:
+    glyphNames: set[str] = field(default_factory=set)
+    glyphNamesFile: str | None = None
+
+    def __post_init__(self):
+        if self.glyphNamesFile:
+            # read file containing glyph names
+            ...
+
+
+@registerActionClass("subset", SubsetActionArguments)
+@dataclass(kw_only=True)
+class SubsetAction(BaseAction):
+    def __post_init__(self):
+        self._glyphMap = None
+
+    async def _getSubsettedGlyphMap(self):
+        if self._glyphMap is None:
+            bigGlyphMap = await self.input.getGlyphMap()
+            subsettedGlyphMap = {}
+            glyphNames = set(self.arguments.glyphNames)
+            while glyphNames:
+                glyphName = glyphNames.pop()
+                if glyphName not in bigGlyphMap:
+                    continue
+
+                subsettedGlyphMap[glyphName] = bigGlyphMap[glyphName]
+
+                glyph = await self.input.getGlyph(glyphName)
+                compoNames = {
+                    compo.name
+                    for layer in glyph.layers.values()
+                    for compo in layer.glyph.components
+                }
+                for compoName in compoNames:
+                    if compoName in bigGlyphMap and compoName not in subsettedGlyphMap:
+                        glyphNames.add(compoName)
+
+            self._glyphMap = subsettedGlyphMap
+        return self._glyphMap
+
+    async def getGlyph(self, glyphName):
+        glyphMap = await self._getSubsettedGlyphMap()
+        if glyphName not in glyphMap:
+            return None
+        return await self.input.getGlyph(glyphName)
+
+    async def getGlyphMap(self):
+        return await self._getSubsettedGlyphMap()
