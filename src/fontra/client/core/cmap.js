@@ -40,8 +40,8 @@ export function makeCharacterMapFromGlyphMap(glyphMap, strict = true) {
   // point is defined multiple times.
   const characterMap = {};
   const ambiguousCodePoints = [];
-  for (const [glyphName, unicodes] of Object.entries(glyphMap)) {
-    for (const codePoint of unicodes) {
+  for (const [glyphName, codePoints] of Object.entries(glyphMap)) {
+    for (const codePoint of codePoints) {
       if (codePoint in characterMap) {
         if (strict) {
           throw new Error(
@@ -165,12 +165,12 @@ function removeReverseMapping(glyphMap, glyphName, codePoint) {
   // if it exists. If no mapping is left for `glyphName`, remove the mapping
   // entirely.
   //
-  const unicodes = glyphMap[glyphName];
-  if (!unicodes) {
+  const codePoints = glyphMap[glyphName];
+  if (!codePoints) {
     return;
   }
-  arrayDiscardItem(unicodes, codePoint);
-  if (!unicodes.length) {
+  arrayDiscardItem(codePoints, codePoint);
+  if (!codePoints.length) {
     delete glyphMap[glyphName];
   }
 }
