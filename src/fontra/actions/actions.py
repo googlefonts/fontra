@@ -156,6 +156,8 @@ class SubsetAction(BaseAction):
 
                 subsettedGlyphMap[glyphName] = bigGlyphMap[glyphName]
 
+                # TODO: add getGlyphsMadeOf() ReadableFontBackend protocol member,
+                # so backends can implement this more efficiently
                 glyph = await self.input.getGlyph(glyphName)
                 compoNames = {
                     compo.name
