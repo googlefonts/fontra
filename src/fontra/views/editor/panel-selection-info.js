@@ -422,6 +422,9 @@ export default class SelectionInfoPanel extends Panel {
 
   async _setupSelectionInfoHandlers(glyphName) {
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
+      const changePath = JSON.parse(fieldItem.key);
+      const senderInfo = { senderID: this, fieldKeyPath: changePath };
+
       const getFieldValue = fieldItem.getValue || defaultGetFieldValue;
       const setFieldValue = fieldItem.setValue || defaultSetFieldValue;
       const deleteFieldValue = fieldItem.deleteValue || defaultDeleteFieldValue;
@@ -468,9 +471,6 @@ export default class SelectionInfoPanel extends Panel {
             this.multiEditChangesAreAbsolute
           );
         }
-
-        const changePath = JSON.parse(fieldItem.key);
-        const senderInfo = { senderID: this, fieldKeyPath: changePath };
 
         const undoLabel =
           changePath.length == 1
