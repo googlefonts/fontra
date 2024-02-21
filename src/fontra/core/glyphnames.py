@@ -23,7 +23,7 @@ def getSuggestedGlyphName(codePoint: int) -> str:
     return "uni" + uniStr if len(uniStr) == 4 else "u" + uniStr
 
 
-def getUnicodeFromGlyphName(glyphName: str) -> int | None:
+def getCodePointFromGlyphName(glyphName: str) -> int | None:
     data = _getGlyphData()
 
     info = data.names.get(glyphName)

@@ -1,4 +1,4 @@
-import { getSuggestedGlyphName, getUnicodeFromGlyphName } from "./server-utils.js";
+import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./server-utils.js";
 import { splitGlyphNameExtension } from "./utils.js";
 
 export async function glyphLinesFromText(text, characterMap, glyphMap) {
@@ -67,7 +67,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
           } else {
             // This is a regular glyph name, but it doesn't exist in the font.
             // Try to see if there's a code point associated with it.
-            const codePoint = await getUnicodeFromGlyphName(glyphName);
+            const codePoint = await getCodePointFromGlyphName(glyphName);
             if (codePoint) {
               char = String.fromCodePoint(codePoint);
             }
