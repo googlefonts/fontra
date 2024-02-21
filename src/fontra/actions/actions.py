@@ -120,4 +120,7 @@ class ScaleAction(BaseAction):
         )
 
     async def processUnitsPerEm(self, unitsPerEm):
-        return unitsPerEm * self.arguments.scaleFactor
+        if self.arguments.scaleUnitsPerEm:
+            return unitsPerEm * self.arguments.scaleFactor
+        else:
+            return unitsPerEm
