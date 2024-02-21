@@ -219,6 +219,17 @@ export class CanvasController {
     });
   }
 
+  isActualViewBox(viewBox) {
+    const canvasCenter = this.canvasPoint(rectCenter(viewBox));
+    return (
+      this.magnification === this._getProposedViewBoxMagnification(viewBox) &&
+      Math.round(this.origin.x) ===
+        Math.round(this.canvasWidth / 2 + this.origin.x - canvasCenter.x) &&
+      Math.round(this.origin.y) ===
+        Math.round(this.canvasHeight / 2 + this.origin.y - canvasCenter.y)
+    );
+  }
+
   setViewBox(viewBox) {
     this.magnification = this._getProposedViewBoxMagnification(viewBox);
     const canvasCenter = this.canvasPoint(rectCenter(viewBox));
