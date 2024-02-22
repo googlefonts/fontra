@@ -85,6 +85,7 @@ export class Form extends SimpleElement {
     this.contentElement.innerHTML = "";
     this._fieldGetters = {};
     this._fieldSetters = {};
+    this._lastValidFieldValues = {};
     if (!fieldDescriptions) {
       return;
     }
@@ -152,6 +153,7 @@ export class Form extends SimpleElement {
   }
 
   _addEditNumber(valueElement, fieldItem) {
+    this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
     inputElement.value = fieldItem.value;
@@ -181,6 +183,11 @@ export class Form extends SimpleElement {
     };
     inputElement.onchange = (event) => {
       let value = parseFloat(inputElement.value);
+      if (isNaN(value)) {
+        value = this._lastValidFieldValues[fieldItem.key];
+        inputElement.value = value;
+      }
+
       if (!inputElement.reportValidity()) {
         if (inputElement.min != undefined) {
           value = Math.max(value, inputElement.min);
@@ -190,6 +197,7 @@ export class Form extends SimpleElement {
         }
         inputElement.value = value;
       }
+      this._lastValidFieldValues[fieldItem.key] = value;
       this._fieldChanging(fieldItem, value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
@@ -198,6 +206,7 @@ export class Form extends SimpleElement {
   }
 
   _addEditAngle(valueElement, fieldItem) {
+    this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = html.input({
       type: "number",
       value: fieldItem.value,
@@ -205,6 +214,11 @@ export class Form extends SimpleElement {
       disabled: fieldItem.disabled,
       onchange: () => {
         let value = parseFloat(inputElement.value);
+        if (isNaN(value)) {
+          value = this._lastValidFieldValues[fieldItem.key];
+          inputElement.value = value;
+        }
+        this._lastValidFieldValues[fieldItem.key] = value;
         this._fieldChanging(fieldItem, value);
         rotaryControl.value = -value;
       },
