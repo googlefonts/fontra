@@ -446,7 +446,12 @@ export class EditorController {
 
     const editToolsElement = document.querySelector("#edit-tools");
     const toolButton = html.div(
-      { "class": "tool-button selected", "data-tool": tool.identifier },
+      {
+        "class": "tool-button selected",
+        "data-tool": tool.identifier,
+        "data-tooltip": tool.identifier,
+        "data-tooltipposition": "bottom",
+      },
       [html.createDomElement("inline-svg", { class: "tool-icon", src: tool.iconPath })]
     );
 

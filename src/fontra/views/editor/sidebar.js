@@ -23,7 +23,12 @@ export class Sidebar {
     );
 
     const panelContent = html.div(
-      { "class": "sidebar-content", "data-sidebarName": panelElement.identifier },
+      {
+        "class": "sidebar-content",
+        "data-sidebarName": panelElement.identifier,
+        "data-tooltip": panelElement.identifier,
+        "data-tooltipposition": "bottom",
+      },
       [panelElement]
     );
 
@@ -38,6 +43,8 @@ export class Sidebar {
         {
           "class": "sidebar-tab",
           "data-sidebarName": panelElement.identifier,
+          "data-tooltip": panelElement.identifier,
+          "data-tooltipposition": "bottom",
         },
         [html.createDomElement("inline-svg", { src: panelElement.iconPath })]
       )
