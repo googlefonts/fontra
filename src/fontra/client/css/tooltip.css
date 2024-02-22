@@ -1,4 +1,4 @@
-:host {
+:root {
   --tooltip-background-color-light: var(--fontra-theme-marker) black;
   --tooltip-background-color-dark: white;
   --tooltip-background-color: var(
