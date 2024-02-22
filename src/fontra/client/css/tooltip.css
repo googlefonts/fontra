@@ -21,10 +21,10 @@
 
 [data-tooltip] {
   position: relative;
-  cursor: default;
 }
 
 [data-tooltip]:hover::before {
+  text-transform: capitalize;
   content: attr(data-tooltip);
   width: max-content;
   max-width: var(--tooltip-max-width);

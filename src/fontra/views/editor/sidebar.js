@@ -4,6 +4,8 @@ import * as html from "/core/html-utils.js";
 export const MIN_SIDEBAR_WIDTH = 200;
 export const MAX_SIDEBAR_WIDTH = 500;
 
+const panelElementsPostionRight = ["selection-info"];
+
 export class Sidebar {
   constructor(identifier) {
     this.identifier = identifier;
@@ -26,8 +28,6 @@ export class Sidebar {
       {
         "class": "sidebar-content",
         "data-sidebarName": panelElement.identifier,
-        "data-tooltip": panelElement.identifier,
-        "data-tooltipposition": "bottom",
       },
       [panelElement]
     );
@@ -43,8 +43,12 @@ export class Sidebar {
         {
           "class": "sidebar-tab",
           "data-sidebarName": panelElement.identifier,
-          "data-tooltip": panelElement.identifier,
-          "data-tooltipposition": "bottom",
+          "data-tooltip": panelElement.identifier.replace(/-/g, " "),
+          "data-tooltipposition": panelElementsPostionRight.includes(
+            panelElement.identifier
+          )
+            ? "left"
+            : "right",
         },
         [html.createDomElement("inline-svg", { src: panelElement.iconPath })]
       )

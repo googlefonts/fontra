@@ -449,7 +449,7 @@ export class EditorController {
       {
         "class": "tool-button selected",
         "data-tool": tool.identifier,
-        "data-tooltip": tool.identifier,
+        "data-tooltip": tool.identifier.replace(/-/g, " "),
         "data-tooltipposition": "bottom",
       },
       [html.createDomElement("inline-svg", { class: "tool-icon", src: tool.iconPath })]
