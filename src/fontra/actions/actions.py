@@ -124,15 +124,22 @@ class ScaleAction(BaseFilterAction):
         )
 
     def _scaleGlyph(self, glyph, transformation):
+        xAdvance = (
+            glyph.xAdvance * self.scaleFactor if glyph.xAdvance else glyph.xAdvance
+        )
+        yAdvance = (
+            glyph.yAdvance * self.scaleFactor if glyph.yAdvance else glyph.yAdvance
+        )
+        verticalOrigin = (
+            glyph.verticalOrigin * self.scaleFactor
+            if glyph.verticalOrigin
+            else glyph.verticalOrigin
+        )
         return replace(
             glyph,
-            xAdvance=glyph.xAdvance * self.scaleFactor,
-            yAdvance=glyph.yAdvance * self.scaleFactor
-            if glyph.yAdvance
-            else glyph.yAdvance,
-            verticalOrigin=glyph.verticalOrigin * self.scaleFactor
-            if glyph.verticalOrigin
-            else glyph.verticalOrigin,
+            xAdvance=xAdvance,
+            yAdvance=yAdvance,
+            verticalOrigin=verticalOrigin,
             path=glyph.path.transformed(transformation),
             components=[
                 self._scaleComponentOrigin(component) for component in glyph.components
