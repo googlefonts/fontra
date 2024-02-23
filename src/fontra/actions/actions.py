@@ -1,5 +1,6 @@
 import pathlib
 from dataclasses import dataclass, field, replace
+from functools import cached_property
 from typing import Any, Protocol, runtime_checkable
 
 from fontTools.misc.transform import Transform
@@ -50,24 +51,29 @@ class BaseAction:
     def close(self) -> None:
         ...
 
+    @cached_property
+    def validatedInput(self) -> ReadableFontBackend:
+        assert isinstance(self.input, ReadableFontBackend)
+        return self.input
+
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
-        glyph = await self.input.getGlyph(glyphName)
+        glyph = await self.validatedInput.getGlyph(glyphName)
         return await self.processGlyph(glyph)
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        axes = await self.input.getGlobalAxes()
+        axes = await self.validatedInput.getGlobalAxes()
         return await self.processGlobalAxes(axes)
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
-        glyphMap = await self.input.getGlyphMap()
+        glyphMap = await self.validatedInput.getGlyphMap()
         return await self.processGlyphMap(glyphMap)
 
     async def getCustomData(self) -> dict[str, Any]:
-        customData = await self.input.getCustomData()
+        customData = await self.validatedInput.getCustomData()
         return await self.processCustomData(customData)
 
     async def getUnitsPerEm(self) -> int:
-        unitsPerEm = await self.input.getUnitsPerEm()
+        unitsPerEm = await self.validatedInput.getUnitsPerEm()
         return await self.processUnitsPerEm(unitsPerEm)
 
     # Default no-op process methods, to be overridden.

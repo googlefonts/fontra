@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 import yaml
 
 from ..core.protocols import ReadableFontBackend
+from .actions import ConnectableAction, OutputAction
 
 
 @dataclass(kw_only=True)
@@ -27,7 +28,9 @@ class ActionStep:
     name: str
     arguments: dict
     steps: list[ActionStep] = field(default_factory=list)
-    action: ReadableFontBackend | None = field(init=False, default=None)
+    action: ReadableFontBackend | ConnectableAction | OutputAction | None = field(
+        init=False, default=None
+    )
 
 
 def _structureSteps(rawSteps):
