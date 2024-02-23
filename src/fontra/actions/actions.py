@@ -126,6 +126,7 @@ class ScaleAction(BaseFilterAction):
     def _scaleGlyph(self, glyph, transformation):
         return replace(
             glyph,
+            xAdvance=glyph.xAdvance * self.scaleFactor,
             path=glyph.path.transformed(transformation),
             components=[
                 self._scaleComponentOrigin(component) for component in glyph.components
