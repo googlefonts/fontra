@@ -1,11 +1,24 @@
 import pathlib
 from dataclasses import dataclass, field, replace
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
 from fontTools.misc.transform import Transform
 
 from ..core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
 from ..core.protocols import ReadableFontBackend
+
+
+@runtime_checkable
+class ConnectableAction(Protocol):
+    def connect(self, input: ReadableFontBackend) -> None:
+        ...
+
+
+@runtime_checkable
+class OutputAction(Protocol):
+    async def process(self) -> None:
+        ...
+
 
 _actions = {}
 
@@ -34,7 +47,7 @@ def getAction(name, input, **arguments):
 class BaseAction:
     input: ReadableFontBackend | None = field(init=False, default=None)
 
-    def connect(self, input: ReadableFontBackend):
+    def connect(self, input: ReadableFontBackend) -> None:
         self.input = input
 
     def close(self) -> None:
