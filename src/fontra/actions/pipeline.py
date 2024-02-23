@@ -11,7 +11,7 @@ from .actions import ConnectableAction, OutputAction
 @dataclass(kw_only=True)
 class Pipeline:
     config: dict
-    steps: list[ActionStep] = field(init=False, default_factory=list)
+    steps: list[ActionStep] = field(init=False)
 
     @classmethod
     def fromYAMLFile(cls, path):
