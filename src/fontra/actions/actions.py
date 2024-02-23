@@ -33,14 +33,11 @@ def registerActionClass(name):
     return wrapper
 
 
-def getAction(name, input, **arguments):
-    if name not in _actions:
+def getActionClass(name):
+    cls = _actions.get(name)
+    if cls is None:
         raise KeyError(f"No action found named '{name}'")
-    cls = _actions[name]
-    action = cls(**arguments)
-    action.connect(input)
-    assert isinstance(action, ReadableFontBackend)
-    return action
+    return cls
 
 
 @dataclass(kw_only=True)

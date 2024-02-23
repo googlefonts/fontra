@@ -4,9 +4,10 @@ import pytest
 import yaml
 from fontTools.misc.arrayTools import scaleRect
 
-from fontra.actions.actions import getAction
+from fontra.actions.actions import ConnectableAction, getActionClass
 from fontra.actions.pipeline import Pipeline
 from fontra.backends import getFileSystemBackend
+from fontra.core.protocols import ReadableFontBackend
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 commonFontsDir = pathlib.Path(__file__).parent.parent / "test-common" / "fonts"
@@ -22,7 +23,10 @@ async def test_scaleAction(testFontraFont, glyphName):
     scaleFactor = 2
 
     unscaledGlyph = await testFontraFont.getGlyph(glyphName)
-    action = getAction("scale", testFontraFont, scaleFactor=scaleFactor)
+    actionClass = getActionClass("scale")
+    action = actionClass(scaleFactor=scaleFactor)
+    assert isinstance(action, (ConnectableAction, ReadableFontBackend))
+    action.connect(testFontraFont)
     scaledGlyph = await action.getGlyph(glyphName)
 
     assert (
@@ -58,9 +62,10 @@ async def test_subsetAction(testFontraFont, tmp_path):
     glyphNamesFile = pathlib.Path(tmp_path) / "subset-glyphs.txt"
     glyphNamesFile.write_text("B\nC Adieresis\n")
 
-    action = getAction(
-        "subset", testFontraFont, glyphNames=glyphNames, glyphNamesFile=glyphNamesFile
-    )
+    actionClass = getActionClass("subset")
+    action = actionClass(glyphNames=glyphNames, glyphNamesFile=glyphNamesFile)
+    assert isinstance(action, (ConnectableAction, ReadableFontBackend))
+    action.connect(testFontraFont)
 
     glyphMap = await action.getGlyphMap()
 
