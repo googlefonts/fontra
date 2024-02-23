@@ -28,17 +28,9 @@ class Pipeline:
     def __post_init__(self):
         self.steps = _structureSteps(self.config["steps"])
 
-    def prepareSteps(self) -> Runner:
-        return Runner(steps=self.steps)
-
-
-@dataclass(kw_only=True)
-class Runner:
-    steps: list[ActionStep]
-    outputs: list[OutputActionProtocol] | None = field(init=False, default=None)
-
-    async def setup(self):
-        _, self.outputs = await _setupActionSteps(None, self.steps)
+    async def setupOutputs(self) -> list[OutputActionProtocol]:
+        _, outputs = await _setupActionSteps(None, self.steps)
+        return outputs
 
 
 async def _setupActionSteps(
