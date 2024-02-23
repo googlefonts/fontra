@@ -42,6 +42,7 @@ async def test_scaleAction(testFontraFont, glyphName) -> None:
     ):
         unscaledLayerGlyph = unscaledLayer.glyph
         scaledLayerGlyph = scaledLayer.glyph
+        assert unscaledLayerGlyph.xAdvance * scaleFactor == scaledLayerGlyph.xAdvance
 
         unscaledBounds = unscaledLayerGlyph.path.getControlBounds()
         assert isinstance(scaledLayerGlyph.path, PackedPath)
