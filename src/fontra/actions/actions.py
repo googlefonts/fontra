@@ -45,16 +45,16 @@ def getActionClass(name):
 class BaseAction:
     input: ReadableFontBackend | None = field(init=False, default=None)
 
+    @cached_property
+    def validatedInput(self) -> ReadableFontBackend:
+        assert isinstance(self.input, ReadableFontBackend)
+        return self.input
+
     def connect(self, input: ReadableFontBackend) -> None:
         self.input = input
 
     def close(self) -> None:
         ...
-
-    @cached_property
-    def validatedInput(self) -> ReadableFontBackend:
-        assert isinstance(self.input, ReadableFontBackend)
-        return self.input
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         glyph = await self.validatedInput.getGlyph(glyphName)
