@@ -16,6 +16,12 @@ class ConnectableActionProtocol(Protocol):
 
 
 @runtime_checkable
+class InputActionProtocol(Protocol):
+    async def prepare(self) -> None:
+        ...
+
+
+@runtime_checkable
 class OutputActionProtocol(Protocol):
     async def process(self) -> None:
         ...
