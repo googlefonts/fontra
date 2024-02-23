@@ -4,7 +4,7 @@ import pytest
 import yaml
 from fontTools.misc.arrayTools import scaleRect
 
-from fontra.actions.actions import ConnectableAction, getActionClass
+from fontra.actions.actions import ConnectableActionProtocol, getActionClass
 from fontra.actions.pipeline import Pipeline
 from fontra.backends import getFileSystemBackend
 from fontra.core.protocols import ReadableFontBackend
@@ -25,7 +25,7 @@ async def test_scaleAction(testFontraFont, glyphName):
     unscaledGlyph = await testFontraFont.getGlyph(glyphName)
     actionClass = getActionClass("scale")
     action = actionClass(scaleFactor=scaleFactor)
-    assert isinstance(action, (ConnectableAction, ReadableFontBackend))
+    assert isinstance(action, (ConnectableActionProtocol, ReadableFontBackend))
     action.connect(testFontraFont)
     scaledGlyph = await action.getGlyph(glyphName)
 
@@ -64,7 +64,7 @@ async def test_subsetAction(testFontraFont, tmp_path):
 
     actionClass = getActionClass("subset")
     action = actionClass(glyphNames=glyphNames, glyphNamesFile=glyphNamesFile)
-    assert isinstance(action, (ConnectableAction, ReadableFontBackend))
+    assert isinstance(action, (ConnectableActionProtocol, ReadableFontBackend))
     action.connect(testFontraFont)
 
     glyphMap = await action.getGlyphMap()

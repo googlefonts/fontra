@@ -10,13 +10,13 @@ from ..core.protocols import ReadableFontBackend
 
 
 @runtime_checkable
-class ConnectableAction(Protocol):
+class ConnectableActionProtocol(Protocol):
     def connect(self, input: ReadableFontBackend) -> None:
         ...
 
 
 @runtime_checkable
-class OutputAction(Protocol):
+class OutputActionProtocol(Protocol):
     async def process(self) -> None:
         ...
 
