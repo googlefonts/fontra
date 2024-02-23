@@ -35,6 +35,10 @@ class Pipeline:
 @dataclass(kw_only=True)
 class Runner:
     steps: list[ActionStep]
+    outputs: list[OutputActionProtocol] | None = field(init=False, default=None)
+
+    async def setup(self):
+        _, self.outputs = await _setupActionSteps(None, self.steps)
 
 
 async def _setupActionSteps(
@@ -47,44 +51,45 @@ async def _setupActionSteps(
         action = actionClass(**step.arguments)
 
         if isinstance(action, OutputActionProtocol):
+            # output
             assert isinstance(action, ConnectableActionProtocol)
             assert currentInput is not None
-            # TODO: evaluate nested steps
-            await action.connect(currentInput)
+
+            # set up nested steps
+            outputStepsResult, moreOutput = await _setupActionSteps(
+                currentInput, step.steps
+            )
+            outputs.extend(moreOutput)
+
+            assert isinstance(outputStepsResult, ConnectableActionProtocol)
+            await action.connect(outputStepsResult)
+            outputs.append(action)
         elif isinstance(action, ConnectableActionProtocol):
+            # filter
             assert isinstance(action, ReadableFontBackend)
             assert currentInput is not None
             await action.connect(currentInput)
-            # TODO: evaluate nested steps
+
+            # set up nested steps
+            action, moreOutput = await _setupActionSteps(action, step.steps)
+            outputs.extend(moreOutput)
+
             currentInput = action  # result of nested steps if any
         elif isinstance(action, InputActionProtocol):
+            # input
             assert isinstance(action, ReadableFontBackend)
             await action.prepare()
-            # TODO: evaluate nested steps
+
+            # set up nested steps
+            action, moreOutput = await _setupActionSteps(action, step.steps)
+            outputs.extend(moreOutput)
+
             if currentInput is None:
                 currentInput = action
             else:
                 currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
         else:
             raise AssertionError("Expected code to be unreachable")
-
-        if isinstance(action, ConnectableActionProtocol):
-            # filter action or output
-            assert currentInput is not None
-            await action.connect(currentInput)
-            if isinstance(action, ReadableFontBackend):
-                # filter action
-                currentInput = action
-            else:
-                # output
-                assert isinstance(action, OutputActionProtocol)
-                outputs.append(action)
-        else:
-            # input
-            if currentInput is None:
-                currentInput = action
-            else:
-                currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
 
     return currentInput, outputs
 
