@@ -5,7 +5,12 @@ from dataclasses import dataclass, field
 import yaml
 
 from ..core.protocols import ReadableFontBackend
-from .actions import ConnectableActionProtocol, OutputActionProtocol, getActionClass
+from .actions import (
+    ConnectableActionProtocol,
+    InputActionProtocol,
+    OutputActionProtocol,
+    getActionClass,
+)
 from .merger import FontBackendMerger
 
 
@@ -40,6 +45,29 @@ async def _setupActionSteps(
     for step in steps:
         actionClass = getActionClass(step.name)
         action = actionClass(**step.arguments)
+
+        if isinstance(action, OutputActionProtocol):
+            assert isinstance(action, ConnectableActionProtocol)
+            assert currentInput is not None
+            # TODO: evaluate nested steps
+            await action.connect(currentInput)
+        elif isinstance(action, ConnectableActionProtocol):
+            assert isinstance(action, ReadableFontBackend)
+            assert currentInput is not None
+            await action.connect(currentInput)
+            # TODO: evaluate nested steps
+            currentInput = action  # result of nested steps if any
+        elif isinstance(action, InputActionProtocol):
+            assert isinstance(action, ReadableFontBackend)
+            await action.prepare()
+            # TODO: evaluate nested steps
+            if currentInput is None:
+                currentInput = action
+            else:
+                currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
+        else:
+            raise AssertionError("Expected code to be unreachable")
+
         if isinstance(action, ConnectableActionProtocol):
             # filter action or output
             assert currentInput is not None
