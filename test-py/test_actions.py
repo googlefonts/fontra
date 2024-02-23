@@ -7,6 +7,7 @@ from fontTools.misc.arrayTools import scaleRect
 from fontra.actions.actions import ConnectableActionProtocol, getActionClass
 from fontra.actions.pipeline import Pipeline
 from fontra.backends import getFileSystemBackend
+from fontra.core.path import PackedPath
 from fontra.core.protocols import ReadableFontBackend
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -19,15 +20,17 @@ def testFontraFont():
 
 
 @pytest.mark.parametrize("glyphName", ["A", "Q", "Adieresis", "period"])
-async def test_scaleAction(testFontraFont, glyphName):
+async def test_scaleAction(testFontraFont, glyphName) -> None:
     scaleFactor = 2
 
     unscaledGlyph = await testFontraFont.getGlyph(glyphName)
     actionClass = getActionClass("scale")
     action = actionClass(scaleFactor=scaleFactor)
-    assert isinstance(action, (ConnectableActionProtocol, ReadableFontBackend))
-    action.connect(testFontraFont)
+    assert isinstance(action, ConnectableActionProtocol)
+    assert isinstance(action, ReadableFontBackend)
+    await action.connect(testFontraFont)
     scaledGlyph = await action.getGlyph(glyphName)
+    assert scaledGlyph is not None
 
     assert (
         await testFontraFont.getUnitsPerEm() * scaleFactor
@@ -41,6 +44,7 @@ async def test_scaleAction(testFontraFont, glyphName):
         scaledLayerGlyph = scaledLayer.glyph
 
         unscaledBounds = unscaledLayerGlyph.path.getControlBounds()
+        assert isinstance(scaledLayerGlyph.path, PackedPath)
         scaledBounds = scaledLayerGlyph.path.getControlBounds()
         if unscaledBounds is None:
             assert scaledBounds is None
@@ -56,7 +60,7 @@ async def test_scaleAction(testFontraFont, glyphName):
             )
 
 
-async def test_subsetAction(testFontraFont, tmp_path):
+async def test_subsetAction(testFontraFont, tmp_path) -> None:
     glyphNames = {"A"}
 
     glyphNamesFile = pathlib.Path(tmp_path) / "subset-glyphs.txt"
@@ -64,8 +68,9 @@ async def test_subsetAction(testFontraFont, tmp_path):
 
     actionClass = getActionClass("subset")
     action = actionClass(glyphNames=glyphNames, glyphNamesFile=glyphNamesFile)
-    assert isinstance(action, (ConnectableActionProtocol, ReadableFontBackend))
-    action.connect(testFontraFont)
+    assert isinstance(action, ConnectableActionProtocol)
+    assert isinstance(action, ReadableFontBackend)
+    await action.connect(testFontraFont)
 
     glyphMap = await action.getGlyphMap()
 

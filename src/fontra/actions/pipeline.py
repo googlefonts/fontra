@@ -32,7 +32,7 @@ class Runner:
     steps: list[ActionStep]
 
 
-def _setupActionSteps(
+async def _setupActionSteps(
     currentInput: ReadableFontBackend | None, steps: list[ActionStep]
 ) -> tuple[ReadableFontBackend | None, list[OutputActionProtocol]]:
     outputs: list[OutputActionProtocol] = []
@@ -43,7 +43,7 @@ def _setupActionSteps(
         if isinstance(action, ConnectableActionProtocol):
             # filter action or output
             assert currentInput is not None
-            action.connect(currentInput)
+            await action.connect(currentInput)
             if isinstance(action, ReadableFontBackend):
                 # filter action
                 currentInput = action

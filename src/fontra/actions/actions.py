@@ -11,7 +11,7 @@ from ..core.protocols import ReadableFontBackend
 
 @runtime_checkable
 class ConnectableActionProtocol(Protocol):
-    def connect(self, input: ReadableFontBackend) -> None:
+    async def connect(self, input: ReadableFontBackend) -> None:
         ...
 
 
@@ -56,7 +56,7 @@ class BaseAction:
         assert isinstance(self.input, ReadableFontBackend)
         return self.input
 
-    def connect(self, input: ReadableFontBackend) -> None:
+    async def connect(self, input: ReadableFontBackend) -> None:
         self.input = input
 
     def close(self) -> None:
