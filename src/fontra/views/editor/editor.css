@@ -20,7 +20,7 @@
   --editor-top-bar-border-color-dark: #2e2e2e;
   --editor-top-bar-link-hover-light: #e1e1e1;
   --editor-top-bar-link-hover-dark: rgb(47, 47, 47);
-  --editor-top-bar-height: 45px;
+  --editor-top-bar-height: 35px;
 }
 
 :root {

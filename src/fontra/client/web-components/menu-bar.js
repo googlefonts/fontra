@@ -5,7 +5,7 @@ import { MenuPanel } from "./menu-panel.js";
 export class MenuBar extends SimpleElement {
   static styles = `
   .menu-bar {
-    padding: 0.5rem 1rem;
+    padding: 0.2rem 0.5rem;
     align-items: center;
     position: absolute;
     font-size: 1rem;
@@ -13,7 +13,7 @@ export class MenuBar extends SimpleElement {
   }
 
   .menu-item {
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.6rem;
     display: inline-block;
     cursor: default;
     user-select: none;
