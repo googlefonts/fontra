@@ -358,7 +358,21 @@ export class EditorController {
         getItems: () => {
           return [
             {
+              title: "Homepage",
+              enabled: () => true,
+              callback: () => {
+                window.open("https://fontra.xyz/");
+              },
+            },
+            {
               title: "Documentation",
+              enabled: () => true,
+              callback: () => {
+                window.open("https://gferreira.github.io/fontra-docs/");
+              },
+            },
+            {
+              title: "GitHub",
               enabled: () => true,
               callback: () => {
                 window.open("https://github.com/googlefonts/fontra");
