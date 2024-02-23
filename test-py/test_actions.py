@@ -127,10 +127,10 @@ steps:
 """
 
 
-async def test_pipeline():
+async def test_pipeline(tmpdir):
     config = yaml.safe_load(testConfigYAML)
     pipeline = Pipeline(config=config)
     outputs = await pipeline.setupOutputs()
 
     for output in outputs:
-        await output.process()
+        await output.process(tmpdir)

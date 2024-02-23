@@ -1,3 +1,4 @@
+import os
 import pathlib
 from contextlib import closing
 from dataclasses import dataclass, field, replace
@@ -239,8 +240,10 @@ class OutputAction:
     async def connect(self, input: ReadableFontBackend) -> None:
         self.input = input
 
-    async def process(self) -> None:
-        output = newFileSystemBackend(pathlib.Path(self.destination).resolve())
+    async def process(self, outputDir: os.PathLike = pathlib.Path()) -> None:
+        outputDir = pathlib.Path(outputDir)
+        output = newFileSystemBackend((outputDir / self.destination).resolve())
+        print(output.path)
 
         with closing(output):
             await copyFont(self.validatedInput, output)
