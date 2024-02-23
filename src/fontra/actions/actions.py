@@ -243,7 +243,6 @@ class OutputAction:
     async def process(self, outputDir: os.PathLike = pathlib.Path()) -> None:
         outputDir = pathlib.Path(outputDir)
         output = newFileSystemBackend((outputDir / self.destination).resolve())
-        print(output.path)
 
         with closing(output):
             await copyFont(self.validatedInput, output)
