@@ -37,7 +37,9 @@ async def mainAsync():
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output-dir", type=existing_folder)
+    parser.add_argument(
+        "--output-dir", type=existing_folder, help="A path to a folder for the output"
+    )
     parser.add_argument(
         "config", type=yaml_or_json, help="A YAML or JSON file providing configuration"
     )
