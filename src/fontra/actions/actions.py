@@ -48,7 +48,7 @@ def getActionClass(name):
 
 
 @dataclass(kw_only=True)
-class BaseAction:
+class BaseFilterAction:
     input: ReadableFontBackend | None = field(init=False, default=None)
 
     @cached_property
@@ -104,7 +104,7 @@ class BaseAction:
 
 @registerActionClass("scale")
 @dataclass(kw_only=True)
-class ScaleAction(BaseAction):
+class ScaleAction(BaseFilterAction):
     scaleFactor: float
     scaleUnitsPerEm: bool = True
 
@@ -149,7 +149,7 @@ class ScaleAction(BaseAction):
 
 @registerActionClass("subset")
 @dataclass(kw_only=True)
-class SubsetAction(BaseAction):
+class SubsetAction(BaseFilterAction):
     glyphNames: set[str] = field(default_factory=set)
     glyphNamesFile: str | None = None
 
