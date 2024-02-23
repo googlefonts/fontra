@@ -17,7 +17,7 @@ class ConnectableActionProtocol(Protocol):
 
 @runtime_checkable
 class InputActionProtocol(Protocol):
-    async def prepare(self) -> None:
+    async def prepare(self) -> ReadableFontBackend:
         ...
 
 

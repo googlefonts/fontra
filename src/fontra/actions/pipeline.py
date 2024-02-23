@@ -70,7 +70,7 @@ async def _setupActionSteps(
         elif isinstance(action, InputActionProtocol):
             # input
             assert isinstance(action, ReadableFontBackend)
-            await action.prepare()
+            action = await action.prepare()
 
             # set up nested steps
             action, moreOutput = await _setupActionSteps(action, step.steps)
