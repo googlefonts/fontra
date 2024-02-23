@@ -6,6 +6,7 @@ import yaml
 
 from ..core.protocols import ReadableFontBackend
 from .actions import ConnectableActionProtocol, OutputActionProtocol, getActionClass
+from .merger import FontBackendMerger
 
 
 @dataclass(kw_only=True)
@@ -55,16 +56,9 @@ def _setupActionSteps(
             if currentInput is None:
                 currentInput = action
             else:
-                currentInput = mergeInputs(currentInput, action)
+                currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
 
     return currentInput, outputs
-
-
-def mergeInputs(
-    input1: ReadableFontBackend, input2: ReadableFontBackend
-) -> ReadableFontBackend:
-    ...
-    return input2
 
 
 @dataclass(kw_only=True)
