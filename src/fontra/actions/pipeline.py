@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-import yaml
-
 from ..core.protocols import ReadableFontBackend
 from .actions import (
     ConnectableActionProtocol,
@@ -18,12 +16,6 @@ from .merger import FontBackendMerger
 class Pipeline:
     config: dict
     steps: list[ActionStep] = field(init=False)
-
-    @classmethod
-    def fromYAMLFile(cls, path):
-        with open(path) as file:
-            config = yaml.safe_load(file)
-        return cls(config=config)
 
     def __post_init__(self):
         self.steps = _structureSteps(self.config["steps"])
