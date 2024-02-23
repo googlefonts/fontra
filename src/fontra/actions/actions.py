@@ -205,7 +205,7 @@ class InputAction:
     source: str
 
     async def prepare(self) -> ReadableFontBackend:
-        return getFileSystemBackend(self.source)
+        return getFileSystemBackend(pathlib.Path(self.source).resolve())
 
 
 @registerActionClass("output")
