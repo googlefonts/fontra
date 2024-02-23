@@ -1,11 +1,13 @@
 import pathlib
+from contextlib import closing
 from dataclasses import dataclass, field, replace
 from functools import cached_property
 from typing import Any, Protocol, runtime_checkable
 
 from fontTools.misc.transform import Transform
 
-from ..backends import getFileSystemBackend
+from ..backends import getFileSystemBackend, newFileSystemBackend
+from ..backends.copy import copyFont
 from ..core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
 from ..core.protocols import ReadableFontBackend
 
@@ -223,5 +225,7 @@ class OutputAction:
         self.input = input
 
     async def process(self) -> None:
-        # TODO
-        print(self.destination)
+        output = newFileSystemBackend(pathlib.Path(self.destination).resolve())
+
+        with closing(output):
+            await copyFont(self.validatedInput, output)
