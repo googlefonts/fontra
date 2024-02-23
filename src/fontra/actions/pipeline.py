@@ -32,6 +32,7 @@ class ActionStep:
 
 def _structureSteps(rawSteps):
     structured = []
+
     for rawStep in rawSteps:
         actionName = rawStep["action"]
         arguments = dict(rawStep)
