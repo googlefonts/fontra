@@ -10,11 +10,11 @@ from ..core.protocols import ReadableFontBackend
 _actions = {}
 
 
-def registerActionClass(name, argumentsType):
+def registerActionClass(name):
     def wrapper(cls):
         assert name not in _actions
         cls.actionName = name
-        _actions[name] = cls, argumentsType
+        _actions[name] = cls
         return cls
 
     return wrapper
@@ -23,16 +23,19 @@ def registerActionClass(name, argumentsType):
 def getAction(name, input, **arguments):
     if name not in _actions:
         raise KeyError(f"No action found named '{name}'")
-    cls, argumentsType = _actions[name]
-    action = cls(input=input, arguments=argumentsType(**arguments))
+    cls = _actions[name]
+    action = cls(**arguments)
+    action.connect(input)
     assert isinstance(action, ReadableFontBackend)
     return action
 
 
 @dataclass(kw_only=True)
 class BaseAction:
-    input: ReadableFontBackend
-    arguments: dict
+    input: ReadableFontBackend | None = field(init=False, default=None)
+
+    def connect(self, input: ReadableFontBackend):
+        self.input = input
 
     def close(self) -> None:
         ...
@@ -77,17 +80,14 @@ class BaseAction:
         return unitsPerEm
 
 
+@registerActionClass("scale")
 @dataclass(kw_only=True)
-class ScaleActionArguments:
+class ScaleAction(BaseAction):
     scaleFactor: float
     scaleUnitsPerEm: bool = True
 
-
-@registerActionClass("scale", ScaleActionArguments)
-@dataclass(kw_only=True)
-class ScaleAction(BaseAction):
     async def processGlyph(self, glyph):
-        transformation = Transform().scale(self.arguments.scaleFactor)
+        transformation = Transform().scale(self.scaleFactor)
         return replace(
             glyph,
             layers={
@@ -108,7 +108,7 @@ class ScaleAction(BaseAction):
         )
 
     def _scaleComponentOrigin(self, component):
-        scaleFactor = self.arguments.scaleFactor
+        scaleFactor = self.scaleFactor
         x = component.transformation.translateX * scaleFactor
         y = component.transformation.translateY * scaleFactor
         return replace(
@@ -119,14 +119,15 @@ class ScaleAction(BaseAction):
         )
 
     async def processUnitsPerEm(self, unitsPerEm):
-        if self.arguments.scaleUnitsPerEm:
-            return unitsPerEm * self.arguments.scaleFactor
+        if self.scaleUnitsPerEm:
+            return unitsPerEm * self.scaleFactor
         else:
             return unitsPerEm
 
 
+@registerActionClass("subset")
 @dataclass(kw_only=True)
-class SubsetActionArguments:
+class SubsetAction(BaseAction):
     glyphNames: set[str] = field(default_factory=set)
     glyphNamesFile: str | None = None
 
@@ -136,19 +137,13 @@ class SubsetActionArguments:
             assert path.is_file()
             glyphNames = set(path.read_text().split())
             self.glyphNames = self.glyphNames | glyphNames
-
-
-@registerActionClass("subset", SubsetActionArguments)
-@dataclass(kw_only=True)
-class SubsetAction(BaseAction):
-    def __post_init__(self):
         self._glyphMap = None
 
     async def _getSubsettedGlyphMap(self):
         if self._glyphMap is None:
             bigGlyphMap = await self.input.getGlyphMap()
             subsettedGlyphMap = {}
-            glyphNames = set(self.arguments.glyphNames)
+            glyphNames = set(self.glyphNames)
             while glyphNames:
                 glyphName = glyphNames.pop()
                 if glyphName not in bigGlyphMap:
