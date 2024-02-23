@@ -74,7 +74,7 @@ async def _setupActionSteps(
             action, moreOutput = await _setupActionSteps(action, step.steps)
             outputs.extend(moreOutput)
 
-            currentInput = action  # result of nested steps if any
+            currentInput = action
         elif isinstance(action, InputActionProtocol):
             # input
             assert isinstance(action, ReadableFontBackend)
