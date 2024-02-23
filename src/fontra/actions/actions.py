@@ -135,6 +135,7 @@ class ScaleAction(BaseFilterAction):
             if glyph.verticalOrigin
             else glyph.verticalOrigin
         )
+        # TODO: anchors, guidelines
         return replace(
             glyph,
             xAdvance=xAdvance,
