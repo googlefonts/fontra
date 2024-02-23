@@ -129,4 +129,7 @@ steps:
 async def test_pipeline():
     config = yaml.safe_load(testConfigYAML)
     pipeline = Pipeline(config=config)
-    print(pipeline)
+    outputs = await pipeline.setupOutputs()
+
+    for output in outputs:
+        await output.process()

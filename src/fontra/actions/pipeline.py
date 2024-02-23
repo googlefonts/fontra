@@ -53,7 +53,7 @@ async def _setupActionSteps(
             )
             outputs.extend(moreOutput)
 
-            assert isinstance(outputStepsResult, ConnectableActionProtocol)
+            assert isinstance(outputStepsResult, ReadableFontBackend)
             await action.connect(outputStepsResult)
             outputs.append(action)
         elif isinstance(action, ConnectableActionProtocol):
@@ -69,8 +69,8 @@ async def _setupActionSteps(
             currentInput = action
         elif isinstance(action, InputActionProtocol):
             # input
-            assert isinstance(action, ReadableFontBackend)
             action = await action.prepare()
+            assert isinstance(action, ReadableFontBackend)
 
             # set up nested steps
             action, moreOutput = await _setupActionSteps(action, step.steps)

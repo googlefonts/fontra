@@ -5,6 +5,7 @@ from typing import Any, Protocol, runtime_checkable
 
 from fontTools.misc.transform import Transform
 
+from ..backends import getFileSystemBackend
 from ..core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
 from ..core.protocols import ReadableFontBackend
 
@@ -196,3 +197,31 @@ class SubsetAction(BaseFilterAction):
 
     async def getGlyphMap(self):
         return await self._getSubsettedGlyphMap()
+
+
+@registerActionClass("input")
+@dataclass(kw_only=True)
+class InputAction:
+    source: str
+
+    async def prepare(self) -> ReadableFontBackend:
+        return getFileSystemBackend(self.source)
+
+
+@registerActionClass("output")
+@dataclass(kw_only=True)
+class OutputAction:
+    destination: str
+    input: ReadableFontBackend | None = field(init=False, default=None)
+
+    @cached_property
+    def validatedInput(self) -> ReadableFontBackend:
+        assert isinstance(self.input, ReadableFontBackend)
+        return self.input
+
+    async def connect(self, input: ReadableFontBackend) -> None:
+        self.input = input
+
+    async def process(self) -> None:
+        # TODO
+        print(self.destination)
