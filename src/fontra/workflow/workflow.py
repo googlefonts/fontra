@@ -13,7 +13,7 @@ from .merger import FontBackendMerger
 
 
 @dataclass(kw_only=True)
-class Pipeline:
+class Workflow:
     config: dict
     steps: list[ActionStep] = field(init=False)
 

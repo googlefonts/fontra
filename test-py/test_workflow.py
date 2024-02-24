@@ -4,11 +4,11 @@ import pytest
 import yaml
 from fontTools.misc.arrayTools import scaleRect
 
-from fontra.actions.actions import ConnectableActionProtocol, getActionClass
-from fontra.actions.pipeline import Pipeline
 from fontra.backends import getFileSystemBackend
 from fontra.core.path import PackedPath
 from fontra.core.protocols import ReadableFontBackend
+from fontra.workflow.actions import ConnectableActionProtocol, getActionClass
+from fontra.workflow.workflow import Workflow
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 commonFontsDir = pathlib.Path(__file__).parent.parent / "test-common" / "fonts"
@@ -127,10 +127,10 @@ steps:
 """
 
 
-async def test_pipeline(tmpdir):
+async def test_workflow(tmpdir):
     config = yaml.safe_load(testConfigYAML)
-    pipeline = Pipeline(config=config)
-    outputs = await pipeline.setupOutputs()
+    workflow = Workflow(config=config)
+    outputs = await workflow.setupOutputs()
 
     for output in outputs:
         await output.process(tmpdir)

@@ -7,7 +7,7 @@ import pathlib
 
 import yaml
 
-from .pipeline import Pipeline
+from .workflow import Workflow
 
 
 def yaml_or_json(path):
@@ -51,8 +51,8 @@ async def mainAsync():
 
     os.chdir(config_path.parent)
 
-    pipeline = Pipeline(config=config)
-    outputs = await pipeline.setupOutputs()
+    workflow = Workflow(config=config)
+    outputs = await workflow.setupOutputs()
 
     for output in outputs:
         await output.process(output_dir)
