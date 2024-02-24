@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import NamedTuple
+from typing import AsyncGenerator, NamedTuple
 
 from ..core.protocols import ReadableFontBackend
 from .actions import (
@@ -21,18 +22,24 @@ class Workflow:
     def __post_init__(self):
         self.steps = _structureSteps(self.config["steps"])
 
-    async def setupOutputs(self) -> WorkflowResult:
-        return await _setupActionSteps(None, self.steps)
+    @asynccontextmanager
+    async def endPoints(self) -> AsyncGenerator[WorkflowEndPoints, None]:
+        endPoints = await _prepareEndPoints(None, self.steps)
+        try:
+            yield endPoints
+        finally:
+            # clean
+            pass
 
 
-class WorkflowResult(NamedTuple):
+class WorkflowEndPoints(NamedTuple):
     endPoint: ReadableFontBackend | None
     outputs: list[OutputActionProtocol]
 
 
-async def _setupActionSteps(
+async def _prepareEndPoints(
     currentInput: ReadableFontBackend | None, steps: list[ActionStep]
-) -> WorkflowResult:
+) -> WorkflowEndPoints:
     outputs: list[OutputActionProtocol] = []
 
     for step in steps:
@@ -45,7 +52,7 @@ async def _setupActionSteps(
             assert currentInput is not None
 
             # set up nested steps
-            outputStepsResult, moreOutput = await _setupActionSteps(
+            outputStepsResult, moreOutput = await _prepareEndPoints(
                 currentInput, step.steps
             )
             outputs.extend(moreOutput)
@@ -60,7 +67,7 @@ async def _setupActionSteps(
             await action.connect(currentInput)
 
             # set up nested steps
-            action, moreOutput = await _setupActionSteps(action, step.steps)
+            action, moreOutput = await _prepareEndPoints(action, step.steps)
             outputs.extend(moreOutput)
 
             currentInput = action
@@ -70,7 +77,7 @@ async def _setupActionSteps(
             assert isinstance(action, ReadableFontBackend)
 
             # set up nested steps
-            action, moreOutput = await _setupActionSteps(action, step.steps)
+            action, moreOutput = await _prepareEndPoints(action, step.steps)
             outputs.extend(moreOutput)
 
             if currentInput is None:
@@ -80,7 +87,7 @@ async def _setupActionSteps(
         else:
             raise AssertionError("Expected code to be unreachable")
 
-    return WorkflowResult(currentInput, outputs)
+    return WorkflowEndPoints(currentInput, outputs)
 
 
 @dataclass(kw_only=True)
