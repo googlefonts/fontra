@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import pathlib
 from contextlib import asynccontextmanager, closing
@@ -13,6 +14,9 @@ from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
 from ..core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
 from ..core.protocols import ReadableFontBackend
+
+# All actions should use this logger, regardless of where they are defined
+actionLogger = logging.getLogger(__name__)
 
 
 @runtime_checkable
