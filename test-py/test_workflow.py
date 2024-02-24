@@ -28,37 +28,42 @@ async def test_scaleAction(testFontraFont, glyphName) -> None:
     action = actionClass(scaleFactor=scaleFactor)
     assert isinstance(action, ConnectableActionProtocol)
     assert isinstance(action, ReadableFontBackend)
-    await action.connect(testFontraFont)
-    scaledGlyph = await action.getGlyph(glyphName)
-    assert scaledGlyph is not None
 
-    assert (
-        await testFontraFont.getUnitsPerEm() * scaleFactor
-        == await action.getUnitsPerEm()
-    )
+    async with action.connect(testFontraFont) as action:
+        scaledGlyph = await action.getGlyph(glyphName)
+        assert scaledGlyph is not None
 
-    for unscaledLayer, scaledLayer in zip(
-        unscaledGlyph.layers.values(), scaledGlyph.layers.values()
-    ):
-        unscaledLayerGlyph = unscaledLayer.glyph
-        scaledLayerGlyph = scaledLayer.glyph
-        assert unscaledLayerGlyph.xAdvance * scaleFactor == scaledLayerGlyph.xAdvance
+        assert (
+            await testFontraFont.getUnitsPerEm() * scaleFactor
+            == await action.getUnitsPerEm()
+        )
 
-        unscaledBounds = unscaledLayerGlyph.path.getControlBounds()
-        assert isinstance(scaledLayerGlyph.path, PackedPath)
-        scaledBounds = scaledLayerGlyph.path.getControlBounds()
-        if unscaledBounds is None:
-            assert scaledBounds is None
-        else:
-            assert scaleRect(unscaledBounds, scaleFactor, scaleFactor) == scaledBounds
-
-        for unscaledComponent, scaledComponent in zip(
-            unscaledLayerGlyph.components, scaledLayerGlyph.components
+        for unscaledLayer, scaledLayer in zip(
+            unscaledGlyph.layers.values(), scaledGlyph.layers.values()
         ):
+            unscaledLayerGlyph = unscaledLayer.glyph
+            scaledLayerGlyph = scaledLayer.glyph
             assert (
-                unscaledComponent.transformation.translateX * scaleFactor
-                == scaledComponent.transformation.translateX
+                unscaledLayerGlyph.xAdvance * scaleFactor == scaledLayerGlyph.xAdvance
             )
+
+            unscaledBounds = unscaledLayerGlyph.path.getControlBounds()
+            assert isinstance(scaledLayerGlyph.path, PackedPath)
+            scaledBounds = scaledLayerGlyph.path.getControlBounds()
+            if unscaledBounds is None:
+                assert scaledBounds is None
+            else:
+                assert (
+                    scaleRect(unscaledBounds, scaleFactor, scaleFactor) == scaledBounds
+                )
+
+            for unscaledComponent, scaledComponent in zip(
+                unscaledLayerGlyph.components, scaledLayerGlyph.components
+            ):
+                assert (
+                    unscaledComponent.transformation.translateX * scaleFactor
+                    == scaledComponent.transformation.translateX
+                )
 
 
 async def test_subsetAction(testFontraFont, tmp_path) -> None:
@@ -71,9 +76,6 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
     action = actionClass(glyphNames=glyphNames, glyphNamesFile=glyphNamesFile)
     assert isinstance(action, ConnectableActionProtocol)
     assert isinstance(action, ReadableFontBackend)
-    await action.connect(testFontraFont)
-
-    glyphMap = await action.getGlyphMap()
 
     expectedGlyphMap = {
         "A": [
@@ -99,6 +101,9 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
             10193,
         ],
     }
+
+    async with action.connect(testFontraFont) as action:
+        glyphMap = await action.getGlyphMap()
 
     assert expectedGlyphMap == glyphMap
 

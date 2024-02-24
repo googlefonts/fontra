@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import dataclass, field
 from typing import AsyncGenerator, NamedTuple
 
@@ -24,12 +24,13 @@ class Workflow:
 
     @asynccontextmanager
     async def endPoints(self) -> AsyncGenerator[WorkflowEndPoints, None]:
-        endPoints = await _prepareEndPoints(None, self.steps)
-        try:
-            yield endPoints
-        finally:
-            # clean
-            pass
+        async with AsyncExitStack() as exitStack:
+            endPoints = await _prepareEndPoints(None, self.steps, exitStack)
+            try:
+                yield endPoints
+            finally:
+                # clean
+                pass
 
 
 class WorkflowEndPoints(NamedTuple):
@@ -38,7 +39,9 @@ class WorkflowEndPoints(NamedTuple):
 
 
 async def _prepareEndPoints(
-    currentInput: ReadableFontBackend | None, steps: list[ActionStep]
+    currentInput: ReadableFontBackend | None,
+    steps: list[ActionStep],
+    exitStack: AsyncExitStack,
 ) -> WorkflowEndPoints:
     outputs: list[OutputActionProtocol] = []
 
@@ -53,31 +56,34 @@ async def _prepareEndPoints(
 
             # set up nested steps
             outputStepsResult, moreOutput = await _prepareEndPoints(
-                currentInput, step.steps
+                currentInput, step.steps, exitStack
             )
             outputs.extend(moreOutput)
 
             assert isinstance(outputStepsResult, ReadableFontBackend)
-            await action.connect(outputStepsResult)
+            action = await exitStack.enter_async_context(
+                action.connect(outputStepsResult)
+            )
             outputs.append(action)
         elif isinstance(action, ConnectableActionProtocol):
             # filter
             assert isinstance(action, ReadableFontBackend)
             assert currentInput is not None
-            await action.connect(currentInput)
+
+            action = await exitStack.enter_async_context(action.connect(currentInput))
 
             # set up nested steps
-            action, moreOutput = await _prepareEndPoints(action, step.steps)
+            action, moreOutput = await _prepareEndPoints(action, step.steps, exitStack)
             outputs.extend(moreOutput)
 
             currentInput = action
         elif isinstance(action, InputActionProtocol):
             # input
-            action = await action.prepare()
+            action = await exitStack.enter_async_context(action.prepare())
             assert isinstance(action, ReadableFontBackend)
 
             # set up nested steps
-            action, moreOutput = await _prepareEndPoints(action, step.steps)
+            action, moreOutput = await _prepareEndPoints(action, step.steps, exitStack)
             outputs.extend(moreOutput)
 
             if currentInput is None:

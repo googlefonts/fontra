@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import os
 import pathlib
-from contextlib import closing
+from contextlib import asynccontextmanager, closing
 from dataclasses import dataclass, field, replace
 from functools import cached_property
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, AsyncContextManager, AsyncGenerator, Protocol, runtime_checkable
 
 from fontTools.misc.transform import Transform
 
@@ -15,13 +17,15 @@ from ..core.protocols import ReadableFontBackend
 
 @runtime_checkable
 class ConnectableActionProtocol(Protocol):
-    async def connect(self, input: ReadableFontBackend) -> None:
+    def connect(
+        self, input: ReadableFontBackend
+    ) -> AsyncContextManager[ReadableFontBackend | OutputActionProtocol]:
         ...
 
 
 @runtime_checkable
 class InputActionProtocol(Protocol):
-    async def prepare(self) -> ReadableFontBackend:
+    def prepare(self) -> AsyncContextManager[ReadableFontBackend]:
         ...
 
 
@@ -60,8 +64,19 @@ class BaseFilterAction:
         assert isinstance(self.input, ReadableFontBackend)
         return self.input
 
-    async def connect(self, input: ReadableFontBackend) -> None:
+    @asynccontextmanager
+    async def connect(
+        self, input: ReadableFontBackend
+    ) -> AsyncGenerator[ReadableFontBackend | OutputActionProtocol, None]:
         self.input = input
+        try:
+            yield self
+        finally:
+            self.input = None
+            try:
+                del self.validatedInput
+            except AttributeError:
+                pass
 
     def close(self) -> None:
         ...
@@ -222,8 +237,13 @@ class SubsetAction(BaseFilterAction):
 class InputAction:
     source: str
 
-    async def prepare(self) -> ReadableFontBackend:
-        return getFileSystemBackend(pathlib.Path(self.source).resolve())
+    @asynccontextmanager
+    async def prepare(self) -> AsyncGenerator[ReadableFontBackend, None]:
+        backend = getFileSystemBackend(pathlib.Path(self.source).resolve())
+        try:
+            yield backend
+        finally:
+            backend.close()
 
 
 @registerActionClass("output")
@@ -237,8 +257,19 @@ class OutputAction:
         assert isinstance(self.input, ReadableFontBackend)
         return self.input
 
-    async def connect(self, input: ReadableFontBackend) -> None:
+    @asynccontextmanager
+    async def connect(
+        self, input: ReadableFontBackend
+    ) -> AsyncGenerator[ReadableFontBackend | OutputActionProtocol, None]:
         self.input = input
+        try:
+            yield self
+        finally:
+            self.input = None
+            try:
+                del self.validatedInput
+            except AttributeError:
+                pass
 
     async def process(self, outputDir: os.PathLike = pathlib.Path()) -> None:
         outputDir = pathlib.Path(outputDir)
