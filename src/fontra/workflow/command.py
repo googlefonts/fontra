@@ -52,9 +52,9 @@ async def mainAsync():
     os.chdir(config_path.parent)
 
     workflow = Workflow(config=config)
-    outputs = await workflow.setupOutputs()
+    result = await workflow.setupOutputs()
 
-    for output in outputs:
+    for output in result.outputs:
         await output.process(output_dir)
 
 

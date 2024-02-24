@@ -130,7 +130,8 @@ steps:
 async def test_workflow(tmpdir):
     config = yaml.safe_load(testConfigYAML)
     workflow = Workflow(config=config)
-    outputs = await workflow.setupOutputs()
+    result = await workflow.setupOutputs()
+    assert result.endPoint is not None
 
-    for output in outputs:
+    for output in result.outputs:
         await output.process(tmpdir)

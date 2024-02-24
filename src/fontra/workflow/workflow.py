@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import NamedTuple
 
 from ..core.protocols import ReadableFontBackend
 from .actions import (
@@ -20,14 +21,18 @@ class Workflow:
     def __post_init__(self):
         self.steps = _structureSteps(self.config["steps"])
 
-    async def setupOutputs(self) -> list[OutputActionProtocol]:
-        _, outputs = await _setupActionSteps(None, self.steps)
-        return outputs
+    async def setupOutputs(self) -> WorkflowResult:
+        return await _setupActionSteps(None, self.steps)
+
+
+class WorkflowResult(NamedTuple):
+    endPoint: ReadableFontBackend | None
+    outputs: list[OutputActionProtocol]
 
 
 async def _setupActionSteps(
     currentInput: ReadableFontBackend | None, steps: list[ActionStep]
-) -> tuple[ReadableFontBackend | None, list[OutputActionProtocol]]:
+) -> WorkflowResult:
     outputs: list[OutputActionProtocol] = []
 
     for step in steps:
@@ -75,7 +80,7 @@ async def _setupActionSteps(
         else:
             raise AssertionError("Expected code to be unreachable")
 
-    return currentInput, outputs
+    return WorkflowResult(currentInput, outputs)
 
 
 @dataclass(kw_only=True)
