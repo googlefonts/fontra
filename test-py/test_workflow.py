@@ -132,18 +132,7 @@ steps:
 
 - action: output
   destination: "testing.fontra"
-  # steps:
 """
-
-
-async def test_workflow(tmpdir):
-    config = yaml.safe_load(testConfigYAML)
-    workflow = Workflow(config=config)
-    async with workflow.endPoints() as endPoints:
-        assert endPoints.endPoint is not None
-
-        for output in endPoints.outputs:
-            await output.process(tmpdir)
 
 
 def test_command(tmpdir):
