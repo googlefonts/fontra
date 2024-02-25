@@ -18,8 +18,14 @@ def directoryTreeToList(path):
     return lines
 
 
+ignore = {".DS_Store"}
+
+
 def _allPaths(path):
     for childPath in path.iterdir():
-        yield childPath
+        if childPath.name in ignore:
+            continue
         if childPath.is_dir():
             yield from _allPaths(childPath)
+        else:
+            yield childPath
