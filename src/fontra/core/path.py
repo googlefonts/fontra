@@ -178,6 +178,18 @@ class PackedPath:
             pen.endPath()
             startPoint = endIndex
 
+    def getControlBounds(self):
+        if not self.coordinates:
+            return None
+        xMin, yMin = self.coordinates[:2]
+        xMax, yMax = xMin, yMin
+        for x, y in pairwise(self.coordinates[2:]):
+            xMin = min(xMin, x)
+            yMin = min(yMin, y)
+            xMax = max(xMax, x)
+            yMax = max(yMax, y)
+        return xMin, yMin, xMax, yMax
+
     def setPointPosition(self, pointIndex: int, x: float, y: float) -> None:
         coords = self.coordinates
         i = pointIndex * 2

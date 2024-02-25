@@ -1,0 +1,124 @@
+{
+"name": "dieresis",
+"sources": [
+{
+"name": "LightCondensed",
+"layerName": "MutatorSansLightCondensed/foreground",
+"location": {
+"width": 0.0,
+"weight": 150.0,
+"italic": 0.0
+}
+},
+{
+"name": "BoldCondensed",
+"layerName": "MutatorSansBoldCondensed/foreground",
+"location": {
+"width": 0.0,
+"weight": 850.0,
+"italic": 0.0
+}
+},
+{
+"name": "LightWide",
+"layerName": "MutatorSansLightWide/foreground",
+"location": {
+"width": 1000.0,
+"weight": 150.0,
+"italic": 0.0
+}
+},
+{
+"name": "BoldWide",
+"layerName": "MutatorSansBoldWide/foreground",
+"location": {
+"width": 1000.0,
+"weight": 850.0,
+"italic": 0.0
+}
+}
+],
+"layers": {
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"components": [
+{
+"name": "dot",
+"transformation": {
+"translateY": -7.5
+}
+},
+{
+"name": "dot",
+"transformation": {
+"translateX": 60.0,
+"translateY": -7.5
+}
+}
+],
+"xAdvance": 187.5
+}
+},
+"MutatorSansBoldCondensed/foreground": {
+"glyph": {
+"components": [
+{
+"name": "dot",
+"transformation": {
+"translateX": -7.5,
+"translateY": -7.5
+}
+},
+{
+"name": "dot",
+"transformation": {
+"translateX": 165.0,
+"translateY": -7.5
+}
+}
+],
+"xAdvance": 390.0
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"components": [
+{
+"name": "dot",
+"transformation": {
+"translateY": -7.5
+}
+},
+{
+"name": "dot",
+"transformation": {
+"translateX": 153.75,
+"translateY": -7.5
+}
+}
+],
+"xAdvance": 258.75
+}
+},
+"MutatorSansBoldWide/foreground": {
+"glyph": {
+"components": [
+{
+"name": "dot",
+"transformation": {
+"translateY": -7.5
+}
+},
+{
+"name": "dot",
+"transformation": {
+"translateX": 187.5,
+"translateY": -7.5
+}
+}
+],
+"xAdvance": 420.0
+}
+}
+}
+}
