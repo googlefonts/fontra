@@ -1,9 +1,11 @@
+import logging
 import pathlib
 import subprocess
 
 import pytest
 import yaml
 from fontTools.misc.arrayTools import scaleRect
+from testSupport import directoryTreeToList
 
 from fontra.backends import getFileSystemBackend
 from fontra.core.path import PackedPath
@@ -12,6 +14,7 @@ from fontra.workflow.actions import ConnectableActionProtocol, getActionClass
 from fontra.workflow.workflow import Workflow
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
+workflowDataDir = dataDir / "workflow"
 commonFontsDir = pathlib.Path(__file__).parent.parent / "test-common" / "fonts"
 
 
@@ -154,3 +157,66 @@ def test_command(tmpdir):
     subprocess.run(["fontra-workflow", configPath, "--output-dir", tmpdir], check=True)
     items = sorted([p.name for p in tmpdir.iterdir()])
     assert ["config.yaml", "testing.fontra"] == items
+
+
+@pytest.mark.parametrize(
+    "testName, configSource, expectedLog",
+    [
+        (
+            "plain",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: input
+              source: "test-py/data/workflow/input1-B.fontra"
+            - action: output
+              destination: "output1.fontra"
+            """,
+            [],
+        ),
+        (
+            "axis-merge-1",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input2-A.fontra"
+            - action: input
+              source: "test-py/data/workflow/input2-B.fontra"
+            - action: output
+              destination: "output2.fontra"
+            """,
+            [
+                (
+                    logging.ERROR,
+                    "Axis default values are not compatible; weight: 400.0, weight: 100.0",
+                )
+            ],
+        ),
+    ],
+)
+async def test_workflowMultiple(testName, configSource, expectedLog, tmpdir, caplog):
+    caplog.set_level(logging.WARNING)
+    tmpdir = pathlib.Path(tmpdir)
+    config = yaml.safe_load(configSource)
+
+    workflow = Workflow(config=config)
+
+    async with workflow.endPoints() as endPoints:
+        assert endPoints.endPoint is not None
+
+        for output in endPoints.outputs:
+            await output.process(tmpdir)
+            expectedPath = workflowDataDir / output.destination
+            resultPath = tmpdir / output.destination
+            if expectedPath.is_file():
+                raise NotImplementedError("file comparison to be implemented")
+            elif expectedPath.is_dir():
+                expectedLines = directoryTreeToList(expectedPath)
+                resultLines = directoryTreeToList(resultPath)
+                assert expectedLines == resultLines
+            else:
+                assert False, resultPath
+
+    record_tuples = [(rec.levelno, rec.message) for rec in caplog.records]
+    assert expectedLog == record_tuples
