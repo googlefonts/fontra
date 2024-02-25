@@ -32,15 +32,17 @@ def existing_folder(path):
 
 
 async def mainAsync():
-    logging.basicConfig(
-        format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
-        level=logging.INFO,
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
+    loggingLevelNames = logging.getLevelNamesMapping()
+    levelNames = [
+        name
+        for name, value in sorted(loggingLevelNames.items(), key=lambda item: item[1])
+    ]
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output-dir", type=existing_folder, help="A path to a folder for the output"
     )
+    parser.add_argument("--logging-level", choices=levelNames, default="WARNING")
     parser.add_argument(
         "--log-file", type=argparse.FileType("w"), help="A path for a log file"
     )
@@ -49,6 +51,12 @@ async def mainAsync():
     )
 
     args = parser.parse_args()
+
+    logging.basicConfig(
+        format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
+        level=loggingLevelNames[args.logging_level],
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
     config, config_path = args.config
     output_dir = args.output_dir
