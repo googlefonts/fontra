@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import pathlib
+import sys
 
 import yaml
 
@@ -32,19 +33,22 @@ def existing_folder(path):
 
 
 async def mainAsync():
-    loggingLevelNames = logging.getLevelNamesMapping()
-    levelNames = [
+    levelNamesMapping = logging.getLevelNamesMapping()
+    sortedlevelNames = [
         name
-        for name, value in sorted(loggingLevelNames.items(), key=lambda item: item[1])
+        for name, value in sorted(levelNamesMapping.items(), key=lambda item: item[1])
     ]
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output-dir", type=existing_folder, help="A path to a folder for the output"
     )
-    parser.add_argument("--logging-level", choices=levelNames, default="WARNING")
+    parser.add_argument("--logging-level", choices=sortedlevelNames, default="WARNING")
     parser.add_argument(
         "--log-file", type=argparse.FileType("w"), help="A path for a log file"
+    )
+    parser.add_argument(
+        "--log-file-logging-level", choices=sortedlevelNames, default="WARNING"
     )
     parser.add_argument(
         "config", type=yaml_or_json, help="A YAML or JSON file providing configuration"
@@ -52,18 +56,24 @@ async def mainAsync():
 
     args = parser.parse_args()
 
-    logging.basicConfig(
-        format="%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
-        level=loggingLevelNames[args.logging_level],
-        datefmt="%Y-%m-%d %H:%M:%S",
+    rootLogger = logging.getLogger()
+    rootLogger.setLevel(logging.NOTSET)
+    stdoutHandler = logging.StreamHandler(sys.stdout)
+    stdoutHandler.setLevel(levelNamesMapping[args.logging_level])
+    stdoutHandler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s %(name)-17s %(levelname)-8s %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
     )
+    rootLogger.addHandler(stdoutHandler)
 
     config, config_path = args.config
     output_dir = args.output_dir
 
     if args.log_file is not None:
         logHandler = logging.StreamHandler(args.log_file)
-        logHandler.setLevel(logging.WARNING)
+        logHandler.setLevel(levelNamesMapping[args.log_file_logging_level])
         logHandler.setFormatter(
             logging.Formatter(
                 "%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
