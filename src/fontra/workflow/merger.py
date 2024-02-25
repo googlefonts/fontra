@@ -27,11 +27,15 @@ class FontBackendMerger:
         glyphMapB = await self.inputB.getGlyphMap()
         self._glyphMap = glyphMapA | glyphMapB
         self._glyphNamesB = set(glyphMapB)
-        self._glyphNamesA = set(glyphMapA) - self._glyphNamesB
+        self._glyphNamesA = set(glyphMapA)
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         await self._prepareGlyphMap()
         if glyphName in self._glyphNamesB:
+            if glyphName in self._glyphNamesA:
+                actionLogger.warning(
+                    f"Merger: Glyph {glyphName!r} exists in both fonts"
+                )
             return await self.inputB.getGlyph(glyphName)
         elif glyphName in self._glyphNamesA:
             return await self.inputA.getGlyph(glyphName)
@@ -68,7 +72,7 @@ class FontBackendMerger:
         unitsPerEmB = await self.inputB.getUnitsPerEm()
         if unitsPerEmA != unitsPerEmB:
             actionLogger.warning(
-                f"Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
+                f"Merger: Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
             )
         return unitsPerEmB
 
@@ -79,19 +83,19 @@ def _mergeAxes(axisA, axisB):
 
     if axisA.mapping != axisB.mapping:
         actionLogger.error(
-            "Axis mappings should be the same; "
+            "Merger: Axis mappings should be the same; "
             f"{axisA.name}, A: {axisA.mapping}, B: {axisB.mapping}"
         )
 
     if axisA.defaultValue != axisB.defaultValue:
         actionLogger.error(
-            "Axis default values should be the same; "
+            "Merger: Axis default values should be the same; "
             f"{axisA.name}, A: {axisA.defaultValue}, B: {axisB.defaultValue}"
         )
 
     if hasattr(axisA, "values") != hasattr(axisB, "values"):
         actionLogger.error(
-            f"Can't merge continuous axis with discrete axis: {axisA.name}"
+            f"Merger: Can't merge continuous axis with discrete axis: {axisA.name}"
         )
     elif hasattr(axisA, "values"):
         resultAxis.values = sorted(set(axisA.values) | set(axisB.values))

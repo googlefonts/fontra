@@ -173,7 +173,12 @@ def test_command(tmpdir):
             - action: output
               destination: "output1.fontra"
             """,
-            [],
+            [
+                (
+                    logging.WARNING,
+                    "Merger: Glyph 'B' exists in both fonts",
+                )
+            ],
         ),
         (
             "axis-merge-1",
@@ -189,7 +194,7 @@ def test_command(tmpdir):
             [
                 (
                     logging.ERROR,
-                    "Axis default values should be the same; weight, A: 400.0, B: 100.0",
+                    "Merger: Axis default values should be the same; weight, A: 400.0, B: 100.0",
                 )
             ],
         ),
