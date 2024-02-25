@@ -26,11 +26,7 @@ class Workflow:
     async def endPoints(self) -> AsyncGenerator[WorkflowEndPoints, None]:
         async with AsyncExitStack() as exitStack:
             endPoints = await _prepareEndPoints(None, self.steps, exitStack)
-            try:
-                yield endPoints
-            finally:
-                # clean
-                pass
+            yield endPoints
 
 
 class WorkflowEndPoints(NamedTuple):
