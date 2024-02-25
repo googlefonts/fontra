@@ -198,6 +198,31 @@ def test_command(tmpdir):
                 )
             ],
         ),
+        (
+            "susbset+scale",
+            """
+            steps:
+
+            - action: input
+              source: "test-py/data/mutatorsans/MutatorSans.designspace"
+              steps:
+              - action: scale
+                scaleFactor: 0.75
+                scaleUnitsPerEm: false
+              - action: subset
+                glyphNames: ["A", "B", "Adieresis"]
+
+            - action: input
+              source: "test-common/fonts/MutatorSans.fontra"
+              steps:
+              - action: subset
+                glyphNames: ["C", "D"]
+
+            - action: output
+              destination: "output3.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflowMultiple(testName, configSource, expectedLog, tmpdir, caplog):
