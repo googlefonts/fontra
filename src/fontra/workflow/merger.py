@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
@@ -37,12 +38,20 @@ class FontBackendMerger:
         return None
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        # TODO: merge axes
-        # - axis by name
-        # - expand axis ranges
-        # - check default axis loc
-        # - check conflicting axis mapping
-        # - check conflicting axis labels
+        axesA = await self.inputA.getGlobalAxes()
+        axesB = await self.inputB.getGlobalAxes()
+        axesByNameA = {axis.name: axis for axis in axesA}
+        axisNamesB = {axis.name for axis in axesB}
+        mergedAxes = []
+        for axis in axesB:
+            if axis.name in axesByNameA:
+                axis = _mergeAxes(axesByNameA[axis.name], axis)
+            mergedAxes.append(axis)
+
+        for axis in axesA:
+            if axis.name not in axisNamesB:
+                mergedAxes.append(axis)
+
         return await self.inputB.getGlobalAxes()
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
@@ -62,3 +71,32 @@ class FontBackendMerger:
                 f"Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
             )
         return unitsPerEmB
+
+
+def _mergeAxes(axisA, axisB):
+    # TODO: merge axis labels and axis value labels
+    resultAxis = deepcopy(axisB)
+
+    if axisA.mapping != axisB.mapping:
+        actionLogger.warning(
+            "Axis mappings are not compatible; "
+            f"{axisA.name}: {axisA.mapping}, {axisB.name}: {axisB.mapping}"
+        )
+
+    if axisA.defaultValue != axisB.defaultValue:
+        actionLogger.warning(
+            "Axis default values are not compatible; "
+            f"{axisA.name}: {axisA.defaultValue}, {axisB.name}: {axisB.defaultValue}"
+        )
+
+    if hasattr(axisA, "values") != hasattr(axisB, "values"):
+        actionLogger.warning(
+            f"Can't merge continuous axis with discrete axis: {axisA.name}"
+        )
+    elif hasattr(axisA, "values"):
+        resultAxis.values = sorted(set(axisA.values) | set(axisB.values))
+    else:
+        resultAxis.maxValue = max(axisA.maxValue, axisB.maxValue)
+        resultAxis.minValue = min(axisA.minValue, axisB.minValue)
+
+    return resultAxis
