@@ -11,6 +11,25 @@ import yaml
 from .actions import actionLogger
 from .workflow import Workflow
 
+if hasattr(logging, "getLevelNamesMapping"):
+    levelNamesMapping = logging.getLevelNamesMapping()
+else:
+    # Python < 3.11
+    levelNamesMapping = {
+        "CRITICAL": 50,
+        "FATAL": 50,
+        "ERROR": 40,
+        "WARN": 30,
+        "WARNING": 30,
+        "INFO": 20,
+        "DEBUG": 10,
+        "NOTSET": 0,
+    }
+
+sortedlevelNames = [
+    name for name, value in sorted(levelNamesMapping.items(), key=lambda item: item[1])
+]
+
 
 def yaml_or_json(path):
     path = pathlib.Path(path)
@@ -33,12 +52,6 @@ def existing_folder(path):
 
 
 async def mainAsync():
-    levelNamesMapping = logging.getLevelNamesMapping()
-    sortedlevelNames = [
-        name
-        for name, value in sorted(levelNamesMapping.items(), key=lambda item: item[1])
-    ]
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output-dir", type=existing_folder, help="A path to a folder for the output"
