@@ -1,4 +1,5 @@
 import pathlib
+import subprocess
 
 import pytest
 import yaml
@@ -140,3 +141,16 @@ async def test_workflow(tmpdir):
 
         for output in endPoints.outputs:
             await output.process(tmpdir)
+
+
+def test_command(tmpdir):
+    tmpdir = pathlib.Path(tmpdir)
+    config = yaml.safe_load(testConfigYAML)
+    for step in config["steps"]:
+        if "source" in step:
+            step["source"] = str(pathlib.Path(step["source"]).resolve())
+    configPath = pathlib.Path(tmpdir) / "config.yaml"
+    configPath.write_text(yaml.dump(config))
+    subprocess.run(["fontra-workflow", configPath, "--output-dir", tmpdir], check=True)
+    items = sorted([p.name for p in tmpdir.iterdir()])
+    assert ["config.yaml", "testing.fontra"] == items
