@@ -79,8 +79,8 @@ def _mergeAxes(axisA, axisB):
 
     if axisA.mapping != axisB.mapping:
         actionLogger.error(
-            "Axis mappings are not compatible; "
-            f"{axisA.name}: {axisA.mapping}, {axisB.name}: {axisB.mapping}"
+            "Axis mappings should be the same; "
+            f"{axisA.name}, A: {axisA.mapping}, B: {axisB.mapping}"
         )
 
     if axisA.defaultValue != axisB.defaultValue:
