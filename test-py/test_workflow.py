@@ -189,7 +189,7 @@ def test_command(tmpdir):
             [
                 (
                     logging.ERROR,
-                    "Axis default values are not compatible; weight: 400.0, weight: 100.0",
+                    "Axis default values should be the same; weight: 400.0, weight: 100.0",
                 )
             ],
         ),

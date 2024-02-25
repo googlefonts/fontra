@@ -85,7 +85,7 @@ def _mergeAxes(axisA, axisB):
 
     if axisA.defaultValue != axisB.defaultValue:
         actionLogger.error(
-            "Axis default values are not compatible; "
+            "Axis default values should be the same; "
             f"{axisA.name}: {axisA.defaultValue}, {axisB.name}: {axisB.defaultValue}"
         )
 
