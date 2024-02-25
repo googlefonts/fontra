@@ -43,12 +43,22 @@ async def mainAsync():
     parser.add_argument(
         "--output-dir", type=existing_folder, help="A path to a folder for the output"
     )
-    parser.add_argument("--logging-level", choices=sortedlevelNames, default="WARNING")
     parser.add_argument(
-        "--log-file", type=argparse.FileType("w"), help="A path for a log file"
+        "--logging-level",
+        choices=sortedlevelNames,
+        default="WARNING",
+        help="The logging level for stdout output",
     )
     parser.add_argument(
-        "--log-file-logging-level", choices=sortedlevelNames, default="WARNING"
+        "--actions-log-file",
+        type=argparse.FileType("w"),
+        help="A path for a log file that captures actions log activity",
+    )
+    parser.add_argument(
+        "--actions-log-file-logging-level",
+        choices=sortedlevelNames,
+        default="WARNING",
+        help="The logging level for the actions log file",
     )
     parser.add_argument(
         "config", type=yaml_or_json, help="A YAML or JSON file providing configuration"
@@ -71,9 +81,9 @@ async def mainAsync():
     config, config_path = args.config
     output_dir = args.output_dir
 
-    if args.log_file is not None:
-        logHandler = logging.StreamHandler(args.log_file)
-        logHandler.setLevel(levelNamesMapping[args.log_file_logging_level])
+    if args.actions_log_file is not None:
+        logHandler = logging.StreamHandler(args.actions_log_file)
+        logHandler.setLevel(levelNamesMapping[args.actions_log_file_logging_level])
         logHandler.setFormatter(
             logging.Formatter(
                 "%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
