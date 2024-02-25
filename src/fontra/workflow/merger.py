@@ -78,19 +78,19 @@ def _mergeAxes(axisA, axisB):
     resultAxis = deepcopy(axisB)
 
     if axisA.mapping != axisB.mapping:
-        actionLogger.warning(
+        actionLogger.error(
             "Axis mappings are not compatible; "
             f"{axisA.name}: {axisA.mapping}, {axisB.name}: {axisB.mapping}"
         )
 
     if axisA.defaultValue != axisB.defaultValue:
-        actionLogger.warning(
+        actionLogger.error(
             "Axis default values are not compatible; "
             f"{axisA.name}: {axisA.defaultValue}, {axisB.name}: {axisB.defaultValue}"
         )
 
     if hasattr(axisA, "values") != hasattr(axisB, "values"):
-        actionLogger.warning(
+        actionLogger.error(
             f"Can't merge continuous axis with discrete axis: {axisA.name}"
         )
     elif hasattr(axisA, "values"):
