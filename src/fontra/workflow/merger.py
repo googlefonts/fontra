@@ -3,6 +3,7 @@ from typing import Any
 
 from ..core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
 from ..core.protocols import ReadableFontBackend
+from .actions import actionLogger
 
 
 @dataclass(kw_only=True)
@@ -57,6 +58,7 @@ class FontBackendMerger:
         unitsPerEmA = await self.inputA.getUnitsPerEm()
         unitsPerEmB = await self.inputB.getUnitsPerEm()
         if unitsPerEmA != unitsPerEmB:
-            # TODO: warn
-            pass
+            actionLogger.warning(
+                f"Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
+            )
         return unitsPerEmB
