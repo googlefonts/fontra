@@ -52,7 +52,7 @@ class FontBackendMerger:
             if axis.name not in axisNamesB:
                 mergedAxes.append(axis)
 
-        return await self.inputB.getGlobalAxes()
+        return mergedAxes
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         await self._prepareGlyphMap()
