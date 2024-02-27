@@ -1,10 +1,8 @@
-import { clamp } from "../../core/utils.js";
+import { capitalizeFirstLetter, clamp } from "../../core/utils.js";
 import * as html from "/core/html-utils.js";
 
 export const MIN_SIDEBAR_WIDTH = 200;
 export const MAX_SIDEBAR_WIDTH = 500;
-
-const panelElementsPostionRight = ["selection-info"];
 
 export class Sidebar {
   constructor(identifier) {
@@ -43,12 +41,10 @@ export class Sidebar {
         {
           "class": "sidebar-tab",
           "data-sidebarName": panelElement.identifier,
-          "data-tooltip": panelElement.identifier.replace(/-/g, " "),
-          "data-tooltipposition": panelElementsPostionRight.includes(
-            panelElement.identifier
-          )
-            ? "left"
-            : "right",
+          "data-tooltip": capitalizeFirstLetter(
+            panelElement.identifier.replaceAll("-", " ")
+          ),
+          "data-tooltipposition": this.identifier === "right" ? "left" : "right",
         },
         [html.createDomElement("inline-svg", { src: panelElement.iconPath })]
       )
