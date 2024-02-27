@@ -227,7 +227,6 @@ export class PenTool extends BaseTool {
         behavior.initialChanges(primaryLayerGlyph.path, initialEvent);
       });
       this.sceneController.selection = behavior.selection;
-
       const deepInitialChanges = thisPropagateChange(initialChanges.change);
       await sendIncrementalChange(deepInitialChanges);
       let preDragChanges = new ChangeCollector();
