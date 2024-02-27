@@ -337,6 +337,20 @@ export class EditorController {
                 this.getSidebarPanel("designspace-navigation").addSource();
               },
             },
+            {
+              title: "Delete source",
+              enabled: () => {
+                return typeof this.sceneModel.selectedGlyph !== "undefined";
+              },
+              callback: () => {
+                const designspaceNavigationPanel = this.getSidebarPanel(
+                  "designspace-navigation"
+                );
+                designspaceNavigationPanel.removeSource(
+                  designspaceNavigationPanel.sourcesList.getSelectedItemIndex()
+                );
+              },
+            },
           ];
         },
       },
