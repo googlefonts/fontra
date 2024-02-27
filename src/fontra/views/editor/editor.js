@@ -24,12 +24,12 @@ import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
 import {
-  capitalizeFirstLetter,
   commandKeyProperty,
   dumpURLFragment,
   enumerate,
   fetchJSON,
   hyphenatedToCamelCase,
+  hyphenatedToLabel,
   isActiveElementTypeable,
   isObjectEmpty,
   loadURLFragment,
@@ -450,7 +450,7 @@ export class EditorController {
       {
         "class": "tool-button selected",
         "data-tool": tool.identifier,
-        "data-tooltip": capitalizeFirstLetter(tool.identifier.replaceAll("-", " ")),
+        "data-tooltip": hyphenatedToLabel(tool.identifier),
         "data-tooltipposition": "bottom",
       },
       [html.createDomElement("inline-svg", { class: "tool-icon", src: tool.iconPath })]

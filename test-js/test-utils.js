@@ -12,6 +12,7 @@ import {
   getCharFromUnicode,
   guessCharFromGlyphName,
   hyphenatedToCamelCase,
+  hyphenatedToLabel,
   loadURLFragment,
   makeUPlusStringFromCodePoint,
   memoize,
@@ -180,8 +181,14 @@ describe("hyphenatedToCamelCase", () => {
   it("should camelize", () => {
     expect(hyphenatedToCamelCase("test-case")).equals("testCase");
   });
-  it("should not delete the hypen when the second part is not a lowercase letter", () => {
+  it("should not delete the hyphen when the second part is not a lowercase letter", () => {
     expect(hyphenatedToCamelCase("test-1")).equals("test-1");
+  });
+});
+
+describe("hyphenatedToLabel", () => {
+  it("should camelize", () => {
+    expect(hyphenatedToLabel("test-case")).equals("Test case");
   });
 });
 

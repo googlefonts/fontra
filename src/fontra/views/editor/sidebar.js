@@ -1,4 +1,4 @@
-import { capitalizeFirstLetter, clamp } from "../../core/utils.js";
+import { clamp, hyphenatedToLabel } from "../../core/utils.js";
 import * as html from "/core/html-utils.js";
 
 export const MIN_SIDEBAR_WIDTH = 200;
@@ -41,9 +41,7 @@ export class Sidebar {
         {
           "class": "sidebar-tab",
           "data-sidebarName": panelElement.identifier,
-          "data-tooltip": capitalizeFirstLetter(
-            panelElement.identifier.replaceAll("-", " ")
-          ),
+          "data-tooltip": hyphenatedToLabel(panelElement.identifier),
           "data-tooltipposition": this.identifier === "right" ? "left" : "right",
         },
         [html.createDomElement("inline-svg", { src: panelElement.iconPath })]
