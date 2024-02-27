@@ -134,7 +134,9 @@ export class ModalDialog extends SimpleElement {
     });
     this.dialogElement = document.createElement("dialog");
     this.dialogElement.addEventListener("click", (event) => {
-      event.target.nodeName == "DIALOG" ? this._dialogDone(null) : null;
+      if (event.target.nodeName == "DIALOG") {
+        this._dialogDone(null);
+      }
     });
     this.dialogElement.appendChild(this.dialogBox);
     this.shadowRoot.append(this.dialogElement);
