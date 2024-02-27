@@ -141,20 +141,12 @@ export class PenTool extends BaseTool {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
       return;
     }
-    console.log("Olli PenTool.handleDrag");
-    console.log("Olli eventStream", eventStream);
-    console.log("Olli initialEvent", initialEvent);
 
     if (this.sceneModel.pathConnectTargetPoint?.segment) {
-      console.log(
-        "Olli if this.sceneModel.pathConnectTargetPoint?.segment: _handleInsertPoint"
-      );
       await this._handleInsertPoint();
     } else if (this.sceneModel.pathInsertHandles) {
-      console.log("Olli if this.sceneModel.pathInsertHandles: _handleInsertHandles");
       await this._handleInsertHandles();
     } else {
-      console.log("Olli else: _handleInsertPoint");
       this._resetHover();
       await this._handleAddPoints(eventStream, initialEvent);
     }
@@ -196,7 +188,6 @@ export class PenTool extends BaseTool {
   }
 
   async _handleAddPoints(eventStream, initialEvent) {
-    console.log("1 Olli PenTool._handleAddPoints");
     await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const secondaryLayers = Object.entries(
         this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
@@ -214,17 +205,6 @@ export class PenTool extends BaseTool {
         glyph: primaryLayerGlyph,
       } = secondaryLayers.shift();
 
-      console.log(
-        "1.1 Olli PenTool._handleAddPoints primaryChangePath",
-        primaryChangePath
-      );
-
-      console.log("2 Olli PenTool._handleAddPoints secondaryLayers", secondaryLayers);
-      console.log(
-        "2 Olli PenTool._handleAddPoints primaryLayerGlyph",
-        primaryLayerGlyph
-      );
-
       const thisPropagateChange = propagateChange.bind(
         null,
         primaryChangePath,
@@ -238,8 +218,6 @@ export class PenTool extends BaseTool {
         this.curveType
       );
 
-      console.log("Olli PenTool._handleAddPoints behavior", behavior);
-
       if (!behavior) {
         // Nothing to do
         return;
@@ -249,38 +227,11 @@ export class PenTool extends BaseTool {
         behavior.initialChanges(primaryLayerGlyph.path, initialEvent);
       });
       this.sceneController.selection = behavior.selection;
-      console.log("Olli initialChanges.change", initialChanges.change);
-
-      console.log("Olli initialEvent.shiftKey", initialEvent.shiftKey);
-      if (initialEvent.shiftKey) {
-        if (initialChanges.change.f === "insertPoint") {
-          console.log("Olli changing insertPoint");
-          console.log(
-            "Olli changing insertPoint initialChanges.change.a[2].x",
-            initialChanges.change.a[2].x
-          );
-          console.log(
-            "Olli changing insertPoint initialChanges.change.a[2].y",
-            initialChanges.change.a[2].y
-          );
-          initialChanges.change.a[2].x = Math.round(initialChanges.change.a[2].x + 100);
-          initialChanges.change.a[2].y = Math.round(initialChanges.change.a[2].y + 100);
-          console.log(
-            "Olli changing insertPoint initialChanges.change.a[2].x",
-            initialChanges.change.a[2].x
-          );
-          console.log(
-            "Olli changing insertPoint initialChanges.change.a[2].y",
-            initialChanges.change.a[2].y
-          );
-        }
-      }
 
       const deepInitialChanges = thisPropagateChange(initialChanges.change);
       await sendIncrementalChange(deepInitialChanges);
       let preDragChanges = new ChangeCollector();
       let dragChanges = new ChangeCollector();
-      console.log("Olli PenTool._handleAddPoints preDragChanges", preDragChanges);
 
       if (await shouldInitiateDrag(eventStream, initialEvent)) {
         preDragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
@@ -302,28 +253,11 @@ export class PenTool extends BaseTool {
         });
         this.sceneController.selection = behavior.selection;
       }
-      console.log(
-        "Olli PenTool._handleAddPoints preDragChanges.change",
-        preDragChanges
-      );
-      console.log("Olli PenTool._handleAddPoints dragChanges.change", dragChanges);
 
       const deepDragChanges = thisPropagateChange(dragChanges.change);
-
-      console.log("Olli deepDragChanges", deepDragChanges);
-
       await sendIncrementalChange(deepDragChanges);
 
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
-      console.log(
-        "Olli PenTool._handleAddPoints finalChanges.change",
-        finalChanges.change
-      );
-      console.log(
-        "Olli PenTool._handleAddPoints finalChanges.rollbackChange",
-        finalChanges.rollbackChange
-      );
-
       const deepFinalChanges = ChangeCollector.fromChanges(
         thisPropagateChange(finalChanges.change, false),
         thisPropagateChange(finalChanges.rollbackChange, false)
@@ -346,10 +280,6 @@ function getPenToolBehavior(sceneController, initialEvent, path, curveType) {
   const appendInfo = getAppendInfo(path, sceneController.selection);
 
   let behaviorFuncs;
-  console.log("Olli getPenToolBehavior appendInfo", appendInfo);
-  console.log("Olli getPenToolBehavior curveType", curveType);
-  console.log("Olli getPenToolBehavior path", path);
-  console.log("Olli getPenToolBehavior initialEvent", initialEvent);
 
   if (appendInfo.createContour) {
     // Let's add a new contour
@@ -488,6 +418,15 @@ function setupExistingAnchorPoint(context, path, point, shiftConstrain) {
 }
 
 function insertAnchorPoint(context, path, point, shiftConstrain) {
+  if (shiftConstrain) {
+    if (context.anchorIndex >= 1) {
+      // the path need at least 2 points
+      // to be able to shift constrain
+      const previousPoint = path.getPoint(context.anchorIndex - 1);
+      point = getHandle(point, previousPoint, shiftConstrain);
+    }
+  }
+
   point = vector.roundVector(point);
   path.insertPoint(context.contourIndex, context.anchorIndex, point);
   context.anchorPoint = point;
