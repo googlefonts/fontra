@@ -346,6 +346,10 @@ function getPenToolBehavior(sceneController, initialEvent, path, curveType) {
   const appendInfo = getAppendInfo(path, sceneController.selection);
 
   let behaviorFuncs;
+  console.log("Olli getPenToolBehavior appendInfo", appendInfo);
+  console.log("Olli getPenToolBehavior curveType", curveType);
+  console.log("Olli getPenToolBehavior path", path);
+  console.log("Olli getPenToolBehavior initialEvent", initialEvent);
 
   if (appendInfo.createContour) {
     // Let's add a new contour
