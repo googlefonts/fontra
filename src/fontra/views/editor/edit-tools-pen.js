@@ -141,15 +141,20 @@ export class PenTool extends BaseTool {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
       return;
     }
-    console.log("PenTool.handleDrag");
-    console.log("eventStream", eventStream);
-    console.log("initialEvent", initialEvent);
+    console.log("Olli PenTool.handleDrag");
+    console.log("Olli eventStream", eventStream);
+    console.log("Olli initialEvent", initialEvent);
 
     if (this.sceneModel.pathConnectTargetPoint?.segment) {
+      console.log(
+        "Olli if this.sceneModel.pathConnectTargetPoint?.segment: _handleInsertPoint"
+      );
       await this._handleInsertPoint();
     } else if (this.sceneModel.pathInsertHandles) {
+      console.log("Olli if this.sceneModel.pathInsertHandles: _handleInsertHandles");
       await this._handleInsertHandles();
     } else {
+      console.log("Olli else: _handleInsertPoint");
       this._resetHover();
       await this._handleAddPoints(eventStream, initialEvent);
     }
@@ -191,7 +196,7 @@ export class PenTool extends BaseTool {
   }
 
   async _handleAddPoints(eventStream, initialEvent) {
-    console.log("Olli PenTool._handleAddPoints");
+    console.log("1 Olli PenTool._handleAddPoints");
     await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const secondaryLayers = Object.entries(
         this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
@@ -208,6 +213,17 @@ export class PenTool extends BaseTool {
         changePath: primaryChangePath,
         glyph: primaryLayerGlyph,
       } = secondaryLayers.shift();
+
+      console.log(
+        "1.1 Olli PenTool._handleAddPoints primaryChangePath",
+        primaryChangePath
+      );
+
+      console.log("2 Olli PenTool._handleAddPoints secondaryLayers", secondaryLayers);
+      console.log(
+        "2 Olli PenTool._handleAddPoints primaryLayerGlyph",
+        primaryLayerGlyph
+      );
 
       const thisPropagateChange = propagateChange.bind(
         null,
