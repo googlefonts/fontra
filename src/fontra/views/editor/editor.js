@@ -351,6 +351,15 @@ export class EditorController {
                 );
               },
             },
+            {
+              title: "Edit local axes",
+              enabled: () => {
+                return typeof this.sceneModel.selectedGlyph !== "undefined";
+              },
+              callback: () => {
+                this.getSidebarPanel("designspace-navigation").editLocalAxes();
+              },
+            },
           ];
         },
       },
