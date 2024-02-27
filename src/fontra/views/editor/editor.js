@@ -1770,7 +1770,7 @@ export class EditorController {
     }
   }
 
-  buildContextMenuItems() {
+  buildContextMenuItems(event) {
     const menuItems = [...this.basicContextMenuItems];
     if (this.sceneSettings.selectedGlyph?.isEditing) {
       this.sceneController.updateContextMenuState(event);
@@ -1788,7 +1788,7 @@ export class EditorController {
     event.preventDefault();
 
     const { x, y } = event;
-    showMenu(this.buildContextMenuItems(), { x: x + 1, y: y - 1 }, event.target);
+    showMenu(this.buildContextMenuItems(event), { x: x + 1, y: y - 1 }, event.target);
   }
 
   async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {
