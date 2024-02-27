@@ -106,10 +106,21 @@ export class MenuBar extends SimpleElement {
       x: clientRect.x,
       y: clientRect.y + clientRect.height,
     };
-    const menuPanel = new MenuPanel(items, position, undefined, () => {
-      this.showMenuWhenHover = false;
-      this.clearCurrentSelection();
-    });
+    const menuPanel = new MenuPanel(
+      items,
+      position,
+      undefined,
+      () => {
+        this.showMenuWhenHover = false;
+        this.clearCurrentSelection();
+      },
+      true,
+      undefined,
+      () => {
+        this.showMenuWhenHover = false;
+        this.clearCurrentSelection();
+      }
+    );
     this.contentElement.appendChild(menuPanel);
   }
 

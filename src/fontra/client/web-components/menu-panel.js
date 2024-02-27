@@ -104,13 +104,15 @@ export class MenuPanel extends SimpleElement {
     positionContainer,
     onSelect,
     visible = true,
-    childOf
+    childOf,
+    onClose
   ) {
     super();
     this.style = "display: none;";
     this.visible = visible;
     this.position = position;
     this.onSelect = onSelect;
+    this.onClose = onClose;
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
     this.childOf = childOf;
@@ -226,6 +228,7 @@ export class MenuPanel extends SimpleElement {
     }
     this.parentElement?.removeChild(this);
     this._savedActiveElement?.focus();
+    this.onClose?.();
   }
 
   selectItem(itemElement) {
