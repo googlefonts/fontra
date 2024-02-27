@@ -279,7 +279,13 @@ export class EditorController {
       {
         title: "Edit",
         getItems: () => {
-          return this.buildContextMenuItems();
+          const menuItems = [...this.basicContextMenuItems];
+          if (this.sceneSettings.selectedGlyph?.isEditing) {
+            this.sceneController.updateContextMenuState(event);
+            menuItems.push(MenuItemDivider);
+            menuItems.push(...this.glyphEditContextMenuItems);
+          }
+          return menuItems;
         },
       },
       {
@@ -327,7 +333,7 @@ export class EditorController {
         title: "Glyph",
         enabled: () => true,
         getItems: () => {
-          return [
+          const items = [
             {
               title: "Add source...",
               enabled: () => {
@@ -361,6 +367,12 @@ export class EditorController {
               },
             },
           ];
+          if (typeof this.sceneModel.selectedGlyph !== "undefined") {
+            this.sceneController.updateContextMenuState();
+            items.push(MenuItemDivider);
+            items.push(...this.glyphSelectedContextMenuItems);
+          }
+          return items;
         },
       },
       {
