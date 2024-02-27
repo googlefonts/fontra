@@ -141,6 +141,9 @@ export class PenTool extends BaseTool {
       await this.editor.tools["pointer-tool"].handleDrag(eventStream, initialEvent);
       return;
     }
+    console.log("PenTool.handleDrag");
+    console.log("eventStream", eventStream);
+    console.log("initialEvent", initialEvent);
 
     if (this.sceneModel.pathConnectTargetPoint?.segment) {
       await this._handleInsertPoint();
@@ -188,6 +191,7 @@ export class PenTool extends BaseTool {
   }
 
   async _handleAddPoints(eventStream, initialEvent) {
+    console.log("Olli PenTool._handleAddPoints");
     await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
       const secondaryLayers = Object.entries(
         this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
@@ -218,6 +222,8 @@ export class PenTool extends BaseTool {
         this.curveType
       );
 
+      console.log("Olli PenTool._handleAddPoints behavior", behavior);
+
       if (!behavior) {
         // Nothing to do
         return;
@@ -231,6 +237,7 @@ export class PenTool extends BaseTool {
       await sendIncrementalChange(deepInitialChanges);
       let preDragChanges = new ChangeCollector();
       let dragChanges = new ChangeCollector();
+      console.log("Olli PenTool._handleAddPoints preDragChanges", preDragChanges);
 
       if (await shouldInitiateDrag(eventStream, initialEvent)) {
         preDragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
@@ -252,10 +259,20 @@ export class PenTool extends BaseTool {
         });
         this.sceneController.selection = behavior.selection;
       }
+      console.log(
+        "Olli PenTool._handleAddPoints preDragChanges.change",
+        preDragChanges
+      );
+      console.log("Olli PenTool._handleAddPoints dragChanges.change", dragChanges);
+
       const deepDragChanges = thisPropagateChange(dragChanges.change);
       await sendIncrementalChange(deepDragChanges);
 
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
+      console.log(
+        "Olli PenTool._handleAddPoints finalChanges.change",
+        finalChanges.change
+      );
 
       const deepFinalChanges = ChangeCollector.fromChanges(
         thisPropagateChange(finalChanges.change, false),
