@@ -1,4 +1,4 @@
-:host {
+:root {
   --tooltip-background-color-light: var(--fontra-theme-marker) black;
   --tooltip-background-color-dark: white;
   --tooltip-background-color: var(
@@ -21,7 +21,6 @@
 
 [data-tooltip] {
   position: relative;
-  cursor: default;
 }
 
 [data-tooltip]:hover::before {
@@ -122,9 +121,7 @@
   border-left: var(--tooltip-arrow-size) solid transparent;
   border-bottom: var(--tooltip-arrow-size) solid var(--tooltip-background-color);
   border-top: 0;
-  left: 100%;
   top: 100%;
-  margin-left: calc(var(--tooltip-arrow-size) * -2);
 }
 
 [data-tooltipposition="bottom-left"]:hover::before {

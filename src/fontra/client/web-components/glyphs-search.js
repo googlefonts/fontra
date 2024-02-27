@@ -68,8 +68,8 @@ export class GlyphsSearch extends UnlitElement {
       { key: "glyphName", title: "glyph name", width: "10em", isIdentifierKey: true },
       {
         key: "unicode",
-        width: "5em",
-        get: (item) => makeUPlusStringFromCodePoint(item.unicodes[0]),
+        width: "fit-content",
+        get: (item) => item.unicodes.map(makeUPlusStringFromCodePoint).join(","),
       },
     ];
     this.glyphNamesList = new UIList();

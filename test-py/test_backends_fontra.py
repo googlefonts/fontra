@@ -1,4 +1,6 @@
+import asyncio
 import pathlib
+import shutil
 from contextlib import closing
 
 import pytest
@@ -18,6 +20,14 @@ def testDSFont():
 @pytest.fixture
 def testFontraFont():
     return getFileSystemBackend(commonFontsDir / "MutatorSans.fontra")
+
+
+@pytest.fixture
+def writableFontraFont(tmpdir):
+    srcPath = commonFontsDir / "MutatorSans.fontra"
+    dstPath = tmpdir / "MutatorSans.fontra"
+    shutil.copytree(srcPath, dstPath)
+    return getFileSystemBackend(dstPath)
 
 
 @pytest.fixture
@@ -58,3 +68,15 @@ async def test_fontraFormat(testFontraFont, newFontraFont):
     assert testFontraFont.glyphInfoPath.read_text(
         encoding="utf-8"
     ) == newFontraFont.glyphInfoPath.read_text(encoding="utf-8")
+
+
+async def test_deleteGlyph(writableFontraFont):
+    glyphName = "A"
+    assert writableFontraFont.getGlyphFilePath(glyphName).exists()
+    assert await writableFontraFont.getGlyph(glyphName) is not None
+    await writableFontraFont.deleteGlyph(glyphName)
+    await asyncio.sleep(0.01)
+    assert await writableFontraFont.getGlyph(glyphName) is None
+    assert not writableFontraFont.getGlyphFilePath(glyphName).exists()
+    reopenedFont = getFileSystemBackend(writableFontraFont.path)
+    assert await reopenedFont.getGlyph(glyphName) is None

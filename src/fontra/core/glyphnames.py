@@ -23,14 +23,15 @@ def getSuggestedGlyphName(codePoint: int) -> str:
     return "uni" + uniStr if len(uniStr) == 4 else "u" + uniStr
 
 
-def getUnicodeFromGlyphName(glyphName: str) -> int | None:
+def getCodePointFromGlyphName(glyphName: str) -> int | None:
     data = _getGlyphData()
 
     info = data.names.get(glyphName)
 
     codePoint = None
     if info is not None:
-        codePoint = int(info["unicode"], 16)
+        if "unicode" in info:
+            codePoint = int(info["unicode"], 16)
     elif glyphName.startswith("uni"):
         uniStr = glyphName[3:]
         if 4 <= len(uniStr) <= 5 and uniStr.upper() == uniStr:

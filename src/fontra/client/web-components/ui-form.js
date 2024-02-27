@@ -85,6 +85,7 @@ export class Form extends SimpleElement {
     this.contentElement.innerHTML = "";
     this._fieldGetters = {};
     this._fieldSetters = {};
+    this._lastValidFieldValues = {};
     if (!fieldDescriptions) {
       return;
     }
@@ -139,7 +140,7 @@ export class Form extends SimpleElement {
     inputElement.value = fieldItem.value || "";
     inputElement.disabled = fieldItem.disabled;
     inputElement.onchange = (event) => {
-      this._fieldChanging(fieldItem.key, inputElement.value, undefined);
+      this._fieldChanging(fieldItem, inputElement.value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
@@ -152,6 +153,7 @@ export class Form extends SimpleElement {
   }
 
   _addEditNumber(valueElement, fieldItem) {
+    this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
     inputElement.value = fieldItem.value;
@@ -181,6 +183,11 @@ export class Form extends SimpleElement {
     };
     inputElement.onchange = (event) => {
       let value = parseFloat(inputElement.value);
+      if (isNaN(value)) {
+        value = this._lastValidFieldValues[fieldItem.key];
+        inputElement.value = value;
+      }
+
       if (!inputElement.reportValidity()) {
         if (inputElement.min != undefined) {
           value = Math.max(value, inputElement.min);
@@ -190,7 +197,8 @@ export class Form extends SimpleElement {
         }
         inputElement.value = value;
       }
-      this._fieldChanging(fieldItem.key, value, undefined);
+      this._lastValidFieldValues[fieldItem.key] = value;
+      this._fieldChanging(fieldItem, value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
@@ -198,6 +206,7 @@ export class Form extends SimpleElement {
   }
 
   _addEditAngle(valueElement, fieldItem) {
+    this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = html.input({
       type: "number",
       value: fieldItem.value,
@@ -205,7 +214,12 @@ export class Form extends SimpleElement {
       disabled: fieldItem.disabled,
       onchange: () => {
         let value = parseFloat(inputElement.value);
-        this._fieldChanging(fieldItem.key, value);
+        if (isNaN(value)) {
+          value = this._lastValidFieldValues[fieldItem.key];
+          inputElement.value = value;
+        }
+        this._lastValidFieldValues[fieldItem.key] = value;
+        this._fieldChanging(fieldItem, value);
         rotaryControl.value = -value;
       },
     });
@@ -221,7 +235,7 @@ export class Form extends SimpleElement {
         inputElement.value = value;
         if (event.dragBegin) {
           valueStream = new QueueIterator(5, true);
-          this._fieldChanging(fieldItem.key, value, valueStream);
+          this._fieldChanging(fieldItem, value, valueStream);
         }
 
         if (valueStream) {
@@ -233,7 +247,7 @@ export class Form extends SimpleElement {
             this._dispatchEvent("endChange", { key: fieldItem.key });
           }
         } else {
-          this._fieldChanging(fieldItem.key, value, undefined);
+          this._fieldChanging(fieldItem, value, undefined);
         }
       };
     }
@@ -260,7 +274,7 @@ export class Form extends SimpleElement {
         const value = event.value;
         if (event.dragBegin) {
           valueStream = new QueueIterator(5, true);
-          this._fieldChanging(fieldItem.key, value, valueStream);
+          this._fieldChanging(fieldItem, value, valueStream);
         }
 
         if (valueStream) {
@@ -272,7 +286,7 @@ export class Form extends SimpleElement {
             this._dispatchEvent("endChange", { key: fieldItem.key });
           }
         } else {
-          this._fieldChanging(fieldItem.key, value, undefined);
+          this._fieldChanging(fieldItem, value, undefined);
         }
       };
     }
@@ -284,15 +298,15 @@ export class Form extends SimpleElement {
     this.contentElement.addEventListener(eventName, handler, options);
   }
 
-  _fieldChanging(fieldKey, value, valueStream) {
+  _fieldChanging(fieldItem, value, valueStream) {
     if (valueStream) {
-      this._dispatchEvent("beginChange", { key: fieldKey });
+      this._dispatchEvent("beginChange", { key: fieldItem.key });
     } else {
-      this._dispatchEvent("doChange", { key: fieldKey, value: value });
+      this._dispatchEvent("doChange", { key: fieldItem.key, value: value });
     }
     const handlerName = "onFieldChange";
     if (this[handlerName] !== undefined) {
-      this[handlerName](fieldKey, value, valueStream);
+      this[handlerName](fieldItem, value, valueStream);
     }
   }
 

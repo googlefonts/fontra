@@ -29,6 +29,7 @@ import {
   enumerate,
   fetchJSON,
   hyphenatedToCamelCase,
+  hyphenatedToLabel,
   isActiveElementTypeable,
   isObjectEmpty,
   loadURLFragment,
@@ -581,7 +582,12 @@ export class EditorController {
 
     const editToolsElement = document.querySelector("#edit-tools");
     const toolButton = html.div(
-      { "class": "tool-button selected", "data-tool": tool.identifier },
+      {
+        "class": "tool-button selected",
+        "data-tool": tool.identifier,
+        "data-tooltip": hyphenatedToLabel(tool.identifier),
+        "data-tooltipposition": "bottom",
+      },
       [html.createDomElement("inline-svg", { class: "tool-icon", src: tool.iconPath })]
     );
 
@@ -925,13 +931,15 @@ export class EditorController {
 
     for (const menuItem of [
       ...this.basicContextMenuItems,
+      ...this.glyphEditContextMenuItems,
       ...this.glyphSelectedContextMenuItems,
     ]) {
       if (menuItem.shortCut) {
         this.registerShortCut(
           menuItem.shortCut.keysOrCodes,
           menuItem.shortCut,
-          menuItem.callback
+          menuItem.callback,
+          menuItem.enabled
         );
       }
     }
@@ -960,7 +968,7 @@ export class EditorController {
     });
   }
 
-  registerShortCut(keysOrCodes, modifiers, callback) {
+  registerShortCut(keysOrCodes, modifiers, callback, enabled = null) {
     //
     // Register a shortcut handler
     //
@@ -975,9 +983,13 @@ export class EditorController {
     // `callback` is a callable that will be called with the event as its single
     // argument.
     //
+    // `enabled` is an optional callable that should return true if the action is
+    // enabled. If `enabled()` returns false, `callback` will not be called.
+    // If `enabled` is not given, `callback` will be called unconditionally.
+    //
 
     for (const keyOrCode of keysOrCodes) {
-      const handlerDef = { ...modifiers, callback };
+      const handlerDef = { ...modifiers, callback, enabled };
       if (!this.shortCutHandlers[keyOrCode]) {
         this.shortCutHandlers[keyOrCode] = [];
       }
@@ -986,11 +998,14 @@ export class EditorController {
   }
 
   async keyDownHandler(event) {
-    const callback = this._getShortCutCallback(event);
+    const { callback, enabled } = this._getShortCutCallback(event);
     if (callback !== undefined) {
+      this.sceneController.updateContextMenuState(null);
       event.preventDefault();
       event.stopImmediatePropagation();
-      await callback(event);
+      if (!enabled || enabled()) {
+        await callback(event);
+      }
     }
   }
 
@@ -1000,7 +1015,7 @@ export class EditorController {
       handlerDefs = this.shortCutHandlers[event.code];
     }
     if (!handlerDefs) {
-      return undefined;
+      return {};
     }
     for (const handlerDef of handlerDefs) {
       if (
@@ -1018,9 +1033,9 @@ export class EditorController {
       if (!matchEvent(handlerDef, event)) {
         continue;
       }
-      return handlerDef.callback;
+      return { callback: handlerDef.callback, enabled: handlerDef.enabled };
     }
-    return undefined;
+    return {};
   }
 
   getUndoRedoLabel(isRedo) {
@@ -1838,9 +1853,9 @@ export class EditorController {
     this.canvasController.requestUpdate();
   }
 
-  async messageFromServer(headline, message) {
+  async messageFromServer(headline, msg) {
     // don't await the dialog result, the server doesn't need an answer
-    message(headline, message);
+    message(headline, msg);
   }
 
   async setupFromWindowLocation() {

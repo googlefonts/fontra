@@ -1,6 +1,6 @@
 import pytest
 
-from fontra.core.glyphnames import getSuggestedGlyphName, getUnicodeFromGlyphName
+from fontra.core.glyphnames import getCodePointFromGlyphName, getSuggestedGlyphName
 
 
 @pytest.mark.parametrize(
@@ -40,7 +40,10 @@ def test_getSuggestedGlyphName(codePoint, expectedGlyphName):
         ("u10FFFF", 0x10FFFF),
         ("u10ffff", None),
         ("u110000", None),
+        (".notdef", None),
+        (".null", None),
+        ("h.ss01", None),
     ],
 )
-def test_getUnicodeFromGlyphName(glyphName, expectedCodePoint):
-    assert expectedCodePoint == getUnicodeFromGlyphName(glyphName)
+def test_getCodePointFromGlyphName(glyphName, expectedCodePoint):
+    assert expectedCodePoint == getCodePointFromGlyphName(glyphName)

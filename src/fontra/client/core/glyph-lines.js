@@ -1,4 +1,4 @@
-import { getSuggestedGlyphName, getUnicodeFromGlyphName } from "./server-utils.js";
+import { getCodePointFromGlyphName, getSuggestedGlyphName } from "./server-utils.js";
 import { splitGlyphNameExtension } from "./utils.js";
 
 export async function glyphLinesFromText(text, characterMap, glyphMap) {
@@ -51,7 +51,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
           const [baseGlyphName, extension] = splitGlyphNameExtension(glyphName);
           const baseCharCode = baseGlyphName.codePointAt(0);
           const charString = String.fromCodePoint(baseCharCode);
-          if (baseGlyphName === charString) {
+          if (baseGlyphName === charString && !isPlainLatinLetter(baseGlyphName)) {
             // The base glyph name is a single character, let's see if there's
             // a glyph name associated with that character
             let properBaseGlyphName = characterMap[baseCharCode];
@@ -67,7 +67,7 @@ async function glyphNamesFromText(text, characterMap, glyphMap) {
           } else {
             // This is a regular glyph name, but it doesn't exist in the font.
             // Try to see if there's a code point associated with it.
-            const codePoint = await getUnicodeFromGlyphName(glyphName);
+            const codePoint = await getCodePointFromGlyphName(glyphName);
             if (codePoint) {
               char = String.fromCodePoint(codePoint);
             }
@@ -118,4 +118,8 @@ export function textFromGlyphLines(glyphLines) {
     textLines.push(textLine);
   }
   return textLines.join("\n");
+}
+
+function isPlainLatinLetter(glyphName) {
+  return glyphName.match(/^[A-Za-z]$/);
 }

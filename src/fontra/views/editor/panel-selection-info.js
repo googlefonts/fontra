@@ -3,9 +3,11 @@ import { recordChanges } from "/core/change-recorder.js";
 import * as html from "/core/html-utils.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import {
+  enumerate,
   getCharFromUnicode,
   makeUPlusStringFromCodePoint,
   parseSelection,
+  range,
   round,
   splitGlyphNameExtension,
   throttleCalls,
@@ -184,6 +186,39 @@ export default class SelectionInfoPanel extends Panel {
           label: "Advance width",
           value: instance.xAdvance,
           minValue: 0,
+        });
+        formContents.push({
+          type: "edit-number-x-y",
+          key: '["sidebearings"]',
+          label: "Sidebearings",
+          fieldX: {
+            key: '["leftMargin"]',
+            value: glyphController.leftMargin,
+            getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+              return layerGlyphController.leftMargin;
+            },
+            setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+              const translationX = value - layerGlyphController.leftMargin;
+              for (const i of range(0, layerGlyph.path.coordinates.length, 2)) {
+                layerGlyph.path.coordinates[i] += translationX;
+              }
+              for (const compo of layerGlyph.components) {
+                compo.transformation.translateX += translationX;
+              }
+              layerGlyph.xAdvance += translationX;
+            },
+          },
+          fieldY: {
+            key: '["rightMargin"]',
+            value: glyphController.rightMargin,
+            getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+              return layerGlyphController.rightMargin;
+            },
+            setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+              const translationX = value - layerGlyphController.rightMargin;
+              layerGlyph.xAdvance += translationX;
+            },
+          },
         });
       }
     }
@@ -421,38 +456,56 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   async _setupSelectionInfoHandlers(glyphName) {
-    this.infoForm.onFieldChange = async (fieldKey, value, valueStream) => {
-      const changePath = JSON.parse(fieldKey);
+    const varGlyph = await this.fontController.getGlyph(glyphName);
+    const sourceIndices = {};
+    for (const [i, source] of enumerate(varGlyph.sources)) {
+      sourceIndices[source.layerName] = i;
+    }
+
+    this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
+      const changePath = JSON.parse(fieldItem.key);
       const senderInfo = { senderID: this, fieldKeyPath: changePath };
+
+      const getFieldValue = fieldItem.getValue || defaultGetFieldValue;
+      const setFieldValue = fieldItem.setValue || defaultSetFieldValue;
+      const deleteFieldValue = fieldItem.deleteValue || defaultDeleteFieldValue;
+
       await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
-        const layerInfo = Object.entries(
+        const layerInfo = [];
+        for (const [layerName, layerGlyph] of Object.entries(
           this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
-        ).map(([layerName, layerGlyph]) => {
-          return {
+        )) {
+          const layerGlyphController =
+            await this.fontController.getLayerGlyphController(
+              glyphName,
+              layerName,
+              sourceIndices[layerName]
+            );
+          layerInfo.push({
             layerName,
             layerGlyph,
-            orgValue: getNestedValue(layerGlyph, changePath),
-          };
-        });
+            layerGlyphController,
+            orgValue: getFieldValue(layerGlyph, layerGlyphController, fieldItem),
+          });
+        }
 
         let changes;
 
         if (valueStream) {
           // Continuous changes (eg. slider drag)
           for await (const value of valueStream) {
-            for (const { layerName, layerGlyph, orgValue } of layerInfo) {
+            for (const { layerGlyph, layerGlyphController, orgValue } of layerInfo) {
               if (orgValue !== undefined) {
-                setNestedValue(layerGlyph, changePath, orgValue); // Ensure getting the correct undo change
+                setFieldValue(layerGlyph, layerGlyphController, fieldItem, orgValue); // Ensure getting the correct undo change
               } else {
-                deleteNestedValue(layerGlyph, changePath);
+                deleteFieldValue(layerGlyph, layerGlyphController, fieldItem);
               }
             }
             changes = applyNewValue(
               glyph,
               layerInfo,
-              changePath,
               value,
-              this._formFieldsByKey[fieldKey],
+              fieldItem,
               this.multiEditChangesAreAbsolute
             );
             await sendIncrementalChange(changes.change, true); // true: "may drop"
@@ -462,9 +515,8 @@ export default class SelectionInfoPanel extends Panel {
           changes = applyNewValue(
             glyph,
             layerInfo,
-            changePath,
             value,
-            this._formFieldsByKey[fieldKey],
+            fieldItem,
             this.multiEditChangesAreAbsolute
           );
         }
@@ -479,8 +531,43 @@ export default class SelectionInfoPanel extends Panel {
           broadcast: true,
         };
       }, senderInfo);
+
+      if (["xAdvance", "leftMargin", "rightMargin"].includes(changePath[0])) {
+        this._updateGlyphMetrics(glyphName, changePath[0]);
+      }
     };
   }
+
+  async _updateGlyphMetrics(glyphName, changedKey) {
+    const keyMap = {
+      xAdvance: "rightMargin",
+      leftMargin: "xAdvance",
+      rightMargin: "xAdvance",
+    };
+    const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
+      glyphName,
+      this.sceneController.sceneSettings.editLayerName
+    );
+
+    const keyToUpdata = keyMap[changedKey];
+    const fieldKey = JSON.stringify([keyToUpdata]);
+    this.infoForm.setValue(fieldKey, glyphController[keyToUpdata]);
+  }
+}
+
+function defaultGetFieldValue(glyph, glyphController, fieldItem) {
+  const changePath = JSON.parse(fieldItem.key);
+  return getNestedValue(glyph, changePath);
+}
+
+function defaultSetFieldValue(glyph, glyphController, fieldItem, value) {
+  const changePath = JSON.parse(fieldItem.key);
+  return setNestedValue(glyph, changePath, value);
+}
+
+function defaultDeleteFieldValue(glyph, glyphController, fieldItem) {
+  const changePath = JSON.parse(fieldItem.key);
+  return deleteNestedValue(glyph, changePath);
 }
 
 function getNestedValue(subject, path) {
@@ -507,19 +594,21 @@ function deleteNestedValue(subject, path) {
   delete subject[key];
 }
 
-function applyNewValue(glyph, layerInfo, changePath, value, field, absolute) {
+function applyNewValue(glyph, layerInfo, value, fieldItem, absolute) {
+  const setFieldValue = fieldItem.setValue || defaultSetFieldValue;
+
   const primaryOrgValue = layerInfo[0].orgValue;
   const isNumber = typeof primaryOrgValue === "number";
   const delta = isNumber && !absolute ? value - primaryOrgValue : null;
   return recordChanges(glyph, (glyph) => {
     const layers = glyph.layers;
-    for (const { layerName, orgValue } of layerInfo) {
+    for (const { layerName, layerGlyphController, orgValue } of layerInfo) {
       let newValue =
         delta === null || orgValue === undefined ? value : orgValue + delta;
       if (isNumber) {
-        newValue = maybeClampValue(newValue, field.minValue, field.maxValue);
+        newValue = maybeClampValue(newValue, fieldItem.minValue, fieldItem.maxValue);
       }
-      setNestedValue(layers[layerName].glyph, changePath, newValue);
+      setFieldValue(layers[layerName].glyph, layerGlyphController, fieldItem, newValue);
     }
   });
 }

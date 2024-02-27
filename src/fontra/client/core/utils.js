@@ -116,6 +116,10 @@ export function hyphenatedToCamelCase(s) {
   return s.replace(/-([a-z])/g, (m) => m[1].toUpperCase());
 }
 
+export function hyphenatedToLabel(s) {
+  return capitalizeFirstLetter(s).replaceAll("-", " ");
+}
+
 // For several functions, we use the command key ("metaKey") on macOS,
 // and the control key ("ctrlKey") on non-macOS. For example short cuts
 // and selection behavior.

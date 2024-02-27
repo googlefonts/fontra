@@ -5,6 +5,7 @@
     <title>Fontra</title>
     <link href="/css/core.css" rel="stylesheet" />
     <link href="/editor/editor.css" rel="stylesheet" />
+    <link href="/css/tooltip.css" rel="stylesheet" />
     <script type="importmap">
       {
         "imports": {
@@ -48,16 +49,36 @@
                 <!-- content will be filled in dynamically -->
               </div>
               <div id="zoom-tools" class="tools-item">
-                <div class="tool-button" data-tool="zoom-out">
+                <div
+                  class="tool-button"
+                  data-tool="zoom-out"
+                  data-tooltip="Zoom out"
+                  data-tooltipposition="bottom"
+                >
                   <inline-svg class="tool-icon" src="/images/minus.svg"></inline-svg>
                 </div>
-                <div class="tool-button" data-tool="zoom-in">
+                <div
+                  class="tool-button"
+                  data-tool="zoom-in"
+                  data-tooltip="Zoom in"
+                  data-tooltipposition="bottom"
+                >
                   <inline-svg class="tool-icon" src="/images/plus.svg"></inline-svg>
                 </div>
-                <div class="tool-button" data-tool="zoom-fit-selection">
+                <div
+                  class="tool-button"
+                  data-tool="zoom-fit-selection"
+                  data-tooltip="Zoom to fit selection"
+                  data-tooltipposition="bottom"
+                >
                   <inline-svg class="tool-icon" src="/images/bullseye.svg"></inline-svg>
                 </div>
-                <div class="tool-button" data-tool="toggle-fullscreen">
+                <div
+                  class="tool-button"
+                  data-tool="toggle-fullscreen"
+                  data-tooltip="Toggle fullscreen"
+                  data-tooltipposition="bottom"
+                >
                   <inline-svg
                     class="tool-icon tool-icon--fullscreen-enter tool-icon--hidden"
                     src="/tabler-icons/maximize.svg"
