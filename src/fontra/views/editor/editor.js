@@ -329,7 +329,7 @@ export class EditorController {
         getItems: () => {
           return [
             {
-              title: "Add source",
+              title: "Add source...",
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
@@ -338,7 +338,7 @@ export class EditorController {
               },
             },
             {
-              title: "Delete source",
+              title: "Delete source...",
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
@@ -352,7 +352,7 @@ export class EditorController {
               },
             },
             {
-              title: "Edit local axes",
+              title: "Edit local axes...",
               enabled: () => {
                 return typeof this.sceneModel.selectedGlyph !== "undefined";
               },
