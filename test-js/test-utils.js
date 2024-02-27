@@ -187,9 +187,18 @@ describe("hyphenatedToCamelCase", () => {
 });
 
 describe("hyphenatedToLabel", () => {
-  it("should camelize", () => {
-    expect(hyphenatedToLabel("test-case")).equals("Test case");
-  });
+  parametrize(
+    "hyphenatedToLabel tests",
+    [
+      ["", ""],
+      ["pen-tool", "Pen tool"],
+      ["power-ruler-tool", "Power ruler tool"],
+    ],
+    (testData) => {
+      const [inputGlyphName, expectedResult] = testData;
+      expect(hyphenatedToLabel(inputGlyphName)).equals(expectedResult);
+    }
+  );
 });
 
 describe("modulo", () => {
