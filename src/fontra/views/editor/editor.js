@@ -329,7 +329,9 @@ export class EditorController {
           return [
             {
               title: "Add source",
-              enabled: () => true,
+              enabled: () => {
+                return typeof this.sceneModel.selectedGlyph !== "undefined";
+              },
               callback: () => {
                 this.getSidebarPanel("designspace-navigation").addSource();
               },
