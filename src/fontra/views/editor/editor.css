@@ -368,7 +368,6 @@ body {
   cursor: pointer;
   height: min-content;
   pointer-events: auto;
-  overflow: hidden;
 }
 
 .tool-button {
@@ -382,6 +381,14 @@ body {
   height: 1.9rem;
   padding: 0.1rem;
   transition: 0.15s;
+}
+
+.tool-button:first-child {
+  border-radius: 0.65em 0 0 0.65em;
+}
+
+.tool-button:last-child {
+  border-radius: 0 0.65em 0.65em 0;
 }
 
 .tool-icon {
