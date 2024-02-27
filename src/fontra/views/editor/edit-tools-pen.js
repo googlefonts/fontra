@@ -252,11 +252,11 @@ export class PenTool extends BaseTool {
         });
         this.sceneController.selection = behavior.selection;
       }
-
       const deepDragChanges = thisPropagateChange(dragChanges.change);
       await sendIncrementalChange(deepDragChanges);
 
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
+
       const deepFinalChanges = ChangeCollector.fromChanges(
         thisPropagateChange(finalChanges.change, false),
         thisPropagateChange(finalChanges.rollbackChange, false)
