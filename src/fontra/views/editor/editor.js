@@ -291,7 +291,7 @@ export class EditorController {
       {
         title: "View",
         getItems: () => {
-          return [
+          const items = [
             {
               title: "Zoom in",
               enabled: () => true,
@@ -327,13 +327,19 @@ export class EditorController {
               },
             },
           ];
+          if (typeof this.sceneModel.selectedGlyph !== "undefined") {
+            this.sceneController.updateContextMenuState();
+            items.push(MenuItemDivider);
+            items.push(...this.glyphSelectedContextMenuItems);
+          }
+          return items;
         },
       },
       {
         title: "Glyph",
         enabled: () => true,
         getItems: () => {
-          const items = [
+          return [
             {
               title: "Add source...",
               enabled: () => {
@@ -367,12 +373,6 @@ export class EditorController {
               },
             },
           ];
-          if (typeof this.sceneModel.selectedGlyph !== "undefined") {
-            this.sceneController.updateContextMenuState();
-            items.push(MenuItemDivider);
-            items.push(...this.glyphSelectedContextMenuItems);
-          }
-          return items;
         },
       },
       {
