@@ -94,6 +94,8 @@ class MenuPanel extends SimpleElement {
     this.position = position;
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
+    this.menuSearchTimer;
+    this.menuSearchText = "";
 
     // No context menu on our context menu please:
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
@@ -178,6 +180,8 @@ class MenuPanel extends SimpleElement {
 
   handleKeyDown(event) {
     event.stopImmediatePropagation();
+
+    this.searchMenuItems(event.key);
     switch (event.key) {
       case "Escape":
         this.dismiss();
@@ -194,6 +198,36 @@ class MenuPanel extends SimpleElement {
           selectedItem.onclick(event);
         }
         break;
+    }
+  }
+
+  searchMenuItems(key) {
+    // Returns true only for letters, numbers & spaces
+    const isValidSearchInput = /^[a-zA-Z0-9 ]$/.test(key);
+    if (isValidSearchInput) {
+      let foundMatchingItem = false;
+      this.menuSearchText += key.toLowerCase();
+
+      for (const item of this.menuElement.children) {
+        if (item.classList.contains("enabled")) {
+          const itemText = item.textContent.toLowerCase();
+          if (itemText.startsWith(this.menuSearchText)) {
+            foundMatchingItem = true;
+            this.selectItem(item);
+            break;
+          }
+        }
+      }
+
+      // If an item matching the search text is not found, then allow the user to immediately start searching again
+      clearTimeout(this.menuSearchTimer);
+      if (foundMatchingItem) {
+        this.menuSearchTimer = setTimeout(() => {
+          this.menuSearchText = "";
+        }, 1000);
+      } else {
+        this.menuSearchText = "";
+      }
     }
   }
 
