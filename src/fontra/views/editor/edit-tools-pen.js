@@ -418,9 +418,8 @@ function setupExistingAnchorPoint(context, path, point, shiftConstrain) {
 
 function insertAnchorPoint(context, path, point, shiftKey) {
   if (shiftKey && !context.createContour && context.isOnCurve) {
-    // Shift-constrain the point 0/45/90 degrees
-    // only if a contour exists already
-    // => at least one point
+    // Shift-constrain the point to 0/45/90/etc degrees
+    // Only if a contour exists and the selected point is an on-curve point
     const referencePoint = path.getContourPoint(
       context.contourIndex,
       context.contourPointIndex
