@@ -191,7 +191,7 @@ class MenuPanel extends SimpleElement {
       case "Enter":
         const selectedItem = this.findSelectedItem();
         if (selectedItem) {
-          selectedItem.onclick(event);
+          selectedItem.onmouseup(event);
         }
         break;
     }
