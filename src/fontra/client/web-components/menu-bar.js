@@ -108,11 +108,11 @@ export class MenuBar extends SimpleElement {
     };
     const menuPanel = new MenuPanel(items, {
       position,
-      onSelect() {
+      onSelect: () => {
         this.showMenuWhenHover = false;
         this.clearCurrentSelection();
       },
-      onClose() {
+      onClose: () => {
         this.showMenuWhenHover = false;
         this.clearCurrentSelection();
       },
