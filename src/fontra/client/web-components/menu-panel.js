@@ -202,7 +202,7 @@ class MenuPanel extends SimpleElement {
   }
 
   searchMenuItems(key) {
-    // Returns true only for letters, numbers & spaces
+    // Accept only letters, numbers & spaces
     const isValidSearchInput = /^[a-zA-Z0-9 ]$/.test(key);
     if (!isValidSearchInput) {
       return;
