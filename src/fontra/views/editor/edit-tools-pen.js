@@ -416,13 +416,17 @@ function setupExistingAnchorPoint(context, path, point, shiftConstrain) {
   );
 }
 
-function insertAnchorPoint(context, path, point, shiftConstrain) {
-  if (shiftConstrain) {
-    if (context.anchorIndex >= 1) {
-      // the path need at least 2 points
-      // to be able to shift constrain
-      const previousPoint = path.getPoint(context.anchorIndex - 1);
-      point = getHandle(point, previousPoint, shiftConstrain);
+function insertAnchorPoint(context, path, point, shiftKey) {
+  if (shiftKey) {
+    // Shift-constrain the point 0/45/90 degrees
+    if (context.createContour === false) {
+      // only if a contour exists already
+      // => at least one point
+      const referencePoint = path.getContourPoint(
+        context.contourIndex,
+        context.contourPointIndex
+      );
+      point = shiftConstrain(referencePoint, point);
     }
   }
 
