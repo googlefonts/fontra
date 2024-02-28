@@ -1,3 +1,6 @@
+// Some deep CSS trickery going on here, as learned from:
+//    https://css-tricks.com/the-css-custom-property-toggle-trick/
+
 export function themeColorCSS(colors) {
   const definitions = [];
   const lightMode = [];
