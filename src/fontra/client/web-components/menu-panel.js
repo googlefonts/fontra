@@ -10,7 +10,7 @@ export function showMenu(menuItems, position, positionContainer, container) {
   if (!container) {
     container = document.querySelector("#menu-panel-container");
   }
-  const menu = new MenuPanel(menuItems, position, positionContainer);
+  const menu = new MenuPanel(menuItems, { position, positionContainer });
   container.appendChild(menu);
 }
 
@@ -98,24 +98,17 @@ export class MenuPanel extends SimpleElement {
     }
   `;
 
-  constructor(
-    menuItems,
-    position,
-    positionContainer,
-    onSelect,
-    visible = true,
-    childOf,
-    onClose
-  ) {
+  constructor(menuItems, options = {}) {
     super();
+    options = { visible: true, ...options };
     this.style = "display: none;";
-    this.visible = visible;
-    this.position = position;
-    this.onSelect = onSelect;
-    this.onClose = onClose;
-    this.positionContainer = positionContainer;
+    this.visible = options.visible;
+    this.position = options.position;
+    this.onSelect = options.onSelect;
+    this.onClose = options.onClose;
+    this.positionContainer = options.positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
-    this.childOf = childOf;
+    this.childOf = options.childOf;
     this.menuSearchText = "";
 
     // No context menu on our context menu please:
@@ -255,16 +248,15 @@ export class MenuPanel extends SimpleElement {
     if (itemElement.classList.contains("with-submenu")) {
       const { y: menuElementY } = this.getBoundingClientRect();
       const { y, width } = itemElement.getBoundingClientRect();
-      const submenu = new MenuPanel(
+      const submenu = new Menupanel(
         this.menuItems[itemElement.dataset.index].getItems(),
         {
-          x: 0,
-          y: 0,
-        },
-        undefined,
-        undefined,
-        false,
-        this
+          position: {
+            x: 0,
+            y: 0,
+          },
+          childOf: this,
+        }
       );
       this.menuElement.appendChild(submenu);
       submenu.position = { x: width, y: y - menuElementY - 4 };
