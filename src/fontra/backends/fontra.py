@@ -53,6 +53,7 @@ class FontraBackend:
         else:
             self.fontData = Font()
             self._writeGlyphInfo()
+            self._writeFontData()
         self._scheduler = Scheduler()
 
     @property

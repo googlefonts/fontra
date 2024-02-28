@@ -80,3 +80,13 @@ async def test_deleteGlyph(writableFontraFont):
     assert not writableFontraFont.getGlyphFilePath(glyphName).exists()
     reopenedFont = getFileSystemBackend(writableFontraFont.path)
     assert await reopenedFont.getGlyph(glyphName) is None
+
+
+async def test_emptyFontraProject(tmpdir):
+    path = tmpdir / "newfont.fontra"
+    backend = newFileSystemBackend(path)
+    backend.close()
+
+    backend = getFileSystemBackend(path)
+    glyphMap = await backend.getGlyphMap()
+    assert [] == list(glyphMap)

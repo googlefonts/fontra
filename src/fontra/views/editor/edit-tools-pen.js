@@ -416,7 +416,17 @@ function setupExistingAnchorPoint(context, path, point, shiftConstrain) {
   );
 }
 
-function insertAnchorPoint(context, path, point, shiftConstrain) {
+function insertAnchorPoint(context, path, point, shiftKey) {
+  if (shiftKey && !context.createContour && context.isOnCurve) {
+    // Shift-constrain the point to 0/45/90/etc degrees
+    // Only if a contour exists and the selected point is an on-curve point
+    const referencePoint = path.getContourPoint(
+      context.contourIndex,
+      context.contourPointIndex
+    );
+    point = shiftConstrain(referencePoint, point);
+  }
+
   point = vector.roundVector(point);
   path.insertPoint(context.contourIndex, context.anchorIndex, point);
   context.anchorPoint = point;
