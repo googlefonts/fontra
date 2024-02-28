@@ -94,7 +94,6 @@ class MenuPanel extends SimpleElement {
     this.position = position;
     this.positionContainer = positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
-    this.menuSearchTimer;
     this.menuSearchText = "";
 
     // No context menu on our context menu please:
