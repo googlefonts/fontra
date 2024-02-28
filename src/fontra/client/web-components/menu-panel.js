@@ -204,30 +204,33 @@ class MenuPanel extends SimpleElement {
   searchMenuItems(key) {
     // Returns true only for letters, numbers & spaces
     const isValidSearchInput = /^[a-zA-Z0-9 ]$/.test(key);
-    if (isValidSearchInput) {
-      let foundMatchingItem = false;
-      this.menuSearchText += key.toLowerCase();
+    if (!isValidSearchInput) {
+      return;
+    }
 
-      for (const item of this.menuElement.children) {
-        if (item.classList.contains("enabled")) {
-          const itemText = item.textContent.toLowerCase();
-          if (itemText.startsWith(this.menuSearchText)) {
-            foundMatchingItem = true;
-            this.selectItem(item);
-            break;
-          }
+    let foundMatchingItem = false;
+    this.menuSearchText += key.toLowerCase();
+
+    for (const item of this.menuElement.children) {
+      if (item.classList.contains("enabled")) {
+        const itemText = item.textContent.toLowerCase();
+        if (itemText.startsWith(this.menuSearchText)) {
+          foundMatchingItem = true;
+          this.selectItem(item);
+          break;
         }
       }
+    }
 
-      // If an item matching the search text is not found, then allow the user to immediately start searching again
-      clearTimeout(this.menuSearchTimer);
-      if (foundMatchingItem) {
-        this.menuSearchTimer = setTimeout(() => {
-          this.menuSearchText = "";
-        }, 1000);
-      } else {
+    // If an item matching the search text is not found
+    // then allow the user to immediately start searching again
+    clearTimeout(this.menuSearchTimer);
+    if (foundMatchingItem) {
+      this.menuSearchTimer = setTimeout(() => {
         this.menuSearchText = "";
-      }
+      }, 1000);
+    } else {
+      this.menuSearchText = "";
     }
   }
 
