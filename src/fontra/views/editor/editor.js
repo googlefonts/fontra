@@ -312,14 +312,16 @@ export class EditorController {
               title: "Zoom to fit",
               enabled: () => {
                 let viewBox = this.sceneController.getSelectionBox();
-                const size = rectSize(viewBox);
-                if (size.width < 4 && size.height < 4) {
-                  const center = rectCenter(viewBox);
-                  viewBox = centeredRect(center.x, center.y, 10, 10);
-                } else {
-                  viewBox = rectAddMargin(viewBox, 0.1);
+                if (viewBox) {
+                  const size = rectSize(viewBox);
+                  if (size.width < 4 && size.height < 4) {
+                    const center = rectCenter(viewBox);
+                    viewBox = centeredRect(center.x, center.y, 10, 10);
+                  } else {
+                    viewBox = rectAddMargin(viewBox, 0.1);
+                  }
+                  return !this.canvasController.isActualViewBox(viewBox);
                 }
-                return !this.canvasController.isActualViewBox(viewBox);
               },
               shortCut: { keysOrCodes: "0", metaKey: true, globalOverride: true },
               callback: () => {
