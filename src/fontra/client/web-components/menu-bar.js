@@ -19,7 +19,7 @@ export class MenuBar extends SimpleElement {
     user-select: none;
   }
 
-  .menu-item:hover,
+  .menu-item.hovered,
   .menu-item.current {
     background: var(--editor-top-bar-link-hover);
     border-radius: 5px;
@@ -35,7 +35,12 @@ export class MenuBar extends SimpleElement {
     window.addEventListener("mousedown", this.onBlur.bind(this));
     window.addEventListener("blur", this.onBlur.bind(this));
     this.contentElement.addEventListener("mouseover", this.onMouseover.bind(this));
+    this.contentElement.addEventListener(
+      "mouseleave",
+      this.unhoverMenuItems.bind(this)
+    );
     this.contentElement.addEventListener("click", this.onClick.bind(this));
+    this.contentElement.addEventListener("keydown", this.handleKeyDown.bind(this));
     this.showMenuWhenHover = false;
   }
 
@@ -60,10 +65,13 @@ export class MenuBar extends SimpleElement {
   }
 
   onMouseover(event) {
+    this.hoverMenuItem(event);
+
     const currentSelection = this.contentElement.querySelector(".current");
     if (!currentSelection && !this.showMenuWhenHover) {
       return;
     }
+
     if (event.target === this.contentElement) {
       this.clearCurrentSelection();
       this.showMenuWhenHover = true;
@@ -80,6 +88,21 @@ export class MenuBar extends SimpleElement {
           break;
         }
       }
+    }
+  }
+
+  hoverMenuItem(event) {
+    this.unhoverMenuItems();
+    const hoveredItem = event.target;
+    if (!hoveredItem.classList.contains("menu-item")) {
+      return;
+    }
+    hoveredItem.classList.add("hovered");
+  }
+
+  unhoverMenuItems() {
+    for (const item of this.contentElement.children) {
+      item.classList.remove("hovered");
     }
   }
 
@@ -118,6 +141,37 @@ export class MenuBar extends SimpleElement {
       },
     });
     this.contentElement.appendChild(menuPanel);
+  }
+
+  handleKeyDown(event) {
+    event.stopImmediatePropagation();
+    switch (event.key) {
+      case "ArrowLeft":
+      case "ArrowRight":
+        this.navigateMenuBar(event.key);
+        break;
+    }
+  }
+
+  navigateMenuBar(arrowKey) {
+    this.unhoverMenuItems();
+    const currentSelection = this.contentElement.querySelector(".current");
+    const menuItemElements = this.contentElement.children;
+    const currentSelectionIndex = Array.prototype.indexOf.call(
+      menuItemElements,
+      currentSelection
+    );
+    const newSelectionIndex =
+      currentSelectionIndex + (arrowKey == "ArrowLeft" ? -1 : +1);
+
+    if (menuItemElements[newSelectionIndex]?.classList.contains("menu-item")) {
+      this.clearCurrentSelection();
+      this.showMenuWhenHover = true;
+      this.showMenu(
+        this.items[newSelectionIndex].getItems(),
+        menuItemElements[newSelectionIndex]
+      );
+    }
   }
 
   render() {

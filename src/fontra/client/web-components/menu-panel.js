@@ -266,8 +266,6 @@ export class MenuPanel extends SimpleElement {
   }
 
   handleKeyDown(event) {
-    event.stopImmediatePropagation();
-
     this.searchMenuItems(event.key);
     switch (event.key) {
       case "Escape":

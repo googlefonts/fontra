@@ -312,6 +312,10 @@ export class EditorController {
               title: "Zoom to fit",
               enabled: () => {
                 let viewBox = this.sceneController.getSelectionBox();
+                if (!viewBox) {
+                  return false;
+                }
+
                 const size = rectSize(viewBox);
                 if (size.width < 4 && size.height < 4) {
                   const center = rectCenter(viewBox);
