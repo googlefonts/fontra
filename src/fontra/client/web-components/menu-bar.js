@@ -154,6 +154,7 @@ export class MenuBar extends SimpleElement {
   }
 
   navigateMenuBar(arrowKey) {
+    this.unhoverMenuItems();
     const currentSelection = this.contentElement.querySelector(".current");
     const menuItemElements = this.contentElement.children;
     const currentSelectionIndex = Array.prototype.indexOf.call(
