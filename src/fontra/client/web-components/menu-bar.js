@@ -138,10 +138,8 @@ export class MenuBar extends SimpleElement {
       menuItemElements,
       currentSelection
     );
-    let newSelectionIndex;
-    arrowKey == "ArrowLeft"
-      ? (newSelectionIndex = currentSelectionIndex - 1)
-      : (newSelectionIndex = currentSelectionIndex + 1);
+    const newSelectionIndex =
+      currentSelectionIndex + (arrowKey == "ArrowLeft" ? -1 : +1);
 
     if (menuItemElements[newSelectionIndex]?.classList.contains("menu-item")) {
       this.clearCurrentSelection();
