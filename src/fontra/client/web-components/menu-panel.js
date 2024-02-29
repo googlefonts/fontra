@@ -1,7 +1,8 @@
 import { themeColorCSS } from "./theme-support.js";
 import * as html from "/core/html-utils.js";
 import { SimpleElement } from "/core/html-utils.js";
-import { capitalizeFirstLetter, reversed } from "/core/utils.js";
+import { capitalizeFirstLetter, enumerate, reversed } from "/core/utils.js";
+import { InlineSVG } from "/web-components/inline-svg.js";
 
 export const MenuItemDivider = { title: "-" };
 
@@ -9,19 +10,14 @@ export function showMenu(menuItems, position, positionContainer, container) {
   if (!container) {
     container = document.querySelector("#menu-panel-container");
   }
-  const menu = new MenuPanel(menuItems, position, positionContainer);
+  const menu = new MenuPanel(menuItems, { position, positionContainer });
   container.appendChild(menu);
 }
 
-class MenuPanel extends SimpleElement {
+export class MenuPanel extends SimpleElement {
   static openMenuPanels = [];
 
   static closeAllMenus(event) {
-    if (event) {
-      if (event.target instanceof MenuPanel) {
-        return;
-      }
-    }
     for (const element of MenuPanel.openMenuPanels) {
       element.parentElement?.removeChild(element);
     }
@@ -66,9 +62,18 @@ class MenuPanel extends SimpleElement {
     .context-menu-item {
       display: grid;
       grid-template-columns: 1em auto;
+      align-items: center;
       gap: 0em;
       padding: 0.1em 0.8em 0.1em 0.5em; /* top, right, bottom, left */
       color: #8080a0;
+    }
+
+    .with-submenu {
+      grid-template-columns: 1em auto auto;
+    }
+
+    .has-open-submenu {
+      background-color: #dedede;
     }
 
     .context-menu-item.enabled {
@@ -86,32 +91,76 @@ class MenuPanel extends SimpleElement {
       gap: 0.5em;
       justify-content: space-between;
     }
+
+    .submenu-icon {
+      width: 10px;
+      height: 14px;
+    }
   `;
 
-  constructor(menuItems, position, positionContainer) {
+  constructor(menuItems, options = {}) {
     super();
+    options = { visible: true, ...options };
     this.style = "display: none;";
-    this.position = position;
-    this.positionContainer = positionContainer;
+    this.visible = options.visible;
+    this.position = options.position;
+    this.onSelect = options.onSelect;
+    this.onClose = options.onClose;
+    this.positionContainer = options.positionContainer;
     this.menuElement = html.div({ class: "menu-container", tabindex: 0 });
+    this.childOf = options.childOf;
     this.menuSearchText = "";
 
     // No context menu on our context menu please:
     this.menuElement.oncontextmenu = (event) => event.preventDefault();
 
-    for (const item of menuItems) {
+    this.menuItems = menuItems;
+
+    for (const [index, item] of enumerate(menuItems)) {
+      const hasSubMenu = typeof item.getItems === "function";
       let itemElement;
       if (item === MenuItemDivider || item.title === "-") {
         itemElement = html.hr({ class: "menu-item-divider" });
       } else {
+        const classNames = ["context-menu-item"];
+        if (
+          (!hasSubMenu || item.getItems().length > 0) &&
+          typeof item.enabled === "function" &&
+          item.enabled()
+        ) {
+          classNames.push("enabled");
+        }
+        if (hasSubMenu) {
+          classNames.push("with-submenu");
+        }
+        const itemElementContent = [
+          html.div({ class: "check-mark" }, [item.checked ? "✓" : ""]),
+          html.div({ class: "item-content" }, [
+            typeof item.title === "function" ? item.title() : item.title,
+            html.span({}, [buildShortCutString(item.shortCut)]),
+          ]),
+        ];
+        if (hasSubMenu) {
+          itemElementContent.push(
+            html.div({ class: "submenu-icon" }, [
+              new InlineSVG(`/tabler-icons/chevron-right.svg`, {
+                style: "margin-top: 2px",
+              }),
+            ])
+          );
+        }
         itemElement = html.div(
           {
-            class: `context-menu-item ${item.enabled() ? "enabled" : ""}`,
+            class: classNames.join(" "),
             onmouseenter: (event) => this.selectItem(itemElement),
             onmousemove: (event) => {
               if (!itemElement.classList.contains("selected")) {
                 this.selectItem(itemElement);
               }
+            },
+            onmousedown: (event) => {
+              event.preventDefault();
+              event.stopImmediatePropagation();
             },
             onmouseleave: (event) => itemElement.classList.remove("selected"),
             onmouseup: (event) => {
@@ -120,17 +169,13 @@ class MenuPanel extends SimpleElement {
               if (item.enabled()) {
                 item.callback?.(event);
                 this.dismiss();
+                this.onSelect?.(itemElement);
               }
             },
           },
-          [
-            html.div({ class: "check-mark" }, [item.checked ? "✓" : ""]),
-            html.div({ class: "item-content" }, [
-              typeof item.title === "function" ? item.title() : item.title,
-              html.span({}, [buildShortCutString(item.shortCut)]),
-            ]),
-          ]
+          itemElementContent
         );
+        itemElement.dataset.index = index;
       }
       this.menuElement.appendChild(itemElement);
     }
@@ -143,6 +188,16 @@ class MenuPanel extends SimpleElement {
   }
 
   connectedCallback() {
+    if (this.visible) {
+      this.show();
+    }
+  }
+
+  hide() {
+    this.style.display = "none";
+  }
+
+  show() {
     this._savedActiveElement = document.activeElement;
     const position = { ...this.position };
     this.style = `display: inherited; left: ${position.x}px; top: ${position.y}px;`;
@@ -167,14 +222,47 @@ class MenuPanel extends SimpleElement {
     }
     this.parentElement?.removeChild(this);
     this._savedActiveElement?.focus();
+    this.onClose?.();
   }
 
   selectItem(itemElement) {
+    for (const menuPanel of MenuPanel.openMenuPanels) {
+      if (menuPanel.childOf === this) {
+        menuPanel.dismiss();
+        break;
+      }
+    }
+
+    for (const item of this.menuElement.children) {
+      if (item.classList.contains("has-open-submenu")) {
+        item.classList.remove("has-open-submenu");
+      }
+    }
+
     const selectedItem = this.findSelectedItem();
     if (selectedItem && selectedItem !== itemElement) {
       selectedItem.classList.remove("selected");
     }
     itemElement.classList.add("selected");
+
+    if (itemElement.classList.contains("with-submenu")) {
+      const { y: menuElementY } = this.getBoundingClientRect();
+      const { y, width } = itemElement.getBoundingClientRect();
+      const submenu = new Menupanel(
+        this.menuItems[itemElement.dataset.index].getItems(),
+        {
+          position: {
+            x: 0,
+            y: 0,
+          },
+          childOf: this,
+        }
+      );
+      this.menuElement.appendChild(submenu);
+      submenu.position = { x: width, y: y - menuElementY - 4 };
+      submenu.show();
+      itemElement.classList.add("has-open-submenu");
+    }
   }
 
   handleKeyDown(event) {

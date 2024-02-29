@@ -59,6 +59,7 @@ import {
 import { VisualizationLayers } from "./visualization-layers.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
+import { MenuBar } from "/web-components/menu-bar.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
 import { parsePluginBasePath } from "/web-components/plugin-manager.js";
@@ -193,6 +194,7 @@ export class EditorController {
     this.sidebars = [];
 
     this.initSidebars();
+    this.initTopBar();
     this.initContextMenuItems();
     this.initShortCuts();
     this.initMiniConsole();
@@ -251,6 +253,174 @@ export class EditorController {
     });
 
     this.updateWithDelay();
+  }
+
+  initTopBar() {
+    const menuBar = new MenuBar([
+      {
+        title: "File",
+        getItems() {
+          return [
+            {
+              title: "New...",
+              enabled: () => false,
+              callback: () => {},
+              shortCut: undefined,
+            },
+            {
+              title: "Open...",
+              enabled: () => false,
+              callback: () => {},
+              shortCut: undefined,
+            },
+          ];
+        },
+      },
+      {
+        title: "Edit",
+        getItems: () => {
+          const menuItems = [...this.basicContextMenuItems];
+          if (this.sceneSettings.selectedGlyph?.isEditing) {
+            this.sceneController.updateContextMenuState(event);
+            menuItems.push(MenuItemDivider);
+            menuItems.push(...this.glyphEditContextMenuItems);
+          }
+          return menuItems;
+        },
+      },
+      {
+        title: "View",
+        getItems: () => {
+          const items = [
+            {
+              title: "Zoom in",
+              enabled: () => true,
+              shortCut: { keysOrCodes: "+=", metaKey: true, globalOverride: true },
+              callback: () => {
+                this.zoomIn();
+              },
+            },
+            {
+              title: "Zoom out",
+              shortCut: { keysOrCodes: "-", metaKey: true, globalOverride: true },
+              enabled: () => true,
+              callback: () => {
+                this.zoomOut();
+              },
+            },
+            {
+              title: "Zoom to fit",
+              enabled: () => {
+                let viewBox = this.sceneController.getSelectionBox();
+                const size = rectSize(viewBox);
+                if (size.width < 4 && size.height < 4) {
+                  const center = rectCenter(viewBox);
+                  viewBox = centeredRect(center.x, center.y, 10, 10);
+                } else {
+                  viewBox = rectAddMargin(viewBox, 0.1);
+                }
+                return !this.canvasController.isActualViewBox(viewBox);
+              },
+              shortCut: { keysOrCodes: "0", metaKey: true, globalOverride: true },
+              callback: () => {
+                this.zoomFit();
+              },
+            },
+          ];
+          if (typeof this.sceneModel.selectedGlyph !== "undefined") {
+            this.sceneController.updateContextMenuState();
+            items.push(MenuItemDivider);
+            items.push(...this.glyphSelectedContextMenuItems);
+          }
+          return items;
+        },
+      },
+      {
+        title: "Glyph",
+        enabled: () => true,
+        getItems: () => {
+          return [
+            {
+              title: "Add source...",
+              enabled: () => {
+                return typeof this.sceneModel.selectedGlyph !== "undefined";
+              },
+              callback: () => {
+                this.getSidebarPanel("designspace-navigation").addSource();
+              },
+            },
+            {
+              title: "Delete source...",
+              enabled: () => {
+                return typeof this.sceneModel.selectedGlyph !== "undefined";
+              },
+              callback: () => {
+                const designspaceNavigationPanel = this.getSidebarPanel(
+                  "designspace-navigation"
+                );
+                designspaceNavigationPanel.removeSource(
+                  designspaceNavigationPanel.sourcesList.getSelectedItemIndex()
+                );
+              },
+            },
+            {
+              title: "Edit local axes...",
+              enabled: () => {
+                return typeof this.sceneModel.selectedGlyph !== "undefined";
+              },
+              callback: () => {
+                this.getSidebarPanel("designspace-navigation").editLocalAxes();
+              },
+            },
+          ];
+        },
+      },
+      {
+        title: "Extensions",
+        enabled: () => true,
+        getItems: () => {
+          return [
+            {
+              title: "Plugin manager",
+              enabled: () => true,
+              callback: () => {
+                window.open("/plugins/plugins.html");
+              },
+            },
+          ];
+        },
+      },
+      {
+        title: "Help",
+        enabled: () => true,
+        getItems: () => {
+          return [
+            {
+              title: "Homepage",
+              enabled: () => true,
+              callback: () => {
+                window.open("https://fontra.xyz/");
+              },
+            },
+            {
+              title: "Documentation",
+              enabled: () => true,
+              callback: () => {
+                window.open("https://gferreira.github.io/fontra-docs/");
+              },
+            },
+            {
+              title: "GitHub",
+              enabled: () => true,
+              callback: () => {
+                window.open("https://github.com/googlefonts/fontra");
+              },
+            },
+          ];
+        },
+      },
+    ]);
+    document.querySelector(".top-bar-container").appendChild(menuBar);
   }
 
   restoreOpenTabs(sidebarName) {
@@ -918,7 +1088,9 @@ export class EditorController {
 
   canCut() {
     return (
-      !this.sceneSettings.selectedGlyph.isEditing || this.sceneController.selection.size
+      (this.sceneSettings.selectedGlyph &&
+        !this.sceneSettings.selectedGlyph.isEditing) ||
+      this.sceneController.selection.size
     );
   }
 
@@ -1650,8 +1822,7 @@ export class EditorController {
     }
   }
 
-  contextMenuHandler(event) {
-    event.preventDefault();
+  buildContextMenuItems(event) {
     const menuItems = [...this.basicContextMenuItems];
     if (this.sceneSettings.selectedGlyph?.isEditing) {
       this.sceneController.updateContextMenuState(event);
@@ -1662,8 +1833,14 @@ export class EditorController {
       menuItems.push(MenuItemDivider);
       menuItems.push(...this.glyphSelectedContextMenuItems);
     }
+    return menuItems;
+  }
+
+  contextMenuHandler(event) {
+    event.preventDefault();
+
     const { x, y } = event;
-    showMenu(menuItems, { x: x + 1, y: y - 1 }, event.target);
+    showMenu(this.buildContextMenuItems(event), { x: x + 1, y: y - 1 }, event.target);
   }
 
   async newGlyph(glyphName, codePoint, varGlyph, undoLabel = null) {

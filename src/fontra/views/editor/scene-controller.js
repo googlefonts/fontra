@@ -573,7 +573,7 @@ export class SceneController {
   }
 
   localPoint(event) {
-    if (event.x !== undefined) {
+    if (event && event.x !== undefined) {
       this._currentLocalPoint = this.canvasController.localPoint(event);
     }
     return this._currentLocalPoint || { x: 0, y: 0 };

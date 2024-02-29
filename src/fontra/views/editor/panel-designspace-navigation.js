@@ -906,7 +906,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     button.disabled = !this.sceneModel.selectedGlyph;
   }
 
-  async editLocalAxes(event) {
+  async editLocalAxes() {
     const varGlyphController =
       await this.sceneModel.getSelectedVariableGlyphController();
     if (!varGlyphController) {
