@@ -36,6 +36,7 @@ export class MenuBar extends SimpleElement {
     window.addEventListener("blur", this.onBlur.bind(this));
     this.contentElement.addEventListener("mouseover", this.onMouseover.bind(this));
     this.contentElement.addEventListener("click", this.onClick.bind(this));
+    this.contentElement.addEventListener("keydown", this.handleKeyDown.bind(this));
     this.showMenuWhenHover = false;
   }
 
@@ -118,6 +119,38 @@ export class MenuBar extends SimpleElement {
       },
     });
     this.contentElement.appendChild(menuPanel);
+  }
+
+  handleKeyDown(event) {
+    event.stopImmediatePropagation();
+    switch (event.key) {
+      case "ArrowLeft":
+      case "ArrowRight":
+        this.navigateMenuBar(event.key);
+        break;
+    }
+  }
+
+  navigateMenuBar(arrowKey) {
+    const currentSelection = this.contentElement.querySelector(".current");
+    const menuItemElements = this.contentElement.children;
+    const currentSelectionIndex = Array.prototype.indexOf.call(
+      menuItemElements,
+      currentSelection
+    );
+    let newSelectionIndex;
+    arrowKey == "ArrowLeft"
+      ? (newSelectionIndex = currentSelectionIndex - 1)
+      : (newSelectionIndex = currentSelectionIndex + 1);
+
+    if (menuItemElements[newSelectionIndex]?.classList.contains("menu-item")) {
+      this.clearCurrentSelection();
+      this.showMenuWhenHover = true;
+      this.showMenu(
+        this.items[newSelectionIndex].getItems(),
+        menuItemElements[newSelectionIndex]
+      );
+    }
   }
 
   render() {
