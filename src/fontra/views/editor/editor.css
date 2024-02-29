@@ -61,6 +61,8 @@
   --editor-mini-console-foreground-color: var(
     --editor-mini-console-foreground-color-dark
   );
+  --editor-top-bar-background-color: var(--editor-top-bar-background-color-dark);
+  --editor-top-bar-border-color: var(--editor-top-bar-border-color-dark);
   --editor-top-bar-link-hover: var(--editor-top-bar-link-hover-dark);
 }
 
