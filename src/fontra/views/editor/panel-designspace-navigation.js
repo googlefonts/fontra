@@ -367,6 +367,7 @@ export default class DesignspaceNavigationPanel extends Panel {
       { axes: null },
       (change, isExternalChange) => {
         this._updateAxes();
+        this._updateSources();
       }
     );
 
