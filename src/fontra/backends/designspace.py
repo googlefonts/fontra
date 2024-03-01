@@ -980,7 +980,7 @@ def readGlyphOrCreate(
         # We read the existing glyph so we don't lose any data that
         # Fontra doesn't understand
         glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
-    layerGlyph.codePoints = codePoints
+    layerGlyph.unicodes = codePoints
     return layerGlyph
 
 
