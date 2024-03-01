@@ -825,24 +825,25 @@ function buildMappingList(axisController) {
 function buildValueLabelList(axisController) {
   const axis = axisController.model;
 
-  const items =
-    axis.valueLabels?.map((label) => {
-      const item = new ObservableController({ ...label });
-      item.addListener((event) => {
-        const sortedItems = [...labelList.items];
-        sortedItems.sort((a, b) => a.value - b.value);
+  const makeItem = (label) => {
+    const item = new ObservableController({ ...label });
+    item.addListener((event) => {
+      const sortedItems = [...labelList.items];
+      sortedItems.sort((a, b) => a.value - b.value);
 
-        if (!arraysEqual(labelList.items, sortedItems)) {
-          labelList.setItems(sortedItems);
-        }
+      if (!arraysEqual(labelList.items, sortedItems)) {
+        labelList.setItems(sortedItems);
+      }
 
-        const newValueLabels = sortedItems.map((valueLabel) => {
-          return { ...valueLabel };
-        });
-        axis.valueLabels = newValueLabels;
+      const newValueLabels = sortedItems.map((valueLabel) => {
+        return { ...valueLabel };
       });
-      return item.model;
-    }) || [];
+      axis.valueLabels = newValueLabels;
+    });
+    return item.model;
+  };
+
+  const items = axis.valueLabels?.map(makeItem) || [];
 
   const labelList = new UIList();
   labelList.classList.add("fontra-ui-font-info-axes-panel-axis-box-label-list");
