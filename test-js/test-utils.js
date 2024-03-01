@@ -9,7 +9,7 @@ import {
   dumpURLFragment,
   enumerate,
   fileNameExtension,
-  getCharFromUnicode,
+  getCharFromCodePoint,
   guessCharFromGlyphName,
   hyphenatedToCamelCase,
   hyphenatedToLabel,
@@ -310,12 +310,12 @@ describe("parseSelection", () => {
   });
 });
 
-describe("getCharFromUnicode", () => {
+describe("getCharFromCodePoint", () => {
   it("should return an empty string if an argument is not passed", () => {
-    expect(getCharFromUnicode()).equals("");
+    expect(getCharFromCodePoint()).equals("");
   });
   it("should convert a unicode symbol number to a character", () => {
-    expect(getCharFromUnicode(97)).equals("a");
+    expect(getCharFromCodePoint(97)).equals("a");
   });
 });
 

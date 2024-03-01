@@ -1,6 +1,6 @@
 import { makeAffineTransform } from "./utils.js";
 
-export function staticGlyphToGLIF(glyphName, glyph, unicodes) {
+export function staticGlyphToGLIF(glyphName, glyph, codePoints) {
   const lines = [
     "<?xml version='1.0' encoding='UTF-8'?>",
     `<glyph name="${glyphName}" format="2">`,
@@ -8,7 +8,7 @@ export function staticGlyphToGLIF(glyphName, glyph, unicodes) {
 
   lines.push(`  <advance width="${glyph.xAdvance}"/>`);
 
-  for (const codePoint of unicodes || []) {
+  for (const codePoint of codePoints || []) {
     const unicode_hex = codePoint.toString(16).toUpperCase().padStart(4, "0");
     lines.push(`  <unicode hex="${unicode_hex}"/>`);
   }

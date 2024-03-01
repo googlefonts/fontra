@@ -41,7 +41,7 @@ from ..core.classes import (
 )
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
-from .ufo_utils import extractGlyphNameAndUnicodes
+from .ufo_utils import extractGlyphNameAndCodePoints
 
 logger = logging.getLogger(__name__)
 
@@ -605,7 +605,7 @@ class DesignspaceBackend:
                 except KeyError:
                     logger.info(f"new glyph '{glyphName}' not found in default source")
                     continue
-                gn, codePoints = extractGlyphNameAndUnicodes(glifData)
+                gn, codePoints = extractGlyphNameAndCodePoints(glifData)
                 glyphMapUpdates[glyphName] = codePoints
 
             for glyphName in changedItems.deletedGlyphs:
@@ -680,7 +680,7 @@ class DesignspaceBackend:
             changedItems.rebuildGlyphSetContents = True
             if glyphName is None:
                 with open(path, "rb") as f:
-                    glyphName, _ = extractGlyphNameAndUnicodes(f.read())
+                    glyphName, _ = extractGlyphNameAndCodePoints(f.read())
                 self.glifFileNames[fileName] = glyphName
                 changedItems.newGlyphs.add(glyphName)
                 return
@@ -1017,7 +1017,7 @@ def getGlyphMapFromGlyphSet(glyphSet):
     glyphMap = {}
     for glyphName in glyphSet.keys():
         glifData = glyphSet.getGLIF(glyphName)
-        gn, codePoints = extractGlyphNameAndUnicodes(glifData)
+        gn, codePoints = extractGlyphNameAndCodePoints(glifData)
         assert gn == glyphName, (gn, glyphName)
         glyphMap[glyphName] = codePoints
     return glyphMap

@@ -3,7 +3,7 @@ import { UIList } from "./ui-list.js";
 import * as html from "/core/html-utils.js";
 import { UnlitElement } from "/core/html-utils.js";
 import {
-  getCharFromUnicode,
+  getCharFromCodePoint,
   guessCharFromGlyphName,
   makeUPlusStringFromCodePoint,
 } from "/core/utils.js";
@@ -59,7 +59,7 @@ export class GlyphsSearch extends UnlitElement {
         width: "1.8em",
         cellFactory: (item, description) => {
           if (item.unicodes[0]) {
-            return getCharFromUnicode(item.unicodes[0]);
+            return getCharFromCodePoint(item.unicodes[0]);
           }
           const guessedChar = guessCharFromGlyphName(item.glyphName);
           return guessedChar ? html.span({ class: "guessed-char" }, [guessedChar]) : "";

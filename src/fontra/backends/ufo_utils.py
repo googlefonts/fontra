@@ -10,7 +10,7 @@ _glyphNamePat = re.compile(rb'<glyph\s+name\s*=\s*"([^"]+)"')
 _codePointPat = re.compile(rb'<unicode\s+hex\s*=\s*"([^"]+)"')
 
 
-def extractGlyphNameAndUnicodes(
+def extractGlyphNameAndCodePoints(
     data: bytes, fileName: str | None = None
 ) -> tuple[str, list[int]]:
     m = _glyphNamePat.search(data)
