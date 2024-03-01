@@ -937,7 +937,14 @@ function buildValueLabelList(axisController) {
 
   const addRemoveButton = html.createDomElement("add-remove-buttons", {
     addButtonCallback: () => {
-      console.log("add");
+      const newItem = makeItem({ name: "Untitled", value: 0 });
+      const newItems = [newItem, ...labelList.items];
+      axis.valueLabels = newItems.map((label) => {
+        return { ...label };
+      });
+      labelList.setItems(newItems);
+      labelList.setSelectedItemIndex(0);
+      labelList.editCell(0, "name");
     },
     removeButtonCallback: deleteSelectedItem,
     disableRemoveButton: true,
