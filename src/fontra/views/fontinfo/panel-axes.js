@@ -747,22 +747,23 @@ function buildMappingGraph(axisController) {
 function buildMappingList(axisController) {
   const axis = axisController.model;
 
-  const items =
-    axis.mapping?.map(([user, source]) => {
-      const item = new ObservableController({ user, source });
-      item.addListener((event) => {
-        const sortedItems = [...mappingList.items];
-        sortedItems.sort((a, b) => a.user - b.user);
+  const makeItem = (user, source) => {
+    const item = new ObservableController({ user, source });
+    item.addListener((event) => {
+      const sortedItems = [...mappingList.items];
+      sortedItems.sort((a, b) => a.user - b.user);
 
-        if (!arraysEqual(mappingList.items, sortedItems)) {
-          mappingList.setItems(sortedItems);
-        }
+      if (!arraysEqual(mappingList.items, sortedItems)) {
+        mappingList.setItems(sortedItems);
+      }
 
-        const newMapping = sortedItems.map(({ user, source }) => [user, source]);
-        axis.mapping = newMapping;
-      });
-      return item.model;
-    }) || [];
+      const newMapping = sortedItems.map(({ user, source }) => [user, source]);
+      axis.mapping = newMapping;
+    });
+    return item.model;
+  };
+
+  const items = axis.mapping?.map(([user, source]) => makeItem(user, source)) || [];
 
   const mappingList = new UIList();
   mappingList.classList.add("fontra-ui-font-info-axes-panel-axis-box-mapping-list");
