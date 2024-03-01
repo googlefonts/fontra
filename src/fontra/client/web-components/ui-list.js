@@ -493,7 +493,8 @@ export class UIList extends UnlitElement {
     }
     if (
       (event.key === "Delete" || event.key === "Backspace") &&
-      (this.selectedItemIndex !== undefined || event.altKey)
+      (this.selectedItemIndex !== undefined || event.altKey) &&
+      !this.container.querySelector(".editing")
     ) {
       event.stopImmediatePropagation();
       if (event.altKey) {
