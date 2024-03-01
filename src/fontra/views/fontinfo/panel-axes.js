@@ -803,6 +803,8 @@ function buildMappingList(axisController) {
     // addRemoveButton.disableRemoveButton = true;  // this messes with the focus??
   };
 
+  mappingList.addEventListener("deleteKey", deleteSelectedItem);
+
   const addRemoveButton = html.createDomElement("add-remove-buttons", {
     addButtonCallback: () => {
       console.log("add");
@@ -923,6 +925,8 @@ function buildValueLabelList(axisController) {
     axis.valueLabels = newValueLabels;
     // addRemoveButton.disableRemoveButton = true;  // this messes with the focus??
   };
+
+  labelList.addEventListener("deleteKey", deleteSelectedItem);
 
   const addRemoveButton = html.createDomElement("add-remove-buttons", {
     addButtonCallback: () => {
