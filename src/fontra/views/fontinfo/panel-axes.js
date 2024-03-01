@@ -808,7 +808,12 @@ function buildMappingList(axisController) {
 
   const addRemoveButton = html.createDomElement("add-remove-buttons", {
     addButtonCallback: () => {
-      console.log("add");
+      const newItem = makeItem(0, 0);
+      const newItems = [newItem, ...mappingList.items];
+      axis.mapping = items.map(({ user, source }) => [user, source]);
+      mappingList.setItems(newItems);
+      mappingList.setSelectedItemIndex(0);
+      mappingList.editCell(0, "user");
     },
     removeButtonCallback: deleteSelectedItem,
     disableRemoveButton: true,
