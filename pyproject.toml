@@ -72,6 +72,7 @@ ufo = "fontra.backends.designspace:UFOBackend"
 ttf = "fontra.backends.opentype:OTFBackend"
 otf = "fontra.backends.opentype:OTFBackend"
 fontra = "fontra.backends.fontra:FontraBackend"
+yaml = "fontra.backends.workflow:WorkflowBackend"
 
 
 [tool.hatch.build.targets.wheel]
