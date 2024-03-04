@@ -256,7 +256,7 @@ export default class SelectionInfoPanel extends Panel {
         auxiliaryElement: html.createDomElement("icon-button", {
           "style": `width: 1.3em;`,
           "src": "/tabler-icons/refresh.svg",
-          "onclick": (event) => console.log(event),
+          "onclick": (event) => this._resetTransformationForComponent(index),
           "data-tooltip": "Reset transformation",
           "data-tooltipposition": "left",
         }),
@@ -369,7 +369,7 @@ export default class SelectionInfoPanel extends Panel {
             auxiliaryElement: html.createDomElement("icon-button", {
               "style": `width: 1.3em;`,
               "src": "/tabler-icons/refresh.svg",
-              "onclick": (event) => console.log(event),
+              "onclick": (event) => this._resetAllAxesForComponent(index),
               "data-tooltip": "Reset all axes",
               "data-tooltipposition": "left",
             }),
@@ -395,6 +395,34 @@ export default class SelectionInfoPanel extends Panel {
       this.infoForm.setFieldDescriptions(formContents);
       await this._setupSelectionInfoHandlers(glyphName);
     }
+  }
+
+  async _resetTransformationForComponent(componentIndex) {
+    console.log(componentIndex);
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        layerGlyph.components[componentIndex].transformation = {
+          translateX: 0,
+          translateY: 0,
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
+          skewX: 0,
+          skewY: 0,
+          tCenterX: 0,
+          tCenterY: 0,
+        };
+      }
+      return "reset transformation";
+    });
+  }
+
+  async _resetAllAxesForComponent(componentIndex) {
+    console.log(componentIndex);
   }
 
   _setupDimensionsInfo(glyphController, pointIndices, componentIndices) {
