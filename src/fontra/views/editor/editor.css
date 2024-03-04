@@ -121,7 +121,7 @@ body {
   display: grid;
   position: relative;
   grid-template-columns: auto 1fr auto;
-  grid-template-rows: 1fr calc(100% - var(--editor-top-bar-height));
+  grid-template-rows: auto 1fr;
   height: 100%;
   width: 100%;
 }
