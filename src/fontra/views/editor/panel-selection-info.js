@@ -250,7 +250,17 @@ export default class SelectionInfoPanel extends Panel {
         label: "Base glyph",
         value: component.name,
       });
-      formContents.push({ type: "header", label: "Transformation" });
+      formContents.push({
+        type: "header",
+        label: "Transformation",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "style": `width: 1.3em;`,
+          "src": "/tabler-icons/refresh.svg",
+          "onclick": (event) => console.log(event),
+          "data-tooltip": "Reset transformation",
+          "data-tooltipposition": "left",
+        }),
+      });
 
       formContents.push({
         type: "edit-number-x-y",
@@ -353,7 +363,17 @@ export default class SelectionInfoPanel extends Panel {
           });
         }
         if (locationItems.length) {
-          formContents.push({ type: "header", label: "Location" });
+          formContents.push({
+            type: "header",
+            label: "Location",
+            auxiliaryElement: html.createDomElement("icon-button", {
+              "style": `width: 1.3em;`,
+              "src": "/tabler-icons/refresh.svg",
+              "onclick": (event) => console.log(event),
+              "data-tooltip": "Reset all axes",
+              "data-tooltipposition": "left",
+            }),
+          });
           formContents.push(...locationItems);
         }
       }
