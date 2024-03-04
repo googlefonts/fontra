@@ -32,9 +32,11 @@ class Workflow:
         self.steps = _structureSteps(self.config["steps"])
 
     @asynccontextmanager
-    async def endPoints(self) -> AsyncGenerator[WorkflowEndPoints, None]:
+    async def endPoints(
+        self, input: ReadableFontBackend | None = None
+    ) -> AsyncGenerator[WorkflowEndPoints, None]:
         async with AsyncExitStack() as exitStack:
-            endPoints = await _prepareEndPoints(None, self.steps, exitStack)
+            endPoints = await _prepareEndPoints(input, self.steps, exitStack)
             yield endPoints
 
 
