@@ -121,7 +121,7 @@ body {
   display: grid;
   position: relative;
   grid-template-columns: auto 1fr auto;
-  grid-template-rows: 1fr calc(100% - var(--editor-top-bar-height));
+  grid-template-rows: auto 1fr;
   height: 100%;
   width: 100%;
 }
@@ -134,7 +134,7 @@ body {
   z-index: 200;
   height: var(--editor-top-bar-height);
   background: var(--editor-top-bar-background-color);
-  border-bottom: 1px solid var(--editor-top-bar-border-color);
+  box-shadow: 0px 0px 5px #0006;
 }
 
 .sidebar-container,
