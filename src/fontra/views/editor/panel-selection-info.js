@@ -250,7 +250,17 @@ export default class SelectionInfoPanel extends Panel {
         label: "Base glyph",
         value: component.name,
       });
-      formContents.push({ type: "header", label: "Transformation" });
+      formContents.push({
+        type: "header",
+        label: "Transformation",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "style": `width: 1.3em;`,
+          "src": "/tabler-icons/refresh.svg",
+          "onclick": (event) => this._resetTransformationForComponent(index),
+          "data-tooltip": "Reset transformation",
+          "data-tooltipposition": "left",
+        }),
+      });
 
       formContents.push({
         type: "edit-number-x-y",
@@ -313,19 +323,23 @@ export default class SelectionInfoPanel extends Panel {
 
       const baseGlyph = await this.fontController.getGlyph(component.name);
       if (baseGlyph && component.location) {
+        const globalAxisNames = this.fontController.globalAxes.map((axis) => axis.name);
         const locationItems = [];
-        const axes = Object.fromEntries(
-          baseGlyph.axes.map((axis) => [axis.name, axis])
-        );
-        // Add global axes, if in location and not in baseGlyph.axes
+
+        // We also add global axes, if in location and not in baseGlyph.axes
+        // (This is partially handled by the .combinedAxes property)
         // TODO: this needs more thinking, as the axes of *nested* components
         // may also be of interest. Also: we need to be able to *add* such a value
         // to component.location.
-        for (const axis of this.fontController.globalAxes) {
-          if (axis.name in component.location && !(axis.name in axes)) {
-            axes[axis.name] = axis;
-          }
-        }
+        const axes = Object.fromEntries(
+          baseGlyph.combinedAxes
+            .filter(
+              (axis) =>
+                !globalAxisNames.includes(axis.name) || axis.name in component.location
+            )
+            .map((axis) => [axis.name, axis])
+        );
+
         const axisList = Object.values(axes);
         // Sort axes: lowercase first, uppercase last
         axisList.sort((a, b) => {
@@ -353,7 +367,17 @@ export default class SelectionInfoPanel extends Panel {
           });
         }
         if (locationItems.length) {
-          formContents.push({ type: "header", label: "Location" });
+          formContents.push({
+            type: "header",
+            label: "Location",
+            auxiliaryElement: html.createDomElement("icon-button", {
+              "style": `width: 1.3em;`,
+              "src": "/tabler-icons/refresh.svg",
+              "onclick": (event) => this._resetAxisValuesForComponent(index),
+              "data-tooltip": "Reset axis values",
+              "data-tooltipposition": "left",
+            }),
+          });
           formContents.push(...locationItems);
         }
       }
@@ -375,6 +399,60 @@ export default class SelectionInfoPanel extends Panel {
       this.infoForm.setFieldDescriptions(formContents);
       await this._setupSelectionInfoHandlers(glyphName);
     }
+  }
+
+  async _resetTransformationForComponent(componentIndex) {
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        layerGlyph.components[componentIndex].transformation = {
+          translateX: 0,
+          translateY: 0,
+          rotation: 0,
+          scaleX: 1,
+          scaleY: 1,
+          skewX: 0,
+          skewY: 0,
+          tCenterX: 0,
+          tCenterY: 0,
+        };
+      }
+      return "reset transformation";
+    });
+  }
+
+  async _resetAxisValuesForComponent(componentIndex) {
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
+    const compo = glyphController.instance.components[componentIndex];
+    const baseGlyph = await this.fontController.getGlyph(compo.name);
+    if (!baseGlyph) {
+      return;
+    }
+
+    const defaultValues = baseGlyph.combinedAxes.map((axis) => [
+      axis.name,
+      axis.defaultValue,
+    ]);
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        const compo = layerGlyph.components[componentIndex];
+        for (const [axisName, axisValue] of defaultValues) {
+          if (axisName in compo.location) {
+            compo.location[axisName] = axisValue;
+          }
+        }
+      }
+      return "reset axis values";
+    });
   }
 
   _setupDimensionsInfo(glyphController, pointIndices, componentIndices) {

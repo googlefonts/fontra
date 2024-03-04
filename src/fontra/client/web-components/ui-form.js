@@ -12,7 +12,6 @@ export class Form extends SimpleElement {
       grid-template-columns: 32% auto;
       box-sizing: border-box;
       gap: 0.35rem 0.35rem;
-      overflow-x: hidden;
       overflow-y: auto;
       margin: 0em;
       padding: 0em;
@@ -21,7 +20,6 @@ export class Form extends SimpleElement {
     .ui-form-label {
       text-align: right;
       align-self: center;
-      overflow: hidden;
       text-overflow: ellipsis;
     }
 
@@ -39,6 +37,9 @@ export class Form extends SimpleElement {
       font-weight: bold;
       grid-column: 1 / span 2;
       text-align: left;
+      display: grid;
+      grid-template-columns: auto auto;
+      justify-content: space-between;
     }
 
     input {
@@ -76,6 +77,9 @@ export class Form extends SimpleElement {
 
   constructor() {
     super();
+    this.shadowRoot.appendChild(
+      html.link({ href: "/css/tooltip.css", rel: "stylesheet" })
+    );
     this.contentElement = this.shadowRoot.appendChild(document.createElement("div"));
     this.contentElement.classList.add("ui-form");
   }
@@ -102,9 +106,12 @@ export class Form extends SimpleElement {
       if (label.length && fieldItem.type !== "header") {
         label += ":";
       }
-      labelElement.innerHTML = label;
+      labelElement.append(label);
       this.contentElement.appendChild(labelElement);
       if (fieldItem.type === "header") {
+        if (fieldItem.auxiliaryElement) {
+          labelElement.appendChild(fieldItem.auxiliaryElement);
+        }
         continue;
       }
       this.contentElement.appendChild(valueElement);
