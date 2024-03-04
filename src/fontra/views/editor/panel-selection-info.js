@@ -369,8 +369,8 @@ export default class SelectionInfoPanel extends Panel {
             auxiliaryElement: html.createDomElement("icon-button", {
               "style": `width: 1.3em;`,
               "src": "/tabler-icons/refresh.svg",
-              "onclick": (event) => this._resetAllAxesForComponent(index),
-              "data-tooltip": "Reset all axes",
+              "onclick": (event) => this._resetAxisValuesForComponent(index),
+              "data-tooltip": "Reset axis values",
               "data-tooltipposition": "left",
             }),
           });
@@ -420,8 +420,32 @@ export default class SelectionInfoPanel extends Panel {
     });
   }
 
-  async _resetAllAxesForComponent(componentIndex) {
-    console.log(componentIndex);
+  async _resetAxisValuesForComponent(componentIndex) {
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
+    const compo = glyphController.instance.components[componentIndex];
+    const baseGlyph = await this.fontController.getGlyph(compo.name);
+    if (!baseGlyph) {
+      return;
+    }
+
+    const defaultValues = baseGlyph.axes.map((axis) => [axis.name, axis.defaultValue]);
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        const compo = layerGlyph.components[componentIndex];
+        for (const [axisName, axisValue] of defaultValues) {
+          if (axisName in compo.location) {
+            compo.location[axisName] = axisValue;
+          }
+        }
+      }
+      return "reset axis values";
+    });
   }
 
   _setupDimensionsInfo(glyphController, pointIndices, componentIndices) {
