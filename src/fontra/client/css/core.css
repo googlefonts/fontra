@@ -121,7 +121,8 @@ body {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="password"] {
   box-sizing: border-box;
   background-color: var(--text-input-background-color);
   color: var(--text-input-foreground-color);
