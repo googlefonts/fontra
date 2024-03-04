@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from contextlib import AsyncExitStack, asynccontextmanager, chdir
+from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
 from typing import AsyncGenerator, NamedTuple
@@ -14,6 +14,17 @@ from .actions import (
     getActionClass,
 )
 from .merger import FontBackendMerger
+
+
+@contextmanager
+def chdir(path):
+    # contextlib.chdir() requires Python >= 3.11
+    currentDir = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(currentDir)
 
 
 def _loadActionsEntryPoints():
