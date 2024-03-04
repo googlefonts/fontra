@@ -146,7 +146,7 @@ body {
 .sidebar-container {
   z-index: 100;
   background-color: var(--ui-element-background-color);
-  height: 100%;
+  height: calc(100vh - var(--editor-top-bar-height));
   width: 0;
   position: relative;
 }
