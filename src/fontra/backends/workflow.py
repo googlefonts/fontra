@@ -17,7 +17,7 @@ class WorkflowBackend:
     @classmethod
     def fromPath(cls, path):
         config = yaml.safe_load(path.read_text())
-        return cls(workflow=Workflow(config=config))
+        return cls(workflow=Workflow(config=config, parentDir=path.parent))
 
     async def _ensureSetup(self) -> ReadableFontBackend:
         if self.endPoint is None:
