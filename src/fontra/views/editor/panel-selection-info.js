@@ -323,19 +323,23 @@ export default class SelectionInfoPanel extends Panel {
 
       const baseGlyph = await this.fontController.getGlyph(component.name);
       if (baseGlyph && component.location) {
+        const globalAxisNames = this.fontController.globalAxes.map((axis) => axis.name);
         const locationItems = [];
-        const axes = Object.fromEntries(
-          baseGlyph.axes.map((axis) => [axis.name, axis])
-        );
-        // Add global axes, if in location and not in baseGlyph.axes
+
+        // We also add global axes, if in location and not in baseGlyph.axes
+        // (This is partially handled by the .combinedAxes property)
         // TODO: this needs more thinking, as the axes of *nested* components
         // may also be of interest. Also: we need to be able to *add* such a value
         // to component.location.
-        for (const axis of this.fontController.globalAxes) {
-          if (axis.name in component.location && !(axis.name in axes)) {
-            axes[axis.name] = axis;
-          }
-        }
+        const axes = Object.fromEntries(
+          baseGlyph.combinedAxes
+            .filter(
+              (axis) =>
+                !globalAxisNames.includes(axis.name) || axis.name in component.location
+            )
+            .map((axis) => [axis.name, axis])
+        );
+
         const axisList = Object.values(axes);
         // Sort axes: lowercase first, uppercase last
         axisList.sort((a, b) => {
@@ -429,7 +433,10 @@ export default class SelectionInfoPanel extends Panel {
       return;
     }
 
-    const defaultValues = baseGlyph.axes.map((axis) => [axis.name, axis.defaultValue]);
+    const defaultValues = baseGlyph.combinedAxes.map((axis) => [
+      axis.name,
+      axis.defaultValue,
+    ]);
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
