@@ -112,40 +112,80 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
     assert expectedGlyphMap == glyphMap
 
 
-testConfigYAML = """
-steps:
+@pytest.mark.parametrize(
+    "configYAMLSources",
+    [
+        [
+            """
+            steps:
 
-- action: input
-  source: "test-py/data/mutatorsans/MutatorSans.designspace"
-  steps:
-  - action: scale
-    scaleFactor: 0.75
-    scaleUnitsPerEm: false
-  - action: subset
-    glyphNames: ["A", "B", "Adieresis"]
+            - action: input
+              source: "test-py/data/mutatorsans/MutatorSans.designspace"
+              steps:
+              - action: scale
+                scaleFactor: 0.75
+                scaleUnitsPerEm: false
+              - action: subset
+                glyphNames: ["A", "B", "Adieresis"]
 
-- action: input
-  source: "test-common/fonts/MutatorSans.fontra"
-  steps:
-  - action: subset
-    glyphNames: ["C", "D"]
+            - action: input
+              source: "test-common/fonts/MutatorSans.fontra"
+              steps:
+              - action: subset
+                glyphNames: ["C", "D"]
 
-- action: output
-  destination: "testing.fontra"
-"""
+            - action: output
+              destination: "testing.fontra"
+            """
+        ],
+        [
+            """
+            steps:
 
+            - action: input
+              source: "test-py/data/mutatorsans/MutatorSans.designspace"
+              steps:
+              - action: scale
+                scaleFactor: 0.75
+                scaleUnitsPerEm: false
+              - action: subset
+                glyphNames: ["A", "B", "Adieresis"]
 
-def test_command(tmpdir):
+            - action: input
+              source: "test-common/fonts/MutatorSans.fontra"
+              steps:
+              - action: subset
+                glyphNames: ["C", "D"]
+            """,
+            """
+            steps:
+
+            - action: output
+              destination: "testing.fontra"
+            """,
+        ],
+    ],
+)
+def test_command(tmpdir, configYAMLSources):
     tmpdir = pathlib.Path(tmpdir)
-    config = yaml.safe_load(testConfigYAML)
-    for step in config["steps"]:
-        if "source" in step:
-            step["source"] = str(pathlib.Path(step["source"]).resolve())
-    configPath = pathlib.Path(tmpdir) / "config.yaml"
-    configPath.write_text(yaml.dump(config))
-    subprocess.run(["fontra-workflow", configPath, "--output-dir", tmpdir], check=True)
+
+    configs = [yaml.safe_load(source) for source in configYAMLSources]
+    configPaths = []
+    for index, config in enumerate(configs):
+        for step in config["steps"]:
+            if "source" in step:
+                step["source"] = str(pathlib.Path(step["source"]).resolve())
+        configPath = pathlib.Path(tmpdir) / f"config_{index}.yaml"
+        configPath.write_text(yaml.dump(config))
+        configPaths.append(configPath)
+
+    expectedFileNames = [p.name for p in configPaths]
+
+    subprocess.run(
+        ["fontra-workflow", *configPaths, "--output-dir", tmpdir], check=True
+    )
     items = sorted([p.name for p in tmpdir.iterdir()])
-    assert ["config.yaml", "testing.fontra"] == items
+    assert [*expectedFileNames, "testing.fontra"] == items
 
 
 @pytest.mark.parametrize(
