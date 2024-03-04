@@ -398,7 +398,6 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   async _resetTransformationForComponent(componentIndex) {
-    console.log(componentIndex);
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
         glyph.layers
