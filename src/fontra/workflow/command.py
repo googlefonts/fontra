@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import sys
+from contextlib import AsyncExitStack
 
 import yaml
 
@@ -74,7 +75,11 @@ async def mainAsync():
         help="The logging level for the actions log file",
     )
     parser.add_argument(
-        "config", type=yaml_or_json, help="A YAML or JSON file providing configuration"
+        "config",
+        nargs="+",
+        type=yaml_or_json,
+        help="One or more YAML or JSON file providing configuration. "
+        "When multiple configuration files are given, they will be chained.",
     )
 
     args = parser.parse_args()
@@ -91,9 +96,6 @@ async def mainAsync():
     )
     rootLogger.addHandler(stdoutHandler)
 
-    config, config_path = args.config
-    output_dir = args.output_dir
-
     if args.actions_log_file is not None:
         logHandler = logging.StreamHandler(args.actions_log_file)
         logHandler.setLevel(levelNamesMapping[args.actions_log_file_logging_level])
@@ -104,11 +106,22 @@ async def mainAsync():
         )
         actionLogger.addHandler(logHandler)
 
-    os.chdir(config_path.parent)
+    output_dir = args.output_dir
 
-    workflow = Workflow(config=config)
-    async with workflow.endPoints() as endPoints:
-        for output in endPoints.outputs:
+    nextInput = None
+
+    async with AsyncExitStack() as exitStack:
+        outputs = []
+        for config, config_path in args.config:
+            os.chdir(config_path.parent)
+            workflow = Workflow(config=config)
+            endPoints = await exitStack.enter_async_context(
+                workflow.endPoints(nextInput)
+            )
+            outputs.extend(endPoints.outputs)
+            nextInput = endPoints.endPoint
+
+        for output in outputs:
             await output.process(output_dir)
 
 
