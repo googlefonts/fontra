@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import AsyncExitStack, asynccontextmanager
 from dataclasses import dataclass, field
+from importlib.metadata import entry_points
 from typing import AsyncGenerator, NamedTuple
 
 from ..core.protocols import ReadableFontBackend
@@ -12,6 +13,14 @@ from .actions import (
     getActionClass,
 )
 from .merger import FontBackendMerger
+
+
+def _loadActionsEntryPoints():
+    for entryPoint in entry_points(group="fontra.workflow.actions"):
+        _ = entryPoint.load()
+
+
+_loadActionsEntryPoints()
 
 
 @dataclass(kw_only=True)
