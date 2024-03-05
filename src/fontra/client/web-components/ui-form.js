@@ -207,7 +207,11 @@ export class Form extends SimpleElement {
       this._fieldChanging(fieldItem, value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
-    console.log("inputElement.value", inputElement.value);
+    if (inputElement.value === "") {
+      inputElement.disabled = "disabled";
+    } else {
+      inputElement.disabled = "";
+    }
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
     valueElement.appendChild(inputElement);
   }
