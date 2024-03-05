@@ -544,6 +544,63 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.coordinatesX",
+  name: "Show coordinatesX",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 600,
+  screenParameters: { fontSize: 10 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const fontSize = parameters.fontSize;
+
+    let {
+      point: pointSelection,
+      component: componentSelection,
+      componentOrigin: componentOriginSelection,
+    } = parseSelection(model.sceneSettings.combinedSelection);
+    componentSelection = unionIndexSets(componentSelection, componentOriginSelection);
+
+    const margin = 0.2 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const lineHeight = fontSize;
+    const bottomY = 0.75 * fontSize;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
+    for (const pt of chain(
+      iterPointsByIndex(glyph.path, pointSelection),
+      iterComponentOriginsByIndex(glyph.instance.components, componentSelection)
+    )) {
+      const xString = `${round(pt.x, 1)}`;
+      const yString = `${round(pt.y, 1)}`;
+      const width =
+        Math.max(
+          context.measureText(xString).width,
+          context.measureText(yString).width
+        ) +
+        2 * margin;
+      context.fillStyle = parameters.boxColor;
+      context.fillRect(
+        pt.x - width / 2,
+        -pt.y - bottomY + margin,
+        width,
+        -boxHeight - 2 * margin
+      );
+
+      context.fillStyle = parameters.color;
+      context.fillText(xString, pt.x, -pt.y - bottomY - lineHeight);
+      context.fillText(yString, pt.x, -pt.y - bottomY);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.contourIndex.indicator",
   name: "Contour index indicator",
   selectionMode: "editing",
@@ -555,10 +612,46 @@ registerVisualizationLayerDefinition({
   colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
-    context.strokeStyle = parameters.color;
-    context.lineWidth = parameters.strokeWidth;
-    const radius = parameters.radius;
+    const fontSize = parameters.fontSize;
+
+    const margin = 0.2 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const lineHeight = fontSize;
+    const bottomY = 0.75 * fontSize;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
     let startPointIndex = 0;
+    let contourIndex = 0;
+
+    for (const contourInfo of glyph.path.contourInfo) {
+      const startPoint = glyph.path.getPoint(startPointIndex);
+      const xString = `${round(startPoint.x, 1)}`;
+      const yString = `${round(startPoint.y, 1)}`;
+      const width =
+        Math.max(
+          context.measureText(xString).width,
+          context.measureText(yString).width
+        ) +
+        2 * margin;
+      context.fillStyle = parameters.boxColor;
+      context.fillRect(
+        startPoint.x - width / 2,
+        -startPoint.y - bottomY + margin,
+        width,
+        -boxHeight - 2 * margin
+      );
+
+      context.fillStyle = parameters.color;
+      context.fillText(xString, startPoint.x, -startPoint.y - bottomY - lineHeight);
+      context.fillText(yString, startPoint.x, -startPoint.y - bottomY);
+      startPointIndex = contourInfo.endPoint + 1;
+    }
+    /*
+    let startPointIndex = 0;
+    let contourIndex = 0;
     for (const contourInfo of glyph.path.contourInfo) {
       const startPoint = glyph.path.getPoint(startPointIndex);
       let angle;
@@ -577,7 +670,7 @@ registerVisualizationLayerDefinition({
       context.arc(startPoint.x, startPoint.y, radius, startAngle, endAngle, false);
       context.stroke();
       startPointIndex = contourInfo.endPoint + 1;
-    }
+    }*/
   },
 });
 
