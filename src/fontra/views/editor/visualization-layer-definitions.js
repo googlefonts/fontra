@@ -545,14 +545,14 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.contourIndex.indicator",
-  name: "Show contour index",
+  name: "Contour indices",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
   screenParameters: { fontSize: 10 },
-  colors: { boxColor: "#000", color: "#FFFB" }, //{ boxColor: "#FFFB", color: "#000" },
-  colorsDarkMode: { boxColor: "#FFF", color: "#3338" }, //{ boxColor: "#3338", color: "#FFF" },
+  colors: { boxColor: "#FFFB", color: "#000" }, //{ boxColor: "#000", color: "#FFFB" },
+  colorsDarkMode: { boxColor: "#3338", color: "#FFF" }, //{ boxColor: "#FFF", color: "#3338" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
@@ -600,14 +600,14 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.componentIndex.indicator",
-  name: "Show component index",
+  name: "Component indices",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
   screenParameters: { fontSize: 10 },
-  colors: { boxColor: "#000", color: "#FFFB" },
-  colorsDarkMode: { boxColor: "#FFF", color: "#3338" },
+  colors: { boxColor: "#FFFB", color: "#000" }, //{ boxColor: "#000", color: "#FFFB" },
+  colorsDarkMode: { boxColor: "#3338", color: "#FFF" }, //{ boxColor: "#FFF", color: "#3338" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
@@ -634,8 +634,8 @@ registerVisualizationLayerDefinition({
         pt.y = transformation.translateY;
       }
 
-      const strLine1 = `Comp ${shapeIndex}`;
-      const strLine2 = `${componentController.compo.name}`;
+      const strLine1 = `${componentController.compo.name}`;
+      const strLine2 = `#${shapeIndex}`;
       const width =
         Math.max(
           context.measureText(strLine1).width,
@@ -757,7 +757,7 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
-  name: "Show coordinates",
+  name: "Coordinates",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
