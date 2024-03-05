@@ -207,6 +207,7 @@ export class Form extends SimpleElement {
       this._fieldChanging(fieldItem, value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
+    console.log("inputElement.value", inputElement.value);
     this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
     valueElement.appendChild(inputElement);
   }
