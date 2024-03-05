@@ -73,7 +73,7 @@ describe("glyph-controller Tests", () => {
     expect(staticGlyphController.xAdvance).to.equal(170);
   });
 
-  it("get empty StaticGlyphController xAdvance", () => {
+  it("get empty StaticGlyphController xAdvance, leftMargin and rightMargin", () => {
     const sgObj = makeTestEmptyStaticGlyphObject();
     const staticGlyph = StaticGlyph.fromObject(sgObj);
     const staticGlyphController = new StaticGlyphController(
@@ -82,6 +82,8 @@ describe("glyph-controller Tests", () => {
       undefined
     );
     expect(staticGlyphController.xAdvance).to.equal(170);
+    expect(staticGlyphController.leftMargin).to.equal(undefined);
+    expect(staticGlyphController.rightMargin).to.equal(undefined);
   });
 
   it("get StaticGlyphController path", () => {
@@ -128,17 +130,6 @@ describe("glyph-controller Tests", () => {
     expect(staticGlyphController.leftMargin).to.equal(60);
   });
 
-  it("get empty StaticGlyphController leftMargin", () => {
-    const sgObj = makeTestEmptyStaticGlyphObject();
-    const staticGlyph = StaticGlyph.fromObject(sgObj);
-    const staticGlyphController = new StaticGlyphController(
-      "dummy",
-      staticGlyph,
-      undefined
-    );
-    expect(staticGlyphController.leftMargin).to.equal(undefined);
-  });
-
   it("get StaticGlyphController rightMargin", () => {
     const sgObj = makeTestStaticGlyphObject();
     const staticGlyph = StaticGlyph.fromObject(sgObj);
@@ -148,17 +139,6 @@ describe("glyph-controller Tests", () => {
       undefined
     );
     expect(staticGlyphController.rightMargin).to.equal(60);
-  });
-
-  it("get empty StaticGlyphController rightMargin", () => {
-    const sgObj = makeTestEmptyStaticGlyphObject();
-    const staticGlyph = StaticGlyph.fromObject(sgObj);
-    const staticGlyphController = new StaticGlyphController(
-      "dummy",
-      staticGlyph,
-      undefined
-    );
-    expect(staticGlyphController.rightMargin).to.equal(undefined);
   });
 
   it("modify leftMargin check leftMargin", () => {
