@@ -544,72 +544,15 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.coordinatesX",
-  name: "Show coordinatesX",
-  selectionMode: "editing",
-  userSwitchable: true,
-  defaultOn: false,
-  zIndex: 600,
-  screenParameters: { fontSize: 10 },
-  colors: { boxColor: "#FFFB", color: "#000" },
-  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
-  draw: (context, positionedGlyph, parameters, model, controller) => {
-    const glyph = positionedGlyph.glyph;
-    const fontSize = parameters.fontSize;
-
-    let {
-      point: pointSelection,
-      component: componentSelection,
-      componentOrigin: componentOriginSelection,
-    } = parseSelection(model.sceneSettings.combinedSelection);
-    componentSelection = unionIndexSets(componentSelection, componentOriginSelection);
-
-    const margin = 0.2 * fontSize;
-    const boxHeight = 1.68 * fontSize;
-    const lineHeight = fontSize;
-    const bottomY = 0.75 * fontSize;
-
-    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
-    context.textAlign = "center";
-    context.scale(1, -1);
-
-    for (const pt of chain(
-      iterPointsByIndex(glyph.path, pointSelection),
-      iterComponentOriginsByIndex(glyph.instance.components, componentSelection)
-    )) {
-      const xString = `${round(pt.x, 1)}`;
-      const yString = `${round(pt.y, 1)}`;
-      const width =
-        Math.max(
-          context.measureText(xString).width,
-          context.measureText(yString).width
-        ) +
-        2 * margin;
-      context.fillStyle = parameters.boxColor;
-      context.fillRect(
-        pt.x - width / 2,
-        -pt.y - bottomY + margin,
-        width,
-        -boxHeight - 2 * margin
-      );
-
-      context.fillStyle = parameters.color;
-      context.fillText(xString, pt.x, -pt.y - bottomY - lineHeight);
-      context.fillText(yString, pt.x, -pt.y - bottomY);
-    }
-  },
-});
-
-registerVisualizationLayerDefinition({
   identifier: "fontra.contourIndex.indicator",
-  name: "Contour index indicator",
+  name: "Show contour index",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
   screenParameters: { fontSize: 10 },
-  colors: { boxColor: "#FFFB", color: "#000" },
-  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
+  colors: { boxColor: "#000", color: "#FFFB" }, //{ boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#FFF", color: "#3338" }, //{ boxColor: "#3338", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
@@ -617,7 +560,7 @@ registerVisualizationLayerDefinition({
     const margin = 0.2 * fontSize;
     const boxHeight = 1.68 * fontSize;
     const lineHeight = fontSize;
-    const bottomY = 0.75 * fontSize;
+    const bottomY = 0.75 * fontSize * -1 - boxHeight;
 
     context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
@@ -625,18 +568,20 @@ registerVisualizationLayerDefinition({
 
     let startPointIndex = 0;
     let contourIndex = 0;
+    const strLine1 = `Contour`;
 
     for (const contourInfo of glyph.path.contourInfo) {
       const startPoint = glyph.path.getPoint(startPointIndex);
-      const xString = `${round(startPoint.x, 1)}`;
-      const yString = `${round(startPoint.y, 1)}`;
+
+      const strLine2 = `${contourIndex}`;
       const width =
         Math.max(
-          context.measureText(xString).width,
-          context.measureText(yString).width
+          context.measureText(strLine1).width,
+          context.measureText(strLine2).width
         ) +
         2 * margin;
       context.fillStyle = parameters.boxColor;
+
       context.fillRect(
         startPoint.x - width / 2,
         -startPoint.y - bottomY + margin,
@@ -645,32 +590,66 @@ registerVisualizationLayerDefinition({
       );
 
       context.fillStyle = parameters.color;
-      context.fillText(xString, startPoint.x, -startPoint.y - bottomY - lineHeight);
-      context.fillText(yString, startPoint.x, -startPoint.y - bottomY);
+      context.fillText(strLine1, startPoint.x, -startPoint.y - bottomY - lineHeight);
+      context.fillText(strLine2, startPoint.x, -startPoint.y - bottomY);
       startPointIndex = contourInfo.endPoint + 1;
+      contourIndex += 1;
     }
-    /*
-    let startPointIndex = 0;
-    let contourIndex = 0;
-    for (const contourInfo of glyph.path.contourInfo) {
-      const startPoint = glyph.path.getPoint(startPointIndex);
-      let angle;
-      if (startPointIndex < contourInfo.endPoint) {
-        const nextPoint = glyph.path.getPoint(startPointIndex + 1);
-        const direction = subVectors(nextPoint, startPoint);
-        angle = Math.atan2(direction.y, direction.x);
-      }
-      let startAngle = 0;
-      let endAngle = 2 * Math.PI;
-      if (angle !== undefined) {
-        startAngle += angle + START_POINT_ARC_GAP_ANGLE;
-        endAngle += angle - START_POINT_ARC_GAP_ANGLE;
-      }
-      context.beginPath();
-      context.arc(startPoint.x, startPoint.y, radius, startAngle, endAngle, false);
-      context.stroke();
-      startPointIndex = contourInfo.endPoint + 1;
-    }*/
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.componentIndex.indicator",
+  name: "Show component index",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 600,
+  screenParameters: { fontSize: 10 },
+  colors: { boxColor: "#000", color: "#FFFB" },
+  colorsDarkMode: { boxColor: "#FFF", color: "#3338" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const fontSize = parameters.fontSize;
+
+    const margin = 0.2 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const lineHeight = fontSize;
+    const bottomY = -boxHeight / 2;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
+    let shapeIndex = 0;
+    for (const componentController of glyph.components) {
+      let bounds = componentController._controlBounds;
+      let center_x = (bounds.xMax - bounds.xMin) / 2 + bounds.xMin;
+      let center_y = (bounds.yMax - bounds.yMin) / 2 + bounds.yMin;
+
+      let pt = { x: center_x, y: center_y };
+      const strLine1 = `Comp ${shapeIndex}`;
+      const strLine2 = `${componentController.compo.name}`;
+      const width =
+        Math.max(
+          context.measureText(strLine1).width,
+          context.measureText(strLine2).width
+        ) +
+        2 * margin;
+      context.fillStyle = parameters.boxColor;
+
+      context.fillRect(
+        pt.x - width / 2,
+        -pt.y - bottomY + margin,
+        width,
+        -boxHeight - 2 * margin
+      );
+
+      context.fillStyle = parameters.color;
+      context.fillText(strLine1, pt.x, -pt.y - bottomY - lineHeight);
+      context.fillText(strLine2, pt.x, -pt.y - bottomY);
+      shapeIndex += 1;
+    }
   },
 });
 
