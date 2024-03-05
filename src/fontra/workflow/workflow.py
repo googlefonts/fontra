@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from contextlib import AsyncExitStack, asynccontextmanager
+import os
+from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
 from typing import AsyncGenerator, NamedTuple
@@ -15,6 +16,17 @@ from .actions import (
 from .merger import FontBackendMerger
 
 
+@contextmanager
+def chdir(path):
+    # contextlib.chdir() requires Python >= 3.11
+    currentDir = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(currentDir)
+
+
 def _loadActionsEntryPoints():
     for entryPoint in entry_points(group="fontra.workflow.actions"):
         _ = entryPoint.load()
@@ -27,6 +39,7 @@ _loadActionsEntryPoints()
 class Workflow:
     config: dict
     steps: list[ActionStep] = field(init=False)
+    parentDir: os.PathLike
 
     def __post_init__(self):
         self.steps = _structureSteps(self.config["steps"])
@@ -36,7 +49,8 @@ class Workflow:
         self, input: ReadableFontBackend | None = None
     ) -> AsyncGenerator[WorkflowEndPoints, None]:
         async with AsyncExitStack() as exitStack:
-            endPoints = await _prepareEndPoints(input, self.steps, exitStack)
+            with chdir(self.parentDir):
+                endPoints = await _prepareEndPoints(input, self.steps, exitStack)
             yield endPoints
 
 

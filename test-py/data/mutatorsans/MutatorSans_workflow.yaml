@@ -1,0 +1,5 @@
+steps:
+  - action: input
+    source: "MutatorSans.designspace"
+  - action: subset
+    glyphNames: ["A", "B"]

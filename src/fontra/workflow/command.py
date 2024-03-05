@@ -2,7 +2,6 @@ import argparse
 import asyncio
 import json
 import logging
-import os
 import pathlib
 import sys
 from contextlib import AsyncExitStack
@@ -113,8 +112,7 @@ async def mainAsync():
     async with AsyncExitStack() as exitStack:
         outputs = []
         for config, config_path in args.config:
-            os.chdir(config_path.parent)
-            workflow = Workflow(config=config)
+            workflow = Workflow(config=config, parentDir=config_path.parent)
             endPoints = await exitStack.enter_async_context(
                 workflow.endPoints(nextInput)
             )

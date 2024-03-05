@@ -259,7 +259,7 @@ async def test_workflowMultiple(testName, configSource, expectedLog, tmpdir, cap
     tmpdir = pathlib.Path(tmpdir)
     config = yaml.safe_load(configSource)
 
-    workflow = Workflow(config=config)
+    workflow = Workflow(config=config, parentDir=pathlib.Path())
 
     async with workflow.endPoints() as endPoints:
         assert endPoints.endPoint is not None
