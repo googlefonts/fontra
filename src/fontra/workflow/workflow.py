@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import pathlib
 from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
@@ -38,8 +39,8 @@ _loadActionsEntryPoints()
 @dataclass(kw_only=True)
 class Workflow:
     config: dict
+    parentDir: os.PathLike = field(default_factory=pathlib.Path)
     steps: list[ActionStep] = field(init=False)
-    parentDir: os.PathLike
 
     def __post_init__(self):
         self.steps = _structureSteps(self.config["steps"])
