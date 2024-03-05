@@ -623,11 +623,17 @@ registerVisualizationLayerDefinition({
 
     let shapeIndex = 0;
     for (const componentController of glyph.components) {
-      let bounds = componentController._controlBounds;
-      let center_x = (bounds.xMax - bounds.xMin) / 2 + bounds.xMin;
-      let center_y = (bounds.yMax - bounds.yMin) / 2 + bounds.yMin;
+      const bounds = componentController._controlBounds;
+      let pt = { x: 0, y: 0 };
+      if (bounds) {
+        pt.x = (bounds.xMax - bounds.xMin) / 2 + bounds.xMin;
+        pt.y = (bounds.yMax - bounds.yMin) / 2 + bounds.yMin;
+      } else {
+        const transformation = componentController.compo.transformation;
+        pt.x = transformation.translateX;
+        pt.y = transformation.translateY;
+      }
 
-      let pt = { x: center_x, y: center_y };
       const strLine1 = `Comp ${shapeIndex}`;
       const strLine2 = `${componentController.compo.name}`;
       const width =
