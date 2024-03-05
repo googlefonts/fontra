@@ -194,6 +194,7 @@ export default class SelectionInfoPanel extends Panel {
           fieldX: {
             key: '["leftMargin"]',
             value: glyphController.leftMargin,
+            disabled: glyphController.leftMargin == undefined,
             getValue: (layerGlyph, layerGlyphController, fieldItem) => {
               return layerGlyphController.leftMargin;
             },
@@ -215,6 +216,7 @@ export default class SelectionInfoPanel extends Panel {
           fieldY: {
             key: '["rightMargin"]',
             value: glyphController.rightMargin,
+            disabled: glyphController.rightMargin == undefined,
             getValue: (layerGlyph, layerGlyphController, fieldItem) => {
               return layerGlyphController.rightMargin;
             },
