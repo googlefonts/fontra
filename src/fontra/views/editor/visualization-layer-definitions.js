@@ -552,7 +552,7 @@ registerVisualizationLayerDefinition({
   zIndex: 600,
   screenParameters: { fontSize: 11 },
   colors: { boxColor: "#FFFB", color: "#000" },
-  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
@@ -602,7 +602,7 @@ registerVisualizationLayerDefinition({
   zIndex: 600,
   screenParameters: { fontSize: 11 },
   colors: { boxColor: "#FFFB", color: "#000" },
-  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
@@ -761,7 +761,7 @@ registerVisualizationLayerDefinition({
   zIndex: 600,
   screenParameters: { fontSize: 10 },
   colors: { boxColor: "#FFFB", color: "#000" },
-  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
