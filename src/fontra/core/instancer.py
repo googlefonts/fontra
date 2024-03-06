@@ -275,9 +275,11 @@ class GlyphInstance:
     async def getFlattenedPath(self, transform: Transform | None = None) -> PackedPath:
         assert isinstance(self.glyph.path, PackedPath)
         paths: list[PackedPath] = [
-            self.glyph.path
-            if transform is None
-            else self.glyph.path.transformed(transform)
+            (
+                self.glyph.path
+                if transform is None
+                else self.glyph.path.transformed(transform)
+            )
         ]
         for component in self.glyph.components:
             paths.append(await self._getComponentPath(component, transform))
