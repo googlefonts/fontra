@@ -336,3 +336,19 @@ def _renameAxis(axis, axes):
         if newAttrs:
             axis = replace(axis, **newAttrs)
     return axis
+
+
+@registerActionClass("drop-unused-sources-and-layers")
+@dataclass(kw_only=True)
+class DropInactiveSourcesAction(BaseFilterAction):
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        usedSources = [source for source in glyph.sources if not source.inactive]
+        usedLayerNames = {source.layerName for source in usedSources}
+        usedLayers = {
+            layerName: layer
+            for layerName, layer in glyph.layers.items()
+            if layerName in usedLayerNames
+        }
+        if usedSources != glyph.sources or usedLayers != glyph.layers:
+            glyph = replace(glyph, sources=usedSources, layers=usedLayers)
+        return glyph

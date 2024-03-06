@@ -272,6 +272,21 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "drop-unused-sources-and-layers",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-drop-unused-sources-and-layers.fontra"
+            - action: subset
+              glyphNames: ["S"]
+            - action: drop-unused-sources-and-layers
+
+            - action: output
+              destination: "output-drop-unused-sources-and-layers.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
