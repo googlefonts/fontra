@@ -87,6 +87,8 @@ class BaseFilterAction:
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         glyph = await self.validatedInput.getGlyph(glyphName)
+        if glyph is None:
+            return None
         return await self.processGlyph(glyph)
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
@@ -109,10 +111,12 @@ class BaseFilterAction:
 
     # These methods should *not* modify the objects, but return modified *copies*
 
-    async def processGlyph(self, glyph):
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         return glyph
 
-    async def processGlobalAxes(self, axes):
+    async def processGlobalAxes(
+        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
+    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return axes
 
     async def processGlyphMap(self, glyphMap):
