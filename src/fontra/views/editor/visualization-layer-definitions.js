@@ -544,6 +544,115 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.contour.index",
+  name: "Contour indices",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 600,
+  screenParameters: { fontSize: 11 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const fontSize = parameters.fontSize;
+
+    const margin = 0.5 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const bottomY = 0.75 * fontSize * -1 - boxHeight + margin / 2;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
+    let startPointIndex = 0;
+
+    for (const [contourIndex, contourInfo] of enumerate(glyph.path.contourInfo)) {
+      const startPoint = glyph.path.getPoint(startPointIndex);
+
+      const strLine = `${contourIndex}`;
+      const width = Math.max(context.measureText(strLine).width) + 2 * margin;
+
+      context.fillStyle = parameters.boxColor;
+      context.beginPath();
+      context.roundRect(
+        startPoint.x - width / 2,
+        -startPoint.y - bottomY + margin,
+        width,
+        -boxHeight / 2 - 2 * margin,
+        boxHeight / 4 // corner radius
+      );
+      context.fill();
+
+      context.fillStyle = parameters.color;
+      context.fillText(strLine, startPoint.x, -startPoint.y - bottomY);
+      startPointIndex = contourInfo.endPoint + 1;
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.component.index",
+  name: "Component names and indices",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 600,
+  screenParameters: { fontSize: 11 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const fontSize = parameters.fontSize;
+
+    const margin = 0.5 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const lineHeight = fontSize;
+    const bottomY = -boxHeight / 2;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
+    for (const [shapeIndex, componentController] of enumerate(glyph.components)) {
+      const bounds = componentController.controlBounds;
+      if (!bounds) {
+        // Shouldn't happen due to the "empty base glyph placeholder",
+        // a.k.a. makeEmptyComponentPlaceholderGlyph(), but let's be safe.
+        continue;
+      }
+      const pt = {
+        x: (bounds.xMax - bounds.xMin) / 2 + bounds.xMin,
+        y: (bounds.yMax - bounds.yMin) / 2 + bounds.yMin,
+      };
+
+      const strLine1 = `${componentController.compo.name}`;
+      const strLine2 = `${shapeIndex}`;
+      const width =
+        Math.max(
+          context.measureText(strLine1).width,
+          context.measureText(strLine2).width
+        ) +
+        2 * margin;
+      context.fillStyle = parameters.boxColor;
+      context.beginPath();
+      context.roundRect(
+        pt.x - width / 2,
+        -pt.y - bottomY + margin,
+        width,
+        -boxHeight - 2 * margin,
+        boxHeight / 4 // corner radius
+      );
+      context.fill();
+
+      context.fillStyle = parameters.color;
+      context.fillText(strLine1, pt.x, -pt.y - bottomY - lineHeight);
+      context.fillText(strLine2, pt.x, -pt.y - bottomY);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.handles",
   name: "Bezier handles",
   selectionMode: "editing",
@@ -641,14 +750,14 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
-  name: "Show coordinates",
+  name: "Coordinates",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
   screenParameters: { fontSize: 10 },
   colors: { boxColor: "#FFFB", color: "#000" },
-  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
