@@ -272,6 +272,21 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "drop-inactive-sources",
+            """
+            steps:
+            - action: input
+              source: "test-common/fonts/MutatorSans.fontra"
+            - action: subset
+              glyphNames: ["S"]
+            - action: drop-inactive-sources
+
+            - action: output
+              destination: "output-drop-inactive-sources.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
