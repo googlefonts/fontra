@@ -594,7 +594,7 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.componentIndex.indicator",
+  identifier: "fontra.component.index",
   name: "Component names and indices",
   selectionMode: "editing",
   userSwitchable: true,
