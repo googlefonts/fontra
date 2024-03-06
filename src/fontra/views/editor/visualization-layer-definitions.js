@@ -544,7 +544,7 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
-  identifier: "fontra.contourIndex.indicator",
+  identifier: "fontra.contour.index",
   name: "Contour indices",
   selectionMode: "editing",
   userSwitchable: true,
