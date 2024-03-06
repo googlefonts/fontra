@@ -24,19 +24,19 @@ class ConnectableActionProtocol(Protocol):
     def connect(
         self, input: ReadableFontBackend
     ) -> AsyncContextManager[ReadableFontBackend | OutputActionProtocol]:
-        ...
+        pass
 
 
 @runtime_checkable
 class InputActionProtocol(Protocol):
     def prepare(self) -> AsyncContextManager[ReadableFontBackend]:
-        ...
+        pass
 
 
 @runtime_checkable
 class OutputActionProtocol(Protocol):
     async def process(self) -> None:
-        ...
+        pass
 
 
 _actions = {}
@@ -83,7 +83,7 @@ class BaseFilterAction:
                 pass
 
     def close(self) -> None:
-        ...
+        pass
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         glyph = await self.validatedInput.getGlyph(glyphName)

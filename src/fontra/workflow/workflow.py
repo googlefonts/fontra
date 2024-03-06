@@ -123,9 +123,9 @@ class ActionStep:
     name: str
     arguments: dict
     steps: list[ActionStep] = field(default_factory=list)
-    action: ReadableFontBackend | ConnectableActionProtocol | OutputActionProtocol | None = field(
-        init=False, default=None
-    )
+    action: (
+        ReadableFontBackend | ConnectableActionProtocol | OutputActionProtocol | None
+    ) = field(init=False, default=None)
 
 
 def _structureSteps(rawSteps):
