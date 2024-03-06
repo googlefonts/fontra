@@ -619,15 +619,15 @@ registerVisualizationLayerDefinition({
     let shapeIndex = 0;
     for (const componentController of glyph.components) {
       const bounds = componentController.controlBounds;
-      let pt = { x: 0, y: 0 };
-      if (bounds) {
-        pt.x = (bounds.xMax - bounds.xMin) / 2 + bounds.xMin;
-        pt.y = (bounds.yMax - bounds.yMin) / 2 + bounds.yMin;
-      } else {
-        const transformation = componentController.compo.transformation;
-        pt.x = transformation.translateX;
-        pt.y = transformation.translateY;
+      if (!bounds) {
+        // Shouldn't happen due to the "empty base glyph placeholder",
+        // a.k.a. makeEmptyComponentPlaceholderGlyph(), but let's be safe.
+        continue;
       }
+      const pt = {
+        x: (bounds.xMax - bounds.xMin) / 2 + bounds.xMin,
+        y: (bounds.yMax - bounds.yMin) / 2 + bounds.yMin,
+      };
 
       const strLine1 = `${componentController.compo.name}`;
       const strLine2 = `${shapeIndex}`;
