@@ -5,10 +5,11 @@ import os
 import pathlib
 from contextlib import asynccontextmanager, closing
 from dataclasses import dataclass, field, replace
-from functools import cached_property
+from functools import cached_property, partial
 from typing import Any, AsyncContextManager, AsyncGenerator, Protocol, runtime_checkable
 
 from fontTools.misc.transform import Transform
+from fontTools.varLib.models import piecewiseLinearMap
 
 from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
@@ -352,3 +353,57 @@ class DropInactiveSourcesAction(BaseFilterAction):
         if usedSources != glyph.sources or usedLayers != glyph.layers:
             glyph = replace(glyph, sources=usedSources, layers=usedLayers)
         return glyph
+
+
+@registerActionClass("drop-axis-mapping")
+@dataclass(kw_only=True)
+class DropAxisMappingAction(BaseFilterAction):
+    axes: list[str] | None = None
+    _axisValueMapFunctions: dict | None = None
+
+    async def _getAxisValueMapFunctions(self):
+        if self._axisValueMapFunctions is None:
+            axes = await self.input.getGlobalAxes()
+            if self.axes:
+                axes = [axis for axis in axes if axis.name in self.axes]
+
+            mapFuncs = {}
+            for axis in axes:
+                if axis.mapping:
+                    mapFuncs[axis.name] = partial(
+                        piecewiseLinearMap,
+                        mapping=dict([(b, a) for a, b in axis.mapping]),
+                    )
+            self._axisValueMapFunctions = mapFuncs
+        return self._axisValueMapFunctions
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        mapFuncs = await self._getAxisValueMapFunctions()
+        return replace(
+            glyph,
+            sources=[
+                replace(source, location=_remapLocation(source.location, mapFuncs))
+                for source in glyph.sources
+            ],
+        )
+
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        assert self.input is not None
+        mapFuncs = await self._getAxisValueMapFunctions()
+        return [
+            _dropAxisMapping(axis, mapFuncs)
+            for axis in await self.input.getGlobalAxes()
+        ]
+
+
+def _remapLocation(location, mapFuncs):
+    return {
+        axisName: mapFuncs.get(axisName, lambda x: x)(axisValue)
+        for axisName, axisValue in location.items()
+    }
+
+
+def _dropAxisMapping(axis, mapFuncs):
+    if axis.name in mapFuncs and axis.mapping:
+        axis = replace(axis, mapping=[])
+    return axis
