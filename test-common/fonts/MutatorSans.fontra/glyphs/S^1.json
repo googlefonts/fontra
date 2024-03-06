@@ -2,6 +2,16 @@
 "name": "S",
 "sources": [
 {
+"name": "inactive-test",
+"layerName": "MutatorSansLightCondensed/foreground",
+"inactive": true,
+"location": {
+"width": 50.0,
+"weight": 150.0,
+"italic": 0.0
+}
+},
+{
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
