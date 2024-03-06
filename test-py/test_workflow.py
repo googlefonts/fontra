@@ -273,17 +273,17 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
-            "drop-inactive-sources",
+            "drop-unused-sources-and-layers",
             """
             steps:
             - action: input
-              source: "test-common/fonts/MutatorSans.fontra"
+              source: "test-py/data/workflow/input-drop-unused-sources-and-layers.fontra"
             - action: subset
               glyphNames: ["S"]
-            - action: drop-inactive-sources
+            - action: drop-unused-sources-and-layers
 
             - action: output
-              destination: "output-drop-inactive-sources.fontra"
+              destination: "output-drop-unused-sources-and-layers.fontra"
             """,
             [],
         ),

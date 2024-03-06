@@ -338,7 +338,7 @@ def _renameAxis(axis, axes):
     return axis
 
 
-@registerActionClass("drop-inactive-sources")
+@registerActionClass("drop-unused-sources-and-layers")
 @dataclass(kw_only=True)
 class DropInactiveSourcesAction(BaseFilterAction):
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
