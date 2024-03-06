@@ -287,6 +287,21 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "drop-axis-mappings",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset
+              glyphNames: ["A"]
+            - action: drop-axis-mapping
+
+            - action: output
+              destination: "output-drop-axis-mapping.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
