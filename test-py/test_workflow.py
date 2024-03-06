@@ -254,7 +254,7 @@ def test_command(tmpdir, configYAMLSources):
         ),
     ],
 )
-async def test_workflowMultiple(testName, configSource, expectedLog, tmpdir, caplog):
+async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
     caplog.set_level(logging.WARNING)
     tmpdir = pathlib.Path(tmpdir)
     config = yaml.safe_load(configSource)
