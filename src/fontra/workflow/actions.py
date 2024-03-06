@@ -291,14 +291,38 @@ class OutputAction:
 @dataclass(kw_only=True)
 class RenameAxesAction(BaseFilterAction):
     axes: dict[str, dict]  # value dict keys: name, tag, label
+    axisRenameMap: dict[str, str] = field(init=False, default_factory=dict)
+
+    def __post_init__(self):
+        self.axisRenameMap = {
+            axisName: renameInfo["name"]
+            for axisName, renameInfo in self.axes.items()
+            if "name" in renameInfo
+        }
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return glyph
+        return replace(
+            glyph,
+            sources=[
+                replace(
+                    source,
+                    location=_renameLocationAxes(source.location, self.axisRenameMap),
+                )
+                for source in glyph.sources
+            ],
+        )
 
     async def processGlobalAxes(
         self, axes: list[GlobalAxis | GlobalDiscreteAxis]
     ) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return [_renameAxis(axis, self.axes) for axis in axes]
+
+
+def _renameLocationAxes(location, axisRenameMap):
+    return {
+        axisRenameMap.get(axisName, axisName): axisValue
+        for axisName, axisValue in location.items()
+    }
 
 
 def _renameAxis(axis, axes):

@@ -6,7 +6,7 @@
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
 "width": 0.0,
-"weight": 150.0,
+"Thickness": 150.0,
 "italic": 0.0
 }
 },
@@ -15,7 +15,7 @@
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
 "width": 0.0,
-"weight": 850.0,
+"Thickness": 850.0,
 "italic": 0.0
 }
 },
@@ -24,7 +24,7 @@
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
 "width": 1000.0,
-"weight": 150.0,
+"Thickness": 150.0,
 "italic": 0.0
 }
 },
@@ -33,7 +33,7 @@
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
 "width": 1000.0,
-"weight": 850.0,
+"Thickness": 850.0,
 "italic": 0.0
 }
 }
