@@ -566,9 +566,8 @@ registerVisualizationLayerDefinition({
     context.scale(1, -1);
 
     let startPointIndex = 0;
-    let contourIndex = 0;
 
-    for (const contourInfo of glyph.path.contourInfo) {
+    for (const [contourIndex, contourInfo] of enumerate(glyph.path.contourInfo)) {
       const startPoint = glyph.path.getPoint(startPointIndex);
 
       const strLine = `${contourIndex}`;
@@ -588,7 +587,6 @@ registerVisualizationLayerDefinition({
       context.fillStyle = parameters.color;
       context.fillText(strLine, startPoint.x, -startPoint.y - bottomY);
       startPointIndex = contourInfo.endPoint + 1;
-      contourIndex += 1;
     }
   },
 });
