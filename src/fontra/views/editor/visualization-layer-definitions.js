@@ -550,17 +550,16 @@ registerVisualizationLayerDefinition({
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
-  screenParameters: { fontSize: 10 },
-  colors: { boxColor: "#FFFB", color: "#000" }, //{ boxColor: "#000", color: "#FFFB" },
-  colorsDarkMode: { boxColor: "#3338", color: "#FFF" }, //{ boxColor: "#FFF", color: "#3338" },
+  screenParameters: { fontSize: 11 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
 
-    const margin = 0.2 * fontSize;
+    const margin = 0.5 * fontSize;
     const boxHeight = 1.68 * fontSize;
-    const lineHeight = fontSize;
-    const bottomY = 0.75 * fontSize * -1 - boxHeight;
+    const bottomY = 0.75 * fontSize * -1 - boxHeight + margin / 2;
 
     context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
@@ -568,30 +567,26 @@ registerVisualizationLayerDefinition({
 
     let startPointIndex = 0;
     let contourIndex = 0;
-    const strLine1 = `Contour`;
 
     for (const contourInfo of glyph.path.contourInfo) {
       const startPoint = glyph.path.getPoint(startPointIndex);
 
-      const strLine2 = `${contourIndex}`;
-      const width =
-        Math.max(
-          context.measureText(strLine1).width,
-          context.measureText(strLine2).width
-        ) +
-        2 * margin;
-      context.fillStyle = parameters.boxColor;
+      const strLine = `${contourIndex}`;
+      const width = Math.max(context.measureText(strLine).width) + 2 * margin;
 
-      context.fillRect(
+      context.fillStyle = parameters.boxColor;
+      context.beginPath();
+      context.roundRect(
         startPoint.x - width / 2,
         -startPoint.y - bottomY + margin,
         width,
-        -boxHeight - 2 * margin
+        -boxHeight / 2 - 2 * margin,
+        boxHeight / 4 // corner radius
       );
+      context.fill();
 
       context.fillStyle = parameters.color;
-      context.fillText(strLine1, startPoint.x, -startPoint.y - bottomY - lineHeight);
-      context.fillText(strLine2, startPoint.x, -startPoint.y - bottomY);
+      context.fillText(strLine, startPoint.x, -startPoint.y - bottomY);
       startPointIndex = contourInfo.endPoint + 1;
       contourIndex += 1;
     }
@@ -600,19 +595,19 @@ registerVisualizationLayerDefinition({
 
 registerVisualizationLayerDefinition({
   identifier: "fontra.componentIndex.indicator",
-  name: "Component indices",
+  name: "Component names and indices",
   selectionMode: "editing",
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
-  screenParameters: { fontSize: 10 },
-  colors: { boxColor: "#FFFB", color: "#000" }, //{ boxColor: "#000", color: "#FFFB" },
-  colorsDarkMode: { boxColor: "#3338", color: "#FFF" }, //{ boxColor: "#FFF", color: "#3338" },
+  screenParameters: { fontSize: 11 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#3338", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
     const fontSize = parameters.fontSize;
 
-    const margin = 0.2 * fontSize;
+    const margin = 0.5 * fontSize;
     const boxHeight = 1.68 * fontSize;
     const lineHeight = fontSize;
     const bottomY = -boxHeight / 2;
@@ -635,7 +630,7 @@ registerVisualizationLayerDefinition({
       }
 
       const strLine1 = `${componentController.compo.name}`;
-      const strLine2 = `#${shapeIndex}`;
+      const strLine2 = `${shapeIndex}`;
       const width =
         Math.max(
           context.measureText(strLine1).width,
@@ -643,13 +638,15 @@ registerVisualizationLayerDefinition({
         ) +
         2 * margin;
       context.fillStyle = parameters.boxColor;
-
-      context.fillRect(
+      context.beginPath();
+      context.roundRect(
         pt.x - width / 2,
         -pt.y - bottomY + margin,
         width,
-        -boxHeight - 2 * margin
+        -boxHeight - 2 * margin,
+        boxHeight / 4 // corner radius
       );
+      context.fill();
 
       context.fillStyle = parameters.color;
       context.fillText(strLine1, pt.x, -pt.y - bottomY - lineHeight);
