@@ -285,3 +285,30 @@ class OutputAction:
 
         with closing(output):
             await copyFont(self.validatedInput, output)
+
+
+@registerActionClass("rename-axes")
+@dataclass(kw_only=True)
+class RenameAxesAction(BaseFilterAction):
+    axes: dict[str, dict]  # value dict keys: name, tag, label
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        return glyph
+
+    async def processGlobalAxes(
+        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
+    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        return [_renameAxis(axis, self.axes) for axis in axes]
+
+
+def _renameAxis(axis, axes):
+    renameInfo = axes.get(axis.name)
+    if renameInfo is not None:
+        newAttrs = {
+            attrName: renameInfo[attrName]
+            for attrName in ["name", "tag", "label"]
+            if attrName in renameInfo
+        }
+        if newAttrs:
+            axis = replace(axis, **newAttrs)
+    return axis
