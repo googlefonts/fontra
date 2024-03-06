@@ -22,6 +22,7 @@ export class Form extends SimpleElement {
       align-self: center;
       overflow-x: auto;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     hr {
