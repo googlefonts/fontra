@@ -616,8 +616,7 @@ registerVisualizationLayerDefinition({
     context.textAlign = "center";
     context.scale(1, -1);
 
-    let shapeIndex = 0;
-    for (const componentController of glyph.components) {
+    for (const [shapeIndex, componentController] of enumerate(glyph.components)) {
       const bounds = componentController.controlBounds;
       if (!bounds) {
         // Shouldn't happen due to the "empty base glyph placeholder",
@@ -651,7 +650,6 @@ registerVisualizationLayerDefinition({
       context.fillStyle = parameters.color;
       context.fillText(strLine1, pt.x, -pt.y - bottomY - lineHeight);
       context.fillText(strLine2, pt.x, -pt.y - bottomY);
-      shapeIndex += 1;
     }
   },
 });
