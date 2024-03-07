@@ -388,7 +388,6 @@ class DropAxisMappingAction(BaseFilterAction):
         )
 
     async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        assert self.input is not None
         mapFuncs = await self._getAxisValueMapFunctions()
         return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
 
