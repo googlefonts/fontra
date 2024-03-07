@@ -334,6 +334,26 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "adjust-axes",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset
+              glyphNames: ["A"]
+            - action: adjust-axes
+              axes:
+                weight:
+                  minValue: 200
+                  defaultValue: 400
+                  maxValue: 900
+
+            - action: output
+              destination: "output-adjust-axes.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
