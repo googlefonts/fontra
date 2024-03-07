@@ -8,8 +8,8 @@ export class MenuBar extends SimpleElement {
     display: flex;
     align-items: center;
     font-size: 1rem;
-    width: 100%;
     height:100%;
+    padding: 0 0.5rem;
   }
 
   .menu-item {

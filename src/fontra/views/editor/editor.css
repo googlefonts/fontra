@@ -129,7 +129,6 @@ body {
 .top-bar-container {
   grid-column: 1 / 4;
   grid-row: 1;
-  padding: 0 0.5rem;
   z-index: 200;
   height: var(--editor-top-bar-height);
   background: var(--editor-top-bar-background-color);
