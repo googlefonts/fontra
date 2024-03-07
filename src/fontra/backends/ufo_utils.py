@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 _glyphNamePat = re.compile(rb'<glyph\s+name\s*=\s*"([^"]+)"')
-_codePointPat = re.compile(rb'<unicode\s+hex\s*=\s*"([^"]+)"')
+_unicodePat = re.compile(rb'<unicode\s+hex\s*=\s*"([^"]+)"')
 
 
 def extractGlyphNameAndCodePoints(
@@ -24,5 +24,5 @@ def extractGlyphNameAndCodePoints(
                 "actual file name does not match predicted file name: "
                 f"{refFileName} {fileName} {glyphName}"
             )
-    codePoints = [int(u, 16) for u in _codePointPat.findall(data)]
+    codePoints = [int(u, 16) for u in _unicodePat.findall(data)]
     return glyphName, codePoints
