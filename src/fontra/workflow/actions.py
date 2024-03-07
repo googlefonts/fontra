@@ -387,13 +387,10 @@ class DropAxisMappingAction(BaseFilterAction):
             ],
         )
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
         assert self.input is not None
         mapFuncs = await self._getAxisValueMapFunctions()
-        return [
-            _dropAxisMapping(axis, mapFuncs)
-            for axis in await self.input.getGlobalAxes()
-        ]
+        return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
 
 
 def _remapLocation(location, mapFuncs):
