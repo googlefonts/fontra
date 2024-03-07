@@ -14,7 +14,6 @@ export class MenuBar extends SimpleElement {
 
   .menu-item {
     padding: 0.4rem 0.6rem;
-    display: inline-block;
     cursor: default;
     user-select: none;
   }
