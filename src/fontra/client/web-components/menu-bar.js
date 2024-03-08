@@ -5,16 +5,15 @@ import { MenuPanel } from "./menu-panel.js";
 export class MenuBar extends SimpleElement {
   static styles = `
   .menu-bar {
-    padding: 0.2rem 0.5rem;
+    display: flex;
     align-items: center;
-    position: absolute;
     font-size: 1rem;
-    width: 100%;
+    height:100%;
+    padding: 0 0.5rem;
   }
 
   .menu-item {
     padding: 0.4rem 0.6rem;
-    display: inline-block;
     cursor: default;
     user-select: none;
   }
