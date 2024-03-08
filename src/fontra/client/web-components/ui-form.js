@@ -20,7 +20,7 @@ export class Form extends SimpleElement {
     .ui-form-label {
       text-align: right;
       align-self: center;
-      overflow-x: auto;
+      overflow-x: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
