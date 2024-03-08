@@ -4,7 +4,7 @@ import * as html from "/core/html-utils.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import {
   enumerate,
-  getCharFromUnicode,
+  getCharFromCodePoint,
   makeUPlusStringFromCodePoint,
   parseSelection,
   range,
@@ -131,7 +131,7 @@ export default class SelectionInfoPanel extends Panel {
       glyphName,
       this.sceneController.sceneSettings.editLayerName
     );
-    let unicodes = this.fontController.glyphMap?.[glyphName] || [];
+    let codePoints = this.fontController.glyphMap?.[glyphName] || [];
 
     const instance = glyphController?.instance;
     this.haveInstance = !!instance;
@@ -141,18 +141,18 @@ export default class SelectionInfoPanel extends Panel {
     if (
       selectedGlyphInfo?.isUndefined &&
       selectedGlyphInfo.character &&
-      !unicodes.length
+      !codePoints.length
     ) {
       // Glyph does not yet exist in the font, but we can grab the unicode from
       // selectedGlyphInfo.character anyway
-      unicodes = [selectedGlyphInfo.character.codePointAt(0)];
+      codePoints = [selectedGlyphInfo.character.codePointAt(0)];
     }
 
-    const unicodesStr = makeUnicodesString(unicodes);
-    let baseUnicodesStr;
-    if (glyphName && !unicodes.length) {
+    const codePointsStr = makeCodePointsString(codePoints);
+    let baseCodePointsStr;
+    if (glyphName && !codePoints.length) {
       const [baseGlyphName, _] = splitGlyphNameExtension(glyphName);
-      baseUnicodesStr = makeUnicodesString(
+      baseCodePointsStr = makeCodePointsString(
         this.fontController.glyphMap?.[baseGlyphName]
       );
     }
@@ -169,14 +169,14 @@ export default class SelectionInfoPanel extends Panel {
         key: "unicodes",
         type: "text",
         label: "Unicode",
-        value: unicodesStr,
+        value: codePointsStr,
       });
-      if (baseUnicodesStr) {
+      if (baseCodePointsStr) {
         formContents.push({
           key: "baseUnicodes",
           type: "text",
           label: "Base unicode",
-          value: baseUnicodesStr,
+          value: baseCodePointsStr,
         });
       }
       if (instance) {
@@ -703,11 +703,11 @@ function maybeClampValue(value, min, max) {
   return value;
 }
 
-function makeUnicodesString(unicodes) {
-  return (unicodes || [])
+function makeCodePointsString(codePoints) {
+  return (codePoints || [])
     .map(
       (code) =>
-        `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromUnicode(code)})`
+        `${makeUPlusStringFromCodePoint(code)}\u00A0(${getCharFromCodePoint(code)})`
     )
     .join(" ");
 }

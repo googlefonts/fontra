@@ -1207,8 +1207,8 @@ export class EditorController {
 
     const svgString = pathToSVG(flattenedPath, bounds);
     const glyphName = this.sceneSettings.selectedGlyphName;
-    const unicodes = this.fontController.glyphMap[glyphName] || [];
-    const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, unicodes);
+    const codePoints = this.fontController.glyphMap[glyphName] || [];
+    const glifString = staticGlyphToGLIF(glyphName, layerGlyphs[0].glyph, codePoints);
     const jsonString = JSON.stringify(
       varGlyph ? { variableGlyph: varGlyph } : { layerGlyphs: layerGlyphs }
     );

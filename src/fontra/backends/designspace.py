@@ -41,7 +41,7 @@ from ..core.classes import (
 )
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
-from .ufo_utils import extractGlyphNameAndUnicodes
+from .ufo_utils import extractGlyphNameAndCodePoints
 
 logger = logging.getLogger(__name__)
 
@@ -288,14 +288,14 @@ class DesignspaceBackend:
         return axes, sources
 
     async def putGlyph(
-        self, glyphName: str, glyph: VariableGlyph, unicodes: list[int]
+        self, glyphName: str, glyph: VariableGlyph, codePoints: list[int]
     ) -> None:
-        assert isinstance(unicodes, list)
-        assert all(isinstance(cp, int) for cp in unicodes)
-        self.glyphMap[glyphName] = unicodes
+        assert isinstance(codePoints, list)
+        assert all(isinstance(cp, int) for cp in codePoints)
+        self.glyphMap[glyphName] = codePoints
 
         defaultLayerGlyph = readGlyphOrCreate(
-            self.defaultUFOLayer.glyphSet, glyphName, unicodes
+            self.defaultUFOLayer.glyphSet, glyphName, codePoints
         )
         revLayerNameMapping = reverseSparseDict(
             defaultLayerGlyph.lib.get(LAYER_NAME_MAPPING_LIB_KEY, {})
@@ -360,7 +360,7 @@ class DesignspaceBackend:
                 storeInLib(layerGlyph, SOURCE_NAME_MAPPING_LIB_KEY, sourceNameMapping)
                 storeInLib(layerGlyph, LAYER_NAME_MAPPING_LIB_KEY, layerNameMapping)
             else:
-                layerGlyph = readGlyphOrCreate(glyphSet, glyphName, unicodes)
+                layerGlyph = readGlyphOrCreate(glyphSet, glyphName, codePoints)
 
             drawPointsFunc = populateUFOLayerGlyph(
                 layerGlyph, layer.glyph, hasVariableComponents
@@ -605,8 +605,8 @@ class DesignspaceBackend:
                 except KeyError:
                     logger.info(f"new glyph '{glyphName}' not found in default source")
                     continue
-                gn, unicodes = extractGlyphNameAndUnicodes(glifData)
-                glyphMapUpdates[glyphName] = unicodes
+                gn, codePoints = extractGlyphNameAndCodePoints(glifData)
+                glyphMapUpdates[glyphName] = codePoints
 
             for glyphName in changedItems.deletedGlyphs:
                 if glyphName in self.glyphMap:
@@ -680,7 +680,7 @@ class DesignspaceBackend:
             changedItems.rebuildGlyphSetContents = True
             if glyphName is None:
                 with open(path, "rb") as f:
-                    glyphName, _ = extractGlyphNameAndUnicodes(f.read())
+                    glyphName, _ = extractGlyphNameAndCodePoints(f.read())
                 self.glifFileNames[fileName] = glyphName
                 changedItems.newGlyphs.add(glyphName)
                 return
@@ -783,13 +783,13 @@ def makeGlyphMapChange(glyphMapUpdates):
     if not glyphMapUpdates:
         return None
     changes = [
-        {"f": "=", "a": [glyphName, unicodes]}
-        for glyphName, unicodes in glyphMapUpdates.items()
-        if unicodes is not None
+        {"f": "=", "a": [glyphName, codePoints]}
+        for glyphName, codePoints in glyphMapUpdates.items()
+        if codePoints is not None
     ] + [
         {"f": "d", "a": [glyphName]}
-        for glyphName, unicodes in glyphMapUpdates.items()
-        if unicodes is None
+        for glyphName, codePoints in glyphMapUpdates.items()
+        if codePoints is None
     ]
     glyphMapChange = {"p": ["glyphMap"]}
     if len(changes) == 1:
@@ -972,7 +972,7 @@ def unpackVariableComponents(lib):
 def readGlyphOrCreate(
     glyphSet: GlyphSet,
     glyphName: str,
-    unicodes: list[int],
+    codePoints: list[int],
 ) -> UFOGlyph:
     layerGlyph = UFOGlyph()
     layerGlyph.lib = {}
@@ -980,7 +980,7 @@ def readGlyphOrCreate(
         # We read the existing glyph so we don't lose any data that
         # Fontra doesn't understand
         glyphSet.readGlyph(glyphName, layerGlyph, validate=False)
-    layerGlyph.unicodes = unicodes
+    layerGlyph.unicodes = codePoints
     return layerGlyph
 
 
@@ -1017,9 +1017,9 @@ def getGlyphMapFromGlyphSet(glyphSet):
     glyphMap = {}
     for glyphName in glyphSet.keys():
         glifData = glyphSet.getGLIF(glyphName)
-        gn, unicodes = extractGlyphNameAndUnicodes(glifData)
+        gn, codePoints = extractGlyphNameAndCodePoints(glifData)
         assert gn == glyphName, (gn, glyphName)
-        glyphMap[glyphName] = unicodes
+        glyphMap[glyphName] = codePoints
     return glyphMap
 
 

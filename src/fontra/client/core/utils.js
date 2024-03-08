@@ -299,7 +299,7 @@ export function makeAffineTransform(transformation) {
   return t;
 }
 
-export function getCharFromUnicode(codePoint) {
+export function getCharFromCodePoint(codePoint) {
   return codePoint !== undefined ? String.fromCodePoint(codePoint) : "";
 }
 
