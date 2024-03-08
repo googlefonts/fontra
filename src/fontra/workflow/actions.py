@@ -361,9 +361,9 @@ class DropAxisMappingAction(BaseFilterAction):
     axes: list[str] | None = None
     _axisValueMapFunctions: dict | None = None
 
-    async def _getAxisValueMapFunctions(self):
+    async def _getAxisValueMapFunctions(self) -> dict:
         if self._axisValueMapFunctions is None:
-            axes = await self.input.getGlobalAxes()
+            axes = await self.validatedInput.getGlobalAxes()
             if self.axes:
                 axes = [axis for axis in axes if axis.name in self.axes]
 
