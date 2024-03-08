@@ -20,10 +20,9 @@ export class Form extends SimpleElement {
     .ui-form-label {
       text-align: right;
       align-self: center;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
       white-space: nowrap;
-      overflow-x: scroll;
-      -ms-overflow-style: none;
-      scrollbar-width: none;
     }
 
     hr {
