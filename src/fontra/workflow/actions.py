@@ -20,6 +20,10 @@ from ..core.protocols import ReadableFontBackend
 actionLogger = logging.getLogger(__name__)
 
 
+class ActionError(Exception):
+    pass
+
+
 @runtime_checkable
 class ConnectableActionProtocol(Protocol):
     def connect(
@@ -361,9 +365,9 @@ class DropAxisMappingAction(BaseFilterAction):
     axes: list[str] | None = None
     _axisValueMapFunctions: dict | None = None
 
-    async def _getAxisValueMapFunctions(self):
+    async def _getAxisValueMapFunctions(self) -> dict:
         if self._axisValueMapFunctions is None:
-            axes = await self.input.getGlobalAxes()
+            axes = await self.validatedInput.getGlobalAxes()
             if self.axes:
                 axes = [axis for axis in axes if axis.name in self.axes]
 
@@ -379,18 +383,23 @@ class DropAxisMappingAction(BaseFilterAction):
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFuncs = await self._getAxisValueMapFunctions()
-        return replace(
+        return _remapSourceLocations(glyph, mapFuncs)
+
+    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        mapFuncs = await self._getAxisValueMapFunctions()
+        return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
+
+
+def _remapSourceLocations(glyph, mapFuncs):
+    if mapFuncs:
+        glyph = replace(
             glyph,
             sources=[
                 replace(source, location=_remapLocation(source.location, mapFuncs))
                 for source in glyph.sources
             ],
         )
-
-    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        assert self.input is not None
-        mapFuncs = await self._getAxisValueMapFunctions()
-        return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
+    return glyph
 
 
 def _remapLocation(location, mapFuncs):
@@ -404,3 +413,53 @@ def _dropAxisMapping(axis, mapFuncs):
     if axis.name in mapFuncs and axis.mapping:
         axis = replace(axis, mapping=[])
     return axis
+
+
+@registerActionClass("adjust-axes")
+@dataclass(kw_only=True)
+class AdjustAxesAction(BaseFilterAction):
+    axes: dict[str, dict[str, Any]]
+    _adjustedAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = None
+    _axisValueMapFunctions: dict | None = None
+
+    async def _ensureSetup(self) -> None:
+        if self._adjustedAxes is not None:
+            return
+        mapFuncs: dict = {}
+        axes = await self.validatedInput.getGlobalAxes()
+        adjustedAxes = []
+        for axis in axes:
+            newValues = self.axes.get(axis.name)
+            if newValues is not None:
+                if isinstance(axis, GlobalDiscreteAxis):
+                    raise ActionError("adjust-axes: discrete axes are not supported")
+                names = {"minValue", "defaultValue", "maxValue"}
+                newValues = {k: v for k, v in newValues.items() if k in names}
+                newAxis = replace(axis, **newValues)
+                mapping = [
+                    (axis.minValue, newAxis.minValue),
+                    (axis.defaultValue, newAxis.defaultValue),
+                    (axis.maxValue, newAxis.maxValue),
+                ]
+                mapFunc = partial(
+                    piecewiseLinearMap,
+                    mapping=dict(mapping),
+                )
+                if newAxis.mapping:
+                    newAxis.mapping = [
+                        [mapFunc(user), source] for user, source in newAxis.mapping
+                    ]
+                else:
+                    mapFuncs[axis.name] = mapFunc
+                axis = newAxis
+            adjustedAxes.append(axis)
+        self._adjustedAxes = adjustedAxes
+        self._axisValueMapFunctions = mapFuncs
+
+    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        await self._ensureSetup()
+        assert self._adjustedAxes is not None
+        return self._adjustedAxes
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        return _remapSourceLocations(glyph, self._axisValueMapFunctions)
