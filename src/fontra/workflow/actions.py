@@ -441,21 +441,24 @@ class AdjustAxesAction(BaseFilterAction):
                 names = {"minValue", "defaultValue", "maxValue"}
                 newValues = {k: v for k, v in newValues.items() if k in names}
                 newAxis = replace(axis, **newValues)
-                mapping = [
-                    (axis.minValue, newAxis.minValue),
-                    (axis.defaultValue, newAxis.defaultValue),
-                    (axis.maxValue, newAxis.maxValue),
-                ]
-                mapFunc = partial(
-                    piecewiseLinearMap,
-                    mapping=dict(mapping),
-                )
-                if newAxis.mapping:
-                    newAxis.mapping = [
-                        [mapFunc(user), source] for user, source in newAxis.mapping
+
+                if self.remapSources:
+                    mapping = [
+                        (axis.minValue, newAxis.minValue),
+                        (axis.defaultValue, newAxis.defaultValue),
+                        (axis.maxValue, newAxis.maxValue),
                     ]
-                else:
-                    mapFuncs[axis.name] = mapFunc
+                    mapFunc = partial(
+                        piecewiseLinearMap,
+                        mapping=dict(mapping),
+                    )
+                    if newAxis.mapping:
+                        newAxis.mapping = [
+                            [mapFunc(user), source] for user, source in newAxis.mapping
+                        ]
+                    else:
+                        mapFuncs[axis.name] = mapFunc
+
                 axis = newAxis
             adjustedAxes.append(axis)
         self._adjustedAxes = adjustedAxes
@@ -467,6 +470,4 @@ class AdjustAxesAction(BaseFilterAction):
         return self._adjustedAxes
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        if self.remapSources:
-            glyph = _remapSourceLocations(glyph, self._axisValueMapFunctions)
-        return glyph
+        return _remapSourceLocations(glyph, self._axisValueMapFunctions)
