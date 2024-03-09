@@ -36,6 +36,17 @@ export class ModalDialog extends SimpleElement {
       white-space: normal;
     }
 
+    dialog[open] {
+      display: grid;
+      align-items: center;
+      justify-items: center;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      box-sizing: border-box;
+    }
+
     dialog::backdrop {
       background-color: #8888;
     }
@@ -49,7 +60,7 @@ export class ModalDialog extends SimpleElement {
 
       outline: none; /* to catch key events we need to focus, but we don't want a focus border */
       max-width: 32em;
-      max-height: 80vh;
+      max-height: 32em; /* changed from vh because of problematic when window resized */
       overflow-wrap: normal;
       font-size: 1.15em;
       background-color: var(--ui-element-background-color);
@@ -66,7 +77,7 @@ export class ModalDialog extends SimpleElement {
 
     dialog .message {
       grid-column: 1 / -1;
-      overflow: scroll;
+      overflow: hidden;
     }
 
     dialog .button {
