@@ -377,6 +377,30 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "adjust-axes-no-mapping-no-source-remap",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset
+              glyphNames: ["A"]
+            - action: subset
+              glyphNames: ["A"]
+            - action: drop-axis-mapping
+            - action: adjust-axes
+              remapSources: false
+              axes:
+                weight:
+                  minValue: 200
+                  defaultValue: 400
+                  maxValue: 800
+
+            - action: output
+              destination: "output-adjust-axes-no-mapping-no-source-remap.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):

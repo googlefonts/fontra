@@ -420,6 +420,7 @@ def _dropAxisMapping(axis, mapFuncs):
 @dataclass(kw_only=True)
 class AdjustAxesAction(BaseFilterAction):
     axes: dict[str, dict[str, Any]]
+    remapSources: bool = True
 
     _adjustedAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = field(
         init=False, default=None
@@ -466,4 +467,6 @@ class AdjustAxesAction(BaseFilterAction):
         return self._adjustedAxes
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return _remapSourceLocations(glyph, self._axisValueMapFunctions)
+        if self.remapSources:
+            glyph = _remapSourceLocations(glyph, self._axisValueMapFunctions)
+        return glyph
