@@ -6,27 +6,27 @@
 "name": "width",
 "label": "width",
 "tag": "wdth",
-"minValue": 0.0,
-"defaultValue": 0.0,
-"maxValue": 1000.0
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 1000
 },
 {
 "name": "weight",
 "label": "weight",
 "tag": "wght",
-"minValue": 100.0,
-"defaultValue": 100.0,
-"maxValue": 900.0
+"minValue": 100,
+"defaultValue": 100,
+"maxValue": 900
 },
 {
 "name": "italic",
 "label": "italic",
 "tag": "ital",
 "values": [
-0.0,
-1.0
+0,
+1
 ],
-"defaultValue": 0.0
+"defaultValue": 0
 }
 ],
 "sources": []

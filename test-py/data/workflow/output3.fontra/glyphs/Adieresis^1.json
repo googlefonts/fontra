@@ -5,36 +5,36 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 0,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 0,
+"weight": 850,
+"italic": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 1000,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 1000,
+"weight": 850,
+"italic": 0
 }
 }
 ],
@@ -49,11 +49,11 @@
 "name": "dieresis",
 "transformation": {
 "translateX": 66.75,
-"translateY": 15.0
+"translateY": 15
 }
 }
 ],
-"xAdvance": 297.0
+"xAdvance": 297
 }
 },
 "MutatorSansBoldCondensed/foreground": {
@@ -62,17 +62,17 @@
 {
 "name": "A",
 "transformation": {
-"translateX": 15.0
+"translateX": 15
 }
 },
 {
 "name": "dieresis",
 "transformation": {
-"translateX": 90.0
+"translateX": 90
 }
 }
 ],
-"xAdvance": 570.0
+"xAdvance": 570
 }
 },
 "MutatorSansLightWide/foreground": {
@@ -85,7 +85,7 @@
 "name": "dieresis",
 "transformation": {
 "translateX": 315.75,
-"translateY": 15.0
+"translateY": 15
 }
 }
 ],
@@ -102,7 +102,7 @@
 "name": "dieresis",
 "transformation": {
 "translateX": 271.5,
-"translateY": 15.0
+"translateY": 15
 }
 }
 ],

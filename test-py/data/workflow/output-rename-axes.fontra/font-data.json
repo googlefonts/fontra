@@ -6,25 +6,25 @@
 "name": "width",
 "label": "width",
 "tag": "wdth",
-"minValue": 0.0,
-"defaultValue": 0.0,
-"maxValue": 1000.0
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 1000
 },
 {
 "name": "Thickness",
 "label": "Thickness",
 "tag": "THCK",
-"minValue": 100.0,
-"defaultValue": 100.0,
-"maxValue": 900.0,
+"minValue": 100,
+"defaultValue": 100,
+"maxValue": 900,
 "mapping": [
 [
-100.0,
-150.0
+100,
+150
 ],
 [
-900.0,
-850.0
+900,
+850
 ]
 ]
 },
@@ -33,10 +33,10 @@
 "label": "italic",
 "tag": "ital",
 "values": [
-0.0,
-1.0
+0,
+1
 ],
-"defaultValue": 0.0
+"defaultValue": 0
 }
 ],
 "sources": []
