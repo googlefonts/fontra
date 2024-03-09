@@ -383,17 +383,23 @@ class DropAxisMappingAction(BaseFilterAction):
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFuncs = await self._getAxisValueMapFunctions()
-        return replace(
+        return _remapSourceLocations(glyph, mapFuncs)
+
+    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        mapFuncs = await self._getAxisValueMapFunctions()
+        return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
+
+
+def _remapSourceLocations(glyph, mapFuncs):
+    if mapFuncs:
+        glyph = replace(
             glyph,
             sources=[
                 replace(source, location=_remapLocation(source.location, mapFuncs))
                 for source in glyph.sources
             ],
         )
-
-    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        mapFuncs = await self._getAxisValueMapFunctions()
-        return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
+    return glyph
 
 
 def _remapLocation(location, mapFuncs):
@@ -416,10 +422,10 @@ class AdjustAxesAction(BaseFilterAction):
     _adjustedAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = None
     _axisValueMapFunctions: dict | None = None
 
-    async def _ensureSetup(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def _ensureSetup(self) -> None:
         if self._adjustedAxes is not None:
             return
-        mapFuncs = {}
+        mapFuncs: dict = {}
         axes = await self.validatedInput.getGlobalAxes()
         adjustedAxes = []
         for axis in axes:
@@ -431,9 +437,9 @@ class AdjustAxesAction(BaseFilterAction):
                 newValues = {k: v for k, v in newValues.items() if k in names}
                 newAxis = replace(axis, **newValues)
                 mapping = [
-                    [axis.minValue, newAxis.minValue],
-                    [axis.defaultValue, newAxis.defaultValue],
-                    [axis.maxValue, newAxis.maxValue],
+                    (axis.minValue, newAxis.minValue),
+                    (axis.defaultValue, newAxis.defaultValue),
+                    (axis.maxValue, newAxis.maxValue),
                 ]
                 mapFunc = partial(
                     piecewiseLinearMap,
@@ -444,7 +450,7 @@ class AdjustAxesAction(BaseFilterAction):
                         [mapFunc(user), source] for user, source in newAxis.mapping
                     ]
                 else:
-                    mapFuncs[axis.name] = mapFuncs
+                    mapFuncs[axis.name] = mapFunc
                 axis = newAxis
             adjustedAxes.append(axis)
         self._adjustedAxes = adjustedAxes
@@ -452,4 +458,8 @@ class AdjustAxesAction(BaseFilterAction):
 
     async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
         await self._ensureSetup()
+        assert self._adjustedAxes is not None
         return self._adjustedAxes
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        return _remapSourceLocations(glyph, self._axisValueMapFunctions)
