@@ -5,18 +5,18 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 0,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "weight=850",
 "layerName": "weight=850",
 "location": {
-"width": 0.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 0,
+"weight": 850,
+"italic": 0
 }
 }
 ],
@@ -46,8 +46,8 @@
 "skewX": 20
 },
 "location": {
-"flip": 70.0,
-"flop": 30.0
+"flip": 70,
+"flop": 30
 }
 },
 {
@@ -62,7 +62,7 @@
 },
 "location": {
 "flip": 20,
-"flop": 80.0
+"flop": 80
 }
 }
 ],
