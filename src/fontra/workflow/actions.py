@@ -363,7 +363,8 @@ class DropInactiveSourcesAction(BaseFilterAction):
 @dataclass(kw_only=True)
 class DropAxisMappingAction(BaseFilterAction):
     axes: list[str] | None = None
-    _axisValueMapFunctions: dict | None = None
+
+    _axisValueMapFunctions: dict | None = field(init=False, default=None)
 
     async def _getAxisValueMapFunctions(self) -> dict:
         if self._axisValueMapFunctions is None:
@@ -419,8 +420,12 @@ def _dropAxisMapping(axis, mapFuncs):
 @dataclass(kw_only=True)
 class AdjustAxesAction(BaseFilterAction):
     axes: dict[str, dict[str, Any]]
-    _adjustedAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = None
-    _axisValueMapFunctions: dict | None = None
+    remapSources: bool = True
+
+    _adjustedAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = field(
+        init=False, default=None
+    )
+    _axisValueMapFunctions: dict | None = field(init=False, default=None)
 
     async def _ensureSetup(self) -> None:
         if self._adjustedAxes is not None:
@@ -436,21 +441,24 @@ class AdjustAxesAction(BaseFilterAction):
                 names = {"minValue", "defaultValue", "maxValue"}
                 newValues = {k: v for k, v in newValues.items() if k in names}
                 newAxis = replace(axis, **newValues)
-                mapping = [
-                    (axis.minValue, newAxis.minValue),
-                    (axis.defaultValue, newAxis.defaultValue),
-                    (axis.maxValue, newAxis.maxValue),
-                ]
-                mapFunc = partial(
-                    piecewiseLinearMap,
-                    mapping=dict(mapping),
-                )
-                if newAxis.mapping:
-                    newAxis.mapping = [
-                        [mapFunc(user), source] for user, source in newAxis.mapping
+
+                if self.remapSources:
+                    mapping = [
+                        (axis.minValue, newAxis.minValue),
+                        (axis.defaultValue, newAxis.defaultValue),
+                        (axis.maxValue, newAxis.maxValue),
                     ]
-                else:
-                    mapFuncs[axis.name] = mapFunc
+                    mapFunc = partial(
+                        piecewiseLinearMap,
+                        mapping=dict(mapping),
+                    )
+                    if newAxis.mapping:
+                        newAxis.mapping = [
+                            [mapFunc(user), source] for user, source in newAxis.mapping
+                        ]
+                    else:
+                        mapFuncs[axis.name] = mapFunc
+
                 axis = newAxis
             adjustedAxes.append(axis)
         self._adjustedAxes = adjustedAxes

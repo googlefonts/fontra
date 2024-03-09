@@ -1,0 +1,33 @@
+{
+"unitsPerEm": 1000,
+"customData": {},
+"axes": [
+{
+"name": "width",
+"label": "width",
+"tag": "wdth",
+"minValue": 0.0,
+"defaultValue": 0.0,
+"maxValue": 1000.0
+},
+{
+"name": "weight",
+"label": "weight",
+"tag": "wght",
+"minValue": 200,
+"defaultValue": 400,
+"maxValue": 800
+},
+{
+"name": "italic",
+"label": "italic",
+"tag": "ital",
+"values": [
+0.0,
+1.0
+],
+"defaultValue": 0.0
+}
+],
+"sources": []
+}
