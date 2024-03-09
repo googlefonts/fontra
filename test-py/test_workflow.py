@@ -347,7 +347,7 @@ def test_command(tmpdir, configYAMLSources):
                 weight:
                   minValue: 200
                   defaultValue: 400
-                  maxValue: 900
+                  maxValue: 800
 
             - action: output
               destination: "output-adjust-axes.fontra"
