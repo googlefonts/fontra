@@ -282,7 +282,7 @@ def _structureNumber(d, tp):
 
 
 def _structurePoint(d, tp):
-    return d
+    return {**d, "x": _unstructureFloat(d["x"]), "y": _unstructureFloat(d["y"])}
 
 
 def _unstructurePoint(v):
