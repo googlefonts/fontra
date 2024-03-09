@@ -253,6 +253,15 @@ def makeSchema(*classes, schema=None):
 # cattrs hooks + structure/unstructure support
 
 
+def _unstructureFloat(v):
+    try:
+        if v.is_integer():
+            return int(v)
+    except AttributeError:
+        pass
+    return v
+
+
 def _structurePath(d, tp):
     if "pointTypes" not in d:
         return structure(d, Path)
@@ -290,6 +299,7 @@ def _unstructurePointType(v):
 
 _cattrsConverter = cattrs.Converter()
 
+_cattrsConverter.register_unstructure_hook(float, _unstructureFloat)
 _cattrsConverter.register_structure_hook(Union[PackedPath, Path], _structurePath)
 _cattrsConverter.register_structure_hook(
     Union[GlobalAxis, GlobalDiscreteAxis], _structureGlobalAxis
