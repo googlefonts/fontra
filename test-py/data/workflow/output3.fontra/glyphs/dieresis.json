@@ -5,36 +5,36 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 0,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 0,
+"weight": 850,
+"italic": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 1000,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 1000,
+"weight": 850,
+"italic": 0
 }
 }
 ],
@@ -51,7 +51,7 @@
 {
 "name": "dot",
 "transformation": {
-"translateX": 60.0,
+"translateX": 60,
 "translateY": -7.5
 }
 }
@@ -72,12 +72,12 @@
 {
 "name": "dot",
 "transformation": {
-"translateX": 165.0,
+"translateX": 165,
 "translateY": -7.5
 }
 }
 ],
-"xAdvance": 390.0
+"xAdvance": 390
 }
 },
 "MutatorSansLightWide/foreground": {
@@ -117,7 +117,7 @@
 }
 }
 ],
-"xAdvance": 420.0
+"xAdvance": 420
 }
 }
 }

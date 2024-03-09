@@ -5,36 +5,36 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 0,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 0,
+"weight": 850,
+"italic": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 1000,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 1000,
+"weight": 850,
+"italic": 0
 }
 }
 ],
@@ -252,7 +252,7 @@
 },
 {
 "x": 684.7628032345013,
-"y": -10.0,
+"y": -10,
 "type": "cubic"
 },
 {
@@ -285,7 +285,7 @@
 },
 {
 "x": 659.7945619335347,
-"y": 26.0,
+"y": 26,
 "type": "cubic"
 },
 {
@@ -295,7 +295,7 @@
 },
 {
 "x": 256.8181818181818,
-"y": 26.0,
+"y": 26,
 "type": "cubic"
 },
 {
@@ -328,7 +328,7 @@
 },
 {
 "x": 230.72972972972974,
-"y": -10.0,
+"y": -10,
 "type": "cubic"
 }
 ],

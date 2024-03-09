@@ -5,45 +5,45 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 0,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 0,
+"weight": 850,
+"italic": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 1000,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 1000,
+"weight": 850,
+"italic": 0
 }
 },
 {
 "name": "support.crossbar",
 "layerName": "MutatorSansLightCondensed/support.crossbar",
 "location": {
-"width": 0.0,
-"weight": 595.0,
-"italic": 0.0
+"width": 0,
+"weight": 595,
+"italic": 0
 }
 }
 ],
@@ -149,11 +149,11 @@
 "points": [
 {
 "x": 45.68544,
-"y": 0.0
+"y": 0
 },
 {
 "x": 264.61744,
-"y": 0.0
+"y": 0
 },
 {
 "x": 264.61744,
@@ -191,11 +191,11 @@
 "points": [
 {
 "x": 115.78639999999999,
-"y": 0.0
+"y": 0
 },
 {
 "x": 504.61744,
-"y": 0.0
+"y": 0
 },
 {
 "x": 504.61744,

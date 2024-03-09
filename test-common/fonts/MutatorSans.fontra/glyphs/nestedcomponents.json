@@ -5,9 +5,9 @@
 "name": "<default>",
 "layerName": "<default>",
 "location": {
-"width": 0.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 0,
+"weight": 150,
+"italic": 0
 }
 }
 ],

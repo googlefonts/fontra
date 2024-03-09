@@ -223,7 +223,7 @@ def test_command(tmpdir, configYAMLSources):
             [
                 (
                     logging.ERROR,
-                    "Merger: Axis default values should be the same; weight, A: 400.0, B: 100.0",
+                    "Merger: Axis default values should be the same; weight, A: 400, B: 100",
                 )
             ],
         ),

@@ -5,36 +5,36 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 0,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 0,
+"weight": 850,
+"italic": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 150.0,
-"italic": 0.0
+"width": 1000,
+"weight": 150,
+"italic": 0
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000.0,
-"weight": 850.0,
-"italic": 0.0
+"width": 1000,
+"weight": 850,
+"italic": 0
 }
 }
 ],
@@ -265,7 +265,7 @@
 },
 {
 "x": 30,
-"y": 95.0,
+"y": 95,
 "type": "cubic"
 },
 {
@@ -357,8 +357,8 @@
 "smooth": true
 },
 {
-"x": 327.0,
-"y": 26.0,
+"x": 327,
+"y": 26,
 "type": "cubic"
 },
 {
@@ -390,8 +390,8 @@
 "type": "cubic"
 },
 {
-"x": 301.0,
-"y": -10.0,
+"x": 301,
+"y": -10,
 "type": "cubic"
 }
 ],
@@ -478,8 +478,8 @@
 "smooth": true
 },
 {
-"x": 576.0,
-"y": 284.0,
+"x": 576,
+"y": 284,
 "type": "cubic"
 },
 {
@@ -511,8 +511,8 @@
 "type": "cubic"
 },
 {
-"x": 310.0,
-"y": -10.0,
+"x": 310,
+"y": -10,
 "type": "cubic"
 }
 ],
