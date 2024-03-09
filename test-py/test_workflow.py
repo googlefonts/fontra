@@ -378,6 +378,29 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
+            "adjust-axes-no-source-remap",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset
+              glyphNames: ["A"]
+            - action: subset
+              glyphNames: ["A"]
+            - action: adjust-axes
+              remapSources: false
+              axes:
+                weight:
+                  minValue: 200
+                  defaultValue: 400
+                  maxValue: 800
+
+            - action: output
+              destination: "output-adjust-axes-no-source-remap.fontra"
+            """,
+            [],
+        ),
+        (
             "adjust-axes-no-mapping-no-source-remap",
             """
             steps:
