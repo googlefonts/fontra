@@ -20,6 +20,10 @@ from ..core.protocols import ReadableFontBackend
 actionLogger = logging.getLogger(__name__)
 
 
+class ActionError(Exception):
+    pass
+
+
 @runtime_checkable
 class ConnectableActionProtocol(Protocol):
     def connect(
@@ -403,3 +407,49 @@ def _dropAxisMapping(axis, mapFuncs):
     if axis.name in mapFuncs and axis.mapping:
         axis = replace(axis, mapping=[])
     return axis
+
+
+@registerActionClass("adjust-axes")
+@dataclass(kw_only=True)
+class AdjustAxesAction(BaseFilterAction):
+    axes: dict[str, dict[str, Any]]
+    _adjustedAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = None
+    _axisValueMapFunctions: dict | None = None
+
+    async def _ensureSetup(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        if self._adjustedAxes is not None:
+            return
+        mapFuncs = {}
+        axes = await self.validatedInput.getGlobalAxes()
+        adjustedAxes = []
+        for axis in axes:
+            newValues = self.axes.get(axis.name)
+            if newValues is not None:
+                if isinstance(axis, GlobalDiscreteAxis):
+                    raise ActionError("adjust-axes: discrete axes are not supported")
+                names = {"minValue", "defaultValue", "maxValue"}
+                newValues = {k: v for k, v in newValues.items() if k in names}
+                newAxis = replace(axis, **newValues)
+                mapping = [
+                    [axis.minValue, newAxis.minValue],
+                    [axis.defaultValue, newAxis.defaultValue],
+                    [axis.maxValue, newAxis.maxValue],
+                ]
+                mapFunc = partial(
+                    piecewiseLinearMap,
+                    mapping=dict(mapping),
+                )
+                if newAxis.mapping:
+                    newAxis.mapping = [
+                        [mapFunc(user), source] for user, source in newAxis.mapping
+                    ]
+                else:
+                    mapFuncs[axis.name] = mapFuncs
+                axis = newAxis
+            adjustedAxes.append(axis)
+        self._adjustedAxes = adjustedAxes
+        self._axisValueMapFunctions = mapFuncs
+
+    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        await self._ensureSetup()
+        return self._adjustedAxes
