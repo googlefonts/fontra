@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import os
 import pathlib
-from contextlib import asynccontextmanager, closing
+from contextlib import aclosing, asynccontextmanager
 from dataclasses import dataclass, field, replace
 from functools import cached_property, partial
 from typing import Any, AsyncContextManager, AsyncGenerator, Protocol, runtime_checkable
@@ -87,7 +87,7 @@ class BaseFilterAction:
             except AttributeError:
                 pass
 
-    def close(self) -> None:
+    async def aclose(self) -> None:
         pass
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
@@ -256,7 +256,7 @@ class InputAction:
         try:
             yield backend
         finally:
-            backend.close()
+            await backend.aclose()
 
 
 @registerActionClass("output")
@@ -288,7 +288,7 @@ class OutputAction:
         outputDir = pathlib.Path(outputDir)
         output = newFileSystemBackend((outputDir / self.destination).resolve())
 
-        with closing(output):
+        async with aclosing(output):
             await copyFont(self.validatedInput, output)
 
 

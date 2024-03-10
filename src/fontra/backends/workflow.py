@@ -27,11 +27,8 @@ class WorkflowBackend:
             assert self.endPoint is not None
         return self.endPoint
 
-    def close(self) -> None:
-        pass
-
     async def aclose(self) -> None:
-        await self.context.__aexit__()
+        await self.context.__aexit__(None, None, None)
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         endPoint = await self._ensureSetup()

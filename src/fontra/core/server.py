@@ -136,7 +136,7 @@ class FontraServer:
             )
 
     async def closeProjectManager(self, httpApp: web.Application) -> None:
-        await self.projectManager.close()
+        await self.projectManager.aclose()
 
     async def websocketHandler(self, request: web.Request) -> web.WebSocketResponse:
         path = "/" + request.match_info["path"]

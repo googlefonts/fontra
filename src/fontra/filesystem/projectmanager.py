@@ -70,9 +70,9 @@ class FileSystemProjectManager:
             self.rootPath = self.rootPath.parent
         self.fontHandlers: dict[str, FontHandler] = {}
 
-    async def close(self) -> None:
+    async def aclose(self) -> None:
         for fontHandler in self.fontHandlers.values():
-            await fontHandler.close()
+            await fontHandler.aclose()
 
     async def authorize(self, request: web.Request) -> str:
         return "yes"  # arbitrary non-false string token
@@ -104,7 +104,7 @@ class FileSystemProjectManager:
             async def closeFontHandler():
                 logger.info(f"closing FontHandler for '{path}'")
                 del self.fontHandlers[path]
-                await fontHandler.close()
+                await fontHandler.aclose()
 
             logger.info(f"new FontHandler for '{path}'")
             fontHandler = FontHandler(

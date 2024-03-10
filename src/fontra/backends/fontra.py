@@ -68,7 +68,7 @@ class FontraBackend:
     def glyphsDir(self):
         return self.path / self.glyphsDirName
 
-    def close(self):
+    async def aclose(self):
         self.flush()
 
     def flush(self):

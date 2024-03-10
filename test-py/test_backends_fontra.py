@@ -1,7 +1,7 @@
 import asyncio
 import pathlib
 import shutil
-from contextlib import closing
+from contextlib import aclosing
 
 import pytest
 
@@ -36,7 +36,7 @@ def newFontraFont(tmpdir):
 
 
 async def test_copy_to_fontra(testDSFont, newFontraFont):
-    with closing(newFontraFont):
+    async with aclosing(newFontraFont):
         await copyFont(testDSFont, newFontraFont)
 
     fontraFont = getFileSystemBackend(newFontraFont.path)
@@ -50,7 +50,7 @@ async def test_copy_to_fontra(testDSFont, newFontraFont):
 
 
 async def test_fontraFormat(testFontraFont, newFontraFont):
-    with closing(newFontraFont):
+    async with aclosing(newFontraFont):
         await copyFont(testFontraFont, newFontraFont)
 
     glyphMap = await newFontraFont.getGlyphMap()
@@ -85,7 +85,7 @@ async def test_deleteGlyph(writableFontraFont):
 async def test_emptyFontraProject(tmpdir):
     path = tmpdir / "newfont.fontra"
     backend = newFileSystemBackend(path)
-    backend.close()
+    await backend.aclose()
 
     backend = getFileSystemBackend(path)
     glyphMap = await backend.getGlyphMap()

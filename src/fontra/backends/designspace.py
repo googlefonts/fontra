@@ -108,7 +108,7 @@ class DesignspaceBackend:
         self.axisPolePositions = axisPolePositions
         self.defaultLocation = defaultLocation
 
-    def close(self):
+    async def aclose(self):
         pass
 
     @property
