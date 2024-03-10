@@ -36,6 +36,17 @@ export class ModalDialog extends SimpleElement {
       white-space: normal;
     }
 
+    dialog[open] {
+      display: grid;
+      align-items: center;
+      justify-items: center;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      box-sizing: border-box;
+    }
+
     dialog::backdrop {
       background-color: #8888;
     }
@@ -66,7 +77,7 @@ export class ModalDialog extends SimpleElement {
 
     dialog .message {
       grid-column: 1 / -1;
-      overflow: scroll;
+      overflow: hidden;
     }
 
     dialog .button {

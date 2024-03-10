@@ -962,7 +962,7 @@ export default class DesignspaceNavigationPanel extends Panel {
     const axisList = html.createDomElement("ui-list");
     axisList.columnDescriptions = columnDescriptions;
     axisList.showHeader = true;
-    axisList.minHeight = "6em";
+    axisList.minHeight = "3em";
     const axisItems = varGlyphController.axes.map((axis) => {
       return { ...axis };
     });
