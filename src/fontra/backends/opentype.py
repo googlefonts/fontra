@@ -44,7 +44,7 @@ class OTFBackend:
         self.glyphSet = self.font.getGlyphSet()
         self.variationGlyphSets: dict[str, Any] = {}
 
-    def close(self):
+    async def aclose(self):
         self.font.close()
 
     async def getGlyphMap(self) -> dict[str, list[int]]:

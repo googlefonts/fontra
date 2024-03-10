@@ -2,21 +2,12 @@ import asyncio
 import logging
 import pathlib
 import shutil
-from contextlib import asynccontextmanager
+from contextlib import aclosing
 
 import pytest
 
 from fontra.backends.designspace import DesignspaceBackend
 from fontra.core.fonthandler import FontHandler
-
-
-@asynccontextmanager
-async def asyncClosing(thing):
-    try:
-        yield thing
-    finally:
-        await thing.close()
-
 
 mutatorSansDir = pathlib.Path(__file__).resolve().parent / "data" / "mutatorsans"
 
@@ -54,7 +45,7 @@ async def testFontHandler(testFontPath):
 
 @pytest.mark.asyncio
 async def test_fontHandler_basic(testFontHandler):
-    async with asyncClosing(testFontHandler):
+    async with aclosing(testFontHandler):
         # await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A", connection=None)
 
@@ -66,7 +57,7 @@ async def test_fontHandler_basic(testFontHandler):
 
 @pytest.mark.asyncio
 async def test_fontHandler_externalChange(testFontHandler):
-    async with asyncClosing(testFontHandler):
+    async with aclosing(testFontHandler):
         await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A")
         layerName, layer = firstLayerItem(glyph)
@@ -95,7 +86,7 @@ async def test_fontHandler_externalChange(testFontHandler):
 
 @pytest.mark.asyncio
 async def test_fontHandler_editGlyph(testFontHandler):
-    async with asyncClosing(testFontHandler):
+    async with aclosing(testFontHandler):
         await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A", connection=None)
         layerName, layer = firstLayerItem(glyph)
@@ -136,7 +127,7 @@ async def test_fontHandler_editGlyph(testFontHandler):
 
 @pytest.mark.asyncio
 async def test_fontHandler_editGlyph_delete_layer(testFontHandler):
-    async with asyncClosing(testFontHandler):
+    async with aclosing(testFontHandler):
         await testFontHandler.startTasks()
         glyph = await testFontHandler.getGlyph("A", connection=None)
 
@@ -173,7 +164,7 @@ async def test_fontHandler_editGlyph_delete_layer(testFontHandler):
 
 @pytest.mark.asyncio
 async def test_fontHandler_getData(testFontHandler):
-    async with asyncClosing(testFontHandler):
+    async with aclosing(testFontHandler):
         unitsPerEm = await testFontHandler.getData("unitsPerEm")
         assert 1000 == unitsPerEm
 
@@ -181,7 +172,7 @@ async def test_fontHandler_getData(testFontHandler):
 @pytest.mark.asyncio
 async def test_fontHandler_setData(testFontHandler, caplog):
     caplog.set_level(logging.INFO)
-    async with asyncClosing(testFontHandler):
+    async with aclosing(testFontHandler):
         await testFontHandler.startTasks()
         glyphMap = await testFontHandler.getData("glyphMap")
         assert [65, 97] == glyphMap["A"]
@@ -207,7 +198,7 @@ async def test_fontHandler_setData(testFontHandler, caplog):
 @pytest.mark.asyncio
 async def test_fontHandler_setData_unitsPerEm(testFontHandler, caplog):
     caplog.set_level(logging.INFO)
-    async with asyncClosing(testFontHandler):
+    async with aclosing(testFontHandler):
         await testFontHandler.startTasks()
         unitsPerEm = await testFontHandler.getData("unitsPerEm")
         assert 1000 == unitsPerEm
@@ -232,7 +223,7 @@ async def test_fontHandler_setData_unitsPerEm(testFontHandler, caplog):
 
 @pytest.mark.asyncio
 async def test_fontHandler_new_glyph(testFontHandler):
-    async with asyncClosing(testFontHandler):
+    async with aclosing(testFontHandler):
         await testFontHandler.startTasks()
 
         newGlyphName = "testglyph"

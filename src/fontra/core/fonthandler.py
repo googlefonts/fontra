@@ -68,8 +68,8 @@ class FontHandler:
         self._writingInProgressEvent = asyncio.Event()
         self._writingInProgressEvent.set()
 
-    async def close(self) -> None:
-        self.backend.close()
+    async def aclose(self) -> None:
+        await self.backend.aclose()
         if hasattr(self, "_watcherTask"):
             self._watcherTask.cancel()
         if hasattr(self, "_processWritesTask"):

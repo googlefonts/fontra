@@ -938,7 +938,7 @@ getGlyphNamesTestData = [
 )
 async def test_getGlyphNames(testFontName, numGlyphs, firstFourGlyphNames):
     font = getTestFont(testFontName)
-    with contextlib.closing(font):
+    async with contextlib.aclosing(font):
         glyphNames = sorted(await font.getGlyphMap())
         assert numGlyphs == len(glyphNames)
         assert firstFourGlyphNames == sorted(glyphNames)[:4]
@@ -958,7 +958,7 @@ getGlyphMapTestData = [
 @pytest.mark.parametrize("testFontName, numGlyphs, testMapping", getGlyphMapTestData)
 async def test_getGlyphMap(testFontName, numGlyphs, testMapping):
     font = getTestFont(testFontName)
-    with contextlib.closing(font):
+    async with contextlib.aclosing(font):
         glyphMap = await font.getGlyphMap()
         assert numGlyphs == len(glyphMap)
         for glyphName, unicodes in testMapping.items():
@@ -970,7 +970,7 @@ async def test_getGlyphMap(testFontName, numGlyphs, testMapping):
 async def test_getGlyph(testFontName, expectedGlyph):
     expectedGlyph = structure(expectedGlyph, VariableGlyph)
     font = getTestFont(testFontName)
-    with contextlib.closing(font):
+    async with contextlib.aclosing(font):
         glyph = await font.getGlyph(expectedGlyph.name)
         assert glyph == expectedGlyph
         assert asdict(glyph) == asdict(expectedGlyph)

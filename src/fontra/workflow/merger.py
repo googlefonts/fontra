@@ -17,7 +17,7 @@ class FontBackendMerger:
         self._glyphNamesB = None
         self._glyphMap = None
 
-    def close(self) -> None:
+    async def aclose(self) -> None:
         pass
 
     async def _prepareGlyphMap(self):

@@ -11,7 +11,7 @@ from .classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
 
 @runtime_checkable
 class ReadableFontBackend(Protocol):
-    def close(self) -> None:
+    async def aclose(self) -> None:
         pass
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
@@ -73,7 +73,7 @@ class ProjectManagerFactory(Protocol):
 
 @runtime_checkable
 class ProjectManager(Protocol):
-    async def close(self) -> None:
+    async def aclose(self) -> None:
         pass
 
     async def authorize(self, request: web.Request) -> str | None:
