@@ -443,7 +443,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: input
               source: "test-py/data/workflow/input-composites.fontra"
             - action: decompose-composites
-              onlyVariableComponents: true
+              onlyVariableComposites: true
             - action: output
               destination: "output-decompose-only-variable-composites.fontra"
             """,
@@ -456,7 +456,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: input
               source: "test-py/data/workflow/input-variable-composites.fontra"
             - action: decompose-composites
-              onlyVariableComponents: true
+              onlyVariableComposites: true
             - action: output
               destination: "output-decompose-variable-composites.fontra"
             """,

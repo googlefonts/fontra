@@ -490,7 +490,7 @@ class AdjustAxesAction(BaseFilterAction):
 @registerActionClass("decompose-composites")
 @dataclass(kw_only=True)
 class DecomposeCompositesAction(BaseFilterAction):
-    onlyVariableComponents: bool = False
+    onlyVariableComposites: bool = False
 
     @cached_property
     def fontInstancer(self):
@@ -501,7 +501,7 @@ class DecomposeCompositesAction(BaseFilterAction):
         glyph = instancer.glyph
 
         if not instancer.componentTypes or (
-            self.onlyVariableComponents and not any(instancer.componentTypes)
+            self.onlyVariableComposites and not any(instancer.componentTypes)
         ):
             return glyph
 
