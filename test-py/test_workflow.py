@@ -441,7 +441,7 @@ def test_command(tmpdir, configYAMLSources):
             """
             steps:
             - action: input
-              source: "test-py/data/workflow/input-varco.fontra"
+              source: "test-py/data/workflow/input-variable-components.fontra"
             - action: decompose-components
               onlyVariableComponents: true
             - action: output
