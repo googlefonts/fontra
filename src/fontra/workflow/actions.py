@@ -487,9 +487,9 @@ class AdjustAxesAction(BaseFilterAction):
         return _remapSourceLocations(glyph, self._axisValueMapFunctions)
 
 
-@registerActionClass("decompose-components")
+@registerActionClass("decompose-composites")
 @dataclass(kw_only=True)
-class DecomposeComponentsAction(BaseFilterAction):
+class DecomposeCompositesAction(BaseFilterAction):
     onlyVariableComponents: bool = False
 
     @cached_property
