@@ -484,75 +484,36 @@ class DecomposeComponentsAction(BaseFilterAction):
     def fontInstancer(self):
         return FontInstancer(self.validatedInput)
 
-    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        if not areComponentsCompatible(glyph):
-            actionLogger.error(
-                "flatten-variable-components: "
-                f"components are not compatible in glyph {glyph.name!r}"
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        glyph = instancer.glyph
+
+        if not instancer.componentTypes or (
+            self.onlyVariableComponents and not any(instancer.componentTypes)
+        ):
+            return glyph
+
+        newLayers = {}
+        for source in instancer.activeSources:
+            pen = PackedPathPointPen()
+            await instancer.drawPoints(
+                pen,
+                source.location,
+                coordSystem=LocationCoordinateSystem.SOURCE,
+                flattenComponents=True,
+                flattenVarComponents=True,
             )
-        elif (
-            not self.onlyVariableComponents and haveComponents(glyph)
-        ) or haveVariableComponents(glyph):
-            instancer = await self.fontInstancer.getGlyphInstancer(glyph.name)
 
-            newLayers = {}
-            for source in getActiveSources(glyph.sources):
-                pen = PackedPathPointPen()
-                await instancer.drawPoints(
-                    pen,
-                    source.location,
-                    coordSystem=LocationCoordinateSystem.SOURCE,
-                    flattenComponents=True,
-                    flattenVarComponents=True,
-                )
+            layer = glyph.layers[source.layerName]
+            newLayers[source.layerName] = replace(
+                layer,
+                glyph=replace(layer.glyph, path=pen.getPath(), components=[]),
+            )
 
-                layer = glyph.layers[source.layerName]
-                newLayers[source.layerName] = replace(
-                    layer,
-                    glyph=replace(layer.glyph, path=pen.getPath(), components=[]),
-                )
-
-            glyph = replace(glyph, layers=newLayers)
+        glyph = replace(glyph, layers=newLayers)
 
         return glyph
 
 
-def areComponentsCompatible(glyph):
-    componentNames = [
-        [compo.name for compo in glyph.layers[source.layerName].glyph.components]
-        for source in getActiveSources(glyph.sources)
-    ]
-
-    return all(names == componentNames[0] for names in componentNames)
-
-
 def getActiveSources(sources):
     return [source for source in sources if not source.inactive]
-
-
-def haveComponents(glyph):
-    return any(
-        glyph.layers[source.layerName].glyph.components
-        for source in getActiveSources(glyph.sources)
-    )
-
-
-def haveVariableComponents(glyph):
-    transposed = list(
-        zip(
-            *[
-                glyph.layers[source.layerName].glyph.components
-                for source in getActiveSources(glyph.sources)
-            ],
-            strict=True,
-        )
-    )
-    return any(isComponentVariable(componentLayers) for componentLayers in transposed)
-
-
-def isComponentVariable(componentLayers):
-    if any(compo.location for compo in componentLayers):
-        return True
-    # TODO: also return True if any of the non-translate transformation
-    # fields are varying
-    return False
