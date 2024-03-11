@@ -207,6 +207,8 @@ class GlyphInstancer:
         variable (has a non-empty location) and False if it is a "classic"
         component.
         """
+        # TODO: also return True for components that vary their non-translate
+        # transformation fields
         numComponents = len(self.activeLayerGlyphs[0].components)
         return [
             any(
