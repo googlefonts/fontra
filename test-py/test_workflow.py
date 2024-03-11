@@ -425,40 +425,40 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
-            "decompose-components",
+            "decompose-composites",
             """
             steps:
             - action: input
-              source: "test-py/data/workflow/input-components.fontra"
-            - action: decompose-components
+              source: "test-py/data/workflow/input-composites.fontra"
+            - action: decompose-composites
             - action: output
-              destination: "output-decompose-components.fontra"
+              destination: "output-decompose-composites.fontra"
             """,
             [],
         ),
         (
-            "decompose-only-variable-components",
+            "decompose-only-variable-composites",
             """
             steps:
             - action: input
-              source: "test-py/data/workflow/input-components.fontra"
-            - action: decompose-components
-              onlyVariableComponents: true
+              source: "test-py/data/workflow/input-composites.fontra"
+            - action: decompose-composites
+              onlyVariableComposites: true
             - action: output
-              destination: "output-decompose-only-variable-components.fontra"
+              destination: "output-decompose-only-variable-composites.fontra"
             """,
             [],
         ),
         (
-            "decompose-variable-components",
+            "decompose-variable-composites",
             """
             steps:
             - action: input
-              source: "test-py/data/workflow/input-variable-components.fontra"
-            - action: decompose-components
-              onlyVariableComponents: true
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - action: decompose-composites
+              onlyVariableComposites: true
             - action: output
-              destination: "output-decompose-variable-components.fontra"
+              destination: "output-decompose-variable-composites.fontra"
             """,
             [],
         ),

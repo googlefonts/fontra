@@ -487,10 +487,10 @@ class AdjustAxesAction(BaseFilterAction):
         return _remapSourceLocations(glyph, self._axisValueMapFunctions)
 
 
-@registerActionClass("decompose-components")
+@registerActionClass("decompose-composites")
 @dataclass(kw_only=True)
-class DecomposeComponentsAction(BaseFilterAction):
-    onlyVariableComponents: bool = False
+class DecomposeCompositesAction(BaseFilterAction):
+    onlyVariableComposites: bool = False
 
     @cached_property
     def fontInstancer(self):
@@ -501,7 +501,7 @@ class DecomposeComponentsAction(BaseFilterAction):
         glyph = instancer.glyph
 
         if not instancer.componentTypes or (
-            self.onlyVariableComponents and not any(instancer.componentTypes)
+            self.onlyVariableComposites and not any(instancer.componentTypes)
         ):
             return glyph
 
