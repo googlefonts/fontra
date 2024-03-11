@@ -8,12 +8,19 @@ from dataclasses import dataclass, field, replace
 from functools import cached_property, partial
 from typing import Any, AsyncContextManager, AsyncGenerator, Protocol, runtime_checkable
 
+from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
 from fontTools.varLib.models import piecewiseLinearMap
 
 from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
-from ..core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
+from ..core.classes import (
+    Component,
+    GlobalAxis,
+    GlobalDiscreteAxis,
+    StaticGlyph,
+    VariableGlyph,
+)
 from ..core.instancer import FontInstancer, LocationCoordinateSystem
 from ..core.path import PackedPathPointPen
 from ..core.protocols import ReadableFontBackend
@@ -126,13 +133,15 @@ class BaseFilterAction:
     ) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return axes
 
-    async def processGlyphMap(self, glyphMap):
+    async def processGlyphMap(
+        self, glyphMap: dict[str, list[int]]
+    ) -> dict[str, list[int]]:
         return glyphMap
 
     async def processCustomData(self, customData):
         return customData
 
-    async def processUnitsPerEm(self, unitsPerEm):
+    async def processUnitsPerEm(self, unitsPerEm: int) -> int:
         return unitsPerEm
 
 
@@ -142,19 +151,21 @@ class ScaleAction(BaseFilterAction):
     scaleFactor: float
     scaleUnitsPerEm: bool = True
 
-    async def processGlyph(self, glyph):
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         transformation = Transform().scale(self.scaleFactor)
         return replace(
             glyph,
             layers={
                 layerName: replace(
-                    layer, glyph=self._scaleGlyph(layer.glyph, transformation)
+                    layer, glyph=self._scaleStaticGlyph(layer.glyph, transformation)
                 )
                 for layerName, layer in glyph.layers.items()
             },
         )
 
-    def _scaleGlyph(self, glyph, transformation):
+    def _scaleStaticGlyph(
+        self, glyph: StaticGlyph, transformation: Transform
+    ) -> StaticGlyph:
         xAdvance = (
             glyph.xAdvance * self.scaleFactor if glyph.xAdvance else glyph.xAdvance
         )
@@ -178,7 +189,7 @@ class ScaleAction(BaseFilterAction):
             ],
         )
 
-    def _scaleComponentOrigin(self, component):
+    def _scaleComponentOrigin(self, component: Component) -> Component:
         scaleFactor = self.scaleFactor
         x = component.transformation.translateX * scaleFactor
         y = component.transformation.translateY * scaleFactor
@@ -189,9 +200,9 @@ class ScaleAction(BaseFilterAction):
             ),
         )
 
-    async def processUnitsPerEm(self, unitsPerEm):
+    async def processUnitsPerEm(self, unitsPerEm: int) -> int:
         if self.scaleUnitsPerEm:
-            return unitsPerEm * self.scaleFactor
+            return otRound(unitsPerEm * self.scaleFactor)
         else:
             return unitsPerEm
 
@@ -210,9 +221,9 @@ class SubsetAction(BaseFilterAction):
             self.glyphNames = self.glyphNames | glyphNames
         self._glyphMap = None
 
-    async def _getSubsettedGlyphMap(self):
+    async def _getSubsettedGlyphMap(self) -> dict[str, list[int]]:
         if self._glyphMap is None:
-            bigGlyphMap = await self.input.getGlyphMap()
+            bigGlyphMap = await self.validatedInput.getGlyphMap()
             subsettedGlyphMap = {}
             glyphNames = set(self.glyphNames)
             while glyphNames:
@@ -224,7 +235,8 @@ class SubsetAction(BaseFilterAction):
 
                 # TODO: add getGlyphsMadeOf() ReadableFontBackend protocol member,
                 # so backends can implement this more efficiently
-                glyph = await self.input.getGlyph(glyphName)
+                glyph = await self.validatedInput.getGlyph(glyphName)
+                assert glyph is not None
                 compoNames = {
                     compo.name
                     for layer in glyph.layers.values()
@@ -237,13 +249,13 @@ class SubsetAction(BaseFilterAction):
             self._glyphMap = subsettedGlyphMap
         return self._glyphMap
 
-    async def getGlyph(self, glyphName):
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         glyphMap = await self._getSubsettedGlyphMap()
         if glyphName not in glyphMap:
             return None
-        return await self.input.getGlyph(glyphName)
+        return await self.validatedInput.getGlyph(glyphName)
 
-    async def getGlyphMap(self):
+    async def getGlyphMap(self) -> dict[str, list[int]]:
         return await self._getSubsettedGlyphMap()
 
 
