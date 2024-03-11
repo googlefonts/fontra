@@ -424,6 +424,44 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "decompose-components",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-components.fontra"
+            - action: decompose-components
+            - action: output
+              destination: "output-decompose-components.fontra"
+            """,
+            [],
+        ),
+        (
+            "decompose-only-variable-components",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-components.fontra"
+            - action: decompose-components
+              onlyVariableComponents: true
+            - action: output
+              destination: "output-decompose-only-variable-components.fontra"
+            """,
+            [],
+        ),
+        (
+            "decompose-variable-components",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-variable-components.fontra"
+            - action: decompose-components
+              onlyVariableComponents: true
+            - action: output
+              destination: "output-decompose-variable-components.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
@@ -445,7 +483,7 @@ async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, cap
             elif expectedPath.is_dir():
                 expectedLines = directoryTreeToList(expectedPath)
                 resultLines = directoryTreeToList(resultPath)
-                assert expectedLines == resultLines
+                assert expectedLines == resultLines, resultPath
             else:
                 assert False, resultPath
 

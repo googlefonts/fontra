@@ -15,6 +15,7 @@ from fontTools.varLib.models import (
 from .classes import (
     Component,
     GlobalAxis,
+    GlobalDiscreteAxis,
     Layer,
     LocalAxis,
     Source,
@@ -22,6 +23,7 @@ from .classes import (
     VariableGlyph,
 )
 from .path import InterpolationError, PackedPath, joinPaths
+from .protocols import ReadableFontBackend
 
 
 class LocationCoordinateSystem(Enum):
@@ -31,11 +33,11 @@ class LocationCoordinateSystem(Enum):
 
 @dataclass
 class FontInstancer:
-    backend: Any
+    backend: ReadableFontBackend
 
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
-        self.globalAxes: list[GlobalAxis] | None = None
+        self.globalAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = None
 
     async def getGlyphInstancer(
         self, glyphName: str, addToCache: bool = False
@@ -45,6 +47,7 @@ class FontInstancer:
             if self.globalAxes is None:
                 self.globalAxes = await self.backend.getGlobalAxes()
             glyph = await self.backend.getGlyph(glyphName)
+            assert glyph is not None, glyphName
             glyph = await self._ensureComponentLocationCompatibility(glyph)
             glyphInstancer = GlyphInstancer(glyph, self)
             if addToCache:
@@ -194,7 +197,7 @@ class GlyphInstancer:
         )
 
     @cached_property
-    def globalAxes(self) -> list[GlobalAxis]:
+    def globalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         assert self.fontInstancer.globalAxes is not None
         return self.fontInstancer.globalAxes
 
@@ -204,6 +207,8 @@ class GlyphInstancer:
         variable (has a non-empty location) and False if it is a "classic"
         component.
         """
+        # TODO: also return True for components that vary their non-translate
+        # transformation fields
         numComponents = len(self.activeLayerGlyphs[0].components)
         return [
             any(

@@ -14,6 +14,8 @@ from fontTools.varLib.models import piecewiseLinearMap
 from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
 from ..core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
+from ..core.instancer import FontInstancer, LocationCoordinateSystem
+from ..core.path import PackedPathPointPen
 from ..core.protocols import ReadableFontBackend
 
 # All actions should use this logger, regardless of where they are defined
@@ -347,7 +349,7 @@ def _renameAxis(axis, axes):
 @dataclass(kw_only=True)
 class DropInactiveSourcesAction(BaseFilterAction):
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        usedSources = [source for source in glyph.sources if not source.inactive]
+        usedSources = getActiveSources(glyph.sources)
         usedLayerNames = {source.layerName for source in usedSources}
         usedLayers = {
             layerName: layer
@@ -471,3 +473,47 @@ class AdjustAxesAction(BaseFilterAction):
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         return _remapSourceLocations(glyph, self._axisValueMapFunctions)
+
+
+@registerActionClass("decompose-components")
+@dataclass(kw_only=True)
+class DecomposeComponentsAction(BaseFilterAction):
+    onlyVariableComponents: bool = False
+
+    @cached_property
+    def fontInstancer(self):
+        return FontInstancer(self.validatedInput)
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        glyph = instancer.glyph
+
+        if not instancer.componentTypes or (
+            self.onlyVariableComponents and not any(instancer.componentTypes)
+        ):
+            return glyph
+
+        newLayers = {}
+        for source in instancer.activeSources:
+            pen = PackedPathPointPen()
+            await instancer.drawPoints(
+                pen,
+                source.location,
+                coordSystem=LocationCoordinateSystem.SOURCE,
+                flattenComponents=True,
+                flattenVarComponents=True,
+            )
+
+            layer = glyph.layers[source.layerName]
+            newLayers[source.layerName] = replace(
+                layer,
+                glyph=replace(layer.glyph, path=pen.getPath(), components=[]),
+            )
+
+        glyph = replace(glyph, layers=newLayers)
+
+        return glyph
+
+
+def getActiveSources(sources):
+    return [source for source in sources if not source.inactive]
