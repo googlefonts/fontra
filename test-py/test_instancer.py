@@ -661,15 +661,15 @@ penTestData = [
 
 
 @pytest.mark.parametrize(
-    "glyphName, location, flattenComponents, flattenVarComponents, expectedResult",
+    "glyphName, location, decomposeComponents, decomposeVarComponents, expectedResult",
     penTestData,
 )
 async def test_drawPoints(
     instancer,
     glyphName,
     location,
-    flattenComponents,
-    flattenVarComponents,
+    decomposeComponents,
+    decomposeVarComponents,
     expectedResult,
 ):
     glyphInstancer = await instancer.getGlyphInstancer(glyphName)
@@ -677,7 +677,7 @@ async def test_drawPoints(
     _ = await glyphInstancer.drawPoints(
         pen,
         location,
-        flattenComponents=flattenComponents,
-        flattenVarComponents=flattenVarComponents,
+        decomposeComponents=decomposeComponents,
+        decomposeVarComponents=decomposeVarComponents,
     )
     assert expectedResult == pen.value

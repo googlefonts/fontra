@@ -166,8 +166,8 @@ class GlyphInstancer:
         location,
         *,
         coordSystem=LocationCoordinateSystem.USER,
-        flattenComponents=False,
-        flattenVarComponents=True,
+        decomposeComponents=False,
+        decomposeVarComponents=True,
     ) -> GlyphInstance:
         if coordSystem == LocationCoordinateSystem.USER:
             location = mapLocationFromUserToSource(location, self.globalAxes)
@@ -175,8 +175,8 @@ class GlyphInstancer:
         instance = self.instantiate(location)
         await instance.drawPoints(
             pen,
-            flattenComponents=flattenComponents,
-            flattenVarComponents=flattenVarComponents,
+            decomposeComponents=decomposeComponents,
+            decomposeVarComponents=decomposeVarComponents,
         )
         return instance
 
@@ -277,7 +277,7 @@ class GlyphInstance:
     parentLocation: dict[str, float]  # LocationCoordinateSystem.SOURCE
     fontInstancer: FontInstancer
 
-    async def getFlattenedPath(self, transform: Transform | None = None) -> PackedPath:
+    async def getDecomposedPath(self, transform: Transform | None = None) -> PackedPath:
         assert isinstance(self.glyph.path, PackedPath)
         paths: list[PackedPath] = [
             (
@@ -294,8 +294,8 @@ class GlyphInstance:
         self,
         pen,
         *,
-        flattenComponents=False,
-        flattenVarComponents=False,
+        decomposeComponents=False,
+        decomposeVarComponents=False,
     ):
         assert self.componentTypes is not None
         assert self.parentLocation is not None
@@ -306,7 +306,7 @@ class GlyphInstance:
         for component, isVarComponent in zip(
             self.glyph.components, self.componentTypes, strict=True
         ):
-            if flattenComponents or (isVarComponent and flattenVarComponents):
+            if decomposeComponents or (isVarComponent and decomposeVarComponents):
                 paths.append(await self._getComponentPath(component))
             else:
                 components.append((component, isVarComponent))
@@ -332,7 +332,7 @@ class GlyphInstance:
         transform = component.transformation.toTransform()
         if parentTransform is not None:
             transform = parentTransform.transform(transform)
-        return await instance.getFlattenedPath(transform)
+        return await instance.getDecomposedPath(transform)
 
 
 @dataclass

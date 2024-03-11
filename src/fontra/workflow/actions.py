@@ -512,8 +512,8 @@ class DecomposeComponentsAction(BaseFilterAction):
                 pen,
                 source.location,
                 coordSystem=LocationCoordinateSystem.SOURCE,
-                flattenComponents=True,
-                flattenVarComponents=True,
+                decomposeComponents=True,
+                decomposeVarComponents=True,
             )
 
             layer = glyph.layers[source.layerName]
