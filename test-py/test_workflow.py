@@ -437,6 +437,19 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
+            "decompose-only-variable-components",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-components.fontra"
+            - action: decompose-components
+              onlyVariableComponents: true
+            - action: output
+              destination: "output-decompose-only-variable-components.fontra"
+            """,
+            [],
+        ),
+        (
             "decompose-variable-components",
             """
             steps:
