@@ -54,7 +54,10 @@ def existing_folder(path):
 async def mainAsync():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--output-dir", type=existing_folder, help="A path to a folder for the output"
+        "--output-dir",
+        type=existing_folder,
+        default=pathlib.Path(),
+        help="A path to a folder for the output",
     )
     parser.add_argument(
         "--logging-level",
