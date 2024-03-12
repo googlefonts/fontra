@@ -1,9 +1,24 @@
 {
 "name": "D",
+"axes": [
+{
+"name": "Lift",
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 100
+}
+],
 "sources": [
 {
 "name": "<default>",
 "layerName": "<default>"
+},
+{
+"name": "Lift=100",
+"layerName": "Lift=100",
+"location": {
+"Lift": 100
+}
 }
 ],
 "layers": {
@@ -14,6 +29,22 @@
 "name": "A",
 "location": {
 "Slant": 0
+}
+}
+],
+"xAdvance": 500
+}
+},
+"Lift=100": {
+"glyph": {
+"components": [
+{
+"name": "A",
+"transformation": {
+"translateY": 200
+},
+"location": {
+"Slant": 100
 }
 }
 ],
