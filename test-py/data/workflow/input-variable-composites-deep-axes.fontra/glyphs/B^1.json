@@ -1,0 +1,24 @@
+{
+"name": "B",
+"sources": [
+{
+"name": "<default>",
+"layerName": "<default>"
+}
+],
+"layers": {
+"<default>": {
+"glyph": {
+"components": [
+{
+"name": "A",
+"location": {
+"Slant": 50
+}
+}
+],
+"xAdvance": 500
+}
+}
+}
+}
