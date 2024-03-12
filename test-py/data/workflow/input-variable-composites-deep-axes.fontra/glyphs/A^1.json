@@ -1,0 +1,234 @@
+{
+"name": "A",
+"axes": [
+{
+"name": "Slant",
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 100
+}
+],
+"sources": [
+{
+"name": "<default>",
+"layerName": "<default>"
+},
+{
+"name": "weight=900",
+"layerName": "weight=900",
+"location": {
+"weight": 900
+}
+},
+{
+"name": "weight=650",
+"layerName": "weight=650",
+"location": {
+"weight": 650
+}
+},
+{
+"name": "width=200",
+"layerName": "width=200",
+"location": {
+"width": 200
+}
+},
+{
+"name": "width=150",
+"layerName": "width=150",
+"location": {
+"width": 150
+}
+},
+{
+"name": "Slant=100",
+"layerName": "Slant=100",
+"location": {
+"Slant": 100
+}
+}
+],
+"layers": {
+"<default>": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 0
+},
+{
+"x": 100,
+"y": 500
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 200,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"weight=900": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 0
+},
+{
+"x": 100,
+"y": 500
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 200,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"weight=650": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 300,
+"y": 0
+},
+{
+"x": 300,
+"y": 500
+},
+{
+"x": 400,
+"y": 500
+},
+{
+"x": 400,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"width=200": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 0
+},
+{
+"x": 100,
+"y": 500
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 200,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"width=150": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 250
+},
+{
+"x": 100,
+"y": 500
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 200,
+"y": 250
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"Slant=100": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 300,
+"y": 500
+},
+{
+"x": 100,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+}
+}
+}

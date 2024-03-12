@@ -1,0 +1,238 @@
+{
+"name": "D",
+"axes": [
+{
+"name": "Lift",
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 100
+}
+],
+"sources": [
+{
+"name": "<default>",
+"layerName": "<default>"
+},
+{
+"name": "Lift=100",
+"layerName": "Lift=100",
+"location": {
+"Lift": 100
+}
+},
+{
+"name": "weight=400,width=150",
+"layerName": "weight=400,width=150",
+"location": {
+"weight": 400,
+"width": 150
+}
+},
+{
+"name": "weight=400,width=200",
+"layerName": "weight=400,width=200",
+"location": {
+"weight": 400,
+"width": 200
+}
+},
+{
+"name": "weight=650,width=100",
+"layerName": "weight=650,width=100",
+"location": {
+"weight": 650,
+"width": 100
+}
+},
+{
+"name": "weight=900,width=100",
+"layerName": "weight=900,width=100",
+"location": {
+"weight": 900,
+"width": 100
+}
+}
+],
+"layers": {
+"<default>": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 0
+},
+{
+"x": 100,
+"y": 500
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 200,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"Lift=100": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 200
+},
+{
+"x": 200,
+"y": 700
+},
+{
+"x": 300,
+"y": 700
+},
+{
+"x": 100,
+"y": 200
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"weight=400,width=150": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 250
+},
+{
+"x": 100,
+"y": 500
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 200,
+"y": 250
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"weight=400,width=200": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 0
+},
+{
+"x": 100,
+"y": 500
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 200,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"weight=650,width=100": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 300,
+"y": 0
+},
+{
+"x": 300,
+"y": 500
+},
+{
+"x": 400,
+"y": 500
+},
+{
+"x": 400,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+},
+"weight=900,width=100": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 0
+},
+{
+"x": 100,
+"y": 500
+},
+{
+"x": 200,
+"y": 500
+},
+{
+"x": 200,
+"y": 0
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 500
+}
+}
+}
+}

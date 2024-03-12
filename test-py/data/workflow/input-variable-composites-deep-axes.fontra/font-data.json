@@ -1,0 +1,23 @@
+{
+"unitsPerEm": 1000,
+"customData": {},
+"axes": [
+{
+"name": "weight",
+"label": "Weight",
+"tag": "wght",
+"minValue": 400,
+"defaultValue": 400,
+"maxValue": 900
+},
+{
+"name": "width",
+"label": "Width",
+"tag": "wdth",
+"minValue": 100,
+"defaultValue": 100,
+"maxValue": 200
+}
+],
+"sources": []
+}

@@ -462,6 +462,19 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "decompose-variable-composites-deep-axes",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-variable-composites-deep-axes.fontra"
+            - action: decompose-composites
+              onlyVariableComposites: true
+            - action: output
+              destination: "output-decompose-variable-composites-deep-axes.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):

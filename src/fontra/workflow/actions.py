@@ -18,6 +18,8 @@ from ..core.classes import (
     Component,
     GlobalAxis,
     GlobalDiscreteAxis,
+    Layer,
+    Source,
     StaticGlyph,
     VariableGlyph,
 )
@@ -499,16 +501,35 @@ class DecomposeCompositesAction(BaseFilterAction):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         glyph = instancer.glyph
+        defaultGlobalLocation = instancer.defaultGlobalLocation
 
         if not instancer.componentTypes or (
             self.onlyVariableComposites and not any(instancer.componentTypes)
         ):
             return glyph
 
+        haveLocations = getGlobalLocationsFromSources(
+            instancer.activeSources, defaultGlobalLocation
+        )
+
+        needLocations = await getGlobalLocationsFromBaseGlyphs(
+            glyph, self.fontInstancer.backend, defaultGlobalLocation
+        )
+
+        locationsToAdd = [
+            dict(location) for location in sorted(needLocations - haveLocations)
+        ]
+        layerNames = [locationToString(location) for location in locationsToAdd]
+
+        newSources = instancer.activeSources + [
+            Source(name=name, location=location, layerName=name)
+            for location, name in zip(locationsToAdd, layerNames, strict=True)
+        ]
         newLayers = {}
-        for source in instancer.activeSources:
+
+        for source in newSources:
             pen = PackedPathPointPen()
-            await instancer.drawPoints(
+            instance = await instancer.drawPoints(
                 pen,
                 source.location,
                 coordSystem=LocationCoordinateSystem.SOURCE,
@@ -516,15 +537,72 @@ class DecomposeCompositesAction(BaseFilterAction):
                 decomposeVarComponents=True,
             )
 
-            layer = glyph.layers[source.layerName]
-            newLayers[source.layerName] = replace(
-                layer,
-                glyph=replace(layer.glyph, path=pen.getPath(), components=[]),
+            newLayers[source.layerName] = Layer(
+                glyph=replace(instance.glyph, path=pen.getPath(), components=[]),
             )
 
-        glyph = replace(glyph, layers=newLayers)
+        return replace(glyph, sources=newSources, layers=newLayers)
 
-        return glyph
+
+async def getGlobalLocationsFromBaseGlyphs(
+    glyph, backend, defaultGlobalLocation, seenGlyphNames=None
+):
+    if seenGlyphNames is None:
+        seenGlyphNames = set()
+
+    baseGlyphNames = set()
+    for source in getActiveSources(glyph.sources):
+        for compo in glyph.layers[source.layerName].glyph.components:
+            baseGlyphNames.add(compo.name)
+
+    baseGlyphNames -= seenGlyphNames
+
+    baseGlyphs = [await backend.getGlyph(name) for name in baseGlyphNames]
+
+    locations = set()
+    for baseGlyph in baseGlyphs:
+        locations.update(
+            getGlobalLocationsFromSources(
+                getActiveSources(baseGlyph.sources), defaultGlobalLocation
+            )
+        )
+
+    seenGlyphNames |= baseGlyphNames
+
+    for baseGlyph in baseGlyphs:
+        locations.update(
+            await getGlobalLocationsFromBaseGlyphs(
+                baseGlyph, backend, defaultGlobalLocation, seenGlyphNames
+            )
+        )
+
+    return locations
+
+
+def getGlobalLocationsFromSources(sources, defaultGlobalLocation):
+    return {
+        tuplifyLocation(
+            defaultGlobalLocation
+            | {k: v for k, v in source.location.items() if k in defaultGlobalLocation}
+        )
+        for source in sources
+    }
+
+
+def locationToString(loc):
+    # TODO: create module for helpers like this, duplicated from opentype.py
+    parts = []
+    for k, v in sorted(loc.items()):
+        v = round(v, 5)  # enough to differentiate all 2.14 fixed values
+        iv = int(v)
+        if iv == v:
+            v = iv
+        parts.append(f"{k}={v}")
+    return ",".join(parts)
+
+
+def tuplifyLocation(loc: dict[str, float]) -> tuple:
+    return tuple(sorted(loc.items()))
 
 
 def getActiveSources(sources):
