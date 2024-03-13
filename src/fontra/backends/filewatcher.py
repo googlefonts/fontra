@@ -42,7 +42,7 @@ class FileWatcher:
             *sorted(self.paths), stop_event=self._stopEvent
         ):
             changes = cleanupWatchFilesChanges(changes)
-            self.callback(changes)
+            await self.callback(changes)
 
 
 def cleanupWatchFilesChanges(changes):

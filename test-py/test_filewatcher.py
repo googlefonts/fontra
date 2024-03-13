@@ -22,7 +22,7 @@ async def test_filewatcher(tmpdir):
 
     collectedChanges = []
 
-    def callback(changes):
+    async def callback(changes):
         for tp, path in changes:
             name = "/".join(pathlib.Path(path).parts[-2:])
             collectedChanges.append((name, tp))
