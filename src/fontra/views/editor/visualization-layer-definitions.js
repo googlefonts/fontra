@@ -575,7 +575,8 @@ registerVisualizationLayerDefinition({
 
       context.fillStyle = parameters.boxColor;
       context.beginPath();
-      context.roundRect(
+      drawRoundRect(
+        context,
         startPoint.x - width / 2,
         -startPoint.y - bottomY + margin,
         width,
@@ -636,7 +637,8 @@ registerVisualizationLayerDefinition({
         2 * margin;
       context.fillStyle = parameters.boxColor;
       context.beginPath();
-      context.roundRect(
+      drawRoundRect(
+        context,
         pt.x - width / 2,
         -pt.y - bottomY + margin,
         width,
@@ -1109,3 +1111,13 @@ function* iterComponentOriginsByIndex(components, componentIndices) {
 //   colorsDarkMode: {},
 //   draw: (context, positionedGlyph, parameters, model, controller) => { /* ... */ },
 // }
+
+function drawRoundRect(context, ...args) {
+  // older versions of Safari don't support roundRect,
+  // so we use rect instead
+  if (context.roundRect) {
+    context.roundRect(...args);
+  } else {
+    context.rect(args[0], args[1], args[2], args[3]);
+  }
+}
