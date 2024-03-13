@@ -48,7 +48,7 @@ class FileWatcher:
             try:
                 await self.callback(changes)
             except Exception:
-                logger.exception("exception in FileWatcher callback", stack_info=True)
+                logger.exception("exception in FileWatcher callback")
 
 
 def cleanupWatchFilesChanges(changes):
