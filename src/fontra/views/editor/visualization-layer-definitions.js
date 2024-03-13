@@ -574,7 +574,6 @@ registerVisualizationLayerDefinition({
       const width = Math.max(context.measureText(strLine).width) + 2 * margin;
 
       context.fillStyle = parameters.boxColor;
-      context.beginPath();
       drawRoundRect(
         context,
         startPoint.x - width / 2,
@@ -583,7 +582,6 @@ registerVisualizationLayerDefinition({
         -boxHeight / 2 - 2 * margin,
         boxHeight / 4 // corner radius
       );
-      context.fill();
 
       context.fillStyle = parameters.color;
       context.fillText(strLine, startPoint.x, -startPoint.y - bottomY);
@@ -636,7 +634,6 @@ registerVisualizationLayerDefinition({
         ) +
         2 * margin;
       context.fillStyle = parameters.boxColor;
-      context.beginPath();
       drawRoundRect(
         context,
         pt.x - width / 2,
@@ -645,7 +642,6 @@ registerVisualizationLayerDefinition({
         -boxHeight - 2 * margin,
         boxHeight / 4 // corner radius
       );
-      context.fill();
 
       context.fillStyle = parameters.color;
       context.fillText(strLine1, pt.x, -pt.y - bottomY - lineHeight);
@@ -1115,9 +1111,11 @@ function* iterComponentOriginsByIndex(components, componentIndices) {
 function drawRoundRect(context, ...args) {
   // older versions of Safari don't support roundRect,
   // so we use rect instead
+  context.beginPath();
   if (context.roundRect) {
     context.roundRect(...args);
   } else {
     context.rect(args[0], args[1], args[2], args[3]);
   }
+  context.fill();
 }
