@@ -1,7 +1,7 @@
 import asyncio
 import os
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Callable, Iterable
 
 import watchfiles
 
@@ -13,21 +13,21 @@ class FileWatcher:
     _stopEvent: asyncio.Event = field(init=False, default=asyncio.Event())
     _task: asyncio.Task | None = field(init=False, default=None)
 
-    async def aclose(self):
-        if self._task is not None:
+    async def aclose(self) -> None:
+        if self._task is None:
             return
         self._stopEvent.set()
         await self._task
 
-    def setPaths(self, paths):
+    def setPaths(self, paths: Iterable[os.PathLike | str]) -> None:
         self.paths = set(paths)
         self._startWatching()
 
-    def addPaths(self, paths):
+    def addPaths(self, paths: Iterable[os.PathLike | str]) -> None:
         self.paths.update(paths)
         self._startWatching()
 
-    def removePaths(self, paths):
+    def removePaths(self, paths: Iterable[os.PathLike | str]) -> None:
         for path in paths:
             self.paths.discard(path)
         self._startWatching()
