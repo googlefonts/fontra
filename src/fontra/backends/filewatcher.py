@@ -29,7 +29,7 @@ class FileWatcher:
 
     def removePaths(self, paths):
         for path in paths:
-            self.paths.discard(paths)
+            self.paths.discard(path)
         self._startWatching()
 
     def _startWatching(self):
@@ -37,7 +37,7 @@ class FileWatcher:
         self._task = asyncio.create_task(self._watchFiles()) if self.paths else None
 
     async def _watchFiles(self):
-        self._stopEvent.clear()
+        self._stopEvent = asyncio.Event()
         async for changes in watchfiles.awatch(
             *sorted(self.paths), stop_event=self._stopEvent
         ):
