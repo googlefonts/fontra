@@ -23,9 +23,9 @@ async def test_filewatcher(tmpdir):
     collectedChanges = []
 
     async def callback(changes):
-        for tp, path in changes:
+        for changeType, path in changes:
             name = "/".join(pathlib.Path(path).parts[-2:])
-            collectedChanges.append((name, tp))
+            collectedChanges.append((name, changeType))
 
     await asyncio.sleep(0.1)
 
