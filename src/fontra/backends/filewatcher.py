@@ -1,9 +1,12 @@
 import asyncio
+import logging
 import os
 from dataclasses import dataclass, field
 from typing import Callable, Iterable
 
 import watchfiles
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -42,7 +45,10 @@ class FileWatcher:
             *sorted(self.paths), stop_event=self._stopEvent
         ):
             changes = cleanupWatchFilesChanges(changes)
-            await self.callback(changes)
+            try:
+                await self.callback(changes)
+            except Exception:
+                logger.exception("exception in FileWatcher callback", stack_info=True)
 
 
 def cleanupWatchFilesChanges(changes):
