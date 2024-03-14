@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 from types import SimpleNamespace
-from typing import Any, AsyncGenerator, Callable, Protocol, runtime_checkable
+from typing import Any, Awaitable, Callable, Protocol, runtime_checkable
 
 from aiohttp import web
 
@@ -55,9 +55,10 @@ class WritableFontBackend(ReadableFontBackend, Protocol):
 
 @runtime_checkable
 class WatchableFontBackend(Protocol):
-    async def watchExternalChanges(self) -> AsyncGenerator[tuple[Any, Any], None]:
-        if False:
-            yield None, None
+    async def watchExternalChanges(
+        self, callback: Callable[[Any, Any], Awaitable[None]]
+    ) -> None:
+        pass
 
 
 @runtime_checkable

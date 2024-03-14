@@ -58,9 +58,8 @@ class FontHandler:
 
     async def startTasks(self) -> None:
         if isinstance(self.backend, WatchableFontBackend):
-            self._watcherTask = scheduleTaskAndLogException(
-                self.processExternalChanges()
-            )
+            await self.backend.watchExternalChanges(self.processExternalChanges)
+
         self._processWritesError: Exception | None = None
         self._processWritesEvent = asyncio.Event()
         self._processWritesTask = scheduleTaskAndLogException(self.processWrites())
@@ -76,18 +75,12 @@ class FontHandler:
             await self.finishWriting()  # shield for cancel?
             self._processWritesTask.cancel()
 
-    async def processExternalChanges(self) -> None:
-        assert isinstance(self.backend, WatchableFontBackend)
-        async for change, reloadPattern in self.backend.watchExternalChanges():
-            try:
-                if change is not None:
-                    await self.updateLocalDataWithExternalChange(change)
-                    await self.broadcastChange(change, None, False)
-                if reloadPattern is not None:
-                    await self.reloadData(reloadPattern)
-            except Exception as e:
-                logger.error("exception in external changes watcher: %r", e)
-                traceback.print_exc()
+    async def processExternalChanges(self, change, reloadPattern) -> None:
+        if change is not None:
+            await self.updateLocalDataWithExternalChange(change)
+            await self.broadcastChange(change, None, False)
+        if reloadPattern is not None:
+            await self.reloadData(reloadPattern)
 
     def _processWritesTaskDone(self, task) -> None:
         # Signal that the write-"thread" is no longer running
