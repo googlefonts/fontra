@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 from dataclasses import dataclass, field
-from typing import Callable, Iterable
+from typing import Awaitable, Callable, Iterable
 
 from watchfiles import Change, awatch
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class FileWatcher:
-    callback: Callable
+    callback: Callable[[list[tuple[Change, os.PathLike | str]]], Awaitable[None]]
     paths: set[os.PathLike | str] = field(init=False, default_factory=set)
     _stopEvent: asyncio.Event = field(init=False, default=asyncio.Event())
     _task: asyncio.Task | None = field(init=False, default=None)
@@ -49,7 +49,9 @@ class FileWatcher:
                 logger.exception("exception in FileWatcher callback")
 
 
-def cleanupWatchFilesChanges(changes):
+def cleanupWatchFilesChanges(
+    changes: list[tuple[Change, os.PathLike | str]]
+) -> list[tuple[Change, os.PathLike | str]]:
     # If a path is mentioned with more than one event type, we pick the most
     # appropriate one among them:
     # - if there is a delete event and the path does not exist: delete it is
