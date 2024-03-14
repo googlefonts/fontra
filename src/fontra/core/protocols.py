@@ -56,7 +56,7 @@ class WritableFontBackend(ReadableFontBackend, Protocol):
 @runtime_checkable
 class WatchableFontBackend(Protocol):
     async def watchExternalChanges(
-        self, callback: Callable[[Any, Any], Awaitable[None]]
+        self, callback: Callable[[Any], Awaitable[None]]
     ) -> None:
         pass
 

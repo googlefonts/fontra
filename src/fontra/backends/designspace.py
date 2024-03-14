@@ -26,7 +26,6 @@ from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
-from ..core.changes import applyChange
 from ..core.classes import (
     AxisValueLabel,
     Component,
@@ -94,7 +93,7 @@ class DesignspaceBackend:
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes: dict[str, set] = {}
         self.fileWatcher: FileWatcher | None = None
-        self.fileWatcherCallbacks: list[Callable[[Any, Any], Awaitable[None]]] = []
+        self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
 
     def updateAxisInfo(self):
         self.dsDoc.findDefault()
@@ -593,7 +592,7 @@ class DesignspaceBackend:
         self.dsDoc.write(self.dsDoc.path)
 
     async def watchExternalChanges(
-        self, callback: Callable[[Any, Any], Awaitable[None]]
+        self, callback: Callable[[Any], Awaitable[None]]
     ) -> None:
         if self.fileWatcher is None:
             self.fileWatcher = FileWatcher(self._fileWatcherCallback)
@@ -604,14 +603,14 @@ class DesignspaceBackend:
         return sorted(set(self.ufoLayers.iterAttrs("path")))
 
     async def _fileWatcherCallback(self, changes: set[tuple[Change, str]]) -> None:
-        changes, reloadPattern = await self.processExternalChanges(changes)
-        if changes or reloadPattern:
+        reloadPattern = await self.processExternalChanges(changes)
+        if reloadPattern:
             for callback in self.fileWatcherCallbacks:
-                await callback(changes, reloadPattern)
+                await callback(reloadPattern)
 
     async def processExternalChanges(
         self, changes: set[tuple[Change, str]]
-    ) -> tuple[Any, Any]:
+    ) -> dict[str, Any]:
         changedItems = await self._analyzeExternalChanges(changes)
 
         glyphMapUpdates: dict[str, list[int] | None] = {}
@@ -631,19 +630,21 @@ class DesignspaceBackend:
             if glyphName in self.glyphMap:
                 glyphMapUpdates[glyphName] = None
 
-        externalChange = makeGlyphMapChange(glyphMapUpdates)
-
-        reloadPattern = (
+        reloadPattern: dict[str, Any] = (
             {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
             if changedItems.changedGlyphs
-            else None
+            else {}
         )
 
-        if externalChange:
-            rootObject = {"glyphMap": self.glyphMap}
-            applyChange(rootObject, externalChange)
+        if glyphMapUpdates:
+            reloadPattern["glyphMap"] = None
+            for glyphName, updatedCodePoints in glyphMapUpdates.items():
+                if updatedCodePoints is None:
+                    del self.glyphMap[glyphName]
+                else:
+                    self.glyphMap[glyphName] = updatedCodePoints
 
-        return externalChange, reloadPattern
+        return reloadPattern
 
     async def _analyzeExternalChanges(self, changes):
         changedItems = SimpleNamespace(
@@ -795,26 +796,6 @@ def packAxisLabels(valueLabels):
         )
         for label in valueLabels
     ]
-
-
-def makeGlyphMapChange(glyphMapUpdates):
-    if not glyphMapUpdates:
-        return None
-    changes = [
-        {"f": "=", "a": [glyphName, codePoints]}
-        for glyphName, codePoints in glyphMapUpdates.items()
-        if codePoints is not None
-    ] + [
-        {"f": "d", "a": [glyphName]}
-        for glyphName, codePoints in glyphMapUpdates.items()
-        if codePoints is None
-    ]
-    glyphMapChange = {"p": ["glyphMap"]}
-    if len(changes) == 1:
-        glyphMapChange.update(changes[0])
-    else:
-        glyphMapChange["c"] = changes
-    return glyphMapChange
 
 
 class UFOBackend(DesignspaceBackend):
