@@ -399,7 +399,9 @@ export default class SelectionInfoPanel extends Panel {
       this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
     } else {
       this.infoForm.setFieldDescriptions(formContents);
-      await this._setupSelectionInfoHandlers(glyphName);
+      if (glyphController) {
+        await this._setupSelectionInfoHandlers(glyphName);
+      }
     }
   }
 
