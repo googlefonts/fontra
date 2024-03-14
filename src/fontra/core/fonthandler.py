@@ -77,7 +77,7 @@ class FontHandler:
             self._processWritesTask.cancel()
 
     async def processExternalChanges(self, reloadPattern) -> None:
-        if "glyphMap" in reloadPattern:
+        if reloadPattern is not None and "glyphMap" in reloadPattern:
             del reloadPattern["glyphMap"]
             glyphMapChange = computeGlyphMapChange(
                 self.glyphMap, await self.backend.getGlyphMap()
@@ -85,7 +85,8 @@ class FontHandler:
             if glyphMapChange:
                 await self.updateLocalDataWithExternalChange(glyphMapChange)
                 await self.broadcastChange(glyphMapChange, None, False)
-        if reloadPattern is not None:
+
+        if reloadPattern or reloadPattern is None:
             await self.reloadData(reloadPattern)
 
     def _processWritesTaskDone(self, task) -> None:
@@ -436,19 +437,26 @@ class FontHandler:
             self.glyphUsedBy[componentName].add(glyphName)
 
     async def reloadData(self, reloadPattern):
-        # Drop local data to ensure it gets reloaded from the backend
-        for rootKey, value in reloadPattern.items():
-            if rootKey == "glyphs":
-                for glyphName in value:
-                    self.localData.pop(("glyphs", glyphName), None)
-            else:
-                self.localData.pop(rootKey, None)
+        if reloadPattern is None:
+            self.localData.clear()
+        else:
+            # Drop local data to ensure it gets reloaded from the backend
+            for rootKey, value in reloadPattern.items():
+                if rootKey == "glyphs":
+                    for glyphName in value:
+                        self.localData.pop(("glyphs", glyphName), None)
+                else:
+                    self.localData.pop(rootKey, None)
 
         connections = []
         for connection in self.connections:
             subscribePattern = self._getCombinedSubscribePattern(connection)
-            connReloadPattern = patternIntersect(subscribePattern, reloadPattern)
-            if connReloadPattern:
+            connReloadPattern = (
+                patternIntersect(subscribePattern, reloadPattern)
+                if reloadPattern
+                else None
+            )
+            if connReloadPattern or connReloadPattern is None:
                 connections.append((connection, connReloadPattern))
 
         if not connections:
