@@ -1108,14 +1108,14 @@ function* iterComponentOriginsByIndex(components, componentIndices) {
 //   draw: (context, positionedGlyph, parameters, model, controller) => { /* ... */ },
 // }
 
-function drawRoundRect(context, ...args) {
+function drawRoundRect(context, x, y, width, height, radii) {
   // older versions of Safari don't support roundRect,
   // so we use rect instead
   context.beginPath();
   if (context.roundRect) {
-    context.roundRect(...args);
+    context.roundRect(x, y, width, height, radii);
   } else {
-    context.rect(args[0], args[1], args[2], args[3]);
+    context.rect(x, y, width, height);
   }
   context.fill();
 }
