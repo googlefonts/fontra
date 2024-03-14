@@ -438,6 +438,7 @@ class FontHandler:
 
     async def reloadData(self, reloadPattern):
         if reloadPattern is None:
+            # A reloadPattern being None means: reload everything
             self.localData.clear()
         else:
             # Drop local data to ensure it gets reloaded from the backend
