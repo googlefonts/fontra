@@ -26,7 +26,6 @@ from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
-from ..core.changes import applyChange
 from ..core.classes import (
     AxisValueLabel,
     Component,
@@ -631,19 +630,21 @@ class DesignspaceBackend:
             if glyphName in self.glyphMap:
                 glyphMapUpdates[glyphName] = None
 
-        externalChange = makeGlyphMapChange(glyphMapUpdates)
-
         reloadPattern = (
             {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
             if changedItems.changedGlyphs
-            else None
+            else {}
         )
 
-        if externalChange:
-            rootObject = {"glyphMap": self.glyphMap}
-            applyChange(rootObject, externalChange)
+        if glyphMapUpdates:
+            reloadPattern["glyphMap"] = None
+            for glyphName, codePoints in glyphMapUpdates.items():
+                if codePoints is None:
+                    del self.glyphMap[glyphName]
+                else:
+                    self.glyphMap[glyphName] = codePoints
 
-        return externalChange, reloadPattern
+        return None, reloadPattern
 
     async def _analyzeExternalChanges(self, changes):
         changedItems = SimpleNamespace(
@@ -795,26 +796,6 @@ def packAxisLabels(valueLabels):
         )
         for label in valueLabels
     ]
-
-
-def makeGlyphMapChange(glyphMapUpdates):
-    if not glyphMapUpdates:
-        return None
-    changes = [
-        {"f": "=", "a": [glyphName, codePoints]}
-        for glyphName, codePoints in glyphMapUpdates.items()
-        if codePoints is not None
-    ] + [
-        {"f": "d", "a": [glyphName]}
-        for glyphName, codePoints in glyphMapUpdates.items()
-        if codePoints is None
-    ]
-    glyphMapChange = {"p": ["glyphMap"]}
-    if len(changes) == 1:
-        glyphMapChange.update(changes[0])
-    else:
-        glyphMapChange["c"] = changes
-    return glyphMapChange
 
 
 class UFOBackend(DesignspaceBackend):

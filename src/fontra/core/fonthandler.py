@@ -51,6 +51,7 @@ class FontHandler:
         self.clientData = defaultdict(dict)
         self.localData = LRUCache()
         self._dataScheduledForWriting = {}
+        self.glyphMap = {}
 
     @cached_property
     def writableBackend(self) -> WritableFontBackend | None:
@@ -76,9 +77,15 @@ class FontHandler:
             self._processWritesTask.cancel()
 
     async def processExternalChanges(self, change, reloadPattern) -> None:
-        if change is not None:
-            await self.updateLocalDataWithExternalChange(change)
-            await self.broadcastChange(change, None, False)
+        assert change is None
+        if "glyphMap" in reloadPattern:
+            del reloadPattern["glyphMap"]
+            glyphMapChange = computeGlyphMapChange(
+                self.glyphMap, await self.backend.getGlyphMap()
+            )
+            if glyphMapChange:
+                await self.updateLocalDataWithExternalChange(glyphMapChange)
+                await self.broadcastChange(glyphMapChange, None, False)
         if reloadPattern is not None:
             await self.reloadData(reloadPattern)
 
@@ -211,7 +218,8 @@ class FontHandler:
 
     @remoteMethod
     async def getGlyphMap(self, *, connection):
-        return await self.getData("glyphMap")
+        self.glyphMap = await self.getData("glyphMap")
+        return self.glyphMap
 
     @remoteMethod
     async def getGlobalAxes(self, *, connection):
@@ -527,3 +535,66 @@ class DictSetDelTracker(UserDict):
         _ = self.pop(key, None)
         self.deletedKeys.add(key)
         self.newKeys.discard(key)
+
+
+def computeGlyphMapChange(glyphMapA, glyphMapB):
+    itemsA = sorted(glyphMapA.items())
+    itemsB = sorted(glyphMapB.items())
+
+    indexA = 0
+    indexB = 0
+
+    diffGlyphNames = set()
+
+    while True:
+        itemA = itemsA[indexA]
+        itemB = itemsB[indexB]
+
+        if itemA == itemB:
+            indexA += 1
+            indexB += 1
+        elif itemA < itemB:
+            diffGlyphNames.add(itemA[0])
+            indexA += 1
+        else:
+            # itemA > itemB
+            diffGlyphNames.add(itemB[0])
+            indexB += 1
+
+        if indexA >= len(itemsA):
+            diffGlyphNames.update(item[0] for item in itemsB[indexB:])
+            break
+
+        if indexB >= len(itemsB):
+            diffGlyphNames.update(item[0] for item in itemsA[indexA:])
+            break
+
+    glyphMapUpdates = {}
+
+    for glyphName in diffGlyphNames:
+        glyphMapUpdates[glyphName] = glyphMapB.get(glyphName)
+
+    return makeGlyphMapChange(glyphMapUpdates)
+
+
+def makeGlyphMapChange(glyphMapUpdates):
+    if not glyphMapUpdates:
+        return None
+
+    changes = [
+        {"f": "=", "a": [glyphName, codePoints]}
+        for glyphName, codePoints in glyphMapUpdates.items()
+        if codePoints is not None
+    ] + [
+        {"f": "d", "a": [glyphName]}
+        for glyphName, codePoints in glyphMapUpdates.items()
+        if codePoints is None
+    ]
+
+    glyphMapChange = {"p": ["glyphMap"]}
+    if len(changes) == 1:
+        glyphMapChange.update(changes[0])
+    else:
+        glyphMapChange["c"] = changes
+
+    return glyphMapChange
