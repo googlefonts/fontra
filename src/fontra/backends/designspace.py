@@ -85,6 +85,9 @@ class DesignspaceBackend:
         return cls(dsDoc)
 
     def __init__(self, dsDoc: DesignSpaceDocument) -> None:
+        self._initialize(dsDoc)
+
+    def _initialize(self, dsDoc: DesignSpaceDocument, initFileWatcher=True) -> None:
         self.dsDoc = dsDoc
         self.ufoManager = UFOManager()
         self.updateAxisInfo()
@@ -92,8 +95,12 @@ class DesignspaceBackend:
         self.buildGlyphFileNameMapping()
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes: dict[str, set] = {}
-        self.fileWatcher: FileWatcher | None = None
-        self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
+        if initFileWatcher:
+            self.fileWatcher: FileWatcher | None = None
+            self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
+
+    def _reloadDesignSpaceFromFile(self):
+        self._initialize(DesignSpaceDocument.fromfile(self.dsDoc.path), False)
 
     def updateAxisInfo(self):
         self.dsDoc.findDefault()
@@ -600,18 +607,23 @@ class DesignspaceBackend:
         self.fileWatcherCallbacks.append(callback)
 
     def _getFilesToWatch(self):
-        return sorted(set(self.ufoLayers.iterAttrs("path")))
+        return [self.dsDoc.path] + sorted(set(self.ufoLayers.iterAttrs("path")))
 
     async def _fileWatcherCallback(self, changes: set[tuple[Change, str]]) -> None:
         reloadPattern = await self.processExternalChanges(changes)
-        if reloadPattern:
+        if reloadPattern is None:
+            self._reloadDesignSpaceFromFile()
+        if reloadPattern or reloadPattern is None:
             for callback in self.fileWatcherCallbacks:
                 await callback(reloadPattern)
 
     async def processExternalChanges(
         self, changes: set[tuple[Change, str]]
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
         changedItems = await self._analyzeExternalChanges(changes)
+        if changedItems is None:
+            # The .designspace file changed, reload all the things
+            return None
 
         glyphMapUpdates: dict[str, list[int] | None] = {}
 
@@ -646,7 +658,12 @@ class DesignspaceBackend:
 
         return reloadPattern
 
-    async def _analyzeExternalChanges(self, changes):
+    async def _analyzeExternalChanges(self, changes) -> SimpleNamespace | None:
+        for change, path in sorted(changes):
+            _, fileSuffix = os.path.splitext(path)
+            if fileSuffix == ".designspace":
+                return None
+
         changedItems = SimpleNamespace(
             changedGlyphs=set(),
             newGlyphs=set(),
