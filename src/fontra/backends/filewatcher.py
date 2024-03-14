@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Callable, Iterable
 
-import watchfiles
+from watchfiles import Change, awatch
 
 logger = logging.getLogger(__name__)
 
@@ -41,9 +41,7 @@ class FileWatcher:
 
     async def _watchFiles(self):
         self._stopEvent = asyncio.Event()
-        async for changes in watchfiles.awatch(
-            *sorted(self.paths), stop_event=self._stopEvent
-        ):
+        async for changes in awatch(*sorted(self.paths), stop_event=self._stopEvent):
             changes = cleanupWatchFilesChanges(changes)
             try:
                 await self.callback(changes)
@@ -59,9 +57,9 @@ def cleanupWatchFilesChanges(changes):
     perPath = {}
     for change, path in sorted(changes):
         if path in perPath:
-            if change == watchfiles.Change.deleted and not os.path.exists(path):
+            if change == Change.deleted and not os.path.exists(path):
                 # File doesn't exist, event to "deleted"
-                perPath[path] = watchfiles.Change.deleted
+                perPath[path] = Change.deleted
             # else: keep the first event
         else:
             perPath[path] = change
