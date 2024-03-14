@@ -76,8 +76,7 @@ class FontHandler:
             await self.finishWriting()  # shield for cancel?
             self._processWritesTask.cancel()
 
-    async def processExternalChanges(self, change, reloadPattern) -> None:
-        assert change is None
+    async def processExternalChanges(self, reloadPattern) -> None:
         if "glyphMap" in reloadPattern:
             del reloadPattern["glyphMap"]
             glyphMapChange = computeGlyphMapChange(

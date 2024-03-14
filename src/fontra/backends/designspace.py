@@ -93,7 +93,7 @@ class DesignspaceBackend:
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes: dict[str, set] = {}
         self.fileWatcher: FileWatcher | None = None
-        self.fileWatcherCallbacks: list[Callable[[Any, Any], Awaitable[None]]] = []
+        self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
 
     def updateAxisInfo(self):
         self.dsDoc.findDefault()
@@ -592,7 +592,7 @@ class DesignspaceBackend:
         self.dsDoc.write(self.dsDoc.path)
 
     async def watchExternalChanges(
-        self, callback: Callable[[Any, Any], Awaitable[None]]
+        self, callback: Callable[[Any], Awaitable[None]]
     ) -> None:
         if self.fileWatcher is None:
             self.fileWatcher = FileWatcher(self._fileWatcherCallback)
@@ -603,14 +603,14 @@ class DesignspaceBackend:
         return sorted(set(self.ufoLayers.iterAttrs("path")))
 
     async def _fileWatcherCallback(self, changes: set[tuple[Change, str]]) -> None:
-        changes, reloadPattern = await self.processExternalChanges(changes)
-        if changes or reloadPattern:
+        reloadPattern = await self.processExternalChanges(changes)
+        if reloadPattern:
             for callback in self.fileWatcherCallbacks:
-                await callback(changes, reloadPattern)
+                await callback(reloadPattern)
 
     async def processExternalChanges(
         self, changes: set[tuple[Change, str]]
-    ) -> tuple[Any, Any]:
+    ) -> dict[str, Any]:
         changedItems = await self._analyzeExternalChanges(changes)
 
         glyphMapUpdates: dict[str, list[int] | None] = {}
@@ -630,7 +630,7 @@ class DesignspaceBackend:
             if glyphName in self.glyphMap:
                 glyphMapUpdates[glyphName] = None
 
-        reloadPattern = (
+        reloadPattern: dict[str, Any] = (
             {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
             if changedItems.changedGlyphs
             else {}
@@ -638,13 +638,13 @@ class DesignspaceBackend:
 
         if glyphMapUpdates:
             reloadPattern["glyphMap"] = None
-            for glyphName, codePoints in glyphMapUpdates.items():
-                if codePoints is None:
+            for glyphName, updatedCodePoints in glyphMapUpdates.items():
+                if updatedCodePoints is None:
                     del self.glyphMap[glyphName]
                 else:
-                    self.glyphMap[glyphName] = codePoints
+                    self.glyphMap[glyphName] = updatedCodePoints
 
-        return None, reloadPattern
+        return reloadPattern
 
     async def _analyzeExternalChanges(self, changes):
         changedItems = SimpleNamespace(
