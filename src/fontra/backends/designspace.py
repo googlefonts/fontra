@@ -603,15 +603,15 @@ class DesignspaceBackend:
     def _getFilesToWatch(self):
         return sorted(set(self.ufoLayers.iterAttrs("path")))
 
-    async def _fileWatcherCallback(
-        self, changes: list[tuple[Change, os.PathLike | str]]
-    ) -> None:
+    async def _fileWatcherCallback(self, changes: set[tuple[Change, str]]) -> None:
         changes, reloadPattern = await self.processExternalChanges(changes)
         if changes or reloadPattern:
             for callback in self.fileWatcherCallbacks:
                 await callback(changes, reloadPattern)
 
-    async def processExternalChanges(self, changes: list) -> tuple[Any, Any]:
+    async def processExternalChanges(
+        self, changes: set[tuple[Change, str]]
+    ) -> tuple[Any, Any]:
         changedItems = await self._analyzeExternalChanges(changes)
 
         glyphMapUpdates: dict[str, list[int] | None] = {}
@@ -652,7 +652,7 @@ class DesignspaceBackend:
             deletedGlyphs=set(),
             rebuildGlyphSetContents=False,
         )
-        for change, path in changes:
+        for change, path in sorted(changes):
             _, fileSuffix = os.path.splitext(path)
 
             if fileSuffix == ".glif":

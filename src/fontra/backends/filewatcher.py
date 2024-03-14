@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class FileWatcher:
-    callback: Callable[[list[tuple[Change, os.PathLike | str]]], Awaitable[None]]
-    paths: set[os.PathLike | str] = field(init=False, default_factory=set)
+    callback: Callable[[set[tuple[Change, str]]], Awaitable[None]]
+    paths: set[str] = field(init=False, default_factory=set)
     _stopEvent: asyncio.Event = field(init=False, default=asyncio.Event())
     _task: asyncio.Task | None = field(init=False, default=None)
 
@@ -23,23 +23,23 @@ class FileWatcher:
         self._task.cancel()
 
     def setPaths(self, paths: Iterable[os.PathLike | str]) -> None:
-        self.paths = set(paths)
+        self.paths = set([os.fspath(p) for p in paths])
         self._startWatching()
 
     def addPaths(self, paths: Iterable[os.PathLike | str]) -> None:
-        self.paths.update(paths)
+        self.paths.update([os.fspath(p) for p in paths])
         self._startWatching()
 
     def removePaths(self, paths: Iterable[os.PathLike | str]) -> None:
         for path in paths:
-            self.paths.discard(path)
+            self.paths.discard(os.fspath(path))
         self._startWatching()
 
     def _startWatching(self):
         self._stopEvent.set()
         self._task = asyncio.create_task(self._watchFiles()) if self.paths else None
 
-    async def _watchFiles(self):
+    async def _watchFiles(self) -> None:
         self._stopEvent = asyncio.Event()
         async for changes in awatch(*sorted(self.paths), stop_event=self._stopEvent):
             changes = cleanupWatchFilesChanges(changes)
@@ -50,8 +50,8 @@ class FileWatcher:
 
 
 def cleanupWatchFilesChanges(
-    changes: list[tuple[Change, os.PathLike | str]]
-) -> list[tuple[Change, os.PathLike | str]]:
+    changes: set[tuple[Change, str]]
+) -> set[tuple[Change, str]]:
     # If a path is mentioned with more than one event type, we pick the most
     # appropriate one among them:
     # - if there is a delete event and the path does not exist: delete it is
@@ -65,4 +65,4 @@ def cleanupWatchFilesChanges(
             # else: keep the first event
         else:
             perPath[path] = change
-    return [(change, path) for path, change in perPath.items()]
+    return {(change, path) for path, change in perPath.items()}
