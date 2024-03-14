@@ -12,9 +12,8 @@ from datetime import datetime
 from functools import cache, cached_property, singledispatch
 from os import PathLike
 from types import SimpleNamespace
-from typing import Any, AsyncGenerator, Callable
+from typing import Any, Awaitable, Callable
 
-import watchfiles
 from fontTools.designspaceLib import (
     AxisDescriptor,
     AxisLabelDescriptor,
@@ -41,6 +40,7 @@ from ..core.classes import (
 )
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
+from .filewatcher import Change, FileWatcher
 from .ufo_utils import extractGlyphNameAndCodePoints
 
 logger = logging.getLogger(__name__)
@@ -85,14 +85,16 @@ class DesignspaceBackend:
         dsDoc.write(path)
         return cls(dsDoc)
 
-    def __init__(self, dsDoc):
+    def __init__(self, dsDoc: DesignSpaceDocument) -> None:
         self.dsDoc = dsDoc
         self.ufoManager = UFOManager()
         self.updateAxisInfo()
         self.loadUFOLayers()
         self.buildGlyphFileNameMapping()
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
-        self.savedGlyphModificationTimes = {}
+        self.savedGlyphModificationTimes: dict[str, set] = {}
+        self.fileWatcher: FileWatcher | None = None
+        self.fileWatcherCallbacks: list[Callable[[Any, Any], Awaitable[None]]] = []
 
     def updateAxisInfo(self):
         self.dsDoc.findDefault()
@@ -109,7 +111,8 @@ class DesignspaceBackend:
         self.defaultLocation = defaultLocation
 
     async def aclose(self):
-        pass
+        if self.fileWatcher is not None:
+            await self.fileWatcher.aclose()
 
     @property
     def defaultDSSource(self):
@@ -589,43 +592,56 @@ class DesignspaceBackend:
         self.dsDoc.lib = deepcopy(lib)
         self.dsDoc.write(self.dsDoc.path)
 
-    async def watchExternalChanges(self) -> AsyncGenerator[tuple[Any, Any], None]:
-        ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
-        async for changes in watchfiles.awatch(*ufoPaths):
-            changes = cleanupWatchFilesChanges(changes)
-            changedItems = await self._analyzeExternalChanges(changes)
+    async def watchExternalChanges(
+        self, callback: Callable[[Any, Any], Awaitable[None]]
+    ) -> None:
+        if self.fileWatcher is None:
+            self.fileWatcher = FileWatcher(self._fileWatcherCallback)
+            self.fileWatcher.setPaths(self._getFilesToWatch())
+        self.fileWatcherCallbacks.append(callback)
 
-            glyphMapUpdates: dict[str, list[int] | None] = {}
+    def _getFilesToWatch(self):
+        return sorted(set(self.ufoLayers.iterAttrs("path")))
 
-            # TODO: update glyphMap for changed non-new glyphs
+    async def _fileWatcherCallback(self, changes):
+        changes, reloadPattern = await self.processExternalChanges(changes)
+        if changes or reloadPattern:
+            for callback in self.fileWatcherCallbacks:
+                await callback(changes, reloadPattern)
 
-            for glyphName in changedItems.newGlyphs:
-                try:
-                    glifData = self.defaultDSSource.layer.glyphSet.getGLIF(glyphName)
-                except KeyError:
-                    logger.info(f"new glyph '{glyphName}' not found in default source")
-                    continue
-                gn, codePoints = extractGlyphNameAndCodePoints(glifData)
-                glyphMapUpdates[glyphName] = codePoints
+    async def processExternalChanges(self, changes: list) -> tuple[Any, Any]:
+        changedItems = await self._analyzeExternalChanges(changes)
 
-            for glyphName in changedItems.deletedGlyphs:
-                if glyphName in self.glyphMap:
-                    glyphMapUpdates[glyphName] = None
+        glyphMapUpdates: dict[str, list[int] | None] = {}
 
-            externalChange = makeGlyphMapChange(glyphMapUpdates)
+        # TODO: update glyphMap for changed non-new glyphs
 
-            reloadPattern = (
-                {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
-                if changedItems.changedGlyphs
-                else None
-            )
+        for glyphName in changedItems.newGlyphs:
+            try:
+                glifData = self.defaultDSSource.layer.glyphSet.getGLIF(glyphName)
+            except KeyError:
+                logger.info(f"new glyph '{glyphName}' not found in default source")
+                continue
+            gn, codePoints = extractGlyphNameAndCodePoints(glifData)
+            glyphMapUpdates[glyphName] = codePoints
 
-            if externalChange:
-                rootObject = {"glyphMap": self.glyphMap}
-                applyChange(rootObject, externalChange)
+        for glyphName in changedItems.deletedGlyphs:
+            if glyphName in self.glyphMap:
+                glyphMapUpdates[glyphName] = None
 
-            if externalChange or reloadPattern:
-                yield externalChange, reloadPattern
+        externalChange = makeGlyphMapChange(glyphMapUpdates)
+
+        reloadPattern = (
+            {"glyphs": dict.fromkeys(changedItems.changedGlyphs)}
+            if changedItems.changedGlyphs
+            else None
+        )
+
+        if externalChange:
+            rootObject = {"glyphMap": self.glyphMap}
+            applyChange(rootObject, externalChange)
+
+        return externalChange, reloadPattern
 
     async def _analyzeExternalChanges(self, changes):
         changedItems = SimpleNamespace(
@@ -664,7 +680,7 @@ class DesignspaceBackend:
         fileName = os.path.basename(path)
         glyphName = self.glifFileNames.get(fileName)
 
-        if change == watchfiles.Change.deleted:
+        if change == Change.deleted:
             # Deleted glyph
             changedItems.rebuildGlyphSetContents = True
             if path.startswith(os.path.join(self.dsDoc.default.path, "glyphs/")):
@@ -675,7 +691,7 @@ class DesignspaceBackend:
             # else:
             # The glyph was deleted from a non-default source,
             # just reload.
-        elif change == watchfiles.Change.added:
+        elif change == Change.added:
             # New glyph
             changedItems.rebuildGlyphSetContents = True
             if glyphName is None:
@@ -686,7 +702,7 @@ class DesignspaceBackend:
                 return
         else:
             # Changed glyph
-            assert change == watchfiles.Change.modified
+            assert change == Change.modified
 
         if glyphName is None:
             return
@@ -1042,23 +1058,6 @@ def cleanupTransform(t):
     """Convert any integer float values into ints. This is to prevent glifLib
     from writing float values that can be integers."""
     return tuple(int(v) if int(v) == v else v for v in t)
-
-
-def cleanupWatchFilesChanges(changes):
-    # If a path is mentioned with more than one event type, we pick the most
-    # appropriate one among them:
-    # - if there is a delete event and the path does not exist: delete it is
-    # - else: keep the lowest sorted event (order: added, modified, deleted)
-    perPath = {}
-    for change, path in sorted(changes):
-        if path in perPath:
-            if change == watchfiles.Change.deleted and not os.path.exists(path):
-                # File doesn't exist, event to "deleted"
-                perPath[path] = watchfiles.Change.deleted
-            # else: keep the first event
-        else:
-            perPath[path] = change
-    return [(change, path) for path, change in perPath.items()]
 
 
 def tuplifyLocation(loc):
