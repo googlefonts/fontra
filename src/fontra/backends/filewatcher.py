@@ -20,7 +20,7 @@ class FileWatcher:
         if self._task is None:
             return
         self._stopEvent.set()
-        await self._task
+        self._task.cancel()
 
     def setPaths(self, paths: Iterable[os.PathLike | str]) -> None:
         self.paths = set(paths)
