@@ -37,7 +37,7 @@ export class FontController {
     this.readOnly = true;
   }
 
-  async initialize() {
+  async initialize(initListener = true) {
     const glyphMap = await this.font.getGlyphMap();
     this.characterMap = makeCharacterMapFromGlyphMap(glyphMap, false);
     this._rootObject["glyphMap"] = getGlyphMapProxy(glyphMap, this.characterMap);
@@ -47,9 +47,11 @@ export class FontController {
     this._rootClassDef = (await getClassSchema())["Font"];
     this.backendInfo = await this.font.getBackEndInfo();
     this.readOnly = await this.font.isReadOnly();
-    this.addChangeListener({ axes: null }, (change, isExternalChange) =>
-      this._purgeInstanceCacheAndVarGlyphAttributeCache()
-    );
+    if (initListener) {
+      this.addChangeListener({ axes: null }, (change, isExternalChange) =>
+        this._purgeInstanceCacheAndVarGlyphAttributeCache()
+      );
+    }
     this._resolveInitialized();
   }
 
@@ -426,7 +428,7 @@ export class FontController {
       ? this._changeListenersLive
       : chain(this._changeListenersLive, this._changeListeners);
     for (const listenerInfo of listeners) {
-      if (matchChangePattern(change, listenerInfo.matchPattern)) {
+      if (!change || matchChangePattern(change, listenerInfo.matchPattern)) {
         setTimeout(() => listenerInfo.listener(change, isExternalChange), 0);
       }
     }
@@ -596,6 +598,14 @@ export class FontController {
       const varGlyph = await varGlyphPromise;
       varGlyph.clearCaches();
     }
+  }
+
+  async reloadEverything() {
+    this._glyphsPromiseCache.clear();
+    this._glyphInstancePromiseCache.clear();
+    this._glyphInstancePromiseCacheKeys = {};
+    await this.initialize(false);
+    this.notifyChangeListeners(null, false, true);
   }
 
   async reloadGlyphs(glyphNames) {

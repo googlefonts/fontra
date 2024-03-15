@@ -90,7 +90,11 @@ export class FontInfoController {
   }
 
   async reloadData(reloadPattern) {
-    // if ("axes" in reloadPattern) -> reload axes panel
+    // We have currently no way to refine update behavior based on the
+    // reloadPattern.
+    //
+    // reloadEverything() will trigger the appropriate listeners
+    this.fontController.reloadEverything();
   }
 
   handleRemoteClose(event) {

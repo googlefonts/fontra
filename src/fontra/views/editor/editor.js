@@ -1890,6 +1890,14 @@ export class EditorController {
   }
 
   async reloadData(reloadPattern) {
+    if (!reloadPattern) {
+      // A reloadPattern of undefined or null means: reload all the things
+      await this.fontController.reloadEverything();
+      await this.sceneModel.updateScene();
+      this.canvasController.requestUpdate();
+      return;
+    }
+
     for (const rootKey of Object.keys(reloadPattern)) {
       if (rootKey == "glyphs") {
         const glyphNames = Object.keys(reloadPattern["glyphs"] || {});
