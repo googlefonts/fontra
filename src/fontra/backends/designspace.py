@@ -91,6 +91,11 @@ class DesignspaceBackend:
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
         self.dsDoc = dsDoc
+        # Keep track of the dsDoc's modification time so we can distinguish between
+        # external changes and internal changes
+        self.dsDocModTime = (
+            os.stat(self.dsDoc.path).st_mtime if self.dsDoc.path else None
+        )
         self.ufoManager = UFOManager()
         self.updateAxisInfo()
         self.loadUFOLayers()
@@ -502,7 +507,7 @@ class DesignspaceBackend:
             path=ufoPath,
             layerName=ufoLayerName,
         )
-        self.dsDoc.write(self.dsDoc.path)
+        self._writeDesignSpaceDocument()
 
         dsSource = DSSource(
             name=source.name,
@@ -576,7 +581,7 @@ class DesignspaceBackend:
                 assert isinstance(axis, GlobalDiscreteAxis)
                 axisParameters["values"] = axis.values
             self.dsDoc.addAxisDescriptor(**axisParameters)
-        self.dsDoc.write(self.dsDoc.path)
+        self._writeDesignSpaceDocument()
         self.updateAxisInfo()
         self.loadUFOLayers()
 
@@ -598,7 +603,11 @@ class DesignspaceBackend:
 
     async def putCustomData(self, lib):
         self.dsDoc.lib = deepcopy(lib)
+        self._writeDesignSpaceDocument()
+
+    def _writeDesignSpaceDocument(self):
         self.dsDoc.write(self.dsDoc.path)
+        self.dsDocModTime = os.stat(self.dsDoc.path).st_mtime
 
     async def watchExternalChanges(
         self, callback: Callable[[Any], Awaitable[None]]
@@ -669,8 +678,15 @@ class DesignspaceBackend:
 
     async def _analyzeExternalChanges(self, changes) -> SimpleNamespace | None:
         if any(os.path.splitext(path)[1] == ".designspace" for _, path in changes):
-            # .designspace changed, reload all the things
-            return None
+            if (
+                self.dsDoc.path
+                and self.dsDocModTime != os.stat(self.dsDoc.path).st_mtime
+            ):
+                # .designspace changed externally, reload all the things
+                self.dsDocModTime = os.stat(self.dsDoc.path).st_mtime
+                return None
+            # else:
+            #     print("it was our own change, not an external one")
 
         changedItems = SimpleNamespace(
             changedGlyphs=set(),
