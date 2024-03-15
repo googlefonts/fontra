@@ -602,14 +602,18 @@ class DesignspaceBackend:
     ) -> None:
         if self.fileWatcher is None:
             self.fileWatcher = FileWatcher(self._fileWatcherCallback)
-            self.fileWatcher.setPaths(self._getPathsToWatch())
+            self._updatePathsToWatch()
         self.fileWatcherCallbacks.append(callback)
 
-    def _getPathsToWatch(self):
+    def _updatePathsToWatch(self):
+        if self.fileWatcher is None:
+            return
+
         paths = sorted(set(self.ufoLayers.iterAttrs("path")))
         if self.dsDoc.path:
             paths.append(self.dsDoc.path)
-        return paths
+
+        self.fileWatcher.setPaths(paths)
 
     async def _fileWatcherCallback(self, changes: set[tuple[Change, str]]) -> None:
         reloadPattern = await self.processExternalChanges(changes)
