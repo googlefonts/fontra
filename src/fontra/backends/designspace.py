@@ -602,10 +602,10 @@ class DesignspaceBackend:
     ) -> None:
         if self.fileWatcher is None:
             self.fileWatcher = FileWatcher(self._fileWatcherCallback)
-            self.fileWatcher.setPaths(self._getFilesToWatch())
+            self.fileWatcher.setPaths(self._getPathsToWatch())
         self.fileWatcherCallbacks.append(callback)
 
-    def _getFilesToWatch(self):
+    def _getPathsToWatch(self):
         paths = sorted(set(self.ufoLayers.iterAttrs("path")))
         if self.dsDoc.path:
             paths.append(self.dsDoc.path)
