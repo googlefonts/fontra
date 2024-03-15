@@ -85,9 +85,9 @@ class DesignspaceBackend:
         return cls(dsDoc)
 
     def __init__(self, dsDoc: DesignSpaceDocument) -> None:
-        self._initialize(dsDoc)
         self.fileWatcher: FileWatcher | None = None
         self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
+        self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
         self.dsDoc = dsDoc
@@ -174,6 +174,8 @@ class DesignspaceBackend:
                     isDefault=source == self.dsDoc.default,
                 )
             )
+
+        self._updatePathsToWatch()
 
     def buildGlyphFileNameMapping(self):
         glifFileNames = {}
@@ -478,6 +480,7 @@ class DesignspaceBackend:
                 name=ufoLayerName,
             )
             self.ufoLayers.append(ufoLayer)
+            self._updatePathsToWatch()
         else:
             # Create a new layer in the appropriate existing UFO
             atPole = {**self.defaultLocation, **atPole}
