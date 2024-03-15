@@ -606,7 +606,10 @@ class DesignspaceBackend:
         self.fileWatcherCallbacks.append(callback)
 
     def _getFilesToWatch(self):
-        return [self.dsDoc.path] + sorted(set(self.ufoLayers.iterAttrs("path")))
+        paths = sorted(set(self.ufoLayers.iterAttrs("path")))
+        if self.dsDoc.path:
+            paths.append(self.dsDoc.path)
+        return paths
 
     async def _fileWatcherCallback(self, changes: set[tuple[Change, str]]) -> None:
         reloadPattern = await self.processExternalChanges(changes)
