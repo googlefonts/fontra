@@ -661,10 +661,9 @@ class DesignspaceBackend:
         return reloadPattern
 
     async def _analyzeExternalChanges(self, changes) -> SimpleNamespace | None:
-        for change, path in sorted(changes):
-            _, fileSuffix = os.path.splitext(path)
-            if fileSuffix == ".designspace":
-                return None
+        if any(os.path.splitext(path)[1] == ".designspace" for _, path in changes):
+            # .designspace changed, reload all the things
+            return None
 
         changedItems = SimpleNamespace(
             changedGlyphs=set(),
