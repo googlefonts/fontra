@@ -465,7 +465,7 @@ class FontHandler:
 
         logger.info(
             f"broadcasting external changes to {len(connections)} "
-            f"clients: {reloadPattern}"
+            f"clients: {reloadPattern if reloadPattern is not None else 'reload everything'}"
         )
 
         await asyncio.gather(
