@@ -86,8 +86,10 @@ class DesignspaceBackend:
 
     def __init__(self, dsDoc: DesignSpaceDocument) -> None:
         self._initialize(dsDoc)
+        self.fileWatcher: FileWatcher | None = None
+        self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
 
-    def _initialize(self, dsDoc: DesignSpaceDocument, initFileWatcher=True) -> None:
+    def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
         self.dsDoc = dsDoc
         self.ufoManager = UFOManager()
         self.updateAxisInfo()
@@ -95,12 +97,9 @@ class DesignspaceBackend:
         self.buildGlyphFileNameMapping()
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes: dict[str, set] = {}
-        if initFileWatcher:
-            self.fileWatcher: FileWatcher | None = None
-            self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
 
     def _reloadDesignSpaceFromFile(self):
-        self._initialize(DesignSpaceDocument.fromfile(self.dsDoc.path), False)
+        self._initialize(DesignSpaceDocument.fromfile(self.dsDoc.path))
 
     def updateAxisInfo(self):
         self.dsDoc.findDefault()
