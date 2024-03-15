@@ -9,7 +9,7 @@ export class LRUCache {
 
   clear() {
     this.map.clear();
-    // this are the boundaries for the double linked list
+    // these are the boundaries for the double linked list
     this.head = {};
     this.tail = {};
 
