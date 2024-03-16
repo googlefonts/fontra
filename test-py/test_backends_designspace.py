@@ -339,7 +339,6 @@ async def test_getGlyphsUsedBy(writableTestFont):
             "varcotest1",
         ] == await writableTestFont.getGlyphsUsedBy("A")
         glyph = await writableTestFont.getGlyph("Aacute")
-        # glyph.layers[glyph.sources[0].layerName].glyph.components.append(Component(name="A"))
         await writableTestFont.putGlyph("B", glyph, [ord("B")])
         assert [
             "Aacute",
