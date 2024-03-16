@@ -118,6 +118,9 @@ class DesignspaceBackend:
             )
         return self._glyphDependenciesTask
 
+    async def getGlyphsUsedBy(self, glyphName):
+        return sorted((await self.glyphDependencies).usedBy.get(glyphName, []))
+
     def _reloadDesignSpaceFromFile(self):
         self._initialize(DesignSpaceDocument.fromfile(self.dsDoc.path))
 
