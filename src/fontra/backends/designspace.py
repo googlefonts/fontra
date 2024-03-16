@@ -37,6 +37,7 @@ from ..core.classes import (
     StaticGlyph,
     VariableGlyph,
 )
+from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
 from .filewatcher import Change, FileWatcher
@@ -87,7 +88,7 @@ class DesignspaceBackend:
     def __init__(self, dsDoc: DesignSpaceDocument) -> None:
         self.fileWatcher: FileWatcher | None = None
         self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
-        self.componentInfoTask = None
+        self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
@@ -104,18 +105,18 @@ class DesignspaceBackend:
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes: dict[str, set] = {}
 
-        try:
-            _ = asyncio.get_running_loop()
-        except RuntimeError:
-            # raise
-            print("no loop")
-        else:
-            print("yes loop")
-            self.componentInfoTask = asyncio.create_task(
-                extractComponentInfoFromUFO(
+    def startOptionalBackgroundTasks(self) -> None:
+        _ = self.glyphDependencies  # trigger background task
+
+    @property
+    def glyphDependencies(self) -> Awaitable[GlyphDependencies]:
+        if self._glyphDependenciesTask is None:
+            self._glyphDependenciesTask = asyncio.create_task(
+                extractGlyphDependenciesFromUFO(
                     self.defaultDSSource.layer.path, self.defaultDSSource.layer.name
                 )
             )
+        return self._glyphDependenciesTask
 
     def _reloadDesignSpaceFromFile(self):
         self._initialize(DesignSpaceDocument.fromfile(self.dsDoc.path))
@@ -137,8 +138,8 @@ class DesignspaceBackend:
     async def aclose(self):
         if self.fileWatcher is not None:
             await self.fileWatcher.aclose()
-        if self.componentInfoTask is not None:
-            self.componentInfoTask.cancel()
+        if self._glyphDependenciesTask is not None:
+            self._glyphDependenciesTask.cancel()
 
     @property
     def defaultDSSource(self):
@@ -1158,10 +1159,16 @@ class ComponentsOnlyPointPen(PackedPathPointPen):
         pass
 
 
-async def extractComponentInfoFromUFO(
+async def extractGlyphDependenciesFromUFO(
     ufoPath: str, layerName: str
-) -> dict[str, set[str]]:
-    return await runInProcess(partial(_extractComponentInfoFromUFO, ufoPath, layerName))
+) -> GlyphDependencies:
+    componentInfo = await runInProcess(
+        partial(_extractComponentInfoFromUFO, ufoPath, layerName)
+    )
+    dependencies = GlyphDependencies()
+    for glyphName, componentNames in componentInfo.items():
+        dependencies.update(glyphName, componentNames)
+    return dependencies
 
 
 def _extractComponentInfoFromUFO(ufoPath: str, layerName: str) -> dict[str, set[str]]:
