@@ -9,7 +9,7 @@ from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from functools import cache, cached_property, singledispatch
+from functools import cache, cached_property, partial, singledispatch
 from os import PathLike
 from types import SimpleNamespace
 from typing import Any, Awaitable, Callable
@@ -87,6 +87,7 @@ class DesignspaceBackend:
     def __init__(self, dsDoc: DesignSpaceDocument) -> None:
         self.fileWatcher: FileWatcher | None = None
         self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
+        self.componentInfoTask = None
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
@@ -102,6 +103,19 @@ class DesignspaceBackend:
         self.buildGlyphFileNameMapping()
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes: dict[str, set] = {}
+
+        try:
+            _ = asyncio.get_running_loop()
+        except RuntimeError:
+            # raise
+            print("no loop")
+        else:
+            print("yes loop")
+            self.componentInfoTask = asyncio.create_task(
+                extractComponentInfoFromUFO(
+                    self.defaultDSSource.layer.path, self.defaultDSSource.layer.name
+                )
+            )
 
     def _reloadDesignSpaceFromFile(self):
         self._initialize(DesignSpaceDocument.fromfile(self.dsDoc.path))
@@ -123,6 +137,8 @@ class DesignspaceBackend:
     async def aclose(self):
         if self.fileWatcher is not None:
             await self.fileWatcher.aclose()
+        if self.componentInfoTask is not None:
+            self.componentInfoTask.cancel()
 
     @property
     def defaultDSSource(self):
@@ -982,10 +998,10 @@ class ItemList:
             yield getattr(item, attrName)
 
 
-def ufoLayerToStaticGlyph(glyphSet, glyphName):
+def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
     glyph = UFOGlyph()
     glyph.lib = {}
-    pen = PackedPathPointPen()
+    pen = penClass()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     components = [*pen.components] + unpackVariableComponents(glyph.lib)
     staticGlyph = StaticGlyph(
@@ -1129,3 +1145,41 @@ def glyphHasVariableComponents(glyph):
         for layer in glyph.layers.values()
         for compo in layer.glyph.components
     )
+
+
+class ComponentsOnlyPointPen(PackedPathPointPen):
+    def beginPath(self, **kwargs) -> None:
+        pass
+
+    def addPoint(self, pt, segmentType=None, smooth=False, *args, **kwargs) -> None:
+        pass
+
+    def endPath(self) -> None:
+        pass
+
+
+async def extractComponentInfoFromUFO(
+    ufoPath: str, layerName: str
+) -> dict[str, set[str]]:
+    return await runInProcess(partial(_extractComponentInfoFromUFO, ufoPath, layerName))
+
+
+def _extractComponentInfoFromUFO(ufoPath: str, layerName: str) -> dict[str, set[str]]:
+    reader = UFOReaderWriter(ufoPath)
+    glyphSet = reader.getGlyphSet(layerName=layerName)
+    componentInfo = {}
+    for glyphName in glyphSet.keys():
+        glyph, _ = ufoLayerToStaticGlyph(
+            glyphSet, glyphName, penClass=ComponentsOnlyPointPen
+        )
+        if glyph.components:
+            componentInfo[glyphName] = {compo.name for compo in glyph.components}
+    return componentInfo
+
+
+async def runInProcess(func):
+    import concurrent.futures
+
+    loop = asyncio.get_running_loop()
+    with concurrent.futures.ProcessPoolExecutor() as pool:
+        return await loop.run_in_executor(pool, func)
