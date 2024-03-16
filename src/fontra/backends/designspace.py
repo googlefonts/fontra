@@ -89,6 +89,7 @@ class DesignspaceBackend:
         self.fileWatcher: FileWatcher | None = None
         self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
         self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
+        self._glyphDependencies: GlyphDependencies | None = None
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
@@ -116,6 +117,13 @@ class DesignspaceBackend:
                     self.defaultDSSource.layer.path, self.defaultDSSource.layer.name
                 )
             )
+
+            def setResult(task):
+                if not task.cancelled() and task.exception() is None:
+                    self._glyphDependencies = task.result()
+
+            self._glyphDependenciesTask.add_done_callback(setResult)
+
         return self._glyphDependenciesTask
 
     async def getGlyphsUsedBy(self, glyphName):
@@ -328,6 +336,9 @@ class DesignspaceBackend:
         assert isinstance(codePoints, list)
         assert all(isinstance(cp, int) for cp in codePoints)
         self.glyphMap[glyphName] = codePoints
+
+        if self._glyphDependencies is not None:
+            self._glyphDependencies.update(glyphName, componentNamesFromGlyph(glyph))
 
         defaultLayerGlyph = readGlyphOrCreate(
             self.defaultUFOLayer.glyphSet, glyphName, codePoints
@@ -1193,3 +1204,11 @@ async def runInProcess(func):
     loop = asyncio.get_running_loop()
     with concurrent.futures.ProcessPoolExecutor() as pool:
         return await loop.run_in_executor(pool, func)
+
+
+def componentNamesFromGlyph(glyph):
+    return {
+        compo.name
+        for layer in glyph.layers.values()
+        for compo in layer.glyph.components
+    }
