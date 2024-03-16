@@ -591,6 +591,8 @@ class DesignspaceBackend:
                 glyphSet.writeContents()
         del self.glyphMap[glyphName]
         self.savedGlyphModificationTimes[glyphName] = None
+        if self._glyphDependencies is not None:
+            self._glyphDependencies.update(glyphName, ())
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.axes
