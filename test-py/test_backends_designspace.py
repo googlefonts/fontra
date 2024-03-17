@@ -449,7 +449,8 @@ getSourcesTestData = [
 async def test_getSources(testFont):
     sources = await testFont.getSources()
     sources = unstructure(sources)
-    assert sources == getSourcesTestData
+    sourcesList = list(sources.values())  # ignore UUIDs
+    assert sourcesList == getSourcesTestData
 
 
 def fileNamesFromDir(path):

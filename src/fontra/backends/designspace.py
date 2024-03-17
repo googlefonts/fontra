@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import shutil
+import uuid
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict, dataclass
@@ -212,6 +213,7 @@ class DesignspaceBackend:
 
             self.dsSources.append(
                 DSSource(
+                    uuid=str(uuid.uuid4()),
                     name=sourceName,
                     layer=sourceLayer,
                     location={**self.defaultLocation, **source.location},
@@ -552,6 +554,7 @@ class DesignspaceBackend:
         self._writeDesignSpaceDocument()
 
         dsSource = DSSource(
+            uuid=str(uuid.uuid4()),
             name=source.name,
             layer=ufoLayer,
             location=globalLocation,
@@ -629,9 +632,12 @@ class DesignspaceBackend:
         self.updateAxisInfo()
         self.loadUFOLayers()
 
-    async def getSources(self) -> list[GlobalSource]:
+    async def getSources(self) -> dict[str, GlobalSource]:
         unitsPerEm = await self.getUnitsPerEm()
-        return [unpackDSSource(dsSource, unitsPerEm) for dsSource in self.dsSources]
+        return {
+            dsSource.uuid: unpackDSSource(dsSource, unitsPerEm)
+            for dsSource in self.dsSources
+        }
 
     async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm
@@ -886,6 +892,7 @@ def packAxisLabels(valueLabels):
         for label in valueLabels
     ]
 
+
 def unpackDSSource(dsSource, unitsPerEm):
     fontInfo = UFOFontInfo()
     dsSource.layer.reader.readInfo(fontInfo)
@@ -966,6 +973,7 @@ class UFOManager:
 
 @dataclass(kw_only=True, frozen=True)
 class DSSource:
+    uuid: str
     name: str
     layer: UFOLayer
     location: dict[str, float]

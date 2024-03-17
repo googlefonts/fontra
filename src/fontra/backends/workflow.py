@@ -38,7 +38,7 @@ class WorkflowBackend:
         endPoint = await self._ensureSetup()
         return await endPoint.getGlobalAxes()
 
-    async def getSources(self) -> list[GlobalSource]:
+    async def getSources(self) -> dict[str, GlobalSource]:
         endPoint = await self._ensureSetup()
         return await endPoint.getSources()
 

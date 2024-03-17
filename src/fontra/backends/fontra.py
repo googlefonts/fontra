@@ -121,7 +121,7 @@ class FontraBackend:
         self.fontData.axes = deepcopy(axes)
         self._scheduler.schedule(self._writeFontData)
 
-    async def getSources(self) -> list[GlobalSource]:
+    async def getSources(self) -> dict[str, GlobalSource]:
         return []
 
     async def getCustomData(self) -> dict[str, Any]:

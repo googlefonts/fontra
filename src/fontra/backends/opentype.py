@@ -112,7 +112,7 @@ class OTFBackend:
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.globalAxes
 
-    async def getSources(self) -> list[GlobalSource]:
+    async def getSources(self) -> dict[str, GlobalSource]:
         return []
 
     async def getUnitsPerEm(self) -> int:

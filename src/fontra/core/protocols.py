@@ -20,7 +20,7 @@ class ReadableFontBackend(Protocol):
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         pass
 
-    async def getSources(self) -> list[GlobalSource]:
+    async def getSources(self) -> dict[str, GlobalSource]:
         pass
 
     async def getGlyphMap(self) -> dict[str, list[int]]:

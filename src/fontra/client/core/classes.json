@@ -20,7 +20,7 @@
       "subtype": "GlobalAxis"
     },
     "sources": {
-      "type": "list",
+      "type": "dict",
       "subtype": "GlobalSource"
     }
   },

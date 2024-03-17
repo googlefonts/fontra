@@ -58,7 +58,7 @@ class FontBackendMerger:
 
         return mergedAxes
 
-    async def getSources(self) -> list[GlobalSource]:
+    async def getSources(self) -> dict[str, GlobalSource]:
         sourcesA = await self.inputA.getSources()
         sourcesB = await self.inputB.getSources()
         return sourcesA + sourcesB
