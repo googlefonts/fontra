@@ -40,10 +40,6 @@
       "type": "int",
       "optional": true
     },
-    "year": {
-      "type": "int",
-      "optional": true
-    },
     "copyright": {
       "type": "str",
       "optional": true

@@ -16,7 +16,6 @@ class FontInfo:
     familyName: Optional[str] = None
     versionMajor: Optional[int] = None
     versionMinor: Optional[int] = None
-    year: Optional[int] = None
     copyright: Optional[str] = None
     trademark: Optional[str] = None
     description: Optional[str] = None
