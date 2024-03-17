@@ -627,7 +627,13 @@ class DesignspaceBackend:
             self._glyphDependencies.update(glyphName, ())
 
     async def getFontInfo(self) -> FontInfo:
-        return FontInfo()
+        ufoInfo = self.defaultFontInfo
+        info = {}
+        for fontraName, ufoName in fontInfoNameMapping:
+            value = getattr(ufoInfo, ufoName, None)
+            if value is not None:
+                info[fontraName] = value
+        return FontInfo(**info)
 
     async def putFontInfo(self, fontInfo: FontInfo):
         pass
