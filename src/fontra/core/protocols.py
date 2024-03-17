@@ -21,7 +21,7 @@ class ReadableFontBackend(Protocol):
         pass
 
     async def getSources(self) -> list[GlobalSource]:
-        ...
+        pass
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         pass
