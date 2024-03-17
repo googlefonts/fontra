@@ -636,7 +636,12 @@ class DesignspaceBackend:
         return FontInfo(**info)
 
     async def putFontInfo(self, fontInfo: FontInfo):
-        pass
+        infoDict = {}
+        for fontraName, ufoName in fontInfoNameMapping:
+            value = getattr(fontInfo, fontraName, None)
+            if value is not None:
+                infoDict[ufoName] = value
+        self._updateUFOFontInfo(infoDict)
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.axes
@@ -677,12 +682,16 @@ class DesignspaceBackend:
 
     async def putUnitsPerEm(self, value: int) -> None:
         del self.defaultFontInfo
+        self._updateUFOFontInfo({"unitsPerEm": value})
+
+    def _updateUFOFontInfo(self, infoDict: dict) -> None:
         ufoPaths = sorted(set(self.ufoLayers.iterAttrs("path")))
         for ufoPath in ufoPaths:
             reader = self.ufoManager.getReader(ufoPath)
             info = UFOFontInfo()
             reader.readInfo(info)
-            info.unitsPerEm = value
+            for name, value in infoDict.items():
+                setattr(info, name, value)
             reader.writeInfo(info)
 
     async def getCustomData(self) -> dict[str, Any]:
