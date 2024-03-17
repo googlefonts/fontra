@@ -30,6 +30,7 @@ from fontTools.ufoLib.glifLib import GlyphSet
 from ..core.classes import (
     AxisValueLabel,
     Component,
+    FontInfo,
     GlobalAxis,
     GlobalDiscreteAxis,
     GlobalMetric,
@@ -74,6 +75,25 @@ verticalMetricsDefaults = {
     "ascender": 0.75,
     "italicAngle": 0,
 }
+
+
+fontInfoNameMapping = [
+    # (Fontra, UFO)
+    ("familyName", "familyName"),
+    ("versionMajor", "versionMajor"),
+    ("versionMinor", "versionMinor"),
+    ("copyright", "copyright"),
+    ("trademark", "trademark"),
+    ("description", "openTypeNameDescription"),
+    ("sampleText", "openTypeNameSampleText"),
+    ("designer", "openTypeNameDesigner"),
+    ("designerURL", "openTypeNameDesignerURL"),
+    ("manufacturer", "openTypeNameManufacturer"),
+    ("manufacturerURL", "openTypeNameManufacturerURL"),
+    ("licenseDescription", "openTypeNameLicense"),
+    ("licenseInfoURL", "openTypeNameLicenseURL"),
+    ("vendorID", "vendorID"),
+]
 
 
 class DesignspaceBackend:
@@ -607,6 +627,12 @@ class DesignspaceBackend:
         self.savedGlyphModificationTimes[glyphName] = None
         if self._glyphDependencies is not None:
             self._glyphDependencies.update(glyphName, ())
+
+    async def getFontInfo(self) -> FontInfo:
+        return FontInfo()
+
+    async def putFontInfo(self, fontInfo: FontInfo):
+        pass
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.axes

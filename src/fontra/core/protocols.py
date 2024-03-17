@@ -6,7 +6,13 @@ from typing import Any, Awaitable, Callable, Protocol, runtime_checkable
 
 from aiohttp import web
 
-from .classes import GlobalAxis, GlobalDiscreteAxis, GlobalSource, VariableGlyph
+from .classes import (
+    FontInfo,
+    GlobalAxis,
+    GlobalDiscreteAxis,
+    GlobalSource,
+    VariableGlyph,
+)
 
 
 @runtime_checkable
@@ -15,6 +21,9 @@ class ReadableFontBackend(Protocol):
         pass
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        pass
+
+    async def getFontInfo(self) -> FontInfo:
         pass
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
@@ -41,6 +50,9 @@ class WritableFontBackend(ReadableFontBackend, Protocol):
         pass
 
     async def deleteGlyph(self, glyphName: str) -> None:
+        pass
+
+    async def putFontInfo(self, fontInfo: FontInfo):
         pass
 
     async def putGlobalAxes(self, value: list[GlobalAxis | GlobalDiscreteAxis]) -> None:

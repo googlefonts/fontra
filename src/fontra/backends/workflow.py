@@ -3,7 +3,13 @@ from typing import Any
 
 import yaml
 
-from ..core.classes import GlobalAxis, GlobalDiscreteAxis, GlobalSource, VariableGlyph
+from ..core.classes import (
+    FontInfo,
+    GlobalAxis,
+    GlobalDiscreteAxis,
+    GlobalSource,
+    VariableGlyph,
+)
 from ..core.protocols import ReadableFontBackend
 from ..workflow.workflow import Workflow
 
@@ -33,6 +39,10 @@ class WorkflowBackend:
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         endPoint = await self._ensureSetup()
         return await endPoint.getGlyph(glyphName)
+
+    async def getFontInfo(self) -> FontInfo:
+        endPoint = await self._ensureSetup()
+        return await endPoint.getFontInfo()
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         endPoint = await self._ensureSetup()

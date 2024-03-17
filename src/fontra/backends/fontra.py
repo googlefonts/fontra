@@ -11,6 +11,7 @@ from typing import Any, Callable
 
 from fontra.core.classes import (
     Font,
+    FontInfo,
     GlobalAxis,
     GlobalDiscreteAxis,
     GlobalSource,
@@ -113,6 +114,13 @@ class FontraBackend:
         filePath.unlink()
         del self.glyphMap[glyphName]
         self._scheduler.schedule(self._writeGlyphInfo)
+
+    async def getFontInfo(self) -> FontInfo:
+        return deepcopy(self.fontData.fontInfo)
+
+    async def putFontInfo(self, fontInfo: FontInfo):
+        self.fontData.fontInfo = deepcopy(fontInfo)
+        self._scheduler.schedule(self._writeFontData)
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return deepcopy(self.fontData.axes)

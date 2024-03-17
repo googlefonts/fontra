@@ -16,6 +16,7 @@ from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
 from ..core.classes import (
     Component,
+    FontInfo,
     GlobalAxis,
     GlobalDiscreteAxis,
     GlobalSource,
@@ -108,6 +109,10 @@ class BaseFilterAction:
             return None
         return await self.processGlyph(glyph)
 
+    async def getFontInfo(self) -> FontInfo:
+        fontInfo = await self.validatedInput.getFontInfo()
+        return await self.processFontInfo(fontInfo)
+
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         axes = await self.validatedInput.getGlobalAxes()
         return await self.processGlobalAxes(axes)
@@ -134,6 +139,9 @@ class BaseFilterAction:
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         return glyph
+
+    async def processFontInfo(self, fontInfo: FontInfo) -> FontInfo:
+        return fontInfo
 
     async def processGlobalAxes(
         self, axes: list[GlobalAxis | GlobalDiscreteAxis]

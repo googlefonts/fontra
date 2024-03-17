@@ -2,7 +2,14 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
-from ..core.classes import GlobalAxis, GlobalDiscreteAxis, GlobalSource, VariableGlyph
+from ..core.classes import (
+    FontInfo,
+    GlobalAxis,
+    GlobalDiscreteAxis,
+    GlobalSource,
+    VariableGlyph,
+    unstructure,
+)
 from ..core.protocols import ReadableFontBackend
 from .actions import actionLogger
 
@@ -40,6 +47,11 @@ class FontBackendMerger:
         elif glyphName in self._glyphNamesA:
             return await self.inputA.getGlyph(glyphName)
         return None
+
+    async def getFontInfo(self) -> FontInfo:
+        fontInfoA = await self.inputA.getFontInfo()
+        fontInfoB = await self.inputB.getFontInfo()
+        return FontInfo(**(unstructure(fontInfoA) | unstructure(fontInfoB)))
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         axesA = await self.inputA.getGlobalAxes()
