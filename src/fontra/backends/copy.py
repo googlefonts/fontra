@@ -19,6 +19,7 @@ async def copyFont(
     numTasks=1,
     progressInterval=0,
 ) -> None:
+    await destBackend.putFontInfo(await sourceBackend.getFontInfo())
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
     await destBackend.putSources(await sourceBackend.getSources())
     await destBackend.putCustomData(await sourceBackend.getCustomData())
