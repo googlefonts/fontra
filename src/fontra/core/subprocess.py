@@ -17,6 +17,7 @@ async def runInSubProcess(func):
 
 def shutdownProcessPool():
     global _processPool
+
     if _processPool is not None:
         _processPool.shutdown(wait=False)
         _processPool = None
