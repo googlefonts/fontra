@@ -233,7 +233,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
 
             - action: input
-              source: "test-py/data/mutatorsans/MutatorSans.designspace"
+              source: "test-common/fonts/MutatorSans.fontra"
               steps:
               - action: scale
                 scaleFactor: 0.75

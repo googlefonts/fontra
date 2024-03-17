@@ -113,7 +113,7 @@ class OTFBackend:
         return self.globalAxes
 
     async def getSources(self) -> dict[str, GlobalSource]:
-        return []
+        return {}
 
     async def getUnitsPerEm(self) -> int:
         return self.font["head"].unitsPerEm

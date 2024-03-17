@@ -112,7 +112,7 @@ class BaseFilterAction:
         axes = await self.validatedInput.getGlobalAxes()
         return await self.processGlobalAxes(axes)
 
-    async def getSources(self) -> list[GlobalSource]:
+    async def getSources(self) -> dict[str, GlobalSource]:
         sources = await self.validatedInput.getSources()
         return await self.processSources(sources)
 
@@ -140,7 +140,9 @@ class BaseFilterAction:
     ) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return axes
 
-    async def processSources(self, sources: list[GlobalSource]) -> list[GlobalSource]:
+    async def processSources(
+        self, sources: dict[str, GlobalSource]
+    ) -> dict[str, GlobalSource]:
         return sources
 
     async def processGlyphMap(

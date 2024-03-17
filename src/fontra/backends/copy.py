@@ -20,6 +20,7 @@ async def copyFont(
     progressInterval=0,
 ) -> None:
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
+    await destBackend.putSources(await sourceBackend.getSources())
     await destBackend.putCustomData(await sourceBackend.getCustomData())
     glyphMap = await sourceBackend.getGlyphMap()
     glyphNamesInFont = set(glyphMap)

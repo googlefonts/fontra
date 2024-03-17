@@ -61,7 +61,7 @@ class FontBackendMerger:
     async def getSources(self) -> dict[str, GlobalSource]:
         sourcesA = await self.inputA.getSources()
         sourcesB = await self.inputB.getSources()
-        return sourcesA + sourcesB
+        return sourcesA | sourcesB
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         await self._prepareGlyphMap()

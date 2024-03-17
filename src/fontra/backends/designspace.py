@@ -639,6 +639,9 @@ class DesignspaceBackend:
             for dsSource in self.dsSources
         }
 
+    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+        pass
+
     async def getUnitsPerEm(self) -> int:
         return self.defaultFontInfo.unitsPerEm
 
@@ -930,6 +933,10 @@ class UFOBackend(DesignspaceBackend):
     async def putGlobalAxes(self, axes):
         if axes:
             raise ValueError("The single-UFO backend does not support variation axes")
+
+    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+        if len(sources) > 1:
+            raise ValueError("The single-UFO backend does not support multiple sources")
 
 
 def createDSDocFromUFOPath(ufoPath, styleName):

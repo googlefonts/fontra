@@ -46,6 +46,9 @@ class WritableFontBackend(ReadableFontBackend, Protocol):
     async def putGlobalAxes(self, value: list[GlobalAxis | GlobalDiscreteAxis]) -> None:
         pass
 
+    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+        pass
+
     async def putGlyphMap(self, value: dict[str, list[int]]) -> None:
         pass
 
