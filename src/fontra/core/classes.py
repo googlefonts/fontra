@@ -13,21 +13,21 @@ from .path import PackedPath, Path, Point, PointType
 
 @dataclass(kw_only=True)
 class FontInfo:
-    familyName: str = ""
-    versionMajor: int = 0
-    versionMinor: int = 0
-    year: int = 0
-    copyright: str = ""
-    trademark: str = ""
-    description: str = ""
-    sampleText: str = ""
-    designer: str = ""
-    designerURL: str = ""
-    manufacturer: str = ""
-    manufacturerURL: str = ""
-    licenseDescription: str = ""
-    licenseInfoURL: str = ""
-    vendorID: str = ""
+    familyName: Optional[str] = None
+    versionMajor: Optional[int] = None
+    versionMinor: Optional[int] = None
+    year: Optional[int] = None
+    copyright: Optional[str] = None
+    trademark: Optional[str] = None
+    description: Optional[str] = None
+    sampleText: Optional[str] = None
+    designer: Optional[str] = None
+    designerURL: Optional[str] = None
+    manufacturer: Optional[str] = None
+    manufacturerURL: Optional[str] = None
+    licenseDescription: Optional[str] = None
+    licenseInfoURL: Optional[str] = None
+    vendorID: Optional[str] = None
     customData: dict[str, Any] = field(default_factory=dict)
 
 

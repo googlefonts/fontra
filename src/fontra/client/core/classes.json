@@ -29,49 +29,64 @@
   },
   "FontInfo": {
     "familyName": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "versionMajor": {
-      "type": "int"
+      "type": "int",
+      "optional": true
     },
     "versionMinor": {
-      "type": "int"
+      "type": "int",
+      "optional": true
     },
     "year": {
-      "type": "int"
+      "type": "int",
+      "optional": true
     },
     "copyright": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "trademark": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "description": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "sampleText": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "designer": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "designerURL": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "manufacturer": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "manufacturerURL": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "licenseDescription": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "licenseInfoURL": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "vendorID": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "customData": {
       "type": "dict",
