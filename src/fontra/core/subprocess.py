@@ -5,7 +5,7 @@ import concurrent.futures
 _processPool = None
 
 
-async def runInProcess(func):
+async def runInSubProcess(func):
     global _processPool
 
     if _processPool is None:
@@ -15,9 +15,11 @@ async def runInProcess(func):
     return await loop.run_in_executor(_processPool, func)
 
 
-def _shutdownProcessPool():
+def shutdownProcessPool():
+    global _processPool
     if _processPool is not None:
-        _processPool.shutdown()
+        _processPool.shutdown(wait=False)
+        _processPool = None
 
 
-atexit.register(_shutdownProcessPool)
+atexit.register(shutdownProcessPool)

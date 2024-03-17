@@ -40,9 +40,9 @@ from ..core.classes import (
 from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
+from ..core.subprocess import runInSubProcess
 from .filewatcher import Change, FileWatcher
 from .ufo_utils import extractGlyphNameAndCodePoints
-from .utils import runInProcess
 
 logger = logging.getLogger(__name__)
 
@@ -1179,7 +1179,7 @@ class ComponentsOnlyPointPen(PackedPathPointPen):
 async def extractGlyphDependenciesFromUFO(
     ufoPath: str, layerName: str
 ) -> GlyphDependencies:
-    componentInfo = await runInProcess(
+    componentInfo = await runInSubProcess(
         partial(_extractComponentInfoFromUFO, ufoPath, layerName)
     )
     dependencies = GlyphDependencies()
