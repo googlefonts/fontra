@@ -125,7 +125,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - First-class support for quadratic curves ✅
 - Multi-level undo/redo, per glyph ✅
 - Interactive sidebearing editing
-- Numeric sidebearing editing
+- Numeric sidebearing editing ✅
 - Numeric advance width editing ✅
 - Pen tool for quadratic curves ✅ (experimental)
 - Decent outline editing (adding/removing points, removing contours) ✅ (with caveats)
@@ -150,14 +150,14 @@ The following list of features is not complete, but gives you a rough idea of wh
 
 ### Font-level viewing / editing
 
-- Create new font project
+- Create new font project ✅ (Fontra Pak)
 - Cell-based font overview
 - List-based font overview
 - Edit font meta data (“font info”)
 - Edit kerning
 - Edit OpenType features
-- Edit variation axes
-- Visualize and edit variation axis mapping (avar)
+- Edit variation axes ✅
+- Visualize and edit variation axis mapping (avar) ✅
 
 ### Multiple windows
 
