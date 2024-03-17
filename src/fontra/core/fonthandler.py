@@ -46,8 +46,6 @@ class FontHandler:
         if self.writableBackend is None:
             self.readOnly = True
         self.connections = set()
-        self.glyphUsedBy = {}
-        self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.localData = LRUCache()
         self._dataScheduledForWriting = {}
@@ -175,10 +173,7 @@ class FontHandler:
         return asyncio.create_task(self._getGlyphFromBackend(glyphName))
 
     async def _getGlyphFromBackend(self, glyphName) -> VariableGlyph | None:
-        glyph = await self.backend.getGlyph(glyphName)
-        if glyph is not None:
-            self.updateGlyphDependencies(glyphName, glyph)
-        return glyph
+        return await self.backend.getGlyph(glyphName)
 
     async def getData(self, key: str) -> Any:
         data = self.localData.get(key)
@@ -422,21 +417,6 @@ class FontHandler:
         if shouldSignal:
             self._processWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()
-
-    def updateGlyphDependencies(self, glyphName, glyph):
-        # Zap previous used-by data for this glyph, if any
-        for componentName in self.glyphMadeOf.get(glyphName, ()):
-            if componentName in self.glyphUsedBy:
-                self.glyphUsedBy[componentName].discard(glyphName)
-        componentNames = set(_iterAllComponentNames(glyph))
-        if componentNames:
-            self.glyphMadeOf[glyphName] = componentNames
-        elif glyphName in self.glyphMadeOf:
-            del self.glyphMadeOf[glyphName]
-        for componentName in componentNames:
-            if componentName not in self.glyphUsedBy:
-                self.glyphUsedBy[componentName] = set()
-            self.glyphUsedBy[componentName].add(glyphName)
 
     async def reloadData(self, reloadPattern):
         if reloadPattern is None:
