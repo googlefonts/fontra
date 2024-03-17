@@ -155,7 +155,9 @@ class FontHandler:
     @remoteMethod
     async def getBackEndInfo(self, *, connection=None) -> dict:
         features = {}
-        for key, methodName in [("glyphs-used-by", "getGlyphsUsedBy")]:
+        for key, methodName in [
+            ("find-glyphs-that-use-glyph", "findGlyphsThatUseGlyph")
+        ]:
             features[key] = hasattr(self.backend, methodName)
         return dict(name=self.backend.__class__.__name__, features=features)
 
@@ -237,9 +239,9 @@ class FontHandler:
         self.clientData[connection.clientUUID][key] = value
 
     @remoteMethod
-    async def getGlyphsUsedBy(self, glyphName: str, *, connection) -> list[str]:
-        if hasattr(self.backend, "getGlyphsUsedBy"):
-            return await self.backend.getGlyphsUsedBy(glyphName)
+    async def findGlyphsThatUseGlyph(self, glyphName: str, *, connection) -> list[str]:
+        if hasattr(self.backend, "findGlyphsThatUseGlyph"):
+            return await self.backend.findGlyphsThatUseGlyph(glyphName)
         return []
 
     @remoteMethod

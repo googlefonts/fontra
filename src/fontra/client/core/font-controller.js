@@ -571,9 +571,9 @@ export class FontController {
     }
   }
 
-  async getGlyphsUsedBy(glyphName) {
+  async findGlyphsThatUseGlyph(glyphName) {
     // Ask the backend about which glyphs use glyph `glyphName` as a component, non-recursively.
-    return await this.font.getGlyphsUsedBy(glyphName);
+    return await this.font.findGlyphsThatUseGlyph(glyphName);
   }
 
   _purgeGlyphCache(glyphName) {

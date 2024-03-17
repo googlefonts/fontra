@@ -127,7 +127,7 @@ class DesignspaceBackend:
 
         return self._glyphDependenciesTask
 
-    async def getGlyphsUsedBy(self, glyphName):
+    async def findGlyphsThatUseGlyph(self, glyphName):
         return sorted((await self.glyphDependencies).usedBy.get(glyphName, []))
 
     def _reloadDesignSpaceFromFile(self):

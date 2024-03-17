@@ -326,25 +326,25 @@ async def test_deleteGlyphRaisesKeyError(writableTestFont):
         await writableTestFont.deleteGlyph(glyphName)
 
 
-async def test_getGlyphsUsedBy(writableTestFont):
+async def test_findGlyphsThatUseGlyph(writableTestFont):
     async with aclosing(writableTestFont):
         assert [
             "Aacute",
             "Adieresis",
             "varcotest1",
-        ] == await writableTestFont.getGlyphsUsedBy("A")
+        ] == await writableTestFont.findGlyphsThatUseGlyph("A")
         await writableTestFont.deleteGlyph("Adieresis")
         assert [
             "Aacute",
             "varcotest1",
-        ] == await writableTestFont.getGlyphsUsedBy("A")
+        ] == await writableTestFont.findGlyphsThatUseGlyph("A")
         glyph = await writableTestFont.getGlyph("Aacute")
         await writableTestFont.putGlyph("B", glyph, [ord("B")])
         assert [
             "Aacute",
             "B",
             "varcotest1",
-        ] == await writableTestFont.getGlyphsUsedBy("A")
+        ] == await writableTestFont.findGlyphsThatUseGlyph("A")
 
 
 def fileNamesFromDir(path):
