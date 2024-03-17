@@ -63,10 +63,8 @@ defaultUFOInfoAttrs = {
     "descender": -250,
     "xHeight": 500,
     "capHeight": 750,
-    "familyName": None,
-    "copyright": None,
-    "year": None,
 }
+
 
 verticalMetricsDefaults = {
     "descender": -0.25,
@@ -534,7 +532,7 @@ class DesignspaceBackend:
             assert not os.path.exists(ufoPath)
             reader = manager.getReader(ufoPath)  # this creates the UFO
             info = UFOFontInfo()
-            for infoAttr in defaultUFOInfoAttrs:
+            for _, infoAttr in fontInfoNameMapping:
                 value = getattr(self.defaultFontInfo, infoAttr, None)
                 if value is not None:
                     setattr(info, infoAttr, value)
