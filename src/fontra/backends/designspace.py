@@ -42,6 +42,7 @@ from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
 from .filewatcher import Change, FileWatcher
 from .ufo_utils import extractGlyphNameAndCodePoints
+from .utils import runInProcess
 
 logger = logging.getLogger(__name__)
 
@@ -1198,14 +1199,6 @@ def _extractComponentInfoFromUFO(ufoPath: str, layerName: str) -> dict[str, set[
         if glyph.components:
             componentInfo[glyphName] = {compo.name for compo in glyph.components}
     return componentInfo
-
-
-async def runInProcess(func):
-    import concurrent.futures
-
-    loop = asyncio.get_running_loop()
-    with concurrent.futures.ProcessPoolExecutor() as pool:
-        return await loop.run_in_executor(pool, func)
 
 
 def componentNamesFromGlyph(glyph):
