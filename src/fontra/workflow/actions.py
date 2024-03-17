@@ -18,6 +18,7 @@ from ..core.classes import (
     Component,
     GlobalAxis,
     GlobalDiscreteAxis,
+    GlobalSource,
     Layer,
     Source,
     StaticGlyph,
@@ -111,6 +112,10 @@ class BaseFilterAction:
         axes = await self.validatedInput.getGlobalAxes()
         return await self.processGlobalAxes(axes)
 
+    async def getSources(self) -> list[GlobalSource]:
+        sources = await self.validatedInput.getSources()
+        return await self.processSources(sources)
+
     async def getGlyphMap(self) -> dict[str, list[int]]:
         glyphMap = await self.validatedInput.getGlyphMap()
         return await self.processGlyphMap(glyphMap)
@@ -134,6 +139,9 @@ class BaseFilterAction:
         self, axes: list[GlobalAxis | GlobalDiscreteAxis]
     ) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return axes
+
+    async def processSources(self, sources: list[GlobalSource]) -> list[GlobalSource]:
+        return sources
 
     async def processGlyphMap(
         self, glyphMap: dict[str, list[int]]

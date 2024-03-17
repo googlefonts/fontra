@@ -2,7 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
 
-from ..core.classes import GlobalAxis, GlobalDiscreteAxis, VariableGlyph
+from ..core.classes import GlobalAxis, GlobalDiscreteAxis, GlobalSource, VariableGlyph
 from ..core.protocols import ReadableFontBackend
 from .actions import actionLogger
 
@@ -57,6 +57,11 @@ class FontBackendMerger:
                 mergedAxes.append(axis)
 
         return mergedAxes
+
+    async def getSources(self) -> list[GlobalSource]:
+        sourcesA = await self.inputA.getSources()
+        sourcesB = await self.inputB.getSources()
+        return sourcesA + sourcesB
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         await self._prepareGlyphMap()
