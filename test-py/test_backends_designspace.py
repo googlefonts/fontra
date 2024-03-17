@@ -1,5 +1,6 @@
 import pathlib
 import shutil
+from contextlib import aclosing
 from dataclasses import asdict
 
 import pytest
@@ -323,6 +324,27 @@ async def test_deleteGlyphRaisesKeyError(writableTestFont):
     glyphName = "A.doesnotexist"
     with pytest.raises(KeyError, match="Glyph 'A.doesnotexist' does not exist"):
         await writableTestFont.deleteGlyph(glyphName)
+
+
+async def test_findGlyphsThatUseGlyph(writableTestFont):
+    async with aclosing(writableTestFont):
+        assert [
+            "Aacute",
+            "Adieresis",
+            "varcotest1",
+        ] == await writableTestFont.findGlyphsThatUseGlyph("A")
+        await writableTestFont.deleteGlyph("Adieresis")
+        assert [
+            "Aacute",
+            "varcotest1",
+        ] == await writableTestFont.findGlyphsThatUseGlyph("A")
+        glyph = await writableTestFont.getGlyph("Aacute")
+        await writableTestFont.putGlyph("B", glyph, [ord("B")])
+        assert [
+            "Aacute",
+            "B",
+            "varcotest1",
+        ] == await writableTestFont.findGlyphsThatUseGlyph("A")
 
 
 def fileNamesFromDir(path):

@@ -46,12 +46,12 @@ class FontHandler:
         if self.writableBackend is None:
             self.readOnly = True
         self.connections = set()
-        self.glyphUsedBy = {}
-        self.glyphMadeOf = {}
         self.clientData = defaultdict(dict)
         self.localData = LRUCache()
         self._dataScheduledForWriting = {}
         self.glyphMap = {}
+        if hasattr(self.backend, "startOptionalBackgroundTasks"):
+            self.backend.startOptionalBackgroundTasks()
 
     @cached_property
     def writableBackend(self) -> WritableFontBackend | None:
@@ -155,7 +155,9 @@ class FontHandler:
     @remoteMethod
     async def getBackEndInfo(self, *, connection=None) -> dict:
         features = {}
-        for key, methodName in [("glyphs-used-by", "getGlyphsUsedBy")]:
+        for key, methodName in [
+            ("find-glyphs-that-use-glyph", "findGlyphsThatUseGlyph")
+        ]:
             features[key] = hasattr(self.backend, methodName)
         return dict(name=self.backend.__class__.__name__, features=features)
 
@@ -173,10 +175,7 @@ class FontHandler:
         return asyncio.create_task(self._getGlyphFromBackend(glyphName))
 
     async def _getGlyphFromBackend(self, glyphName) -> VariableGlyph | None:
-        glyph = await self.backend.getGlyph(glyphName)
-        if glyph is not None:
-            self.updateGlyphDependencies(glyphName, glyph)
-        return glyph
+        return await self.backend.getGlyph(glyphName)
 
     async def getData(self, key: str) -> Any:
         data = self.localData.get(key)
@@ -240,9 +239,9 @@ class FontHandler:
         self.clientData[connection.clientUUID][key] = value
 
     @remoteMethod
-    async def getGlyphsUsedBy(self, glyphName: str, *, connection) -> list[str]:
-        if hasattr(self.backend, "getGlyphsUsedBy"):
-            return await self.backend.getGlyphsUsedBy(glyphName)
+    async def findGlyphsThatUseGlyph(self, glyphName: str, *, connection) -> list[str]:
+        if hasattr(self.backend, "findGlyphsThatUseGlyph"):
+            return await self.backend.findGlyphsThatUseGlyph(glyphName)
         return []
 
     @remoteMethod
@@ -420,21 +419,6 @@ class FontHandler:
         if shouldSignal:
             self._processWritesEvent.set()  # write: go!
             self._writingInProgressEvent.clear()
-
-    def updateGlyphDependencies(self, glyphName, glyph):
-        # Zap previous used-by data for this glyph, if any
-        for componentName in self.glyphMadeOf.get(glyphName, ()):
-            if componentName in self.glyphUsedBy:
-                self.glyphUsedBy[componentName].discard(glyphName)
-        componentNames = set(_iterAllComponentNames(glyph))
-        if componentNames:
-            self.glyphMadeOf[glyphName] = componentNames
-        elif glyphName in self.glyphMadeOf:
-            del self.glyphMadeOf[glyphName]
-        for componentName in componentNames:
-            if componentName not in self.glyphUsedBy:
-                self.glyphUsedBy[componentName] = set()
-            self.glyphUsedBy[componentName].add(glyphName)
 
     async def reloadData(self, reloadPattern):
         if reloadPattern is None:

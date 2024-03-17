@@ -9,7 +9,7 @@ from collections import defaultdict
 from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import datetime
-from functools import cache, cached_property, singledispatch
+from functools import cache, cached_property, partial, singledispatch
 from os import PathLike
 from types import SimpleNamespace
 from typing import Any, Awaitable, Callable
@@ -37,8 +37,10 @@ from ..core.classes import (
     StaticGlyph,
     VariableGlyph,
 )
+from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
 from ..core.protocols import WritableFontBackend
+from ..core.subprocess import runInSubProcess
 from .filewatcher import Change, FileWatcher
 from .ufo_utils import extractGlyphNameAndCodePoints
 
@@ -87,6 +89,8 @@ class DesignspaceBackend:
     def __init__(self, dsDoc: DesignSpaceDocument) -> None:
         self.fileWatcher: FileWatcher | None = None
         self.fileWatcherCallbacks: list[Callable[[Any], Awaitable[None]]] = []
+        self._glyphDependenciesTask: asyncio.Task[GlyphDependencies] | None = None
+        self._glyphDependencies: GlyphDependencies | None = None
         self._initialize(dsDoc)
 
     def _initialize(self, dsDoc: DesignSpaceDocument) -> None:
@@ -102,6 +106,29 @@ class DesignspaceBackend:
         self.buildGlyphFileNameMapping()
         self.glyphMap = getGlyphMapFromGlyphSet(self.defaultDSSource.layer.glyphSet)
         self.savedGlyphModificationTimes: dict[str, set] = {}
+
+    def startOptionalBackgroundTasks(self) -> None:
+        _ = self.glyphDependencies  # trigger background task
+
+    @property
+    def glyphDependencies(self) -> Awaitable[GlyphDependencies]:
+        if self._glyphDependenciesTask is None:
+            self._glyphDependenciesTask = asyncio.create_task(
+                extractGlyphDependenciesFromUFO(
+                    self.defaultDSSource.layer.path, self.defaultDSSource.layer.name
+                )
+            )
+
+            def setResult(task):
+                if not task.cancelled() and task.exception() is None:
+                    self._glyphDependencies = task.result()
+
+            self._glyphDependenciesTask.add_done_callback(setResult)
+
+        return self._glyphDependenciesTask
+
+    async def findGlyphsThatUseGlyph(self, glyphName):
+        return sorted((await self.glyphDependencies).usedBy.get(glyphName, []))
 
     def _reloadDesignSpaceFromFile(self):
         self._initialize(DesignSpaceDocument.fromfile(self.dsDoc.path))
@@ -123,6 +150,8 @@ class DesignspaceBackend:
     async def aclose(self):
         if self.fileWatcher is not None:
             await self.fileWatcher.aclose()
+        if self._glyphDependenciesTask is not None:
+            self._glyphDependenciesTask.cancel()
 
     @property
     def defaultDSSource(self):
@@ -308,6 +337,9 @@ class DesignspaceBackend:
         assert isinstance(codePoints, list)
         assert all(isinstance(cp, int) for cp in codePoints)
         self.glyphMap[glyphName] = codePoints
+
+        if self._glyphDependencies is not None:
+            self._glyphDependencies.update(glyphName, componentNamesFromGlyph(glyph))
 
         defaultLayerGlyph = readGlyphOrCreate(
             self.defaultUFOLayer.glyphSet, glyphName, codePoints
@@ -560,6 +592,8 @@ class DesignspaceBackend:
                 glyphSet.writeContents()
         del self.glyphMap[glyphName]
         self.savedGlyphModificationTimes[glyphName] = None
+        if self._glyphDependencies is not None:
+            self._glyphDependencies.update(glyphName, ())
 
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return self.axes
@@ -982,10 +1016,10 @@ class ItemList:
             yield getattr(item, attrName)
 
 
-def ufoLayerToStaticGlyph(glyphSet, glyphName):
+def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
     glyph = UFOGlyph()
     glyph.lib = {}
-    pen = PackedPathPointPen()
+    pen = penClass()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     components = [*pen.components] + unpackVariableComponents(glyph.lib)
     staticGlyph = StaticGlyph(
@@ -1129,3 +1163,47 @@ def glyphHasVariableComponents(glyph):
         for layer in glyph.layers.values()
         for compo in layer.glyph.components
     )
+
+
+class ComponentsOnlyPointPen(PackedPathPointPen):
+    def beginPath(self, **kwargs) -> None:
+        pass
+
+    def addPoint(self, pt, segmentType=None, smooth=False, *args, **kwargs) -> None:
+        pass
+
+    def endPath(self) -> None:
+        pass
+
+
+async def extractGlyphDependenciesFromUFO(
+    ufoPath: str, layerName: str
+) -> GlyphDependencies:
+    componentInfo = await runInSubProcess(
+        partial(_extractComponentInfoFromUFO, ufoPath, layerName)
+    )
+    dependencies = GlyphDependencies()
+    for glyphName, componentNames in componentInfo.items():
+        dependencies.update(glyphName, componentNames)
+    return dependencies
+
+
+def _extractComponentInfoFromUFO(ufoPath: str, layerName: str) -> dict[str, set[str]]:
+    reader = UFOReaderWriter(ufoPath)
+    glyphSet = reader.getGlyphSet(layerName=layerName)
+    componentInfo = {}
+    for glyphName in glyphSet.keys():
+        glyph, _ = ufoLayerToStaticGlyph(
+            glyphSet, glyphName, penClass=ComponentsOnlyPointPen
+        )
+        if glyph.components:
+            componentInfo[glyphName] = {compo.name for compo in glyph.components}
+    return componentInfo
+
+
+def componentNamesFromGlyph(glyph):
+    return {
+        compo.name
+        for layer in glyph.layers.values()
+        for compo in layer.glyph.components
+    }

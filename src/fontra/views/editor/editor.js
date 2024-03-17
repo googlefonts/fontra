@@ -958,8 +958,9 @@ export class EditorController {
 
     this.glyphSelectedContextMenuItems.push({
       title: () => `Find glyphs that use '${this.sceneSettings.selectedGlyphName}'`,
-      enabled: () => this.fontController.backendInfo.features["glyphs-used-by"],
-      callback: () => this.doFindGlyphsUsedBy(),
+      enabled: () =>
+        this.fontController.backendInfo.features["find-glyphs-that-use-glyph"],
+      callback: () => this.doFindGlyphsThatUseGlyph(),
     });
   }
 
@@ -1740,10 +1741,12 @@ export class EditorController {
     this.sceneSettings.selectedSourceIndex = newSourceIndex;
   }
 
-  async doFindGlyphsUsedBy() {
+  async doFindGlyphsThatUseGlyph() {
     const glyphName = this.sceneSettings.selectedGlyphName;
 
-    const usedBy = await loaderSpinner(this.fontController.getGlyphsUsedBy(glyphName));
+    const usedBy = await loaderSpinner(
+      this.fontController.findGlyphsThatUseGlyph(glyphName)
+    );
 
     if (!usedBy.length) {
       await message(
