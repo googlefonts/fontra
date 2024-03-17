@@ -3,6 +3,9 @@
     "unitsPerEm": {
       "type": "int"
     },
+    "fontInfo": {
+      "type": "FontInfo"
+    },
     "glyphs": {
       "type": "dict",
       "subtype": "VariableGlyph"
@@ -22,6 +25,57 @@
     "sources": {
       "type": "dict",
       "subtype": "GlobalSource"
+    }
+  },
+  "FontInfo": {
+    "familyName": {
+      "type": "str"
+    },
+    "versionMajor": {
+      "type": "int"
+    },
+    "versionMinor": {
+      "type": "int"
+    },
+    "year": {
+      "type": "int"
+    },
+    "copyright": {
+      "type": "str"
+    },
+    "trademark": {
+      "type": "str"
+    },
+    "description": {
+      "type": "str"
+    },
+    "sampleText": {
+      "type": "str"
+    },
+    "designer": {
+      "type": "str"
+    },
+    "designerURL": {
+      "type": "str"
+    },
+    "manufacturer": {
+      "type": "str"
+    },
+    "manufacturerURL": {
+      "type": "str"
+    },
+    "licenseDescription": {
+      "type": "str"
+    },
+    "licenseInfoURL": {
+      "type": "str"
+    },
+    "vendorID": {
+      "type": "str"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "VariableGlyph": {

@@ -12,8 +12,29 @@ from .path import PackedPath, Path, Point, PointType
 
 
 @dataclass(kw_only=True)
+class FontInfo:
+    familyName: str = ""
+    versionMajor: int = 0
+    versionMinor: int = 0
+    year: int = 0
+    copyright: str = ""
+    trademark: str = ""
+    description: str = ""
+    sampleText: str = ""
+    designer: str = ""
+    designerURL: str = ""
+    manufacturer: str = ""
+    manufacturerURL: str = ""
+    licenseDescription: str = ""
+    licenseInfoURL: str = ""
+    vendorID: str = ""
+    customData: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
 class Font:
     unitsPerEm: int = 1000
+    fontInfo: FontInfo = field(default_factory=FontInfo)
     glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
@@ -335,6 +356,7 @@ registerOmitDefaultHook(GlobalDiscreteAxis)
 registerOmitDefaultHook(AxisValueLabel)
 registerOmitDefaultHook(GlobalMetric)
 registerOmitDefaultHook(GlobalSource)
+registerOmitDefaultHook(FontInfo)
 
 
 def structure(obj, cls):
