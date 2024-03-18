@@ -46,6 +46,10 @@ export class FontInfoPanel extends BaseInfoPanel {
     this.infoForm.className = "fontra-ui-font-info-axes-panel";
     this.infoForm.labelWidth = "max-content";
 
+    this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
+      console.log(fieldItem, value, valueStream);
+    };
+
     const formContents = [];
 
     formContents.push(
