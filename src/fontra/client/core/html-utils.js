@@ -22,6 +22,7 @@ export class SimpleElement extends HTMLElement {
     for (const style of this._additionalStyles) {
       this._appendStyle(style);
     }
+    delete this._additionalStyles;
   }
 
   _appendStyle(cssText) {
@@ -29,7 +30,11 @@ export class SimpleElement extends HTMLElement {
   }
 
   appendStyle(cssText) {
-    this._additionalStyles.push(cssText);
+    if (this._additionalStyles) {
+      this._additionalStyles.push(cssText);
+    } else {
+      this._appendStyle(cssText);
+    }
   }
 }
 
