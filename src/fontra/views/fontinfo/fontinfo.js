@@ -3,7 +3,7 @@ import * as html from "../core/html-utils.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { AxesPanel } from "./panel-axes.js";
-import { FamilyInfoPanel } from "./panel-family-info.js";
+import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
 
 export class FontInfoController {
@@ -34,7 +34,7 @@ export class FontInfoController {
     await this.fontController.subscribeChanges({ axes: null }, false);
 
     const url = new URL(window.location);
-    const selectedPanel = url.hash ? url.hash.slice(1) : "family-info-panel";
+    const selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
 
     const panelContainer = document.querySelector("#panel-container");
     const headerContainer = document.querySelector("#header-container");
@@ -42,7 +42,7 @@ export class FontInfoController {
     this.panels = {};
     const observer = setupIntersectionObserver(panelContainer, this.panels);
 
-    for (const panelClass of [FamilyInfoPanel, AxesPanel, SourcesPanel]) {
+    for (const panelClass of [FontInfoPanel, AxesPanel, SourcesPanel]) {
       const headerElement = html.div(
         {
           class: "header",
