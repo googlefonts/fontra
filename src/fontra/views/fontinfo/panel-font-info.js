@@ -1,3 +1,4 @@
+import { recordChanges } from "../core/change-recorder.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { BaseInfoPanel } from "./panel-base.js";
@@ -41,7 +42,24 @@ export class FontInfoPanel extends BaseInfoPanel {
     this.infoForm.labelWidth = "max-content";
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
-      console.log(fieldItem, value, valueStream);
+      const [rootKey, itemKey] = JSON.parse(fieldItem.key);
+      const undoLabel = `change ${itemKey ? itemKey : rootKey}`;
+
+      const root = {
+        fontInfo: await this.fontController.getFontInfo(),
+        unitsPerEm: this.fontController.unitsPerEm,
+      };
+      const changes = recordChanges(root, (root) => {
+        if (itemKey) {
+          const subject = root[rootKey];
+          subject[itemKey] = value;
+        } else {
+          root[rootKey] = value;
+        }
+      });
+      if (changes.hasChange) {
+        await this.postChange(changes.change, changes.rollbackChange, undoLabel);
+      }
     };
 
     const formContents = [];
