@@ -83,8 +83,27 @@ export class FontController {
     return this._rootObject["customData"];
   }
 
+  async getData(key) {
+    if (!this._rootObject[key]) {
+      const methods = {
+        fontInfo: "getFontInfo",
+        sources: "getSources",
+      };
+      const methodName = methods[key];
+      if (!methodName) {
+        throw Error(`unknown data key: ${key}`);
+      }
+      this._rootObject[key] = await this.font[methodName]();
+    }
+    return this._rootObject[key];
+  }
+
   async getFontInfo() {
-    return await this.font.getFontInfo();
+    return await this.getData("fontInfo");
+  }
+
+  async getSources() {
+    return await this.getData("sources");
   }
 
   getCachedGlyphNames() {
