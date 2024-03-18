@@ -63,6 +63,10 @@ export class Form extends SimpleElement {
       width: min(100%, 9.5em);
     }
 
+    .ui-form-value input[type="text"] {
+      width: 100%;
+    }
+
     .ui-form-value input[type="number"] {
       width: 4em;
     }
