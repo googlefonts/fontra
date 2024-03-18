@@ -1,5 +1,6 @@
 {
 "unitsPerEm": 1000,
+"fontInfo": {},
 "customData": {},
 "axes": [
 {
@@ -19,5 +20,5 @@
 "maxValue": 200
 }
 ],
-"sources": []
+"sources": {}
 }

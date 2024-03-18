@@ -12,13 +12,33 @@ from .path import PackedPath, Path, Point, PointType
 
 
 @dataclass(kw_only=True)
+class FontInfo:
+    familyName: Optional[str] = None
+    versionMajor: Optional[int] = None
+    versionMinor: Optional[int] = None
+    copyright: Optional[str] = None
+    trademark: Optional[str] = None
+    description: Optional[str] = None
+    sampleText: Optional[str] = None
+    designer: Optional[str] = None
+    designerURL: Optional[str] = None
+    manufacturer: Optional[str] = None
+    manufacturerURL: Optional[str] = None
+    licenseDescription: Optional[str] = None
+    licenseInfoURL: Optional[str] = None
+    vendorID: Optional[str] = None
+    customData: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
 class Font:
     unitsPerEm: int = 1000
+    fontInfo: FontInfo = field(default_factory=FontInfo)
     glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
     axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
-    sources: list[GlobalSource] = field(default_factory=list)
+    sources: dict[str, GlobalSource] = field(default_factory=dict)
 
     def _trackAssignedAttributeNames(self):
         # see fonthandler.py
@@ -333,6 +353,9 @@ registerOmitDefaultHook(PackedPath)
 registerOmitDefaultHook(GlobalAxis)
 registerOmitDefaultHook(GlobalDiscreteAxis)
 registerOmitDefaultHook(AxisValueLabel)
+registerOmitDefaultHook(GlobalMetric)
+registerOmitDefaultHook(GlobalSource)
+registerOmitDefaultHook(FontInfo)
 
 
 def structure(obj, cls):

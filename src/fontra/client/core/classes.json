@@ -3,6 +3,9 @@
     "unitsPerEm": {
       "type": "int"
     },
+    "fontInfo": {
+      "type": "FontInfo"
+    },
     "glyphs": {
       "type": "dict",
       "subtype": "VariableGlyph"
@@ -20,8 +23,70 @@
       "subtype": "GlobalAxis"
     },
     "sources": {
-      "type": "list",
+      "type": "dict",
       "subtype": "GlobalSource"
+    }
+  },
+  "FontInfo": {
+    "familyName": {
+      "type": "str",
+      "optional": true
+    },
+    "versionMajor": {
+      "type": "int",
+      "optional": true
+    },
+    "versionMinor": {
+      "type": "int",
+      "optional": true
+    },
+    "copyright": {
+      "type": "str",
+      "optional": true
+    },
+    "trademark": {
+      "type": "str",
+      "optional": true
+    },
+    "description": {
+      "type": "str",
+      "optional": true
+    },
+    "sampleText": {
+      "type": "str",
+      "optional": true
+    },
+    "designer": {
+      "type": "str",
+      "optional": true
+    },
+    "designerURL": {
+      "type": "str",
+      "optional": true
+    },
+    "manufacturer": {
+      "type": "str",
+      "optional": true
+    },
+    "manufacturerURL": {
+      "type": "str",
+      "optional": true
+    },
+    "licenseDescription": {
+      "type": "str",
+      "optional": true
+    },
+    "licenseInfoURL": {
+      "type": "str",
+      "optional": true
+    },
+    "vendorID": {
+      "type": "str",
+      "optional": true
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "VariableGlyph": {

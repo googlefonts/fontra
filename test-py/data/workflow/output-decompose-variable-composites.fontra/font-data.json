@@ -1,5 +1,6 @@
 {
 "unitsPerEm": 1000,
+"fontInfo": {},
 "customData": {
 "fontra.sourceStatusFieldDefinitions": [
 {
@@ -95,5 +96,5 @@
 ]
 }
 ],
-"sources": []
+"sources": {}
 }

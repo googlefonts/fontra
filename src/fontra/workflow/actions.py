@@ -16,8 +16,10 @@ from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
 from ..core.classes import (
     Component,
+    FontInfo,
     GlobalAxis,
     GlobalDiscreteAxis,
+    GlobalSource,
     Layer,
     Source,
     StaticGlyph,
@@ -107,9 +109,17 @@ class BaseFilterAction:
             return None
         return await self.processGlyph(glyph)
 
+    async def getFontInfo(self) -> FontInfo:
+        fontInfo = await self.validatedInput.getFontInfo()
+        return await self.processFontInfo(fontInfo)
+
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         axes = await self.validatedInput.getGlobalAxes()
         return await self.processGlobalAxes(axes)
+
+    async def getSources(self) -> dict[str, GlobalSource]:
+        sources = await self.validatedInput.getSources()
+        return await self.processSources(sources)
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         glyphMap = await self.validatedInput.getGlyphMap()
@@ -130,10 +140,18 @@ class BaseFilterAction:
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         return glyph
 
+    async def processFontInfo(self, fontInfo: FontInfo) -> FontInfo:
+        return fontInfo
+
     async def processGlobalAxes(
         self, axes: list[GlobalAxis | GlobalDiscreteAxis]
     ) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return axes
+
+    async def processSources(
+        self, sources: dict[str, GlobalSource]
+    ) -> dict[str, GlobalSource]:
+        return sources
 
     async def processGlyphMap(
         self, glyphMap: dict[str, list[int]]

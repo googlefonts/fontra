@@ -11,8 +11,10 @@ from typing import Any, Callable
 
 from fontra.core.classes import (
     Font,
+    FontInfo,
     GlobalAxis,
     GlobalDiscreteAxis,
+    GlobalSource,
     VariableGlyph,
     structure,
     unstructure,
@@ -113,11 +115,25 @@ class FontraBackend:
         del self.glyphMap[glyphName]
         self._scheduler.schedule(self._writeGlyphInfo)
 
+    async def getFontInfo(self) -> FontInfo:
+        return deepcopy(self.fontData.fontInfo)
+
+    async def putFontInfo(self, fontInfo: FontInfo):
+        self.fontData.fontInfo = deepcopy(fontInfo)
+        self._scheduler.schedule(self._writeFontData)
+
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         return deepcopy(self.fontData.axes)
 
     async def putGlobalAxes(self, axes: list[GlobalAxis | GlobalDiscreteAxis]) -> None:
         self.fontData.axes = deepcopy(axes)
+        self._scheduler.schedule(self._writeFontData)
+
+    async def getSources(self) -> dict[str, GlobalSource]:
+        return {}
+
+    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+        self.fontData.sources = deepcopy(sources)
         self._scheduler.schedule(self._writeFontData)
 
     async def getCustomData(self) -> dict[str, Any]:
