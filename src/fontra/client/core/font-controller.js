@@ -499,6 +499,9 @@ export class FontController {
       ? filterChangePattern(unmatched, { glyphs: null })
       : null;
     change = filterChangePattern(change, cachedPattern);
+    if (!change) {
+      return;
+    }
 
     const glyphNames = collectGlyphNames(change);
     const glyphSet = {};
