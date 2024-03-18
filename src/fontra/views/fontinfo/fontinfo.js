@@ -5,6 +5,7 @@ import { makeDisplayPath } from "../core/view-utils.js";
 import { AxesPanel } from "./panel-axes.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
+import { dialog } from "/web-components/modal-dialog.js";
 
 export class FontInfoController {
   static async fromWebSocket() {
@@ -95,6 +96,11 @@ export class FontInfoController {
     //
     // reloadEverything() will trigger the appropriate listeners
     this.fontController.reloadEverything();
+  }
+
+  async messageFromServer(headline, msg) {
+    // don't await the dialog result, the server doesn't need an answer
+    message(headline, msg);
   }
 
   handleRemoteClose(event) {
