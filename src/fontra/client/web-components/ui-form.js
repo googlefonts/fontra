@@ -7,9 +7,12 @@ import "/web-components/rotary-control.js";
 
 export class Form extends SimpleElement {
   static styles = `
+    :host {
+      --label-column-width: 32%;
+    }
     .ui-form {
       display: grid;
-      grid-template-columns: 32% auto;
+      grid-template-columns: var(--label-column-width) auto;
       box-sizing: border-box;
       gap: 0.35rem 0.35rem;
       overflow-y: auto;
@@ -88,6 +91,12 @@ export class Form extends SimpleElement {
     );
     this.contentElement = this.shadowRoot.appendChild(document.createElement("div"));
     this.contentElement.classList.add("ui-form");
+  }
+
+  set labelWidth(width) {
+    this.appendStyle(`:host {
+      --label-column-width: ${width};
+    }`);
   }
 
   setFieldDescriptions(fieldDescriptions) {
