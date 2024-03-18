@@ -58,7 +58,7 @@ export class FontInfoController {
             for (const el of document.querySelectorAll(".font-info-panel")) {
               el.hidden = el.id != selectedPanel;
               if (el.id == selectedPanel) {
-                el.focus(); // So it can receive key eventas
+                el.focus(); // So it can receive key events
               }
             }
 
