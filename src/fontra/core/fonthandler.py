@@ -19,7 +19,7 @@ from .changes import (
     patternIntersect,
     patternUnion,
 )
-from .classes import Font, VariableGlyph
+from .classes import Font, FontInfo, GlobalSource, VariableGlyph
 from .lrucache import LRUCache
 from .protocols import ReadableFontBackend, WatchableFontBackend, WritableFontBackend
 
@@ -188,6 +188,10 @@ class FontHandler:
         value: Any
 
         match key:
+            case "fontInfo":
+                value = await self.backend.getFontInfo()
+            case "sources":
+                value = await self.backend.getSources()
             case "axes":
                 value = await self.backend.getGlobalAxes()
             case "glyphMap":
@@ -204,6 +208,10 @@ class FontHandler:
     async def _putData(self, key: str, value: Any) -> None:
         assert self.writableBackend is not None
         match key:
+            case "fontInfo":
+                await self.writableBackend.putFontInfo(value)
+            case "sources":
+                await self.writableBackend.putSources(value)
             case "axes":
                 await self.writableBackend.putGlobalAxes(value)
             case "glyphMap":
@@ -219,6 +227,14 @@ class FontHandler:
     async def getGlyphMap(self, *, connection):
         self.glyphMap = await self.getData("glyphMap")
         return self.glyphMap
+
+    @remoteMethod
+    async def getFontInfo(self, *, connection=None) -> FontInfo:
+        return await self.getData("fontInfo")
+
+    @remoteMethod
+    async def getSources(self, *, connection=None) -> dict[str, GlobalSource]:
+        return await self.getData("sources")
 
     @remoteMethod
     async def getGlobalAxes(self, *, connection):

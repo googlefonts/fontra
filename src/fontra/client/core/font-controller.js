@@ -83,6 +83,10 @@ export class FontController {
     return this._rootObject["customData"];
   }
 
+  async getFontInfo() {
+    return await this.font.getFontInfo();
+  }
+
   getCachedGlyphNames() {
     return this._glyphsPromiseCache.keys();
   }
