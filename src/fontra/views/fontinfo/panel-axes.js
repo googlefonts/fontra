@@ -1,5 +1,4 @@
 import { recordChanges } from "../core/change-recorder.js";
-import { UndoStack, reverseUndoRecord } from "../core/font-controller.js";
 import * as html from "../core/html-utils.js";
 import { addStyleSheet } from "../core/html-utils.js";
 import { ObservableController } from "../core/observable-object.js";
@@ -11,7 +10,7 @@ import {
   labeledTextInput,
   setupSortableList,
 } from "../core/ui-utils.js";
-import { commandKeyProperty, enumerate, range, zip } from "../core/utils.js";
+import { enumerate, range, zip } from "../core/utils.js";
 import { piecewiseLinearMap } from "../core/var-model.js";
 import { IconButton } from "../web-components/icon-button.js"; // for <icon-button>
 import { UIList } from "../web-components/ui-list.js";
@@ -71,56 +70,6 @@ export class AxesPanel extends BaseInfoPanel {
   static id = "axes-panel";
 
   setupUI() {
-    this.fontController = this.fontInfoController.fontController;
-    this.undoStack = new UndoStack();
-
-    this.fontController.addChangeListener(
-      { axes: null },
-      (change, isExternalChange) => {
-        if (isExternalChange) {
-          this.setupAxisBoxes();
-          this.undoStack.clear();
-        }
-      },
-      false
-    );
-    this.setupAxisBoxes();
-    this.panelElement.addEventListener("keydown", (event) => this.handleKeyDown(event));
-  }
-
-  handleKeyDown(event) {
-    if (event[commandKeyProperty]) {
-      if (event.key == "z") {
-        event.stopImmediatePropagation();
-        event.preventDefault();
-        this.doUndoRedo(event.shiftKey);
-      }
-    }
-  }
-
-  async doUndoRedo(isRedo) {
-    let undoRecord = this.undoStack.popUndoRedoRecord(isRedo);
-    if (!undoRecord) {
-      return;
-    }
-    if (isRedo) {
-      undoRecord = reverseUndoRecord(undoRecord);
-    }
-    this.fontController.applyChange(undoRecord.rollbackChange);
-
-    const error = await this.fontController.editFinal(
-      undoRecord.rollbackChange,
-      undoRecord.change,
-      undoRecord.info.label,
-      true
-    );
-    // TODO handle error
-    this.fontController.notifyEditListeners("editFinal", this);
-
-    this.setupAxisBoxes();
-  }
-
-  setupAxisBoxes() {
     const axisContainer = html.div({
       style: "display: grid; gap: 0.5em;",
     });
@@ -247,7 +196,7 @@ export class AxesPanel extends BaseInfoPanel {
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.setupAxisBoxes();
+      this.setupUI();
     }
   }
 
@@ -267,29 +216,8 @@ export class AxesPanel extends BaseInfoPanel {
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
-      this.setupAxisBoxes();
+      this.setupUI();
     }
-  }
-
-  async postChange(change, rollbackChange, undoLabel) {
-    const undoRecord = {
-      change: change,
-      rollbackChange: rollbackChange,
-      info: {
-        label: undoLabel,
-      },
-    };
-
-    this.undoStack.pushUndoRecord(undoRecord);
-
-    const error = await this.fontController.editFinal(
-      change,
-      rollbackChange,
-      undoLabel,
-      true
-    );
-    // TODO handle error
-    this.fontController.notifyEditListeners("editFinal", this);
   }
 }
 

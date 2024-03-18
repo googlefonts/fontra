@@ -33,13 +33,7 @@ export class FontInfoPanel extends BaseInfoPanel {
   static title = "Font info";
   static id = "font-info-panel";
 
-  setupUI() {
-    this.fontController = this.fontInfoController.fontController;
-
-    this.setupFontInfoUI();
-  }
-
-  async setupFontInfoUI() {
+  async setupUI() {
     const info = await this.fontController.getFontInfo();
 
     this.infoForm = new Form();
