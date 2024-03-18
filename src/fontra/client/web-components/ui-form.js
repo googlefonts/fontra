@@ -107,6 +107,9 @@ export class Form extends SimpleElement {
       labelElement.classList.add("ui-form-label", fieldItem.type);
       const valueElement = document.createElement("div");
       valueElement.classList.add("ui-form-value", fieldItem.type);
+      if (fieldItem.width) {
+        valueElement.style.width = fieldItem.width;
+      }
 
       let label = fieldItem.label || fieldItem.key || "";
       if (label.length && fieldItem.type !== "header") {

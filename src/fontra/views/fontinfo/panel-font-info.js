@@ -6,8 +6,6 @@ import { Form } from "/web-components/ui-form.js";
 const fontInfoFields = [
   // [property name, UI label, type]
   ["familyName", "Family Name", "edit-text"],
-  ["versionMajor", "Version Major", "edit-number"],
-  ["versionMinor", "Version Minor", "edit-number"],
   ["copyright", "Copyright", "edit-text"],
   ["trademark", "Trademark", "edit-text"],
   ["description", "Description", "edit-text"],
@@ -19,6 +17,8 @@ const fontInfoFields = [
   ["licenseDescription", "License Description", "edit-text"],
   ["licenseInfoURL", "License Info URL", "edit-text"],
   ["vendorID", "Vendor ID", "edit-text"],
+  ["versionMajor", "Version Major", "edit-number"],
+  ["versionMinor", "Version Minor", "edit-number"],
 ];
 
 addStyleSheet(`
@@ -26,12 +26,6 @@ addStyleSheet(`
   background-color: var(--ui-element-background-color);
   border-radius: 0.5em;
   padding: 1em;
-  // cursor: pointer;
-  // display: grid;
-  // grid-template-rows: auto auto;
-  // grid-template-columns: max-content max-content max-content max-content auto auto;
-  // grid-row-gap: 0.1em;
-  // grid-column-gap: 1em;
 }
 `);
 
@@ -57,12 +51,19 @@ export class FontInfoPanel extends BaseInfoPanel {
       ...fontInfoFields.map(([key, label, type]) => {
         return {
           type: type,
-          key: key,
+          key: JSON.stringify(["fontInfo", key]),
           label: label,
           value: info[key],
+          ...(key === "vendorID" ? { width: "4em" } : {}),
         };
       })
     );
+    formContents.push({
+      type: "edit-number",
+      key: JSON.stringify(["unitsPerEm"]),
+      label: "Units Per Em",
+      value: this.fontController.unitsPerEm,
+    });
 
     this.infoForm.setFieldDescriptions(formContents);
 
