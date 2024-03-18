@@ -938,7 +938,7 @@ def packAxisLabels(valueLabels):
     ]
 
 
-def unpackDSSource(dsSource, unitsPerEm):
+def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> GlobalSource:
     fontInfo = UFOFontInfo()
     dsSource.layer.reader.readInfo(fontInfo)
     verticalMetrics = {}
