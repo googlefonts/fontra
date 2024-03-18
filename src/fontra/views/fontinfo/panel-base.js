@@ -31,7 +31,6 @@ export class BaseInfoPanel {
       false
     );
     this.setupUI();
-    this.panelElement.addEventListener("keydown", (event) => this.handleKeyDown(event));
   }
 
   handleKeyDown(event) {

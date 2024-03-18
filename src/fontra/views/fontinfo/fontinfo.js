@@ -38,7 +38,7 @@ export class FontInfoController {
     );
 
     const url = new URL(window.location);
-    const selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
+    this.selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
 
     const panelContainer = document.querySelector("#panel-container");
     const headerContainer = document.querySelector("#header-container");
@@ -54,22 +54,22 @@ export class FontInfoController {
             document.querySelector(".header.selected")?.classList.remove("selected");
             const clickedHeader = event.target;
             clickedHeader.classList.add("selected");
-            const selectedPanel = clickedHeader.getAttribute("for");
+            this.selectedPanel = clickedHeader.getAttribute("for");
             for (const el of document.querySelectorAll(".font-info-panel")) {
-              el.hidden = el.id != selectedPanel;
-              if (el.id == selectedPanel) {
+              el.hidden = el.id != this.selectedPanel;
+              if (el.id == this.selectedPanel) {
                 el.focus(); // So it can receive key events
               }
             }
 
             const url = new URL(window.location);
-            url.hash = `#${selectedPanel}`;
+            url.hash = `#${this.selectedPanel}`;
             window.history.replaceState({}, "", url);
           },
         },
         [panelClass.title]
       );
-      if (panelClass.id === selectedPanel) {
+      if (panelClass.id === this.selectedPanel) {
         headerElement.classList.add("selected");
       }
       headerElement.setAttribute("for", panelClass.id);
@@ -79,13 +79,20 @@ export class FontInfoController {
         class: "font-info-panel",
         tabindex: 1,
         id: panelClass.id,
-        hidden: panelClass.id != selectedPanel,
+        hidden: panelClass.id != this.selectedPanel,
       });
       panelContainer.appendChild(panelElement);
 
       this.panels[panelClass.id] = new panelClass(this, panelElement);
       observer.observe(panelElement);
     }
+
+    window.addEventListener("keydown", (event) => this.handleKeyDown(event));
+  }
+
+  handleKeyDown(event) {
+    const panel = this.panels[this.selectedPanel];
+    panel?.handleKeyDown?.(event);
   }
 
   async externalChange(change, isLiveChange) {
