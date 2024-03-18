@@ -678,6 +678,8 @@ class DesignspaceBackend:
         }
 
     async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+        # TODO: this may require rewriting UFOs and UFO layers
+        # Also: what to do if a source gets deleted?
         pass
 
     async def getUnitsPerEm(self) -> int:
