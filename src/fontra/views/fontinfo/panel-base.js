@@ -21,7 +21,7 @@ export class BaseInfoPanel {
     this.undoStack = new UndoStack();
 
     this.fontController.addChangeListener(
-      { axes: null },
+      { axes: null, sources: null, fontInfo: null },
       (change, isExternalChange) => {
         if (isExternalChange) {
           this.setupUI();

@@ -32,7 +32,10 @@ export class FontInfoController {
   async start() {
     await this.fontController.initialize();
 
-    await this.fontController.subscribeChanges({ axes: null }, false);
+    await this.fontController.subscribeChanges(
+      { axes: null, sources: null, fontInfo: null },
+      false
+    );
 
     const url = new URL(window.location);
     const selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
