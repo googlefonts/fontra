@@ -216,6 +216,8 @@ class DesignspaceBackend:
 
         makeUniqueSourceName = uniqueNameMaker()
         for source in self.dsDoc.sources:
+            if not hasattr(source, "fontraUUID"):
+                source.fontraUUID = str(uuid.uuid4())
             reader = manager.getReader(source.path)
             defaultLayerName = reader.getDefaultLayerName()
             ufoLayerName = source.layerName or defaultLayerName
@@ -231,7 +233,7 @@ class DesignspaceBackend:
 
             self.dsSources.append(
                 DSSource(
-                    uuid=str(uuid.uuid4()),
+                    uuid=source.fontraUUID,
                     name=sourceName,
                     layer=sourceLayer,
                     location={**self.defaultLocation, **source.location},
@@ -563,16 +565,17 @@ class DesignspaceBackend:
             )
             ufoLayerName = ufoLayer.name
 
-        self.dsDoc.addSourceDescriptor(
+        dsDocSource = self.dsDoc.addSourceDescriptor(
             styleName=source.name,
             location=globalLocation,
             path=ufoPath,
             layerName=ufoLayerName,
         )
+        dsDocSource.fontraUUID = str(uuid.uuid4())
         self._writeDesignSpaceDocument()
 
         dsSource = DSSource(
-            uuid=str(uuid.uuid4()),
+            uuid=dsDocSource.fontraUUID,
             name=source.name,
             layer=ufoLayer,
             location=globalLocation,
