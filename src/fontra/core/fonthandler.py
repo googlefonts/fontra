@@ -483,12 +483,6 @@ class FontHandler:
         return patternUnion(patternA, patternB)
 
 
-def _iterAllComponentNames(glyph):
-    for layer in glyph.layers.values():
-        for compo in layer.glyph.components:
-            yield compo.name
-
-
 def popFirstItem(d):
     key = next(iter(d))
     return (key, d.pop(key))
