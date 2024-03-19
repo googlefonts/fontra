@@ -151,6 +151,11 @@ def matchChangePattern(
             return True
         node = childNode
 
+    if change.get("f") in baseChangeFunctions:
+        args = change.get("a")
+        if args and args[0] in node:
+            return True
+
     for childChange in change.get("c", []):
         if matchChangePattern(childChange, node):
             return True
@@ -182,6 +187,11 @@ def filterChangePattern(
             # leaf node
             return None if inverse else change
         node = childNode
+
+    if change.get("f") in baseChangeFunctions:
+        args = change.get("a")
+        if args and args[0] in node:
+            return None if inverse else change
 
     filteredChildren = []
     for childChange in change.get("c", []):

@@ -355,6 +355,10 @@ export function matchChangePattern(change, matchPattern) {
     node = childNode;
   }
 
+  if (change.f in baseChangeFunctions && change.a?.[0] in node) {
+    return true;
+  }
+
   for (const childChange of change.c || []) {
     if (matchChangePattern(childChange, node)) {
       return true;
@@ -389,6 +393,10 @@ export function filterChangePattern(change, matchPattern, inverse) {
       return inverse ? null : change;
     }
     node = childNode;
+  }
+
+  if (change.f in baseChangeFunctions && change.a?.[0] in node) {
+    return inverse ? null : change;
   }
 
   const filteredChildren = [];
