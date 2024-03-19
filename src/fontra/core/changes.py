@@ -188,10 +188,11 @@ def filterChangePattern(
             return None if inverse else change
         node = childNode
 
+    matchedRootChange = False
     if change.get("f") in baseChangeFunctions:
         args = change.get("a")
-        if args and args[0] in node:
-            return None if inverse else change
+        if args and node.get(args[0], _MISSING) is None:
+            matchedRootChange = True
 
     filteredChildren = []
     for childChange in change.get("c", []):
@@ -200,8 +201,13 @@ def filterChangePattern(
             filteredChildren.append(childChange)
 
     result = {**change, "c": filteredChildren}
-    if not inverse:
-        # We've at most matched one or more children, but not the root change
+    if inverse == matchedRootChange:
+        # inverse  matchedRootChange
+        # -------  -------  -------
+        # False    False   -> don't include root change in result
+        # False    True    -> do include root change in result
+        # True     False   -> do include root change in result
+        # True     True    -> don't include root change in result
         result.pop("f", None)
         result.pop("a", None)
 
