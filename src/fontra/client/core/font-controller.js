@@ -83,6 +83,29 @@ export class FontController {
     return this._rootObject["customData"];
   }
 
+  async getData(key) {
+    if (!this._rootObject[key]) {
+      const methods = {
+        fontInfo: "getFontInfo",
+        sources: "getSources",
+      };
+      const methodName = methods[key];
+      if (!methodName) {
+        throw Error(`unknown data key: ${key}`);
+      }
+      this._rootObject[key] = await this.font[methodName]();
+    }
+    return this._rootObject[key];
+  }
+
+  async getFontInfo() {
+    return await this.getData("fontInfo");
+  }
+
+  async getSources() {
+    return await this.getData("sources");
+  }
+
   getCachedGlyphNames() {
     return this._glyphsPromiseCache.keys();
   }
@@ -476,6 +499,9 @@ export class FontController {
       ? filterChangePattern(unmatched, { glyphs: null })
       : null;
     change = filterChangePattern(change, cachedPattern);
+    if (!change) {
+      return;
+    }
 
     const glyphNames = collectGlyphNames(change);
     const glyphSet = {};

@@ -355,6 +355,12 @@ export function matchChangePattern(change, matchPattern) {
     node = childNode;
   }
 
+  const firstArgument = change.f in baseChangeFunctions ? change.a?.[0] : undefined;
+  if (firstArgument !== undefined && node[firstArgument] === null) {
+    // Leaf node on first argument
+    return true;
+  }
+
   for (const childChange of change.c || []) {
     if (matchChangePattern(childChange, node)) {
       return true;
@@ -391,6 +397,9 @@ export function filterChangePattern(change, matchPattern, inverse) {
     node = childNode;
   }
 
+  const firstArgument = change.f in baseChangeFunctions ? change.a?.[0] : undefined;
+  const matchedRootChange = firstArgument !== undefined && node[firstArgument] === null;
+
   const filteredChildren = [];
   for (let childChange of change.c || []) {
     childChange = filterChangePattern(childChange, node, inverse);
@@ -400,8 +409,13 @@ export function filterChangePattern(change, matchPattern, inverse) {
   }
 
   const result = { ...change, c: filteredChildren };
-  if (!inverse) {
-    // We've at most matched one or more children, but not the root change
+  if (inverse === matchedRootChange) {
+    // inverse  matchedRootChange
+    // -------  -------  -------
+    // false    false    -> don't include root change in result
+    // false    true     -> do include root change in result
+    // true     false    -> do include root change in result
+    // true     true     -> don't include root change in result
     delete result.f;
     delete result.a;
   }

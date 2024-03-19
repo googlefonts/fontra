@@ -7,9 +7,12 @@ import "/web-components/rotary-control.js";
 
 export class Form extends SimpleElement {
   static styles = `
+    :host {
+      --label-column-width: 32%;
+    }
     .ui-form {
       display: grid;
-      grid-template-columns: 32% auto;
+      grid-template-columns: var(--label-column-width) auto;
       box-sizing: border-box;
       gap: 0.35rem 0.35rem;
       overflow-y: auto;
@@ -63,6 +66,10 @@ export class Form extends SimpleElement {
       width: min(100%, 9.5em);
     }
 
+    .ui-form-value input[type="text"] {
+      width: 100%;
+    }
+
     .ui-form-value input[type="number"] {
       width: 4em;
     }
@@ -86,6 +93,12 @@ export class Form extends SimpleElement {
     this.contentElement.classList.add("ui-form");
   }
 
+  set labelWidth(width) {
+    this.appendStyle(`:host {
+      --label-column-width: ${width};
+    }`);
+  }
+
   setFieldDescriptions(fieldDescriptions) {
     this.contentElement.innerHTML = "";
     this._fieldGetters = {};
@@ -103,6 +116,9 @@ export class Form extends SimpleElement {
       labelElement.classList.add("ui-form-label", fieldItem.type);
       const valueElement = document.createElement("div");
       valueElement.classList.add("ui-form-value", fieldItem.type);
+      if (fieldItem.width) {
+        valueElement.style.width = fieldItem.width;
+      }
 
       let label = fieldItem.label || fieldItem.key || "";
       if (label.length && fieldItem.type !== "header") {

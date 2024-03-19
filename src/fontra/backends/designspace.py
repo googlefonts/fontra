@@ -686,7 +686,8 @@ class DesignspaceBackend:
         return self.defaultFontInfo.unitsPerEm
 
     async def putUnitsPerEm(self, value: int) -> None:
-        del self.defaultFontInfo
+        if hasattr(self, "defaultFontInfo"):
+            del self.defaultFontInfo
         self._updateUFOFontInfo({"unitsPerEm": value})
 
     def _updateUFOFontInfo(self, infoDict: dict) -> None:

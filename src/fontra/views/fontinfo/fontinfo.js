@@ -3,8 +3,9 @@ import * as html from "../core/html-utils.js";
 import { getRemoteProxy } from "../core/remote.js";
 import { makeDisplayPath } from "../core/view-utils.js";
 import { AxesPanel } from "./panel-axes.js";
-import { FamilyInfoPanel } from "./panel-family-info.js";
+import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
+import { dialog } from "/web-components/modal-dialog.js";
 
 export class FontInfoController {
   static async fromWebSocket() {
@@ -31,10 +32,8 @@ export class FontInfoController {
   async start() {
     await this.fontController.initialize();
 
-    await this.fontController.subscribeChanges({ axes: null }, false);
-
     const url = new URL(window.location);
-    const selectedPanel = url.hash ? url.hash.slice(1) : "family-info-panel";
+    this.selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
 
     const panelContainer = document.querySelector("#panel-container");
     const headerContainer = document.querySelector("#header-container");
@@ -42,7 +41,13 @@ export class FontInfoController {
     this.panels = {};
     const observer = setupIntersectionObserver(panelContainer, this.panels);
 
-    for (const panelClass of [FamilyInfoPanel, AxesPanel, SourcesPanel]) {
+    const subscribePattern = {};
+
+    for (const panelClass of [FontInfoPanel, AxesPanel, SourcesPanel]) {
+      panelClass.fontAttributes.forEach((fontAttr) => {
+        subscribePattern[fontAttr] = null;
+      });
+
       const headerElement = html.div(
         {
           class: "header",
@@ -50,22 +55,22 @@ export class FontInfoController {
             document.querySelector(".header.selected")?.classList.remove("selected");
             const clickedHeader = event.target;
             clickedHeader.classList.add("selected");
-            const selectedPanel = clickedHeader.getAttribute("for");
+            this.selectedPanel = clickedHeader.getAttribute("for");
             for (const el of document.querySelectorAll(".font-info-panel")) {
-              el.hidden = el.id != selectedPanel;
-              if (el.id == selectedPanel) {
-                el.focus(); // So it can receive key eventas
+              el.hidden = el.id != this.selectedPanel;
+              if (el.id == this.selectedPanel) {
+                el.focus(); // So it can receive key events
               }
             }
 
             const url = new URL(window.location);
-            url.hash = `#${selectedPanel}`;
+            url.hash = `#${this.selectedPanel}`;
             window.history.replaceState({}, "", url);
           },
         },
         [panelClass.title]
       );
-      if (panelClass.id === selectedPanel) {
+      if (panelClass.id === this.selectedPanel) {
         headerElement.classList.add("selected");
       }
       headerElement.setAttribute("for", panelClass.id);
@@ -75,13 +80,22 @@ export class FontInfoController {
         class: "font-info-panel",
         tabindex: 1,
         id: panelClass.id,
-        hidden: panelClass.id != selectedPanel,
+        hidden: panelClass.id != this.selectedPanel,
       });
       panelContainer.appendChild(panelElement);
 
       this.panels[panelClass.id] = new panelClass(this, panelElement);
       observer.observe(panelElement);
     }
+
+    await this.fontController.subscribeChanges(subscribePattern, false);
+
+    window.addEventListener("keydown", (event) => this.handleKeyDown(event));
+  }
+
+  handleKeyDown(event) {
+    const panel = this.panels[this.selectedPanel];
+    panel?.handleKeyDown?.(event);
   }
 
   async externalChange(change, isLiveChange) {
@@ -95,6 +109,11 @@ export class FontInfoController {
     //
     // reloadEverything() will trigger the appropriate listeners
     this.fontController.reloadEverything();
+  }
+
+  async messageFromServer(headline, msg) {
+    // don't await the dialog result, the server doesn't need an answer
+    message(headline, msg);
   }
 
   handleRemoteClose(event) {

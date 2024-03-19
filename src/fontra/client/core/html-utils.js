@@ -6,7 +6,6 @@ import { consolidateCalls } from "./utils.js";
 export class SimpleElement extends HTMLElement {
   constructor() {
     super();
-    this._additionalStyles = [];
     this.attachShadow({ mode: "open" });
     this._postInit();
   }
@@ -17,10 +16,7 @@ export class SimpleElement extends HTMLElement {
 
   _attachStyles() {
     if (this.constructor.styles) {
-      this._appendStyle(this.constructor.styles);
-    }
-    for (const style of this._additionalStyles) {
-      this._appendStyle(style);
+      this.appendStyle(this.constructor.styles);
     }
   }
 
@@ -29,14 +25,26 @@ export class SimpleElement extends HTMLElement {
   }
 
   appendStyle(cssText) {
-    this._additionalStyles.push(cssText);
+    this._appendStyle(cssText);
   }
 }
 
 export class UnlitElement extends SimpleElement {
   _postInit() {
+    this._additionalStyles = [];
     this._setupProperties();
     this.requestUpdate = consolidateCalls(() => this._render());
+  }
+
+  _attachStyles() {
+    super._attachStyles();
+    for (const style of this._additionalStyles) {
+      this._appendStyle(style);
+    }
+  }
+
+  appendStyle(cssText) {
+    this._additionalStyles.push(cssText);
   }
 
   connectedCallback() {

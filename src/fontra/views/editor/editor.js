@@ -346,12 +346,12 @@ export class EditorController {
         getItems: () => {
           return [
             {
-              title: "Font info",
+              title: "Edit Font Info, Axes and Sources",
               enabled: () => true,
               callback: () => {
                 const url = new URL(window.location);
                 url.pathname = url.pathname.replace("/editor/", "/fontinfo/");
-                url.hash = "#axes-panel";
+                url.hash = "";
                 window.open(url.toString());
               },
             },
