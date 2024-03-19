@@ -72,6 +72,7 @@ export class FontInfoPanel extends BaseInfoPanel {
           key: JSON.stringify(["fontInfo", key]),
           label: label,
           value: info[key],
+          minValue: type === "edit-number" ? 0 : undefined,
           ...(key === "vendorID" ? { width: "4em" } : {}),
         };
       })
@@ -81,6 +82,7 @@ export class FontInfoPanel extends BaseInfoPanel {
       key: JSON.stringify(["unitsPerEm"]),
       label: "Units Per Em",
       value: this.fontController.unitsPerEm,
+      minValue: 1,
     });
 
     this.infoForm.setFieldDescriptions(formContents);
