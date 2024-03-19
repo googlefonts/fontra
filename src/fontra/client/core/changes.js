@@ -411,11 +411,11 @@ export function filterChangePattern(change, matchPattern, inverse) {
   const result = { ...change, c: filteredChildren };
   if (inverse === matchedRootChange) {
     // inverse  matchedRootChange
-    // -------  -------
-    // false    false   -> don't include root change in result
-    // false    true    -> do include root change in result
-    // true     false   -> do include root change in result
-    // true     true    -> don't include root change in result
+    // -------  -------  -------
+    // false    false    -> don't include root change in result
+    // false    true     -> do include root change in result
+    // true     false    -> do include root change in result
+    // true     true     -> don't include root change in result
     delete result.f;
     delete result.a;
   }

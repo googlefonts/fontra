@@ -204,10 +204,10 @@ def filterChangePattern(
     if inverse == matchedRootChange:
         # inverse  matchedRootChange
         # -------  -------  -------
-        # False    False   -> don't include root change in result
-        # False    True    -> do include root change in result
-        # True     False   -> do include root change in result
-        # True     True    -> don't include root change in result
+        # False    False    -> don't include root change in result
+        # False    True     -> do include root change in result
+        # True     False    -> do include root change in result
+        # True     True     -> don't include root change in result
         result.pop("f", None)
         result.pop("a", None)
 
