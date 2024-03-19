@@ -491,6 +491,31 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [(logging.ERROR, "set-names: unknown name(s): 'unknownName'")],
         ),
+        (
+            "drop-unreachable-glyphs-composed",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-drop-unreachable-glyphs.fontra"
+            - action: drop-unreachable-glyphs
+            - action: output
+              destination: "output-drop-unreachable-glyphs-composed.fontra"
+            """,
+            [],
+        ),
+        (
+            "drop-unreachable-glyphs-decomposed",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-drop-unreachable-glyphs.fontra"
+            - action: decompose-composites
+            - action: drop-unreachable-glyphs
+            - action: output
+              destination: "output-drop-unreachable-glyphs-decomposed.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):

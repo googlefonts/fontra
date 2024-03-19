@@ -236,47 +236,40 @@ class ScaleAction(BaseFilterAction):
             return unitsPerEm
 
 
-@registerActionClass("subset")
+@registerActionClass("drop-unreachable-glyphs")
 @dataclass(kw_only=True)
-class SubsetAction(BaseFilterAction):
-    glyphNames: set[str] = field(default_factory=set)
-    glyphNamesFile: str | None = None
-
-    def __post_init__(self):
-        if self.glyphNamesFile:
-            path = pathlib.Path(self.glyphNamesFile)
-            assert path.is_file()
-            glyphNames = set(path.read_text().split())
-            self.glyphNames = self.glyphNames | glyphNames
-        self._glyphMap = None
+class DropUnreachableGlyphsAction(BaseFilterAction):
+    _glyphMap: dict[str, list[int]] | None = field(init=False, repr=False, default=None)
 
     async def _getSubsettedGlyphMap(self) -> dict[str, list[int]]:
         if self._glyphMap is None:
-            bigGlyphMap = await self.validatedInput.getGlyphMap()
-            subsettedGlyphMap = {}
-            glyphNames = set(self.glyphNames)
-            while glyphNames:
-                glyphName = glyphNames.pop()
-                if glyphName not in bigGlyphMap:
-                    continue
-
-                subsettedGlyphMap[glyphName] = bigGlyphMap[glyphName]
-
-                # TODO: add getGlyphsMadeOf() ReadableFontBackend protocol member,
-                # so backends can implement this more efficiently
-                glyph = await self.validatedInput.getGlyph(glyphName)
-                assert glyph is not None
-                compoNames = {
-                    compo.name
-                    for layer in glyph.layers.values()
-                    for compo in layer.glyph.components
-                }
-                for compoName in compoNames:
-                    if compoName in bigGlyphMap and compoName not in subsettedGlyphMap:
-                        glyphNames.add(compoName)
-
-            self._glyphMap = subsettedGlyphMap
+            self._glyphMap = await self._buildSubsettedGlyphMap(
+                await self.validatedInput.getGlyphMap()
+            )
         return self._glyphMap
+
+    async def _buildSubsettedGlyphMap(
+        self, originalGlyphMap: dict[str, list[int]]
+    ) -> dict[str, list[int]]:
+        reachableGlyphs = {
+            glyphName
+            for glyphName, codePoints in originalGlyphMap.items()
+            if codePoints
+        }
+        glyphsToCheck = set(reachableGlyphs)
+        while glyphsToCheck:
+            glyphName = glyphsToCheck.pop()
+            glyph = await self.validatedInput.getGlyph(glyphName)
+            componentNames = getComponentNames(glyph)
+            uncheckedGlyphs = componentNames - reachableGlyphs
+            reachableGlyphs.update(uncheckedGlyphs)
+            glyphsToCheck.update(uncheckedGlyphs)
+
+        return {
+            glyphName: codePoints
+            for glyphName, codePoints in originalGlyphMap.items()
+            if glyphName in reachableGlyphs
+        }
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         glyphMap = await self._getSubsettedGlyphMap()
@@ -286,6 +279,55 @@ class SubsetAction(BaseFilterAction):
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         return await self._getSubsettedGlyphMap()
+
+
+def getComponentNames(glyph):
+    return {
+        compo.name
+        for layer in glyph.layers.values()
+        for compo in layer.glyph.components
+    }
+
+
+@registerActionClass("subset")
+@dataclass(kw_only=True)
+class SubsetAction(DropUnreachableGlyphsAction):
+    glyphNames: set[str] = field(default_factory=set)
+    glyphNamesFile: str | None = None
+
+    def __post_init__(self):
+        if self.glyphNamesFile:
+            path = pathlib.Path(self.glyphNamesFile)
+            assert path.is_file()
+            glyphNames = set(path.read_text().split())
+            self.glyphNames = self.glyphNames | glyphNames
+
+    async def _buildSubsettedGlyphMap(
+        self, originalGlyphMap: dict[str, list[int]]
+    ) -> dict[str, list[int]]:
+        subsettedGlyphMap = {}
+        glyphNames = set(self.glyphNames)
+        while glyphNames:
+            glyphName = glyphNames.pop()
+            if glyphName not in originalGlyphMap:
+                continue
+
+            subsettedGlyphMap[glyphName] = originalGlyphMap[glyphName]
+
+            # TODO: add getGlyphsMadeOf() ReadableFontBackend protocol member,
+            # so backends can implement this more efficiently
+            glyph = await self.validatedInput.getGlyph(glyphName)
+            assert glyph is not None
+            compoNames = {
+                compo.name
+                for layer in glyph.layers.values()
+                for compo in layer.glyph.components
+            }
+            for compoName in compoNames:
+                if compoName in originalGlyphMap and compoName not in subsettedGlyphMap:
+                    glyphNames.add(compoName)
+
+        return subsettedGlyphMap
 
 
 @registerActionClass("input")
