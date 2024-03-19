@@ -681,14 +681,14 @@ def getActiveSources(sources):
 fontInfoNames = set(get_type_hints(FontInfo))
 
 
-@registerActionClass("set-names")
+@registerActionClass("set-font-info")
 @dataclass(kw_only=True)
-class SetNamesAction(BaseFilterAction):
-    names: dict[str, str]
+class SetFontInfoAction(BaseFilterAction):
+    fontInfo: dict[str, str]
 
     async def processFontInfo(self, fontInfo):
-        extraNames = set(self.names) - fontInfoNames
+        extraNames = set(self.fontInfo) - fontInfoNames
         if extraNames:
             extraNamesString = ", ".join(repr(n) for n in sorted(extraNames))
-            actionLogger.error(f"set-names: unknown name(s): {extraNamesString}")
-        return structure(unstructure(fontInfo) | self.names, FontInfo)
+            actionLogger.error(f"set-font-info: unknown name(s): {extraNamesString}")
+        return structure(unstructure(fontInfo) | self.fontInfo, FontInfo)

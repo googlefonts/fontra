@@ -476,20 +476,20 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
-            "set-names",
+            "set-font-info",
             """
             steps:
             - action: input
-              source: "test-py/data/workflow/input-set-names.fontra"
-            - action: set-names
-              names:
+              source: "test-py/data/workflow/input-set-font-info.fontra"
+            - action: set-font-info
+              fontInfo:
                 familyName: "A Brand New Font"
                 unknownName: "Unknown, will be warned about"
                 designer: "Joe Font Designer"
             - action: output
-              destination: "output-set-names.fontra"
+              destination: "output-set-font-info.fontra"
             """,
-            [(logging.ERROR, "set-names: unknown name(s): 'unknownName'")],
+            [(logging.ERROR, "set-font-info: unknown name(s): 'unknownName'")],
         ),
         (
             "drop-unreachable-glyphs-composed",
