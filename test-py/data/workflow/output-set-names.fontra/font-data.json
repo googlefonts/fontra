@@ -1,7 +1,8 @@
 {
 "unitsPerEm": 1000,
 "fontInfo": {
-"familyName": "A Brand New Font"
+"familyName": "A Brand New Font",
+"designer": "Joe Font Designer"
 },
 "customData": {},
 "axes": [
