@@ -484,7 +484,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: set-names
               names:
                 familyName: "A Brand New Font"
-                unknownName: "Unknown, will be ignored"
+                unknownName: "Unknown, will be warned about"
                 designer: "Joe Font Designer"
             - action: output
               destination: "output-set-names.fontra"
