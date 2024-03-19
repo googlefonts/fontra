@@ -6,7 +6,14 @@ import pathlib
 from contextlib import aclosing, asynccontextmanager
 from dataclasses import dataclass, field, replace
 from functools import cached_property, partial
-from typing import Any, AsyncContextManager, AsyncGenerator, Protocol, runtime_checkable
+from typing import (
+    Any,
+    AsyncContextManager,
+    AsyncGenerator,
+    Protocol,
+    get_type_hints,
+    runtime_checkable,
+)
 
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
@@ -629,10 +636,16 @@ def getActiveSources(sources):
     return [source for source in sources if not source.inactive]
 
 
+fontInfoNames = set(get_type_hints(FontInfo))
+
+
 @registerActionClass("set-names")
 @dataclass(kw_only=True)
 class SetNamesAction(BaseFilterAction):
     names: dict[str, str]
 
     async def processFontInfo(self, fontInfo):
+        extraNames = sorted(set(self.names) - fontInfoNames)
+        if extraNames:
+            actionLogger.error(f"set-names: unknown name(s): {', '.join(extraNames)}")
         return structure(unstructure(fontInfo) | self.names, FontInfo)

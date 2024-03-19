@@ -489,7 +489,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-set-names.fontra"
             """,
-            [],
+            [(logging.ERROR, "set-names: unknown name(s): unknownName")],
         ),
     ],
 )
