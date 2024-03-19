@@ -480,7 +480,7 @@ def test_command(tmpdir, configYAMLSources):
             """
             steps:
             - action: input
-              source: "test-py/data/workflow/input2-A.fontra"
+              source: "test-py/data/workflow/input-set-names.fontra"
             - action: set-names
               names:
                 familyName: "A Brand New Font"
