@@ -5,7 +5,7 @@ import { makeDisplayPath } from "../core/view-utils.js";
 import { AxesPanel } from "./panel-axes.js";
 import { FontInfoPanel } from "./panel-font-info.js";
 import { SourcesPanel } from "./panel-sources.js";
-import { dialog } from "/web-components/modal-dialog.js";
+import { message } from "/web-components/modal-dialog.js";
 
 export class FontInfoController {
   static async fromWebSocket() {

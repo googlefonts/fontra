@@ -188,6 +188,10 @@ export class Form extends SimpleElement {
       inputElement.max = fieldItem.maxValue;
     }
     inputElement.step = "any";
+    if (fieldItem.integer) {
+      inputElement.pattern = "\\d*";
+      inputElement.step = 1;
+    }
 
     inputElement.disabled = fieldItem.disabled;
     inputElement.onkeydown = (event) => {

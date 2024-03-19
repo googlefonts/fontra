@@ -33,13 +33,13 @@ export class FontController {
       this._resolveInitialized = resolve;
     });
     this.undoStacks = {}; // glyph name -> undo stack
-    this._rootObject = {};
     this.readOnly = true;
   }
 
   async initialize(initListener = true) {
     const glyphMap = await this.font.getGlyphMap();
     this.characterMap = makeCharacterMapFromGlyphMap(glyphMap, false);
+    this._rootObject = {};
     this._rootObject["glyphMap"] = getGlyphMapProxy(glyphMap, this.characterMap);
     this._rootObject["axes"] = await this.font.getGlobalAxes();
     this._rootObject["unitsPerEm"] = await this.font.getUnitsPerEm();
