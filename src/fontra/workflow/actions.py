@@ -251,7 +251,25 @@ class DropUnreachableGlyphsAction(BaseFilterAction):
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
     ) -> dict[str, list[int]]:
-        raise NotImplementedError
+        reachableGlyphs = {
+            glyphName
+            for glyphName, codePoints in originalGlyphMap.items()
+            if codePoints
+        }
+        glyphsToCheck = set(reachableGlyphs)
+        while glyphsToCheck:
+            glyphName = glyphsToCheck.pop()
+            glyph = await self.validatedInput.getGlyph(glyphName)
+            componentNames = getComponentNames(glyph)
+            uncheckedGlyphs = componentNames - reachableGlyphs
+            reachableGlyphs.update(uncheckedGlyphs)
+            glyphsToCheck.update(uncheckedGlyphs)
+
+        return {
+            glyphName: codePoints
+            for glyphName, codePoints in originalGlyphMap.items()
+            if glyphName in reachableGlyphs
+        }
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         glyphMap = await self._getSubsettedGlyphMap()
@@ -261,6 +279,14 @@ class DropUnreachableGlyphsAction(BaseFilterAction):
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
         return await self._getSubsettedGlyphMap()
+
+
+def getComponentNames(glyph):
+    return {
+        compo.name
+        for layer in glyph.layers.values()
+        for compo in layer.glyph.components
+    }
 
 
 @registerActionClass("subset")
