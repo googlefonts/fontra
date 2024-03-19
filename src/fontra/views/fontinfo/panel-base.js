@@ -20,8 +20,11 @@ export class BaseInfoPanel {
   initializePanel() {
     this.undoStack = new UndoStack();
 
+    const subscribePattern = Object.fromEntries(
+      this.constructor.fontAttributes.map((fontAttr) => [fontAttr, null])
+    );
     this.fontController.addChangeListener(
-      { axes: null, sources: null, fontInfo: null },
+      subscribePattern,
       (change, isExternalChange) => {
         if (isExternalChange) {
           this.setupUI();

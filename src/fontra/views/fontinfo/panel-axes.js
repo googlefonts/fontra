@@ -68,6 +68,7 @@ const presetAxesByTag = Object.fromEntries(
 export class AxesPanel extends BaseInfoPanel {
   static title = "Axes";
   static id = "axes-panel";
+  static fontAttributes = ["axes", "sources"];
 
   setupUI() {
     const axisContainer = html.div({

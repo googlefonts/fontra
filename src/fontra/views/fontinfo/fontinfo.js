@@ -32,11 +32,6 @@ export class FontInfoController {
   async start() {
     await this.fontController.initialize();
 
-    await this.fontController.subscribeChanges(
-      { axes: null, sources: null, fontInfo: null },
-      false
-    );
-
     const url = new URL(window.location);
     this.selectedPanel = url.hash ? url.hash.slice(1) : "font-info-panel";
 
@@ -46,7 +41,13 @@ export class FontInfoController {
     this.panels = {};
     const observer = setupIntersectionObserver(panelContainer, this.panels);
 
+    const subscribePattern = {};
+
     for (const panelClass of [FontInfoPanel, AxesPanel, SourcesPanel]) {
+      panelClass.fontAttributes.forEach((fontAttr) => {
+        subscribePattern[fontAttr] = null;
+      });
+
       const headerElement = html.div(
         {
           class: "header",
@@ -86,6 +87,8 @@ export class FontInfoController {
       this.panels[panelClass.id] = new panelClass(this, panelElement);
       observer.observe(panelElement);
     }
+
+    await this.fontController.subscribeChanges(subscribePattern, false);
 
     window.addEventListener("keydown", (event) => this.handleKeyDown(event));
   }

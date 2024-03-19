@@ -33,6 +33,7 @@ addStyleSheet(`
 export class FontInfoPanel extends BaseInfoPanel {
   static title = "Font info";
   static id = "font-info-panel";
+  static fontAttributes = ["fontInfo", "unitsPerEm"];
 
   async setupUI() {
     const info = await this.fontController.getFontInfo();

@@ -4,6 +4,7 @@ import { BaseInfoPanel } from "./panel-base.js";
 export class SourcesPanel extends BaseInfoPanel {
   static title = "Sources";
   static id = "sources-panel";
+  static fontAttributes = ["axes", "sources"];
 
   setupUI() {
     this.panelElement.appendChild(
