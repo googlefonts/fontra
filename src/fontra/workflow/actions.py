@@ -645,7 +645,8 @@ class SetNamesAction(BaseFilterAction):
     names: dict[str, str]
 
     async def processFontInfo(self, fontInfo):
-        extraNames = sorted(set(self.names) - fontInfoNames)
+        extraNames = set(self.names) - fontInfoNames
         if extraNames:
-            actionLogger.error(f"set-names: unknown name(s): {', '.join(extraNames)}")
+            extraNamesString = ", ".join(repr(n) for n in sorted(extraNames))
+            actionLogger.error(f"set-names: unknown name(s): {extraNamesString}")
         return structure(unstructure(fontInfo) | self.names, FontInfo)
