@@ -475,6 +475,22 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "set-names",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-set-names.fontra"
+            - action: set-names
+              names:
+                familyName: "A Brand New Font"
+                unknownName: "Unknown, will be warned about"
+                designer: "Joe Font Designer"
+            - action: output
+              destination: "output-set-names.fontra"
+            """,
+            [(logging.ERROR, "set-names: unknown name(s): 'unknownName'")],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):

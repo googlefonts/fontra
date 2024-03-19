@@ -6,7 +6,14 @@ import pathlib
 from contextlib import aclosing, asynccontextmanager
 from dataclasses import dataclass, field, replace
 from functools import cached_property, partial
-from typing import Any, AsyncContextManager, AsyncGenerator, Protocol, runtime_checkable
+from typing import (
+    Any,
+    AsyncContextManager,
+    AsyncGenerator,
+    Protocol,
+    get_type_hints,
+    runtime_checkable,
+)
 
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import Transform
@@ -24,6 +31,8 @@ from ..core.classes import (
     Source,
     StaticGlyph,
     VariableGlyph,
+    structure,
+    unstructure,
 )
 from ..core.instancer import FontInstancer, LocationCoordinateSystem
 from ..core.path import PackedPathPointPen
@@ -625,3 +634,19 @@ def tuplifyLocation(loc: dict[str, float]) -> tuple:
 
 def getActiveSources(sources):
     return [source for source in sources if not source.inactive]
+
+
+fontInfoNames = set(get_type_hints(FontInfo))
+
+
+@registerActionClass("set-names")
+@dataclass(kw_only=True)
+class SetNamesAction(BaseFilterAction):
+    names: dict[str, str]
+
+    async def processFontInfo(self, fontInfo):
+        extraNames = set(self.names) - fontInfoNames
+        if extraNames:
+            extraNamesString = ", ".join(repr(n) for n in sorted(extraNames))
+            actionLogger.error(f"set-names: unknown name(s): {extraNamesString}")
+        return structure(unstructure(fontInfo) | self.names, FontInfo)
