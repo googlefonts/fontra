@@ -1,0 +1,36 @@
+{
+"unitsPerEm": 1000,
+"fontInfo": {
+"familyName": "A Brand New Font"
+},
+"customData": {},
+"axes": [
+{
+"name": "width",
+"label": "width",
+"tag": "wdth",
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 1000
+},
+{
+"name": "weight",
+"label": "weight",
+"tag": "wght",
+"minValue": 50,
+"defaultValue": 400,
+"maxValue": 950
+},
+{
+"name": "italic",
+"label": "italic",
+"tag": "ital",
+"values": [
+0,
+1
+],
+"defaultValue": 0
+}
+],
+"sources": {}
+}

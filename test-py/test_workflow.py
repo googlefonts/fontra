@@ -475,6 +475,20 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "set-names",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input2-A.fontra"
+            - action: set-names
+              names:
+                familyName: "A Brand New Font"
+            - action: output
+              destination: "output-set-names.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):

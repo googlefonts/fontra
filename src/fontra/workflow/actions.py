@@ -24,6 +24,8 @@ from ..core.classes import (
     Source,
     StaticGlyph,
     VariableGlyph,
+    structure,
+    unstructure,
 )
 from ..core.instancer import FontInstancer, LocationCoordinateSystem
 from ..core.path import PackedPathPointPen
@@ -625,3 +627,12 @@ def tuplifyLocation(loc: dict[str, float]) -> tuple:
 
 def getActiveSources(sources):
     return [source for source in sources if not source.inactive]
+
+
+@registerActionClass("set-names")
+@dataclass(kw_only=True)
+class SetNamesAction(BaseFilterAction):
+    names: dict[str, str]
+
+    async def processFontInfo(self, fontInfo):
+        return structure(unstructure(fontInfo) | self.names, FontInfo)
