@@ -135,14 +135,9 @@ export class ShapeToolRect extends BaseTool {
       y = y - height / 2;
     }
 
-    const unpackedContours = this.getUnpackedContour(x, y, width, height);
-
-    const path = new VarPackedPath();
-    for (const i in unpackedContours) {
-      const packedContour = packContour(unpackedContours[i]);
-      path.appendContour(packedContour);
-    }
-    return path;
+    return VarPackedPath.fromUnpackedContours(
+      this.getUnpackedContour(x, y, width, height)
+    );
   }
 
   getUnpackedContour(x, y, width, height) {
