@@ -8,8 +8,6 @@ export class ShapeToolRect extends BaseTool {
   iconPath = "/tabler-icons/square-plus-2.svg";
   identifier = "shape-tool-rectangle";
 
-  handleHover(event) {}
-
   setCursor() {
     if (this.sceneModel.selectedGlyph?.isEditing) {
       this.canvasController.canvas.style.cursor = "crosshair";
