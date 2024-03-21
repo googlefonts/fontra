@@ -17,13 +17,13 @@ export class ShapeToolEllipse extends ShapeToolRect {
 export function getUnpackedContourEllipse(cx, cy, rx, ry, t = bezierArcMagic) {
   let points = [];
   let [x, y] = [1, 0];
-  points.push({ x: cx + rx * x, y: cy + ry * y, smooth: true });
+
   for (let i = 0; i < 4; i++) {
+    points.push({ x: cx + rx * x, y: cy + ry * y, smooth: true });
     points.push({ x: cx + rx * (x - y * t), y: cy + ry * (x * t + y), type: "cubic" });
     points.push({ x: cx + rx * (x * t - y), y: cy + ry * (x + y * t), type: "cubic" });
-    points.push({ x: cx + rx * -y, y: cy + ry * x, smooth: true });
     [x, y] = [-y, x];
   }
-  points.pop(); // remove last point
+
   return [{ points: points, isClosed: true }];
 }
