@@ -181,12 +181,19 @@ export class Form extends SimpleElement {
     const inputElement = document.createElement("input");
     inputElement.type = "number";
     inputElement.value = fieldItem.value.toFixed(1);
-    inputElement.onclick = (event) => {
-      inputElement.value = fieldItem.value;
-    };
     inputElement.onmouseout = (event) => {
-      inputElement.value = fieldItem.value.toFixed(1);
+      inputElement.value = this._lastValidFieldValues[fieldItem.key].toFixed(1);
     };
+    inputElement.onmouseover = (event) => {
+      inputElement.value = this._lastValidFieldValues[fieldItem.key];
+    };
+    inputElement.onclick = (event) => {
+      inputElement.value = this._lastValidFieldValues[fieldItem.key];
+    };
+    window.addEventListener("focusout", (event) => {
+      inputElement.value = this._lastValidFieldValues[fieldItem.key].toFixed(1);
+    });
+
     if ("minValue" in fieldItem) {
       inputElement.min = fieldItem.minValue;
     }
