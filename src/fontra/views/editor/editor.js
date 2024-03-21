@@ -697,7 +697,7 @@ export class EditorController {
       toolButton.onmouseup = () => {
         if (this.downTimer >= 100) {
           clearTimeout(this.downTimer);
-          this.setSelectedTool(tool.identifier);
+          this.setSelectedTool(tool.identifier, wrapper_id);
           this.canvasController.canvas.focus();
 
           if (toolButton === editToolsElement.children[0]) {
@@ -838,13 +838,13 @@ export class EditorController {
     };
   }
 
-  setSelectedTool(toolIdentifier) {
+  setSelectedTool(toolIdentifier, wrapper_id = "unkown") {
     for (const editToolItem of document.querySelectorAll(
       "#edit-tools > .tool-button"
     )) {
       editToolItem.classList.toggle(
         "selected",
-        editToolItem.dataset.tool === toolIdentifier
+        editToolItem.dataset.tool === toolIdentifier || editToolItem.id === wrapper_id
       );
     }
     this.sceneController.setSelectedTool(this.tools[toolIdentifier]);

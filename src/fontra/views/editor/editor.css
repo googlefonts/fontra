@@ -429,7 +429,9 @@ body {
 }
 
 .subtool-button {
-  padding: unset;
+  margin-top: -0.1rem;
+  fill: unset;
+  background-color: unset;
 }
 
 .subtool-button:last-child {
@@ -439,6 +441,9 @@ body {
 .subtool-button:not(:first-child) {
   visibility: hidden;
   transition-duration: 100ms;
+  background-color: var(--ui-element-background-color);
+  fill: var(--foreground-color);
+  box-shadow: 1px 1px 5px #0006;
 }
 
 .tool-icon {
