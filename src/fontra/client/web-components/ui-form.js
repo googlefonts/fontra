@@ -5,6 +5,13 @@ import { hyphenatedToCamelCase } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 import "/web-components/rotary-control.js";
 
+function getNiceNumber(value) {
+  if (value === Math.floor(value)) {
+    return value;
+  }
+  return value.toFixed(1);
+}
+
 export class Form extends SimpleElement {
   static styles = `
     :host {
@@ -180,9 +187,10 @@ export class Form extends SimpleElement {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
-    inputElement.value = fieldItem.value.toFixed(1);
+    inputElement.value = getNiceNumber(this._lastValidFieldValues[fieldItem.key]);
+
     inputElement.onmouseout = (event) => {
-      inputElement.value = this._lastValidFieldValues[fieldItem.key].toFixed(1);
+      inputElement.value = getNiceNumber(this._lastValidFieldValues[fieldItem.key]);
     };
     inputElement.onmouseover = (event) => {
       inputElement.value = this._lastValidFieldValues[fieldItem.key];
@@ -191,7 +199,7 @@ export class Form extends SimpleElement {
       inputElement.value = this._lastValidFieldValues[fieldItem.key];
     };
     window.addEventListener("focusout", (event) => {
-      inputElement.value = this._lastValidFieldValues[fieldItem.key].toFixed(1);
+      inputElement.value = getNiceNumber(this._lastValidFieldValues[fieldItem.key]);
     });
 
     if ("minValue" in fieldItem) {
