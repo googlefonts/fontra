@@ -1,5 +1,3 @@
-import * as rectangle from "../core/rectangle.js";
-import { range } from "../core/utils.js";
 import { ShapeToolRect } from "./edit-tools-shape.js";
 
 const bezierArcMagic = 0.5522847498; // constant for drawing circular arcs w/ Beziers
