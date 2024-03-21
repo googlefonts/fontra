@@ -180,7 +180,7 @@ export class Form extends SimpleElement {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
-    inputElement.value = fieldItem.value;
+    inputElement.value = fieldItem.value.toFixed(1);
     if ("minValue" in fieldItem) {
       inputElement.min = fieldItem.minValue;
     }
