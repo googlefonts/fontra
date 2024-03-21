@@ -181,6 +181,12 @@ export class Form extends SimpleElement {
     const inputElement = document.createElement("input");
     inputElement.type = "number";
     inputElement.value = fieldItem.value.toFixed(1);
+    inputElement.onclick = (event) => {
+      inputElement.value = fieldItem.value;
+    };
+    inputElement.onmouseout = (event) => {
+      inputElement.value = fieldItem.value.toFixed(1);
+    };
     if ("minValue" in fieldItem) {
       inputElement.min = fieldItem.minValue;
     }
