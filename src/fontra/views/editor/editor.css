@@ -441,11 +441,6 @@ body {
   transition-duration: 100ms;
 }
 
-.subtool-button:first-child:active ~ .subtool-button {
-  visibility: visible;
-  transition-duration: 100ms;
-}
-
 .tool-icon {
   width: 1.75rem;
   height: 1.75rem;

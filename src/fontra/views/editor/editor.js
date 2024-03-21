@@ -685,10 +685,35 @@ export class EditorController {
         this.canvasController.canvas.focus();
       };
     } else {
+      toolButton.onmousedown = () => {
+        clearTimeout(this.downTimer);
+        this.downTimer = setTimeout(function () {
+          for (const child of editToolsElement.children) {
+            child.style.visibility = "visible";
+          }
+        }, 650);
+      };
+
       toolButton.onmouseup = () => {
-        this.setSelectedTool(tool.identifier);
-        this.canvasController.canvas.focus();
-        editToolsElement.prepend(toolButton);
+        if (this.downTimer >= 100) {
+          clearTimeout(this.downTimer);
+          this.setSelectedTool(tool.identifier);
+          this.canvasController.canvas.focus();
+
+          if (toolButton === editToolsElement.children[0]) {
+            // do nothing. Still the same tool
+            return;
+          }
+
+          editToolsElement.prepend(toolButton);
+
+          for (const child of editToolsElement.children) {
+            if (child !== toolButton) {
+              child.style.visibility = "hidden";
+            }
+          }
+        }
+        clearTimeout(this.downTimer);
       };
     }
 
