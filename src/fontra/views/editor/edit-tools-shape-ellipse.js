@@ -9,12 +9,8 @@ export class ShapeToolEllipse extends ShapeToolRect {
   getUnpackedContour(x, y, width, height) {
     let cx = x + width / 2;
     let cy = y + height / 2;
-
-    return [
-      this.reversePackedContour(
-        getUnpackedContourEllipse(cx, cy, width / 2, height / 2)[0]
-      ),
-    ];
+    let shape = getUnpackedContourEllipse(cx, cy, width / 2, height / 2);
+    return [this.reversePackedContour(shape[0])];
   }
 }
 
