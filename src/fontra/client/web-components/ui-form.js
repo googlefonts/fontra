@@ -134,6 +134,12 @@ export class Form extends SimpleElement {
       }
       this.contentElement.appendChild(valueElement);
 
+      if (fieldItem.type === "edit-number-x-y") {
+        if (fieldItem.auxiliaryElement) {
+          valueElement.appendChild(fieldItem.auxiliaryElement);
+        }
+      }
+
       const methodName = hyphenatedToCamelCase("_add-" + fieldItem.type);
       if (this[methodName] === undefined) {
         throw new Error(`Unknown field type: ${fieldItem.type}`);
