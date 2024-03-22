@@ -443,7 +443,7 @@ body {
   transition-duration: 100ms;
   background-color: var(--ui-element-background-color);
   fill: var(--foreground-color);
-  box-shadow: 1px 1px 5px #0006;
+  box-shadow: 1px 3px 3px #0006;
 }
 
 .tool-icon {
@@ -461,8 +461,7 @@ body {
   display: none;
 }
 
-.tool-icon--fullscreen-enter .icon,
-.tool-icon--fullscreen-exit .icon {
+.icon-tabler {
   stroke-width: 1.7px;
 }
 
@@ -476,10 +475,14 @@ body {
   background-color: var(--editor-tool-button-active-background-color);
 }
 
-.subtool-button.selected,
+.selected .subtool-button:first-child,
 .tool-button.selected {
   background-color: var(--editor-tool-button-selected-background-color);
   fill: var(--background-color);
+}
+
+.selected .subtool-button:first-child .icon-tabler {
+  stroke: var(--background-color);
 }
 
 #mini-console {

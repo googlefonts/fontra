@@ -715,6 +715,22 @@ export class EditorController {
         }
         clearTimeout(this.downTimer);
       };
+
+      window.addEventListener(
+        "click",
+        function (event) {
+          if (!editToolsElement.contains(event.target)) {
+            // the click was outside the editToolsElement,
+            // hide all subtools except the first one
+            for (const [i, child] of enumerate(editToolsElement.children)) {
+              if (i !== 0) {
+                child.style.visibility = "hidden";
+              }
+            }
+          }
+        },
+        false
+      );
     }
 
     editToolsElement.appendChild(toolButton);
