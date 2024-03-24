@@ -107,8 +107,9 @@ class FontraBackend:
         jsonSource = serializeGlyph(glyph, glyphName)
         filePath = self.getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")
-        self.glyphMap[glyphName] = codePoints
-        self._scheduler.schedule(self._writeGlyphInfo)
+        if codePoints != self.glyphMap.get(glyphName):
+            self.glyphMap[glyphName] = codePoints
+            self._scheduler.schedule(self._writeGlyphInfo)
 
     async def deleteGlyph(self, glyphName: str) -> None:
         if glyphName not in self.glyphMap:
