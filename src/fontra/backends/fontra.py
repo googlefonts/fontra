@@ -6,7 +6,6 @@ import pathlib
 import shutil
 from copy import deepcopy
 from dataclasses import dataclass, field
-from os import PathLike
 from typing import Any, Callable
 
 from fontra.core.classes import (
@@ -39,8 +38,12 @@ class FontraBackend:
     def createFromPath(cls, path) -> WritableFontBackend:
         return cls(path=path, create=True)
 
-    def __init__(self, *, path: PathLike, create: bool = False):
-        self.path = pathlib.Path(path).resolve()
+    def __init__(self, *, path: Any, create: bool = False):
+        # Typing TODO: `path` needs to be PathLike or be similar to pathlib.Path
+        if not hasattr(path, "read_text"):
+            self.path = pathlib.Path(path).resolve()
+        else:
+            self.path = path
         if create:
             if self.path.is_dir():
                 shutil.rmtree(self.path)
@@ -104,8 +107,9 @@ class FontraBackend:
         jsonSource = serializeGlyph(glyph, glyphName)
         filePath = self.getGlyphFilePath(glyphName)
         filePath.write_text(jsonSource, encoding="utf=8")
-        self.glyphMap[glyphName] = codePoints
-        self._scheduler.schedule(self._writeGlyphInfo)
+        if codePoints != self.glyphMap.get(glyphName):
+            self.glyphMap[glyphName] = codePoints
+            self._scheduler.schedule(self._writeGlyphInfo)
 
     async def deleteGlyph(self, glyphName: str) -> None:
         if glyphName not in self.glyphMap:
@@ -144,7 +148,7 @@ class FontraBackend:
         self._scheduler.schedule(self._writeFontData)
 
     def _readGlyphInfo(self) -> None:
-        with open(self.glyphInfoPath, "r", encoding="utf-8") as file:
+        with self.glyphInfoPath.open("r", encoding="utf-8") as file:
             reader = csv.reader(file, delimiter=";")
             header = next(reader)
             assert header[:2] == ["glyph name", "code points"]
@@ -157,7 +161,7 @@ class FontraBackend:
                 self.glyphMap[glyphName] = codePoints
 
     def _writeGlyphInfo(self) -> None:
-        with open(self.glyphInfoPath, "w", encoding="utf-8") as file:
+        with self.glyphInfoPath.open("w", encoding="utf-8") as file:
             writer = csv.writer(file, delimiter=";")
             writer.writerow(["glyph name", "code points"])
             for glyphName, codePoints in sorted(self.glyphMap.items()):
