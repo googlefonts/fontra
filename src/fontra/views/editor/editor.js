@@ -624,7 +624,7 @@ export class EditorController {
         const editToolsElement = document.querySelector("#edit-tools");
         const wrapper_id = `edit-tools-multi-wrapper-${toolIndex}`;
         editToolsElement.appendChild(
-          html.div({ id: wrapper_id, class: "tool-button" })
+          html.div({ id: wrapper_id, class: "tool-button tool-button-triangle" })
         );
         for (const subClass of editToolClass) {
           this.addEditTool(new subClass(this), wrapper_id);

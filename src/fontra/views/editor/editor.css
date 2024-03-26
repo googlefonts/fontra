@@ -434,11 +434,14 @@ body {
   background-color: unset;
 }
 
-.subtool-button:first-child:after {
+.tool-button-triangle::after {
+  position: absolute;
   content: "";
   border-top: 5px solid transparent;
   border-right: 5px solid var(--foreground-color);
-  margin-top: -3px;
+  margin-right: -5px;
+  margin-left: 2.3rem;
+  margin-top: calc(1.9rem - 6px);
   pointer-events: none;
 }
 
@@ -487,6 +490,10 @@ body {
 .tool-button.selected {
   background-color: var(--editor-tool-button-selected-background-color);
   fill: var(--background-color);
+}
+
+.tool-button-triangle.selected::after {
+  border-right: 5px solid var(--background-color);
 }
 
 .selected .subtool-button:first-child .icon-tabler {
