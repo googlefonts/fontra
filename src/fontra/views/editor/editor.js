@@ -663,22 +663,21 @@ export class EditorController {
     });
   }
 
-  addEditTool(tool, wrapper_id = "edit-tools") {
+  addEditTool(tool, wrapperID = "edit-tools") {
     this.tools[tool.identifier] = tool;
 
-    const editToolsElement = document.querySelector("#" + wrapper_id);
+    const editToolsElement = document.querySelector("#" + wrapperID);
     const toolButton = html.div(
       {
-        "class":
-          wrapper_id === "edit-tools" ? "tool-button selected" : "subtool-button",
+        "class": wrapperID === "edit-tools" ? "tool-button selected" : "subtool-button",
         "data-tool": tool.identifier,
         "data-tooltip": hyphenatedToLabel(tool.identifier),
-        "data-tooltipposition": wrapper_id === "edit-tools" ? "bottom" : "right",
+        "data-tooltipposition": wrapperID === "edit-tools" ? "bottom" : "right",
       },
       [html.createDomElement("inline-svg", { class: "tool-icon", src: tool.iconPath })]
     );
 
-    if (wrapper_id === "edit-tools") {
+    if (wrapperID === "edit-tools") {
       toolButton.onclick = () => {
         this.setSelectedTool(tool.identifier);
         this.canvasController.canvas.focus();
@@ -696,7 +695,7 @@ export class EditorController {
       toolButton.onmouseup = () => {
         if (this.downTimer >= 100) {
           clearTimeout(this.downTimer);
-          this.setSelectedTool(tool.identifier, wrapper_id);
+          this.setSelectedTool(tool.identifier, wrapperID);
           this.canvasController.canvas.focus();
 
           if (toolButton === editToolsElement.children[0]) {
@@ -853,13 +852,13 @@ export class EditorController {
     };
   }
 
-  setSelectedTool(toolIdentifier, wrapper_id = "unkown") {
+  setSelectedTool(toolIdentifier, wrapperID = "unkown") {
     for (const editToolItem of document.querySelectorAll(
       "#edit-tools > .tool-button"
     )) {
       editToolItem.classList.toggle(
         "selected",
-        editToolItem.dataset.tool === toolIdentifier || editToolItem.id === wrapper_id
+        editToolItem.dataset.tool === toolIdentifier || editToolItem.id === wrapperID
       );
     }
     this.sceneController.setSelectedTool(this.tools[toolIdentifier]);
