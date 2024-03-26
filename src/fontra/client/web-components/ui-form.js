@@ -1,16 +1,9 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
-import { hyphenatedToCamelCase } from "../core/utils.js";
+import { hyphenatedToCamelCase, round } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 import "/web-components/rotary-control.js";
-
-function getNiceNumber(value) {
-  if (value === Math.floor(value)) {
-    return value;
-  }
-  return value.toFixed(1);
-}
 
 export class Form extends SimpleElement {
   static styles = `
@@ -187,20 +180,9 @@ export class Form extends SimpleElement {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
-    inputElement.value = getNiceNumber(this._lastValidFieldValues[fieldItem.key]);
-
-    inputElement.onmouseout = (event) => {
-      inputElement.value = getNiceNumber(this._lastValidFieldValues[fieldItem.key]);
-    };
-    inputElement.onmouseover = (event) => {
-      inputElement.value = this._lastValidFieldValues[fieldItem.key];
-    };
-    inputElement.onclick = (event) => {
-      inputElement.value = this._lastValidFieldValues[fieldItem.key];
-    };
-    window.addEventListener("focusout", (event) => {
-      inputElement.value = getNiceNumber(this._lastValidFieldValues[fieldItem.key]);
-    });
+    inputElement.value = fieldItem.numDigits
+      ? round(fieldItem.value, fieldItem.numDigits)
+      : fieldItem.value;
 
     if ("minValue" in fieldItem) {
       inputElement.min = fieldItem.minValue;
@@ -250,7 +232,10 @@ export class Form extends SimpleElement {
       this._fieldChanging(fieldItem, value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
-    this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
+    this._fieldSetters[fieldItem.key] = (value) =>
+      (inputElement.value = fieldItem.numDigits
+        ? round(value, fieldItem.numDigits)
+        : value);
     valueElement.appendChild(inputElement);
   }
 
