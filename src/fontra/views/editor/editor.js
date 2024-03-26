@@ -621,12 +621,12 @@ export class EditorController {
     for (const editToolClass of editToolClasses) {
       if (Array.isArray(editToolClass)) {
         const editToolsElement = document.querySelector("#edit-tools");
-        const wrapper_id = `edit-tools-multi-wrapper-${toolIndex}`;
+        const wrapperID = `edit-tools-multi-wrapper-${toolIndex}`;
         editToolsElement.appendChild(
-          html.div({ id: wrapper_id, class: "tool-button tool-button-triangle" })
+          html.div({ id: wrapperID, class: "tool-button tool-button-triangle" })
         );
         for (const subClass of editToolClass) {
-          this.addEditTool(new subClass(this), wrapper_id);
+          this.addEditTool(new subClass(this), wrapperID);
         }
       } else {
         this.addEditTool(new editToolClass(this));
