@@ -95,7 +95,7 @@ export class ShapeToolRect extends BaseTool {
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           layerGlyph.path.appendPath(pathNew);
         }
-        return `add ${this.identifier.split("-").slice(-1)}`;
+        return "add shape";
       },
       undefined,
       true
