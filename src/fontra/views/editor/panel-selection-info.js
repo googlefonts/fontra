@@ -548,6 +548,12 @@ export default class SelectionInfoPanel extends Panel {
     });
   }
 
+  _getOriginInfo(event) {
+    //const el = html.getElementById(ID);
+    console.log("event", event);
+    console.log("this", this);
+  }
+
   _setupTransformationForPath(glyphController, pointIndices, componentIndices) {
     const formContents = [];
     let scaleFactorX = 1;
@@ -558,6 +564,20 @@ export default class SelectionInfoPanel extends Panel {
       key: "transformation",
       type: "header",
       label: "Transformation",
+    });
+
+    formContents.push({
+      type: "edit-icon-button",
+      key: '["origin"]',
+      label: "Origin",
+      auxiliaryElement: html.createDomElement("inline-svg", {
+        ID: "origin-icon",
+        style: `width: 1.3em !important;`,
+        src: "/tabler-icons/grid-dots.svg",
+        onclick: (event) => this._getOriginInfo(event),
+        /*         "data-tooltip": "Origin of transformation",
+        "data-tooltipposition": "left", */
+      }),
     });
 
     formContents.push({

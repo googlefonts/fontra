@@ -651,6 +651,86 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.bounds.selection",
+  name: "Bounds of Selection",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
+  zIndex: 400,
+  screenParameters: {
+    strokeWidth: 1,
+    lineDash: [4, 4],
+    cornerSize: 8,
+    smoothSize: 8,
+    handleSize: 6.5,
+  },
+
+  /*   colors: { boxColor: "#FFFB", color: "#FFFB" }, //#000
+  colorsDarkMode: { boxColor: "#1118", color: "#1118" }, //"#FFF" */
+  colors: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const { point: selectedPointIndices } = parseSelection(model.selection);
+    if (!selectedPointIndices || selectedPointIndices.length <= 1) {
+      return;
+    }
+
+    const glyph = positionedGlyph.glyph;
+    let bounds = {
+      xMin: Infinity,
+      xMax: -Infinity,
+      yMin: Infinity,
+      yMax: -Infinity,
+    };
+
+    for (const pt of iterPointsByIndex(glyph.path, selectedPointIndices)) {
+      bounds.xMin = Math.min(bounds.xMin, pt.x);
+      bounds.xMax = Math.max(bounds.xMax, pt.x);
+      bounds.yMin = Math.min(bounds.yMin, pt.y);
+      bounds.yMax = Math.max(bounds.yMax, pt.y);
+    }
+
+    let [x, y, w, h] = [
+      bounds.xMin,
+      bounds.yMin,
+      bounds.xMax - bounds.xMin,
+      bounds.yMax - bounds.yMin,
+    ];
+    context.lineWidth = parameters.strokeWidth;
+    context.strokeStyle = parameters.hoveredColor;
+    context.setLineDash(parameters.lineDash);
+    context.strokeRect(x, y, w, h);
+
+    bounds = {
+      xMin: bounds.xMin - 10,
+      xMax: bounds.xMax + 10,
+      yMin: bounds.yMin - 10,
+      yMax: bounds.yMax + 10,
+    };
+    [x, y, w, h] = [
+      bounds.xMin,
+      bounds.yMin,
+      bounds.xMax - bounds.xMin,
+      bounds.yMax - bounds.yMin,
+    ];
+
+    const cornerSize = parameters.cornerSize;
+    const smoothSize = parameters.smoothSize;
+    const handleSize = parameters.handleSize;
+
+    context.fillStyle = parameters.hoveredColor;
+    fillRoundNode(context, { x: x, y: y }, smoothSize);
+    fillRoundNode(context, { x: x + w / 2, y: y }, smoothSize);
+    fillRoundNode(context, { x: x + w, y: y }, smoothSize);
+    fillRoundNode(context, { x: x, y: y + h / 2 }, smoothSize);
+    fillRoundNode(context, { x: x + w, y: y + h / 2 }, smoothSize);
+    fillRoundNode(context, { x: x, y: y + h }, smoothSize);
+    fillRoundNode(context, { x: x + w / 2, y: y + h }, smoothSize);
+    fillRoundNode(context, { x: x + w, y: y + h }, smoothSize);
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.handles",
   name: "Bezier handles",
   selectionMode: "editing",
