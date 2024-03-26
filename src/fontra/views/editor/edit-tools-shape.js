@@ -134,11 +134,11 @@ export class ShapeToolRect extends BaseTool {
     }
 
     return VarPackedPath.fromUnpackedContours(
-      this.getUnpackedContour(x, y, width, height)
+      this.getUnpackedContours(x, y, width, height)
     );
   }
 
-  getUnpackedContour(x, y, width, height) {
+  getUnpackedContours(x, y, width, height) {
     return getUnpackedContourRect(x, y, width, height);
   }
 
@@ -180,7 +180,7 @@ export class ShapeToolEllipse extends ShapeToolRect {
   iconPath = "/tabler-icons/circle-plus-2.svg";
   identifier = "shape-tool-ellipse";
 
-  getUnpackedContour(x, y, width, height) {
+  getUnpackedContours(x, y, width, height) {
     let cx = x + width / 2;
     let cy = y + height / 2;
     let shape = getUnpackedContourEllipse(cx, cy, width / 2, height / 2);
