@@ -139,7 +139,7 @@ export class ShapeToolRect extends BaseTool {
   }
 
   getUnpackedContours(x, y, width, height) {
-    return getUnpackedContourRect(x, y, width, height);
+    return getUnpackedContoursRect(x, y, width, height);
   }
 
   reversePath(path) {
@@ -160,8 +160,8 @@ export class ShapeToolRect extends BaseTool {
   }
 }
 
-export function getUnpackedContourRect(x, y, width, height, contourType = "cubic") {
-  const unpackedContour = [
+export function getUnpackedContoursRect(x, y, width, height, contourType = "cubic") {
+  const unpackedContours = [
     {
       points: [
         { x: x, y: y },
@@ -173,7 +173,7 @@ export function getUnpackedContourRect(x, y, width, height, contourType = "cubic
     },
   ];
 
-  return unpackedContour;
+  return unpackedContours;
 }
 
 export class ShapeToolEllipse extends ShapeToolRect {
@@ -183,13 +183,13 @@ export class ShapeToolEllipse extends ShapeToolRect {
   getUnpackedContours(x, y, width, height) {
     let cx = x + width / 2;
     let cy = y + height / 2;
-    let shape = getUnpackedContourEllipse(cx, cy, width / 2, height / 2);
+    let shape = getUnpackedContoursEllipse(cx, cy, width / 2, height / 2);
     return [this.reversePackedContour(shape[0])];
   }
 }
 
 const bezierArcMagic = 0.5522847498; // constant for drawing circular arcs w/ Beziers
-export function getUnpackedContourEllipse(cx, cy, rx, ry, t = bezierArcMagic) {
+export function getUnpackedContoursEllipse(cx, cy, rx, ry, t = bezierArcMagic) {
   let points = [];
   let [x, y] = [1, 0];
 
