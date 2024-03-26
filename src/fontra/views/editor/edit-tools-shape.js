@@ -120,19 +120,17 @@ export class ShapeToolRect extends BaseTool {
 
     // make square, not rectangle
     if (event.shiftKey) {
-      if ((width > 0 && height > 0) || (width < 0 && height < 0)) {
-        height = width;
-      } else {
-        height = -width;
-      }
+      const size = (Math.abs(width) + Math.abs(height)) / 2;
+      width = size * Math.sign(width);
+      height = size * Math.sign(height);
     }
 
     // positon at center
     if (event.altKey) {
-      width = width * 2;
-      height = height * 2;
-      x = x - width / 2;
-      y = y - height / 2;
+      x = x - width;
+      y = y - height;
+      width *= 2;
+      height *= 2;
     }
 
     return VarPackedPath.fromUnpackedContours(

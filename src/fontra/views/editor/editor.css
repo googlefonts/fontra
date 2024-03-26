@@ -434,6 +434,14 @@ body {
   background-color: unset;
 }
 
+.subtool-button:first-child:after {
+  content: "";
+  border-top: 5px solid transparent;
+  border-right: 5px solid var(--foreground-color);
+  margin-top: -3px;
+  pointer-events: none;
+}
+
 .subtool-button:last-child {
   border-radius: 0 0 0.65em 0.65em;
 }
