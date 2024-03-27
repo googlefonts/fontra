@@ -516,6 +516,48 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "subset-keep-glyphs",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset-glyphs
+              glyphNamesFile: test-py/data/workflow/subset-keep-glyph-names.txt
+
+            - action: output
+              destination: "output-subset-keep-drop-glyphs.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-drop-glyphs",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset-glyphs
+              dropGlyphNames: ["B"]
+
+            - action: output
+              destination: "output-subset-keep-drop-glyphs.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-drop-glyphs",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset-glyphs
+              dropGlyphNamesFile: test-py/data/workflow/subset-drop-glyph-names.txt
+
+            - action: output
+              destination: "output-subset-keep-drop-glyphs.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
