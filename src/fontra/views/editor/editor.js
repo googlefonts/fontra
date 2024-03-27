@@ -668,7 +668,7 @@ export class EditorController {
         html.div({
           "id": wrapperID,
           "data-tool": tool.identifier,
-          "class": "tool-button tool-button-triangle multi-tool",
+          "class": "tool-button multi-tool",
         })
       );
     } else {

@@ -434,7 +434,7 @@ body {
   background-color: unset;
 }
 
-.tool-button-triangle::after {
+.multi-tool::after {
   position: absolute;
   content: "";
   border-top: 5px solid transparent;
@@ -492,7 +492,7 @@ body {
   fill: var(--background-color);
 }
 
-.tool-button-triangle.selected::after {
+.multi-tool.selected::after {
   border-right: 5px solid var(--background-color);
 }
 
