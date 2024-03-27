@@ -297,6 +297,10 @@ body {
   justify-content: flex-start;
 }
 
+.tab-overlay-container.right > .sidebar-tab .icon-tabler {
+  stroke-width: 1.5px;
+}
+
 .sidebar-content {
   display: none;
 
