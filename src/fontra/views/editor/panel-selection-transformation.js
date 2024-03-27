@@ -120,20 +120,18 @@ export default class SelectionTransformationPanel extends Panel {
     const formContents = [];
 
     formContents.push({ type: "header", label: `Transformations` });
-    formContents.push({ type: "divider" });
+    /*     formContents.push({ type: "divider" }); */
     formContents.push({
       type: "icons",
       label: "Flip",
       auxiliaryElements: [
         html.createDomElement("icon-button", {
-          "style": `width: 1.3em;`,
           "src": "/tabler-icons/flip-vertical.svg",
           "onclick": (event) => this._doSomthing("Flip vertically"),
           "data-tooltip": "Flip vertically",
           "data-tooltipposition": "left",
         }),
         html.createDomElement("icon-button", {
-          "style": `width: 1.3em;`,
           "src": "/tabler-icons/flip-horizontal.svg",
           "onclick": (event) => this._doSomthing("Flip horizontally"),
           "data-tooltip": "Flip horizontally",
@@ -141,8 +139,19 @@ export default class SelectionTransformationPanel extends Panel {
         }),
       ],
     });
+    /*     formContents.push({ type: "divider" }); */
+    formContents.push({
+      type: "edit-number-x-y",
+      label: "Scale",
+      fieldX: {
+        value: 100,
+      },
+      fieldY: {
+        value: 100,
+      },
+    });
 
-    const someIcons = html.div(
+    /*     const someIcons = html.div(
       {
         id: "text-align-menu",
       },
@@ -163,7 +172,7 @@ export default class SelectionTransformationPanel extends Panel {
       ]
     );
 
-    formContents.push(someIcons);
+    formContents.push(someIcons); */
 
     if (!formContents.length) {
       this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
