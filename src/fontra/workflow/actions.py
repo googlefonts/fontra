@@ -236,10 +236,18 @@ class ScaleAction(BaseFilterAction):
             return unitsPerEm
 
 
-@registerActionClass("drop-unreachable-glyphs")
 @dataclass(kw_only=True)
-class DropUnreachableGlyphsAction(BaseFilterAction):
+class BaseGlyphSubsetterAction(BaseFilterAction):
     _glyphMap: dict[str, list[int]] | None = field(init=False, repr=False, default=None)
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        glyphMap = await self._getSubsettedGlyphMap()
+        if glyphName not in glyphMap:
+            return None
+        return await self.validatedInput.getGlyph(glyphName)
+
+    async def getGlyphMap(self) -> dict[str, list[int]]:
+        return await self._getSubsettedGlyphMap()
 
     async def _getSubsettedGlyphMap(self) -> dict[str, list[int]]:
         if self._glyphMap is None:
@@ -247,6 +255,17 @@ class DropUnreachableGlyphsAction(BaseFilterAction):
                 await self.validatedInput.getGlyphMap()
             )
         return self._glyphMap
+
+    async def _buildSubsettedGlyphMap(
+        self, originalGlyphMap: dict[str, list[int]]
+    ) -> dict[str, list[int]]:
+        # Override
+        return originalGlyphMap
+
+
+@registerActionClass("drop-unreachable-glyphs")
+@dataclass(kw_only=True)
+class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
 
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
@@ -271,15 +290,6 @@ class DropUnreachableGlyphsAction(BaseFilterAction):
             if glyphName in reachableGlyphs
         }
 
-    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
-        glyphMap = await self._getSubsettedGlyphMap()
-        if glyphName not in glyphMap:
-            return None
-        return await self.validatedInput.getGlyph(glyphName)
-
-    async def getGlyphMap(self) -> dict[str, list[int]]:
-        return await self._getSubsettedGlyphMap()
-
 
 def getComponentNames(glyph):
     return {
@@ -291,7 +301,7 @@ def getComponentNames(glyph):
 
 @registerActionClass("subset")
 @dataclass(kw_only=True)
-class SubsetAction(DropUnreachableGlyphsAction):
+class SubsetAction(BaseGlyphSubsetterAction):
     glyphNames: set[str] = field(default_factory=set)
     glyphNamesFile: str | None = None
 
