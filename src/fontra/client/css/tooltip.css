@@ -161,6 +161,17 @@
   margin-left: 0;
 }
 
+/* no tooltip when the parent is being clicked on */
+[data-tooltip]:active::before {
+  opacity: 0;
+  animation-name: none;
+}
+
+[data-tooltip]:active::after {
+  opacity: 0;
+  animation-name: none;
+}
+
 @keyframes disappear {
   0% {
     opacity: 1;
