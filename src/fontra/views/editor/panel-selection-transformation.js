@@ -1,13 +1,41 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { scalePoint } from "/core/path-functions.js";
-import { findNestedActiveElement } from "/core/utils.js";
+import {
+  enumerate,
+  findNestedActiveElement,
+  getCharFromCodePoint,
+  makeUPlusStringFromCodePoint,
+  parseSelection,
+  range,
+  round,
+  splitGlyphNameExtension,
+  throttleCalls,
+} from "/core/utils.js";
+import { Form } from "/web-components/ui-form.js";
 
 export default class SelectionTransformationPanel extends Panel {
   identifier = "selection-transformation";
   iconPath = "/tabler-icons/shape.svg";
 
   static styles = `
+    .selection-transformation {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      justify-content: space-between;
+      box-sizing: border-box;
+      height: 100%;
+      width: 100%;
+      padding: 1em;
+      white-space: normal;
+    }
+
+    ui-form {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
     .sidebar-text-entry {
       box-sizing: border-box;
       height: 100%;
@@ -65,11 +93,14 @@ export default class SelectionTransformationPanel extends Panel {
   constructor(editorController) {
     super(editorController);
 
+    this.infoForm = new Form();
+    this.contentElement.appendChild(this.infoForm);
+
+    this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
+
     //this.textSettingsController = this.editorController.sceneSettingsController;
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
-
-    //this.setupTextAlignElement();
   }
 
   getContentElement() {
@@ -79,6 +110,69 @@ export default class SelectionTransformationPanel extends Panel {
       },
       []
     );
+  }
+
+  _doSomthing(text) {
+    console.log("do something: ", text);
+  }
+
+  async update(senderInfo) {
+    const formContents = [];
+
+    formContents.push({ type: "header", label: `Transformations` });
+    formContents.push({ type: "divider" });
+    formContents.push({
+      type: "icons",
+      label: "Flip",
+      auxiliaryElements: [
+        html.createDomElement("icon-button", {
+          "style": `width: 1.3em;`,
+          "src": "/tabler-icons/flip-vertical.svg",
+          "onclick": (event) => this._doSomthing("Flip vertically"),
+          "data-tooltip": "Flip vertically",
+          "data-tooltipposition": "left",
+        }),
+        html.createDomElement("icon-button", {
+          "style": `width: 1.3em;`,
+          "src": "/tabler-icons/flip-horizontal.svg",
+          "onclick": (event) => this._doSomthing("Flip horizontally"),
+          "data-tooltip": "Flip horizontally",
+          "data-tooltipposition": "left",
+        }),
+      ],
+    });
+
+    const someIcons = html.div(
+      {
+        id: "text-align-menu",
+      },
+      [
+        html.createDomElement("inline-svg", {
+          "data-align": "left",
+          "src": "/images/alignleft.svg",
+        }),
+        html.createDomElement("inline-svg", {
+          "class": "selected",
+          "data-align": "center",
+          "src": "/images/aligncenter.svg",
+        }),
+        html.createDomElement("inline-svg", {
+          "data-align": "right",
+          "src": "/images/alignright.svg",
+        }),
+      ]
+    );
+
+    formContents.push(someIcons);
+
+    if (!formContents.length) {
+      this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
+    } else {
+      this.infoForm.setFieldDescriptions(formContents);
+    }
+
+    /*     console.log("someIcons", someIcons);
+    this.contentElement.appendChild(someIcons); */
   }
 
   /*   getContentElement() {
@@ -136,8 +230,8 @@ export default class SelectionTransformationPanel extends Panel {
   }
 
   async toggle(on, focus) {
-    if (focus) {
-      this.focusTextEntry();
+    if (on) {
+      this.update();
     }
   }
 }

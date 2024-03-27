@@ -132,6 +132,14 @@ export class Form extends SimpleElement {
         }
         continue;
       }
+      if (fieldItem.type === "icons") {
+        if (fieldItem.auxiliaryElements) {
+          for (const element of fieldItem.auxiliaryElements) {
+            labelElement.appendChild(element);
+          }
+        }
+        continue;
+      }
       this.contentElement.appendChild(valueElement);
 
       const methodName = hyphenatedToCamelCase("_add-" + fieldItem.type);
