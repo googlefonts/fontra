@@ -406,8 +406,8 @@ body {
   pointer-events: auto;
 }
 
-.tool-button {
-  display: flex;
+.tool-button,
+.subtool-button {
   justify-content: center;
   align-items: center;
   user-select: none;
@@ -417,6 +417,7 @@ body {
   height: 1.9rem;
   padding: 0.1rem;
   transition: 0.15s;
+  display: inline-grid;
 }
 
 .tool-button:first-child {
@@ -425,6 +426,35 @@ body {
 
 .tool-button:last-child {
   border-radius: 0 0.65em 0.65em 0;
+}
+
+.subtool-button {
+  margin-top: -0.1rem;
+  fill: unset;
+  background-color: unset;
+}
+
+.multi-tool::after {
+  position: absolute;
+  content: "";
+  border-top: 5px solid transparent;
+  border-right: 5px solid var(--foreground-color);
+  margin-right: -5px;
+  margin-left: 2.3rem;
+  margin-top: calc(1.9rem - 6px);
+  pointer-events: none;
+}
+
+.subtool-button:last-child {
+  border-radius: 0 0 0.65em 0.65em;
+}
+
+.subtool-button:not(:first-child) {
+  visibility: hidden;
+  transition-duration: 100ms;
+  background-color: var(--ui-element-background-color);
+  fill: var(--foreground-color);
+  box-shadow: 1px 3px 3px #0006;
 }
 
 .tool-icon {
@@ -442,22 +472,32 @@ body {
   display: none;
 }
 
-.tool-icon--fullscreen-enter .icon,
-.tool-icon--fullscreen-exit .icon {
+.icon-tabler {
   stroke-width: 1.7px;
 }
 
+.subtool-button:hover,
 .tool-button:hover {
   background-color: var(--editor-tool-button-hover-background-color);
 }
 
+.subtool-button:active,
 .tool-button:active {
   background-color: var(--editor-tool-button-active-background-color);
 }
 
+.selected .subtool-button:first-child,
 .tool-button.selected {
   background-color: var(--editor-tool-button-selected-background-color);
   fill: var(--background-color);
+}
+
+.multi-tool.selected::after {
+  border-right: 5px solid var(--background-color);
+}
+
+.selected .subtool-button:first-child .icon-tabler {
+  stroke: var(--background-color);
 }
 
 #mini-console {
