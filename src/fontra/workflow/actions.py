@@ -782,11 +782,11 @@ def subsetLocationDrop(location, axisNames):
 
 
 def getDefaultSourceLocation(axes):
-    location = {}
-    for axis in axes:
-        if axis.mapping:
-            value = piecewiseLinearMap(axis.defaultValue, dict(axis.mapping))
-        else:
-            value = axis.defaultValue
-        location[axis.name] = value
-    return location
+    return {
+        axis.name: (
+            piecewiseLinearMap(axis.defaultValue, dict(axis.mapping))
+            if axis.mapping
+            else axis.defaultValue
+        )
+        for axis in axes
+    }
