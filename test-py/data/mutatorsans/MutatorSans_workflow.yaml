@@ -1,5 +1,6 @@
 steps:
   - action: input
     source: "MutatorSans.designspace"
-  - action: subset
-    glyphNames: ["A", "B"]
+  - action: subset-glyphs
+    glyphNames: ["A", "B", "C"]
+    dropGlyphNames: ["C"]

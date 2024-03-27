@@ -236,10 +236,18 @@ class ScaleAction(BaseFilterAction):
             return unitsPerEm
 
 
-@registerActionClass("drop-unreachable-glyphs")
 @dataclass(kw_only=True)
-class DropUnreachableGlyphsAction(BaseFilterAction):
+class BaseGlyphSubsetterAction(BaseFilterAction):
     _glyphMap: dict[str, list[int]] | None = field(init=False, repr=False, default=None)
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        glyphMap = await self._getSubsettedGlyphMap()
+        if glyphName not in glyphMap:
+            return None
+        return await self.validatedInput.getGlyph(glyphName)
+
+    async def getGlyphMap(self) -> dict[str, list[int]]:
+        return await self._getSubsettedGlyphMap()
 
     async def _getSubsettedGlyphMap(self) -> dict[str, list[int]]:
         if self._glyphMap is None:
@@ -247,6 +255,17 @@ class DropUnreachableGlyphsAction(BaseFilterAction):
                 await self.validatedInput.getGlyphMap()
             )
         return self._glyphMap
+
+    async def _buildSubsettedGlyphMap(
+        self, originalGlyphMap: dict[str, list[int]]
+    ) -> dict[str, list[int]]:
+        # Override
+        return originalGlyphMap
+
+
+@registerActionClass("drop-unreachable-glyphs")
+@dataclass(kw_only=True)
+class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
 
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
@@ -271,15 +290,6 @@ class DropUnreachableGlyphsAction(BaseFilterAction):
             if glyphName in reachableGlyphs
         }
 
-    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
-        glyphMap = await self._getSubsettedGlyphMap()
-        if glyphName not in glyphMap:
-            return None
-        return await self.validatedInput.getGlyph(glyphName)
-
-    async def getGlyphMap(self) -> dict[str, list[int]]:
-        return await self._getSubsettedGlyphMap()
-
 
 def getComponentNames(glyph):
     return {
@@ -289,24 +299,36 @@ def getComponentNames(glyph):
     }
 
 
-@registerActionClass("subset")
+@registerActionClass("subset-glyphs")
 @dataclass(kw_only=True)
-class SubsetAction(DropUnreachableGlyphsAction):
+class SubsetGlyphsAction(BaseGlyphSubsetterAction):
     glyphNames: set[str] = field(default_factory=set)
     glyphNamesFile: str | None = None
+    dropGlyphNames: set[str] = field(default_factory=set)
+    dropGlyphNamesFile: str | None = None
 
     def __post_init__(self):
         if self.glyphNamesFile:
             path = pathlib.Path(self.glyphNamesFile)
             assert path.is_file()
             glyphNames = set(path.read_text().split())
-            self.glyphNames = self.glyphNames | glyphNames
+            self.glyphNames = set(self.glyphNames) | glyphNames
+        if self.dropGlyphNamesFile:
+            path = pathlib.Path(self.dropGlyphNamesFile)
+            assert path.is_file()
+            dropGlyphNames = set(path.read_text().split())
+            self.dropGlyphNames = set(self.dropGlyphNames) | dropGlyphNames
 
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
     ) -> dict[str, list[int]]:
         subsettedGlyphMap = {}
         glyphNames = set(self.glyphNames)
+        if not glyphNames and self.dropGlyphNames:
+            glyphNames = set(originalGlyphMap)
+        if self.dropGlyphNames:
+            glyphNames = glyphNames - set(self.dropGlyphNames)
+
         while glyphNames:
             glyphName = glyphNames.pop()
             if glyphName not in originalGlyphMap:
