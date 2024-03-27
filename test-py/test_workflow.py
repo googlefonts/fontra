@@ -239,7 +239,8 @@ def test_command(tmpdir, configYAMLSources):
                 scaleFactor: 0.75
                 scaleUnitsPerEm: false
               - action: subset-glyphs
-                glyphNames: ["A", "B", "Adieresis"]
+                glyphNames: ["B", "Adieresis"]
+                glyphNamesFile: test-py/data/workflow/subset-keep-glyph-names.txt
 
             - action: input
               source: "test-common/fonts/MutatorSans.fontra"
