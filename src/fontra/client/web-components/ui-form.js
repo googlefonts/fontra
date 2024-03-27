@@ -82,6 +82,18 @@ export class Form extends SimpleElement {
       display: flex;
       gap: 0.3rem;
     }
+    .ui-form-value.icons {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    .ui-form-icon {
+      overflow-x: unset;
+      width: 2em;
+      white-space: nowrap;
+      margin-left: 1em;
+      margin-right: 1em;
+    }
   `;
 
   constructor() {
@@ -135,9 +147,13 @@ export class Form extends SimpleElement {
       if (fieldItem.type === "icons") {
         if (fieldItem.auxiliaryElements) {
           for (const element of fieldItem.auxiliaryElements) {
-            labelElement.appendChild(element);
+            const iconElement = document.createElement("div");
+            iconElement.classList.add("ui-form-icon");
+            iconElement.appendChild(element);
+            valueElement.appendChild(iconElement, fieldItem);
           }
         }
+        this.contentElement.appendChild(valueElement);
         continue;
       }
       this.contentElement.appendChild(valueElement);
@@ -155,6 +171,10 @@ export class Form extends SimpleElement {
   }
 
   _addNumber(valueElement, fieldItem) {
+    this._addText(valueElement, fieldItem);
+  }
+
+  _addIcon(valueElement, fieldItem) {
     this._addText(valueElement, fieldItem);
   }
 
