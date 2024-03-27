@@ -221,11 +221,32 @@ export class PowerRulerTool extends BaseTool {
   }
 
   computeSideBearingLines(glyphController) {
-    const top = this.fontController.unitsPerEm;
-    const bottom = -this.fontController.unitsPerEm;
     const extraLines = [];
-    for (const x of [0, glyphController.xAdvance]) {
+    let doTopAndBottom = false;
+    let left, right, top, bottom;
+    if (this.editor.visualizationLayersSettings.model["fontra.cjk.design.frame"]) {
+      doTopAndBottom = true;
+      const { frameBottomLeft, frameHeight } =
+        this.editor.cjkDesignFrame.cjkDesignFrameParameters;
+      left = frameBottomLeft.x;
+      right = glyphController.xAdvance - frameBottomLeft.x;
+      bottom = frameBottomLeft.y;
+      top = bottom + frameHeight;
+    } else {
+      left = 0;
+      right = glyphController.xAdvance;
+      top = this.fontController.unitsPerEm;
+      bottom = -this.fontController.unitsPerEm;
+    }
+
+    for (const x of [left, right]) {
       extraLines.push({ p1: { x: x, y: bottom }, p2: { x: x, y: top } });
+    }
+
+    if (doTopAndBottom) {
+      for (const y of [bottom, top]) {
+        extraLines.push({ p1: { x: left, y: y }, p2: { x: right, y: y } });
+      }
     }
     return extraLines;
   }
