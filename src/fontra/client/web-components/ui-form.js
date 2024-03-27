@@ -82,7 +82,6 @@ export class Form extends SimpleElement {
       display: flex;
       gap: 0.3rem;
     }
-
   `;
 
   constructor() {
