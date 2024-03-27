@@ -304,19 +304,31 @@ def getComponentNames(glyph):
 class SubsetGlyphsAction(BaseGlyphSubsetterAction):
     glyphNames: set[str] = field(default_factory=set)
     glyphNamesFile: str | None = None
+    dropGlyphNames: set[str] = field(default_factory=set)
+    dropGlyphNamesFile: str | None = None
 
     def __post_init__(self):
         if self.glyphNamesFile:
             path = pathlib.Path(self.glyphNamesFile)
             assert path.is_file()
             glyphNames = set(path.read_text().split())
-            self.glyphNames = self.glyphNames | glyphNames
+            self.glyphNames = set(self.glyphNames) | glyphNames
+        if self.dropGlyphNamesFile:
+            path = pathlib.Path(self.dropGlyphNamesFile)
+            assert path.is_file()
+            dropGlyphNames = set(path.read_text().split())
+            self.dropGlyphNames = set(self.dropGlyphNames) | dropGlyphNames
 
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
     ) -> dict[str, list[int]]:
         subsettedGlyphMap = {}
         glyphNames = set(self.glyphNames)
+        if not glyphNames and self.dropGlyphNames:
+            glyphNames = set(originalGlyphMap)
+        if self.dropGlyphNames:
+            glyphNames = glyphNames - set(self.dropGlyphNames)
+
         while glyphNames:
             glyphName = glyphNames.pop()
             if glyphName not in originalGlyphMap:
