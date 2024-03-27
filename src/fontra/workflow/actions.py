@@ -454,16 +454,20 @@ def _renameAxis(axis, axes):
 @dataclass(kw_only=True)
 class DropInactiveSourcesAction(BaseFilterAction):
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        usedSources = getActiveSources(glyph.sources)
-        usedLayerNames = {source.layerName for source in usedSources}
-        usedLayers = {
-            layerName: layer
-            for layerName, layer in glyph.layers.items()
-            if layerName in usedLayerNames
-        }
-        if usedSources != glyph.sources or usedLayers != glyph.layers:
-            glyph = replace(glyph, sources=usedSources, layers=usedLayers)
-        return glyph
+        return dropUnusedSourcesAndLayers(glyph)
+
+
+def dropUnusedSourcesAndLayers(glyph):
+    usedSources = getActiveSources(glyph.sources)
+    usedLayerNames = {source.layerName for source in usedSources}
+    usedLayers = {
+        layerName: layer
+        for layerName, layer in glyph.layers.items()
+        if layerName in usedLayerNames
+    }
+    if usedSources != glyph.sources or usedLayers != glyph.layers:
+        glyph = replace(glyph, sources=usedSources, layers=usedLayers)
+    return glyph
 
 
 @registerActionClass("drop-axis-mapping")
@@ -714,3 +718,75 @@ class SetFontInfoAction(BaseFilterAction):
             extraNamesString = ", ".join(repr(n) for n in sorted(extraNames))
             actionLogger.error(f"set-font-info: unknown name(s): {extraNamesString}")
         return structure(unstructure(fontInfo) | self.fontInfo, FontInfo)
+
+
+@registerActionClass("subset-axes")
+@dataclass(kw_only=True)
+class SubsetAxesAction(BaseFilterAction):
+    axisNames: set[str] = field(default_factory=set)
+    dropAxisNames: set[str] = field(default_factory=set)
+
+    def __post_init__(self):
+        self.axisNames = set(self.axisNames)
+        self.dropAxisNames = set(self.dropAxisNames)
+        self._locationToKeep = None
+
+    def getAxisNamesToKeep(self, axes):
+        axisNames = (
+            set(axis.name for axis in axes)
+            if not self.axisNames and self.dropAxisNames
+            else self.axisNames
+        )
+        return axisNames - self.dropAxisNames
+
+    async def getLocationToKeep(self):
+        if self._locationToKeep is None:
+            axes = await self.validatedInput.getGlobalAxes()
+            keepAxisNames = self.getAxisNamesToKeep(axes)
+            location = getDefaultSourceLocation(axes)
+            self._locationToKeep = {
+                n: v for n, v in location.items() if n not in keepAxisNames
+            }
+        return self._locationToKeep
+
+    async def processGlobalAxes(
+        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
+    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        keepAxisNames = self.getAxisNamesToKeep(axes)
+        return [axis for axis in axes if axis.name in keepAxisNames]
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        # locationToKeep contains axis *values* for sources we want to keep,
+        # but those axes are to be dropped, so it *also* says "axes to drop"
+        locationToKeep = await self.getLocationToKeep()
+
+        sources = [
+            replace(
+                source, location=subsetLocationDrop(source.location, locationToKeep)
+            )
+            for source in glyph.sources
+            if subsetLocationKeep(locationToKeep | source.location, locationToKeep)
+            == locationToKeep
+        ]
+
+        glyph = replace(glyph, sources=sources)
+        return dropUnusedSourcesAndLayers(glyph)
+
+
+def subsetLocationKeep(location, axisNames):
+    return {n: v for n, v in location.items() if n in axisNames}
+
+
+def subsetLocationDrop(location, axisNames):
+    return {n: v for n, v in location.items() if n not in axisNames}
+
+
+def getDefaultSourceLocation(axes):
+    return {
+        axis.name: (
+            piecewiseLinearMap(axis.defaultValue, dict(axis.mapping))
+            if axis.mapping
+            else axis.defaultValue
+        )
+        for axis in axes
+    }

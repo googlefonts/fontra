@@ -559,6 +559,34 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "subset-keep-axis",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset-axes
+              axisNames: ["weight"]
+
+            - action: output
+              destination: "output-subset-axes.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-drop-axis",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset-axes
+              dropAxisNames: ["width", "italic"]
+
+            - action: output
+              destination: "output-subset-axes.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):

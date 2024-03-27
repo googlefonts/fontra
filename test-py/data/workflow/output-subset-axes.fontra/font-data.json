@@ -1,0 +1,26 @@
+{
+"unitsPerEm": 1000,
+"fontInfo": {},
+"customData": {},
+"axes": [
+{
+"name": "weight",
+"label": "weight",
+"tag": "wght",
+"minValue": 100,
+"defaultValue": 100,
+"maxValue": 900,
+"mapping": [
+[
+100,
+150
+],
+[
+900,
+850
+]
+]
+}
+],
+"sources": {}
+}
