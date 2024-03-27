@@ -1,5 +1,6 @@
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
+import { scalePoint } from "/core/path-functions.js";
 import { findNestedActiveElement } from "/core/utils.js";
 
 export default class SelectionTransformationPanel extends Panel {
@@ -74,6 +75,15 @@ export default class SelectionTransformationPanel extends Panel {
   getContentElement() {
     return html.div(
       {
+        class: "selection-transformation",
+      },
+      []
+    );
+  }
+
+  /*   getContentElement() {
+    return html.div(
+      {
         class: "sidebar-text-entry",
       },
       [
@@ -99,7 +109,7 @@ export default class SelectionTransformationPanel extends Panel {
         ),
       ]
     );
-  }
+  } */
 
   updateAlignElement(align) {
     for (const el of this.textAlignElement.children) {
