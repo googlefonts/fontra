@@ -647,7 +647,8 @@ function defaultGetFieldValue(glyph, glyphController, fieldItem) {
 
 function defaultSetFieldValue(glyph, glyphController, fieldItem, value) {
   const changePath = JSON.parse(fieldItem.key);
-  const niceValue = fieldItem.numDigits ? round(value, fieldItem.numDigits) : value;
+  const niceValue =
+    fieldItem.numDigits === undefined ? value : round(value, fieldItem.numDigits);
   return setNestedValue(glyph, changePath, niceValue);
 }
 

@@ -180,9 +180,10 @@ export class Form extends SimpleElement {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
-    inputElement.value = fieldItem.numDigits
-      ? round(fieldItem.value, fieldItem.numDigits)
-      : fieldItem.value;
+    inputElement.value =
+      fieldItem.numDigits === undefined
+        ? fieldItem.value
+        : round(fieldItem.value, fieldItem.numDigits);
 
     if ("minValue" in fieldItem) {
       inputElement.min = fieldItem.minValue;
@@ -233,9 +234,8 @@ export class Form extends SimpleElement {
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
     this._fieldSetters[fieldItem.key] = (value) =>
-      (inputElement.value = fieldItem.numDigits
-        ? round(value, fieldItem.numDigits)
-        : value);
+      (inputElement.value =
+        fieldItem.numDigits === undefined ? value : round(value, fieldItem.numDigits));
     valueElement.appendChild(inputElement);
   }
 
