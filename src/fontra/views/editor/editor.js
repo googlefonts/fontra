@@ -700,17 +700,41 @@ export class EditorController {
           this.canvasController.canvas.focus();
         };
       } else {
+        function collapseSubTools(editToolsElement) {
+          // Hide sub tools
+          for (const [index, child] of enumerate(editToolsElement.children)) {
+            child.style.visibility = index ? "hidden" : "visible";
+            child.dataset.tooltipposition = index ? "right" : "bottom";
+          }
+          window.removeEventListener("mousedown", globalListener, false);
+          window.removeEventListener("keydown", globalListener, false);
+        }
+
+        const globalListener = {
+          handleEvent: (event) => {
+            if (event.type != "keydown" || event.key == "Escape") {
+              collapseSubTools(editToolsElement);
+            }
+          },
+        };
+
         toolButton.onmousedown = () => {
           clearTimeout(this.downTimer);
           this.downTimer = setTimeout(function () {
+            // Show sub tools
             for (const child of editToolsElement.children) {
               child.style.visibility = "visible";
             }
+            window.addEventListener("mousedown", globalListener, false);
+            window.addEventListener("keydown", globalListener, false);
           }, 650);
         };
 
         toolButton.onmouseup = () => {
           if (this.downTimer >= 100) {
+            event.stopImmediatePropagation();
+            event.preventDefault();
+
             clearTimeout(this.downTimer);
             this.setSelectedTool(tool.identifier);
             this.canvasController.canvas.focus();
@@ -720,33 +744,12 @@ export class EditorController {
               return;
             }
 
+            collapseSubTools(editToolsElement);
             editToolsElement.prepend(toolButton);
-
-            for (const [index, child] of enumerate(editToolsElement.children)) {
-              if (child !== toolButton) {
-                child.style.visibility = "hidden";
-              }
-              child.dataset.tooltipposition = index ? "right" : "bottom";
-            }
+            collapseSubTools(editToolsElement);
           }
           clearTimeout(this.downTimer);
         };
-
-        window.addEventListener(
-          "click",
-          function (event) {
-            if (!editToolsElement.contains(event.target)) {
-              // the click was outside the editToolsElement,
-              // hide all subtools except the first one
-              for (const [i, child] of enumerate(editToolsElement.children)) {
-                if (i !== 0) {
-                  child.style.visibility = "hidden";
-                }
-              }
-            }
-          },
-          false
-        );
       }
       editToolsElement.appendChild(toolButton);
     }
