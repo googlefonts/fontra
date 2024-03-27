@@ -185,6 +185,7 @@ export default class SelectionInfoPanel extends Panel {
           key: '["xAdvance"]',
           label: "Advance width",
           value: instance.xAdvance,
+          numDigits: 1,
           minValue: 0,
         });
         formContents.push({
@@ -194,6 +195,7 @@ export default class SelectionInfoPanel extends Panel {
           fieldX: {
             key: '["leftMargin"]',
             value: glyphController.leftMargin,
+            numDigits: 1,
             disabled: glyphController.leftMargin == undefined,
             getValue: (layerGlyph, layerGlyphController, fieldItem) => {
               return layerGlyphController.leftMargin;
@@ -212,6 +214,7 @@ export default class SelectionInfoPanel extends Panel {
           fieldY: {
             key: '["rightMargin"]',
             value: glyphController.rightMargin,
+            numDigits: 1,
             disabled: glyphController.rightMargin == undefined,
             getValue: (layerGlyph, layerGlyphController, fieldItem) => {
               return layerGlyphController.rightMargin;

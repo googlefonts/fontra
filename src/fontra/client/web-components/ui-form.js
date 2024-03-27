@@ -1,7 +1,7 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
-import { hyphenatedToCamelCase } from "../core/utils.js";
+import { hyphenatedToCamelCase, round } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 import "/web-components/rotary-control.js";
 
@@ -180,7 +180,8 @@ export class Form extends SimpleElement {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
-    inputElement.value = fieldItem.value;
+    inputElement.value = maybeRound(fieldItem.value, fieldItem.numDigits);
+
     if ("minValue" in fieldItem) {
       inputElement.min = fieldItem.minValue;
     }
@@ -229,7 +230,8 @@ export class Form extends SimpleElement {
       this._fieldChanging(fieldItem, value, undefined);
     };
     this._fieldGetters[fieldItem.key] = () => inputElement.value;
-    this._fieldSetters[fieldItem.key] = (value) => (inputElement.value = value);
+    this._fieldSetters[fieldItem.key] = (value) =>
+      (inputElement.value = maybeRound(value, fieldItem.numDigits));
     valueElement.appendChild(inputElement);
   }
 
@@ -369,6 +371,10 @@ export class Form extends SimpleElement {
     }
     setter(value);
   }
+}
+
+function maybeRound(value, digits) {
+  return digits === undefined ? value : round(value, digits);
 }
 
 customElements.define("ui-form", Form);
