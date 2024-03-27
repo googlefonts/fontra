@@ -51,7 +51,7 @@ import { HandTool } from "./edit-tools-hand.js";
 import { PenTool } from "./edit-tools-pen.js";
 import { PointerTool } from "./edit-tools-pointer.js";
 import { PowerRulerTool } from "./edit-tools-power-ruler.js";
-import { ShapeToolEllipse, ShapeToolRect } from "./edit-tools-shape.js";
+import { ShapeTool } from "./edit-tools-shape.js";
 import { SceneController } from "./scene-controller.js";
 import { MIN_SIDEBAR_WIDTH, Sidebar } from "./sidebar.js";
 import {
@@ -610,29 +610,13 @@ export class EditorController {
 
   initTools() {
     this.tools = {};
-    const editToolClasses = [
-      PointerTool,
-      PenTool,
-      [ShapeToolRect, ShapeToolEllipse],
-      PowerRulerTool,
-      HandTool,
-    ];
-    let toolIndex = 0;
+    this.topLevelTools = {};
+    const editToolClasses = [PointerTool, PenTool, ShapeTool, PowerRulerTool, HandTool];
+
     for (const editToolClass of editToolClasses) {
-      if (Array.isArray(editToolClass)) {
-        const editToolsElement = document.querySelector("#edit-tools");
-        const wrapperID = `edit-tools-multi-wrapper-${toolIndex}`;
-        editToolsElement.appendChild(
-          html.div({ id: wrapperID, class: "tool-button tool-button-triangle" })
-        );
-        for (const subClass of editToolClass) {
-          this.addEditTool(new subClass(this), wrapperID);
-        }
-      } else {
-        this.addEditTool(new editToolClass(this));
-      }
-      toolIndex++;
+      this.addEditTool(new editToolClass(this));
     }
+
     this.setSelectedTool("pointer-tool");
 
     for (const zoomElement of document.querySelectorAll("#zoom-tools > .tool-button")) {
@@ -663,75 +647,108 @@ export class EditorController {
     });
   }
 
-  addEditTool(tool, wrapperID = "edit-tools") {
+  addEditTool(tool) {
     this.tools[tool.identifier] = tool;
+    this.topLevelTools[tool.identifier] = tool;
+
+    let wrapperID = "edit-tools";
+
+    const toolDefs = [];
+
+    if (tool.subTools) {
+      for (const subToolClass of tool.subTools) {
+        const subTool = new subToolClass(this);
+        toolDefs.push(subTool);
+        this.tools[subTool.identifier] = subTool;
+      }
+
+      wrapperID = `edit-tools-multi-wrapper-${tool.identifier}`;
+      const editToolsElement = document.querySelector("#edit-tools");
+      editToolsElement.appendChild(
+        html.div({
+          "id": wrapperID,
+          "data-tool": tool.identifier,
+          "class": "tool-button tool-button-triangle multi-tool",
+        })
+      );
+    } else {
+      toolDefs.push(tool);
+    }
 
     const editToolsElement = document.querySelector("#" + wrapperID);
-    const toolButton = html.div(
-      {
-        "class": wrapperID === "edit-tools" ? "tool-button selected" : "subtool-button",
-        "data-tool": tool.identifier,
-        "data-tooltip": hyphenatedToLabel(tool.identifier),
-        "data-tooltipposition": wrapperID === "edit-tools" ? "bottom" : "right",
-      },
-      [html.createDomElement("inline-svg", { class: "tool-icon", src: tool.iconPath })]
-    );
 
-    if (wrapperID === "edit-tools") {
-      toolButton.onclick = () => {
-        this.setSelectedTool(tool.identifier);
-        this.canvasController.canvas.focus();
-      };
-    } else {
-      toolButton.onmousedown = () => {
-        clearTimeout(this.downTimer);
-        this.downTimer = setTimeout(function () {
-          for (const child of editToolsElement.children) {
-            child.style.visibility = "visible";
-          }
-        }, 650);
-      };
+    for (const tool of toolDefs) {
+      const toolButton = html.div(
+        {
+          "class":
+            wrapperID === "edit-tools" ? "tool-button selected" : "subtool-button",
+          "data-tool": tool.identifier,
+          "data-tooltip": hyphenatedToLabel(tool.identifier),
+          "data-tooltipposition": wrapperID === "edit-tools" ? "bottom" : "right",
+        },
+        [
+          html.createDomElement("inline-svg", {
+            class: "tool-icon",
+            src: tool.iconPath,
+          }),
+        ]
+      );
 
-      toolButton.onmouseup = () => {
-        if (this.downTimer >= 100) {
-          clearTimeout(this.downTimer);
-          this.setSelectedTool(tool.identifier, wrapperID);
+      if (wrapperID === "edit-tools") {
+        toolButton.onclick = () => {
+          this.setSelectedTool(tool.identifier);
           this.canvasController.canvas.focus();
-
-          if (toolButton === editToolsElement.children[0]) {
-            // do nothing. Still the same tool
-            return;
-          }
-
-          editToolsElement.prepend(toolButton);
-
-          for (const child of editToolsElement.children) {
-            if (child !== toolButton) {
-              child.style.visibility = "hidden";
+        };
+      } else {
+        toolButton.onmousedown = () => {
+          clearTimeout(this.downTimer);
+          this.downTimer = setTimeout(function () {
+            for (const child of editToolsElement.children) {
+              child.style.visibility = "visible";
             }
-          }
-        }
-        clearTimeout(this.downTimer);
-      };
+          }, 650);
+        };
 
-      window.addEventListener(
-        "click",
-        function (event) {
-          if (!editToolsElement.contains(event.target)) {
-            // the click was outside the editToolsElement,
-            // hide all subtools except the first one
-            for (const [i, child] of enumerate(editToolsElement.children)) {
-              if (i !== 0) {
+        toolButton.onmouseup = () => {
+          if (this.downTimer >= 100) {
+            clearTimeout(this.downTimer);
+            this.setSelectedTool(tool.identifier);
+            this.canvasController.canvas.focus();
+
+            if (toolButton === editToolsElement.children[0]) {
+              // do nothing. Still the same tool
+              return;
+            }
+
+            editToolsElement.prepend(toolButton);
+
+            for (const child of editToolsElement.children) {
+              if (child !== toolButton) {
                 child.style.visibility = "hidden";
               }
             }
           }
-        },
-        false
-      );
-    }
+          clearTimeout(this.downTimer);
+        };
 
-    editToolsElement.appendChild(toolButton);
+        window.addEventListener(
+          "click",
+          function (event) {
+            if (!editToolsElement.contains(event.target)) {
+              // the click was outside the editToolsElement,
+              // hide all subtools except the first one
+              for (const [i, child] of enumerate(editToolsElement.children)) {
+                if (i !== 0) {
+                  child.style.visibility = "hidden";
+                }
+              }
+            }
+          },
+          false
+        );
+      }
+      editToolsElement.appendChild(toolButton);
+    }
   }
 
   initSidebars() {
@@ -852,16 +869,28 @@ export class EditorController {
     };
   }
 
-  setSelectedTool(toolIdentifier, wrapperID = "unkown") {
+  setSelectedTool(toolIdentifier) {
+    let selectedToolIdentifier = toolIdentifier;
+
     for (const editToolItem of document.querySelectorAll(
       "#edit-tools > .tool-button"
     )) {
-      editToolItem.classList.toggle(
-        "selected",
-        editToolItem.dataset.tool === toolIdentifier || editToolItem.id === wrapperID
-      );
+      let shouldSelect = editToolItem.dataset.tool === toolIdentifier;
+
+      if (editToolItem.classList.contains("multi-tool")) {
+        if (shouldSelect) {
+          selectedToolIdentifier = editToolItem.children[0].dataset.tool;
+        } else {
+          for (const childToolElement of editToolItem.children) {
+            if (childToolElement.dataset.tool === toolIdentifier) {
+              shouldSelect = true;
+            }
+          }
+        }
+      }
+      editToolItem.classList.toggle("selected", shouldSelect);
     }
-    this.sceneController.setSelectedTool(this.tools[toolIdentifier]);
+    this.sceneController.setSelectedTool(this.tools[selectedToolIdentifier]);
   }
 
   themeChanged() {
@@ -1051,8 +1080,9 @@ export class EditorController {
     });
     this.registerShortCut("123456789", { metaKey: false }, (event) => {
       const toolIndex = parseInt(event.key) - 1;
-      if (toolIndex < Object.keys(this.tools).length) {
-        this.setSelectedTool(Object.keys(this.tools)[toolIndex]);
+      const toolIdentifiers = Object.keys(this.topLevelTools);
+      if (toolIndex < toolIdentifiers.length) {
+        this.setSelectedTool(toolIdentifiers[toolIndex]);
       }
     });
     this.registerShortCut("f", { metaKey: true, globalOverride: true }, () => {
