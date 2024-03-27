@@ -76,7 +76,7 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
     glyphNamesFile = pathlib.Path(tmp_path) / "subset-glyphs.txt"
     glyphNamesFile.write_text("B\nC Adieresis\n")
 
-    actionClass = getActionClass("subset")
+    actionClass = getActionClass("subset-glyphs")
     action = actionClass(glyphNames=glyphNames, glyphNamesFile=glyphNamesFile)
     assert isinstance(action, ConnectableActionProtocol)
     assert isinstance(action, ReadableFontBackend)
@@ -125,13 +125,13 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
               - action: scale
                 scaleFactor: 0.75
                 scaleUnitsPerEm: false
-              - action: subset
+              - action: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
             - action: input
               source: "test-common/fonts/MutatorSans.fontra"
               steps:
-              - action: subset
+              - action: subset-glyphs
                 glyphNames: ["C", "D"]
 
             - action: output
@@ -148,13 +148,13 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
               - action: scale
                 scaleFactor: 0.75
                 scaleUnitsPerEm: false
-              - action: subset
+              - action: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
             - action: input
               source: "test-common/fonts/MutatorSans.fontra"
               steps:
-              - action: subset
+              - action: subset-glyphs
                 glyphNames: ["C", "D"]
             """,
             """
@@ -238,13 +238,13 @@ def test_command(tmpdir, configYAMLSources):
               - action: scale
                 scaleFactor: 0.75
                 scaleUnitsPerEm: false
-              - action: subset
+              - action: subset-glyphs
                 glyphNames: ["A", "B", "Adieresis"]
 
             - action: input
               source: "test-common/fonts/MutatorSans.fontra"
               steps:
-              - action: subset
+              - action: subset-glyphs
                 glyphNames: ["C", "D"]
 
             - action: output
@@ -258,7 +258,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
             - action: rename-axes
               axes:
@@ -278,7 +278,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input-drop-unused-sources-and-layers.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["S"]
             - action: drop-unused-sources-and-layers
 
@@ -293,7 +293,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
             - action: drop-axis-mapping
 
@@ -308,7 +308,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
             - action: drop-axis-mapping
               axes: ["weight"]
@@ -324,7 +324,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
             - action: drop-axis-mapping
               axes: ["non-existent"]
@@ -340,7 +340,7 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
             - action: adjust-axes
               axes:
@@ -360,9 +360,9 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
             - action: drop-axis-mapping
             - action: adjust-axes
@@ -383,9 +383,9 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
             - action: adjust-axes
               remapSources: false
@@ -406,9 +406,9 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
-            - action: subset
+            - action: subset-glyphs
               glyphNames: ["A"]
             - action: drop-axis-mapping
             - action: adjust-axes

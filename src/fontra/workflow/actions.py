@@ -299,9 +299,9 @@ def getComponentNames(glyph):
     }
 
 
-@registerActionClass("subset")
+@registerActionClass("subset-glyphs")
 @dataclass(kw_only=True)
-class SubsetAction(BaseGlyphSubsetterAction):
+class SubsetGlyphsAction(BaseGlyphSubsetterAction):
     glyphNames: set[str] = field(default_factory=set)
     glyphNamesFile: str | None = None
 
