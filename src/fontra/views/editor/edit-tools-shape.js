@@ -4,7 +4,7 @@ import { VarPackedPath, packContour } from "../core/var-path.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
 
-export class ShapeTool extends BaseTool {
+export class ShapeTool {
   identifier = "shape-tool";
   subTools = [ShapeToolRect, ShapeToolEllipse];
 }
