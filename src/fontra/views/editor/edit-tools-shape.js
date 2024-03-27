@@ -7,6 +7,7 @@ import { registerVisualizationLayerDefinition } from "./visualization-layer-defi
 export class ShapeToolRect extends BaseTool {
   iconPath = "/tabler-icons/square-plus-2.svg";
   identifier = "shape-tool-rectangle";
+  shapeNames = ["rectangle", "square"];
 
   setCursor() {
     if (this.sceneModel.selectedGlyph?.isEditing) {
@@ -71,10 +72,10 @@ export class ShapeToolRect extends BaseTool {
     if (eventTemp.ctrlKey) {
       this.reversePath(pathNew);
     }
-    this.addShapePath(pathNew);
+    this.addShapePath(pathNew, eventTemp);
   }
 
-  async addShapePath(pathNew) {
+  async addShapePath(pathNew, event) {
     await this.sceneController.editGlyphAndRecordChanges(
       (glyph) => {
         const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
@@ -95,7 +96,7 @@ export class ShapeToolRect extends BaseTool {
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           layerGlyph.path.appendPath(pathNew);
         }
-        return "add shape";
+        return `add ${this.shapeNames[event.shiftKey ? 1 : 0]}`;
       },
       undefined,
       true
@@ -179,6 +180,7 @@ export function getUnpackedContoursRect(x, y, width, height, contourType = "cubi
 export class ShapeToolEllipse extends ShapeToolRect {
   iconPath = "/tabler-icons/circle-plus-2.svg";
   identifier = "shape-tool-ellipse";
+  shapeNames = ["ellipse", "circle"];
 
   getUnpackedContours(x, y, width, height) {
     let cx = x + width / 2;
