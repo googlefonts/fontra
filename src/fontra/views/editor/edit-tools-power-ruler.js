@@ -65,6 +65,11 @@ export class PowerRulerTool extends BaseTool {
       }
     );
 
+    editor.visualizationLayersSettings.addKeyListener(
+      "fontra.cjk.design.frame",
+      (event) => this.recalc()
+    );
+
     this.sceneController.addCurrentGlyphChangeListener((event) => {
       this.recalc();
     });
