@@ -677,14 +677,14 @@ export class EditorController {
 
     const editToolsElement = document.querySelector("#" + wrapperID);
 
-    for (const tool of toolDefs) {
+    for (const [index, tool] of enumerate(toolDefs)) {
       const toolButton = html.div(
         {
           "class":
             wrapperID === "edit-tools" ? "tool-button selected" : "subtool-button",
           "data-tool": tool.identifier,
           "data-tooltip": hyphenatedToLabel(tool.identifier),
-          "data-tooltipposition": wrapperID === "edit-tools" ? "bottom" : "right",
+          "data-tooltipposition": index ? "right" : "bottom",
         },
         [
           html.createDomElement("inline-svg", {
@@ -722,10 +722,11 @@ export class EditorController {
 
             editToolsElement.prepend(toolButton);
 
-            for (const child of editToolsElement.children) {
+            for (const [index, child] of enumerate(editToolsElement.children)) {
               if (child !== toolButton) {
                 child.style.visibility = "hidden";
               }
+              child.dataset.tooltipposition = index ? "right" : "bottom";
             }
           }
           clearTimeout(this.downTimer);
