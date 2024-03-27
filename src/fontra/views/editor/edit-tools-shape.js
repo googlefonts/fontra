@@ -4,6 +4,12 @@ import { VarPackedPath, packContour } from "../core/var-path.js";
 import { BaseTool, shouldInitiateDrag } from "./edit-tools-base.js";
 import { registerVisualizationLayerDefinition } from "./visualization-layer-definitions.js";
 
+export class ShapeTool extends BaseTool {
+  iconPath = "/tabler-icons/square-plus-2.svg"; // placeholder, do we need it????
+  identifier = "shape-tool";
+  subTools = [ShapeToolRect, ShapeToolEllipse];
+}
+
 export class ShapeToolRect extends BaseTool {
   iconPath = "/tabler-icons/square-plus-2.svg";
   identifier = "shape-tool-rectangle";
