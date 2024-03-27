@@ -731,24 +731,21 @@ export class EditorController {
         };
 
         toolButton.onmouseup = () => {
-          if (this.downTimer >= 100) {
-            event.stopImmediatePropagation();
-            event.preventDefault();
-
-            clearTimeout(this.downTimer);
-            this.setSelectedTool(tool.identifier);
-            this.canvasController.canvas.focus();
-
-            if (toolButton === editToolsElement.children[0]) {
-              // do nothing. Still the same tool
-              return;
-            }
-
-            collapseSubTools(editToolsElement);
-            editToolsElement.prepend(toolButton);
-            collapseSubTools(editToolsElement);
-          }
+          event.stopImmediatePropagation();
+          event.preventDefault();
           clearTimeout(this.downTimer);
+
+          this.setSelectedTool(tool.identifier);
+          this.canvasController.canvas.focus();
+
+          if (toolButton === editToolsElement.children[0]) {
+            // do nothing. Still the same tool
+            return;
+          }
+
+          collapseSubTools(editToolsElement);
+          editToolsElement.prepend(toolButton);
+          collapseSubTools(editToolsElement);
         };
       }
       editToolsElement.appendChild(toolButton);
