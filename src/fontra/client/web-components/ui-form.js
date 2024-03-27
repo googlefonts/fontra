@@ -83,11 +83,6 @@ export class Form extends SimpleElement {
       gap: 0.3rem;
     }
 
-    .node:hover {
-      color: blue;
-      pointer-events: auto;
-      cursor: pointer;
-    }
   `;
 
   constructor() {
@@ -139,19 +134,6 @@ export class Form extends SimpleElement {
         continue;
       }
       this.contentElement.appendChild(valueElement);
-
-      if (fieldItem.type === "edit-number-x-y") {
-        if (fieldItem.auxiliaryElement) {
-          valueElement.appendChild(fieldItem.auxiliaryElement);
-        }
-      }
-
-      if (fieldItem.type === "edit-icon-button") {
-        if (fieldItem.auxiliaryElement) {
-          valueElement.appendChild(fieldItem.auxiliaryElement);
-        }
-        continue;
-      }
 
       const methodName = hyphenatedToCamelCase("_add-" + fieldItem.type);
       if (this[methodName] === undefined) {

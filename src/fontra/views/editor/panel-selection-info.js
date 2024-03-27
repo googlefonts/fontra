@@ -1,7 +1,6 @@
 import Panel from "./panel.js";
 import { recordChanges } from "/core/change-recorder.js";
 import * as html from "/core/html-utils.js";
-import { scalePoint } from "/core/path-functions.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import {
   enumerate,
