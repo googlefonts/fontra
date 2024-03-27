@@ -719,8 +719,8 @@ export class EditorController {
         };
 
         toolButton.onmousedown = () => {
-          clearTimeout(this.downTimer);
-          this.downTimer = setTimeout(function () {
+          clearTimeout(this._multiToolMouseDownTimer);
+          this._multiToolMouseDownTimer = setTimeout(function () {
             // Show sub tools
             for (const child of editToolsElement.children) {
               child.style.visibility = "visible";
@@ -733,7 +733,7 @@ export class EditorController {
         toolButton.onmouseup = () => {
           event.stopImmediatePropagation();
           event.preventDefault();
-          clearTimeout(this.downTimer);
+          clearTimeout(this._multiToolMouseDownTimer);
 
           this.setSelectedTool(tool.identifier);
           this.canvasController.canvas.focus();
