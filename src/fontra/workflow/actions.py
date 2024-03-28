@@ -21,6 +21,7 @@ from fontTools.varLib.models import piecewiseLinearMap
 
 from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
+from ..core.async_property import async_cached_property
 from ..core.classes import (
     Component,
     FontInfo,
@@ -241,20 +242,19 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
     _glyphMap: dict[str, list[int]] | None = field(init=False, repr=False, default=None)
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
-        glyphMap = await self._getSubsettedGlyphMap()
+        glyphMap = await self.subsettedGlyphMap
         if glyphName not in glyphMap:
             return None
         return await self.validatedInput.getGlyph(glyphName)
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
-        return await self._getSubsettedGlyphMap()
+        return await self.subsettedGlyphMap
 
-    async def _getSubsettedGlyphMap(self) -> dict[str, list[int]]:
-        if self._glyphMap is None:
-            self._glyphMap = await self._buildSubsettedGlyphMap(
-                await self.validatedInput.getGlyphMap()
-            )
-        return self._glyphMap
+    @async_cached_property
+    async def subsettedGlyphMap(self) -> dict[str, list[int]]:
+        return await self._buildSubsettedGlyphMap(
+            await self.validatedInput.getGlyphMap()
+        )
 
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
@@ -475,30 +475,27 @@ def dropUnusedSourcesAndLayers(glyph):
 class DropAxisMappingAction(BaseFilterAction):
     axes: list[str] | None = None
 
-    _axisValueMapFunctions: dict | None = field(init=False, default=None)
+    @async_cached_property
+    async def axisValueMapFunctions(self) -> dict:
+        axes = await self.validatedInput.getGlobalAxes()
+        if self.axes:
+            axes = [axis for axis in axes if axis.name in self.axes]
 
-    async def _getAxisValueMapFunctions(self) -> dict:
-        if self._axisValueMapFunctions is None:
-            axes = await self.validatedInput.getGlobalAxes()
-            if self.axes:
-                axes = [axis for axis in axes if axis.name in self.axes]
-
-            mapFuncs = {}
-            for axis in axes:
-                if axis.mapping:
-                    mapFuncs[axis.name] = partial(
-                        piecewiseLinearMap,
-                        mapping=dict([(b, a) for a, b in axis.mapping]),
-                    )
-            self._axisValueMapFunctions = mapFuncs
-        return self._axisValueMapFunctions
+        mapFuncs = {}
+        for axis in axes:
+            if axis.mapping:
+                mapFuncs[axis.name] = partial(
+                    piecewiseLinearMap,
+                    mapping=dict([(b, a) for a, b in axis.mapping]),
+                )
+        return mapFuncs
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        mapFuncs = await self._getAxisValueMapFunctions()
+        mapFuncs = await self.axisValueMapFunctions
         return _remapSourceLocations(glyph, mapFuncs)
 
     async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        mapFuncs = await self._getAxisValueMapFunctions()
+        mapFuncs = await self.axisValueMapFunctions
         return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
 
 
