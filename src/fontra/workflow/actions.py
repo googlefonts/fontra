@@ -530,14 +530,18 @@ class AdjustAxesAction(BaseFilterAction):
     axes: dict[str, dict[str, Any]]
     remapSources: bool = True
 
-    _adjustedAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = field(
-        init=False, default=None
-    )
-    _axisValueMapFunctions: dict | None = field(init=False, default=None)
+    @async_cached_property
+    async def adjustedAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        adjustedAxes, _ = await self._adjustedAxesAndMapFunctions
+        return adjustedAxes
 
-    async def _ensureSetup(self) -> None:
-        if self._adjustedAxes is not None:
-            return
+    @async_cached_property
+    async def axisValueMapFunctions(self) -> dict:
+        _, mapFuncs = await self._adjustedAxesAndMapFunctions
+        return mapFuncs
+
+    @async_cached_property
+    async def _adjustedAxesAndMapFunctions(self) -> None:
         mapFuncs: dict = {}
         axes = await self.validatedInput.getGlobalAxes()
         adjustedAxes = []
@@ -569,16 +573,13 @@ class AdjustAxesAction(BaseFilterAction):
 
                 axis = newAxis
             adjustedAxes.append(axis)
-        self._adjustedAxes = adjustedAxes
-        self._axisValueMapFunctions = mapFuncs
+        return adjustedAxes, mapFuncs
 
     async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        await self._ensureSetup()
-        assert self._adjustedAxes is not None
-        return self._adjustedAxes
+        return await self.adjustedAxes
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return _remapSourceLocations(glyph, self._axisValueMapFunctions)
+        return _remapSourceLocations(glyph, await self.axisValueMapFunctions)
 
 
 @registerActionClass("decompose-composites")
