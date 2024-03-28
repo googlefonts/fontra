@@ -594,7 +594,7 @@ class DecomposeCompositesAction(BaseFilterAction):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         glyph = instancer.glyph
-        defaultGlobalLocation = instancer.defaultGlobalLocation
+        defaultGlobalSourceLocation = instancer.defaultGlobalSourceLocation
 
         if not instancer.componentTypes or (
             self.onlyVariableComposites and not any(instancer.componentTypes)
@@ -602,11 +602,11 @@ class DecomposeCompositesAction(BaseFilterAction):
             return glyph
 
         haveLocations = getGlobalLocationsFromSources(
-            instancer.activeSources, defaultGlobalLocation
+            instancer.activeSources, defaultGlobalSourceLocation
         )
 
         needLocations = await getGlobalLocationsFromBaseGlyphs(
-            glyph, self.fontInstancer.backend, defaultGlobalLocation
+            glyph, self.fontInstancer.backend, defaultGlobalSourceLocation
         )
 
         locationsToAdd = [
@@ -638,7 +638,7 @@ class DecomposeCompositesAction(BaseFilterAction):
 
 
 async def getGlobalLocationsFromBaseGlyphs(
-    glyph, backend, defaultGlobalLocation, seenGlyphNames=None
+    glyph, backend, defaultGlobalSourceLocation, seenGlyphNames=None
 ):
     if seenGlyphNames is None:
         seenGlyphNames = set()
@@ -656,7 +656,7 @@ async def getGlobalLocationsFromBaseGlyphs(
     for baseGlyph in baseGlyphs:
         locations.update(
             getGlobalLocationsFromSources(
-                getActiveSources(baseGlyph.sources), defaultGlobalLocation
+                getActiveSources(baseGlyph.sources), defaultGlobalSourceLocation
             )
         )
 
@@ -665,18 +665,22 @@ async def getGlobalLocationsFromBaseGlyphs(
     for baseGlyph in baseGlyphs:
         locations.update(
             await getGlobalLocationsFromBaseGlyphs(
-                baseGlyph, backend, defaultGlobalLocation, seenGlyphNames
+                baseGlyph, backend, defaultGlobalSourceLocation, seenGlyphNames
             )
         )
 
     return locations
 
 
-def getGlobalLocationsFromSources(sources, defaultGlobalLocation):
+def getGlobalLocationsFromSources(sources, defaultGlobalSourceLocation):
     return {
         tuplifyLocation(
-            defaultGlobalLocation
-            | {k: v for k, v in source.location.items() if k in defaultGlobalLocation}
+            defaultGlobalSourceLocation
+            | {
+                k: v
+                for k, v in source.location.items()
+                if k in defaultGlobalSourceLocation
+            }
         )
         for source in sources
     }
