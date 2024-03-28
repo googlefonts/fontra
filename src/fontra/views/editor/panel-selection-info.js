@@ -225,6 +225,25 @@ export default class SelectionInfoPanel extends Panel {
             },
           },
         });
+
+        formContents.push({ type: "divider" });
+        formContents.push({ type: "divider" });
+
+        formContents.push({
+          type: "edit-number-x-y",
+          key: '["selectionScale"]',
+          label: "Selection Scale",
+          fieldX: {
+            key: '["selectionScaleX"]',
+            value: 100,
+          },
+          fieldY: {
+            key: '["selectionScaleY"]',
+            value: 100,
+          },
+        });
+
+        formContents.push({ type: "divider" });
       }
     }
 

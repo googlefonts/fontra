@@ -92,10 +92,14 @@ export class Form extends SimpleElement {
 
     .ui-form-icon {
       overflow-x: unset;
-      width: 2em;
+      width: 1.2em;
       white-space: nowrap;
-      margin-left: 1em;
-      margin-right: 1em;
+      margin-left: 1.3em;
+      margin-right: 1.3em;
+    }
+
+    .ui-form-single-icon {
+      width: 100%;
     }
 
     ui-form-icon-button {
@@ -130,6 +134,12 @@ export class Form extends SimpleElement {
     .ui-form-icon.ui-form-icon-button {
       display: inline-block;
     }
+
+    .ui-form-value.single-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   `;
 
   constructor() {
@@ -160,6 +170,19 @@ export class Form extends SimpleElement {
         this.contentElement.appendChild(html.hr());
         continue;
       }
+      if (fieldItem.type === "single-icon") {
+        if (fieldItem.element) {
+          const iconElement = document.createElement("div");
+          iconElement.classList.add("ui-form-single-icon");
+          iconElement.appendChild(fieldItem.element);
+          const valueElement = document.createElement("div");
+          valueElement.classList.add("ui-form-value", fieldItem.type);
+          valueElement.appendChild(iconElement);
+          this.contentElement.appendChild(valueElement);
+        }
+        continue;
+      }
+
       const labelElement = document.createElement("div");
       labelElement.classList.add("ui-form-label", fieldItem.type);
       const valueElement = document.createElement("div");
@@ -180,6 +203,7 @@ export class Form extends SimpleElement {
         }
         continue;
       }
+
       if (fieldItem.type === "icons") {
         if (fieldItem.auxiliaryElements) {
           for (const element of fieldItem.auxiliaryElements) {
@@ -211,7 +235,7 @@ export class Form extends SimpleElement {
   }
 
   _addIcon(valueElement, fieldItem) {
-    this._addText(valueElement, fieldItem);
+    valueElement.appendChild(fieldItem.element);
   }
 
   _addText(valueElement, fieldItem) {
@@ -267,6 +291,9 @@ export class Form extends SimpleElement {
   _addEditNumber(valueElement, fieldItem) {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
+    if (fieldItem.id) {
+      inputElement.id = fieldItem.id;
+    }
     inputElement.type = "number";
     inputElement.value = maybeRound(fieldItem.value, fieldItem.numDigits);
 

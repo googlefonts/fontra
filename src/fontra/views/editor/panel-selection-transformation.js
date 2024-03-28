@@ -1,3 +1,4 @@
+import SelectionInfoPanel from "./panel-selection-info.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { scalePoint } from "/core/path-functions.js";
@@ -14,9 +15,17 @@ import {
 } from "/core/utils.js";
 import { Form } from "/web-components/ui-form.js";
 
-export default class SelectionTransformationPanel extends Panel {
+export default class SelectionTransformationPanel extends SelectionInfoPanel {
   identifier = "selection-transformation";
   iconPath = "/tabler-icons/shape.svg";
+
+  scaleX = 100;
+  scaleY = 100;
+  scaleFactorX = 1;
+  scaleFactorY = 1;
+  rotation = 0;
+  moveX = 0;
+  moveY = 0;
 
   static styles = `
     .selection-transformation {
@@ -31,77 +40,7 @@ export default class SelectionTransformationPanel extends Panel {
       white-space: normal;
     }
 
-    ui-form {
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-
-    .sidebar-text-entry {
-      box-sizing: border-box;
-      height: 100%;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5em;
-      padding: 1em;
-    }
-
-    #text-align-menu {
-      display: grid;
-      grid-template-columns: auto auto auto;
-      justify-content: start;
-      gap: 0.5em;
-    }
-
-    #text-align-menu > inline-svg {
-      width: 1.5rem;
-      height: 1.5rem;
-      position: relative;
-      padding: 0.3em 0.45em 0.3em 0.45em;
-      border-radius: 0.75em;
-      cursor: pointer;
-      user-select: none;
-      transition: 120ms;
-    }
-
-    #text-align-menu > inline-svg:hover {
-      background-color: #c0c0c050;
-    }
-
-    #text-align-menu > inline-svg:active {
-      background-color: #c0c0c080;
-    }
-
-    #text-align-menu > inline-svg.selected {
-      background-color: #c0c0c060;
-    }
-
-    #text-entry-textarea {
-      background-color: var(--text-input-background-color);
-      color: var(--text-input-foreground-color);
-      border-radius: 0.25em;
-      border: 0.5px solid lightgray;
-      outline: none;
-      padding: 0.2em 0.5em;
-      font-family: fontra-ui-regular, sans-serif;
-      font-size: 1.1rem;
-      resize: none;
-      overflow-x: auto;
-    }
   `;
-
-  constructor(editorController) {
-    super(editorController);
-
-    this.infoForm = new Form();
-    this.contentElement.appendChild(this.infoForm);
-
-    this.throttledUpdate = throttleCalls((senderID) => this.update(senderID), 100);
-
-    //this.textSettingsController = this.editorController.sceneSettingsController;
-    this.fontController = this.editorController.fontController;
-    this.sceneController = this.editorController.sceneController;
-  }
 
   getContentElement() {
     return html.div(
@@ -112,222 +51,274 @@ export default class SelectionTransformationPanel extends Panel {
     );
   }
 
-  _doSomthing(text) {
-    console.log("do something: ", text);
-  }
-
   async update(senderInfo) {
+    await this.fontController.ensureInitialized;
+
+    const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
+    const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
+      glyphName,
+      this.sceneController.sceneSettings.editLayerName
+    );
+
     const formContents = [];
 
     formContents.push({ type: "header", label: `Transformations` });
-    /*     formContents.push({ type: "divider" }); */
+
+    let icon_origin = html.createDomElement("icon-button", {
+      src: "/tabler-icons/grid-dots.svg",
+      onclick: (event) => this._doSomthing("Get Origin"),
+      class: "",
+    });
+    formContents.push({
+      type: "single-icon",
+      element: icon_origin,
+    });
+
+    formContents.push({ type: "divider" });
+
+    let button_move = html.createDomElement("icon-button", {
+      src: "/tabler-icons/arrow-move-right.svg",
+      onclick: (event) => this._moveLayerGlyph(),
+      class: "ui-form-icon ui-form-icon-button",
+      /*       "data-tooltip": "Scale",
+      "data-tooltipposition": "left", */
+    });
+
+    formContents.push({
+      type: "edit-number-x-y",
+      key: '["selectionTransformationMove"]',
+      label: button_move,
+      fieldX: {
+        key: '["selectionTransformationMoveX"]',
+        value: 0,
+        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+          console.log("setValue", value);
+          this.moveX = value;
+        },
+      },
+      fieldY: {
+        key: '["selectionTransformationMoveY"]',
+        value: 0,
+        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+          console.log("setValue", value);
+          this.moveY = value;
+        },
+      },
+    });
+
+    let button_rotate = html.createDomElement("icon-button", {
+      src: "/tabler-icons/rotate-clockwise.svg",
+      onclick: (event) => this._doSomthing("Rotate Selection"),
+      class: "ui-form-icon ui-form-icon-button",
+      /*       "data-tooltip": "Rotate",
+      "data-tooltipposition": "left", */
+    });
+
+    formContents.push({
+      type: "edit-number",
+      key: '["selectionTransformationRotate"]',
+      label: button_rotate,
+      value: 0,
+      setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+        console.log("setValue rotation", value);
+        this.rotation = value;
+      },
+    });
+
+    let button_scale = html.createDomElement("icon-button", {
+      src: "/tabler-icons/dimensions.svg",
+      onclick: (event) => this._scaleLayerGlyph(),
+      class: "ui-form-icon ui-form-icon-button",
+      /*       "data-tooltip": "Scale",
+      "data-tooltipposition": "left", */
+    });
+
+    formContents.push({
+      type: "edit-number-x-y",
+      key: '["selectionTransformationScale"]',
+      label: button_scale,
+      fieldX: {
+        key: '["selectionTransformationScaleX"]',
+        //id: "selection-transformation-scaleX",
+        value: 100,
+        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+          return this.scaleFactorX;
+        },
+        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+          console.log("setValue", value);
+          this.scaleFactorX = value / 100;
+          console.log("scaleFactorX", this.scaleFactorX);
+        },
+      },
+      fieldY: {
+        key: '["selectionTransformationScaleY"]',
+        //id: "selection-transformation-scaleY",
+        value: 100,
+        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+          console.log("setValue", value);
+          this.scaleFactorY = value / 100;
+          console.log("scaleFactorY", this.scaleFactorY);
+        },
+      },
+    });
+
+    formContents.push({ type: "divider" });
+
     formContents.push({
       type: "icons",
       label: "Flip",
       auxiliaryElements: [
         html.createDomElement("icon-button", {
-          "src": "/tabler-icons/flip-vertical.svg",
-          "onclick": (event) => this._doSomthing("Flip vertically"),
-          "data-tooltip": "Flip vertically",
-          "data-tooltipposition": "left",
+          src: "/tabler-icons/flip-vertical.svg",
+          onclick: (event) =>
+            this._scaleLayerGlyph({
+              scaleFactorX: -1,
+              scaleFactorY: 1,
+              undoName: "Flip vertically",
+            }),
+          /*           "data-tooltip": "Flip vertically",
+          "data-tooltipposition": "left", */
         }),
         html.createDomElement("icon-button", {
-          "src": "/tabler-icons/flip-horizontal.svg",
-          "onclick": (event) => this._doSomthing("Flip horizontally"),
-          "data-tooltip": "Flip horizontally",
-          "data-tooltipposition": "left",
+          src: "/tabler-icons/flip-horizontal.svg",
+          onclick: (event) =>
+            this._scaleLayerGlyph({
+              scaleFactorX: 1,
+              scaleFactorY: -1,
+              undoName: "Flip horizontally",
+            }),
+          /*           "data-tooltip": "Flip horizontally",
+          "data-tooltipposition": "left", */
         }),
       ],
     });
 
-    formContents.push({ type: "divider" });
-    formContents.push({
-      type: "edit-number-x-y",
-      label: "Scale",
-      fieldX: {
-        value: 100,
-      },
-      fieldY: {
-        value: 100,
-      },
-    });
-
-    formContents.push({ type: "divider" });
-    let label_button = html.createDomElement("button", {
-      src: "/tabler-icons/flip-horizontal.svg",
-      onclick: (event) => this._doSomthing("Scale Selection"),
-      class: "form-button",
-    });
-    label_button.textContent = "Scale";
-    formContents.push({
-      type: "edit-number-x-y",
-      label: label_button,
-      fieldX: {
-        value: 100,
-      },
-      fieldY: {
-        value: 100,
-      },
-    });
-
-    formContents.push({ type: "divider" });
-    let label_button2 = html.createDomElement("icon-button", {
-      src: "/tabler-icons/dimensions.svg",
-      onclick: (event) => this._doSomthing("Scale Selection"),
-      class: "ui-form-icon ui-form-icon-button",
-    });
-
-    formContents.push({
-      type: "edit-number-x-y",
-      label: label_button2,
-      fieldX: {
-        value: 100,
-      },
-      fieldY: {
-        value: 100,
-      },
-    });
-
-    formContents.push({ type: "divider" });
-    formContents.push({
-      type: "edit-number-x-y-button",
-      label: "scale",
-      fieldX: { value: 100 },
-      fieldY: { value: 100 },
-      buttonLabel: "do",
-    });
-
-    let label_button3 = html.createDomElement("icon-button", {
-      src: "/tabler-icons/selector.svg",
-      onclick: (event) => this._doSomthing("Scale Selection"),
-      class: "ui-form-icon ui-form-icon-button",
-    });
-
-    formContents.push({ type: "divider" });
-    formContents.push({
-      type: "edit-number-x-y-element",
-      label: "scale",
-      fieldX: { value: 100 },
-      fieldY: { value: 100 },
-      element: label_button3,
-    });
-
-    let label_button4 = html.createDomElement("icon-button", {
-      src: "/tabler-icons/dimensions.svg",
-      onclick: (event) => this._doSomthing("Scale Selection"),
-      class: "ui-form-icon ui-form-icon-button",
-    });
-    formContents.push({ type: "divider" });
-    formContents.push({
-      type: "element-edit-number-x-y",
-      element: label_button4,
-      fieldX: { value: 100 },
-      fieldY: { value: 100 },
-    });
-
-    formContents.push({ type: "divider" });
-    let label_button5 = html.createDomElement("icon-button", {
-      src: "/tabler-icons/dimensions.svg",
-      onclick: (event) => this._doSomthing("Scale Selection"),
-      class: "ui-form-icon ui-form-icon-button",
-    });
-    label_button5.innerText = "some text";
-    formContents.push({
-      type: "edit-number-x-y",
-      label: label_button5,
-      fieldX: {
-        value: 100,
-      },
-      fieldY: {
-        value: 100,
-      },
-    });
-
-    /*     const someIcons = html.div(
-      {
-        id: "text-align-menu",
-      },
-      [
-        html.createDomElement("inline-svg", {
-          "data-align": "left",
-          "src": "/images/alignleft.svg",
-        }),
-        html.createDomElement("inline-svg", {
-          "class": "selected",
-          "data-align": "center",
-          "src": "/images/aligncenter.svg",
-        }),
-        html.createDomElement("inline-svg", {
-          "data-align": "right",
-          "src": "/images/alignright.svg",
-        }),
-      ]
-    );
-
-    formContents.push(someIcons); */
-
-    if (!formContents.length) {
-      this.infoForm.setFieldDescriptions([{ type: "text", value: "(No selection)" }]);
-    } else {
-      this.infoForm.setFieldDescriptions(formContents);
-    }
-
-    /*     console.log("someIcons", someIcons);
-    this.contentElement.appendChild(someIcons); */
-  }
-
-  /*   getContentElement() {
-    return html.div(
-      {
-        class: "sidebar-text-entry",
-      },
-      [
-        html.div(
-          {
-            id: "text-align-menu",
-          },
-          [
-            html.createDomElement("inline-svg", {
-              "data-align": "left",
-              "src": "/images/alignleft.svg",
-            }),
-            html.createDomElement("inline-svg", {
-              "class": "selected",
-              "data-align": "center",
-              "src": "/images/aligncenter.svg",
-            }),
-            html.createDomElement("inline-svg", {
-              "data-align": "right",
-              "src": "/images/alignright.svg",
-            }),
-          ]
-        ),
-      ]
-    );
-  } */
-
-  updateAlignElement(align) {
-    for (const el of this.textAlignElement.children) {
-      el.classList.toggle("selected", align === el.dataset.align);
+    this.infoForm.setFieldDescriptions(formContents);
+    if (glyphController) {
+      await this._setupSelectionInfoHandlers(glyphName);
     }
   }
 
-  setupTextAlignElement() {
-    this.textAlignElement = this.contentElement.querySelector("#text-align-menu");
-    this.updateAlignElement(this.textSettings.align);
+  async _moveLayerGlyph({
+    moveX = this.moveX,
+    moveY = this.moveY,
+    undoName = "move",
+  } = {}) {
+    const { pointIndices, componentIndices } = this._getSelection();
+    if (!pointIndices.length >= 1) {
+      return;
+    }
 
-    this.textSettingsController.addKeyListener("align", (event) => {
-      this.updateAlignElement(this.textSettings.align);
-    });
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
 
-    for (const el of this.textAlignElement.children) {
-      el.onclick = (event) => {
-        if (event.target.classList.contains("selected")) {
-          return;
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        for (const [i, index] of enumerate(
+          range(0, layerGlyph.path.coordinates.length, 2)
+        )) {
+          if (pointIndices.includes(i)) {
+            let point = layerGlyph.path.getPoint(i);
+            layerGlyph.path.coordinates[index] = point.x + moveX;
+          }
         }
-        this.textSettings.align = el.dataset.align;
-      };
+
+        for (const [i, index] of enumerate(
+          range(1, layerGlyph.path.coordinates.length, 2)
+        )) {
+          if (pointIndices.includes(i)) {
+            let point = layerGlyph.path.getPoint(i);
+            layerGlyph.path.coordinates[index] = point.y + moveY;
+          }
+        }
+      }
+      return undoName;
+    });
+  }
+
+  async _scaleLayerGlyph({
+    originPositionX = "center",
+    originPositionY = "center",
+    scaleFactorX = this.scaleFactorX,
+    scaleFactorY = this.scaleFactorY,
+    undoName = "scale",
+  } = {}) {
+    console.log("scaleLayerGlyph", scaleFactorX, scaleFactorY);
+    const { pointIndices, componentIndices } = this._getSelection();
+    if (!pointIndices.length >= 2) {
+      return;
     }
+
+    console.log("scaleLayerGlyph", pointIndices, scaleFactorX, scaleFactorY);
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        const map_x = pointIndices.map((i) => layerGlyph.path.getPoint(i).x);
+        const xMin = Math.min(...map_x);
+        const xMax = Math.max(...map_x);
+        const width = xMax - xMin;
+        console.log("xMin", xMin);
+        console.log("xMax", xMax);
+        console.log("width", width);
+
+        let scaleOriginX = xMin; // if scale from left
+        //scaleOriginX = xMin + width / 2; // if scale from center
+        if (originPositionX === "center") {
+          scaleOriginX = xMin + width / 2;
+        }
+
+        //scaleOriginX = xMax; // if scale from right
+        let pinPoint = { x: scaleOriginX, y: 0 };
+
+        for (const [i, index] of enumerate(
+          range(0, layerGlyph.path.coordinates.length, 2)
+        )) {
+          if (pointIndices.includes(i)) {
+            let point = layerGlyph.path.getPoint(i);
+            let pointScaled = scalePoint(pinPoint, point, scaleFactorX);
+            layerGlyph.path.coordinates[index] = pointScaled.x;
+          }
+        }
+
+        const map_y = pointIndices.map((i) => layerGlyph.path.getPoint(i).y);
+        const yMin = Math.min(...map_y);
+        const yMax = Math.max(...map_y);
+        const height = yMax - yMin;
+
+        let scaleOriginY = yMin; // if scale from left
+        if (originPositionY === "center") {
+          scaleOriginY = yMin + height / 2;
+        }
+        //scaleOriginY = yMax; // if scale from right
+        pinPoint = { x: 0, y: scaleOriginY };
+
+        for (const [i, index] of enumerate(
+          range(1, layerGlyph.path.coordinates.length, 2)
+        )) {
+          if (pointIndices.includes(i)) {
+            let point = layerGlyph.path.getPoint(i);
+            let pointScaled = scalePoint(pinPoint, point, scaleFactorY);
+            layerGlyph.path.coordinates[index] = pointScaled.y;
+          }
+        }
+      }
+      return undoName;
+    });
+  }
+
+  _getOriginInfo(event) {
+    //const el = html.getElementById(ID);
+    console.log("event", event);
+    console.log("this", this);
+  }
+
+  _doSomthing(text) {
+    console.log("do something: ", text);
   }
 
   async toggle(on, focus) {
