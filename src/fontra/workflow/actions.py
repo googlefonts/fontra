@@ -788,3 +788,40 @@ def getDefaultSourceLocation(axes):
         )
         for axis in axes
     }
+
+
+@registerActionClass("move-default-location")
+@dataclass(kw_only=True)
+class MoveDefaultLocationAction(BaseFilterAction):
+    newDefaultUserLocation: dict[str, float]
+
+    @async_cached_property
+    async def newDefaultSourceLocation(self):
+        newDefaultUserLocation = self.newDefaultUserLocation
+        axes = [
+            axis
+            for axis in await self.validatedInput.getGlobalAxes()
+            if axis.name in newDefaultUserLocation
+        ]
+        return {
+            axis.name: (
+                piecewiseLinearMap(
+                    newDefaultUserLocation[axis.name], dict(axis.mapping)
+                )
+                if axis.mapping
+                else axis.defaultValue
+            )
+            for axis in axes
+        }
+
+    async def processGlobalAxes(
+        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
+    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        newDefaultUserLocation = self.newDefaultUserLocation
+        return [
+            replace(
+                axis,
+                defaultValue=newDefaultUserLocation.get(axis.name, axis.defaultValue),
+            )
+            for axis in axes
+        ]
