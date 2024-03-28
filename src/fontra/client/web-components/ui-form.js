@@ -78,7 +78,10 @@ export class Form extends SimpleElement {
       white-space: normal;
     }
 
-    .ui-form-value.edit-number-x-y {
+    .ui-form-value.edit-number-x-y,
+    .ui-form-value.edit-number-x-y-button,
+    .ui-form-value.edit-number-x-y-element,
+    .ui-form-value.element-edit-number-x-y {
       display: flex;
       gap: 0.3rem;
     }
@@ -93,6 +96,39 @@ export class Form extends SimpleElement {
       white-space: nowrap;
       margin-left: 1em;
       margin-right: 1em;
+    }
+
+    ui-form-icon-button {
+      overflow-x: unset;
+      width: 1em;
+      white-space: nowrap;
+      margin-left: 1em;
+      margin-right: 1em;
+    }
+
+    .form-button {
+      box-sizing: border-box;
+      background-color: var(--text-input-background-color);
+      color: var(--text-input-foreground-color);
+      border-radius: 0.25em;
+      border: none;
+      outline: none;
+      padding: 0.1em 0.3em;
+      font-family: "fontra-ui-regular";
+    }
+
+    .form-button:hover {
+      background-color: var(--editor-tool-button-selected-background-color);
+      color: var(--text-input-background-color);
+    }
+
+    .form-button:active {
+      background-color: var(--text-input-foreground-color);
+      color: var(--text-input-background-color);
+    }
+
+    .ui-form-icon.ui-form-icon-button {
+      display: inline-block;
     }
   `;
 
@@ -200,6 +236,30 @@ export class Form extends SimpleElement {
   }
 
   _addEditNumberXY(valueElement, fieldItem) {
+    this._addEditNumber(valueElement, fieldItem.fieldX);
+    this._addEditNumber(valueElement, fieldItem.fieldY);
+  }
+
+  _addEditNumberXYButton(valueElement, fieldItem) {
+    this._addEditNumber(valueElement, fieldItem.fieldX);
+    this._addEditNumber(valueElement, fieldItem.fieldY);
+    const buttonElement = document.createElement("button");
+    buttonElement.classList.add("form-button");
+    buttonElement.innerText = fieldItem.buttonLabel;
+    buttonElement.onclick = (event) => {
+      this._dispatchEvent("buttonClick", { key: fieldItem.key });
+    };
+    valueElement.appendChild(buttonElement);
+  }
+
+  _addEditNumberXYElement(valueElement, fieldItem) {
+    this._addEditNumber(valueElement, fieldItem.fieldX);
+    this._addEditNumber(valueElement, fieldItem.fieldY);
+    valueElement.appendChild(fieldItem.element);
+  }
+
+  _addElementEditNumberXY(valueElement, fieldItem) {
+    valueElement.appendChild(fieldItem.element);
     this._addEditNumber(valueElement, fieldItem.fieldX);
     this._addEditNumber(valueElement, fieldItem.fieldY);
   }

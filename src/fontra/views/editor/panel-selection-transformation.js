@@ -139,10 +139,102 @@ export default class SelectionTransformationPanel extends Panel {
         }),
       ],
     });
-    /*     formContents.push({ type: "divider" }); */
+
+    formContents.push({ type: "divider" });
     formContents.push({
       type: "edit-number-x-y",
       label: "Scale",
+      fieldX: {
+        value: 100,
+      },
+      fieldY: {
+        value: 100,
+      },
+    });
+
+    formContents.push({ type: "divider" });
+    let label_button = html.createDomElement("button", {
+      src: "/tabler-icons/flip-horizontal.svg",
+      onclick: (event) => this._doSomthing("Scale Selection"),
+      class: "form-button",
+    });
+    label_button.textContent = "Scale";
+    formContents.push({
+      type: "edit-number-x-y",
+      label: label_button,
+      fieldX: {
+        value: 100,
+      },
+      fieldY: {
+        value: 100,
+      },
+    });
+
+    formContents.push({ type: "divider" });
+    let label_button2 = html.createDomElement("icon-button", {
+      src: "/tabler-icons/dimensions.svg",
+      onclick: (event) => this._doSomthing("Scale Selection"),
+      class: "ui-form-icon ui-form-icon-button",
+    });
+
+    formContents.push({
+      type: "edit-number-x-y",
+      label: label_button2,
+      fieldX: {
+        value: 100,
+      },
+      fieldY: {
+        value: 100,
+      },
+    });
+
+    formContents.push({ type: "divider" });
+    formContents.push({
+      type: "edit-number-x-y-button",
+      label: "scale",
+      fieldX: { value: 100 },
+      fieldY: { value: 100 },
+      buttonLabel: "do",
+    });
+
+    let label_button3 = html.createDomElement("icon-button", {
+      src: "/tabler-icons/selector.svg",
+      onclick: (event) => this._doSomthing("Scale Selection"),
+      class: "ui-form-icon ui-form-icon-button",
+    });
+
+    formContents.push({ type: "divider" });
+    formContents.push({
+      type: "edit-number-x-y-element",
+      label: "scale",
+      fieldX: { value: 100 },
+      fieldY: { value: 100 },
+      element: label_button3,
+    });
+
+    let label_button4 = html.createDomElement("icon-button", {
+      src: "/tabler-icons/dimensions.svg",
+      onclick: (event) => this._doSomthing("Scale Selection"),
+      class: "ui-form-icon ui-form-icon-button",
+    });
+    formContents.push({ type: "divider" });
+    formContents.push({
+      type: "element-edit-number-x-y",
+      element: label_button4,
+      fieldX: { value: 100 },
+      fieldY: { value: 100 },
+    });
+
+    formContents.push({ type: "divider" });
+    let label_button5 = html.createDomElement("icon-button", {
+      src: "/tabler-icons/dimensions.svg",
+      onclick: (event) => this._doSomthing("Scale Selection"),
+      class: "ui-form-icon ui-form-icon-button",
+    });
+    label_button5.innerText = "some text";
+    formContents.push({
+      type: "edit-number-x-y",
+      label: label_button5,
       fieldX: {
         value: 100,
       },
