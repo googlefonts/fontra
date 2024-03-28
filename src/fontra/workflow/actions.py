@@ -541,7 +541,7 @@ class AdjustAxesAction(BaseFilterAction):
         return mapFuncs
 
     @async_cached_property
-    async def _adjustedAxesAndMapFunctions(self) -> None:
+    async def _adjustedAxesAndMapFunctions(self) -> tuple:
         mapFuncs: dict = {}
         axes = await self.validatedInput.getGlobalAxes()
         adjustedAxes = []
