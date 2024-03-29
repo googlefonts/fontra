@@ -28,6 +28,11 @@ export class Form extends SimpleElement {
       white-space: nowrap;
     }
 
+    .ui-form-label-single-icon {
+      font-weight: bold;
+      grid-column: 1 / span 2;
+    }
+
     hr {
       border: none;
       border-top: 1px solid var(--horizontal-rule-color);
@@ -98,10 +103,6 @@ export class Form extends SimpleElement {
       margin-right: 1.3em;
     }
 
-    .ui-form-single-icon {
-      width: 100%;
-    }
-
     ui-form-icon-button {
       overflow-x: unset;
       width: 1em;
@@ -140,6 +141,37 @@ export class Form extends SimpleElement {
       justify-content: center;
       align-items: center;
     }
+
+    .ui-form-single-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.35rem 0.35rem;
+    }
+
+    input[type="radio"] {
+      appearance: none;
+      background-color: var(--editor-mini-console-background-color-light);
+      margin: 3px;
+      font: inherit;
+      color: var(--editor-mini-console-background-color-light);
+      width: 1.0em;
+      height: 1.0em;
+      border: 0.15em solid var(--editor-mini-console-background-color-light);
+      border-radius: 50%;
+      transform: translateY(-0.075em);
+      cursor: pointer;
+    }
+
+    input[type="radio"]:hover {
+      background-color: var(--text-input-background-color-dark);
+      border: 0.15em solid var(--text-input-background-color-dark);
+    }
+
+    input[type="radio"]:checked {
+      background-color: var(--text-input-background-color-dark);
+      border: 0.15em solid var(--text-input-background-color-dark);
+    }
   `;
 
   constructor() {
@@ -176,7 +208,7 @@ export class Form extends SimpleElement {
           iconElement.classList.add("ui-form-single-icon");
           iconElement.appendChild(fieldItem.element);
           const valueElement = document.createElement("div");
-          valueElement.classList.add("ui-form-value", fieldItem.type);
+          valueElement.classList.add("ui-form-label-single-icon", "header");
           valueElement.appendChild(iconElement);
           this.contentElement.appendChild(valueElement);
         }
@@ -309,17 +341,6 @@ export class Form extends SimpleElement {
       inputElement.step = 1;
     }
     inputElement.disabled = fieldItem.disabled;
-    /*     inputElement.ondblclick = (event) => {
-      if (inputElement.readonly) {
-        inputElement.readonly = false;
-        inputElement.value = 0;
-      } else {
-        inputElement.readonly = true;
-        inputElement.value = undefined;
-      }
-      console.log("dblclick");
-    } */
-
     inputElement.onkeydown = (event) => {
       if (event.shiftKey) {
         switch (event.key) {
