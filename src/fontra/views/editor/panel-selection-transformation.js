@@ -26,6 +26,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
   rotation = 0;
   moveX = 0;
   moveY = 0;
+  originX = "center";
+  originY = "middle";
+  originXButton = undefined;
+  originYButton = undefined;
 
   static styles = `
     .selection-transformation {
@@ -40,9 +44,11 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       white-space: normal;
     }
 
-    .radio-btns{
+    .radio-btns {
       display: flex;
       gap: 0rem;
+      flex-direction: unset;
+      white-space: unset;
     }
 
     .icon-origin-node:hover {
@@ -92,24 +98,26 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     formContents.push({ type: "header", label: `Transformations` });
 
-    /*     let radio_button_origin = html.createDomElement("div", {
-      class: "radio-btns-wrapper",
-       "data-tooltip": "Origin",
+    let radio_button_origin = html.createDomElement("div", {
+      "class": "radio-btns-wrapper",
+      "data-tooltip": "Origin",
       "data-tooltipposition": "bottom",
     });
 
-    for (const key1 in ["top", "middle", "bottom"]) {
+    for (const keyY of ["top", "middle", "bottom"]) {
       let radio_row = html.createDomElement("div", {
-        class: "radio-btns",
+        /*         class: "radio-btns", */
+        style: "display: flex; gap: 0rem; flex-direction: unset; white-space: unset;",
       });
-      for (const key2 in ["left", "center", "right"]) {
-        const key = `${key1}-${key2}`;
+      for (const keyX of ["left", "center", "right"]) {
+        const key = `${keyX}-${keyY}`;
         let radio_button = html.createDomElement("input", {
-          type: "radio",
-          value: key,
-          name: key,
+          "type": "radio",
+          "value": key,
+          "name": "origin",
           "v-model": "role",
-          onclick: (event) => this._doSomthing(key),
+          "checked": keyX === this.originX && keyY === this.originY ? "checked" : "",
+          "onclick": (event) => this._changeOrigin(keyX, keyY),
         });
         radio_row.appendChild(radio_button);
       }
@@ -119,44 +127,39 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     formContents.push({
       type: "single-icon",
       element: radio_button_origin,
-    }); */
-
-    let icon_origin = html.createDomElement("icon-button", {
-      src: "/tabler-icons/grid-dots.svg",
-      onclick: (event) => this._doSomthing("Get Origin"),
-      class: "",
-    });
-    formContents.push({
-      type: "single-icon",
-      element: icon_origin,
     });
 
     formContents.push({ type: "divider" });
 
-    let label_button = html.createDomElement("div", {
-      src: "/tabler-icons/flip-horizontal.svg",
-      ondblclick: (event) => this._doubleClickOrigin(),
-      class: "",
-    });
-    label_button.textContent = "Origin:";
-
     formContents.push({
       type: "edit-number-x-y",
       key: '["selectionTransformationOrigin"]',
-      label: label_button,
+      label: "Origin",
       fieldX: {
         key: '["selectionTransformationOriginX"]',
-        name: "selectionTransformationOriginX",
-        value: undefined,
-        disabled: true,
-        defaultValue: undefined,
+        value: this.originXButton,
+        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+          return fieldItem.value;
+        },
+        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+          this.originX = value;
+          this.originXButton = value;
+          this.update();
+          return value;
+        },
       },
       fieldY: {
         key: '["selectionTransformationOriginY"]',
-        name: "selectionTransformationOriginY",
-        value: undefined,
-        disabled: true,
-        defaultValue: undefined,
+        value: this.originYButton,
+        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+          return fieldItem.value;
+        },
+        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+          this.originY = value;
+          this.originYButton = value;
+          this.update();
+          return value;
+        },
       },
     });
 
@@ -307,21 +310,13 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     }
   }
 
-  _doubleClickOrigin() {
-    console.log("double click origin");
-    const el = this.infoForm.querySelector(
-      'input[name="selectionTransformationOriginX"]'
-    ); //.value = 0;
-    console.log(el);
-  }
-
   async _moveLayerGlyph({
     moveX = this.moveX,
     moveY = this.moveY,
     undoName = "move",
   } = {}) {
     const { pointIndices, componentIndices } = this._getSelection();
-    if (!pointIndices.length >= 1) {
+    if (!pointIndices || pointIndices.length <= 1) {
       return;
     }
 
@@ -354,15 +349,15 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
   }
 
   async _scaleLayerGlyph({
-    originPositionX = "center",
-    originPositionY = "center",
+    originPositionX = this.originX,
+    originPositionY = this.originY,
     scaleFactorX = this.scaleFactorX,
     scaleFactorY = this.scaleFactorY,
     undoName = "scale",
   } = {}) {
     console.log("scaleLayerGlyph", scaleFactorX, scaleFactorY);
     const { pointIndices, componentIndices } = this._getSelection();
-    if (!pointIndices.length >= 2) {
+    if (!pointIndices || pointIndices.length <= 1) {
       return;
     }
 
@@ -378,14 +373,18 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
         const xMin = Math.min(...map_x);
         const xMax = Math.max(...map_x);
         const width = xMax - xMin;
-        console.log("xMin", xMin);
-        console.log("xMax", xMax);
-        console.log("width", width);
 
-        let scaleOriginX = xMin; // if scale from left
-        //scaleOriginX = xMin + width / 2; // if scale from center
-        if (originPositionX === "center") {
-          scaleOriginX = xMin + width / 2;
+        // default scale: from center
+        let scaleOriginX = xMin + width / 2;
+
+        if (typeof originPositionX === "number") {
+          scaleOriginX = originPositionX;
+        } else if (originPositionX === "left") {
+          // if scale from left
+          scaleOriginX = xMin;
+        } else if (originPositionX === "right") {
+          // if scale from right
+          scaleOriginX = xMax;
         }
 
         //scaleOriginX = xMax; // if scale from right
@@ -406,11 +405,17 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
         const yMax = Math.max(...map_y);
         const height = yMax - yMin;
 
-        let scaleOriginY = yMin; // if scale from left
-        if (originPositionY === "center") {
-          scaleOriginY = yMin + height / 2;
+        // default scale: from center
+        let scaleOriginY = yMin + height / 2;
+
+        if (typeof originPositionY === "number") {
+          scaleOriginY = originPositionY;
+        } else if (originPositionY === "top") {
+          scaleOriginY = yMax;
+        } else if (originPositionY === "bottom") {
+          scaleOriginY = yMin;
         }
-        //scaleOriginY = yMax; // if scale from right
+
         pinPoint = { x: 0, y: scaleOriginY };
 
         for (const [i, index] of enumerate(
@@ -427,10 +432,13 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     });
   }
 
-  _getOriginInfo(event) {
-    //const el = html.getElementById(ID);
-    console.log("event", event);
-    console.log("this", this);
+  _changeOrigin(keyX, keyY) {
+    this.originX = keyX;
+    this.originY = keyY;
+    console.log("change origin: ", keyX, keyY);
+    this.originXButton = undefined;
+    this.originYButton = undefined;
+    this.update();
   }
 
   _doSomthing(text) {
@@ -442,22 +450,6 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       this.update();
     }
   }
-}
-
-function changeOrigin(thisElement) {
-  //console.log(thisElement)
-  const els = document.querySelectorAll(".node");
-  for (subElement of els) {
-    console.log(subElement);
-    //subElement.setAttribute('fill', 'red')
-    if (subElement.id === thisElement.id) {
-      subElement.style.color = "red";
-    } else {
-      subElement.style.color = "unset";
-    }
-  }
-  //console.log(thisElement)
-  //console.log(thisElement.id)
 }
 
 customElements.define("panel-selection-transformation", SelectionTransformationPanel);
