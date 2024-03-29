@@ -659,22 +659,22 @@ export default class SelectionInfoPanel extends Panel {
   }
 }
 
-function defaultGetFieldValue(glyph, glyphController, fieldItem) {
+export function defaultGetFieldValue(glyph, glyphController, fieldItem) {
   const changePath = JSON.parse(fieldItem.key);
   return getNestedValue(glyph, changePath);
 }
 
-function defaultSetFieldValue(glyph, glyphController, fieldItem, value) {
+export function defaultSetFieldValue(glyph, glyphController, fieldItem, value) {
   const changePath = JSON.parse(fieldItem.key);
   return setNestedValue(glyph, changePath, value);
 }
 
-function defaultDeleteFieldValue(glyph, glyphController, fieldItem) {
+export function defaultDeleteFieldValue(glyph, glyphController, fieldItem) {
   const changePath = JSON.parse(fieldItem.key);
   return deleteNestedValue(glyph, changePath);
 }
 
-function getNestedValue(subject, path) {
+export function getNestedValue(subject, path) {
   for (const pathElement of path) {
     if (subject === undefined) {
       throw new Error(`assert -- invalid change path: ${path}`);
@@ -684,21 +684,21 @@ function getNestedValue(subject, path) {
   return subject;
 }
 
-function setNestedValue(subject, path, value) {
+export function setNestedValue(subject, path, value) {
   const key = path.slice(-1)[0];
   path = path.slice(0, -1);
   subject = getNestedValue(subject, path);
   subject[key] = value;
 }
 
-function deleteNestedValue(subject, path) {
+export function deleteNestedValue(subject, path) {
   const key = path.slice(-1)[0];
   path = path.slice(0, -1);
   subject = getNestedValue(subject, path);
   delete subject[key];
 }
 
-function applyNewValue(glyph, layerInfo, value, fieldItem, absolute) {
+export function applyNewValue(glyph, layerInfo, value, fieldItem, absolute) {
   const setFieldValue = fieldItem.setValue || defaultSetFieldValue;
 
   const primaryOrgValue = layerInfo[0].orgValue;

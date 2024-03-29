@@ -40,6 +40,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       white-space: normal;
     }
 
+    .radio-btns{
+      display: flex;
+      gap: 0rem;
+    }
+
+    .icon-origin-node:hover {
+      color: red;
+        stroke-width: 5.5px;
+    }
+
+    .icon-origin-node:active {
+        color: #585858;
+    }
+
   `;
 
   getContentElement() {
@@ -52,6 +66,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
   }
 
   async update(senderInfo) {
+    if (
+      senderInfo?.senderID === this &&
+      senderInfo?.fieldKeyPath?.length !== 3 &&
+      senderInfo?.fieldKeyPath?.[0] !== "component" &&
+      senderInfo?.fieldKeyPath?.[2] !== "name"
+    ) {
+      // Don't rebuild, just update the Dimensions field
+      return;
+    }
+    if (!this.infoForm.contentElement.offsetParent) {
+      // If the info form is not visible, do nothing
+      return;
+    }
+
     await this.fontController.ensureInitialized;
 
     const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
@@ -64,6 +92,35 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     formContents.push({ type: "header", label: `Transformations` });
 
+    /*     let radio_button_origin = html.createDomElement("div", {
+      class: "radio-btns-wrapper",
+       "data-tooltip": "Origin",
+      "data-tooltipposition": "bottom",
+    });
+
+    for (const key1 in ["top", "middle", "bottom"]) {
+      let radio_row = html.createDomElement("div", {
+        class: "radio-btns",
+      });
+      for (const key2 in ["left", "center", "right"]) {
+        const key = `${key1}-${key2}`;
+        let radio_button = html.createDomElement("input", {
+          type: "radio",
+          value: key,
+          name: key,
+          "v-model": "role",
+          onclick: (event) => this._doSomthing(key),
+        });
+        radio_row.appendChild(radio_button);
+      }
+      radio_button_origin.appendChild(radio_row);
+    }
+
+    formContents.push({
+      type: "single-icon",
+      element: radio_button_origin,
+    }); */
+
     let icon_origin = html.createDomElement("icon-button", {
       src: "/tabler-icons/grid-dots.svg",
       onclick: (event) => this._doSomthing("Get Origin"),
@@ -72,6 +129,35 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     formContents.push({
       type: "single-icon",
       element: icon_origin,
+    });
+
+    formContents.push({ type: "divider" });
+
+    let label_button = html.createDomElement("div", {
+      src: "/tabler-icons/flip-horizontal.svg",
+      ondblclick: (event) => this._doubleClickOrigin(),
+      class: "",
+    });
+    label_button.textContent = "Origin:";
+
+    formContents.push({
+      type: "edit-number-x-y",
+      key: '["selectionTransformationOrigin"]',
+      label: label_button,
+      fieldX: {
+        key: '["selectionTransformationOriginX"]',
+        name: "selectionTransformationOriginX",
+        value: undefined,
+        disabled: true,
+        defaultValue: undefined,
+      },
+      fieldY: {
+        key: '["selectionTransformationOriginY"]',
+        name: "selectionTransformationOriginY",
+        value: undefined,
+        disabled: true,
+        defaultValue: undefined,
+      },
     });
 
     formContents.push({ type: "divider" });
@@ -90,18 +176,24 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       label: button_move,
       fieldX: {
         key: '["selectionTransformationMoveX"]',
-        value: 0,
+        value: this.moveX,
+        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+          return fieldItem.value;
+        },
         setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          console.log("setValue", value);
           this.moveX = value;
+          return value;
         },
       },
       fieldY: {
         key: '["selectionTransformationMoveY"]',
-        value: 0,
+        value: this.moveY,
+        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+          return fieldItem.value;
+        },
         setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          console.log("setValue", value);
           this.moveY = value;
+          return value;
         },
       },
     });
@@ -118,10 +210,13 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       type: "edit-number",
       key: '["selectionTransformationRotate"]',
       label: button_rotate,
-      value: 0,
+      value: this.rotation,
+      getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+        return fieldItem.value;
+      },
       setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-        console.log("setValue rotation", value);
         this.rotation = value;
+        return value;
       },
     });
 
@@ -139,25 +234,28 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       label: button_scale,
       fieldX: {
         key: '["selectionTransformationScaleX"]',
-        //id: "selection-transformation-scaleX",
-        value: 100,
+        id: "selection-transformation-scaleX",
+        value: this.scaleX,
         getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return this.scaleFactorX;
+          return fieldItem.value;
         },
         setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          console.log("setValue", value);
+          this.scaleX = value;
           this.scaleFactorX = value / 100;
-          console.log("scaleFactorX", this.scaleFactorX);
+          return value;
         },
       },
       fieldY: {
         key: '["selectionTransformationScaleY"]',
-        //id: "selection-transformation-scaleY",
-        value: 100,
+        id: "selection-transformation-scaleY",
+        value: this.scaleY,
+        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+          return fieldItem.value;
+        },
         setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          console.log("setValue", value);
+          this.scaleY = value;
           this.scaleFactorY = value / 100;
-          console.log("scaleFactorY", this.scaleFactorY);
+          return value;
         },
       },
     });
@@ -193,10 +291,28 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       ],
     });
 
+    this._formFieldsByKey = {};
+    for (const field of formContents) {
+      if (field.fieldX) {
+        this._formFieldsByKey[field.fieldX.key] = field.fieldX;
+        this._formFieldsByKey[field.fieldY.key] = field.fieldY;
+      } else {
+        this._formFieldsByKey[field.key] = field;
+      }
+    }
+
     this.infoForm.setFieldDescriptions(formContents);
     if (glyphController) {
       await this._setupSelectionInfoHandlers(glyphName);
     }
+  }
+
+  _doubleClickOrigin() {
+    console.log("double click origin");
+    const el = this.infoForm.querySelector(
+      'input[name="selectionTransformationOriginX"]'
+    ); //.value = 0;
+    console.log(el);
   }
 
   async _moveLayerGlyph({
@@ -326,6 +442,22 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       this.update();
     }
   }
+}
+
+function changeOrigin(thisElement) {
+  //console.log(thisElement)
+  const els = document.querySelectorAll(".node");
+  for (subElement of els) {
+    console.log(subElement);
+    //subElement.setAttribute('fill', 'red')
+    if (subElement.id === thisElement.id) {
+      subElement.style.color = "red";
+    } else {
+      subElement.style.color = "unset";
+    }
+  }
+  //console.log(thisElement)
+  //console.log(thisElement.id)
 }
 
 customElements.define("panel-selection-transformation", SelectionTransformationPanel);

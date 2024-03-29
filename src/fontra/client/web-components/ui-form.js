@@ -308,8 +308,18 @@ export class Form extends SimpleElement {
       inputElement.pattern = "\\d*";
       inputElement.step = 1;
     }
-
     inputElement.disabled = fieldItem.disabled;
+    /*     inputElement.ondblclick = (event) => {
+      if (inputElement.readonly) {
+        inputElement.readonly = false;
+        inputElement.value = 0;
+      } else {
+        inputElement.readonly = true;
+        inputElement.value = undefined;
+      }
+      console.log("dblclick");
+    } */
+
     inputElement.onkeydown = (event) => {
       if (event.shiftKey) {
         switch (event.key) {
