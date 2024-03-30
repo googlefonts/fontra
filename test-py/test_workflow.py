@@ -592,7 +592,7 @@ def test_command(tmpdir, configYAMLSources):
             """
             steps:
             - action: input
-              source: "test-py/data/workflow/input1-A.fontra"
+              source: "test-py/data/workflow/input-move-default-location.fontra"
             - action: subset-axes
               dropAxisNames: ["italic"]
             - action: move-default-location
