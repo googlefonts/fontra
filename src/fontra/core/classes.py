@@ -317,6 +317,10 @@ def _unstructurePointType(v):
     return int(v)
 
 
+def _unstructureLocationSorted(v):
+    return unstructure(dict(sorted(v.items())))
+
+
 _cattrsConverter = cattrs.Converter()
 
 _cattrsConverter.register_unstructure_hook(float, _unstructureFloat)
@@ -332,20 +336,24 @@ _cattrsConverter.register_structure_hook(PointType, _structurePointType)
 _cattrsConverter.register_unstructure_hook(PointType, _unstructurePointType)
 
 
-def registerOmitDefaultHook(cls):
+def registerOmitDefaultHook(cls, **fieldHooks):
+    fieldHooks = {
+        k: cattrs.gen.override(unstruct_hook=v) for k, v in fieldHooks.items()
+    }
     _hook = cattrs.gen.make_dict_unstructure_fn(
         cls,
         _cattrsConverter,
         _cattrs_omit_if_default=True,
+        **fieldHooks,
     )
     _cattrsConverter.register_unstructure_hook(cls, _hook)
 
 
 # The order in which the hooks are applied is significant, for unclear reasons
 registerOmitDefaultHook(DecomposedTransform)
-registerOmitDefaultHook(Component)
+registerOmitDefaultHook(Component, location=_unstructureLocationSorted)
 registerOmitDefaultHook(StaticGlyph)
-registerOmitDefaultHook(Source)
+registerOmitDefaultHook(Source, location=_unstructureLocationSorted)
 registerOmitDefaultHook(Layer)
 registerOmitDefaultHook(VariableGlyph)
 registerOmitDefaultHook(Path)
@@ -354,7 +362,7 @@ registerOmitDefaultHook(GlobalAxis)
 registerOmitDefaultHook(GlobalDiscreteAxis)
 registerOmitDefaultHook(AxisValueLabel)
 registerOmitDefaultHook(GlobalMetric)
-registerOmitDefaultHook(GlobalSource)
+registerOmitDefaultHook(GlobalSource, location=_unstructureLocationSorted)
 registerOmitDefaultHook(FontInfo)
 
 
