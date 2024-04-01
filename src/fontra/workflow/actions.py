@@ -849,6 +849,7 @@ class MoveDefaultLocationAction(BaseFilterAction):
             for source in instancer.activeSources
         }
 
+        movingAxisNames = set(self.newDefaultUserLocation)
         interactingAxes = set()
 
         for locationTuple in sourcesByLocation:
@@ -856,7 +857,9 @@ class MoveDefaultLocationAction(BaseFilterAction):
             for axisName, value in locationTuple:
                 if value != defaultLocation[axisName]:
                     contributingAxes.add(axisName)
-            if len(contributingAxes) > 1:
+            if len(contributingAxes) > 1 and not contributingAxes.isdisjoint(
+                movingAxisNames
+            ):
                 interactingAxes.update(contributingAxes)
 
         standaloneAxes = axisNames - interactingAxes
