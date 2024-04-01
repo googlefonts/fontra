@@ -4,56 +4,56 @@
 {
 "name": "inactive-test",
 "layerName": "MutatorSansLightCondensed/foreground",
-"inactive": true,
 "location": {
-"width": 50,
+"italic": 0,
 "weight": 150,
-"italic": 0
-}
+"width": 50
+},
+"inactive": true
 },
 {
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 1000
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 1000
 }
 },
 {
 "name": "support.S.wide",
 "layerName": "MutatorSansLightCondensed/support.S.wide",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 595,
-"italic": 0
+"width": 1000
 }
 }
 ],
