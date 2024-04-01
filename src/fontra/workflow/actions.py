@@ -836,9 +836,6 @@ class MoveDefaultLocationAction(BaseFilterAction):
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
-        glyph = instancer.glyph
-
-        axisNames = {axis.name for axis in instancer.combinedAxes}
 
         defaultLocation = {
             axis.name: axis.defaultValue for axis in instancer.combinedAxes
@@ -849,6 +846,7 @@ class MoveDefaultLocationAction(BaseFilterAction):
             for source in instancer.activeSources
         }
 
+        axisNames = {axis.name for axis in instancer.combinedAxes}
         movingAxisNames = set(self.newDefaultUserLocation)
         interactingAxes = set()
 
@@ -866,11 +864,10 @@ class MoveDefaultLocationAction(BaseFilterAction):
 
         newLocations = [dict(loc) for loc in sourcesByLocation]
 
+        newDefaultSourceLocation = await self.newDefaultSourceLocation
         currentDefaultLocation = dict(defaultLocation)
 
-        for movingAxisName, movingAxisValue in (
-            await self.newDefaultSourceLocation
-        ).items():
+        for movingAxisName, movingAxisValue in newDefaultSourceLocation.items():
             newDefaultAxisLoc = {movingAxisName: movingAxisValue}
 
             locationsToAdd = [
@@ -903,6 +900,7 @@ class MoveDefaultLocationAction(BaseFilterAction):
 
         newLocationTuples = [tuplifyLocation(loc) for loc in newLocations]
 
+        glyph = instancer.glyph
         newSources = []
         newLayers = {}
 
