@@ -144,6 +144,85 @@
 "xAdvance": 1000
 }
 },
+"height=505": {
+"glyph": {
+"components": [
+{
+"name": "VG_31C6_00",
+"transformation": {
+"translateX": -226,
+"translateY": -485
+},
+"location": {
+"G_height": 0,
+"G_width": -34,
+"H_left_angle": 0,
+"S_weight": -1,
+"TR_serif_right_height": 0,
+"TR_serif_right_moveV": 0,
+"TR_serif_right_width": 0,
+"TR_serif_top_height": 0,
+"TR_serif_top_moveH": 0,
+"TR_serif_top_width": 0,
+"height": 471,
+"weight": 45,
+"width": 520
+}
+},
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": -240,
+"translateY": -460
+},
+"location": {
+"B_curve": 100,
+"T_angle": 0,
+"length": 495,
+"serif_height": 0,
+"serif_moveV": -32,
+"serif_style2": 1,
+"serif_style3": 3,
+"serif_width": 0,
+"weight": 44
+}
+},
+{
+"name": "VG_4E00_01",
+"transformation": {
+"translateX": 249,
+"translateY": -140
+},
+"location": {
+"L_cutangle": 0,
+"serif_height": 0,
+"serif_right_moveV": 0,
+"serif_top_moveH": 0,
+"serif_width": 0,
+"weight": 30,
+"width": 510.22
+}
+},
+{
+"name": "VG_4E00_01",
+"transformation": {
+"translateX": 250,
+"translateY": -269
+},
+"location": {
+"L_cutangle": 0,
+"serif_height": 0,
+"serif_right_moveV": 0,
+"serif_top_moveH": 0,
+"serif_width": 0,
+"weight": 30,
+"width": 510.22
+}
+}
+],
+"xAdvance": 1000
+}
+},
 "wght=1": {
 "glyph": {
 "components": [
@@ -218,85 +297,6 @@
 "serif_width": 0,
 "weight": 28,
 "width": 560.22
-}
-}
-],
-"xAdvance": 1000
-}
-},
-"height=505": {
-"glyph": {
-"components": [
-{
-"name": "VG_31C6_00",
-"transformation": {
-"translateX": -226,
-"translateY": -485
-},
-"location": {
-"G_height": 0,
-"G_width": -34,
-"H_left_angle": 0,
-"S_weight": -1,
-"TR_serif_right_height": 0,
-"TR_serif_right_moveV": 0,
-"TR_serif_right_width": 0,
-"TR_serif_top_height": 0,
-"TR_serif_top_moveH": 0,
-"TR_serif_top_width": 0,
-"height": 471,
-"weight": 45,
-"width": 520
-}
-},
-{
-"name": "VG_4E28_00",
-"transformation": {
-"translateX": -240,
-"translateY": -460
-},
-"location": {
-"B_curve": 100,
-"T_angle": 0,
-"length": 495,
-"serif_height": 0,
-"serif_moveV": -32,
-"serif_style2": 1,
-"serif_style3": 3,
-"serif_width": 0,
-"weight": 44
-}
-},
-{
-"name": "VG_4E00_01",
-"transformation": {
-"translateX": 249,
-"translateY": -140
-},
-"location": {
-"L_cutangle": 0,
-"serif_height": 0,
-"serif_right_moveV": 0,
-"serif_top_moveH": 0,
-"serif_width": 0,
-"weight": 30,
-"width": 510.22
-}
-},
-{
-"name": "VG_4E00_01",
-"transformation": {
-"translateX": 250,
-"translateY": -269
-},
-"location": {
-"L_cutangle": 0,
-"serif_height": 0,
-"serif_right_moveV": 0,
-"serif_top_moveH": 0,
-"serif_width": 0,
-"weight": 30,
-"width": 510.22
 }
 }
 ],

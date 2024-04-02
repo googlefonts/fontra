@@ -39,53 +39,6 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 136,
-"y": 371
-},
-{
-"x": 136,
-"y": 342
-},
-{
-"x": 559,
-"y": 336
-},
-{
-"x": 559,
-"y": 377
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 195,
-"y": 408
-},
-{
-"x": 5,
-"y": 356
-},
-{
-"x": 194,
-"y": 306
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 569
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "path": {
@@ -133,53 +86,6 @@
 "xAdvance": 568
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 136,
-"y": 371
-},
-{
-"x": 136,
-"y": 342
-},
-{
-"x": 1059,
-"y": 336
-},
-{
-"x": 1059,
-"y": 377
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 195,
-"y": 408
-},
-{
-"x": 5,
-"y": 356
-},
-{
-"x": 194,
-"y": 306
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 1069
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "path": {
@@ -225,6 +131,100 @@
 ]
 },
 "xAdvance": 1418
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 136,
+"y": 371
+},
+{
+"x": 136,
+"y": 342
+},
+{
+"x": 559,
+"y": 336
+},
+{
+"x": 559,
+"y": 377
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 195,
+"y": 408
+},
+{
+"x": 5,
+"y": 356
+},
+{
+"x": 194,
+"y": 306
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 569
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 136,
+"y": 371
+},
+{
+"x": 136,
+"y": 342
+},
+{
+"x": 1059,
+"y": 336
+},
+{
+"x": 1059,
+"y": 377
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 195,
+"y": 408
+},
+{
+"x": 5,
+"y": 356
+},
+{
+"x": 194,
+"y": 306
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1069
 }
 }
 }

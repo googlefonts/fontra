@@ -39,23 +39,6 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"components": [
-{
-"name": "A"
-},
-{
-"name": "dieresis",
-"transformation": {
-"translateX": 89,
-"translateY": 20
-}
-}
-],
-"xAdvance": 396
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "components": [
@@ -75,23 +58,6 @@
 "xAdvance": 760
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"components": [
-{
-"name": "A"
-},
-{
-"name": "dieresis",
-"transformation": {
-"translateX": 421,
-"translateY": 20
-}
-}
-],
-"xAdvance": 1190
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "components": [
@@ -107,6 +73,40 @@
 }
 ],
 "xAdvance": 1290
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"components": [
+{
+"name": "A"
+},
+{
+"name": "dieresis",
+"transformation": {
+"translateX": 89,
+"translateY": 20
+}
+}
+],
+"xAdvance": 396
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"components": [
+{
+"name": "A"
+},
+{
+"name": "dieresis",
+"transformation": {
+"translateX": 421,
+"translateY": 20
+}
+}
+],
+"xAdvance": 1190
 }
 }
 }

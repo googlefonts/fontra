@@ -39,127 +39,6 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 100,
-"y": 320
-},
-{
-"x": 100,
-"y": 700
-},
-{
-"x": 60,
-"y": 700
-},
-{
-"x": 60,
-"y": 320
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 232,
-"y": -10,
-"smooth": true
-},
-{
-"x": 338,
-"y": -10,
-"type": "cubic"
-},
-{
-"x": 403,
-"y": 38,
-"type": "cubic"
-},
-{
-"x": 403,
-"y": 182,
-"smooth": true
-},
-{
-"x": 403,
-"y": 700
-},
-{
-"x": 363,
-"y": 700
-},
-{
-"x": 363,
-"y": 182,
-"smooth": true
-},
-{
-"x": 363,
-"y": 60,
-"type": "cubic"
-},
-{
-"x": 313,
-"y": 26,
-"type": "cubic"
-},
-{
-"x": 232,
-"y": 26,
-"smooth": true
-},
-{
-"x": 151,
-"y": 26,
-"type": "cubic"
-},
-{
-"x": 100,
-"y": 60,
-"type": "cubic"
-},
-{
-"x": 100,
-"y": 182,
-"smooth": true
-},
-{
-"x": 100,
-"y": 240
-},
-{
-"x": 60,
-"y": 240
-},
-{
-"x": 60,
-"y": 182,
-"smooth": true
-},
-{
-"x": 60,
-"y": 38,
-"type": "cubic"
-},
-{
-"x": 124,
-"y": -10,
-"type": "cubic"
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 463
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "path": {
@@ -281,127 +160,6 @@
 "xAdvance": 756
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 160,
-"y": 433
-},
-{
-"x": 160,
-"y": 700
-},
-{
-"x": 120,
-"y": 700
-},
-{
-"x": 120,
-"y": 433
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 590,
-"y": -10,
-"smooth": true
-},
-{
-"x": 879,
-"y": -10,
-"type": "cubic"
-},
-{
-"x": 1061,
-"y": 108,
-"type": "cubic"
-},
-{
-"x": 1061,
-"y": 352,
-"smooth": true
-},
-{
-"x": 1061,
-"y": 700
-},
-{
-"x": 1021,
-"y": 700
-},
-{
-"x": 1021,
-"y": 352,
-"smooth": true
-},
-{
-"x": 1021,
-"y": 124,
-"type": "cubic"
-},
-{
-"x": 854,
-"y": 26,
-"type": "cubic"
-},
-{
-"x": 590,
-"y": 26,
-"smooth": true
-},
-{
-"x": 327,
-"y": 26,
-"type": "cubic"
-},
-{
-"x": 160,
-"y": 111.97546012269939,
-"type": "cubic"
-},
-{
-"x": 160,
-"y": 312,
-"smooth": true
-},
-{
-"x": 160,
-"y": 343
-},
-{
-"x": 120,
-"y": 343
-},
-{
-"x": 120,
-"y": 312,
-"smooth": true
-},
-{
-"x": 120,
-"y": 94.96132596685081,
-"type": "cubic"
-},
-{
-"x": 301,
-"y": -10,
-"type": "cubic"
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 1181
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "path": {
@@ -521,6 +279,248 @@
 ]
 },
 "xAdvance": 1327
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 100,
+"y": 320
+},
+{
+"x": 100,
+"y": 700
+},
+{
+"x": 60,
+"y": 700
+},
+{
+"x": 60,
+"y": 320
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 232,
+"y": -10,
+"smooth": true
+},
+{
+"x": 338,
+"y": -10,
+"type": "cubic"
+},
+{
+"x": 403,
+"y": 38,
+"type": "cubic"
+},
+{
+"x": 403,
+"y": 182,
+"smooth": true
+},
+{
+"x": 403,
+"y": 700
+},
+{
+"x": 363,
+"y": 700
+},
+{
+"x": 363,
+"y": 182,
+"smooth": true
+},
+{
+"x": 363,
+"y": 60,
+"type": "cubic"
+},
+{
+"x": 313,
+"y": 26,
+"type": "cubic"
+},
+{
+"x": 232,
+"y": 26,
+"smooth": true
+},
+{
+"x": 151,
+"y": 26,
+"type": "cubic"
+},
+{
+"x": 100,
+"y": 60,
+"type": "cubic"
+},
+{
+"x": 100,
+"y": 182,
+"smooth": true
+},
+{
+"x": 100,
+"y": 240
+},
+{
+"x": 60,
+"y": 240
+},
+{
+"x": 60,
+"y": 182,
+"smooth": true
+},
+{
+"x": 60,
+"y": 38,
+"type": "cubic"
+},
+{
+"x": 124,
+"y": -10,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 463
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 160,
+"y": 433
+},
+{
+"x": 160,
+"y": 700
+},
+{
+"x": 120,
+"y": 700
+},
+{
+"x": 120,
+"y": 433
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 590,
+"y": -10,
+"smooth": true
+},
+{
+"x": 879,
+"y": -10,
+"type": "cubic"
+},
+{
+"x": 1061,
+"y": 108,
+"type": "cubic"
+},
+{
+"x": 1061,
+"y": 352,
+"smooth": true
+},
+{
+"x": 1061,
+"y": 700
+},
+{
+"x": 1021,
+"y": 700
+},
+{
+"x": 1021,
+"y": 352,
+"smooth": true
+},
+{
+"x": 1021,
+"y": 124,
+"type": "cubic"
+},
+{
+"x": 854,
+"y": 26,
+"type": "cubic"
+},
+{
+"x": 590,
+"y": 26,
+"smooth": true
+},
+{
+"x": 327,
+"y": 26,
+"type": "cubic"
+},
+{
+"x": 160,
+"y": 111.97546012269939,
+"type": "cubic"
+},
+{
+"x": 160,
+"y": 312,
+"smooth": true
+},
+{
+"x": 160,
+"y": 343
+},
+{
+"x": 120,
+"y": 343
+},
+{
+"x": 120,
+"y": 312,
+"smooth": true
+},
+{
+"x": 120,
+"y": 94.96132596685081,
+"type": "cubic"
+},
+{
+"x": 301,
+"y": -10,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1181
 }
 }
 }

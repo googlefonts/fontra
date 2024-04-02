@@ -39,23 +39,6 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"components": [
-{
-"name": "A"
-},
-{
-"name": "acute",
-"transformation": {
-"translateX": 99,
-"translateY": 20
-}
-}
-],
-"xAdvance": 396
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "components": [
@@ -70,23 +53,6 @@
 }
 ],
 "xAdvance": 740
-}
-},
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"components": [
-{
-"name": "A"
-},
-{
-"name": "acute",
-"transformation": {
-"translateX": 494,
-"translateY": 20
-}
-}
-],
-"xAdvance": 1190
 }
 },
 "MutatorSansBoldWide/foreground": {
@@ -104,6 +70,40 @@
 }
 ],
 "xAdvance": 1290
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"components": [
+{
+"name": "A"
+},
+{
+"name": "acute",
+"transformation": {
+"translateX": 99,
+"translateY": 20
+}
+}
+],
+"xAdvance": 396
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"components": [
+{
+"name": "A"
+},
+{
+"name": "acute",
+"transformation": {
+"translateX": 494,
+"translateY": 20
+}
+}
+],
+"xAdvance": 1190
 }
 }
 }

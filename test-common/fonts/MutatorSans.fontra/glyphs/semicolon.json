@@ -39,22 +39,6 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"components": [
-{
-"name": "comma"
-},
-{
-"name": "period",
-"transformation": {
-"translateY": 360
-}
-}
-],
-"xAdvance": 171
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "components": [
@@ -74,22 +58,6 @@
 "xAdvance": 250
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"components": [
-{
-"name": "comma"
-},
-{
-"name": "period",
-"transformation": {
-"translateY": 360
-}
-}
-],
-"xAdvance": 291
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "components": [
@@ -107,6 +75,38 @@
 }
 ],
 "xAdvance": 310
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"components": [
+{
+"name": "comma"
+},
+{
+"name": "period",
+"transformation": {
+"translateY": 360
+}
+}
+],
+"xAdvance": 171
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"components": [
+{
+"name": "comma"
+},
+{
+"name": "period",
+"transformation": {
+"translateY": 360
+}
+}
+],
+"xAdvance": 291
 }
 }
 }

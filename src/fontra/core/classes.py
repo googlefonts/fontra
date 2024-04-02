@@ -379,7 +379,11 @@ registerHook(
     customData=_unstructureDictSortedRecursively,
 )
 registerHook(Layer, customData=_unstructureDictSortedRecursively)
-registerHook(VariableGlyph, customData=_unstructureDictSortedRecursively)
+registerHook(
+    VariableGlyph,
+    layers=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursively,
+)
 registerHook(Path)
 registerHook(PackedPath)
 registerHook(AxisValueLabel)

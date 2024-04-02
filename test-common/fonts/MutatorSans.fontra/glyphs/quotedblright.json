@@ -39,26 +39,6 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"components": [
-{
-"name": "comma",
-"transformation": {
-"translateY": 580
-}
-},
-{
-"name": "comma",
-"transformation": {
-"translateX": 130,
-"translateY": 580
-}
-}
-],
-"xAdvance": 301
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "components": [
@@ -79,26 +59,6 @@
 "xAdvance": 480
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"components": [
-{
-"name": "comma",
-"transformation": {
-"translateY": 480
-}
-},
-{
-"name": "comma",
-"transformation": {
-"translateX": 130,
-"translateY": 480
-}
-}
-],
-"xAdvance": 421
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "components": [
@@ -117,6 +77,46 @@
 }
 ],
 "xAdvance": 540
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"components": [
+{
+"name": "comma",
+"transformation": {
+"translateY": 580
+}
+},
+{
+"name": "comma",
+"transformation": {
+"translateX": 130,
+"translateY": 580
+}
+}
+],
+"xAdvance": 301
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"components": [
+{
+"name": "comma",
+"transformation": {
+"translateY": 480
+}
+},
+{
+"name": "comma",
+"transformation": {
+"translateX": 130,
+"translateY": 480
+}
+}
+],
+"xAdvance": 421
 }
 }
 }

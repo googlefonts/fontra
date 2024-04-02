@@ -39,22 +39,22 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"xAdvance": 250
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "xAdvance": 250
 }
 },
-"MutatorSansLightWide/foreground": {
+"MutatorSansBoldWide/foreground": {
 "glyph": {
 "xAdvance": 250
 }
 },
-"MutatorSansBoldWide/foreground": {
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"xAdvance": 250
+}
+},
+"MutatorSansLightWide/foreground": {
 "glyph": {
 "xAdvance": 250
 }

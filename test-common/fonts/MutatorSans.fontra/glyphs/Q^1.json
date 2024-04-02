@@ -39,41 +39,6 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 330,
-"y": -130
-},
-{
-"x": 374,
-"y": -130
-},
-{
-"x": 275,
-"y": 13
-},
-{
-"x": 243,
-"y": -5
-}
-],
-"isClosed": true
-}
-]
-},
-"components": [
-{
-"name": "O"
-}
-],
-"xAdvance": 503
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "path": {
@@ -109,41 +74,6 @@
 "xAdvance": 844
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 708,
-"y": -130
-},
-{
-"x": 752,
-"y": -130
-},
-{
-"x": 653,
-"y": 13
-},
-{
-"x": 621,
-"y": -5
-}
-],
-"isClosed": true
-}
-]
-},
-"components": [
-{
-"name": "O"
-}
-],
-"xAdvance": 1321
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "path": {
@@ -177,6 +107,76 @@
 }
 ],
 "xAdvance": 1381
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 330,
+"y": -130
+},
+{
+"x": 374,
+"y": -130
+},
+{
+"x": 275,
+"y": 13
+},
+{
+"x": 243,
+"y": -5
+}
+],
+"isClosed": true
+}
+]
+},
+"components": [
+{
+"name": "O"
+}
+],
+"xAdvance": 503
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 708,
+"y": -130
+},
+{
+"x": 752,
+"y": -130
+},
+{
+"x": 653,
+"y": 13
+},
+{
+"x": 621,
+"y": -5
+}
+],
+"isClosed": true
+}
+]
+},
+"components": [
+{
+"name": "O"
+}
+],
+"xAdvance": 1321
 }
 }
 }

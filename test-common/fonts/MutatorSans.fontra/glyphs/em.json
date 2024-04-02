@@ -21,14 +21,14 @@
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"xAdvance": 500
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "xAdvance": 0
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"xAdvance": 500
 }
 }
 }
