@@ -324,6 +324,16 @@ def _unstructureDictSorted(v):
     return unstructure(dict(sorted(v.items())))
 
 
+def _unstructureDictSortedRecursive(v):
+    if isinstance(v, dict):
+        return unstructure(
+            dict(sorted((k, _unstructureDictSortedRecursive(v)) for k, v in v.items()))
+        )
+    elif isinstance(v, list):
+        return [_unstructureDictSortedRecursive(item) for item in v]
+    return v
+
+
 _cattrsConverter = cattrs.Converter()
 
 _cattrsConverter.register_unstructure_hook(float, _unstructureFloat)
@@ -355,24 +365,30 @@ def registerHook(cls, omitIfDefault=True, **fieldHooks):
 # The order in which the hooks are registered is significant, for unclear reasons
 registerHook(DecomposedTransform)
 registerHook(
-    Component, location=_unstructureDictSorted, customData=_unstructureDictSorted
+    Component,
+    location=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursive,
 )
-registerHook(LocalAxis, customData=_unstructureDictSorted)
-registerHook(StaticGlyph, customData=_unstructureDictSorted)
-registerHook(Source, location=_unstructureDictSorted, customData=_unstructureDictSorted)
-registerHook(Layer, customData=_unstructureDictSorted)
-registerHook(VariableGlyph, customData=_unstructureDictSorted)
+registerHook(LocalAxis, customData=_unstructureDictSortedRecursive)
+registerHook(StaticGlyph, customData=_unstructureDictSortedRecursive)
+registerHook(
+    Source, location=_unstructureDictSorted, customData=_unstructureDictSortedRecursive
+)
+registerHook(Layer, customData=_unstructureDictSortedRecursive)
+registerHook(VariableGlyph, customData=_unstructureDictSortedRecursive)
 registerHook(Path)
 registerHook(PackedPath)
 registerHook(AxisValueLabel)
-registerHook(GlobalMetric, customData=_unstructureDictSorted)
+registerHook(GlobalMetric, customData=_unstructureDictSortedRecursive)
 registerHook(
-    GlobalSource, location=_unstructureDictSorted, customData=_unstructureDictSorted
+    GlobalSource,
+    location=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursive,
 )
-registerHook(GlobalAxis, customData=_unstructureDictSorted)
-registerHook(GlobalDiscreteAxis, customData=_unstructureDictSorted)
-registerHook(FontInfo, customData=_unstructureDictSorted)
-registerHook(Font, omitIfDefault=False, customData=_unstructureDictSorted)
+registerHook(GlobalAxis, customData=_unstructureDictSortedRecursive)
+registerHook(GlobalDiscreteAxis, customData=_unstructureDictSortedRecursive)
+registerHook(FontInfo, customData=_unstructureDictSortedRecursive)
+registerHook(Font, omitIfDefault=False, customData=_unstructureDictSortedRecursive)
 
 
 def structure(obj, cls):
