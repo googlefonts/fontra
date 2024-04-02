@@ -28,8 +28,7 @@ export class Form extends SimpleElement {
       white-space: nowrap;
     }
 
-    .ui-form-label-single-icon {
-      font-weight: bold;
+    .ui-form-full-width {
       grid-column: 1 / span 2;
     }
 
@@ -101,7 +100,7 @@ export class Form extends SimpleElement {
       display: inline-block;
     }
 
-    .ui-form-single-icon {
+    .ui-form-center {
       display: flex;
       justify-content: center;
       align-items: center;
@@ -166,12 +165,9 @@ export class Form extends SimpleElement {
       }
       if (fieldItem.type === "single-icon") {
         if (fieldItem.element) {
-          const iconElement = document.createElement("div");
-          iconElement.classList.add("ui-form-single-icon");
-          iconElement.appendChild(fieldItem.element);
           const valueElement = document.createElement("div");
-          valueElement.classList.add("ui-form-label-single-icon", "header");
-          valueElement.appendChild(iconElement);
+          valueElement.classList.add("ui-form-full-width");
+          valueElement.appendChild(fieldItem.element);
           this.contentElement.appendChild(valueElement);
         }
         continue;
@@ -228,10 +224,6 @@ export class Form extends SimpleElement {
     this._addText(valueElement, fieldItem);
   }
 
-  _addIcon(valueElement, fieldItem) {
-    valueElement.appendChild(fieldItem.element);
-  }
-
   _addText(valueElement, fieldItem) {
     if (fieldItem.value !== undefined) {
       valueElement.innerText = fieldItem.value;
@@ -258,24 +250,9 @@ export class Form extends SimpleElement {
     this._addEditNumber(valueElement, fieldItem.fieldY);
   }
 
-  _addEditNumberXYElement(valueElement, fieldItem) {
-    this._addEditNumber(valueElement, fieldItem.fieldX);
-    this._addEditNumber(valueElement, fieldItem.fieldY);
-    valueElement.appendChild(fieldItem.element);
-  }
-
-  _addElementEditNumberXY(valueElement, fieldItem) {
-    valueElement.appendChild(fieldItem.element);
-    this._addEditNumber(valueElement, fieldItem.fieldX);
-    this._addEditNumber(valueElement, fieldItem.fieldY);
-  }
-
   _addEditNumber(valueElement, fieldItem) {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
-    if (fieldItem.id) {
-      inputElement.id = fieldItem.id;
-    }
     inputElement.type = "number";
     inputElement.value = maybeRound(fieldItem.value, fieldItem.numDigits);
 
@@ -290,6 +267,7 @@ export class Form extends SimpleElement {
       inputElement.pattern = "\\d*";
       inputElement.step = 1;
     }
+
     inputElement.disabled = fieldItem.disabled;
     inputElement.onkeydown = (event) => {
       if (event.shiftKey) {
