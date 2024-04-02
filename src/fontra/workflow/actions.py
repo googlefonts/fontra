@@ -21,6 +21,7 @@ from fontTools.varLib.models import piecewiseLinearMap
 
 from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
+from ..core.async_property import async_cached_property
 from ..core.classes import (
     Component,
     FontInfo,
@@ -241,20 +242,19 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
     _glyphMap: dict[str, list[int]] | None = field(init=False, repr=False, default=None)
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
-        glyphMap = await self._getSubsettedGlyphMap()
+        glyphMap = await self.subsettedGlyphMap
         if glyphName not in glyphMap:
             return None
         return await self.validatedInput.getGlyph(glyphName)
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
-        return await self._getSubsettedGlyphMap()
+        return await self.subsettedGlyphMap
 
-    async def _getSubsettedGlyphMap(self) -> dict[str, list[int]]:
-        if self._glyphMap is None:
-            self._glyphMap = await self._buildSubsettedGlyphMap(
-                await self.validatedInput.getGlyphMap()
-            )
-        return self._glyphMap
+    @async_cached_property
+    async def subsettedGlyphMap(self) -> dict[str, list[int]]:
+        return await self._buildSubsettedGlyphMap(
+            await self.validatedInput.getGlyphMap()
+        )
 
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
@@ -475,30 +475,27 @@ def dropUnusedSourcesAndLayers(glyph):
 class DropAxisMappingAction(BaseFilterAction):
     axes: list[str] | None = None
 
-    _axisValueMapFunctions: dict | None = field(init=False, default=None)
+    @async_cached_property
+    async def axisValueMapFunctions(self) -> dict:
+        axes = await self.validatedInput.getGlobalAxes()
+        if self.axes:
+            axes = [axis for axis in axes if axis.name in self.axes]
 
-    async def _getAxisValueMapFunctions(self) -> dict:
-        if self._axisValueMapFunctions is None:
-            axes = await self.validatedInput.getGlobalAxes()
-            if self.axes:
-                axes = [axis for axis in axes if axis.name in self.axes]
-
-            mapFuncs = {}
-            for axis in axes:
-                if axis.mapping:
-                    mapFuncs[axis.name] = partial(
-                        piecewiseLinearMap,
-                        mapping=dict([(b, a) for a, b in axis.mapping]),
-                    )
-            self._axisValueMapFunctions = mapFuncs
-        return self._axisValueMapFunctions
+        mapFuncs = {}
+        for axis in axes:
+            if axis.mapping:
+                mapFuncs[axis.name] = partial(
+                    piecewiseLinearMap,
+                    mapping=dict([(b, a) for a, b in axis.mapping]),
+                )
+        return mapFuncs
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        mapFuncs = await self._getAxisValueMapFunctions()
+        mapFuncs = await self.axisValueMapFunctions
         return _remapSourceLocations(glyph, mapFuncs)
 
     async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        mapFuncs = await self._getAxisValueMapFunctions()
+        mapFuncs = await self.axisValueMapFunctions
         return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
 
 
@@ -533,14 +530,18 @@ class AdjustAxesAction(BaseFilterAction):
     axes: dict[str, dict[str, Any]]
     remapSources: bool = True
 
-    _adjustedAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = field(
-        init=False, default=None
-    )
-    _axisValueMapFunctions: dict | None = field(init=False, default=None)
+    @async_cached_property
+    async def adjustedAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        adjustedAxes, _ = await self._adjustedAxesAndMapFunctions
+        return adjustedAxes
 
-    async def _ensureSetup(self) -> None:
-        if self._adjustedAxes is not None:
-            return
+    @async_cached_property
+    async def axisValueMapFunctions(self) -> dict:
+        _, mapFuncs = await self._adjustedAxesAndMapFunctions
+        return mapFuncs
+
+    @async_cached_property
+    async def _adjustedAxesAndMapFunctions(self) -> tuple:
         mapFuncs: dict = {}
         axes = await self.validatedInput.getGlobalAxes()
         adjustedAxes = []
@@ -572,16 +573,13 @@ class AdjustAxesAction(BaseFilterAction):
 
                 axis = newAxis
             adjustedAxes.append(axis)
-        self._adjustedAxes = adjustedAxes
-        self._axisValueMapFunctions = mapFuncs
+        return adjustedAxes, mapFuncs
 
     async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        await self._ensureSetup()
-        assert self._adjustedAxes is not None
-        return self._adjustedAxes
+        return await self.adjustedAxes
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        return _remapSourceLocations(glyph, self._axisValueMapFunctions)
+        return _remapSourceLocations(glyph, await self.axisValueMapFunctions)
 
 
 @registerActionClass("decompose-composites")
@@ -596,19 +594,19 @@ class DecomposeCompositesAction(BaseFilterAction):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         glyph = instancer.glyph
-        defaultGlobalLocation = instancer.defaultGlobalLocation
+        defaultGlobalSourceLocation = instancer.defaultGlobalSourceLocation
 
         if not instancer.componentTypes or (
             self.onlyVariableComposites and not any(instancer.componentTypes)
         ):
             return glyph
 
-        haveLocations = getGlobalLocationsFromSources(
-            instancer.activeSources, defaultGlobalLocation
+        haveLocations = getGlobalSourceLocationsFromSources(
+            instancer.activeSources, defaultGlobalSourceLocation
         )
 
-        needLocations = await getGlobalLocationsFromBaseGlyphs(
-            glyph, self.fontInstancer.backend, defaultGlobalLocation
+        needLocations = await getGlobalSourceLocationsFromBaseGlyphs(
+            glyph, self.fontInstancer.backend, defaultGlobalSourceLocation
         )
 
         locationsToAdd = [
@@ -639,8 +637,8 @@ class DecomposeCompositesAction(BaseFilterAction):
         return replace(glyph, sources=newSources, layers=newLayers)
 
 
-async def getGlobalLocationsFromBaseGlyphs(
-    glyph, backend, defaultGlobalLocation, seenGlyphNames=None
+async def getGlobalSourceLocationsFromBaseGlyphs(
+    glyph, backend, defaultGlobalSourceLocation, seenGlyphNames=None
 ):
     if seenGlyphNames is None:
         seenGlyphNames = set()
@@ -657,8 +655,8 @@ async def getGlobalLocationsFromBaseGlyphs(
     locations = set()
     for baseGlyph in baseGlyphs:
         locations.update(
-            getGlobalLocationsFromSources(
-                getActiveSources(baseGlyph.sources), defaultGlobalLocation
+            getGlobalSourceLocationsFromSources(
+                getActiveSources(baseGlyph.sources), defaultGlobalSourceLocation
             )
         )
 
@@ -666,19 +664,23 @@ async def getGlobalLocationsFromBaseGlyphs(
 
     for baseGlyph in baseGlyphs:
         locations.update(
-            await getGlobalLocationsFromBaseGlyphs(
-                baseGlyph, backend, defaultGlobalLocation, seenGlyphNames
+            await getGlobalSourceLocationsFromBaseGlyphs(
+                baseGlyph, backend, defaultGlobalSourceLocation, seenGlyphNames
             )
         )
 
     return locations
 
 
-def getGlobalLocationsFromSources(sources, defaultGlobalLocation):
+def getGlobalSourceLocationsFromSources(sources, defaultGlobalSourceLocation):
     return {
         tuplifyLocation(
-            defaultGlobalLocation
-            | {k: v for k, v in source.location.items() if k in defaultGlobalLocation}
+            defaultGlobalSourceLocation
+            | {
+                k: v
+                for k, v in source.location.items()
+                if k in defaultGlobalSourceLocation
+            }
         )
         for source in sources
     }
@@ -790,3 +792,131 @@ def getDefaultSourceLocation(axes):
         )
         for axis in axes
     }
+
+
+@registerActionClass("move-default-location")
+@dataclass(kw_only=True)
+class MoveDefaultLocationAction(BaseFilterAction):
+    newDefaultUserLocation: dict[str, float]
+
+    @cached_property
+    def fontInstancer(self):
+        return FontInstancer(self.validatedInput)
+
+    @async_cached_property
+    async def newDefaultSourceLocation(self):
+        newDefaultUserLocation = self.newDefaultUserLocation
+        axes = [
+            axis
+            for axis in await self.validatedInput.getGlobalAxes()
+            if axis.name in newDefaultUserLocation
+        ]
+        return {
+            axis.name: (
+                piecewiseLinearMap(
+                    newDefaultUserLocation[axis.name], dict(axis.mapping)
+                )
+                if axis.mapping
+                else newDefaultUserLocation[axis.name]
+            )
+            for axis in axes
+        }
+
+    async def processGlobalAxes(
+        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
+    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        newDefaultUserLocation = self.newDefaultUserLocation
+        return [
+            replace(
+                axis,
+                defaultValue=newDefaultUserLocation.get(axis.name, axis.defaultValue),
+            )
+            for axis in axes
+        ]
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+
+        defaultLocation = {
+            axis.name: axis.defaultValue for axis in instancer.combinedAxes
+        }
+
+        sourcesByLocation = {
+            tuplifyLocation(defaultLocation | source.location): source
+            for source in instancer.activeSources
+        }
+
+        axisNames = {axis.name for axis in instancer.combinedAxes}
+        movingAxisNames = set(self.newDefaultUserLocation)
+        interactingAxes = set()
+
+        for locationTuple in sourcesByLocation:
+            contributingAxes = set()
+            for axisName, value in locationTuple:
+                if value != defaultLocation[axisName]:
+                    contributingAxes.add(axisName)
+            if len(contributingAxes) > 1 and not contributingAxes.isdisjoint(
+                movingAxisNames
+            ):
+                interactingAxes.update(contributingAxes)
+
+        standaloneAxes = axisNames - interactingAxes
+
+        newLocations = [dict(loc) for loc in sourcesByLocation]
+
+        newDefaultSourceLocation = await self.newDefaultSourceLocation
+        currentDefaultLocation = dict(defaultLocation)
+
+        for movingAxisName, movingAxisValue in newDefaultSourceLocation.items():
+            newDefaultAxisLoc = {movingAxisName: movingAxisValue}
+
+            locationsToAdd = [
+                loc | newDefaultAxisLoc
+                for loc in newLocations
+                if any(
+                    loc[axisName] != currentDefaultLocation[axisName]
+                    for axisName in interactingAxes
+                )
+            ]
+
+            for axisName in standaloneAxes:
+                if axisName == movingAxisName:
+                    continue
+
+                for loc in newLocations:
+                    if (
+                        loc[axisName] != currentDefaultLocation[axisName]
+                        and loc[movingAxisName]
+                        == currentDefaultLocation[movingAxisName]
+                    ):
+                        loc[movingAxisName] = movingAxisValue
+
+            currentDefaultLocation = currentDefaultLocation | newDefaultAxisLoc
+
+            locationsToAdd.append(dict(currentDefaultLocation))
+            for loc in locationsToAdd:
+                if loc not in newLocations:
+                    newLocations.append(loc)
+
+        newLocationTuples = [tuplifyLocation(loc) for loc in newLocations]
+
+        glyph = instancer.glyph
+        newSources = []
+        newLayers = {}
+
+        for locationTuple in sorted(newLocationTuples):
+            source = sourcesByLocation.get(locationTuple)
+            if source is not None:
+                newLayers[source.layerName] = glyph.layers[source.layerName]
+            else:
+                location = dict(locationTuple)
+                name = locationToString(location)
+                source = Source(name=name, location=location, layerName=name)
+                instance = instancer.instantiate(location)
+                newLayers[source.layerName] = Layer(glyph=instance.glyph)
+
+            newSources.append(source)
+
+        return dropUnusedSourcesAndLayers(
+            replace(glyph, sources=newSources, layers=newLayers)
+        )

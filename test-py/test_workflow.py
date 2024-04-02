@@ -587,6 +587,24 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "subset-move-default-location",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-move-default-location.fontra"
+            - action: subset-axes
+              dropAxisNames: ["italic"]
+            - action: move-default-location
+              newDefaultUserLocation:
+                width: 400
+                weight: 300
+
+            - action: output
+              destination: "output-move-default-location.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
