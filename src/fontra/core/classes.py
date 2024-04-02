@@ -317,7 +317,7 @@ def _unstructurePointType(v):
     return int(v)
 
 
-def _unstructureLocationSorted(v):
+def _unstructureDictSorted(v):
     return unstructure(dict(sorted(v.items())))
 
 
@@ -351,9 +351,9 @@ def registerHook(cls, omitIfDefault=True, **fieldHooks):
 
 # The order in which the hooks are applied is significant, for unclear reasons
 registerHook(DecomposedTransform)
-registerHook(Component, location=_unstructureLocationSorted)
+registerHook(Component, location=_unstructureDictSorted)
 registerHook(StaticGlyph)
-registerHook(Source, location=_unstructureLocationSorted)
+registerHook(Source, location=_unstructureDictSorted)
 registerHook(Layer)
 registerHook(VariableGlyph)
 registerHook(Path)
@@ -362,9 +362,9 @@ registerHook(GlobalAxis)
 registerHook(GlobalDiscreteAxis)
 registerHook(AxisValueLabel)
 registerHook(GlobalMetric)
-registerHook(GlobalSource, location=_unstructureLocationSorted)
+registerHook(GlobalSource, location=_unstructureDictSorted)
 registerHook(FontInfo)
-registerHook(Font, omitIfDefault=False, customData=_unstructureLocationSorted)
+registerHook(Font, omitIfDefault=False, customData=_unstructureDictSorted)
 
 
 def structure(obj, cls):
