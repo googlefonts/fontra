@@ -27,7 +27,7 @@ class FontInfo:
     licenseDescription: Optional[str] = None
     licenseInfoURL: Optional[str] = None
     vendorID: Optional[str] = None
-    customData: dict[str, Any] = field(default_factory=dict)
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
