@@ -45,22 +45,6 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       white-space: normal;
     }
 
-    .radio-btns {
-      display: flex;
-      gap: 0rem;
-      flex-direction: unset;
-      white-space: unset;
-    }
-
-    .icon-origin-node:hover {
-      color: red;
-        stroke-width: 5.5px;
-    }
-
-    .icon-origin-node:active {
-        color: #585858;
-    }
-
   `;
 
   getContentElement() {
@@ -100,15 +84,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     formContents.push({ type: "header", label: `Transformations` });
 
     let radio_button_origin = html.createDomElement("div", {
-      "data-tooltip": "Origin",
-      "data-tooltipposition": "bottom",
+      class: "origin-radio-buttons",
     });
 
     for (const keyY of ["top", "middle", "bottom"]) {
-      let radio_row = html.createDomElement("div", {
-        /*         class: "radio-btns", */
-        style: "display: flex; gap: 0rem; flex-direction: unset; white-space: unset;",
-      });
       for (const keyX of ["left", "center", "right"]) {
         const key = `${keyX}-${keyY}`;
         let radio_button = html.createDomElement("input", {
@@ -118,10 +97,11 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           "v-model": "role",
           "checked": keyX === this.originX && keyY === this.originY ? "checked" : "",
           "onclick": (event) => this._changeOrigin(keyX, keyY),
+          "data-tooltip": `Origin ${keyY} ${keyX}`,
+          "data-tooltipposition": "bottom",
         });
-        radio_row.appendChild(radio_button);
+        radio_button_origin.appendChild(radio_button);
       }
-      radio_button_origin.appendChild(radio_row);
     }
 
     formContents.push({
@@ -169,7 +149,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       src: "/tabler-icons/arrow-move-right.svg",
       onclick: (event) => this._moveLayerGlyph(),
       class: "ui-form-icon ui-form-icon-button",
-      /*       "data-tooltip": "Scale",
+      /*       "data-tooltip": "Move",
       "data-tooltipposition": "left", */
     });
 
@@ -277,7 +257,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
               scaleFactorY: 1,
               undoName: "Flip vertically",
             }),
-          /*           "data-tooltip": "Flip vertically",
+          /* "data-tooltip": "Flip vertically",
           "data-tooltipposition": "left", */
         }),
         html.createDomElement("icon-button", {
@@ -288,7 +268,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
               scaleFactorY: -1,
               undoName: "Flip horizontally",
             }),
-          /*           "data-tooltip": "Flip horizontally",
+          /* "data-tooltip": "Flip horizontally",
           "data-tooltipposition": "left", */
         }),
       ],
@@ -347,17 +327,15 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     const width = bounds.xMax - bounds.xMin;
     const height = bounds.yMax - bounds.yMin;
 
-    // default scale: from center
+    // default from center
     let pinPointX = bounds.xMin + width / 2;
     let pinPointY = bounds.yMin + height / 2;
 
     if (typeof originX === "number") {
       pinPointX = originX;
     } else if (originX === "left") {
-      // if scale from left
       pinPointX = bounds.xMin;
     } else if (originX === "right") {
-      // if scale from right
       pinPointX = bounds.xMax;
     }
 

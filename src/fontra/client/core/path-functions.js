@@ -624,7 +624,7 @@ export function scalePoint(pinPoint, point, factor) {
 }
 
 export function rotatePoint(pinPoint, point, angle) {
-  let theta = (angle * Math.PI) / 180;
+  const theta = (angle * Math.PI) / 180;
   const point_x =
     Math.cos(theta) * (point.x - pinPoint.x) -
     Math.sin(theta) * (point.y - pinPoint.y) +

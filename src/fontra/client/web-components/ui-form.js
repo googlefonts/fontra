@@ -97,22 +97,8 @@ export class Form extends SimpleElement {
       margin-right: 1.3em;
     }
 
-    ui-form-icon-button {
-      overflow-x: unset;
-      width: 1em;
-      white-space: nowrap;
-      margin-left: 1em;
-      margin-right: 1em;
-    }
-
     .ui-form-icon.ui-form-icon-button {
       display: inline-block;
-    }
-
-    .ui-form-value.single-icon {
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     .ui-form-single-icon {
@@ -122,26 +108,29 @@ export class Form extends SimpleElement {
       padding: 0.35rem 0.35rem;
     }
 
-    input[type="radio"] {
+    .origin-radio-buttons {
+      display: grid;
+      grid-template-columns: auto auto auto;
+    }
+
+    .origin-radio-buttons > input[type="radio"] {
       appearance: none;
       background-color: var(--editor-mini-console-background-color-light);
       margin: 3px;
-      font: inherit;
       color: var(--editor-mini-console-background-color-light);
       width: 1.0em;
       height: 1.0em;
       border: 0.15em solid var(--editor-mini-console-background-color-light);
       border-radius: 50%;
-      transform: translateY(-0.075em);
       cursor: pointer;
     }
 
-    input[type="radio"]:hover {
+    .origin-radio-buttons > input[type="radio"]:hover {
       background-color: var(--text-input-background-color-dark);
       border: 0.15em solid var(--text-input-background-color-dark);
     }
 
-    input[type="radio"]:checked {
+    .origin-radio-buttons > input[type="radio"]:checked {
       background-color: var(--text-input-background-color-dark);
       border: 0.15em solid var(--text-input-background-color-dark);
     }
