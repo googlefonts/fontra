@@ -336,34 +336,35 @@ _cattrsConverter.register_structure_hook(PointType, _structurePointType)
 _cattrsConverter.register_unstructure_hook(PointType, _unstructurePointType)
 
 
-def registerOmitDefaultHook(cls, **fieldHooks):
+def registerHook(cls, omitIfDefault=True, **fieldHooks):
     fieldHooks = {
         k: cattrs.gen.override(unstruct_hook=v) for k, v in fieldHooks.items()
     }
     _hook = cattrs.gen.make_dict_unstructure_fn(
         cls,
         _cattrsConverter,
-        _cattrs_omit_if_default=True,
+        _cattrs_omit_if_default=omitIfDefault,
         **fieldHooks,
     )
     _cattrsConverter.register_unstructure_hook(cls, _hook)
 
 
 # The order in which the hooks are applied is significant, for unclear reasons
-registerOmitDefaultHook(DecomposedTransform)
-registerOmitDefaultHook(Component, location=_unstructureLocationSorted)
-registerOmitDefaultHook(StaticGlyph)
-registerOmitDefaultHook(Source, location=_unstructureLocationSorted)
-registerOmitDefaultHook(Layer)
-registerOmitDefaultHook(VariableGlyph)
-registerOmitDefaultHook(Path)
-registerOmitDefaultHook(PackedPath)
-registerOmitDefaultHook(GlobalAxis)
-registerOmitDefaultHook(GlobalDiscreteAxis)
-registerOmitDefaultHook(AxisValueLabel)
-registerOmitDefaultHook(GlobalMetric)
-registerOmitDefaultHook(GlobalSource, location=_unstructureLocationSorted)
-registerOmitDefaultHook(FontInfo)
+registerHook(DecomposedTransform)
+registerHook(Component, location=_unstructureLocationSorted)
+registerHook(StaticGlyph)
+registerHook(Source, location=_unstructureLocationSorted)
+registerHook(Layer)
+registerHook(VariableGlyph)
+registerHook(Path)
+registerHook(PackedPath)
+registerHook(GlobalAxis)
+registerHook(GlobalDiscreteAxis)
+registerHook(AxisValueLabel)
+registerHook(GlobalMetric)
+registerHook(GlobalSource, location=_unstructureLocationSorted)
+registerHook(FontInfo)
+registerHook(Font, omitIfDefault=False, customData=_unstructureLocationSorted)
 
 
 def structure(obj, cls):
