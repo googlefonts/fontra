@@ -472,10 +472,6 @@ body {
   transform: scale(1.1, 1.1);
 }
 
-.icon-tabler-grid-dots:hover {
-  color: green;
-}
-
 .tool-icon--hidden {
   display: none;
 }

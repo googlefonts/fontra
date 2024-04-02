@@ -99,7 +99,6 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     formContents.push({ type: "header", label: `Transformations` });
 
     let radio_button_origin = html.createDomElement("div", {
-      "class": "radio-btns-wrapper",
       "data-tooltip": "Origin",
       "data-tooltipposition": "bottom",
     });
