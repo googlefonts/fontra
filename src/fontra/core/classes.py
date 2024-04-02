@@ -364,13 +364,13 @@ registerHook(Layer, customData=_unstructureDictSorted)
 registerHook(VariableGlyph, customData=_unstructureDictSorted)
 registerHook(Path)
 registerHook(PackedPath)
-registerHook(GlobalAxis, customData=_unstructureDictSorted)
-registerHook(GlobalDiscreteAxis, customData=_unstructureDictSorted)
 registerHook(AxisValueLabel)
 registerHook(GlobalMetric, customData=_unstructureDictSorted)
 registerHook(
     GlobalSource, location=_unstructureDictSorted, customData=_unstructureDictSorted
 )
+registerHook(GlobalAxis, customData=_unstructureDictSorted)
+registerHook(GlobalDiscreteAxis, customData=_unstructureDictSorted)
 registerHook(FontInfo, customData=_unstructureDictSorted)
 registerHook(Font, omitIfDefault=False, customData=_unstructureDictSorted)
 
