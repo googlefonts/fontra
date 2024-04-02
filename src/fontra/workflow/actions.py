@@ -838,9 +838,7 @@ class MoveDefaultLocationAction(BaseFilterAction):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
 
-        defaultLocation = {
-            axis.name: axis.defaultValue for axis in instancer.combinedAxes
-        }
+        defaultLocation = instancer.defaultSourceLocation
 
         locations = [
             defaultLocation | source.location for source in instancer.activeSources

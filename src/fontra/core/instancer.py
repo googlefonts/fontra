@@ -207,6 +207,10 @@ class GlyphInstancer:
         return mapLocationFromUserToSource(location, self.globalAxes)
 
     @cached_property
+    def defaultSourceLocation(self) -> dict[str, float]:
+        return {axis.name: axis.defaultValue for axis in self.combinedAxes}
+
+    @cached_property
     def componentTypes(self) -> list[bool]:
         """A list with a boolean for each component: True if the component is
         variable (has a non-empty location) and False if it is a "classic"
