@@ -1,7 +1,8 @@
 import SelectionInfoPanel from "./panel-selection-info.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
-import { scalePoint } from "/core/path-functions.js";
+import { rotatePoint, scalePoint } from "/core/path-functions.js";
+import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import {
   enumerate,
   findNestedActiveElement,
@@ -20,7 +21,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
   iconPath = "/tabler-icons/shape.svg";
 
   scaleX = 100;
-  scaleY = 100;
+  scaleY = undefined;
   scaleFactorX = 1;
   scaleFactorY = 1;
   rotation = 0;
@@ -202,7 +203,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     let button_rotate = html.createDomElement("icon-button", {
       src: "/tabler-icons/rotate-clockwise.svg",
-      onclick: (event) => this._doSomthing("Rotate Selection"),
+      onclick: (event) => this._rotateLayerGlyph(),
       class: "ui-form-icon ui-form-icon-button",
       /*       "data-tooltip": "Rotate",
       "data-tooltipposition": "left", */
@@ -309,6 +310,68 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     }
   }
 
+  _getSelectedBounds(layerGlyph, pointIndices, componentIndices) {
+    const selectionRects = [];
+    if (pointIndices.length) {
+      const selRect = rectFromPoints(
+        pointIndices.map((i) => layerGlyph.path.getPoint(i)).filter((point) => !!point)
+      );
+      if (selRect) {
+        selectionRects.push(selRect);
+      }
+    }
+    // the following does not work, yet
+    // because I am not able to get the bounds of the components
+    /*     for (const componentIndex of componentIndices) {
+      const component = glyphController.components[componentIndex];
+      console.log("component", component);
+      console.log("component.controlBounds", component.controlBounds);
+
+      if (!component || !component.controlBounds) {
+        continue;
+      }
+      selectionRects.push(component.bounds);
+    }
+    if (!selectionRects.length && glyphController?.controlBounds) {
+      selectionRects.push(glyphController.bounds);
+    } */
+
+    if (selectionRects.length) {
+      const selectionBounds = unionRect(...selectionRects);
+      return selectionBounds;
+    }
+  }
+
+  _getPinPoint(layerGlyph, pointIndices, componentIndices, originX, originY) {
+    const bounds = this._getSelectedBounds(layerGlyph, pointIndices, componentIndices);
+    const width = bounds.xMax - bounds.xMin;
+    const height = bounds.yMax - bounds.yMin;
+
+    // default scale: from center
+    let pinPointX = bounds.xMin + width / 2;
+    let pinPointY = bounds.yMin + height / 2;
+
+    if (typeof originX === "number") {
+      pinPointX = originX;
+    } else if (originX === "left") {
+      // if scale from left
+      pinPointX = bounds.xMin;
+    } else if (originX === "right") {
+      // if scale from right
+      pinPointX = bounds.xMax;
+    }
+
+    if (typeof originY === "number") {
+      pinPointY = originY;
+    } else if (originY === "top") {
+      pinPointY = bounds.yMax;
+    } else if (originY === "bottom") {
+      pinPointY = bounds.yMin;
+    }
+
+    return { x: pinPointX, y: pinPointY };
+  }
+
   async _moveLayerGlyph({
     moveX = this.moveX,
     moveY = this.moveY,
@@ -347,20 +410,16 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     });
   }
 
-  async _scaleLayerGlyph({
-    originPositionX = this.originX,
-    originPositionY = this.originY,
-    scaleFactorX = this.scaleFactorX,
-    scaleFactorY = this.scaleFactorY,
-    undoName = "scale",
+  async _rotateLayerGlyph({
+    originX = this.originX,
+    originY = this.originY,
+    angle = this.rotation * -1,
+    undoName = "rotation",
   } = {}) {
-    console.log("scaleLayerGlyph", scaleFactorX, scaleFactorY);
     const { pointIndices, componentIndices } = this._getSelection();
     if (!pointIndices || pointIndices.length <= 1) {
       return;
     }
-
-    console.log("scaleLayerGlyph", pointIndices, scaleFactorX, scaleFactorY);
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
@@ -368,64 +427,76 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       );
 
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-        const map_x = pointIndices.map((i) => layerGlyph.path.getPoint(i).x);
-        const xMin = Math.min(...map_x);
-        const xMax = Math.max(...map_x);
-        const width = xMax - xMin;
+        const pinPoint = this._getPinPoint(
+          layerGlyph,
+          pointIndices,
+          componentIndices,
+          originX,
+          originY
+        );
 
-        // default scale: from center
-        let scaleOriginX = xMin + width / 2;
+        for (const index of pointIndices) {
+          let point = layerGlyph.path.getPoint(index);
+          let pointRotated = rotatePoint(pinPoint, point, angle);
+          layerGlyph.path.coordinates[index * 2] = pointRotated.x;
+          layerGlyph.path.coordinates[index * 2 + 1] = pointRotated.y;
+        }
+      }
+      return undoName;
+    });
+  }
 
-        if (typeof originPositionX === "number") {
-          scaleOriginX = originPositionX;
-        } else if (originPositionX === "left") {
-          // if scale from left
-          scaleOriginX = xMin;
-        } else if (originPositionX === "right") {
-          // if scale from right
-          scaleOriginX = xMax;
+  async _scaleLayerGlyph({
+    originX = this.originX,
+    originY = this.originY,
+    scaleFactorX = this.scaleFactorX,
+    scaleFactorY = this.scaleY ? this.scaleFactorY : this.scaleFactorX,
+    undoName = "scale",
+  } = {}) {
+    const { pointIndices, componentIndices } = this._getSelection();
+    /*     const glyphController =
+      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
+ */
+    if (!pointIndices || (pointIndices.length <= 1 && !componentIndices.length)) {
+      return;
+    }
+
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        const pinPoint = this._getPinPoint(
+          layerGlyph,
+          pointIndices,
+          componentIndices,
+          originX,
+          originY
+        );
+
+        for (const index of pointIndices) {
+          let point = layerGlyph.path.getPoint(index);
+          let pointScaledX = scalePoint(pinPoint, point, scaleFactorX);
+          let pointScaledY = scalePoint(pinPoint, point, scaleFactorY);
+          layerGlyph.path.coordinates[index * 2] = pointScaledX.x;
+          layerGlyph.path.coordinates[index * 2 + 1] = pointScaledY.y;
         }
 
-        //scaleOriginX = xMax; // if scale from right
-        let pinPoint = { x: scaleOriginX, y: 0 };
-
-        for (const [i, index] of enumerate(
-          range(0, layerGlyph.path.coordinates.length, 2)
-        )) {
-          if (pointIndices.includes(i)) {
-            let point = layerGlyph.path.getPoint(i);
-            let pointScaled = scalePoint(pinPoint, point, scaleFactorX);
-            layerGlyph.path.coordinates[index] = pointScaled.x;
-          }
-        }
-
-        const map_y = pointIndices.map((i) => layerGlyph.path.getPoint(i).y);
-        const yMin = Math.min(...map_y);
-        const yMax = Math.max(...map_y);
-        const height = yMax - yMin;
-
-        // default scale: from center
-        let scaleOriginY = yMin + height / 2;
-
-        if (typeof originPositionY === "number") {
-          scaleOriginY = originPositionY;
-        } else if (originPositionY === "top") {
-          scaleOriginY = yMax;
-        } else if (originPositionY === "bottom") {
-          scaleOriginY = yMin;
-        }
-
-        pinPoint = { x: 0, y: scaleOriginY };
-
-        for (const [i, index] of enumerate(
-          range(1, layerGlyph.path.coordinates.length, 2)
-        )) {
-          if (pointIndices.includes(i)) {
-            let point = layerGlyph.path.getPoint(i);
-            let pointScaled = scalePoint(pinPoint, point, scaleFactorY);
-            layerGlyph.path.coordinates[index] = pointScaled.y;
-          }
-        }
+        /*         // Update the components
+        for (const index of componentIndices) {
+          compo.transformation = {
+            translateX: compo.transformation.translateX,
+            translateY: compo.transformation.translateY,
+            rotation: compo.transformation.rotation,
+            scaleX: compo.transformation.scaleX * scaleFactorX,
+            scaleY: compo.transformation.scaleY * scaleFactorY,
+            skewX: compo.transformation.skewX,
+            skewY: compo.transformation.skewY,
+            tCenterX: compo.transformation.tCenterX,
+            tCenterY: compo.transformation.tCenterY,
+          };
+        } */
       }
       return undoName;
     });
@@ -434,14 +505,9 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
   _changeOrigin(keyX, keyY) {
     this.originX = keyX;
     this.originY = keyY;
-    console.log("change origin: ", keyX, keyY);
     this.originXButton = undefined;
     this.originYButton = undefined;
     this.update();
-  }
-
-  _doSomthing(text) {
-    console.log("do something: ", text);
   }
 
   async toggle(on, focus) {
