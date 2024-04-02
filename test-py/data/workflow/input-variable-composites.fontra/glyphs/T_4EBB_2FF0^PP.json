@@ -148,6 +148,348 @@
 }
 ],
 "layers": {
+"P_height=-100": {
+"glyph": {
+"components": [
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": -286,
+"translateY": -295
+},
+"location": {
+"TL_cut": 41.3330001873946,
+"T_angle": -5.46630020613405,
+"barb": 1,
+"barb_size": -8.35892614645357,
+"barb_slope": 12.3409589470385,
+"crop_corner": 64.5356732476758,
+"flat_end": 0.123890107594276,
+"length": 655.73,
+"serif_height": -13,
+"serif_moveV": -21,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -4,
+"start_slope": 0,
+"thickness": 0,
+"weight": 44
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -327,
+"translateY": -1
+},
+"location": {
+"L_curveH": -8,
+"L_curveV": 0,
+"P_bottom_moveH": 0,
+"P_bottom_moveV": 0,
+"P_curve_weightV": 0,
+"R_curveH": -5,
+"S_top_length": 0,
+"height": 413,
+"serif_height": 0,
+"serif_moveV": 0,
+"serif_right_moveV": 0,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": 0,
+"weight": 62,
+"width": 320
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"P_height=100": {
+"glyph": {
+"components": [
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": -286,
+"translateY": -295
+},
+"location": {
+"TL_cut": 41.3330001873946,
+"T_angle": -5.46630020613405,
+"barb": 1,
+"barb_size": -8.35892614645357,
+"barb_slope": 12.3409589470385,
+"crop_corner": 64.5356732476758,
+"flat_end": 0.123890107594276,
+"length": 655.73,
+"serif_height": -13,
+"serif_moveV": -21,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -4,
+"start_slope": 0,
+"thickness": 0,
+"weight": 44
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -327,
+"translateY": -1
+},
+"location": {
+"L_curveH": -8,
+"L_curveV": 0,
+"P_bottom_moveH": 0,
+"P_bottom_moveV": 0,
+"P_curve_weightV": 0,
+"R_curveH": -5,
+"S_top_length": 0,
+"height": 613,
+"serif_height": 0,
+"serif_moveV": 0,
+"serif_right_moveV": 0,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": 0,
+"weight": 62,
+"width": 320
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"S_moveH=-100": {
+"glyph": {
+"components": [
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": -386,
+"translateY": -295
+},
+"location": {
+"TL_cut": 41.3330001873946,
+"T_angle": -5.46630020613405,
+"barb": 1,
+"barb_size": -8.35892614645357,
+"barb_slope": 12.3409589470385,
+"crop_corner": 64.5356732476758,
+"flat_end": 0.123890107594276,
+"length": 655.73,
+"serif_height": -13,
+"serif_moveV": -21,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -4,
+"start_slope": 0,
+"thickness": 0,
+"weight": 44
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -327,
+"translateY": -1
+},
+"location": {
+"L_curveH": -8,
+"L_curveV": 0,
+"P_bottom_moveH": 0,
+"P_bottom_moveV": 0,
+"P_curve_weightV": 0,
+"R_curveH": -5,
+"S_top_length": 0,
+"height": 513,
+"serif_height": 0,
+"serif_moveV": 0,
+"serif_right_moveV": 0,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": 0,
+"weight": 62,
+"width": 320
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"S_moveH=100": {
+"glyph": {
+"components": [
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": -186,
+"translateY": -295
+},
+"location": {
+"TL_cut": 41.3330001873946,
+"T_angle": -5.46630020613405,
+"barb": 1,
+"barb_size": -8.35892614645357,
+"barb_slope": 12.3409589470385,
+"crop_corner": 64.5356732476758,
+"flat_end": 0.123890107594276,
+"length": 655.73,
+"serif_height": -13,
+"serif_moveV": -21,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -4,
+"start_slope": 0,
+"thickness": 0,
+"weight": 44
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -327,
+"translateY": -1
+},
+"location": {
+"L_curveH": -8,
+"L_curveV": 0,
+"P_bottom_moveH": 0,
+"P_bottom_moveV": 0,
+"P_curve_weightV": 0,
+"R_curveH": -5,
+"S_top_length": 0,
+"height": 513,
+"serif_height": 0,
+"serif_moveV": 0,
+"serif_right_moveV": 0,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": 0,
+"weight": 62,
+"width": 320
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"S_top_moveV=-100": {
+"glyph": {
+"components": [
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": -286,
+"translateY": -395
+},
+"location": {
+"TL_cut": 41.3330001873946,
+"T_angle": -5.46630020613405,
+"barb": 1,
+"barb_size": -8.35892614645357,
+"barb_slope": 12.3409589470385,
+"crop_corner": 64.5356732476758,
+"flat_end": 0.123890107594276,
+"length": 555.73,
+"serif_height": -13,
+"serif_moveV": -21,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -4,
+"start_slope": 0,
+"thickness": 0,
+"weight": 44
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -327,
+"translateY": -1
+},
+"location": {
+"L_curveH": -8,
+"L_curveV": 0,
+"P_bottom_moveH": 0,
+"P_bottom_moveV": 0,
+"P_curve_weightV": 0,
+"R_curveH": -5,
+"S_top_length": 0,
+"height": 513,
+"serif_height": 0,
+"serif_moveV": 0,
+"serif_right_moveV": 0,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": 0,
+"weight": 62,
+"width": 320
+}
+}
+],
+"xAdvance": 1000
+}
+},
+"S_top_moveV=100": {
+"glyph": {
+"components": [
+{
+"name": "VG_4E28_00",
+"transformation": {
+"translateX": -286,
+"translateY": -195
+},
+"location": {
+"TL_cut": 41.3330001873946,
+"T_angle": -5.46630020613405,
+"barb": 1,
+"barb_size": -8.35892614645357,
+"barb_slope": 12.3409589470385,
+"crop_corner": 64.5356732476758,
+"flat_end": 0.123890107594276,
+"length": 755.73,
+"serif_height": -13,
+"serif_moveV": -21,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": -4,
+"start_slope": 0,
+"thickness": 0,
+"weight": 44
+}
+},
+{
+"name": "VG_4E3F_01",
+"transformation": {
+"translateX": -327,
+"translateY": -1
+},
+"location": {
+"L_curveH": -8,
+"L_curveV": 0,
+"P_bottom_moveH": 0,
+"P_bottom_moveV": 0,
+"P_curve_weightV": 0,
+"R_curveH": -5,
+"S_top_length": 0,
+"height": 513,
+"serif_height": 0,
+"serif_moveV": 0,
+"serif_right_moveV": 0,
+"serif_style2": 1,
+"serif_style3": 1,
+"serif_width": 0,
+"weight": 62,
+"width": 320
+}
+}
+],
+"xAdvance": 1000
+}
+},
 "foreground": {
 "glyph": {
 "components": [
@@ -259,54 +601,57 @@
 "xAdvance": 1000
 }
 },
-"width=267": {
+"wght=1,width=232": {
 "glyph": {
 "components": [
 {
 "name": "VG_4E28_00",
 "transformation": {
-"translateX": -334,
-"translateY": -290
+"translateX": -383,
+"translateY": -334
 },
 "location": {
-"TL_cut": 41.3330001873946,
-"T_angle": -5.46630020613405,
+"TL_cut": 28.333,
+"T_angle": 13.533999999999999,
 "barb": 1,
 "barb_size": -8.35892614645357,
 "barb_slope": 12.3409589470385,
 "crop_corner": 64.5356732476758,
 "flat_end": 0.123890107594276,
-"length": 663.73,
+"length": 638.73,
 "serif_height": -13,
-"serif_moveV": -21,
+"serif_moveV": -17,
 "serif_style2": 1,
 "serif_style3": 1,
-"serif_width": -4,
+"serif_width": -10,
 "start_slope": 0,
-"thickness": 0
+"thickness": 0,
+"weight": 119
 }
 },
 {
 "name": "VG_4E3F_01",
 "transformation": {
-"translateX": -401,
-"translateY": -1
+"translateX": -483,
+"translateY": 20
 },
 "location": {
-"L_curveH": -8,
+"L_curveH": -3,
+"L_curveV": 6,
 "P_bottom_moveH": 0,
 "P_bottom_moveV": 0,
 "P_curve_weightV": 0,
-"R_curveH": -5,
+"R_curveH": 7,
 "S_top_length": 0,
-"height": 503,
-"serif_height": 0,
+"height": 498,
+"serif_height": 5,
 "serif_moveV": 0,
+"serif_right_moveV": -1,
 "serif_style2": 1,
 "serif_style3": 1,
-"serif_width": 0,
-"weight": 62,
-"width": 258
+"serif_width": 2,
+"weight": 138,
+"width": 171
 }
 }
 ],
@@ -370,234 +715,6 @@
 "xAdvance": 1000
 }
 },
-"S_moveH=100": {
-"glyph": {
-"components": [
-{
-"name": "VG_4E28_00",
-"transformation": {
-"translateX": -186,
-"translateY": -295
-},
-"location": {
-"TL_cut": 41.3330001873946,
-"T_angle": -5.46630020613405,
-"barb": 1,
-"barb_size": -8.35892614645357,
-"barb_slope": 12.3409589470385,
-"crop_corner": 64.5356732476758,
-"flat_end": 0.123890107594276,
-"length": 655.73,
-"serif_height": -13,
-"serif_moveV": -21,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": -4,
-"start_slope": 0,
-"thickness": 0,
-"weight": 44
-}
-},
-{
-"name": "VG_4E3F_01",
-"transformation": {
-"translateX": -327,
-"translateY": -1
-},
-"location": {
-"L_curveH": -8,
-"L_curveV": 0,
-"P_bottom_moveH": 0,
-"P_bottom_moveV": 0,
-"P_curve_weightV": 0,
-"R_curveH": -5,
-"S_top_length": 0,
-"height": 513,
-"serif_height": 0,
-"serif_moveV": 0,
-"serif_right_moveV": 0,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": 0,
-"weight": 62,
-"width": 320
-}
-}
-],
-"xAdvance": 1000
-}
-},
-"S_moveH=-100": {
-"glyph": {
-"components": [
-{
-"name": "VG_4E28_00",
-"transformation": {
-"translateX": -386,
-"translateY": -295
-},
-"location": {
-"TL_cut": 41.3330001873946,
-"T_angle": -5.46630020613405,
-"barb": 1,
-"barb_size": -8.35892614645357,
-"barb_slope": 12.3409589470385,
-"crop_corner": 64.5356732476758,
-"flat_end": 0.123890107594276,
-"length": 655.73,
-"serif_height": -13,
-"serif_moveV": -21,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": -4,
-"start_slope": 0,
-"thickness": 0,
-"weight": 44
-}
-},
-{
-"name": "VG_4E3F_01",
-"transformation": {
-"translateX": -327,
-"translateY": -1
-},
-"location": {
-"L_curveH": -8,
-"L_curveV": 0,
-"P_bottom_moveH": 0,
-"P_bottom_moveV": 0,
-"P_curve_weightV": 0,
-"R_curveH": -5,
-"S_top_length": 0,
-"height": 513,
-"serif_height": 0,
-"serif_moveV": 0,
-"serif_right_moveV": 0,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": 0,
-"weight": 62,
-"width": 320
-}
-}
-],
-"xAdvance": 1000
-}
-},
-"S_top_moveV=100": {
-"glyph": {
-"components": [
-{
-"name": "VG_4E28_00",
-"transformation": {
-"translateX": -286,
-"translateY": -195
-},
-"location": {
-"TL_cut": 41.3330001873946,
-"T_angle": -5.46630020613405,
-"barb": 1,
-"barb_size": -8.35892614645357,
-"barb_slope": 12.3409589470385,
-"crop_corner": 64.5356732476758,
-"flat_end": 0.123890107594276,
-"length": 755.73,
-"serif_height": -13,
-"serif_moveV": -21,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": -4,
-"start_slope": 0,
-"thickness": 0,
-"weight": 44
-}
-},
-{
-"name": "VG_4E3F_01",
-"transformation": {
-"translateX": -327,
-"translateY": -1
-},
-"location": {
-"L_curveH": -8,
-"L_curveV": 0,
-"P_bottom_moveH": 0,
-"P_bottom_moveV": 0,
-"P_curve_weightV": 0,
-"R_curveH": -5,
-"S_top_length": 0,
-"height": 513,
-"serif_height": 0,
-"serif_moveV": 0,
-"serif_right_moveV": 0,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": 0,
-"weight": 62,
-"width": 320
-}
-}
-],
-"xAdvance": 1000
-}
-},
-"S_top_moveV=-100": {
-"glyph": {
-"components": [
-{
-"name": "VG_4E28_00",
-"transformation": {
-"translateX": -286,
-"translateY": -395
-},
-"location": {
-"TL_cut": 41.3330001873946,
-"T_angle": -5.46630020613405,
-"barb": 1,
-"barb_size": -8.35892614645357,
-"barb_slope": 12.3409589470385,
-"crop_corner": 64.5356732476758,
-"flat_end": 0.123890107594276,
-"length": 555.73,
-"serif_height": -13,
-"serif_moveV": -21,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": -4,
-"start_slope": 0,
-"thickness": 0,
-"weight": 44
-}
-},
-{
-"name": "VG_4E3F_01",
-"transformation": {
-"translateX": -327,
-"translateY": -1
-},
-"location": {
-"L_curveH": -8,
-"L_curveV": 0,
-"P_bottom_moveH": 0,
-"P_bottom_moveV": 0,
-"P_curve_weightV": 0,
-"R_curveH": -5,
-"S_top_length": 0,
-"height": 513,
-"serif_height": 0,
-"serif_moveV": 0,
-"serif_right_moveV": 0,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": 0,
-"weight": 62,
-"width": 320
-}
-}
-],
-"xAdvance": 1000
-}
-},
 "width=232": {
 "glyph": {
 "components": [
@@ -655,71 +772,14 @@
 "xAdvance": 1000
 }
 },
-"wght=1,width=232": {
+"width=267": {
 "glyph": {
 "components": [
 {
 "name": "VG_4E28_00",
 "transformation": {
-"translateX": -383,
-"translateY": -334
-},
-"location": {
-"TL_cut": 28.333,
-"T_angle": 13.533999999999999,
-"barb": 1,
-"barb_size": -8.35892614645357,
-"barb_slope": 12.3409589470385,
-"crop_corner": 64.5356732476758,
-"flat_end": 0.123890107594276,
-"length": 638.73,
-"serif_height": -13,
-"serif_moveV": -17,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": -10,
-"start_slope": 0,
-"thickness": 0,
-"weight": 119
-}
-},
-{
-"name": "VG_4E3F_01",
-"transformation": {
-"translateX": -483,
-"translateY": 20
-},
-"location": {
-"L_curveH": -3,
-"L_curveV": 6,
-"P_bottom_moveH": 0,
-"P_bottom_moveV": 0,
-"P_curve_weightV": 0,
-"R_curveH": 7,
-"S_top_length": 0,
-"height": 498,
-"serif_height": 5,
-"serif_moveV": 0,
-"serif_right_moveV": -1,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": 2,
-"weight": 138,
-"width": 171
-}
-}
-],
-"xAdvance": 1000
-}
-},
-"P_height=100": {
-"glyph": {
-"components": [
-{
-"name": "VG_4E28_00",
-"transformation": {
-"translateX": -286,
-"translateY": -295
+"translateX": -334,
+"translateY": -290
 },
 "location": {
 "TL_cut": 41.3330001873946,
@@ -729,97 +789,37 @@
 "barb_slope": 12.3409589470385,
 "crop_corner": 64.5356732476758,
 "flat_end": 0.123890107594276,
-"length": 655.73,
+"length": 663.73,
 "serif_height": -13,
 "serif_moveV": -21,
 "serif_style2": 1,
 "serif_style3": 1,
 "serif_width": -4,
 "start_slope": 0,
-"thickness": 0,
-"weight": 44
+"thickness": 0
 }
 },
 {
 "name": "VG_4E3F_01",
 "transformation": {
-"translateX": -327,
+"translateX": -401,
 "translateY": -1
 },
 "location": {
 "L_curveH": -8,
-"L_curveV": 0,
 "P_bottom_moveH": 0,
 "P_bottom_moveV": 0,
 "P_curve_weightV": 0,
 "R_curveH": -5,
 "S_top_length": 0,
-"height": 613,
+"height": 503,
 "serif_height": 0,
 "serif_moveV": 0,
-"serif_right_moveV": 0,
 "serif_style2": 1,
 "serif_style3": 1,
 "serif_width": 0,
 "weight": 62,
-"width": 320
-}
-}
-],
-"xAdvance": 1000
-}
-},
-"P_height=-100": {
-"glyph": {
-"components": [
-{
-"name": "VG_4E28_00",
-"transformation": {
-"translateX": -286,
-"translateY": -295
-},
-"location": {
-"TL_cut": 41.3330001873946,
-"T_angle": -5.46630020613405,
-"barb": 1,
-"barb_size": -8.35892614645357,
-"barb_slope": 12.3409589470385,
-"crop_corner": 64.5356732476758,
-"flat_end": 0.123890107594276,
-"length": 655.73,
-"serif_height": -13,
-"serif_moveV": -21,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": -4,
-"start_slope": 0,
-"thickness": 0,
-"weight": 44
-}
-},
-{
-"name": "VG_4E3F_01",
-"transformation": {
-"translateX": -327,
-"translateY": -1
-},
-"location": {
-"L_curveH": -8,
-"L_curveV": 0,
-"P_bottom_moveH": 0,
-"P_bottom_moveV": 0,
-"P_curve_weightV": 0,
-"R_curveH": -5,
-"S_top_length": 0,
-"height": 413,
-"serif_height": 0,
-"serif_moveV": 0,
-"serif_right_moveV": 0,
-"serif_style2": 1,
-"serif_style3": 1,
-"serif_width": 0,
-"weight": 62,
-"width": 320
+"width": 258
 }
 }
 ],

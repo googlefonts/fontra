@@ -27,7 +27,7 @@ class FontInfo:
     licenseDescription: Optional[str] = None
     licenseInfoURL: Optional[str] = None
     vendorID: Optional[str] = None
-    customData: dict[str, Any] = field(default_factory=dict)
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -36,9 +36,9 @@ class Font:
     fontInfo: FontInfo = field(default_factory=FontInfo)
     glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
-    customData: CustomData = field(default_factory=dict)
     axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
     sources: dict[str, GlobalSource] = field(default_factory=dict)
+    customData: CustomData = field(default_factory=dict)
 
     def _trackAssignedAttributeNames(self):
         # see fonthandler.py
@@ -112,6 +112,7 @@ class GlobalAxis:
     mapping: list[list[float]] = field(default_factory=list)
     valueLabels: list[AxisValueLabel] = field(default_factory=list)
     hidden: bool = False
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -124,6 +125,7 @@ class GlobalDiscreteAxis:
     mapping: list[list[float]] = field(default_factory=list)
     valueLabels: list[AxisValueLabel] = field(default_factory=list)
     hidden: bool = False
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -132,6 +134,7 @@ class LocalAxis:
     minValue: float
     defaultValue: float
     maxValue: float
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -317,6 +320,22 @@ def _unstructurePointType(v):
     return int(v)
 
 
+def _unstructureDictSorted(v):
+    return unstructure(dict(sorted(v.items())))
+
+
+def _unstructureDictSortedRecursively(v):
+    if isinstance(v, dict):
+        return unstructure(
+            dict(
+                sorted((k, _unstructureDictSortedRecursively(v)) for k, v in v.items())
+            )
+        )
+    elif isinstance(v, list):
+        return [_unstructureDictSortedRecursively(item) for item in v]
+    return v
+
+
 _cattrsConverter = cattrs.Converter()
 
 _cattrsConverter.register_unstructure_hook(float, _unstructureFloat)
@@ -332,30 +351,58 @@ _cattrsConverter.register_structure_hook(PointType, _structurePointType)
 _cattrsConverter.register_unstructure_hook(PointType, _unstructurePointType)
 
 
-def registerOmitDefaultHook(cls):
+def registerHook(cls, omitIfDefault=True, **fieldHooks):
+    fieldHooks = {
+        k: cattrs.gen.override(unstruct_hook=v) for k, v in fieldHooks.items()
+    }
     _hook = cattrs.gen.make_dict_unstructure_fn(
         cls,
         _cattrsConverter,
-        _cattrs_omit_if_default=True,
+        _cattrs_omit_if_default=omitIfDefault,
+        **fieldHooks,
     )
     _cattrsConverter.register_unstructure_hook(cls, _hook)
 
 
-# The order in which the hooks are applied is significant, for unclear reasons
-registerOmitDefaultHook(DecomposedTransform)
-registerOmitDefaultHook(Component)
-registerOmitDefaultHook(StaticGlyph)
-registerOmitDefaultHook(Source)
-registerOmitDefaultHook(Layer)
-registerOmitDefaultHook(VariableGlyph)
-registerOmitDefaultHook(Path)
-registerOmitDefaultHook(PackedPath)
-registerOmitDefaultHook(GlobalAxis)
-registerOmitDefaultHook(GlobalDiscreteAxis)
-registerOmitDefaultHook(AxisValueLabel)
-registerOmitDefaultHook(GlobalMetric)
-registerOmitDefaultHook(GlobalSource)
-registerOmitDefaultHook(FontInfo)
+# The order in which the hooks are registered is significant, for unclear reasons
+registerHook(DecomposedTransform)
+registerHook(
+    Component,
+    location=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursively,
+)
+registerHook(LocalAxis, customData=_unstructureDictSortedRecursively)
+registerHook(StaticGlyph, customData=_unstructureDictSortedRecursively)
+registerHook(
+    Source,
+    location=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursively,
+)
+registerHook(Layer, customData=_unstructureDictSortedRecursively)
+registerHook(
+    VariableGlyph,
+    layers=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursively,
+)
+registerHook(Path)
+registerHook(PackedPath)
+registerHook(AxisValueLabel)
+registerHook(GlobalMetric, customData=_unstructureDictSortedRecursively)
+registerHook(
+    GlobalSource,
+    location=_unstructureDictSorted,
+    verticalMetrics=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursively,
+)
+registerHook(GlobalAxis, customData=_unstructureDictSortedRecursively)
+registerHook(GlobalDiscreteAxis, customData=_unstructureDictSortedRecursively)
+registerHook(FontInfo, customData=_unstructureDictSortedRecursively)
+registerHook(
+    Font,
+    omitIfDefault=False,
+    source=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursively,
+)
 
 
 def structure(obj, cls):

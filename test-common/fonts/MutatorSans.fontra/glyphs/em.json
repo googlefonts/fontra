@@ -5,30 +5,30 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 1000
 }
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"xAdvance": 500
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "xAdvance": 0
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"xAdvance": 500
 }
 }
 }

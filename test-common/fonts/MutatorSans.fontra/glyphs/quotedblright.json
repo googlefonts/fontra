@@ -5,60 +5,40 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 1000
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 1000
 }
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"components": [
-{
-"name": "comma",
-"transformation": {
-"translateY": 580
-}
-},
-{
-"name": "comma",
-"transformation": {
-"translateX": 130,
-"translateY": 580
-}
-}
-],
-"xAdvance": 301
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "components": [
@@ -79,26 +59,6 @@
 "xAdvance": 480
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"components": [
-{
-"name": "comma",
-"transformation": {
-"translateY": 480
-}
-},
-{
-"name": "comma",
-"transformation": {
-"translateX": 130,
-"translateY": 480
-}
-}
-],
-"xAdvance": 421
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "components": [
@@ -117,6 +77,46 @@
 }
 ],
 "xAdvance": 540
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"components": [
+{
+"name": "comma",
+"transformation": {
+"translateY": 580
+}
+},
+{
+"name": "comma",
+"transformation": {
+"translateX": 130,
+"translateY": 580
+}
+}
+],
+"xAdvance": 301
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"components": [
+{
+"name": "comma",
+"transformation": {
+"translateY": 480
+}
+},
+{
+"name": "comma",
+"transformation": {
+"translateX": 130,
+"translateY": 480
+}
+}
+],
+"xAdvance": 421
 }
 }
 }

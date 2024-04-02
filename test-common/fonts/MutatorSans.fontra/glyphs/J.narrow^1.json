@@ -5,130 +5,40 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 1000
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 1000
 }
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 122,
-"y": -10,
-"smooth": true
-},
-{
-"x": 247,
-"y": -10,
-"type": "cubic"
-},
-{
-"x": 323,
-"y": 48,
-"type": "cubic"
-},
-{
-"x": 323,
-"y": 222,
-"smooth": true
-},
-{
-"x": 323,
-"y": 700
-},
-{
-"x": 283,
-"y": 700
-},
-{
-"x": 283,
-"y": 222,
-"smooth": true
-},
-{
-"x": 283,
-"y": 68,
-"type": "cubic"
-},
-{
-"x": 222,
-"y": 26,
-"type": "cubic"
-},
-{
-"x": 122,
-"y": 26,
-"smooth": true
-},
-{
-"x": 104,
-"y": 26,
-"type": "cubic"
-},
-{
-"x": 87,
-"y": 28,
-"type": "cubic"
-},
-{
-"x": 72,
-"y": 32
-},
-{
-"x": 60,
-"y": -3
-},
-{
-"x": 79,
-"y": -8,
-"type": "cubic"
-},
-{
-"x": 100,
-"y": -10,
-"type": "cubic"
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 383
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "path": {
@@ -219,96 +129,6 @@
 "xAdvance": 658
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 285,
-"y": -10,
-"smooth": true
-},
-{
-"x": 574,
-"y": -10,
-"type": "cubic"
-},
-{
-"x": 756,
-"y": 108,
-"type": "cubic"
-},
-{
-"x": 756,
-"y": 352,
-"smooth": true
-},
-{
-"x": 756,
-"y": 700
-},
-{
-"x": 716,
-"y": 700
-},
-{
-"x": 716,
-"y": 352,
-"smooth": true
-},
-{
-"x": 716,
-"y": 124,
-"type": "cubic"
-},
-{
-"x": 549,
-"y": 26,
-"type": "cubic"
-},
-{
-"x": 285,
-"y": 26,
-"smooth": true
-},
-{
-"x": 229,
-"y": 26,
-"type": "cubic"
-},
-{
-"x": 178,
-"y": 32,
-"type": "cubic"
-},
-{
-"x": 132,
-"y": 42
-},
-{
-"x": 120,
-"y": 5
-},
-{
-"x": 170,
-"y": -5,
-"type": "cubic"
-},
-{
-"x": 225,
-"y": -10,
-"type": "cubic"
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 876
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "path": {
@@ -397,6 +217,186 @@
 ]
 },
 "xAdvance": 889
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 122,
+"y": -10,
+"smooth": true
+},
+{
+"x": 247,
+"y": -10,
+"type": "cubic"
+},
+{
+"x": 323,
+"y": 48,
+"type": "cubic"
+},
+{
+"x": 323,
+"y": 222,
+"smooth": true
+},
+{
+"x": 323,
+"y": 700
+},
+{
+"x": 283,
+"y": 700
+},
+{
+"x": 283,
+"y": 222,
+"smooth": true
+},
+{
+"x": 283,
+"y": 68,
+"type": "cubic"
+},
+{
+"x": 222,
+"y": 26,
+"type": "cubic"
+},
+{
+"x": 122,
+"y": 26,
+"smooth": true
+},
+{
+"x": 104,
+"y": 26,
+"type": "cubic"
+},
+{
+"x": 87,
+"y": 28,
+"type": "cubic"
+},
+{
+"x": 72,
+"y": 32
+},
+{
+"x": 60,
+"y": -3
+},
+{
+"x": 79,
+"y": -8,
+"type": "cubic"
+},
+{
+"x": 100,
+"y": -10,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 383
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 285,
+"y": -10,
+"smooth": true
+},
+{
+"x": 574,
+"y": -10,
+"type": "cubic"
+},
+{
+"x": 756,
+"y": 108,
+"type": "cubic"
+},
+{
+"x": 756,
+"y": 352,
+"smooth": true
+},
+{
+"x": 756,
+"y": 700
+},
+{
+"x": 716,
+"y": 700
+},
+{
+"x": 716,
+"y": 352,
+"smooth": true
+},
+{
+"x": 716,
+"y": 124,
+"type": "cubic"
+},
+{
+"x": 549,
+"y": 26,
+"type": "cubic"
+},
+{
+"x": 285,
+"y": 26,
+"smooth": true
+},
+{
+"x": 229,
+"y": 26,
+"type": "cubic"
+},
+{
+"x": 178,
+"y": 32,
+"type": "cubic"
+},
+{
+"x": 132,
+"y": 42
+},
+{
+"x": 120,
+"y": 5
+},
+{
+"x": 170,
+"y": -5,
+"type": "cubic"
+},
+{
+"x": 225,
+"y": -10,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 876
 }
 }
 }

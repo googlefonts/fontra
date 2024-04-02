@@ -5,60 +5,40 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 1000
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 1000
 }
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
-"glyph": {
-"components": [
-{
-"name": "dot",
-"transformation": {
-"translateY": -10
-}
-},
-{
-"name": "dot",
-"transformation": {
-"translateX": 80,
-"translateY": -10
-}
-}
-],
-"xAdvance": 250
-}
-},
 "MutatorSansBoldCondensed/foreground": {
 "glyph": {
 "components": [
@@ -80,26 +60,6 @@
 "xAdvance": 520
 }
 },
-"MutatorSansLightWide/foreground": {
-"glyph": {
-"components": [
-{
-"name": "dot",
-"transformation": {
-"translateY": -10
-}
-},
-{
-"name": "dot",
-"transformation": {
-"translateX": 205,
-"translateY": -10
-}
-}
-],
-"xAdvance": 345
-}
-},
 "MutatorSansBoldWide/foreground": {
 "glyph": {
 "components": [
@@ -118,6 +78,46 @@
 }
 ],
 "xAdvance": 560
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"components": [
+{
+"name": "dot",
+"transformation": {
+"translateY": -10
+}
+},
+{
+"name": "dot",
+"transformation": {
+"translateX": 80,
+"translateY": -10
+}
+}
+],
+"xAdvance": 250
+}
+},
+"MutatorSansLightWide/foreground": {
+"glyph": {
+"components": [
+{
+"name": "dot",
+"transformation": {
+"translateY": -10
+}
+},
+{
+"name": "dot",
+"transformation": {
+"translateX": 205,
+"translateY": -10
+}
+}
+],
+"xAdvance": 345
 }
 }
 }

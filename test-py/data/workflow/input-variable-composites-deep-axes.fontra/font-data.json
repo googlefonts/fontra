@@ -1,7 +1,6 @@
 {
 "unitsPerEm": 1000,
 "fontInfo": {},
-"customData": {},
 "axes": [
 {
 "name": "weight",
@@ -20,5 +19,6 @@
 "maxValue": 200
 }
 ],
-"sources": {}
+"sources": {},
+"customData": {}
 }

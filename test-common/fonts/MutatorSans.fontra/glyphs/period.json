@@ -5,41 +5,71 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 1000
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 1000
 }
 }
 ],
 "layers": {
-"MutatorSansLightCondensed/foreground": {
+"MutatorSansBoldCondensed/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 30,
+"y": 0
+},
+{
+"x": 220,
+"y": 0
+},
+{
+"x": 220,
+"y": 300
+},
+{
+"x": 30,
+"y": 300
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 250
+}
+},
+"MutatorSansBoldWide/foreground": {
 "glyph": {
 "path": {
 "contours": [
@@ -50,23 +80,23 @@
 "y": 0
 },
 {
-"x": 110,
+"x": 250,
 "y": 0
 },
 {
-"x": 110,
-"y": 120
+"x": 250,
+"y": 300
 },
 {
 "x": 60,
-"y": 120
+"y": 300
 }
 ],
 "isClosed": true
 }
 ]
 },
-"xAdvance": 170
+"xAdvance": 310
 }
 },
 "MutatorSansLightCondensed/background": {
@@ -99,34 +129,34 @@
 "xAdvance": 170
 }
 },
-"MutatorSansBoldCondensed/foreground": {
+"MutatorSansLightCondensed/foreground": {
 "glyph": {
 "path": {
 "contours": [
 {
 "points": [
 {
-"x": 30,
+"x": 60,
 "y": 0
 },
 {
-"x": 220,
+"x": 110,
 "y": 0
 },
 {
-"x": 220,
-"y": 300
+"x": 110,
+"y": 120
 },
 {
-"x": 30,
-"y": 300
+"x": 60,
+"y": 120
 }
 ],
 "isClosed": true
 }
 ]
 },
-"xAdvance": 250
+"xAdvance": 170
 }
 },
 "MutatorSansLightWide/foreground": {
@@ -157,36 +187,6 @@
 ]
 },
 "xAdvance": 290
-}
-},
-"MutatorSansBoldWide/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 60,
-"y": 0
-},
-{
-"x": 250,
-"y": 0
-},
-{
-"x": 250,
-"y": 300
-},
-{
-"x": 60,
-"y": 300
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 310
 }
 }
 }

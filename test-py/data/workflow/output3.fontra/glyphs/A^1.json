@@ -5,40 +5,226 @@
 "name": "LightCondensed",
 "layerName": "MutatorSansLightCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "BoldCondensed",
 "layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"width": 0,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 0
 }
 },
 {
 "name": "LightWide",
 "layerName": "MutatorSansLightWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 150,
-"italic": 0
+"width": 1000
 }
 },
 {
 "name": "BoldWide",
 "layerName": "MutatorSansBoldWide/foreground",
 "location": {
-"width": 1000,
+"italic": 0,
 "weight": 850,
-"italic": 0
+"width": 1000
 }
 }
 ],
 "layers": {
+"MutatorSansBoldCondensed/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": -7.5,
+"y": 0
+},
+{
+"x": 187.5,
+"y": 0
+},
+{
+"x": 250.5,
+"y": 600
+},
+{
+"x": 78,
+"y": 600
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 82.5,
+"y": 90
+},
+{
+"x": 435,
+"y": 90
+},
+{
+"x": 435,
+"y": 247.5
+},
+{
+"x": 82.5,
+"y": 247.5
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 292.5,
+"y": 0
+},
+{
+"x": 547.5,
+"y": 0
+},
+{
+"x": 460.5,
+"y": 600
+},
+{
+"x": 220.5,
+"y": 600
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 153,
+"y": 405
+},
+{
+"x": 355.5,
+"y": 405
+},
+{
+"x": 355.5,
+"y": 600
+},
+{
+"x": 153,
+"y": 600
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 555
+}
+},
+"MutatorSansBoldWide/foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 15,
+"y": 0
+},
+{
+"x": 262.5,
+"y": 0
+},
+{
+"x": 480,
+"y": 600
+},
+{
+"x": 270,
+"y": 600
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 157.5,
+"y": 90
+},
+{
+"x": 705,
+"y": 90
+},
+{
+"x": 705,
+"y": 255
+},
+{
+"x": 157.5,
+"y": 255
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 600,
+"y": 0
+},
+{
+"x": 952.5,
+"y": 0
+},
+{
+"x": 697.5,
+"y": 600
+},
+{
+"x": 360,
+"y": 600
+}
+],
+"isClosed": true
+},
+{
+"points": [
+{
+"x": 307.5,
+"y": 405
+},
+{
+"x": 622.5,
+"y": 405
+},
+{
+"x": 622.5,
+"y": 600
+},
+{
+"x": 307.5,
+"y": 600
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 967.5
+}
+},
 "MutatorSansLightCondensed/foreground": {
 "glyph": {
 "path": {
@@ -137,99 +323,6 @@
 "xAdvance": 697.5
 }
 },
-"MutatorSansBoldCondensed/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": -7.5,
-"y": 0
-},
-{
-"x": 187.5,
-"y": 0
-},
-{
-"x": 250.5,
-"y": 600
-},
-{
-"x": 78,
-"y": 600
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 82.5,
-"y": 90
-},
-{
-"x": 435,
-"y": 90
-},
-{
-"x": 435,
-"y": 247.5
-},
-{
-"x": 82.5,
-"y": 247.5
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 292.5,
-"y": 0
-},
-{
-"x": 547.5,
-"y": 0
-},
-{
-"x": 460.5,
-"y": 600
-},
-{
-"x": 220.5,
-"y": 600
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 153,
-"y": 405
-},
-{
-"x": 355.5,
-"y": 405
-},
-{
-"x": 355.5,
-"y": 600
-},
-{
-"x": 153,
-"y": 600
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 555
-}
-},
 "MutatorSansLightWide/foreground": {
 "glyph": {
 "path": {
@@ -321,99 +414,6 @@
 ]
 },
 "xAdvance": 892.5
-}
-},
-"MutatorSansBoldWide/foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 15,
-"y": 0
-},
-{
-"x": 262.5,
-"y": 0
-},
-{
-"x": 480,
-"y": 600
-},
-{
-"x": 270,
-"y": 600
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 157.5,
-"y": 90
-},
-{
-"x": 705,
-"y": 90
-},
-{
-"x": 705,
-"y": 255
-},
-{
-"x": 157.5,
-"y": 255
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 600,
-"y": 0
-},
-{
-"x": 952.5,
-"y": 0
-},
-{
-"x": 697.5,
-"y": 600
-},
-{
-"x": 360,
-"y": 600
-}
-],
-"isClosed": true
-},
-{
-"points": [
-{
-"x": 307.5,
-"y": 405
-},
-{
-"x": 622.5,
-"y": 405
-},
-{
-"x": 622.5,
-"y": 600
-},
-{
-"x": 307.5,
-"y": 600
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 967.5
 }
 }
 }

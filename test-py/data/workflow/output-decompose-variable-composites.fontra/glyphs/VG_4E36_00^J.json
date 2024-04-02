@@ -219,82 +219,6 @@
 }
 ],
 "layers": {
-"foreground": {
-"glyph": {
-"path": {
-"contours": [
-{
-"points": [
-{
-"x": 237,
-"y": 636
-},
-{
-"x": 227,
-"y": 622
-},
-{
-"x": 501,
-"y": 442,
-"type": "cubic"
-},
-{
-"x": 637,
-"y": 277,
-"type": "cubic"
-},
-{
-"x": 679,
-"y": 142
-},
-{
-"x": 685,
-"y": 138,
-"type": "cubic"
-},
-{
-"x": 693,
-"y": 136,
-"type": "cubic"
-},
-{
-"x": 702,
-"y": 136,
-"smooth": true
-},
-{
-"x": 717,
-"y": 136,
-"type": "cubic"
-},
-{
-"x": 727,
-"y": 147,
-"type": "cubic"
-},
-{
-"x": 727,
-"y": 167,
-"smooth": true
-},
-{
-"x": 727,
-"y": 257,
-"type": "cubic"
-},
-{
-"x": 609,
-"y": 446,
-"type": "cubic"
-}
-],
-"isClosed": true
-}
-]
-},
-"xAdvance": 1000
-}
-},
 "L_curveH=-100": {
 "glyph": {
 "path": {
@@ -893,6 +817,82 @@
 {
 "x": 609,
 "y": 546,
+"type": "cubic"
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000
+}
+},
+"foreground": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 237,
+"y": 636
+},
+{
+"x": 227,
+"y": 622
+},
+{
+"x": 501,
+"y": 442,
+"type": "cubic"
+},
+{
+"x": 637,
+"y": 277,
+"type": "cubic"
+},
+{
+"x": 679,
+"y": 142
+},
+{
+"x": 685,
+"y": 138,
+"type": "cubic"
+},
+{
+"x": 693,
+"y": 136,
+"type": "cubic"
+},
+{
+"x": 702,
+"y": 136,
+"smooth": true
+},
+{
+"x": 717,
+"y": 136,
+"type": "cubic"
+},
+{
+"x": 727,
+"y": 147,
+"type": "cubic"
+},
+{
+"x": 727,
+"y": 167,
+"smooth": true
+},
+{
+"x": 727,
+"y": 257,
+"type": "cubic"
+},
+{
+"x": 609,
+"y": 446,
 "type": "cubic"
 }
 ],
