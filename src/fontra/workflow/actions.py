@@ -904,7 +904,7 @@ class MoveDefaultLocationAction(BaseFilterAction):
         newSources = []
         newLayers = {}
 
-        for locationTuple in newLocationTuples:
+        for locationTuple in sorted(newLocationTuples):
             source = sourcesByLocation.get(locationTuple)
             if source is not None:
                 newLayers[source.layerName] = glyph.layers[source.layerName]

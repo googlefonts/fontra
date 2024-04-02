@@ -2,6 +2,14 @@
 "name": "C",
 "sources": [
 {
+"name": "weight=150,width=400",
+"layerName": "weight=150,width=400",
+"location": {
+"weight": 150,
+"width": 400
+}
+},
+{
 "name": "weight=325,width=0",
 "layerName": "weight=325,width=0",
 "location": {
@@ -10,10 +18,10 @@
 }
 },
 {
-"name": "weight=850,width=400",
-"layerName": "weight=850,width=400",
+"name": "weight=325,width=400",
+"layerName": "weight=325,width=400",
 "location": {
-"weight": 850,
+"weight": 325,
 "width": 400
 }
 },
@@ -26,18 +34,10 @@
 }
 },
 {
-"name": "weight=150,width=400",
-"layerName": "weight=150,width=400",
+"name": "weight=850,width=400",
+"layerName": "weight=850,width=400",
 "location": {
-"weight": 150,
-"width": 400
-}
-},
-{
-"name": "weight=325,width=400",
-"layerName": "weight=325,width=400",
-"location": {
-"weight": 325,
+"weight": 850,
 "width": 400
 }
 }

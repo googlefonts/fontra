@@ -10,11 +10,11 @@
 }
 },
 {
-"name": "BoldCondensed",
-"layerName": "MutatorSansBoldCondensed/foreground",
+"name": "weight=150,width=400",
+"layerName": "weight=150,width=400",
 "location": {
-"weight": 850,
-"width": 0
+"weight": 150,
+"width": 400
 }
 },
 {
@@ -26,35 +26,19 @@
 }
 },
 {
-"name": "BoldWide",
-"layerName": "MutatorSansBoldWide/foreground",
-"location": {
-"weight": 850,
-"width": 1000
-}
-},
-{
-"name": "weight=850,width=400",
-"layerName": "weight=850,width=400",
-"location": {
-"weight": 850,
-"width": 400
-}
-},
-{
-"name": "weight=150,width=400",
-"layerName": "weight=150,width=400",
-"location": {
-"weight": 150,
-"width": 400
-}
-},
-{
 "name": "weight=325,width=0",
 "layerName": "weight=325,width=0",
 "location": {
 "weight": 325,
 "width": 0
+}
+},
+{
+"name": "weight=325,width=400",
+"layerName": "weight=325,width=400",
+"location": {
+"weight": 325,
+"width": 400
 }
 },
 {
@@ -66,11 +50,27 @@
 }
 },
 {
-"name": "weight=325,width=400",
-"layerName": "weight=325,width=400",
+"name": "BoldCondensed",
+"layerName": "MutatorSansBoldCondensed/foreground",
 "location": {
-"weight": 325,
+"weight": 850,
+"width": 0
+}
+},
+{
+"name": "weight=850,width=400",
+"layerName": "weight=850,width=400",
+"location": {
+"weight": 850,
 "width": 400
+}
+},
+{
+"name": "BoldWide",
+"layerName": "MutatorSansBoldWide/foreground",
+"location": {
+"weight": 850,
+"width": 1000
 }
 }
 ],
