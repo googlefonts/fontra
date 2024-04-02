@@ -4,6 +4,7 @@ import logging
 import os
 import pathlib
 from contextlib import aclosing, asynccontextmanager
+from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from functools import cached_property, partial
 from typing import (
@@ -841,18 +842,17 @@ class MoveDefaultLocationAction(BaseFilterAction):
             axis.name: axis.defaultValue for axis in instancer.combinedAxes
         }
 
-        sourcesByLocation = {
-            tuplifyLocation(defaultLocation | source.location): source
-            for source in instancer.activeSources
-        }
+        locations = [
+            defaultLocation | source.location for source in instancer.activeSources
+        ]
 
         axisNames = {axis.name for axis in instancer.combinedAxes}
         movingAxisNames = set(self.newDefaultUserLocation)
         interactingAxes = set()
 
-        for locationTuple in sourcesByLocation:
+        for location in locations:
             contributingAxes = set()
-            for axisName, value in locationTuple:
+            for axisName, value in location.items():
                 if value != defaultLocation[axisName]:
                     contributingAxes.add(axisName)
             if len(contributingAxes) > 1 and not contributingAxes.isdisjoint(
@@ -862,7 +862,7 @@ class MoveDefaultLocationAction(BaseFilterAction):
 
         standaloneAxes = axisNames - interactingAxes
 
-        newLocations = [dict(loc) for loc in sourcesByLocation]
+        newLocations = deepcopy(locations)
 
         newDefaultSourceLocation = await self.newDefaultSourceLocation
         currentDefaultLocation = dict(defaultLocation)
@@ -898,25 +898,33 @@ class MoveDefaultLocationAction(BaseFilterAction):
                 if loc not in newLocations:
                     newLocations.append(loc)
 
-        newLocationTuples = [tuplifyLocation(loc) for loc in newLocations]
+        return updateSourcesAndLayers(instancer, newLocations)
 
-        glyph = instancer.glyph
-        newSources = []
-        newLayers = {}
 
-        for locationTuple in sorted(newLocationTuples):
-            source = sourcesByLocation.get(locationTuple)
-            if source is not None:
-                newLayers[source.layerName] = glyph.layers[source.layerName]
-            else:
-                location = dict(locationTuple)
-                name = locationToString(location)
-                source = Source(name=name, location=location, layerName=name)
-                instance = instancer.instantiate(location)
-                newLayers[source.layerName] = Layer(glyph=instance.glyph)
+def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
+    glyph = instancer.glyph
 
-            newSources.append(source)
+    sourcesByLocation = {
+        tuplifyLocation(source.location): source for source in glyph.sources
+    }
+    locationTuples = [tuplifyLocation(loc) for loc in newLocations]
 
-        return dropUnusedSourcesAndLayers(
-            replace(glyph, sources=newSources, layers=newLayers)
-        )
+    newSources = []
+    newLayers = {}
+
+    for locationTuple in sorted(locationTuples):
+        source = sourcesByLocation.get(locationTuple)
+        if source is not None:
+            newLayers[source.layerName] = glyph.layers[source.layerName]
+        else:
+            location = dict(locationTuple)
+            name = locationToString(location)
+            source = Source(name=name, location=location, layerName=name)
+            instance = instancer.instantiate(location)
+            newLayers[source.layerName] = Layer(glyph=instance.glyph)
+
+        newSources.append(source)
+
+    return dropUnusedSourcesAndLayers(
+        replace(glyph, sources=newSources, layers=newLayers)
+    )
