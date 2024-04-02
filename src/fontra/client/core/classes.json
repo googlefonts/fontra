@@ -122,6 +122,10 @@
     },
     "maxValue": {
       "type": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "Source": {
@@ -337,6 +341,10 @@
     },
     "hidden": {
       "type": "bool"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "AxisValueLabel": {
@@ -392,6 +400,10 @@
     },
     "hidden": {
       "type": "bool"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "GlobalSource": {

@@ -36,9 +36,9 @@ class Font:
     fontInfo: FontInfo = field(default_factory=FontInfo)
     glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
-    customData: CustomData = field(default_factory=dict)
     axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
     sources: dict[str, GlobalSource] = field(default_factory=dict)
+    customData: CustomData = field(default_factory=dict)
 
     def _trackAssignedAttributeNames(self):
         # see fonthandler.py
@@ -112,6 +112,7 @@ class GlobalAxis:
     mapping: list[list[float]] = field(default_factory=list)
     valueLabels: list[AxisValueLabel] = field(default_factory=list)
     hidden: bool = False
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -124,6 +125,7 @@ class GlobalDiscreteAxis:
     mapping: list[list[float]] = field(default_factory=list)
     valueLabels: list[AxisValueLabel] = field(default_factory=list)
     hidden: bool = False
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -132,6 +134,7 @@ class LocalAxis:
     minValue: float
     defaultValue: float
     maxValue: float
+    customData: CustomData = field(default_factory=dict)
 
 
 @dataclass(kw_only=True)
@@ -349,21 +352,26 @@ def registerHook(cls, omitIfDefault=True, **fieldHooks):
     _cattrsConverter.register_unstructure_hook(cls, _hook)
 
 
-# The order in which the hooks are applied is significant, for unclear reasons
+# The order in which the hooks are registered is significant, for unclear reasons
 registerHook(DecomposedTransform)
-registerHook(Component, location=_unstructureDictSorted)
-registerHook(StaticGlyph)
-registerHook(Source, location=_unstructureDictSorted)
-registerHook(Layer)
-registerHook(VariableGlyph)
+registerHook(
+    Component, location=_unstructureDictSorted, customData=_unstructureDictSorted
+)
+registerHook(LocalAxis, customData=_unstructureDictSorted)
+registerHook(StaticGlyph, customData=_unstructureDictSorted)
+registerHook(Source, location=_unstructureDictSorted, customData=_unstructureDictSorted)
+registerHook(Layer, customData=_unstructureDictSorted)
+registerHook(VariableGlyph, customData=_unstructureDictSorted)
 registerHook(Path)
 registerHook(PackedPath)
-registerHook(GlobalAxis)
-registerHook(GlobalDiscreteAxis)
+registerHook(GlobalAxis, customData=_unstructureDictSorted)
+registerHook(GlobalDiscreteAxis, customData=_unstructureDictSorted)
 registerHook(AxisValueLabel)
-registerHook(GlobalMetric)
-registerHook(GlobalSource, location=_unstructureDictSorted)
-registerHook(FontInfo)
+registerHook(GlobalMetric, customData=_unstructureDictSorted)
+registerHook(
+    GlobalSource, location=_unstructureDictSorted, customData=_unstructureDictSorted
+)
+registerHook(FontInfo, customData=_unstructureDictSorted)
 registerHook(Font, omitIfDefault=False, customData=_unstructureDictSorted)
 
 
