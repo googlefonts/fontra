@@ -63,7 +63,6 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       senderInfo?.fieldKeyPath?.[0] !== "component" &&
       senderInfo?.fieldKeyPath?.[2] !== "name"
     ) {
-      // Don't rebuild, just update the Dimensions field
       return;
     }
     if (!this.infoForm.contentElement.offsetParent) {
@@ -84,7 +83,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     formContents.push({ type: "header", label: `Transformations` });
 
     let radio_button_origin = html.createDomElement("div", {
-      class: "origin-radio-buttons",
+      class: "origin-radio-buttons ui-form-center",
     });
 
     for (const keyY of ["top", "middle", "bottom"]) {
