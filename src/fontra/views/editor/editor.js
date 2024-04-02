@@ -71,7 +71,6 @@ import GlyphSearchPanel from "./panel-glyph-search.js";
 import ReferenceFontPanel from "./panel-reference-font.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import SelectionTransformationPanel from "./panel-selection-transformation.js";
-//import SelectionTransformationPanelSave from "./panel-selection-transformation_save.js";
 import TextEntryPanel from "./panel-text-entry.js";
 import UserSettingsPanel from "./panel-user-settings.js";
 import Panel from "./panel.js";
@@ -764,7 +763,6 @@ export class EditorController {
     this.addSidebarPanel(new ReferenceFontPanel(this), "left");
     this.addSidebarPanel(new SelectionInfoPanel(this), "right");
     this.addSidebarPanel(new SelectionTransformationPanel(this), "right");
-    //this.addSidebarPanel(new SelectionTransformationPanelSave(this), "right");
 
     // Upon reload, the "animating" class may still be set (why?), so remove it
     for (const sidebarContainer of document.querySelectorAll(".sidebar-container")) {
