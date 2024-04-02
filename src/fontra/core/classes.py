@@ -387,12 +387,18 @@ registerHook(GlobalMetric, customData=_unstructureDictSortedRecursively)
 registerHook(
     GlobalSource,
     location=_unstructureDictSorted,
+    verticalMetrics=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )
 registerHook(GlobalAxis, customData=_unstructureDictSortedRecursively)
 registerHook(GlobalDiscreteAxis, customData=_unstructureDictSortedRecursively)
 registerHook(FontInfo, customData=_unstructureDictSortedRecursively)
-registerHook(Font, omitIfDefault=False, customData=_unstructureDictSortedRecursively)
+registerHook(
+    Font,
+    omitIfDefault=False,
+    source=_unstructureDictSorted,
+    customData=_unstructureDictSortedRecursively,
+)
 
 
 def structure(obj, cls):
