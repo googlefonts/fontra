@@ -623,6 +623,19 @@ export function scalePoint(pinPoint, point, factor) {
   );
 }
 
+export function rotatePoint(pinPoint, point, angle) {
+  let theta = (angle * Math.PI) / 180;
+  const point_x =
+    Math.cos(theta) * (point.x - pinPoint.x) -
+    Math.sin(theta) * (point.y - pinPoint.y) +
+    pinPoint.x;
+  const point_y =
+    Math.sin(theta) * (point.x - pinPoint.x) +
+    Math.cos(theta) * (point.y - pinPoint.y) +
+    pinPoint.y;
+  return vector.roundVector({ x: point_x, y: point_y });
+}
+
 export function getSelectionByContour(path, pointIndices) {
   const selectionByContour = new Map();
   for (const pointIndex of pointIndices) {
