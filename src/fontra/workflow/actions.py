@@ -732,7 +732,6 @@ class SubsetAxesAction(BaseFilterAction):
     def __post_init__(self):
         self.axisNames = set(self.axisNames)
         self.dropAxisNames = set(self.dropAxisNames)
-        self._locationToKeep = None
 
     def getAxisNamesToKeep(self, axes):
         axisNames = (
@@ -742,15 +741,12 @@ class SubsetAxesAction(BaseFilterAction):
         )
         return axisNames - self.dropAxisNames
 
-    async def getLocationToKeep(self):
-        if self._locationToKeep is None:
-            axes = await self.validatedInput.getGlobalAxes()
-            keepAxisNames = self.getAxisNamesToKeep(axes)
-            location = getDefaultSourceLocation(axes)
-            self._locationToKeep = {
-                n: v for n, v in location.items() if n not in keepAxisNames
-            }
-        return self._locationToKeep
+    @async_cached_property
+    async def locationToKeep(self):
+        axes = await self.validatedInput.getGlobalAxes()
+        keepAxisNames = self.getAxisNamesToKeep(axes)
+        location = getDefaultSourceLocation(axes)
+        return {n: v for n, v in location.items() if n not in keepAxisNames}
 
     async def processGlobalAxes(
         self, axes: list[GlobalAxis | GlobalDiscreteAxis]
@@ -761,7 +757,7 @@ class SubsetAxesAction(BaseFilterAction):
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         # locationToKeep contains axis *values* for sources we want to keep,
         # but those axes are to be dropped, so it *also* says "axes to drop"
-        locationToKeep = await self.getLocationToKeep()
+        locationToKeep = await self.locationToKeep
 
         sources = [
             replace(
