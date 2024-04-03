@@ -64,7 +64,9 @@ class InputActionProtocol(Protocol):
 
 @runtime_checkable
 class OutputActionProtocol(Protocol):
-    async def process(self) -> None:
+    async def process(
+        self, outputDir: os.PathLike = pathlib.Path(), *, continueOnError=False
+    ) -> None:
         pass
 
 
@@ -392,12 +394,14 @@ class OutputAction:
             except AttributeError:
                 pass
 
-    async def process(self, outputDir: os.PathLike = pathlib.Path()) -> None:
+    async def process(
+        self, outputDir: os.PathLike = pathlib.Path(), *, continueOnError=False
+    ) -> None:
         outputDir = pathlib.Path(outputDir)
         output = newFileSystemBackend((outputDir / self.destination).resolve())
 
         async with aclosing(output):
-            await copyFont(self.validatedInput, output)
+            await copyFont(self.validatedInput, output, continueOnError=continueOnError)
 
 
 @registerActionClass("rename-axes")

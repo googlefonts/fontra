@@ -182,7 +182,14 @@ def test_command(tmpdir, configYAMLSources):
     expectedFileNames = [p.name for p in configPaths]
 
     subprocess.run(
-        ["fontra-workflow", *configPaths, "--output-dir", tmpdir], check=True
+        [
+            "fontra-workflow",
+            *configPaths,
+            "--output-dir",
+            tmpdir,
+            "--continue-on-error",
+        ],
+        check=True,
     )
     items = sorted([p.name for p in tmpdir.iterdir()])
     assert [*expectedFileNames, "testing.fontra"] == items
@@ -625,6 +632,24 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "error-glyph",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-error-glyph.fontra"
+
+            - action: output
+              destination: "output-error-glyph.fontra"
+            """,
+            [
+                (
+                    40,
+                    "glyph A caused an error: JSONDecodeError('Expecting value: line "
+                    "1 column 1 (char 0)')",
+                )
+            ],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
@@ -638,7 +663,7 @@ async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, cap
         assert endPoints.endPoint is not None
 
         for output in endPoints.outputs:
-            await output.process(tmpdir)
+            await output.process(tmpdir, continueOnError=True)
             expectedPath = workflowDataDir / output.destination
             resultPath = tmpdir / output.destination
             if expectedPath.is_file():

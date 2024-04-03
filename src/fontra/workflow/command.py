@@ -51,7 +51,7 @@ def existing_folder(path):
     return path
 
 
-async def mainAsync():
+async def mainAsync() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output-dir",
@@ -75,6 +75,12 @@ async def mainAsync():
         choices=sortedlevelNames,
         default="WARNING",
         help="The logging level for the actions log file",
+    )
+    parser.add_argument(
+        "--continue-on-error",
+        action="store_true",
+        help="Continue copying if reading or processing a glyph causes an error. "
+        "The error will be logged, but the glyph will not be present in the output.",
     )
     parser.add_argument(
         "config",
@@ -123,7 +129,7 @@ async def mainAsync():
             nextInput = endPoints.endPoint
 
         for output in outputs:
-            await output.process(output_dir)
+            await output.process(output_dir, continueOnError=args.continue_on_error)
 
 
 def main():
