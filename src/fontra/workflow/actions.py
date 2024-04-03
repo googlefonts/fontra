@@ -904,6 +904,10 @@ class MoveDefaultLocationAction(BaseFilterAction):
 class TrimAxesAction(BaseFilterAction):
     axes: dict[str, dict[str, Any]]
 
+    @cached_property
+    def fontInstancer(self):
+        return FontInstancer(self.validatedInput)
+
     @async_cached_property
     async def _trimmedAxesAndSourceRanges(self):
         axes = await self.validatedInput.getGlobalAxes()
@@ -925,6 +929,18 @@ class TrimAxesAction(BaseFilterAction):
 
             trimmedAxis.minValue = rangeDict.get("minValue", trimmedAxis.minValue)
             trimmedAxis.maxValue = rangeDict.get("maxValue", trimmedAxis.maxValue)
+
+            if trimmedAxis.minValue > trimmedAxis.defaultValue:
+                raise ActionError(
+                    f"trim-axes: trimmed minValue for {axis.name} should be <= "
+                    f"{trimmedAxis.defaultValue}"
+                )
+
+            if trimmedAxis.maxValue < trimmedAxis.defaultValue:
+                raise ActionError(
+                    f"trim-axes: trimmed maxValue for {axis.name} should be >= "
+                    f"{trimmedAxis.defaultValue}"
+                )
 
             if trimmedAxis.mapping:
                 mapping = dict(trimmedAxis.mapping)
@@ -960,6 +976,27 @@ class TrimAxesAction(BaseFilterAction):
     async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
         trimmedAxes, _ = await self._trimmedAxesAndSourceRanges
         return trimmedAxes
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+
+        defaultLocation = instancer.defaultSourceLocation
+
+        newLocations = [
+            defaultLocation | source.location for source in instancer.activeSources
+        ]
+
+        _, sourceRanges = await self._trimmedAxesAndSourceRanges
+
+        for loc in newLocations:
+            for axisName, value in loc.items():
+                if axisName not in sourceRanges:
+                    continue
+                minValue, maxValue = sourceRanges[axisName]
+                trimmedValue = max(min(value, maxValue), minValue)
+                loc[axisName] = trimmedValue
+
+        return updateSourcesAndLayers(instancer, newLocations)
 
 
 def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
