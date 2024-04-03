@@ -185,7 +185,7 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
   return VarPackedPath.fromUnpackedContours(filteredUnpackedContours);
 }
 
-function makeExpandedIndexSet(
+export function makeExpandedIndexSet(
   path,
   contourPointIndices,
   contourIndex,
@@ -633,6 +633,13 @@ export function rotatePoint(pinPoint, point, angle) {
     Math.sin(theta) * (point.x - pinPoint.x) +
     Math.cos(theta) * (point.y - pinPoint.y) +
     pinPoint.y;
+  return vector.roundVector({ x: point_x, y: point_y });
+}
+
+export function skewPoint(pinPoint, point, angle) {
+  const theta = (angle * Math.PI) / 180;
+  const point_x = point.x + Math.tan(theta) * (point.y - pinPoint.y);
+  const point_y = point.y + Math.tan(theta) * (point.x - pinPoint.x);
   return vector.roundVector({ x: point_x, y: point_y });
 }
 
