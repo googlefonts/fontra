@@ -1030,3 +1030,18 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
     return dropUnusedSourcesAndLayers(
         replace(glyph, sources=newSources, layers=newLayers)
     )
+
+
+@registerActionClass("check-interpolation")
+@dataclass(kw_only=True)
+class CheckInterpolationAction(BaseFilterAction):
+    @cached_property
+    def fontInstancer(self):
+        return FontInstancer(self.validatedInput)
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        # Each of the next two lines may raise an error if the glyph
+        # doesn't interpolate
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+        _ = instancer.deltas
+        return instancer.glyph
