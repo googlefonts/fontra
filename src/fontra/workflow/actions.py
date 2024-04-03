@@ -899,6 +899,69 @@ class MoveDefaultLocationAction(BaseFilterAction):
         return updateSourcesAndLayers(instancer, newLocations)
 
 
+@registerActionClass("trim-axes")
+@dataclass(kw_only=True)
+class TrimAxesAction(BaseFilterAction):
+    axes: dict[str, dict[str, Any]]
+
+    @async_cached_property
+    async def _trimmedAxesAndSourceRanges(self):
+        axes = await self.validatedInput.getGlobalAxes()
+        trimmedAxes = []
+        sourceRanges = {}
+
+        for axis in axes:
+            trimmedAxis = deepcopy(axis)
+            trimmedAxes.append(trimmedAxis)
+
+            rangeDict = {
+                k: v
+                for k, v in self.axes.get(axis.name, {}).items()
+                if k in {"minValue", "maxValue"}
+            }
+
+            if not rangeDict:
+                continue
+
+            trimmedAxis.minValue = rangeDict.get("minValue", trimmedAxis.minValue)
+            trimmedAxis.maxValue = rangeDict.get("maxValue", trimmedAxis.maxValue)
+
+            if trimmedAxis.mapping:
+                mapping = dict(trimmedAxis.mapping)
+                rangeValues = []
+                for userValue in [trimmedAxis.minValue, trimmedAxis.maxValue]:
+                    sourceValue = piecewiseLinearMap(userValue, mapping)
+                    rangeValues.append(sourceValue)
+                    if [userValue, sourceValue] not in trimmedAxis.mapping:
+                        trimmedAxis.mapping.append([userValue, sourceValue])
+
+                trimmedAxis.mapping = sorted(
+                    [
+                        [u, s]
+                        for u, s in trimmedAxis.mapping
+                        if trimmedAxis.minValue <= u <= trimmedAxis.maxValue
+                    ]
+                )
+                sourceRanges[axis.name] = tuple(rangeValues)
+            else:
+                sourceRanges[axis.name] = (
+                    trimmedAxis.minValue,
+                    trimmedAxis.maxValue,
+                )
+
+            trimmedAxis.valueLabels = [
+                label
+                for label in trimmedAxis.valueLabels
+                if trimmedAxis.minValue <= label.value <= trimmedAxis.maxValue
+            ]
+
+        return trimmedAxes, sourceRanges
+
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        trimmedAxes, _ = await self._trimmedAxesAndSourceRanges
+        return trimmedAxes
+
+
 def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
     glyph = instancer.glyph
 

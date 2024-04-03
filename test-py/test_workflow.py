@@ -605,6 +605,26 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "trim-axes",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-trim-axes.fontra"
+            - action: trim-axes
+              axes:
+                width:
+                  minValue: 100
+                  maxValue: 700
+                weight:
+                  minValue: 200
+                  maxValue: 800
+
+            - action: output
+              destination: "output-trim-axes.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
