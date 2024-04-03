@@ -145,3 +145,7 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "importlib.resources.abc"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "lxml.etree"
+ignore_missing_imports = true
