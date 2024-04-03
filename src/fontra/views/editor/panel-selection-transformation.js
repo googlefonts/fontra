@@ -428,7 +428,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     return { x: pinPointX, y: pinPointY };
   }
 
-  _getAllPointIndices(path, pointIndices) {
+  _getPointIndicesInclOffCurves(path, pointIndices) {
     let newPointIndices = new Set();
     const selectionByContour = getSelectionByContour(path, pointIndices);
     for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
@@ -440,13 +440,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
         startPoint
       );
 
-      let contourPointCount = 0;
-      for (const i of range(0, contourIndex)) {
-        const contour = path.getUnpackedContour(i);
-        contourPointCount += contour.points.length;
+      for (const i of indexSet) {
+        const pointAbsolutIndex = path.getAbsolutePointIndex(contourIndex, i);
+        newPointIndices.add(pointAbsolutIndex);
+        const point = path.getPoint(pointAbsolutIndex);
+        if (point.smooth) {
+          // get the off curve points if the point is smooth
+          for (const index of [pointAbsolutIndex - 1, pointAbsolutIndex + 1]) {
+            const pointCloseTo = path.getPoint(index);
+            if (pointCloseTo.type === "cubic" || pointCloseTo.type === "quadratic") {
+              newPointIndices.add(index);
+            }
+          }
+        }
       }
-      const otherPointIndices = Array.from(indexSet).map((v) => v + contourPointCount);
-      newPointIndices = new Set([...newPointIndices, ...otherPointIndices]);
     }
     return Array.from(newPointIndices).sort((a, b) => a - b);
   }
@@ -467,7 +474,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       );
 
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-        pointIndices = this._getAllPointIndices(layerGlyph.path, pointIndices);
+        pointIndices = this._getPointIndicesInclOffCurves(
+          layerGlyph.path,
+          pointIndices
+        );
 
         for (const [i, index] of enumerate(
           range(0, layerGlyph.path.coordinates.length, 2)
@@ -515,7 +525,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           originX,
           originY
         );
-        pointIndices = this._getAllPointIndices(layerGlyph.path, pointIndices);
+        pointIndices = this._getPointIndicesInclOffCurves(
+          layerGlyph.path,
+          pointIndices
+        );
 
         for (const index of pointIndices) {
           let point = layerGlyph.path.getPoint(index);
@@ -554,7 +567,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           originX,
           originY
         );
-        pointIndices = this._getAllPointIndices(layerGlyph.path, pointIndices);
+        pointIndices = this._getPointIndicesInclOffCurves(
+          layerGlyph.path,
+          pointIndices
+        );
 
         for (const index of pointIndices) {
           let point = layerGlyph.path.getPoint(index);
@@ -606,7 +622,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           originY
         );
 
-        pointIndices = this._getAllPointIndices(layerGlyph.path, pointIndices);
+        pointIndices = this._getPointIndicesInclOffCurves(
+          layerGlyph.path,
+          pointIndices
+        );
 
         for (const index of pointIndices) {
           let point = layerGlyph.path.getPoint(index);
