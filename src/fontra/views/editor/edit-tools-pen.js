@@ -399,16 +399,16 @@ class PenToolBehavior {
   }
 }
 
-function insertContourAndSetupAnchorPoint(context, path, point, shiftConstrain) {
+function insertContourAndSetupAnchorPoint(context, path, point, shiftKey) {
   path.insertContour(context.contourIndex, emptyContour());
   context.anchorIndex = context.contourPointIndex;
 }
 
-function setupAnchorPoint(context, path, point, shiftConstrain) {
+function setupAnchorPoint(context, path, point, shiftKey) {
   context.anchorIndex = context.contourPointIndex + context.appendBias;
 }
 
-function setupExistingAnchorPoint(context, path, point, shiftConstrain) {
+function setupExistingAnchorPoint(context, path, point, shiftKey) {
   context.anchorIndex = context.contourPointIndex;
   context.anchorPoint = path.getContourPoint(
     context.contourIndex,
@@ -437,21 +437,21 @@ function insertAnchorPoint(context, path, point, shiftKey) {
   );
 }
 
-function insertHandleOut(context, path, point, shiftConstrain) {
+function insertHandleOut(context, path, point, shiftKey) {
   point = vector.roundVector(point);
   _insertHandleOut(context, path, point);
   _setHandleOutAbsIndex(context, path);
   context.selection = getPointSelectionAbs(context.handleOutAbsIndex);
 }
 
-function insertHandleIn(context, path, point, shiftConstrain) {
+function insertHandleIn(context, path, point, shiftKey) {
   point = vector.roundVector(point);
   _insertHandleIn(context, path, point);
   _setHandleInAbsIndex(context, path);
   context.selection = new Set();
 }
 
-function insertHandleInOut(context, path, point, shiftConstrain) {
+function insertHandleInOut(context, path, point, shiftKey) {
   point = vector.roundVector(point);
   _insertHandleIn(context, path, point);
   _insertHandleOut(context, path, point);
@@ -465,7 +465,7 @@ function insertHandleInOut(context, path, point, shiftConstrain) {
   context.selection = getPointSelectionAbs(context.handleOutAbsIndex);
 }
 
-function _insertHandleIn(context, path, point, shiftConstrain) {
+function _insertHandleIn(context, path, point, shiftKey) {
   path.insertPoint(context.contourIndex, context.anchorIndex + context.prependBias, {
     ...point,
     type: context.curveType,
@@ -473,7 +473,7 @@ function _insertHandleIn(context, path, point, shiftConstrain) {
   context.anchorIndex += context.appendBias;
 }
 
-function _insertHandleOut(context, path, point, shiftConstrain) {
+function _insertHandleOut(context, path, point, shiftKey) {
   path.insertPoint(context.contourIndex, context.anchorIndex + context.appendBias, {
     ...point,
     type: context.curveType,
@@ -495,7 +495,7 @@ function _setHandleOutAbsIndex(context, path) {
   );
 }
 
-function deleteHandle(context, path, point, shiftConstrain) {
+function deleteHandle(context, path, point, shiftKey) {
   path.deletePoint(context.contourIndex, context.contourPointIndex);
   const anchorIndex = path.getAbsolutePointIndex(
     context.contourIndex,
@@ -505,7 +505,7 @@ function deleteHandle(context, path, point, shiftConstrain) {
   context.selection = getPointSelectionAbs(anchorIndex);
 }
 
-function closeContour(context, path, point, shiftConstrain) {
+function closeContour(context, path, point, shiftKey) {
   path.contourInfo[context.contourIndex].isClosed = true;
   const numPoints = path.getNumPointsOfContour(context.contourIndex);
   if (!context.contourPointIndex) {
@@ -521,8 +521,8 @@ function closeContour(context, path, point, shiftConstrain) {
   context.selection = getPointSelection(path, context.contourIndex, 0);
 }
 
-function dragHandle(context, path, point, shiftConstrain) {
-  point = getHandle(point, context.anchorPoint, shiftConstrain);
+function dragHandle(context, path, point, shiftKey) {
+  point = getHandle(point, context.anchorPoint, shiftKey);
   if (context.handleOutAbsIndex !== undefined) {
     path.setPointPosition(context.handleOutAbsIndex, point.x, point.y);
   }
@@ -532,7 +532,7 @@ function dragHandle(context, path, point, shiftConstrain) {
   }
 }
 
-function connectToContour(context, path, point, shiftConstrain) {
+function connectToContour(context, path, point, shiftKey) {
   const isPrepend = context.appendMode === AppendModes.PREPEND;
   const targetContourBefore = context.targetContourIndex < context.contourIndex;
   const insertIndex = context.contourIndex - (targetContourBefore ? 1 : 0);
