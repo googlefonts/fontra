@@ -448,6 +448,9 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           // get the off curve points if the point is smooth
           for (const index of [pointAbsolutIndex - 1, pointAbsolutIndex + 1]) {
             const pointCloseTo = path.getPoint(index);
+            if (!pointCloseTo) {
+              continue;
+            }
             if (pointCloseTo.type === "cubic" || pointCloseTo.type === "quadratic") {
               newPointIndices.add(index);
             }
