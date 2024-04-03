@@ -64,7 +64,9 @@ class InputActionProtocol(Protocol):
 
 @runtime_checkable
 class OutputActionProtocol(Protocol):
-    async def process(self) -> None:
+    async def process(
+        self, outputDir: os.PathLike = pathlib.Path(), continueOnError=False
+    ) -> None:
         pass
 
 
