@@ -1,3 +1,4 @@
+from typing import Any
 from xml.etree.ElementTree import ParseError
 
 from fontTools.pens.boundsPen import ControlBoundsPen
@@ -11,6 +12,14 @@ from fontTools.ufoLib.glifLib import readGlyphFromString, writeGlyphToString
 from ..backends.designspace import UFOGlyph, populateUFOLayerGlyph, readGlyphOrCreate
 from .classes import StaticGlyph
 from .path import PackedPathPointPen
+
+XMLErrors: tuple[Any, ...]
+try:
+    from lxml.etree import XMLSyntaxError
+except ImportError:
+    XMLErrors = (ParseError,)
+else:
+    XMLErrors = (ParseError, XMLSyntaxError)
 
 
 def parseClipboard(data: str) -> StaticGlyph | None:
@@ -26,7 +35,7 @@ def parseSVG(data: str) -> StaticGlyph | None:
         svgPath = SVGPath.fromstring(
             data.encode("utf-8"), transform=(1, 0, 0, -1, 0, 0)
         )
-    except ParseError:
+    except XMLErrors:
         return None
     recPen = RecordingPen()
     svgPath.draw(recPen)
