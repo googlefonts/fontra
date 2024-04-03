@@ -625,6 +625,24 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "error-glyph",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-error-glyph.fontra"
+
+            - action: output
+              destination: "output-error-glyph.fontra"
+            """,
+            [
+                (
+                    40,
+                    "glyph A caused an error: JSONDecodeError('Expecting value: line "
+                    "1 column 1 (char 0)')",
+                )
+            ],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):

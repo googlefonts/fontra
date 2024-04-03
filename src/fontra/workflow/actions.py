@@ -392,12 +392,14 @@ class OutputAction:
             except AttributeError:
                 pass
 
-    async def process(self, outputDir: os.PathLike = pathlib.Path()) -> None:
+    async def process(
+        self, outputDir: os.PathLike = pathlib.Path(), continueOnError=True
+    ) -> None:
         outputDir = pathlib.Path(outputDir)
         output = newFileSystemBackend((outputDir / self.destination).resolve())
 
         async with aclosing(output):
-            await copyFont(self.validatedInput, output)
+            await copyFont(self.validatedInput, output, continueOnError=continueOnError)
 
 
 @registerActionClass("rename-axes")
