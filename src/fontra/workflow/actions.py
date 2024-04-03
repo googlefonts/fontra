@@ -923,8 +923,12 @@ class TrimAxesAction(BaseFilterAction):
             if not rangeDict:
                 continue
 
-            trimmedAxis.minValue = rangeDict.get("minValue", trimmedAxis.minValue)
-            trimmedAxis.maxValue = rangeDict.get("maxValue", trimmedAxis.maxValue)
+            trimmedAxis.minValue = max(
+                trimmedAxis.minValue, rangeDict.get("minValue", trimmedAxis.minValue)
+            )
+            trimmedAxis.maxValue = min(
+                trimmedAxis.maxValue, rangeDict.get("maxValue", trimmedAxis.maxValue)
+            )
 
             if trimmedAxis.minValue > trimmedAxis.defaultValue:
                 raise ActionError(
