@@ -393,7 +393,7 @@ class OutputAction:
                 pass
 
     async def process(
-        self, outputDir: os.PathLike = pathlib.Path(), continueOnError=True
+        self, outputDir: os.PathLike = pathlib.Path(), continueOnError=False
     ) -> None:
         outputDir = pathlib.Path(outputDir)
         output = newFileSystemBackend((outputDir / self.destination).resolve())

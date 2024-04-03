@@ -656,7 +656,7 @@ async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, cap
         assert endPoints.endPoint is not None
 
         for output in endPoints.outputs:
-            await output.process(tmpdir)
+            await output.process(tmpdir, continueOnError=True)
             expectedPath = workflowDataDir / output.destination
             resultPath = tmpdir / output.destination
             if expectedPath.is_file():
