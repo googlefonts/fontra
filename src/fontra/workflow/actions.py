@@ -471,9 +471,9 @@ def dropUnusedSourcesAndLayers(glyph):
     return glyph
 
 
-@registerActionClass("drop-axis-mapping")
+@registerActionClass("drop-axis-mappings")
 @dataclass(kw_only=True)
-class DropAxisMappingAction(BaseFilterAction):
+class DropAxisMappingsAction(BaseFilterAction):
     axes: list[str] | None = None
 
     @async_cached_property

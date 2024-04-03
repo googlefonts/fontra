@@ -296,7 +296,7 @@ def test_command(tmpdir, configYAMLSources):
               source: "test-py/data/workflow/input1-A.fontra"
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
 
             - action: output
               destination: "output-drop-axis-mapping.fontra"
@@ -311,7 +311,7 @@ def test_command(tmpdir, configYAMLSources):
               source: "test-py/data/workflow/input1-A.fontra"
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
               axes: ["weight"]
 
             - action: output
@@ -327,7 +327,7 @@ def test_command(tmpdir, configYAMLSources):
               source: "test-py/data/workflow/input1-A.fontra"
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
               axes: ["non-existent"]
 
             - action: output
@@ -365,7 +365,7 @@ def test_command(tmpdir, configYAMLSources):
               glyphNames: ["A"]
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
             - action: adjust-axes
               axes:
                 weight:
@@ -411,7 +411,7 @@ def test_command(tmpdir, configYAMLSources):
               glyphNames: ["A"]
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
             - action: adjust-axes
               remapSources: false
               axes:
