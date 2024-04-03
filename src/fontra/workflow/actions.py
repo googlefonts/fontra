@@ -65,7 +65,7 @@ class InputActionProtocol(Protocol):
 @runtime_checkable
 class OutputActionProtocol(Protocol):
     async def process(
-        self, outputDir: os.PathLike = pathlib.Path(), continueOnError=False
+        self, outputDir: os.PathLike = pathlib.Path(), *, continueOnError=False
     ) -> None:
         pass
 
@@ -395,7 +395,7 @@ class OutputAction:
                 pass
 
     async def process(
-        self, outputDir: os.PathLike = pathlib.Path(), continueOnError=False
+        self, outputDir: os.PathLike = pathlib.Path(), *, continueOnError=False
     ) -> None:
         outputDir = pathlib.Path(outputDir)
         output = newFileSystemBackend((outputDir / self.destination).resolve())
