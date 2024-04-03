@@ -51,7 +51,7 @@ def existing_folder(path):
     return path
 
 
-async def mainAsync():
+async def mainAsync() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output-dir",
