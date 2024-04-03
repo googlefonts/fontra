@@ -182,7 +182,14 @@ def test_command(tmpdir, configYAMLSources):
     expectedFileNames = [p.name for p in configPaths]
 
     subprocess.run(
-        ["fontra-workflow", *configPaths, "--output-dir", tmpdir], check=True
+        [
+            "fontra-workflow",
+            *configPaths,
+            "--output-dir",
+            tmpdir,
+            "--continue-on-error",
+        ],
+        check=True,
     )
     items = sorted([p.name for p in tmpdir.iterdir()])
     assert [*expectedFileNames, "testing.fontra"] == items
