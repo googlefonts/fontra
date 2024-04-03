@@ -4,6 +4,7 @@ import logging
 import os
 import pathlib
 from contextlib import aclosing, asynccontextmanager
+from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from functools import cached_property, partial
 from typing import (
@@ -731,7 +732,6 @@ class SubsetAxesAction(BaseFilterAction):
     def __post_init__(self):
         self.axisNames = set(self.axisNames)
         self.dropAxisNames = set(self.dropAxisNames)
-        self._locationToKeep = None
 
     def getAxisNamesToKeep(self, axes):
         axisNames = (
@@ -741,15 +741,12 @@ class SubsetAxesAction(BaseFilterAction):
         )
         return axisNames - self.dropAxisNames
 
-    async def getLocationToKeep(self):
-        if self._locationToKeep is None:
-            axes = await self.validatedInput.getGlobalAxes()
-            keepAxisNames = self.getAxisNamesToKeep(axes)
-            location = getDefaultSourceLocation(axes)
-            self._locationToKeep = {
-                n: v for n, v in location.items() if n not in keepAxisNames
-            }
-        return self._locationToKeep
+    @async_cached_property
+    async def locationToKeep(self):
+        axes = await self.validatedInput.getGlobalAxes()
+        keepAxisNames = self.getAxisNamesToKeep(axes)
+        location = getDefaultSourceLocation(axes)
+        return {n: v for n, v in location.items() if n not in keepAxisNames}
 
     async def processGlobalAxes(
         self, axes: list[GlobalAxis | GlobalDiscreteAxis]
@@ -760,7 +757,7 @@ class SubsetAxesAction(BaseFilterAction):
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         # locationToKeep contains axis *values* for sources we want to keep,
         # but those axes are to be dropped, so it *also* says "axes to drop"
-        locationToKeep = await self.getLocationToKeep()
+        locationToKeep = await self.locationToKeep
 
         sources = [
             replace(
@@ -837,22 +834,19 @@ class MoveDefaultLocationAction(BaseFilterAction):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
 
-        defaultLocation = {
-            axis.name: axis.defaultValue for axis in instancer.combinedAxes
-        }
+        defaultLocation = instancer.defaultSourceLocation
 
-        sourcesByLocation = {
-            tuplifyLocation(defaultLocation | source.location): source
-            for source in instancer.activeSources
-        }
+        locations = [
+            defaultLocation | source.location for source in instancer.activeSources
+        ]
 
         axisNames = {axis.name for axis in instancer.combinedAxes}
         movingAxisNames = set(self.newDefaultUserLocation)
         interactingAxes = set()
 
-        for locationTuple in sourcesByLocation:
+        for location in locations:
             contributingAxes = set()
-            for axisName, value in locationTuple:
+            for axisName, value in location.items():
                 if value != defaultLocation[axisName]:
                     contributingAxes.add(axisName)
             if len(contributingAxes) > 1 and not contributingAxes.isdisjoint(
@@ -862,7 +856,7 @@ class MoveDefaultLocationAction(BaseFilterAction):
 
         standaloneAxes = axisNames - interactingAxes
 
-        newLocations = [dict(loc) for loc in sourcesByLocation]
+        newLocations = deepcopy(locations)
 
         newDefaultSourceLocation = await self.newDefaultSourceLocation
         currentDefaultLocation = dict(defaultLocation)
@@ -898,25 +892,133 @@ class MoveDefaultLocationAction(BaseFilterAction):
                 if loc not in newLocations:
                     newLocations.append(loc)
 
-        newLocationTuples = [tuplifyLocation(loc) for loc in newLocations]
+        return updateSourcesAndLayers(instancer, newLocations)
 
-        glyph = instancer.glyph
-        newSources = []
-        newLayers = {}
 
-        for locationTuple in sorted(newLocationTuples):
-            source = sourcesByLocation.get(locationTuple)
-            if source is not None:
-                newLayers[source.layerName] = glyph.layers[source.layerName]
+@registerActionClass("trim-axes")
+@dataclass(kw_only=True)
+class TrimAxesAction(BaseFilterAction):
+    axes: dict[str, dict[str, Any]]
+
+    @cached_property
+    def fontInstancer(self):
+        return FontInstancer(self.validatedInput)
+
+    @async_cached_property
+    async def _trimmedAxesAndSourceRanges(self):
+        axes = await self.validatedInput.getGlobalAxes()
+        trimmedAxes = []
+        sourceRanges = {}
+
+        for axis in axes:
+            trimmedAxis = deepcopy(axis)
+            trimmedAxes.append(trimmedAxis)
+
+            rangeDict = {
+                k: v
+                for k, v in self.axes.get(axis.name, {}).items()
+                if k in {"minValue", "maxValue"}
+            }
+
+            if not rangeDict:
+                continue
+
+            trimmedAxis.minValue = rangeDict.get("minValue", trimmedAxis.minValue)
+            trimmedAxis.maxValue = rangeDict.get("maxValue", trimmedAxis.maxValue)
+
+            if trimmedAxis.minValue > trimmedAxis.defaultValue:
+                raise ActionError(
+                    f"trim-axes: trimmed minValue for {axis.name} should be <= "
+                    f"{trimmedAxis.defaultValue}"
+                )
+
+            if trimmedAxis.maxValue < trimmedAxis.defaultValue:
+                raise ActionError(
+                    f"trim-axes: trimmed maxValue for {axis.name} should be >= "
+                    f"{trimmedAxis.defaultValue}"
+                )
+
+            if trimmedAxis.mapping:
+                mapping = dict(trimmedAxis.mapping)
+                rangeValues = []
+                for userValue in [trimmedAxis.minValue, trimmedAxis.maxValue]:
+                    sourceValue = piecewiseLinearMap(userValue, mapping)
+                    rangeValues.append(sourceValue)
+                    if [userValue, sourceValue] not in trimmedAxis.mapping:
+                        trimmedAxis.mapping.append([userValue, sourceValue])
+
+                trimmedAxis.mapping = sorted(
+                    [
+                        [u, s]
+                        for u, s in trimmedAxis.mapping
+                        if trimmedAxis.minValue <= u <= trimmedAxis.maxValue
+                    ]
+                )
+                sourceRanges[axis.name] = tuple(rangeValues)
             else:
-                location = dict(locationTuple)
-                name = locationToString(location)
-                source = Source(name=name, location=location, layerName=name)
-                instance = instancer.instantiate(location)
-                newLayers[source.layerName] = Layer(glyph=instance.glyph)
+                sourceRanges[axis.name] = (
+                    trimmedAxis.minValue,
+                    trimmedAxis.maxValue,
+                )
 
-            newSources.append(source)
+            trimmedAxis.valueLabels = [
+                label
+                for label in trimmedAxis.valueLabels
+                if trimmedAxis.minValue <= label.value <= trimmedAxis.maxValue
+            ]
 
-        return dropUnusedSourcesAndLayers(
-            replace(glyph, sources=newSources, layers=newLayers)
-        )
+        return trimmedAxes, sourceRanges
+
+    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+        trimmedAxes, _ = await self._trimmedAxesAndSourceRanges
+        return trimmedAxes
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph:
+        instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+
+        defaultLocation = instancer.defaultSourceLocation
+
+        newLocations = [
+            defaultLocation | source.location for source in instancer.activeSources
+        ]
+
+        _, sourceRanges = await self._trimmedAxesAndSourceRanges
+
+        for loc in newLocations:
+            for axisName, value in loc.items():
+                if axisName not in sourceRanges:
+                    continue
+                minValue, maxValue = sourceRanges[axisName]
+                trimmedValue = max(min(value, maxValue), minValue)
+                loc[axisName] = trimmedValue
+
+        return updateSourcesAndLayers(instancer, newLocations)
+
+
+def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
+    glyph = instancer.glyph
+
+    sourcesByLocation = {
+        tuplifyLocation(source.location): source for source in glyph.sources
+    }
+    locationTuples = sorted({tuplifyLocation(loc) for loc in newLocations})
+
+    newSources = []
+    newLayers = {}
+
+    for locationTuple in locationTuples:
+        source = sourcesByLocation.get(locationTuple)
+        if source is not None:
+            newLayers[source.layerName] = glyph.layers[source.layerName]
+        else:
+            location = dict(locationTuple)
+            name = locationToString(location)
+            source = Source(name=name, location=location, layerName=name)
+            instance = instancer.instantiate(location)
+            newLayers[source.layerName] = Layer(glyph=instance.glyph)
+
+        newSources.append(source)
+
+    return dropUnusedSourcesAndLayers(
+        replace(glyph, sources=newSources, layers=newLayers)
+    )
