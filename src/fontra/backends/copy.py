@@ -18,6 +18,7 @@ async def copyFont(
     glyphNames=None,
     numTasks=1,
     progressInterval=0,
+    stopOnError=False,
 ) -> None:
     await destBackend.putFontInfo(await sourceBackend.getFontInfo())
     await destBackend.putGlobalAxes(await sourceBackend.getGlobalAxes())
@@ -39,6 +40,7 @@ async def copyFont(
                 glyphNamesToCopy,
                 glyphNamesCopied,
                 progressInterval,
+                stopOnError,
             )
         )
         for i in range(numTasks)
@@ -64,6 +66,7 @@ async def copyGlyphs(
     glyphNamesToCopy: list[str],
     glyphNamesCopied: set[str],
     progressInterval: int,
+    stopOnError: bool,
 ) -> None:
     while glyphNamesToCopy:
         if progressInterval and not (len(glyphNamesToCopy) % progressInterval):
@@ -75,6 +78,8 @@ async def copyGlyphs(
         try:
             glyph = await sourceBackend.getGlyph(glyphName)
         except Exception as e:
+            if stopOnError:
+                raise
             logger.error(f"glyph {glyphName} caused an error: {e!r}")
             continue
 
@@ -114,6 +119,7 @@ async def mainAsync() -> None:
     )
     parser.add_argument("--progress-interval", type=int, default=0)
     parser.add_argument("--num-tasks", type=int, default=1)
+    parser.add_argument("--stop-on-error", action="store_true")
 
     args = parser.parse_args()
 
@@ -146,6 +152,7 @@ async def mainAsync() -> None:
             glyphNames=glyphNames,
             numTasks=args.num_tasks,
             progressInterval=args.progress_interval,
+            stopOnError=args.stop_on_error,
         )
 
 
