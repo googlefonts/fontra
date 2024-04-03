@@ -679,8 +679,8 @@ function emptyContour() {
   return { coordinates: [], pointTypes: [], isClosed: false };
 }
 
-function getHandle(handleOut, anchorPoint, constrain) {
-  if (constrain) {
+function getHandle(handleOut, anchorPoint, shiftKey) {
+  if (shiftKey) {
     handleOut = shiftConstrain(anchorPoint, handleOut);
   }
   return vector.roundVector(handleOut);
