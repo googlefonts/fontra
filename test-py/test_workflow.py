@@ -650,6 +650,26 @@ def test_command(tmpdir, configYAMLSources):
                 )
             ],
         ),
+        (
+            "check-interpolation",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-check-interpolation.fontra"
+
+            - action: check-interpolation
+
+            - action: output
+              destination: "output-check-interpolation.fontra"
+            """,
+            [
+                (
+                    40,
+                    "glyph A caused an error: InterpolationError('paths are not "
+                    "compatible')",
+                )
+            ],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
