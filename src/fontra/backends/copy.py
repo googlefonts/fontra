@@ -71,7 +71,13 @@ async def copyGlyphs(
         glyphName = glyphNamesToCopy.pop(0)
         glyphNamesCopied.update(glyphNamesToCopy)
         logger.debug(f"reading {glyphName}")
-        glyph = await sourceBackend.getGlyph(glyphName)
+
+        try:
+            glyph = await sourceBackend.getGlyph(glyphName)
+        except Exception as e:
+            logger.error(f"glyph {glyphName} caused an error: {e!r}")
+            continue
+
         if glyph is None:
             logger.warn(f"glyph {glyphName} not found")
             continue
