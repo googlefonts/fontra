@@ -77,6 +77,12 @@ async def mainAsync():
         help="The logging level for the actions log file",
     )
     parser.add_argument(
+        "--continue-on-error",
+        action="store_true",
+        help="Continue copying if reading or processing a glyph causes an error. "
+        "The error will be logged, but the glyph will not be present in the output.",
+    )
+    parser.add_argument(
         "config",
         nargs="+",
         type=yaml_or_json,
@@ -123,7 +129,7 @@ async def mainAsync():
             nextInput = endPoints.endPoint
 
         for output in outputs:
-            await output.process(output_dir)
+            await output.process(output_dir, continueOnError=args.continue_on_error)
 
 
 def main():
