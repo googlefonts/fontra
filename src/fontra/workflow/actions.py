@@ -968,12 +968,12 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
     sourcesByLocation = {
         tuplifyLocation(source.location): source for source in glyph.sources
     }
-    locationTuples = [tuplifyLocation(loc) for loc in newLocations]
+    locationTuples = sorted({tuplifyLocation(loc) for loc in newLocations})
 
     newSources = []
     newLayers = {}
 
-    for locationTuple in sorted(locationTuples):
+    for locationTuple in locationTuples:
         source = sourcesByLocation.get(locationTuple)
         if source is not None:
             newLayers[source.layerName] = glyph.layers[source.layerName]
