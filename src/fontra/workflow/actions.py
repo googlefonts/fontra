@@ -11,6 +11,7 @@ from typing import (
     Any,
     AsyncContextManager,
     AsyncGenerator,
+    ClassVar,
     Protocol,
     get_type_hints,
     runtime_checkable,
@@ -92,6 +93,7 @@ def getActionClass(name):
 @dataclass(kw_only=True)
 class BaseFilterAction:
     input: ReadableFontBackend | None = field(init=False, default=None)
+    actionName: ClassVar[str]
 
     @cached_property
     def validatedInput(self) -> ReadableFontBackend:
@@ -264,6 +266,29 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
         # Override
         return originalGlyphMap
 
+    async def _componentClosure(self, glyphNames) -> set[str]:
+        glyphsToCheck = set(glyphNames)  # this set will shrink
+        glyphNamesExpanded = set(glyphNames)  # this set may grow
+
+        while glyphsToCheck:
+            glyphName = glyphsToCheck.pop()
+
+            try:
+                glyph = await self.validatedInput.getGlyph(glyphName)
+            except Exception as e:
+                actionLogger.error(
+                    f"{self.actionName}: glyph {glyphName} caused an error: {e!r}"
+                )
+                continue
+            assert glyph is not None
+
+            componentNames = getComponentNames(glyph)
+            uncheckedGlyphs = componentNames - glyphNamesExpanded
+            glyphNamesExpanded.update(uncheckedGlyphs)
+            glyphsToCheck.update(uncheckedGlyphs)
+
+        return glyphNamesExpanded
+
 
 @registerActionClass("drop-unreachable-glyphs")
 @dataclass(kw_only=True)
@@ -277,27 +302,9 @@ class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
             for glyphName, codePoints in originalGlyphMap.items()
             if codePoints
         }
-        glyphsToCheck = set(reachableGlyphs)
-        while glyphsToCheck:
-            glyphName = glyphsToCheck.pop()
-            try:
-                glyph = await self.validatedInput.getGlyph(glyphName)
-            except Exception as e:
-                actionLogger.error(
-                    f"drop-unreachable-glyphs: glyph {glyphName} caused an error: {e!r}"
-                )
-                continue
-            assert glyph is not None
-            componentNames = getComponentNames(glyph)
-            uncheckedGlyphs = componentNames - reachableGlyphs
-            reachableGlyphs.update(uncheckedGlyphs)
-            glyphsToCheck.update(uncheckedGlyphs)
 
-        return {
-            glyphName: codePoints
-            for glyphName, codePoints in originalGlyphMap.items()
-            if glyphName in reachableGlyphs
-        }
+        reachableGlyphs = await self._componentClosure(reachableGlyphs)
+        return filterGlyphMap(originalGlyphMap, reachableGlyphs)
 
 
 def getComponentNames(glyph):
@@ -305,6 +312,14 @@ def getComponentNames(glyph):
         compo.name
         for layer in glyph.layers.values()
         for compo in layer.glyph.components
+    }
+
+
+def filterGlyphMap(glyphMap, glyphNames):
+    return {
+        glyphName: codePoints
+        for glyphName, codePoints in glyphMap.items()
+        if glyphName in glyphNames
     }
 
 
@@ -331,36 +346,14 @@ class SubsetGlyphsAction(BaseGlyphSubsetterAction):
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
     ) -> dict[str, list[int]]:
-        subsettedGlyphMap = {}
         glyphNames = set(self.glyphNames)
         if not glyphNames and self.dropGlyphNames:
             glyphNames = set(originalGlyphMap)
         if self.dropGlyphNames:
             glyphNames = glyphNames - set(self.dropGlyphNames)
 
-        while glyphNames:
-            glyphName = glyphNames.pop()
-            if glyphName not in originalGlyphMap:
-                continue
-
-            subsettedGlyphMap[glyphName] = originalGlyphMap[glyphName]
-
-            # TODO: add getGlyphsMadeOf() ReadableFontBackend protocol member,
-            # so backends can implement this more efficiently
-            try:
-                glyph = await self.validatedInput.getGlyph(glyphName)
-            except Exception as e:
-                actionLogger.error(
-                    f"subset-glyphs: glyph {glyphName} caused an error: {e!r}"
-                )
-                continue
-            assert glyph is not None
-            componentNames = getComponentNames(glyph)
-            for compoName in componentNames:
-                if compoName in originalGlyphMap and compoName not in subsettedGlyphMap:
-                    glyphNames.add(compoName)
-
-        return subsettedGlyphMap
+        glyphNames = await self._componentClosure(glyphNames)
+        return filterGlyphMap(originalGlyphMap, glyphNames)
 
 
 @registerActionClass("input")
