@@ -290,6 +290,22 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
         return glyphNamesExpanded
 
 
+def getComponentNames(glyph):
+    return {
+        compo.name
+        for layer in glyph.layers.values()
+        for compo in layer.glyph.components
+    }
+
+
+def filterGlyphMap(glyphMap, glyphNames):
+    return {
+        glyphName: codePoints
+        for glyphName, codePoints in glyphMap.items()
+        if glyphName in glyphNames
+    }
+
+
 @registerActionClass("drop-unreachable-glyphs")
 @dataclass(kw_only=True)
 class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
@@ -305,22 +321,6 @@ class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
 
         reachableGlyphs = await self._componentClosure(reachableGlyphs)
         return filterGlyphMap(originalGlyphMap, reachableGlyphs)
-
-
-def getComponentNames(glyph):
-    return {
-        compo.name
-        for layer in glyph.layers.values()
-        for compo in layer.glyph.components
-    }
-
-
-def filterGlyphMap(glyphMap, glyphNames):
-    return {
-        glyphName: codePoints
-        for glyphName, codePoints in glyphMap.items()
-        if glyphName in glyphNames
-    }
 
 
 @registerActionClass("subset-glyphs")
