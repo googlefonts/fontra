@@ -41,7 +41,7 @@ from ..core.instancer import FontInstancer
 from ..core.protocols import ReadableFontBackend
 
 # All actions should use this logger, regardless of where they are defined
-actionLogger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ActionError(Exception):
@@ -276,7 +276,7 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
             try:
                 glyph = await self.validatedInput.getGlyph(glyphName)
             except Exception as e:
-                actionLogger.error(
+                logger.error(
                     f"{self.actionName}: glyph {glyphName} caused an error: {e!r}"
                 )
                 continue
@@ -721,7 +721,7 @@ class SetFontInfoAction(BaseFilterAction):
         extraNames = set(self.fontInfo) - fontInfoNames
         if extraNames:
             extraNamesString = ", ".join(repr(n) for n in sorted(extraNames))
-            actionLogger.error(f"set-font-info: unknown name(s): {extraNamesString}")
+            logger.error(f"set-font-info: unknown name(s): {extraNamesString}")
         return structure(unstructure(fontInfo) | self.fontInfo, FontInfo)
 
 
