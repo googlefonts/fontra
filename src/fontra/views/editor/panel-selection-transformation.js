@@ -483,11 +483,33 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       return;
     }
 
+    const varGlyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+
+    const editingLayers = this.sceneController.getEditingLayerFromGlyphLayers(
+      varGlyphController.layers
+    );
+    const staticGlyphControllers = {};
+    for (const [i, source] of enumerate(varGlyphController.sources)) {
+      if (source.layerName in editingLayers) {
+        staticGlyphControllers[source.layerName] =
+          await this.fontController.getLayerGlyphController(
+            varGlyphController.name,
+            source.layerName,
+            i
+          );
+      }
+    }
+
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
         glyph.layers
       );
+
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        const layerGlyphController = staticGlyphControllers[layerName];
+        console.log(layerName, layerGlyphController);
+
         const pinPoint = this._getPinPoint(
           layerGlyph,
           pointIndices,
