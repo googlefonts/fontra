@@ -185,7 +185,7 @@ export function filterPathByPointIndices(path, pointIndices, doCut = false) {
   return VarPackedPath.fromUnpackedContours(filteredUnpackedContours);
 }
 
-export function makeExpandedIndexSet(
+function makeExpandedIndexSet(
   path,
   contourPointIndices,
   contourIndex,
