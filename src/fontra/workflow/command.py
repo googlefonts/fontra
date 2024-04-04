@@ -8,7 +8,6 @@ from contextlib import AsyncExitStack
 
 import yaml
 
-from .actions import actionLogger
 from .workflow import Workflow
 
 if hasattr(logging, "getLevelNamesMapping"):
@@ -105,14 +104,14 @@ async def mainAsync() -> None:
     rootLogger.addHandler(stdoutHandler)
 
     if args.actions_log_file is not None:
-        logHandler = logging.StreamHandler(args.actions_log_file)
-        logHandler.setLevel(levelNamesMapping[args.actions_log_file_logging_level])
-        logHandler.setFormatter(
+        logFileHandler = logging.StreamHandler(args.actions_log_file)
+        logFileHandler.setLevel(levelNamesMapping[args.actions_log_file_logging_level])
+        logFileHandler.setFormatter(
             logging.Formatter(
                 "%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
             )
         )
-        actionLogger.addHandler(logHandler)
+        rootLogger.addHandler(logFileHandler)
 
     output_dir = args.output_dir
 
