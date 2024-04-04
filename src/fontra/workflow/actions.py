@@ -280,7 +280,14 @@ class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
         glyphsToCheck = set(reachableGlyphs)
         while glyphsToCheck:
             glyphName = glyphsToCheck.pop()
-            glyph = await self.validatedInput.getGlyph(glyphName)
+            try:
+                glyph = await self.validatedInput.getGlyph(glyphName)
+            except Exception as e:
+                actionLogger.error(
+                    f"drop-unreachable-glyphs: glyph {glyphName} caused an error: {e!r}"
+                )
+                continue
+            assert glyph is not None
             componentNames = getComponentNames(glyph)
             uncheckedGlyphs = componentNames - reachableGlyphs
             reachableGlyphs.update(uncheckedGlyphs)
@@ -340,7 +347,13 @@ class SubsetGlyphsAction(BaseGlyphSubsetterAction):
 
             # TODO: add getGlyphsMadeOf() ReadableFontBackend protocol member,
             # so backends can implement this more efficiently
-            glyph = await self.validatedInput.getGlyph(glyphName)
+            try:
+                glyph = await self.validatedInput.getGlyph(glyphName)
+            except Exception as e:
+                actionLogger.error(
+                    f"subset-glyphs: glyph {glyphName} caused an error: {e!r}"
+                )
+                continue
             assert glyph is not None
             compoNames = {
                 compo.name
