@@ -115,10 +115,10 @@ export class Form extends SimpleElement {
     .origin-radio-buttons > input[type="radio"] {
       appearance: none;
       background-color: var(--editor-mini-console-background-color-light);
-      margin: 3px;
+      margin: 2px;
       color: var(--editor-mini-console-background-color-light);
-      width: 1.0em;
-      height: 1.0em;
+      width: 0.9em;
+      height: 0.9em;
       border: 0.15em solid var(--editor-mini-console-background-color-light);
       border-radius: 50%;
       cursor: pointer;
