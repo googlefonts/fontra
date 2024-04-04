@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from copy import copy, deepcopy
+from copy import copy
 from dataclasses import dataclass, field, replace
 from enum import IntEnum
 from typing import TypedDict
@@ -286,20 +286,20 @@ class PackedPath:
         self._ensureCompatibility(other)
         coordinates = [v1 - v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
         return PackedPath(
-            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+            coordinates, list(self.pointTypes), copyContourInfo(self.contourInfo)
         )
 
     def __add__(self, other: PackedPath) -> PackedPath:
         self._ensureCompatibility(other)
         coordinates = [v1 + v2 for v1, v2 in zip(self.coordinates, other.coordinates)]
         return PackedPath(
-            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+            coordinates, list(self.pointTypes), copyContourInfo(self.contourInfo)
         )
 
     def __mul__(self, scalar: float) -> PackedPath:
         coordinates = [v * scalar for v in self.coordinates]
         return PackedPath(
-            coordinates, list(self.pointTypes), deepcopy(self.contourInfo)
+            coordinates, list(self.pointTypes), copyContourInfo(self.contourInfo)
         )
 
 
@@ -392,6 +392,10 @@ class PackedPathPointPen:
         self.components.append(
             Component(name=glyphName, transformation=transformation, location=location)
         )
+
+
+def copyContourInfo(contourInfo):
+    return [ContourInfo(cont.endPoint, cont.isClosed) for cont in contourInfo]
 
 
 _pointToSegmentType = {
