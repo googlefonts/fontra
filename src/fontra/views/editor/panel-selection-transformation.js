@@ -234,7 +234,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     });
 
     let button_rotate = html.createDomElement("icon-button", {
-      src: "/tabler-icons/rotate-clockwise.svg",
+      src: "/tabler-icons/rotate.svg",
       onclick: (event) =>
         this._transformLayerGlyph({
           rotation: this.rotation,
