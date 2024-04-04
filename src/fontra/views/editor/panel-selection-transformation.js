@@ -1,4 +1,7 @@
-import { decomposeComponents } from "../core/glyph-controller.js";
+import {
+  decomposeAffineTransform,
+  decomposeComponents,
+} from "../core/glyph-controller.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import * as html from "/core/html-utils.js";
 import { getSelectionByContour, makeExpandedIndexSet } from "/core/path-functions.js";
@@ -8,6 +11,7 @@ import {
   enumerate,
   findNestedActiveElement,
   getCharFromCodePoint,
+  makeAffineTransform,
   makeUPlusStringFromCodePoint,
   parseSelection,
   range,
@@ -412,7 +416,15 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
   }
 
   _getPinPoint(layerGlyph, pointIndices, componentIndices, originX, originY) {
-    const bounds = this._getSelectedBounds(layerGlyph, pointIndices, componentIndices);
+    let bounds = this._getSelectedBounds(layerGlyph, pointIndices, componentIndices);
+    if (!bounds) {
+      bounds = {
+        xMin: 0,
+        xMax: layerGlyph.xAdvance,
+        yMin: 0,
+        yMax: layerGlyph.yAdvance ? layerGlyph.yAdvance : 0,
+      };
+    }
     const width = bounds.xMax - bounds.xMin;
     const height = bounds.yMax - bounds.yMin;
 
@@ -508,34 +520,28 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           pointIndices
         );
 
+        let t = new Transform();
+        t = t.translate(pinPoint.x + translateX, pinPoint.y + translateY);
+        t = t.scale(scaleX, scaleY);
+        t = t.rotate((rotation * Math.PI) / 180);
+        t = t.skew((skewX * Math.PI) / 180, (skewY * Math.PI) / 180);
+        t = t.translate(-pinPoint.x, -pinPoint.y);
+
+        // transform contour points
         for (const index of pointIndices) {
           let point = layerGlyph.path.getPoint(index);
-          console.log("point", point);
-          let t = new Transform();
-          t = t.translate(pinPoint.x + translateX, pinPoint.y + translateY);
-          t = t.scale(scaleX, scaleY);
-          t = t.rotate((rotation * Math.PI) / 180);
-          t = t.skew((skewX * Math.PI) / 180, (skewY * Math.PI) / 180);
-          t = t.translate(-pinPoint.x, -pinPoint.y);
           let pointTransformed = t.transformPointObject(point);
-          console.log("pointTransformed", pointTransformed);
           layerGlyph.path.coordinates[index * 2] = pointTransformed.x;
           layerGlyph.path.coordinates[index * 2 + 1] = pointTransformed.y;
         }
 
-        /*         for (const index of componentIndices) {
-          compo.transformation = {
-            translateX: compo.transformation.translateX,
-            translateY: compo.transformation.translateY,
-            rotation: compo.transformation.rotation,
-            scaleX: compo.transformation.scaleX * scaleFactorX,
-            scaleY: compo.transformation.scaleY * scaleFactorY,
-            skewX: compo.transformation.skewX,
-            skewY: compo.transformation.skewY,
-            tCenterX: compo.transformation.tCenterX,
-            tCenterY: compo.transformation.tCenterY,
-          };
-        } */
+        // transform components
+        for (const index of componentIndices) {
+          const compo = layerGlyph.components[index];
+          const compoT = makeAffineTransform(compo.transformation);
+          const newCompoT = t.transform(compoT);
+          compo.transformation = decomposeAffineTransform(newCompoT);
+        }
       }
       return undoName;
     });
