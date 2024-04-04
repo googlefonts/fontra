@@ -1,11 +1,8 @@
-import {
-  decomposeAffineTransform,
-  decomposeComponents,
-} from "../core/glyph-controller.js";
+import { decomposeAffineTransform } from "../core/glyph-controller.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import * as html from "/core/html-utils.js";
-import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
+import { rectFromPoints, unionRect } from "/core/rectangle.js";
 import { Transform } from "/core/transform.js";
 import { enumerate, makeAffineTransform } from "/core/utils.js";
 
