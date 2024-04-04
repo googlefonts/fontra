@@ -36,8 +36,7 @@ from ..core.classes import (
     structure,
     unstructure,
 )
-from ..core.instancer import FontInstancer, LocationCoordinateSystem
-from ..core.path import PackedPathPointPen
+from ..core.instancer import FontInstancer
 from ..core.protocols import ReadableFontBackend
 
 # All actions should use this logger, regardless of where they are defined
@@ -626,17 +625,14 @@ class DecomposeCompositesAction(BaseFilterAction):
         newLayers = {}
 
         for source in newSources:
-            pen = PackedPathPointPen()
-            instance = await instancer.drawPoints(
-                pen,
-                source.location,
-                coordSystem=LocationCoordinateSystem.SOURCE,
-                decomposeComponents=True,
-                decomposeVarComponents=True,
-            )
+            instance = instancer.instantiate(source.location)
 
             newLayers[source.layerName] = Layer(
-                glyph=replace(instance.glyph, path=pen.getPath(), components=[]),
+                glyph=replace(
+                    instance.glyph,
+                    path=await instance.getDecomposedPath(),
+                    components=[],
+                ),
             )
 
         return replace(glyph, sources=newSources, layers=newLayers)
