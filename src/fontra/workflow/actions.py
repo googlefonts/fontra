@@ -266,7 +266,7 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
         # Override
         return originalGlyphMap
 
-    async def _componentClosure(self, glyphNames) -> set[str]:
+    async def _componentsClosure(self, glyphNames) -> set[str]:
         glyphsToCheck = set(glyphNames)  # this set will shrink
         glyphNamesExpanded = set(glyphNames)  # this set may grow
 
@@ -319,7 +319,7 @@ class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
             if codePoints
         }
 
-        reachableGlyphs = await self._componentClosure(reachableGlyphs)
+        reachableGlyphs = await self._componentsClosure(reachableGlyphs)
         return filterGlyphMap(originalGlyphMap, reachableGlyphs)
 
 
@@ -352,7 +352,7 @@ class SubsetGlyphsAction(BaseGlyphSubsetterAction):
         if self.dropGlyphNames:
             glyphNames = glyphNames - set(self.dropGlyphNames)
 
-        glyphNames = await self._componentClosure(glyphNames)
+        glyphNames = await self._componentsClosure(glyphNames)
         return filterGlyphMap(originalGlyphMap, glyphNames)
 
 
