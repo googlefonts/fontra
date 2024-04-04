@@ -355,12 +355,8 @@ class SubsetGlyphsAction(BaseGlyphSubsetterAction):
                 )
                 continue
             assert glyph is not None
-            compoNames = {
-                compo.name
-                for layer in glyph.layers.values()
-                for compo in layer.glyph.components
-            }
-            for compoName in compoNames:
+            componentNames = getComponentNames(glyph)
+            for compoName in componentNames:
                 if compoName in originalGlyphMap and compoName not in subsettedGlyphMap:
                     glyphNames.add(compoName)
 
