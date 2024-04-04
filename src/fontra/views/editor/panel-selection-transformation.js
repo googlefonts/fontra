@@ -2,24 +2,12 @@ import {
   decomposeAffineTransform,
   decomposeComponents,
 } from "../core/glyph-controller.js";
+import { EditBehaviorFactory } from "./edit-behavior.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
 import * as html from "/core/html-utils.js";
-import { getSelectionByContour, makeExpandedIndexSet } from "/core/path-functions.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { Transform } from "/core/transform.js";
-import {
-  enumerate,
-  findNestedActiveElement,
-  getCharFromCodePoint,
-  makeAffineTransform,
-  makeUPlusStringFromCodePoint,
-  parseSelection,
-  range,
-  round,
-  splitGlyphNameExtension,
-  throttleCalls,
-} from "/core/utils.js";
-import { Form } from "/web-components/ui-form.js";
+import { enumerate, makeAffineTransform } from "/core/utils.js";
 
 export default class SelectionTransformationPanel extends SelectionInfoPanel {
   identifier = "selection-transformation";
@@ -450,36 +438,28 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     return { x: pinPointX, y: pinPointY };
   }
-
-  _getPointIndicesInclOffCurves(path, pointIndices) {
+  _getPointIndicesInclOffCurves(layerGlyph, pointIndices) {
+    if (!pointIndices || pointIndices.length < 1) {
+      return [];
+    }
     let newPointIndices = new Set();
-    const selectionByContour = getSelectionByContour(path, pointIndices);
-    for (const [contourIndex, contourPointIndices] of selectionByContour.entries()) {
-      const startPoint = path.getAbsolutePointIndex(contourIndex, 0);
-      const indexSet = makeExpandedIndexSet(
-        path,
-        contourPointIndices,
-        contourIndex,
-        startPoint
-      );
+    const behaviorFactory = new EditBehaviorFactory(
+      layerGlyph,
+      this.sceneController.selection,
+      this.sceneController.experimentalFeatures.scalingEditBehavior
+    );
 
-      for (const i of indexSet) {
-        const pointAbsolutIndex = path.getAbsolutePointIndex(contourIndex, i);
-        newPointIndices.add(pointAbsolutIndex);
-        const point = path.getPoint(pointAbsolutIndex);
-        if (point.smooth) {
-          // get the off curve points if the point is smooth
-          for (const index of [pointAbsolutIndex - 1, pointAbsolutIndex + 1]) {
-            const pointCloseTo = path.getPoint(index);
-            if (!pointCloseTo) {
-              continue;
-            }
-            if (pointCloseTo.type === "cubic" || pointCloseTo.type === "quadratic") {
-              newPointIndices.add(index);
-            }
-          }
-        }
+    const editBehavior = behaviorFactory.getBehavior("default");
+    const contours = behaviorFactory.contours;
+    for (const [i, arrayPointsIndices] of enumerate(
+      editBehavior.participatingPointIndices
+    )) {
+      if (!arrayPointsIndices) {
+        continue;
       }
+      arrayPointsIndices.forEach((item) =>
+        newPointIndices.add(item + contours[i].startIndex)
+      );
     }
     return Array.from(newPointIndices).sort((a, b) => a - b);
   }
@@ -515,10 +495,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           originX,
           originY
         );
-        pointIndices = this._getPointIndicesInclOffCurves(
-          layerGlyph.path,
-          pointIndices
-        );
+        pointIndices = this._getPointIndicesInclOffCurves(layerGlyph, pointIndices);
 
         let t = new Transform();
         t = t.translate(pinPoint.x + translateX, pinPoint.y + translateY);

@@ -84,6 +84,7 @@ class EditBehavior {
       behavior
     );
     this.pointEditFuncs = pointEditFuncs;
+    this.participatingPointIndices = participatingPointIndices;
 
     const componentRollbackChanges = [];
     this.componentEditFuncs = [];
