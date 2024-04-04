@@ -341,7 +341,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     }
   }
 
-  _getSelectedBounds(layerGlyph, pointIndices, componentIndices) {
+  _getSelectedBounds(layerGlyphController, layerGlyph, pointIndices, componentIndices) {
     const selectionRects = [];
     if (pointIndices.length) {
       const selRect = rectFromPoints(
@@ -351,51 +351,14 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
         selectionRects.push(selRect);
       }
     }
-    // the following does not work, yet
-    // because I am not able to get the bounds of the components
-    /*     console.log("layerGlyph", layerGlyph);
-    console.log("layerGlyph.name", layerGlyph.name);
-    const getGlyphFunc = (glyphName) => this.fontController.getGlyph(glyphName);
+
     for (const componentIndex of componentIndices) {
-      const compo = layerGlyph.components[componentIndex];
-      console.log("compo", compo);
-      const decomposed = {};
-      decomposed[componentIndex] = await decomposeComponents(
-        layerGlyph.components,
-        componentIndices,
-        layerGlyph.locations,
-        getGlyphFunc
-      );
-      console.log("decomposed", decomposed);
-
-    } */
-
-    //NOTE see: decomposeSelectedComponents
-    //const componentController = glyph.components[componentIndex];
-
-    /*     // Get the decomposed path/components for each editing layer
-    const getGlyphFunc = (glyphName) => this.fontController.getGlyph(glyphName);
-    const decomposed = {};)
-    decomposed[layerName] = await decomposeComponents(
-      layerGlyph.components,
-      componentIndices,
-      layerLocations[layerName],
-      getGlyphFunc
-    ); */
-
-    /*     for (const componentIndex of componentIndices) {
-      const component = glyphController.components[componentIndex];
-      console.log("component", component);
-      console.log("component.controlBounds", component.controlBounds);
-
+      const component = layerGlyphController.components[componentIndex];
       if (!component || !component.controlBounds) {
         continue;
       }
-      selectionRects.push(component.bounds);
+      selectionRects.push(component.controlBounds);
     }
-    if (!selectionRects.length && glyphController?.controlBounds) {
-      selectionRects.push(glyphController.bounds);
-    } */
 
     if (selectionRects.length) {
       const selectionBounds = unionRect(...selectionRects);
@@ -403,8 +366,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     }
   }
 
-  _getPinPoint(layerGlyph, pointIndices, componentIndices, originX, originY) {
-    let bounds = this._getSelectedBounds(layerGlyph, pointIndices, componentIndices);
+  _getPinPoint(
+    layerGlyphController,
+    layerGlyph,
+    pointIndices,
+    componentIndices,
+    originX,
+    originY
+  ) {
+    let bounds = this._getSelectedBounds(
+      layerGlyphController,
+      layerGlyph,
+      pointIndices,
+      componentIndices
+    );
     if (!bounds) {
       bounds = {
         xMin: 0,
@@ -507,10 +482,8 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       );
 
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-        const layerGlyphController = staticGlyphControllers[layerName];
-        console.log(layerName, layerGlyphController);
-
         const pinPoint = this._getPinPoint(
+          staticGlyphControllers[layerName],
           layerGlyph,
           pointIndices,
           componentIndices,
