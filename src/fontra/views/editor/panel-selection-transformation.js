@@ -1,15 +1,7 @@
 import { decomposeComponents } from "../core/glyph-controller.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
-import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
-import {
-  filterPathByPointIndices,
-  getSelectionByContour,
-  makeExpandedIndexSet,
-  rotatePoint,
-  scalePoint,
-  skewPoint,
-} from "/core/path-functions.js";
+import { getSelectionByContour, makeExpandedIndexSet } from "/core/path-functions.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { Transform } from "/core/transform.js";
 import {
@@ -157,7 +149,12 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     let button_move = html.createDomElement("icon-button", {
       src: "/tabler-icons/arrow-move-right.svg",
-      onclick: (event) => this._moveLayerGlyph(),
+      onclick: (event) =>
+        this._transformLayerGlyph({
+          translateX: this.moveX,
+          translateY: this.moveY,
+          undoName: "move",
+        }),
       class: "ui-form-icon ui-form-icon-button",
       /*       "data-tooltip": "Move",
       "data-tooltipposition": "left", */
@@ -191,69 +188,14 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       },
     });
 
-    let button_rotate = html.createDomElement("icon-button", {
-      src: "/tabler-icons/rotate-clockwise.svg",
-      onclick: (event) => this._rotateLayerGlyph(),
-      class: "ui-form-icon ui-form-icon-button",
-      /*       "data-tooltip": "Rotate",
-      "data-tooltipposition": "left", */
-    });
-
-    formContents.push({
-      type: "edit-number",
-      key: '["selectionTransformationRotate"]',
-      label: button_rotate,
-      value: this.rotation,
-      getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-        return fieldItem.value;
-      },
-      setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-        this.rotation = value;
-        return value;
-      },
-    });
-
-    let button_skew = html.createDomElement("icon-button", {
-      src: "/tabler-icons/angle.svg",
-      onclick: (event) => this._skewLayerGlyph(),
-      class: "ui-form-icon ui-form-icon-button",
-      /*       "data-tooltip": "Slant",
-      "data-tooltipposition": "left", */
-    });
-
-    formContents.push({
-      type: "edit-number-x-y",
-      key: '["selectionTransformationSkew"]',
-      label: button_skew,
-      fieldX: {
-        key: '["selectionTransformationSkewX"]',
-        id: "selection-transformation-skewX",
-        value: this.skewX,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.skewX = value;
-          return value;
-        },
-      },
-      fieldY: {
-        key: '["selectionTransformationSkewY"]',
-        id: "selection-transformation-skewY",
-        value: this.skewY,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.skewY = value;
-          return value;
-        },
-      },
-    });
-
     let button_scale = html.createDomElement("icon-button", {
       src: "/tabler-icons/dimensions.svg",
-      onclick: (event) => this._scaleLayerGlyph(),
+      onclick: (event) =>
+        this._transformLayerGlyph({
+          scaleX: this.scaleFactorX,
+          scaleY: this.scaleY ? this.scaleFactorY : this.scaleFactorX,
+          undoName: "scale",
+        }),
       class: "ui-form-icon ui-form-icon-button",
       /*       "data-tooltip": "Scale",
       "data-tooltipposition": "left", */
@@ -291,6 +233,75 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       },
     });
 
+    let button_rotate = html.createDomElement("icon-button", {
+      src: "/tabler-icons/rotate-clockwise.svg",
+      onclick: (event) =>
+        this._transformLayerGlyph({
+          rotation: this.rotation,
+          undoName: "rotate",
+        }),
+      class: "ui-form-icon ui-form-icon-button",
+      /*       "data-tooltip": "Rotate",
+      "data-tooltipposition": "left", */
+    });
+
+    formContents.push({
+      type: "edit-number",
+      key: '["selectionTransformationRotate"]',
+      label: button_rotate,
+      value: this.rotation,
+      getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+        return fieldItem.value;
+      },
+      setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+        this.rotation = value;
+        return value;
+      },
+    });
+
+    let button_skew = html.createDomElement("icon-button", {
+      src: "/tabler-icons/angle.svg",
+      onclick: (event) =>
+        this._transformLayerGlyph({
+          skewX: this.skewX,
+          skewY: this.skewY,
+          undoName: "slant",
+        }),
+      class: "ui-form-icon ui-form-icon-button",
+      /*       "data-tooltip": "Slant",
+      "data-tooltipposition": "left", */
+    });
+
+    formContents.push({
+      type: "edit-number-x-y",
+      key: '["selectionTransformationSkew"]',
+      label: button_skew,
+      fieldX: {
+        key: '["selectionTransformationSkewX"]',
+        id: "selection-transformation-skewX",
+        value: this.skewX,
+        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+          return fieldItem.value;
+        },
+        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+          this.skewX = value;
+          return value;
+        },
+      },
+      fieldY: {
+        key: '["selectionTransformationSkewY"]',
+        id: "selection-transformation-skewY",
+        value: this.skewY,
+        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
+          return fieldItem.value;
+        },
+        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
+          this.skewY = value;
+          return value;
+        },
+      },
+    });
+
     formContents.push({ type: "divider" });
 
     formContents.push({
@@ -300,10 +311,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
         html.createDomElement("icon-button", {
           src: "/tabler-icons/flip-vertical.svg",
           onclick: (event) =>
-            this._scaleLayerGlyph({
-              scaleFactorX: -1,
-              scaleFactorY: 1,
-              undoName: "Flip vertically",
+            this._transformLayerGlyph({
+              scaleX: -1,
+              scaleY: 1,
+              undoName: "flip vertically",
             }),
           /* "data-tooltip": "Flip vertically",
           "data-tooltipposition": "left", */
@@ -311,10 +322,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
         html.createDomElement("icon-button", {
           src: "/tabler-icons/flip-horizontal.svg",
           onclick: (event) =>
-            this._scaleLayerGlyph({
-              scaleFactorX: 1,
-              scaleFactorY: -1,
-              undoName: "Flip horizontally",
+            this._transformLayerGlyph({
+              scaleX: 1,
+              scaleY: -1,
+              undoName: "flip horizontally",
             }),
           /* "data-tooltip": "Flip horizontally",
           "data-tooltipposition": "left", */
@@ -461,102 +472,24 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     return Array.from(newPointIndices).sort((a, b) => a - b);
   }
 
-  async _moveLayerGlyph({
-    moveX = this.moveX,
-    moveY = this.moveY,
-    undoName = "move",
-  } = {}) {
-    let { pointIndices, componentIndices } = this._getSelection();
-    if (!pointIndices || pointIndices.length <= 1) {
-      return;
-    }
-
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-        glyph.layers
-      );
-
-      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-        pointIndices = this._getPointIndicesInclOffCurves(
-          layerGlyph.path,
-          pointIndices
-        );
-
-        for (const [i, index] of enumerate(
-          range(0, layerGlyph.path.coordinates.length, 2)
-        )) {
-          if (pointIndices.includes(i)) {
-            let point = layerGlyph.path.getPoint(i);
-            layerGlyph.path.coordinates[index] = point.x + moveX;
-          }
-        }
-
-        for (const [i, index] of enumerate(
-          range(1, layerGlyph.path.coordinates.length, 2)
-        )) {
-          if (pointIndices.includes(i)) {
-            let point = layerGlyph.path.getPoint(i);
-            layerGlyph.path.coordinates[index] = point.y + moveY;
-          }
-        }
-      }
-      return undoName;
-    });
-  }
-
-  async _rotateLayerGlyph({
+  async _transformLayerGlyph({
     originX = this.originX,
     originY = this.originY,
-    angle = this.rotation * -1,
-    undoName = "rotation",
+    translateX = 0,
+    translateY = 0,
+    rotation = 0,
+    scaleX = 1,
+    scaleY = 1,
+    skewX = 0,
+    skewY = 0,
+    tCenterX = 0,
+    tCenterY = 0,
+    undoName = "transformation",
   } = {}) {
     let { pointIndices, componentIndices } = this._getSelection();
-    if (!pointIndices || pointIndices.length <= 1) {
+    if ((!pointIndices || pointIndices.length < 1) && !componentIndices.length) {
       return;
     }
-
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-        glyph.layers
-      );
-
-      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-        const pinPoint = this._getPinPoint(
-          layerGlyph,
-          pointIndices,
-          componentIndices,
-          originX,
-          originY
-        );
-        pointIndices = this._getPointIndicesInclOffCurves(
-          layerGlyph.path,
-          pointIndices
-        );
-
-        for (const index of pointIndices) {
-          let point = layerGlyph.path.getPoint(index);
-          let pointRotated = rotatePoint(pinPoint, point, angle);
-          layerGlyph.path.coordinates[index * 2] = pointRotated.x;
-          layerGlyph.path.coordinates[index * 2 + 1] = pointRotated.y;
-        }
-      }
-      return undoName;
-    });
-  }
-
-  async _skewLayerGlyph({
-    originX = this.originX,
-    originY = this.originY,
-    skewX = this.skewX,
-    skewY = this.skewY,
-    undoName = "slant",
-  } = {}) {
-    let { pointIndices, componentIndices } = this._getSelection();
-    if (!pointIndices || pointIndices.length <= 1) {
-      return;
-    }
-    /*     const thetaX = skewX * Math.PI / 180;
-    const thetaY = skewY * Math.PI / 180; */
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
@@ -577,69 +510,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
         for (const index of pointIndices) {
           let point = layerGlyph.path.getPoint(index);
-          let pointX = skewPoint(pinPoint, point, skewX);
-          let pointY = skewPoint(pinPoint, point, skewY);
-          layerGlyph.path.coordinates[index * 2] = pointX.x;
-          layerGlyph.path.coordinates[index * 2 + 1] = pointY.y;
-          /*        let point = layerGlyph.path.getPoint(index);
-          let t = new Transform()
-          t = t.skew(thetaX, thetaY)
-          let pointSkewed = t.transformPointObject(point)
-          layerGlyph.path.coordinates[index * 2] = pointSkewed.x;
-          layerGlyph.path.coordinates[index * 2 + 1] = pointSkewed.y; */
-        }
-      }
-      return undoName;
-    });
-  }
-
-  async _scaleLayerGlyph({
-    originX = this.originX,
-    originY = this.originY,
-    scaleFactorX = this.scaleFactorX,
-    scaleFactorY = this.scaleY ? this.scaleFactorY : this.scaleFactorX,
-    undoName = "scale",
-  } = {}) {
-    let { pointIndices, componentIndices } = this._getSelection();
-    /*     const glyphController =
-      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
- */
-    if ((!pointIndices || pointIndices.length <= 1) && !componentIndices.length) {
-      return;
-    }
-
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-        glyph.layers
-      );
-      /*       //const componentController = glyph.components[0];
-      console.log("componentController", componentController);
-      console.log("glyph.layers", glyph.layers);
-      console.log("glyph", glyph); */
-      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-        const pinPoint = this._getPinPoint(
-          layerGlyph,
-          pointIndices,
-          componentIndices,
-          originX,
-          originY
-        );
-
-        pointIndices = this._getPointIndicesInclOffCurves(
-          layerGlyph.path,
-          pointIndices
-        );
-
-        for (const index of pointIndices) {
-          let point = layerGlyph.path.getPoint(index);
-          let pointScaledX = scalePoint(pinPoint, point, scaleFactorX);
-          let pointScaledY = scalePoint(pinPoint, point, scaleFactorY);
-          layerGlyph.path.coordinates[index * 2] = pointScaledX.x;
-          layerGlyph.path.coordinates[index * 2 + 1] = pointScaledY.y;
+          console.log("point", point);
+          let t = new Transform();
+          t = t.translate(pinPoint.x + translateX, pinPoint.y + translateY);
+          t = t.scale(scaleX, scaleY);
+          t = t.rotate((rotation * Math.PI) / 180);
+          t = t.skew((skewX * Math.PI) / 180, (skewY * Math.PI) / 180);
+          t = t.translate(-pinPoint.x, -pinPoint.y);
+          let pointTransformed = t.transformPointObject(point);
+          console.log("pointTransformed", pointTransformed);
+          layerGlyph.path.coordinates[index * 2] = pointTransformed.x;
+          layerGlyph.path.coordinates[index * 2 + 1] = pointTransformed.y;
         }
 
-        /*         // Update the components
-        for (const index of componentIndices) {
+        /*         for (const index of componentIndices) {
           compo.transformation = {
             translateX: compo.transformation.translateX,
             translateY: compo.transformation.translateY,
