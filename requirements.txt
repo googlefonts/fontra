@@ -1,6 +1,6 @@
 aiohttp==3.9.3
 cattrs==23.2.3
-fonttools[ufo,unicode]==4.50.0
+fonttools[ufo,unicode]==4.51.0
 glyphsLib==6.7.0
 watchfiles==0.21.0
 pyyaml==6.0.1
