@@ -139,11 +139,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     let button_move = html.createDomElement("icon-button", {
       src: "/tabler-icons/arrow-move-right.svg",
       onclick: (event) =>
-        this._transformLayerGlyph({
-          translateX: this.moveX,
-          translateY: this.moveY,
-          undoName: "move",
-        }),
+        this._transformLayerGlyph(
+          {
+            translateX: this.moveX,
+            translateY: this.moveY,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            skewX: 0,
+            skewY: 0,
+            tCenterX: 0,
+            tCenterY: 0,
+          },
+          "move"
+        ),
       class: "ui-form-icon ui-form-icon-button",
       /*       "data-tooltip": "Move",
       "data-tooltipposition": "left", */
@@ -180,11 +189,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     let button_scale = html.createDomElement("icon-button", {
       src: "/tabler-icons/dimensions.svg",
       onclick: (event) =>
-        this._transformLayerGlyph({
-          scaleX: this.scaleFactorX,
-          scaleY: this.scaleY ? this.scaleFactorY : this.scaleFactorX,
-          undoName: "scale",
-        }),
+        this._transformLayerGlyph(
+          {
+            translateX: 0,
+            translateY: 0,
+            rotation: 0,
+            scaleX: this.scaleFactorX,
+            scaleY: this.scaleY ? this.scaleFactorY : this.scaleFactorX,
+            skewX: 0,
+            skewY: 0,
+            tCenterX: 0,
+            tCenterY: 0,
+          },
+          "scale"
+        ),
       class: "ui-form-icon ui-form-icon-button",
       /*       "data-tooltip": "Scale",
       "data-tooltipposition": "left", */
@@ -225,10 +243,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     let button_rotate = html.createDomElement("icon-button", {
       src: "/tabler-icons/rotate.svg",
       onclick: (event) =>
-        this._transformLayerGlyph({
-          rotation: this.rotation,
-          undoName: "rotate",
-        }),
+        this._transformLayerGlyph(
+          {
+            translateX: 0,
+            translateY: 0,
+            rotation: this.rotation,
+            scaleX: 1,
+            scaleY: 1,
+            skewX: 0,
+            skewY: 0,
+            tCenterX: 0,
+            tCenterY: 0,
+          },
+          "rotate"
+        ),
       class: "ui-form-icon ui-form-icon-button",
       /*       "data-tooltip": "Rotate",
       "data-tooltipposition": "left", */
@@ -251,11 +279,20 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     let button_skew = html.createDomElement("icon-button", {
       src: "/tabler-icons/angle.svg",
       onclick: (event) =>
-        this._transformLayerGlyph({
-          skewX: this.skewX,
-          skewY: this.skewY,
-          undoName: "slant",
-        }),
+        this._transformLayerGlyph(
+          {
+            translateX: 0,
+            translateY: 0,
+            rotation: 0,
+            scaleX: 1,
+            scaleY: 1,
+            skewX: this.skewX,
+            skewY: this.skewY,
+            tCenterX: 0,
+            tCenterY: 0,
+          },
+          "slant"
+        ),
       class: "ui-form-icon ui-form-icon-button",
       /*       "data-tooltip": "Slant",
       "data-tooltipposition": "left", */
@@ -300,22 +337,40 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
         html.createDomElement("icon-button", {
           src: "/tabler-icons/flip-vertical.svg",
           onclick: (event) =>
-            this._transformLayerGlyph({
-              scaleX: -1,
-              scaleY: 1,
-              undoName: "flip vertically",
-            }),
+            this._transformLayerGlyph(
+              {
+                translateX: 0,
+                translateY: 0,
+                rotation: 0,
+                scaleX: -1,
+                scaleY: 1,
+                skewX: 0,
+                skewY: 0,
+                tCenterX: 0,
+                tCenterY: 0,
+              },
+              "flip vertically"
+            ),
           /* "data-tooltip": "Flip vertically",
           "data-tooltipposition": "left", */
         }),
         html.createDomElement("icon-button", {
           src: "/tabler-icons/flip-horizontal.svg",
           onclick: (event) =>
-            this._transformLayerGlyph({
-              scaleX: 1,
-              scaleY: -1,
-              undoName: "flip horizontally",
-            }),
+            this._transformLayerGlyph(
+              {
+                translateX: 0,
+                translateY: 0,
+                rotation: 0,
+                scaleX: 1,
+                scaleY: -1,
+                skewX: 0,
+                skewY: 0,
+                tCenterX: 0,
+                tCenterY: 0,
+              },
+              "flip horizontally"
+            ),
           /* "data-tooltip": "Flip horizontally",
           "data-tooltipposition": "left", */
         }),
@@ -436,24 +491,12 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     return Array.from(newPointIndices).sort((a, b) => a - b);
   }
 
-  async _transformLayerGlyph({
-    originX = this.originX,
-    originY = this.originY,
-    translateX = 0,
-    translateY = 0,
-    rotation = 0,
-    scaleX = 1,
-    scaleY = 1,
-    skewX = 0,
-    skewY = 0,
-    tCenterX = 0,
-    tCenterY = 0,
-    undoName = "transformation",
-  } = {}) {
+  async _transformLayerGlyph(transformation, undoLabel) {
     let { pointIndices, componentIndices } = this._getSelection();
     if ((!pointIndices || pointIndices.length < 1) && !componentIndices.length) {
       return;
     }
+    const otherT = makeAffineTransform(transformation);
 
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
@@ -484,16 +527,14 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           layerGlyph,
           pointIndices,
           componentIndices,
-          originX,
-          originY
+          this.originX,
+          this.originY
         );
         pointIndices = this._getPointIndicesInclOffCurves(layerGlyph, pointIndices);
 
         let t = new Transform();
-        t = t.translate(pinPoint.x + translateX, pinPoint.y + translateY);
-        t = t.scale(scaleX, scaleY);
-        t = t.rotate((rotation * Math.PI) / 180);
-        t = t.skew((skewX * Math.PI) / 180, (skewY * Math.PI) / 180);
+        t = t.translate(pinPoint.x, pinPoint.y);
+        t = t.transform(otherT);
         t = t.translate(-pinPoint.x, -pinPoint.y);
 
         // transform contour points
@@ -512,7 +553,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           compo.transformation = decomposeAffineTransform(newCompoT);
         }
       }
-      return undoName;
+      return undoLabel;
     });
   }
 
