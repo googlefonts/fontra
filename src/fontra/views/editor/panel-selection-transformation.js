@@ -1,3 +1,9 @@
+import {
+  ChangeCollector,
+  applyChange,
+  consolidateChanges,
+  hasChange,
+} from "../core/changes.js";
 import { decomposeAffineTransform } from "../core/glyph-controller.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import SelectionInfoPanel from "./panel-selection-info.js";
@@ -450,33 +456,56 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       }
     }
 
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-        glyph.layers
-      );
+    await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
+      const layerInfo = Object.entries(
+        this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
+      ).map(([layerName, layerGlyph]) => {
+        const behaviorFactory = new EditBehaviorFactory(
+          layerGlyph,
+          this.sceneController.selection,
+          this.sceneController.experimentalFeatures.scalingEditBehavior
+        );
+        return {
+          layerName,
+          layerGlyph,
+          changePath: ["layers", layerName, "glyph"],
+          layerGlyphController: staticGlyphControllers[layerName],
+          editBehavior: behaviorFactory.getBehavior("default"),
+        };
+      });
 
-      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+      const editChanges = [];
+      const rollbackChanges = [];
+      for (const {
+        layerGlyph,
+        changePath,
+        editBehavior,
+        layerGlyphController,
+      } of layerInfo) {
         const pinPoint = this._getPinPoint(
-          staticGlyphControllers[layerName],
+          layerGlyphController,
           layerGlyph,
           pointIndices,
           componentIndices,
           this.originX,
           this.originY
         );
-        pointIndices = this._getPointIndicesInclOffCurves(layerGlyph, pointIndices);
 
         let t = new Transform();
         t = t.translate(pinPoint.x, pinPoint.y);
         t = t.transform(transformation);
         t = t.translate(-pinPoint.x, -pinPoint.y);
 
-        // transform contour points
-        for (const index of pointIndices) {
-          let point = layerGlyph.path.getPoint(index);
-          let pointTransformed = t.transformPointObject(point);
-          layerGlyph.path.coordinates[index * 2] = pointTransformed.x;
-          layerGlyph.path.coordinates[index * 2 + 1] = pointTransformed.y;
+        if (pointIndices.length) {
+          // only do this if there are points selected
+          const pointTransformFunction = t.transformPointObject.bind(t);
+          const editChange =
+            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+          applyChange(layerGlyph, editChange);
+          editChanges.push(consolidateChanges(editChange, changePath));
+          rollbackChanges.push(
+            consolidateChanges(editBehavior.rollbackChange, changePath)
+          );
         }
 
         // transform components
@@ -487,7 +516,17 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           compo.transformation = decomposeAffineTransform(newCompoT);
         }
       }
-      return undoLabel;
+
+      let changes = ChangeCollector.fromChanges(
+        consolidateChanges(editChanges),
+        consolidateChanges(rollbackChanges)
+      );
+
+      return {
+        changes: changes,
+        undoLabel: undoLabel,
+        broadcast: true,
+      };
     });
   }
 
