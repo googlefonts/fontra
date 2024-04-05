@@ -42,8 +42,6 @@ export default class SelectionTransformationPanel extends Panel {
     this.transformParameters = {
       scaleX: 100,
       scaleY: undefined,
-      scaleFactorX: 1,
-      scaleFactorY: 1,
       rotation: 0,
       moveX: 0,
       moveY: 0,
@@ -157,10 +155,10 @@ export default class SelectionTransformationPanel extends Panel {
       onclick: (event) =>
         this._transformLayerGlyph(
           new Transform().scale(
-            this.transformParameters.scaleFactorX,
-            this.transformParameters.scaleY
-              ? this.transformParameters.scaleFactorY
-              : this.transformParameters.scaleFactorX
+            this.transformParameters.scaleX / 100,
+            (this.transformParameters.scaleY
+              ? this.transformParameters.scaleY
+              : this.transformParameters.scaleX) / 100
           ),
           "scale"
         ),
