@@ -392,7 +392,6 @@ export default class SelectionTransformationPanel extends Panel {
         );
         return {
           layerName,
-          layerGlyph,
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
           editBehavior: behaviorFactory.getBehavior("default"),
@@ -401,12 +400,8 @@ export default class SelectionTransformationPanel extends Panel {
 
       const editChanges = [];
       const rollbackChanges = [];
-      for (const {
-        layerGlyph,
-        changePath,
-        editBehavior,
-        layerGlyphController,
-      } of layerInfo) {
+      for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
+        const layerGlyph = layerGlyphController.instance;
         const pinPoint = this._getPinPoint(
           layerGlyphController,
           pointIndices,
