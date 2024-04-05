@@ -375,14 +375,6 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       pointIndices,
       componentIndices
     );
-    if (!bounds) {
-      bounds = {
-        xMin: 0,
-        xMax: layerGlyph.xAdvance,
-        yMin: 0,
-        yMax: layerGlyph.yAdvance ? layerGlyph.yAdvance : 0,
-      };
-    }
     const width = bounds.xMax - bounds.xMin;
     const height = bounds.yMax - bounds.yMin;
 
