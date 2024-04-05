@@ -111,7 +111,6 @@ export default class SelectionTransformationPanel extends Panel {
 
     formContents.push({
       type: "edit-number-x-y",
-      key: "selectionTransformationOrigin?????",
       label: "Origin",
       fieldX: {
         key: "originXButton",
@@ -142,7 +141,6 @@ export default class SelectionTransformationPanel extends Panel {
 
     formContents.push({
       type: "edit-number-x-y",
-      key: "selectionTransformationMove????",
       label: button_move,
       fieldX: {
         key: "moveX",
@@ -173,7 +171,6 @@ export default class SelectionTransformationPanel extends Panel {
 
     formContents.push({
       type: "edit-number-x-y",
-      key: "selectionTransformationScale????",
       label: button_scale,
       fieldX: {
         key: "scaleX",
