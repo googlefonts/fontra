@@ -140,17 +140,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       src: "/tabler-icons/arrow-move-right.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
-          {
-            translateX: this.moveX,
-            translateY: this.moveY,
-            rotation: 0,
-            scaleX: 1,
-            scaleY: 1,
-            skewX: 0,
-            skewY: 0,
-            tCenterX: 0,
-            tCenterY: 0,
-          },
+          new Transform().translate(this.moveX, this.moveY),
           "move"
         ),
       class: "ui-form-icon ui-form-icon-button",
@@ -190,17 +180,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       src: "/tabler-icons/dimensions.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
-          {
-            translateX: 0,
-            translateY: 0,
-            rotation: 0,
-            scaleX: this.scaleFactorX,
-            scaleY: this.scaleY ? this.scaleFactorY : this.scaleFactorX,
-            skewX: 0,
-            skewY: 0,
-            tCenterX: 0,
-            tCenterY: 0,
-          },
+          new Transform().scale(
+            this.scaleFactorX,
+            this.scaleY ? this.scaleFactorY : this.scaleFactorX
+          ),
           "scale"
         ),
       class: "ui-form-icon ui-form-icon-button",
@@ -244,17 +227,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       src: "/tabler-icons/rotate.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
-          {
-            translateX: 0,
-            translateY: 0,
-            rotation: this.rotation,
-            scaleX: 1,
-            scaleY: 1,
-            skewX: 0,
-            skewY: 0,
-            tCenterX: 0,
-            tCenterY: 0,
-          },
+          new Transform().rotate((this.rotation * Math.PI) / 180),
           "rotate"
         ),
       class: "ui-form-icon ui-form-icon-button",
@@ -280,17 +253,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       src: "/tabler-icons/angle.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
-          {
-            translateX: 0,
-            translateY: 0,
-            rotation: 0,
-            scaleX: 1,
-            scaleY: 1,
-            skewX: this.skewX,
-            skewY: this.skewY,
-            tCenterX: 0,
-            tCenterY: 0,
-          },
+          new Transform().skew(
+            (this.skewX * Math.PI) / 180,
+            (this.skewY * Math.PI) / 180
+          ),
           "slant"
         ),
       class: "ui-form-icon ui-form-icon-button",
@@ -337,20 +303,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
         html.createDomElement("icon-button", {
           src: "/tabler-icons/flip-vertical.svg",
           onclick: (event) =>
-            this._transformLayerGlyph(
-              {
-                translateX: 0,
-                translateY: 0,
-                rotation: 0,
-                scaleX: -1,
-                scaleY: 1,
-                skewX: 0,
-                skewY: 0,
-                tCenterX: 0,
-                tCenterY: 0,
-              },
-              "flip vertically"
-            ),
+            this._transformLayerGlyph(new Transform().scale(-1, 1), "flip vertically"),
           /* "data-tooltip": "Flip vertically",
           "data-tooltipposition": "left", */
         }),
@@ -358,17 +311,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           src: "/tabler-icons/flip-horizontal.svg",
           onclick: (event) =>
             this._transformLayerGlyph(
-              {
-                translateX: 0,
-                translateY: 0,
-                rotation: 0,
-                scaleX: 1,
-                scaleY: -1,
-                skewX: 0,
-                skewY: 0,
-                tCenterX: 0,
-                tCenterY: 0,
-              },
+              new Transform().scale(1, -1),
               "flip horizontally"
             ),
           /* "data-tooltip": "Flip horizontally",
@@ -496,7 +439,6 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     if ((!pointIndices || pointIndices.length < 1) && !componentIndices.length) {
       return;
     }
-    const otherT = makeAffineTransform(transformation);
 
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
@@ -534,7 +476,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
         let t = new Transform();
         t = t.translate(pinPoint.x, pinPoint.y);
-        t = t.transform(otherT);
+        t = t.transform(transformation);
         t = t.translate(-pinPoint.x, -pinPoint.y);
 
         // transform contour points
