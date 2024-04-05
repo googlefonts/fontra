@@ -280,11 +280,13 @@ export default class SelectionTransformationPanel extends Panel {
     };
   }
 
-  _getSelectedBounds(layerGlyphController, layerGlyph, pointIndices, componentIndices) {
+  _getSelectedBounds(layerGlyphController, pointIndices, componentIndices) {
     const selectionRects = [];
     if (pointIndices.length) {
       const selRect = rectFromPoints(
-        pointIndices.map((i) => layerGlyph.path.getPoint(i)).filter((point) => !!point)
+        pointIndices
+          .map((i) => layerGlyphController.instance.path.getPoint(i))
+          .filter((point) => !!point)
       );
       if (selRect) {
         selectionRects.push(selRect);
@@ -305,17 +307,9 @@ export default class SelectionTransformationPanel extends Panel {
     }
   }
 
-  _getPinPoint(
-    layerGlyphController,
-    layerGlyph,
-    pointIndices,
-    componentIndices,
-    originX,
-    originY
-  ) {
+  _getPinPoint(layerGlyphController, pointIndices, componentIndices, originX, originY) {
     let bounds = this._getSelectedBounds(
       layerGlyphController,
-      layerGlyph,
       pointIndices,
       componentIndices
     );
@@ -405,7 +399,6 @@ export default class SelectionTransformationPanel extends Panel {
       } of layerInfo) {
         const pinPoint = this._getPinPoint(
           layerGlyphController,
-          layerGlyph,
           pointIndices,
           componentIndices,
           this.transformParameters.originX,
