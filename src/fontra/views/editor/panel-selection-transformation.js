@@ -87,6 +87,7 @@ export default class SelectionTransformationPanel extends Panel {
           "value": key,
           "name": "origin",
           "v-model": "role",
+          "class": "ui-form-radio-button",
           "checked":
             keyX === this.transformParameters.originX &&
             keyY === this.transformParameters.originY
@@ -272,6 +273,21 @@ export default class SelectionTransformationPanel extends Panel {
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
       this.transformParameters[fieldItem.key] = value;
+      if (fieldItem.key === "originXButton" || fieldItem.key === "originYButton") {
+        this.transformParameters.originX = value;
+        this.transformParameters.originY = value;
+
+        const iconRadioButtons = this.infoForm.querySelectorAll(
+          ".ui-form-radio-button"
+        );
+        iconRadioButtons.forEach((radioButton) => {
+          console.log("radioButton: ", radioButton);
+          radioButton.checked = false;
+        });
+        // because the radio buttons are not updating
+        // I do the following for now:
+        this.update();
+      }
     };
   }
 
