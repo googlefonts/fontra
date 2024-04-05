@@ -6,29 +6,16 @@ import {
 } from "../core/changes.js";
 import { decomposeAffineTransform } from "../core/glyph-controller.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
-import SelectionInfoPanel from "./panel-selection-info.js";
+import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { rectFromPoints, unionRect } from "/core/rectangle.js";
 import { Transform } from "/core/transform.js";
-import { enumerate, makeAffineTransform } from "/core/utils.js";
+import { enumerate, makeAffineTransform, parseSelection } from "/core/utils.js";
+import { Form } from "/web-components/ui-form.js";
 
-export default class SelectionTransformationPanel extends SelectionInfoPanel {
+export default class SelectionTransformationPanel extends Panel {
   identifier = "selection-transformation";
   iconPath = "/tabler-icons/shape.svg";
-
-  scaleX = 100;
-  scaleY = undefined;
-  scaleFactorX = 1;
-  scaleFactorY = 1;
-  rotation = 0;
-  moveX = 0;
-  moveY = 0;
-  originX = "center";
-  originY = "middle";
-  originXButton = undefined;
-  originYButton = undefined;
-  skewX = 0;
-  skewY = 0;
 
   static styles = `
     .selection-transformation {
@@ -45,6 +32,30 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
   `;
 
+  constructor(editorController) {
+    super(editorController);
+    this.infoForm = new Form();
+    this.contentElement.appendChild(this.infoForm);
+    this.fontController = this.editorController.fontController;
+    this.sceneController = this.editorController.sceneController;
+
+    this.transformParameters = {
+      scaleX: 100,
+      scaleY: undefined,
+      scaleFactorX: 1,
+      scaleFactorY: 1,
+      rotation: 0,
+      moveX: 0,
+      moveY: 0,
+      originX: "center",
+      originY: "middle",
+      originXButton: undefined,
+      originYButton: undefined,
+      skewX: 0,
+      skewY: 0,
+    };
+  }
+
   getContentElement() {
     return html.div(
       {
@@ -55,26 +66,12 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
   }
 
   async update(senderInfo) {
-    if (
-      senderInfo?.senderID === this &&
-      senderInfo?.fieldKeyPath?.length !== 3 &&
-      senderInfo?.fieldKeyPath?.[0] !== "component" &&
-      senderInfo?.fieldKeyPath?.[2] !== "name"
-    ) {
-      return;
-    }
     if (!this.infoForm.contentElement.offsetParent) {
       // If the info form is not visible, do nothing
       return;
     }
 
     await this.fontController.ensureInitialized;
-
-    const glyphName = this.sceneController.sceneSettings.selectedGlyphName;
-    const glyphController = await this.sceneController.sceneModel.getGlyphInstance(
-      glyphName,
-      this.sceneController.sceneSettings.editLayerName
-    );
 
     const formContents = [];
 
@@ -92,7 +89,11 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           "value": key,
           "name": "origin",
           "v-model": "role",
-          "checked": keyX === this.originX && keyY === this.originY ? "checked" : "",
+          "checked":
+            keyX === this.transformParameters.originX &&
+            keyY === this.transformParameters.originY
+              ? "checked"
+              : "",
           "onclick": (event) => this._changeOrigin(keyX, keyY),
           "data-tooltip": `Origin ${keyY} ${keyX}`,
           "data-tooltipposition": "bottom",
@@ -110,33 +111,15 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     formContents.push({
       type: "edit-number-x-y",
-      key: '["selectionTransformationOrigin"]',
+      key: "selectionTransformationOrigin?????",
       label: "Origin",
       fieldX: {
-        key: '["selectionTransformationOriginX"]',
-        value: this.originXButton,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.originX = value;
-          this.originXButton = value;
-          this.update();
-          return value;
-        },
+        key: "originXButton",
+        value: this.transformParameters.originXButton,
       },
       fieldY: {
-        key: '["selectionTransformationOriginY"]',
-        value: this.originYButton,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.originY = value;
-          this.originYButton = value;
-          this.update();
-          return value;
-        },
+        key: "originYButton",
+        value: this.transformParameters.originYButton,
       },
     });
 
@@ -146,7 +129,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       src: "/tabler-icons/arrow-move-right.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
-          new Transform().translate(this.moveX, this.moveY),
+          new Transform().translate(
+            this.transformParameters.moveX,
+            this.transformParameters.moveY
+          ),
           "move"
         ),
       class: "ui-form-icon ui-form-icon-button",
@@ -156,29 +142,15 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     formContents.push({
       type: "edit-number-x-y",
-      key: '["selectionTransformationMove"]',
+      key: "selectionTransformationMove????",
       label: button_move,
       fieldX: {
-        key: '["selectionTransformationMoveX"]',
-        value: this.moveX,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.moveX = value;
-          return value;
-        },
+        key: "moveX",
+        value: this.transformParameters.moveX,
       },
       fieldY: {
-        key: '["selectionTransformationMoveY"]',
-        value: this.moveY,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.moveY = value;
-          return value;
-        },
+        key: "moveY",
+        value: this.transformParameters.moveY,
       },
     });
 
@@ -187,8 +159,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       onclick: (event) =>
         this._transformLayerGlyph(
           new Transform().scale(
-            this.scaleFactorX,
-            this.scaleY ? this.scaleFactorY : this.scaleFactorX
+            this.transformParameters.scaleFactorX,
+            this.transformParameters.scaleY
+              ? this.transformParameters.scaleFactorY
+              : this.transformParameters.scaleFactorX
           ),
           "scale"
         ),
@@ -199,33 +173,17 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     formContents.push({
       type: "edit-number-x-y",
-      key: '["selectionTransformationScale"]',
+      key: "selectionTransformationScale????",
       label: button_scale,
       fieldX: {
-        key: '["selectionTransformationScaleX"]',
+        key: "scaleX",
         id: "selection-transformation-scaleX",
-        value: this.scaleX,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.scaleX = value;
-          this.scaleFactorX = value / 100;
-          return value;
-        },
+        value: this.transformParameters.scaleX,
       },
       fieldY: {
-        key: '["selectionTransformationScaleY"]',
+        key: "scaleY",
         id: "selection-transformation-scaleY",
-        value: this.scaleY,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.scaleY = value;
-          this.scaleFactorY = value / 100;
-          return value;
-        },
+        value: this.transformParameters.scaleY,
       },
     });
 
@@ -233,7 +191,7 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       src: "/tabler-icons/rotate.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
-          new Transform().rotate((this.rotation * Math.PI) / 180),
+          new Transform().rotate((this.transformParameters.rotation * Math.PI) / 180),
           "rotate"
         ),
       class: "ui-form-icon ui-form-icon-button",
@@ -243,16 +201,9 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     formContents.push({
       type: "edit-number",
-      key: '["selectionTransformationRotate"]',
+      key: "rotation",
       label: button_rotate,
-      value: this.rotation,
-      getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-        return fieldItem.value;
-      },
-      setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-        this.rotation = value;
-        return value;
-      },
+      value: this.transformParameters.rotation,
     });
 
     let button_skew = html.createDomElement("icon-button", {
@@ -260,8 +211,8 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       onclick: (event) =>
         this._transformLayerGlyph(
           new Transform().skew(
-            (this.skewX * Math.PI) / 180,
-            (this.skewY * Math.PI) / 180
+            (this.transformParameters.skewX * Math.PI) / 180,
+            (this.transformParameters.skewY * Math.PI) / 180
           ),
           "slant"
         ),
@@ -275,28 +226,14 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
       key: '["selectionTransformationSkew"]',
       label: button_skew,
       fieldX: {
-        key: '["selectionTransformationSkewX"]',
+        key: "skewX",
         id: "selection-transformation-skewX",
-        value: this.skewX,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.skewX = value;
-          return value;
-        },
+        value: this.transformParameters.skewX,
       },
       fieldY: {
-        key: '["selectionTransformationSkewY"]',
+        key: "skewY",
         id: "selection-transformation-skewY",
-        value: this.skewY,
-        getValue: (layerGlyph, layerGlyphController, fieldItem) => {
-          return fieldItem.value;
-        },
-        setValue: (layerGlyph, layerGlyphController, fieldItem, value) => {
-          this.skewY = value;
-          return value;
-        },
+        value: this.transformParameters.skewY,
       },
     });
 
@@ -337,9 +274,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
     }
 
     this.infoForm.setFieldDescriptions(formContents);
-    if (glyphController) {
-      await this._setupSelectionInfoHandlers(glyphName);
-    }
+
+    this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
+      this.transformParameters[fieldItem.key] = value;
+    };
   }
 
   _getSelectedBounds(layerGlyphController, layerGlyph, pointIndices, componentIndices) {
@@ -406,35 +344,18 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
 
     return { x: pinPointX, y: pinPointY };
   }
-  _getPointIndicesInclOffCurves(layerGlyph, pointIndices) {
-    if (!pointIndices || pointIndices.length < 1) {
-      return [];
-    }
-    let newPointIndices = new Set();
-    const behaviorFactory = new EditBehaviorFactory(
-      layerGlyph,
-      this.sceneController.selection,
-      this.sceneController.experimentalFeatures.scalingEditBehavior
-    );
-
-    const editBehavior = behaviorFactory.getBehavior("default");
-    const contours = behaviorFactory.contours;
-    for (const [i, arrayPointsIndices] of enumerate(
-      editBehavior.participatingPointIndices
-    )) {
-      if (!arrayPointsIndices) {
-        continue;
-      }
-      arrayPointsIndices.forEach((item) =>
-        newPointIndices.add(item + contours[i].startIndex)
-      );
-    }
-    return Array.from(newPointIndices).sort((a, b) => a - b);
-  }
 
   async _transformLayerGlyph(transformation, undoLabel) {
-    let { pointIndices, componentIndices } = this._getSelection();
-    if ((!pointIndices || pointIndices.length < 1) && !componentIndices.length) {
+    let {
+      point: pointIndices,
+      component: componentIndices,
+      componentOrigin,
+      componentTCenter,
+    } = parseSelection(this.sceneController.selection);
+
+    pointIndices = pointIndices || [];
+    componentIndices = componentIndices || [];
+    if (!pointIndices.length && !componentIndices.length) {
       return;
     }
 
@@ -487,8 +408,8 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           layerGlyph,
           pointIndices,
           componentIndices,
-          this.originX,
-          this.originY
+          this.transformParameters.originX,
+          this.transformParameters.originY
         );
 
         let t = new Transform();
@@ -508,13 +429,13 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
           );
         }
 
-        // transform components
-        for (const index of componentIndices) {
-          const compo = layerGlyph.components[index];
-          const compoT = makeAffineTransform(compo.transformation);
-          const newCompoT = t.transform(compoT);
-          compo.transformation = decomposeAffineTransform(newCompoT);
-        }
+        // // transform components
+        // for (const index of componentIndices) {
+        //   const compo = layerGlyph.components[index];
+        //   const compoT = makeAffineTransform(compo.transformation);
+        //   const newCompoT = t.transform(compoT);
+        //   compo.transformation = decomposeAffineTransform(newCompoT);
+        // }
       }
 
       let changes = ChangeCollector.fromChanges(
@@ -531,10 +452,10 @@ export default class SelectionTransformationPanel extends SelectionInfoPanel {
   }
 
   _changeOrigin(keyX, keyY) {
-    this.originX = keyX;
-    this.originY = keyY;
-    this.originXButton = undefined;
-    this.originYButton = undefined;
+    this.transformParameters.originX = keyX;
+    this.transformParameters.originY = keyY;
+    this.transformParameters.originXButton = undefined;
+    this.transformParameters.originYButton = undefined;
     this.update();
   }
 
