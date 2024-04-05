@@ -274,8 +274,7 @@ export default class SelectionTransformationPanel extends Panel {
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
       this.transformParameters[fieldItem.key] = value;
       if (fieldItem.key === "originXButton" || fieldItem.key === "originYButton") {
-        this.transformParameters.originX = value;
-        this.transformParameters.originY = value;
+        this.transformParameters[fieldItem.key.replace("Button", "")] = value;
 
         const iconRadioButtons = this.infoForm.querySelectorAll(
           ".ui-form-radio-button"
