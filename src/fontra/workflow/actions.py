@@ -275,12 +275,12 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
 
             try:
                 glyph = await self.validatedInput.getGlyph(glyphName)
+                assert glyph is not None, f"Unexpected missing glyph {glyphName}"
             except Exception as e:
                 logger.error(
                     f"{self.actionName}: glyph {glyphName} caused an error: {e!r}"
                 )
                 continue
-            assert glyph is not None
 
             componentNames = getComponentNames(glyph)
             uncheckedGlyphs = componentNames - glyphNamesExpanded
