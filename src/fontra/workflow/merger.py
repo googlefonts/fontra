@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
@@ -34,7 +35,19 @@ class FontBackendMerger:
             return
         glyphMapA = await self.inputA.getGlyphMap()
         glyphMapB = await self.inputB.getGlyphMap()
-        self._glyphMap = glyphMapA | glyphMapB
+        cmapA = cmapFromGlyphMap(glyphMapA)
+        cmapB = cmapFromGlyphMap(glyphMapB)
+
+        cmap = cmapA | cmapB
+        encodedGlyphMap = defaultdict(set)
+        for codePoint, glyphName in cmap.items():
+            encodedGlyphMap[glyphName].add(codePoint)
+
+        self._glyphMap = {
+            glyphName: sorted(encodedGlyphMap.get(glyphName, []))
+            for glyphName in glyphMapA | glyphMapB
+        }
+
         self._glyphNamesB = set(glyphMapB)
         self._glyphNamesA = set(glyphMapA)
 
@@ -92,6 +105,20 @@ class FontBackendMerger:
                 f"Merger: Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
             )
         return unitsPerEmB
+
+
+def cmapFromGlyphMap(glyphMap):
+    cmap = {}
+    for glyphName, codePoints in glyphMap.items():
+        for codePoint in codePoints:
+            if codePoint in cmap:
+                logger.warning(
+                    f"Merger: Code point U+{codePoint:04X} is mapped multiple times: "
+                    f"{cmap[codePoint]}, {glyphName}"
+                )
+            else:
+                cmap[codePoint] = glyphName
+    return cmap
 
 
 def _mergeAxes(axisA, axisB):

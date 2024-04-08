@@ -670,6 +670,21 @@ def test_command(tmpdir, configYAMLSources):
                 )
             ],
         ),
+        (
+            "merge-codepoint-conflict",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+
+            - action: input
+              source: "test-py/data/workflow/input-merge-codepoint-conflict.fontra"
+
+            - action: output
+              destination: "output-merge-codepoint-conflict.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
