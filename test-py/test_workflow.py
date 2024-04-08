@@ -235,7 +235,7 @@ def test_command(tmpdir, configYAMLSources):
             ],
         ),
         (
-            "susbset+scale",
+            "subset+scale",
             """
             steps:
 
