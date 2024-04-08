@@ -1010,7 +1010,7 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
     glyph = instancer.glyph
 
     sourcesByLocation = {
-        tuplifyLocation(source.location): source for source in glyph.sources
+        tuplifyLocation(source.location): source for source in instancer.activeSources
     }
     locationTuples = sorted({tuplifyLocation(loc) for loc in newLocations})
 
