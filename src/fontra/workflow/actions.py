@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import logging
 import os
 import pathlib
+import tempfile
 from contextlib import aclosing, asynccontextmanager
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
@@ -23,6 +25,7 @@ from fontTools.varLib.models import piecewiseLinearMap
 
 from ..backends import getFileSystemBackend, newFileSystemBackend
 from ..backends.copy import copyFont
+from ..backends.filenames import stringToFileName
 from ..core.async_property import async_cached_property
 from ..core.classes import (
     Component,
@@ -109,6 +112,7 @@ class BaseFilterAction:
             yield self
         finally:
             self.input = None
+            await input.aclose()
             try:
                 del self.validatedInput
             except AttributeError:
@@ -390,6 +394,7 @@ class OutputAction:
             yield self
         finally:
             self.input = None
+            await input.aclose()
             try:
                 del self.validatedInput
             except AttributeError:
@@ -1043,3 +1048,48 @@ class CheckInterpolationAction(BaseFilterAction):
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         _ = instancer.deltas
         return instancer.glyph
+
+
+@registerActionClass("memory-cache")
+@dataclass(kw_only=True)
+class MemoryCacheAction(BaseFilterAction):
+    def __post_init__(self):
+        self._glyphCache = {}
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        if glyphName not in self._glyphCache:
+            self._glyphCache[glyphName] = await self.validatedInput.getGlyph(glyphName)
+        return self._glyphCache[glyphName]
+
+
+@registerActionClass("disk-cache")
+@dataclass(kw_only=True)
+class DiskCacheAction(BaseFilterAction):
+    def __post_init__(self):
+        self._tempDir = tempfile.TemporaryDirectory(
+            prefix="fontra-workflow-disk-cache-"
+        )
+        self._tempDirPath = pathlib.Path(self._tempDir.name)
+        logger.info(f"disk-cache: created temp dir: {self._tempDir.name}")
+        self._glyphFilePaths = {}
+
+    async def aclose(self):
+        await super().aclose()
+        logger.info(f"disk-cache: cleaning up temp dir: {self._tempDir.name}")
+        self._tempDir.cleanup()
+
+    async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
+        path = self._glyphFilePaths.get(glyphName)
+        if path is None:
+            glyph = await self.validatedInput.getGlyph(glyphName)
+            obj = unstructure(glyph)
+            text = json.dumps(obj, separators=(",", ":"), ensure_ascii=False)
+            path = self._tempDirPath / (stringToFileName(glyphName) + ".json")
+            self._glyphFilePaths[glyphName] = path
+            path.write_text(text, encoding="utf-8")
+        else:
+            text = path.read_text(encoding="utf-8")
+            obj = json.loads(text)
+            glyph = structure(obj, VariableGlyph)
+
+        return glyph

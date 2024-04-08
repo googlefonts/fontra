@@ -235,7 +235,7 @@ def test_command(tmpdir, configYAMLSources):
             ],
         ),
         (
-            "susbset+scale",
+            "subset+scale",
             """
             steps:
 
@@ -682,6 +682,19 @@ def test_command(tmpdir, configYAMLSources):
 
             - action: output
               destination: "output-merge-codepoint-conflict.fontra"
+            """,
+            [],
+        ),
+        (
+            "cache-tests",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: memory-cache
+            - action: disk-cache
+            - action: output
+              destination: "input1-A.fontra"
             """,
             [],
         ),
