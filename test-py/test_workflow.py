@@ -685,6 +685,19 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "cache-tests",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: memory-cache
+            - action: disk-cache
+            - action: output
+              destination: "input1-A.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
