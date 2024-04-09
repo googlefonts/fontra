@@ -245,10 +245,10 @@ export default class TransformationPanel extends Panel {
             (this.transformParameters.skewX * Math.PI) / 180,
             (this.transformParameters.skewY * Math.PI) / 180
           ),
-          "slant"
+          "skew"
         ),
       "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "Slant",
+      "data-tooltip": "Skew",
       "data-tooltipposition": "top",
     });
 
