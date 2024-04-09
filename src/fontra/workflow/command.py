@@ -8,7 +8,6 @@ from contextlib import AsyncExitStack
 
 import yaml
 
-from .actions import actionLogger
 from .workflow import Workflow
 
 if hasattr(logging, "getLevelNamesMapping"):
@@ -51,7 +50,7 @@ def existing_folder(path):
     return path
 
 
-async def mainAsync():
+async def mainAsync() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output-dir",
@@ -66,15 +65,21 @@ async def mainAsync():
         help="The logging level for stdout output",
     )
     parser.add_argument(
-        "--actions-log-file",
+        "--log-file",
         type=argparse.FileType("w"),
         help="A path for a log file that captures actions log activity",
     )
     parser.add_argument(
-        "--actions-log-file-logging-level",
+        "--log-file-logging-level",
         choices=sortedlevelNames,
         default="WARNING",
         help="The logging level for the actions log file",
+    )
+    parser.add_argument(
+        "--continue-on-error",
+        action="store_true",
+        help="Continue copying if reading or processing a glyph causes an error. "
+        "The error will be logged, but the glyph will not be present in the output.",
     )
     parser.add_argument(
         "config",
@@ -98,15 +103,15 @@ async def mainAsync():
     )
     rootLogger.addHandler(stdoutHandler)
 
-    if args.actions_log_file is not None:
-        logHandler = logging.StreamHandler(args.actions_log_file)
-        logHandler.setLevel(levelNamesMapping[args.actions_log_file_logging_level])
-        logHandler.setFormatter(
+    if args.log_file is not None:
+        logFileHandler = logging.StreamHandler(args.log_file)
+        logFileHandler.setLevel(levelNamesMapping[args.log_file_logging_level])
+        logFileHandler.setFormatter(
             logging.Formatter(
                 "%(asctime)s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
             )
         )
-        actionLogger.addHandler(logHandler)
+        rootLogger.addHandler(logFileHandler)
 
     output_dir = args.output_dir
 
@@ -123,7 +128,7 @@ async def mainAsync():
             nextInput = endPoints.endPoint
 
         for output in outputs:
-            await output.process(output_dir)
+            await output.process(output_dir, continueOnError=args.continue_on_error)
 
 
 def main():

@@ -1,0 +1,34 @@
+{
+"unitsPerEm": 1000,
+"fontInfo": {},
+"axes": [
+{
+"name": "width",
+"label": "width",
+"tag": "wdth",
+"minValue": 100,
+"defaultValue": 400,
+"maxValue": 700
+},
+{
+"name": "weight",
+"label": "weight",
+"tag": "wght",
+"minValue": 200,
+"defaultValue": 300,
+"maxValue": 800,
+"mapping": [
+[
+200,
+237.5
+],
+[
+800,
+762.5
+]
+]
+}
+],
+"sources": {},
+"customData": {}
+}

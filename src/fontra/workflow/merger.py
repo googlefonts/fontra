@@ -1,3 +1,4 @@
+import logging
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any
@@ -11,7 +12,8 @@ from ..core.classes import (
     unstructure,
 )
 from ..core.protocols import ReadableFontBackend
-from .actions import actionLogger
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True)
@@ -40,9 +42,7 @@ class FontBackendMerger:
         await self._prepareGlyphMap()
         if glyphName in self._glyphNamesB:
             if glyphName in self._glyphNamesA:
-                actionLogger.warning(
-                    f"Merger: Glyph {glyphName!r} exists in both fonts"
-                )
+                logger.warning(f"Merger: Glyph {glyphName!r} exists in both fonts")
             return await self.inputB.getGlyph(glyphName)
         elif glyphName in self._glyphNamesA:
             return await self.inputA.getGlyph(glyphName)
@@ -88,7 +88,7 @@ class FontBackendMerger:
         unitsPerEmA = await self.inputA.getUnitsPerEm()
         unitsPerEmB = await self.inputB.getUnitsPerEm()
         if unitsPerEmA != unitsPerEmB:
-            actionLogger.warning(
+            logger.warning(
                 f"Merger: Fonts have different units-per-em; A: {unitsPerEmA}, B: {unitsPerEmB}"
             )
         return unitsPerEmB
@@ -99,19 +99,19 @@ def _mergeAxes(axisA, axisB):
     resultAxis = deepcopy(axisB)
 
     if axisA.mapping != axisB.mapping:
-        actionLogger.error(
+        logger.error(
             "Merger: Axis mappings should be the same; "
             f"{axisA.name}, A: {axisA.mapping}, B: {axisB.mapping}"
         )
 
     if axisA.defaultValue != axisB.defaultValue:
-        actionLogger.error(
+        logger.error(
             "Merger: Axis default values should be the same; "
             f"{axisA.name}, A: {axisA.defaultValue}, B: {axisB.defaultValue}"
         )
 
     if hasattr(axisA, "values") != hasattr(axisB, "values"):
-        actionLogger.error(
+        logger.error(
             f"Merger: Can't merge continuous axis with discrete axis: {axisA.name}"
         )
     elif hasattr(axisA, "values"):

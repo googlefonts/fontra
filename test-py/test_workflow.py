@@ -182,7 +182,14 @@ def test_command(tmpdir, configYAMLSources):
     expectedFileNames = [p.name for p in configPaths]
 
     subprocess.run(
-        ["fontra-workflow", *configPaths, "--output-dir", tmpdir], check=True
+        [
+            "fontra-workflow",
+            *configPaths,
+            "--output-dir",
+            tmpdir,
+            "--continue-on-error",
+        ],
+        check=True,
     )
     items = sorted([p.name for p in tmpdir.iterdir()])
     assert [*expectedFileNames, "testing.fontra"] == items
@@ -296,7 +303,7 @@ def test_command(tmpdir, configYAMLSources):
               source: "test-py/data/workflow/input1-A.fontra"
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
 
             - action: output
               destination: "output-drop-axis-mapping.fontra"
@@ -311,7 +318,7 @@ def test_command(tmpdir, configYAMLSources):
               source: "test-py/data/workflow/input1-A.fontra"
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
               axes: ["weight"]
 
             - action: output
@@ -327,7 +334,7 @@ def test_command(tmpdir, configYAMLSources):
               source: "test-py/data/workflow/input1-A.fontra"
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
               axes: ["non-existent"]
 
             - action: output
@@ -365,7 +372,7 @@ def test_command(tmpdir, configYAMLSources):
               glyphNames: ["A"]
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
             - action: adjust-axes
               axes:
                 weight:
@@ -411,7 +418,7 @@ def test_command(tmpdir, configYAMLSources):
               glyphNames: ["A"]
             - action: subset-glyphs
               glyphNames: ["A"]
-            - action: drop-axis-mapping
+            - action: drop-axis-mappings
             - action: adjust-axes
               remapSources: false
               axes:
@@ -605,6 +612,64 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "trim-axes",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-trim-axes.fontra"
+            - action: trim-axes
+              axes:
+                width:
+                  minValue: 100
+                  maxValue: 700
+                weight:
+                  minValue: 200
+                  maxValue: 800
+
+            - action: output
+              destination: "output-trim-axes.fontra"
+            """,
+            [],
+        ),
+        (
+            "error-glyph",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-error-glyph.fontra"
+
+            - action: output
+              destination: "output-error-glyph.fontra"
+            """,
+            [
+                (
+                    40,
+                    "glyph A caused an error: JSONDecodeError('Expecting value: line "
+                    "1 column 1 (char 0)')",
+                )
+            ],
+        ),
+        (
+            "check-interpolation",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-check-interpolation.fontra"
+
+            - action: check-interpolation
+
+            - action: output
+              destination: "output-check-interpolation.fontra"
+            """,
+            [
+                (
+                    40,
+                    "glyph A caused an error: InterpolationError('paths are not "
+                    "compatible')",
+                )
+            ],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
@@ -618,7 +683,7 @@ async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, cap
         assert endPoints.endPoint is not None
 
         for output in endPoints.outputs:
-            await output.process(tmpdir)
+            await output.process(tmpdir, continueOnError=True)
             expectedPath = workflowDataDir / output.destination
             resultPath = tmpdir / output.destination
             if expectedPath.is_file():
