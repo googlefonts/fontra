@@ -107,7 +107,7 @@ class EditBehavior {
       componentRollbackChanges.push(compoRollback);
     }
 
-    if (true || !fullComponentTransform) {
+    if (!fullComponentTransform) {
       for (const componentIndex of componentTCenterIndices) {
         const [editFunc, compoRollback] = makeComponentTCenterEditFunc(
           components[componentIndex],
