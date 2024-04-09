@@ -238,7 +238,7 @@ export default class TransformationPanel extends Panel {
     });
 
     let buttonSkew = html.createDomElement("icon-button", {
-      "src": "/tabler-icons/angle.svg",
+      "src": "/images/skew.svg",
       "onclick": (event) =>
         this._transformLayerGlyph(
           new Transform().skew(
