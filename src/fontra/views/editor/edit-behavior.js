@@ -93,27 +93,21 @@ class EditBehavior {
     const componentRollbackChanges = [];
     this.componentEditFuncs = [];
 
-    if (fullComponentTransform) {
-      for (const componentIndex of componentOriginIndices) {
-        const [editFunc, compoRollback] = makeComponentTransformationEditFunc(
-          components[componentIndex],
-          componentIndex,
-          this.roundFunc
-        );
-        this.componentEditFuncs.push(editFunc);
-        componentRollbackChanges.push(compoRollback);
-      }
-    } else {
-      for (const componentIndex of componentOriginIndices) {
-        const [editFunc, compoRollback] = makeComponentOriginEditFunc(
-          components[componentIndex],
-          componentIndex,
-          this.roundFunc
-        );
-        this.componentEditFuncs.push(editFunc);
-        componentRollbackChanges.push(compoRollback);
-      }
+    const makeCompoEditFunc = fullComponentTransform
+      ? makeComponentTransformationEditFunc
+      : makeComponentOriginEditFunc;
 
+    for (const componentIndex of componentOriginIndices) {
+      const [editFunc, compoRollback] = makeCompoEditFunc(
+        components[componentIndex],
+        componentIndex,
+        this.roundFunc
+      );
+      this.componentEditFuncs.push(editFunc);
+      componentRollbackChanges.push(compoRollback);
+    }
+
+    if (true || !fullComponentTransform) {
       for (const componentIndex of componentTCenterIndices) {
         const [editFunc, compoRollback] = makeComponentTCenterEditFunc(
           components[componentIndex],
