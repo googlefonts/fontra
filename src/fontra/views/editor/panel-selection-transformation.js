@@ -8,7 +8,7 @@ import { decomposeAffineTransform } from "../core/glyph-controller.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
-import { rectFromPoints, unionRect } from "/core/rectangle.js";
+import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { Transform } from "/core/transform.js";
 import { enumerate, makeAffineTransform, parseSelection } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
@@ -33,6 +33,10 @@ export default class SelectionTransformationPanel extends Panel {
   `;
 
   static stylesForm = `
+  .ui-form-label {
+    overflow-x: unset;
+  }
+
   .origin-radio-buttons {
     display: grid;
     grid-template-columns: auto auto auto;
@@ -155,8 +159,8 @@ export default class SelectionTransformationPanel extends Panel {
     formContents.push({ type: "divider" });
 
     let buttonMove = html.createDomElement("icon-button", {
-      src: "/tabler-icons/arrow-move-right.svg",
-      onclick: (event) =>
+      "src": "/tabler-icons/arrow-move-right.svg",
+      "onclick": (event) =>
         this._transformLayerGlyph(
           new Transform().translate(
             this.transformParameters.moveX,
@@ -164,9 +168,9 @@ export default class SelectionTransformationPanel extends Panel {
           ),
           "move"
         ),
-      class: "ui-form-icon ui-form-icon-button",
-      /*       "data-tooltip": "Move",
-      "data-tooltipposition": "left", */
+      "class": "ui-form-icon ui-form-icon-button",
+      "data-tooltip": "Move",
+      "data-tooltipposition": "top",
     });
 
     formContents.push({
@@ -183,8 +187,8 @@ export default class SelectionTransformationPanel extends Panel {
     });
 
     let buttonScale = html.createDomElement("icon-button", {
-      src: "/tabler-icons/dimensions.svg",
-      onclick: (event) =>
+      "src": "/tabler-icons/dimensions.svg",
+      "onclick": (event) =>
         this._transformLayerGlyph(
           new Transform().scale(
             this.transformParameters.scaleX / 100,
@@ -194,9 +198,9 @@ export default class SelectionTransformationPanel extends Panel {
           ),
           "scale"
         ),
-      class: "ui-form-icon ui-form-icon-button",
-      /*       "data-tooltip": "Scale",
-      "data-tooltipposition": "left", */
+      "class": "ui-form-icon ui-form-icon-button",
+      "data-tooltip": "Scale",
+      "data-tooltipposition": "top",
     });
 
     formContents.push({
@@ -215,15 +219,15 @@ export default class SelectionTransformationPanel extends Panel {
     });
 
     let buttonRotate = html.createDomElement("icon-button", {
-      src: "/tabler-icons/rotate.svg",
-      onclick: (event) =>
+      "src": "/tabler-icons/rotate.svg",
+      "onclick": (event) =>
         this._transformLayerGlyph(
           new Transform().rotate((this.transformParameters.rotation * Math.PI) / 180),
           "rotate"
         ),
-      class: "ui-form-icon ui-form-icon-button",
-      /*       "data-tooltip": "Rotate",
-      "data-tooltipposition": "left", */
+      "class": "ui-form-icon ui-form-icon-button",
+      "data-tooltip": "Rotate",
+      "data-tooltipposition": "top",
     });
 
     formContents.push({
@@ -234,8 +238,8 @@ export default class SelectionTransformationPanel extends Panel {
     });
 
     let buttonSkew = html.createDomElement("icon-button", {
-      src: "/tabler-icons/angle.svg",
-      onclick: (event) =>
+      "src": "/tabler-icons/angle.svg",
+      "onclick": (event) =>
         this._transformLayerGlyph(
           new Transform().skew(
             (this.transformParameters.skewX * Math.PI) / 180,
@@ -243,9 +247,9 @@ export default class SelectionTransformationPanel extends Panel {
           ),
           "slant"
         ),
-      class: "ui-form-icon ui-form-icon-button",
-      /*       "data-tooltip": "Slant",
-      "data-tooltipposition": "left", */
+      "class": "ui-form-icon ui-form-icon-button",
+      "data-tooltip": "Slant",
+      "data-tooltipposition": "top",
     });
 
     formContents.push({
@@ -271,21 +275,21 @@ export default class SelectionTransformationPanel extends Panel {
       label: "Flip",
       auxiliaryElements: [
         html.createDomElement("icon-button", {
-          src: "/tabler-icons/flip-vertical.svg",
-          onclick: (event) =>
+          "src": "/tabler-icons/flip-vertical.svg",
+          "onclick": (event) =>
             this._transformLayerGlyph(new Transform().scale(-1, 1), "flip vertically"),
-          /* "data-tooltip": "Flip vertically",
-          "data-tooltipposition": "left", */
+          "data-tooltip": "Flip vertically",
+          "data-tooltipposition": "top",
         }),
         html.createDomElement("icon-button", {
-          src: "/tabler-icons/flip-horizontal.svg",
-          onclick: (event) =>
+          "src": "/tabler-icons/flip-horizontal.svg",
+          "onclick": (event) =>
             this._transformLayerGlyph(
               new Transform().scale(1, -1),
               "flip horizontally"
             ),
-          /* "data-tooltip": "Flip horizontally",
-          "data-tooltipposition": "left", */
+          "data-tooltip": "Flip horizontally",
+          "data-tooltipposition": "top",
         }),
       ],
     });
@@ -340,8 +344,7 @@ export default class SelectionTransformationPanel extends Panel {
       pointIndices,
       componentIndices
     );
-    const width = bounds.xMax - bounds.xMin;
-    const height = bounds.yMax - bounds.yMin;
+    const { width, height } = rectSize(bounds);
 
     // default from center
     let pinPointX = bounds.xMin + width / 2;
