@@ -30,12 +30,42 @@ export default class SelectionTransformationPanel extends Panel {
       padding: 1em;
       white-space: normal;
     }
-
   `;
+
+  static stylesForm = `
+  .origin-radio-buttons {
+    display: grid;
+    grid-template-columns: auto auto auto;
+  }
+
+  .origin-radio-buttons > input[type="radio"] {
+    appearance: none;
+    background-color: var(--editor-mini-console-background-color-light);
+    margin: 2px;
+    color: var(--editor-mini-console-background-color-light);
+    width: 0.9em;
+    height: 0.9em;
+    border: 0.15em solid var(--editor-mini-console-background-color-light);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .origin-radio-buttons > input[type="radio"]:hover {
+    background-color: var(--text-input-background-color-dark);
+    border: 0.15em solid var(--text-input-background-color-dark);
+  }
+
+  .origin-radio-buttons > input[type="radio"]:checked {
+    background-color: var(--text-input-background-color-dark);
+    border: 0.15em solid var(--text-input-background-color-dark);
+  }
+`;
 
   constructor(editorController) {
     super(editorController);
     this.infoForm = new Form();
+
+    this.infoForm.appendStyle(SelectionTransformationPanel.stylesForm);
     this.contentElement.appendChild(this.infoForm);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
