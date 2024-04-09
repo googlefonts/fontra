@@ -432,18 +432,22 @@ export default class TransformationPanel extends Panel {
         t = t.translate(-pinPoint.x, -pinPoint.y);
 
         const pointTransformFunction = t.transformPointObject.bind(t);
-        const componentTransformFunction = (component, componentIndex) => {
-          // TODO: decompose the transformation origin, so it doesn't get lost when
-          // round tripping through an affine:
-          // const tCenter = {x: transformation.tCenterX, y: transformation.tCenterY}
-          // transformation.tCenterX = 0
-          // transformation.tCenterY = 0
 
-          const affine = makeAffineTransform(component.transformation);
-          const editedT = t.transform(affine);
+        const componentTransformFunction = (component, componentIndex) => {
+          const [tCenterX, tCenterY] = [
+            component.transformation.tCenterX,
+            component.transformation.tCenterY,
+          ];
+
+          const editedT = new Transform()
+            .translate(-tCenterX, -tCenterY)
+            .transform(t.transform(makeAffineTransform(component.transformation)))
+            .translate(tCenterX, tCenterY);
 
           component = copyComponent(component);
           component.transformation = decomposeAffineTransform(editedT);
+          component.transformation.tCenterX = tCenterX;
+          component.transformation.tCenterY = tCenterY;
 
           return component;
         };
