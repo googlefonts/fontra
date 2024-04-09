@@ -75,14 +75,14 @@ export default class SelectionTransformationPanel extends Panel {
 
     formContents.push({ type: "header", label: `Transformations` });
 
-    let radio_button_origin = html.createDomElement("div", {
+    let radioButtonOrigin = html.createDomElement("div", {
       class: "origin-radio-buttons ui-form-center",
     });
 
     for (const keyY of ["top", "middle", "bottom"]) {
       for (const keyX of ["left", "center", "right"]) {
         const key = `${keyX}-${keyY}`;
-        let radio_button = html.createDomElement("input", {
+        let radioButton = html.createDomElement("input", {
           "type": "radio",
           "value": key,
           "name": "origin",
@@ -97,13 +97,13 @@ export default class SelectionTransformationPanel extends Panel {
           "data-tooltip": `Origin ${keyY} ${keyX}`,
           "data-tooltipposition": "bottom",
         });
-        radio_button_origin.appendChild(radio_button);
+        radioButtonOrigin.appendChild(radioButton);
       }
     }
 
     formContents.push({
       type: "single-icon",
-      element: radio_button_origin,
+      element: radioButtonOrigin,
     });
 
     formContents.push({ type: "divider" });
@@ -123,7 +123,7 @@ export default class SelectionTransformationPanel extends Panel {
 
     formContents.push({ type: "divider" });
 
-    let button_move = html.createDomElement("icon-button", {
+    let buttonMove = html.createDomElement("icon-button", {
       src: "/tabler-icons/arrow-move-right.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
@@ -140,7 +140,7 @@ export default class SelectionTransformationPanel extends Panel {
 
     formContents.push({
       type: "edit-number-x-y",
-      label: button_move,
+      label: buttonMove,
       fieldX: {
         key: "moveX",
         value: this.transformParameters.moveX,
@@ -151,7 +151,7 @@ export default class SelectionTransformationPanel extends Panel {
       },
     });
 
-    let button_scale = html.createDomElement("icon-button", {
+    let buttonScale = html.createDomElement("icon-button", {
       src: "/tabler-icons/dimensions.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
@@ -170,7 +170,7 @@ export default class SelectionTransformationPanel extends Panel {
 
     formContents.push({
       type: "edit-number-x-y",
-      label: button_scale,
+      label: buttonScale,
       fieldX: {
         key: "scaleX",
         id: "selection-transformation-scaleX",
@@ -183,7 +183,7 @@ export default class SelectionTransformationPanel extends Panel {
       },
     });
 
-    let button_rotate = html.createDomElement("icon-button", {
+    let buttonRotate = html.createDomElement("icon-button", {
       src: "/tabler-icons/rotate.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
@@ -198,11 +198,11 @@ export default class SelectionTransformationPanel extends Panel {
     formContents.push({
       type: "edit-number",
       key: "rotation",
-      label: button_rotate,
+      label: buttonRotate,
       value: this.transformParameters.rotation,
     });
 
-    let button_skew = html.createDomElement("icon-button", {
+    let buttonSkew = html.createDomElement("icon-button", {
       src: "/tabler-icons/angle.svg",
       onclick: (event) =>
         this._transformLayerGlyph(
@@ -220,7 +220,7 @@ export default class SelectionTransformationPanel extends Panel {
     formContents.push({
       type: "edit-number-x-y",
       key: '["selectionTransformationSkew"]',
-      label: button_skew,
+      label: buttonSkew,
       fieldX: {
         key: "skewX",
         id: "selection-transformation-skewX",
@@ -258,16 +258,6 @@ export default class SelectionTransformationPanel extends Panel {
         }),
       ],
     });
-
-    this._formFieldsByKey = {};
-    for (const field of formContents) {
-      if (field.fieldX) {
-        this._formFieldsByKey[field.fieldX.key] = field.fieldX;
-        this._formFieldsByKey[field.fieldY.key] = field.fieldY;
-      } else {
-        this._formFieldsByKey[field.key] = field;
-      }
-    }
 
     this.infoForm.setFieldDescriptions(formContents);
 
