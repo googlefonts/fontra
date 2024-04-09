@@ -14,7 +14,7 @@ import { enumerate, makeAffineTransform, parseSelection } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
 
-export default class SelectionTransformationPanel extends Panel {
+export default class TransformationPanel extends Panel {
   identifier = "selection-transformation";
   iconPath = "/tabler-icons/shape.svg";
 
@@ -69,7 +69,7 @@ export default class SelectionTransformationPanel extends Panel {
     super(editorController);
     this.infoForm = new Form();
 
-    this.infoForm.appendStyle(SelectionTransformationPanel.stylesForm);
+    this.infoForm.appendStyle(TransformationPanel.stylesForm);
     this.contentElement.appendChild(this.infoForm);
     this.fontController = this.editorController.fontController;
     this.sceneController = this.editorController.sceneController;
@@ -488,4 +488,4 @@ export default class SelectionTransformationPanel extends Panel {
   }
 }
 
-customElements.define("panel-selection-transformation", SelectionTransformationPanel);
+customElements.define("panel-transformation", TransformationPanel);
