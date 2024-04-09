@@ -969,7 +969,7 @@ export function decomposeAffineTransform(affine) {
     rotation: rotation * (180 / Math.PI),
     scaleX: scaleX,
     scaleY: scaleY,
-    skewX: -skewX * (180 / Math.PI),
+    skewX: skewX * (180 / Math.PI),
     skewY: skewY * (180 / Math.PI),
     tCenterX: 0,
     tCenterY: 0,
