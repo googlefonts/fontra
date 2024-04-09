@@ -11,6 +11,7 @@ import * as html from "/core/html-utils.js";
 import { rectFromPoints, unionRect } from "/core/rectangle.js";
 import { Transform } from "/core/transform.js";
 import { enumerate, makeAffineTransform, parseSelection } from "/core/utils.js";
+import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
 
 export default class SelectionTransformationPanel extends Panel {
@@ -380,7 +381,7 @@ export default class SelectionTransformationPanel extends Panel {
           layerName,
           changePath: ["layers", layerName, "glyph"],
           layerGlyphController: staticGlyphControllers[layerName],
-          editBehavior: behaviorFactory.getBehavior("default"),
+          editBehavior: behaviorFactory.getBehavior("default", true),
         };
       });
 
@@ -401,25 +402,33 @@ export default class SelectionTransformationPanel extends Panel {
         t = t.transform(transformation);
         t = t.translate(-pinPoint.x, -pinPoint.y);
 
-        if (pointIndices.length) {
-          // only do this if there are points selected
-          const pointTransformFunction = t.transformPointObject.bind(t);
-          const editChange =
-            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
-          applyChange(layerGlyph, editChange);
-          editChanges.push(consolidateChanges(editChange, changePath));
-          rollbackChanges.push(
-            consolidateChanges(editBehavior.rollbackChange, changePath)
-          );
-        }
+        const pointTransformFunction = t.transformPointObject.bind(t);
+        const componentTransformFunction = (component, componentIndex) => {
+          // TODO: decompose the transformation origin, so it doesn't get lost when
+          // round tripping through an affine:
+          // const tCenter = {x: transformation.tCenterX, y: transformation.tCenterY}
+          // transformation.tCenterX = 0
+          // transformation.tCenterY = 0
 
-        // // transform components
-        // for (const index of componentIndices) {
-        //   const compo = layerGlyph.components[index];
-        //   const compoT = makeAffineTransform(compo.transformation);
-        //   const newCompoT = t.transform(compoT);
-        //   compo.transformation = decomposeAffineTransform(newCompoT);
-        // }
+          const affine = makeAffineTransform(component.transformation);
+          const editedT = t.transform(affine);
+
+          component = copyComponent(component);
+          component.transformation = decomposeAffineTransform(editedT);
+
+          return component;
+        };
+
+        const editChange = editBehavior.makeChangeForTransformFunc(
+          pointTransformFunction,
+          null,
+          componentTransformFunction
+        );
+        applyChange(layerGlyph, editChange);
+        editChanges.push(consolidateChanges(editChange, changePath));
+        rollbackChanges.push(
+          consolidateChanges(editBehavior.rollbackChange, changePath)
+        );
       }
 
       let changes = ChangeCollector.fromChanges(

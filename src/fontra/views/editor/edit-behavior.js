@@ -7,6 +7,7 @@ import {
   reversed,
   unionIndexSets,
 } from "../core/utils.js";
+import { copyComponent } from "../core/var-glyph.js";
 import * as vector from "../core/vector.js";
 import {
   ANY,
@@ -45,7 +46,7 @@ export class EditBehaviorFactory {
     this.enableScalingEdit = enableScalingEdit;
   }
 
-  getBehavior(behaviorName) {
+  getBehavior(behaviorName, fullComponentTransform = false) {
     let behavior = this.behaviors[behaviorName];
     if (!behavior) {
       let behaviorType = behaviorTypes[behaviorName];
@@ -61,7 +62,8 @@ export class EditBehaviorFactory {
         this.components,
         this.componentOriginIndices,
         this.componentTCenterIndices,
-        behaviorType
+        behaviorType,
+        fullComponentTransform
       );
       this.behaviors[behaviorName] = behavior;
     }
@@ -75,8 +77,10 @@ class EditBehavior {
     components,
     componentOriginIndices,
     componentTCenterIndices,
-    behavior
+    behavior,
+    fullComponentTransform
   ) {
+    this.fullComponentTransform = fullComponentTransform;
     this.roundFunc = Math.round;
     this.constrainDelta = behavior.constrainDelta || ((v) => v);
     const [pointEditFuncs, participatingPointIndices] = makePointEditFuncs(
@@ -89,24 +93,36 @@ class EditBehavior {
     const componentRollbackChanges = [];
     this.componentEditFuncs = [];
 
-    for (const componentIndex of componentOriginIndices) {
-      const [editFunc, compoRollback] = makeComponentOriginEditFunc(
-        components[componentIndex],
-        componentIndex,
-        this.roundFunc
-      );
-      this.componentEditFuncs.push(editFunc);
-      componentRollbackChanges.push(compoRollback);
-    }
+    if (fullComponentTransform) {
+      for (const componentIndex of componentOriginIndices) {
+        const [editFunc, compoRollback] = makeComponentTransformationEditFunc(
+          components[componentIndex],
+          componentIndex,
+          this.roundFunc
+        );
+        this.componentEditFuncs.push(editFunc);
+        componentRollbackChanges.push(compoRollback);
+      }
+    } else {
+      for (const componentIndex of componentOriginIndices) {
+        const [editFunc, compoRollback] = makeComponentOriginEditFunc(
+          components[componentIndex],
+          componentIndex,
+          this.roundFunc
+        );
+        this.componentEditFuncs.push(editFunc);
+        componentRollbackChanges.push(compoRollback);
+      }
 
-    for (const componentIndex of componentTCenterIndices) {
-      const [editFunc, compoRollback] = makeComponentTCenterEditFunc(
-        components[componentIndex],
-        componentIndex,
-        this.roundFunc
-      );
-      this.componentEditFuncs.push(editFunc);
-      componentRollbackChanges.push(compoRollback);
+      for (const componentIndex of componentTCenterIndices) {
+        const [editFunc, compoRollback] = makeComponentTCenterEditFunc(
+          components[componentIndex],
+          componentIndex,
+          this.roundFunc
+        );
+        this.componentEditFuncs.push(editFunc);
+        componentRollbackChanges.push(compoRollback);
+      }
     }
 
     this.rollbackChange = makeRollbackChange(
@@ -132,11 +148,21 @@ class EditBehavior {
     );
   }
 
-  makeChangeForTransformFunc(transformFunc, freeTransformFunc) {
+  makeChangeForTransformFunc(
+    transformFunc,
+    freeTransformFunc = null,
+    transformComponentFunc = null
+  ) {
+    if (this.fullComponentTransform && !transformComponentFunc) {
+      throw Error(
+        "assert -- must pass transformComponentFunc when doing fullComponentTransform"
+      );
+    }
     const transform = {
       constrained: transformFunc,
       free: freeTransformFunc || transformFunc,
       constrainDelta: this.constrainDelta,
+      transformComponent: transformComponentFunc,
     };
     const pathChanges = this.pointEditFuncs
       ?.map((editFunc) => {
@@ -186,6 +212,21 @@ function makeRollbackChange(contours, participatingPointIndices, componentRollba
     changes.push(consolidateChanges(componentRollback, ["components"]));
   }
   return consolidateChanges(changes);
+}
+
+function makeComponentTransformationEditFunc(component, componentIndex) {
+  const oldComponent = copyComponent(component);
+  return [
+    (transform) => {
+      const newComponent = transform.transformComponent(component, componentIndex);
+      return makeComponentChange(newComponent, componentIndex);
+    },
+    makeComponentChange(oldComponent, componentIndex),
+  ];
+}
+
+function makeComponentChange(component, componentIndex) {
+  return { f: "=", a: [componentIndex, component] };
 }
 
 function makeComponentOriginEditFunc(component, componentIndex, roundFunc) {
@@ -320,9 +361,7 @@ function unpackContours(path, selectedPointIndices) {
 function unpackComponents(components, selectedComponentIndices) {
   const unpackedComponents = new Array(components.length);
   for (const componentIndex of selectedComponentIndices) {
-    unpackedComponents[componentIndex] = {
-      transformation: components[componentIndex].transformation,
-    };
+    unpackedComponents[componentIndex] = copyComponent(components[componentIndex]);
   }
   return unpackedComponents;
 }
