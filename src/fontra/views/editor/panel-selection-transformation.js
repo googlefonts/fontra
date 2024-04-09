@@ -275,21 +275,17 @@ export default class SelectionTransformationPanel extends Panel {
       label: "Flip",
       auxiliaryElements: [
         html.createDomElement("icon-button", {
-          "src": "/tabler-icons/flip-vertical.svg",
-          "onclick": (event) =>
+          src: "/tabler-icons/flip-vertical.svg",
+          onclick: (event) =>
             this._transformLayerGlyph(new Transform().scale(-1, 1), "flip vertically"),
-          "data-tooltip": "Flip vertically",
-          "data-tooltipposition": "top",
         }),
         html.createDomElement("icon-button", {
-          "src": "/tabler-icons/flip-horizontal.svg",
-          "onclick": (event) =>
+          src: "/tabler-icons/flip-horizontal.svg",
+          onclick: (event) =>
             this._transformLayerGlyph(
               new Transform().scale(1, -1),
               "flip horizontally"
             ),
-          "data-tooltip": "Flip horizontally",
-          "data-tooltipposition": "top",
         }),
       ],
     });
