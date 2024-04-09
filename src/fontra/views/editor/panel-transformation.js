@@ -426,10 +426,10 @@ export default class TransformationPanel extends Panel {
           this.transformParameters.originY
         );
 
-        let t = new Transform();
-        t = t.translate(pinPoint.x, pinPoint.y);
-        t = t.transform(transformation);
-        t = t.translate(-pinPoint.x, -pinPoint.y);
+        const t = new Transform()
+          .translate(pinPoint.x, pinPoint.y)
+          .transform(transformation)
+          .translate(-pinPoint.x, -pinPoint.y);
 
         const pointTransformFunction = t.transformPointObject.bind(t);
 
