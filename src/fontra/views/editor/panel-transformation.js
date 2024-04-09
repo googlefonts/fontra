@@ -299,6 +299,51 @@ export default class TransformationPanel extends Panel {
       ],
     });
 
+    formContents.push({ type: "divider" });
+    formContents.push({ type: "header", label: `Align Objects` });
+
+    let buttonHorizontalAlignTop = html.createDomElement("icon-button", {
+      src: "/tabler-icons/horizontal-align-top.svg",
+      onclick: (event) => this._doSomthing("horizontal-align-top"),
+      class: "ui-form-icon ui-form-icon-button",
+    });
+
+    formContents.push({
+      type: "icons",
+      label: buttonHorizontalAlignTop,
+      auxiliaryElements: [
+        html.createDomElement("icon-button", {
+          src: "/tabler-icons/horizontal-align-center.svg",
+          onclick: (event) => this._doSomthing("horizontal-align-center"),
+        }),
+        html.createDomElement("icon-button", {
+          src: "/tabler-icons/horizontal-align-bottom.svg",
+          onclick: (event) => this._doSomthing("horizontal-align-bottom"),
+        }),
+      ],
+    });
+
+    let buttonVerticalAlignTop = html.createDomElement("icon-button", {
+      src: "/tabler-icons/vertical-align-left.svg",
+      onclick: (event) => this._doSomthing("vertical-align-left"),
+      class: "ui-form-icon ui-form-icon-button",
+    });
+
+    formContents.push({
+      type: "icons",
+      label: buttonVerticalAlignTop,
+      auxiliaryElements: [
+        html.createDomElement("icon-button", {
+          src: "/tabler-icons/vertical-align-center.svg",
+          onclick: (event) => this._doSomthing("vertical-align-center"),
+        }),
+        html.createDomElement("icon-button", {
+          src: "/tabler-icons/vertical-align-right.svg",
+          onclick: (event) => this._doSomthing("vertical-align-right"),
+        }),
+      ],
+    });
+
     this.infoForm.setFieldDescriptions(formContents);
 
     this.infoForm.onFieldChange = async (fieldItem, value, valueStream) => {
@@ -316,9 +361,42 @@ export default class TransformationPanel extends Panel {
     };
   }
 
-  _getPinPoint(layerGlyphController, originX, originY) {
-    const bounds = layerGlyphController.getSelectionBounds(
-      this.sceneController.selection
+  _doSomthing(label) {
+    console.log("Do something: ", label);
+  }
+
+  _getSelectedBounds(layerGlyphController, pointIndices, componentIndices) {
+    const selectionRects = [];
+    if (pointIndices.length) {
+      const selRect = rectFromPoints(
+        pointIndices
+          .map((i) => layerGlyphController.instance.path.getPoint(i))
+          .filter((point) => !!point)
+      );
+      if (selRect) {
+        selectionRects.push(selRect);
+      }
+    }
+
+    for (const componentIndex of componentIndices) {
+      const component = layerGlyphController.components[componentIndex];
+      if (!component || !component.controlBounds) {
+        continue;
+      }
+      selectionRects.push(component.controlBounds);
+    }
+
+    if (selectionRects.length) {
+      const selectionBounds = unionRect(...selectionRects);
+      return selectionBounds;
+    }
+  }
+
+  _getPinPoint(layerGlyphController, pointIndices, componentIndices, originX, originY) {
+    let bounds = this._getSelectedBounds(
+      layerGlyphController,
+      pointIndices,
+      componentIndices
     );
     const { width, height } = rectSize(bounds);
 
