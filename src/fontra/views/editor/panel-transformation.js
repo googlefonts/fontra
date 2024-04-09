@@ -299,7 +299,7 @@ export default class TransformationPanel extends Panel {
       ],
     });
 
-    formContents.push({ type: "divider" });
+    formContents.push({ type: "spacer" });
     formContents.push({ type: "header", label: `Align Objects` });
 
     let buttonHorizontalAlignTop = html.createDomElement("icon-button", {
@@ -343,6 +343,9 @@ export default class TransformationPanel extends Panel {
         }),
       ],
     });
+
+    formContents.push({ type: "spacer" });
+    formContents.push({ type: "header", label: `Distribute Objects` });
 
     this.infoForm.setFieldDescriptions(formContents);
 

@@ -137,6 +137,10 @@ export class Form extends SimpleElement {
         this.contentElement.appendChild(html.hr());
         continue;
       }
+      if (fieldItem.type === "spacer") {
+        this.contentElement.appendChild(html.br());
+        continue;
+      }
       if (fieldItem.type === "single-icon") {
         if (fieldItem.element) {
           const valueElement = document.createElement("div");
