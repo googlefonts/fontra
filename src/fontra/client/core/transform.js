@@ -205,13 +205,14 @@ export function decomposedFromTransform(affine) {
   // - skewX
   // - skewY
   let [a, b, c, d] = [affine.xx, affine.xy, affine.yx, affine.yy];
-  const delta = a * d - b * c;
 
   let sx = Math.sign(a) || 1;
   if (sx < 0) {
     a *= sx;
     b *= sx;
   }
+
+  const delta = a * d - b * c;
 
   let rotation = 0;
   let scaleX = 0,
