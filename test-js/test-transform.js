@@ -101,16 +101,9 @@ describe("transform tests", () => {
 
   it("toDecomposed", () => {
     const t = new Transform().translate(2, 3).scale(4, 5);
-    expect(t.toDecomposed().toTransform().toArray()).to.deep.equal([4, 0, 0, 5, 2, 3]);
-  });
-
-  it("DecomposedTransform", () => {
-    const d = new DecomposedTransform();
-    d.translateX = 2;
-    d.translateY = 3;
-    d.scaleX = 4;
-    d.scaleY = 5;
-    expect(d.toTransform().toArray()).to.deep.equal([4, 0, 0, 5, 2, 3]);
+    expect(decomposedToTransform(t.toDecomposed()).toArray()).to.deep.equal([
+      4, 0, 0, 5, 2, 3,
+    ]);
   });
 });
 
@@ -165,11 +158,18 @@ describe("DecomposedTransform", () => {
     ],
     (decomposed) => {
       decomposed = { ...decomposedIdentity, ...decomposed };
-      expect(
+      const d = decomposedToTransform(
+        decomposedFromTransform(decomposedToTransform(decomposed))
+      );
+      const dr = decomposedToTransform(decomposed);
+      for (const key of Object.keys(d)) {
+        expect(d[key]).to.almost.eql(dr[key], key);
+      }
+      /*       expect(
         decomposedToTransform(
           decomposedFromTransform(decomposedToTransform(decomposed))
         ).toArray()
-      ).to.deep.almost.equals(decomposedToTransform(decomposed).toArray());
+      ).to.deep.almost.equals(decomposedToTransform(decomposed).toArray()); */
     }
   );
 });

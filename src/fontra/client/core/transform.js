@@ -181,50 +181,6 @@ function _unpackTransformObject(t) {
   return [t.xx, t.xy, t.yx, t.yy, t.dx, t.dy];
 }
 
-/* export class DecomposedTransform {
-  constructor(
-    translateX = 0,
-    translateY = 0,
-    rotation = 0,
-    scaleX = 1,
-    scaleY = 1,
-    skewX = 0,
-    skewY = 0,
-    tCenterX = 0,
-    tCenterY = 0
-  ) {
-    this.translateX = translateX;
-    this.translateY = translateY;
-    this.rotation = rotation; // in degrees, counter-clockwise
-    this.scaleX = scaleX;
-    this.scaleY = scaleY;
-    this.skewX = skewX; // in degrees, clockwise
-    this.skewY = skewY; // in degrees, counter-clockwise
-    this.tCenterX = tCenterX;
-    this.tCenterY = tCenterY;
-  }
-
-  static fromTransform(transform) {
-    const t = decomposedFromTransform(transform);
-
-    return new DecomposedTransform(
-      t.translateX,
-      t.translateY,
-      t.rotation,
-      t.scaleX,
-      t.scaleY,
-      t.skewX,
-      t.skewY,
-      0,
-      0
-    );
-  }
-
-  toTransform() {
-    return decomposedToTransform(this);
-  }
-}
- */
 export function decomposedToTransform(transformation) {
   let t = new Transform();
   t = t.translate(
