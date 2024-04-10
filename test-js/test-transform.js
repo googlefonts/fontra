@@ -1,6 +1,10 @@
 import { expect } from "chai";
 
-import { Transform } from "../src/fontra/client/core/transform.js";
+import {
+  Transform,
+  decomposedFromTransform,
+  decomposedToTransform,
+} from "../src/fontra/client/core/transform.js";
 
 describe("transform tests", () => {
   it("identity", () => {
@@ -67,5 +71,28 @@ describe("transform tests", () => {
     expect(t.transformPoint(10, 20)).to.deep.equal([42, 103]);
     const it = t.inverse();
     expect(it.transformPoint(42, 103)).to.deep.equal([10, 20]);
+  });
+
+  it("decomposedFromTransform", () => {
+    const t = new Transform().scale(4, 5);
+    const d = decomposedFromTransform(t);
+    expect(d.scaleX).to.deep.equal(4);
+    expect(d.scaleY).to.deep.equal(5);
+  });
+
+  it("decomposedFromTransform", () => {
+    const t = {
+      translateX: 2,
+      translateY: 3,
+      rotation: 0,
+      scaleX: 4,
+      scaleY: 5,
+      skewX: 0,
+      skewY: 0,
+      tCenterX: 0,
+      tCenterY: 0,
+    };
+    const d = decomposedToTransform(t);
+    expect(d).to.deep.equal({ xx: 4, xy: 0, yx: 0, yy: 5, dx: 2, dy: 3 });
   });
 });
