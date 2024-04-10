@@ -170,7 +170,7 @@ export class Transform {
 
   toDecomposed() {
     //Decompose into a DecomposedTransform.
-    return DecomposedTransform.fromTransform(this);
+    return decomposedFromTransform(this);
   }
 
   toArray() {
@@ -182,7 +182,7 @@ function _unpackTransformObject(t) {
   return [t.xx, t.xy, t.yx, t.yy, t.dx, t.dy];
 }
 
-export class DecomposedTransform {
+/* export class DecomposedTransform {
   constructor(
     translateX = 0,
     translateY = 0,
@@ -225,7 +225,7 @@ export class DecomposedTransform {
     return decomposedToTransform(this);
   }
 }
-
+ */
 export function decomposedToTransform(transformation) {
   let t = new Transform();
   t = t.translate(

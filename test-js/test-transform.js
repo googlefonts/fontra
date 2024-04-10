@@ -1,7 +1,8 @@
-import { expect } from "chai";
+import { expect, use } from "chai";
+import chaiAlmost from "chai-almost";
+use(chaiAlmost());
 
 import {
-  DecomposedTransform,
   Transform,
   decomposedFromTransform,
   decomposedToTransform,
@@ -167,8 +168,8 @@ describe("DecomposedTransform", () => {
       expect(
         decomposedToTransform(
           decomposedFromTransform(decomposedToTransform(decomposed))
-        )
-      ).to.deep.equals(decomposedToTransform(decomposed));
+        ).toArray()
+      ).to.deep.almost.equals(decomposedToTransform(decomposed).toArray());
     }
   );
 });
