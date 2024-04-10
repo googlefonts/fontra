@@ -275,13 +275,19 @@ export default class TransformationPanel extends Panel {
       label: "Flip",
       auxiliaryElements: [
         html.createDomElement("icon-button", {
-          src: "/tabler-icons/flip-vertical.svg",
-          onclick: (event) =>
+          "class": "ui-form-icon",
+          "src": "/tabler-icons/flip-vertical.svg",
+          "data-tooltip": "Flip vertically",
+          "data-tooltipposition": "top",
+          "onclick": (event) =>
             this._transformLayerGlyph(new Transform().scale(-1, 1), "flip vertically"),
         }),
         html.createDomElement("icon-button", {
-          src: "/tabler-icons/flip-horizontal.svg",
-          onclick: (event) =>
+          "class": "ui-form-icon",
+          "src": "/tabler-icons/flip-horizontal.svg",
+          "data-tooltip": "Flip horizontally",
+          "data-tooltipposition": "top-right",
+          "onclick": (event) =>
             this._transformLayerGlyph(
               new Transform().scale(1, -1),
               "flip horizontally"

@@ -170,10 +170,7 @@ export class Form extends SimpleElement {
       if (fieldItem.type === "icons") {
         if (fieldItem.auxiliaryElements) {
           for (const element of fieldItem.auxiliaryElements) {
-            const iconElement = document.createElement("div");
-            iconElement.classList.add("ui-form-icon");
-            iconElement.appendChild(element);
-            valueElement.appendChild(iconElement, fieldItem);
+            valueElement.appendChild(element, fieldItem);
           }
         }
         this.contentElement.appendChild(valueElement);
