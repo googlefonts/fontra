@@ -1,10 +1,12 @@
 import { expect } from "chai";
 
 import {
+  DecomposedTransform,
   Transform,
   decomposedFromTransform,
   decomposedToTransform,
 } from "../src/fontra/client/core/transform.js";
+import { parametrize } from "./test-support.js";
 
 describe("transform tests", () => {
   it("identity", () => {
@@ -80,7 +82,7 @@ describe("transform tests", () => {
     expect(d.scaleY).to.deep.equal(5);
   });
 
-  it("decomposedFromTransform", () => {
+  it("decomposedToTransform", () => {
     const t = {
       translateX: 2,
       translateY: 3,
@@ -93,6 +95,88 @@ describe("transform tests", () => {
       tCenterY: 0,
     };
     const d = decomposedToTransform(t);
-    expect(d).to.deep.equal({ xx: 4, xy: 0, yx: 0, yy: 5, dx: 2, dy: 3 });
+    expect(d.toArray()).to.deep.equal([4, 0, 0, 5, 2, 3]);
   });
+
+  it("toDecomposed", () => {
+    const t = new Transform().translate(2, 3).scale(4, 5);
+    expect(t.toDecomposed().toTransform().toArray()).to.deep.equal([4, 0, 0, 5, 2, 3]);
+  });
+
+  it("DecomposedTransform", () => {
+    const d = new DecomposedTransform();
+    d.translateX = 2;
+    d.translateY = 3;
+    d.scaleX = 4;
+    d.scaleY = 5;
+    expect(d.toTransform().toArray()).to.deep.equal([4, 0, 0, 5, 2, 3]);
+  });
+});
+
+function testDecomposedTransform({
+  translateX = 0,
+  translateY = 0,
+  rotation = 0,
+  scaleX = 1,
+  scaleY = 1,
+  skewX = 0,
+  skewY = 0,
+  tCenterX = 0,
+  tCenterY = 0,
+} = {}) {
+  let d = new DecomposedTransform();
+  d.translateX = translateX;
+  d.translateY = translateY;
+  d.rotation = rotation;
+  d.scaleX = scaleX;
+  d.scaleY = scaleY;
+  d.skewX = skewX;
+  (d.skewY = skewY), (d.tCenterX = tCenterX);
+  d.tCenterY = tCenterY;
+  return d;
+}
+
+describe("DecomposedTransform", () => {
+  parametrize(
+    "DecomposedTransform tests",
+    [
+      testDecomposedTransform({ scaleX: 1, scaleY: 0 }),
+      testDecomposedTransform({ scaleX: 0, scaleY: 1 }),
+      testDecomposedTransform({ scaleX: 1, scaleY: 0, rotation: 30 }),
+      testDecomposedTransform({ scaleX: 0, scaleY: 1, rotation: 30 }),
+      testDecomposedTransform({ scaleX: 1, scaleY: 1 }),
+      testDecomposedTransform({ scaleX: -1, scaleY: 1 }),
+      testDecomposedTransform({ scaleX: 1, scaleY: -1 }),
+      testDecomposedTransform({ scaleX: -1, scaleY: -1 }),
+      testDecomposedTransform({ rotation: 90 }),
+      testDecomposedTransform({ rotation: -90 }),
+      testDecomposedTransform({ skewX: 45 }),
+      testDecomposedTransform({ skewY: 45 }),
+      testDecomposedTransform({ scaleX: -1, skewX: 45 }),
+      testDecomposedTransform({ scaleX: -1, skewY: 45 }),
+      testDecomposedTransform({ scaleY: -1, skewX: 45 }),
+      testDecomposedTransform({ scaleY: -1, skewY: 45 }),
+      testDecomposedTransform({ scaleX: -1, skewX: 45, rotation: 30 }),
+      testDecomposedTransform({ scaleX: -1, skewY: 45, rotation: 30 }),
+      testDecomposedTransform({ scaleY: -1, skewX: 45, rotation: 30 }),
+      testDecomposedTransform({ scaleY: -1, skewY: 45, rotation: 30 }),
+      testDecomposedTransform({ scaleX: -1, skewX: 45, rotation: -30 }),
+      testDecomposedTransform({ scaleX: -1, skewY: 45, rotation: -30 }),
+      testDecomposedTransform({ scaleY: -1, skewX: 45, rotation: -30 }),
+      testDecomposedTransform({ scaleY: -1, skewY: 45, rotation: -30 }),
+      testDecomposedTransform({ scaleX: -2, skewX: 45, rotation: 30 }),
+      testDecomposedTransform({ scaleX: -2, skewY: 45, rotation: 30 }),
+      testDecomposedTransform({ scaleY: -2, skewX: 45, rotation: 30 }),
+      testDecomposedTransform({ scaleY: -2, skewY: 45, rotation: 30 }),
+      testDecomposedTransform({ scaleX: -2, skewX: 45, rotation: -30 }),
+      testDecomposedTransform({ scaleX: -2, skewY: 45, rotation: -30 }),
+      testDecomposedTransform({ scaleY: -2, skewX: 45, rotation: -30 }),
+      testDecomposedTransform({ scaleY: -2, skewY: 45, rotation: -30 }),
+    ],
+    (testData) => {
+      expect(
+        testData.toTransform().toDecomposed().toTransform().toArray()
+      ).to.deep.equals(testData.toTransform().toArray());
+    }
+  );
 });

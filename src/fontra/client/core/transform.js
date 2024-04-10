@@ -1,3 +1,4 @@
+import { copySign } from "./utils.js";
 // transform.js is a partial port of fonttools' transform.py
 // (AKA fontTools.misc.transform.Transform) which is used on
 // Fontra's Python side.
@@ -167,6 +168,11 @@ export class Transform {
     return new this.constructor(xx, xy, yx, yy, dx, dy);
   }
 
+  toDecomposed() {
+    //Decompose into a DecomposedTransform.
+    return DecomposedTransform.fromTransform(this);
+  }
+
   toArray() {
     return _unpackTransformObject(this);
   }
@@ -174,6 +180,50 @@ export class Transform {
 
 function _unpackTransformObject(t) {
   return [t.xx, t.xy, t.yx, t.yy, t.dx, t.dy];
+}
+
+export class DecomposedTransform {
+  constructor(
+    translateX = 0,
+    translateY = 0,
+    rotation = 0,
+    scaleX = 1,
+    scaleY = 1,
+    skewX = 0,
+    skewY = 0,
+    tCenterX = 0,
+    tCenterY = 0
+  ) {
+    this.translateX = translateX;
+    this.translateY = translateY;
+    this.rotation = rotation; // in degrees, counter-clockwise
+    this.scaleX = scaleX;
+    this.scaleY = scaleY;
+    this.skewX = skewX; // in degrees, clockwise
+    this.skewY = skewY; // in degrees, counter-clockwise
+    this.tCenterX = tCenterX;
+    this.tCenterY = tCenterY;
+  }
+
+  static fromTransform(transform) {
+    const t = decomposedFromTransform(transform);
+
+    return new DecomposedTransform(
+      t.translateX,
+      t.translateY,
+      t.rotation,
+      t.scaleX,
+      t.scaleY,
+      t.skewX,
+      t.skewY,
+      0,
+      0
+    );
+  }
+
+  toTransform() {
+    return decomposedToTransform(this);
+  }
 }
 
 export function decomposedToTransform(transformation) {
@@ -202,6 +252,12 @@ export function decomposedFromTransform(affine) {
   const [a, b, c, d] = [affine.xx, affine.xy, affine.yx, affine.yy];
   const delta = a * d - b * c;
 
+  let sx = copySign(1, a);
+  if (sx < 0) {
+    a *= sx;
+    b *= sx;
+  }
+
   let rotation = 0;
   let scaleX = 0,
     scaleY = 0;
@@ -227,9 +283,9 @@ export function decomposedFromTransform(affine) {
     translateX: affine.dx,
     translateY: affine.dy,
     rotation: rotation * (180 / Math.PI),
-    scaleX: scaleX,
+    scaleX: scaleX * sx,
     scaleY: scaleY,
-    skewX: skewX * (180 / Math.PI),
+    skewX: skewX * (180 / Math.PI) * sx,
     skewY: skewY * (180 / Math.PI),
     tCenterX: 0,
     tCenterY: 0,

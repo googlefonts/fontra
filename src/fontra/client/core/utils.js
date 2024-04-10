@@ -483,3 +483,12 @@ export function loadURLFragment(fragment) {
 export function dumpURLFragment(obj) {
   return "#" + bytesToBase64(zlibSync(strToU8(JSON.stringify(obj))));
 }
+
+export function copySign(x, y) {
+  // This is similar to python math.copysign
+  // Generated with openAI's codex
+  if (x === 0 || y === 0) {
+    return Math.sign(x) * Math.sign(y);
+  }
+  return Math.abs(x) * Math.sign(y);
+}
