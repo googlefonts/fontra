@@ -2,7 +2,7 @@ import { consolidateChanges } from "../core/changes.js";
 import { polygonIsConvex } from "../core/convex-hull.js";
 import { Transform } from "../core/transform.js";
 import {
-  makeAffineTransform,
+  decomposedToTransform,
   parseSelection,
   reversed,
   unionIndexSets,
@@ -250,7 +250,7 @@ function makeComponentTCenterEditFunc(component, componentIndex, roundFunc) {
     x: transformation.tCenterX,
     y: transformation.tCenterY,
   };
-  const affine = makeAffineTransform(transformation);
+  const affine = decomposedToTransform(transformation);
   const affineInv = affine.inverse();
   const localTCenter = affine.transformPointObject(tCenter);
   return [
@@ -260,7 +260,7 @@ function makeComponentTCenterEditFunc(component, componentIndex, roundFunc) {
       );
       editedTCenter.x = roundFunc(editedTCenter.x);
       editedTCenter.y = roundFunc(editedTCenter.y);
-      const editedAffine = makeAffineTransform({
+      const editedAffine = decomposedToTransform({
         ...transformation,
         tCenterX: editedTCenter.x,
         tCenterY: editedTCenter.y,

@@ -17,7 +17,7 @@ import {
   registerRepresentationFactory,
 } from "./representation-cache.js";
 import { Transform } from "./transform.js";
-import { enumerate, makeAffineTransform, range } from "./utils.js";
+import { decomposedToTransform, enumerate, range } from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
@@ -818,7 +818,7 @@ async function* iterFlattenedComponentPaths(
       inst = makeEmptyComponentPlaceholderGlyph();
     }
   }
-  let t = makeAffineTransform(compo.transformation);
+  let t = decomposedToTransform(compo.transformation);
   if (transformation) {
     t = transformation.transform(t);
   }
@@ -868,14 +868,14 @@ export async function decomposeComponents(
       location,
       getGlyphFunc
     );
-    const t = makeAffineTransform(component.transformation);
+    const t = decomposedToTransform(component.transformation);
     newPaths.push(compoInstance.path.transformed(t));
     for (const nestedCompo of compoInstance.components) {
-      const nestedT = makeAffineTransform(nestedCompo.transformation);
+      const nestedT = decomposedToTransform(nestedCompo.transformation);
       const newNestedT = t.transform(nestedT);
       newComponents.push({
         name: nestedCompo.name,
-        transformation: decomposeAffineTransform(newNestedT),
+        transformation: decomposedFromTransform(newNestedT),
         location: { ...nestedCompo.location },
       });
     }
@@ -932,7 +932,7 @@ function mergeLocations(loc1, loc2) {
   return { ...loc1, ...loc2 };
 }
 
-export function decomposeAffineTransform(affine) {
+export function decomposedFromTransform(affine) {
   // Decompose a 2x2 transformation matrix into components:
   // - rotation
   // - scaleX

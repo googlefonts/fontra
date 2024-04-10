@@ -283,7 +283,7 @@ export async function readFromClipboard(type) {
   return undefined;
 }
 
-export function makeAffineTransform(transformation) {
+export function decomposedToTransform(transformation) {
   let t = new Transform();
   t = t.translate(
     transformation.translateX + transformation.tCenterX,
