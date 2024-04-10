@@ -302,31 +302,12 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "spacer" });
     formContents.push({ type: "header", label: `Align Objects` });
 
-    let buttonHorizontalAlignTop = html.createDomElement("icon-button", {
-      src: "/tabler-icons/horizontal-align-top.svg",
-      onclick: (event) => this._doSomthing("horizontal-align-top"),
-      class: "ui-form-icon ui-form-icon-button",
-    });
-
-    formContents.push({
-      type: "icons",
-      label: buttonHorizontalAlignTop,
-      auxiliaryElements: [
-        html.createDomElement("icon-button", {
-          src: "/tabler-icons/horizontal-align-center.svg",
-          onclick: (event) => this._doSomthing("horizontal-align-center"),
-        }),
-        html.createDomElement("icon-button", {
-          src: "/tabler-icons/horizontal-align-bottom.svg",
-          onclick: (event) => this._doSomthing("horizontal-align-bottom"),
-        }),
-      ],
-    });
-
     let buttonVerticalAlignTop = html.createDomElement("icon-button", {
-      src: "/tabler-icons/vertical-align-left.svg",
-      onclick: (event) => this._doSomthing("vertical-align-left"),
-      class: "ui-form-icon ui-form-icon-button",
+      "src": "/tabler-icons/vertical-align-left.svg",
+      "onclick": (event) => this._alignObjectsLayerGlyph("align left"),
+      "class": "ui-form-icon ui-form-icon-button",
+      "data-tooltip": "Align left",
+      "data-tooltipposition": "bottom-left",
     });
 
     formContents.push({
@@ -334,18 +315,76 @@ export default class TransformationPanel extends Panel {
       label: buttonVerticalAlignTop,
       auxiliaryElements: [
         html.createDomElement("icon-button", {
-          src: "/tabler-icons/vertical-align-center.svg",
-          onclick: (event) => this._doSomthing("vertical-align-center"),
+          "src": "/tabler-icons/vertical-align-center.svg",
+          "onclick": (event) => this._doSomthing("vertical-align-center"),
+          "data-tooltip": "Align center",
+          "data-tooltipposition": "bottom",
+          "class": "ui-form-icon",
         }),
         html.createDomElement("icon-button", {
-          src: "/tabler-icons/vertical-align-right.svg",
-          onclick: (event) => this._doSomthing("vertical-align-right"),
+          "src": "/tabler-icons/vertical-align-right.svg",
+          "onclick": (event) => this._doSomthing("vertical-align-right"),
+          "data-tooltip": "Align right",
+          "data-tooltipposition": "bottom-right",
+          "class": "ui-form-icon",
+        }),
+      ],
+    });
+
+    let buttonHorizontalAlignTop = html.createDomElement("icon-button", {
+      "src": "/tabler-icons/horizontal-align-top.svg",
+      "onclick": (event) => this._alignObjectsLayerGlyph("align top"),
+      "class": "ui-form-icon ui-form-icon-button",
+      "data-tooltip": "Align top",
+      "data-tooltipposition": "bottom-left",
+    });
+
+    formContents.push({
+      type: "icons",
+      label: buttonHorizontalAlignTop,
+      auxiliaryElements: [
+        html.createDomElement("icon-button", {
+          "src": "/tabler-icons/horizontal-align-center.svg",
+          "onclick": (event) => this._doSomthing("horizontal-align-middle"),
+          "data-tooltip": "Align middle",
+          "data-tooltipposition": "bottom",
+          "class": "ui-form-icon",
+        }),
+        html.createDomElement("icon-button", {
+          "src": "/tabler-icons/horizontal-align-bottom.svg",
+          "onclick": (event) => this._doSomthing("horizontal-align-bottom"),
+          "data-tooltip": "Align bottom",
+          "data-tooltipposition": "bottom-right",
+          "class": "ui-form-icon",
+        }),
+      ],
+    });
+
+    /*  formContents.push({ type: "spacer" });
+    formContents.push({ type: "header", label: `Distribute Objects` }); */
+
+    formContents.push({
+      type: "icons",
+      label: "",
+      auxiliaryElements: [
+        html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layout-distribute-vertical.svg",
+          "onclick": (event) => this._doSomthing("layout-distribute-vertical"),
+          "data-tooltip": "Distribute vertical",
+          "data-tooltipposition": "top",
+          "class": "ui-form-icon",
+        }),
+        html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layout-distribute-horizontal.svg",
+          "onclick": (event) => this._doSomthing("layout-distribute-horizontal"),
+          "data-tooltip": "Distribute horizontal",
+          "data-tooltipposition": "top-right",
+          "class": "ui-form-icon",
         }),
       ],
     });
 
     formContents.push({ type: "spacer" });
-    formContents.push({ type: "header", label: `Distribute Objects` });
 
     this.infoForm.setFieldDescriptions(formContents);
 
@@ -529,6 +568,103 @@ export default class TransformationPanel extends Panel {
     this.transformParameters.originXButton = undefined;
     this.transformParameters.originYButton = undefined;
     this.update();
+  }
+
+  async _alignObjectsLayerGlyph(undoLabel) {
+    let {
+      point: pointIndices,
+      component: componentIndices,
+      componentOrigin,
+      componentTCenter,
+    } = parseSelection(this.sceneController.selection);
+
+    pointIndices = pointIndices || [];
+    componentIndices = componentIndices || [];
+    if (!pointIndices.length && !componentIndices.length) {
+      return;
+    }
+
+    const varGlyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+
+    const editingLayers = this.sceneController.getEditingLayerFromGlyphLayers(
+      varGlyphController.layers
+    );
+    const staticGlyphControllers = {};
+    for (const [i, source] of enumerate(varGlyphController.sources)) {
+      if (source.layerName in editingLayers) {
+        staticGlyphControllers[source.layerName] =
+          await this.fontController.getLayerGlyphController(
+            varGlyphController.name,
+            source.layerName,
+            i
+          );
+      }
+    }
+
+    await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
+      const layerInfo = Object.entries(
+        this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
+      ).map(([layerName, layerGlyph]) => {
+        const behaviorFactory = new EditBehaviorFactory(
+          layerGlyph,
+          this.sceneController.selection,
+          this.sceneController.experimentalFeatures.scalingEditBehavior
+        );
+        return {
+          layerName,
+          changePath: ["layers", layerName, "glyph"],
+          layerGlyphController: staticGlyphControllers[layerName],
+          editBehavior: behaviorFactory.getBehavior("default"),
+        };
+      });
+
+      const editChanges = [];
+      const rollbackChanges = [];
+      for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
+        const layerGlyph = layerGlyphController.instance;
+        // pinPoint might be the alignment point
+        /*         const pinPoint = this._getPinPoint(
+          layerGlyphController,
+          pointIndices,
+          componentIndices,
+          this.transformParameters.originX,
+          this.transformParameters.originY
+        ); */
+
+        const alignmentPoint = { x: 0, y: 100 };
+
+        const t = new Transform().translate(alignmentPoint.x, alignmentPoint.y);
+        /*           .transform(transformation)
+          .translate(-pinPoint.x, -pinPoint.y); */
+
+        const pointTransformFunction = t.transformPointObject.bind(t);
+        // TODO: delta for each outline and component is different,
+        // depending on the alignment each object has to be moved differently.
+        // Not sure if this is possibel with the current implementation
+        //delta = {}
+
+        const editChange =
+          editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+
+        applyChange(layerGlyph, editChange);
+        editChanges.push(consolidateChanges(editChange, changePath));
+        rollbackChanges.push(
+          consolidateChanges(editBehavior.rollbackChange, changePath)
+        );
+      }
+
+      let changes = ChangeCollector.fromChanges(
+        consolidateChanges(editChanges),
+        consolidateChanges(rollbackChanges)
+      );
+
+      return {
+        changes: changes,
+        undoLabel: undoLabel,
+        broadcast: true,
+      };
+    });
   }
 
   async toggle(on, focus) {
