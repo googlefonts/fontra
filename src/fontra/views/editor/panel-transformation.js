@@ -369,20 +369,52 @@ export default class TransformationPanel extends Panel {
       auxiliaryElements: [
         html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-vertical.svg",
-          "onclick": (event) => this._doSomthing("layout-distribute-vertical"),
-          "data-tooltip": "Distribute vertical",
+          "onclick": (event) => this._doSomthing("layout-distribute-horizontal"),
+          "data-tooltip": "Distribute horizontal",
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
         }),
         html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-horizontal.svg",
-          "onclick": (event) => this._doSomthing("layout-distribute-horizontal"),
-          "data-tooltip": "Distribute horizontal",
+          "onclick": (event) => this._doSomthing("layout-distribute-vertical"),
+          "data-tooltip": "Distribute vertical",
           "data-tooltipposition": "top-right",
           "class": "ui-form-icon",
         }),
       ],
     });
+
+    /*     formContents.push({ type: "divider" });
+
+    let buttonDistributeVertical = html.createDomElement("icon-button", {
+      "src": "/tabler-icons/layout-distribute-vertical.svg",
+      "onclick": (event) => this._doSomthing("layout-distribute-vertical"),
+      "class": "ui-form-icon ui-form-icon-button",
+      "data-tooltip": "distribute vertical",
+      "data-tooltipposition": "top-left",
+    });
+
+    formContents.push({
+      type: "edit-number",
+      key: "rotation",
+      label: buttonDistributeVertical,
+      value: this.transformParameters.rotation,
+    });
+
+    let buttonDistributeHorizontal = html.createDomElement("icon-button", {
+      "src": "/tabler-icons/layout-distribute-horizontal.svg",
+      "onclick": (event) => this._doSomthing("layout-distribute-horizontal"),
+      "class": "ui-form-icon ui-form-icon-button",
+      "data-tooltip": "distribute horizontal",
+      "data-tooltipposition": "top-left",
+    });
+
+    formContents.push({
+      type: "edit-number",
+      key: "rotation",
+      label: buttonDistributeHorizontal,
+      value: this.transformParameters.rotation,
+    }); */
 
     formContents.push({ type: "spacer" });
 
