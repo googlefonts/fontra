@@ -28,6 +28,10 @@ export class Form extends SimpleElement {
       white-space: nowrap;
     }
 
+    .ui-form-full-width {
+      grid-column: 1 / span 2;
+    }
+
     hr {
       border: none;
       border-top: 1px solid var(--horizontal-rule-color);
@@ -78,9 +82,29 @@ export class Form extends SimpleElement {
       white-space: normal;
     }
 
-    .ui-form-value.edit-number-x-y {
+    .ui-form-value.edit-number-x-y,
+    .ui-form-value.icons {
       display: flex;
       gap: 0.3rem;
+    }
+
+    .ui-form-icon {
+      overflow-x: unset;
+      width: 1.2em;
+      white-space: nowrap;
+      margin-left: 1.3em;
+      margin-right: 1.3em;
+    }
+
+    .ui-form-icon.ui-form-icon-button {
+      display: inline-block;
+    }
+
+    .ui-form-center {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0.35rem 0.35rem;
     }
   `;
 
@@ -112,6 +136,16 @@ export class Form extends SimpleElement {
         this.contentElement.appendChild(html.hr());
         continue;
       }
+      if (fieldItem.type === "single-icon") {
+        if (fieldItem.element) {
+          const valueElement = document.createElement("div");
+          valueElement.classList.add("ui-form-full-width");
+          valueElement.appendChild(fieldItem.element);
+          this.contentElement.appendChild(valueElement);
+        }
+        continue;
+      }
+
       const labelElement = document.createElement("div");
       labelElement.classList.add("ui-form-label", fieldItem.type);
       const valueElement = document.createElement("div");
@@ -130,6 +164,16 @@ export class Form extends SimpleElement {
         if (fieldItem.auxiliaryElement) {
           labelElement.appendChild(fieldItem.auxiliaryElement);
         }
+        continue;
+      }
+
+      if (fieldItem.type === "icons") {
+        if (fieldItem.auxiliaryElements) {
+          for (const element of fieldItem.auxiliaryElements) {
+            valueElement.appendChild(element, fieldItem);
+          }
+        }
+        this.contentElement.appendChild(valueElement);
         continue;
       }
       this.contentElement.appendChild(valueElement);

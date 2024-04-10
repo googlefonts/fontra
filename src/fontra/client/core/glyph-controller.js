@@ -932,7 +932,7 @@ function mergeLocations(loc1, loc2) {
   return { ...loc1, ...loc2 };
 }
 
-function decomposeAffineTransform(affine) {
+export function decomposeAffineTransform(affine) {
   // Decompose a 2x2 transformation matrix into components:
   // - rotation
   // - scaleX
@@ -969,7 +969,7 @@ function decomposeAffineTransform(affine) {
     rotation: rotation * (180 / Math.PI),
     scaleX: scaleX,
     scaleY: scaleY,
-    skewX: -skewX * (180 / Math.PI),
+    skewX: skewX * (180 / Math.PI),
     skewY: skewY * (180 / Math.PI),
     tCenterX: 0,
     tCenterY: 0,

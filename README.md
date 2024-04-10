@@ -134,7 +134,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Connecting open paths ✅
 - Show point coordinates and component origins numerically ✅
 - Knife tool
-- Shape tool
+- Shape tool ✅
 - Measure tool ✅
 - Copy / paste ✅
 - Create new glyphs ✅
