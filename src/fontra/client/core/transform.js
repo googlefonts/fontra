@@ -249,7 +249,7 @@ export function decomposedFromTransform(affine) {
   // - scaleY
   // - skewX
   // - skewY
-  const [a, b, c, d] = [affine.xx, affine.xy, affine.yx, affine.yy];
+  let [a, b, c, d] = [affine.xx, affine.xy, affine.yx, affine.yy];
   const delta = a * d - b * c;
 
   let sx = copySign(1, a);

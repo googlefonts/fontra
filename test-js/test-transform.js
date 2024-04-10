@@ -128,11 +128,9 @@ function testDecomposedTransform({
   d.translateX = translateX;
   d.translateY = translateY;
   d.rotation = rotation;
-  d.scaleX = scaleX;
-  d.scaleY = scaleY;
-  d.skewX = skewX;
-  (d.skewY = skewY), (d.tCenterX = tCenterX);
-  d.tCenterY = tCenterY;
+  (d.scaleX = scaleX), (d.scaleY = scaleY);
+  (d.skewX = skewX), (d.skewY = skewY);
+  (d.tCenterX = tCenterX), (d.tCenterY = tCenterY);
   return d;
 }
 
