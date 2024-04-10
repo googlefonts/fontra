@@ -1,8 +1,8 @@
 import { difference, isSuperset, union } from "../core/set-ops.js";
 import { subVectors } from "../core/vector.js";
+import { decomposedToTransform } from "/core/transform.js";
 import {
   chain,
-  decomposedToTransform,
   enumerate,
   makeUPlusStringFromCodePoint,
   parseSelection,

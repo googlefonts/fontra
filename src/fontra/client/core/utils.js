@@ -283,22 +283,6 @@ export async function readFromClipboard(type) {
   return undefined;
 }
 
-export function decomposedToTransform(transformation) {
-  let t = new Transform();
-  t = t.translate(
-    transformation.translateX + transformation.tCenterX,
-    transformation.translateY + transformation.tCenterY
-  );
-  t = t.rotate(transformation.rotation * (Math.PI / 180));
-  t = t.scale(transformation.scaleX, transformation.scaleY);
-  t = t.skew(
-    transformation.skewX * (Math.PI / 180),
-    transformation.skewY * (Math.PI / 180)
-  );
-  t = t.translate(-transformation.tCenterX, -transformation.tCenterY);
-  return t;
-}
-
 export function getCharFromCodePoint(codePoint) {
   return codePoint !== undefined ? String.fromCodePoint(codePoint) : "";
 }

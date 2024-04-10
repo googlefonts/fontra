@@ -1,12 +1,7 @@
 import { consolidateChanges } from "../core/changes.js";
 import { polygonIsConvex } from "../core/convex-hull.js";
-import { Transform } from "../core/transform.js";
-import {
-  decomposedToTransform,
-  parseSelection,
-  reversed,
-  unionIndexSets,
-} from "../core/utils.js";
+import { Transform, decomposedToTransform } from "../core/transform.js";
+import { parseSelection, reversed, unionIndexSets } from "../core/utils.js";
 import { copyComponent } from "../core/var-glyph.js";
 import * as vector from "../core/vector.js";
 import {

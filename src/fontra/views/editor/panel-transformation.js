@@ -4,13 +4,16 @@ import {
   consolidateChanges,
   hasChange,
 } from "../core/changes.js";
-import { decomposedFromTransform } from "../core/glyph-controller.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
-import { Transform } from "/core/transform.js";
-import { decomposedToTransform, enumerate, parseSelection } from "/core/utils.js";
+import {
+  Transform,
+  decomposedFromTransform,
+  decomposedToTransform,
+} from "/core/transform.js";
+import { enumerate, parseSelection } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
 

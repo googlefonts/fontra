@@ -1,4 +1,4 @@
-import { decomposedToTransform } from "./utils.js";
+import { decomposedToTransform } from "./transform.js";
 
 export function staticGlyphToGLIF(glyphName, glyph, codePoints) {
   const lines = [

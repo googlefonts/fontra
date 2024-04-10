@@ -16,8 +16,12 @@ import {
   getRepresentation,
   registerRepresentationFactory,
 } from "./representation-cache.js";
-import { Transform } from "./transform.js";
-import { decomposedToTransform, enumerate, range } from "./utils.js";
+import {
+  Transform,
+  decomposedFromTransform,
+  decomposedToTransform,
+} from "./transform.js";
+import { enumerate, range } from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
@@ -930,51 +934,6 @@ function mergeLocations(loc1, loc2) {
     return loc2;
   }
   return { ...loc1, ...loc2 };
-}
-
-export function decomposedFromTransform(affine) {
-  // Decompose a 2x2 transformation matrix into components:
-  // - rotation
-  // - scaleX
-  // - scaleY
-  // - skewX
-  // - skewY
-  const [a, b, c, d] = [affine.xx, affine.xy, affine.yx, affine.yy];
-  const delta = a * d - b * c;
-
-  let rotation = 0;
-  let scaleX = 0,
-    scaleY = 0;
-  let skewX = 0,
-    skewY = 0;
-
-  // Apply the QR-like decomposition.
-  if (a != 0 || b != 0) {
-    const r = Math.sqrt(a * a + b * b);
-    rotation = b > 0 ? Math.acos(a / r) : -Math.acos(a / r);
-    [scaleX, scaleY] = [r, delta / r];
-    [skewX, skewY] = [Math.atan((a * c + b * d) / (r * r)), 0];
-  } else if (c != 0 || d != 0) {
-    const s = Math.sqrt(c * c + d * d);
-    rotation = Math.PI / 2 - (d > 0 ? Math.acos(-c / s) : -Math.acos(c / s));
-    [scaleX, scaleY] = [delta / s, s];
-    [skewX, skewY] = [0, Math.atan((a * c + b * d) / (s * s))];
-  } else {
-    // a = b = c = d = 0
-  }
-
-  const transformation = {
-    translateX: affine.dx,
-    translateY: affine.dy,
-    rotation: rotation * (180 / Math.PI),
-    scaleX: scaleX,
-    scaleY: scaleY,
-    skewX: skewX * (180 / Math.PI),
-    skewY: skewY * (180 / Math.PI),
-    tCenterX: 0,
-    tCenterY: 0,
-  };
-  return transformation;
 }
 
 function subsetLocation(location, axes) {
