@@ -189,82 +189,61 @@ export class PenTool extends BaseTool {
 
   async _handleAddPoints(eventStream, initialEvent) {
     await this.sceneController.editGlyph(async (sendIncrementalChange, glyph) => {
-      const secondaryLayers = Object.entries(
+      const layerInfo = Object.entries(
         this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
       ).map(([layerName, layerGlyph]) => {
         return {
           layerName,
-          changePath: ["layers", layerName, "glyph"],
-          glyph: layerGlyph,
+          layerGlyph,
+          behavior: getPenToolBehavior(
+            this.sceneController,
+            initialEvent,
+            layerGlyph.path,
+            this.curveType
+          ),
         };
       });
 
-      const {
-        layerName: primaryLayerName,
-        changePath: primaryChangePath,
-        glyph: primaryLayerGlyph,
-      } = secondaryLayers.shift();
+      const primaryBehavior = layerInfo[0].behavior;
 
-      const thisPropagateChange = propagateChange.bind(
-        null,
-        primaryChangePath,
-        secondaryLayers
-      );
-
-      const behavior = getPenToolBehavior(
-        this.sceneController,
-        initialEvent,
-        primaryLayerGlyph.path,
-        this.curveType
-      );
-
-      if (!behavior) {
+      if (!primaryBehavior) {
         // Nothing to do
         return;
       }
 
-      const initialChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
-        behavior.initialChanges(primaryLayerGlyph.path, initialEvent);
+      const initialChanges = recordLayerChanges(layerInfo, (behavior, layerGlyph) => {
+        behavior.initialChanges(layerGlyph.path, initialEvent);
       });
-      this.sceneController.selection = behavior.selection;
-      const deepInitialChanges = thisPropagateChange(initialChanges.change);
-      await sendIncrementalChange(deepInitialChanges);
+      this.sceneController.selection = primaryBehavior.selection;
+      await sendIncrementalChange(initialChanges.change);
       let preDragChanges = new ChangeCollector();
       let dragChanges = new ChangeCollector();
 
       if (await shouldInitiateDrag(eventStream, initialEvent)) {
-        preDragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
-          behavior.setupDrag(primaryLayerGlyph.path, initialEvent);
+        preDragChanges = recordLayerChanges(layerInfo, (behavior, layerGlyph) => {
+          behavior.setupDrag(layerGlyph.path, initialEvent);
         });
-        this.sceneController.selection = behavior.selection;
-        const deepPreDragChanges = thisPropagateChange(preDragChanges.change);
-        await sendIncrementalChange(deepPreDragChanges);
+        this.sceneController.selection = primaryBehavior.selection;
+        await sendIncrementalChange(preDragChanges.change);
         for await (const event of eventStream) {
-          dragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
-            behavior.drag(primaryLayerGlyph.path, event);
+          dragChanges = recordLayerChanges(layerInfo, (behavior, layerGlyph) => {
+            behavior.drag(layerGlyph.path, event);
           });
-          const deepDragChanges = thisPropagateChange(dragChanges.change);
-          await sendIncrementalChange(deepDragChanges, true); // true: "may drop"
+          await sendIncrementalChange(dragChanges.change, true); // true: "may drop"
         }
       } else {
-        dragChanges = recordChanges(primaryLayerGlyph, (primaryLayerGlyph) => {
-          behavior.noDrag(primaryLayerGlyph.path);
+        dragChanges = recordLayerChanges(layerInfo, (behavior, layerGlyph) => {
+          behavior.noDrag(layerGlyph.path);
         });
-        this.sceneController.selection = behavior.selection;
+        this.sceneController.selection = primaryBehavior.selection;
       }
-      const deepDragChanges = thisPropagateChange(dragChanges.change);
-      await sendIncrementalChange(deepDragChanges);
+      await sendIncrementalChange(dragChanges.change);
 
       const finalChanges = initialChanges.concat(preDragChanges, dragChanges);
 
-      const deepFinalChanges = ChangeCollector.fromChanges(
-        thisPropagateChange(finalChanges.change, false),
-        thisPropagateChange(finalChanges.rollbackChange, false)
-      );
-
       return {
-        changes: deepFinalChanges,
-        undoLabel: behavior.undoLabel,
+        changes: finalChanges,
+        undoLabel: primaryBehavior.undoLabel,
       };
     });
   }
@@ -727,18 +706,13 @@ function pointsEqual(point1, point2) {
   return point1 === point2 || (point1?.x === point2?.x && point1?.y === point2?.y);
 }
 
-function propagateChange(
-  primaryChangePath,
-  secondaryLayers,
-  change,
-  doApplyChange = true
-) {
-  const primaryChange = consolidateChanges(change, primaryChangePath);
-  const layerChanges = secondaryLayers.map((layerInfo) => {
-    if (doApplyChange) {
-      applyChange(layerInfo.glyph, change);
-    }
-    return consolidateChanges(change, layerInfo.changePath);
-  });
-  return consolidateChanges([primaryChange, ...layerChanges]);
+function recordLayerChanges(layerInfo, editFunc) {
+  const layerChanges = [];
+  for (const { layerName, layerGlyph, behavior } of layerInfo) {
+    const layerChange = recordChanges(layerGlyph, (layerGlyph) =>
+      editFunc(behavior, layerGlyph)
+    );
+    layerChanges.push(layerChange.prefixed(["layers", layerName, "glyph"]));
+  }
+  return new ChangeCollector().concat(...layerChanges);
 }
