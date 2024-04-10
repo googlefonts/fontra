@@ -752,7 +752,7 @@ def test_command(tmpdir, configYAMLSources):
               source: "test-py/data/workflow/input-variable-composites.fontra"
             - action: drop-shapes
             - action: subset-by-development-status
-              statuses: [4]
+              statuses: [3]
               sourceSelectBehavior: any
             - action: drop-unreachable-glyphs
             - action: output
