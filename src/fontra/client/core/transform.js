@@ -222,12 +222,12 @@ export function decomposedFromTransform(affine) {
   // Apply the QR-like decomposition.
   if (a != 0 || b != 0) {
     const r = Math.sqrt(a * a + b * b);
-    rotation = b > 0 ? Math.acos(a / r) : -Math.acos(a / r);
+    rotation = b >= 0 ? Math.acos(a / r) : -Math.acos(a / r);
     [scaleX, scaleY] = [r, delta / r];
     [skewX, skewY] = [Math.atan((a * c + b * d) / (r * r)), 0];
   } else if (c != 0 || d != 0) {
     const s = Math.sqrt(c * c + d * d);
-    rotation = Math.PI / 2 - (d > 0 ? Math.acos(-c / s) : -Math.acos(c / s));
+    rotation = Math.PI / 2 - (d >= 0 ? Math.acos(-c / s) : -Math.acos(c / s));
     [scaleX, scaleY] = [delta / s, s];
     [skewX, skewY] = [0, Math.atan((a * c + b * d) / (s * s))];
   } else {
