@@ -113,68 +113,62 @@ describe("transform tests", () => {
   });
 });
 
-function testDecomposedTransform({
-  translateX = 0,
-  translateY = 0,
-  rotation = 0,
-  scaleX = 1,
-  scaleY = 1,
-  skewX = 0,
-  skewY = 0,
-  tCenterX = 0,
-  tCenterY = 0,
-} = {}) {
-  let d = new DecomposedTransform();
-  d.translateX = translateX;
-  d.translateY = translateY;
-  d.rotation = rotation;
-  (d.scaleX = scaleX), (d.scaleY = scaleY);
-  (d.skewX = skewX), (d.skewY = skewY);
-  (d.tCenterX = tCenterX), (d.tCenterY = tCenterY);
-  return d;
-}
+const decomposedIdentity = {
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+  scaleX: 1,
+  scaleY: 1,
+  skewX: 0,
+  skewY: 0,
+  tCenterX: 0,
+  tCenterY: 0,
+};
 
 describe("DecomposedTransform", () => {
   parametrize(
     "DecomposedTransform tests",
     [
-      testDecomposedTransform({ scaleX: 1, scaleY: 0 }),
-      testDecomposedTransform({ scaleX: 0, scaleY: 1 }),
-      testDecomposedTransform({ scaleX: 1, scaleY: 0, rotation: 30 }),
-      testDecomposedTransform({ scaleX: 0, scaleY: 1, rotation: 30 }),
-      testDecomposedTransform({ scaleX: 1, scaleY: 1 }),
-      testDecomposedTransform({ scaleX: -1, scaleY: 1 }),
-      testDecomposedTransform({ scaleX: 1, scaleY: -1 }),
-      testDecomposedTransform({ scaleX: -1, scaleY: -1 }),
-      testDecomposedTransform({ rotation: 90 }),
-      testDecomposedTransform({ rotation: -90 }),
-      testDecomposedTransform({ skewX: 45 }),
-      testDecomposedTransform({ skewY: 45 }),
-      testDecomposedTransform({ scaleX: -1, skewX: 45 }),
-      testDecomposedTransform({ scaleX: -1, skewY: 45 }),
-      testDecomposedTransform({ scaleY: -1, skewX: 45 }),
-      testDecomposedTransform({ scaleY: -1, skewY: 45 }),
-      testDecomposedTransform({ scaleX: -1, skewX: 45, rotation: 30 }),
-      testDecomposedTransform({ scaleX: -1, skewY: 45, rotation: 30 }),
-      testDecomposedTransform({ scaleY: -1, skewX: 45, rotation: 30 }),
-      testDecomposedTransform({ scaleY: -1, skewY: 45, rotation: 30 }),
-      testDecomposedTransform({ scaleX: -1, skewX: 45, rotation: -30 }),
-      testDecomposedTransform({ scaleX: -1, skewY: 45, rotation: -30 }),
-      testDecomposedTransform({ scaleY: -1, skewX: 45, rotation: -30 }),
-      testDecomposedTransform({ scaleY: -1, skewY: 45, rotation: -30 }),
-      testDecomposedTransform({ scaleX: -2, skewX: 45, rotation: 30 }),
-      testDecomposedTransform({ scaleX: -2, skewY: 45, rotation: 30 }),
-      testDecomposedTransform({ scaleY: -2, skewX: 45, rotation: 30 }),
-      testDecomposedTransform({ scaleY: -2, skewY: 45, rotation: 30 }),
-      testDecomposedTransform({ scaleX: -2, skewX: 45, rotation: -30 }),
-      testDecomposedTransform({ scaleX: -2, skewY: 45, rotation: -30 }),
-      testDecomposedTransform({ scaleY: -2, skewX: 45, rotation: -30 }),
-      testDecomposedTransform({ scaleY: -2, skewY: 45, rotation: -30 }),
+      { scaleX: 1, scaleY: 0 },
+      { scaleX: 0, scaleY: 1 },
+      { scaleX: 1, scaleY: 0, rotation: 30 },
+      { scaleX: 0, scaleY: 1, rotation: 30 },
+      { scaleX: 1, scaleY: 1 },
+      { scaleX: -1, scaleY: 1 },
+      { scaleX: 1, scaleY: -1 },
+      { scaleX: -1, scaleY: -1 },
+      { rotation: 90 },
+      { rotation: -90 },
+      { skewX: 45 },
+      { skewY: 45 },
+      { scaleX: -1, skewX: 45 },
+      { scaleX: -1, skewY: 45 },
+      { scaleY: -1, skewX: 45 },
+      { scaleY: -1, skewY: 45 },
+      { scaleX: -1, skewX: 45, rotation: 30 },
+      { scaleX: -1, skewY: 45, rotation: 30 },
+      { scaleY: -1, skewX: 45, rotation: 30 },
+      { scaleY: -1, skewY: 45, rotation: 30 },
+      { scaleX: -1, skewX: 45, rotation: -30 },
+      { scaleX: -1, skewY: 45, rotation: -30 },
+      { scaleY: -1, skewX: 45, rotation: -30 },
+      { scaleY: -1, skewY: 45, rotation: -30 },
+      { scaleX: -2, skewX: 45, rotation: 30 },
+      { scaleX: -2, skewY: 45, rotation: 30 },
+      { scaleY: -2, skewX: 45, rotation: 30 },
+      { scaleY: -2, skewY: 45, rotation: 30 },
+      { scaleX: -2, skewX: 45, rotation: -30 },
+      { scaleX: -2, skewY: 45, rotation: -30 },
+      { scaleY: -2, skewX: 45, rotation: -30 },
+      { scaleY: -2, skewY: 45, rotation: -30 },
     ],
-    (testData) => {
+    (decomposed) => {
+      decomposed = { ...decomposedIdentity, ...decomposed };
       expect(
-        testData.toTransform().toDecomposed().toTransform().toArray()
-      ).to.deep.equals(testData.toTransform().toArray());
+        decomposedToTransform(
+          decomposedFromTransform(decomposedToTransform(decomposed))
+        )
+      ).to.deep.equals(decomposedToTransform(decomposed));
     }
   );
 });
