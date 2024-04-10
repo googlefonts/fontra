@@ -1101,7 +1101,13 @@ class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
 
         for glyphName in originalGlyphMap:
             if self.sourceSelectBehavior == "default":
-                instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+                try:
+                    instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+                except Exception as e:
+                    logger.error(
+                        f"{self.actionName}: glyph {glyphName} caused an error: {e!r}"
+                    )
+                    continue
                 sources = [instancer.defaultSource]
                 selectFunc = any
             else:
