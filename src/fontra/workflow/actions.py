@@ -41,6 +41,7 @@ from ..core.classes import (
     unstructure,
 )
 from ..core.instancer import FontInstancer
+from ..core.path import PackedPath
 from ..core.protocols import ReadableFontBackend
 
 # All actions should use this logger, regardless of where they are defined
@@ -102,6 +103,10 @@ class BaseFilterAction:
     def validatedInput(self) -> ReadableFontBackend:
         assert isinstance(self.input, ReadableFontBackend)
         return self.input
+
+    @cached_property
+    def fontInstancer(self):
+        return FontInstancer(self.validatedInput)
 
     @asynccontextmanager
     async def connect(
@@ -598,10 +603,6 @@ class AdjustAxesAction(BaseFilterAction):
 class DecomposeCompositesAction(BaseFilterAction):
     onlyVariableComposites: bool = False
 
-    @cached_property
-    def fontInstancer(self):
-        return FontInstancer(self.validatedInput)
-
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         glyph = instancer.glyph
@@ -803,10 +804,6 @@ def getDefaultSourceLocation(axes):
 class MoveDefaultLocationAction(BaseFilterAction):
     newDefaultUserLocation: dict[str, float]
 
-    @cached_property
-    def fontInstancer(self):
-        return FontInstancer(self.validatedInput)
-
     @async_cached_property
     async def newDefaultSourceLocation(self):
         newDefaultUserLocation = self.newDefaultUserLocation
@@ -906,10 +903,6 @@ class MoveDefaultLocationAction(BaseFilterAction):
 @dataclass(kw_only=True)
 class TrimAxesAction(BaseFilterAction):
     axes: dict[str, dict[str, Any]]
-
-    @cached_property
-    def fontInstancer(self):
-        return FontInstancer(self.validatedInput)
 
     @async_cached_property
     async def _trimmedAxesAndSourceRanges(self):
@@ -1038,9 +1031,6 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
 @registerActionClass("check-interpolation")
 @dataclass(kw_only=True)
 class CheckInterpolationAction(BaseFilterAction):
-    @cached_property
-    def fontInstancer(self):
-        return FontInstancer(self.validatedInput)
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         # Each of the next two lines may raise an error if the glyph
@@ -1093,3 +1083,55 @@ class DiskCacheAction(BaseFilterAction):
             glyph = structure(obj, VariableGlyph)
 
         return glyph
+
+
+@registerActionClass("subset-by-development-status")
+@dataclass(kw_only=True)
+class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
+    statuses: list[int]
+    sourceSelectBehavior: str = (
+        "default"  # "any", "all" or "default" (the default source)
+    )
+
+    async def _buildSubsettedGlyphMap(
+        self, originalGlyphMap: dict[str, list[int]]
+    ) -> dict[str, list[int]]:
+        statuses = set(self.statuses)
+        selectedGlyphs = set()
+
+        for glyphName in originalGlyphMap:
+            if self.sourceSelectBehavior == "default":
+                instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
+                sources = [instancer.defaultSource]
+                selectFunc = any
+            else:
+                selectFunc = any if self.sourceSelectBehavior == "any" else all
+                glyph = await self.validatedInput.getGlyph(glyphName)
+                if glyph is None:
+                    continue
+                sources = getActiveSources(glyph.sources)
+
+            if selectFunc(
+                source.customData.get("fontra.development.status") in statuses
+                for source in sources
+            ):
+                selectedGlyphs.add(glyphName)
+
+        selectedGlyphs = await self._componentsClosure(selectedGlyphs)
+        return filterGlyphMap(originalGlyphMap, selectedGlyphs)
+
+
+@registerActionClass("drop-shapes")
+@dataclass(kw_only=True)
+class DropShapesAction(BaseFilterAction):
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        return replace(
+            glyph,
+            layers={
+                layerName: replace(
+                    layer, glyph=replace(layer.glyph, path=PackedPath(), components=[])
+                )
+                for layerName, layer in glyph.layers.items()
+            },
+        )

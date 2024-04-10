@@ -1,0 +1,34 @@
+{
+"name": "uni4FFC",
+"sources": [
+{
+"name": "<default>",
+"layerName": "foreground",
+"customData": {
+"fontra.development.status": 4
+}
+},
+{
+"name": "wght=1",
+"layerName": "wght=1",
+"location": {
+"wght": 1
+},
+"customData": {
+"fontra.development.status": 3
+}
+}
+],
+"layers": {
+"foreground": {
+"glyph": {
+"xAdvance": 1000
+}
+},
+"wght=1": {
+"glyph": {
+"xAdvance": 1000
+}
+}
+}
+}

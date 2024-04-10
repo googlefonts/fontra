@@ -698,6 +698,84 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "subset-by-development-status-default-yes",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - action: drop-shapes
+            - action: subset-by-development-status
+              statuses: [4]
+            - action: drop-unreachable-glyphs
+            - action: output
+              destination: "output-subset-by-development-status-yes.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-by-development-status-default-no",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - action: drop-shapes
+            - action: subset-by-development-status
+              statuses: [3]
+            - action: drop-unreachable-glyphs
+            - action: output
+              destination: "output-subset-by-development-status-no.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-by-development-status-all-no",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - action: drop-shapes
+            - action: subset-by-development-status
+              statuses: [4]
+              sourceSelectBehavior: all
+            - action: drop-unreachable-glyphs
+            - action: output
+              destination: "output-subset-by-development-status-no.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-by-development-status-any-yes",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - action: drop-shapes
+            - action: subset-by-development-status
+              statuses: [4]
+              sourceSelectBehavior: any
+            - action: drop-unreachable-glyphs
+            - action: output
+              destination: "output-subset-by-development-status-yes.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-by-development-status-any-no",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-variable-composites.fontra"
+            - action: drop-shapes
+            - action: subset-by-development-status
+              statuses: [2]
+              sourceSelectBehavior: any
+            - action: drop-unreachable-glyphs
+            - action: output
+              destination: "output-subset-by-development-status-no.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
