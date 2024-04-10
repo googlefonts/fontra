@@ -1,4 +1,3 @@
-import { copySign } from "./utils.js";
 // transform.js is a partial port of fonttools' transform.py
 // (AKA fontTools.misc.transform.Transform) which is used on
 // Fontra's Python side.
@@ -252,7 +251,7 @@ export function decomposedFromTransform(affine) {
   let [a, b, c, d] = [affine.xx, affine.xy, affine.yx, affine.yy];
   const delta = a * d - b * c;
 
-  let sx = copySign(1, a);
+  let sx = Math.sign(a) || 1;
   if (sx < 0) {
     a *= sx;
     b *= sx;
