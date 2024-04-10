@@ -450,7 +450,8 @@ export default class TransformationPanel extends Panel {
 
           const editedT = new Transform()
             .translate(-tCenterX, -tCenterY)
-            .transform(t.transform(decomposedToTransform(component.transformation)))
+            .transform(t)
+            .transform(decomposedToTransform(component.transformation))
             .translate(tCenterX, tCenterY);
 
           component = copyComponent(component);
