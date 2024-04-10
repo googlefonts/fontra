@@ -147,6 +147,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Edit local sources/layers ✅
 - Built-in support for Non-Linear Interpolation
 - Remove overlap and other path operators
+- Transformation panel ✅
 
 ### Font-level viewing / editing
 
