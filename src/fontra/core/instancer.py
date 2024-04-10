@@ -211,6 +211,14 @@ class GlyphInstancer:
         return {axis.name: axis.defaultValue for axis in self.combinedAxes}
 
     @cached_property
+    def defaultSource(self) -> Source:
+        defaultSourceLocation = self.defaultSourceLocation
+        for source in self.activeSources:
+            if defaultSourceLocation | source.location == defaultSourceLocation:
+                return source
+        raise InterpolationError("default source not found")
+
+    @cached_property
     def componentTypes(self) -> list[bool]:
         """A list with a boolean for each component: True if the component is
         variable (has a non-empty location) and False if it is a "classic"
