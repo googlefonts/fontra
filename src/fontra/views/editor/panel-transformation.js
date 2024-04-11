@@ -316,38 +316,9 @@ export default class TransformationPanel extends Panel {
     };
   }
 
-  _getSelectedBounds(layerGlyphController, pointIndices, componentIndices) {
-    const selectionRects = [];
-    if (pointIndices.length) {
-      const selRect = rectFromPoints(
-        pointIndices
-          .map((i) => layerGlyphController.instance.path.getPoint(i))
-          .filter((point) => !!point)
-      );
-      if (selRect) {
-        selectionRects.push(selRect);
-      }
-    }
-
-    for (const componentIndex of componentIndices) {
-      const component = layerGlyphController.components[componentIndex];
-      if (!component || !component.controlBounds) {
-        continue;
-      }
-      selectionRects.push(component.controlBounds);
-    }
-
-    if (selectionRects.length) {
-      const selectionBounds = unionRect(...selectionRects);
-      return selectionBounds;
-    }
-  }
-
-  _getPinPoint(layerGlyphController, pointIndices, componentIndices, originX, originY) {
-    let bounds = this._getSelectedBounds(
-      layerGlyphController,
-      pointIndices,
-      componentIndices
+  _getPinPoint(layerGlyphController, originX, originY) {
+    const bounds = layerGlyphController.getSelectionBounds(
+      this.sceneController.selection
     );
     const { width, height } = rectSize(bounds);
 
@@ -375,12 +346,9 @@ export default class TransformationPanel extends Panel {
   }
 
   async _transformLayerGlyph(transformation, undoLabel) {
-    let {
-      point: pointIndices,
-      component: componentIndices,
-      componentOrigin,
-      componentTCenter,
-    } = parseSelection(this.sceneController.selection);
+    let { point: pointIndices, component: componentIndices } = parseSelection(
+      this.sceneController.selection
+    );
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
@@ -429,8 +397,6 @@ export default class TransformationPanel extends Panel {
         const layerGlyph = layerGlyphController.instance;
         const pinPoint = this._getPinPoint(
           layerGlyphController,
-          pointIndices,
-          componentIndices,
           this.transformParameters.originX,
           this.transformParameters.originY
         );
