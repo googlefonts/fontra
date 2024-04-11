@@ -190,7 +190,7 @@ export default class TransformationPanel extends Panel {
     });
 
     let buttonScale = html.createDomElement("icon-button", {
-      "src": "/tabler-icons/dimensions.svg",
+      "src": "/tabler-icons/resize.svg",
       "onclick": (event) =>
         this._transformLayerGlyph(
           new Transform().scale(
