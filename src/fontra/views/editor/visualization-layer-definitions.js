@@ -1,9 +1,9 @@
 import { difference, isSuperset, union } from "../core/set-ops.js";
 import { subVectors } from "../core/vector.js";
+import { decomposedToTransform } from "/core/transform.js";
 import {
   chain,
   enumerate,
-  makeAffineTransform,
   makeUPlusStringFromCodePoint,
   parseSelection,
   round,
@@ -467,7 +467,7 @@ registerVisualizationLayerDefinition({
         const component = componentController.compo;
         const transformation = component.transformation;
 
-        const affine = makeAffineTransform(transformation);
+        const affine = decomposedToTransform(transformation);
         const [cx, cy] = affine.transformPoint(
           transformation.tCenterX,
           transformation.tCenterY

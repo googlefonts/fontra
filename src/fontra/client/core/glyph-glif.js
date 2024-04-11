@@ -1,4 +1,4 @@
-import { makeAffineTransform } from "./utils.js";
+import { decomposedToTransform } from "./transform.js";
 
 export function staticGlyphToGLIF(glyphName, glyph, codePoints) {
   const lines = [
@@ -58,7 +58,7 @@ export function staticGlyphToGLIF(glyphName, glyph, codePoints) {
       // TODO: implement variable-components-in-ufo
       continue;
     }
-    const t = makeAffineTransform(component.transformation);
+    const t = decomposedToTransform(component.transformation);
     const attrs = { base: component.name };
     for (const [fontraField, ufoField, defaultValue] of transformFieldsMap) {
       if (t[fontraField] != defaultValue) {

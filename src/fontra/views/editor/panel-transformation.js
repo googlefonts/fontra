@@ -4,13 +4,16 @@ import {
   consolidateChanges,
   hasChange,
 } from "../core/changes.js";
-import { decomposeAffineTransform } from "../core/glyph-controller.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
-import { Transform } from "/core/transform.js";
-import { enumerate, makeAffineTransform, parseSelection } from "/core/utils.js";
+import {
+  Transform,
+  decomposedFromTransform,
+  decomposedToTransform,
+} from "/core/transform.js";
+import { enumerate, parseSelection } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
 
@@ -447,11 +450,12 @@ export default class TransformationPanel extends Panel {
 
           const editedT = new Transform()
             .translate(-tCenterX, -tCenterY)
-            .transform(t.transform(makeAffineTransform(component.transformation)))
+            .transform(t)
+            .transform(decomposedToTransform(component.transformation))
             .translate(tCenterX, tCenterY);
 
           component = copyComponent(component);
-          component.transformation = decomposeAffineTransform(editedT);
+          component.transformation = decomposedFromTransform(editedT);
           component.transformation.tCenterX = tCenterX;
           component.transformation.tCenterY = tCenterY;
 

@@ -1,6 +1,13 @@
-import { expect } from "chai";
+import { expect, use } from "chai";
+import chaiAlmost from "chai-almost";
+use(chaiAlmost());
 
-import { Transform } from "../src/fontra/client/core/transform.js";
+import {
+  Transform,
+  decomposedFromTransform,
+  decomposedToTransform,
+} from "../src/fontra/client/core/transform.js";
+import { parametrize } from "./test-support.js";
 
 describe("transform tests", () => {
   it("identity", () => {
@@ -68,4 +75,94 @@ describe("transform tests", () => {
     const it = t.inverse();
     expect(it.transformPoint(42, 103)).to.deep.equal([10, 20]);
   });
+
+  it("decomposedFromTransform", () => {
+    const t = new Transform().scale(4, 5);
+    const d = decomposedFromTransform(t);
+    expect(d.scaleX).to.deep.equal(4);
+    expect(d.scaleY).to.deep.equal(5);
+  });
+
+  it("decomposedToTransform", () => {
+    const t = {
+      translateX: 2,
+      translateY: 3,
+      rotation: 0,
+      scaleX: 4,
+      scaleY: 5,
+      skewX: 0,
+      skewY: 0,
+      tCenterX: 0,
+      tCenterY: 0,
+    };
+    const d = decomposedToTransform(t);
+    expect(d.toArray()).to.deep.equal([4, 0, 0, 5, 2, 3]);
+  });
+
+  it("toDecomposed", () => {
+    const t = new Transform().translate(2, 3).scale(4, 5);
+    expect(decomposedToTransform(t.toDecomposed()).toArray()).to.deep.equal([
+      4, 0, 0, 5, 2, 3,
+    ]);
+  });
+});
+
+const decomposedIdentity = {
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+  scaleX: 1,
+  scaleY: 1,
+  skewX: 0,
+  skewY: 0,
+  tCenterX: 0,
+  tCenterY: 0,
+};
+
+describe("DecomposedTransform", () => {
+  parametrize(
+    "DecomposedTransform tests",
+    [
+      { scaleX: 1, scaleY: 0 },
+      { scaleX: 0, scaleY: 1 },
+      { scaleX: 1, scaleY: 0, rotation: 30 },
+      { scaleX: 0, scaleY: 1, rotation: 30 },
+      { scaleX: 1, scaleY: 1 },
+      { scaleX: -1, scaleY: 1 },
+      { scaleX: 1, scaleY: -1 },
+      { scaleX: -1, scaleY: -1 },
+      { rotation: 90 },
+      { rotation: -90 },
+      { skewX: 45 },
+      { skewY: 45 },
+      { scaleX: -1, skewX: 45 },
+      { scaleX: -1, skewY: 45 },
+      { scaleY: -1, skewX: 45 },
+      { scaleY: -1, skewY: 45 },
+      { scaleX: -1, skewX: 45, rotation: 30 },
+      { scaleX: -1, skewY: 45, rotation: 30 },
+      { scaleY: -1, skewX: 45, rotation: 30 },
+      { scaleY: -1, skewY: 45, rotation: 30 },
+      { scaleX: -1, skewX: 45, rotation: -30 },
+      { scaleX: -1, skewY: 45, rotation: -30 },
+      { scaleY: -1, skewX: 45, rotation: -30 },
+      { scaleY: -1, skewY: 45, rotation: -30 },
+      { scaleX: -2, skewX: 45, rotation: 30 },
+      { scaleX: -2, skewY: 45, rotation: 30 },
+      { scaleY: -2, skewX: 45, rotation: 30 },
+      { scaleY: -2, skewY: 45, rotation: 30 },
+      { scaleX: -2, skewX: 45, rotation: -30 },
+      { scaleX: -2, skewY: 45, rotation: -30 },
+      { scaleY: -2, skewX: 45, rotation: -30 },
+      { scaleY: -2, skewY: 45, rotation: -30 },
+    ],
+    (decomposed) => {
+      decomposed = { ...decomposedIdentity, ...decomposed };
+      expect(
+        decomposedToTransform(
+          decomposedFromTransform(decomposedToTransform(decomposed))
+        )
+      ).to.deep.almost.equals(decomposedToTransform(decomposed));
+    }
+  );
 });
