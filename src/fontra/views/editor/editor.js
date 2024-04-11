@@ -61,6 +61,7 @@ import {
 import { VisualizationLayers } from "./visualization-layers.js";
 import * as html from "/core/html-utils.js";
 import { themeController } from "/core/theme-settings.js";
+import { getDecomposedIdentity } from "/core/transform.js";
 import { MenuBar } from "/web-components/menu-bar.js";
 import { MenuItemDivider, showMenu } from "/web-components/menu-panel.js";
 import { dialog, dialogSetup, message } from "/web-components/modal-dialog.js";
@@ -1755,24 +1756,13 @@ export class EditorController {
       return;
     }
 
-    const transformation = {
-      translateX: 0,
-      translateY: 0,
-      rotation: 0,
-      scaleX: 1,
-      scaleY: 1,
-      skewX: 0,
-      skewY: 0,
-      tCenterX: 0,
-      tCenterY: 0,
-    };
     const baseGlyph = await this.fontController.getGlyph(glyphName);
     const location = Object.fromEntries(
       baseGlyph.glyph.axes.map((axis) => [axis.name, axis.defaultValue])
     );
     const newComponent = {
       name: glyphName,
-      transformation: transformation,
+      transformation: getDecomposedIdentity(),
       location: location,
     };
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {

@@ -2,6 +2,7 @@ import Panel from "./panel.js";
 import { recordChanges } from "/core/change-recorder.js";
 import * as html from "/core/html-utils.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
+import { getDecomposedIdentity } from "/core/transform.js";
 import {
   enumerate,
   getCharFromCodePoint,
@@ -415,17 +416,7 @@ export default class SelectionInfoPanel extends Panel {
       );
 
       for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-        layerGlyph.components[componentIndex].transformation = {
-          translateX: 0,
-          translateY: 0,
-          rotation: 0,
-          scaleX: 1,
-          scaleY: 1,
-          skewX: 0,
-          skewY: 0,
-          tCenterX: 0,
-          tCenterY: 0,
-        };
+        layerGlyph.components[componentIndex].transformation = getDecomposedIdentity();
       }
       return "reset transformation";
     });

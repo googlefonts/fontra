@@ -1,6 +1,7 @@
 import { expect } from "chai";
 
 import { StaticGlyphController } from "../src/fontra/client/core/glyph-controller.js";
+import { getDecomposedIdentity } from "../src/fontra/client/core/transform.js";
 import { range } from "../src/fontra/client/core/utils.js";
 import { StaticGlyph, VariableGlyph } from "../src/fontra/client/core/var-glyph.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
@@ -17,17 +18,7 @@ function makeTestStaticGlyphObject() {
       {
         name: "test",
         location: { a: 0.5 },
-        transformation: {
-          translateX: 0,
-          translateY: 0,
-          rotation: 0,
-          scaleX: 1,
-          scaleY: 1,
-          skewX: 0,
-          skewY: 0,
-          tCenterX: 0,
-          tCenterY: 0,
-        },
+        transformation: getDecomposedIdentity(),
       },
     ],
   };
