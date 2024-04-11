@@ -573,13 +573,29 @@ export default class TransformationPanel extends Panel {
     this.update();
   }
 
+  _splitSelection(layerGlyphController, selection) {
+    const { point: pointIndices, component: componentIndices } =
+      parseSelection(selection);
+
+    const points = pointIndices
+      ? pointIndices.map((index) => layerGlyphController.instance.path.getPoint(index))
+      : [];
+    const contours = pointIndices
+      ? pointIndices.map((index) =>
+          layerGlyphController.instance.path.getContourIndex(index)
+        )
+      : [];
+    const components = componentIndices
+      ? componentIndices.map((index) => layerGlyphController.instance.components[index])
+      : [];
+
+    return { points, contours, components };
+  }
+
   async _alignObjectsLayerGlyph(undoLabel) {
-    let {
-      point: pointIndices,
-      component: componentIndices,
-      componentOrigin,
-      componentTCenter,
-    } = parseSelection(this.sceneController.selection);
+    let { point: pointIndices, component: componentIndices } = parseSelection(
+      this.sceneController.selection
+    );
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
@@ -625,36 +641,62 @@ export default class TransformationPanel extends Panel {
       const editChanges = [];
       const rollbackChanges = [];
       for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
-        const layerGlyph = layerGlyphController.instance;
-        // pinPoint might be the alignment point
-        /*         const pinPoint = this._getPinPoint(
+        console.log("this.sceneController.selection: ", this.sceneController.selection);
+        const { points, contours, components } = this._splitSelection(
           layerGlyphController,
-          pointIndices,
-          componentIndices,
-          this.transformParameters.originX,
-          this.transformParameters.originY
-        ); */
-
-        const alignmentPoint = { x: 0, y: 100 };
-
-        const t = new Transform().translate(alignmentPoint.x, alignmentPoint.y);
-        /*           .transform(transformation)
-          .translate(-pinPoint.x, -pinPoint.y); */
-
-        const pointTransformFunction = t.transformPointObject.bind(t);
-        // TODO: delta for each outline and component is different,
-        // depending on the alignment each object has to be moved differently.
-        // Not sure if this is possibel with the current implementation
-        //delta = {}
-
-        const editChange =
-          editBehavior.makeChangeForTransformFunc(pointTransformFunction);
-
-        applyChange(layerGlyph, editChange);
-        editChanges.push(consolidateChanges(editChange, changePath));
-        rollbackChanges.push(
-          consolidateChanges(editBehavior.rollbackChange, changePath)
+          this.sceneController.selection
         );
+        console.log("points: ", points);
+        console.log("contours: ", contours);
+        console.log("components: ", components);
+
+        const bounds = layerGlyphController.getSelectionBounds(
+          this.sceneController.selection
+        );
+        if (!bounds) {
+          continue;
+        }
+        const layerGlyph = layerGlyphController.instance;
+
+        // let's align everything to the left for now
+        const alignmentPoint = { x: bounds.xMin, y: undefined };
+
+        // get all points, contours:
+
+        // first move points which are not a pull contour
+
+        // move each component
+        for (const compoIndex of componentIndices) {
+          const component = layerGlyph.components[compoIndex];
+
+          const translateX = alignmentPoint.x
+            ? alignmentPoint.x - component.bounds.xMin
+            : 0;
+          const translateY = alignmentPoint.y
+            ? alignmentPoint.y - component.bounds.yMin
+            : 0;
+          const t = new Transform().translate(translateX, translateY);
+
+          const pointTransformFunction = t.transformPointObject.bind(t);
+
+          const behaviorFactory = new EditBehaviorFactory(
+            layerGlyph,
+            individualSelection, //this.sceneController.selection,
+            this.sceneController.experimentalFeatures.scalingEditBehavior
+          );
+
+          const editBehavior = behaviorFactory.getBehavior("default", true);
+          const editChange =
+            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+
+          applyChange(layerGlyph, editChange);
+          editChanges.push(consolidateChanges(editChange, changePath));
+          rollbackChanges.push(
+            consolidateChanges(editBehavior.rollbackChange, changePath)
+          );
+        }
+
+        // then move each full contour
       }
 
       let changes = ChangeCollector.fromChanges(
