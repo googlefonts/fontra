@@ -12,7 +12,7 @@ import {
 import { VariationError } from "./errors.js";
 import { filterPathByPointIndices } from "./path-functions.js";
 import { PathHitTester } from "./path-hit-tester.js";
-import { rectFromPoints, rectSize, sectRect, unionRect } from "./rectangle.js";
+import { sectRect, unionRect } from "./rectangle.js";
 import {
   getRepresentation,
   registerRepresentationFactory,
