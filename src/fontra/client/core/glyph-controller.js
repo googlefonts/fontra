@@ -645,8 +645,7 @@ export class StaticGlyphController {
     }
 
     if (selectionRects.length) {
-      const selectionBounds = unionRect(...selectionRects);
-      return selectionBounds;
+      return unionRect(...selectionRects);
     }
   }
 }
