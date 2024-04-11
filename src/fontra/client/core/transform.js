@@ -281,6 +281,14 @@ export function getDecomposedIdentity() {
 }
 
 export function prependTransformToDecomposed(prependTransform, decomposed) {
+  //
+  // Prepend `prependTransform` to `decomposed`
+  //
+  // `prependTransform` is a `Transform` instance
+  // `decomposed` is a decomposed transform
+  // This operation ensures the `tCenterX` and `tCenterY` properties of the
+  // `decomposed` transform are not lost.
+  //
   const [tCenterX, tCenterY] = [decomposed.tCenterX, decomposed.tCenterY];
 
   const newTransform = new Transform()
