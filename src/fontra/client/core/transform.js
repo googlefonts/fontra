@@ -281,10 +281,6 @@ export function getDecomposedIdentity() {
 }
 
 export function prependTransformToDecomposed(prependTransform, decomposed) {
-  if (!prependTransform) {
-    prependTransform = new Transform();
-  }
-
   const [tCenterX, tCenterY] = [decomposed.tCenterX, decomposed.tCenterY];
 
   const newTransform = new Transform()
