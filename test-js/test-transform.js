@@ -6,6 +6,7 @@ import {
   Transform,
   decomposedFromTransform,
   decomposedToTransform,
+  getDecomposedIdentity,
 } from "../src/fontra/client/core/transform.js";
 import { parametrize } from "./test-support.js";
 
@@ -84,18 +85,10 @@ describe("transform tests", () => {
   });
 
   it("decomposedToTransform", () => {
-    const t = {
-      translateX: 2,
-      translateY: 3,
-      rotation: 0,
-      scaleX: 4,
-      scaleY: 5,
-      skewX: 0,
-      skewY: 0,
-      tCenterX: 0,
-      tCenterY: 0,
-    };
-    const d = decomposedToTransform(t);
+    const t = { translateX: 2, translateY: 3, scaleX: 4, scaleY: 5 };
+    const decomposed = { ...getDecomposedIdentity(), ...t };
+
+    const d = decomposedToTransform(decomposed);
     expect(d.toArray()).to.deep.equal([4, 0, 0, 5, 2, 3]);
   });
 
@@ -106,18 +99,6 @@ describe("transform tests", () => {
     ]);
   });
 });
-
-const decomposedIdentity = {
-  translateX: 0,
-  translateY: 0,
-  rotation: 0,
-  scaleX: 1,
-  scaleY: 1,
-  skewX: 0,
-  skewY: 0,
-  tCenterX: 0,
-  tCenterY: 0,
-};
 
 describe("DecomposedTransform", () => {
   parametrize(
@@ -157,7 +138,7 @@ describe("DecomposedTransform", () => {
       { scaleY: -2, skewY: 45, rotation: -30 },
     ],
     (decomposed) => {
-      decomposed = { ...decomposedIdentity, ...decomposed };
+      decomposed = { ...getDecomposedIdentity(), ...decomposed };
       expect(
         decomposedToTransform(
           decomposedFromTransform(decomposedToTransform(decomposed))

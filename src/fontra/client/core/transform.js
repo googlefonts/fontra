@@ -263,3 +263,19 @@ function _normSinCos(v) {
   }
   return v;
 }
+
+const decomposedIdentity = {
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+  scaleX: 1,
+  scaleY: 1,
+  skewX: 0,
+  skewY: 0,
+  tCenterX: 0,
+  tCenterY: 0,
+};
+
+export function getDecomposedIdentity() {
+  return { ...decomposedIdentity };
+}
