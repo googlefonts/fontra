@@ -21,6 +21,7 @@ function makeTestStaticGlyphObject() {
         location: { a: 0.5 },
         transformation: getDecomposedIdentity(),
       },
+      { bounds: { xMin: 0, yMin: 0, xMax: 100, yMax: 200 } },
     ],
   };
 }
@@ -178,6 +179,7 @@ describe("StaticGlyphController getSelectionBounds", () => {
     [
       [["point/0", "point/1", "point/2", "point/3"], staticGlyphController.bounds],
       [["point/0", "point/1"], { xMin: 60, yMin: 0, xMax: 110, yMax: 0 }],
+      [["component/0"], { xMin: 0, yMin: 0, xMax: 100, yMax: 200 }],
       [
         ["point/0", "point/1", "component/0"],
         { xMin: 60, yMin: 0, xMax: 110, yMax: 0 },
