@@ -279,3 +279,22 @@ const decomposedIdentity = {
 export function getDecomposedIdentity() {
   return { ...decomposedIdentity };
 }
+
+export function prependTransformToDecomposed(prependTransform, decomposed) {
+  if (!prependTransform) {
+    prependTransform = new Transform();
+  }
+
+  const [tCenterX, tCenterY] = [decomposed.tCenterX, decomposed.tCenterY];
+
+  const newTransform = new Transform()
+    .translate(-tCenterX, -tCenterY)
+    .transform(prependTransform)
+    .transform(decomposedToTransform(decomposed))
+    .translate(tCenterX, tCenterY);
+
+  const newDecomposed = decomposedFromTransform(newTransform);
+  newDecomposed.tCenterX = tCenterX;
+  newDecomposed.tCenterY = tCenterY;
+  return newDecomposed;
+}
