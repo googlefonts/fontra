@@ -346,12 +346,9 @@ export default class TransformationPanel extends Panel {
   }
 
   async _transformLayerGlyph(transformation, undoLabel) {
-    let {
-      point: pointIndices,
-      component: componentIndices,
-      componentOrigin,
-      componentTCenter,
-    } = parseSelection(this.sceneController.selection);
+    let { point: pointIndices, component: componentIndices } = parseSelection(
+      this.sceneController.selection
+    );
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
