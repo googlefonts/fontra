@@ -7,6 +7,7 @@ import {
   decomposedFromTransform,
   decomposedToTransform,
   getDecomposedIdentity,
+  prependTransformToDecomposed,
 } from "../src/fontra/client/core/transform.js";
 import { parametrize } from "./test-support.js";
 
@@ -144,6 +145,52 @@ describe("DecomposedTransform", () => {
           decomposedFromTransform(decomposedToTransform(decomposed))
         )
       ).to.deep.almost.equals(decomposedToTransform(decomposed));
+    }
+  );
+});
+
+describe("prependTransformToDecomposed", () => {
+  parametrize(
+    "test name",
+    [
+      {
+        prependTransform: new Transform(),
+        decomposed: {},
+        expectedResult: {},
+      },
+      {
+        prependTransform: new Transform(),
+        decomposed: { rotation: 30 },
+        expectedResult: { rotation: 30 },
+      },
+      {
+        prependTransform: new Transform().rotate((30 * Math.PI) / 180),
+        decomposed: { rotation: 30 },
+        expectedResult: { rotation: 60 },
+      },
+      {
+        prependTransform: new Transform().rotate((30 * Math.PI) / 180),
+        decomposed: { rotation: 30, tCenterX: 50, tCenterY: 50 },
+        expectedResult: {
+          rotation: 60,
+          translateX: -31.698729810778058,
+          translateY: 18.301270189221924,
+          tCenterX: 50,
+          tCenterY: 50,
+        },
+      },
+    ],
+    (testData) => {
+      const decomposed = { ...getDecomposedIdentity(), ...testData.decomposed };
+      const expectedResult = { ...getDecomposedIdentity(), ...testData.expectedResult };
+      const result = prependTransformToDecomposed(
+        testData.prependTransform,
+        decomposed
+      );
+      expect(result).to.deep.almost.equal(expectedResult);
+      expect(decomposedToTransform(result)).to.deep.almost.equal(
+        decomposedToTransform(expectedResult)
+      );
     }
   );
 });
