@@ -158,18 +158,11 @@ describe("DecomposedTransform", () => {
     ],
     (decomposed) => {
       decomposed = { ...decomposedIdentity, ...decomposed };
-      const d = decomposedToTransform(
-        decomposedFromTransform(decomposedToTransform(decomposed))
-      );
-      const dr = decomposedToTransform(decomposed);
-      for (const key of Object.keys(d)) {
-        expect(d[key]).to.almost.eql(dr[key], key);
-      }
-      /*       expect(
+      expect(
         decomposedToTransform(
           decomposedFromTransform(decomposedToTransform(decomposed))
-        ).toArray()
-      ).to.deep.almost.equals(decomposedToTransform(decomposed).toArray()); */
+        )
+      ).to.deep.almost.equals(decomposedToTransform(decomposed));
     }
   );
 });
