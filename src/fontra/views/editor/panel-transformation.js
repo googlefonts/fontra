@@ -439,11 +439,9 @@ export default class TransformationPanel extends Panel {
     console.log("Do something: ", label);
   }
 
-  _getPinPoint(layerGlyphController, pointIndices, componentIndices, originX, originY) {
-    let bounds = this._getSelectedBounds(
-      layerGlyphController,
-      pointIndices,
-      componentIndices
+  _getPinPoint(layerGlyphController, originX, originY) {
+    const bounds = layerGlyphController.getSelectionBounds(
+      this.sceneController.selection
     );
     const { width, height } = rectSize(bounds);
 
