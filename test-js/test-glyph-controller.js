@@ -5,6 +5,7 @@ import { getDecomposedIdentity } from "../src/fontra/client/core/transform.js";
 import { range } from "../src/fontra/client/core/utils.js";
 import { StaticGlyph, VariableGlyph } from "../src/fontra/client/core/var-glyph.js";
 import { VarPackedPath } from "../src/fontra/client/core/var-path.js";
+import { parametrize } from "./test-support.js";
 
 function makeTestStaticGlyphObject() {
   return {
@@ -162,4 +163,29 @@ describe("glyph-controller Tests", () => {
     staticGlyph.xAdvance += 10;
     expect(staticGlyphController.rightMargin).to.equal(70);
   });
+});
+
+describe("StaticGlyphController getSelectionBounds", () => {
+  const sgObj = makeTestStaticGlyphObject();
+  const staticGlyph = StaticGlyph.fromObject(sgObj);
+  const staticGlyphController = new StaticGlyphController(
+    "dummy",
+    staticGlyph,
+    undefined
+  );
+  parametrize(
+    "StaticGlyphController getSelectionBounds",
+    [
+      [["point/0", "point/1", "point/2", "point/3"], staticGlyphController.bounds],
+      [["point/0", "point/1"], { xMin: 60, yMin: 0, xMax: 110, yMax: 0 }],
+      [
+        ["point/0", "point/1", "component/0"],
+        { xMin: 60, yMin: 0, xMax: 110, yMax: 0 },
+      ],
+    ],
+    (testData) => {
+      const [selection, result] = testData;
+      expect(staticGlyphController.getSelectionBounds(selection)).to.deep.equal(result);
+    }
+  );
 });

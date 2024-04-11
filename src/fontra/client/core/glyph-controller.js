@@ -10,8 +10,9 @@ import {
   splitDiscreteLocation,
 } from "./discrete-variation-model.js";
 import { VariationError } from "./errors.js";
+import { filterPathByPointIndices } from "./path-functions.js";
 import { PathHitTester } from "./path-hit-tester.js";
-import { sectRect } from "./rectangle.js";
+import { rectFromPoints, rectSize, sectRect, unionRect } from "./rectangle.js";
 import {
   getRepresentation,
   registerRepresentationFactory,
@@ -21,7 +22,7 @@ import {
   decomposedFromTransform,
   decomposedToTransform,
 } from "./transform.js";
-import { enumerate, range } from "./utils.js";
+import { enumerate, parseSelection, range } from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
 import { StaticGlyph } from "./var-glyph.js";
 import {
@@ -618,6 +619,40 @@ export class StaticGlyphController {
 
   get flattenedPathHitTester() {
     return getRepresentation(this, "flattenedPathHitTester");
+  }
+
+  getSelectionBounds(selection) {
+    let { point: pointIndices, component: componentIndices } =
+      parseSelection(selection);
+
+    pointIndices = pointIndices || [];
+    componentIndices = componentIndices || [];
+
+    //path = filterPathByPointIndices(this.instance.path, pointIndices);
+    const selectionRects = [];
+    if (pointIndices.length) {
+      const selRect = rectFromPoints(
+        pointIndices
+          .map((i) => this.instance.path.getPoint(i))
+          .filter((point) => !!point)
+      );
+      if (selRect) {
+        selectionRects.push(selRect);
+      }
+    }
+
+    for (const componentIndex of componentIndices) {
+      const component = this.components[componentIndex];
+      if (!component || !component.controlBounds) {
+        continue;
+      }
+      selectionRects.push(component.controlBounds);
+    }
+
+    if (selectionRects.length) {
+      const selectionBounds = unionRect(...selectionRects);
+      return selectionBounds;
+    }
   }
 }
 
