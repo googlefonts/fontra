@@ -11,7 +11,7 @@ import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import {
   Transform,
   decomposedFromTransform,
-  decomposedToTransform,
+  prependTransformToDecomposed,
 } from "/core/transform.js";
 import { enumerate, parseSelection } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
@@ -443,22 +443,11 @@ export default class TransformationPanel extends Panel {
         const pointTransformFunction = t.transformPointObject.bind(t);
 
         const componentTransformFunction = (component, componentIndex) => {
-          const [tCenterX, tCenterY] = [
-            component.transformation.tCenterX,
-            component.transformation.tCenterY,
-          ];
-
-          const editedT = new Transform()
-            .translate(-tCenterX, -tCenterY)
-            .transform(t)
-            .transform(decomposedToTransform(component.transformation))
-            .translate(tCenterX, tCenterY);
-
           component = copyComponent(component);
-          component.transformation = decomposedFromTransform(editedT);
-          component.transformation.tCenterX = tCenterX;
-          component.transformation.tCenterY = tCenterY;
-
+          component.transformation = prependTransformToDecomposed(
+            t,
+            component.transformation
+          );
           return component;
         };
 

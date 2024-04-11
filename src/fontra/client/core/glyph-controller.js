@@ -18,8 +18,8 @@ import {
 } from "./representation-cache.js";
 import {
   Transform,
-  decomposedFromTransform,
   decomposedToTransform,
+  prependTransformToDecomposed,
 } from "./transform.js";
 import { enumerate, range } from "./utils.js";
 import { addItemwise } from "./var-funcs.js";
@@ -875,11 +875,9 @@ export async function decomposeComponents(
     const t = decomposedToTransform(component.transformation);
     newPaths.push(compoInstance.path.transformed(t));
     for (const nestedCompo of compoInstance.components) {
-      const nestedT = decomposedToTransform(nestedCompo.transformation);
-      const newNestedT = t.transform(nestedT);
       newComponents.push({
         name: nestedCompo.name,
-        transformation: decomposedFromTransform(newNestedT),
+        transformation: prependTransformToDecomposed(t, nestedCompo.transformation),
         location: { ...nestedCompo.location },
       });
     }
