@@ -168,7 +168,7 @@ export class Transform {
   }
 
   toDecomposed() {
-    //Decompose into a DecomposedTransform.
+    // Decompose into a DecomposedTransform.
     return decomposedFromTransform(this);
   }
 
