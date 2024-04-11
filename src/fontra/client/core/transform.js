@@ -286,6 +286,8 @@ export function prependTransformToDecomposed(prependTransform, decomposed) {
   //
   // `prependTransform` is a `Transform` instance
   // `decomposed` is a decomposed transform
+  // The return value is a decomposed transform
+  //
   // This operation ensures the `tCenterX` and `tCenterY` properties of the
   // `decomposed` transform are not lost.
   //
