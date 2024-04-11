@@ -131,7 +131,9 @@ def _fixComponentLocationsCompatibility(
                 glyph=replace(
                     layerGlyph,
                     components=[
-                        _fixComponentLocation(compo, axisNames, axisDefaults)
+                        _fixComponentLocation(
+                            compo, axisNames, axisDefaults[compo.name]
+                        )
                         for compo, axisNames in zip(
                             layerGlyph.components, componentAxisNames, strict=True
                         )
