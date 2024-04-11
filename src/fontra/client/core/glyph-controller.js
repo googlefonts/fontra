@@ -641,10 +641,10 @@ export class StaticGlyphController {
 
     for (const componentIndex of componentIndices) {
       const component = this.components[componentIndex];
-      if (!component || !component.controlBounds) {
+      if (!component || !component.bounds) {
         continue;
       }
-      selectionRects.push(component.controlBounds);
+      selectionRects.push(component.bounds);
     }
 
     if (selectionRects.length) {

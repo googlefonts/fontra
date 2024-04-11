@@ -175,7 +175,7 @@ describe("StaticGlyphController getSelectionBounds", () => {
   );
 
   staticGlyphController.components.push({
-    controlBounds: { xMin: 0, yMin: 0, xMax: 100, yMax: 200 },
+    bounds: { xMin: 0, yMin: 0, xMax: 100, yMax: 200 },
   });
 
   parametrize(
