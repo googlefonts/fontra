@@ -578,12 +578,17 @@ export default class TransformationPanel extends Panel {
   }
 
   _splitSelection(layerGlyphController, selection) {
-    const { point: pointIndices, component: componentIndices } =
+    let { point: pointIndices, component: componentIndices } =
       parseSelection(selection);
+    pointIndices = pointIndices || [];
 
     const points = [];
     const contours = [];
     const components = componentIndices ? componentIndices : [];
+
+    if (!pointIndices.length) {
+      return { points, contours, components };
+    }
 
     const path = layerGlyphController.instance.path;
     const pathSelection = filterPathByPointIndices(
@@ -597,7 +602,6 @@ export default class TransformationPanel extends Panel {
       while (path.contourInfo[contourIndex].endPoint < pointIndex) {
         contourIndex++;
       }
-      console.log("contourIndex: ", contourIndex);
 
       let pathSelectionContourIndex;
       for (const [j, [cIndex, contourSelection]] of enumerate(selectionByContour)) {
@@ -606,8 +610,6 @@ export default class TransformationPanel extends Panel {
           break;
         }
       }
-
-      console.log("pathSelectionContourIndex: ", pathSelectionContourIndex);
 
       if (pathSelection.contourInfo[pathSelectionContourIndex].isClosed) {
         const contourStartIndex = !contourIndex
@@ -638,10 +640,10 @@ export default class TransformationPanel extends Panel {
       translateX = alignmentBounds.xMin - objectBounds.xMin;
     }
     if (undoLabel === "align center") {
-      // this is not correct, yet
       const width = objectBounds.xMax - objectBounds.xMin;
+      const widthAlignment = alignmentBounds.xMax - alignmentBounds.xMin;
       translateX =
-        alignmentBounds.xMin - objectBounds.xMin + alignmentBounds.xMax / 2 - width / 2;
+        alignmentBounds.xMin - objectBounds.xMin + widthAlignment / 2 - width / 2;
     }
     if (undoLabel === "align right") {
       translateX = alignmentBounds.xMax - objectBounds.xMax;
