@@ -663,6 +663,38 @@ export default class TransformationPanel extends Panel {
     return { translateX, translateY };
   }
 
+  _alignObjectEditBehaviour(
+    layerGlyph,
+    selection,
+    objectBounds,
+    alignmentBounds,
+    undoLabel,
+    editChanges,
+    changePath,
+    rollbackChanges
+  ) {
+    const behaviorFactory = new EditBehaviorFactory(
+      layerGlyph,
+      selection,
+      this.sceneController.experimentalFeatures.scalingEditBehavior
+    );
+
+    const { translateX, translateY } = this._getTranslationForObject(
+      undoLabel,
+      objectBounds,
+      alignmentBounds
+    );
+
+    const t = new Transform().translate(translateX, translateY);
+    const pointTransformFunction = t.transformPointObject.bind(t);
+    const editBehavior = behaviorFactory.getBehavior("default");
+    const editChange = editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+
+    applyChange(layerGlyph, editChange);
+    editChanges.push(consolidateChanges(editChange, changePath));
+    rollbackChanges.push(consolidateChanges(editBehavior.rollbackChange, changePath));
+  }
+
   async _alignObjectsLayerGlyph(undoLabel) {
     let { point: pointIndices, component: componentIndices } = parseSelection(
       this.sceneController.selection
@@ -712,23 +744,14 @@ export default class TransformationPanel extends Panel {
       const editChanges = [];
       const rollbackChanges = [];
       for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
-        console.log("this.sceneController.selection: ", this.sceneController.selection);
         const { points, contours, components } = this._splitSelection(
           layerGlyphController,
           this.sceneController.selection
         );
-        console.log("points: ", points);
-        console.log("contours: ", contours);
-        console.log("components: ", components);
 
-        const bounds = layerGlyphController.getSelectionBounds(
+        let alignmentBounds = layerGlyphController.getSelectionBounds(
           this.sceneController.selection
         );
-        if (!bounds) {
-          continue;
-        }
-
-        let alignmentBounds = { ...bounds };
         if (
           (contours.length == 1 && !components.length && !points.length) ||
           (components.length == 1 && !contours.length && !points.length) ||
@@ -737,7 +760,7 @@ export default class TransformationPanel extends Panel {
           // if only one object is selected
           // align with glyph bounding box
           const ascender = this.fontController.unitsPerEm;
-          const descender = 0; // this is not correct (it's the baseline), but it's a start
+          const descender = 0; // TODO: this is not correct (it's the baseline), but it's a start
           alignmentBounds = {
             xMin: 0,
             xMax: layerGlyphController.xAdvance,
@@ -748,94 +771,56 @@ export default class TransformationPanel extends Panel {
 
         const layerGlyph = layerGlyphController.instance;
 
-        // move points which are not a pull contour
+        // move points which are not a full contour
         for (const pointIndex of points) {
           const individualSelection = [`point/${pointIndex}`];
-          const behaviorFactory = new EditBehaviorFactory(
-            layerGlyph,
-            individualSelection,
-            this.sceneController.experimentalFeatures.scalingEditBehavior
-          );
           const path = filterPathByPointIndices(layerGlyphController.instance.path, [
             pointIndex,
           ]);
-          const { translateX, translateY } = this._getTranslationForObject(
-            undoLabel,
+          this._alignObjectEditBehaviour(
+            layerGlyph,
+            individualSelection,
             path.getBounds(),
-            alignmentBounds
-          );
-
-          const t = new Transform().translate(translateX, translateY);
-          const pointTransformFunction = t.transformPointObject.bind(t);
-          const editBehavior = behaviorFactory.getBehavior("default");
-          const editChange =
-            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
-
-          applyChange(layerGlyph, editChange);
-          editChanges.push(consolidateChanges(editChange, changePath));
-          rollbackChanges.push(
-            consolidateChanges(editBehavior.rollbackChange, changePath)
+            alignmentBounds,
+            undoLabel,
+            editChanges,
+            changePath,
+            rollbackChanges
           );
         }
 
-        // then move each full contour
+        // move each full contour
         for (const pointIndices of contours) {
-          console.log("pointIndices: ", pointIndices);
           const individualSelection = pointIndices.map((point) => `point/${point}`);
-          console.log("individualSelection: ", individualSelection);
-          const behaviorFactory = new EditBehaviorFactory(
-            layerGlyph,
-            individualSelection,
-            this.sceneController.experimentalFeatures.scalingEditBehavior
-          );
           const path = filterPathByPointIndices(
             layerGlyphController.instance.path,
             pointIndices
           );
-          const { translateX, translateY } = this._getTranslationForObject(
-            undoLabel,
+
+          this._alignObjectEditBehaviour(
+            layerGlyph,
+            individualSelection,
             path.getBounds(),
-            alignmentBounds
-          );
-
-          const t = new Transform().translate(translateX, translateY);
-          const pointTransformFunction = t.transformPointObject.bind(t);
-          const editBehavior = behaviorFactory.getBehavior("default");
-          const editChange =
-            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
-
-          applyChange(layerGlyph, editChange);
-          editChanges.push(consolidateChanges(editChange, changePath));
-          rollbackChanges.push(
-            consolidateChanges(editBehavior.rollbackChange, changePath)
+            alignmentBounds,
+            undoLabel,
+            editChanges,
+            changePath,
+            rollbackChanges
           );
         }
         // move each component
         for (const compoIndex of componentIndices) {
           const individualSelection = [`component/${compoIndex}`];
-          const behaviorFactory = new EditBehaviorFactory(
-            layerGlyph,
-            individualSelection, //this.sceneController.selection,
-            this.sceneController.experimentalFeatures.scalingEditBehavior
-          );
-
           const component = layerGlyphController.components[compoIndex];
-          const { translateX, translateY } = this._getTranslationForObject(
-            undoLabel,
+          this._alignObjectEditBehaviour(
+            layerGlyph,
+            individualSelection,
             component.bounds,
-            alignmentBounds
-          );
-
-          const t = new Transform().translate(translateX, translateY);
-          const pointTransformFunction = t.transformPointObject.bind(t);
-          const editBehavior = behaviorFactory.getBehavior("default");
-          const editChange =
-            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
-
-          applyChange(layerGlyph, editChange);
-          editChanges.push(consolidateChanges(editChange, changePath));
-          rollbackChanges.push(
-            consolidateChanges(editBehavior.rollbackChange, changePath)
+            alignmentBounds,
+            undoLabel,
+            editChanges,
+            changePath,
+            rollbackChanges
           );
         }
       }
