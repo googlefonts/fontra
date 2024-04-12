@@ -4,16 +4,20 @@ import {
   consolidateChanges,
   hasChange,
 } from "../core/changes.js";
-import { EditBehaviorFactory } from "./edit-behavior.js";
+import { EditBehaviorFactory, unpackContours } from "./edit-behavior.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
+import {
+  filterPathByPointIndices,
+  getSelectionByContour,
+} from "/core/path-functions.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import {
   Transform,
   decomposedFromTransform,
   prependTransformToDecomposed,
 } from "/core/transform.js";
-import { enumerate, parseSelection } from "/core/utils.js";
+import { enumerate, parseSelection, range } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
 
@@ -577,17 +581,52 @@ export default class TransformationPanel extends Panel {
     const { point: pointIndices, component: componentIndices } =
       parseSelection(selection);
 
-    const points = pointIndices
-      ? pointIndices.map((index) => layerGlyphController.instance.path.getPoint(index))
-      : [];
-    const contours = pointIndices
-      ? pointIndices.map((index) =>
-          layerGlyphController.instance.path.getContourIndex(index)
-        )
-      : [];
-    const components = componentIndices
-      ? componentIndices.map((index) => layerGlyphController.instance.components[index])
-      : [];
+    const points = [];
+    const contours = [];
+    const components = componentIndices ? componentIndices : [];
+
+    const path = layerGlyphController.instance.path;
+    const pathSelection = filterPathByPointIndices(
+      layerGlyphController.instance.path,
+      pointIndices
+    );
+    const selectionByContour = getSelectionByContour(path, pointIndices);
+
+    let contourIndex = 0;
+    for (const pointIndex of pointIndices) {
+      while (path.contourInfo[contourIndex].endPoint < pointIndex) {
+        contourIndex++;
+      }
+      console.log("contourIndex: ", contourIndex);
+
+      let pathSelectionContourIndex;
+      for (const [j, [cIndex, contourSelection]] of enumerate(selectionByContour)) {
+        if (contourIndex === cIndex) {
+          pathSelectionContourIndex = j;
+          break;
+        }
+      }
+
+      console.log("pathSelectionContourIndex: ", pathSelectionContourIndex);
+
+      if (pathSelection.contourInfo[pathSelectionContourIndex].isClosed) {
+        const contourStartIndex = !contourIndex
+          ? 0
+          : layerGlyphController.instance.path.contourInfo[contourIndex - 1].endPoint +
+            1;
+        const contourEndIndex = path.contourInfo[contourIndex].endPoint + 1;
+
+        const contourPoints = Array.from(range(contourStartIndex, contourEndIndex));
+
+        if (contourStartIndex === pointIndex) {
+          // only add list of contours
+          // if the point is the start of the contour
+          contours.push(contourPoints);
+        }
+      } else {
+        points.push(pointIndex);
+      }
+    }
 
     return { points, contours, components };
   }
@@ -693,7 +732,7 @@ export default class TransformationPanel extends Panel {
         if (
           (contours.length == 1 && !components.length && !points.length) ||
           (components.length == 1 && !contours.length && !points.length) ||
-          (points.length && !contours.length && !components.length)
+          (points.length < 1 && !contours.length && !components.length)
         ) {
           // if only one object is selected
           // align with glyph bounding box
@@ -707,12 +746,70 @@ export default class TransformationPanel extends Panel {
           };
         }
 
-        console.log("alignmentBounds: ", alignmentBounds);
         const layerGlyph = layerGlyphController.instance;
-        // get all points, contours:
 
         // move points which are not a pull contour
+        for (const pointIndex of points) {
+          const individualSelection = [`point/${pointIndex}`];
+          const behaviorFactory = new EditBehaviorFactory(
+            layerGlyph,
+            individualSelection,
+            this.sceneController.experimentalFeatures.scalingEditBehavior
+          );
+          const path = filterPathByPointIndices(layerGlyphController.instance.path, [
+            pointIndex,
+          ]);
+          const { translateX, translateY } = this._getTranslationForObject(
+            undoLabel,
+            path.getBounds(),
+            alignmentBounds
+          );
+
+          const t = new Transform().translate(translateX, translateY);
+          const pointTransformFunction = t.transformPointObject.bind(t);
+          const editBehavior = behaviorFactory.getBehavior("default");
+          const editChange =
+            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+
+          applyChange(layerGlyph, editChange);
+          editChanges.push(consolidateChanges(editChange, changePath));
+          rollbackChanges.push(
+            consolidateChanges(editBehavior.rollbackChange, changePath)
+          );
+        }
+
         // then move each full contour
+        for (const pointIndices of contours) {
+          console.log("pointIndices: ", pointIndices);
+          const individualSelection = pointIndices.map((point) => `point/${point}`);
+          console.log("individualSelection: ", individualSelection);
+          const behaviorFactory = new EditBehaviorFactory(
+            layerGlyph,
+            individualSelection,
+            this.sceneController.experimentalFeatures.scalingEditBehavior
+          );
+          const path = filterPathByPointIndices(
+            layerGlyphController.instance.path,
+            pointIndices
+          );
+          const { translateX, translateY } = this._getTranslationForObject(
+            undoLabel,
+            path.getBounds(),
+            alignmentBounds
+          );
+
+          const t = new Transform().translate(translateX, translateY);
+          const pointTransformFunction = t.transformPointObject.bind(t);
+          const editBehavior = behaviorFactory.getBehavior("default");
+          const editChange =
+            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+
+          applyChange(layerGlyph, editChange);
+          editChanges.push(consolidateChanges(editChange, changePath));
+          rollbackChanges.push(
+            consolidateChanges(editBehavior.rollbackChange, changePath)
+          );
+        }
         // move each component
         for (const compoIndex of componentIndices) {
           const individualSelection = [`component/${compoIndex}`];

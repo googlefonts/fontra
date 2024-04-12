@@ -314,7 +314,7 @@ function makeComponentTCenterChange(componentIndex, x, y, cx, cy) {
   };
 }
 
-function unpackContours(path, selectedPointIndices) {
+export function unpackContours(path, selectedPointIndices) {
   // Return an array with one item per contour. An item is either `undefined`,
   // when no points from this contour are selected, or an object with contour info,
   const contours = new Array(path.contourInfo.length);
