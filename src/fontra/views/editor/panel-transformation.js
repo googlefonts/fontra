@@ -316,14 +316,14 @@ export default class TransformationPanel extends Panel {
       auxiliaryElements: [
         html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-center.svg",
-          "onclick": (event) => this._doSomthing("vertical-align-center"),
+          "onclick": (event) => this._alignObjectsLayerGlyph("align center"),
           "data-tooltip": "Align center",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
         }),
         html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-right.svg",
-          "onclick": (event) => this._doSomthing("vertical-align-right"),
+          "onclick": (event) => this._alignObjectsLayerGlyph("align right"),
           "data-tooltip": "Align right",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
@@ -345,14 +345,14 @@ export default class TransformationPanel extends Panel {
       auxiliaryElements: [
         html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-center.svg",
-          "onclick": (event) => this._doSomthing("horizontal-align-middle"),
+          "onclick": (event) => this._alignObjectsLayerGlyph("align middle"),
           "data-tooltip": "Align middle",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
         }),
         html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-bottom.svg",
-          "onclick": (event) => this._doSomthing("horizontal-align-bottom"),
+          "onclick": (event) => this._alignObjectsLayerGlyph("align bottom"),
           "data-tooltip": "Align bottom",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
@@ -592,6 +592,38 @@ export default class TransformationPanel extends Panel {
     return { points, contours, components };
   }
 
+  _getTranslationForObject(undoLabel, objectBounds, alignmentBounds) {
+    let translateX = 0;
+    let translateY = 0;
+    if (undoLabel === "align left") {
+      translateX = alignmentBounds.xMin - objectBounds.xMin;
+    }
+    if (undoLabel === "align center") {
+      // this is not correct, yet
+      const width = objectBounds.xMax - objectBounds.xMin;
+      translateX =
+        alignmentBounds.xMin - objectBounds.xMin + alignmentBounds.xMax / 2 - width / 2;
+    }
+    if (undoLabel === "align right") {
+      translateX = alignmentBounds.xMax - objectBounds.xMax;
+    }
+    if (undoLabel === "align top") {
+      translateY = alignmentBounds.yMax - objectBounds.yMax;
+    }
+    if (undoLabel === "align middle") {
+      const height = objectBounds.yMax - objectBounds.yMin;
+      translateY =
+        alignmentBounds.yMax -
+        objectBounds.yMax +
+        height / 2 -
+        alignmentBounds.yMax / 2;
+    }
+    if (undoLabel === "align bottom") {
+      translateY = alignmentBounds.yMin - objectBounds.yMin;
+    }
+    return { translateX, translateY };
+  }
+
   async _alignObjectsLayerGlyph(undoLabel) {
     let { point: pointIndices, component: componentIndices } = parseSelection(
       this.sceneController.selection
@@ -656,36 +688,50 @@ export default class TransformationPanel extends Panel {
         if (!bounds) {
           continue;
         }
+
+        let alignmentBounds = { ...bounds };
+        if (
+          (contours.length == 1 && !components.length && !points.length) ||
+          (components.length == 1 && !contours.length && !points.length) ||
+          (points.length && !contours.length && !components.length)
+        ) {
+          // if only one object is selected
+          // align with glyph bounding box
+          const ascender = this.fontController.unitsPerEm;
+          const descender = 0; // this is not correct (it's the baseline), but it's a start
+          alignmentBounds = {
+            xMin: 0,
+            xMax: layerGlyphController.xAdvance,
+            yMin: descender,
+            yMax: ascender,
+          };
+        }
+
+        console.log("alignmentBounds: ", alignmentBounds);
         const layerGlyph = layerGlyphController.instance;
-
-        // let's align everything to the left for now
-        const alignmentPoint = { x: bounds.xMin, y: undefined };
-
         // get all points, contours:
 
-        // first move points which are not a pull contour
-
+        // move points which are not a pull contour
+        // then move each full contour
         // move each component
         for (const compoIndex of componentIndices) {
-          const component = layerGlyph.components[compoIndex];
-
-          const translateX = alignmentPoint.x
-            ? alignmentPoint.x - component.bounds.xMin
-            : 0;
-          const translateY = alignmentPoint.y
-            ? alignmentPoint.y - component.bounds.yMin
-            : 0;
-          const t = new Transform().translate(translateX, translateY);
-
-          const pointTransformFunction = t.transformPointObject.bind(t);
-
+          const individualSelection = [`component/${compoIndex}`];
           const behaviorFactory = new EditBehaviorFactory(
             layerGlyph,
             individualSelection, //this.sceneController.selection,
             this.sceneController.experimentalFeatures.scalingEditBehavior
           );
 
-          const editBehavior = behaviorFactory.getBehavior("default", true);
+          const component = layerGlyphController.components[compoIndex];
+          const { translateX, translateY } = this._getTranslationForObject(
+            undoLabel,
+            component.bounds,
+            alignmentBounds
+          );
+
+          const t = new Transform().translate(translateX, translateY);
+          const pointTransformFunction = t.transformPointObject.bind(t);
+          const editBehavior = behaviorFactory.getBehavior("default");
           const editChange =
             editBehavior.makeChangeForTransformFunc(pointTransformFunction);
 
@@ -695,8 +741,6 @@ export default class TransformationPanel extends Panel {
             consolidateChanges(editBehavior.rollbackChange, changePath)
           );
         }
-
-        // then move each full contour
       }
 
       let changes = ChangeCollector.fromChanges(
