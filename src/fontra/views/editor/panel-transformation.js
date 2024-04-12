@@ -4,7 +4,7 @@ import {
   consolidateChanges,
   hasChange,
 } from "../core/changes.js";
-import { EditBehaviorFactory, unpackContours } from "./edit-behavior.js";
+import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
 import {
