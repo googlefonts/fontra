@@ -653,11 +653,9 @@ export default class TransformationPanel extends Panel {
     }
     if (undoLabel === "align middle") {
       const height = objectBounds.yMax - objectBounds.yMin;
+      const heightAlignment = alignmentBounds.yMax - alignmentBounds.yMin;
       translateY =
-        alignmentBounds.yMax -
-        objectBounds.yMax +
-        height / 2 -
-        alignmentBounds.yMax / 2;
+        alignmentBounds.yMax - objectBounds.yMax + height / 2 - heightAlignment / 2;
     }
     if (undoLabel === "align bottom") {
       translateY = alignmentBounds.yMin - objectBounds.yMin;
@@ -727,25 +725,16 @@ export default class TransformationPanel extends Panel {
     }
 
     await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
-      const layerInfo = Object.entries(
-        this.sceneController.getEditingLayerFromGlyphLayers(glyph.layers)
-      ).map(([layerName, layerGlyph]) => {
-        const behaviorFactory = new EditBehaviorFactory(
-          layerGlyph,
-          this.sceneController.selection,
-          this.sceneController.experimentalFeatures.scalingEditBehavior
-        );
-        return {
-          layerName,
-          changePath: ["layers", layerName, "glyph"],
-          layerGlyphController: staticGlyphControllers[layerName],
-          editBehavior: behaviorFactory.getBehavior("default"),
-        };
-      });
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
 
       const editChanges = [];
       const rollbackChanges = [];
-      for (const { changePath, editBehavior, layerGlyphController } of layerInfo) {
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        const layerGlyphController = staticGlyphControllers[layerName];
+        const changePath = ["layers", layerName, "glyph"];
+
         const { points, contours, components } = this._splitSelection(
           layerGlyphController,
           this.sceneController.selection
@@ -761,13 +750,11 @@ export default class TransformationPanel extends Panel {
         ) {
           // if only one object is selected
           // align with glyph bounding box
-          const ascender = this.fontController.unitsPerEm;
-          const descender = 0; // TODO: this is not correct (it's the baseline), but it's a start
           alignmentBounds = {
             xMin: 0,
             xMax: layerGlyphController.xAdvance,
-            yMin: descender,
-            yMax: ascender,
+            yMin: 0, // TODO: should be descender (for now use the baseline)
+            yMax: this.fontController.unitsPerEm, // TODO: should be ascender
           };
         }
 
