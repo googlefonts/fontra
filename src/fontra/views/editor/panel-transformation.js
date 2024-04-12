@@ -93,6 +93,7 @@ export default class TransformationPanel extends Panel {
       originYButton: undefined,
       skewX: 0,
       skewY: 0,
+      distributeValue: undefined,
     };
   }
 
@@ -364,61 +365,36 @@ export default class TransformationPanel extends Panel {
       ],
     });
 
-    /*  formContents.push({ type: "spacer" });
-    formContents.push({ type: "header", label: `Distribute Objects` }); */
+    formContents.push({ type: "spacer" });
+    formContents.push({ type: "header", label: `Distribute Objects` });
+
+    let buttonDistributeValue = html.createDomElement("icon-button", {
+      "src": "/tabler-icons/layout-distribute-vertical.svg",
+      "onclick": (event) => this._alignObjectsLayerGlyph("distribute horizontal"),
+      "data-tooltip": "Distribute horizontal",
+      "data-tooltipposition": "top-left",
+      "class": "ui-form-icon ui-form-icon-button",
+    });
 
     formContents.push({
       type: "icons",
-      label: "",
+      label: buttonDistributeValue,
       auxiliaryElements: [
         html.createDomElement("icon-button", {
-          "src": "/tabler-icons/layout-distribute-vertical.svg",
-          "onclick": (event) => this._doSomthing("layout-distribute-horizontal"),
-          "data-tooltip": "Distribute horizontal",
+          "src": "/tabler-icons/layout-distribute-horizontal.svg",
+          "onclick": (event) => this._alignObjectsLayerGlyph("distribute vertical"),
+          "data-tooltip": "Distribute vertical",
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
         }),
-        html.createDomElement("icon-button", {
-          "src": "/tabler-icons/layout-distribute-horizontal.svg",
-          "onclick": (event) => this._doSomthing("layout-distribute-vertical"),
-          "data-tooltip": "Distribute vertical",
-          "data-tooltipposition": "top-right",
-          "class": "ui-form-icon",
+        html.createDomElement("input", {
+          key: "distributeValue",
+          onchange: (event) => console.log("distributeValue: ", event), //this.transformParameters.distributeValue = event,
+          value: undefined,
+          type: "number",
         }),
       ],
     });
-
-    /*     formContents.push({ type: "divider" });
-
-    let buttonDistributeVertical = html.createDomElement("icon-button", {
-      "src": "/tabler-icons/layout-distribute-vertical.svg",
-      "onclick": (event) => this._doSomthing("layout-distribute-vertical"),
-      "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "distribute vertical",
-      "data-tooltipposition": "top-left",
-    });
-
-    formContents.push({
-      type: "edit-number",
-      key: "rotation",
-      label: buttonDistributeVertical,
-      value: this.transformParameters.rotation,
-    });
-
-    let buttonDistributeHorizontal = html.createDomElement("icon-button", {
-      "src": "/tabler-icons/layout-distribute-horizontal.svg",
-      "onclick": (event) => this._doSomthing("layout-distribute-horizontal"),
-      "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "distribute horizontal",
-      "data-tooltipposition": "top-left",
-    });
-
-    formContents.push({
-      type: "edit-number",
-      key: "rotation",
-      label: buttonDistributeHorizontal,
-      value: this.transformParameters.rotation,
-    }); */
 
     formContents.push({ type: "spacer" });
 
@@ -437,10 +413,6 @@ export default class TransformationPanel extends Panel {
         });
       }
     };
-  }
-
-  _doSomthing(label) {
-    console.log("Do something: ", label);
   }
 
   _getPinPoint(layerGlyphController, originX, originY) {
@@ -633,7 +605,31 @@ export default class TransformationPanel extends Panel {
     return { points, contours, components };
   }
 
-  _getTranslationForObject(undoLabel, objectBounds, alignmentBounds) {
+  _getTranslationForObject(
+    undoLabel,
+    objectBounds,
+    alignmentBounds,
+    nextPosition,
+    distributeSpacer
+  ) {
+    if (undoLabel.startsWith("align")) {
+      return this._getTranslationForAlignObject(
+        undoLabel,
+        objectBounds,
+        alignmentBounds
+      );
+    }
+    if (undoLabel.startsWith("distribute")) {
+      return this._getTranslationForDistributeObject(
+        undoLabel,
+        objectBounds,
+        nextPosition,
+        distributeSpacer
+      );
+    }
+  }
+
+  _getTranslationForAlignObject(undoLabel, objectBounds, alignmentBounds) {
     let translateX = 0;
     let translateY = 0;
     if (undoLabel === "align left") {
@@ -663,12 +659,36 @@ export default class TransformationPanel extends Panel {
     return { translateX, translateY };
   }
 
+  _getTranslationForDistributeObject(
+    undoLabel,
+    objectBounds,
+    nextPosition,
+    distributeSpacer
+  ) {
+    let translateX = 0;
+    let translateY = 0;
+    const objectWidth = objectBounds.xMax - objectBounds.xMin;
+    const objectHeight = objectBounds.yMax - objectBounds.yMin;
+
+    if (undoLabel === "distribute horizontal") {
+      translateX = nextPosition.x - objectBounds.xMin;
+      nextPosition.x += objectWidth;
+      nextPosition.x += distributeSpacer.width;
+    }
+    if (undoLabel === "distribute vertical") {
+      translateY = nextPosition.y - objectBounds.yMin;
+      nextPosition.y += objectHeight;
+      nextPosition.y += distributeSpacer.height;
+    }
+
+    return { translateX, translateY };
+  }
+
   _alignObjectEditBehaviour(
     layerGlyph,
     selection,
-    objectBounds,
-    alignmentBounds,
-    undoLabel,
+    translateX,
+    translateY,
     editChanges,
     changePath,
     rollbackChanges
@@ -679,12 +699,6 @@ export default class TransformationPanel extends Panel {
       this.sceneController.experimentalFeatures.scalingEditBehavior
     );
 
-    const { translateX, translateY } = this._getTranslationForObject(
-      undoLabel,
-      objectBounds,
-      alignmentBounds
-    );
-
     const t = new Transform().translate(translateX, translateY);
     const pointTransformFunction = t.transformPointObject.bind(t);
     const editBehavior = behaviorFactory.getBehavior("default");
@@ -693,6 +707,60 @@ export default class TransformationPanel extends Panel {
     applyChange(layerGlyph, editChange);
     editChanges.push(consolidateChanges(editChange, changePath));
     rollbackChanges.push(consolidateChanges(editBehavior.rollbackChange, changePath));
+  }
+
+  _getDistributeSpacer(
+    layerGlyphController,
+    selectionBounds,
+    points,
+    contours,
+    components
+  ) {
+    if (this.transformParameters.distributeValue) {
+      return {
+        width: this.transformParameters.distributeValue,
+        height: this.transformParameters.distributeValue,
+      };
+    }
+
+    let effectiveUsedBounds = { width: 0, height: 0 };
+    for (const pointIndices of contours) {
+      const path = filterPathByPointIndices(
+        layerGlyphController.instance.path,
+        pointIndices
+      );
+      const b = path.getBounds();
+      const width = b.xMax - b.xMin;
+      const height = b.yMax - b.yMin;
+      effectiveUsedBounds.width += width;
+      effectiveUsedBounds.height += height;
+    }
+
+    for (const compoIndex of components) {
+      const component = layerGlyphController.components[compoIndex];
+      const b = component.bounds;
+      const width = b.xMax - b.xMin;
+      const height = b.yMax - b.yMin;
+      effectiveUsedBounds.width += width;
+      effectiveUsedBounds.height += height;
+    }
+
+    let dictributeObjectCount = contours.length + components.length;
+    if (points.length && (contours.length || components.length)) {
+      dictributeObjectCount += 1;
+    }
+    if (points.length && !contours.length && !components.length) {
+      dictributeObjectCount = points.length;
+    }
+
+    const heightSelection = selectionBounds.yMax - selectionBounds.yMin;
+    const widthSelection = selectionBounds.xMax - selectionBounds.xMin;
+    const distributeSpacer = {
+      width: (widthSelection - effectiveUsedBounds.width) / (dictributeObjectCount - 1),
+      height:
+        (heightSelection - effectiveUsedBounds.height) / (dictributeObjectCount - 1),
+    };
+    return distributeSpacer;
   }
 
   async _alignObjectsLayerGlyph(undoLabel) {
@@ -740,9 +808,10 @@ export default class TransformationPanel extends Panel {
           this.sceneController.selection
         );
 
-        let alignmentBounds = layerGlyphController.getSelectionBounds(
+        let selectionBounds = layerGlyphController.getSelectionBounds(
           this.sceneController.selection
         );
+
         if (
           (contours.length == 1 && !components.length && !points.length) ||
           (components.length == 1 && !contours.length && !points.length) ||
@@ -750,13 +819,22 @@ export default class TransformationPanel extends Panel {
         ) {
           // if only one object is selected
           // align with glyph bounding box
-          alignmentBounds = {
+          selectionBounds = {
             xMin: 0,
             xMax: layerGlyphController.xAdvance,
             yMin: 0, // TODO: should be descender (for now use the baseline)
             yMax: this.fontController.unitsPerEm, // TODO: should be ascender
           };
         }
+
+        const distributeSpacer = this._getDistributeSpacer(
+          layerGlyphController,
+          selectionBounds,
+          points,
+          contours,
+          components
+        );
+        let nextPosition = { x: selectionBounds.xMin, y: selectionBounds.yMin };
 
         const layerGlyph = layerGlyphController.instance;
 
@@ -766,12 +844,19 @@ export default class TransformationPanel extends Panel {
           const path = filterPathByPointIndices(layerGlyphController.instance.path, [
             pointIndex,
           ]);
+          const { translateX, translateY } = this._getTranslationForObject(
+            undoLabel,
+            path.getBounds(),
+            selectionBounds,
+            nextPosition,
+            distributeSpacer
+          );
+
           this._alignObjectEditBehaviour(
             layerGlyph,
             individualSelection,
-            path.getBounds(),
-            alignmentBounds,
-            undoLabel,
+            translateX,
+            translateY,
             editChanges,
             changePath,
             rollbackChanges
@@ -786,12 +871,19 @@ export default class TransformationPanel extends Panel {
             pointIndices
           );
 
+          const { translateX, translateY } = this._getTranslationForObject(
+            undoLabel,
+            path.getBounds(),
+            selectionBounds,
+            nextPosition,
+            distributeSpacer
+          );
+
           this._alignObjectEditBehaviour(
             layerGlyph,
             individualSelection,
-            path.getBounds(),
-            alignmentBounds,
-            undoLabel,
+            translateX,
+            translateY,
             editChanges,
             changePath,
             rollbackChanges
@@ -801,12 +893,19 @@ export default class TransformationPanel extends Panel {
         for (const compoIndex of componentIndices) {
           const individualSelection = [`component/${compoIndex}`];
           const component = layerGlyphController.components[compoIndex];
+          const { translateX, translateY } = this._getTranslationForObject(
+            undoLabel,
+            component.bounds,
+            selectionBounds,
+            nextPosition,
+            distributeSpacer
+          );
+
           this._alignObjectEditBehaviour(
             layerGlyph,
             individualSelection,
-            component.bounds,
-            alignmentBounds,
-            undoLabel,
+            translateX,
+            translateY,
             editChanges,
             changePath,
             rollbackChanges
