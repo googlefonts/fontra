@@ -763,17 +763,31 @@ class SubsetAxesAction(BaseFilterAction):
         return axisNames - self.dropAxisNames
 
     @async_cached_property
-    async def locationToKeep(self):
-        axes = (await self.validatedInput.getAxes()).axes
-        keepAxisNames = self.getAxisNamesToKeep(axes)
-        location = getDefaultSourceLocation(axes)
-        return {n: v for n, v in location.items() if n not in keepAxisNames}
+    async def adjustedAxes(self):
+        adjustedAxes, _ = await self._adjustedAxesAndLocationToKeep
+        return adjustedAxes
 
-    async def processAxes(self, axes: Axes) -> Axes:
+    @async_cached_property
+    async def locationToKeep(self):
+        _, locationToKeep = await self._adjustedAxesAndLocationToKeep
+        return locationToKeep
+
+    @async_cached_property
+    async def _adjustedAxesAndLocationToKeep(self):
+        axes = await self.validatedInput.getAxes()
         keepAxisNames = self.getAxisNamesToKeep(axes.axes)
-        return replace(
+        location = getDefaultSourceLocation(axes.axes)
+
+        locationToKeep = {n: v for n, v in location.items() if n not in keepAxisNames}
+
+        adjustedAxes = replace(
             axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
         )
+
+        return adjustedAxes, locationToKeep
+
+    async def getAxes(self) -> Axes:
+        return await self.adjustedAxes
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         # locationToKeep contains axis *values* for sources we want to keep,
