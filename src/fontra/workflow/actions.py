@@ -908,11 +908,11 @@ class TrimAxesAction(BaseFilterAction):
 
     @async_cached_property
     async def _trimmedAxesAndSourceRanges(self):
-        axes = (await self.validatedInput.getAxes()).axes
+        axes = await self.validatedInput.getAxes()
         trimmedAxes = []
         sourceRanges = {}
 
-        for axis in axes:
+        for axis in axes.axes:
             trimmedAxis = deepcopy(axis)
             trimmedAxes.append(trimmedAxis)
 
@@ -973,12 +973,11 @@ class TrimAxesAction(BaseFilterAction):
                 if trimmedAxis.minValue <= label.value <= trimmedAxis.maxValue
             ]
 
-        return trimmedAxes, sourceRanges
+        return replace(axes, axes=trimmedAxes), sourceRanges
 
     async def getAxes(self) -> Axes:
-        axes = await self.validatedInput.getAxes()
         trimmedAxes, _ = await self._trimmedAxesAndSourceRanges
-        return replace(axes, axes=trimmedAxes)
+        return trimmedAxes
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
