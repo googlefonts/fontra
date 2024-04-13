@@ -108,6 +108,10 @@ class BaseFilterAction:
     def fontInstancer(self):
         return FontInstancer(self.validatedInput)
 
+    @async_cached_property
+    def inputAxes(self):
+        return self.validatedInput.getAxes()
+
     @asynccontextmanager
     async def connect(
         self, input: ReadableFontBackend
@@ -488,17 +492,7 @@ class DropAxisMappingsAction(BaseFilterAction):
     axes: list[str] | None = None
 
     @async_cached_property
-    async def adjustedAxes(self) -> Axes:
-        adjustedAxes, _ = await self._axisAxesAndMapFunctions
-        return adjustedAxes
-
-    @async_cached_property
     async def axisValueMapFunctions(self) -> dict:
-        _, mapFuncs = await self._axisAxesAndMapFunctions
-        return mapFuncs
-
-    @async_cached_property
-    async def _axisAxesAndMapFunctions(self) -> tuple[Axes, dict]:
         axes = await self.validatedInput.getAxes()
         relevantAxes = (
             [axis for axis in axes.axes if axis.name in self.axes]
@@ -514,18 +508,18 @@ class DropAxisMappingsAction(BaseFilterAction):
                     mapping=dict([(b, a) for a, b in axis.mapping]),
                 )
 
-        adjustedAxes = replace(
-            axes, axes=[_dropAxisMapping(axis, mapFuncs) for axis in axes.axes]
-        )
-
-        return adjustedAxes, mapFuncs
+        return mapFuncs
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFuncs = await self.axisValueMapFunctions
         return _remapSourceLocations(glyph, mapFuncs)
 
     async def getAxes(self) -> Axes:
-        return await self.adjustedAxes
+        axes = await self.inputAxes
+        mapFuncs = await self.axisValueMapFunctions
+        return replace(
+            axes, axes=[_dropAxisMapping(axis, mapFuncs) for axis in axes.axes]
+        )
 
 
 def _remapSourceLocations(glyph, mapFuncs):
@@ -763,31 +757,20 @@ class SubsetAxesAction(BaseFilterAction):
         return axisNames - self.dropAxisNames
 
     @async_cached_property
-    async def adjustedAxes(self):
-        adjustedAxes, _ = await self._adjustedAxesAndLocationToKeep
-        return adjustedAxes
-
-    @async_cached_property
     async def locationToKeep(self):
-        _, locationToKeep = await self._adjustedAxesAndLocationToKeep
-        return locationToKeep
-
-    @async_cached_property
-    async def _adjustedAxesAndLocationToKeep(self):
-        axes = await self.validatedInput.getAxes()
+        axes = await self.inputAxes
         keepAxisNames = self.getAxisNamesToKeep(axes.axes)
         location = getDefaultSourceLocation(axes.axes)
 
-        locationToKeep = {n: v for n, v in location.items() if n not in keepAxisNames}
-
-        adjustedAxes = replace(
-            axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
-        )
-
-        return adjustedAxes, locationToKeep
+        return {n: v for n, v in location.items() if n not in keepAxisNames}
 
     async def getAxes(self) -> Axes:
-        return await self.adjustedAxes
+        axes = await self.inputAxes
+        keepAxisNames = self.getAxisNamesToKeep(axes.axes)
+
+        return replace(
+            axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
+        )
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         # locationToKeep contains axis *values* for sources we want to keep,
