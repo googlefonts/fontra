@@ -756,7 +756,7 @@ class SubsetAxesAction(BaseFilterAction):
         return {n: v for n, v in location.items() if n not in keepAxisNames}
 
     async def processAxes(self, axes: Axes) -> Axes:
-        keepAxisNames = self.getAxisNamesToKeep(axes)
+        keepAxisNames = self.getAxisNamesToKeep(axes.axes)
         return replace(
             axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
         )
@@ -976,8 +976,9 @@ class TrimAxesAction(BaseFilterAction):
         return trimmedAxes, sourceRanges
 
     async def getAxes(self) -> Axes:
+        axes = await self.validatedInput.getAxes()
         trimmedAxes, _ = await self._trimmedAxesAndSourceRanges
-        return trimmedAxes
+        return replace(axes, axes=trimmedAxes)
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
