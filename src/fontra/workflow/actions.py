@@ -31,7 +31,6 @@ from ..core.classes import (
     Axes,
     Component,
     FontInfo,
-    GlobalAxis,
     GlobalDiscreteAxis,
     GlobalSource,
     Layer,
@@ -489,29 +488,44 @@ class DropAxisMappingsAction(BaseFilterAction):
     axes: list[str] | None = None
 
     @async_cached_property
+    async def adjustedAxes(self) -> Axes:
+        adjustedAxes, _ = await self._axisAxesAndMapFunctions
+        return adjustedAxes
+
+    @async_cached_property
     async def axisValueMapFunctions(self) -> dict:
-        axes = (await self.validatedInput.getAxes()).axes
-        if self.axes:
-            axes = [axis for axis in axes if axis.name in self.axes]
+        _, mapFuncs = await self._axisAxesAndMapFunctions
+        return mapFuncs
+
+    @async_cached_property
+    async def _axisAxesAndMapFunctions(self) -> tuple[Axes, dict]:
+        axes = await self.validatedInput.getAxes()
+        relevantAxes = (
+            [axis for axis in axes.axes if axis.name in self.axes]
+            if self.axes
+            else axes.axes
+        )
 
         mapFuncs = {}
-        for axis in axes:
+        for axis in relevantAxes:
             if axis.mapping:
                 mapFuncs[axis.name] = partial(
                     piecewiseLinearMap,
                     mapping=dict([(b, a) for a, b in axis.mapping]),
                 )
-        return mapFuncs
+
+        adjustedAxes = replace(
+            axes, axes=[_dropAxisMapping(axis, mapFuncs) for axis in axes.axes]
+        )
+
+        return adjustedAxes, mapFuncs
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         mapFuncs = await self.axisValueMapFunctions
         return _remapSourceLocations(glyph, mapFuncs)
 
-    async def processAxes(self, axes: Axes) -> Axes:
-        mapFuncs = await self.axisValueMapFunctions
-        return replace(
-            axes, axes=[_dropAxisMapping(axis, mapFuncs) for axis in axes.axes]
-        )
+    async def getAxes(self) -> Axes:
+        return await self.adjustedAxes
 
 
 def _remapSourceLocations(glyph, mapFuncs):
@@ -546,7 +560,7 @@ class AdjustAxesAction(BaseFilterAction):
     remapSources: bool = True
 
     @async_cached_property
-    async def adjustedAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def adjustedAxes(self) -> Axes:
         adjustedAxes, _ = await self._adjustedAxesAndMapFunctions
         return adjustedAxes
 
