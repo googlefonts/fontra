@@ -817,11 +817,12 @@ class MoveDefaultLocationAction(BaseFilterAction):
     @async_cached_property
     async def newDefaultSourceLocation(self):
         newDefaultUserLocation = self.newDefaultUserLocation
-        axes = [
-            axis
-            for axis in (await self.validatedInput.getAxes()).axes
-            if axis.name in newDefaultUserLocation
+        axes = await self.inputAxes
+
+        relevantAxes = [
+            axis for axis in axes.axes if axis.name in newDefaultUserLocation
         ]
+
         return {
             axis.name: (
                 piecewiseLinearMap(
@@ -830,10 +831,11 @@ class MoveDefaultLocationAction(BaseFilterAction):
                 if axis.mapping
                 else newDefaultUserLocation[axis.name]
             )
-            for axis in axes
+            for axis in relevantAxes
         }
 
-    async def processAxes(self, axes: Axes) -> Axes:
+    async def getAxes(self) -> Axes:
+        axes = await self.inputAxes
         newDefaultUserLocation = self.newDefaultUserLocation
         return replace(
             axes,
