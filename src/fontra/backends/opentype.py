@@ -8,6 +8,7 @@ from fontTools.ttLib import TTFont
 from fontra.core.protocols import ReadableFontBackend
 
 from ..core.classes import (
+    Axes,
     FontInfo,
     GlobalAxis,
     GlobalDiscreteAxis,
@@ -113,8 +114,8 @@ class OTFBackend:
     async def getFontInfo(self) -> FontInfo:
         return FontInfo()
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        return self.globalAxes
+    async def getAxes(self) -> Axes:
+        return Axes(axes=self.globalAxes)
 
     async def getSources(self) -> dict[str, GlobalSource]:
         return {}

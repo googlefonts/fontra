@@ -45,7 +45,8 @@ class FontInstancer:
         glyphInstancer = self.glyphInstancers.get(glyphName)
         if glyphInstancer is None:
             if self.globalAxes is None:
-                self.globalAxes = await self.backend.getGlobalAxes()
+                self.globalAxes = (await self.backend.getAxes()).axes
+                print("XXX", type(self.backend), self.globalAxes)
             glyph = await self.backend.getGlyph(glyphName)
             assert glyph is not None, glyphName
             glyph = await self._ensureComponentLocationCompatibility(glyph)

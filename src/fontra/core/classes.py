@@ -340,6 +340,15 @@ def _unstructurePointType(v):
     return int(v)
 
 
+def _structureAxes(v, tp):
+    if isinstance(v, list):
+        # old format
+        v = {"axes": v}
+
+    fieldTypes = get_type_hints(tp)
+    return Axes(**{n: structure(vv, fieldTypes[n]) for n, vv in v.items()})
+
+
 def _unstructureDictSorted(v):
     return unstructure(dict(sorted(v.items())))
 
@@ -369,6 +378,7 @@ _cattrsConverter.register_unstructure_hook(Point, _unstructurePoint)
 _cattrsConverter.register_structure_hook(bool, lambda x, y: x)
 _cattrsConverter.register_structure_hook(PointType, _structurePointType)
 _cattrsConverter.register_unstructure_hook(PointType, _unstructurePointType)
+_cattrsConverter.register_structure_hook(Axes, _structureAxes)
 
 
 def registerHook(cls, omitIfDefault=True, **fieldHooks):

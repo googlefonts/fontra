@@ -28,6 +28,7 @@ from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ..core.classes import (
+    Axes,
     AxisValueLabel,
     Component,
     FontInfo,
@@ -646,12 +647,12 @@ class DesignspaceBackend:
                 infoDict[ufoName] = value
         self._updateUFOFontInfo(infoDict)
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        return self.axes
+    async def getAxes(self) -> Axes:
+        return Axes(axes=self.axes)
 
-    async def putGlobalAxes(self, axes):
+    async def putAxes(self, axes):
         self.dsDoc.axes = []
-        for axis in axes:
+        for axis in axes.axes:
             axisParameters = dict(
                 name=axis.name,
                 tag=axis.tag,
@@ -975,8 +976,8 @@ class UFOBackend(DesignspaceBackend):
         dsDoc = createDSDocFromUFOPath(path, "default")
         return cls(dsDoc)
 
-    async def putGlobalAxes(self, axes):
-        if axes:
+    async def putAxes(self, axes):
+        if axes.axes:
             raise ValueError("The single-UFO backend does not support variation axes")
 
     async def putSources(self, sources: dict[str, GlobalSource]) -> None:

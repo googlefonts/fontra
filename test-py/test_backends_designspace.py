@@ -209,9 +209,9 @@ async def test_addLocalAxisAndSource(writableTestFont):
     assert asdict(glyph) == asdict(savedGlyph)
 
 
-async def test_putGlobalAxes(writableTestFont):
-    axes = await writableTestFont.getGlobalAxes()
-    axes.append(
+async def test_putAxes(writableTestFont):
+    axes = await writableTestFont.getAxes()
+    axes.axes.append(
         GlobalAxis(
             name="Testing",
             tag="TEST",
@@ -222,11 +222,11 @@ async def test_putGlobalAxes(writableTestFont):
             mapping=[[10, 0], [20, 100], [20, 200]],
         )
     )
-    await writableTestFont.putGlobalAxes(axes)
+    await writableTestFont.putAxes(axes)
 
     path = writableTestFont.dsDoc.path
     newFont = DesignspaceBackend.fromPath(path)
-    newAxes = await newFont.getGlobalAxes()
+    newAxes = await newFont.getAxes()
     assert axes == newAxes
 
 
@@ -259,11 +259,11 @@ async def test_newFileSystemBackend(
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / fileName
     font = newFileSystemBackend(destPath)
-    assert [] == await font.getGlobalAxes()
+    assert [] == (await font.getAxes()).axes
     assert initialExpectedFileNames == fileNamesFromDir(tmpdir)
 
-    axes = await sourceFont.getGlobalAxes()
-    await font.putGlobalAxes(axes)
+    axes = await sourceFont.getAxes()
+    await font.putAxes(axes)
     glyphMap = await sourceFont.getGlyphMap()
     glyph = await sourceFont.getGlyph("A")
     await font.putGlyph("A", glyph, glyphMap["A"])
@@ -297,8 +297,8 @@ async def test_writeCorrectLayers(tmpdir, testFont):
     dsPath = tmpdir / "Test.designspace"
     font = newFileSystemBackend(dsPath)
 
-    axes = await testFont.getGlobalAxes()
-    await font.putGlobalAxes(axes)
+    axes = await testFont.getAxes()
+    await font.putAxes(axes)
     glyphMap = await testFont.getGlyphMap()
     glyph = await testFont.getGlyph("A")
     await font.putGlyph("A", glyph, glyphMap["A"])

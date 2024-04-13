@@ -28,6 +28,7 @@ from ..backends.copy import copyFont
 from ..backends.filenames import stringToFileName
 from ..core.async_property import async_cached_property
 from ..core.classes import (
+    Axes,
     Component,
     FontInfo,
     GlobalAxis,
@@ -136,9 +137,9 @@ class BaseFilterAction:
         fontInfo = await self.validatedInput.getFontInfo()
         return await self.processFontInfo(fontInfo)
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        axes = await self.validatedInput.getGlobalAxes()
-        return await self.processGlobalAxes(axes)
+    async def getAxes(self) -> Axes:
+        axes = await self.validatedInput.getAxes()
+        return await self.processAxes(axes)
 
     async def getSources(self) -> dict[str, GlobalSource]:
         sources = await self.validatedInput.getSources()
@@ -166,9 +167,7 @@ class BaseFilterAction:
     async def processFontInfo(self, fontInfo: FontInfo) -> FontInfo:
         return fontInfo
 
-    async def processGlobalAxes(
-        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
-    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def processAxes(self, axes: Axes) -> Axes:
         return axes
 
     async def processSources(
@@ -440,10 +439,8 @@ class RenameAxesAction(BaseFilterAction):
             ],
         )
 
-    async def processGlobalAxes(
-        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
-    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        return [_renameAxis(axis, self.axes) for axis in axes]
+    async def processAxes(self, axes: Axes) -> Axes:
+        return replace(axes, axes=[_renameAxis(axis, self.axes) for axis in axes.axes])
 
 
 def _renameLocationAxes(location, axisRenameMap):
@@ -493,7 +490,7 @@ class DropAxisMappingsAction(BaseFilterAction):
 
     @async_cached_property
     async def axisValueMapFunctions(self) -> dict:
-        axes = await self.validatedInput.getGlobalAxes()
+        axes = (await self.validatedInput.getAxes()).axes
         if self.axes:
             axes = [axis for axis in axes if axis.name in self.axes]
 
@@ -510,9 +507,11 @@ class DropAxisMappingsAction(BaseFilterAction):
         mapFuncs = await self.axisValueMapFunctions
         return _remapSourceLocations(glyph, mapFuncs)
 
-    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def processAxes(self, axes: Axes) -> Axes:
         mapFuncs = await self.axisValueMapFunctions
-        return [_dropAxisMapping(axis, mapFuncs) for axis in axes]
+        return replace(
+            axes, axes=[_dropAxisMapping(axis, mapFuncs) for axis in axes.axes]
+        )
 
 
 def _remapSourceLocations(glyph, mapFuncs):
@@ -559,7 +558,7 @@ class AdjustAxesAction(BaseFilterAction):
     @async_cached_property
     async def _adjustedAxesAndMapFunctions(self) -> tuple:
         mapFuncs: dict = {}
-        axes = await self.validatedInput.getGlobalAxes()
+        axes = (await self.validatedInput.getAxes()).axes
         adjustedAxes = []
         for axis in axes:
             newValues = self.axes.get(axis.name)
@@ -591,8 +590,8 @@ class AdjustAxesAction(BaseFilterAction):
             adjustedAxes.append(axis)
         return adjustedAxes, mapFuncs
 
-    async def processGlobalAxes(self, axes) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        return await self.adjustedAxes
+    async def processAxes(self, axes: Axes) -> Axes:
+        return replace(axes, axes=await self.adjustedAxes)
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         return _remapSourceLocations(glyph, await self.axisValueMapFunctions)
@@ -751,16 +750,16 @@ class SubsetAxesAction(BaseFilterAction):
 
     @async_cached_property
     async def locationToKeep(self):
-        axes = await self.validatedInput.getGlobalAxes()
+        axes = (await self.validatedInput.getAxes()).axes
         keepAxisNames = self.getAxisNamesToKeep(axes)
         location = getDefaultSourceLocation(axes)
         return {n: v for n, v in location.items() if n not in keepAxisNames}
 
-    async def processGlobalAxes(
-        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
-    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def processAxes(self, axes: Axes) -> Axes:
         keepAxisNames = self.getAxisNamesToKeep(axes)
-        return [axis for axis in axes if axis.name in keepAxisNames]
+        return replace(
+            axes, axes=[axis for axis in axes.axes if axis.name in keepAxisNames]
+        )
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         # locationToKeep contains axis *values* for sources we want to keep,
@@ -809,7 +808,7 @@ class MoveDefaultLocationAction(BaseFilterAction):
         newDefaultUserLocation = self.newDefaultUserLocation
         axes = [
             axis
-            for axis in await self.validatedInput.getGlobalAxes()
+            for axis in (await self.validatedInput.getAxes()).axes
             if axis.name in newDefaultUserLocation
         ]
         return {
@@ -823,17 +822,20 @@ class MoveDefaultLocationAction(BaseFilterAction):
             for axis in axes
         }
 
-    async def processGlobalAxes(
-        self, axes: list[GlobalAxis | GlobalDiscreteAxis]
-    ) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def processAxes(self, axes: Axes) -> Axes:
         newDefaultUserLocation = self.newDefaultUserLocation
-        return [
-            replace(
-                axis,
-                defaultValue=newDefaultUserLocation.get(axis.name, axis.defaultValue),
-            )
-            for axis in axes
-        ]
+        return replace(
+            axes,
+            axes=[
+                replace(
+                    axis,
+                    defaultValue=newDefaultUserLocation.get(
+                        axis.name, axis.defaultValue
+                    ),
+                )
+                for axis in axes.axes
+            ],
+        )
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
@@ -906,7 +908,7 @@ class TrimAxesAction(BaseFilterAction):
 
     @async_cached_property
     async def _trimmedAxesAndSourceRanges(self):
-        axes = await self.validatedInput.getGlobalAxes()
+        axes = (await self.validatedInput.getAxes()).axes
         trimmedAxes = []
         sourceRanges = {}
 
@@ -973,7 +975,7 @@ class TrimAxesAction(BaseFilterAction):
 
         return trimmedAxes, sourceRanges
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def getAxes(self) -> Axes:
         trimmedAxes, _ = await self._trimmedAxesAndSourceRanges
         return trimmedAxes
 
