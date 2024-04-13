@@ -558,9 +558,9 @@ class AdjustAxesAction(BaseFilterAction):
     @async_cached_property
     async def _adjustedAxesAndMapFunctions(self) -> tuple:
         mapFuncs: dict = {}
-        axes = (await self.validatedInput.getAxes()).axes
+        axes = await self.validatedInput.getAxes()
         adjustedAxes = []
-        for axis in axes:
+        for axis in axes.axes:
             newValues = self.axes.get(axis.name)
             if newValues is not None:
                 if isinstance(axis, GlobalDiscreteAxis):
@@ -588,10 +588,10 @@ class AdjustAxesAction(BaseFilterAction):
 
                 axis = newAxis
             adjustedAxes.append(axis)
-        return adjustedAxes, mapFuncs
+        return replace(axes, axes=adjustedAxes), mapFuncs
 
-    async def processAxes(self, axes: Axes) -> Axes:
-        return replace(axes, axes=await self.adjustedAxes)
+    async def getAxes(self) -> Axes:
+        return await self.adjustedAxes
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
         return _remapSourceLocations(glyph, await self.axisValueMapFunctions)
