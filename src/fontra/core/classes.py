@@ -31,12 +31,32 @@ class FontInfo:
 
 
 @dataclass(kw_only=True)
+class Axes:
+    axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
+    mappings: list[MultipleAxisMapping] = field(default_factory=list)
+    elidedFallBackname: Optional[str] = None
+    customData: CustomData = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class MultipleAxisMapping:
+    inputLocation: Location
+    outputLocation: Location
+
+
+@dataclass(kw_only=True)
+class SingleAxisMapping:
+    inputUserValue: float
+    outputUserValue: float
+
+
+@dataclass(kw_only=True)
 class Font:
     unitsPerEm: int = 1000
     fontInfo: FontInfo = field(default_factory=FontInfo)
     glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
-    axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
+    axes: Axes = field(default_factory=Axes)
     sources: dict[str, GlobalSource] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
 
@@ -397,6 +417,7 @@ registerHook(
 registerHook(GlobalAxis, customData=_unstructureDictSortedRecursively)
 registerHook(GlobalDiscreteAxis, customData=_unstructureDictSortedRecursively)
 registerHook(FontInfo, customData=_unstructureDictSortedRecursively)
+registerHook(Axes, customData=_unstructureDictSortedRecursively)
 registerHook(
     Font,
     omitIfDefault=False,

@@ -14,17 +14,16 @@
       "type": "dict",
       "subtype": "list"
     },
-    "customData": {
-      "type": "dict",
-      "subtype": "Any"
-    },
     "axes": {
-      "type": "list",
-      "subtype": "GlobalAxis"
+      "type": "Axes"
     },
     "sources": {
       "type": "dict",
       "subtype": "GlobalSource"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "FontInfo": {
@@ -312,6 +311,24 @@
       "subtype": "Any"
     }
   },
+  "Axes": {
+    "axes": {
+      "type": "list",
+      "subtype": "GlobalAxis"
+    },
+    "mappings": {
+      "type": "list",
+      "subtype": "MultipleAxisMapping"
+    },
+    "elidedFallBackname": {
+      "type": "str",
+      "optional": true
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
   "GlobalAxis": {
     "name": {
       "type": "str"
@@ -404,6 +421,16 @@
     "customData": {
       "type": "dict",
       "subtype": "Any"
+    }
+  },
+  "MultipleAxisMapping": {
+    "inputLocation": {
+      "type": "dict",
+      "subtype": "float"
+    },
+    "outputLocation": {
+      "type": "dict",
+      "subtype": "float"
     }
   },
   "GlobalSource": {
