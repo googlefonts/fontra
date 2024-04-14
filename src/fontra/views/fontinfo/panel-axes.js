@@ -75,8 +75,8 @@ export class AxesPanel extends BaseInfoPanel {
       style: "display: grid; gap: 0.5em;",
     });
 
-    const axes = this.fontController.globalAxes;
-    for (const index of range(axes.length)) {
+    const axes = this.fontController.axes;
+    for (const index of range(axes.axes.length)) {
       axisContainer.appendChild(
         new AxisBox(axes, index, this.postChange.bind(this), this.deleteAxis.bind(this))
       );
@@ -191,9 +191,9 @@ export class AxesPanel extends BaseInfoPanel {
     };
 
     const undoLabel = `add axis '${newAxis.name}'`;
-    const root = { axes: this.fontController.globalAxes };
+    const root = { axes: this.fontController.axes };
     const changes = recordChanges(root, (root) => {
-      root.axes.push(newAxis);
+      root.axes.axes.push(newAxis);
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -202,18 +202,18 @@ export class AxesPanel extends BaseInfoPanel {
   }
 
   async replaceAxes(updatedAxes, undoLabel) {
-    const root = { axes: this.fontController.globalAxes };
+    const root = { axes: this.fontController.axes };
     const changes = recordChanges(root, (root) => {
-      root.axes.splice(0, root.axes.length, ...updatedAxes);
+      root.axes.axes.splice(0, root.axes.length, ...updatedAxes);
     });
     await this.postChange(changes.change, changes.rollbackChange, undoLabel);
   }
 
   async deleteAxis(axisIndex) {
-    const undoLabel = `delete axis '${this.fontController.globalAxes[axisIndex].name}'`;
-    const root = { axes: this.fontController.globalAxes };
+    const undoLabel = `delete axis '${this.fontController.axes.axes[axisIndex].name}'`;
+    const root = { axes: this.fontController.axes };
     const changes = recordChanges(root, (root) => {
-      root.axes.splice(axisIndex, 1);
+      root.axes.axes.splice(axisIndex, 1);
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -285,13 +285,13 @@ class AxisBox extends HTMLElement {
   }
 
   get axis() {
-    return this.axes[this.axisIndex];
+    return this.axes.axes[this.axisIndex];
   }
 
   editAxis(editFunc, undoLabel) {
     const root = { axes: this.axes };
     const changes = recordChanges(root, (root) => {
-      editFunc(root.axes[this.axisIndex]);
+      editFunc(root.axes.axes[this.axisIndex]);
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
@@ -301,7 +301,7 @@ class AxisBox extends HTMLElement {
   replaceAxis(newAxis, undoLabel) {
     const root = { axes: this.axes };
     const changes = recordChanges(root, (root) => {
-      root.axes[this.axisIndex] = newAxis;
+      root.axes.axes[this.axisIndex] = newAxis;
     });
     if (changes.hasChange) {
       this.postChange(changes.change, changes.rollbackChange, undoLabel);
