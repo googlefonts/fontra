@@ -1026,7 +1026,7 @@ getAxesTestData = [
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("testFontName, expectedGlobalAxes", getAxesTestData)
-async def test_getGlobalAxes(testFontName, expectedGlobalAxes):
+async def test_getAxes(testFontName, expectedGlobalAxes):
     font = getTestFont(testFontName)
     globalAxes = (await font.getAxes()).axes
     assert expectedGlobalAxes == globalAxes
