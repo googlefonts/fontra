@@ -31,13 +31,33 @@ class FontInfo:
 
 
 @dataclass(kw_only=True)
+class Axes:
+    axes: list[Union[FontAxis, DiscreteFontAxis]] = field(default_factory=list)
+    mappings: list[MultipleAxisMapping] = field(default_factory=list)
+    elidedFallBackname: Optional[str] = None
+    customData: CustomData = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
+class MultipleAxisMapping:
+    inputLocation: Location
+    outputLocation: Location
+
+
+@dataclass(kw_only=True)
+class SingleAxisMapping:
+    inputUserValue: float
+    outputUserValue: float
+
+
+@dataclass(kw_only=True)
 class Font:
     unitsPerEm: int = 1000
     fontInfo: FontInfo = field(default_factory=FontInfo)
     glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
-    axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
-    sources: dict[str, GlobalSource] = field(default_factory=dict)
+    axes: Axes = field(default_factory=Axes)
+    sources: dict[str, FontSource] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
 
     def _trackAssignedAttributeNames(self):
@@ -51,10 +71,10 @@ class Font:
 
 
 @dataclass(kw_only=True)
-class GlobalSource:
+class FontSource:
     name: str
     location: Location = field(default_factory=dict)
-    verticalMetrics: dict[str, GlobalMetric] = field(default_factory=dict)
+    verticalMetrics: dict[str, FontMetric] = field(default_factory=dict)
     guidelines: list[Union[Guideline, HorizontalGuideline, VerticalGuideline]] = field(
         default_factory=list
     )
@@ -62,7 +82,7 @@ class GlobalSource:
 
 
 @dataclass(kw_only=True)
-class GlobalMetric:
+class FontMetric:
     value: float
     customData: CustomData = field(default_factory=dict)
 
@@ -102,7 +122,7 @@ class AxisValueLabel:
 
 
 @dataclass(kw_only=True)
-class GlobalAxis:
+class FontAxis:
     name: str  # this identifies the axis
     label: str  # a user friendly label
     tag: str  # the opentype 4-char tag
@@ -116,7 +136,7 @@ class GlobalAxis:
 
 
 @dataclass(kw_only=True)
-class GlobalDiscreteAxis:
+class DiscreteFontAxis:
     name: str  # this identifies the axis
     label: str  # a user friendly label
     tag: str  # the opentype 4-char tag
@@ -129,7 +149,7 @@ class GlobalDiscreteAxis:
 
 
 @dataclass(kw_only=True)
-class LocalAxis:
+class GlyphAxis:
     name: str
     minValue: float
     defaultValue: float
@@ -140,8 +160,8 @@ class LocalAxis:
 @dataclass(kw_only=True)
 class VariableGlyph:
     name: str
-    axes: list[LocalAxis] = field(default_factory=list)
-    sources: list[Source] = field(default_factory=list)
+    axes: list[GlyphAxis] = field(default_factory=list)
+    sources: list[GlyphSource] = field(default_factory=list)
     layers: dict[str, Layer] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
 
@@ -153,7 +173,7 @@ class VariableGlyph:
 
 
 @dataclass(kw_only=True)
-class Source:
+class GlyphSource:
     name: str
     layerName: str
     location: Location = field(default_factory=dict)
@@ -294,9 +314,9 @@ def _structurePath(d, tp):
 
 def _structureGlobalAxis(d, tp):
     if "values" not in d:
-        return structure(d, GlobalAxis)
+        return structure(d, FontAxis)
     else:
-        return structure(d, GlobalDiscreteAxis)
+        return structure(d, DiscreteFontAxis)
 
 
 def _structureNumber(d, tp):
@@ -320,6 +340,15 @@ def _unstructurePointType(v):
     return int(v)
 
 
+def _structureAxes(v, tp):
+    if isinstance(v, list):
+        # old format
+        v = {"axes": v}
+
+    fieldTypes = get_type_hints(tp)
+    return Axes(**{n: structure(vv, fieldTypes[n]) for n, vv in v.items()})
+
+
 def _unstructureDictSorted(v):
     return unstructure(dict(sorted(v.items())))
 
@@ -341,7 +370,7 @@ _cattrsConverter = cattrs.Converter()
 _cattrsConverter.register_unstructure_hook(float, _unstructureFloat)
 _cattrsConverter.register_structure_hook(Union[PackedPath, Path], _structurePath)
 _cattrsConverter.register_structure_hook(
-    Union[GlobalAxis, GlobalDiscreteAxis], _structureGlobalAxis
+    Union[FontAxis, DiscreteFontAxis], _structureGlobalAxis
 )
 _cattrsConverter.register_structure_hook(float, _structureNumber)
 _cattrsConverter.register_structure_hook(Point, _structurePoint)
@@ -349,6 +378,7 @@ _cattrsConverter.register_unstructure_hook(Point, _unstructurePoint)
 _cattrsConverter.register_structure_hook(bool, lambda x, y: x)
 _cattrsConverter.register_structure_hook(PointType, _structurePointType)
 _cattrsConverter.register_unstructure_hook(PointType, _unstructurePointType)
+_cattrsConverter.register_structure_hook(Axes, _structureAxes)
 
 
 def registerHook(cls, omitIfDefault=True, **fieldHooks):
@@ -371,10 +401,10 @@ registerHook(
     location=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )
-registerHook(LocalAxis, customData=_unstructureDictSortedRecursively)
+registerHook(GlyphAxis, customData=_unstructureDictSortedRecursively)
 registerHook(StaticGlyph, customData=_unstructureDictSortedRecursively)
 registerHook(
-    Source,
+    GlyphSource,
     location=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )
@@ -387,16 +417,17 @@ registerHook(
 registerHook(Path)
 registerHook(PackedPath)
 registerHook(AxisValueLabel)
-registerHook(GlobalMetric, customData=_unstructureDictSortedRecursively)
+registerHook(FontMetric, customData=_unstructureDictSortedRecursively)
 registerHook(
-    GlobalSource,
+    FontSource,
     location=_unstructureDictSorted,
     verticalMetrics=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )
-registerHook(GlobalAxis, customData=_unstructureDictSortedRecursively)
-registerHook(GlobalDiscreteAxis, customData=_unstructureDictSortedRecursively)
+registerHook(FontAxis, customData=_unstructureDictSortedRecursively)
+registerHook(DiscreteFontAxis, customData=_unstructureDictSortedRecursively)
 registerHook(FontInfo, customData=_unstructureDictSortedRecursively)
+registerHook(Axes, customData=_unstructureDictSortedRecursively)
 registerHook(
     Font,
     omitIfDefault=False,

@@ -14,7 +14,7 @@ import {
   scheduleCalls,
   throttleCalls,
 } from "/core/utils.js";
-import { Layer, Source } from "/core/var-glyph.js";
+import { GlyphSource, Layer } from "/core/var-glyph.js";
 import {
   locationToString,
   makeSparseLocation,
@@ -672,7 +672,7 @@ export default class DesignspaceNavigationPanel extends Panel {
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       glyph.sources.push(
-        Source.fromObject({
+        GlyphSource.fromObject({
           name: sourceName,
           layerName: layerName,
           location: newLocation,

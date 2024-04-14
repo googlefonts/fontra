@@ -1,6 +1,7 @@
 {
 "unitsPerEm": 1000,
 "fontInfo": {},
+"axes": {
 "axes": [
 {
 "name": "wght",
@@ -40,7 +41,8 @@
 ]
 ]
 }
-],
+]
+},
 "sources": {},
 "customData": {
 "fontra.sourceStatusFieldDefinitions": [

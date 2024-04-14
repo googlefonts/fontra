@@ -3,8 +3,8 @@ import pathlib
 
 from fontra.backends.fontra import deserializeGlyph
 from fontra.core.classes import (
+    GlyphSource,
     Layer,
-    Source,
     VariableGlyph,
     classCastFuncs,
     serializableClassSchema,
@@ -42,7 +42,7 @@ def test_cast():
     assert str(glyph) == str(originalGlyph)
 
     sourcesList = unstructure(glyph.sources)
-    sources = classCastFuncs[list[Source]](sourcesList)
+    sources = classCastFuncs[list[GlyphSource]](sourcesList)
     assert glyph.sources == sources
 
     layersDict = unstructure(glyph.layers)

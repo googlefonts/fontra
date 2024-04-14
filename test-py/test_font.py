@@ -7,8 +7,8 @@ import pytest
 from fontra.backends import getFileSystemBackend
 from fontra.core.classes import (
     AxisValueLabel,
-    GlobalAxis,
-    GlobalDiscreteAxis,
+    DiscreteFontAxis,
+    FontAxis,
     VariableGlyph,
     structure,
 )
@@ -976,11 +976,11 @@ async def test_getGlyph(testFontName, expectedGlyph):
         assert asdict(glyph) == asdict(expectedGlyph)
 
 
-getGlobalAxesTestData = [
+getAxesTestData = [
     (
         "designspace",
         [
-            GlobalAxis(
+            FontAxis(
                 defaultValue=0.0,
                 maxValue=1000.0,
                 minValue=0.0,
@@ -988,7 +988,7 @@ getGlobalAxesTestData = [
                 name="width",
                 tag="wdth",
             ),
-            GlobalAxis(
+            FontAxis(
                 defaultValue=100.0,
                 maxValue=900.0,
                 mapping=[[100.0, 150.0], [900.0, 850.0]],
@@ -997,7 +997,7 @@ getGlobalAxesTestData = [
                 name="weight",
                 tag="wght",
             ),
-            GlobalDiscreteAxis(
+            DiscreteFontAxis(
                 name="italic",
                 label="italic",
                 tag="ital",
@@ -1025,10 +1025,10 @@ getGlobalAxesTestData = [
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("testFontName, expectedGlobalAxes", getGlobalAxesTestData)
-async def test_getGlobalAxes(testFontName, expectedGlobalAxes):
+@pytest.mark.parametrize("testFontName, expectedGlobalAxes", getAxesTestData)
+async def test_getAxes(testFontName, expectedGlobalAxes):
     font = getTestFont(testFontName)
-    globalAxes = await font.getGlobalAxes()
+    globalAxes = (await font.getAxes()).axes
     assert expectedGlobalAxes == globalAxes
 
 

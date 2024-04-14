@@ -9,10 +9,10 @@ from fontTools.designspaceLib import DesignSpaceDocument
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
-    GlobalAxis,
+    FontAxis,
+    GlyphAxis,
+    GlyphSource,
     Layer,
-    LocalAxis,
-    Source,
     StaticGlyph,
     unstructure,
 )
@@ -132,7 +132,7 @@ async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
     glyph = await writableTestFont.getGlyph(glyphName)
     dsSources = unpackSources(writableTestFont.dsDoc.sources)
 
-    glyph.sources.append(Source(name="mid", location=location, layerName="mid"))
+    glyph.sources.append(GlyphSource(name="mid", location=location, layerName="mid"))
     glyph.layers["mid"] = Layer(glyph=StaticGlyph())
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
@@ -157,7 +157,7 @@ async def test_addNewDenseSource(writableTestFont):
     dsSources = unpackSources(writableTestFont.dsDoc.sources)
 
     glyph.sources.append(
-        Source(name="widest", location={"width": 1500}, layerName="widest")
+        GlyphSource(name="widest", location={"width": 1500}, layerName="widest")
     )
     glyph.layers["widest"] = Layer(glyph=StaticGlyph())
 
@@ -180,7 +180,7 @@ async def test_addLocalAxis(writableTestFont):
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
 
-    glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+    glyph.axes.append(GlyphAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
@@ -196,9 +196,9 @@ async def test_addLocalAxisAndSource(writableTestFont):
 
     layerName = "test"
 
-    glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+    glyph.axes.append(GlyphAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
     glyph.sources.append(
-        Source(name="test", location={"test": 100}, layerName=layerName)
+        GlyphSource(name="test", location={"test": 100}, layerName=layerName)
     )
     glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
 
@@ -209,10 +209,10 @@ async def test_addLocalAxisAndSource(writableTestFont):
     assert asdict(glyph) == asdict(savedGlyph)
 
 
-async def test_putGlobalAxes(writableTestFont):
-    axes = await writableTestFont.getGlobalAxes()
-    axes.append(
-        GlobalAxis(
+async def test_putAxes(writableTestFont):
+    axes = await writableTestFont.getAxes()
+    axes.axes.append(
+        FontAxis(
             name="Testing",
             tag="TEST",
             label="Testing",
@@ -222,11 +222,11 @@ async def test_putGlobalAxes(writableTestFont):
             mapping=[[10, 0], [20, 100], [20, 200]],
         )
     )
-    await writableTestFont.putGlobalAxes(axes)
+    await writableTestFont.putAxes(axes)
 
     path = writableTestFont.dsDoc.path
     newFont = DesignspaceBackend.fromPath(path)
-    newAxes = await newFont.getGlobalAxes()
+    newAxes = await newFont.getAxes()
     assert axes == newAxes
 
 
@@ -259,11 +259,11 @@ async def test_newFileSystemBackend(
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / fileName
     font = newFileSystemBackend(destPath)
-    assert [] == await font.getGlobalAxes()
+    assert [] == (await font.getAxes()).axes
     assert initialExpectedFileNames == fileNamesFromDir(tmpdir)
 
-    axes = await sourceFont.getGlobalAxes()
-    await font.putGlobalAxes(axes)
+    axes = await sourceFont.getAxes()
+    await font.putAxes(axes)
     glyphMap = await sourceFont.getGlyphMap()
     glyph = await sourceFont.getGlyph("A")
     await font.putGlyph("A", glyph, glyphMap["A"])
@@ -297,8 +297,8 @@ async def test_writeCorrectLayers(tmpdir, testFont):
     dsPath = tmpdir / "Test.designspace"
     font = newFileSystemBackend(dsPath)
 
-    axes = await testFont.getGlobalAxes()
-    await font.putGlobalAxes(axes)
+    axes = await testFont.getAxes()
+    await font.putAxes(axes)
     glyphMap = await testFont.getGlyphMap()
     glyph = await testFont.getGlyph("A")
     await font.putGlyph("A", glyph, glyphMap["A"])

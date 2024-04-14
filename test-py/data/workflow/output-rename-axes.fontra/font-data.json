@@ -1,6 +1,7 @@
 {
 "unitsPerEm": 1000,
 "fontInfo": {},
+"axes": {
 "axes": [
 {
 "name": "width",
@@ -38,7 +39,8 @@
 ],
 "defaultValue": 0
 }
-],
+]
+},
 "sources": {},
 "customData": {}
 }

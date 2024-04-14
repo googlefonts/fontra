@@ -39,7 +39,9 @@ export function setupSortableList(listContainer) {
     });
 
     // Inserting the dragging item before the found sibling
-    listContainer.insertBefore(draggingItem, nextSibling);
+    if (draggingItem.nextSibling != nextSibling) {
+      listContainer.insertBefore(draggingItem, nextSibling);
+    }
   });
 
   listContainer.addEventListener("dragenter", (event) => event.preventDefault());

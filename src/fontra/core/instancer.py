@@ -14,11 +14,11 @@ from fontTools.varLib.models import (
 
 from .classes import (
     Component,
-    GlobalAxis,
-    GlobalDiscreteAxis,
+    DiscreteFontAxis,
+    FontAxis,
+    GlyphAxis,
+    GlyphSource,
     Layer,
-    LocalAxis,
-    Source,
     StaticGlyph,
     VariableGlyph,
 )
@@ -37,7 +37,7 @@ class FontInstancer:
 
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
-        self.globalAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = None
+        self.globalAxes: list[FontAxis | DiscreteFontAxis] | None = None
 
     async def getGlyphInstancer(
         self, glyphName: str, addToCache: bool = False
@@ -45,7 +45,8 @@ class FontInstancer:
         glyphInstancer = self.glyphInstancers.get(glyphName)
         if glyphInstancer is None:
             if self.globalAxes is None:
-                self.globalAxes = await self.backend.getGlobalAxes()
+                self.globalAxes = (await self.backend.getAxes()).axes
+                print("XXX", type(self.backend), self.globalAxes)
             glyph = await self.backend.getGlyph(glyphName)
             assert glyph is not None, glyphName
             glyph = await self._ensureComponentLocationCompatibility(glyph)
@@ -199,12 +200,12 @@ class GlyphInstancer:
         )
 
     @cached_property
-    def globalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    def globalAxes(self) -> list[FontAxis | DiscreteFontAxis]:
         assert self.fontInstancer.globalAxes is not None
         return self.fontInstancer.globalAxes
 
     @cached_property
-    def defaultGlobalSourceLocation(self) -> dict[str, float]:
+    def defaultFontSourceLocation(self) -> dict[str, float]:
         location = {axis.name: axis.defaultValue for axis in self.globalAxes}
         return mapLocationFromUserToSource(location, self.globalAxes)
 
@@ -213,7 +214,7 @@ class GlyphInstancer:
         return {axis.name: axis.defaultValue for axis in self.combinedAxes}
 
     @cached_property
-    def defaultSource(self) -> Source:
+    def defaultSource(self) -> GlyphSource:
         defaultSourceLocation = self.defaultSourceLocation
         for source in self.activeSources:
             if defaultSourceLocation | source.location == defaultSourceLocation:
@@ -238,18 +239,18 @@ class GlyphInstancer:
         ]
 
     @cached_property
-    def combinedAxes(self) -> list[LocalAxis]:
+    def combinedAxes(self) -> list[GlyphAxis]:
         combinedAxes = list(self.glyph.axes)
         localAxisNames = {axis.name for axis in self.glyph.axes}
         for axis in self.globalAxes:
             if axis.name in localAxisNames:
                 continue
             mapFunc = makeAxisMapFunc(axis)
-            if not isinstance(axis, GlobalAxis):
+            if not isinstance(axis, FontAxis):
                 # Skip discrete axes
                 continue
             combinedAxes.append(
-                LocalAxis(
+                GlyphAxis(
                     name=axis.name,
                     minValue=mapFunc(axis.minValue),
                     defaultValue=mapFunc(axis.defaultValue),
@@ -266,7 +267,7 @@ class GlyphInstancer:
         }
 
     @cached_property
-    def activeSources(self) -> list[Source]:
+    def activeSources(self) -> list[GlyphSource]:
         return [source for source in self.glyph.sources if not source.inactive]
 
     @cached_property

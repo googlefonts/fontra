@@ -14,17 +14,16 @@
       "type": "dict",
       "subtype": "list"
     },
-    "customData": {
-      "type": "dict",
-      "subtype": "Any"
-    },
     "axes": {
-      "type": "list",
-      "subtype": "GlobalAxis"
+      "type": "Axes"
     },
     "sources": {
       "type": "dict",
-      "subtype": "GlobalSource"
+      "subtype": "FontSource"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
     }
   },
   "FontInfo": {
@@ -95,11 +94,11 @@
     },
     "axes": {
       "type": "list",
-      "subtype": "LocalAxis"
+      "subtype": "GlyphAxis"
     },
     "sources": {
       "type": "list",
-      "subtype": "Source"
+      "subtype": "GlyphSource"
     },
     "layers": {
       "type": "dict",
@@ -110,7 +109,7 @@
       "subtype": "Any"
     }
   },
-  "LocalAxis": {
+  "GlyphAxis": {
     "name": {
       "type": "str"
     },
@@ -128,7 +127,7 @@
       "subtype": "Any"
     }
   },
-  "Source": {
+  "GlyphSource": {
     "name": {
       "type": "str"
     },
@@ -312,7 +311,25 @@
       "subtype": "Any"
     }
   },
-  "GlobalAxis": {
+  "Axes": {
+    "axes": {
+      "type": "list",
+      "subtype": "FontAxis"
+    },
+    "mappings": {
+      "type": "list",
+      "subtype": "MultipleAxisMapping"
+    },
+    "elidedFallBackname": {
+      "type": "str",
+      "optional": true
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
+  "FontAxis": {
     "name": {
       "type": "str"
     },
@@ -373,7 +390,7 @@
       "type": "bool"
     }
   },
-  "GlobalDiscreteAxis": {
+  "DiscreteFontAxis": {
     "name": {
       "type": "str"
     },
@@ -406,7 +423,17 @@
       "subtype": "Any"
     }
   },
-  "GlobalSource": {
+  "MultipleAxisMapping": {
+    "inputLocation": {
+      "type": "dict",
+      "subtype": "float"
+    },
+    "outputLocation": {
+      "type": "dict",
+      "subtype": "float"
+    }
+  },
+  "FontSource": {
     "name": {
       "type": "str"
     },
@@ -416,7 +443,7 @@
     },
     "verticalMetrics": {
       "type": "dict",
-      "subtype": "GlobalMetric"
+      "subtype": "FontMetric"
     },
     "guidelines": {
       "type": "list",
@@ -427,7 +454,7 @@
       "subtype": "Any"
     }
   },
-  "GlobalMetric": {
+  "FontMetric": {
     "value": {
       "type": "float"
     },

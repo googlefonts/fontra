@@ -8,12 +8,13 @@ from fontTools.ttLib import TTFont
 from fontra.core.protocols import ReadableFontBackend
 
 from ..core.classes import (
+    Axes,
+    DiscreteFontAxis,
+    FontAxis,
     FontInfo,
-    GlobalAxis,
-    GlobalDiscreteAxis,
-    GlobalSource,
+    FontSource,
+    GlyphSource,
     Layer,
-    Source,
     StaticGlyph,
     VariableGlyph,
 )
@@ -61,7 +62,7 @@ class OTFBackend:
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}
         defaultLocation = {axis.name: 0.0 for axis in self.globalAxes}
         sources = [
-            Source(
+            GlyphSource(
                 location=defaultLocation,
                 name=defaultLayerName,
                 layerName=defaultLayerName,
@@ -76,7 +77,7 @@ class OTFBackend:
                 self.variationGlyphSets[locStr] = varGlyphSet
             varGlyph = buildStaticGlyph(varGlyphSet, glyphName)
             layers[locStr] = Layer(glyph=varGlyph)
-            sources.append(Source(location=fullLoc, name=locStr, layerName=locStr))
+            sources.append(GlyphSource(location=fullLoc, name=locStr, layerName=locStr))
         if self.charStrings is not None:
             checkAndFixCFF2Compatibility(glyphName, layers)
         glyph.layers = layers
@@ -113,10 +114,10 @@ class OTFBackend:
     async def getFontInfo(self) -> FontInfo:
         return FontInfo()
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        return self.globalAxes
+    async def getAxes(self) -> Axes:
+        return Axes(axes=self.globalAxes)
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         return {}
 
     async def getUnitsPerEm(self) -> int:
@@ -143,7 +144,7 @@ def getLocationsFromVarstore(
         yield location
 
 
-def unpackAxes(font: TTFont) -> list[GlobalAxis | GlobalDiscreteAxis]:
+def unpackAxes(font: TTFont) -> list[FontAxis | DiscreteFontAxis]:
     fvar = font.get("fvar")
     if fvar is None:
         return []
@@ -154,7 +155,7 @@ def unpackAxes(font: TTFont) -> list[GlobalAxis | GlobalDiscreteAxis]:
         if avar is not None
         else {}
     )
-    axisList: list[GlobalAxis | GlobalDiscreteAxis] = []
+    axisList: list[FontAxis | DiscreteFontAxis] = []
     for axis in fvar.axes:
         normMin = -1 if axis.minValue < axis.defaultValue else 0
         normMax = 1 if axis.maxValue > axis.defaultValue else 0
@@ -182,7 +183,7 @@ def unpackAxes(font: TTFont) -> list[GlobalAxis | GlobalDiscreteAxis]:
             axisNameRecord.toUnicode() if axisNameRecord is not None else axis.axisTag
         )
         axisList.append(
-            GlobalAxis(
+            FontAxis(
                 minValue=axis.minValue,
                 defaultValue=axis.defaultValue,
                 maxValue=axis.maxValue,

@@ -1,17 +1,10 @@
 import logging
 from collections import defaultdict
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
-from ..core.classes import (
-    FontInfo,
-    GlobalAxis,
-    GlobalDiscreteAxis,
-    GlobalSource,
-    VariableGlyph,
-    unstructure,
-)
+from ..core.classes import Axes, FontInfo, FontSource, VariableGlyph, unstructure
 from ..core.protocols import ReadableFontBackend
 
 logger = logging.getLogger(__name__)
@@ -66,24 +59,24 @@ class FontBackendMerger:
         fontInfoB = await self.inputB.getFontInfo()
         return FontInfo(**(unstructure(fontInfoA) | unstructure(fontInfoB)))
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        axesA = await self.inputA.getGlobalAxes()
-        axesB = await self.inputB.getGlobalAxes()
-        axesByNameA = {axis.name: axis for axis in axesA}
-        axisNamesB = {axis.name for axis in axesB}
+    async def getAxes(self) -> Axes:
+        axesA = await self.inputA.getAxes()
+        axesB = await self.inputB.getAxes()
+        axesByNameA = {axis.name: axis for axis in axesA.axes}
+        axisNamesB = {axis.name for axis in axesB.axes}
         mergedAxes = []
-        for axis in axesB:
+        for axis in axesB.axes:
             if axis.name in axesByNameA:
                 axis = _mergeAxes(axesByNameA[axis.name], axis)
             mergedAxes.append(axis)
 
-        for axis in axesA:
+        for axis in axesA.axes:
             if axis.name not in axisNamesB:
                 mergedAxes.append(axis)
 
-        return mergedAxes
+        return replace(axesA, axes=mergedAxes)
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         sourcesA = await self.inputA.getSources()
         sourcesB = await self.inputB.getSources()
         return sourcesA | sourcesB

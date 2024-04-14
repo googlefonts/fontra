@@ -17,8 +17,8 @@ describe("schema tests", () => {
     [
       ["glyphs", "dict<VariableGlyph>"],
       ["<anything>", "VariableGlyph"],
-      ["sources", "list<Source>"],
-      [999, "Source"],
+      ["sources", "list<GlyphSource>"],
+      [999, "GlyphSource"],
       ["location", "dict<float>"],
       ["<anything>", "float"],
     ],

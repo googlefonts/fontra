@@ -28,16 +28,17 @@ from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ..core.classes import (
+    Axes,
     AxisValueLabel,
     Component,
+    DiscreteFontAxis,
+    FontAxis,
     FontInfo,
-    GlobalAxis,
-    GlobalDiscreteAxis,
-    GlobalMetric,
-    GlobalSource,
+    FontMetric,
+    FontSource,
+    GlyphAxis,
+    GlyphSource,
     Layer,
-    LocalAxis,
-    Source,
     StaticGlyph,
     VariableGlyph,
 )
@@ -324,7 +325,7 @@ class DesignspaceBackend:
 
     def _unpackLocalDesignSpace(self, dsDict, defaultLayerName):
         axes = [
-            LocalAxis(
+            GlyphAxis(
                 name=axis["name"],
                 minValue=axis["minimum"],
                 defaultValue=axis["default"],
@@ -355,7 +356,7 @@ class DesignspaceBackend:
             ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
             assert ufoLayer is not None
             sources.append(
-                Source(
+                GlyphSource(
                     name=sourceName,
                     location=source["location"],
                     layerName=ufoLayer.fontraLayerName,
@@ -646,12 +647,12 @@ class DesignspaceBackend:
                 infoDict[ufoName] = value
         self._updateUFOFontInfo(infoDict)
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
-        return self.axes
+    async def getAxes(self) -> Axes:
+        return Axes(axes=self.axes)
 
-    async def putGlobalAxes(self, axes):
+    async def putAxes(self, axes):
         self.dsDoc.axes = []
-        for axis in axes:
+        for axis in axes.axes:
             axisParameters = dict(
                 name=axis.name,
                 tag=axis.tag,
@@ -659,25 +660,25 @@ class DesignspaceBackend:
                 map=deepcopy(axis.mapping) if axis.mapping else None,
                 axisLabels=packAxisLabels(axis.valueLabels),
             )
-            if isinstance(axis, GlobalAxis):
+            if isinstance(axis, FontAxis):
                 axisParameters["minimum"] = axis.minValue
                 axisParameters["maximum"] = axis.maxValue
             else:
-                assert isinstance(axis, GlobalDiscreteAxis)
+                assert isinstance(axis, DiscreteFontAxis)
                 axisParameters["values"] = axis.values
             self.dsDoc.addAxisDescriptor(**axisParameters)
         self._writeDesignSpaceDocument()
         self.updateAxisInfo()
         self.loadUFOLayers()
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         unitsPerEm = await self.getUnitsPerEm()
         return {
             dsSource.uuid: unpackDSSource(dsSource, unitsPerEm)
             for dsSource in self.dsSources
         }
 
-    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+    async def putSources(self, sources: dict[str, FontSource]) -> None:
         # TODO: this may require rewriting UFOs and UFO layers
         # Also: what to do if a source gets deleted?
         pass
@@ -870,7 +871,7 @@ class DesignspaceBackend:
 
 @singledispatch
 def unpackDSAxis(dsAxis: AxisDescriptor):
-    axis = GlobalAxis(
+    axis = FontAxis(
         minValue=dsAxis.minimum,
         defaultValue=dsAxis.default,
         maxValue=dsAxis.maximum,
@@ -888,7 +889,7 @@ def unpackDSAxis(dsAxis: AxisDescriptor):
 
 @unpackDSAxis.register
 def _(dsAxis: DiscreteAxisDescriptor):
-    axis = GlobalDiscreteAxis(
+    axis = DiscreteFontAxis(
         values=dsAxis.values,
         defaultValue=dsAxis.default,
         label=dsAxis.name,
@@ -941,7 +942,7 @@ def packAxisLabels(valueLabels):
     ]
 
 
-def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> GlobalSource:
+def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
     fontInfo = UFOFontInfo()
     dsSource.layer.reader.readInfo(fontInfo)
     verticalMetrics = {}
@@ -949,9 +950,9 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> GlobalSource:
         value = getattr(fontInfo, name, None)
         if value is None:
             value = round(defaultFactor * unitsPerEm)
-        verticalMetrics[name] = GlobalMetric(value=value)
+        verticalMetrics[name] = FontMetric(value=value)
 
-    return GlobalSource(
+    return FontSource(
         name=dsSource.name,
         location=dsSource.location,
         verticalMetrics=verticalMetrics,
@@ -975,11 +976,11 @@ class UFOBackend(DesignspaceBackend):
         dsDoc = createDSDocFromUFOPath(path, "default")
         return cls(dsDoc)
 
-    async def putGlobalAxes(self, axes):
-        if axes:
+    async def putAxes(self, axes):
+        if axes.axes:
             raise ValueError("The single-UFO backend does not support variation axes")
 
-    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+    async def putSources(self, sources: dict[str, FontSource]) -> None:
         if len(sources) > 1:
             raise ValueError("The single-UFO backend does not support multiple sources")
 
@@ -1038,7 +1039,7 @@ class DSSource:
     def newFontraSource(self, localDefaultOverride=None):
         if localDefaultOverride is None:
             localDefaultOverride = {}
-        return Source(
+        return GlyphSource(
             name=self.name,
             location={**self.location, **localDefaultOverride},
             layerName=self.layer.fontraLayerName,

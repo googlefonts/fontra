@@ -9,7 +9,7 @@ export class VariableGlyph {
       obj.axes?.map((axis) => {
         return { ...axis };
       }) || [];
-    glyph.sources = obj.sources.map((source) => Source.fromObject(source));
+    glyph.sources = obj.sources.map((source) => GlyphSource.fromObject(source));
     glyph.layers = Object.fromEntries(
       Object.entries(obj.layers).map(([name, layer]) => [name, Layer.fromObject(layer)])
     );
@@ -31,9 +31,9 @@ export class Layer {
   }
 }
 
-export class Source {
+export class GlyphSource {
   static fromObject(obj) {
-    const source = new Source();
+    const source = new GlyphSource();
     source.name = obj.name;
     source.location = { ...obj.location } || {};
     source.layerName = obj.layerName;

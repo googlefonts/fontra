@@ -19,7 +19,7 @@ from .changes import (
     patternIntersect,
     patternUnion,
 )
-from .classes import Font, FontInfo, GlobalSource, VariableGlyph
+from .classes import Font, FontInfo, FontSource, VariableGlyph
 from .lrucache import LRUCache
 from .protocols import ReadableFontBackend, WatchableFontBackend, WritableFontBackend
 
@@ -193,7 +193,7 @@ class FontHandler:
             case "sources":
                 value = await self.backend.getSources()
             case "axes":
-                value = await self.backend.getGlobalAxes()
+                value = await self.backend.getAxes()
             case "glyphMap":
                 value = await self.backend.getGlyphMap()
             case "customData":
@@ -213,7 +213,7 @@ class FontHandler:
             case "sources":
                 await self.writableBackend.putSources(value)
             case "axes":
-                await self.writableBackend.putGlobalAxes(value)
+                await self.writableBackend.putAxes(value)
             case "glyphMap":
                 await self.writableBackend.putGlyphMap(value)
             case "customData":
@@ -233,11 +233,11 @@ class FontHandler:
         return await self.getData("fontInfo")
 
     @remoteMethod
-    async def getSources(self, *, connection=None) -> dict[str, GlobalSource]:
+    async def getSources(self, *, connection=None) -> dict[str, FontSource]:
         return await self.getData("sources")
 
     @remoteMethod
-    async def getGlobalAxes(self, *, connection):
+    async def getAxes(self, *, connection):
         return await self.getData("axes")
 
     @remoteMethod

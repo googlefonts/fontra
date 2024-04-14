@@ -41,7 +41,7 @@ export class FontController {
     this.characterMap = makeCharacterMapFromGlyphMap(glyphMap, false);
     this._rootObject = {};
     this._rootObject["glyphMap"] = getGlyphMapProxy(glyphMap, this.characterMap);
-    this._rootObject["axes"] = await this.font.getGlobalAxes();
+    this._rootObject["axes"] = await this.font.getAxes();
     this._rootObject["unitsPerEm"] = await this.font.getUnitsPerEm();
     this._rootObject["customData"] = await this.font.getCustomData();
     this._rootClassDef = (await getClassSchema())["Font"];
@@ -68,19 +68,23 @@ export class FontController {
   }
 
   get glyphMap() {
-    return this._rootObject["glyphMap"];
+    return this._rootObject.glyphMap;
+  }
+
+  get axes() {
+    return this._rootObject.axes;
   }
 
   get globalAxes() {
-    return this._rootObject["axes"];
+    return this._rootObject.axes.axes;
   }
 
   get unitsPerEm() {
-    return this._rootObject["unitsPerEm"];
+    return this._rootObject.unitsPerEm;
   }
 
   get customData() {
-    return this._rootObject["customData"];
+    return this._rootObject.customData;
   }
 
   async getData(key) {

@@ -9,11 +9,10 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from fontra.core.classes import (
+    Axes,
     Font,
     FontInfo,
-    GlobalAxis,
-    GlobalDiscreteAxis,
-    GlobalSource,
+    FontSource,
     VariableGlyph,
     structure,
     unstructure,
@@ -126,17 +125,17 @@ class FontraBackend:
         self.fontData.fontInfo = deepcopy(fontInfo)
         self._scheduler.schedule(self._writeFontData)
 
-    async def getGlobalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    async def getAxes(self) -> Axes:
         return deepcopy(self.fontData.axes)
 
-    async def putGlobalAxes(self, axes: list[GlobalAxis | GlobalDiscreteAxis]) -> None:
+    async def putAxes(self, axes: Axes) -> None:
         self.fontData.axes = deepcopy(axes)
         self._scheduler.schedule(self._writeFontData)
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         return {}
 
-    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+    async def putSources(self, sources: dict[str, FontSource]) -> None:
         self.fontData.sources = deepcopy(sources)
         self._scheduler.schedule(self._writeFontData)
 
