@@ -149,7 +149,7 @@ class DiscreteFontAxis:
 
 
 @dataclass(kw_only=True)
-class LocalAxis:
+class GlyphAxis:
     name: str
     minValue: float
     defaultValue: float
@@ -160,7 +160,7 @@ class LocalAxis:
 @dataclass(kw_only=True)
 class VariableGlyph:
     name: str
-    axes: list[LocalAxis] = field(default_factory=list)
+    axes: list[GlyphAxis] = field(default_factory=list)
     sources: list[Source] = field(default_factory=list)
     layers: dict[str, Layer] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
@@ -401,7 +401,7 @@ registerHook(
     location=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )
-registerHook(LocalAxis, customData=_unstructureDictSortedRecursively)
+registerHook(GlyphAxis, customData=_unstructureDictSortedRecursively)
 registerHook(StaticGlyph, customData=_unstructureDictSortedRecursively)
 registerHook(
     Source,

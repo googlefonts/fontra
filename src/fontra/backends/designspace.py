@@ -36,8 +36,8 @@ from ..core.classes import (
     FontInfo,
     FontMetric,
     FontSource,
+    GlyphAxis,
     Layer,
-    LocalAxis,
     Source,
     StaticGlyph,
     VariableGlyph,
@@ -325,7 +325,7 @@ class DesignspaceBackend:
 
     def _unpackLocalDesignSpace(self, dsDict, defaultLayerName):
         axes = [
-            LocalAxis(
+            GlyphAxis(
                 name=axis["name"],
                 minValue=axis["minimum"],
                 defaultValue=axis["default"],

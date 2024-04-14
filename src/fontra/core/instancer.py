@@ -16,8 +16,8 @@ from .classes import (
     Component,
     DiscreteFontAxis,
     FontAxis,
+    GlyphAxis,
     Layer,
-    LocalAxis,
     Source,
     StaticGlyph,
     VariableGlyph,
@@ -239,7 +239,7 @@ class GlyphInstancer:
         ]
 
     @cached_property
-    def combinedAxes(self) -> list[LocalAxis]:
+    def combinedAxes(self) -> list[GlyphAxis]:
         combinedAxes = list(self.glyph.axes)
         localAxisNames = {axis.name for axis in self.glyph.axes}
         for axis in self.globalAxes:
@@ -250,7 +250,7 @@ class GlyphInstancer:
                 # Skip discrete axes
                 continue
             combinedAxes.append(
-                LocalAxis(
+                GlyphAxis(
                     name=axis.name,
                     minValue=mapFunc(axis.minValue),
                     defaultValue=mapFunc(axis.defaultValue),

@@ -10,8 +10,8 @@ from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
     FontAxis,
+    GlyphAxis,
     Layer,
-    LocalAxis,
     Source,
     StaticGlyph,
     unstructure,
@@ -180,7 +180,7 @@ async def test_addLocalAxis(writableTestFont):
     glyphMap = await writableTestFont.getGlyphMap()
     glyph = await writableTestFont.getGlyph(glyphName)
 
-    glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+    glyph.axes.append(GlyphAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
@@ -196,7 +196,7 @@ async def test_addLocalAxisAndSource(writableTestFont):
 
     layerName = "test"
 
-    glyph.axes.append(LocalAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+    glyph.axes.append(GlyphAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
     glyph.sources.append(
         Source(name="test", location={"test": 100}, layerName=layerName)
     )

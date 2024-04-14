@@ -94,7 +94,7 @@
     },
     "axes": {
       "type": "list",
-      "subtype": "LocalAxis"
+      "subtype": "GlyphAxis"
     },
     "sources": {
       "type": "list",
@@ -109,7 +109,7 @@
       "subtype": "Any"
     }
   },
-  "LocalAxis": {
+  "GlyphAxis": {
     "name": {
       "type": "str"
     },
