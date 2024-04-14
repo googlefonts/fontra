@@ -204,7 +204,7 @@ export class AxesPanel extends BaseInfoPanel {
   async replaceAxes(updatedAxes, undoLabel) {
     const root = { axes: this.fontController.axes };
     const changes = recordChanges(root, (root) => {
-      root.axes.axes.splice(0, root.axes.length, ...updatedAxes);
+      root.axes.axes.splice(0, root.axes.axes.length, ...updatedAxes);
     });
     await this.postChange(changes.change, changes.rollbackChange, undoLabel);
   }
