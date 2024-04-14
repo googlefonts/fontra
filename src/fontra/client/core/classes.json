@@ -443,7 +443,7 @@
     },
     "verticalMetrics": {
       "type": "dict",
-      "subtype": "GlobalMetric"
+      "subtype": "FontMetric"
     },
     "guidelines": {
       "type": "list",
@@ -454,7 +454,7 @@
       "subtype": "Any"
     }
   },
-  "GlobalMetric": {
+  "FontMetric": {
     "value": {
       "type": "float"
     },

@@ -32,9 +32,9 @@ from ..core.classes import (
     AxisValueLabel,
     Component,
     FontInfo,
+    FontMetric,
     GlobalAxis,
     GlobalDiscreteAxis,
-    GlobalMetric,
     GlobalSource,
     Layer,
     LocalAxis,
@@ -950,7 +950,7 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> GlobalSource:
         value = getattr(fontInfo, name, None)
         if value is None:
             value = round(defaultFactor * unitsPerEm)
-        verticalMetrics[name] = GlobalMetric(value=value)
+        verticalMetrics[name] = FontMetric(value=value)
 
     return GlobalSource(
         name=dsSource.name,

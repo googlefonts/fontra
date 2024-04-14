@@ -74,7 +74,7 @@ class Font:
 class GlobalSource:
     name: str
     location: Location = field(default_factory=dict)
-    verticalMetrics: dict[str, GlobalMetric] = field(default_factory=dict)
+    verticalMetrics: dict[str, FontMetric] = field(default_factory=dict)
     guidelines: list[Union[Guideline, HorizontalGuideline, VerticalGuideline]] = field(
         default_factory=list
     )
@@ -82,7 +82,7 @@ class GlobalSource:
 
 
 @dataclass(kw_only=True)
-class GlobalMetric:
+class FontMetric:
     value: float
     customData: CustomData = field(default_factory=dict)
 
@@ -417,7 +417,7 @@ registerHook(
 registerHook(Path)
 registerHook(PackedPath)
 registerHook(AxisValueLabel)
-registerHook(GlobalMetric, customData=_unstructureDictSortedRecursively)
+registerHook(FontMetric, customData=_unstructureDictSortedRecursively)
 registerHook(
     GlobalSource,
     location=_unstructureDictSorted,
