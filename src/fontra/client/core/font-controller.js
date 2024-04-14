@@ -71,6 +71,10 @@ export class FontController {
     return this._rootObject.glyphMap;
   }
 
+  get axes() {
+    return this._rootObject.axes;
+  }
+
   get globalAxes() {
     return this._rootObject.axes.axes;
   }
