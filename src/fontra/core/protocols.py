@@ -6,7 +6,7 @@ from typing import Any, Awaitable, Callable, Protocol, runtime_checkable
 
 from aiohttp import web
 
-from .classes import Axes, FontInfo, GlobalSource, VariableGlyph
+from .classes import Axes, FontInfo, FontSource, VariableGlyph
 
 
 @runtime_checkable
@@ -23,7 +23,7 @@ class ReadableFontBackend(Protocol):
     async def getAxes(self) -> Axes:
         pass
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         pass
 
     async def getGlyphMap(self) -> dict[str, list[int]]:
@@ -52,7 +52,7 @@ class WritableFontBackend(ReadableFontBackend, Protocol):
     async def putAxes(self, value: Axes) -> None:
         pass
 
-    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+    async def putSources(self, sources: dict[str, FontSource]) -> None:
         pass
 
     async def putGlyphMap(self, value: dict[str, list[int]]) -> None:

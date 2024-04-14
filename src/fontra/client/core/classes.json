@@ -19,7 +19,7 @@
     },
     "sources": {
       "type": "dict",
-      "subtype": "GlobalSource"
+      "subtype": "FontSource"
     },
     "customData": {
       "type": "dict",
@@ -433,7 +433,7 @@
       "subtype": "float"
     }
   },
-  "GlobalSource": {
+  "FontSource": {
     "name": {
       "type": "str"
     },

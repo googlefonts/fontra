@@ -31,8 +31,8 @@ from ..core.classes import (
     Axes,
     Component,
     FontInfo,
+    FontSource,
     GlobalDiscreteAxis,
-    GlobalSource,
     Layer,
     Source,
     StaticGlyph,
@@ -144,7 +144,7 @@ class BaseFilterAction:
         axes = await self.validatedInput.getAxes()
         return await self.processAxes(axes)
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         sources = await self.validatedInput.getSources()
         return await self.processSources(sources)
 
@@ -174,8 +174,8 @@ class BaseFilterAction:
         return axes
 
     async def processSources(
-        self, sources: dict[str, GlobalSource]
-    ) -> dict[str, GlobalSource]:
+        self, sources: dict[str, FontSource]
+    ) -> dict[str, FontSource]:
         return sources
 
     async def processGlyphMap(
@@ -613,19 +613,19 @@ class DecomposeCompositesAction(BaseFilterAction):
     async def getGlyph(self, glyphName: str) -> VariableGlyph:
         instancer = await self.fontInstancer.getGlyphInstancer(glyphName)
         glyph = instancer.glyph
-        defaultGlobalSourceLocation = instancer.defaultGlobalSourceLocation
+        defaultFontSourceLocation = instancer.defaultFontSourceLocation
 
         if not instancer.componentTypes or (
             self.onlyVariableComposites and not any(instancer.componentTypes)
         ):
             return glyph
 
-        haveLocations = getGlobalSourceLocationsFromSources(
-            instancer.activeSources, defaultGlobalSourceLocation
+        haveLocations = getFontSourceLocationsFromSources(
+            instancer.activeSources, defaultFontSourceLocation
         )
 
-        needLocations = await getGlobalSourceLocationsFromBaseGlyphs(
-            glyph, self.fontInstancer.backend, defaultGlobalSourceLocation
+        needLocations = await getFontSourceLocationsFromBaseGlyphs(
+            glyph, self.fontInstancer.backend, defaultFontSourceLocation
         )
 
         locationsToAdd = [
@@ -653,8 +653,8 @@ class DecomposeCompositesAction(BaseFilterAction):
         return replace(glyph, sources=newSources, layers=newLayers)
 
 
-async def getGlobalSourceLocationsFromBaseGlyphs(
-    glyph, backend, defaultGlobalSourceLocation, seenGlyphNames=None
+async def getFontSourceLocationsFromBaseGlyphs(
+    glyph, backend, defaultFontSourceLocation, seenGlyphNames=None
 ):
     if seenGlyphNames is None:
         seenGlyphNames = set()
@@ -671,8 +671,8 @@ async def getGlobalSourceLocationsFromBaseGlyphs(
     locations = set()
     for baseGlyph in baseGlyphs:
         locations.update(
-            getGlobalSourceLocationsFromSources(
-                getActiveSources(baseGlyph.sources), defaultGlobalSourceLocation
+            getFontSourceLocationsFromSources(
+                getActiveSources(baseGlyph.sources), defaultFontSourceLocation
             )
         )
 
@@ -680,22 +680,22 @@ async def getGlobalSourceLocationsFromBaseGlyphs(
 
     for baseGlyph in baseGlyphs:
         locations.update(
-            await getGlobalSourceLocationsFromBaseGlyphs(
-                baseGlyph, backend, defaultGlobalSourceLocation, seenGlyphNames
+            await getFontSourceLocationsFromBaseGlyphs(
+                baseGlyph, backend, defaultFontSourceLocation, seenGlyphNames
             )
         )
 
     return locations
 
 
-def getGlobalSourceLocationsFromSources(sources, defaultGlobalSourceLocation):
+def getFontSourceLocationsFromSources(sources, defaultFontSourceLocation):
     return {
         tuplifyLocation(
-            defaultGlobalSourceLocation
+            defaultFontSourceLocation
             | {
                 k: v
                 for k, v in source.location.items()
-                if k in defaultGlobalSourceLocation
+                if k in defaultFontSourceLocation
             }
         )
         for source in sources

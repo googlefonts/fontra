@@ -205,7 +205,7 @@ class GlyphInstancer:
         return self.fontInstancer.globalAxes
 
     @cached_property
-    def defaultGlobalSourceLocation(self) -> dict[str, float]:
+    def defaultFontSourceLocation(self) -> dict[str, float]:
         location = {axis.name: axis.defaultValue for axis in self.globalAxes}
         return mapLocationFromUserToSource(location, self.globalAxes)
 

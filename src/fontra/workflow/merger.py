@@ -4,7 +4,7 @@ from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
-from ..core.classes import Axes, FontInfo, GlobalSource, VariableGlyph, unstructure
+from ..core.classes import Axes, FontInfo, FontSource, VariableGlyph, unstructure
 from ..core.protocols import ReadableFontBackend
 
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ class FontBackendMerger:
 
         return replace(axesA, axes=mergedAxes)
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         sourcesA = await self.inputA.getSources()
         sourcesB = await self.inputB.getSources()
         return sourcesA | sourcesB

@@ -12,7 +12,7 @@ from fontra.core.classes import (
     Axes,
     Font,
     FontInfo,
-    GlobalSource,
+    FontSource,
     VariableGlyph,
     structure,
     unstructure,
@@ -132,10 +132,10 @@ class FontraBackend:
         self.fontData.axes = deepcopy(axes)
         self._scheduler.schedule(self._writeFontData)
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         return {}
 
-    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+    async def putSources(self, sources: dict[str, FontSource]) -> None:
         self.fontData.sources = deepcopy(sources)
         self._scheduler.schedule(self._writeFontData)
 

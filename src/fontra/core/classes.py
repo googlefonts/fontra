@@ -57,7 +57,7 @@ class Font:
     glyphs: dict[str, VariableGlyph] = field(default_factory=dict)
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
     axes: Axes = field(default_factory=Axes)
-    sources: dict[str, GlobalSource] = field(default_factory=dict)
+    sources: dict[str, FontSource] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
 
     def _trackAssignedAttributeNames(self):
@@ -71,7 +71,7 @@ class Font:
 
 
 @dataclass(kw_only=True)
-class GlobalSource:
+class FontSource:
     name: str
     location: Location = field(default_factory=dict)
     verticalMetrics: dict[str, FontMetric] = field(default_factory=dict)
@@ -419,7 +419,7 @@ registerHook(PackedPath)
 registerHook(AxisValueLabel)
 registerHook(FontMetric, customData=_unstructureDictSortedRecursively)
 registerHook(
-    GlobalSource,
+    FontSource,
     location=_unstructureDictSorted,
     verticalMetrics=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,

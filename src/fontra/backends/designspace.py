@@ -33,9 +33,9 @@ from ..core.classes import (
     Component,
     FontInfo,
     FontMetric,
+    FontSource,
     GlobalAxis,
     GlobalDiscreteAxis,
-    GlobalSource,
     Layer,
     LocalAxis,
     Source,
@@ -671,14 +671,14 @@ class DesignspaceBackend:
         self.updateAxisInfo()
         self.loadUFOLayers()
 
-    async def getSources(self) -> dict[str, GlobalSource]:
+    async def getSources(self) -> dict[str, FontSource]:
         unitsPerEm = await self.getUnitsPerEm()
         return {
             dsSource.uuid: unpackDSSource(dsSource, unitsPerEm)
             for dsSource in self.dsSources
         }
 
-    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+    async def putSources(self, sources: dict[str, FontSource]) -> None:
         # TODO: this may require rewriting UFOs and UFO layers
         # Also: what to do if a source gets deleted?
         pass
@@ -942,7 +942,7 @@ def packAxisLabels(valueLabels):
     ]
 
 
-def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> GlobalSource:
+def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> FontSource:
     fontInfo = UFOFontInfo()
     dsSource.layer.reader.readInfo(fontInfo)
     verticalMetrics = {}
@@ -952,7 +952,7 @@ def unpackDSSource(dsSource: DSSource, unitsPerEm: int) -> GlobalSource:
             value = round(defaultFactor * unitsPerEm)
         verticalMetrics[name] = FontMetric(value=value)
 
-    return GlobalSource(
+    return FontSource(
         name=dsSource.name,
         location=dsSource.location,
         verticalMetrics=verticalMetrics,
@@ -980,7 +980,7 @@ class UFOBackend(DesignspaceBackend):
         if axes.axes:
             raise ValueError("The single-UFO backend does not support variation axes")
 
-    async def putSources(self, sources: dict[str, GlobalSource]) -> None:
+    async def putSources(self, sources: dict[str, FontSource]) -> None:
         if len(sources) > 1:
             raise ValueError("The single-UFO backend does not support multiple sources")
 
