@@ -9,10 +9,10 @@ from fontra.core.protocols import ReadableFontBackend
 
 from ..core.classes import (
     Axes,
+    DiscreteFontAxis,
+    FontAxis,
     FontInfo,
     FontSource,
-    GlobalAxis,
-    GlobalDiscreteAxis,
     Layer,
     Source,
     StaticGlyph,
@@ -144,7 +144,7 @@ def getLocationsFromVarstore(
         yield location
 
 
-def unpackAxes(font: TTFont) -> list[GlobalAxis | GlobalDiscreteAxis]:
+def unpackAxes(font: TTFont) -> list[FontAxis | DiscreteFontAxis]:
     fvar = font.get("fvar")
     if fvar is None:
         return []
@@ -155,7 +155,7 @@ def unpackAxes(font: TTFont) -> list[GlobalAxis | GlobalDiscreteAxis]:
         if avar is not None
         else {}
     )
-    axisList: list[GlobalAxis | GlobalDiscreteAxis] = []
+    axisList: list[FontAxis | DiscreteFontAxis] = []
     for axis in fvar.axes:
         normMin = -1 if axis.minValue < axis.defaultValue else 0
         normMax = 1 if axis.maxValue > axis.defaultValue else 0
@@ -183,7 +183,7 @@ def unpackAxes(font: TTFont) -> list[GlobalAxis | GlobalDiscreteAxis]:
             axisNameRecord.toUnicode() if axisNameRecord is not None else axis.axisTag
         )
         axisList.append(
-            GlobalAxis(
+            FontAxis(
                 minValue=axis.minValue,
                 defaultValue=axis.defaultValue,
                 maxValue=axis.maxValue,

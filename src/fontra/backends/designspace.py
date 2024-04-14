@@ -31,11 +31,11 @@ from ..core.classes import (
     Axes,
     AxisValueLabel,
     Component,
+    DiscreteFontAxis,
+    FontAxis,
     FontInfo,
     FontMetric,
     FontSource,
-    GlobalAxis,
-    GlobalDiscreteAxis,
     Layer,
     LocalAxis,
     Source,
@@ -660,11 +660,11 @@ class DesignspaceBackend:
                 map=deepcopy(axis.mapping) if axis.mapping else None,
                 axisLabels=packAxisLabels(axis.valueLabels),
             )
-            if isinstance(axis, GlobalAxis):
+            if isinstance(axis, FontAxis):
                 axisParameters["minimum"] = axis.minValue
                 axisParameters["maximum"] = axis.maxValue
             else:
-                assert isinstance(axis, GlobalDiscreteAxis)
+                assert isinstance(axis, DiscreteFontAxis)
                 axisParameters["values"] = axis.values
             self.dsDoc.addAxisDescriptor(**axisParameters)
         self._writeDesignSpaceDocument()
@@ -871,7 +871,7 @@ class DesignspaceBackend:
 
 @singledispatch
 def unpackDSAxis(dsAxis: AxisDescriptor):
-    axis = GlobalAxis(
+    axis = FontAxis(
         minValue=dsAxis.minimum,
         defaultValue=dsAxis.default,
         maxValue=dsAxis.maximum,
@@ -889,7 +889,7 @@ def unpackDSAxis(dsAxis: AxisDescriptor):
 
 @unpackDSAxis.register
 def _(dsAxis: DiscreteAxisDescriptor):
-    axis = GlobalDiscreteAxis(
+    axis = DiscreteFontAxis(
         values=dsAxis.values,
         defaultValue=dsAxis.default,
         label=dsAxis.name,

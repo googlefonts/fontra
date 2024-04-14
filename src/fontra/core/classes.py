@@ -32,7 +32,7 @@ class FontInfo:
 
 @dataclass(kw_only=True)
 class Axes:
-    axes: list[Union[GlobalAxis, GlobalDiscreteAxis]] = field(default_factory=list)
+    axes: list[Union[FontAxis, DiscreteFontAxis]] = field(default_factory=list)
     mappings: list[MultipleAxisMapping] = field(default_factory=list)
     elidedFallBackname: Optional[str] = None
     customData: CustomData = field(default_factory=dict)
@@ -122,7 +122,7 @@ class AxisValueLabel:
 
 
 @dataclass(kw_only=True)
-class GlobalAxis:
+class FontAxis:
     name: str  # this identifies the axis
     label: str  # a user friendly label
     tag: str  # the opentype 4-char tag
@@ -136,7 +136,7 @@ class GlobalAxis:
 
 
 @dataclass(kw_only=True)
-class GlobalDiscreteAxis:
+class DiscreteFontAxis:
     name: str  # this identifies the axis
     label: str  # a user friendly label
     tag: str  # the opentype 4-char tag
@@ -314,9 +314,9 @@ def _structurePath(d, tp):
 
 def _structureGlobalAxis(d, tp):
     if "values" not in d:
-        return structure(d, GlobalAxis)
+        return structure(d, FontAxis)
     else:
-        return structure(d, GlobalDiscreteAxis)
+        return structure(d, DiscreteFontAxis)
 
 
 def _structureNumber(d, tp):
@@ -370,7 +370,7 @@ _cattrsConverter = cattrs.Converter()
 _cattrsConverter.register_unstructure_hook(float, _unstructureFloat)
 _cattrsConverter.register_structure_hook(Union[PackedPath, Path], _structurePath)
 _cattrsConverter.register_structure_hook(
-    Union[GlobalAxis, GlobalDiscreteAxis], _structureGlobalAxis
+    Union[FontAxis, DiscreteFontAxis], _structureGlobalAxis
 )
 _cattrsConverter.register_structure_hook(float, _structureNumber)
 _cattrsConverter.register_structure_hook(Point, _structurePoint)
@@ -424,8 +424,8 @@ registerHook(
     verticalMetrics=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )
-registerHook(GlobalAxis, customData=_unstructureDictSortedRecursively)
-registerHook(GlobalDiscreteAxis, customData=_unstructureDictSortedRecursively)
+registerHook(FontAxis, customData=_unstructureDictSortedRecursively)
+registerHook(DiscreteFontAxis, customData=_unstructureDictSortedRecursively)
 registerHook(FontInfo, customData=_unstructureDictSortedRecursively)
 registerHook(Axes, customData=_unstructureDictSortedRecursively)
 registerHook(

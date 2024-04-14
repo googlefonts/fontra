@@ -14,8 +14,8 @@ from fontTools.varLib.models import (
 
 from .classes import (
     Component,
-    GlobalAxis,
-    GlobalDiscreteAxis,
+    DiscreteFontAxis,
+    FontAxis,
     Layer,
     LocalAxis,
     Source,
@@ -37,7 +37,7 @@ class FontInstancer:
 
     def __post_init__(self) -> None:
         self.glyphInstancers: dict[str, GlyphInstancer] = {}
-        self.globalAxes: list[GlobalAxis | GlobalDiscreteAxis] | None = None
+        self.globalAxes: list[FontAxis | DiscreteFontAxis] | None = None
 
     async def getGlyphInstancer(
         self, glyphName: str, addToCache: bool = False
@@ -200,7 +200,7 @@ class GlyphInstancer:
         )
 
     @cached_property
-    def globalAxes(self) -> list[GlobalAxis | GlobalDiscreteAxis]:
+    def globalAxes(self) -> list[FontAxis | DiscreteFontAxis]:
         assert self.fontInstancer.globalAxes is not None
         return self.fontInstancer.globalAxes
 
@@ -246,7 +246,7 @@ class GlyphInstancer:
             if axis.name in localAxisNames:
                 continue
             mapFunc = makeAxisMapFunc(axis)
-            if not isinstance(axis, GlobalAxis):
+            if not isinstance(axis, FontAxis):
                 # Skip discrete axes
                 continue
             combinedAxes.append(

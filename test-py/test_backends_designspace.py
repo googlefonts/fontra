@@ -9,7 +9,7 @@ from fontTools.designspaceLib import DesignSpaceDocument
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
-    GlobalAxis,
+    FontAxis,
     Layer,
     LocalAxis,
     Source,
@@ -212,7 +212,7 @@ async def test_addLocalAxisAndSource(writableTestFont):
 async def test_putAxes(writableTestFont):
     axes = await writableTestFont.getAxes()
     axes.axes.append(
-        GlobalAxis(
+        FontAxis(
             name="Testing",
             tag="TEST",
             label="Testing",

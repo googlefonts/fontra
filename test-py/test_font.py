@@ -7,8 +7,8 @@ import pytest
 from fontra.backends import getFileSystemBackend
 from fontra.core.classes import (
     AxisValueLabel,
-    GlobalAxis,
-    GlobalDiscreteAxis,
+    DiscreteFontAxis,
+    FontAxis,
     VariableGlyph,
     structure,
 )
@@ -980,7 +980,7 @@ getAxesTestData = [
     (
         "designspace",
         [
-            GlobalAxis(
+            FontAxis(
                 defaultValue=0.0,
                 maxValue=1000.0,
                 minValue=0.0,
@@ -988,7 +988,7 @@ getAxesTestData = [
                 name="width",
                 tag="wdth",
             ),
-            GlobalAxis(
+            FontAxis(
                 defaultValue=100.0,
                 maxValue=900.0,
                 mapping=[[100.0, 150.0], [900.0, 850.0]],
@@ -997,7 +997,7 @@ getAxesTestData = [
                 name="weight",
                 tag="wght",
             ),
-            GlobalDiscreteAxis(
+            DiscreteFontAxis(
                 name="italic",
                 label="italic",
                 tag="ital",

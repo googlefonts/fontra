@@ -314,7 +314,7 @@
   "Axes": {
     "axes": {
       "type": "list",
-      "subtype": "GlobalAxis"
+      "subtype": "FontAxis"
     },
     "mappings": {
       "type": "list",
@@ -329,7 +329,7 @@
       "subtype": "Any"
     }
   },
-  "GlobalAxis": {
+  "FontAxis": {
     "name": {
       "type": "str"
     },
@@ -390,7 +390,7 @@
       "type": "bool"
     }
   },
-  "GlobalDiscreteAxis": {
+  "DiscreteFontAxis": {
     "name": {
       "type": "str"
     },
