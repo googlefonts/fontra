@@ -17,8 +17,8 @@ from .classes import (
     DiscreteFontAxis,
     FontAxis,
     GlyphAxis,
+    GlyphSource,
     Layer,
-    Source,
     StaticGlyph,
     VariableGlyph,
 )
@@ -214,7 +214,7 @@ class GlyphInstancer:
         return {axis.name: axis.defaultValue for axis in self.combinedAxes}
 
     @cached_property
-    def defaultSource(self) -> Source:
+    def defaultSource(self) -> GlyphSource:
         defaultSourceLocation = self.defaultSourceLocation
         for source in self.activeSources:
             if defaultSourceLocation | source.location == defaultSourceLocation:
@@ -267,7 +267,7 @@ class GlyphInstancer:
         }
 
     @cached_property
-    def activeSources(self) -> list[Source]:
+    def activeSources(self) -> list[GlyphSource]:
         return [source for source in self.glyph.sources if not source.inactive]
 
     @cached_property

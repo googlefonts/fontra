@@ -161,7 +161,7 @@ class GlyphAxis:
 class VariableGlyph:
     name: str
     axes: list[GlyphAxis] = field(default_factory=list)
-    sources: list[Source] = field(default_factory=list)
+    sources: list[GlyphSource] = field(default_factory=list)
     layers: dict[str, Layer] = field(default_factory=dict)
     customData: CustomData = field(default_factory=dict)
 
@@ -173,7 +173,7 @@ class VariableGlyph:
 
 
 @dataclass(kw_only=True)
-class Source:
+class GlyphSource:
     name: str
     layerName: str
     location: Location = field(default_factory=dict)
@@ -404,7 +404,7 @@ registerHook(
 registerHook(GlyphAxis, customData=_unstructureDictSortedRecursively)
 registerHook(StaticGlyph, customData=_unstructureDictSortedRecursively)
 registerHook(
-    Source,
+    GlyphSource,
     location=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )

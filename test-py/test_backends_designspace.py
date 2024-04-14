@@ -11,8 +11,8 @@ from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
     FontAxis,
     GlyphAxis,
+    GlyphSource,
     Layer,
-    Source,
     StaticGlyph,
     unstructure,
 )
@@ -132,7 +132,7 @@ async def test_addNewSparseSource(writableTestFont, location, expectedDSSource):
     glyph = await writableTestFont.getGlyph(glyphName)
     dsSources = unpackSources(writableTestFont.dsDoc.sources)
 
-    glyph.sources.append(Source(name="mid", location=location, layerName="mid"))
+    glyph.sources.append(GlyphSource(name="mid", location=location, layerName="mid"))
     glyph.layers["mid"] = Layer(glyph=StaticGlyph())
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
@@ -157,7 +157,7 @@ async def test_addNewDenseSource(writableTestFont):
     dsSources = unpackSources(writableTestFont.dsDoc.sources)
 
     glyph.sources.append(
-        Source(name="widest", location={"width": 1500}, layerName="widest")
+        GlyphSource(name="widest", location={"width": 1500}, layerName="widest")
     )
     glyph.layers["widest"] = Layer(glyph=StaticGlyph())
 
@@ -198,7 +198,7 @@ async def test_addLocalAxisAndSource(writableTestFont):
 
     glyph.axes.append(GlyphAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
     glyph.sources.append(
-        Source(name="test", location={"test": 100}, layerName=layerName)
+        GlyphSource(name="test", location={"test": 100}, layerName=layerName)
     )
     glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
 

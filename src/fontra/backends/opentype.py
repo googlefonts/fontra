@@ -13,8 +13,8 @@ from ..core.classes import (
     FontAxis,
     FontInfo,
     FontSource,
+    GlyphSource,
     Layer,
-    Source,
     StaticGlyph,
     VariableGlyph,
 )
@@ -62,7 +62,7 @@ class OTFBackend:
         layers = {defaultLayerName: Layer(glyph=staticGlyph)}
         defaultLocation = {axis.name: 0.0 for axis in self.globalAxes}
         sources = [
-            Source(
+            GlyphSource(
                 location=defaultLocation,
                 name=defaultLayerName,
                 layerName=defaultLayerName,
@@ -77,7 +77,7 @@ class OTFBackend:
                 self.variationGlyphSets[locStr] = varGlyphSet
             varGlyph = buildStaticGlyph(varGlyphSet, glyphName)
             layers[locStr] = Layer(glyph=varGlyph)
-            sources.append(Source(location=fullLoc, name=locStr, layerName=locStr))
+            sources.append(GlyphSource(location=fullLoc, name=locStr, layerName=locStr))
         if self.charStrings is not None:
             checkAndFixCFF2Compatibility(glyphName, layers)
         glyph.layers = layers

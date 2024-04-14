@@ -37,8 +37,8 @@ from ..core.classes import (
     FontMetric,
     FontSource,
     GlyphAxis,
+    GlyphSource,
     Layer,
-    Source,
     StaticGlyph,
     VariableGlyph,
 )
@@ -356,7 +356,7 @@ class DesignspaceBackend:
             ufoLayer = self.ufoLayers.findItem(path=ufoPath, name=ufoLayerName)
             assert ufoLayer is not None
             sources.append(
-                Source(
+                GlyphSource(
                     name=sourceName,
                     location=source["location"],
                     layerName=ufoLayer.fontraLayerName,
@@ -1039,7 +1039,7 @@ class DSSource:
     def newFontraSource(self, localDefaultOverride=None):
         if localDefaultOverride is None:
             localDefaultOverride = {}
-        return Source(
+        return GlyphSource(
             name=self.name,
             location={**self.location, **localDefaultOverride},
             layerName=self.layer.fontraLayerName,

@@ -33,8 +33,8 @@ from ..core.classes import (
     DiscreteFontAxis,
     FontInfo,
     FontSource,
+    GlyphSource,
     Layer,
-    Source,
     StaticGlyph,
     VariableGlyph,
     structure,
@@ -634,7 +634,7 @@ class DecomposeCompositesAction(BaseFilterAction):
         layerNames = [locationToString(location) for location in locationsToAdd]
 
         newSources = instancer.activeSources + [
-            Source(name=name, location=location, layerName=name)
+            GlyphSource(name=name, location=location, layerName=name)
             for location, name in zip(locationsToAdd, layerNames, strict=True)
         ]
         newLayers = {}
@@ -1032,7 +1032,7 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
         else:
             location = dict(locationTuple)
             name = locationToString(location)
-            source = Source(name=name, location=location, layerName=name)
+            source = GlyphSource(name=name, location=location, layerName=name)
             instance = instancer.instantiate(location)
             newLayers[source.layerName] = Layer(glyph=instance.glyph)
 

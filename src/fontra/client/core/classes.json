@@ -98,7 +98,7 @@
     },
     "sources": {
       "type": "list",
-      "subtype": "Source"
+      "subtype": "GlyphSource"
     },
     "layers": {
       "type": "dict",
@@ -127,7 +127,7 @@
       "subtype": "Any"
     }
   },
-  "Source": {
+  "GlyphSource": {
     "name": {
       "type": "str"
     },
