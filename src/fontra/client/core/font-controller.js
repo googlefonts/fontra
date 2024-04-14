@@ -68,7 +68,7 @@ export class FontController {
   }
 
   get glyphMap() {
-    return this._rootObject["glyphMap"];
+    return this._rootObject.glyphMap;
   }
 
   get globalAxes() {
@@ -76,11 +76,11 @@ export class FontController {
   }
 
   get unitsPerEm() {
-    return this._rootObject["unitsPerEm"];
+    return this._rootObject.unitsPerEm;
   }
 
   get customData() {
-    return this._rootObject["customData"];
+    return this._rootObject.customData;
   }
 
   async getData(key) {
