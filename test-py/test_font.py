@@ -976,7 +976,7 @@ async def test_getGlyph(testFontName, expectedGlyph):
         assert asdict(glyph) == asdict(expectedGlyph)
 
 
-getGlobalAxesTestData = [
+getAxesTestData = [
     (
         "designspace",
         [
@@ -1025,7 +1025,7 @@ getGlobalAxesTestData = [
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("testFontName, expectedGlobalAxes", getGlobalAxesTestData)
+@pytest.mark.parametrize("testFontName, expectedGlobalAxes", getAxesTestData)
 async def test_getGlobalAxes(testFontName, expectedGlobalAxes):
     font = getTestFont(testFontName)
     globalAxes = (await font.getAxes()).axes
