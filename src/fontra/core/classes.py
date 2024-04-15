@@ -40,6 +40,8 @@ class Axes:
 
 @dataclass(kw_only=True)
 class MultipleAxisMapping:
+    description: Optional[str] = None
+    groupDescription: Optional[str] = None
     inputLocation: Location
     outputLocation: Location
 

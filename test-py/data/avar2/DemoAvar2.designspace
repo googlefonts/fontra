@@ -4,9 +4,9 @@
     <axis tag="DIAG" name="Diagonal" minimum="0" maximum="100" default="0"/>
     <axis tag="HORI" name="Horizontal" minimum="0" maximum="100" default="0" hidden="true"/>
     <axis tag="VERT" name="Vertical" minimum="0" maximum="100" default="0" hidden="true"/>
-    <mappings>
+    <mappings description="Mappings group one">
 
-      <mapping>
+      <mapping description="Default mapping">
         <input>
           <dimension name="Diagonal" xvalue="0"/>
         </input>
