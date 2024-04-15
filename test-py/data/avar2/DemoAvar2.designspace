@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<designspace format="5.0">
+  <axes>
+    <axis tag="DIAG" name="Diagonal" minimum="0" maximum="100" default="0"/>
+    <axis tag="HORI" name="Horizontal" minimum="0" maximum="100" default="0" hidden="true"/>
+    <axis tag="VERT" name="Vertical" minimum="0" maximum="100" default="0" hidden="true"/>
+    <mappings>
+
+      <mapping>
+        <input>
+          <dimension name="Diagonal" xvalue="0"/>
+        </input>
+        <output>
+          <dimension name="Horizontal" xvalue="0"/>
+          <dimension name="Vertical" xvalue="0"/>
+        </output>
+      </mapping>
+
+      <mapping>
+        <input>
+          <dimension name="Diagonal" xvalue="25"/>
+        </input>
+        <output>
+          <dimension name="Horizontal" xvalue="0"/>
+          <dimension name="Vertical" xvalue="33"/>
+        </output>
+      </mapping>
+
+      <mapping>
+        <input>
+          <dimension name="Diagonal" xvalue="75"/>
+        </input>
+        <output>
+          <dimension name="Horizontal" xvalue="100"/>
+          <dimension name="Vertical" xvalue="67"/>
+        </output>
+      </mapping>
+
+      <mapping>
+        <input>
+          <dimension name="Diagonal" xvalue="100"/>
+        </input>
+        <output>
+          <dimension name="Horizontal" xvalue="100"/>
+          <dimension name="Vertical" xvalue="100"/>
+        </output>
+      </mapping>
+
+    </mappings>
+  </axes>
+  <sources>
+    <source filename="DemoAvar2_Regular.ufo" stylename="Regular"/>
+    <source filename="DemoAvar2_Horizontal.ufo" stylename="Horizontal" layer="public.default">
+      <location>
+        <dimension name="Horizontal" xvalue="100"/>
+        <dimension name="Vertical" xvalue="0"/>
+      </location>
+    </source>
+    <source filename="DemoAvar2_Vertical.ufo" stylename="Vertical" layer="public.default">
+      <location>
+        <dimension name="Horizontal" xvalue="0"/>
+        <dimension name="Vertical" xvalue="100"/>
+      </location>
+    </source>
+  </sources>
+</designspace>
