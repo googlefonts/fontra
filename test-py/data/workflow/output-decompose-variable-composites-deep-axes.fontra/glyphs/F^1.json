@@ -1,0 +1,161 @@
+{
+"name": "F",
+"axes": [
+{
+"name": "Chop",
+"minValue": 0,
+"defaultValue": 0,
+"maxValue": 100
+}
+],
+"sources": [
+{
+"name": "<default>",
+"layerName": "<default>"
+},
+{
+"name": "weight=900",
+"layerName": "weight=900",
+"location": {
+"weight": 900
+}
+},
+{
+"name": "Chop=100",
+"layerName": "Chop=100",
+"location": {
+"Chop": 100
+}
+},
+{
+"name": "weight=900,Chop=100",
+"layerName": "weight=900,Chop=100",
+"location": {
+"Chop": 100,
+"weight": 900
+}
+}
+],
+"layers": {
+"<default>": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 500
+},
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 50,
+"y": 0
+},
+{
+"x": 50,
+"y": 500
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 200
+}
+},
+"Chop=100": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 500
+},
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 50,
+"y": 0
+},
+{
+"x": 50,
+"y": 450
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 200
+}
+},
+"weight=900": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 500
+},
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 150,
+"y": 0
+},
+{
+"x": 150,
+"y": 500
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 200
+}
+},
+"weight=900,Chop=100": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 500
+},
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 150,
+"y": 0
+},
+{
+"x": 150,
+"y": 350
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 200
+}
+}
+}
+}

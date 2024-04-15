@@ -1,0 +1,154 @@
+{
+"name": "G",
+"sources": [
+{
+"name": "<default>",
+"layerName": "<default>"
+},
+{
+"name": "width=200",
+"layerName": "width=200",
+"location": {
+"width": 200
+}
+},
+{
+"name": "weight=900,width=100",
+"layerName": "weight=900,width=100",
+"location": {
+"weight": 900,
+"width": 100
+}
+},
+{
+"name": "weight=900,width=200",
+"layerName": "weight=900,width=200",
+"location": {
+"weight": 900,
+"width": 200
+}
+}
+],
+"layers": {
+"<default>": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 500
+},
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 50,
+"y": 0
+},
+{
+"x": 50,
+"y": 500
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 200
+}
+},
+"weight=900,width=100": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 500
+},
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 150,
+"y": 0
+},
+{
+"x": 150,
+"y": 500
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 200
+}
+},
+"weight=900,width=200": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 500
+},
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 150,
+"y": 0
+},
+{
+"x": 150,
+"y": 350
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 200
+}
+},
+"width=200": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 0,
+"y": 500
+},
+{
+"x": 0,
+"y": 0
+},
+{
+"x": 50,
+"y": 0
+},
+{
+"x": 50,
+"y": 450
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 200
+}
+}
+}
+}

@@ -1,0 +1,44 @@
+{
+"name": "G",
+"sources": [
+{
+"name": "<default>",
+"layerName": "<default>"
+},
+{
+"name": "width=200",
+"layerName": "width=200",
+"location": {
+"width": 200
+}
+}
+],
+"layers": {
+"<default>": {
+"glyph": {
+"components": [
+{
+"name": "F",
+"location": {
+"Chop": 0
+}
+}
+],
+"xAdvance": 200
+}
+},
+"width=200": {
+"glyph": {
+"components": [
+{
+"name": "F",
+"location": {
+"Chop": 100
+}
+}
+],
+"xAdvance": 200
+}
+}
+}
+}

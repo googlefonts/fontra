@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import json
 import logging
 import os
@@ -629,6 +630,10 @@ class DecomposeCompositesAction(BaseFilterAction):
             glyph, self.fontInstancer.backend, defaultFontSourceLocation
         )
 
+        needLocations = multiplyLocations(
+            haveLocations, needLocations, defaultFontSourceLocation
+        )
+
         locationsToAdd = [
             dict(location) for location in sorted(needLocations - haveLocations)
         ]
@@ -656,7 +661,7 @@ class DecomposeCompositesAction(BaseFilterAction):
 
 async def getFontSourceLocationsFromBaseGlyphs(
     glyph, backend, defaultFontSourceLocation, seenGlyphNames=None
-):
+) -> set[tuple]:
     if seenGlyphNames is None:
         seenGlyphNames = set()
 
@@ -689,7 +694,7 @@ async def getFontSourceLocationsFromBaseGlyphs(
     return locations
 
 
-def getFontSourceLocationsFromSources(sources, defaultFontSourceLocation):
+def getFontSourceLocationsFromSources(sources, defaultFontSourceLocation) -> set[tuple]:
     return {
         tuplifyLocation(
             defaultFontSourceLocation
@@ -701,6 +706,25 @@ def getFontSourceLocationsFromSources(sources, defaultFontSourceLocation):
         )
         for source in sources
     }
+
+
+def multiplyLocations(
+    haveLocationsTuples, needLocationsTuples, defaultFontSourceLocation
+) -> set[tuple]:
+    haveLocations = [dict(loc) for loc in haveLocationsTuples]
+    needLocations = [
+        sparseLocation(dict(loc), defaultFontSourceLocation)
+        for loc in needLocationsTuples
+    ]
+    needLocations = [
+        haveLoc | needLoc
+        for haveLoc, needLoc in itertools.product(haveLocations, needLocations)
+    ]
+    return {tuplifyLocation(loc) for loc in needLocations}
+
+
+def sparseLocation(location, defaultFontSourceLocation):
+    return {k: v for k, v in location.items() if v != defaultFontSourceLocation[k]}
 
 
 def locationToString(loc):
