@@ -4,14 +4,6 @@
 "axes": {
 "axes": [
 {
-"name": "width",
-"label": "width",
-"tag": "wdth",
-"minValue": 0,
-"defaultValue": 0,
-"maxValue": 1000
-},
-{
 "name": "weight",
 "label": "weight",
 "tag": "wght",
@@ -28,16 +20,6 @@
 850
 ]
 ]
-},
-{
-"name": "italic",
-"label": "italic",
-"tag": "ital",
-"values": [
-0,
-1
-],
-"defaultValue": 0
 }
 ]
 },

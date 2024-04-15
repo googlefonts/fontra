@@ -782,6 +782,8 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset-axes
+              axisNames: ["weight"]
             - action: drop-shapes
             - action: amend-cmap
               cmap:
@@ -801,6 +803,8 @@ def test_command(tmpdir, configYAMLSources):
             steps:
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset-axes
+              axisNames: ["weight"]
             - action: drop-shapes
             - action: amend-cmap
               cmapFile: "test-py/data/workflow/amend-cmap-cmap.txt"
