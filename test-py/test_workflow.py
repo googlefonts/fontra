@@ -795,6 +795,20 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "amend-cmap-from-file",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: drop-shapes
+            - action: amend-cmap
+              cmapFile: "test-py/data/workflow/amend-cmap-cmap.txt"
+            - action: output
+              destination: "output-amend-cmap.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
