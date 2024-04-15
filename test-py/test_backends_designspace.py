@@ -486,18 +486,23 @@ expectedAxesWithMappings = Axes(
     ],
     mappings=[
         MultipleAxisMapping(
+            description="Default mapping",
+            groupDescription="Mappings group one",
             inputLocation={"Diagonal": 0.0},
             outputLocation={"Horizontal": 0.0, "Vertical": 0.0},
         ),
         MultipleAxisMapping(
+            groupDescription="Mappings group one",
             inputLocation={"Diagonal": 25.0},
             outputLocation={"Horizontal": 0.0, "Vertical": 33.0},
         ),
         MultipleAxisMapping(
+            groupDescription="Mappings group one",
             inputLocation={"Diagonal": 75.0},
             outputLocation={"Horizontal": 100.0, "Vertical": 67.0},
         ),
         MultipleAxisMapping(
+            groupDescription="Mappings group one",
             inputLocation={"Diagonal": 100.0},
             outputLocation={"Horizontal": 100.0, "Vertical": 100.0},
         ),

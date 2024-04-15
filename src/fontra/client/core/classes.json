@@ -424,6 +424,14 @@
     }
   },
   "MultipleAxisMapping": {
+    "description": {
+      "type": "str",
+      "optional": true
+    },
+    "groupDescription": {
+      "type": "str",
+      "optional": true
+    },
     "inputLocation": {
       "type": "dict",
       "subtype": "float"

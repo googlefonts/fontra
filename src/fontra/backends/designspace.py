@@ -178,6 +178,8 @@ class DesignspaceBackend:
 
         self.axisMappings = [
             MultipleAxisMapping(
+                description=mapping.description,
+                groupDescription=mapping.groupDescription,
                 inputLocation=dict(mapping.inputLocation),
                 outputLocation=dict(mapping.outputLocation),
             )
@@ -685,6 +687,8 @@ class DesignspaceBackend:
 
         for mapping in axes.mappings:
             self.dsDoc.addAxisMappingDescriptor(
+                description=mapping.description,
+                groupDescription=mapping.groupDescription,
                 inputLocation=mapping.inputLocation,
                 outputLocation=mapping.outputLocation,
             )
