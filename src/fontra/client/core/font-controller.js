@@ -40,10 +40,10 @@ export class FontController {
     const glyphMap = await this.font.getGlyphMap();
     this.characterMap = makeCharacterMapFromGlyphMap(glyphMap, false);
     this._rootObject = {};
-    this._rootObject["glyphMap"] = getGlyphMapProxy(glyphMap, this.characterMap);
-    this._rootObject["axes"] = await this.font.getAxes();
-    this._rootObject["unitsPerEm"] = await this.font.getUnitsPerEm();
-    this._rootObject["customData"] = await this.font.getCustomData();
+    this._rootObject.glyphMap = getGlyphMapProxy(glyphMap, this.characterMap);
+    this._rootObject.axes = ensureDenseAxes(await this.font.getAxes());
+    this._rootObject.unitsPerEm = await this.font.getUnitsPerEm();
+    this._rootObject.customData = await this.font.getCustomData();
     this._rootClassDef = (await getClassSchema())["Font"];
     this.backendInfo = await this.font.getBackEndInfo();
     this.readOnly = await this.font.isReadOnly();
@@ -861,4 +861,8 @@ function objectPropertyTracker(obj) {
 
   const proxy = new Proxy(obj, handler);
   return { proxy, addedProperties, deletedProperties };
+}
+
+function ensureDenseAxes(axes) {
+  return { ...axes, axes: axes.axes || [], mappings: axes.mappings || [] };
 }
