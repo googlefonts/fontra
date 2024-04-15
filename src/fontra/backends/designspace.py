@@ -39,6 +39,7 @@ from ..core.classes import (
     GlyphAxis,
     GlyphSource,
     Layer,
+    MultipleAxisMapping,
     StaticGlyph,
     VariableGlyph,
 )
@@ -174,6 +175,15 @@ class DesignspaceBackend:
             axisPolePositions[dsAxis.name] = {dsAxis.map_forward(p) for p in poles}
             defaultLocation[dsAxis.name] = dsAxis.map_forward(dsAxis.default)
         self.axes = axes
+
+        self.axisMappings = [
+            MultipleAxisMapping(
+                inputLocation=dict(mapping.inputLocation),
+                outputLocation=dict(mapping.outputLocation),
+            )
+            for mapping in self.dsDoc.axisMappings
+        ]
+
         self.axisPolePositions = axisPolePositions
         self.defaultLocation = defaultLocation
 
@@ -648,10 +658,12 @@ class DesignspaceBackend:
         self._updateUFOFontInfo(infoDict)
 
     async def getAxes(self) -> Axes:
-        return Axes(axes=self.axes)
+        return Axes(axes=self.axes, mappings=self.axisMappings)
 
     async def putAxes(self, axes):
         self.dsDoc.axes = []
+        self.dsDoc.axisMappings = []
+
         for axis in axes.axes:
             axisParameters = dict(
                 name=axis.name,
@@ -659,14 +671,24 @@ class DesignspaceBackend:
                 default=axis.defaultValue,
                 map=deepcopy(axis.mapping) if axis.mapping else None,
                 axisLabels=packAxisLabels(axis.valueLabels),
+                hidden=axis.hidden,
             )
+
             if isinstance(axis, FontAxis):
                 axisParameters["minimum"] = axis.minValue
                 axisParameters["maximum"] = axis.maxValue
             else:
                 assert isinstance(axis, DiscreteFontAxis)
                 axisParameters["values"] = axis.values
+
             self.dsDoc.addAxisDescriptor(**axisParameters)
+
+        for mapping in axes.mappings:
+            self.dsDoc.addAxisMappingDescriptor(
+                inputLocation=mapping.inputLocation,
+                outputLocation=mapping.outputLocation,
+            )
+
         self._writeDesignSpaceDocument()
         self.updateAxisInfo()
         self.loadUFOLayers()

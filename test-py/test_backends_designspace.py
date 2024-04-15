@@ -9,10 +9,12 @@ from fontTools.designspaceLib import DesignSpaceDocument
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
+    Axes,
     FontAxis,
     GlyphAxis,
     GlyphSource,
     Layer,
+    MultipleAxisMapping,
     StaticGlyph,
     unstructure,
 )
@@ -451,6 +453,74 @@ async def test_getSources(testFont):
     sources = unstructure(sources)
     sourcesList = list(sources.values())  # ignore UUIDs
     assert sourcesList == getSourcesTestData
+
+
+expectedAxesWithMappings = Axes(
+    axes=[
+        FontAxis(
+            name="Diagonal",
+            label="Diagonal",
+            tag="DIAG",
+            minValue=0.0,
+            defaultValue=0.0,
+            maxValue=100.0,
+        ),
+        FontAxis(
+            name="Horizontal",
+            label="Horizontal",
+            tag="HORI",
+            minValue=0.0,
+            defaultValue=0.0,
+            maxValue=100.0,
+            hidden=True,
+        ),
+        FontAxis(
+            name="Vertical",
+            label="Vertical",
+            tag="VERT",
+            minValue=0.0,
+            defaultValue=0.0,
+            maxValue=100.0,
+            hidden=True,
+        ),
+    ],
+    mappings=[
+        MultipleAxisMapping(
+            inputLocation={"Diagonal": 0.0},
+            outputLocation={"Horizontal": 0.0, "Vertical": 0.0},
+        ),
+        MultipleAxisMapping(
+            inputLocation={"Diagonal": 25.0},
+            outputLocation={"Horizontal": 0.0, "Vertical": 33.0},
+        ),
+        MultipleAxisMapping(
+            inputLocation={"Diagonal": 75.0},
+            outputLocation={"Horizontal": 100.0, "Vertical": 67.0},
+        ),
+        MultipleAxisMapping(
+            inputLocation={"Diagonal": 100.0},
+            outputLocation={"Horizontal": 100.0, "Vertical": 100.0},
+        ),
+    ],
+)
+
+
+async def test_getAxes_with_mappings():
+    backend = getFileSystemBackend(dataDir / "avar2" / "DemoAvar2.designspace")
+    axes = await backend.getAxes()
+    assert expectedAxesWithMappings == axes
+
+
+async def test_putAxes_with_mappings(tmpdir):
+    outputPath = tmpdir / "TmpFont.designspace"
+    outputBackend = newFileSystemBackend(outputPath)
+
+    async with aclosing(outputBackend):
+        await outputBackend.putAxes(expectedAxesWithMappings)
+
+    reopenedBackend = getFileSystemBackend(outputPath)
+    roundTrippedAxes = await reopenedBackend.getAxes()
+    assert expectedAxesWithMappings == roundTrippedAxes
 
 
 def fileNamesFromDir(path):
