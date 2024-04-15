@@ -1,0 +1,43 @@
+{
+"name": "B",
+"sources": [
+{
+"name": "LightCondensed",
+"layerName": "MutatorSansLightCondensed/foreground",
+"location": {
+"weight": 150
+}
+},
+{
+"name": "BoldCondensed",
+"layerName": "MutatorSansBoldCondensed/foreground",
+"location": {
+"weight": 850
+}
+},
+{
+"name": "support.crossbar",
+"layerName": "MutatorSansLightCondensed/support.crossbar",
+"location": {
+"weight": 595
+}
+}
+],
+"layers": {
+"MutatorSansBoldCondensed/foreground": {
+"glyph": {
+"xAdvance": 710
+}
+},
+"MutatorSansLightCondensed/foreground": {
+"glyph": {
+"xAdvance": 443
+}
+},
+"MutatorSansLightCondensed/support.crossbar": {
+"glyph": {
+"xAdvance": 645
+}
+}
+}
+}

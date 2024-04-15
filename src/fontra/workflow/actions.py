@@ -43,6 +43,7 @@ from ..core.classes import (
 from ..core.instancer import FontInstancer
 from ..core.path import PackedPath
 from ..core.protocols import ReadableFontBackend
+from .merger import cmapFromGlyphMap
 
 # All actions should use this logger, regardless of where they are defined
 logger = logging.getLogger(__name__)
@@ -1156,3 +1157,58 @@ class DropShapesAction(BaseFilterAction):
                 for layerName, layer in glyph.layers.items()
             },
         )
+
+
+@registerActionClass("amend-cmap")
+@dataclass(kw_only=True)
+class AmendCmapAction(BaseFilterAction):
+    cmap: dict[int | str, str | None] = field(default_factory=dict)
+    cmapFile: str | None = None
+
+    def __post_init__(self) -> None:
+        self.cmap = {
+            (
+                codePoint
+                if isinstance(codePoint, int)
+                else parseCodePointString(codePoint, self.actionName)
+            ): glyphName
+            for codePoint, glyphName in self.cmap.items()
+        }
+
+        if not self.cmapFile:
+            return
+        path = pathlib.Path(self.cmapFile)
+        assert path.is_file()
+
+        cmap = {}
+        for line in path.read_text().splitlines():
+            parts = line.split()
+            if len(parts) == 1:
+                codePointString = parts[0]
+                glyphName = None
+            else:
+                codePointString, glyphName = parts
+
+            codePoint = parseCodePointString(codePointString, self.actionName)
+            cmap[codePoint] = glyphName
+
+        self.cmap = cmap | self.cmap
+
+    async def processGlyphMap(
+        self, glyphMap: dict[str, list[int]]
+    ) -> dict[str, list[int]]:
+        newGlyphMap: dict[str, list[int]] = {glyphName: [] for glyphName in glyphMap}
+        cmap = cmapFromGlyphMap(glyphMap) | self.cmap
+        for codePoint, glyphName in sorted(cmap.items()):
+            if glyphName:
+                newGlyphMap[glyphName].append(codePoint)
+        return newGlyphMap
+
+
+def parseCodePointString(codePointString, actionName):
+    if not codePointString[:2] == "U+":
+        raise ActionError(
+            f"{actionName} codePoint must start with U+, found {codePointString}"
+        )
+
+    return int(codePointString[2:], 16)
