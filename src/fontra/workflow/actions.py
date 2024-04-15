@@ -1208,7 +1208,7 @@ class AmendCmapAction(BaseFilterAction):
 def parseCodePointString(codePointString, actionName):
     if not codePointString[:2] == "U+":
         raise ActionError(
-            f"{actionName} codePoint must start with U+, " f"found {codePointString}"
+            f"{actionName} codePoint must start with U+, found {codePointString}"
         )
 
     return int(codePointString[2:], 16)
