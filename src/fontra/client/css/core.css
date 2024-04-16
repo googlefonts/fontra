@@ -131,6 +131,7 @@ input[type="password"] {
   outline: none;
   padding: 0.1em 0.3em;
   font-family: "fontra-ui-regular", sans-serif;
+  font-size: 100%;
 }
 
 inline-svg {
