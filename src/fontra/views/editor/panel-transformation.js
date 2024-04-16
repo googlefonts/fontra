@@ -797,7 +797,7 @@ export default class TransformationPanel extends Panel {
       };
     }
 
-    let effectiveUsedBounds = { width: 0, height: 0 };
+    let effectiveDimentions = { width: 0, height: 0 };
     for (const pointIndices of contours) {
       const path = filterPathByPointIndices(
         layerGlyphController.instance.path,
@@ -806,8 +806,8 @@ export default class TransformationPanel extends Panel {
       const b = path.getBounds();
       const width = b.xMax - b.xMin;
       const height = b.yMax - b.yMin;
-      effectiveUsedBounds.width += width;
-      effectiveUsedBounds.height += height;
+      effectiveDimentions.width += width;
+      effectiveDimentions.height += height;
     }
 
     for (const compoIndex of components) {
@@ -815,8 +815,8 @@ export default class TransformationPanel extends Panel {
       const b = component.bounds;
       const width = b.xMax - b.xMin;
       const height = b.yMax - b.yMin;
-      effectiveUsedBounds.width += width;
-      effectiveUsedBounds.height += height;
+      effectiveDimentions.width += width;
+      effectiveDimentions.height += height;
     }
 
     let dictributeObjectCount = contours.length + components.length;
@@ -830,9 +830,9 @@ export default class TransformationPanel extends Panel {
     const heightSelection = selectionBounds.yMax - selectionBounds.yMin;
     const widthSelection = selectionBounds.xMax - selectionBounds.xMin;
     const distributeSpacer = {
-      width: (widthSelection - effectiveUsedBounds.width) / (dictributeObjectCount - 1),
+      width: (widthSelection - effectiveDimentions.width) / (dictributeObjectCount - 1),
       height:
-        (heightSelection - effectiveUsedBounds.height) / (dictributeObjectCount - 1),
+        (heightSelection - effectiveDimentions.height) / (dictributeObjectCount - 1),
     };
     return distributeSpacer;
   }
