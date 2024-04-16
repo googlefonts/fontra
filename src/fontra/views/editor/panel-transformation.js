@@ -837,6 +837,37 @@ export default class TransformationPanel extends Panel {
     return distributeSpacer;
   }
 
+  _transformObject(
+    undoLabel,
+    layerGlyph,
+    objectBounds,
+    selectionBounds,
+    nextPosition,
+    distributeSpacer,
+    individualSelection,
+    editChanges,
+    changePath,
+    rollbackChanges
+  ) {
+    const { translateX, translateY } = this._getTranslationForObject(
+      undoLabel,
+      objectBounds,
+      selectionBounds,
+      nextPosition,
+      distributeSpacer
+    );
+
+    this._alignObjectEditBehaviour(
+      layerGlyph,
+      individualSelection,
+      translateX,
+      translateY,
+      editChanges,
+      changePath,
+      rollbackChanges
+    );
+  }
+
   async _alignObjectsLayerGlyph(undoLabel) {
     let { point: pointIndices, component: componentIndices } = parseSelection(
       this.sceneController.selection
@@ -922,24 +953,17 @@ export default class TransformationPanel extends Panel {
           // move points which are not a full contour
           if (object.startsWith("point")) {
             const pointIndex = object.split("/")[1];
-            const individualSelection = [object]; //[`point/${pointIndex}`];
             const path = filterPathByPointIndices(layerGlyphController.instance.path, [
               pointIndex,
             ]);
-
-            const { translateX, translateY } = this._getTranslationForObject(
+            this._transformObject(
               undoLabel,
+              layerGlyph,
               path.getBounds(),
               selectionBounds,
               nextPosition,
-              distributeSpacer
-            );
-
-            this._alignObjectEditBehaviour(
-              layerGlyph,
-              individualSelection,
-              translateX,
-              translateY,
+              distributeSpacer,
+              [object],
               editChanges,
               changePath,
               rollbackChanges
@@ -952,25 +976,18 @@ export default class TransformationPanel extends Panel {
               .split("/")[1]
               .split(",")
               .map((pointIndex) => parseInt(pointIndex));
-            const individualSelection = pointIndices.map((point) => `point/${point}`);
             const path = filterPathByPointIndices(
               layerGlyphController.instance.path,
               pointIndices
             );
-
-            const { translateX, translateY } = this._getTranslationForObject(
+            this._transformObject(
               undoLabel,
+              layerGlyph,
               path.getBounds(),
               selectionBounds,
               nextPosition,
-              distributeSpacer
-            );
-
-            this._alignObjectEditBehaviour(
-              layerGlyph,
-              individualSelection,
-              translateX,
-              translateY,
+              distributeSpacer,
+              pointIndices.map((point) => `point/${point}`),
               editChanges,
               changePath,
               rollbackChanges
@@ -979,21 +996,14 @@ export default class TransformationPanel extends Panel {
           // move each component
           if (object.startsWith("component")) {
             const compoIndex = object.split("/")[1];
-            const individualSelection = [`component/${compoIndex}`];
-            const component = layerGlyphController.components[compoIndex];
-            const { translateX, translateY } = this._getTranslationForObject(
+            this._transformObject(
               undoLabel,
-              component.bounds,
+              layerGlyph,
+              layerGlyphController.components[compoIndex].bounds,
               selectionBounds,
               nextPosition,
-              distributeSpacer
-            );
-
-            this._alignObjectEditBehaviour(
-              layerGlyph,
-              individualSelection,
-              translateX,
-              translateY,
+              distributeSpacer,
+              [`component/${compoIndex}`],
               editChanges,
               changePath,
               rollbackChanges

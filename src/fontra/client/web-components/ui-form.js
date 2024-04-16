@@ -178,15 +178,11 @@ export class Form extends SimpleElement {
       if (this[methodName] === undefined) {
         throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
-      if (methodName === "_addFieldsOneTwoThree") {
-        this[methodName](labelElement, valueElement, fieldItem);
-      } else {
-        this[methodName](valueElement, fieldItem);
-      }
+      this[methodName](valueElement, fieldItem, labelElement);
     }
   }
 
-  _addFieldsOneTwoThree(labelElement, valueElement, fieldItem) {
+  _addFieldsOneTwoThree(valueElement, fieldItem, labelElement) {
     for (const [i, field] of enumerate([
       fieldItem.field1,
       fieldItem.field2,
