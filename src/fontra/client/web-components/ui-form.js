@@ -60,6 +60,7 @@ export class Form extends SimpleElement {
       outline: none;
       padding: 0.1em 0.3em;
       font-family: "fontra-ui-regular";
+      font-size: 100%;
     }
 
     .ui-form-value {
