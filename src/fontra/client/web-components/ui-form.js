@@ -1,7 +1,7 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
-import { hyphenatedToCamelCase, round } from "../core/utils.js";
+import { enumerate, hyphenatedToCamelCase, round } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 import "/web-components/rotary-control.js";
 
@@ -84,7 +84,7 @@ export class Form extends SimpleElement {
     }
 
     .ui-form-value.edit-number-x-y,
-    .ui-form-value.icons {
+    .ui-form-value.fields-one-two-three {
       display: flex;
       gap: 0.3rem;
     }
@@ -172,22 +172,37 @@ export class Form extends SimpleElement {
         continue;
       }
 
-      if (fieldItem.type === "icons") {
-        if (fieldItem.auxiliaryElements) {
-          for (const element of fieldItem.auxiliaryElements) {
-            valueElement.appendChild(element, fieldItem);
-          }
-        }
-        this.contentElement.appendChild(valueElement);
-        continue;
-      }
       this.contentElement.appendChild(valueElement);
 
       const methodName = hyphenatedToCamelCase("_add-" + fieldItem.type);
       if (this[methodName] === undefined) {
         throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
-      this[methodName](valueElement, fieldItem);
+      if (methodName === "_addFieldsOneTwoThree") {
+        this[methodName](labelElement, valueElement, fieldItem);
+      } else {
+        this[methodName](valueElement, fieldItem);
+      }
+    }
+  }
+
+  _addFieldsOneTwoThree(labelElement, valueElement, fieldItem) {
+    for (const [i, field] of enumerate([
+      fieldItem.field1,
+      fieldItem.field2,
+      fieldItem.field3,
+    ])) {
+      let element = valueElement;
+      if (i == 0) {
+        element = labelElement;
+      }
+      const methodName = hyphenatedToCamelCase("_add-" + field.type);
+      if (this[methodName]) {
+        this[methodName](element, field, field.allowUndefined);
+      }
+      if (field.auxiliaryElement) {
+        element.appendChild(field.auxiliaryElement, field);
+      }
     }
   }
 
@@ -225,11 +240,17 @@ export class Form extends SimpleElement {
     this._addEditNumber(valueElement, fieldItem.fieldY);
   }
 
-  _addEditNumber(valueElement, fieldItem) {
+  _addEditNumber(valueElement, fieldItem, allowUndefined = false) {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
     inputElement.value = maybeRound(fieldItem.value, fieldItem.numDigits);
+
+    if (fieldItem["data-tooltip"]) {
+      // data-tooltip doesn't work for input number,
+      // default title is used
+      inputElement.setAttribute("title", fieldItem["data-tooltip"]);
+    }
 
     if ("minValue" in fieldItem) {
       inputElement.min = fieldItem.minValue;
@@ -261,9 +282,11 @@ export class Form extends SimpleElement {
     };
     inputElement.onchange = (event) => {
       let value = parseFloat(inputElement.value);
-      if (isNaN(value)) {
-        value = this._lastValidFieldValues[fieldItem.key];
-        inputElement.value = value;
+      if (!allowUndefined) {
+        if (isNaN(value)) {
+          value = this._lastValidFieldValues[fieldItem.key];
+          inputElement.value = value;
+        }
       }
 
       if (!inputElement.reportValidity()) {

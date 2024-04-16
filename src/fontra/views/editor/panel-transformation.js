@@ -279,10 +279,16 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "divider" });
 
     formContents.push({
-      type: "icons",
-      label: "Flip",
-      auxiliaryElements: [
-        html.createDomElement("icon-button", {
+      type: "fields-one-two-three",
+      field1: {
+        type: "text",
+        key: "LabelFlip",
+        value: "Flip:",
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "FlipVertically",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "class": "ui-form-icon",
           "src": "/tabler-icons/flip-vertical.svg",
           "data-tooltip": "Flip vertically",
@@ -290,7 +296,11 @@ export default class TransformationPanel extends Panel {
           "onclick": (event) =>
             this._transformLayerGlyph(new Transform().scale(-1, 1), "flip vertically"),
         }),
-        html.createDomElement("icon-button", {
+      },
+      field3: {
+        type: "auxiliaryElement",
+        key: "FlipHorizontally",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "class": "ui-form-icon",
           "src": "/tabler-icons/flip-horizontal.svg",
           "data-tooltip": "Flip horizontally",
@@ -301,102 +311,122 @@ export default class TransformationPanel extends Panel {
               "flip horizontally"
             ),
         }),
-      ],
+      },
     });
 
     formContents.push({ type: "spacer" });
     formContents.push({ type: "header", label: `Align Objects` });
 
-    let buttonVerticalAlignTop = html.createDomElement("icon-button", {
-      "src": "/tabler-icons/vertical-align-left.svg",
-      "onclick": (event) => this._alignObjectsLayerGlyph("align left"),
-      "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "Align left",
-      "data-tooltipposition": "bottom-left",
-    });
-
     formContents.push({
-      type: "icons",
-      label: buttonVerticalAlignTop,
-      auxiliaryElements: [
-        html.createDomElement("icon-button", {
+      type: "fields-one-two-three",
+      field1: {
+        type: "auxiliaryElement",
+        key: "AlignLeft",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/vertical-align-left.svg",
+          "onclick": (event) => this._alignObjectsLayerGlyph("align left"),
+          "class": "ui-form-icon ui-form-icon-button",
+          "data-tooltip": "Align left",
+          "data-tooltipposition": "bottom-left",
+        }),
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "AlignCenter",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-center.svg",
           "onclick": (event) => this._alignObjectsLayerGlyph("align center"),
           "data-tooltip": "Align center",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
         }),
-        html.createDomElement("icon-button", {
+      },
+      field3: {
+        type: "auxiliaryElement",
+        key: "AlignRight",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-right.svg",
           "onclick": (event) => this._alignObjectsLayerGlyph("align right"),
           "data-tooltip": "Align right",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
         }),
-      ],
-    });
-
-    let buttonHorizontalAlignTop = html.createDomElement("icon-button", {
-      "src": "/tabler-icons/horizontal-align-top.svg",
-      "onclick": (event) => this._alignObjectsLayerGlyph("align top"),
-      "class": "ui-form-icon ui-form-icon-button",
-      "data-tooltip": "Align top",
-      "data-tooltipposition": "bottom-left",
+      },
     });
 
     formContents.push({
-      type: "icons",
-      label: buttonHorizontalAlignTop,
-      auxiliaryElements: [
-        html.createDomElement("icon-button", {
+      type: "fields-one-two-three",
+      field1: {
+        type: "auxiliaryElement",
+        key: "AlignTop",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/horizontal-align-top.svg",
+          "onclick": (event) => this._alignObjectsLayerGlyph("align top"),
+          "class": "ui-form-icon ui-form-icon-button",
+          "data-tooltip": "Align top",
+          "data-tooltipposition": "bottom-left",
+        }),
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "AlignMiddle",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-center.svg",
           "onclick": (event) => this._alignObjectsLayerGlyph("align middle"),
           "data-tooltip": "Align middle",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
         }),
-        html.createDomElement("icon-button", {
+      },
+      field3: {
+        type: "auxiliaryElement",
+        key: "AlignMiddle",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-bottom.svg",
           "onclick": (event) => this._alignObjectsLayerGlyph("align bottom"),
           "data-tooltip": "Align bottom",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
         }),
-      ],
+      },
     });
 
     formContents.push({ type: "spacer" });
     formContents.push({ type: "header", label: `Distribute Objects` });
 
-    let buttonDistributeValue = html.createDomElement("icon-button", {
-      "src": "/tabler-icons/layout-distribute-vertical.svg",
-      "onclick": (event) => this._alignObjectsLayerGlyph("distribute horizontal"),
-      "data-tooltip": "Distribute horizontal",
-      "data-tooltipposition": "top-left",
-      "class": "ui-form-icon ui-form-icon-button",
-    });
-
     formContents.push({
-      type: "icons",
-      label: buttonDistributeValue,
-      auxiliaryElements: [
-        html.createDomElement("icon-button", {
+      type: "fields-one-two-three",
+      field1: {
+        type: "auxiliaryElement",
+        key: "distributeHorizontally",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layout-distribute-vertical.svg",
+          "onclick": (event) => this._alignObjectsLayerGlyph("distribute horizontal"),
+          "data-tooltip": "Distribute horizontally",
+          "data-tooltipposition": "top-left",
+          "class": "ui-form-icon ui-form-icon-button",
+        }),
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "distributeVertically",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-horizontal.svg",
           "onclick": (event) => this._alignObjectsLayerGlyph("distribute vertical"),
-          "data-tooltip": "Distribute vertical",
+          "data-tooltip": "Distribute vertically",
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
         }),
-        html.createDomElement("input", {
-          key: "distributeValue",
-          onchange: (event) => console.log("distributeValue: ", event), //this.transformParameters.distributeValue = event,
-          value: undefined,
-          type: "number",
-        }),
-      ],
+      },
+      field3: {
+        "type": "edit-number",
+        "key": "distributeValue",
+        "value": this.transformParameters.distributeValue,
+        "allowUndefined": true,
+        "data-tooltip": "Distance between objects",
+        "data-tooltipposition": "top-right",
+      },
     });
-
-    formContents.push({ type: "spacer" });
 
     this.infoForm.setFieldDescriptions(formContents);
 
@@ -716,7 +746,7 @@ export default class TransformationPanel extends Panel {
     contours,
     components
   ) {
-    if (this.transformParameters.distributeValue) {
+    if (!isNaN(this.transformParameters.distributeValue)) {
       return {
         width: this.transformParameters.distributeValue,
         height: this.transformParameters.distributeValue,
