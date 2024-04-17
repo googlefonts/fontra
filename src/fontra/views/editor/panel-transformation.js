@@ -734,8 +734,14 @@ export default class TransformationPanel extends Panel {
   }
 
   async moveObjects(moveDescriptor) {
-    const staticGlyphControllers = await this._getStaticGlyphControllers();
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
+    const movableObjects = this._collectMovableObjects(glyphController);
+    if (movableObjects.length <= 1) {
+      return;
+    }
 
+    const staticGlyphControllers = await this._getStaticGlyphControllers();
     await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
       const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
         glyph.layers
@@ -747,15 +753,13 @@ export default class TransformationPanel extends Panel {
         const changePath = ["layers", layerName, "glyph"];
         const controller = staticGlyphControllers[layerName];
 
-        const movableObjects = this._collectMovableObjects(controller);
-        if (movableObjects.length <= 1) {
-          continue;
-        }
-
         const boundingBoxes = movableObjects.map((obj) =>
           obj.computeBounds(controller)
         );
-        const deltas = moveDescriptor.computeDeltasFromBoundingBoxes(boundingBoxes);
+        const deltas = moveDescriptor.computeDeltasFromBoundingBoxes(
+          boundingBoxes,
+          this.transformParameters.distributeValue
+        );
         for (const [delta, movableObject] of zip(deltas, movableObjects)) {
           const [editChange, rollbackChange] = movableObject.getChangesForDelta(
             delta,
@@ -911,7 +915,72 @@ const alignBottom = {
   },
 };
 
-//distributeHorizontally
-//distributeVertically
+const distributeHorizontally = {
+  undoLabel: "distribute horizontally",
+  computeDeltasFromBoundingBoxes: (boundingBoxes, distributeValue) => {
+    let effectiveWidth = 0;
+    for (const bounds of boundingBoxes) {
+      effectiveWidth += bounds.xMax - bounds.xMin;
+    }
+    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
+    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
+    const left = Math.min(...xMins);
+    const right = Math.max(...xMaxes);
+
+    let distributionSpacing =
+      (right - left - effectiveWidth) / (boundingBoxes.length - 1);
+    if (!isNaN(distributeValue)) {
+      distributionSpacing = distributeValue;
+    }
+
+    let next = left;
+    let deltas = [];
+    for (const bounds of boundingBoxes) {
+      const width = bounds.xMax - bounds.xMin;
+      const delta = {
+        x: next - bounds.xMin,
+        y: 0,
+      };
+      deltas.push(delta);
+      next += width + distributionSpacing;
+    }
+    return deltas;
+  },
+};
+
+const distributeVertically = {
+  undoLabel: "distribute vertically",
+  computeDeltasFromBoundingBoxes: (boundingBoxes, distributeValue) => {
+    let effectiveHeight = 0;
+    for (const bounds of boundingBoxes) {
+      effectiveHeight += bounds.yMax - bounds.yMin;
+    }
+    const yMins = boundingBoxes.map((bounds) => bounds.yMin);
+    const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
+    const bottom = Math.min(...yMins);
+    const top = Math.max(...yMaxes);
+
+    let distributionSpacing =
+      (top - bottom - effectiveHeight) / (boundingBoxes.length - 1);
+    console.log("distributionSpacing: ", distributionSpacing);
+    if (!isNaN(distributeValue)) {
+      distributionSpacing = distributeValue;
+    }
+    console.log("distributionSpacing: ", distributionSpacing);
+
+    let next = bottom;
+    let deltas = [];
+    for (const bounds of boundingBoxes) {
+      const height = bounds.yMax - bounds.yMin;
+      const delta = {
+        x: 0,
+        y: next - bounds.yMin,
+      };
+      deltas.push(delta);
+      next += height + distributionSpacing;
+    }
+    return deltas;
+  },
+};
 
 customElements.define("panel-transformation", TransformationPanel);
