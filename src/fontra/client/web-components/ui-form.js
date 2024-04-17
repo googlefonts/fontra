@@ -84,7 +84,7 @@ export class Form extends SimpleElement {
     }
 
     .ui-form-value.edit-number-x-y,
-    .ui-form-value.fields-one-two-three {
+    .ui-form-value.universal-row {
       display: flex;
       gap: 0.3rem;
     }
@@ -182,7 +182,7 @@ export class Form extends SimpleElement {
     }
   }
 
-  _addFieldsOneTwoThree(valueElement, fieldItem, labelElement) {
+  _addUniversalRow(valueElement, fieldItem, labelElement) {
     for (const [i, field] of enumerate([
       fieldItem.field1,
       fieldItem.field2,

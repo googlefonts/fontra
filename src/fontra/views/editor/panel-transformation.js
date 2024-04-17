@@ -279,7 +279,7 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "divider" });
 
     formContents.push({
-      type: "fields-one-two-three",
+      type: "universal-row",
       field1: {
         type: "text",
         key: "LabelFlip",
@@ -318,7 +318,7 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "header", label: `Align Objects` });
 
     formContents.push({
-      type: "fields-one-two-three",
+      type: "universal-row",
       field1: {
         type: "auxiliaryElement",
         key: "AlignLeft",
@@ -355,7 +355,7 @@ export default class TransformationPanel extends Panel {
     });
 
     formContents.push({
-      type: "fields-one-two-three",
+      type: "universal-row",
       field1: {
         type: "auxiliaryElement",
         key: "AlignTop",
@@ -395,7 +395,7 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "header", label: `Distribute Objects` });
 
     formContents.push({
-      type: "fields-one-two-three",
+      type: "universal-row",
       field1: {
         type: "auxiliaryElement",
         key: "distributeHorizontally",
