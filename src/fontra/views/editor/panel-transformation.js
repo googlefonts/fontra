@@ -797,7 +797,7 @@ export default class TransformationPanel extends Panel {
       };
     }
 
-    let effectiveDimentions = { width: 0, height: 0 };
+    let effectiveDimensions = { width: 0, height: 0 };
     for (const pointIndices of contours) {
       const path = filterPathByPointIndices(
         layerGlyphController.instance.path,
@@ -806,8 +806,8 @@ export default class TransformationPanel extends Panel {
       const b = path.getBounds();
       const width = b.xMax - b.xMin;
       const height = b.yMax - b.yMin;
-      effectiveDimentions.width += width;
-      effectiveDimentions.height += height;
+      effectiveDimensions.width += width;
+      effectiveDimensions.height += height;
     }
 
     for (const compoIndex of components) {
@@ -815,24 +815,24 @@ export default class TransformationPanel extends Panel {
       const b = component.bounds;
       const width = b.xMax - b.xMin;
       const height = b.yMax - b.yMin;
-      effectiveDimentions.width += width;
-      effectiveDimentions.height += height;
+      effectiveDimensions.width += width;
+      effectiveDimensions.height += height;
     }
 
-    let dictributeObjectCount = contours.length + components.length;
+    let distributeObjectCount = contours.length + components.length;
     if (points.length && (contours.length || components.length)) {
-      dictributeObjectCount += 1;
+      distributeObjectCount += 1;
     }
     if (points.length && !contours.length && !components.length) {
-      dictributeObjectCount = points.length;
+      distributeObjectCount = points.length;
     }
 
     const heightSelection = selectionBounds.yMax - selectionBounds.yMin;
     const widthSelection = selectionBounds.xMax - selectionBounds.xMin;
     const distributeSpacer = {
-      width: (widthSelection - effectiveDimentions.width) / (dictributeObjectCount - 1),
+      width: (widthSelection - effectiveDimensions.width) / (distributeObjectCount - 1),
       height:
-        (heightSelection - effectiveDimentions.height) / (dictributeObjectCount - 1),
+        (heightSelection - effectiveDimensions.height) / (distributeObjectCount - 1),
     };
     return distributeSpacer;
   }
