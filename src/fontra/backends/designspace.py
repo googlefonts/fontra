@@ -1140,9 +1140,12 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     components = [*pen.components] + unpackVariableComponents(glyph.lib)
     staticGlyph = StaticGlyph(
-        path=pen.getPath(), components=components, xAdvance=glyph.width
+        path=pen.getPath(),
+        components=components,
+        xAdvance=glyph.width,
+        anchors=glyph.anchors,
     )
-    # TODO: anchors
+
     # TODO: yAdvance, verticalOrigin
     return staticGlyph, glyph
 
