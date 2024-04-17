@@ -594,13 +594,12 @@ export default class TransformationPanel extends Panel {
     return layerGlyphController.getSelectionBounds([selection]);
   }
 
-  _getSortedObjects(
-    layerGlyphController,
-    points,
-    contours,
-    components,
-    distributeDirection
-  ) {
+  _getSortedObjects(layerGlyphController, distributeDirection) {
+    const { points, contours, components } = this._splitSelection(
+      layerGlyphController,
+      this.sceneController.selection
+    );
+
     let objects = [];
     for (const pointIndex of points) {
       objects.push(`point/${pointIndex}`);
@@ -788,13 +787,7 @@ export default class TransformationPanel extends Panel {
     rollbackChanges.push(consolidateChanges(editBehavior.rollbackChange, changePath));
   }
 
-  _getDistributionSpacing(
-    layerGlyphController,
-    selectionBounds,
-    points,
-    contours,
-    components
-  ) {
+  _getDistributionSpacing(layerGlyphController, selectionBounds, objectsSorted) {
     if (!isNaN(this.transformParameters.distributeValue)) {
       return {
         width: this.transformParameters.distributeValue,
@@ -803,41 +796,20 @@ export default class TransformationPanel extends Panel {
     }
 
     const effectiveDimensions = { width: 0, height: 0 };
-    for (const pointIndices of contours) {
-      const path = filterPathByPointIndices(
-        layerGlyphController.instance.path,
-        pointIndices
-      );
-      const b = path.getBounds();
-      const width = b.xMax - b.xMin;
-      const height = b.yMax - b.yMin;
+    for (const object of objectsSorted) {
+      const bounds = this._getObjectBounds(layerGlyphController, object);
+      const width = bounds.xMax - bounds.xMin;
+      const height = bounds.yMax - bounds.yMin;
       effectiveDimensions.width += width;
       effectiveDimensions.height += height;
-    }
-
-    for (const compoIndex of components) {
-      const component = layerGlyphController.components[compoIndex];
-      const b = component.bounds;
-      const width = b.xMax - b.xMin;
-      const height = b.yMax - b.yMin;
-      effectiveDimensions.width += width;
-      effectiveDimensions.height += height;
-    }
-
-    let distributeObjectCount = contours.length + components.length;
-    if (points.length && (contours.length || components.length)) {
-      distributeObjectCount += 1;
-    }
-    if (points.length && !contours.length && !components.length) {
-      distributeObjectCount = points.length;
     }
 
     const heightSelection = selectionBounds.yMax - selectionBounds.yMin;
     const widthSelection = selectionBounds.xMax - selectionBounds.xMin;
     const distributionSpacing = {
-      width: (widthSelection - effectiveDimensions.width) / (distributeObjectCount - 1),
+      width: (widthSelection - effectiveDimensions.width) / (objectsSorted.length - 1),
       height:
-        (heightSelection - effectiveDimensions.height) / (distributeObjectCount - 1),
+        (heightSelection - effectiveDimensions.height) / (objectsSorted.length - 1),
     };
     return distributionSpacing;
   }
@@ -897,20 +869,15 @@ export default class TransformationPanel extends Panel {
         const layerGlyphController = staticGlyphControllers[layerName];
         const changePath = ["layers", layerName, "glyph"];
 
-        const { points, contours, components } = this._splitSelection(
+        const objectsSorted = this._getSortedObjects(
           layerGlyphController,
-          this.sceneController.selection
+          indicator.split(" ")[1]
         );
 
         let selectionBounds = layerGlyphController.getSelectionBounds(
           this.sceneController.selection
         );
-
-        if (
-          (contours.length == 1 && !components.length && !points.length) ||
-          (components.length == 1 && !contours.length && !points.length) ||
-          (points.length < 1 && !contours.length && !components.length)
-        ) {
+        if (objectsSorted.length === 1) {
           // if only one object is selected
           // align with glyph bounding box
           selectionBounds = {
@@ -924,20 +891,10 @@ export default class TransformationPanel extends Panel {
         const distributionSpacing = this._getDistributionSpacing(
           layerGlyphController,
           selectionBounds,
-          points,
-          contours,
-          components
+          objectsSorted
         );
         let nextPosition = { x: selectionBounds.xMin, y: selectionBounds.yMin };
 
-        const layerGlyph = layerGlyphController.instance;
-        const objectsSorted = this._getSortedObjects(
-          layerGlyphController,
-          points,
-          contours,
-          components,
-          indicator.split(" ")[1]
-        );
         for (const object of objectsSorted) {
           // move points which are not a full contour
           if (object.startsWith("point")) {
@@ -947,7 +904,7 @@ export default class TransformationPanel extends Panel {
             ]);
             this._transformObject(
               indicator,
-              layerGlyph,
+              layerGlyphController.instance,
               path.getBounds(),
               selectionBounds,
               nextPosition,
@@ -971,7 +928,7 @@ export default class TransformationPanel extends Panel {
             );
             this._transformObject(
               indicator,
-              layerGlyph,
+              layerGlyphController.instance,
               path.getBounds(),
               selectionBounds,
               nextPosition,
@@ -987,7 +944,7 @@ export default class TransformationPanel extends Panel {
             const compoIndex = object.split("/")[1];
             this._transformObject(
               indicator,
-              layerGlyph,
+              layerGlyphController.instance,
               layerGlyphController.components[compoIndex].bounds,
               selectionBounds,
               nextPosition,
