@@ -474,17 +474,7 @@ export default class TransformationPanel extends Panel {
     return { x: pinPointX, y: pinPointY };
   }
 
-  async _transformLayerGlyph(transformation, undoLabel) {
-    let { point: pointIndices, component: componentIndices } = parseSelection(
-      this.sceneController.selection
-    );
-
-    pointIndices = pointIndices || [];
-    componentIndices = componentIndices || [];
-    if (!pointIndices.length && !componentIndices.length) {
-      return;
-    }
-
+  async _getStaticGlyphControllers() {
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
 
@@ -502,6 +492,21 @@ export default class TransformationPanel extends Panel {
           );
       }
     }
+    return staticGlyphControllers;
+  }
+
+  async _transformLayerGlyph(transformation, undoLabel) {
+    let { point: pointIndices, component: componentIndices } = parseSelection(
+      this.sceneController.selection
+    );
+
+    pointIndices = pointIndices || [];
+    componentIndices = componentIndices || [];
+    if (!pointIndices.length && !componentIndices.length) {
+      return;
+    }
+
+    const staticGlyphControllers = await this._getStaticGlyphControllers();
 
     await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
       const layerInfo = Object.entries(
@@ -684,7 +689,7 @@ export default class TransformationPanel extends Panel {
     objectBounds,
     alignmentBounds,
     nextPosition,
-    distributeSpacer
+    distributionSpacing
   ) {
     if (indicator.startsWith("align")) {
       return this._getTranslationForAlignObject(
@@ -698,7 +703,7 @@ export default class TransformationPanel extends Panel {
         indicator,
         objectBounds,
         nextPosition,
-        distributeSpacer
+        distributionSpacing
       );
     }
   }
@@ -737,7 +742,7 @@ export default class TransformationPanel extends Panel {
     indicator,
     objectBounds,
     nextPosition,
-    distributeSpacer
+    distributionSpacing
   ) {
     let translateX = 0;
     let translateY = 0;
@@ -747,12 +752,12 @@ export default class TransformationPanel extends Panel {
     if (indicator === "distribute horizontal") {
       translateX = nextPosition.x - objectBounds.xMin;
       nextPosition.x += objectWidth;
-      nextPosition.x += distributeSpacer.width;
+      nextPosition.x += distributionSpacing.width;
     }
     if (indicator === "distribute vertical") {
       translateY = nextPosition.y - objectBounds.yMin;
       nextPosition.y += objectHeight;
-      nextPosition.y += distributeSpacer.height;
+      nextPosition.y += distributionSpacing.height;
     }
 
     return { translateX, translateY };
@@ -829,12 +834,12 @@ export default class TransformationPanel extends Panel {
 
     const heightSelection = selectionBounds.yMax - selectionBounds.yMin;
     const widthSelection = selectionBounds.xMax - selectionBounds.xMin;
-    const distributeSpacer = {
+    const distributionSpacing = {
       width: (widthSelection - effectiveDimensions.width) / (distributeObjectCount - 1),
       height:
         (heightSelection - effectiveDimensions.height) / (distributeObjectCount - 1),
     };
-    return distributeSpacer;
+    return distributionSpacing;
   }
 
   _transformObject(
@@ -843,7 +848,7 @@ export default class TransformationPanel extends Panel {
     objectBounds,
     selectionBounds,
     nextPosition,
-    distributeSpacer,
+    distributionSpacing,
     individualSelection,
     editChanges,
     changePath,
@@ -854,7 +859,7 @@ export default class TransformationPanel extends Panel {
       objectBounds,
       selectionBounds,
       nextPosition,
-      distributeSpacer
+      distributionSpacing
     );
 
     this._alignObjectEditBehaviour(
@@ -879,23 +884,7 @@ export default class TransformationPanel extends Panel {
       return;
     }
 
-    const varGlyphController =
-      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-
-    const editingLayers = this.sceneController.getEditingLayerFromGlyphLayers(
-      varGlyphController.layers
-    );
-    const staticGlyphControllers = {};
-    for (const [i, source] of enumerate(varGlyphController.sources)) {
-      if (source.layerName in editingLayers) {
-        staticGlyphControllers[source.layerName] =
-          await this.fontController.getLayerGlyphController(
-            varGlyphController.name,
-            source.layerName,
-            i
-          );
-      }
-    }
+    const staticGlyphControllers = await this._getStaticGlyphControllers();
 
     await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
       const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
@@ -932,7 +921,7 @@ export default class TransformationPanel extends Panel {
           };
         }
 
-        const distributeSpacer = this._getDistributionSpacing(
+        const distributionSpacing = this._getDistributionSpacing(
           layerGlyphController,
           selectionBounds,
           points,
@@ -962,7 +951,7 @@ export default class TransformationPanel extends Panel {
               path.getBounds(),
               selectionBounds,
               nextPosition,
-              distributeSpacer,
+              distributionSpacing,
               [object],
               editChanges,
               changePath,
@@ -986,7 +975,7 @@ export default class TransformationPanel extends Panel {
               path.getBounds(),
               selectionBounds,
               nextPosition,
-              distributeSpacer,
+              distributionSpacing,
               pointIndices.map((point) => `point/${point}`),
               editChanges,
               changePath,
@@ -1002,7 +991,7 @@ export default class TransformationPanel extends Panel {
               layerGlyphController.components[compoIndex].bounds,
               selectionBounds,
               nextPosition,
-              distributeSpacer,
+              distributionSpacing,
               [`component/${compoIndex}`],
               editChanges,
               changePath,
