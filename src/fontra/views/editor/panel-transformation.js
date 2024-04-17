@@ -750,10 +750,8 @@ class MovableBaseObject {
       sceneController.experimentalFeatures.scalingEditBehavior
     );
 
-    const t = new Transform().translate(delta.x, delta.y);
-    const pointTransformFunction = t.transformPointObject.bind(t);
     const editBehavior = behaviorFactory.getBehavior("default");
-    const editChange = editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+    const editChange = editBehavior.makeChangeForDelta(delta);
     return [editChange, editBehavior.rollbackChange];
   }
 }
