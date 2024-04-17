@@ -335,7 +335,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignCenter",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-center.svg",
-          "onclick": (event) => this._alignObjects("align center"),
+          "onclick": (event) => this.moveObjects(alignCenter), //this._alignObjects("align center"),
           "data-tooltip": "Align center",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
@@ -361,7 +361,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignTop",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-top.svg",
-          "onclick": (event) => this._alignObjects("align top"),
+          "onclick": (event) => this.moveObjects(alignTop), //this._alignObjects("align top"),
           "class": "ui-form-icon ui-form-icon-button",
           "data-tooltip": "Align top",
           "data-tooltipposition": "bottom-left",
@@ -905,11 +905,172 @@ export default class TransformationPanel extends Panel {
     });
   }
 
+  _collectMovableObjects(controller, moveDescriptor) {
+    const { points, contours, components } = this._splitSelection(
+      controller,
+      this.sceneController.selection
+    );
+
+    const movableObjects = [];
+    for (const pointIndex of points) {
+      const individualSelection = [`point/${pointIndex}`];
+      movableObjects.push(new MovablePoint(pointIndex, individualSelection));
+    }
+    for (const [contourIndex, pointIndices] of enumerate(contours)) {
+      const individualSelection = pointIndices.map(
+        (pointIndex) => `point/${pointIndex}`
+      );
+      movableObjects.push(new MovableContour(contourIndex, individualSelection));
+    }
+    for (const componentIndex of components) {
+      const individualSelection = [`component/${componentIndex}`];
+      movableObjects.push(new MovableComponent(componentIndex, individualSelection));
+    }
+
+    let movableObjectsSorted = movableObjects.sort(
+      (a, b) => a.computeBounds(controller).yMin - b.computeBounds(controller).yMin
+    );
+    if (moveDescriptor.distributeDirection === "horizontal") {
+      movableObjectsSorted = movableObjects.sort(
+        (a, b) => a.computeBounds(controller).xMin - b.computeBounds(controller).xMin
+      );
+    }
+
+    return movableObjectsSorted;
+  }
+
+  async moveObjects(moveDescriptor) {
+    const staticGlyphControllers = await this._getStaticGlyphControllers();
+
+    await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      const editChanges = [];
+      const rollbackChanges = [];
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        const changePath = ["layers", layerName, "glyph"];
+        const controller = staticGlyphControllers[layerName];
+
+        const movableObjects = this._collectMovableObjects(controller, moveDescriptor);
+        if (movableObjects.length <= 1) {
+          continue;
+        }
+
+        const boundingBoxes = movableObjects.map((obj) =>
+          obj.computeBounds(controller)
+        );
+        const deltas = moveDescriptor.computeDeltasFromBoundingBoxes(boundingBoxes);
+
+        for (let i = 0; i < movableObjects.length; i++) {
+          const movableObject = movableObjects[i];
+          const delta = deltas[i];
+
+          const behaviorFactory = new EditBehaviorFactory(
+            layerGlyph,
+            movableObject.selection,
+            this.sceneController.experimentalFeatures.scalingEditBehavior
+          );
+
+          const t = new Transform().translate(delta.x, delta.y);
+          const pointTransformFunction = t.transformPointObject.bind(t);
+          const editBehavior = behaviorFactory.getBehavior("default");
+          const editChange =
+            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+
+          applyChange(layerGlyph, editChange);
+          editChanges.push(consolidateChanges(editChange, changePath));
+          rollbackChanges.push(
+            consolidateChanges(editBehavior.rollbackChange, changePath)
+          );
+        }
+      }
+
+      let changes = ChangeCollector.fromChanges(
+        consolidateChanges(editChanges),
+        consolidateChanges(rollbackChanges)
+      );
+
+      return {
+        changes: changes,
+        undoLabel: moveDescriptor.undoLabel,
+        broadcast: true,
+      };
+    });
+  }
+
   async toggle(on, focus) {
     if (on) {
       this.update();
     }
   }
 }
+
+// Define MovableObject classes
+class MovableBaseObject {
+  constructor(selection) {
+    this.selection = selection;
+  }
+
+  computeBounds(staticGlyphController) {
+    return staticGlyphController.getSelectionBounds(this.selection);
+  }
+
+  getChangesForDelta(delta, staticGlyphController) {
+    // Not in use currenly and
+    // not sure what it should be doing.
+  }
+}
+
+class MovablePoint extends MovableBaseObject {
+  constructor(pointIndex, selection) {
+    super(selection);
+    this.pointIndex = pointIndex;
+  }
+}
+
+class MovableContour extends MovableBaseObject {
+  constructor(pointIndices, selection) {
+    super(selection);
+    this.pointIndices = pointIndices;
+  }
+}
+
+class MovableComponent extends MovableBaseObject {
+  constructor(componentIndex, selection) {
+    super(selection);
+    this.componentIndex = componentIndex;
+  }
+}
+
+// Define moveDescriptor objects
+const alignTop = {
+  undoLabel: "align top",
+  distributeDirection: undefined,
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
+    const top = Math.max(...yMaxes);
+    return yMaxes.map((yMax) => ({
+      x: 0,
+      y: top - yMax,
+    }));
+  },
+};
+
+const alignCenter = {
+  undoLabel: "align center",
+  distributeDirection: undefined,
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
+    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
+    const left = Math.max(...xMins);
+    const right = Math.max(...xMaxes);
+    return boundingBoxes.map((bounds) => ({
+      x: left - bounds.xMin + (right - left) / 2 - (bounds.xMax - bounds.xMin) / 2,
+      y: 0,
+    }));
+  },
+};
 
 customElements.define("panel-transformation", TransformationPanel);
