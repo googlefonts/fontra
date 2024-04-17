@@ -64,7 +64,10 @@ def parseGLIF(data: str) -> StaticGlyph | None:
     except GlifLibError:
         return None
     return StaticGlyph(
-        path=pen.getPath(), components=pen.components, xAdvance=ufoGlyph.width
+        path=pen.getPath(),
+        components=pen.components,
+        xAdvance=ufoGlyph.width,
+        anchors=ufoGlyph.anchors,
     )
 
 
