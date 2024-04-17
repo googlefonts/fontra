@@ -188,10 +188,7 @@ export class Form extends SimpleElement {
       fieldItem.field2,
       fieldItem.field3,
     ])) {
-      let element = valueElement;
-      if (i == 0) {
-        element = labelElement;
-      }
+      const element = i === 0 ? labelElement : valueElement;
       const methodName = hyphenatedToCamelCase("_add-" + field.type);
       if (this[methodName]) {
         this[methodName](element, field, field.allowUndefined);
