@@ -17,7 +17,7 @@ import {
   decomposedFromTransform,
   prependTransformToDecomposed,
 } from "/core/transform.js";
-import { enumerate, parseSelection, range } from "/core/utils.js";
+import { enumerate, parseSelection, range, zip } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
 
@@ -324,7 +324,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignLeft",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-left.svg",
-          "onclick": (event) => this._alignObjects("align left"),
+          "onclick": (event) => this.moveObjects(alignLeft), //this._alignObjects("align left"),
           "class": "ui-form-icon ui-form-icon-button",
           "data-tooltip": "Align left",
           "data-tooltipposition": "bottom-left",
@@ -346,7 +346,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignRight",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-right.svg",
-          "onclick": (event) => this._alignObjects("align right"),
+          "onclick": (event) => this.moveObjects(alignRight), //this._alignObjects("align right"),
           "data-tooltip": "Align right",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
@@ -372,7 +372,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignMiddle",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-center.svg",
-          "onclick": (event) => this._alignObjects("align middle"),
+          "onclick": (event) => this.moveObjects(alignMiddle), //this._alignObjects("align middle"),
           "data-tooltip": "Align middle",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
@@ -383,7 +383,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignMiddle",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-bottom.svg",
-          "onclick": (event) => this._alignObjects("align bottom"),
+          "onclick": (event) => this.moveObjects(alignBottom), //this._alignObjects("align bottom"),
           "data-tooltip": "Align bottom",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
@@ -401,7 +401,7 @@ export default class TransformationPanel extends Panel {
         key: "distributeHorizontally",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-vertical.svg",
-          "onclick": (event) => this._alignObjects("distribute horizontal"),
+          "onclick": (event) => this.moveObjects(distributeHorizontally), //this._alignObjects("distribute horizontal"),
           "data-tooltip": "Distribute horizontally",
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -412,7 +412,7 @@ export default class TransformationPanel extends Panel {
         key: "distributeVertically",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-horizontal.svg",
-          "onclick": (event) => this._alignObjects("distribute vertical"),
+          "onclick": (event) => this.moveObjects(distributeVertically), //this._alignObjects("distribute vertical"),
           "data-tooltip": "Distribute vertically",
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
@@ -601,39 +601,6 @@ export default class TransformationPanel extends Panel {
     return layerGlyphController.getSelectionBounds(selection);
   }
 
-  _getSortedObjects(layerGlyphController, distributeDirection) {
-    const { points, contours, components } = this._splitSelection(
-      layerGlyphController,
-      this.sceneController.selection
-    );
-
-    let objects = [];
-    for (const pointIndex of points) {
-      objects.push(["point", pointIndex]);
-    }
-    for (const pointIndices of contours) {
-      objects.push(["contour", pointIndices]);
-    }
-    for (const componentIndex of components) {
-      objects.push(["component", componentIndex]);
-    }
-
-    let objectsSorted = objects.sort(
-      (a, b) =>
-        this._getObjectBounds(layerGlyphController, a).yMin -
-        this._getObjectBounds(layerGlyphController, b).yMin
-    );
-    if (distributeDirection === "horizontal") {
-      objectsSorted = objects.sort(
-        (a, b) =>
-          this._getObjectBounds(layerGlyphController, a).xMin -
-          this._getObjectBounds(layerGlyphController, b).xMin
-      );
-    }
-
-    return objectsSorted;
-  }
-
   _splitSelection(layerGlyphController, selection) {
     let { point: pointIndices, component: componentIndices } =
       parseSelection(selection);
@@ -690,60 +657,6 @@ export default class TransformationPanel extends Panel {
     return { points, contours, components };
   }
 
-  _getTranslationForObject(
-    indicator,
-    objectBounds,
-    alignmentBounds,
-    nextPosition,
-    distributionSpacing
-  ) {
-    if (indicator.startsWith("align")) {
-      return this._getTranslationForAlignObject(
-        indicator,
-        objectBounds,
-        alignmentBounds
-      );
-    }
-    if (indicator.startsWith("distribute")) {
-      return this._getTranslationForDistributeObject(
-        indicator,
-        objectBounds,
-        nextPosition,
-        distributionSpacing
-      );
-    }
-  }
-
-  _getTranslationForAlignObject(indicator, objectBounds, alignmentBounds) {
-    let translateX = 0;
-    let translateY = 0;
-    if (indicator === "align left") {
-      translateX = alignmentBounds.xMin - objectBounds.xMin;
-    }
-    if (indicator === "align center") {
-      const width = objectBounds.xMax - objectBounds.xMin;
-      const widthAlignment = alignmentBounds.xMax - alignmentBounds.xMin;
-      translateX =
-        alignmentBounds.xMin - objectBounds.xMin + widthAlignment / 2 - width / 2;
-    }
-    if (indicator === "align right") {
-      translateX = alignmentBounds.xMax - objectBounds.xMax;
-    }
-    if (indicator === "align top") {
-      translateY = alignmentBounds.yMax - objectBounds.yMax;
-    }
-    if (indicator === "align middle") {
-      const height = objectBounds.yMax - objectBounds.yMin;
-      const heightAlignment = alignmentBounds.yMax - alignmentBounds.yMin;
-      translateY =
-        alignmentBounds.yMax - objectBounds.yMax + height / 2 - heightAlignment / 2;
-    }
-    if (indicator === "align bottom") {
-      translateY = alignmentBounds.yMin - objectBounds.yMin;
-    }
-    return { translateX, translateY };
-  }
-
   _getTranslationForDistributeObject(
     indicator,
     objectBounds,
@@ -796,116 +709,7 @@ export default class TransformationPanel extends Panel {
     return distributionSpacing;
   }
 
-  _transformObject(
-    indicator,
-    layerGlyph,
-    objectBounds,
-    selectionBounds,
-    nextPosition,
-    distributionSpacing,
-    selection,
-    editChanges,
-    changePath,
-    rollbackChanges
-  ) {
-    const { translateX, translateY } = this._getTranslationForObject(
-      indicator,
-      objectBounds,
-      selectionBounds,
-      nextPosition,
-      distributionSpacing
-    );
-
-    const behaviorFactory = new EditBehaviorFactory(
-      layerGlyph,
-      selection,
-      this.sceneController.experimentalFeatures.scalingEditBehavior
-    );
-
-    const t = new Transform().translate(translateX, translateY);
-    const pointTransformFunction = t.transformPointObject.bind(t);
-    const editBehavior = behaviorFactory.getBehavior("default");
-    const editChange = editBehavior.makeChangeForTransformFunc(pointTransformFunction);
-
-    applyChange(layerGlyph, editChange);
-    editChanges.push(consolidateChanges(editChange, changePath));
-    rollbackChanges.push(consolidateChanges(editBehavior.rollbackChange, changePath));
-  }
-
-  async _alignObjects(indicator) {
-    let { point: pointIndices, component: componentIndices } = parseSelection(
-      this.sceneController.selection
-    );
-
-    pointIndices = pointIndices || [];
-    componentIndices = componentIndices || [];
-    if (!pointIndices.length && !componentIndices.length) {
-      return;
-    }
-
-    const staticGlyphControllers = await this._getStaticGlyphControllers();
-
-    await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
-      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
-        glyph.layers
-      );
-
-      const editChanges = [];
-      const rollbackChanges = [];
-      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
-        const layerGlyphController = staticGlyphControllers[layerName];
-        const changePath = ["layers", layerName, "glyph"];
-
-        const objectsSorted = this._getSortedObjects(
-          layerGlyphController,
-          indicator.split(" ")[1]
-        );
-
-        if (objectsSorted.length === 1) {
-          return;
-        }
-
-        let selectionBounds = layerGlyphController.getSelectionBounds(
-          this.sceneController.selection
-        );
-
-        const distributionSpacing = this._getDistributionSpacing(
-          layerGlyphController,
-          selectionBounds,
-          objectsSorted
-        );
-        let nextPosition = { x: selectionBounds.xMin, y: selectionBounds.yMin };
-
-        for (const objectItem of objectsSorted) {
-          this._transformObject(
-            indicator,
-            layerGlyphController.instance,
-            this._getObjectBounds(layerGlyphController, objectItem),
-            selectionBounds,
-            nextPosition,
-            distributionSpacing,
-            this._getSelectionOfObjectItem(objectItem),
-            editChanges,
-            changePath,
-            rollbackChanges
-          );
-        }
-      }
-
-      let changes = ChangeCollector.fromChanges(
-        consolidateChanges(editChanges),
-        consolidateChanges(rollbackChanges)
-      );
-
-      return {
-        changes: changes,
-        undoLabel: indicator,
-        broadcast: true,
-      };
-    });
-  }
-
-  _collectMovableObjects(controller, moveDescriptor) {
+  _collectMovableObjects(controller) {
     const { points, contours, components } = this._splitSelection(
       controller,
       this.sceneController.selection
@@ -926,17 +730,7 @@ export default class TransformationPanel extends Panel {
       const individualSelection = [`component/${componentIndex}`];
       movableObjects.push(new MovableComponent(componentIndex, individualSelection));
     }
-
-    let movableObjectsSorted = movableObjects.sort(
-      (a, b) => a.computeBounds(controller).yMin - b.computeBounds(controller).yMin
-    );
-    if (moveDescriptor.distributeDirection === "horizontal") {
-      movableObjectsSorted = movableObjects.sort(
-        (a, b) => a.computeBounds(controller).xMin - b.computeBounds(controller).xMin
-      );
-    }
-
-    return movableObjectsSorted;
+    return movableObjects;
   }
 
   async moveObjects(moveDescriptor) {
@@ -953,7 +747,7 @@ export default class TransformationPanel extends Panel {
         const changePath = ["layers", layerName, "glyph"];
         const controller = staticGlyphControllers[layerName];
 
-        const movableObjects = this._collectMovableObjects(controller, moveDescriptor);
+        const movableObjects = this._collectMovableObjects(controller);
         if (movableObjects.length <= 1) {
           continue;
         }
@@ -962,28 +756,15 @@ export default class TransformationPanel extends Panel {
           obj.computeBounds(controller)
         );
         const deltas = moveDescriptor.computeDeltasFromBoundingBoxes(boundingBoxes);
-
-        for (let i = 0; i < movableObjects.length; i++) {
-          const movableObject = movableObjects[i];
-          const delta = deltas[i];
-
-          const behaviorFactory = new EditBehaviorFactory(
+        for (const [delta, movableObject] of zip(deltas, movableObjects)) {
+          const [editChange, rollbackChange] = movableObject.getChangesForDelta(
+            delta,
             layerGlyph,
-            movableObject.selection,
-            this.sceneController.experimentalFeatures.scalingEditBehavior
+            this.sceneController
           );
-
-          const t = new Transform().translate(delta.x, delta.y);
-          const pointTransformFunction = t.transformPointObject.bind(t);
-          const editBehavior = behaviorFactory.getBehavior("default");
-          const editChange =
-            editBehavior.makeChangeForTransformFunc(pointTransformFunction);
-
           applyChange(layerGlyph, editChange);
           editChanges.push(consolidateChanges(editChange, changePath));
-          rollbackChanges.push(
-            consolidateChanges(editBehavior.rollbackChange, changePath)
-          );
+          rollbackChanges.push(consolidateChanges(rollbackChange, changePath));
         }
       }
 
@@ -1017,9 +798,18 @@ class MovableBaseObject {
     return staticGlyphController.getSelectionBounds(this.selection);
   }
 
-  getChangesForDelta(delta, staticGlyphController) {
-    // Not in use currenly and
-    // not sure what it should be doing.
+  getChangesForDelta(delta, layerGlyph, sceneController) {
+    const behaviorFactory = new EditBehaviorFactory(
+      layerGlyph,
+      this.selection,
+      sceneController.experimentalFeatures.scalingEditBehavior
+    );
+
+    const t = new Transform().translate(delta.x, delta.y);
+    const pointTransformFunction = t.transformPointObject.bind(t);
+    const editBehavior = behaviorFactory.getBehavior("default");
+    const editChange = editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+    return [editChange, editBehavior.rollbackChange];
   }
 }
 
@@ -1045,9 +835,46 @@ class MovableComponent extends MovableBaseObject {
 }
 
 // Define moveDescriptor objects
+const alignLeft = {
+  undoLabel: "align left",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
+    const left = Math.min(...xMins);
+    return xMins.map((xMin) => ({
+      x: left - xMin,
+      y: 0,
+    }));
+  },
+};
+
+const alignCenter = {
+  undoLabel: "align center",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
+    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
+    const left = Math.min(...xMins);
+    const right = Math.max(...xMaxes);
+    return boundingBoxes.map((bounds) => ({
+      x: left - bounds.xMin + (right - left) / 2 - (bounds.xMax - bounds.xMin) / 2,
+      y: 0,
+    }));
+  },
+};
+
+const alignRight = {
+  undoLabel: "align right",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
+    const right = Math.max(...xMaxes);
+    return xMaxes.map((xMax) => ({
+      x: right - xMax,
+      y: 0,
+    }));
+  },
+};
+
 const alignTop = {
   undoLabel: "align top",
-  distributeDirection: undefined,
   computeDeltasFromBoundingBoxes: (boundingBoxes) => {
     const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
     const top = Math.max(...yMaxes);
@@ -1058,19 +885,33 @@ const alignTop = {
   },
 };
 
-const alignCenter = {
-  undoLabel: "align center",
-  distributeDirection: undefined,
+const alignMiddle = {
+  undoLabel: "align middle",
   computeDeltasFromBoundingBoxes: (boundingBoxes) => {
-    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
-    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
-    const left = Math.max(...xMins);
-    const right = Math.max(...xMaxes);
+    const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
+    const yMins = boundingBoxes.map((bounds) => bounds.yMin);
+    const bottom = Math.min(...yMins);
+    const top = Math.max(...yMaxes);
     return boundingBoxes.map((bounds) => ({
-      x: left - bounds.xMin + (right - left) / 2 - (bounds.xMax - bounds.xMin) / 2,
-      y: 0,
+      x: 0,
+      y: top - bounds.yMax + (bounds.yMax - bounds.yMin) / 2 - (top - bottom) / 2,
     }));
   },
 };
+
+const alignBottom = {
+  undoLabel: "align bottom",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const yMins = boundingBoxes.map((bounds) => bounds.yMin);
+    const bottom = Math.min(...yMins);
+    return yMins.map((yMin) => ({
+      x: 0,
+      y: bottom - yMin,
+    }));
+  },
+};
+
+//distributeHorizontally
+//distributeVertically
 
 customElements.define("panel-transformation", TransformationPanel);
