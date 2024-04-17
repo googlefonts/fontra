@@ -902,11 +902,9 @@ const distributeVertically = {
 
     let distributionSpacing =
       (top - bottom - effectiveHeight) / (boundingBoxes.length - 1);
-    console.log("distributionSpacing: ", distributionSpacing);
     if (!isNaN(distributeValue)) {
       distributionSpacing = distributeValue;
     }
-    console.log("distributionSpacing: ", distributionSpacing);
 
     let next = bottom;
     let deltas = [];
