@@ -324,7 +324,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignLeft",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-left.svg",
-          "onclick": (event) => this._alignObjectsLayerGlyph("align left"),
+          "onclick": (event) => this._alignObjects("align left"),
           "class": "ui-form-icon ui-form-icon-button",
           "data-tooltip": "Align left",
           "data-tooltipposition": "bottom-left",
@@ -335,7 +335,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignCenter",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-center.svg",
-          "onclick": (event) => this._alignObjectsLayerGlyph("align center"),
+          "onclick": (event) => this._alignObjects("align center"),
           "data-tooltip": "Align center",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
@@ -346,7 +346,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignRight",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-right.svg",
-          "onclick": (event) => this._alignObjectsLayerGlyph("align right"),
+          "onclick": (event) => this._alignObjects("align right"),
           "data-tooltip": "Align right",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
@@ -361,7 +361,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignTop",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-top.svg",
-          "onclick": (event) => this._alignObjectsLayerGlyph("align top"),
+          "onclick": (event) => this._alignObjects("align top"),
           "class": "ui-form-icon ui-form-icon-button",
           "data-tooltip": "Align top",
           "data-tooltipposition": "bottom-left",
@@ -372,7 +372,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignMiddle",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-center.svg",
-          "onclick": (event) => this._alignObjectsLayerGlyph("align middle"),
+          "onclick": (event) => this._alignObjects("align middle"),
           "data-tooltip": "Align middle",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
@@ -383,7 +383,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignMiddle",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-bottom.svg",
-          "onclick": (event) => this._alignObjectsLayerGlyph("align bottom"),
+          "onclick": (event) => this._alignObjects("align bottom"),
           "data-tooltip": "Align bottom",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
@@ -401,7 +401,7 @@ export default class TransformationPanel extends Panel {
         key: "distributeHorizontally",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-vertical.svg",
-          "onclick": (event) => this._alignObjectsLayerGlyph("distribute horizontal"),
+          "onclick": (event) => this._alignObjects("distribute horizontal"),
           "data-tooltip": "Distribute horizontally",
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -412,7 +412,7 @@ export default class TransformationPanel extends Panel {
         key: "distributeVertically",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-horizontal.svg",
-          "onclick": (event) => this._alignObjectsLayerGlyph("distribute vertical"),
+          "onclick": (event) => this._alignObjects("distribute vertical"),
           "data-tooltip": "Distribute vertically",
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
@@ -680,22 +680,22 @@ export default class TransformationPanel extends Panel {
   }
 
   _getTranslationForObject(
-    undoLabel,
+    indicator,
     objectBounds,
     alignmentBounds,
     nextPosition,
     distributeSpacer
   ) {
-    if (undoLabel.startsWith("align")) {
+    if (indicator.startsWith("align")) {
       return this._getTranslationForAlignObject(
-        undoLabel,
+        indicator,
         objectBounds,
         alignmentBounds
       );
     }
-    if (undoLabel.startsWith("distribute")) {
+    if (indicator.startsWith("distribute")) {
       return this._getTranslationForDistributeObject(
-        undoLabel,
+        indicator,
         objectBounds,
         nextPosition,
         distributeSpacer
@@ -703,38 +703,38 @@ export default class TransformationPanel extends Panel {
     }
   }
 
-  _getTranslationForAlignObject(undoLabel, objectBounds, alignmentBounds) {
+  _getTranslationForAlignObject(indicator, objectBounds, alignmentBounds) {
     let translateX = 0;
     let translateY = 0;
-    if (undoLabel === "align left") {
+    if (indicator === "align left") {
       translateX = alignmentBounds.xMin - objectBounds.xMin;
     }
-    if (undoLabel === "align center") {
+    if (indicator === "align center") {
       const width = objectBounds.xMax - objectBounds.xMin;
       const widthAlignment = alignmentBounds.xMax - alignmentBounds.xMin;
       translateX =
         alignmentBounds.xMin - objectBounds.xMin + widthAlignment / 2 - width / 2;
     }
-    if (undoLabel === "align right") {
+    if (indicator === "align right") {
       translateX = alignmentBounds.xMax - objectBounds.xMax;
     }
-    if (undoLabel === "align top") {
+    if (indicator === "align top") {
       translateY = alignmentBounds.yMax - objectBounds.yMax;
     }
-    if (undoLabel === "align middle") {
+    if (indicator === "align middle") {
       const height = objectBounds.yMax - objectBounds.yMin;
       const heightAlignment = alignmentBounds.yMax - alignmentBounds.yMin;
       translateY =
         alignmentBounds.yMax - objectBounds.yMax + height / 2 - heightAlignment / 2;
     }
-    if (undoLabel === "align bottom") {
+    if (indicator === "align bottom") {
       translateY = alignmentBounds.yMin - objectBounds.yMin;
     }
     return { translateX, translateY };
   }
 
   _getTranslationForDistributeObject(
-    undoLabel,
+    indicator,
     objectBounds,
     nextPosition,
     distributeSpacer
@@ -744,12 +744,12 @@ export default class TransformationPanel extends Panel {
     const objectWidth = objectBounds.xMax - objectBounds.xMin;
     const objectHeight = objectBounds.yMax - objectBounds.yMin;
 
-    if (undoLabel === "distribute horizontal") {
+    if (indicator === "distribute horizontal") {
       translateX = nextPosition.x - objectBounds.xMin;
       nextPosition.x += objectWidth;
       nextPosition.x += distributeSpacer.width;
     }
-    if (undoLabel === "distribute vertical") {
+    if (indicator === "distribute vertical") {
       translateY = nextPosition.y - objectBounds.yMin;
       nextPosition.y += objectHeight;
       nextPosition.y += distributeSpacer.height;
@@ -797,7 +797,7 @@ export default class TransformationPanel extends Panel {
       };
     }
 
-    let effectiveDimensions = { width: 0, height: 0 };
+    const effectiveDimensions = { width: 0, height: 0 };
     for (const pointIndices of contours) {
       const path = filterPathByPointIndices(
         layerGlyphController.instance.path,
@@ -838,7 +838,7 @@ export default class TransformationPanel extends Panel {
   }
 
   _transformObject(
-    undoLabel,
+    indicator,
     layerGlyph,
     objectBounds,
     selectionBounds,
@@ -850,7 +850,7 @@ export default class TransformationPanel extends Panel {
     rollbackChanges
   ) {
     const { translateX, translateY } = this._getTranslationForObject(
-      undoLabel,
+      indicator,
       objectBounds,
       selectionBounds,
       nextPosition,
@@ -868,7 +868,7 @@ export default class TransformationPanel extends Panel {
     );
   }
 
-  async _alignObjectsLayerGlyph(undoLabel) {
+  async _alignObjects(indicator) {
     let { point: pointIndices, component: componentIndices } = parseSelection(
       this.sceneController.selection
     );
@@ -947,7 +947,7 @@ export default class TransformationPanel extends Panel {
           points,
           contours,
           components,
-          undoLabel.split(" ")[1]
+          indicator.split(" ")[1]
         );
         for (const object of objectsSorted) {
           // move points which are not a full contour
@@ -957,7 +957,7 @@ export default class TransformationPanel extends Panel {
               pointIndex,
             ]);
             this._transformObject(
-              undoLabel,
+              indicator,
               layerGlyph,
               path.getBounds(),
               selectionBounds,
@@ -981,7 +981,7 @@ export default class TransformationPanel extends Panel {
               pointIndices
             );
             this._transformObject(
-              undoLabel,
+              indicator,
               layerGlyph,
               path.getBounds(),
               selectionBounds,
@@ -997,7 +997,7 @@ export default class TransformationPanel extends Panel {
           if (object.startsWith("component")) {
             const compoIndex = object.split("/")[1];
             this._transformObject(
-              undoLabel,
+              indicator,
               layerGlyph,
               layerGlyphController.components[compoIndex].bounds,
               selectionBounds,
@@ -1019,7 +1019,7 @@ export default class TransformationPanel extends Panel {
 
       return {
         changes: changes,
-        undoLabel: undoLabel,
+        undoLabel: indicator,
         broadcast: true,
       };
     });
