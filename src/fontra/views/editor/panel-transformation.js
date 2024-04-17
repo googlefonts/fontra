@@ -783,7 +783,7 @@ export default class TransformationPanel extends Panel {
     rollbackChanges.push(consolidateChanges(editBehavior.rollbackChange, changePath));
   }
 
-  _getDistributeSpacer(
+  _getDistributionSpacing(
     layerGlyphController,
     selectionBounds,
     points,
@@ -932,7 +932,7 @@ export default class TransformationPanel extends Panel {
           };
         }
 
-        const distributeSpacer = this._getDistributeSpacer(
+        const distributeSpacer = this._getDistributionSpacing(
           layerGlyphController,
           selectionBounds,
           points,
