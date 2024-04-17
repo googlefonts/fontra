@@ -584,14 +584,21 @@ export default class TransformationPanel extends Panel {
     this.update();
   }
 
-  _getObjectBounds(layerGlyphController, selection) {
-    if (selection.startsWith("contour")) {
-      const contour = selection.split("/")[1];
-      const points = contour.split(",").map((pointIndex) => `point/${pointIndex}`);
-      return layerGlyphController.getSelectionBounds(points);
-    }
+  _getSelectionOfObjectItem(objectItem) {
+    const objectIdentifier = objectItem[0];
 
-    return layerGlyphController.getSelectionBounds([selection]);
+    if (objectIdentifier === "point" || objectIdentifier === "component") {
+      return [`${objectIdentifier}/${objectItem[1]}`];
+    }
+    if (objectIdentifier === "contour") {
+      return objectItem[1].map((pointIndex) => `point/${pointIndex}`);
+    }
+    return [];
+  }
+
+  _getObjectBounds(layerGlyphController, objectItem) {
+    const selection = this._getSelectionOfObjectItem(objectItem);
+    return layerGlyphController.getSelectionBounds(selection);
   }
 
   _getSortedObjects(layerGlyphController, distributeDirection) {
@@ -602,13 +609,13 @@ export default class TransformationPanel extends Panel {
 
     let objects = [];
     for (const pointIndex of points) {
-      objects.push(`point/${pointIndex}`);
+      objects.push(["point", pointIndex]);
     }
-    for (const contour of contours) {
-      objects.push(`contour/${contour}`);
+    for (const pointIndices of contours) {
+      objects.push(["contour", pointIndices]);
     }
     for (const componentIndex of components) {
-      objects.push(`component/${componentIndex}`);
+      objects.push(["component", componentIndex]);
     }
 
     let objectsSorted = objects.sort(
@@ -762,31 +769,6 @@ export default class TransformationPanel extends Panel {
     return { translateX, translateY };
   }
 
-  _alignObjectEditBehaviour(
-    layerGlyph,
-    selection,
-    translateX,
-    translateY,
-    editChanges,
-    changePath,
-    rollbackChanges
-  ) {
-    const behaviorFactory = new EditBehaviorFactory(
-      layerGlyph,
-      selection,
-      this.sceneController.experimentalFeatures.scalingEditBehavior
-    );
-
-    const t = new Transform().translate(translateX, translateY);
-    const pointTransformFunction = t.transformPointObject.bind(t);
-    const editBehavior = behaviorFactory.getBehavior("default");
-    const editChange = editBehavior.makeChangeForTransformFunc(pointTransformFunction);
-
-    applyChange(layerGlyph, editChange);
-    editChanges.push(consolidateChanges(editChange, changePath));
-    rollbackChanges.push(consolidateChanges(editBehavior.rollbackChange, changePath));
-  }
-
   _getDistributionSpacing(layerGlyphController, selectionBounds, objectsSorted) {
     if (!isNaN(this.transformParameters.distributeValue)) {
       return {
@@ -821,7 +803,7 @@ export default class TransformationPanel extends Panel {
     selectionBounds,
     nextPosition,
     distributionSpacing,
-    individualSelection,
+    selection,
     editChanges,
     changePath,
     rollbackChanges
@@ -834,15 +816,20 @@ export default class TransformationPanel extends Panel {
       distributionSpacing
     );
 
-    this._alignObjectEditBehaviour(
+    const behaviorFactory = new EditBehaviorFactory(
       layerGlyph,
-      individualSelection,
-      translateX,
-      translateY,
-      editChanges,
-      changePath,
-      rollbackChanges
+      selection,
+      this.sceneController.experimentalFeatures.scalingEditBehavior
     );
+
+    const t = new Transform().translate(translateX, translateY);
+    const pointTransformFunction = t.transformPointObject.bind(t);
+    const editBehavior = behaviorFactory.getBehavior("default");
+    const editChange = editBehavior.makeChangeForTransformFunc(pointTransformFunction);
+
+    applyChange(layerGlyph, editChange);
+    editChanges.push(consolidateChanges(editChange, changePath));
+    rollbackChanges.push(consolidateChanges(editBehavior.rollbackChange, changePath));
   }
 
   async _alignObjects(indicator) {
@@ -874,19 +861,13 @@ export default class TransformationPanel extends Panel {
           indicator.split(" ")[1]
         );
 
+        if (objectsSorted.length === 1) {
+          return;
+        }
+
         let selectionBounds = layerGlyphController.getSelectionBounds(
           this.sceneController.selection
         );
-        if (objectsSorted.length === 1) {
-          // if only one object is selected
-          // align with glyph bounding box
-          selectionBounds = {
-            xMin: 0,
-            xMax: layerGlyphController.xAdvance,
-            yMin: 0, // TODO: should be descender (for now use the baseline)
-            yMax: this.fontController.unitsPerEm, // TODO: should be ascender
-          };
-        }
 
         const distributionSpacing = this._getDistributionSpacing(
           layerGlyphController,
@@ -895,66 +876,19 @@ export default class TransformationPanel extends Panel {
         );
         let nextPosition = { x: selectionBounds.xMin, y: selectionBounds.yMin };
 
-        for (const object of objectsSorted) {
-          // move points which are not a full contour
-          if (object.startsWith("point")) {
-            const pointIndex = object.split("/")[1];
-            const path = filterPathByPointIndices(layerGlyphController.instance.path, [
-              pointIndex,
-            ]);
-            this._transformObject(
-              indicator,
-              layerGlyphController.instance,
-              path.getBounds(),
-              selectionBounds,
-              nextPosition,
-              distributionSpacing,
-              [object],
-              editChanges,
-              changePath,
-              rollbackChanges
-            );
-          }
-
-          // move each full contour
-          if (object.startsWith("contour")) {
-            const pointIndices = object
-              .split("/")[1]
-              .split(",")
-              .map((pointIndex) => parseInt(pointIndex));
-            const path = filterPathByPointIndices(
-              layerGlyphController.instance.path,
-              pointIndices
-            );
-            this._transformObject(
-              indicator,
-              layerGlyphController.instance,
-              path.getBounds(),
-              selectionBounds,
-              nextPosition,
-              distributionSpacing,
-              pointIndices.map((point) => `point/${point}`),
-              editChanges,
-              changePath,
-              rollbackChanges
-            );
-          }
-          // move each component
-          if (object.startsWith("component")) {
-            const compoIndex = object.split("/")[1];
-            this._transformObject(
-              indicator,
-              layerGlyphController.instance,
-              layerGlyphController.components[compoIndex].bounds,
-              selectionBounds,
-              nextPosition,
-              distributionSpacing,
-              [`component/${compoIndex}`],
-              editChanges,
-              changePath,
-              rollbackChanges
-            );
-          }
+        for (const objectItem of objectsSorted) {
+          this._transformObject(
+            indicator,
+            layerGlyphController.instance,
+            this._getObjectBounds(layerGlyphController, objectItem),
+            selectionBounds,
+            nextPosition,
+            distributionSpacing,
+            this._getSelectionOfObjectItem(objectItem),
+            editChanges,
+            changePath,
+            rollbackChanges
+          );
         }
       }
 
