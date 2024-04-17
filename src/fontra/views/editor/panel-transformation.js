@@ -584,23 +584,6 @@ export default class TransformationPanel extends Panel {
     this.update();
   }
 
-  _getSelectionOfObjectItem(objectItem) {
-    const objectIdentifier = objectItem[0];
-
-    if (objectIdentifier === "point" || objectIdentifier === "component") {
-      return [`${objectIdentifier}/${objectItem[1]}`];
-    }
-    if (objectIdentifier === "contour") {
-      return objectItem[1].map((pointIndex) => `point/${pointIndex}`);
-    }
-    return [];
-  }
-
-  _getObjectBounds(layerGlyphController, objectItem) {
-    const selection = this._getSelectionOfObjectItem(objectItem);
-    return layerGlyphController.getSelectionBounds(selection);
-  }
-
   _splitSelection(layerGlyphController, selection) {
     let { point: pointIndices, component: componentIndices } =
       parseSelection(selection);
@@ -657,59 +640,7 @@ export default class TransformationPanel extends Panel {
     return { points, contours, components };
   }
 
-  _getTranslationForDistributeObject(
-    indicator,
-    objectBounds,
-    nextPosition,
-    distributionSpacing
-  ) {
-    let translateX = 0;
-    let translateY = 0;
-    const objectWidth = objectBounds.xMax - objectBounds.xMin;
-    const objectHeight = objectBounds.yMax - objectBounds.yMin;
-
-    if (indicator === "distribute horizontal") {
-      translateX = nextPosition.x - objectBounds.xMin;
-      nextPosition.x += objectWidth;
-      nextPosition.x += distributionSpacing.width;
-    }
-    if (indicator === "distribute vertical") {
-      translateY = nextPosition.y - objectBounds.yMin;
-      nextPosition.y += objectHeight;
-      nextPosition.y += distributionSpacing.height;
-    }
-
-    return { translateX, translateY };
-  }
-
-  _getDistributionSpacing(layerGlyphController, selectionBounds, objectsSorted) {
-    if (!isNaN(this.transformParameters.distributeValue)) {
-      return {
-        width: this.transformParameters.distributeValue,
-        height: this.transformParameters.distributeValue,
-      };
-    }
-
-    const effectiveDimensions = { width: 0, height: 0 };
-    for (const object of objectsSorted) {
-      const bounds = this._getObjectBounds(layerGlyphController, object);
-      const width = bounds.xMax - bounds.xMin;
-      const height = bounds.yMax - bounds.yMin;
-      effectiveDimensions.width += width;
-      effectiveDimensions.height += height;
-    }
-
-    const heightSelection = selectionBounds.yMax - selectionBounds.yMin;
-    const widthSelection = selectionBounds.xMax - selectionBounds.xMin;
-    const distributionSpacing = {
-      width: (widthSelection - effectiveDimensions.width) / (objectsSorted.length - 1),
-      height:
-        (heightSelection - effectiveDimensions.height) / (objectsSorted.length - 1),
-    };
-    return distributionSpacing;
-  }
-
-  _collectMovableObjects(controller) {
+  _collectMovableObjects(moveDescriptor, controller) {
     const { points, contours, components } = this._splitSelection(
       controller,
       this.sceneController.selection
@@ -730,13 +661,23 @@ export default class TransformationPanel extends Panel {
       const individualSelection = [`component/${componentIndex}`];
       movableObjects.push(new MovableComponent(componentIndex, individualSelection));
     }
-    return movableObjects;
+
+    let movableObjectsSorted = movableObjects.sort(
+      (a, b) => a.computeBounds(controller).yMin - b.computeBounds(controller).yMin
+    );
+    if (moveDescriptor.distributeDirection === "horizontally") {
+      movableObjectsSorted = movableObjects.sort(
+        (a, b) => a.computeBounds(controller).xMin - b.computeBounds(controller).xMin
+      );
+    }
+
+    return movableObjectsSorted;
   }
 
   async moveObjects(moveDescriptor) {
     const glyphController =
       await this.sceneController.sceneModel.getSelectedStaticGlyphController();
-    const movableObjects = this._collectMovableObjects(glyphController);
+    const movableObjects = this._collectMovableObjects(moveDescriptor, glyphController);
     if (movableObjects.length <= 1) {
       return;
     }
@@ -917,6 +858,7 @@ const alignBottom = {
 
 const distributeHorizontally = {
   undoLabel: "distribute horizontally",
+  distributeDirection: "horizontally",
   computeDeltasFromBoundingBoxes: (boundingBoxes, distributeValue) => {
     let effectiveWidth = 0;
     for (const bounds of boundingBoxes) {
