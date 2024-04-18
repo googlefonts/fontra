@@ -826,12 +826,17 @@ class DistributeObjectsDescriptor {
     return deltas;
   }
 
-  compareObjects(a, b, controller) {
+  getCenter(a, controller) {
     return (
-      a.computeBounds(controller)[this.minProperty] -
-      b.computeBounds(controller)[this.minProperty]
+      a.computeBounds(controller)[this.minProperty] +
+      (a.computeBounds(controller)[this.maxProperty] -
+        a.computeBounds(controller)[this.minProperty]) /
+        2
     );
-    // Btw. I still think this should sort based on the center, not the left or bottom
+  }
+
+  compareObjects(a, b, controller) {
+    return this.getCenter(a, controller) - this.getCenter(b, controller);
   }
 }
 
