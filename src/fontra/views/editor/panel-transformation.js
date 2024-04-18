@@ -11,7 +11,7 @@ import {
   filterPathByPointIndices,
   getSelectionByContour,
 } from "/core/path-functions.js";
-import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
+import { rectCenter, rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import {
   Transform,
   decomposedFromTransform,
@@ -799,9 +799,9 @@ class DistributeObjectsDescriptor {
   }
 
   computeDeltasFromBoundingBoxes(boundingBoxes, distributeValue) {
-    let effectiveSize = 0;
+    let effectiveExtent = 0;
     for (const bounds of boundingBoxes) {
-      effectiveSize += bounds[this.maxProperty] - bounds[this.minProperty];
+      effectiveExtent += bounds[this.maxProperty] - bounds[this.minProperty];
     }
     const mins = boundingBoxes.map((bounds) => bounds[this.minProperty]);
     const maxes = boundingBoxes.map((bounds) => bounds[this.maxProperty]);
@@ -809,7 +809,7 @@ class DistributeObjectsDescriptor {
     const maximum = Math.max(...maxes);
 
     let distributionSpacing =
-      (maximum - minimum - effectiveSize) / (boundingBoxes.length - 1);
+      (maximum - minimum - effectiveExtent) / (boundingBoxes.length - 1);
     if (!isNaN(distributeValue)) {
       distributionSpacing = distributeValue;
     }
@@ -817,26 +817,20 @@ class DistributeObjectsDescriptor {
     let next = minimum;
     let deltas = [];
     for (const bounds of boundingBoxes) {
-      const dimentions = bounds[this.maxProperty] - bounds[this.minProperty];
+      const extent = bounds[this.maxProperty] - bounds[this.minProperty];
       const delta = { x: 0, y: 0 };
       delta[this.deltaProperty] = next - bounds[this.minProperty];
       deltas.push(delta);
-      next += dimentions + distributionSpacing;
+      next += extent + distributionSpacing;
     }
     return deltas;
   }
 
-  getCenter(a, controller) {
-    return (
-      a.computeBounds(controller)[this.minProperty] +
-      (a.computeBounds(controller)[this.maxProperty] -
-        a.computeBounds(controller)[this.minProperty]) /
-        2
-    );
-  }
-
   compareObjects(a, b, controller) {
-    return this.getCenter(a, controller) - this.getCenter(b, controller);
+    return (
+      rectCenter(a.computeBounds(controller))[this.deltaProperty] -
+      rectCenter(b.computeBounds(controller))[this.deltaProperty]
+    );
   }
 }
 
