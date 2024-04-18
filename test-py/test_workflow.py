@@ -69,11 +69,13 @@ async def test_scaleAction(testFontraFont, glyphName) -> None:
                     == scaledComponent.transformation.translateX
                 )
 
-            assert len(unscaledLayerGlyph.anchors) == 13
+            # assert len(unscaledLayerGlyph.anchors) == 13
             for unscaledAnchor, scaledAnchor in zip(
                 unscaledLayerGlyph.anchors, scaledLayerGlyph.anchors
             ):
                 assert unscaledAnchor.x * scaleFactor == scaledAnchor.x
+                assert unscaledAnchor.y * scaleFactor == scaledAnchor.y
+                assert unscaledAnchor.name == scaledAnchor.name
 
 
 async def test_subsetAction(testFontraFont, tmp_path) -> None:

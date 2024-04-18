@@ -42,7 +42,7 @@ async def test_copy_to_fontra(testDSFont, newFontraFont):
     fontraFont = getFileSystemBackend(newFontraFont.path)
 
     for dstFont in [newFontraFont, fontraFont]:
-        for glyphName in ["A", "B", "Q", "nlitest", "varcotest1"]:
+        for glyphName in ["A", "B", "E", "Q", "nlitest", "varcotest1"]:
             srcGlyph = await testDSFont.getGlyph(glyphName)
             dstGlyph = await dstFont.getGlyph(glyphName)
             assert srcGlyph == dstGlyph

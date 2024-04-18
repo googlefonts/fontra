@@ -1033,7 +1033,7 @@ class UFOGlyph:
     unicodes: list = []
     width: float | None = 0
     height: float | None = None
-    # anchors: list = []
+    anchors: list = []
     lib: dict
 
 
