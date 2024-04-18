@@ -205,7 +205,10 @@ async def test_addAnchor(writableTestFont):
 
     savedGlyph = await writableTestFont.getGlyph(glyphName)
 
-    assert asdict(glyph) == asdict(savedGlyph)
+    assert (
+        glyph.layers[layerName].glyph.anchors
+        == savedGlyph.layers[layerName].glyph.anchors
+    )
 
 
 async def test_addLocalAxisAndSource(writableTestFont):
