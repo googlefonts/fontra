@@ -12,6 +12,7 @@ export class Form extends SimpleElement {
     }
     .ui-form {
       display: grid;
+      align-items: center;
       grid-template-columns: var(--label-column-width) auto;
       box-sizing: border-box;
       gap: 0.35rem 0.35rem;
@@ -69,6 +70,7 @@ export class Form extends SimpleElement {
 
     .ui-form-value input {
       width: min(100%, 9.5em);
+      height: 1.6em;
     }
 
     .ui-form-value input[type="text"] {
@@ -91,7 +93,7 @@ export class Form extends SimpleElement {
 
     .ui-form-icon {
       overflow-x: unset;
-      width: 1.2em;
+      width: 1.5em;
       white-space: nowrap;
       margin-left: 1.3em;
       margin-right: 1.3em;
