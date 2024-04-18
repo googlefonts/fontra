@@ -169,7 +169,7 @@ export default class TransformationPanel extends Panel {
     let buttonMove = html.createDomElement("icon-button", {
       "src": "/tabler-icons/arrow-move-right.svg",
       "onclick": (event) =>
-        this._transformLayerGlyph(
+        this.transformSelection(
           new Transform().translate(
             this.transformParameters.moveX,
             this.transformParameters.moveY
@@ -197,7 +197,7 @@ export default class TransformationPanel extends Panel {
     let buttonScale = html.createDomElement("icon-button", {
       "src": "/tabler-icons/resize.svg",
       "onclick": (event) =>
-        this._transformLayerGlyph(
+        this.transformSelection(
           new Transform().scale(
             this.transformParameters.scaleX / 100,
             (this.transformParameters.scaleY
@@ -229,7 +229,7 @@ export default class TransformationPanel extends Panel {
     let buttonRotate = html.createDomElement("icon-button", {
       "src": "/tabler-icons/rotate.svg",
       "onclick": (event) =>
-        this._transformLayerGlyph(
+        this.transformSelection(
           new Transform().rotate((this.transformParameters.rotation * Math.PI) / 180),
           "rotate"
         ),
@@ -248,7 +248,7 @@ export default class TransformationPanel extends Panel {
     let buttonSkew = html.createDomElement("icon-button", {
       "src": "/images/skew.svg",
       "onclick": (event) =>
-        this._transformLayerGlyph(
+        this.transformSelection(
           new Transform().skew(
             (this.transformParameters.skewX * Math.PI) / 180,
             (this.transformParameters.skewY * Math.PI) / 180
@@ -294,7 +294,7 @@ export default class TransformationPanel extends Panel {
           "data-tooltip": "Flip vertically",
           "data-tooltipposition": "top",
           "onclick": (event) =>
-            this._transformLayerGlyph(new Transform().scale(-1, 1), "flip vertically"),
+            this.transformSelection(new Transform().scale(-1, 1), "flip vertically"),
         }),
       },
       field3: {
@@ -306,10 +306,7 @@ export default class TransformationPanel extends Panel {
           "data-tooltip": "Flip horizontally",
           "data-tooltipposition": "top-right",
           "onclick": (event) =>
-            this._transformLayerGlyph(
-              new Transform().scale(1, -1),
-              "flip horizontally"
-            ),
+            this.transformSelection(new Transform().scale(1, -1), "flip horizontally"),
         }),
       },
     });
@@ -324,7 +321,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignLeft",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-left.svg",
-          "onclick": (event) => this.moveObjects(alignLeft), //this._alignObjects("align left"),
+          "onclick": (event) => this.moveObjects(alignLeft),
           "class": "ui-form-icon ui-form-icon-button",
           "data-tooltip": "Align left",
           "data-tooltipposition": "bottom-left",
@@ -335,7 +332,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignCenter",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-center.svg",
-          "onclick": (event) => this.moveObjects(alignCenter), //this._alignObjects("align center"),
+          "onclick": (event) => this.moveObjects(alignCenter),
           "data-tooltip": "Align center",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
@@ -346,7 +343,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignRight",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/vertical-align-right.svg",
-          "onclick": (event) => this.moveObjects(alignRight), //this._alignObjects("align right"),
+          "onclick": (event) => this.moveObjects(alignRight),
           "data-tooltip": "Align right",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
@@ -361,7 +358,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignTop",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-top.svg",
-          "onclick": (event) => this.moveObjects(alignTop), //this._alignObjects("align top"),
+          "onclick": (event) => this.moveObjects(alignTop),
           "class": "ui-form-icon ui-form-icon-button",
           "data-tooltip": "Align top",
           "data-tooltipposition": "bottom-left",
@@ -372,7 +369,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignMiddle",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-center.svg",
-          "onclick": (event) => this.moveObjects(alignMiddle), //this._alignObjects("align middle"),
+          "onclick": (event) => this.moveObjects(alignMiddle),
           "data-tooltip": "Align middle",
           "data-tooltipposition": "bottom",
           "class": "ui-form-icon",
@@ -383,7 +380,7 @@ export default class TransformationPanel extends Panel {
         key: "AlignMiddle",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/horizontal-align-bottom.svg",
-          "onclick": (event) => this.moveObjects(alignBottom), //this._alignObjects("align bottom"),
+          "onclick": (event) => this.moveObjects(alignBottom),
           "data-tooltip": "Align bottom",
           "data-tooltipposition": "bottom-right",
           "class": "ui-form-icon",
@@ -401,7 +398,7 @@ export default class TransformationPanel extends Panel {
         key: "distributeHorizontally",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-vertical.svg",
-          "onclick": (event) => this.moveObjects(distributeHorizontally), //this._alignObjects("distribute horizontal"),
+          "onclick": (event) => this.moveObjects(distributeHorizontally),
           "data-tooltip": "Distribute horizontally",
           "data-tooltipposition": "top-left",
           "class": "ui-form-icon ui-form-icon-button",
@@ -412,7 +409,7 @@ export default class TransformationPanel extends Panel {
         key: "distributeVertically",
         auxiliaryElement: html.createDomElement("icon-button", {
           "src": "/tabler-icons/layout-distribute-horizontal.svg",
-          "onclick": (event) => this.moveObjects(distributeVertically), //this._alignObjects("distribute vertical"),
+          "onclick": (event) => this.moveObjects(distributeVertically),
           "data-tooltip": "Distribute vertically",
           "data-tooltipposition": "top",
           "class": "ui-form-icon",
@@ -495,7 +492,7 @@ export default class TransformationPanel extends Panel {
     return staticGlyphControllers;
   }
 
-  async _transformLayerGlyph(transformation, undoLabel) {
+  async transformSelection(transformation, undoLabel) {
     let { point: pointIndices, component: componentIndices } = parseSelection(
       this.sceneController.selection
     );
@@ -649,29 +646,24 @@ export default class TransformationPanel extends Panel {
     const movableObjects = [];
     for (const pointIndex of points) {
       const individualSelection = [`point/${pointIndex}`];
-      movableObjects.push(new MovablePoint(pointIndex, individualSelection));
+      movableObjects.push(new MovableObject(individualSelection));
     }
     for (const [contourIndex, pointIndices] of enumerate(contours)) {
       const individualSelection = pointIndices.map(
         (pointIndex) => `point/${pointIndex}`
       );
-      movableObjects.push(new MovableContour(contourIndex, individualSelection));
+      movableObjects.push(new MovableObject(individualSelection));
     }
     for (const componentIndex of components) {
       const individualSelection = [`component/${componentIndex}`];
-      movableObjects.push(new MovableComponent(componentIndex, individualSelection));
+      movableObjects.push(new MovableObject(individualSelection));
     }
 
-    let movableObjectsSorted = movableObjects.sort(
-      (a, b) => a.computeBounds(controller).yMin - b.computeBounds(controller).yMin
-    );
-    if (moveDescriptor.distributeDirection === "horizontally") {
-      movableObjectsSorted = movableObjects.sort(
-        (a, b) => a.computeBounds(controller).xMin - b.computeBounds(controller).xMin
-      );
+    if (moveDescriptor.compareObjects) {
+      movableObjects.sort((a, b) => moveDescriptor.compareObjects(a, b, controller));
     }
 
-    return movableObjectsSorted;
+    return movableObjects;
   }
 
   async moveObjects(moveDescriptor) {
@@ -702,7 +694,7 @@ export default class TransformationPanel extends Panel {
           this.transformParameters.distributeValue
         );
         for (const [delta, movableObject] of zip(deltas, movableObjects)) {
-          const [editChange, rollbackChange] = movableObject.getChangesForDelta(
+          const [editChange, rollbackChange] = movableObject.makeChangesForDelta(
             delta,
             layerGlyph,
             this.sceneController
@@ -734,7 +726,7 @@ export default class TransformationPanel extends Panel {
 }
 
 // Define MovableObject classes
-class MovableBaseObject {
+class MovableObject {
   constructor(selection) {
     this.selection = selection;
   }
@@ -743,7 +735,7 @@ class MovableBaseObject {
     return staticGlyphController.getSelectionBounds(this.selection);
   }
 
-  getChangesForDelta(delta, layerGlyph, sceneController) {
+  makeChangesForDelta(delta, layerGlyph, sceneController) {
     const behaviorFactory = new EditBehaviorFactory(
       layerGlyph,
       this.selection,
@@ -753,27 +745,6 @@ class MovableBaseObject {
     const editBehavior = behaviorFactory.getBehavior("default");
     const editChange = editBehavior.makeChangeForDelta(delta);
     return [editChange, editBehavior.rollbackChange];
-  }
-}
-
-class MovablePoint extends MovableBaseObject {
-  constructor(pointIndex, selection) {
-    super(selection);
-    this.pointIndex = pointIndex;
-  }
-}
-
-class MovableContour extends MovableBaseObject {
-  constructor(pointIndices, selection) {
-    super(selection);
-    this.pointIndices = pointIndices;
-  }
-}
-
-class MovableComponent extends MovableBaseObject {
-  constructor(componentIndex, selection) {
-    super(selection);
-    this.componentIndex = componentIndex;
   }
 }
 
@@ -854,71 +825,52 @@ const alignBottom = {
   },
 };
 
-const distributeHorizontally = {
-  undoLabel: "distribute horizontally",
-  distributeDirection: "horizontally",
-  computeDeltasFromBoundingBoxes: (boundingBoxes, distributeValue) => {
-    let effectiveWidth = 0;
+class DistributeObjectsDescriptor {
+  constructor(direction, directionVar) {
+    this.undoLabel = `distribute ${direction}`;
+    this.minProperty = `${directionVar}Min`;
+    this.maxProperty = `${directionVar}Max`;
+    this.deltaProperty = directionVar;
+  }
+
+  computeDeltasFromBoundingBoxes(boundingBoxes, distributeValue) {
+    let effectiveDimentions = 0;
     for (const bounds of boundingBoxes) {
-      effectiveWidth += bounds.xMax - bounds.xMin;
+      effectiveDimentions += bounds[this.maxProperty] - bounds[this.minProperty];
     }
-    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
-    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
-    const left = Math.min(...xMins);
-    const right = Math.max(...xMaxes);
+    const mins = boundingBoxes.map((bounds) => bounds[this.minProperty]);
+    const maxes = boundingBoxes.map((bounds) => bounds[this.maxProperty]);
+    const minimum = Math.min(...mins);
+    const maximum = Math.max(...maxes);
 
     let distributionSpacing =
-      (right - left - effectiveWidth) / (boundingBoxes.length - 1);
+      (maximum - minimum - effectiveDimentions) / (boundingBoxes.length - 1);
     if (!isNaN(distributeValue)) {
       distributionSpacing = distributeValue;
     }
 
-    let next = left;
+    let next = minimum;
     let deltas = [];
     for (const bounds of boundingBoxes) {
-      const width = bounds.xMax - bounds.xMin;
-      const delta = {
-        x: next - bounds.xMin,
-        y: 0,
-      };
+      const dimentions = bounds[this.maxProperty] - bounds[this.minProperty];
+      const delta = { x: 0, y: 0 };
+      delta[this.deltaProperty] = next - bounds[this.minProperty];
       deltas.push(delta);
-      next += width + distributionSpacing;
+      next += dimentions + distributionSpacing;
     }
     return deltas;
-  },
-};
+  }
 
-const distributeVertically = {
-  undoLabel: "distribute vertically",
-  computeDeltasFromBoundingBoxes: (boundingBoxes, distributeValue) => {
-    let effectiveHeight = 0;
-    for (const bounds of boundingBoxes) {
-      effectiveHeight += bounds.yMax - bounds.yMin;
-    }
-    const yMins = boundingBoxes.map((bounds) => bounds.yMin);
-    const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
-    const bottom = Math.min(...yMins);
-    const top = Math.max(...yMaxes);
+  compareObjects(a, b, controller) {
+    return (
+      a.computeBounds(controller)[this.minProperty] -
+      b.computeBounds(controller)[this.minProperty]
+    );
+    // Btw. I still think this should sort based on the center, not the left or bottom
+  }
+}
 
-    let distributionSpacing =
-      (top - bottom - effectiveHeight) / (boundingBoxes.length - 1);
-    if (!isNaN(distributeValue)) {
-      distributionSpacing = distributeValue;
-    }
-
-    let next = bottom;
-    let deltas = [];
-    for (const bounds of boundingBoxes) {
-      const height = bounds.yMax - bounds.yMin;
-      const delta = {
-        x: 0,
-        y: next - bounds.yMin,
-      };
-      deltas.push(delta);
-      next += height + distributionSpacing;
-    }
-    return deltas;
-  },
-};
+const distributeHorizontally = new DistributeObjectsDescriptor("horizontally", "x");
+const distributeVertically = new DistributeObjectsDescriptor("vertically", "y");
 
 customElements.define("panel-transformation", TransformationPanel);
