@@ -28,6 +28,7 @@ from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ..core.classes import (
+    Anchor,
     Axes,
     AxisValueLabel,
     Component,
@@ -42,6 +43,7 @@ from ..core.classes import (
     MultipleAxisMapping,
     StaticGlyph,
     VariableGlyph,
+    structure,
 )
 from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
@@ -1144,7 +1146,7 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
         path=pen.getPath(),
         components=components,
         xAdvance=glyph.width,
-        anchors=glyph.anchors,
+        anchors=[structure(a, Anchor) for a in glyph.anchors],
     )
 
     # TODO: yAdvance, verticalOrigin

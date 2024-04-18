@@ -9,6 +9,7 @@ from fontTools.designspaceLib import DesignSpaceDocument
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
+    Anchor,
     Axes,
     FontAxis,
     GlyphAxis,
@@ -183,6 +184,22 @@ async def test_addLocalAxis(writableTestFont):
     glyph = await writableTestFont.getGlyph(glyphName)
 
     glyph.axes.append(GlyphAxis(name="test", minValue=0, defaultValue=50, maxValue=100))
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert asdict(glyph) == asdict(savedGlyph)
+
+
+async def test_addAnchor(writableTestFont):
+    glyphName = "E"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    layerName = "test"
+    glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
+    glyph.layers[layerName].glyph.anchors.append(Anchor(name="top", x=207, y=746))
 
     await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
 
