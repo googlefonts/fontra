@@ -1,9 +1,4 @@
-import {
-  ChangeCollector,
-  applyChange,
-  consolidateChanges,
-  hasChange,
-} from "../core/changes.js";
+import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
@@ -11,12 +6,8 @@ import {
   filterPathByPointIndices,
   getSelectionByContour,
 } from "/core/path-functions.js";
-import { rectCenter, rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
-import {
-  Transform,
-  decomposedFromTransform,
-  prependTransformToDecomposed,
-} from "/core/transform.js";
+import { rectCenter, rectSize } from "/core/rectangle.js";
+import { Transform, prependTransformToDecomposed } from "/core/transform.js";
 import { enumerate, parseSelection, range, zip } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
