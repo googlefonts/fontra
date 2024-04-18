@@ -749,46 +749,81 @@ class MovableObject {
 }
 
 // Define moveDescriptor objects
-class AlignObjectsDescriptor {
-  constructor(descriptor, position, directionVar) {
-    this.position = position;
-    this.undoLabel = `align ${descriptor}`;
-    this.minProperty = `${directionVar}Min`;
-    this.maxProperty = `${directionVar}Max`;
-    this.property = `${directionVar}${position}`;
-    this.deltaProperty = directionVar;
-  }
+const alignLeft = {
+  undoLabel: "align left",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
+    const left = Math.min(...xMins);
+    return xMins.map((xMin) => ({
+      x: left - xMin,
+      y: 0,
+    }));
+  },
+};
 
-  computeDeltasFromBoundingBoxes(boundingBoxes) {
-    const maxes = boundingBoxes.map((bounds) => bounds[this.maxProperty]);
-    const mins = boundingBoxes.map((bounds) => bounds[this.minProperty]);
-    let maximum = Math.max(...maxes);
-    let minimum = Math.min(...mins);
-    let deltas = [];
-    for (const bounds of boundingBoxes) {
-      const delta = { x: 0, y: 0 };
-      if (this.position === "Center") {
-        delta[this.deltaProperty] =
-          maximum -
-          bounds[this.maxProperty] +
-          (bounds[this.maxProperty] - bounds[this.minProperty]) / 2 -
-          (maximum - minimum) / 2;
-      } else {
-        const pos = this.position === "Min" ? minimum : maximum;
-        delta[this.deltaProperty] = pos - bounds[this.property];
-      }
-      deltas.push(delta);
-    }
-    return deltas;
-  }
-}
+const alignCenter = {
+  undoLabel: "align center",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
+    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
+    const left = Math.min(...xMins);
+    const right = Math.max(...xMaxes);
+    return boundingBoxes.map((bounds) => ({
+      x: left - bounds.xMin + (right - left) / 2 - (bounds.xMax - bounds.xMin) / 2,
+      y: 0,
+    }));
+  },
+};
 
-const alignBottom = new AlignObjectsDescriptor("bottom", "Min", "y");
-const alignTop = new AlignObjectsDescriptor("top", "Max", "y");
-const alignLeft = new AlignObjectsDescriptor("left", "Min", "x");
-const alignRight = new AlignObjectsDescriptor("right", "Max", "x");
-const alignMiddle = new AlignObjectsDescriptor("middle", "Center", "y");
-const alignCenter = new AlignObjectsDescriptor("center", "Center", "x");
+const alignRight = {
+  undoLabel: "align right",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
+    const right = Math.max(...xMaxes);
+    return xMaxes.map((xMax) => ({
+      x: right - xMax,
+      y: 0,
+    }));
+  },
+};
+
+const alignTop = {
+  undoLabel: "align top",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
+    const top = Math.max(...yMaxes);
+    return yMaxes.map((yMax) => ({
+      x: 0,
+      y: top - yMax,
+    }));
+  },
+};
+
+const alignMiddle = {
+  undoLabel: "align middle",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
+    const yMins = boundingBoxes.map((bounds) => bounds.yMin);
+    const bottom = Math.min(...yMins);
+    const top = Math.max(...yMaxes);
+    return boundingBoxes.map((bounds) => ({
+      x: 0,
+      y: top - bounds.yMax + (bounds.yMax - bounds.yMin) / 2 - (top - bottom) / 2,
+    }));
+  },
+};
+
+const alignBottom = {
+  undoLabel: "align bottom",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const yMins = boundingBoxes.map((bounds) => bounds.yMin);
+    const bottom = Math.min(...yMins);
+    return yMins.map((yMin) => ({
+      x: 0,
+      y: bottom - yMin,
+    }));
+  },
+};
 
 class DistributeObjectsDescriptor {
   constructor(direction, directionVar) {
