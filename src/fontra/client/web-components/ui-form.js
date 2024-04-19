@@ -276,12 +276,12 @@ export class Form extends SimpleElement {
       }
     };
     inputElement.onchange = (event) => {
-      let value = parseFloat(inputElement.value);
-      if (isNaN(value)) {
-        if (allowEmptyField) {
-          value = null;
-          inputElement.value = value;
-        } else {
+      let value;
+      if (allowEmptyField && inputElement.value === "") {
+        value = null;
+      } else {
+        value = parseFloat(inputElement.value);
+        if (isNaN(value)) {
           value = this._lastValidFieldValues[fieldItem.key];
           inputElement.value = value;
         }
