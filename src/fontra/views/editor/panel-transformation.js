@@ -1,19 +1,14 @@
-import {
-  ChangeCollector,
-  applyChange,
-  consolidateChanges,
-  hasChange,
-} from "../core/changes.js";
+import { ChangeCollector, applyChange, consolidateChanges } from "../core/changes.js";
 import { EditBehaviorFactory } from "./edit-behavior.js";
 import Panel from "./panel.js";
 import * as html from "/core/html-utils.js";
-import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import {
-  Transform,
-  decomposedFromTransform,
-  prependTransformToDecomposed,
-} from "/core/transform.js";
-import { enumerate, parseSelection } from "/core/utils.js";
+  filterPathByPointIndices,
+  getSelectionByContour,
+} from "/core/path-functions.js";
+import { rectCenter, rectSize } from "/core/rectangle.js";
+import { Transform, prependTransformToDecomposed } from "/core/transform.js";
+import { enumerate, parseSelection, range, zip } from "/core/utils.js";
 import { copyComponent } from "/core/var-glyph.js";
 import { Form } from "/web-components/ui-form.js";
 
@@ -89,6 +84,7 @@ export default class TransformationPanel extends Panel {
       originYButton: undefined,
       skewX: 0,
       skewY: 0,
+      customDistributionSpacing: null,
     };
   }
 
@@ -164,7 +160,7 @@ export default class TransformationPanel extends Panel {
     let buttonMove = html.createDomElement("icon-button", {
       "src": "/tabler-icons/arrow-move-right.svg",
       "onclick": (event) =>
-        this._transformLayerGlyph(
+        this.transformSelection(
           new Transform().translate(
             this.transformParameters.moveX,
             this.transformParameters.moveY
@@ -192,7 +188,7 @@ export default class TransformationPanel extends Panel {
     let buttonScale = html.createDomElement("icon-button", {
       "src": "/tabler-icons/resize.svg",
       "onclick": (event) =>
-        this._transformLayerGlyph(
+        this.transformSelection(
           new Transform().scale(
             this.transformParameters.scaleX / 100,
             (this.transformParameters.scaleY
@@ -224,7 +220,7 @@ export default class TransformationPanel extends Panel {
     let buttonRotate = html.createDomElement("icon-button", {
       "src": "/tabler-icons/rotate.svg",
       "onclick": (event) =>
-        this._transformLayerGlyph(
+        this.transformSelection(
           new Transform().rotate((this.transformParameters.rotation * Math.PI) / 180),
           "rotate"
         ),
@@ -243,7 +239,7 @@ export default class TransformationPanel extends Panel {
     let buttonSkew = html.createDomElement("icon-button", {
       "src": "/images/skew.svg",
       "onclick": (event) =>
-        this._transformLayerGlyph(
+        this.transformSelection(
           new Transform().skew(
             (this.transformParameters.skewX * Math.PI) / 180,
             (this.transformParameters.skewY * Math.PI) / 180
@@ -274,29 +270,150 @@ export default class TransformationPanel extends Panel {
     formContents.push({ type: "divider" });
 
     formContents.push({
-      type: "icons",
-      label: "Flip",
-      auxiliaryElements: [
-        html.createDomElement("icon-button", {
+      type: "universal-row",
+      field1: {
+        type: "text",
+        key: "LabelFlip",
+        value: "Flip:",
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "FlipVertically",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "class": "ui-form-icon",
           "src": "/tabler-icons/flip-vertical.svg",
           "data-tooltip": "Flip vertically",
           "data-tooltipposition": "top",
           "onclick": (event) =>
-            this._transformLayerGlyph(new Transform().scale(-1, 1), "flip vertically"),
+            this.transformSelection(new Transform().scale(-1, 1), "flip vertically"),
         }),
-        html.createDomElement("icon-button", {
+      },
+      field3: {
+        type: "auxiliaryElement",
+        key: "FlipHorizontally",
+        auxiliaryElement: html.createDomElement("icon-button", {
           "class": "ui-form-icon",
           "src": "/tabler-icons/flip-horizontal.svg",
           "data-tooltip": "Flip horizontally",
           "data-tooltipposition": "top-right",
           "onclick": (event) =>
-            this._transformLayerGlyph(
-              new Transform().scale(1, -1),
-              "flip horizontally"
-            ),
+            this.transformSelection(new Transform().scale(1, -1), "flip horizontally"),
         }),
-      ],
+      },
+    });
+
+    formContents.push({ type: "spacer" });
+    formContents.push({ type: "header", label: `Align Objects` });
+
+    formContents.push({
+      type: "universal-row",
+      field1: {
+        type: "auxiliaryElement",
+        key: "AlignLeft",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/vertical-align-left.svg",
+          "onclick": (event) => this.moveObjects(alignLeft),
+          "class": "ui-form-icon ui-form-icon-button",
+          "data-tooltip": "Align left",
+          "data-tooltipposition": "bottom-left",
+        }),
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "AlignCenter",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/vertical-align-center.svg",
+          "onclick": (event) => this.moveObjects(alignCenter),
+          "data-tooltip": "Align center",
+          "data-tooltipposition": "bottom",
+          "class": "ui-form-icon",
+        }),
+      },
+      field3: {
+        type: "auxiliaryElement",
+        key: "AlignRight",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/vertical-align-right.svg",
+          "onclick": (event) => this.moveObjects(alignRight),
+          "data-tooltip": "Align right",
+          "data-tooltipposition": "bottom-right",
+          "class": "ui-form-icon",
+        }),
+      },
+    });
+
+    formContents.push({
+      type: "universal-row",
+      field1: {
+        type: "auxiliaryElement",
+        key: "AlignTop",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/horizontal-align-top.svg",
+          "onclick": (event) => this.moveObjects(alignTop),
+          "class": "ui-form-icon ui-form-icon-button",
+          "data-tooltip": "Align top",
+          "data-tooltipposition": "bottom-left",
+        }),
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "AlignMiddle",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/horizontal-align-center.svg",
+          "onclick": (event) => this.moveObjects(alignMiddle),
+          "data-tooltip": "Align middle",
+          "data-tooltipposition": "bottom",
+          "class": "ui-form-icon",
+        }),
+      },
+      field3: {
+        type: "auxiliaryElement",
+        key: "AlignMiddle",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/horizontal-align-bottom.svg",
+          "onclick": (event) => this.moveObjects(alignBottom),
+          "data-tooltip": "Align bottom",
+          "data-tooltipposition": "bottom-right",
+          "class": "ui-form-icon",
+        }),
+      },
+    });
+
+    formContents.push({ type: "spacer" });
+    formContents.push({ type: "header", label: `Distribute Objects` });
+
+    formContents.push({
+      type: "universal-row",
+      field1: {
+        type: "auxiliaryElement",
+        key: "distributeHorizontally",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layout-distribute-vertical.svg",
+          "onclick": (event) => this.moveObjects(distributeHorizontally),
+          "data-tooltip": "Distribute horizontally",
+          "data-tooltipposition": "top-left",
+          "class": "ui-form-icon ui-form-icon-button",
+        }),
+      },
+      field2: {
+        type: "auxiliaryElement",
+        key: "distributeVertically",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "src": "/tabler-icons/layout-distribute-horizontal.svg",
+          "onclick": (event) => this.moveObjects(distributeVertically),
+          "data-tooltip": "Distribute vertically",
+          "data-tooltipposition": "top",
+          "class": "ui-form-icon",
+        }),
+      },
+      field3: {
+        "type": "edit-number",
+        "key": "customDistributionSpacing",
+        "value": this.transformParameters.customDistributionSpacing,
+        "allowEmptyField": true,
+        "data-tooltip": "Distance in units",
+        "data-tooltipposition": "top-right",
+      },
     });
 
     this.infoForm.setFieldDescriptions(formContents);
@@ -345,17 +462,7 @@ export default class TransformationPanel extends Panel {
     return { x: pinPointX, y: pinPointY };
   }
 
-  async _transformLayerGlyph(transformation, undoLabel) {
-    let { point: pointIndices, component: componentIndices } = parseSelection(
-      this.sceneController.selection
-    );
-
-    pointIndices = pointIndices || [];
-    componentIndices = componentIndices || [];
-    if (!pointIndices.length && !componentIndices.length) {
-      return;
-    }
-
+  async _getStaticGlyphControllers() {
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
 
@@ -373,6 +480,21 @@ export default class TransformationPanel extends Panel {
           );
       }
     }
+    return staticGlyphControllers;
+  }
+
+  async transformSelection(transformation, undoLabel) {
+    let { point: pointIndices, component: componentIndices } = parseSelection(
+      this.sceneController.selection
+    );
+
+    pointIndices = pointIndices || [];
+    componentIndices = componentIndices || [];
+    if (!pointIndices.length && !componentIndices.length) {
+      return;
+    }
+
+    const staticGlyphControllers = await this._getStaticGlyphControllers();
 
     await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
       const layerInfo = Object.entries(
@@ -450,11 +572,294 @@ export default class TransformationPanel extends Panel {
     this.update();
   }
 
+  _splitSelection(layerGlyphController, selection) {
+    let { point: pointIndices, component: componentIndices } =
+      parseSelection(selection);
+    pointIndices = pointIndices || [];
+
+    const points = [];
+    const contours = [];
+    const components = componentIndices || [];
+
+    if (!pointIndices.length) {
+      return { points, contours, components };
+    }
+
+    const path = layerGlyphController.instance.path;
+    const pathSelection = filterPathByPointIndices(
+      layerGlyphController.instance.path,
+      pointIndices
+    );
+    const selectionByContour = getSelectionByContour(path, pointIndices);
+
+    let contourIndex = 0;
+    for (const pointIndex of pointIndices) {
+      while (path.contourInfo[contourIndex].endPoint < pointIndex) {
+        contourIndex++;
+      }
+
+      let pathSelectionContourIndex;
+      for (const [j, [cIndex, contourSelection]] of enumerate(selectionByContour)) {
+        if (contourIndex === cIndex) {
+          pathSelectionContourIndex = j;
+          break;
+        }
+      }
+
+      if (pathSelection.contourInfo[pathSelectionContourIndex].isClosed) {
+        const contourStartIndex = !contourIndex
+          ? 0
+          : layerGlyphController.instance.path.contourInfo[contourIndex - 1].endPoint +
+            1;
+        const contourEndIndex = path.contourInfo[contourIndex].endPoint + 1;
+
+        const contourPoints = Array.from(range(contourStartIndex, contourEndIndex));
+
+        if (contourStartIndex === pointIndex) {
+          // only add list of contours
+          // if the point is the start of the contour
+          contours.push(contourPoints);
+        }
+      } else {
+        points.push(pointIndex);
+      }
+    }
+
+    return { points, contours, components };
+  }
+
+  _collectMovableObjects(moveDescriptor, controller) {
+    const { points, contours, components } = this._splitSelection(
+      controller,
+      this.sceneController.selection
+    );
+
+    const movableObjects = [];
+    for (const pointIndex of points) {
+      const individualSelection = [`point/${pointIndex}`];
+      movableObjects.push(new MovableObject(individualSelection));
+    }
+    for (const [contourIndex, pointIndices] of enumerate(contours)) {
+      const individualSelection = pointIndices.map(
+        (pointIndex) => `point/${pointIndex}`
+      );
+      movableObjects.push(new MovableObject(individualSelection));
+    }
+    for (const componentIndex of components) {
+      const individualSelection = [`component/${componentIndex}`];
+      movableObjects.push(new MovableObject(individualSelection));
+    }
+
+    if (moveDescriptor.compareObjects) {
+      movableObjects.sort((a, b) => moveDescriptor.compareObjects(a, b, controller));
+    }
+
+    return movableObjects;
+  }
+
+  async moveObjects(moveDescriptor) {
+    const glyphController =
+      await this.sceneController.sceneModel.getSelectedStaticGlyphController();
+    const movableObjects = this._collectMovableObjects(moveDescriptor, glyphController);
+    if (movableObjects.length <= 1) {
+      return;
+    }
+
+    const staticGlyphControllers = await this._getStaticGlyphControllers();
+    await this.sceneController.editGlyph((sendIncrementalChange, glyph) => {
+      const editLayerGlyphs = this.sceneController.getEditingLayerFromGlyphLayers(
+        glyph.layers
+      );
+
+      const editChanges = [];
+      const rollbackChanges = [];
+      for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
+        const changePath = ["layers", layerName, "glyph"];
+        const controller = staticGlyphControllers[layerName];
+
+        const boundingBoxes = movableObjects.map((obj) =>
+          obj.computeBounds(controller)
+        );
+        const deltas = moveDescriptor.computeDeltasFromBoundingBoxes(
+          boundingBoxes,
+          this.transformParameters.customDistributionSpacing
+        );
+        for (const [delta, movableObject] of zip(deltas, movableObjects)) {
+          const [editChange, rollbackChange] = movableObject.makeChangesForDelta(
+            delta,
+            layerGlyph,
+            this.sceneController
+          );
+          applyChange(layerGlyph, editChange);
+          editChanges.push(consolidateChanges(editChange, changePath));
+          rollbackChanges.push(consolidateChanges(rollbackChange, changePath));
+        }
+      }
+
+      let changes = ChangeCollector.fromChanges(
+        consolidateChanges(editChanges),
+        consolidateChanges(rollbackChanges)
+      );
+
+      return {
+        changes: changes,
+        undoLabel: moveDescriptor.undoLabel,
+        broadcast: true,
+      };
+    });
+  }
+
   async toggle(on, focus) {
     if (on) {
       this.update();
     }
   }
 }
+
+// Define MovableObject classes
+class MovableObject {
+  constructor(selection) {
+    this.selection = selection;
+  }
+
+  computeBounds(staticGlyphController) {
+    return staticGlyphController.getSelectionBounds(this.selection);
+  }
+
+  makeChangesForDelta(delta, layerGlyph, sceneController) {
+    const behaviorFactory = new EditBehaviorFactory(
+      layerGlyph,
+      this.selection,
+      sceneController.experimentalFeatures.scalingEditBehavior
+    );
+
+    const editBehavior = behaviorFactory.getBehavior("default");
+    const editChange = editBehavior.makeChangeForDelta(delta);
+    return [editChange, editBehavior.rollbackChange];
+  }
+}
+
+// Define moveDescriptor objects
+const alignLeft = {
+  undoLabel: "align left",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
+    const left = Math.min(...xMins);
+    return xMins.map((xMin) => ({
+      x: left - xMin,
+      y: 0,
+    }));
+  },
+};
+
+const alignCenter = {
+  undoLabel: "align center",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
+    const xMins = boundingBoxes.map((bounds) => bounds.xMin);
+    const left = Math.min(...xMins);
+    const right = Math.max(...xMaxes);
+    return boundingBoxes.map((bounds) => ({
+      x: left - bounds.xMin + (right - left) / 2 - (bounds.xMax - bounds.xMin) / 2,
+      y: 0,
+    }));
+  },
+};
+
+const alignRight = {
+  undoLabel: "align right",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const xMaxes = boundingBoxes.map((bounds) => bounds.xMax);
+    const right = Math.max(...xMaxes);
+    return xMaxes.map((xMax) => ({
+      x: right - xMax,
+      y: 0,
+    }));
+  },
+};
+
+const alignTop = {
+  undoLabel: "align top",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
+    const top = Math.max(...yMaxes);
+    return yMaxes.map((yMax) => ({
+      x: 0,
+      y: top - yMax,
+    }));
+  },
+};
+
+const alignMiddle = {
+  undoLabel: "align middle",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const yMaxes = boundingBoxes.map((bounds) => bounds.yMax);
+    const yMins = boundingBoxes.map((bounds) => bounds.yMin);
+    const bottom = Math.min(...yMins);
+    const top = Math.max(...yMaxes);
+    return boundingBoxes.map((bounds) => ({
+      x: 0,
+      y: top - bounds.yMax + (bounds.yMax - bounds.yMin) / 2 - (top - bottom) / 2,
+    }));
+  },
+};
+
+const alignBottom = {
+  undoLabel: "align bottom",
+  computeDeltasFromBoundingBoxes: (boundingBoxes) => {
+    const yMins = boundingBoxes.map((bounds) => bounds.yMin);
+    const bottom = Math.min(...yMins);
+    return yMins.map((yMin) => ({
+      x: 0,
+      y: bottom - yMin,
+    }));
+  },
+};
+
+class DistributeObjectsDescriptor {
+  constructor(direction, directionVar) {
+    this.undoLabel = `distribute ${direction}`;
+    this.minProperty = `${directionVar}Min`;
+    this.maxProperty = `${directionVar}Max`;
+    this.deltaProperty = directionVar;
+  }
+
+  computeDeltasFromBoundingBoxes(boundingBoxes, customDistributionSpacing) {
+    let effectiveExtent = 0;
+    for (const bounds of boundingBoxes) {
+      effectiveExtent += bounds[this.maxProperty] - bounds[this.minProperty];
+    }
+    const mins = boundingBoxes.map((bounds) => bounds[this.minProperty]);
+    const maxes = boundingBoxes.map((bounds) => bounds[this.maxProperty]);
+    const minimum = Math.min(...mins);
+    const maximum = Math.max(...maxes);
+
+    const distributionSpacing =
+      customDistributionSpacing === null
+        ? (maximum - minimum - effectiveExtent) / (boundingBoxes.length - 1)
+        : customDistributionSpacing;
+
+    let next = minimum;
+    let deltas = [];
+    for (const bounds of boundingBoxes) {
+      const extent = bounds[this.maxProperty] - bounds[this.minProperty];
+      const delta = { x: 0, y: 0 };
+      delta[this.deltaProperty] = next - bounds[this.minProperty];
+      deltas.push(delta);
+      next += extent + distributionSpacing;
+    }
+    return deltas;
+  }
+
+  compareObjects(a, b, controller) {
+    return (
+      rectCenter(a.computeBounds(controller))[this.deltaProperty] -
+      rectCenter(b.computeBounds(controller))[this.deltaProperty]
+    );
+  }
+}
+
+const distributeHorizontally = new DistributeObjectsDescriptor("horizontally", "x");
+const distributeVertically = new DistributeObjectsDescriptor("vertically", "y");
 
 customElements.define("panel-transformation", TransformationPanel);

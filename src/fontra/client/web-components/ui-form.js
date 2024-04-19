@@ -1,7 +1,7 @@
 import * as html from "../core/html-utils.js";
 import { SimpleElement } from "../core/html-utils.js";
 import { QueueIterator } from "../core/queue-iterator.js";
-import { hyphenatedToCamelCase, round } from "../core/utils.js";
+import { enumerate, hyphenatedToCamelCase, round } from "../core/utils.js";
 import { RangeSlider } from "/web-components/range-slider.js";
 import "/web-components/rotary-control.js";
 
@@ -12,6 +12,7 @@ export class Form extends SimpleElement {
     }
     .ui-form {
       display: grid;
+      align-items: center;
       grid-template-columns: var(--label-column-width) auto;
       box-sizing: border-box;
       gap: 0.35rem 0.35rem;
@@ -69,6 +70,7 @@ export class Form extends SimpleElement {
 
     .ui-form-value input {
       width: min(100%, 9.5em);
+      height: 1.6em;
     }
 
     .ui-form-value input[type="text"] {
@@ -84,14 +86,14 @@ export class Form extends SimpleElement {
     }
 
     .ui-form-value.edit-number-x-y,
-    .ui-form-value.icons {
+    .ui-form-value.universal-row {
       display: flex;
       gap: 0.3rem;
     }
 
     .ui-form-icon {
       overflow-x: unset;
-      width: 1.2em;
+      width: 1.5em;
       white-space: nowrap;
       margin-left: 1.3em;
       margin-right: 1.3em;
@@ -137,6 +139,10 @@ export class Form extends SimpleElement {
         this.contentElement.appendChild(html.hr());
         continue;
       }
+      if (fieldItem.type === "spacer") {
+        this.contentElement.appendChild(html.br());
+        continue;
+      }
       if (fieldItem.type === "single-icon") {
         if (fieldItem.element) {
           const valueElement = document.createElement("div");
@@ -168,22 +174,30 @@ export class Form extends SimpleElement {
         continue;
       }
 
-      if (fieldItem.type === "icons") {
-        if (fieldItem.auxiliaryElements) {
-          for (const element of fieldItem.auxiliaryElements) {
-            valueElement.appendChild(element, fieldItem);
-          }
-        }
-        this.contentElement.appendChild(valueElement);
-        continue;
-      }
       this.contentElement.appendChild(valueElement);
 
       const methodName = hyphenatedToCamelCase("_add-" + fieldItem.type);
       if (this[methodName] === undefined) {
         throw new Error(`Unknown field type: ${fieldItem.type}`);
       }
-      this[methodName](valueElement, fieldItem);
+      this[methodName](valueElement, fieldItem, labelElement);
+    }
+  }
+
+  _addUniversalRow(valueElement, fieldItem, labelElement) {
+    for (const [i, field] of enumerate([
+      fieldItem.field1,
+      fieldItem.field2,
+      fieldItem.field3,
+    ])) {
+      const element = i === 0 ? labelElement : valueElement;
+      const methodName = hyphenatedToCamelCase("_add-" + field.type);
+      if (this[methodName]) {
+        this[methodName](element, field, field.allowEmptyField);
+      }
+      if (field.auxiliaryElement) {
+        element.appendChild(field.auxiliaryElement, field);
+      }
     }
   }
 
@@ -221,11 +235,17 @@ export class Form extends SimpleElement {
     this._addEditNumber(valueElement, fieldItem.fieldY);
   }
 
-  _addEditNumber(valueElement, fieldItem) {
+  _addEditNumber(valueElement, fieldItem, allowEmptyField = false) {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
     inputElement.value = maybeRound(fieldItem.value, fieldItem.numDigits);
+
+    if (fieldItem["data-tooltip"]) {
+      // data-tooltip doesn't work for input number,
+      // default title is used
+      inputElement.setAttribute("title", fieldItem["data-tooltip"]);
+    }
 
     if ("minValue" in fieldItem) {
       inputElement.min = fieldItem.minValue;
@@ -256,10 +276,15 @@ export class Form extends SimpleElement {
       }
     };
     inputElement.onchange = (event) => {
-      let value = parseFloat(inputElement.value);
-      if (isNaN(value)) {
-        value = this._lastValidFieldValues[fieldItem.key];
-        inputElement.value = value;
+      let value;
+      if (allowEmptyField && inputElement.value === "") {
+        value = null;
+      } else {
+        value = parseFloat(inputElement.value);
+        if (isNaN(value)) {
+          value = this._lastValidFieldValues[fieldItem.key];
+          inputElement.value = value;
+        }
       }
 
       if (!inputElement.reportValidity()) {
