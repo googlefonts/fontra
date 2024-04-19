@@ -140,7 +140,15 @@
 }
 ]
 },
-"xAdvance": 597
+"xAdvance": 597,
+"anchors": [
+{
+"name": "top",
+"x": 312,
+"y": 841,
+"customData": {}
+}
+]
 }
 },
 "MutatorSansBoldWide/foreground": {
@@ -233,7 +241,15 @@
 }
 ]
 },
-"xAdvance": 1120
+"xAdvance": 1120,
+"anchors": [
+{
+"name": "top",
+"x": 582,
+"y": 841,
+"customData": {}
+}
+]
 }
 },
 "MutatorSansLightCondensed/foreground": {
@@ -326,7 +342,15 @@
 }
 ]
 },
-"xAdvance": 380
+"xAdvance": 380,
+"anchors": [
+{
+"name": "top",
+"x": 207,
+"y": 746,
+"customData": {}
+}
+]
 }
 },
 "MutatorSansLightCondensed/support.crossbar": {
@@ -419,7 +443,15 @@
 }
 ]
 },
-"xAdvance": 551
+"xAdvance": 551,
+"anchors": [
+{
+"name": "top",
+"x": 282.15144,
+"y": 813.99416,
+"customData": {}
+}
+]
 }
 },
 "MutatorSansLightWide/foreground": {
@@ -512,7 +544,15 @@
 }
 ]
 },
-"xAdvance": 1010
+"xAdvance": 1010,
+"anchors": [
+{
+"name": "top",
+"x": 532,
+"y": 746,
+"customData": {}
+}
+]
 }
 }
 }
