@@ -218,7 +218,7 @@ class Component:
 
 @dataclass(kw_only=True)
 class Anchor:
-    name: Optional[str] = None
+    name: Optional[str]
     x: float
     y: float
     customData: CustomData = field(default_factory=dict)
