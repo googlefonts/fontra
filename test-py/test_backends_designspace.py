@@ -17,6 +17,7 @@ from fontra.core.classes import (
     Layer,
     MultipleAxisMapping,
     StaticGlyph,
+    structure,
     unstructure,
 )
 
@@ -190,6 +191,18 @@ async def test_addLocalAxis(writableTestFont):
     savedGlyph = await writableTestFont.getGlyph(glyphName)
 
     assert asdict(glyph) == asdict(savedGlyph)
+
+
+async def test_getAnchors(writableTestFont):
+    glyph = await writableTestFont.getGlyph("E")
+
+    layerName = "MutatorSansLightCondensed/foreground"
+    layer = glyph.layers[layerName]
+
+    assert 1 == len(layer.glyph.anchors)
+    assert (
+        structure({"name": "top", "x": 207, "y": 746}, Anchor) == layer.glyph.anchors[0]
+    )
 
 
 async def test_addAnchor(writableTestFont):

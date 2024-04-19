@@ -44,6 +44,7 @@ from ..core.classes import (
     StaticGlyph,
     VariableGlyph,
     structure,
+    unstructure,
 )
 from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
@@ -1192,6 +1193,7 @@ def populateUFOLayerGlyph(
     layerGlyph.height = staticGlyph.yAdvance
     staticGlyph.path.drawPoints(pen)
     variableComponents = []
+    layerGlyph.anchors = [unstructure(a) for a in staticGlyph.anchors]
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:
             # Store as a variable component
