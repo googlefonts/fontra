@@ -27,7 +27,7 @@ from fontTools.pens.recordingPen import RecordingPointPen
 from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
-from ..core.classes import (  # unstructure, # TODO: unstructure doesn't wotk with Anchors, yet.
+from ..core.classes import (
     Anchor,
     Axes,
     AxisValueLabel,
@@ -43,7 +43,6 @@ from ..core.classes import (  # unstructure, # TODO: unstructure doesn't wotk wi
     MultipleAxisMapping,
     StaticGlyph,
     VariableGlyph,
-    structure,
 )
 from ..core.glyphdependencies import GlyphDependencies
 from ..core.path import PackedPathPointPen
@@ -1142,7 +1141,7 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
     pen = penClass()
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     components = [*pen.components] + unpackVariableComponents(glyph.lib)
-    anchors = [Anchor(name=a.name, x=a.x, y=a.y) for a in glyph.anchors]
+    anchors = [Anchor(name=a.get("name"), x=a["x"], y=a["y"]) for a in glyph.anchors]
     staticGlyph = StaticGlyph(
         path=pen.getPath(),
         components=components,
@@ -1192,9 +1191,6 @@ def populateUFOLayerGlyph(
     layerGlyph.height = staticGlyph.yAdvance
     staticGlyph.path.drawPoints(pen)
     variableComponents = []
-    # # TODO: unstructrue anchors to dict fails with:
-    # fontTools.ufoLib.errors.GlifLibError: anchors attribute does not have the proper structure.
-    # layerGlyph.anchors = [unstructure(a) for a in staticGlyph.anchors]
     layerGlyph.anchors = [
         {"name": a.name, "x": a.x, "y": a.y} for a in staticGlyph.anchors
     ]

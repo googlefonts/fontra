@@ -29,7 +29,6 @@ from ..backends.copy import copyFont
 from ..backends.filenames import stringToFileName
 from ..core.async_property import async_cached_property
 from ..core.classes import (
-    Anchor,
     Axes,
     Component,
     DiscreteFontAxis,
@@ -226,10 +225,10 @@ class ScaleAction(BaseFilterAction):
             else glyph.verticalOrigin
         )
         anchors = [
-            Anchor(name=a.name, x=a.x * self.scaleFactor, y=a.y * self.scaleFactor)
+            replace(a, x=a.x * self.scaleFactor, y=a.y * self.scaleFactor)
             for a in glyph.anchors
         ]
-        # TODO: anchors, guidelines
+        # TODO: guidelines
         return replace(
             glyph,
             xAdvance=xAdvance,

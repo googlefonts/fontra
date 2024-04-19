@@ -17,7 +17,6 @@ from fontra.core.classes import (
     Layer,
     MultipleAxisMapping,
     StaticGlyph,
-    structure,
     unstructure,
 )
 
@@ -200,9 +199,7 @@ async def test_getAnchors(writableTestFont):
     layer = glyph.layers[layerName]
 
     assert 1 == len(layer.glyph.anchors)
-    assert (
-        structure({"name": "top", "x": 207, "y": 746}, Anchor) == layer.glyph.anchors[0]
-    )
+    assert Anchor(name="top", x=207, y=746) == layer.glyph.anchors[0]
 
 
 async def test_addAnchor(writableTestFont):
