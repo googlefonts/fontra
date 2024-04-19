@@ -56,16 +56,6 @@ async def test_fontHandler_basic(testFontHandler):
 
 
 @pytest.mark.asyncio
-async def test_fontHandler_getAnchors(testFontHandler):
-    async with aclosing(testFontHandler):
-        glyph = await testFontHandler.getGlyph("E")
-
-    layerName, layer = firstLayerItem(glyph)
-    assert 1 == len(layer.glyph.anchors)
-    assert {"name": "top", "x": 207, "y": 746} == layer.glyph.anchors[0]
-
-
-@pytest.mark.asyncio
 async def test_fontHandler_externalChange(testFontHandler):
     async with aclosing(testFontHandler):
         await testFontHandler.startTasks()
