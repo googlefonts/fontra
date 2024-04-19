@@ -834,11 +834,9 @@ class DistributeObjectsDescriptor {
     const minimum = Math.min(...mins);
     const maximum = Math.max(...maxes);
 
-    let distributionSpacing =
-      (maximum - minimum - effectiveExtent) / (boundingBoxes.length - 1);
-    if (!isNaN(distributeValue)) {
-      distributionSpacing = distributeValue;
-    }
+    const distributionSpacing = isNaN(distributeValue)
+      ? (maximum - minimum - effectiveExtent) / (boundingBoxes.length - 1)
+      : distributeValue;
 
     let next = minimum;
     let deltas = [];
