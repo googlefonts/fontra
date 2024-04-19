@@ -84,7 +84,7 @@ export default class TransformationPanel extends Panel {
       originYButton: undefined,
       skewX: 0,
       skewY: 0,
-      distributeValue: null,
+      customDistributionSpacing: null,
     };
   }
 
@@ -408,8 +408,8 @@ export default class TransformationPanel extends Panel {
       },
       field3: {
         "type": "edit-number",
-        "key": "distributeValue",
-        "value": this.transformParameters.distributeValue,
+        "key": "customDistributionSpacing",
+        "value": this.transformParameters.customDistributionSpacing,
         "allowEmptyField": true,
         "data-tooltip": "Distance in units",
         "data-tooltipposition": "top-right",
@@ -682,7 +682,7 @@ export default class TransformationPanel extends Panel {
         );
         const deltas = moveDescriptor.computeDeltasFromBoundingBoxes(
           boundingBoxes,
-          this.transformParameters.distributeValue
+          this.transformParameters.customDistributionSpacing
         );
         for (const [delta, movableObject] of zip(deltas, movableObjects)) {
           const [editChange, rollbackChange] = movableObject.makeChangesForDelta(
@@ -824,7 +824,7 @@ class DistributeObjectsDescriptor {
     this.deltaProperty = directionVar;
   }
 
-  computeDeltasFromBoundingBoxes(boundingBoxes, distributeValue) {
+  computeDeltasFromBoundingBoxes(boundingBoxes, customDistributionSpacing) {
     let effectiveExtent = 0;
     for (const bounds of boundingBoxes) {
       effectiveExtent += bounds[this.maxProperty] - bounds[this.minProperty];
@@ -835,9 +835,9 @@ class DistributeObjectsDescriptor {
     const maximum = Math.max(...maxes);
 
     const distributionSpacing =
-      distributeValue === null
+      customDistributionSpacing === null
         ? (maximum - minimum - effectiveExtent) / (boundingBoxes.length - 1)
-        : distributeValue;
+        : customDistributionSpacing;
 
     let next = minimum;
     let deltas = [];
