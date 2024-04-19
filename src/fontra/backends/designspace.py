@@ -28,6 +28,7 @@ from fontTools.ufoLib import UFOReaderWriter
 from fontTools.ufoLib.glifLib import GlyphSet
 
 from ..core.classes import (
+    Anchor,
     Axes,
     AxisValueLabel,
     Component,
@@ -1033,6 +1034,7 @@ class UFOGlyph:
     unicodes: list = []
     width: float | None = 0
     height: float | None = None
+    anchors: list = []
     lib: dict
 
 
@@ -1140,9 +1142,12 @@ def ufoLayerToStaticGlyph(glyphSet, glyphName, penClass=PackedPathPointPen):
     glyphSet.readGlyph(glyphName, glyph, pen, validate=False)
     components = [*pen.components] + unpackVariableComponents(glyph.lib)
     staticGlyph = StaticGlyph(
-        path=pen.getPath(), components=components, xAdvance=glyph.width
+        path=pen.getPath(),
+        components=components,
+        xAdvance=glyph.width,
+        anchors=unpackAnchors(glyph.anchors),
     )
-    # TODO: anchors
+
     # TODO: yAdvance, verticalOrigin
     return staticGlyph, glyph
 
@@ -1158,6 +1163,10 @@ def unpackVariableComponents(lib):
             Component(name=glyphName, transformation=transformation, location=location)
         )
     return components
+
+
+def unpackAnchors(anchors):
+    return [Anchor(name=a.get("name"), x=a["x"], y=a["y"]) for a in anchors]
 
 
 def readGlyphOrCreate(
@@ -1185,6 +1194,9 @@ def populateUFOLayerGlyph(
     layerGlyph.height = staticGlyph.yAdvance
     staticGlyph.path.drawPoints(pen)
     variableComponents = []
+    layerGlyph.anchors = [
+        {"name": a.name, "x": a.x, "y": a.y} for a in staticGlyph.anchors
+    ]
     for component in staticGlyph.components:
         if component.location or forceVariableComponents:
             # Store as a variable component

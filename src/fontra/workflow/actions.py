@@ -224,7 +224,11 @@ class ScaleAction(BaseFilterAction):
             if glyph.verticalOrigin
             else glyph.verticalOrigin
         )
-        # TODO: anchors, guidelines
+        anchors = [
+            replace(a, x=a.x * self.scaleFactor, y=a.y * self.scaleFactor)
+            for a in glyph.anchors
+        ]
+        # TODO: guidelines
         return replace(
             glyph,
             xAdvance=xAdvance,
@@ -234,6 +238,7 @@ class ScaleAction(BaseFilterAction):
             components=[
                 self._scaleComponentOrigin(component) for component in glyph.components
             ],
+            anchors=anchors,
         )
 
     def _scaleComponentOrigin(self, component: Component) -> Component:

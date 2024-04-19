@@ -218,7 +218,7 @@ class Component:
 
 @dataclass(kw_only=True)
 class Anchor:
-    name: str
+    name: Optional[str]
     x: float
     y: float
     customData: CustomData = field(default_factory=dict)
@@ -404,6 +404,7 @@ registerHook(
     customData=_unstructureDictSortedRecursively,
 )
 registerHook(GlyphAxis, customData=_unstructureDictSortedRecursively)
+registerHook(Anchor, customData=_unstructureDictSortedRecursively)
 registerHook(StaticGlyph, customData=_unstructureDictSortedRecursively)
 registerHook(
     GlyphSource,

@@ -9,6 +9,7 @@ from fontTools.designspaceLib import DesignSpaceDocument
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.designspace import DesignspaceBackend, UFOBackend
 from fontra.core.classes import (
+    Anchor,
     Axes,
     FontAxis,
     GlyphAxis,
@@ -189,6 +190,35 @@ async def test_addLocalAxis(writableTestFont):
     savedGlyph = await writableTestFont.getGlyph(glyphName)
 
     assert asdict(glyph) == asdict(savedGlyph)
+
+
+async def test_getAnchors(writableTestFont):
+    glyph = await writableTestFont.getGlyph("E")
+
+    layerName = "MutatorSansLightCondensed/foreground"
+    layer = glyph.layers[layerName]
+
+    assert 1 == len(layer.glyph.anchors)
+    assert Anchor(name="top", x=207, y=746) == layer.glyph.anchors[0]
+
+
+async def test_addAnchor(writableTestFont):
+    glyphName = "E"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+
+    layerName = "test"
+    glyph.layers[layerName] = Layer(glyph=StaticGlyph(xAdvance=0))
+    glyph.layers[layerName].glyph.anchors.append(Anchor(name="top", x=207, y=746))
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert (
+        glyph.layers[layerName].glyph.anchors
+        == savedGlyph.layers[layerName].glyph.anchors
+    )
 
 
 async def test_addLocalAxisAndSource(writableTestFont):

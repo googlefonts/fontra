@@ -9,7 +9,12 @@ from fontTools.svgLib import SVGPath
 from fontTools.ufoLib.errors import GlifLibError
 from fontTools.ufoLib.glifLib import readGlyphFromString, writeGlyphToString
 
-from ..backends.designspace import UFOGlyph, populateUFOLayerGlyph, readGlyphOrCreate
+from ..backends.designspace import (
+    UFOGlyph,
+    populateUFOLayerGlyph,
+    readGlyphOrCreate,
+    unpackAnchors,
+)
 from .classes import StaticGlyph
 from .path import PackedPathPointPen
 
@@ -64,7 +69,10 @@ def parseGLIF(data: str) -> StaticGlyph | None:
     except GlifLibError:
         return None
     return StaticGlyph(
-        path=pen.getPath(), components=pen.components, xAdvance=ufoGlyph.width
+        path=pen.getPath(),
+        components=pen.components,
+        xAdvance=ufoGlyph.width,
+        anchors=unpackAnchors(ufoGlyph.anchors),
     )
 
 

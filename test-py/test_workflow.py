@@ -23,7 +23,7 @@ def testFontraFont():
     return getFileSystemBackend(commonFontsDir / "MutatorSans.fontra")
 
 
-@pytest.mark.parametrize("glyphName", ["A", "Q", "Adieresis", "period"])
+@pytest.mark.parametrize("glyphName", ["A", "E", "Q", "Adieresis", "period"])
 async def test_scaleAction(testFontraFont, glyphName) -> None:
     scaleFactor = 2
 
@@ -68,6 +68,13 @@ async def test_scaleAction(testFontraFont, glyphName) -> None:
                     unscaledComponent.transformation.translateX * scaleFactor
                     == scaledComponent.transformation.translateX
                 )
+
+            for unscaledAnchor, scaledAnchor in zip(
+                unscaledLayerGlyph.anchors, scaledLayerGlyph.anchors
+            ):
+                assert unscaledAnchor.x * scaleFactor == scaledAnchor.x
+                assert unscaledAnchor.y * scaleFactor == scaledAnchor.y
+                assert unscaledAnchor.name == scaledAnchor.name
 
 
 async def test_subsetAction(testFontraFont, tmp_path) -> None:

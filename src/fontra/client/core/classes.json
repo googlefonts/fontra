@@ -253,7 +253,8 @@
   },
   "Anchor": {
     "name": {
-      "type": "str"
+      "type": "str",
+      "optional": true
     },
     "x": {
       "type": "float"
