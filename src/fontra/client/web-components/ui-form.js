@@ -193,7 +193,7 @@ export class Form extends SimpleElement {
       const element = i === 0 ? labelElement : valueElement;
       const methodName = hyphenatedToCamelCase("_add-" + field.type);
       if (this[methodName]) {
-        this[methodName](element, field, field.allowUndefined);
+        this[methodName](element, field, field.allowEmptyField);
       }
       if (field.auxiliaryElement) {
         element.appendChild(field.auxiliaryElement, field);
@@ -235,7 +235,7 @@ export class Form extends SimpleElement {
     this._addEditNumber(valueElement, fieldItem.fieldY);
   }
 
-  _addEditNumber(valueElement, fieldItem, allowUndefined = false) {
+  _addEditNumber(valueElement, fieldItem, allowEmptyField = false) {
     this._lastValidFieldValues[fieldItem.key] = fieldItem.value;
     const inputElement = document.createElement("input");
     inputElement.type = "number";
@@ -277,8 +277,11 @@ export class Form extends SimpleElement {
     };
     inputElement.onchange = (event) => {
       let value = parseFloat(inputElement.value);
-      if (!allowUndefined) {
-        if (isNaN(value)) {
+      if (isNaN(value)) {
+        if (allowEmptyField) {
+          value = null;
+          inputElement.value = value;
+        } else {
           value = this._lastValidFieldValues[fieldItem.key];
           inputElement.value = value;
         }

@@ -84,7 +84,7 @@ export default class TransformationPanel extends Panel {
       originYButton: undefined,
       skewX: 0,
       skewY: 0,
-      distributeValue: undefined,
+      distributeValue: null,
     };
   }
 
@@ -410,7 +410,7 @@ export default class TransformationPanel extends Panel {
         "type": "edit-number",
         "key": "distributeValue",
         "value": this.transformParameters.distributeValue,
-        "allowUndefined": true,
+        "allowEmptyField": true,
         "data-tooltip": "Distance in units",
         "data-tooltipposition": "top-right",
       },
@@ -834,9 +834,10 @@ class DistributeObjectsDescriptor {
     const minimum = Math.min(...mins);
     const maximum = Math.max(...maxes);
 
-    const distributionSpacing = isNaN(distributeValue)
-      ? (maximum - minimum - effectiveExtent) / (boundingBoxes.length - 1)
-      : distributeValue;
+    const distributionSpacing =
+      distributeValue === null
+        ? (maximum - minimum - effectiveExtent) / (boundingBoxes.length - 1)
+        : distributeValue;
 
     let next = minimum;
     let deltas = [];
