@@ -176,8 +176,6 @@ registerVisualizationLayerDefinition({
   identifier: "fontra.anchors",
   name: "Anchors",
   selectionMode: "editing",
-  userSwitchable: true,
-  defaultOn: true,
   zIndex: 500,
   screenParameters: {
     strokeWidth: 1,
