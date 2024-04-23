@@ -22,6 +22,10 @@ function makeTestStaticGlyphObject() {
         transformation: getDecomposedIdentity(),
       },
     ],
+    anchors: [
+      { name: "top", x: 100, y: 100 },
+      { name: "bottom", x: 100, y: 0 },
+    ],
   };
 }
 
@@ -92,6 +96,21 @@ describe("glyph-controller Tests", () => {
       [{ endPoint: 3, isClosed: true }]
     );
     expect(staticGlyphController.path).to.deep.equal(expectedPath);
+  });
+
+  it("get StaticGlyphController anchors", () => {
+    const sgObj = makeTestStaticGlyphObject();
+    const staticGlyph = StaticGlyph.fromObject(sgObj);
+    const staticGlyphController = new StaticGlyphController(
+      "dummy",
+      staticGlyph,
+      undefined
+    );
+    const expectedAnchors = [
+      { name: "top", x: 100, y: 100 },
+      { name: "bottom", x: 100, y: 0 },
+    ];
+    expect(staticGlyphController.anchors).to.deep.equal(expectedAnchors);
   });
 
   it("get StaticGlyphController bounds", () => {

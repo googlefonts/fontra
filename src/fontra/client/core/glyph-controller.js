@@ -525,6 +525,7 @@ export class StaticGlyphController {
     this.errors = errors;
     this.canEdit = layerName != undefined;
     this.components = [];
+    //this.anchors = instance.anchors;// || [];
   }
 
   async setupComponents(getGlyphFunc, parentLocation) {
