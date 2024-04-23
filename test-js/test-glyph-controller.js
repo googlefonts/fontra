@@ -113,6 +113,18 @@ describe("glyph-controller Tests", () => {
     expect(staticGlyphController.anchors).to.deep.equal(expectedAnchors);
   });
 
+  it("get StaticGlyphController anchors", () => {
+    const sgObj = makeTestEmptyStaticGlyphObject();
+    const staticGlyph = StaticGlyph.fromObject(sgObj);
+    const staticGlyphController = new StaticGlyphController(
+      "dummy",
+      staticGlyph,
+      undefined
+    );
+    const expectedAnchors = [];
+    expect(staticGlyphController.anchors).to.deep.equal(expectedAnchors);
+  });
+
   it("get StaticGlyphController bounds", () => {
     const sgObj = makeTestStaticGlyphObject();
     const staticGlyph = StaticGlyph.fromObject(sgObj);

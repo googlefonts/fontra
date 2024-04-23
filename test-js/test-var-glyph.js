@@ -31,6 +31,7 @@ function makeTestGlyphObject() {
               transformation: getDecomposedIdentity(),
             },
           ],
+          anchors: [],
         },
         customData: {},
       },
@@ -71,6 +72,7 @@ describe("var-glyph Tests", () => {
       verticalOrigin: undefined,
       xAdvance: 500,
       yAdvance: undefined,
+      anchors: [],
     };
     const glyph = StaticGlyph.fromObject(sparseObject);
     expect(glyph).to.deep.equal(denseObject);
