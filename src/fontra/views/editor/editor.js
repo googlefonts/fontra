@@ -1792,20 +1792,56 @@ export class EditorController {
       return;
     }
 
-    const newSelection = new Set();
+    if (selectNone) {
+      this.sceneController.selection = new Set();
+      return;
+    }
 
-    if (!selectNone) {
-      const glyphPath = positionedGlyph.glyph.path;
-      const glyphComponents = positionedGlyph.glyph.components;
+    let {
+      point: pointIndices,
+      component: componentIndices,
+      anchor: anchorIndices,
+    } = parseSelection(this.sceneController.selection);
+    pointIndices = pointIndices || [];
+    componentIndices = componentIndices || [];
+    anchorIndices = anchorIndices || [];
+    // TODO: guidelinesIndices = guidelinesIndices || [];
 
+    let selectObjects = false;
+    let selectAnchors = false;
+    // TODO: let selectGuidelines;
+
+    if (!pointIndices.length && !componentIndices.length && !anchorIndices.length) {
+      selectObjects = true;
+      selectAnchors = false;
+    }
+    if ((pointIndices.length || componentIndices.length) && !anchorIndices.length) {
+      selectObjects = true;
+      selectAnchors = true;
+    }
+    if ((pointIndices.length || componentIndices.length) && anchorIndices.length) {
+      selectObjects = false;
+      selectAnchors = true;
+    }
+
+    let newSelection = new Set();
+    const glyphPath = positionedGlyph.glyph.path;
+    const glyphComponents = positionedGlyph.glyph.components;
+
+    if (selectObjects) {
       for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
         if ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE) {
           newSelection.add(`point/${pointIndex}`);
         }
       }
-
-      for (const [componentIndex] of glyphComponents.entries()) {
+      for (const [componentIndex] of enumerate(glyphComponents)) {
         newSelection.add(`component/${componentIndex}`);
+      }
+    }
+
+    if (selectAnchors) {
+      for (const [pointIndex, anchor] of enumerate(positionedGlyph.glyph.anchors)) {
+        newSelection.add(`anchor/${pointIndex}`);
       }
     }
 

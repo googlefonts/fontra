@@ -813,6 +813,63 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.selected.anchors",
+  name: "Selected anchors",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    cornerSize: 8,
+    smoothSize: 8,
+    handleSize: 6.5,
+    strokeWidth: 1,
+    hoverStrokeOffset: 4,
+    underlayOffset: 2,
+  },
+  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const cornerSize = parameters.cornerSize;
+    const smoothSize = parameters.smoothSize;
+    const handleSize = parameters.handleSize;
+
+    const { anchor: hoveredAnchorIndices } = parseSelection(model.hoverSelection);
+    const { anchor: selectedAnchorIndices } = parseSelection(model.selection);
+
+    // Under layer
+    const underlayOffset = parameters.underlayOffset;
+    context.fillStyle = parameters.underColor;
+    for (const pt of iterAnchorsPointsByIndex(glyph.anchors, selectedAnchorIndices)) {
+      fillNode(
+        context,
+        pt,
+        cornerSize + underlayOffset,
+        smoothSize + underlayOffset,
+        handleSize + underlayOffset
+      );
+    }
+    // Selected anchor
+    context.fillStyle = parameters.selectedColor;
+    for (const pt of iterAnchorsPointsByIndex(glyph.anchors, selectedAnchorIndices)) {
+      fillNode(context, pt, cornerSize, smoothSize, handleSize);
+    }
+    // Hovered anchor
+    context.strokeStyle = parameters.hoveredColor;
+    context.lineWidth = parameters.strokeWidth;
+    const hoverStrokeOffset = parameters.hoverStrokeOffset;
+    for (const pt of iterAnchorsPointsByIndex(glyph.anchors, hoveredAnchorIndices)) {
+      strokeNode(
+        context,
+        pt,
+        cornerSize + hoverStrokeOffset,
+        smoothSize + hoverStrokeOffset,
+        handleSize + hoverStrokeOffset
+      );
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
   name: "Coordinates",
   selectionMode: "editing",
@@ -1144,6 +1201,20 @@ function* iterPointsByIndex(path, pointIndices) {
   }
   for (const index of pointIndices) {
     const pt = path.getPoint(index);
+    if (pt) {
+      yield pt;
+    }
+  }
+}
+
+function* iterAnchorsPointsByIndex(anchors, anchorIndices) {
+  if (!anchorIndices) {
+    return;
+  }
+  for (const index of anchorIndices) {
+    const anchor = anchors[index];
+    const pt = { x: anchor.x, y: anchor.y, smooth: true };
+    // smooth: true is a hack to make the fillNode function work
     if (pt) {
       yield pt;
     }

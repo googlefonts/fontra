@@ -451,6 +451,11 @@ export class SceneModel {
       return { selection: pointSelection };
     }
 
+    const anchorSelection = this.anchorSelectionAtPoint(point, size);
+    if (anchorSelection.size) {
+      return { selection: anchorSelection };
+    }
+
     const { selection: segmentSelection, pathHit: pathHit } =
       this.segmentSelectionAtPoint(point, size);
     if (pathHit) {
@@ -464,6 +469,26 @@ export class SceneModel {
       preferTCenter
     );
     return { selection: componentSelection };
+  }
+
+  anchorSelectionAtPoint(point, size) {
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return new Set();
+    }
+
+    const anchors = positionedGlyph.glyph.anchors;
+    const x = point.x - positionedGlyph.x;
+    const y = point.y - positionedGlyph.y;
+    const selRect = centeredRect(x, y, size);
+    const selection = new Set([]);
+    for (const [i, anchor] of enumerate(anchors)) {
+      const anchorMatch = pointInRect(anchor.x, anchor.y, selRect);
+      if (anchorMatch) {
+        selection.add(`anchor/${i}`);
+      }
+    }
+    return selection;
   }
 
   pointSelectionAtPoint(point, size) {
