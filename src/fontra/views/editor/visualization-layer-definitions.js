@@ -887,6 +887,7 @@ registerVisualizationLayerDefinition({
       point: pointSelection,
       component: componentSelection,
       componentOrigin: componentOriginSelection,
+      anchor: anchorSelection,
     } = parseSelection(model.sceneSettings.combinedSelection);
     componentSelection = unionIndexSets(componentSelection, componentOriginSelection);
 
@@ -899,10 +900,10 @@ registerVisualizationLayerDefinition({
     context.textAlign = "center";
     context.scale(1, -1);
 
-    // TODO: also show anchor coordinates if selected
     for (const pt of chain(
       iterPointsByIndex(glyph.path, pointSelection),
-      iterComponentOriginsByIndex(glyph.instance.components, componentSelection)
+      iterComponentOriginsByIndex(glyph.instance.components, componentSelection),
+      iterAnchorsPointsByIndex(glyph.anchors, anchorSelection)
     )) {
       const xString = `${round(pt.x, 1)}`;
       const yString = `${round(pt.y, 1)}`;
