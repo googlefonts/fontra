@@ -177,54 +177,60 @@ registerVisualizationLayerDefinition({
   name: "Anchors",
   selectionMode: "editing",
   userSwitchable: true,
-  defaultOn: false,
+  defaultOn: true,
   zIndex: 500,
   screenParameters: {
     strokeWidth: 1,
     originMarkerRadius: 4,
-    fontSize: 11,
   },
-  colors: {
-    strokeColor: "#0004",
-    boxColor: "#FFFB",
-    color: "#000",
-  },
-  colorsDarkMode: {
-    boxColor: "#1118",
-    color: "#FFF",
-    strokeColor: "#FFF6",
-  },
+  colors: { strokeColor: "#0004" },
+  colorsDarkMode: { strokeColor: "#FFF6" },
 
   draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    for (const anchor of positionedGlyph.glyph.anchors) {
+      strokeCircle(context, anchor.x, anchor.y, parameters.originMarkerRadius);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.anchor.names",
+  name: "Anchor names",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: false,
+  zIndex: 600,
+  screenParameters: { fontSize: 10 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
     const fontSize = parameters.fontSize;
-    const margin = 0.5 * fontSize;
-    const boxHeight = 1.68 * fontSize;
+
+    const margin = 0.2 * fontSize;
+    const boxHeight = (1.68 / 2) * fontSize;
     const lineHeight = fontSize;
-    const bottomY = -boxHeight / 2;
+    const bottomY = 0.75 * fontSize;
 
     context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
     context.scale(1, -1);
 
-    context.strokeStyle = parameters.strokeColor;
-    context.lineWidth = parameters.strokeWidth;
     for (const anchor of positionedGlyph.glyph.anchors) {
-      strokeCircle(context, anchor.x, anchor.y, parameters.originMarkerRadius);
-      const strLine1 = `${anchor.name}`;
-      const width = context.measureText(strLine1).width + 2 * margin;
-
+      const pt = { x: anchor.x, y: anchor.y };
+      const nameString = `${anchor.name}`;
+      const width = Math.max(context.measureText(nameString).width) + 2 * margin;
       context.fillStyle = parameters.boxColor;
-      drawRoundRect(
-        context,
-        anchor.x - width / 2,
-        -anchor.y - bottomY + margin,
+      context.fillRect(
+        pt.x - width / 2,
+        -pt.y + bottomY + lineHeight + margin,
         width,
-        -boxHeight - 2 * margin,
-        boxHeight / 4 // corner radius
+        -boxHeight - 2 * margin
       );
 
       context.fillStyle = parameters.color;
-      context.fillText(strLine1, anchor.x, -anchor.y - bottomY - lineHeight);
+      context.fillText(nameString, pt.x, -pt.y + bottomY + lineHeight);
     }
   },
 });
@@ -833,6 +839,7 @@ registerVisualizationLayerDefinition({
     context.textAlign = "center";
     context.scale(1, -1);
 
+    // TODO: also show anchor coordinates if selected
     for (const pt of chain(
       iterPointsByIndex(glyph.path, pointSelection),
       iterComponentOriginsByIndex(glyph.instance.components, componentSelection)
