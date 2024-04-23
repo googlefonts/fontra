@@ -202,16 +202,15 @@ registerVisualizationLayerDefinition({
   userSwitchable: true,
   defaultOn: false,
   zIndex: 600,
-  screenParameters: { fontSize: 10 },
+  screenParameters: { fontSize: 11 },
   colors: { boxColor: "#FFFB", color: "#000" },
   colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const fontSize = parameters.fontSize;
 
-    const margin = 0.2 * fontSize;
-    const boxHeight = (1.68 / 2) * fontSize;
-    const lineHeight = fontSize;
-    const bottomY = 0.75 * fontSize;
+    const margin = 0.5 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const bottomY = 0.75 * fontSize * -1 - boxHeight + margin / 2;
 
     context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
@@ -219,18 +218,22 @@ registerVisualizationLayerDefinition({
 
     for (const anchor of positionedGlyph.glyph.anchors) {
       const pt = { x: anchor.x, y: anchor.y };
-      const nameString = `${anchor.name}`;
-      const width = Math.max(context.measureText(nameString).width) + 2 * margin;
+
+      const strLine = `${anchor.name}`;
+      const width = Math.max(context.measureText(strLine).width) + 2 * margin;
+
       context.fillStyle = parameters.boxColor;
-      context.fillRect(
+      drawRoundRect(
+        context,
         pt.x - width / 2,
-        -pt.y + bottomY + lineHeight + margin,
+        -pt.y - bottomY + margin,
         width,
-        -boxHeight - 2 * margin
+        -boxHeight / 2 - 2 * margin,
+        boxHeight / 4 // corner radius
       );
 
       context.fillStyle = parameters.color;
-      context.fillText(nameString, pt.x, -pt.y + bottomY + lineHeight);
+      context.fillText(strLine, pt.x, -pt.y - bottomY);
     }
   },
 });
