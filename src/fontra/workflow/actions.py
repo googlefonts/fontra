@@ -1176,14 +1176,23 @@ class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
 @registerActionClass("drop-shapes")
 @dataclass(kw_only=True)
 class DropShapesAction(BaseFilterAction):
+    dropPath: bool = True
+    dropComponents: bool = True
+    dropAnchors: bool = True
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        clearedItems = {}
+        if self.dropPath:
+            clearedItems["path"] = PackedPath()
+        if self.dropComponents:
+            clearedItems["components"] = []
+        if self.dropAnchors:
+            clearedItems["anchors"] = []
+
         return replace(
             glyph,
             layers={
-                layerName: replace(
-                    layer, glyph=replace(layer.glyph, path=PackedPath(), components=[])
-                )
+                layerName: replace(layer, glyph=replace(layer.glyph, **clearedItems))
                 for layerName, layer in glyph.layers.items()
             },
         )
