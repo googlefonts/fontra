@@ -578,13 +578,14 @@ class AdjustAxesAction(BaseFilterAction):
         for axis in axes.axes:
             newValues = self.axes.get(axis.name)
             if newValues is not None:
-                if isinstance(axis, DiscreteFontAxis):
-                    raise ActionError("adjust-axes: discrete axes are not supported")
-                names = {"minValue", "defaultValue", "maxValue"}
-                newValues = {k: v for k, v in newValues.items() if k in names}
-                newAxis = replace(axis, **newValues)
+                newAxis = structure(unstructure(axis) | newValues, type(axis))
 
                 if self.remapSources:
+                    if isinstance(axis, DiscreteFontAxis):
+                        raise ActionError(
+                            f"{self.actionName}: discrete axes are not supported "
+                            "with remapSources=true"
+                        )
                     mapping = [
                         (axis.minValue, newAxis.minValue),
                         (axis.defaultValue, newAxis.defaultValue),
