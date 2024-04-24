@@ -1694,9 +1694,11 @@ export class EditorController {
   }
 
   async _deleteSelection(event) {
-    const { point: pointSelection, component: componentSelection } = parseSelection(
-      this.sceneController.selection
-    );
+    const {
+      point: pointSelection,
+      component: componentSelection,
+      anchor: anchorSelection,
+    } = parseSelection(this.sceneController.selection);
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         if (event.altKey) {
@@ -1709,6 +1711,11 @@ export class EditorController {
           if (componentSelection) {
             for (const componentIndex of reversed(componentSelection)) {
               layerGlyph.components.splice(componentIndex, 1);
+            }
+          }
+          if (anchorSelection) {
+            for (const anchorIndex of reversed(anchorSelection)) {
+              layerGlyph.anchors.splice(anchorIndex, 1);
             }
           }
         }
