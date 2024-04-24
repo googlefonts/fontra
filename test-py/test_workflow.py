@@ -440,6 +440,29 @@ def test_command(tmpdir, configYAMLSources):
             [],
         ),
         (
+            "adjust-axes-set-axis-values",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input1-A.fontra"
+            - action: subset-glyphs
+              glyphNames: ["A"]
+            - action: drop-shapes
+            - action: adjust-axes
+              axes:
+                weight:
+                  valueLabels: [
+                    {"name": "Regular", "value": 400, "elidable": true},
+                    {"name": "Bold", "value": 700},
+                  ]
+                  hidden: true
+
+            - action: output
+              destination: "output-adjust-axes-set-axis-values.fontra"
+            """,
+            [],
+        ),
+        (
             "decompose-composites",
             """
             steps:
