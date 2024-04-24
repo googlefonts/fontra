@@ -295,9 +295,10 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
                 glyph = await self.validatedInput.getGlyph(glyphName)
                 assert glyph is not None, f"Unexpected missing glyph {glyphName}"
             except Exception as e:
-                logger.error(
-                    f"{self.actionName}: glyph {glyphName} caused an error: {e!r}"
-                )
+                if glyphName != ".notdef":
+                    logger.error(
+                        f"{self.actionName}: glyph {glyphName} caused an error: {e!r}"
+                    )
                 continue
 
             componentNames = getComponentNames(glyph)
@@ -327,6 +328,7 @@ def filterGlyphMap(glyphMap, glyphNames):
 @registerActionClass("drop-unreachable-glyphs")
 @dataclass(kw_only=True)
 class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
+    keepNotdef: bool = True
 
     async def _buildSubsettedGlyphMap(
         self, originalGlyphMap: dict[str, list[int]]
@@ -336,6 +338,9 @@ class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
             for glyphName, codePoints in originalGlyphMap.items()
             if codePoints
         }
+
+        if self.keepNotdef:
+            reachableGlyphs.add(".notdef")
 
         reachableGlyphs = await self._componentsClosure(reachableGlyphs)
         return filterGlyphMap(originalGlyphMap, reachableGlyphs)
