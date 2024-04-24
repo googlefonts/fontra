@@ -201,6 +201,7 @@ export class EditorController {
     });
 
     this.sidebars = [];
+    this.contextMenuPosition = { x: 0, y: 0 };
 
     this.initSidebars();
     this.initTopBar();
@@ -1076,7 +1077,7 @@ export class EditorController {
     this.glyphEditContextMenuItems.push({
       title: "Add Anchor",
       enabled: () => this.canAddAnchor(),
-      callback: (event) => this.doAddAnchor(event), //TODO: get right click event
+      callback: () => this.doAddAnchor(),
       shortCut: undefined,
     });
 
@@ -1851,22 +1852,22 @@ export class EditorController {
     return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
   }
 
-  async doAddAnchor(event) {
-    const { anchor: newAnchor } = await this.doAddEditAnchorDialog(undefined, event);
-    if (!newAnchor) {
+  async doAddAnchor() {
+    const point = this.sceneController.selectedGlyphPoint(this.contextMenuPosition);
+    const { anchor: tempAnchor } = await this.doAddEditAnchorDialog(undefined, point);
+    if (!tempAnchor) {
       return;
     }
 
-    const point = this.sceneController.selectedGlyphPoint(event);
-    let tempAnchor = {
-      name: newAnchor.name ? newAnchor.name : "suggestedAnchorName",
-      x: newAnchor.x ? newAnchor.x : Math.round(point.x),
-      y: newAnchor.y ? newAnchor.y : Math.round(point.y),
+    let newAnchor = {
+      name: tempAnchor.name ? tempAnchor.name : "anchorName",
+      x: tempAnchor.x ? tempAnchor.x : Math.round(point.x),
+      y: tempAnchor.y ? tempAnchor.y : Math.round(point.y),
     };
 
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        layerGlyph.anchors.push(tempAnchor);
+        layerGlyph.anchors.push(newAnchor);
       }
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const newAnchorIndex = instance.anchors.length - 1;
@@ -1875,19 +1876,18 @@ export class EditorController {
     });
   }
 
-  async doAddEditAnchorDialog(anchor = undefined, event = undefined) {
+  async doAddEditAnchorDialog(anchor = undefined, point = undefined) {
     const titlePrefix = anchor ? "Edit" : "Add";
 
     let tempAnchor = {
-      name: "suggestedAnchorName",
+      name: "anchorName",
       x: 0,
       y: 0,
     };
 
     if (anchor) {
       tempAnchor = anchor;
-    } else if (event) {
-      const point = this.sceneController.selectedGlyphPoint(event);
+    } else if (point) {
       tempAnchor.x = Math.round(point.x);
       tempAnchor.y = Math.round(point.y);
     }
@@ -1902,7 +1902,7 @@ export class EditorController {
       this._anchorPropertiesContentElement(nameController);
     const dialog = await dialogSetup(`${titlePrefix} Anchor`, null, [
       { title: "Cancel", isCancelButton: true },
-      { title: titlePrefix, isDefaultButton: true, resultValue: "ok" }, //disabled: true },
+      { title: titlePrefix, isDefaultButton: true, resultValue: "ok" }, //, disabled: true },
     ]);
 
     dialog.setContent(contentElement);
@@ -1939,15 +1939,8 @@ export class EditorController {
   }
 
   _anchorPropertiesContentElement(controller) {
-    const locationElement = html.createDomElement("anchor-settings", {
-      style: `grid-column: 1 / -1;
-        min-height: 0;
-        overflow: auto;
-        height: 100%;
-      `,
-    });
     const warningElement = html.div({
-      id: "warning-text",
+      id: "warning-text-anchor-name",
       style: `grid-column: 1 / -1; min-height: 1.5em;`,
     });
     const contentElement = html.div(
@@ -1974,7 +1967,6 @@ export class EditorController {
           placeholderKey: "anchorY",
         }),
         html.br(),
-        locationElement,
         warningElement,
       ]
     );
@@ -2207,6 +2199,7 @@ export class EditorController {
     event.preventDefault();
 
     const { x, y } = event;
+    this.contextMenuPosition = { x: x, y: y };
     showMenu(this.buildContextMenuItems(event), { x: x + 1, y: y - 1 }, event.target);
   }
 
