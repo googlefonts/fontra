@@ -1231,7 +1231,12 @@ class AmendCmapAction(BaseFilterAction):
         cmap = cmapFromGlyphMap(glyphMap) | self.cmap
         for codePoint, glyphName in sorted(cmap.items()):
             if glyphName:
-                newGlyphMap[glyphName].append(codePoint)
+                if glyphName not in newGlyphMap:
+                    logger.warning(
+                        f"{self.actionName}: glyph {glyphName} does not exist"
+                    )
+                else:
+                    newGlyphMap[glyphName].append(codePoint)
         return newGlyphMap
 
 
