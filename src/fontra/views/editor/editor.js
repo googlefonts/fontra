@@ -1418,11 +1418,14 @@ export class EditorController {
           };
     }
 
-    const { point: pointIndices, component: componentIndices } = parseSelection(
-      this.sceneController.selection
-    );
+    const {
+      point: pointIndices,
+      component: componentIndices,
+      anchor: anchorSelection,
+    } = parseSelection(this.sceneController.selection);
     let path;
     let components;
+    let anchors;
     const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
@@ -1439,10 +1442,19 @@ export class EditorController {
         }
       }
     }
+    if (anchorSelection) {
+      anchors = anchorSelection.map((i) => editInstance.anchors[i]);
+      if (doCut) {
+        for (const anchorIndex of reversed(anchorSelection)) {
+          editInstance.anchors.splice(anchorIndex, 1);
+        }
+      }
+    }
     const instance = StaticGlyph.fromObject({
       ...editInstance,
       path: path,
       components: components,
+      anchors: anchors,
     });
     return {
       instance: instance,
@@ -1634,6 +1646,13 @@ export class EditorController {
           selection.add(`component/${componentIndex}`);
         }
 
+        for (const anchorIndex of range(
+          firstLayerGlyph.anchors.length,
+          firstLayerGlyph.anchors.length + defaultPasteGlyph.anchors.length
+        )) {
+          selection.add(`anchor/${anchorIndex}`);
+        }
+
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           const pasteGlyph =
             pasteLayerGlyphsByLayerName[layerName] ||
@@ -1643,6 +1662,7 @@ export class EditorController {
             defaultPasteGlyph;
           layerGlyph.path.appendPath(pasteGlyph.path);
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
+          layerGlyph.anchors.push(...pasteGlyph.anchors);
         }
         this.sceneController.selection = selection;
         return "Paste";

@@ -1207,7 +1207,7 @@ function* iterPointsByIndex(path, pointIndices) {
 }
 
 function* iterAnchorsPointsByIndex(anchors, anchorIndices) {
-  if (!anchorIndices) {
+  if (!anchorIndices || !anchors.length) {
     return;
   }
   for (const index of anchorIndices) {
