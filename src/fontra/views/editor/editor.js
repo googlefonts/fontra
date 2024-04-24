@@ -1857,9 +1857,16 @@ export class EditorController {
       return;
     }
 
+    const point = this.sceneController.selectedGlyphPoint(event);
+    let tempAnchor = {
+      name: newAnchor.name ? newAnchor.name : "suggestedAnchorName",
+      x: newAnchor.x ? newAnchor.x : Math.round(point.x),
+      y: newAnchor.y ? newAnchor.y : Math.round(point.y),
+    };
+
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        layerGlyph.anchors.push(newAnchor);
+        layerGlyph.anchors.push(tempAnchor);
       }
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const newAnchorIndex = instance.anchors.length - 1;

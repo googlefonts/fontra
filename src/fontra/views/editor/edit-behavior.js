@@ -417,7 +417,7 @@ function unpackComponents(components, selectedComponentIndices) {
 }
 
 function unpackAnchors(anchors, selectedAnchorIndices) {
-  const unpackedAnchors = new Array();
+  const unpackedAnchors = new Array(anchors.length);
   for (const anchorIndex of selectedAnchorIndices) {
     unpackedAnchors[anchorIndex] = anchors[anchorIndex];
   }
