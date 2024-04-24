@@ -1181,7 +1181,7 @@ class DropShapesAction(BaseFilterAction):
     dropAnchors: bool = True
 
     async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
-        clearedItems = {}
+        clearedItems: dict[str, Any] = {}
         if self.dropPath:
             clearedItems["path"] = PackedPath()
         if self.dropComponents:
