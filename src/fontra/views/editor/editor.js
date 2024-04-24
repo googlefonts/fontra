@@ -985,7 +985,12 @@ export class EditorController {
 
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        layerGlyph.anchors[anchorIndex] = newAnchor;
+        const oldAnchor = layerGlyph.anchors[anchorIndex];
+        layerGlyph.anchors[anchorIndex] = {
+          name: newAnchor.name ? newAnchor.name : oldAnchor.name,
+          x: newAnchor.x ? newAnchor.x : oldAnchor.x,
+          y: newAnchor.y ? newAnchor.y : oldAnchor.y,
+        };
       }
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const newAnchorIndex = instance.anchors.length - 1;
@@ -1866,21 +1871,25 @@ export class EditorController {
   async doAddEditAnchorDialog(anchor = undefined, event = undefined) {
     const titlePrefix = anchor ? "Edit" : "Add";
 
-    const nameController = new ObservableController({
-      anchorName: "suggestedAnchorName",
-      anchorX: "0",
-      anchorY: "0",
-    });
+    let tempAnchor = {
+      name: "suggestedAnchorName",
+      x: 0,
+      y: 0,
+    };
 
     if (anchor) {
-      nameController.model.anchorName = anchor.name;
-      nameController.model.anchorX = anchor.x;
-      nameController.model.anchorY = anchor.y;
+      tempAnchor = anchor;
     } else if (event) {
       const point = this.sceneController.selectedGlyphPoint(event);
-      nameController.model.anchorX = Math.round(point.x);
-      nameController.model.anchorY = Math.round(point.y);
+      tempAnchor.x = Math.round(point.x);
+      tempAnchor.y = Math.round(point.y);
     }
+
+    const nameController = new ObservableController({
+      anchorName: tempAnchor.name,
+      anchorX: tempAnchor.x,
+      anchorY: tempAnchor.y,
+    });
 
     const { contentElement, warningElement } =
       this._anchorPropertiesContentElement(nameController);
@@ -1903,10 +1912,20 @@ export class EditorController {
       return {};
     }
 
+    // the following is necessary when only one of the values is changed
     const newAnchor = {
-      name: nameController.model.anchorName,
-      x: nameController.model.anchorX,
-      y: nameController.model.anchorY,
+      name:
+        tempAnchor.name != nameController.model.anchorName
+          ? nameController.model.anchorName
+          : undefined,
+      x:
+        tempAnchor.x != nameController.model.anchorX
+          ? nameController.model.anchorX
+          : undefined,
+      y:
+        tempAnchor.y != nameController.model.anchorY
+          ? nameController.model.anchorY
+          : undefined,
     };
 
     return { anchor: newAnchor };
