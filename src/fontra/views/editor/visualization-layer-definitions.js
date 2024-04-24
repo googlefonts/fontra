@@ -208,7 +208,7 @@ registerVisualizationLayerDefinition({
 
     const margin = 0.5 * fontSize;
     const boxHeight = 1.68 * fontSize;
-    const bottomY = 0.75 * fontSize * -1 - boxHeight + margin / 2;
+    const bottomY = 0.75 * fontSize * -1 - boxHeight + margin;
 
     context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
     context.textAlign = "center";
