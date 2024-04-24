@@ -198,7 +198,7 @@ registerVisualizationLayerDefinition({
   name: "Anchor names",
   selectionMode: "editing",
   userSwitchable: true,
-  defaultOn: false,
+  defaultOn: true,
   zIndex: 600,
   screenParameters: { fontSize: 11 },
   colors: { boxColor: "#FFFB", color: "#000" },
