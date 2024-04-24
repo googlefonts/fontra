@@ -446,7 +446,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: input
               source: "test-py/data/workflow/input1-A.fontra"
             - action: subset-glyphs
-              glyphNames: ["A"]
+              glyphNames: []
             - action: drop-shapes
             - action: adjust-axes
               axes:
