@@ -23,6 +23,7 @@ import {
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
+import { labeledTextInput } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
   dumpURLFragment,
@@ -177,6 +178,10 @@ export class EditorController {
     // TODO move event stuff out of here
     this.sceneController.addEventListener("doubleClickedComponents", async (event) => {
       this.doubleClickedComponentsCallback(event);
+    });
+
+    this.sceneController.addEventListener("doubleClickedAnchors", async (event) => {
+      this.doubleClickedAnchorsCallback(event);
     });
 
     this.sceneController.addEventListener("glyphEditCannotEditReadOnly", async () => {
@@ -967,6 +972,28 @@ export class EditorController {
     };
   }
 
+  async doubleClickedAnchorsCallback(event) {
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    const instance = glyphController.instance;
+
+    const anchorIndex = this.sceneController.doubleClickedAnchorIndices[0];
+    let anchor = instance.anchors[anchorIndex];
+    const { anchor: newAnchor } = await this.doAddEditAnchorDialog(anchor);
+    if (!newAnchor) {
+      return;
+    }
+
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        layerGlyph.anchors[anchorIndex] = newAnchor;
+      }
+      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+      const newAnchorIndex = instance.anchors.length - 1;
+      this.sceneController.selection = new Set([`anchor/${newAnchorIndex}`]);
+      return "Edit Anchor";
+    });
+  }
+
   initContextMenuItems() {
     this.basicContextMenuItems = [];
     for (const isRedo of [false, true]) {
@@ -1038,6 +1065,13 @@ export class EditorController {
       title: "Add Component",
       enabled: () => this.canAddComponent(),
       callback: () => this.doAddComponent(),
+      shortCut: undefined,
+    });
+
+    this.glyphEditContextMenuItems.push({
+      title: "Add Anchor",
+      enabled: () => this.canAddAnchor(),
+      callback: (event) => this.doAddAnchor(event), //TODO: get right click event
       shortCut: undefined,
     });
 
@@ -1806,6 +1840,119 @@ export class EditorController {
       this.sceneController.selection = new Set([`component/${newComponentIndex}`]);
       return "Add Component";
     });
+  }
+
+  canAddAnchor() {
+    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
+  }
+
+  async doAddAnchor(event) {
+    const { anchor: newAnchor } = await this.doAddEditAnchorDialog(undefined, event);
+    if (!newAnchor) {
+      return;
+    }
+
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        layerGlyph.anchors.push(newAnchor);
+      }
+      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+      const newAnchorIndex = instance.anchors.length - 1;
+      this.sceneController.selection = new Set([`anchor/${newAnchorIndex}`]);
+      return "Add Anchor";
+    });
+  }
+
+  async doAddEditAnchorDialog(anchor = undefined, event = undefined) {
+    const titlePrefix = anchor ? "Edit" : "Add";
+
+    const nameController = new ObservableController({
+      anchorName: "suggestedAnchorName",
+      anchorX: "0",
+      anchorY: "0",
+    });
+
+    if (anchor) {
+      nameController.model.anchorName = anchor.name;
+      nameController.model.anchorX = anchor.x;
+      nameController.model.anchorY = anchor.y;
+    } else if (event) {
+      const point = this.sceneController.selectedGlyphPoint(event);
+      nameController.model.anchorX = Math.round(point.x);
+      nameController.model.anchorY = Math.round(point.y);
+    }
+
+    const { contentElement, warningElement } =
+      this._anchorPropertiesContentElement(nameController);
+    const dialog = await dialogSetup(`${titlePrefix} Anchor`, null, [
+      { title: "Cancel", isCancelButton: true },
+      { title: titlePrefix, isDefaultButton: true, resultValue: "ok" }, //disabled: true },
+    ]);
+
+    dialog.setContent(contentElement);
+
+    setTimeout(
+      () => contentElement.querySelector("#anchor-name-text-input")?.focus(),
+      0
+    );
+
+    //validateInput();
+
+    if (!(await dialog.run())) {
+      // User cancelled
+      return {};
+    }
+
+    const newAnchor = {
+      name: nameController.model.anchorName,
+      x: nameController.model.anchorX,
+      y: nameController.model.anchorY,
+    };
+
+    return { anchor: newAnchor };
+  }
+
+  _anchorPropertiesContentElement(controller) {
+    const locationElement = html.createDomElement("anchor-settings", {
+      style: `grid-column: 1 / -1;
+        min-height: 0;
+        overflow: auto;
+        height: 100%;
+      `,
+    });
+    const warningElement = html.div({
+      id: "warning-text",
+      style: `grid-column: 1 / -1; min-height: 1.5em;`,
+    });
+    const contentElement = html.div(
+      {
+        style: `overflow: hidden;
+          white-space: nowrap;
+          display: grid;
+          gap: 0.5em;
+          grid-template-columns: max-content auto;
+          align-items: center;
+          height: 100%;
+          min-height: 0;
+        `,
+      },
+      [
+        ...labeledTextInput("Name:", controller, "anchorName", {
+          placeholderKey: "anchorName",
+          id: "anchor-name-text-input",
+        }),
+        ...labeledTextInput("x:", controller, "anchorX", {
+          placeholderKey: "anchorX",
+        }),
+        ...labeledTextInput("y:", controller, "anchorY", {
+          placeholderKey: "anchorY",
+        }),
+        html.br(),
+        locationElement,
+        warningElement,
+      ]
+    );
+    return { contentElement, warningElement };
   }
 
   canSelectAllNone(selectNone) {

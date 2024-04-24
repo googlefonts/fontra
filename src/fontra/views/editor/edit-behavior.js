@@ -37,6 +37,7 @@ export class EditBehaviorFactory {
     this.contours = unpackContours(instance.path, pointSelection || []);
     this.components = unpackComponents(instance.components, relevantComponentIndices);
     this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
+    this.anchorSelection = anchorSelection || [];
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
@@ -58,6 +59,7 @@ export class EditBehaviorFactory {
         this.contours,
         this.components,
         this.anchors,
+        this.anchorSelection,
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
@@ -74,6 +76,7 @@ class EditBehavior {
     contours,
     components,
     anchors,
+    anchorSelection,
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
@@ -119,9 +122,9 @@ class EditBehavior {
 
     const anchorRollbackChanges = [];
     this.anchorEditFuncs = [];
-    for (const [anchorIndex, anchor] of enumerate(anchors)) {
+    for (const anchorIndex of anchorSelection) {
       const [editFunc, anchorRollback] = makeAnchorEditFunc(
-        anchor,
+        anchors[anchorIndex],
         anchorIndex,
         this.roundFunc
       );
