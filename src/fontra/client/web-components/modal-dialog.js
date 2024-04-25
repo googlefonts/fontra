@@ -135,10 +135,6 @@ export class ModalDialog extends SimpleElement {
       font-size: 1.1rem;
       resize: none;
     }
-
-    dialog label {
-      grid-column: 1;
-    }
   `;
 
   constructor() {
