@@ -1884,34 +1884,78 @@ export class EditorController {
 
   async doAddEditAnchorDialog(anchor = undefined, point = undefined) {
     const titlePrefix = anchor ? "Edit" : "Add";
-
-    let tempAnchor = {
-      name: "anchorName",
-      x: 0,
-      y: 0,
-    };
-
-    if (anchor) {
-      tempAnchor = anchor;
-    } else if (point) {
-      tempAnchor.x = Math.round(point.x);
-      tempAnchor.y = Math.round(point.y);
+    if (!anchor && !point) {
+      // Need at least one of the two
+      return {};
     }
 
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+
+    const validateInput = () => {
+      const warnings = [];
+      const editedAnchorName =
+        nameController.model.anchorName || nameController.model.suggestedAnchorName;
+      if (!editedAnchorName.length) {
+        warnings.push("⚠️ The name must not be empty");
+      }
+      if (
+        !(
+          nameController.model.anchorName ||
+          nameController.model.anchorX ||
+          nameController.model.anchorY
+        )
+      ) {
+        warnings.push("⚠️ At least one element need to be specified");
+      }
+      for (const n of ["X", "Y"]) {
+        const value = nameController.model[`anchor${n}`];
+        if (isNaN(value)) {
+          if (value !== undefined) {
+            warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
+          }
+        }
+      }
+      if (
+        editedAnchorName !== anchor?.name &&
+        instance.anchors.some((anchor) => anchor.name === editedAnchorName)
+      ) {
+        warnings.push("⚠️ The anchor name should be unique");
+      }
+      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
+      dialog.defaultButton.classList.toggle("disabled", warnings.length);
+    };
+
+    const anchorNameDefault = anchor ? anchor.name : "anchorName";
     const nameController = new ObservableController({
-      anchorName: undefined,
+      anchorName: anchor ? undefined : anchorNameDefault,
       anchorX: undefined,
       anchorY: undefined,
-      anchorNamePlaceholder: tempAnchor.name,
-      anchorXPlaceholder: tempAnchor.x,
-      anchorYPlaceholder: tempAnchor.y,
+      suggestedAnchorName: anchorNameDefault,
+      suggestedAnchorX: anchor ? anchor.x : Math.round(point.x),
+      suggestedAnchorY: anchor ? anchor.y : Math.round(point.y),
     });
 
+    nameController.addKeyListener("anchorName", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("anchorX", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("anchorY", (event) => {
+      validateInput();
+    });
+
+    const disable =
+      nameController.model.anchorName ||
+      nameController.model.anchorX ||
+      nameController.model.anchorY
+        ? false
+        : true;
     const { contentElement, warningElement } =
       this._anchorPropertiesContentElement(nameController);
     const dialog = await dialogSetup(`${titlePrefix} Anchor`, null, [
       { title: "Cancel", isCancelButton: true },
-      { title: titlePrefix, isDefaultButton: true, resultValue: "ok" }, //, disabled: true },
+      { title: titlePrefix, isDefaultButton: true, disabled: disable },
     ]);
 
     dialog.setContent(contentElement);
@@ -1921,36 +1965,18 @@ export class EditorController {
       0
     );
 
-    //validateInput();
+    validateInput();
 
     if (!(await dialog.run())) {
       // User cancelled
       return {};
     }
 
-    // the following is necessary when only one of the values is changed
     const newAnchor = {
-      name:
-        tempAnchor.name != nameController.model.anchorName
-          ? nameController.model.anchorName
-          : undefined,
-      x:
-        tempAnchor.x != nameController.model.anchorX
-          ? nameController.model.anchorX
-          : undefined,
-      y:
-        tempAnchor.y != nameController.model.anchorY
-          ? nameController.model.anchorY
-          : undefined,
+      name: nameController.model.anchorName,
+      x: nameController.model.anchorX,
+      y: nameController.model.anchorY,
     };
-
-    if (
-      newAnchor.name === undefined &&
-      newAnchor.x === undefined &&
-      newAnchor.y === undefined
-    ) {
-      return {};
-    }
 
     return { anchor: newAnchor };
   }
@@ -1974,14 +2000,14 @@ export class EditorController {
       },
       [
         ...labeledTextInput("Name:", controller, "anchorName", {
-          placeholderKey: "anchorNamePlaceholder",
+          placeholderKey: "suggestedAnchorName",
           id: "anchor-name-text-input",
         }),
         ...labeledTextInput("x:", controller, "anchorX", {
-          placeholderKey: "anchorXPlaceholder",
+          placeholderKey: "suggestedAnchorX",
         }),
         ...labeledTextInput("y:", controller, "anchorY", {
-          placeholderKey: "anchorYPlaceholder",
+          placeholderKey: "suggestedAnchorY",
         }),
         html.br(),
         warningElement,
