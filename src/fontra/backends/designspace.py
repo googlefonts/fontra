@@ -187,6 +187,7 @@ class DesignspaceBackend:
             for mapping in self.dsDoc.axisMappings
         ]
 
+        self.axisNames = set(defaultLocation)
         self.axisPolePositions = axisPolePositions
         self.defaultLocation = defaultLocation
 
@@ -624,10 +625,11 @@ class DesignspaceBackend:
         return ufoLayer
 
     def _getGlobalPortionOfLocation(self, location, localAxisNames):
+        fontAxisNames = self.axisNames
         globalLocation = {
             name: value
             for name, value in location.items()
-            if name not in localAxisNames
+            if name in fontAxisNames and name not in localAxisNames
         }
         return {**self.defaultLocation, **globalLocation}
 
