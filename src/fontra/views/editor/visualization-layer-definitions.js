@@ -989,6 +989,7 @@ registerVisualizationLayerDefinition({
   zIndex: 490,
   screenParameters: {
     strokeWidth: 1,
+    originMarkerRadius: 4,
   },
   colors: { color: "#AAA8" },
   colorsDarkMode: { color: "#8888" },
@@ -1014,6 +1015,7 @@ registerVisualizationLayerDefinition({
   zIndex: 490,
   screenParameters: {
     strokeWidth: 1,
+    originMarkerRadius: 4,
   },
   colors: { color: "#66FA" },
   colorsDarkMode: { color: "#88FA" },
