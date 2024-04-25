@@ -1899,9 +1899,12 @@ export class EditorController {
     }
 
     const nameController = new ObservableController({
-      anchorName: tempAnchor.name,
-      anchorX: tempAnchor.x,
-      anchorY: tempAnchor.y,
+      anchorName: undefined,
+      anchorX: undefined,
+      anchorY: undefined,
+      anchorNamePlaceholder: tempAnchor.name,
+      anchorXPlaceholder: tempAnchor.x,
+      anchorYPlaceholder: tempAnchor.y,
     });
 
     const { contentElement, warningElement } =
@@ -1941,6 +1944,14 @@ export class EditorController {
           : undefined,
     };
 
+    if (
+      newAnchor.name === undefined &&
+      newAnchor.x === undefined &&
+      newAnchor.y === undefined
+    ) {
+      return {};
+    }
+
     return { anchor: newAnchor };
   }
 
@@ -1963,14 +1974,14 @@ export class EditorController {
       },
       [
         ...labeledTextInput("Name:", controller, "anchorName", {
-          placeholderKey: "anchorName",
+          placeholderKey: "anchorNamePlaceholder",
           id: "anchor-name-text-input",
         }),
         ...labeledTextInput("x:", controller, "anchorX", {
-          placeholderKey: "anchorX",
+          placeholderKey: "anchorXPlaceholder",
         }),
         ...labeledTextInput("y:", controller, "anchorY", {
-          placeholderKey: "anchorY",
+          placeholderKey: "anchorYPlaceholder",
         }),
         html.br(),
         warningElement,
