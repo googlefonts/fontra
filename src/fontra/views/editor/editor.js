@@ -1992,7 +1992,7 @@ export class EditorController {
           white-space: nowrap;
           display: grid;
           gap: 0.5em;
-          grid-template-columns: max-content auto;
+          grid-template-columns: auto auto;
           align-items: center;
           height: 100%;
           min-height: 0;
