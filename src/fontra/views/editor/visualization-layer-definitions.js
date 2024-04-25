@@ -827,41 +827,38 @@ registerVisualizationLayerDefinition({
   colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const glyph = positionedGlyph.glyph;
-    const cornerSize = parameters.cornerSize;
     const smoothSize = parameters.smoothSize;
-    const handleSize = parameters.handleSize;
 
     const { anchor: hoveredAnchorIndices } = parseSelection(model.hoverSelection);
     const { anchor: selectedAnchorIndices } = parseSelection(model.selection);
 
     // Under layer
-    const underlayOffset = parameters.underlayOffset;
     context.fillStyle = parameters.underColor;
-    for (const pt of iterAnchorsPointsByIndex(glyph.anchors, selectedAnchorIndices)) {
-      fillNode(
+    for (const anchorIndex of selectedAnchorIndices || []) {
+      const anchor = glyph.anchors[anchorIndex];
+      fillRoundNode(
         context,
-        pt,
-        cornerSize + underlayOffset,
-        smoothSize + underlayOffset,
-        handleSize + underlayOffset
+        { x: anchor.x, y: anchor.y },
+        smoothSize + parameters.underlayOffset
       );
     }
+
     // Selected anchor
     context.fillStyle = parameters.selectedColor;
-    for (const pt of iterAnchorsPointsByIndex(glyph.anchors, selectedAnchorIndices)) {
-      fillNode(context, pt, cornerSize, smoothSize, handleSize);
+    for (const anchorIndex of selectedAnchorIndices || []) {
+      const anchor = glyph.anchors[anchorIndex];
+      fillRoundNode(context, { x: anchor.x, y: anchor.y }, smoothSize);
     }
+
     // Hovered anchor
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
-    const hoverStrokeOffset = parameters.hoverStrokeOffset;
-    for (const pt of iterAnchorsPointsByIndex(glyph.anchors, hoveredAnchorIndices)) {
-      strokeNode(
+    for (const anchorIndex of hoveredAnchorIndices || []) {
+      const anchor = glyph.anchors[anchorIndex];
+      strokeRoundNode(
         context,
-        pt,
-        cornerSize + hoverStrokeOffset,
-        smoothSize + hoverStrokeOffset,
-        handleSize + hoverStrokeOffset
+        { x: anchor.x, y: anchor.y },
+        smoothSize + parameters.hoverStrokeOffset
       );
     }
   },
@@ -1001,6 +998,11 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.color;
     for (const layerGlyph of Object.values(model.backgroundLayerGlyphs || {})) {
       context.stroke(layerGlyph.flattenedPath2d);
+
+      // visualizing anchors
+      for (const anchor of layerGlyph.anchors) {
+        strokeCircle(context, anchor.x, anchor.y, parameters.originMarkerRadius);
+      }
     }
   },
 });
@@ -1023,6 +1025,11 @@ registerVisualizationLayerDefinition({
     for (const layerGlyph of Object.values(model.editingLayerGlyphs || {})) {
       if (layerGlyph !== primaryEditingInstance) {
         context.stroke(layerGlyph.flattenedPath2d);
+
+        // visualizing anchors
+        for (const anchor of layerGlyph.anchors) {
+          strokeCircle(context, anchor.x, anchor.y, parameters.originMarkerRadius);
+        }
       }
     }
   },
@@ -1212,8 +1219,7 @@ function* iterAnchorsPointsByIndex(anchors, anchorIndices) {
   }
   for (const index of anchorIndices) {
     const anchor = anchors[index];
-    const pt = { x: anchor.x, y: anchor.y, smooth: true };
-    // smooth: true is a hack to make the fillNode function work
+    const pt = { x: anchor.x, y: anchor.y };
     if (pt) {
       yield pt;
     }
