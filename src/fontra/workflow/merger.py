@@ -102,7 +102,7 @@ class FontBackendMerger:
 
 def cmapFromGlyphMap(glyphMap):
     cmap = {}
-    for glyphName, codePoints in glyphMap.items():
+    for glyphName, codePoints in sorted(glyphMap.items()):
         for codePoint in codePoints:
             if codePoint in cmap:
                 logger.warning(
