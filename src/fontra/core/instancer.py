@@ -266,6 +266,10 @@ class GlyphInstancer:
         }
 
     @cached_property
+    def combinedAxisNames(self) -> set[str]:
+        return {axis.name for axis in self.combinedAxes}
+
+    @cached_property
     def activeSources(self) -> list[GlyphSource]:
         return [source for source in self.glyph.sources if not source.inactive]
 

@@ -754,6 +754,10 @@ def tuplifyLocation(loc: dict[str, float]) -> tuple:
     return tuple(sorted(loc.items()))
 
 
+def filterLocation(loc: dict[str, float], axisNames: set[str]) -> dict[str, float]:
+    return {name: value for name, value in loc.items() if name in axisNames}
+
+
 def getActiveSources(sources):
     return [source for source in sources if not source.inactive]
 
@@ -1051,12 +1055,16 @@ class TrimAxesAction(BaseFilterAction):
 
 
 def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
+    axisNames = instancer.combinedAxisNames
     glyph = instancer.glyph
 
     sourcesByLocation = {
-        tuplifyLocation(source.location): source for source in instancer.activeSources
+        tuplifyLocation(filterLocation(source.location, axisNames)): source
+        for source in instancer.activeSources
     }
-    locationTuples = sorted({tuplifyLocation(loc) for loc in newLocations})
+    locationTuples = sorted(
+        {tuplifyLocation(filterLocation(loc, axisNames)) for loc in newLocations}
+    )
 
     newSources = []
     newLayers = {}
