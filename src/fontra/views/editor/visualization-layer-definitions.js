@@ -816,9 +816,7 @@ registerVisualizationLayerDefinition({
   selectionMode: "editing",
   zIndex: 500,
   screenParameters: {
-    cornerSize: 8,
     smoothSize: 8,
-    handleSize: 6.5,
     strokeWidth: 1,
     hoverStrokeOffset: 4,
     underlayOffset: 2,
@@ -835,10 +833,9 @@ registerVisualizationLayerDefinition({
     // Under layer
     context.fillStyle = parameters.underColor;
     for (const anchorIndex of selectedAnchorIndices || []) {
-      const anchor = glyph.anchors[anchorIndex];
       fillRoundNode(
         context,
-        { x: anchor.x, y: anchor.y },
+        glyph.anchors[anchorIndex],
         smoothSize + parameters.underlayOffset
       );
     }
@@ -846,18 +843,16 @@ registerVisualizationLayerDefinition({
     // Selected anchor
     context.fillStyle = parameters.selectedColor;
     for (const anchorIndex of selectedAnchorIndices || []) {
-      const anchor = glyph.anchors[anchorIndex];
-      fillRoundNode(context, { x: anchor.x, y: anchor.y }, smoothSize);
+      fillRoundNode(context, glyph.anchors[anchorIndex], smoothSize);
     }
 
     // Hovered anchor
     context.strokeStyle = parameters.hoveredColor;
     context.lineWidth = parameters.strokeWidth;
     for (const anchorIndex of hoveredAnchorIndices || []) {
-      const anchor = glyph.anchors[anchorIndex];
       strokeRoundNode(
         context,
-        { x: anchor.x, y: anchor.y },
+        glyph.anchors[anchorIndex],
         smoothSize + parameters.hoverStrokeOffset
       );
     }

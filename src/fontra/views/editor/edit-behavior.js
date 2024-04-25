@@ -270,20 +270,17 @@ function makeComponentOriginEditFunc(component, componentIndex, roundFunc) {
 }
 
 function makeAnchorEditFunc(anchor, anchorIndex, roundFunc) {
-  const origin = {
-    x: anchor.x,
-    y: anchor.y,
-  };
+  const oldAnchor = { ...anchor };
   return [
     (transform) => {
-      const editedOrigin = transform.constrained(origin);
+      const editedAnchor = transform.constrained(oldAnchor);
       return makeAnchorChange(
         anchorIndex,
-        roundFunc(editedOrigin.x),
-        roundFunc(editedOrigin.y)
+        roundFunc(editedAnchor.x),
+        roundFunc(editedAnchor.y)
       );
     },
-    makeAnchorChange(anchorIndex, origin.x, origin.y),
+    makeAnchorChange(anchorIndex, oldAnchor.x, oldAnchor.y),
   ];
 }
 
