@@ -481,14 +481,13 @@ export class SceneModel {
     const x = point.x - positionedGlyph.x;
     const y = point.y - positionedGlyph.y;
     const selRect = centeredRect(x, y, size);
-    const selection = new Set([]);
     for (const [i, anchor] of enumerate(anchors)) {
       const anchorMatch = pointInRect(anchor.x, anchor.y, selRect);
       if (anchorMatch) {
-        selection.add(`anchor/${i}`);
+        return new Set([`anchor/${i}`]);
       }
     }
-    return selection;
+    return new Set([]);
   }
 
   pointSelectionAtPoint(point, size) {
