@@ -1857,20 +1857,17 @@ export class EditorController {
       return;
     }
 
-    let newAnchor = {
+    const newAnchor = {
       name: tempAnchor.name ? tempAnchor.name : "anchorName",
-      x: tempAnchor.x ? tempAnchor.x : Math.round(point.x),
-      y: tempAnchor.y ? tempAnchor.y : Math.round(point.y),
+      x: !isNaN(tempAnchor.x) ? tempAnchor.x : Math.round(point.x),
+      y: !isNaN(tempAnchor.y) ? tempAnchor.y : Math.round(point.y),
     };
     const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-    let relativeScaleX;
-    if (instance.xAdvance != 0) {
-      relativeScaleX = Math.round(point.x) / instance.xAdvance;
-    }
+    const relativeScaleX = instance.xAdvance ? point.x / instance.xAdvance : null;
 
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
-        if (!tempAnchor.x && layerGlyph.xAdvance != 0) {
+        if (isNaN(tempAnchor.x) && relativeScaleX != null) {
           newAnchor.x = layerGlyph.xAdvance * relativeScaleX;
         }
         layerGlyph.anchors.push({ ...newAnchor });
