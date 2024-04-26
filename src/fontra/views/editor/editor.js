@@ -895,6 +895,7 @@ export class EditorController {
       editToolItem.classList.toggle("selected", shouldSelect);
     }
     this.sceneController.setSelectedTool(this.tools[selectedToolIdentifier]);
+    this.selectedToolIdentifier = selectedToolIdentifier;
   }
 
   themeChanged() {
@@ -1938,6 +1939,8 @@ export class EditorController {
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
       overlay.classList.add("overlay-layer-hidden");
     }
+    this.savedSelectedToolIdentifier = this.selectedToolIdentifier;
+    this.setSelectedTool("hand-tool");
   }
 
   spaceKeyUpHandler(event) {
@@ -1946,6 +1949,8 @@ export class EditorController {
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
       overlay.classList.remove("overlay-layer-hidden");
     }
+    this.setSelectedTool(this.savedSelectedToolIdentifier);
+    delete this.savedSelectedToolIdentifier;
   }
 
   buildContextMenuItems(event) {
