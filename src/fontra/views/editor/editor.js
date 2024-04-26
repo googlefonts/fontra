@@ -1926,7 +1926,7 @@ export class EditorController {
 
     const anchorNameDefault = anchor ? anchor.name : "anchorName";
     const nameController = new ObservableController({
-      anchorName: anchor ? undefined : anchorNameDefault,
+      anchorName: anchorNameDefault,
       anchorX: undefined,
       anchorY: undefined,
       suggestedAnchorName: anchorNameDefault,
