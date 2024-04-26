@@ -229,6 +229,13 @@ export default class DesignspaceNavigationPanel extends Panel {
       }
     );
 
+    this.sceneController.addEventListener("glyphEditCannotEditReadOnly", () => {
+      // This happens also when the user tries to change the development status
+      // or the "on/off" source selector, in which case we must refresh the UI.
+      this._updateAxes();
+      this._updateSources();
+    });
+
     const columnDescriptions = [
       {
         title: "on",
