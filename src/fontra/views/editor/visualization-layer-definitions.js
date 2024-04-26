@@ -1215,10 +1215,8 @@ function* iterAnchorsPointsByIndex(anchors, anchorIndices) {
     return;
   }
   for (const index of anchorIndices) {
-    const anchor = anchors[index];
-    const pt = { x: anchor.x, y: anchor.y };
-    if (pt) {
-      yield pt;
+    for (const index of anchorIndices) {
+      yield anchors[index];
     }
   }
 }
