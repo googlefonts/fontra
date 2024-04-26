@@ -611,7 +611,7 @@ export class EditorController {
   }
 
   initTools() {
-    this.toolIdentifierSelected = undefined;
+    this.selectedToolIdentifier = undefined;
     this.tools = {};
     this.topLevelTools = {};
     const editToolClasses = [PointerTool, PenTool, ShapeTool, PowerRulerTool, HandTool];
@@ -874,10 +874,7 @@ export class EditorController {
     };
   }
 
-  setSelectedTool(toolIdentifier, setToolIdentifier = true) {
-    if (setToolIdentifier) {
-      this.toolIdentifierSelected = toolIdentifier;
-    }
+  setSelectedTool(toolIdentifier) {
     let selectedToolIdentifier = toolIdentifier;
 
     for (const editToolItem of document.querySelectorAll(
@@ -899,6 +896,7 @@ export class EditorController {
       editToolItem.classList.toggle("selected", shouldSelect);
     }
     this.sceneController.setSelectedTool(this.tools[selectedToolIdentifier]);
+    this.selectedToolIdentifier = selectedToolIdentifier;
   }
 
   themeChanged() {
@@ -1942,7 +1940,8 @@ export class EditorController {
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
       overlay.classList.add("overlay-layer-hidden");
     }
-    this.setSelectedTool("hand-tool", false);
+    this.savedSelectedToolIdentifier = this.selectedToolIdentifier;
+    this.setSelectedTool("hand-tool");
   }
 
   spaceKeyUpHandler(event) {
@@ -1951,7 +1950,8 @@ export class EditorController {
     for (const overlay of document.querySelectorAll(".cleanable-overlay")) {
       overlay.classList.remove("overlay-layer-hidden");
     }
-    this.setSelectedTool(this.toolIdentifierSelected);
+    this.setSelectedTool(this.savedSelectedToolIdentifier);
+    delete this.savedSelectedToolIdentifier;
   }
 
   buildContextMenuItems(event) {
