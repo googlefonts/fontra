@@ -986,8 +986,8 @@ registerVisualizationLayerDefinition({
     strokeWidth: 1,
     anchorRadius: 4,
   },
-  colors: { color: "#AAA8", colorAnchor: "#AAA5" },
-  colorsDarkMode: { color: "#8888", colorAnchor: "#8885" },
+  colors: { color: "#AAA8", colorAnchor: "#AAA7" },
+  colorsDarkMode: { color: "#8888", colorAnchor: "#8887" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
@@ -1014,7 +1014,7 @@ registerVisualizationLayerDefinition({
     anchorRadius: 4,
   },
   colors: { color: "#66FA", colorAnchor: "#66F5" },
-  colorsDarkMode: { color: "#88FA", colorAnchor: "#88F5" },
+  colorsDarkMode: { color: "#88FA", colorAnchor: "#88F7" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const primaryEditingInstance = positionedGlyph.glyph;
     context.lineJoin = "round";
