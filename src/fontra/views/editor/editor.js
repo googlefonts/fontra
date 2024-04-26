@@ -1857,24 +1857,24 @@ export class EditorController {
       return;
     }
 
-    const newAnchor = {
+    let newAnchor = {
       name: tempAnchor.name ? tempAnchor.name : "anchorName",
-      // x will be specified individually for each layer
+      x: tempAnchor.x ? tempAnchor.x : Math.round(point.x),
       y: tempAnchor.y ? tempAnchor.y : Math.round(point.y),
     };
-    let anchorX = tempAnchor.x ? tempAnchor.x : Math.round(point.x);
-    const relativeScaleX =
-      Math.round(point.x) /
-      this.sceneModel.getSelectedPositionedGlyph().glyph.instance.xAdvance;
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+    let relativeScaleX;
+    if (instance.xAdvance != 0) {
+      relativeScaleX = Math.round(point.x) / instance.xAdvance;
+    }
 
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         if (!tempAnchor.x && layerGlyph.xAdvance != 0) {
-          anchorX = layerGlyph.xAdvance * relativeScaleX;
+          newAnchor.x = layerGlyph.xAdvance * relativeScaleX;
         }
-        layerGlyph.anchors.push({ name: newAnchor.name, x: anchorX, y: newAnchor.y });
+        layerGlyph.anchors.push({ ...newAnchor });
       }
-      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
       const newAnchorIndex = instance.anchors.length - 1;
       this.sceneController.selection = new Set([`anchor/${newAnchorIndex}`]);
       return "Add Anchor";
