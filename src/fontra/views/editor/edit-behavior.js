@@ -1,7 +1,7 @@
 import { consolidateChanges } from "../core/changes.js";
 import { polygonIsConvex } from "../core/convex-hull.js";
 import { Transform, decomposedToTransform } from "../core/transform.js";
-import { parseSelection, reversed, unionIndexSets } from "../core/utils.js";
+import { enumerate, parseSelection, reversed, unionIndexSets } from "../core/utils.js";
 import { copyComponent } from "../core/var-glyph.js";
 import * as vector from "../core/vector.js";
 import {
@@ -37,7 +37,6 @@ export class EditBehaviorFactory {
     this.contours = unpackContours(instance.path, pointSelection || []);
     this.components = unpackComponents(instance.components, relevantComponentIndices);
     this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
-    this.anchorSelection = anchorSelection || [];
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
@@ -59,7 +58,6 @@ export class EditBehaviorFactory {
         this.contours,
         this.components,
         this.anchors,
-        this.anchorSelection,
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
@@ -76,7 +74,6 @@ class EditBehavior {
     contours,
     components,
     anchors,
-    anchorSelection,
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
@@ -122,7 +119,10 @@ class EditBehavior {
 
     const anchorRollbackChanges = [];
     this.anchorEditFuncs = [];
-    for (const anchorIndex of anchorSelection) {
+    for (const [anchorIndex, anchor] of enumerate(anchors)) {
+      if (!anchor) {
+        continue;
+      }
       const [editFunc, anchorRollback] = makeAnchorEditFunc(
         anchors[anchorIndex],
         anchorIndex,
