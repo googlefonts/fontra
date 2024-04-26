@@ -988,14 +988,12 @@ export class EditorController {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         const oldAnchor = layerGlyph.anchors[anchorIndex];
         layerGlyph.anchors[anchorIndex] = {
-          name: newAnchor.name ? newAnchor.name : oldAnchor.name,
-          x: newAnchor.x ? newAnchor.x : oldAnchor.x,
-          y: newAnchor.y ? newAnchor.y : oldAnchor.y,
+          name: !isNaN(newAnchor.name) ? newAnchor.name : oldAnchor.name,
+          x: !isNaN(newAnchor.x) ? newAnchor.x : oldAnchor.x,
+          y: !isNaN(newAnchor.y) ? newAnchor.y : oldAnchor.y,
         };
       }
-      const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-      const newAnchorIndex = instance.anchors.length - 1;
-      this.sceneController.selection = new Set([`anchor/${newAnchorIndex}`]);
+      this.sceneController.selection = new Set([`anchor/${anchorIndex}`]);
       return "Edit Anchor";
     });
   }
