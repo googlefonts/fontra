@@ -611,7 +611,6 @@ export class EditorController {
   }
 
   initTools() {
-    this.selectedToolIdentifier = undefined;
     this.tools = {};
     this.topLevelTools = {};
     const editToolClasses = [PointerTool, PenTool, ShapeTool, PowerRulerTool, HandTool];
