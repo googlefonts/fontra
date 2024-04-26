@@ -1868,7 +1868,7 @@ export class EditorController {
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         if (isNaN(tempAnchor.x) && relativeScaleX != null) {
-          newAnchor.x = layerGlyph.xAdvance * relativeScaleX;
+          newAnchor.x = Math.round(layerGlyph.xAdvance * relativeScaleX);
         }
         layerGlyph.anchors.push({ ...newAnchor });
       }
