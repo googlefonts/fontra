@@ -1904,7 +1904,7 @@ export class EditorController {
           nameController.model.anchorY
         )
       ) {
-        warnings.push("⚠️ At least one element need to be specified");
+        warnings.push("");
       }
       for (const n of ["X", "Y"]) {
         const value = nameController.model[`anchor${n}`];
