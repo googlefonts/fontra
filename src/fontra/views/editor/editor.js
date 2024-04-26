@@ -2061,7 +2061,6 @@ export class EditorController {
 
     let newSelection = new Set();
     const glyphPath = positionedGlyph.glyph.path;
-    const glyphComponents = positionedGlyph.glyph.components;
 
     if (selectObjects) {
       for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
@@ -2069,14 +2068,14 @@ export class EditorController {
           newSelection.add(`point/${pointIndex}`);
         }
       }
-      for (const [componentIndex] of enumerate(glyphComponents)) {
+      for (const componentIndex of range(positionedGlyph.glyph.components.length)) {
         newSelection.add(`component/${componentIndex}`);
       }
     }
 
     if (selectAnchors) {
-      for (const [pointIndex, anchor] of enumerate(positionedGlyph.glyph.anchors)) {
-        newSelection.add(`anchor/${pointIndex}`);
+      for (const anchorIndex of range(positionedGlyph.glyph.anchors.length)) {
+        newSelection.add(`anchor/${anchorIndex}`);
       }
     }
 
