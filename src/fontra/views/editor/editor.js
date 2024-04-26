@@ -988,7 +988,7 @@ export class EditorController {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         const oldAnchor = layerGlyph.anchors[anchorIndex];
         layerGlyph.anchors[anchorIndex] = {
-          name: !isNaN(newAnchor.name) ? newAnchor.name : oldAnchor.name,
+          name: newAnchor.name ? newAnchor.name : oldAnchor.name,
           x: !isNaN(newAnchor.x) ? newAnchor.x : oldAnchor.x,
           y: !isNaN(newAnchor.y) ? newAnchor.y : oldAnchor.y,
         };
