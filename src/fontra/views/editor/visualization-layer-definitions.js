@@ -1215,9 +1215,7 @@ function* iterAnchorsPointsByIndex(anchors, anchorIndices) {
     return;
   }
   for (const index of anchorIndices) {
-    for (const index of anchorIndices) {
-      yield anchors[index];
-    }
+    yield anchors[index];
   }
 }
 
