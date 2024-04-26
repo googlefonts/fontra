@@ -40,7 +40,10 @@ class FontInstancer:
         self.globalAxes: list[FontAxis | DiscreteFontAxis] | None = None
 
     async def getGlyphInstancer(
-        self, glyphName: str, addToCache: bool = False
+        self,
+        glyphName: str,
+        addToCache: bool = False,
+        fixComponentLocationCompatibility: bool = True,
     ) -> GlyphInstancer:
         glyphInstancer = self.glyphInstancers.get(glyphName)
         if glyphInstancer is None:
@@ -48,7 +51,8 @@ class FontInstancer:
                 self.globalAxes = (await self.backend.getAxes()).axes
             glyph = await self.backend.getGlyph(glyphName)
             assert glyph is not None, glyphName
-            glyph = await self._ensureComponentLocationCompatibility(glyph)
+            if fixComponentLocationCompatibility:
+                glyph = await self._ensureComponentLocationCompatibility(glyph)
             glyphInstancer = GlyphInstancer(glyph, self)
             if addToCache:
                 self.glyphInstancers[glyphName] = glyphInstancer
