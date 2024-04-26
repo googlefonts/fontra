@@ -984,20 +984,21 @@ registerVisualizationLayerDefinition({
   zIndex: 490,
   screenParameters: {
     strokeWidth: 1,
-    originMarkerRadius: 4,
+    anchorRadius: 4,
   },
-  colors: { color: "#AAA8" },
-  colorsDarkMode: { color: "#8888" },
+  colors: { color: "#AAA8", colorAnchor: "#00AAA820" },
+  colorsDarkMode: { color: "#8888", colorAnchor: "#00888820" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
-    context.strokeStyle = parameters.color;
     for (const layerGlyph of Object.values(model.backgroundLayerGlyphs || {})) {
+      context.strokeStyle = parameters.color;
       context.stroke(layerGlyph.flattenedPath2d);
 
       // visualizing anchors
+      context.strokeStyle = parameters.colorAnchor;
       for (const anchor of layerGlyph.anchors) {
-        strokeCircle(context, anchor.x, anchor.y, parameters.originMarkerRadius);
+        strokeCircle(context, anchor.x, anchor.y, parameters.anchorRadius);
       }
     }
   },
@@ -1010,22 +1011,23 @@ registerVisualizationLayerDefinition({
   zIndex: 490,
   screenParameters: {
     strokeWidth: 1,
-    originMarkerRadius: 4,
+    anchorRadius: 4,
   },
-  colors: { color: "#66FA" },
-  colorsDarkMode: { color: "#88FA" },
+  colors: { color: "#66FA", colorAnchor: "#0066FA20" },
+  colorsDarkMode: { color: "#88FA", colorAnchor: "#0088FA20" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const primaryEditingInstance = positionedGlyph.glyph;
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
-    context.strokeStyle = parameters.color;
     for (const layerGlyph of Object.values(model.editingLayerGlyphs || {})) {
       if (layerGlyph !== primaryEditingInstance) {
+        context.strokeStyle = parameters.color;
         context.stroke(layerGlyph.flattenedPath2d);
 
         // visualizing anchors
+        context.strokeStyle = parameters.colorAnchor;
         for (const anchor of layerGlyph.anchors) {
-          strokeCircle(context, anchor.x, anchor.y, parameters.originMarkerRadius);
+          strokeCircle(context, anchor.x, anchor.y, parameters.anchorRadius);
         }
       }
     }
