@@ -1975,8 +1975,8 @@ export class EditorController {
 
     const newAnchor = {
       name: nameController.model.anchorName,
-      x: nameController.model.anchorX,
-      y: nameController.model.anchorY,
+      x: Number(nameController.model.anchorX),
+      y: Number(nameController.model.anchorY),
     };
 
     return { anchor: newAnchor };
