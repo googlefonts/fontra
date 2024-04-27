@@ -174,7 +174,7 @@ async def test_addNewDenseSource(writableTestFont):
         location=dict(italic=0, weight=150, width=1500),
         styleName="widest",
         filename="MutatorSans_widest.ufo",
-        layerName="public.default",
+        layerName=None,
     )
 
 
