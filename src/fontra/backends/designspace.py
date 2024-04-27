@@ -580,11 +580,14 @@ class DesignspaceBackend:
             )
             ufoLayerName = ufoLayer.name
 
+        reader = manager.getReader(ufoPath)
+        defaultLayerName = reader.getDefaultLayerName()
+
         dsDocSource = self.dsDoc.addSourceDescriptor(
             styleName=source.name,
             location=globalLocation,
             path=ufoPath,
-            layerName=ufoLayerName,
+            layerName=ufoLayerName if ufoLayerName != defaultLayerName else None,
         )
         dsDocSource.fontraUUID = str(uuid.uuid4())
         self._writeDesignSpaceDocument()
