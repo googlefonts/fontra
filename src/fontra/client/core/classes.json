@@ -21,6 +21,9 @@
       "type": "dict",
       "subtype": "FontSource"
     },
+    "features": {
+      "type": "OpenTypeFeatures"
+    },
     "customData": {
       "type": "dict",
       "subtype": "Any"
@@ -466,6 +469,18 @@
   "FontMetric": {
     "value": {
       "type": "float"
+    },
+    "customData": {
+      "type": "dict",
+      "subtype": "Any"
+    }
+  },
+  "OpenTypeFeatures": {
+    "language": {
+      "type": "str"
+    },
+    "text": {
+      "type": "str"
     },
     "customData": {
       "type": "dict",
