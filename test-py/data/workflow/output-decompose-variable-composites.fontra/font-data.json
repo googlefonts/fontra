@@ -1,6 +1,4 @@
 {
-"unitsPerEm": 1000,
-"fontInfo": {},
 "axes": {
 "axes": [
 {
@@ -43,7 +41,6 @@
 }
 ]
 },
-"sources": {},
 "customData": {
 "fontra.sourceStatusFieldDefinitions": [
 {
