@@ -738,8 +738,19 @@ class DesignspaceBackend:
         return OpenTypeFeatures(language="fea", text=self.defaultReader.readFeatures())
 
     async def putFeatures(self, features: OpenTypeFeatures) -> None:
-        if features.language == "fea":
-            self.defaultReader.writeFeatures(features.text)
+        if features.language != "fea":
+            logger.warning(
+                f"skip writing features in unsupported language: {features.language!r}"
+            )
+            return
+
+        # Write feature text to default UFO, write empty feature text to others
+        paths = sorted(set(self.ufoLayers.iterAttrs("path")))
+        defaultPath = self.defaultUFOLayer.path
+        for path in paths:
+            writer = self.ufoManager.getReader(path)
+            featureText = features.text if path == defaultPath else ""
+            writer.writeFeatures(featureText)
 
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
