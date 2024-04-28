@@ -15,6 +15,7 @@ from ..core.classes import (
     FontSource,
     GlyphSource,
     Layer,
+    OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
 )
@@ -122,6 +123,9 @@ class OTFBackend:
 
     async def getUnitsPerEm(self) -> int:
         return self.font["head"].unitsPerEm
+
+    async def getFeatures(self) -> OpenTypeFeatures:
+        return OpenTypeFeatures()
 
     async def getCustomData(self) -> dict[str, Any]:
         return {}

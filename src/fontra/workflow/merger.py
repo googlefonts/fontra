@@ -4,7 +4,14 @@ from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
-from ..core.classes import Axes, FontInfo, FontSource, VariableGlyph, unstructure
+from ..core.classes import (
+    Axes,
+    FontInfo,
+    FontSource,
+    OpenTypeFeatures,
+    VariableGlyph,
+    unstructure,
+)
 from ..core.protocols import ReadableFontBackend
 
 logger = logging.getLogger(__name__)
@@ -84,6 +91,12 @@ class FontBackendMerger:
     async def getGlyphMap(self) -> dict[str, list[int]]:
         await self._prepareGlyphMap()
         return self._glyphMap
+
+    async def getFeatures(self) -> OpenTypeFeatures:
+        # featuresA = await self.inputA.getFeatures()
+        featuresB = await self.inputB.getFeatures()
+        # TODO: merge features
+        return featuresB
 
     async def getCustomData(self) -> dict[str, Any]:
         customDataA = await self.inputA.getCustomData()

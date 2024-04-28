@@ -36,6 +36,7 @@ from ..core.classes import (
     FontSource,
     GlyphSource,
     Layer,
+    OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
     structure,
@@ -154,6 +155,10 @@ class BaseFilterAction:
         glyphMap = await self.validatedInput.getGlyphMap()
         return await self.processGlyphMap(glyphMap)
 
+    async def getFeatures(self) -> OpenTypeFeatures:
+        features = await self.validatedInput.getFeatures()
+        return await self.processFeatures(features)
+
     async def getCustomData(self) -> dict[str, Any]:
         customData = await self.validatedInput.getCustomData()
         return await self.processCustomData(customData)
@@ -184,6 +189,9 @@ class BaseFilterAction:
         self, glyphMap: dict[str, list[int]]
     ) -> dict[str, list[int]]:
         return glyphMap
+
+    async def processFeatures(self, features: OpenTypeFeatures) -> OpenTypeFeatures:
+        return features
 
     async def processCustomData(self, customData):
         return customData

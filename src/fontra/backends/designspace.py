@@ -41,6 +41,7 @@ from ..core.classes import (
     GlyphSource,
     Layer,
     MultipleAxisMapping,
+    OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
 )
@@ -732,6 +733,12 @@ class DesignspaceBackend:
             for name, value in infoDict.items():
                 setattr(info, name, value)
             reader.writeInfo(info)
+
+    async def getFeatures(self) -> OpenTypeFeatures:
+        return OpenTypeFeatures()
+
+    async def putFeatures(self, features: OpenTypeFeatures) -> None:
+        pass
 
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
