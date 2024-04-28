@@ -125,6 +125,7 @@ class OTFBackend:
         return self.font["head"].unitsPerEm
 
     async def getFeatures(self) -> OpenTypeFeatures:
+        # TODO: do best effort of reading GSUB/GPOS with fontFeatures
         return OpenTypeFeatures()
 
     async def getCustomData(self) -> dict[str, Any]:
