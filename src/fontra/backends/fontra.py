@@ -198,6 +198,9 @@ class FontraBackend:
         featureText = None
         if "features" in fontData:
             featureText = fontData["features"].pop("text", None)
+            if fontData["features"].get("language", "fea") == "fea":
+                # omit if default
+                del fontData["features"]
             if featureText:
                 self.featureTextPath.write_text(featureText, encoding="utf-8")
         if not featureText and self.featureTextPath.exists():
