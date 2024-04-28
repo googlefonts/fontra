@@ -735,10 +735,11 @@ class DesignspaceBackend:
             reader.writeInfo(info)
 
     async def getFeatures(self) -> OpenTypeFeatures:
-        return OpenTypeFeatures()
+        return OpenTypeFeatures(language="fea", text=self.defaultReader.readFeatures())
 
     async def putFeatures(self, features: OpenTypeFeatures) -> None:
-        pass
+        if features.language == "fea":
+            self.defaultReader.writeFeatures(features.text)
 
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
