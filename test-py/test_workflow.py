@@ -842,6 +842,19 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "merge-features",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-merge-features-A.fontra"
+            - action: input
+              source: "test-py/data/workflow/input-merge-features-B.fontra"
+            - action: output
+              destination: "output-merge-features.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
