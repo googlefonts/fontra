@@ -282,15 +282,16 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
 
     @async_cached_property
     async def subsettedGlyphMap(self) -> dict[str, list[int]]:
-        return await self._buildSubsettedGlyphMap(
-            await self.validatedInput.getGlyphMap()
-        )
+        originalGlyphMap = await self.validatedInput.getGlyphMap()
+        reachableGlyphs = await self._buildSubsettedGlyphSet(originalGlyphMap)
+        reachableGlyphs = await self._componentsClosure(reachableGlyphs)
+        return filterGlyphMap(originalGlyphMap, reachableGlyphs)
 
-    async def _buildSubsettedGlyphMap(
+    async def _buildSubsettedGlyphSet(
         self, originalGlyphMap: dict[str, list[int]]
-    ) -> dict[str, list[int]]:
+    ) -> set[str]:
         # Override
-        return originalGlyphMap
+        raise NotImplementedError
 
     async def _componentsClosure(self, glyphNames) -> set[str]:
         glyphsToCheck = set(glyphNames)  # this set will shrink
@@ -338,9 +339,9 @@ def filterGlyphMap(glyphMap, glyphNames):
 class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
     keepNotdef: bool = True
 
-    async def _buildSubsettedGlyphMap(
+    async def _buildSubsettedGlyphSet(
         self, originalGlyphMap: dict[str, list[int]]
-    ) -> dict[str, list[int]]:
+    ) -> set[str]:
         reachableGlyphs = {
             glyphName
             for glyphName, codePoints in originalGlyphMap.items()
@@ -350,8 +351,7 @@ class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
         if self.keepNotdef:
             reachableGlyphs.add(".notdef")
 
-        reachableGlyphs = await self._componentsClosure(reachableGlyphs)
-        return filterGlyphMap(originalGlyphMap, reachableGlyphs)
+        return reachableGlyphs
 
 
 @registerActionClass("subset-glyphs")
@@ -374,17 +374,16 @@ class SubsetGlyphsAction(BaseGlyphSubsetterAction):
             dropGlyphNames = set(path.read_text().split())
             self.dropGlyphNames = set(self.dropGlyphNames) | dropGlyphNames
 
-    async def _buildSubsettedGlyphMap(
+    async def _buildSubsettedGlyphSet(
         self, originalGlyphMap: dict[str, list[int]]
-    ) -> dict[str, list[int]]:
+    ) -> set[str]:
         glyphNames = set(self.glyphNames)
         if not glyphNames and self.dropGlyphNames:
             glyphNames = set(originalGlyphMap)
         if self.dropGlyphNames:
             glyphNames = glyphNames - set(self.dropGlyphNames)
 
-        glyphNames = await self._componentsClosure(glyphNames)
-        return filterGlyphMap(originalGlyphMap, glyphNames)
+        return glyphNames
 
 
 @registerActionClass("input")
@@ -1160,9 +1159,9 @@ class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
         "default"  # "any", "all" or "default" (the default source)
     )
 
-    async def _buildSubsettedGlyphMap(
+    async def _buildSubsettedGlyphSet(
         self, originalGlyphMap: dict[str, list[int]]
-    ) -> dict[str, list[int]]:
+    ) -> set[str]:
         statuses = set(self.statuses)
         selectedGlyphs = set()
 
@@ -1192,8 +1191,7 @@ class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
             ):
                 selectedGlyphs.add(glyphName)
 
-        selectedGlyphs = await self._componentsClosure(selectedGlyphs)
-        return filterGlyphMap(originalGlyphMap, selectedGlyphs)
+        return selectedGlyphs
 
 
 @registerActionClass("drop-shapes")
