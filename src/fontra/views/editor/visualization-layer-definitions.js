@@ -173,6 +173,70 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.anchors",
+  name: "Anchors",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    strokeWidth: 1,
+    originMarkerRadius: 4,
+  },
+  colors: { strokeColor: "#0006" },
+  colorsDarkMode: { strokeColor: "#FFF8" },
+
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    context.strokeStyle = parameters.strokeColor;
+    context.lineWidth = parameters.strokeWidth;
+    for (const anchor of positionedGlyph.glyph.anchors) {
+      strokeCircle(context, anchor.x, anchor.y, parameters.originMarkerRadius);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
+  identifier: "fontra.anchor.names",
+  name: "Anchor names",
+  selectionMode: "editing",
+  userSwitchable: true,
+  defaultOn: true,
+  zIndex: 600,
+  screenParameters: { fontSize: 11 },
+  colors: { boxColor: "#FFFB", color: "#000" },
+  colorsDarkMode: { boxColor: "#1118", color: "#FFF" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const fontSize = parameters.fontSize;
+
+    const margin = 0.5 * fontSize;
+    const boxHeight = 1.68 * fontSize;
+    const bottomY = 0.75 * fontSize * -1 - boxHeight + margin;
+
+    context.font = `${fontSize}px fontra-ui-regular, sans-serif`;
+    context.textAlign = "center";
+    context.scale(1, -1);
+
+    for (const anchor of positionedGlyph.glyph.anchors) {
+      const pt = { x: anchor.x, y: anchor.y };
+
+      const strLine = `${anchor.name}`;
+      const width = Math.max(context.measureText(strLine).width) + 2 * margin;
+
+      context.fillStyle = parameters.boxColor;
+      drawRoundRect(
+        context,
+        pt.x - width / 2,
+        -pt.y - bottomY + margin,
+        width,
+        -boxHeight / 2 - 2 * margin,
+        boxHeight / 4 // corner radius
+      );
+
+      context.fillStyle = parameters.color;
+      context.fillText(strLine, pt.x, -pt.y - bottomY);
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.sidebearings.unselected",
   name: "Sidebearings for non-editing glyphs",
   selectionMode: "notediting",
@@ -747,6 +811,55 @@ registerVisualizationLayerDefinition({
 });
 
 registerVisualizationLayerDefinition({
+  identifier: "fontra.selected.anchors",
+  name: "Selected anchors",
+  selectionMode: "editing",
+  zIndex: 500,
+  screenParameters: {
+    smoothSize: 8,
+    strokeWidth: 1,
+    hoverStrokeOffset: 4,
+    underlayOffset: 2,
+  },
+  colors: { hoveredColor: "#BBB", selectedColor: "#000", underColor: "#FFFA" },
+  colorsDarkMode: { hoveredColor: "#BBB", selectedColor: "#FFF", underColor: "#0008" },
+  draw: (context, positionedGlyph, parameters, model, controller) => {
+    const glyph = positionedGlyph.glyph;
+    const smoothSize = parameters.smoothSize;
+
+    const { anchor: hoveredAnchorIndices } = parseSelection(model.hoverSelection);
+    const { anchor: selectedAnchorIndices } = parseSelection(model.selection);
+
+    // Under layer
+    context.fillStyle = parameters.underColor;
+    for (const anchorIndex of selectedAnchorIndices || []) {
+      fillRoundNode(
+        context,
+        glyph.anchors[anchorIndex],
+        smoothSize + parameters.underlayOffset
+      );
+    }
+
+    // Selected anchor
+    context.fillStyle = parameters.selectedColor;
+    for (const anchorIndex of selectedAnchorIndices || []) {
+      fillRoundNode(context, glyph.anchors[anchorIndex], smoothSize);
+    }
+
+    // Hovered anchor
+    context.strokeStyle = parameters.hoveredColor;
+    context.lineWidth = parameters.strokeWidth;
+    for (const anchorIndex of hoveredAnchorIndices || []) {
+      strokeRoundNode(
+        context,
+        glyph.anchors[anchorIndex],
+        smoothSize + parameters.hoverStrokeOffset
+      );
+    }
+  },
+});
+
+registerVisualizationLayerDefinition({
   identifier: "fontra.coordinates",
   name: "Coordinates",
   selectionMode: "editing",
@@ -764,6 +877,7 @@ registerVisualizationLayerDefinition({
       point: pointSelection,
       component: componentSelection,
       componentOrigin: componentOriginSelection,
+      anchor: anchorSelection,
     } = parseSelection(model.sceneSettings.combinedSelection);
     componentSelection = unionIndexSets(componentSelection, componentOriginSelection);
 
@@ -778,7 +892,8 @@ registerVisualizationLayerDefinition({
 
     for (const pt of chain(
       iterPointsByIndex(glyph.path, pointSelection),
-      iterComponentOriginsByIndex(glyph.instance.components, componentSelection)
+      iterComponentOriginsByIndex(glyph.instance.components, componentSelection),
+      iterAnchorsPointsByIndex(glyph.anchors, anchorSelection)
     )) {
       const xString = `${round(pt.x, 1)}`;
       const yString = `${round(pt.y, 1)}`;
@@ -869,15 +984,22 @@ registerVisualizationLayerDefinition({
   zIndex: 490,
   screenParameters: {
     strokeWidth: 1,
+    anchorRadius: 4,
   },
-  colors: { color: "#AAA8" },
-  colorsDarkMode: { color: "#8888" },
+  colors: { color: "#AAA8", colorAnchor: "#AAA7" },
+  colorsDarkMode: { color: "#8888", colorAnchor: "#8887" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
-    context.strokeStyle = parameters.color;
     for (const layerGlyph of Object.values(model.backgroundLayerGlyphs || {})) {
+      context.strokeStyle = parameters.color;
       context.stroke(layerGlyph.flattenedPath2d);
+
+      // visualizing anchors
+      context.strokeStyle = parameters.colorAnchor;
+      for (const anchor of layerGlyph.anchors) {
+        strokeCircle(context, anchor.x, anchor.y, parameters.anchorRadius);
+      }
     }
   },
 });
@@ -889,17 +1011,24 @@ registerVisualizationLayerDefinition({
   zIndex: 490,
   screenParameters: {
     strokeWidth: 1,
+    anchorRadius: 4,
   },
-  colors: { color: "#66FA" },
-  colorsDarkMode: { color: "#88FA" },
+  colors: { color: "#66FA", colorAnchor: "#66F5" },
+  colorsDarkMode: { color: "#88FA", colorAnchor: "#88F7" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
     const primaryEditingInstance = positionedGlyph.glyph;
     context.lineJoin = "round";
     context.lineWidth = parameters.strokeWidth;
-    context.strokeStyle = parameters.color;
     for (const layerGlyph of Object.values(model.editingLayerGlyphs || {})) {
       if (layerGlyph !== primaryEditingInstance) {
+        context.strokeStyle = parameters.color;
         context.stroke(layerGlyph.flattenedPath2d);
+
+        // visualizing anchors
+        context.strokeStyle = parameters.colorAnchor;
+        for (const anchor of layerGlyph.anchors) {
+          strokeCircle(context, anchor.x, anchor.y, parameters.anchorRadius);
+        }
       }
     }
   },
@@ -1080,6 +1209,15 @@ function* iterPointsByIndex(path, pointIndices) {
     if (pt) {
       yield pt;
     }
+  }
+}
+
+function* iterAnchorsPointsByIndex(anchors, anchorIndices) {
+  if (!anchorIndices || !anchors.length) {
+    return;
+  }
+  for (const index of anchorIndices) {
+    yield anchors[index];
   }
 }
 

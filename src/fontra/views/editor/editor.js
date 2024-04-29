@@ -23,6 +23,7 @@ import {
 import { getRemoteProxy } from "../core/remote.js";
 import { SceneView } from "../core/scene-view.js";
 import { parseClipboard } from "../core/server-utils.js";
+import { labeledTextInput } from "../core/ui-utils.js";
 import {
   commandKeyProperty,
   dumpURLFragment,
@@ -179,6 +180,10 @@ export class EditorController {
       this.doubleClickedComponentsCallback(event);
     });
 
+    this.sceneController.addEventListener("doubleClickedAnchors", async (event) => {
+      this.doubleClickedAnchorsCallback(event);
+    });
+
     this.sceneController.addEventListener("glyphEditCannotEditReadOnly", async () => {
       this.showDialogGlyphEditCannotEditReadOnly();
     });
@@ -196,6 +201,7 @@ export class EditorController {
     });
 
     this.sidebars = [];
+    this.contextMenuPosition = { x: 0, y: 0 };
 
     this.initSidebars();
     this.initTopBar();
@@ -967,6 +973,31 @@ export class EditorController {
     };
   }
 
+  async doubleClickedAnchorsCallback(event) {
+    const glyphController = await this.sceneModel.getSelectedStaticGlyphController();
+    const instance = glyphController.instance;
+
+    const anchorIndex = this.sceneController.doubleClickedAnchorIndices[0];
+    let anchor = instance.anchors[anchorIndex];
+    const { anchor: newAnchor } = await this.doAddEditAnchorDialog(anchor);
+    if (!newAnchor) {
+      return;
+    }
+
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        const oldAnchor = layerGlyph.anchors[anchorIndex];
+        layerGlyph.anchors[anchorIndex] = {
+          name: newAnchor.name ? newAnchor.name : oldAnchor.name,
+          x: !isNaN(newAnchor.x) ? newAnchor.x : oldAnchor.x,
+          y: !isNaN(newAnchor.y) ? newAnchor.y : oldAnchor.y,
+        };
+      }
+      this.sceneController.selection = new Set([`anchor/${anchorIndex}`]);
+      return "Edit Anchor";
+    });
+  }
+
   initContextMenuItems() {
     this.basicContextMenuItems = [];
     for (const isRedo of [false, true]) {
@@ -1038,6 +1069,13 @@ export class EditorController {
       title: "Add Component",
       enabled: () => this.canAddComponent(),
       callback: () => this.doAddComponent(),
+      shortCut: undefined,
+    });
+
+    this.glyphEditContextMenuItems.push({
+      title: "Add Anchor",
+      enabled: () => this.canAddAnchor(),
+      callback: () => this.doAddAnchor(),
       shortCut: undefined,
     });
 
@@ -1418,11 +1456,14 @@ export class EditorController {
           };
     }
 
-    const { point: pointIndices, component: componentIndices } = parseSelection(
-      this.sceneController.selection
-    );
+    const {
+      point: pointIndices,
+      component: componentIndices,
+      anchor: anchorIndices,
+    } = parseSelection(this.sceneController.selection);
     let path;
     let components;
+    let anchors;
     const flattenedPathList = wantFlattenedPath ? [] : undefined;
     if (pointIndices) {
       path = filterPathByPointIndices(editInstance.path, pointIndices, doCut);
@@ -1439,10 +1480,19 @@ export class EditorController {
         }
       }
     }
+    if (anchorIndices) {
+      anchors = anchorIndices.map((i) => editInstance.anchors[i]);
+      if (doCut) {
+        for (const anchorIndex of reversed(anchorIndices)) {
+          editInstance.anchors.splice(anchorIndex, 1);
+        }
+      }
+    }
     const instance = StaticGlyph.fromObject({
       ...editInstance,
       path: path,
       components: components,
+      anchors: anchors,
     });
     return {
       instance: instance,
@@ -1634,6 +1684,13 @@ export class EditorController {
           selection.add(`component/${componentIndex}`);
         }
 
+        for (const anchorIndex of range(
+          firstLayerGlyph.anchors.length,
+          firstLayerGlyph.anchors.length + defaultPasteGlyph.anchors.length
+        )) {
+          selection.add(`anchor/${anchorIndex}`);
+        }
+
         for (const [layerName, layerGlyph] of Object.entries(editLayerGlyphs)) {
           const pasteGlyph =
             pasteLayerGlyphsByLayerName[layerName] ||
@@ -1643,6 +1700,7 @@ export class EditorController {
             defaultPasteGlyph;
           layerGlyph.path.appendPath(pasteGlyph.path);
           layerGlyph.components.push(...pasteGlyph.components.map(copyComponent));
+          layerGlyph.anchors.push(...pasteGlyph.anchors);
         }
         this.sceneController.selection = selection;
         return "Paste";
@@ -1694,9 +1752,11 @@ export class EditorController {
   }
 
   async _deleteSelection(event) {
-    const { point: pointSelection, component: componentSelection } = parseSelection(
-      this.sceneController.selection
-    );
+    const {
+      point: pointSelection,
+      component: componentSelection,
+      anchor: anchorSelection,
+    } = parseSelection(this.sceneController.selection);
     await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
       for (const layerGlyph of Object.values(layerGlyphs)) {
         if (event.altKey) {
@@ -1709,6 +1769,11 @@ export class EditorController {
           if (componentSelection) {
             for (const componentIndex of reversed(componentSelection)) {
               layerGlyph.components.splice(componentIndex, 1);
+            }
+          }
+          if (anchorSelection) {
+            for (const anchorIndex of reversed(anchorSelection)) {
+              layerGlyph.anchors.splice(anchorIndex, 1);
             }
           }
         }
@@ -1781,6 +1846,172 @@ export class EditorController {
     });
   }
 
+  canAddAnchor() {
+    return this.sceneModel.getSelectedPositionedGlyph()?.glyph.canEdit;
+  }
+
+  async doAddAnchor() {
+    const point = this.sceneController.selectedGlyphPoint(this.contextMenuPosition);
+    const { anchor: tempAnchor } = await this.doAddEditAnchorDialog(undefined, point);
+    if (!tempAnchor) {
+      return;
+    }
+
+    const newAnchor = {
+      name: tempAnchor.name ? tempAnchor.name : "anchorName",
+      x: !isNaN(tempAnchor.x) ? tempAnchor.x : Math.round(point.x),
+      y: !isNaN(tempAnchor.y) ? tempAnchor.y : Math.round(point.y),
+    };
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+    const relativeScaleX = instance.xAdvance ? point.x / instance.xAdvance : null;
+
+    await this.sceneController.editLayersAndRecordChanges((layerGlyphs) => {
+      for (const layerGlyph of Object.values(layerGlyphs)) {
+        if (isNaN(tempAnchor.x) && relativeScaleX != null) {
+          newAnchor.x = Math.round(layerGlyph.xAdvance * relativeScaleX);
+        }
+        layerGlyph.anchors.push({ ...newAnchor });
+      }
+      const newAnchorIndex = instance.anchors.length - 1;
+      this.sceneController.selection = new Set([`anchor/${newAnchorIndex}`]);
+      return "Add Anchor";
+    });
+  }
+
+  async doAddEditAnchorDialog(anchor = undefined, point = undefined) {
+    const titlePrefix = anchor ? "Edit" : "Add";
+    if (!anchor && !point) {
+      // Need at least one of the two
+      return {};
+    }
+
+    const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
+
+    const validateInput = () => {
+      const warnings = [];
+      const editedAnchorName =
+        nameController.model.anchorName || nameController.model.suggestedAnchorName;
+      if (!editedAnchorName.length) {
+        warnings.push("⚠️ The name must not be empty");
+      }
+      if (
+        !(
+          nameController.model.anchorName ||
+          nameController.model.anchorX ||
+          nameController.model.anchorY
+        )
+      ) {
+        warnings.push("");
+      }
+      for (const n of ["X", "Y"]) {
+        const value = nameController.model[`anchor${n}`];
+        if (isNaN(value)) {
+          if (value !== undefined) {
+            warnings.push(`⚠️ The ${n.toLowerCase()} value must be a number`);
+          }
+        }
+      }
+      if (
+        editedAnchorName !== anchor?.name &&
+        instance.anchors.some((anchor) => anchor.name === editedAnchorName)
+      ) {
+        warnings.push("⚠️ The anchor name should be unique");
+      }
+      warningElement.innerText = warnings.length ? warnings.join("\n") : "";
+      dialog.defaultButton.classList.toggle("disabled", warnings.length);
+    };
+
+    const anchorNameDefault = anchor ? anchor.name : "anchorName";
+    const nameController = new ObservableController({
+      anchorName: anchorNameDefault,
+      anchorX: undefined,
+      anchorY: undefined,
+      suggestedAnchorName: anchorNameDefault,
+      suggestedAnchorX: anchor ? anchor.x : Math.round(point.x),
+      suggestedAnchorY: anchor ? anchor.y : Math.round(point.y),
+    });
+
+    nameController.addKeyListener("anchorName", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("anchorX", (event) => {
+      validateInput();
+    });
+    nameController.addKeyListener("anchorY", (event) => {
+      validateInput();
+    });
+
+    const disable =
+      nameController.model.anchorName ||
+      nameController.model.anchorX ||
+      nameController.model.anchorY
+        ? false
+        : true;
+    const { contentElement, warningElement } =
+      this._anchorPropertiesContentElement(nameController);
+    const dialog = await dialogSetup(`${titlePrefix} Anchor`, null, [
+      { title: "Cancel", isCancelButton: true },
+      { title: titlePrefix, isDefaultButton: true, disabled: disable },
+    ]);
+
+    dialog.setContent(contentElement);
+
+    setTimeout(
+      () => contentElement.querySelector("#anchor-name-text-input")?.focus(),
+      0
+    );
+
+    validateInput();
+
+    if (!(await dialog.run())) {
+      // User cancelled
+      return {};
+    }
+
+    const newAnchor = {
+      name: nameController.model.anchorName,
+      x: Number(nameController.model.anchorX),
+      y: Number(nameController.model.anchorY),
+    };
+
+    return { anchor: newAnchor };
+  }
+
+  _anchorPropertiesContentElement(controller) {
+    const warningElement = html.div({
+      id: "warning-text-anchor-name",
+      style: `grid-column: 1 / -1; min-height: 1.5em;`,
+    });
+    const contentElement = html.div(
+      {
+        style: `overflow: hidden;
+          white-space: nowrap;
+          display: grid;
+          gap: 0.5em;
+          grid-template-columns: auto auto;
+          align-items: center;
+          height: 100%;
+          min-height: 0;
+        `,
+      },
+      [
+        ...labeledTextInput("Name:", controller, "anchorName", {
+          placeholderKey: "suggestedAnchorName",
+          id: "anchor-name-text-input",
+        }),
+        ...labeledTextInput("x:", controller, "anchorX", {
+          placeholderKey: "suggestedAnchorX",
+        }),
+        ...labeledTextInput("y:", controller, "anchorY", {
+          placeholderKey: "suggestedAnchorY",
+        }),
+        html.br(),
+        warningElement,
+      ]
+    );
+    return { contentElement, warningElement };
+  }
+
   canSelectAllNone(selectNone) {
     return this.sceneSettings.selectedGlyph?.isEditing;
   }
@@ -1792,20 +2023,55 @@ export class EditorController {
       return;
     }
 
-    const newSelection = new Set();
+    if (selectNone) {
+      this.sceneController.selection = new Set();
+      return;
+    }
 
-    if (!selectNone) {
-      const glyphPath = positionedGlyph.glyph.path;
-      const glyphComponents = positionedGlyph.glyph.components;
+    let {
+      point: pointIndices,
+      component: componentIndices,
+      anchor: anchorIndices,
+    } = parseSelection(this.sceneController.selection);
+    pointIndices = pointIndices || [];
+    componentIndices = componentIndices || [];
+    anchorIndices = anchorIndices || [];
+    // TODO: guidelinesIndices = guidelinesIndices || [];
 
+    let selectObjects = false;
+    let selectAnchors = false;
+    // TODO: let selectGuidelines;
+
+    if (!pointIndices.length && !componentIndices.length && !anchorIndices.length) {
+      selectObjects = true;
+      selectAnchors = false;
+    }
+    if ((pointIndices.length || componentIndices.length) && !anchorIndices.length) {
+      selectObjects = true;
+      selectAnchors = true;
+    }
+    if ((pointIndices.length || componentIndices.length) && anchorIndices.length) {
+      selectObjects = false;
+      selectAnchors = true;
+    }
+
+    let newSelection = new Set();
+    const glyphPath = positionedGlyph.glyph.path;
+
+    if (selectObjects) {
       for (const [pointIndex, pointType] of enumerate(glyphPath.pointTypes)) {
         if ((pointType & VarPackedPath.POINT_TYPE_MASK) === VarPackedPath.ON_CURVE) {
           newSelection.add(`point/${pointIndex}`);
         }
       }
-
-      for (const [componentIndex] of glyphComponents.entries()) {
+      for (const componentIndex of range(positionedGlyph.glyph.components.length)) {
         newSelection.add(`component/${componentIndex}`);
+      }
+    }
+
+    if (selectAnchors) {
+      for (const anchorIndex of range(positionedGlyph.glyph.anchors.length)) {
+        newSelection.add(`anchor/${anchorIndex}`);
       }
     }
 
@@ -1971,6 +2237,7 @@ export class EditorController {
     event.preventDefault();
 
     const { x, y } = event;
+    this.contextMenuPosition = { x: x, y: y };
     showMenu(this.buildContextMenuItems(event), { x: x + 1, y: y - 1 }, event.target);
   }
 

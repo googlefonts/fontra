@@ -148,13 +148,23 @@ export class PointerTool extends BaseTool {
       }
     } else {
       const instance = this.sceneModel.getSelectedPositionedGlyph().glyph.instance;
-      const { point: pointIndices, component: componentIndices } = parseSelection(
-        sceneController.selection
-      );
-      if (componentIndices?.length && !pointIndices?.length) {
+      const {
+        point: pointIndices,
+        component: componentIndices,
+        anchor: anchorIndices,
+      } = parseSelection(sceneController.selection);
+      if (componentIndices?.length && !pointIndices?.length && !anchorIndices?.length) {
         componentIndices.sort();
         sceneController.doubleClickedComponentIndices = componentIndices;
         sceneController._dispatchEvent("doubleClickedComponents");
+      } else if (
+        anchorIndices?.length &&
+        !pointIndices?.length &&
+        !componentIndices?.length
+      ) {
+        anchorIndices.sort();
+        sceneController.doubleClickedAnchorIndices = anchorIndices;
+        sceneController._dispatchEvent("doubleClickedAnchors");
       } else if (pointIndices?.length && !sceneController.hoverPathHit) {
         await this.handlePointsDoubleClick(pointIndices);
       } else if (sceneController.hoverPathHit) {

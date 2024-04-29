@@ -1,7 +1,7 @@
 import { consolidateChanges } from "../core/changes.js";
 import { polygonIsConvex } from "../core/convex-hull.js";
 import { Transform, decomposedToTransform } from "../core/transform.js";
-import { parseSelection, reversed, unionIndexSets } from "../core/utils.js";
+import { enumerate, parseSelection, reversed, unionIndexSets } from "../core/utils.js";
 import { copyComponent } from "../core/var-glyph.js";
 import * as vector from "../core/vector.js";
 import {
@@ -21,6 +21,7 @@ export class EditBehaviorFactory {
     const {
       point: pointSelection,
       component: componentSelection,
+      anchor: anchorSelection,
       componentOrigin: componentOriginSelection,
       componentTCenter: componentTCenterSelection,
     } = parseSelection(selection);
@@ -35,6 +36,7 @@ export class EditBehaviorFactory {
     );
     this.contours = unpackContours(instance.path, pointSelection || []);
     this.components = unpackComponents(instance.components, relevantComponentIndices);
+    this.anchors = unpackAnchors(instance.anchors, anchorSelection || []);
     this.componentOriginIndices = componentOriginIndices || [];
     this.componentTCenterIndices = componentTCenterSelection || [];
     this.behaviors = {};
@@ -55,6 +57,7 @@ export class EditBehaviorFactory {
       behavior = new EditBehavior(
         this.contours,
         this.components,
+        this.anchors,
         this.componentOriginIndices,
         this.componentTCenterIndices,
         behaviorType,
@@ -70,6 +73,7 @@ class EditBehavior {
   constructor(
     contours,
     components,
+    anchors,
     componentOriginIndices,
     componentTCenterIndices,
     behavior,
@@ -113,10 +117,26 @@ class EditBehavior {
       }
     }
 
+    const anchorRollbackChanges = [];
+    this.anchorEditFuncs = [];
+    for (const [anchorIndex, anchor] of enumerate(anchors)) {
+      if (!anchor) {
+        continue;
+      }
+      const [editFunc, anchorRollback] = makeAnchorEditFunc(
+        anchors[anchorIndex],
+        anchorIndex,
+        this.roundFunc
+      );
+      this.anchorEditFuncs.push(editFunc);
+      anchorRollbackChanges.push(anchorRollback);
+    }
+
     this.rollbackChange = makeRollbackChange(
       contours,
       participatingPointIndices,
-      componentRollbackChanges
+      componentRollbackChanges,
+      anchorRollbackChanges
     );
   }
 
@@ -164,6 +184,9 @@ class EditBehavior {
     const componentChanges = this.componentEditFuncs?.map((editFunc) => {
       return editFunc(transform);
     });
+    const anchorChanges = this.anchorEditFuncs?.map((editFunc) => {
+      return editFunc(transform);
+    });
     const changes = [];
     if (pathChanges && pathChanges.length) {
       changes.push(consolidateChanges(pathChanges, ["path"]));
@@ -171,11 +194,19 @@ class EditBehavior {
     if (componentChanges && componentChanges.length) {
       changes.push(consolidateChanges(componentChanges, ["components"]));
     }
+    if (anchorChanges && anchorChanges.length) {
+      changes.push(consolidateChanges(anchorChanges, ["anchors"]));
+    }
     return consolidateChanges(changes);
   }
 }
 
-function makeRollbackChange(contours, participatingPointIndices, componentRollback) {
+function makeRollbackChange(
+  contours,
+  participatingPointIndices,
+  componentRollback,
+  anchorRollback
+) {
   const pointRollback = [];
   for (let i = 0; i < contours.length; i++) {
     const contour = contours[i];
@@ -198,6 +229,9 @@ function makeRollbackChange(contours, participatingPointIndices, componentRollba
   }
   if (componentRollback.length) {
     changes.push(consolidateChanges(componentRollback, ["components"]));
+  }
+  if (anchorRollback.length) {
+    changes.push(consolidateChanges(anchorRollback, ["anchors"]));
   }
   return consolidateChanges(changes);
 }
@@ -232,6 +266,21 @@ function makeComponentOriginEditFunc(component, componentIndex, roundFunc) {
       );
     },
     makeComponentOriginChange(componentIndex, origin.x, origin.y),
+  ];
+}
+
+function makeAnchorEditFunc(anchor, anchorIndex, roundFunc) {
+  const oldAnchor = { ...anchor };
+  return [
+    (transform) => {
+      const editedAnchor = transform.constrained(oldAnchor);
+      return makeAnchorChange(
+        anchorIndex,
+        roundFunc(editedAnchor.x),
+        roundFunc(editedAnchor.y)
+      );
+    },
+    makeAnchorChange(anchorIndex, oldAnchor.x, oldAnchor.y),
   ];
 }
 
@@ -290,6 +339,16 @@ function makePointTranslateFunction(delta) {
 
 function makePointChange(pointIndex, x, y) {
   return { f: "=xy", a: [pointIndex, x, y] };
+}
+
+function makeAnchorChange(anchorIndex, x, y) {
+  return {
+    p: [anchorIndex],
+    c: [
+      { f: "=", a: ["x", x] },
+      { f: "=", a: ["y", y] },
+    ],
+  };
 }
 
 function makeComponentOriginChange(componentIndex, x, y) {
@@ -352,6 +411,14 @@ function unpackComponents(components, selectedComponentIndices) {
     unpackedComponents[componentIndex] = copyComponent(components[componentIndex]);
   }
   return unpackedComponents;
+}
+
+function unpackAnchors(anchors, selectedAnchorIndices) {
+  const unpackedAnchors = new Array(anchors.length);
+  for (const anchorIndex of selectedAnchorIndices) {
+    unpackedAnchors[anchorIndex] = anchors[anchorIndex];
+  }
+  return unpackedAnchors;
 }
 
 function makePointEditFuncs(contours, behavior) {

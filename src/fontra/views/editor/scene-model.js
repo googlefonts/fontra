@@ -451,6 +451,11 @@ export class SceneModel {
       return { selection: pointSelection };
     }
 
+    const anchorSelection = this.anchorSelectionAtPoint(point, size);
+    if (anchorSelection.size) {
+      return { selection: anchorSelection };
+    }
+
     const { selection: segmentSelection, pathHit: pathHit } =
       this.segmentSelectionAtPoint(point, size);
     if (pathHit) {
@@ -569,6 +574,25 @@ export class SceneModel {
     }
     // Else, fall back to the first match
     return new Set([`component/${componentHullMatches[0].index}`]);
+  }
+
+  anchorSelectionAtPoint(point, size) {
+    const positionedGlyph = this.getSelectedPositionedGlyph();
+    if (!positionedGlyph) {
+      return new Set();
+    }
+
+    const anchors = positionedGlyph.glyph.anchors;
+    const x = point.x - positionedGlyph.x;
+    const y = point.y - positionedGlyph.y;
+    const selRect = centeredRect(x, y, size);
+    for (const [i, anchor] of enumerate(anchors)) {
+      const anchorMatch = pointInRect(anchor.x, anchor.y, selRect);
+      if (anchorMatch) {
+        return new Set([`anchor/${i}`]);
+      }
+    }
+    return new Set([]);
   }
 
   selectionAtRect(selRect, pointFilterFunc) {

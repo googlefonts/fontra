@@ -573,6 +573,10 @@ export class StaticGlyphController {
     return this.instance.verticalOrigin;
   }
 
+  get anchors() {
+    return this.instance.anchors;
+  }
+
   get path() {
     return this.instance.path;
   }
