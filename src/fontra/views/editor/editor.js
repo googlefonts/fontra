@@ -1459,7 +1459,7 @@ export class EditorController {
     const {
       point: pointIndices,
       component: componentIndices,
-      anchor: anchorSelection,
+      anchor: anchorIndices,
     } = parseSelection(this.sceneController.selection);
     let path;
     let components;
@@ -1480,10 +1480,10 @@ export class EditorController {
         }
       }
     }
-    if (anchorSelection) {
-      anchors = anchorSelection.map((i) => editInstance.anchors[i]);
+    if (anchorIndices) {
+      anchors = anchorIndices.map((i) => editInstance.anchors[i]);
       if (doCut) {
-        for (const anchorIndex of reversed(anchorSelection)) {
+        for (const anchorIndex of reversed(anchorIndices)) {
           editInstance.anchors.splice(anchorIndex, 1);
         }
       }
