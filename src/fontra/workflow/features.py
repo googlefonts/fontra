@@ -1,10 +1,22 @@
+import enum
 from dataclasses import dataclass, field
-from enum import StrEnum
 from typing import Iterable
 
 import ufomerge
 
 from fontra.core.classes import OpenTypeFeatures
+
+if hasattr(enum, "StrEnum"):
+    # Python >= 3.11
+    StrEnum = enum.StrEnum
+else:
+
+    class StrEnum(str, enum.ReprEnum):
+        def __new__(cls, value):
+            value = str(value)
+            member = str.__new__(cls, value)
+            member._value_ = value
+            return member
 
 
 class LayoutHandling(StrEnum):
