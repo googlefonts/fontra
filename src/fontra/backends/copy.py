@@ -156,7 +156,7 @@ async def mainAsync() -> None:
         await copyFont(
             sourceBackend,
             destBackend,
-            glyphNames=glyphNames,
+            glyphNames=glyphNames if glyphNames else None,
             numTasks=args.num_tasks,
             progressInterval=args.progress_interval,
             continueOnError=args.continue_on_error,
