@@ -301,12 +301,13 @@ class BaseGlyphSubsetterAction(BaseFilterAction):
                 f"{self.actionName}: can't subset features in language={features.language}"
             )
         elif features.text:
-            subsettedFeatureText, _ = subsetFeatures(
+            subsettedFeatureText, subsettedGlyphMap = subsetFeatures(
                 features.text,
                 originalGlyphMap,
                 keepGlyphNames=reachableGlyphs,
-                layoutHandling=self.layoutHandling,
+                layoutHandling=LayoutHandling(self.layoutHandling),
             )
+            reachableGlyphs = set(subsettedGlyphMap)
             features = OpenTypeFeatures(text=subsettedFeatureText)
 
         reachableGlyphs = await self._componentsClosure(reachableGlyphs)
