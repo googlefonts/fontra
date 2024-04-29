@@ -12,7 +12,7 @@ import {
 import { VariationError } from "./errors.js";
 import { filterPathByPointIndices } from "./path-functions.js";
 import { PathHitTester } from "./path-hit-tester.js";
-import { sectRect, unionRect } from "./rectangle.js";
+import { centeredRect, sectRect, unionRect } from "./rectangle.js";
 import {
   getRepresentation,
   registerRepresentationFactory,
@@ -654,12 +654,7 @@ export class StaticGlyphController {
 
     for (const anchorIndex of anchorIndices) {
       const anchor = this.instance.anchors[anchorIndex];
-      selectionRects.push({
-        xMin: anchor.x,
-        yMin: anchor.y,
-        xMax: anchor.x,
-        yMax: anchor.y,
-      });
+      selectionRects.push(centeredRect(anchor.x, anchor.y, 0));
     }
 
     return unionRect(...selectionRects);
