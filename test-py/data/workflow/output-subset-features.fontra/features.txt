@@ -1,0 +1,9 @@
+languagesystem DFLT dflt;
+languagesystem latn dflt;
+# comment 1
+feature calt {
+    sub A by A.alt;
+    sub [A A.alt] by [A.alt A.alt];
+} calt;
+
+# comment 2
