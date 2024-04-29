@@ -6,9 +6,12 @@ import ufomerge
 
 from fontra.core.classes import OpenTypeFeatures
 
+EnumBaseClass: type
+
+
 if hasattr(enum, "StrEnum"):
     # Python >= 3.11
-    StrEnum = enum.StrEnum
+    EnumBaseClass = enum.StrEnum
 else:
 
     class ReprEnum(enum.Enum):
@@ -21,8 +24,10 @@ else:
             member._value_ = value
             return member
 
+    EnumBaseClass = StrEnum
 
-class LayoutHandling(StrEnum):
+
+class LayoutHandling(EnumBaseClass):
     SUBSET = "subset"
     CLOSURE = "closure"
     IGNORE = "ignore"
