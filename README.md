@@ -140,7 +140,7 @@ The following list of features is not complete, but gives you a rough idea of wh
 - Create new glyphs ✅
 - Delete glyphs ✅
 - Add / remove (variable) components ✅
-- Anchors
+- Anchors ✅
 - Guidelines
 - View background layers
 - Edit local variation axes ✅

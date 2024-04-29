@@ -626,11 +626,15 @@ export class StaticGlyphController {
   }
 
   getSelectionBounds(selection) {
-    let { point: pointIndices, component: componentIndices } =
-      parseSelection(selection);
+    let {
+      point: pointIndices,
+      component: componentIndices,
+      anchor: anchorIndices,
+    } = parseSelection(selection);
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
+    anchorIndices = anchorIndices || [];
 
     const selectionRects = [];
     if (pointIndices.length) {
@@ -646,6 +650,16 @@ export class StaticGlyphController {
         continue;
       }
       selectionRects.push(component.bounds);
+    }
+
+    for (const anchorIndex of anchorIndices) {
+      const anchor = this.instance.anchors[anchorIndex];
+      selectionRects.push({
+        xMin: anchor.x,
+        yMin: anchor.y,
+        xMax: anchor.x,
+        yMax: anchor.y,
+      });
     }
 
     return unionRect(...selectionRects);

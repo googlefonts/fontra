@@ -484,13 +484,16 @@ export default class TransformationPanel extends Panel {
   }
 
   async transformSelection(transformation, undoLabel) {
-    let { point: pointIndices, component: componentIndices } = parseSelection(
-      this.sceneController.selection
-    );
+    let {
+      point: pointIndices,
+      component: componentIndices,
+      anchor: anchorIndices,
+    } = parseSelection(this.sceneController.selection);
 
     pointIndices = pointIndices || [];
     componentIndices = componentIndices || [];
-    if (!pointIndices.length && !componentIndices.length) {
+    anchorIndices = anchorIndices || [];
+    if (!pointIndices.length && !componentIndices.length && !anchorIndices.length) {
       return;
     }
 
@@ -573,16 +576,20 @@ export default class TransformationPanel extends Panel {
   }
 
   _splitSelection(layerGlyphController, selection) {
-    let { point: pointIndices, component: componentIndices } =
-      parseSelection(selection);
+    let {
+      point: pointIndices,
+      component: componentIndices,
+      anchor: anchorIndices,
+    } = parseSelection(selection);
     pointIndices = pointIndices || [];
 
     const points = [];
     const contours = [];
     const components = componentIndices || [];
+    const anchors = anchorIndices || [];
 
     if (!pointIndices.length) {
-      return { points, contours, components };
+      return { points, contours, components, anchors };
     }
 
     const path = layerGlyphController.instance.path;
@@ -625,11 +632,11 @@ export default class TransformationPanel extends Panel {
       }
     }
 
-    return { points, contours, components };
+    return { points, contours, components, anchors };
   }
 
   _collectMovableObjects(moveDescriptor, controller) {
-    const { points, contours, components } = this._splitSelection(
+    const { points, contours, components, anchors } = this._splitSelection(
       controller,
       this.sceneController.selection
     );
@@ -647,6 +654,10 @@ export default class TransformationPanel extends Panel {
     }
     for (const componentIndex of components) {
       const individualSelection = [`component/${componentIndex}`];
+      movableObjects.push(new MovableObject(individualSelection));
+    }
+    for (const anchorIndex of anchors) {
+      const individualSelection = [`anchor/${anchorIndex}`];
       movableObjects.push(new MovableObject(individualSelection));
     }
 
