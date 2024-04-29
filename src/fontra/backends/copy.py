@@ -3,7 +3,7 @@ import asyncio
 import logging
 import pathlib
 import shutil
-from contextlib import aclosing
+from contextlib import aclosing, asynccontextmanager
 
 from ..core.protocols import ReadableFontBackend, WritableFontBackend
 from . import getFileSystemBackend, newFileSystemBackend
@@ -20,16 +20,39 @@ async def copyFont(
     progressInterval=0,
     continueOnError=False,
 ) -> None:
+    if glyphNames is not None:
+        from ..workflow.actions import SubsetGlyphsAction
+
+        subsetter = SubsetGlyphsAction(glyphNames=glyphNames)
+        context = subsetter.connect(sourceBackend)
+    else:
+        context = async_nullcontext(sourceBackend)
+
+    async with context as sourceBackend:
+        return await _copyFont(
+            sourceBackend,
+            destBackend,
+            numTasks=numTasks,
+            progressInterval=progressInterval,
+            continueOnError=continueOnError,
+        )
+
+
+async def _copyFont(
+    sourceBackend: ReadableFontBackend,
+    destBackend: WritableFontBackend,
+    *,
+    numTasks=1,
+    progressInterval=0,
+    continueOnError=False,
+) -> None:
     await destBackend.putFontInfo(await sourceBackend.getFontInfo())
     await destBackend.putAxes(await sourceBackend.getAxes())
     await destBackend.putSources(await sourceBackend.getSources())
     await destBackend.putFeatures(await sourceBackend.getFeatures())
     await destBackend.putCustomData(await sourceBackend.getCustomData())
     glyphMap = await sourceBackend.getGlyphMap()
-    glyphNamesInFont = set(glyphMap)
-    glyphNamesToCopy = sorted(
-        glyphNamesInFont if not glyphNames else set(glyphNames) & set(glyphMap)
-    )
+    glyphNamesToCopy = sorted(glyphMap)
     glyphNamesCopied: set[str] = set()
 
     tasks = [
@@ -161,6 +184,11 @@ async def mainAsync() -> None:
             progressInterval=args.progress_interval,
             continueOnError=args.continue_on_error,
         )
+
+
+@asynccontextmanager
+async def async_nullcontext(item):
+    yield item
 
 
 def main():
