@@ -1,4 +1,4 @@
-from fontra.workflow.features import mergeFeatures, subsetFeatures
+from fontra.workflow.features import LayoutHandling, mergeFeatures, subsetFeatures
 
 mergeFeatureTextA = """\
 languagesystem DFLT dflt;
@@ -78,7 +78,7 @@ def test_subsetFeatures():
         expectedMergeFeatureText,
         glyphMap,
         keepGlyphNames=["A", "A.alt"],
-        layoutHandling="subset",
+        layoutHandling=LayoutHandling.SUBSET,
     )
     assert ["A", "A.alt"] == sorted(subsettedGlyphMap)
     assert expectedSubsettedFeatureText == subsettedFeatureText
@@ -87,7 +87,7 @@ def test_subsetFeatures():
         expectedMergeFeatureText,
         glyphMap,
         keepGlyphNames=["A"],
-        layoutHandling="closure",
+        layoutHandling=LayoutHandling.CLOSURE,
     )
     assert ["A", "A.alt"] == sorted(subsettedGlyphMap)
     assert expectedSubsettedFeatureText == subsettedFeatureText

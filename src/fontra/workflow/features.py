@@ -1,9 +1,16 @@
 from dataclasses import dataclass, field
+from enum import StrEnum
 from typing import Iterable
 
 import ufomerge
 
 from fontra.core.classes import OpenTypeFeatures
+
+
+class LayoutHandling(StrEnum):
+    SUBSET = "subset"
+    CLOSURE = "closure"
+    IGNORE = "ignore"
 
 
 def mergeFeatures(
@@ -25,7 +32,7 @@ def subsetFeatures(
     featureText: str,
     glyphMap: dict[str, list[int]],
     keepGlyphNames: Iterable[str],
-    layoutHandling="subset",
+    layoutHandling=LayoutHandling.SUBSET,
 ) -> tuple[str, dict[str, list[int]]]:
     subsettedUFO = MinimalUFO()
     ufo = MinimalUFO(glyphMap=glyphMap, features=OpenTypeFeatures(text=featureText))
