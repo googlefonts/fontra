@@ -109,7 +109,6 @@ async def mainAsync() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
     parser.add_argument("destination")
-    parser.add_argument("--overwrite", type=bool, default=False)
     parser.add_argument(
         "--glyph-names",
         help="A comma- or space-separated list of glyph names",
