@@ -737,7 +737,7 @@ class DesignspaceBackend:
     async def getFeatures(self) -> OpenTypeFeatures:
         featureText = self.defaultReader.readFeatures()
         ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
-        featureText = resolveFeatureIncludes(featureText, ufoDir)
+        featureText = resolveFeatureIncludes(featureText, ufoDir, set(self.glyphMap))
         return OpenTypeFeatures(language="fea", text=featureText)
 
     async def putFeatures(self, features: OpenTypeFeatures) -> None:
@@ -1368,14 +1368,14 @@ def componentNamesFromGlyph(glyph):
     }
 
 
-def resolveFeatureIncludes(featureText, includeDir):
+def resolveFeatureIncludes(featureText, includeDir, glyphNames):
     if "include" in featureText:
         from io import StringIO
 
         from fontTools.feaLib.parser import Parser
 
         f = StringIO(featureText)
-        p = Parser(f, includeDir=includeDir)
+        p = Parser(f, includeDir=includeDir, glyphNames=glyphNames)
         ff = p.parse()
         featureText = ff.asFea()
 
