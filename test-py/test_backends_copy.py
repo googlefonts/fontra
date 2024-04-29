@@ -1,6 +1,7 @@
 import pathlib
 import subprocess
 
+import pytest
 from test_backends_designspace import fileNamesFromDir
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
@@ -14,12 +15,13 @@ mutatorDSPath = (
 )
 
 
-async def test_copyFont(tmpdir):
+@pytest.mark.parametrize("glyphNames", [None, ["A", "period"]])
+async def test_copyFont(tmpdir, glyphNames):
     tmpdir = pathlib.Path(tmpdir)
     destPath = tmpdir / "MutatorCopy.designspace"
     sourceFont = getFileSystemBackend(mutatorDSPath)
     destFont = newFileSystemBackend(destPath)
-    await copyFont(sourceFont, destFont)
+    await copyFont(sourceFont, destFont, glyphNames=glyphNames)
     assert [
         "MutatorCopy.designspace",
         "MutatorCopy_BoldCondensed.ufo",
