@@ -570,6 +570,11 @@ async def test_putFeatures(writableTestFont):
     assert features.text == featureText
 
 
+async def test_getFeatures(testFont):
+    features = await testFont.getFeatures()
+    assert "# Included feature text" in features.text
+
+
 def fileNamesFromDir(path):
     return sorted(p.name for p in path.iterdir())
 
