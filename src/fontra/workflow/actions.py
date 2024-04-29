@@ -1010,6 +1010,7 @@ class TrimAxesAction(BaseFilterAction):
             }
 
             if not rangeDict:
+                sourceRanges[axis.name] = (axis.minValue, axis.maxValue)
                 continue
 
             trimmedAxis.minValue = max(
@@ -1075,13 +1076,23 @@ class TrimAxesAction(BaseFilterAction):
             defaultLocation | source.location for source in instancer.activeSources
         ]
 
-        _, sourceRanges = await self._trimmedAxesAndSourceRanges
+        _, trimmedRanges = await self._trimmedAxesAndSourceRanges
+
+        # Existing source locations can be out of range and cause trouble,
+        # so we ensure all source location values are within range.
+        # The trouble being that we otherwise may have locations that
+        # are unique until they are normalized, and then VariationModel
+        # complains.
+        localRanges = {
+            axis.name: (axis.minValue, axis.maxValue) for axis in instancer.glyph.axes
+        }
+        ranges = localRanges | trimmedRanges
 
         for loc in newLocations:
             for axisName, value in loc.items():
-                if axisName not in sourceRanges:
+                if axisName not in ranges:
                     continue
-                minValue, maxValue = sourceRanges[axisName]
+                minValue, maxValue = ranges[axisName]
                 trimmedValue = max(min(value, maxValue), minValue)
                 loc[axisName] = trimmedValue
 
