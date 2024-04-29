@@ -111,10 +111,12 @@ async def mainAsync() -> None:
     parser.add_argument("destination")
     parser.add_argument("--overwrite", type=bool, default=False)
     parser.add_argument(
-        "--glyphs", help="A comma- or space-separated list of glyph names", default=""
+        "--glyph-names",
+        help="A comma- or space-separated list of glyph names",
+        default="",
     )
     parser.add_argument(
-        "--glyphs-file",
+        "--glyph-names-file",
         type=argparse.FileType("r"),
         help="A file containing a space-separated list glyph names",
     )
@@ -130,10 +132,10 @@ async def mainAsync() -> None:
     args = parser.parse_args()
 
     glyphNames = [
-        glyphName for part in args.glyphs.split(",") for glyphName in part.split()
+        glyphName for part in args.glyph_names.split(",") for glyphName in part.split()
     ]
-    if args.glyphs_file is not None:
-        glyphNames.extend(args.glyphs_file.read().split())
+    if args.glyph_names_file is not None:
+        glyphNames.extend(args.glyph_names_file.read().split())
 
     sourcePath = pathlib.Path(args.source)
     assert sourcePath.exists()
