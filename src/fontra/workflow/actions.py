@@ -119,7 +119,7 @@ class BaseFilterAction:
     @asynccontextmanager
     async def connect(
         self, input: ReadableFontBackend
-    ) -> AsyncGenerator[ReadableFontBackend | OutputActionProtocol, None]:
+    ) -> AsyncGenerator[ReadableFontBackend, None]:
         self.input = input
         try:
             yield self
@@ -441,7 +441,7 @@ class OutputAction:
     @asynccontextmanager
     async def connect(
         self, input: ReadableFontBackend
-    ) -> AsyncGenerator[ReadableFontBackend | OutputActionProtocol, None]:
+    ) -> AsyncGenerator[OutputActionProtocol, None]:
         self.input = input
         try:
             yield self
