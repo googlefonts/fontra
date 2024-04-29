@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Iterable
 
 import ufomerge
@@ -28,11 +27,14 @@ def subsetFeatures(
     keepGlyphNames: Iterable[str],
     layoutHandling="subset",
 ) -> tuple[str, dict[str, list[int]]]:
+    subsettedUFO = MinimalUFO()
     ufo = MinimalUFO(glyphMap=glyphMap, features=OpenTypeFeatures(text=featureText))
 
-    subsettedUFO = _subset_ufo(
-        ufo, glyphs=keepGlyphNames, layout_handling=layoutHandling
+    merger = ufomerge.UFOMerger(
+        subsettedUFO, ufo, glyphs=keepGlyphNames, layout_handling=layoutHandling
     )
+    merger.merge()
+
     return subsettedUFO.features.text, subsettedUFO.getMergedGlyphMap()
 
 
@@ -79,26 +81,3 @@ class MinimalUFO:
 
     def getMergedGlyphMap(self) -> dict[str, list[int]]:
         return self.glyphMap | self.updatedGlyphMap
-
-
-def _subset_ufo(
-    ufo: MinimalUFO,
-    glyphs: Iterable[str] = [],
-    exclude_glyphs: Iterable[str] = [],
-    codepoints: Iterable[int] = [],
-    layout_handling: str = "subset",
-    include_dir: Path | None = None,
-    original_glyphlist: Iterable[str] | None = None,
-) -> MinimalUFO:
-    new_ufo = MinimalUFO()
-    ufomerge.merge_ufos(
-        new_ufo,
-        ufo,
-        glyphs,
-        exclude_glyphs,
-        codepoints,
-        layout_handling=layout_handling,
-        include_dir=include_dir,
-        original_glyphlist=original_glyphlist,
-    )
-    return new_ufo
