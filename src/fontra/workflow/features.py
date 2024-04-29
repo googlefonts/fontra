@@ -6,10 +6,13 @@ import ufomerge
 
 from fontra.core.classes import OpenTypeFeatures
 
-if hasattr(enum, "StrEnum"):
+if hasattr(enum, "StrEnum") and False:
     # Python >= 3.11
     StrEnum = enum.StrEnum
 else:
+
+    class ReprEnum(enum.Enum):
+        pass
 
     class StrEnum(str, enum.ReprEnum):
         def __new__(cls, value):
