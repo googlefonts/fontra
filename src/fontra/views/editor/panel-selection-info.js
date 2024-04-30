@@ -4,7 +4,6 @@ import * as html from "/core/html-utils.js";
 import { rectFromPoints, rectSize, unionRect } from "/core/rectangle.js";
 import { getDecomposedIdentity } from "/core/transform.js";
 import {
-  GLYPH_LOCKED_LIB_KEY,
   enumerate,
   getCharFromCodePoint,
   makeUPlusStringFromCodePoint,
@@ -142,7 +141,7 @@ export default class SelectionInfoPanel extends Panel {
     const selectedGlyphInfo = this.sceneController.sceneModel.getSelectedGlyphInfo();
     const varGlyphController =
       await this.sceneController.sceneModel.getSelectedVariableGlyphController();
-    const glyphLocked = !!varGlyphController?.glyph.customData[GLYPH_LOCKED_LIB_KEY];
+    const glyphLocked = !!varGlyphController?.glyph.customData["fontra.glyph.locked"];
 
     if (
       selectedGlyphInfo?.isUndefined &&
@@ -430,7 +429,7 @@ export default class SelectionInfoPanel extends Panel {
   }
 
   async _glyphLocking(varGlyph) {
-    if (varGlyph.customData[GLYPH_LOCKED_LIB_KEY]) {
+    if (varGlyph.customData["fontra.glyph.locked"]) {
       const result = await dialog(
         `Are you sure you want to unlock glyph ${varGlyph.name}?`,
         "",
@@ -448,14 +447,15 @@ export default class SelectionInfoPanel extends Panel {
 
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       this.sceneController.selection = new Set();
-      glyph.customData[GLYPH_LOCKED_LIB_KEY] = !glyph.customData[GLYPH_LOCKED_LIB_KEY];
+      glyph.customData["fontra.glyph.locked"] =
+        !glyph.customData["fontra.glyph.locked"];
 
       const iconElement = this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
-      iconElement.src = glyph.customData[GLYPH_LOCKED_LIB_KEY]
+      iconElement.src = glyph.customData["fontra.glyph.locked"]
         ? "/tabler-icons/lock-open-2.svg"
         : "/tabler-icons/lock.svg";
 
-      return glyph.customData[GLYPH_LOCKED_LIB_KEY] ? "lock glyph" : "unlock glyph";
+      return glyph.customData["fontra.glyph.locked"] ? "lock glyph" : "unlock glyph";
     });
   }
 

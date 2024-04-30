@@ -2,7 +2,6 @@ import { difference, isSuperset, union } from "../core/set-ops.js";
 import { subVectors } from "../core/vector.js";
 import { decomposedToTransform } from "/core/transform.js";
 import {
-  GLYPH_LOCKED_LIB_KEY,
   chain,
   enumerate,
   makeUPlusStringFromCodePoint,
@@ -186,7 +185,7 @@ registerVisualizationLayerDefinition({
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
 
-    if (!!positionedGlyph.varGlyph.glyph.customData[GLYPH_LOCKED_LIB_KEY]) {
+    if (!!positionedGlyph.varGlyph.glyph.customData["fontra.glyph.locked"]) {
       var img = new Image();
       img.src = "/tabler-icons/lock.svg";
       context.scale(1, -1);
