@@ -1395,12 +1395,13 @@ class GeneratePaltFeature(BaseFilterAction):
     async def processFeatures(self, features):
         glyphMap = await self.getGlyphMap()
 
-        horizontalAdjustments = await self._collectAdjustments(glyphMap)
+        axes = await self.getAxes()
+
+        horizontalAdjustments = await self._collectAdjustments(glyphMap, axes.axes)
 
         if not horizontalAdjustments:
             return features
 
-        axes = await self.getAxes()
         axisList = [
             SimpleNamespace(
                 axisTag=axis.tag,
@@ -1438,9 +1439,33 @@ class GeneratePaltFeature(BaseFilterAction):
         featureText, _ = mergeFeatures(features.text, glyphMap, featureText, glyphMap)
         return OpenTypeFeatures(text=featureText)
 
-    async def _collectAdjustments(self, glyphMap):
+    async def _collectAdjustments(self, glyphMap, axes):
+        mapFuncs = {}
+        for axis in axes:
+            if axis.mapping:
+                forwardMap = dict([(a, b) for a, b in axis.mapping])
+                userRange = [axis.minValue, axis.defaultValue, axis.maxValue]
+                sourceRange = [
+                    piecewiseLinearMap(value, forwardMap) for value in userRange
+                ]
+                backwardMap = list(zip(sourceRange, userRange))
+                mapFuncs[axis.name] = partial(
+                    piecewiseLinearMap,
+                    mapping=dict(backwardMap),
+                )
+            else:
+                mapFuncs[axis.name] = lambda v: v
+
         horizontalAdjustments = {}
         for glyphName in glyphMap:
+            try:
+                glyph = await self.getGlyph(glyphName)
+            except Exception as e:
+                logger.error(
+                    f"{self.actionName}: glyph {glyphName} caused an error: {e!r}"
+                )
+                continue
+
             glyph = await self.getGlyph(glyphName)
             adjustments = []
             for source in getActiveSources(glyph.sources):
@@ -1455,9 +1480,11 @@ class GeneratePaltFeature(BaseFilterAction):
                 if lsbAnchorPos is not None and rsbAnchorPos is not None:
                     placementAdjust = -lsbAnchorPos
                     advanceAdjust = rsbAnchorPos - lsbAnchorPos - layerGlyph.xAdvance
-                    adjustments.append(
-                        (source.location, placementAdjust, advanceAdjust)
-                    )
+                    location = {
+                        name: mapFuncs[name](value)
+                        for name, value in source.location.items()
+                    }
+                    adjustments.append((location, placementAdjust, advanceAdjust))
             if adjustments:
                 horizontalAdjustments[glyphName] = adjustments
 
