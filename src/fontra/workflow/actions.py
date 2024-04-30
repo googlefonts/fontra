@@ -10,6 +10,7 @@ from contextlib import aclosing, asynccontextmanager
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
 from functools import cached_property, partial
+from types import SimpleNamespace
 from typing import (
     Any,
     AsyncContextManager,
@@ -45,7 +46,8 @@ from ..core.classes import (
 from ..core.instancer import FontInstancer
 from ..core.path import PackedPath
 from ..core.protocols import ReadableFontBackend
-from .features import LayoutHandling, subsetFeatures
+from .features import LayoutHandling, mergeFeatures, subsetFeatures
+from .featurewriter import FeatureWriter, VariableScalar
 from .merger import cmapFromGlyphMap
 
 # All actions should use this logger, regardless of where they are defined
@@ -1383,3 +1385,80 @@ def roundCoordinates(
         ]
 
     return replace(glyph, **newFields)
+
+
+@registerActionClass("generate-palt-feature")
+@dataclass(kw_only=True)
+class GeneratePaltFeature(BaseFilterAction):
+    languageSystems: list[tuple[str, str]] = field(default_factory=list)
+
+    async def processFeatures(self, features):
+        glyphMap = await self.getGlyphMap()
+
+        horizontalAdjustments = await self._collectAdjustments(glyphMap)
+
+        if not horizontalAdjustments:
+            return features
+
+        axes = await self.getAxes()
+        axisList = [
+            SimpleNamespace(
+                axisTag=axis.tag,
+                minValue=axis.minValue,
+                defaultValue=axis.defaultValue,
+                maxValue=axis.maxValue,
+            )
+            for axis in axes.axes
+        ]
+
+        axisTagMapping = {axis.name: axis.tag for axis in axes.axes}
+
+        w = FeatureWriter()
+        for script, language in self.languageSystems:
+            w.addLanguageSystem(script, language)
+
+        fea = w.addFeature("palt")
+        for glyphName, adjustments in horizontalAdjustments.items():
+            if len(adjustments) == 1:
+                _, placementScalar, advanceScalar = adjustments[0]
+            else:
+                placementScalar = VariableScalar()
+                placementScalar.axes = axisList
+                advanceScalar = VariableScalar()
+                advanceScalar.axes = axisList
+                for location, placementAdjust, advanceAdjust in adjustments:
+                    location = {axisTagMapping[k]: v for k, v in location.items()}
+                    locationTuple = tuplifyLocation(location)
+                    placementScalar.add_value(locationTuple, placementAdjust)
+                    advanceScalar.add_value(locationTuple, advanceAdjust)
+            fea.addLine(f"pos {glyphName} <{placementScalar} 0 {advanceScalar} 0>")
+
+        featureText = w.asFea()
+
+        featureText, _ = mergeFeatures(features.text, glyphMap, featureText, glyphMap)
+        return OpenTypeFeatures(text=featureText)
+
+    async def _collectAdjustments(self, glyphMap):
+        horizontalAdjustments = {}
+        for glyphName in glyphMap:
+            glyph = await self.getGlyph(glyphName)
+            adjustments = []
+            for source in getActiveSources(glyph.sources):
+                layerGlyph = glyph.layers[source.layerName].glyph
+                lsbAnchorPos = None
+                rsbAnchorPos = None
+                for anchor in layerGlyph.anchors:
+                    if anchor.name == "LSB":
+                        lsbAnchorPos = anchor.x
+                    elif anchor.name == "RSB":
+                        rsbAnchorPos = anchor.x
+                if lsbAnchorPos is not None and rsbAnchorPos is not None:
+                    placementAdjust = -lsbAnchorPos
+                    advanceAdjust = rsbAnchorPos - lsbAnchorPos - layerGlyph.xAdvance
+                    adjustments.append(
+                        (source.location, placementAdjust, advanceAdjust)
+                    )
+            if adjustments:
+                horizontalAdjustments[glyphName] = adjustments
+
+        return horizontalAdjustments
