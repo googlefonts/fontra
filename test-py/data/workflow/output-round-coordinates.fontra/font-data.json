@@ -1,0 +1,24 @@
+{
+"axes": {
+"axes": [
+{
+"name": "weight",
+"label": "weight",
+"tag": "wght",
+"minValue": 223,
+"defaultValue": 431,
+"maxValue": 734,
+"mapping": [
+[
+223,
+257.625
+],
+[
+734,
+704.75
+]
+]
+}
+]
+}
+}

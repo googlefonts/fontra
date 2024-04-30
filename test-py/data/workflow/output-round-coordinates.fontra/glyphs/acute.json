@@ -1,0 +1,118 @@
+{
+"name": "acute",
+"sources": [
+{
+"name": "weight=257.625",
+"layerName": "weight=257.625",
+"location": {
+"weight": 257.625
+}
+},
+{
+"name": "weight=439.625",
+"layerName": "weight=439.625",
+"location": {
+"weight": 439.625
+}
+},
+{
+"name": "weight=704.75",
+"layerName": "weight=704.75",
+"location": {
+"weight": 704.75
+}
+}
+],
+"layers": {
+"weight=257.625": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 45,
+"y": 745
+},
+{
+"x": 214,
+"y": 752
+},
+{
+"x": 214,
+"y": 798
+},
+{
+"x": 45,
+"y": 785
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 259
+}
+},
+"weight=439.625": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 38,
+"y": 771
+},
+{
+"x": 237,
+"y": 776
+},
+{
+"x": 237,
+"y": 844
+},
+{
+"x": 38,
+"y": 826
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 275
+}
+},
+"weight=704.75": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 26,
+"y": 809
+},
+{
+"x": 271,
+"y": 811
+},
+{
+"x": 271,
+"y": 913
+},
+{
+"x": 26,
+"y": 887
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 298
+}
+}
+}
+}

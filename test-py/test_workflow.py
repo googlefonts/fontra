@@ -930,7 +930,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: input
               source: "test-common/fonts/MutatorSans.fontra"
             - action: subset-glyphs
-              glyphNames: ["E", "Q"]
+              glyphNames: ["E", "Aacute"]
             - action: subset-axes
               axisNames: ["weight"]
             - action: move-default-location
