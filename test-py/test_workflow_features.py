@@ -55,6 +55,43 @@ def test_mergeFeatures():
     assert expectedMergeFeatureText == mergedFeatureText
 
 
+mergeFeatureTextSameGlyphsA = """\
+languagesystem DFLT dflt;
+feature calt {
+    sub A by A.alt;
+} calt;
+"""
+
+mergeFeatureTextSameGlyphsB = """\
+languagesystem latn dflt;
+feature calt {
+    sub A by B;
+} calt;
+"""
+
+expectedMergeFeatureTextSameGlyphs = """\
+languagesystem DFLT dflt;
+languagesystem latn dflt;
+feature calt {
+    sub A by A.alt;
+} calt;
+
+feature calt {
+    sub A by B;
+} calt;
+"""
+
+
+def test_mergeFeatures_sameGlyphs():
+    glyphMap = makeGlyphMap(["A", "A.alt", "B"])
+
+    mergedFeatureText, glyphMap = mergeFeatures(
+        mergeFeatureTextSameGlyphsA, glyphMap, mergeFeatureTextSameGlyphsB, glyphMap
+    )
+    assert ["A", "A.alt", "B"] == sorted(glyphMap)
+    assert expectedMergeFeatureTextSameGlyphs == mergedFeatureText
+
+
 expectedSubsettedFeatureText = """\
 languagesystem DFLT dflt;
 languagesystem latn dflt;
