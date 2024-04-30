@@ -1,6 +1,8 @@
 import { strFromU8, strToU8, unzlibSync, zlibSync } from "../third-party/fflate.js";
 import { Transform } from "./transform.js";
 
+export const GLYPH_LOCKED_LIB_KEY = "xyz.fontra.glyph-locked";
+
 export function objectsEqual(obj1, obj2) {
   // Shallow object compare. Arguments may be null or undefined
   if (!obj1 || !obj2) {
