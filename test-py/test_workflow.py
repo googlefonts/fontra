@@ -948,6 +948,36 @@ def test_command(tmpdir, configYAMLSources):
             False,
             [],
         ),
+        (
+            "generate-palt-feature",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-generate-palt-feature.fontra"
+            - action: generate-palt-feature
+            - action: output
+              destination: "output-generate-palt-feature.fontra"
+            """,
+            False,
+            [],
+        ),
+        (
+            "generate-palt-feature-single-source",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-generate-palt-feature.fontra"
+            - action: subset-axes
+              axisNames: []
+            - action: generate-palt-feature
+              languageSystems:
+              - ["kana", "dflt"]
+            - action: output
+              destination: "output-generate-palt-feature-single-source.fontra"
+            """,
+            False,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(
