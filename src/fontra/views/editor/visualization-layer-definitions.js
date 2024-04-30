@@ -182,11 +182,10 @@ registerVisualizationLayerDefinition({
   colors: { strokeColor: "#0004" },
   colorsDarkMode: { strokeColor: "#FFF6" },
   draw: (context, positionedGlyph, parameters, model, controller) => {
-    const glyph = positionedGlyph.varGlyph.glyph;
     context.strokeStyle = parameters.strokeColor;
     context.lineWidth = parameters.strokeWidth;
 
-    if (glyph.customData?.locked) {
+    if (positionedGlyph.varGlyph.glyph.customData?.locked) {
       console.log("draw locked");
       context.beginPath();
       // for now only draw a circle, later we will use a lock icon

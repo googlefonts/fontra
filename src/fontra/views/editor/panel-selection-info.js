@@ -138,6 +138,11 @@ export default class SelectionInfoPanel extends Panel {
     this.haveInstance = !!instance;
 
     const selectedGlyphInfo = this.sceneController.sceneModel.getSelectedGlyphInfo();
+    const varGlyphController =
+      await this.sceneController.sceneModel.getSelectedVariableGlyphController();
+    const glyphLocked = varGlyphController
+      ? varGlyphController.glyph.customData?.locked
+      : false;
 
     if (
       selectedGlyphInfo?.isUndefined &&
@@ -165,12 +170,13 @@ export default class SelectionInfoPanel extends Panel {
         type: "header",
         label: "Glyph info",
         auxiliaryElement: html.createDomElement("icon-button", {
-          "style": `width: 1.3em;`,
           "id": "glyphLocking",
-          "src": "/tabler-icons/lock-open-2.svg",
-          "srcToggle": "/tabler-icons/lock.svg",
+          "style": `width: 1.3em;`,
+          "src": glyphLocked
+            ? "/tabler-icons/lock.svg"
+            : "/tabler-icons/lock-open-2.svg",
           "onclick": (event) => this._glyphLocking(),
-          "data-tooltip": "Un/Lock glyph",
+          "data-tooltip": glyphLocked ? "Locked glyph" : "Unlocked glyph",
           "data-tooltipposition": "left",
         }),
       });
@@ -426,18 +432,14 @@ export default class SelectionInfoPanel extends Panel {
   async _glyphLocking() {
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       this.sceneController.selection = new Set();
-      console.log("before Locked glyph", glyph.name, glyph.customData.locked);
       glyph.customData.locked = !glyph.customData.locked;
-      console.log("after Locked glyph", glyph.name, glyph.customData.locked);
 
       const iconElement = this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
-      console.log("iconElement.src", iconElement.src);
       iconElement.src = glyph.customData.locked
         ? "/tabler-icons/lock-open-2.svg"
         : "/tabler-icons/lock.svg";
-      console.log("iconElement.src", iconElement.src);
 
-      return glyph.customData.locked ? "unlock glyph" : "lock glyph";
+      return glyph.customData.locked ? "lock glyph" : "unlock glyph";
     });
   }
 
