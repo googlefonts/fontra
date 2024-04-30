@@ -103,6 +103,9 @@ export class Sidebar {
   }
 
   applyWidth(width, saveLocalStorage = false) {
+    if (width === undefined) {
+      return;
+    }
     if (saveLocalStorage) {
       localStorage.setItem(`fontra-sidebar-width-${this.identifier}`, width);
     }
@@ -176,8 +179,6 @@ export class Sidebar {
       document.addEventListener("pointerup", onPointerUp, { once: true });
     });
     const sidebarWidth = this.getStoredWidth();
-    if (sidebarWidth !== undefined) {
-      this.applyWidth(sidebarWidth);
-    }
+    this.applyWidth(sidebarWidth);
   }
 }
