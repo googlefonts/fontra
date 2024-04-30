@@ -705,12 +705,18 @@ export class SceneController {
     return this._glyphEditingDonePromise;
   }
 
-  async editGlyphAndRecordChanges(editFunc, senderID, requireSelectedLayer) {
+  async editGlyphAndRecordChanges(
+    editFunc,
+    senderID,
+    requireSelectedLayer,
+    ignoreGlyphLock = false
+  ) {
     return await this._editGlyphOrInstanceAndRecordChanges(
       editFunc,
       senderID,
       false,
-      requireSelectedLayer
+      requireSelectedLayer,
+      ignoreGlyphLock
     );
   }
 
@@ -746,7 +752,8 @@ export class SceneController {
     editFunc,
     senderID,
     doInstance,
-    requireSelectedLayer
+    requireSelectedLayer,
+    ignoreGlyphLock = false
   ) {
     await this._editGlyphOrInstance(
       (sendIncrementalChange, subject) => {
@@ -762,7 +769,8 @@ export class SceneController {
       },
       senderID,
       doInstance,
-      requireSelectedLayer
+      requireSelectedLayer,
+      ignoreGlyphLock
     );
   }
 
@@ -770,7 +778,13 @@ export class SceneController {
     return await this._editGlyphOrInstance(editFunc, senderID, false, true);
   }
 
-  async _editGlyphOrInstance(editFunc, senderID, doInstance, requireSelectedLayer) {
+  async _editGlyphOrInstance(
+    editFunc,
+    senderID,
+    doInstance,
+    requireSelectedLayer,
+    ignoreGlyphLock = false
+  ) {
     if (this._glyphEditingDonePromise) {
       try {
         // A previous call to _editGlyphOrInstance is still ongoing.
@@ -789,7 +803,8 @@ export class SceneController {
         editFunc,
         senderID,
         doInstance,
-        requireSelectedLayer
+        requireSelectedLayer,
+        ignoreGlyphLock
       );
     } finally {
       // // Simulate slow response
@@ -806,7 +821,8 @@ export class SceneController {
     editFunc,
     senderID,
     doInstance,
-    requireSelectedLayer
+    requireSelectedLayer,
+    ignoreGlyphLock = false
   ) {
     if (this.fontController.readOnly) {
       this._dispatchEvent("glyphEditCannotEditReadOnly");
@@ -816,7 +832,7 @@ export class SceneController {
     const varGlyph = await this.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
 
-    if (!!varGlyph?.glyph.customData["fontra.glyph.locked"]) {
+    if (!!varGlyph?.glyph.customData["fontra.glyph.locked"] && !ignoreGlyphLock) {
       this._dispatchEvent("glyphEditCannotEditLocked");
       return;
     }

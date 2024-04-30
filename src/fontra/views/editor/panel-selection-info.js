@@ -445,18 +445,24 @@ export default class SelectionInfoPanel extends Panel {
       }
     }
 
-    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
-      this.sceneController.selection = new Set();
-      glyph.customData["fontra.glyph.locked"] =
-        !glyph.customData["fontra.glyph.locked"];
+    await this.sceneController.editGlyphAndRecordChanges(
+      (glyph) => {
+        this.sceneController.selection = new Set();
+        glyph.customData["fontra.glyph.locked"] =
+          !glyph.customData["fontra.glyph.locked"];
 
-      const iconElement = this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
-      iconElement.src = glyph.customData["fontra.glyph.locked"]
-        ? "/tabler-icons/lock-open-2.svg"
-        : "/tabler-icons/lock.svg";
+        const iconElement =
+          this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
+        iconElement.src = glyph.customData["fontra.glyph.locked"]
+          ? "/tabler-icons/lock-open-2.svg"
+          : "/tabler-icons/lock.svg";
 
-      return glyph.customData["fontra.glyph.locked"] ? "lock glyph" : "unlock glyph";
-    });
+        return glyph.customData["fontra.glyph.locked"] ? "lock glyph" : "unlock glyph";
+      },
+      undefined,
+      undefined,
+      true // ignoreGlyphLock
+    );
   }
 
   async _resetTransformationForComponent(componentIndex) {
