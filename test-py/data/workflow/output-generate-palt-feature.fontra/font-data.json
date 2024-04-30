@@ -7,7 +7,17 @@
 "tag": "wght",
 "minValue": 400,
 "defaultValue": 400,
-"maxValue": 900
+"maxValue": 900,
+"mapping": [
+[
+400,
+100
+],
+[
+900,
+200
+]
+]
 }
 ]
 }

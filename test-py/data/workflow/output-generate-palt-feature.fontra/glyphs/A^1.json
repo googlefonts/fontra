@@ -6,10 +6,10 @@
 "layerName": "<default>"
 },
 {
-"name": "weight=900",
-"layerName": "weight=900",
+"name": "weight=200",
+"layerName": "weight=200",
 "location": {
-"weight": 900
+"weight": 200
 }
 }
 ],
@@ -56,7 +56,7 @@
 ]
 }
 },
-"weight=900": {
+"weight=200": {
 "glyph": {
 "path": {
 "contours": [
