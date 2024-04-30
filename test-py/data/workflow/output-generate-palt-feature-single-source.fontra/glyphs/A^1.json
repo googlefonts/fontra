@@ -1,0 +1,53 @@
+{
+"name": "A",
+"sources": [
+{
+"name": "<default>",
+"layerName": "<default>"
+}
+],
+"layers": {
+"<default>": {
+"glyph": {
+"path": {
+"contours": [
+{
+"points": [
+{
+"x": 200,
+"y": 700
+},
+{
+"x": 200,
+"y": -100
+},
+{
+"x": 800,
+"y": -100
+},
+{
+"x": 800,
+"y": 700
+}
+],
+"isClosed": true
+}
+]
+},
+"xAdvance": 1000,
+"anchors": [
+{
+"name": "LSB",
+"x": 110,
+"y": 400
+},
+{
+"name": "RSB",
+"x": 890,
+"y": 400
+}
+]
+}
+}
+}
+}

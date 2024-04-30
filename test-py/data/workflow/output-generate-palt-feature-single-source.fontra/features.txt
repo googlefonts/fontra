@@ -1,0 +1,10 @@
+languagesystem DFLT dflt;
+languagesystem latn dflt;
+languagesystem kana dflt;
+feature calt {
+    sub A A by A;
+} calt;
+
+feature palt {
+    pos A <-110 0 -220 0>;
+} palt;
