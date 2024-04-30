@@ -58,13 +58,9 @@ export class IconButton extends UnlitElement {
   }
 
   render() {
-    const svgContent = html.createDomElement("inline-svg", { src: this.src });
-    if (this.id) {
-      svgContent.id = this.id;
-    }
     this._button = html.button(
       { onclick: this._buttonOnClick, disabled: this._buttonDisabled },
-      [svgContent]
+      [html.createDomElement("inline-svg", { src: this.src })]
     );
     return this._button;
   }
