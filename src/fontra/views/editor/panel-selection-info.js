@@ -13,6 +13,7 @@ import {
   splitGlyphNameExtension,
   throttleCalls,
 } from "/core/utils.js";
+import { dialog } from "/web-components/modal-dialog.js";
 import { Form } from "/web-components/ui-form.js";
 
 export default class SelectionInfoPanel extends Panel {
@@ -175,8 +176,8 @@ export default class SelectionInfoPanel extends Panel {
           "src": glyphLocked
             ? "/tabler-icons/lock.svg"
             : "/tabler-icons/lock-open-2.svg",
-          "onclick": (event) => this._glyphLocking(),
-          "data-tooltip": glyphLocked ? "Locked glyph" : "Unlocked glyph",
+          "onclick": (event) => this._glyphLocking(varGlyphController.glyph),
+          "data-tooltip": glyphLocked ? "Unlock glyph" : "Lock glyph",
           "data-tooltipposition": "left",
         }),
       });
@@ -429,7 +430,23 @@ export default class SelectionInfoPanel extends Panel {
     }
   }
 
-  async _glyphLocking() {
+  async _glyphLocking(varGlyph) {
+    if (varGlyph.customData.locked) {
+      const result = await dialog(
+        `Are you sure you want to unlock glyph ${varGlyph.name}?`,
+        "",
+        [
+          { title: "Cancel", isCancelButton: true },
+          { title: "Yes", isDefaultButton: true, resultValue: "ok" },
+        ]
+      );
+
+      if (!result) {
+        // User cancelled
+        return;
+      }
+    }
+
     await this.sceneController.editGlyphAndRecordChanges((glyph) => {
       this.sceneController.selection = new Set();
       glyph.customData.locked = !glyph.customData.locked;

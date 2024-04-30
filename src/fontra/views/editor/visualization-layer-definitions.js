@@ -186,11 +186,10 @@ registerVisualizationLayerDefinition({
     context.lineWidth = parameters.strokeWidth;
 
     if (positionedGlyph.varGlyph.glyph.customData?.locked) {
-      console.log("draw locked");
-      context.beginPath();
-      // for now only draw a circle, later we will use a lock icon
-      context.arc(0, 0, 10, 0, 2 * Math.PI);
-      context.fill();
+      var img = new Image();
+      img.src = "/tabler-icons/lock.svg";
+      context.scale(1, -1);
+      context.drawImage(img, positionedGlyph.glyph.xAdvance / 2 - 15, 0, 30, 30);
     }
   },
 });
