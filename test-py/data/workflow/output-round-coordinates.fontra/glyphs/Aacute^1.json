@@ -1,0 +1,79 @@
+{
+"name": "Aacute",
+"sources": [
+{
+"name": "weight=257.625",
+"layerName": "weight=257.625",
+"location": {
+"weight": 257.625
+}
+},
+{
+"name": "weight=439.625",
+"layerName": "weight=439.625",
+"location": {
+"weight": 439.625
+}
+},
+{
+"name": "weight=704.75",
+"layerName": "weight=704.75",
+"location": {
+"weight": 704.75
+}
+}
+],
+"layers": {
+"weight=257.625": {
+"glyph": {
+"components": [
+{
+"name": "A"
+},
+{
+"name": "acute",
+"transformation": {
+"translateX": 115,
+"translateY": 17
+}
+}
+],
+"xAdvance": 449
+}
+},
+"weight=439.625": {
+"glyph": {
+"components": [
+{
+"name": "A"
+},
+{
+"name": "acute",
+"transformation": {
+"translateX": 142,
+"translateY": 12
+}
+}
+],
+"xAdvance": 538
+}
+},
+"weight=704.75": {
+"glyph": {
+"components": [
+{
+"name": "A"
+},
+{
+"name": "acute",
+"transformation": {
+"translateX": 182,
+"translateY": 4
+}
+}
+],
+"xAdvance": 669
+}
+}
+}
+}

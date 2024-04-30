@@ -6,6 +6,7 @@ from dataclasses import dataclass, field, replace
 from enum import IntEnum
 from typing import TypedDict
 
+from fontTools.misc.roundTools import otRound
 from fontTools.misc.transform import DecomposedTransform, Transform
 
 logger = logging.getLogger(__name__)
@@ -121,6 +122,9 @@ class PackedPath:
         for i in range(0, len(self.coordinates), 2):
             newCoordinates.extend(transform.transformPoint(coordinates[i : i + 2]))
         return replace(self, coordinates=newCoordinates)
+
+    def rounded(self, roundFunc=otRound) -> PackedPath:
+        return replace(self, coordinates=[roundFunc(v) for v in self.coordinates])
 
     def unpackedContours(self) -> list[dict]:
         unpackedContours = []

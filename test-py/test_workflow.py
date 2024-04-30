@@ -203,7 +203,7 @@ def test_command(tmpdir, configYAMLSources):
 
 
 @pytest.mark.parametrize(
-    "testName, configSource, expectedLog",
+    "testName, configSource, continueOnError, expectedLog",
     [
         (
             "plain",
@@ -216,6 +216,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output1.fontra"
             """,
+            False,
             [
                 (
                     logging.WARNING,
@@ -234,6 +235,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output2.fontra"
             """,
+            False,
             [
                 (
                     logging.ERROR,
@@ -265,6 +267,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output3.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -285,6 +288,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-rename-axes.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -300,6 +304,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-drop-unused-sources-and-layers.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -315,6 +320,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-drop-axis-mapping.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -331,6 +337,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-drop-axis-mapping.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -347,6 +354,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-drop-axis-mapping-noop.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -367,6 +375,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-adjust-axes.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -390,6 +399,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-adjust-axes-no-mapping.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -413,6 +423,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-adjust-axes-no-source-remap.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -437,6 +448,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-adjust-axes-no-mapping-no-source-remap.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -459,6 +471,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-adjust-axes-set-axis-values.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -471,6 +484,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-decompose-composites.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -484,6 +498,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-decompose-only-variable-composites.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -497,6 +512,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-decompose-variable-composites.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -510,6 +526,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-decompose-variable-composites-deep-axes.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -526,6 +543,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-set-font-info.fontra"
             """,
+            False,
             [(logging.ERROR, "set-font-info: unknown name(s): 'unknownName'")],
         ),
         (
@@ -538,6 +556,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-drop-unreachable-glyphs-composed.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -551,6 +570,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-drop-unreachable-glyphs-decomposed.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -565,6 +585,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-keep-drop-glyphs.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -579,6 +600,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-keep-drop-glyphs.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -593,6 +615,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-keep-drop-glyphs.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -607,6 +630,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-axes.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -621,6 +645,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-axes.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -639,6 +664,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-move-default-location.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -659,6 +685,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-trim-axes.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -671,6 +698,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-error-glyph.fontra"
             """,
+            True,
             [
                 (
                     40,
@@ -691,6 +719,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-check-interpolation.fontra"
             """,
+            True,
             [
                 (
                     40,
@@ -712,6 +741,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-merge-codepoint-conflict.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -725,6 +755,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "input1-A.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -740,6 +771,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-by-development-status-yes.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -755,6 +787,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-by-development-status-no.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -771,6 +804,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-by-development-status-no.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -787,6 +821,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-by-development-status-yes.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -803,6 +838,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-by-development-status-no.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -824,6 +860,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-amend-cmap.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -840,6 +877,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-amend-cmap.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -853,6 +891,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-merge-features.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -866,6 +905,7 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-features.fontra"
             """,
+            False,
             [],
         ),
         (
@@ -880,11 +920,39 @@ def test_command(tmpdir, configYAMLSources):
             - action: output
               destination: "output-subset-features.fontra"
             """,
+            False,
+            [],
+        ),
+        (
+            "round-coordinates",
+            """
+            steps:
+            - action: input
+              source: "test-common/fonts/MutatorSans.fontra"
+            - action: subset-glyphs
+              glyphNames: ["E", "Aacute"]
+            - action: subset-axes
+              axisNames: ["weight"]
+            - action: move-default-location
+              newDefaultUserLocation:
+                weight: 431
+            - action: trim-axes
+              axes:
+                weight:
+                  minValue: 223
+                  maxValue: 734
+            - action: round-coordinates
+            - action: output
+              destination: "output-round-coordinates.fontra"
+            """,
+            False,
             [],
         ),
     ],
 )
-async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):
+async def test_workflow_actions(
+    testName, configSource, continueOnError, expectedLog, tmpdir, caplog
+):
     caplog.set_level(logging.WARNING)
     tmpdir = pathlib.Path(tmpdir)
     config = yaml.safe_load(configSource)
@@ -895,7 +963,7 @@ async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, cap
         assert endPoints.endPoint is not None
 
         for output in endPoints.outputs:
-            await output.process(tmpdir, continueOnError=True)
+            await output.process(tmpdir, continueOnError=continueOnError)
             expectedPath = workflowDataDir / output.destination
             resultPath = tmpdir / output.destination
             if expectedPath.is_file():

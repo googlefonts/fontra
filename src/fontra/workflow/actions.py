@@ -1315,3 +1315,71 @@ def parseCodePointString(codePointString, actionName):
         )
 
     return int(codePointString[2:], 16)
+
+
+@registerActionClass("round-coordinates")
+@dataclass(kw_only=True)
+class RoundCoordinatesAction(BaseFilterAction):
+    roundPathCoordinates: bool = True
+    roundComponentOrigins: bool = True
+    roundGlyphMetrics: bool = True
+    roundAnchors: bool = True
+
+    async def processGlyph(self, glyph: VariableGlyph) -> VariableGlyph:
+        roundPathCoordinates = self.roundPathCoordinates
+        roundComponentOrigins = self.roundComponentOrigins
+        roundGlyphMetrics = self.roundGlyphMetrics
+        roundAnchors = self.roundAnchors
+
+        newLayers = {
+            layerName: replace(
+                layer,
+                glyph=roundCoordinates(
+                    layer.glyph,
+                    roundPathCoordinates,
+                    roundComponentOrigins,
+                    roundGlyphMetrics,
+                    roundAnchors,
+                ),
+            )
+            for layerName, layer in glyph.layers.items()
+        }
+        return replace(glyph, layers=newLayers)
+
+
+def roundCoordinates(
+    glyph, roundPathCoordinates, roundComponentOrigins, roundGlyphMetrics, roundAnchors
+):
+    newFields = {}
+
+    if roundPathCoordinates:
+        newFields["path"] = glyph.path.rounded()
+
+    if roundComponentOrigins:
+        newFields["components"] = [
+            replace(
+                compo,
+                transformation=replace(
+                    compo.transformation,
+                    translateX=otRound(compo.transformation.translateX),
+                    translateY=otRound(compo.transformation.translateY),
+                ),
+            )
+            for compo in glyph.components
+        ]
+
+    if roundGlyphMetrics:
+        if glyph.xAdvance:
+            newFields["xAdvance"] = otRound(glyph.xAdvance)
+        if glyph.yAdvance:
+            newFields["yAdvance"] = otRound(glyph.yAdvance)
+        if glyph.verticalOrigin:
+            newFields["verticalOrigin"] = otRound(glyph.verticalOrigin)
+
+    if roundAnchors:
+        newFields["anchors"] = [
+            replace(anchor, x=otRound(anchor.x), y=otRound(anchor.y))
+            for anchor in glyph.anchors
+        ]
+
+    return replace(glyph, **newFields)
