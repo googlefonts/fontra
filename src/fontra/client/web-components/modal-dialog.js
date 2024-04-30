@@ -145,8 +145,13 @@ export class ModalDialog extends SimpleElement {
       onkeydown: (event) => this._handleKeyDown(event),
     });
     this.dialogElement = document.createElement("dialog");
-    this.dialogElement.addEventListener("click", (event) => {
-      if (event.target.nodeName == "DIALOG") {
+    let downInBackdrop;
+    this.dialogElement.addEventListener("pointerdown", (event) => {
+      downInBackdrop = event.target.nodeName == "DIALOG";
+    });
+    this.dialogElement.addEventListener("pointerup", (event) => {
+      const upInBackdrop = event.target.nodeName == "DIALOG";
+      if (upInBackdrop && downInBackdrop) {
         this._dialogDone(null);
       }
     });
