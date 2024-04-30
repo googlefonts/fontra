@@ -222,6 +222,19 @@ async def test_addAnchor(writableTestFont):
     )
 
 
+async def test_add_glyph_set_locked(writableTestFont):
+    glyphName = "E"
+    glyphMap = await writableTestFont.getGlyphMap()
+    glyph = await writableTestFont.getGlyph(glyphName)
+    glyph.customData["locked"] = True
+
+    await writableTestFont.putGlyph(glyphName, glyph, glyphMap[glyphName])
+
+    savedGlyph = await writableTestFont.getGlyph(glyphName)
+
+    assert glyph.customData.get("locked") == savedGlyph.customData.get("locked")
+
+
 async def test_addLocalAxisAndSource(writableTestFont):
     glyphName = "period"
     glyphMap = await writableTestFont.getGlyphMap()

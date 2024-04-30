@@ -161,6 +161,20 @@ export default class SelectionInfoPanel extends Panel {
     const formContents = [];
     if (glyphName) {
       formContents.push({
+        key: "glyphLocking",
+        type: "header",
+        label: "Glyph info",
+        auxiliaryElement: html.createDomElement("icon-button", {
+          "style": `width: 1.3em;`,
+          "id": "glyphLocking",
+          "src": "/tabler-icons/lock-open-2.svg",
+          "srcToggle": "/tabler-icons/lock.svg",
+          "onclick": (event) => this._glyphLocking(),
+          "data-tooltip": "Un/Lock glyph",
+          "data-tooltipposition": "left",
+        }),
+      });
+      formContents.push({
         key: "glyphName",
         type: "text",
         label: "Glyph name",
@@ -407,6 +421,24 @@ export default class SelectionInfoPanel extends Panel {
         await this._setupSelectionInfoHandlers(glyphName);
       }
     }
+  }
+
+  async _glyphLocking() {
+    await this.sceneController.editGlyphAndRecordChanges((glyph) => {
+      this.sceneController.selection = new Set();
+      console.log("before Locked glyph", glyph.name, glyph.customData.locked);
+      glyph.customData.locked = !glyph.customData.locked;
+      console.log("after Locked glyph", glyph.name, glyph.customData.locked);
+
+      const iconElement = this.infoForm.shadowRoot.querySelectorAll("#glyphLocking")[0];
+      console.log("iconElement.src", iconElement.src);
+      iconElement.src = glyph.customData.locked
+        ? "/tabler-icons/lock-open-2.svg"
+        : "/tabler-icons/lock.svg";
+      console.log("iconElement.src", iconElement.src);
+
+      return glyph.customData.locked ? "unlock glyph" : "lock glyph";
+    });
   }
 
   async _resetTransformationForComponent(componentIndex) {
