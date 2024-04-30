@@ -288,9 +288,9 @@ class DesignspaceBackend:
         layers = {}
         sourceNameMapping = {}
         layerNameMapping = {}
-        # we need to gather customData from VariableGlyph
+        # TODO: we need to gather customData from VariableGlyph
         # not sure how to do this currently
-        customData = {}
+        # customData = {}
 
         for ufoLayer in self.ufoLayers:
             if glyphName not in ufoLayer.glyphSet:
@@ -344,7 +344,7 @@ class DesignspaceBackend:
             axes=axes,
             sources=sources,
             layers=layers,
-            customData=customData,
+            # TODO: customData=customData,
         )
 
     def _unpackLocalDesignSpace(self, dsDict, defaultLayerName):
