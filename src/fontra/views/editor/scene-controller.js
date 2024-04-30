@@ -816,6 +816,11 @@ export class SceneController {
     const varGlyph = await this.fontController.getGlyph(glyphName);
     const baseChangePath = ["glyphs", glyphName];
 
+    if (!!varGlyph?.glyph.customData["fontra.glyph.locked"]) {
+      this._dispatchEvent("glyphEditCannotEditLocked");
+      return;
+    }
+
     let glyphController;
     if (doInstance || requireSelectedLayer) {
       glyphController = this.sceneModel.getSelectedPositionedGlyph().glyph;

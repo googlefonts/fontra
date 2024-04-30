@@ -188,6 +188,10 @@ export class EditorController {
       this.showDialogGlyphEditCannotEditReadOnly();
     });
 
+    this.sceneController.addEventListener("glyphEditCannotEditLocked", async () => {
+      this.showDialogGlyphEditCannotEditLocked();
+    });
+
     this.sceneController.addEventListener("glyphEditLocationNotAtSource", async () => {
       this.showDialogGlyphEditLocationNotAtSource();
     });
@@ -582,6 +586,14 @@ export class EditorController {
     await message(
       `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
       "The font is read-only."
+    );
+  }
+
+  async showDialogGlyphEditCannotEditLocked(create = false) {
+    const glyphName = this.sceneSettings.selectedGlyphName;
+    await message(
+      `Can’t ${create ? "create" : "edit"} glyph “${glyphName}”`,
+      "The glyph is locked."
     );
   }
 
