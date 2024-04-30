@@ -53,6 +53,13 @@ class SingleAxisMapping:
 
 
 @dataclass(kw_only=True)
+class OpenTypeFeatures:
+    language: str = "fea"
+    text: str = ""
+    customData: CustomData = field(default_factory=dict)
+
+
+@dataclass(kw_only=True)
 class Font:
     unitsPerEm: int = 1000
     fontInfo: FontInfo = field(default_factory=FontInfo)
@@ -60,6 +67,7 @@ class Font:
     glyphMap: dict[str, list[int]] = field(default_factory=dict)
     axes: Axes = field(default_factory=Axes)
     sources: dict[str, FontSource] = field(default_factory=dict)
+    features: OpenTypeFeatures = field(default_factory=OpenTypeFeatures)
     customData: CustomData = field(default_factory=dict)
 
     def _trackAssignedAttributeNames(self):
@@ -431,9 +439,9 @@ registerHook(FontAxis, customData=_unstructureDictSortedRecursively)
 registerHook(DiscreteFontAxis, customData=_unstructureDictSortedRecursively)
 registerHook(FontInfo, customData=_unstructureDictSortedRecursively)
 registerHook(Axes, customData=_unstructureDictSortedRecursively)
+registerHook(OpenTypeFeatures, customData=_unstructureDictSortedRecursively)
 registerHook(
     Font,
-    omitIfDefault=False,
     source=_unstructureDictSorted,
     customData=_unstructureDictSortedRecursively,
 )

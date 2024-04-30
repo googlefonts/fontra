@@ -7,6 +7,7 @@ import pytest
 
 from fontra.backends import getFileSystemBackend, newFileSystemBackend
 from fontra.backends.copy import copyFont
+from fontra.core.classes import OpenTypeFeatures
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
 commonFontsDir = pathlib.Path(__file__).parent.parent / "test-common" / "fonts"
@@ -90,3 +91,25 @@ async def test_emptyFontraProject(tmpdir):
     backend = getFileSystemBackend(path)
     glyphMap = await backend.getGlyphMap()
     assert [] == list(glyphMap)
+
+
+test_featureData = OpenTypeFeatures(language="fea", text="# dummy fea data\n")
+
+
+async def test_features(writableFontraFont):
+    blankFeatures = await writableFontraFont.getFeatures()
+    assert blankFeatures == OpenTypeFeatures()
+
+    await writableFontraFont.putFeatures(test_featureData)
+    writableFontraFont.flush()
+    assert writableFontraFont.featureTextPath.is_file()
+
+    reopenedFont = getFileSystemBackend(writableFontraFont.path)
+    assert await reopenedFont.getFeatures() == test_featureData
+
+    await writableFontraFont.putFeatures(OpenTypeFeatures())
+    writableFontraFont.flush()
+    assert not writableFontraFont.featureTextPath.is_file()
+
+    reopenedFont = getFileSystemBackend(writableFontraFont.path)
+    assert await reopenedFont.getFeatures() == OpenTypeFeatures()

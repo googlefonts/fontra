@@ -13,6 +13,7 @@ from fontTools.varLib.models import (
 )
 
 from .classes import (
+    Anchor,
     Component,
     DiscreteFontAxis,
     FontAxis,
@@ -452,6 +453,21 @@ def _(v: Component, scalar):
 
 
 @add.register
+def _(v1: Anchor, v2):
+    return _anchorOperator(v1, v2, add)
+
+
+@subtract.register
+def _(v1: Anchor, v2):
+    return _anchorOperator(v1, v2, subtract)
+
+
+@multiply.register
+def _(v: Anchor, scalar):
+    return _anchorMul(v, scalar)
+
+
+@add.register
 def _(v1: None, v2):
     if v2 is not None:
         raise InterpolationError("incompatible value, None expected")
@@ -512,6 +528,16 @@ def _componentMul(compo, scalar):
         transformation=multiply(compo.transformation, scalar),
         location=_locationMul(compo.location, scalar),
     )
+
+
+def _anchorOperator(anchor1, anchor2, op):
+    if anchor1.name != anchor2.name:
+        raise InterpolationError("incompatible anchor name")
+    return replace(anchor1, x=op(anchor1.x, anchor2.x), y=op(anchor1.y, anchor2.y))
+
+
+def _anchorMul(anchor, scalar):
+    return replace(anchor, x=anchor.x * scalar, y=anchor.y * scalar)
 
 
 def _locationOperator(v1, v2, op):

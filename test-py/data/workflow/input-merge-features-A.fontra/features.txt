@@ -1,0 +1,10 @@
+languagesystem DFLT dflt;
+
+@group_A = [A A.alt];
+
+# comment 1
+
+feature calt {
+    sub A by A.alt;
+    sub @group_A by A.alt;
+} calt;

@@ -16,6 +16,7 @@ from fontra.core.classes import (
     GlyphSource,
     Layer,
     MultipleAxisMapping,
+    OpenTypeFeatures,
     StaticGlyph,
     unstructure,
 )
@@ -556,6 +557,22 @@ async def test_putAxes_with_mappings(tmpdir):
     reopenedBackend = getFileSystemBackend(outputPath)
     roundTrippedAxes = await reopenedBackend.getAxes()
     assert expectedAxesWithMappings == roundTrippedAxes
+
+
+async def test_putFeatures(writableTestFont):
+    featureText = "# dummy feature data"
+
+    async with aclosing(writableTestFont):
+        await writableTestFont.putFeatures(OpenTypeFeatures(text=featureText))
+
+    reopenedBackend = getFileSystemBackend(writableTestFont.dsDoc.path)
+    features = await reopenedBackend.getFeatures()
+    assert features.text == featureText
+
+
+async def test_getFeatures(testFont):
+    features = await testFont.getFeatures()
+    assert "# Included feature text" in features.text
 
 
 def fileNamesFromDir(path):

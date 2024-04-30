@@ -4,8 +4,16 @@ from copy import deepcopy
 from dataclasses import dataclass, replace
 from typing import Any
 
-from ..core.classes import Axes, FontInfo, FontSource, VariableGlyph, unstructure
+from ..core.classes import (
+    Axes,
+    FontInfo,
+    FontSource,
+    OpenTypeFeatures,
+    VariableGlyph,
+    unstructure,
+)
 from ..core.protocols import ReadableFontBackend
+from .features import mergeFeatures
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +34,10 @@ class FontBackendMerger:
     async def _prepareGlyphMap(self):
         if self._glyphMap is not None:
             return
-        glyphMapA = await self.inputA.getGlyphMap()
-        glyphMapB = await self.inputB.getGlyphMap()
-        cmapA = cmapFromGlyphMap(glyphMapA)
-        cmapB = cmapFromGlyphMap(glyphMapB)
+        self._glyphMapA = await self.inputA.getGlyphMap()
+        self._glyphMapB = await self.inputB.getGlyphMap()
+        cmapA = cmapFromGlyphMap(self._glyphMapA)
+        cmapB = cmapFromGlyphMap(self._glyphMapB)
 
         cmap = cmapA | cmapB
         encodedGlyphMap = defaultdict(set)
@@ -38,11 +46,11 @@ class FontBackendMerger:
 
         self._glyphMap = {
             glyphName: sorted(encodedGlyphMap.get(glyphName, []))
-            for glyphName in glyphMapA | glyphMapB
+            for glyphName in self._glyphMapA | self._glyphMapB
         }
 
-        self._glyphNamesB = set(glyphMapB)
-        self._glyphNamesA = set(glyphMapA)
+        self._glyphNamesB = set(self._glyphMapB)
+        self._glyphNamesA = set(self._glyphMapA)
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         await self._prepareGlyphMap()
@@ -84,6 +92,27 @@ class FontBackendMerger:
     async def getGlyphMap(self) -> dict[str, list[int]]:
         await self._prepareGlyphMap()
         return self._glyphMap
+
+    async def getFeatures(self) -> OpenTypeFeatures:
+        await self._prepareGlyphMap()
+        featuresA = await self.inputA.getFeatures()
+        featuresB = await self.inputB.getFeatures()
+        if featuresA.language != "fea" or featuresB.language != "fea":
+            logger.warning("can't merge languages other than fea")
+            return featuresB
+
+        if not featuresA.text:
+            return featuresB
+        elif not featuresB.text:
+            return featuresA
+
+        mergedFeatureText, mergedGlyphMap = mergeFeatures(
+            featuresA.text, self._glyphMapA, featuresB.text, self._glyphMapB
+        )
+
+        assert set(mergedGlyphMap) == set(self._glyphMap)
+
+        return OpenTypeFeatures(text=mergedFeatureText)
 
     async def getCustomData(self) -> dict[str, Any]:
         customDataA = await self.inputA.getCustomData()

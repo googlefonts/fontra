@@ -3,7 +3,7 @@ from typing import Any
 
 import yaml
 
-from ..core.classes import Axes, FontInfo, FontSource, VariableGlyph
+from ..core.classes import Axes, FontInfo, FontSource, OpenTypeFeatures, VariableGlyph
 from ..core.protocols import ReadableFontBackend
 from ..workflow.workflow import Workflow
 
@@ -49,6 +49,10 @@ class WorkflowBackend:
     async def getGlyphMap(self) -> dict[str, list[int]]:
         endPoint = await self._ensureSetup()
         return await endPoint.getGlyphMap()
+
+    async def getFeatures(self) -> OpenTypeFeatures:
+        endPoint = await self._ensureSetup()
+        return await endPoint.getFeatures()
 
     async def getCustomData(self) -> dict[str, Any]:
         endPoint = await self._ensureSetup()

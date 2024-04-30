@@ -36,6 +36,7 @@ from ..core.classes import (
     FontSource,
     GlyphSource,
     Layer,
+    OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
     structure,
@@ -44,6 +45,7 @@ from ..core.classes import (
 from ..core.instancer import FontInstancer
 from ..core.path import PackedPath
 from ..core.protocols import ReadableFontBackend
+from .features import LayoutHandling, subsetFeatures
 from .merger import cmapFromGlyphMap
 
 # All actions should use this logger, regardless of where they are defined
@@ -117,7 +119,7 @@ class BaseFilterAction:
     @asynccontextmanager
     async def connect(
         self, input: ReadableFontBackend
-    ) -> AsyncGenerator[ReadableFontBackend | OutputActionProtocol, None]:
+    ) -> AsyncGenerator[ReadableFontBackend, None]:
         self.input = input
         try:
             yield self
@@ -154,6 +156,10 @@ class BaseFilterAction:
         glyphMap = await self.validatedInput.getGlyphMap()
         return await self.processGlyphMap(glyphMap)
 
+    async def getFeatures(self) -> OpenTypeFeatures:
+        features = await self.validatedInput.getFeatures()
+        return await self.processFeatures(features)
+
     async def getCustomData(self) -> dict[str, Any]:
         customData = await self.validatedInput.getCustomData()
         return await self.processCustomData(customData)
@@ -184,6 +190,9 @@ class BaseFilterAction:
         self, glyphMap: dict[str, list[int]]
     ) -> dict[str, list[int]]:
         return glyphMap
+
+    async def processFeatures(self, features: OpenTypeFeatures) -> OpenTypeFeatures:
+        return features
 
     async def processCustomData(self, customData):
         return customData
@@ -262,27 +271,54 @@ class ScaleAction(BaseFilterAction):
 @dataclass(kw_only=True)
 class BaseGlyphSubsetterAction(BaseFilterAction):
     _glyphMap: dict[str, list[int]] | None = field(init=False, repr=False, default=None)
+    layoutHandling: str = LayoutHandling.SUBSET
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
-        glyphMap = await self.subsettedGlyphMap
+        glyphMap, _ = await self._subsettedGlyphMapAndFeatures
         if glyphName not in glyphMap:
             return None
         return await self.validatedInput.getGlyph(glyphName)
 
+    async def getFeatures(self) -> OpenTypeFeatures:
+        _, features = await self._subsettedGlyphMapAndFeatures
+        return features
+
     async def getGlyphMap(self) -> dict[str, list[int]]:
-        return await self.subsettedGlyphMap
+        glyphMap, _ = await self._subsettedGlyphMapAndFeatures
+        return glyphMap
 
     @async_cached_property
-    async def subsettedGlyphMap(self) -> dict[str, list[int]]:
-        return await self._buildSubsettedGlyphMap(
-            await self.validatedInput.getGlyphMap()
-        )
+    async def _subsettedGlyphMapAndFeatures(
+        self,
+    ) -> tuple[dict[str, list[int]], OpenTypeFeatures]:
+        originalGlyphMap = await self.validatedInput.getGlyphMap()
+        reachableGlyphs = await self._buildSubsettedGlyphSet(originalGlyphMap)
 
-    async def _buildSubsettedGlyphMap(
+        features = await self.validatedInput.getFeatures()
+
+        if features.language != "fea" and features.text:
+            logger.warning(
+                f"{self.actionName}: can't subset features in language={features.language}"
+            )
+        elif features.text:
+            subsettedFeatureText, subsettedGlyphMap = subsetFeatures(
+                features.text,
+                originalGlyphMap,
+                keepGlyphNames=reachableGlyphs,
+                layoutHandling=LayoutHandling(self.layoutHandling),
+            )
+            reachableGlyphs = set(subsettedGlyphMap)
+            features = OpenTypeFeatures(text=subsettedFeatureText)
+
+        reachableGlyphs = await self._componentsClosure(reachableGlyphs)
+        glyphMap = filterGlyphMap(originalGlyphMap, reachableGlyphs)
+        return glyphMap, features
+
+    async def _buildSubsettedGlyphSet(
         self, originalGlyphMap: dict[str, list[int]]
-    ) -> dict[str, list[int]]:
+    ) -> set[str]:
         # Override
-        return originalGlyphMap
+        raise NotImplementedError
 
     async def _componentsClosure(self, glyphNames) -> set[str]:
         glyphsToCheck = set(glyphNames)  # this set will shrink
@@ -330,9 +366,9 @@ def filterGlyphMap(glyphMap, glyphNames):
 class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
     keepNotdef: bool = True
 
-    async def _buildSubsettedGlyphMap(
+    async def _buildSubsettedGlyphSet(
         self, originalGlyphMap: dict[str, list[int]]
-    ) -> dict[str, list[int]]:
+    ) -> set[str]:
         reachableGlyphs = {
             glyphName
             for glyphName, codePoints in originalGlyphMap.items()
@@ -342,8 +378,7 @@ class DropUnreachableGlyphsAction(BaseGlyphSubsetterAction):
         if self.keepNotdef:
             reachableGlyphs.add(".notdef")
 
-        reachableGlyphs = await self._componentsClosure(reachableGlyphs)
-        return filterGlyphMap(originalGlyphMap, reachableGlyphs)
+        return reachableGlyphs
 
 
 @registerActionClass("subset-glyphs")
@@ -366,17 +401,16 @@ class SubsetGlyphsAction(BaseGlyphSubsetterAction):
             dropGlyphNames = set(path.read_text().split())
             self.dropGlyphNames = set(self.dropGlyphNames) | dropGlyphNames
 
-    async def _buildSubsettedGlyphMap(
+    async def _buildSubsettedGlyphSet(
         self, originalGlyphMap: dict[str, list[int]]
-    ) -> dict[str, list[int]]:
+    ) -> set[str]:
         glyphNames = set(self.glyphNames)
         if not glyphNames and self.dropGlyphNames:
             glyphNames = set(originalGlyphMap)
         if self.dropGlyphNames:
             glyphNames = glyphNames - set(self.dropGlyphNames)
 
-        glyphNames = await self._componentsClosure(glyphNames)
-        return filterGlyphMap(originalGlyphMap, glyphNames)
+        return glyphNames
 
 
 @registerActionClass("input")
@@ -407,7 +441,7 @@ class OutputAction:
     @asynccontextmanager
     async def connect(
         self, input: ReadableFontBackend
-    ) -> AsyncGenerator[ReadableFontBackend | OutputActionProtocol, None]:
+    ) -> AsyncGenerator[OutputActionProtocol, None]:
         self.input = input
         try:
             yield self
@@ -976,6 +1010,7 @@ class TrimAxesAction(BaseFilterAction):
             }
 
             if not rangeDict:
+                sourceRanges[axis.name] = (axis.minValue, axis.maxValue)
                 continue
 
             trimmedAxis.minValue = max(
@@ -1041,13 +1076,23 @@ class TrimAxesAction(BaseFilterAction):
             defaultLocation | source.location for source in instancer.activeSources
         ]
 
-        _, sourceRanges = await self._trimmedAxesAndSourceRanges
+        _, trimmedRanges = await self._trimmedAxesAndSourceRanges
+
+        # Existing source locations can be out of range and cause trouble,
+        # so we ensure all source location values are within range.
+        # The trouble being that we otherwise may have locations that
+        # are unique until they are normalized, and then VariationModel
+        # complains.
+        localRanges = {
+            axis.name: (axis.minValue, axis.maxValue) for axis in instancer.glyph.axes
+        }
+        ranges = localRanges | trimmedRanges
 
         for loc in newLocations:
             for axisName, value in loc.items():
-                if axisName not in sourceRanges:
+                if axisName not in ranges:
                     continue
-                minValue, maxValue = sourceRanges[axisName]
+                minValue, maxValue = ranges[axisName]
                 trimmedValue = max(min(value, maxValue), minValue)
                 loc[axisName] = trimmedValue
 
@@ -1152,9 +1197,9 @@ class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
         "default"  # "any", "all" or "default" (the default source)
     )
 
-    async def _buildSubsettedGlyphMap(
+    async def _buildSubsettedGlyphSet(
         self, originalGlyphMap: dict[str, list[int]]
-    ) -> dict[str, list[int]]:
+    ) -> set[str]:
         statuses = set(self.statuses)
         selectedGlyphs = set()
 
@@ -1184,8 +1229,7 @@ class SubsetByDevelopmentStatusAction(BaseGlyphSubsetterAction):
             ):
                 selectedGlyphs.add(glyphName)
 
-        selectedGlyphs = await self._componentsClosure(selectedGlyphs)
-        return filterGlyphMap(originalGlyphMap, selectedGlyphs)
+        return selectedGlyphs
 
 
 @registerActionClass("drop-shapes")

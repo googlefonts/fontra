@@ -1,0 +1,10 @@
+languagesystem latn dflt;
+
+@group_B = [B B.alt C];
+
+# comment 2
+
+feature calt {
+    sub B by B.alt;
+    sub @group_B by C;
+} calt;

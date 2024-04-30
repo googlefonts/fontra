@@ -681,3 +681,8 @@ async def test_drawPoints(
         decomposeVarComponents=decomposeVarComponents,
     )
     assert expectedResult == pen.value
+
+
+async def test_anchorInterpolation(instancer):
+    glyphInstancer = await instancer.getGlyphInstancer("E")
+    _ = glyphInstancer.instantiate({"Weight": 400})

@@ -93,6 +93,7 @@ async def mainAsync() -> None:
 
     rootLogger = logging.getLogger()
     rootLogger.setLevel(logging.NOTSET)
+    rootLogger.handlers.clear()
     stdoutHandler = logging.StreamHandler(sys.stdout)
     stdoutHandler.setLevel(levelNamesMapping[args.logging_level])
     stdoutHandler.setFormatter(

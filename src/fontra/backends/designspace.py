@@ -41,6 +41,7 @@ from ..core.classes import (
     GlyphSource,
     Layer,
     MultipleAxisMapping,
+    OpenTypeFeatures,
     StaticGlyph,
     VariableGlyph,
 )
@@ -733,6 +734,30 @@ class DesignspaceBackend:
                 setattr(info, name, value)
             reader.writeInfo(info)
 
+    async def getFeatures(self) -> OpenTypeFeatures:
+        featureText = self.defaultReader.readFeatures()
+        ufoDir = pathlib.Path(self.defaultUFOLayer.path).parent
+        featureText = resolveFeatureIncludes(featureText, ufoDir, set(self.glyphMap))
+        return OpenTypeFeatures(language="fea", text=featureText)
+
+    async def putFeatures(self, features: OpenTypeFeatures) -> None:
+        if features.language != "fea":
+            logger.warning(
+                f"skip writing features in unsupported language: {features.language!r}"
+            )
+            return
+
+        # Once this https://github.com/googlefonts/ufo2ft/pull/833 gets merged:
+        # Write feature text to default UFO, write empty feature text to others
+        # Until then: write features to all UFOs
+        paths = sorted(set(self.ufoLayers.iterAttrs("path")))
+        # defaultPath = self.defaultUFOLayer.path
+        for path in paths:
+            writer = self.ufoManager.getReader(path)
+            # featureText = features.text if path == defaultPath else ""
+            featureText = features.text
+            writer.writeFeatures(featureText)
+
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.dsDoc.lib)
 
@@ -1341,3 +1366,17 @@ def componentNamesFromGlyph(glyph):
         for layer in glyph.layers.values()
         for compo in layer.glyph.components
     }
+
+
+def resolveFeatureIncludes(featureText, includeDir, glyphNames):
+    if "include" in featureText:
+        from io import StringIO
+
+        from fontTools.feaLib.parser import Parser
+
+        f = StringIO(featureText)
+        p = Parser(f, includeDir=includeDir, glyphNames=glyphNames)
+        ff = p.parse()
+        featureText = ff.asFea()
+
+    return featureText

@@ -842,6 +842,46 @@ def test_command(tmpdir, configYAMLSources):
             """,
             [],
         ),
+        (
+            "merge-features",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/input-merge-features-A.fontra"
+            - action: input
+              source: "test-py/data/workflow/input-merge-features-B.fontra"
+            - action: output
+              destination: "output-merge-features.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-features",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/output-merge-features.fontra"
+            - action: subset-glyphs
+              glyphNames: ["A", "A.alt"]
+            - action: output
+              destination: "output-subset-features.fontra"
+            """,
+            [],
+        ),
+        (
+            "subset-features-closure",
+            """
+            steps:
+            - action: input
+              source: "test-py/data/workflow/output-merge-features.fontra"
+            - action: subset-glyphs
+              layoutHandling: "closure"
+              glyphNames: ["A"]
+            - action: output
+              destination: "output-subset-features.fontra"
+            """,
+            [],
+        ),
     ],
 )
 async def test_workflow_actions(testName, configSource, expectedLog, tmpdir, caplog):

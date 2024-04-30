@@ -3,7 +3,7 @@ import asyncio
 import logging
 import pathlib
 import shutil
-from contextlib import aclosing
+from contextlib import aclosing, asynccontextmanager
 
 from ..core.protocols import ReadableFontBackend, WritableFontBackend
 from . import getFileSystemBackend, newFileSystemBackend
@@ -20,15 +20,38 @@ async def copyFont(
     progressInterval=0,
     continueOnError=False,
 ) -> None:
+    if glyphNames is not None:
+        from ..workflow.actions import SubsetGlyphsAction
+
+        subsetter = SubsetGlyphsAction(glyphNames=glyphNames)
+        context = subsetter.connect(sourceBackend)
+    else:
+        context = async_nullcontext(sourceBackend)
+
+    async with context as sourceBackend:
+        return await _copyFont(
+            sourceBackend,
+            destBackend,
+            numTasks=numTasks,
+            progressInterval=progressInterval,
+            continueOnError=continueOnError,
+        )
+
+
+async def _copyFont(
+    sourceBackend: ReadableFontBackend,
+    destBackend: WritableFontBackend,
+    *,
+    numTasks=1,
+    progressInterval=0,
+    continueOnError=False,
+) -> None:
     await destBackend.putFontInfo(await sourceBackend.getFontInfo())
     await destBackend.putAxes(await sourceBackend.getAxes())
     await destBackend.putSources(await sourceBackend.getSources())
     await destBackend.putCustomData(await sourceBackend.getCustomData())
     glyphMap = await sourceBackend.getGlyphMap()
-    glyphNamesInFont = set(glyphMap)
-    glyphNamesToCopy = sorted(
-        glyphNamesInFont if not glyphNames else set(glyphNames) & set(glyphMap)
-    )
+    glyphNamesToCopy = sorted(glyphMap)
     glyphNamesCopied: set[str] = set()
 
     tasks = [
@@ -57,6 +80,8 @@ async def copyFont(
         e = exceptions[0]
         assert e is not None
         raise e
+
+    await destBackend.putFeatures(await sourceBackend.getFeatures())
 
 
 async def copyGlyphs(
@@ -108,12 +133,13 @@ async def mainAsync() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source")
     parser.add_argument("destination")
-    parser.add_argument("--overwrite", type=bool, default=False)
     parser.add_argument(
-        "--glyphs", help="A comma- or space-separated list of glyph names", default=""
+        "--glyph-names",
+        help="A comma- or space-separated list of glyph names",
+        default="",
     )
     parser.add_argument(
-        "--glyphs-file",
+        "--glyph-names-file",
         type=argparse.FileType("r"),
         help="A file containing a space-separated list glyph names",
     )
@@ -129,10 +155,10 @@ async def mainAsync() -> None:
     args = parser.parse_args()
 
     glyphNames = [
-        glyphName for part in args.glyphs.split(",") for glyphName in part.split()
+        glyphName for part in args.glyph_names.split(",") for glyphName in part.split()
     ]
-    if args.glyphs_file is not None:
-        glyphNames.extend(args.glyphs_file.read().split())
+    if args.glyph_names_file is not None:
+        glyphNames.extend(args.glyph_names_file.read().split())
 
     sourcePath = pathlib.Path(args.source)
     assert sourcePath.exists()
@@ -154,11 +180,16 @@ async def mainAsync() -> None:
         await copyFont(
             sourceBackend,
             destBackend,
-            glyphNames=glyphNames,
+            glyphNames=glyphNames if glyphNames else None,
             numTasks=args.num_tasks,
             progressInterval=args.progress_interval,
             continueOnError=args.continue_on_error,
         )
+
+
+@asynccontextmanager
+async def async_nullcontext(item):
+    yield item
 
 
 def main():

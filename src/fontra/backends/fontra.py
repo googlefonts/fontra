@@ -13,6 +13,7 @@ from fontra.core.classes import (
     Font,
     FontInfo,
     FontSource,
+    OpenTypeFeatures,
     VariableGlyph,
     structure,
     unstructure,
@@ -27,6 +28,7 @@ logger = logging.getLogger(__name__)
 class FontraBackend:
     glyphInfoFileName = "glyph-info.csv"
     fontDataFileName = "font-data.json"
+    featureTextFileName = "features.txt"
     glyphsDirName = "glyphs"
 
     @classmethod
@@ -63,6 +65,10 @@ class FontraBackend:
     @property
     def fontDataPath(self):
         return self.path / self.fontDataFileName
+
+    @property
+    def featureTextPath(self):
+        return self.path / self.featureTextFileName
 
     @property
     def glyphInfoPath(self):
@@ -139,6 +145,14 @@ class FontraBackend:
         self.fontData.sources = deepcopy(sources)
         self._scheduler.schedule(self._writeFontData)
 
+    async def getFeatures(self) -> OpenTypeFeatures:
+        return deepcopy(self.fontData.features)
+
+    async def putFeatures(self, features: OpenTypeFeatures) -> None:
+        assert isinstance(features, OpenTypeFeatures)
+        self.fontData.features = deepcopy(features)
+        self._scheduler.schedule(self._writeFontData)
+
     async def getCustomData(self) -> dict[str, Any]:
         return deepcopy(self.fontData.customData)
 
@@ -171,11 +185,27 @@ class FontraBackend:
         self.fontData = structure(
             json.loads(self.fontDataPath.read_text(encoding="utf-8")), Font
         )
+        if self.featureTextPath.exists():
+            self.fontData.features.text = self.featureTextPath.read_text(
+                encoding="utf-8"
+            )
 
     def _writeFontData(self) -> None:
         fontData = unstructure(self.fontData)
         fontData.pop("glyphs", None)
         fontData.pop("glyphMap", None)
+
+        featureText = None
+        if "features" in fontData:
+            featureText = fontData["features"].pop("text", None)
+            if fontData["features"].get("language", "fea") == "fea":
+                # omit if default
+                del fontData["features"]
+            if featureText:
+                self.featureTextPath.write_text(featureText, encoding="utf-8")
+        if not featureText and self.featureTextPath.exists():
+            self.featureTextPath.unlink()
+
         self.fontDataPath.write_text(serialize(fontData) + "\n", encoding="utf-8")
 
     def getGlyphData(self, glyphName: str) -> str:
