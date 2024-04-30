@@ -55,10 +55,6 @@ def test_mergeFeatures():
     assert expectedMergeFeatureText == mergedFeatureText
 
 
-def makeGlyphMap(glyphNames):
-    return {glyphName: [] for glyphName in glyphNames}
-
-
 expectedSubsettedFeatureText = """\
 languagesystem DFLT dflt;
 languagesystem latn dflt;
@@ -91,3 +87,7 @@ def test_subsetFeatures():
     )
     assert ["A", "A.alt"] == sorted(subsettedGlyphMap)
     assert expectedSubsettedFeatureText == subsettedFeatureText
+
+
+def makeGlyphMap(glyphNames):
+    return {glyphName: [] for glyphName in glyphNames}
