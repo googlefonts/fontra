@@ -174,7 +174,7 @@ export default class SelectionInfoPanel extends Panel {
           "src": glyphLocked
             ? "/tabler-icons/lock.svg"
             : "/tabler-icons/lock-open-2.svg",
-          "onclick": (event) => this._glyphLocking(varGlyphController.glyph),
+          "onclick": (event) => this._toggleGlyphLock(varGlyphController.glyph),
           "data-tooltip": glyphLocked ? "Unlock glyph" : "Lock glyph",
           "data-tooltipposition": "left",
         }),
@@ -428,7 +428,7 @@ export default class SelectionInfoPanel extends Panel {
     }
   }
 
-  async _glyphLocking(varGlyph) {
+  async _toggleGlyphLock(varGlyph) {
     if (varGlyph.customData["fontra.glyph.locked"]) {
       const result = await dialog(
         `Are you sure you want to unlock glyph ${varGlyph.name}?`,
