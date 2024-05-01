@@ -164,7 +164,7 @@ class OutputActionStep(ActionStep):
         return WorkflowEndPoints(endPoint=currentInput, outputs=outputs)
 
 
-def _structureSteps(rawSteps):
+def _structureSteps(rawSteps) -> list[ActionStep]:
     structured = []
 
     for rawStep in rawSteps:
