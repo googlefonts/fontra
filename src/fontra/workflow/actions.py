@@ -1169,7 +1169,6 @@ def updateSourcesAndLayers(instancer, newLocations) -> VariableGlyph:
 @registerFilterAction("check-interpolation")
 @dataclass(kw_only=True)
 class CheckInterpolation(BaseFilter):
-
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
         # Each of the next two lines may raise an error if the glyph
         # doesn't interpolate
