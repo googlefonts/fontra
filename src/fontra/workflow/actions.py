@@ -464,7 +464,7 @@ class FontraRead:
 @dataclass(kw_only=True)
 class FontraWrite:
     destination: str
-    input: ReadableFontBackend | None = field(init=False, default=None)
+    input: ReadableFontBackend = field(init=False, default=NullBackend())
 
     @cached_property
     def validatedInput(self) -> ReadableFontBackend:
@@ -479,7 +479,7 @@ class FontraWrite:
         try:
             yield self
         finally:
-            self.input = None
+            self.input = NullBackend()
             await input.aclose()
             try:
                 del self.validatedInput
