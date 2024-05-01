@@ -66,21 +66,6 @@ class WorkflowEndPoints:
     outputs: list[OutputProcessorProtocol]
 
 
-async def _prepareEndPoints(
-    currentInput: ReadableFontBackend,
-    steps: list[ActionStep],
-    exitStack: AsyncExitStack,
-) -> WorkflowEndPoints:
-    outputs: list[OutputProcessorProtocol] = []
-
-    for step in steps:
-        endPoints = await step.setup(currentInput, exitStack)
-        currentInput = endPoints.endPoint
-        outputs.extend(endPoints.outputs)
-
-    return WorkflowEndPoints(currentInput, outputs)
-
-
 @dataclass(kw_only=True)
 class ActionStep:
     actionName: str
@@ -203,3 +188,18 @@ def _structureSteps(rawSteps):
         )
 
     return structured
+
+
+async def _prepareEndPoints(
+    currentInput: ReadableFontBackend,
+    steps: list[ActionStep],
+    exitStack: AsyncExitStack,
+) -> WorkflowEndPoints:
+    outputs: list[OutputProcessorProtocol] = []
+
+    for step in steps:
+        endPoints = await step.setup(currentInput, exitStack)
+        currentInput = endPoints.endPoint
+        outputs.extend(endPoints.outputs)
+
+    return WorkflowEndPoints(currentInput, outputs)
