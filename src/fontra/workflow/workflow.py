@@ -20,17 +20,6 @@ from .actions import (
 from .merger import FontBackendMerger
 
 
-@contextmanager
-def chdir(path):
-    # contextlib.chdir() requires Python >= 3.11
-    currentDir = os.getcwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(currentDir)
-
-
 def _loadActionsEntryPoints():
     for entryPoint in entry_points(group="fontra.workflow.actions"):
         _ = entryPoint.load()
@@ -201,3 +190,14 @@ async def _prepareEndPoints(
         outputs.extend(endPoints.outputs)
 
     return WorkflowEndPoints(currentInput, outputs)
+
+
+@contextmanager
+def chdir(path):
+    # contextlib.chdir() requires Python >= 3.11
+    currentDir = os.getcwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(currentDir)
