@@ -8,7 +8,7 @@ from ..core.classes import Axes, FontInfo, FontSource, OpenTypeFeatures, Variabl
 class NullBackend:
     def __new__(cls):
         if not hasattr(cls, "instance"):
-            cls.instance = super(NullBackend, cls).__new__(cls)
+            cls.instance = super().__new__(cls)
         return cls.instance
 
     async def aclose(self) -> None:
