@@ -10,7 +10,6 @@ from typing import AsyncGenerator, ClassVar
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
 from .actions import (
-    ActionError,
     FilterActionProtocol,
     InputActionProtocol,
     OutputActionProtocol,
@@ -18,6 +17,10 @@ from .actions import (
     getActionClass,
 )
 from .merger import FontBackendMerger
+
+
+class WorkflowError(Exception):
+    pass
 
 
 @dataclass(kw_only=True)
@@ -157,7 +160,7 @@ def _structureSteps(rawSteps) -> list[ActionStep]:
                 continue
             break
         if actionName is None:
-            raise ActionError("no action type keyword found in step")
+            raise WorkflowError("no action type keyword found in step")
         arguments = dict(rawStep)
         del arguments[actionType]
         subSteps = _structureSteps(arguments.pop("steps", []))
