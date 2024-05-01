@@ -70,92 +70,99 @@ async def _prepareEndPoints(
     outputs: list[OutputProcessorProtocol] = []
 
     for step in steps:
-        action = step.getAction()
-
-        match step.actionType:
-            case "input":
-                assert isinstance(action, InputActionProtocol)
-                action = await exitStack.enter_async_context(action.prepare())
-                assert isinstance(action, ReadableFontBackend)
-
-                # set up nested steps
-                action, moreOutput = await _prepareEndPoints(
-                    action, step.steps, exitStack
-                )
-                outputs.extend(moreOutput)
-
-                if currentInput is None:
-                    currentInput = action
-                else:
-                    currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
-            case "filter":
-                assert isinstance(action, FilterActionProtocol)
-                assert currentInput is not None
-
-                action = await exitStack.enter_async_context(
-                    action.connect(currentInput)
-                )
-
-                # set up nested steps
-                action, moreOutput = await _prepareEndPoints(
-                    action, step.steps, exitStack
-                )
-                outputs.extend(moreOutput)
-
-                currentInput = action
-            case "output":
-                assert isinstance(action, OutputActionProtocol)
-                assert currentInput is not None
-
-                # set up nested steps
-                outputStepsResult, moreOutput = await _prepareEndPoints(
-                    currentInput, step.steps, exitStack
-                )
-                outputs.extend(moreOutput)
-
-                assert isinstance(outputStepsResult, ReadableFontBackend)
-                action = await exitStack.enter_async_context(
-                    action.connect(outputStepsResult)
-                )
-                assert isinstance(action, OutputProcessorProtocol)
-                outputs.append(action)
-            case _:
-                raise AssertionError("Expected code to be unreachable")
+        currentInput, newOutputs = await step.setup(currentInput, exitStack)
+        outputs.extend(newOutputs)
 
     return WorkflowEndPoints(currentInput, outputs)
 
 
 @dataclass(kw_only=True)
 class ActionStep:
-    actionType: str
     actionName: str
     arguments: dict
     steps: list[ActionStep] = field(default_factory=list)
 
     def getAction(self):
-        actionClass = self.getActionClass()
-        return actionClass(**self.arguments)
+        actionClass = getActionClass(self.actionType, self.actionName)
+        action = actionClass(**self.arguments)
+        assert isinstance(action, self.actionProtocol)
+        return action
 
-    def getActionClass(self):
-        return getActionClass(self.actionType, self.actionName)
+    async def setup(self, currentInput, exitStack):
+        raise NotImplementedError
 
 
 @dataclass(kw_only=True)
 class InputActionStep(ActionStep):
     actionProtocol = InputActionProtocol
+    actionType = "input"
+
+    async def setup(self, currentInput, exitStack):
+        action = self.getAction()
+
+        action = await exitStack.enter_async_context(action.prepare())
+        assert isinstance(action, ReadableFontBackend)
+
+        # set up nested steps
+        action, moreOutput = await _prepareEndPoints(action, self.steps, exitStack)
+
+        if currentInput is None:
+            currentInput = action
+        else:
+            currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
+        return currentInput, moreOutput
 
 
 @dataclass(kw_only=True)
 class FilterActionStep(ActionStep):
     actionProtocol = FilterActionProtocol
+    actionType = "filter"
+
+    async def setup(self, currentInput, exitStack):
+        action = self.getAction()
+
+        assert currentInput is not None
+
+        action = await exitStack.enter_async_context(action.connect(currentInput))
+
+        # set up nested steps
+        action, moreOutput = await _prepareEndPoints(action, self.steps, exitStack)
+
+        return action, moreOutput
 
 
 @dataclass(kw_only=True)
 class OutputActionStep(ActionStep):
     actionProtocol = OutputActionProtocol
+    actionType = "output"
+
+    async def setup(self, currentInput, exitStack):
+        assert currentInput is not None
+        action = self.getAction()
+
+        outputs = []
+
+        # set up nested steps
+        outputStepsResult, moreOutput = await _prepareEndPoints(
+            currentInput, self.steps, exitStack
+        )
+        outputs.extend(moreOutput)
+
+        assert isinstance(outputStepsResult, ReadableFontBackend)
+        action = await exitStack.enter_async_context(action.connect(outputStepsResult))
+        assert isinstance(action, OutputProcessorProtocol)
+        outputs.append(action)
+
+        return currentInput, outputs
 
 
-_actionTypes = ["input", "filter", "output"]
+_stepClasses = {
+    "input": InputActionStep,
+    "filter": FilterActionStep,
+    "output": OutputActionStep,
+}
+
+_actionTypes = list(_stepClasses)
 
 
 def _structureSteps(rawSteps):
@@ -174,8 +181,7 @@ def _structureSteps(rawSteps):
         del arguments[actionType]
         subSteps = _structureSteps(arguments.pop("steps", []))
         structured.append(
-            ActionStep(
-                actionType=actionType,
+            _stepClasses[actionType](
                 actionName=actionName,
                 arguments=arguments,
                 steps=subSteps,
