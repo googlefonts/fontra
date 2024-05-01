@@ -110,16 +110,16 @@ class InputActionStep(ActionStep):
     async def setup(self, currentInput, exitStack):
         action = self.getAction()
 
-        action = await exitStack.enter_async_context(action.prepare())
-        assert isinstance(action, ReadableFontBackend)
+        backend = await exitStack.enter_async_context(action.prepare())
+        assert isinstance(backend, ReadableFontBackend)
 
         # set up nested steps
-        action, outputs = await _prepareEndPoints(action, self.steps, exitStack)
+        backend, outputs = await _prepareEndPoints(backend, self.steps, exitStack)
 
         if currentInput is None:
-            currentInput = action
+            currentInput = backend
         else:
-            currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
+            currentInput = FontBackendMerger(inputA=currentInput, inputB=backend)
         return currentInput, outputs
 
 
