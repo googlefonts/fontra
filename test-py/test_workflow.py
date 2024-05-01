@@ -10,7 +10,7 @@ from testSupport import directoryTreeToList
 from fontra.backends import getFileSystemBackend
 from fontra.core.path import PackedPath
 from fontra.core.protocols import ReadableFontBackend
-from fontra.workflow.actions import ConnectableActionProtocol, getActionClass
+from fontra.workflow.actions import FilterActionProtocol, getActionClass
 from fontra.workflow.workflow import Workflow
 
 dataDir = pathlib.Path(__file__).resolve().parent / "data"
@@ -30,7 +30,7 @@ async def test_scaleAction(testFontraFont, glyphName) -> None:
     unscaledGlyph = await testFontraFont.getGlyph(glyphName)
     actionClass = getActionClass("filter", "scale")
     action = actionClass(scaleFactor=scaleFactor)
-    assert isinstance(action, ConnectableActionProtocol)
+    assert isinstance(action, FilterActionProtocol)
     assert isinstance(action, ReadableFontBackend)
 
     async with action.connect(testFontraFont) as action:
@@ -85,7 +85,7 @@ async def test_subsetAction(testFontraFont, tmp_path) -> None:
 
     actionClass = getActionClass("filter", "subset-glyphs")
     action = actionClass(glyphNames=glyphNames, glyphNamesFile=glyphNamesFile)
-    assert isinstance(action, ConnectableActionProtocol)
+    assert isinstance(action, FilterActionProtocol)
     assert isinstance(action, ReadableFontBackend)
 
     expectedGlyphMap = {

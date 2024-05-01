@@ -59,10 +59,10 @@ class ActionError(Exception):
 
 
 @runtime_checkable
-class ConnectableActionProtocol(Protocol):
+class FilterActionProtocol(Protocol):
     def connect(
         self, input: ReadableFontBackend
-    ) -> AsyncContextManager[ReadableFontBackend | OutputActionProtocol]:
+    ) -> AsyncContextManager[ReadableFontBackend]:
         pass
 
 
@@ -74,13 +74,21 @@ class InputActionProtocol(Protocol):
 
 @runtime_checkable
 class OutputActionProtocol(Protocol):
+    def connect(
+        self, input: ReadableFontBackend
+    ) -> AsyncContextManager[OutputProcessorProtocol]:
+        pass
+
+
+@runtime_checkable
+class OutputProcessorProtocol(Protocol):
     async def process(
         self, outputDir: os.PathLike = pathlib.Path(), *, continueOnError=False
     ) -> None:
         pass
 
 
-_actionRegistry = {
+_actionRegistry: dict[str, dict[str, type]] = {
     "filter": {},
     "input": {},
     "output": {},

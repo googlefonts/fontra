@@ -10,9 +10,10 @@ from typing import AsyncGenerator, NamedTuple
 from ..core.protocols import ReadableFontBackend
 from .actions import (
     ActionError,
-    ConnectableActionProtocol,
+    FilterActionProtocol,
     InputActionProtocol,
     OutputActionProtocol,
+    OutputProcessorProtocol,
     getActionClass,
 )
 from .merger import FontBackendMerger
@@ -58,7 +59,7 @@ class Workflow:
 
 class WorkflowEndPoints(NamedTuple):
     endPoint: ReadableFontBackend | None
-    outputs: list[OutputActionProtocol]
+    outputs: list[OutputProcessorProtocol]
 
 
 async def _prepareEndPoints(
@@ -66,7 +67,7 @@ async def _prepareEndPoints(
     steps: list[ActionStep],
     exitStack: AsyncExitStack,
 ) -> WorkflowEndPoints:
-    outputs: list[OutputActionProtocol] = []
+    outputs: list[OutputProcessorProtocol] = []
 
     for step in steps:
         action = step.getAction()
@@ -88,7 +89,7 @@ async def _prepareEndPoints(
                 else:
                     currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
             case "filter":
-                assert isinstance(action, ReadableFontBackend)
+                assert isinstance(action, FilterActionProtocol)
                 assert currentInput is not None
 
                 action = await exitStack.enter_async_context(
@@ -103,7 +104,7 @@ async def _prepareEndPoints(
 
                 currentInput = action
             case "output":
-                assert isinstance(action, ConnectableActionProtocol)
+                assert isinstance(action, OutputActionProtocol)
                 assert currentInput is not None
 
                 # set up nested steps
@@ -136,6 +137,21 @@ class ActionStep:
 
     def getActionClass(self):
         return getActionClass(self.actionType, self.actionName)
+
+
+@dataclass(kw_only=True)
+class InputActionStep(ActionStep):
+    actionProtocol = InputActionProtocol
+
+
+@dataclass(kw_only=True)
+class FilterActionStep(ActionStep):
+    actionProtocol = FilterActionProtocol
+
+
+@dataclass(kw_only=True)
+class OutputActionStep(ActionStep):
+    actionProtocol = OutputActionProtocol
 
 
 _actionTypes = ["input", "filter", "output"]
