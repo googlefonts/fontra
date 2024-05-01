@@ -298,7 +298,6 @@ class Scale(BaseFilter):
 
 @dataclass(kw_only=True)
 class BaseGlyphSubsetter(BaseFilter):
-    _glyphMap: dict[str, list[int]] | None = field(init=False, repr=False, default=None)
     layoutHandling: str = LayoutHandling.SUBSET
 
     async def getGlyph(self, glyphName: str) -> VariableGlyph | None:
