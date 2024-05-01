@@ -20,11 +20,6 @@ from .actions import (
 from .merger import FontBackendMerger
 
 
-def _loadActionsEntryPoints():
-    for entryPoint in entry_points(group="fontra.workflow.actions"):
-        _ = entryPoint.load()
-
-
 @dataclass(kw_only=True)
 class Workflow:
     config: dict
@@ -190,6 +185,11 @@ async def _prepareEndPoints(
         outputs.extend(endPoints.outputs)
 
     return WorkflowEndPoints(currentInput, outputs)
+
+
+def _loadActionsEntryPoints():
+    for entryPoint in entry_points(group="fontra.workflow.actions"):
+        _ = entryPoint.load()
 
 
 @contextmanager
