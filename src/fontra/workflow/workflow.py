@@ -5,7 +5,7 @@ import pathlib
 from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 from dataclasses import dataclass, field
 from importlib.metadata import entry_points
-from typing import AsyncGenerator, NamedTuple
+from typing import AsyncGenerator, ClassVar, NamedTuple
 
 from ..backends.null import NullBackend
 from ..core.protocols import ReadableFontBackend
@@ -84,11 +84,18 @@ class ActionStep:
     actionName: str
     arguments: dict
     steps: list[ActionStep] = field(default_factory=list)
+    actionType: ClassVar[str]
+    actionProtocol: ClassVar[type]
 
-    def getAction(self):
+    def getAction(
+        self,
+    ) -> InputActionProtocol | FilterActionProtocol | OutputActionProtocol:
         actionClass = getActionClass(self.actionType, self.actionName)
         action = actionClass(**self.arguments)
         assert isinstance(action, self.actionProtocol)
+        assert isinstance(
+            action, (InputActionProtocol, FilterActionProtocol, OutputActionProtocol)
+        )
         return action
 
     async def setup(self, currentInput, exitStack):

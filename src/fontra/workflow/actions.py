@@ -103,7 +103,7 @@ def _actionRegistryWrapper(cls, actionName, actionType):
     return cls
 
 
-def getActionClass(actionType, actionName):
+def getActionClass(actionType: str, actionName: str) -> type:
     registry = _actionRegistry[actionType]
     cls = registry.get(actionName)
     if cls is None:
