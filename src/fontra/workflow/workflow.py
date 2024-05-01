@@ -155,15 +155,15 @@ class OutputActionStep(ActionStep):
         outputs = []
 
         # set up nested steps
-        outputStepsResult, moreOutput = await _prepareEndPoints(
+        backend, moreOutput = await _prepareEndPoints(
             currentInput, self.steps, exitStack
         )
         outputs.extend(moreOutput)
 
-        assert isinstance(outputStepsResult, ReadableFontBackend)
-        action = await exitStack.enter_async_context(action.connect(outputStepsResult))
-        assert isinstance(action, OutputProcessorProtocol)
-        outputs.append(action)
+        assert isinstance(backend, ReadableFontBackend)
+        processor = await exitStack.enter_async_context(action.connect(backend))
+        assert isinstance(processor, OutputProcessorProtocol)
+        outputs.append(processor)
 
         return currentInput, outputs
 
