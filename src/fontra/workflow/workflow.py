@@ -36,9 +36,6 @@ def _loadActionsEntryPoints():
         _ = entryPoint.load()
 
 
-_loadActionsEntryPoints()
-
-
 @dataclass(kw_only=True)
 class Workflow:
     config: dict
@@ -47,6 +44,7 @@ class Workflow:
 
     def __post_init__(self):
         self.steps = _structureSteps(self.config["steps"])
+        _loadActionsEntryPoints()
 
     @asynccontextmanager
     async def endPoints(
