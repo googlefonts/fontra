@@ -130,9 +130,6 @@ class ActionStep:
     actionName: str
     arguments: dict
     steps: list[ActionStep] = field(default_factory=list)
-    action: (
-        ReadableFontBackend | ConnectableActionProtocol | OutputActionProtocol | None
-    ) = field(init=False, default=None)
 
 
 _actionTypes = ["input", "filter", "output"]
