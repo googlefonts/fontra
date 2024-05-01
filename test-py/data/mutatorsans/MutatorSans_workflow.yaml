@@ -1,6 +1,6 @@
 steps:
-  - action: input
+  - input: fontra-read
     source: "MutatorSans.designspace"
-  - action: subset-glyphs
+  - filter: subset-glyphs
     glyphNames: ["A", "B", "C"]
     dropGlyphNames: ["C"]
