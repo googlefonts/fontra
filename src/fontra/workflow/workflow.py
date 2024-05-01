@@ -114,13 +114,13 @@ class InputActionStep(ActionStep):
         assert isinstance(action, ReadableFontBackend)
 
         # set up nested steps
-        action, moreOutput = await _prepareEndPoints(action, self.steps, exitStack)
+        action, outputs = await _prepareEndPoints(action, self.steps, exitStack)
 
         if currentInput is None:
             currentInput = action
         else:
             currentInput = FontBackendMerger(inputA=currentInput, inputB=action)
-        return currentInput, moreOutput
+        return currentInput, outputs
 
 
 @registerActionStepClass
@@ -137,9 +137,9 @@ class FilterActionStep(ActionStep):
         action = await exitStack.enter_async_context(action.connect(currentInput))
 
         # set up nested steps
-        action, moreOutput = await _prepareEndPoints(action, self.steps, exitStack)
+        action, outputs = await _prepareEndPoints(action, self.steps, exitStack)
 
-        return action, moreOutput
+        return action, outputs
 
 
 @registerActionStepClass
