@@ -134,12 +134,12 @@ class FilterActionStep(ActionStep):
 
         assert currentInput is not None
 
-        action = await exitStack.enter_async_context(action.connect(currentInput))
+        backend = await exitStack.enter_async_context(action.connect(currentInput))
 
         # set up nested steps
-        action, outputs = await _prepareEndPoints(action, self.steps, exitStack)
+        backend, outputs = await _prepareEndPoints(backend, self.steps, exitStack)
 
-        return action, outputs
+        return backend, outputs
 
 
 @registerActionStepClass
